@@ -88,9 +88,96 @@ describe('Invitation API: public landing RSVP', () => {
 			expect.objectContaining({
 				fullName: 'Mariana Soto',
 				phone: '6680000000',
+				countryCode: '+52',
 				maxAllowedAttendees: 3,
 			}),
 		);
+	});
+
+	it('passes through a non-MX countryCode when provided', async () => {
+		submitGuestRsvpByPublicEventMock.mockResolvedValue({
+			attendanceStatus: 'confirmed',
+			attendeeCount: 1,
+			respondedAt: new Date().toISOString(),
+			inviteId: 'invite-3',
+			guestId: 'guest-3',
+			entrySource: 'generic_public',
+		});
+
+		await publicRsvp({
+			params: { eventType: 'xv', slug: 'demo' },
+			request: createMockRequest(
+				{
+					fullName: 'John Smith',
+					phone: '5551234567',
+					countryCode: '+1',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+				},
+				{ 'Content-Type': 'application/json', 'x-real-ip': '127.0.0.1' },
+			),
+		} as never);
+
+		expect(submitGuestRsvpByPublicEventMock).toHaveBeenCalledWith(
+			expect.objectContaining({ countryCode: '+1' }),
+		);
+	});
+
+	it('passes countryCode when phone is empty but countryCode is provided', async () => {
+		submitGuestRsvpByPublicEventMock.mockResolvedValue({
+			attendanceStatus: 'confirmed',
+			attendeeCount: 1,
+			respondedAt: new Date().toISOString(),
+			inviteId: 'invite-5',
+			guestId: 'guest-5',
+			entrySource: 'generic_public',
+		});
+
+		await publicRsvp({
+			params: { eventType: 'xv', slug: 'demo' },
+			request: createMockRequest(
+				{
+					fullName: 'Carlos Ruiz',
+					phone: '',
+					countryCode: '+34',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+				},
+				{ 'Content-Type': 'application/json', 'x-real-ip': '127.0.0.1' },
+			),
+		} as never);
+
+		const callArg = submitGuestRsvpByPublicEventMock.mock.calls[0][0];
+		expect(callArg.phone).toBe('');
+		expect(callArg.countryCode).toBe('+34');
+	});
+
+	it('does not pass countryCode when phone is empty', async () => {
+		submitGuestRsvpByPublicEventMock.mockResolvedValue({
+			attendanceStatus: 'confirmed',
+			attendeeCount: 1,
+			respondedAt: new Date().toISOString(),
+			inviteId: 'invite-4',
+			guestId: 'guest-4',
+			entrySource: 'generic_public',
+		});
+
+		await publicRsvp({
+			params: { eventType: 'xv', slug: 'demo' },
+			request: createMockRequest(
+				{
+					fullName: 'Ana López',
+					phone: '',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+				},
+				{ 'Content-Type': 'application/json', 'x-real-ip': '127.0.0.1' },
+			),
+		} as never);
+
+		const callArg = submitGuestRsvpByPublicEventMock.mock.calls[0][0];
+		expect(callArg.phone).toBe('');
+		expect(callArg.countryCode).toBeUndefined();
 	});
 
 	it('rejects events that do not opt into hybrid RSVP', async () => {

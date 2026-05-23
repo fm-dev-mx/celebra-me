@@ -1,4 +1,5 @@
 export const MAX_TEXT_LEN = 500;
+export const DEFAULT_COUNTRY_CODE = '+52';
 
 /**
  * Sanitizes a string by trimming and slicing to a maximum length.

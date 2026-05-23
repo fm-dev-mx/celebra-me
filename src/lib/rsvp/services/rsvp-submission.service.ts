@@ -32,6 +32,7 @@ type PublicEventRsvpIdentity = {
 	event: EventRecord;
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 };
 
@@ -50,6 +51,7 @@ type ResolvedRsvpTarget =
 				eventId: string;
 				fullName: string;
 				phone?: string;
+				countryCode?: string;
 				maxAllowedAttendees: number;
 				entrySource: EntrySource;
 				tags?: string[];
@@ -99,6 +101,7 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 				eventId: identity.event.id,
 				fullName,
 				phone: phone ?? undefined,
+				countryCode: identity.countryCode,
 				maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
 				entrySource: 'generic_public',
 				tags: ['system:public'],
@@ -205,6 +208,7 @@ export async function submitGuestRsvpByPublicEvent(input: {
 	event: EventRecord;
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	payload: GuestRSVPSubmitDTO;
 }): Promise<{
@@ -219,6 +223,7 @@ export async function submitGuestRsvpByPublicEvent(input: {
 		event: input.event,
 		fullName: input.fullName,
 		phone: input.phone,
+		countryCode: input.countryCode,
 		maxAllowedAttendees: input.maxAllowedAttendees,
 	});
 	return persistRsvpResponse(target, input.payload, 'generic_link');

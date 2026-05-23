@@ -21,6 +21,7 @@ export function toGuestDto(
 		inviteId: guest.inviteId,
 		fullName: guest.fullName,
 		phone: guest.phone,
+		countryCode: guest.countryCode,
 		maxAllowedAttendees: guest.maxAllowedAttendees,
 		attendanceStatus: guest.attendanceStatus,
 		attendeeCount: guest.attendeeCount,

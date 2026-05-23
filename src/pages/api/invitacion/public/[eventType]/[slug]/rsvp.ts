@@ -63,6 +63,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			event,
 			fullName: parsedRequest.fullName,
 			phone: parsedRequest.phone,
+			countryCode: parsedRequest.countryCode,
 			maxAllowedAttendees: rsvpConfig.guestCap,
 			payload: parsedRequest.payload,
 		});

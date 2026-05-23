@@ -1,11 +1,17 @@
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { EventRecord, GuestRSVPSubmitDTO } from '@/interfaces/rsvp/domain.interface';
 import { badRequest, parseJsonBody } from '@/lib/rsvp/core/http';
-import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
+import {
+	DEFAULT_COUNTRY_CODE,
+	formatPhoneError,
+	normalizeOptionalNationalPhone,
+	sanitize,
+} from '@/lib/rsvp/core/utils';
 
 export interface PublicGuestRsvpRequest {
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 	payload: GuestRSVPSubmitDTO;
 }
 
@@ -56,9 +62,14 @@ export async function parsePublicGuestRsvpRequest(
 		return badRequest(formatPhoneError(phoneResult.reason));
 	}
 
+	const phone = phoneResult.phone;
+	const rawCountryCode = (body.countryCode as string)?.trim() || undefined;
+	const countryCode = phone && !rawCountryCode ? DEFAULT_COUNTRY_CODE : rawCountryCode;
+
 	return {
 		fullName,
-		phone: phoneResult.phone ?? '',
+		phone: phone ?? '',
+		countryCode,
 		payload,
 	};
 }
