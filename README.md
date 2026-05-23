@@ -130,6 +130,7 @@ See `docs/domains/rsvp/database.md` for operational details.
 - `docs/core/agent-interaction.md`
 - `docs/core/architecture.md`
 - `docs/core/project-conventions.md`
+- `docs/core/release-process.md`
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/theme/architecture.md`
