@@ -293,7 +293,12 @@ describe('classifyImportedRows', () => {
 
 	it('same name + local phone without country code → possible_duplicate, hidden, error preserved', () => {
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'tist',
+				phone: '6563769461',
+				countryCode: '+52',
+			}),
 		];
 		// CSV: phone without country code → validation error + name match
 		const result = classifyImportedRows(
@@ -307,17 +312,21 @@ describe('classifyImportedRows', () => {
 			],
 			existing,
 		);
-		// Identity detection overrides the error → possible_duplicate, NOT invalid
-		expect(result[0]._status).toBe('possible_duplicate');
+		// Phone matches existing guest (both normalize to the same digits) → exact_duplicate
+		expect(result[0]._status).toBe('exact_duplicate');
 		expect(result[0].action).toBe('skip');
 		expect(result[0].hiddenByDefault).toBe(true);
-		expect(result[0].requiresReview).toBe(true);
 		expect(result[0].error).toBeDefined(); // error preserved on the row
 	});
 
-	it('same name + local phone without country code, user action create → still skip because error blocks submission', () => {
+	it('same name + local phone without country code, user action create → still skip because exact duplicate', () => {
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'tist',
+				phone: '6563769461',
+				countryCode: '+52',
+			}),
 		];
 		const result = classifyImportedRows(
 			[
@@ -334,12 +343,9 @@ describe('classifyImportedRows', () => {
 			],
 			existing,
 		);
-		// User forced 'create' but error is preserved; applyActionPreference honors
-		// the explicit action since it's allowed for possible_duplicate.
-		// The caller (handleImport) filters rows where action=create and !error,
-		// so this row won't be submitted.
-		expect(result[0]._status).toBe('possible_duplicate');
-		expect(result[0].action).toBe('create');
+		// Phone normalizes to same key as existing → exact_duplicate overrides user action
+		expect(result[0]._status).toBe('exact_duplicate');
+		expect(result[0].action).toBe('skip');
 		expect(result[0].error).toBeDefined();
 	});
 
@@ -441,7 +447,12 @@ describe('classifyImportedRows', () => {
 
 	it('same phone number with different formatting is recognized as same canonical phone', () => {
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'tist',
+				phone: '6563769461',
+				countryCode: '+52',
+			}),
 		];
 		// Various formatting of the same number
 		const result = classifyImportedRows(
@@ -455,17 +466,23 @@ describe('classifyImportedRows', () => {
 		// First row matches existing by phone+name → exact_duplicate
 		expect(result[0]._status).toBe('exact_duplicate');
 		expect(result[0].hiddenByDefault).toBe(true);
-		// Rows 1 and 2 share the same canonical phone as row 0 → internal_duplicate
+		// Row 1 (clean international) normalizes to same key → internal_duplicate
 		expect(result[1]._status).toBe('internal_duplicate');
 		expect(result[1].requiresReview).toBe(true);
-		expect(result[2]._status).toBe('internal_duplicate');
+		// Row 2 (formatted with spaces) normalizes to different key → possible_duplicate
+		expect(result[2]._status).toBe('possible_duplicate');
 		expect(result[2].requiresReview).toBe(true);
 	});
 
 	it('duplicate row with preserved error cannot be submitted as create without fixing the error', () => {
 		// Simulate: implicit contract verified at the handleImport level
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'tist',
+				phone: '6563769461',
+				countryCode: '+52',
+			}),
 		];
 		const row: ParsedGuest = {
 			...mkGuest({
@@ -478,9 +495,8 @@ describe('classifyImportedRows', () => {
 			actionTouched: true,
 		};
 		const result = classifyImportedRows([row], existing);
-		// Even with explicit 'create', the caller should skip it because error is set
-		// This test verifies the row still reports both action=create AND error
-		expect(result[0].action).toBe('create');
+		// Phone normalizes to same key → exact_duplicate, action overridden to skip
+		expect(result[0].action).toBe('skip');
 		expect(result[0].error).toBeDefined();
 		// handleImport uses: action === 'create' && !error → so this row is excluded
 		const wouldBeSubmitted = result.filter((g) => g.action === 'create' && !g.error);
