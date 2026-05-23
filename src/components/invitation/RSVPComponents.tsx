@@ -10,7 +10,11 @@ import {
 import { CheckSealIcon } from '@/components/common/icons/invitation/CheckSeal';
 import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak';
 
-export { buildWhatsAppUrl, resolveLabels } from '@/components/invitation/rsvp-logic';
+export {
+	buildWhatsAppUrl,
+	resolveLabels,
+	coerceAttendeeCount,
+} from '@/components/invitation/rsvp-logic';
 export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
 // --- Sub-components ---
@@ -151,6 +155,7 @@ export function RsvpFormView(props: {
 	phone: string;
 	countryCode: string;
 	showPhoneField: boolean;
+	showIdentityFields: boolean;
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
 	attendanceStatus: AttendanceStatus;
@@ -182,6 +187,7 @@ export function RsvpFormView(props: {
 		isSubmitting,
 		submitStatus,
 		isDemoPreview,
+		showIdentityFields,
 	} = props;
 
 	return (
@@ -189,14 +195,16 @@ export function RsvpFormView(props: {
 			<p className="rsvp__eyebrow">RSVP</p>
 			<h2 className="rsvp__title">{title}</h2>
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
-				<div className="rsvp__grid">
-					<NameField {...props} />
-					<PhoneField
-						{...props}
-						countryCode={props.countryCode}
-						onCountryCodeChange={props.onCountryCodeChange}
-					/>
-				</div>
+				{showIdentityFields && (
+					<div className="rsvp__grid">
+						<NameField {...props} />
+						<PhoneField
+							{...props}
+							countryCode={props.countryCode}
+							onCountryCodeChange={props.onCountryCodeChange}
+						/>
+					</div>
+				)}
 				<AttendanceField {...props} />
 				<ConfirmedFields {...props} />
 				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">

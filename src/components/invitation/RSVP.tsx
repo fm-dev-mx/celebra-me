@@ -5,6 +5,7 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
+	coerceAttendeeCount,
 	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
@@ -54,7 +55,7 @@ const RSVP: React.FC<RSVPProps> = ({
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
-	const allowPublicRsvp = !hasPersonalizedInvite && accessMode === 'hybrid';
+	const isPublicRsvp = !hasPersonalizedInvite && accessMode === 'hybrid';
 
 	const {
 		name,
@@ -95,6 +96,8 @@ const RSVP: React.FC<RSVPProps> = ({
 		prefersReducedMotion: !!prefersReducedMotion,
 		isDemoPreview,
 	});
+	const hasSelectedAttendance = attendanceStatus !== null;
+	const showIdentityFields = isPublicRsvp ? hasSelectedAttendance && !nameLocked : !nameLocked;
 	const labelsResolved = resolveLabels(labels, celebrantName);
 	const showWhatsAppCta =
 		submitted &&
@@ -102,7 +105,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	if (!hasPersonalizedInvite && !allowPublicRsvp && !isDemoPreview) {
+	if (!hasPersonalizedInvite && !isPublicRsvp && !isDemoPreview) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
 
@@ -160,6 +163,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						phone={phone}
 						countryCode={countryCode}
 						showPhoneField={showPhoneField}
+						showIdentityFields={showIdentityFields}
 						touched={touched}
 						errors={errors}
 						attendanceStatus={attendanceStatus}
@@ -190,7 +194,12 @@ const RSVP: React.FC<RSVPProps> = ({
 						onAttendanceChange={(status) => {
 							setAttendanceStatus(status);
 							setAttendeeCount(
-								status === 'declined' ? 0 : supportsPlusOnes ? attendeeCount : 1,
+								coerceAttendeeCount(
+									status,
+									attendeeCount,
+									supportsPlusOnes,
+									effectiveGuestCap,
+								),
 							);
 							if (touched.attendance) validate();
 						}}

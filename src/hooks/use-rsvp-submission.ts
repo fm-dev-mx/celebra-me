@@ -53,9 +53,9 @@ export function useRsvpSubmission({
 		isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap,
 	);
 	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
-	const [attendeeCount, setAttendeeCount] = useState<number | string>(effectiveGuestCap);
+	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
-	const [nameLocked] = useState(isDemoPreview || Boolean(initialData?.fullName));
+	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
 	const [rsvpId, setRsvpId] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -82,7 +82,8 @@ export function useRsvpSubmission({
 	const supportsPlusOnes = effectiveGuestCap > 1;
 	// Show phone field for public/hybrid access RSVPs
 	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
-	const showPhoneField = !isPersonalized && accessMode === 'hybrid';
+	const isPublicRsvp = !isPersonalized && accessMode === 'hybrid';
+	const showPhoneField = isPublicRsvp;
 	// Extract country code from pasted phone values
 	const handlePhoneChange = useCallback((value: string) => {
 		const parsed = parseRsvpPhoneInput(value);
@@ -100,6 +101,7 @@ export function useRsvpSubmission({
 			attendeeCount,
 			supportsPlusOnes,
 			effectiveGuestCap,
+			isPublicRsvp,
 		});
 		setErrors(newErrors);
 		return newErrors;
@@ -107,6 +109,7 @@ export function useRsvpSubmission({
 		attendanceStatus,
 		attendeeCount,
 		effectiveGuestCap,
+		isPublicRsvp,
 		name,
 		nameLocked,
 		phone,
@@ -193,14 +196,16 @@ export function useRsvpSubmission({
 						return;
 					}
 
+					const trimmedNotes = notes.trim();
+					const normalizedPhone = normalizePhoneInput(phone);
+
 					await rsvpApi.submitPublicRsvp(eventType, eventSlug, {
 						fullName: name.trim(),
-						phone: normalizePhoneInput(phone),
-						countryCode: phone ? countryCode : undefined,
 						attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 						attendeeCount: normalizedCount,
-						guestComment: notes,
-					});
+						guestComment: trimmedNotes,
+						...(normalizedPhone ? { phone: normalizedPhone, countryCode } : {}),
+					} as import('@/lib/client/rsvp-api').PublicRsvpPayload);
 
 					setSubmitStatus('success');
 					window.setTimeout(() => setSubmitted(true), 400);
@@ -210,7 +215,7 @@ export function useRsvpSubmission({
 				const payload = {
 					attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 					attendeeCount: normalizedCount,
-					guestComment: notes,
+					guestComment: notes.trim(),
 				};
 
 				const data = await rsvpApi.submitRsvp(initialData.inviteId, payload);
