@@ -230,6 +230,7 @@ export interface InvitationViewModel {
 		rsvp?: {
 			eventSlug: string;
 			eventType: 'xv' | 'boda' | 'bautizo' | 'cumple';
+			subcopy?: string;
 			title: string;
 			guestCap: number;
 			accessMode: 'personalized-only' | 'hybrid';

@@ -39,6 +39,32 @@ describe('RSVP Component', () => {
 			expect(screen.getByText(defaultProps.title)).toBeInTheDocument();
 		});
 
+		it('should render custom subcopy when provided', () => {
+			render(<RSVP {...defaultProps} subcopy="Texto personalizado para esta celebración." />);
+
+			expect(
+				screen.getByText('Texto personalizado para esta celebración.'),
+			).toBeInTheDocument();
+		});
+
+		it('should render default subcopy based on eventType when omitted', () => {
+			render(<RSVP {...defaultProps} />);
+
+			expect(
+				screen.getByText(
+					'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
+				),
+			).toBeInTheDocument();
+		});
+
+		it('should render subcopy element even with whitespace-only value', () => {
+			const { container } = render(<RSVP {...defaultProps} subcopy=" " />);
+
+			const subcopyEl = container.querySelector('.rsvp__subcopy');
+			expect(subcopyEl).toBeInTheDocument();
+			expect(subcopyEl?.textContent).toBe(' ');
+		});
+
 		it('should render attendance radio buttons', () => {
 			const { container } = render(<RSVP {...defaultProps} />);
 

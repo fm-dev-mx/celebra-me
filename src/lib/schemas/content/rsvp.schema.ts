@@ -22,6 +22,7 @@ export const rsvpSectionStyleSchema = z
 
 export const rsvpSchema = z
 	.object({
+		subcopy: z.string().optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: z.number().int().positive().default(1),
 		accessMode: z.enum(['personalized-only', 'hybrid']).default('personalized-only'),

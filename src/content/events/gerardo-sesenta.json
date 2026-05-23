@@ -133,6 +133,7 @@
         ]
     },
     "rsvp": {
+        "subcopy": "Tu confirmación nos ayuda a preparar cada detalle para celebrar esta noche especial.",
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",

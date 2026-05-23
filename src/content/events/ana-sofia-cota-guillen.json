@@ -138,6 +138,7 @@
         ]
     },
     "rsvp": {
+        "subcopy": "Tu respuesta nos ayuda a preparar cada detalle para compartir esta noche especial contigo.",
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
