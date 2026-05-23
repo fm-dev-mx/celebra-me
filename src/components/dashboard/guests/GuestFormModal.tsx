@@ -16,7 +16,7 @@ interface GuestFormModalProps {
 	onSubmit: (
 		payload: {
 			fullName: string;
-			phone?: string;
+			phone?: string | null;
 			countryCode?: string;
 			maxAllowedAttendees: number;
 			attendanceStatus?: AttendanceStatus;
@@ -29,6 +29,30 @@ interface GuestFormModalProps {
 }
 
 const PREDEFINED_TAGS = ['Familia', 'Amigos', 'VIP', 'Trabajo'];
+
+function resolvePhonePayload(input: {
+	phone: string;
+	countryCode: string;
+	mode: 'create' | 'edit';
+	initialPhone?: string;
+}): { phone?: string | null; countryCode?: string; error?: string } {
+	if (!input.phone.trim()) {
+		return {
+			phone: input.mode === 'edit' && input.initialPhone ? null : undefined,
+			countryCode: undefined,
+		};
+	}
+
+	const result = parsePhoneInput(input.phone.trim());
+	if (!result.ok) {
+		return { error: result.reason };
+	}
+
+	return {
+		phone: result.phone,
+		countryCode: result.countryCode || input.countryCode,
+	};
+}
 
 const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	open,
@@ -94,11 +118,14 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			errors.fullName = 'El nombre es obligatorio.';
 		}
 
-		if (phone.trim()) {
-			const result = parsePhoneInput(phone.trim());
-			if (!result.ok) {
-				errors.phone = result.reason;
-			}
+		const phonePayload = resolvePhonePayload({
+			phone,
+			countryCode,
+			mode,
+			initialPhone: initialGuest?.phone,
+		});
+		if (phonePayload.error) {
+			errors.phone = phonePayload.error;
 		}
 
 		if (mode === 'edit' && attendeeCount > maxAllowedAttendees) {
@@ -114,13 +141,11 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setFieldErrors({});
 		setLocalError('');
 		try {
-			const sendPhone = phone.trim() || undefined;
-			const sendCountryCode = sendPhone ? countryCode : undefined;
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phone: sendPhone,
-					countryCode: sendCountryCode,
+					phone: phonePayload.phone,
+					countryCode: phonePayload.countryCode,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,

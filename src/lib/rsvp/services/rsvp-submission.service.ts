@@ -22,6 +22,7 @@ import {
 	sanitize,
 	toSafeAttendeeCount,
 } from '@/lib/rsvp/core/utils';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 
 type InviteRsvpIdentity = {
@@ -86,7 +87,14 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 		}
 		const phone = phoneResult.phone;
 		if (phone) {
-			const existingInvitation = await findGuestByPhonePublic(identity.event.id, phone);
+			if (!identity.countryCode || !isSupportedCountryCode(identity.countryCode)) {
+				throw new ApiError(400, 'bad_request', 'Código de país no válido.');
+			}
+			const existingInvitation = await findGuestByPhonePublic(
+				identity.event.id,
+				identity.countryCode,
+				phone,
+			);
 			if (existingInvitation) {
 				return {
 					event: identity.event,

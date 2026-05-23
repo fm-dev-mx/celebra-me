@@ -24,7 +24,7 @@ export interface GuestFilters {
 export interface CreateGuestInput {
 	eventId: string;
 	fullName: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
@@ -35,7 +35,7 @@ export interface CreateGuestInput {
 export interface UpdateGuestInput {
 	guestId: string;
 	fullName?: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;

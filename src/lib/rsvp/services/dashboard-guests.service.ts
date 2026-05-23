@@ -25,6 +25,7 @@ import {
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
@@ -78,6 +79,40 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 		declinedPeople,
 		viewed,
 	};
+}
+
+async function resolvePhoneUpdate(input: {
+	existing: Awaited<ReturnType<typeof getGuestAccessOrThrow>>;
+	phone?: string | null;
+	countryCode?: string;
+	hostAccessToken: string;
+}): Promise<{ phone?: string | null; countryCode?: string }> {
+	const nextPhone = input.phone === null ? null : input.phone || undefined;
+	if (typeof nextPhone !== 'string') {
+		return { phone: nextPhone, countryCode: undefined };
+	}
+
+	if (!input.countryCode || !isSupportedCountryCode(input.countryCode)) {
+		throw new ApiError(400, 'bad_request', 'Código de país no válido.');
+	}
+
+	if (nextPhone !== input.existing.phone || input.countryCode !== input.existing.countryCode) {
+		const duplicate = await findGuestByPhoneAuth(
+			input.existing.eventId,
+			input.countryCode,
+			nextPhone,
+			input.hostAccessToken,
+		);
+		if (duplicate) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'Ya existe un invitado con ese número de teléfono.',
+			);
+		}
+	}
+
+	return { phone: nextPhone, countryCode: input.countryCode };
 }
 
 export async function listDashboardGuests(input: {
@@ -157,7 +192,15 @@ export async function createDashboardGuest(input: {
 
 	const phone = input.phone || undefined;
 	if (phone) {
-		const existing = await findGuestByPhoneAuth(event.id, phone, input.hostAccessToken);
+		if (!input.countryCode || !isSupportedCountryCode(input.countryCode)) {
+			throw new ApiError(400, 'bad_request', 'Código de país no válido.');
+		}
+		const existing = await findGuestByPhoneAuth(
+			event.id,
+			input.countryCode,
+			phone,
+			input.hostAccessToken,
+		);
 		if (existing) {
 			throw new ApiError(
 				409,
@@ -226,7 +269,7 @@ export async function updateDashboardGuest(input: {
 	actorUserId?: string;
 	isSuperAdmin?: boolean;
 	fullName?: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
@@ -261,29 +304,19 @@ export async function updateDashboardGuest(input: {
 
 	let updated;
 	try {
-		const nextPhone = input.phone || undefined;
-		const nextCountryCode = input.countryCode;
-		if (nextPhone && nextPhone !== existing.phone) {
-			const duplicate = await findGuestByPhoneAuth(
-				existing.eventId,
-				nextPhone,
-				input.hostAccessToken,
-			);
-			if (duplicate) {
-				throw new ApiError(
-					409,
-					'conflict',
-					'Ya existe un invitado con ese número de teléfono.',
-				);
-			}
-		}
+		const phoneUpdate = await resolvePhoneUpdate({
+			existing,
+			phone: input.phone,
+			countryCode: input.countryCode,
+			hostAccessToken: input.hostAccessToken,
+		});
 
 		updated = await updateGuestById(
 			{
 				guestId: input.guestId,
 				fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
-				phone: nextPhone,
-				countryCode: nextCountryCode,
+				phone: phoneUpdate.phone,
+				countryCode: phoneUpdate.countryCode,
 				maxAllowedAttendees: nextCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,

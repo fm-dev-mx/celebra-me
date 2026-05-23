@@ -9,7 +9,7 @@ type ModalMode = 'create' | 'edit' | 'send-pending';
 
 export interface GuestFormPayload {
 	fullName: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
 	attendanceStatus?: AttendanceStatus;
@@ -202,15 +202,16 @@ export const useGuestDashboardActions = ({
 			payload: {
 				fullName: string;
 				maxAllowedAttendees: number;
-				phone?: string;
+				phone?: string | null;
 				countryCode?: string;
 			},
 		): Promise<DashboardGuestItem> => {
-			const phone = payload.phone || undefined;
+			const phone = payload.phone === null ? null : payload.phone || undefined;
 			const updated = await guestsApi.update(guestId, {
 				...payload,
 				phone,
-				countryCode: phone ? payload.countryCode || undefined : undefined,
+				countryCode:
+					typeof phone === 'string' ? payload.countryCode || undefined : undefined,
 			});
 			setItems((prev) =>
 				prev.map((entry) => (entry.guestId === guestId ? { ...entry, ...updated } : entry)),

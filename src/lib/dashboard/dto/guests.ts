@@ -28,7 +28,7 @@ export interface BulkImportResult {
 export interface CreateGuestDTO {
 	eventId: string;
 	fullName: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	email?: string | null;
 	tags?: string[];
@@ -37,7 +37,7 @@ export interface CreateGuestDTO {
 
 export interface UpdateGuestDTO {
 	fullName?: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	email?: string | null;
 	tags?: string[];

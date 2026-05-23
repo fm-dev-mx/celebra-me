@@ -10,6 +10,7 @@ import {
 	parseJsonBody,
 } from '@/lib/rsvp/core/http';
 import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	createDashboardGuest,
@@ -98,6 +99,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 		if (!phoneResult.ok) {
 			return badRequest(formatPhoneError(phoneResult.reason));
 		}
+		const normalizedCountryCode = phoneResult.phone ? countryCode : undefined;
+		if (phoneResult.phone && !normalizedCountryCode) {
+			return badRequest('La clave país es obligatoria cuando hay teléfono.');
+		}
+		if (normalizedCountryCode && !isSupportedCountryCode(normalizedCountryCode)) {
+			return badRequest('Código de país no válido.');
+		}
 
 		const maxAllowedAttendees =
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
@@ -106,7 +114,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			eventId,
 			fullName,
 			phone: phoneResult.phone,
-			countryCode,
+			countryCode: normalizedCountryCode,
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,

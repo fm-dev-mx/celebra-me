@@ -9,6 +9,7 @@ import {
 	parseJsonBody,
 } from '@/lib/rsvp/core/http';
 import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	deleteDashboardGuest,
@@ -19,6 +20,33 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 function parseStatus(raw: string): AttendanceStatus | undefined {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;
 	return undefined;
+}
+
+function parsePhoneUpdate(
+	body: Record<string, unknown>,
+): { ok: true; phone?: string | null; countryCode?: string } | { ok: false; message: string } {
+	const countryCode = typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
+	let phone: string | null | undefined;
+
+	if (body.phone !== undefined) {
+		const phoneResult = normalizeOptionalNationalPhone(body.phone as string);
+		if (!phoneResult.ok) {
+			return { ok: false, message: formatPhoneError(phoneResult.reason) };
+		}
+		phone = phoneResult.phone;
+	}
+
+	if (!phone) {
+		return { ok: true, phone, countryCode: undefined };
+	}
+	if (!countryCode) {
+		return { ok: false, message: 'La clave país es obligatoria cuando hay teléfono.' };
+	}
+	if (!isSupportedCountryCode(countryCode)) {
+		return { ok: false, message: 'Código de país no válido.' };
+	}
+
+	return { ok: true, phone, countryCode };
 }
 
 export const PATCH: APIRoute = async ({ params, request, url }) => {
@@ -49,17 +77,8 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 
-		const countryCode =
-			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
-
-		let validatedPhone: string | undefined;
-		if (body.phone !== undefined) {
-			const phoneResult = normalizeOptionalNationalPhone(body.phone as string);
-			if (!phoneResult.ok) {
-				return badRequest(formatPhoneError(phoneResult.reason));
-			}
-			validatedPhone = phoneResult.phone ?? undefined;
-		}
+		const phoneUpdate = parsePhoneUpdate(body);
+		if (!phoneUpdate.ok) return badRequest(phoneUpdate.message);
 
 		const result = await updateDashboardGuest({
 			guestId,
@@ -68,8 +87,8 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			actorUserId: session.userId,
 			isSuperAdmin: session.isSuperAdmin,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
-			phone: validatedPhone,
-			countryCode,
+			phone: phoneUpdate.phone,
+			countryCode: phoneUpdate.countryCode,
 			maxAllowedAttendees:
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,
 			attendanceStatus: parseStatus(sanitize(body.attendanceStatus, 20)),

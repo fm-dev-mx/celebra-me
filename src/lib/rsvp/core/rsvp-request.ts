@@ -1,12 +1,8 @@
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { EventRecord, GuestRSVPSubmitDTO } from '@/interfaces/rsvp/domain.interface';
 import { badRequest, parseJsonBody } from '@/lib/rsvp/core/http';
-import {
-	DEFAULT_COUNTRY_CODE,
-	formatPhoneError,
-	normalizeOptionalNationalPhone,
-	sanitize,
-} from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 
 export interface PublicGuestRsvpRequest {
 	fullName: string;
@@ -64,7 +60,13 @@ export async function parsePublicGuestRsvpRequest(
 
 	const phone = phoneResult.phone;
 	const rawCountryCode = (body.countryCode as string)?.trim() || undefined;
-	const countryCode = phone && !rawCountryCode ? DEFAULT_COUNTRY_CODE : rawCountryCode;
+	if (phone && !rawCountryCode) {
+		return badRequest('La clave país es obligatoria cuando hay teléfono.');
+	}
+	if (phone && rawCountryCode && !isSupportedCountryCode(rawCountryCode)) {
+		return badRequest('Código de país no válido.');
+	}
+	const countryCode = phone ? rawCountryCode : undefined;
 
 	return {
 		fullName,

@@ -211,9 +211,12 @@ export function normalizePhoneForComparison(
 	if (!rawPhone) return '';
 
 	const norm = normalizeImportPhone(rawPhone, rawCountryCode);
-	if (norm.ok && norm.phone) return norm.phone;
+	if (norm.ok && norm.phone && norm.countryCode) return `${norm.countryCode}|${norm.phone}`;
 
-	return rawPhone.replace(/[^\d]/g, '');
+	const split = splitPhoneForExport(rawPhone);
+	if (split?.localPhone) return `${split.countryCode}|${split.localPhone}`;
+
+	return rawCountryCode ? `${rawCountryCode}|${rawPhone.replace(/[^\d]/g, '')}` : '';
 }
 
 function splitCsvRows(content: string): string[][] {

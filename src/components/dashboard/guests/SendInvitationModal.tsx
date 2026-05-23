@@ -17,7 +17,7 @@ interface SendInvitationModalProps {
 		payload: {
 			fullName: string;
 			maxAllowedAttendees: number;
-			phone?: string;
+			phone?: string | null;
 			countryCode?: string;
 		},
 	) => Promise<DashboardGuestItem>;

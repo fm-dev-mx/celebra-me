@@ -3,11 +3,7 @@ import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { badRequest, errorResponse, getIp, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
-import {
-	formatPhoneError,
-	normalizeOptionalNationalPhone,
-	SUPPORTED_COUNTRY_CODES,
-} from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone } from '@/lib/rsvp/core/utils';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
@@ -68,6 +64,11 @@ export const POST: APIRoute = async ({ request }) => {
 			}
 
 			const countryCode = guest.country_code ?? null;
+			if (phoneResult.phone && !countryCode) {
+				rowErrors.push(`Fila ${i + 1}: La clave país es obligatoria cuando hay teléfono.`);
+				return null;
+			}
+
 			if (phoneResult.phone && countryCode && !isSupportedCountryCode(countryCode)) {
 				rowErrors.push(`Fila ${i + 1}: Código de país no válido (${countryCode}).`);
 				return null;
@@ -76,7 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
 			return {
 				full_name: guest.full_name,
 				phone: phoneResult.phone,
-				country_code: countryCode,
+				country_code: phoneResult.phone ? countryCode : null,
 				email: guest.email ?? null,
 				tags: guest.tags ?? [],
 				max_allowed_attendees: guest.max_allowed_attendees,

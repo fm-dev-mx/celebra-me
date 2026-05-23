@@ -15,7 +15,7 @@ interface UseSendInvitationOptions {
 		payload: {
 			fullName: string;
 			maxAllowedAttendees: number;
-			phone?: string;
+			phone?: string | null;
 			countryCode?: string;
 		},
 	) => Promise<DashboardGuestItem>;
@@ -141,7 +141,7 @@ export function useSendInvitation({
 			}
 		}
 
-		const sendPhone = editPhone.trim() || undefined;
+		const sendPhone = editPhone.trim() || (guest.phone ? null : undefined);
 		try {
 			const updated = await onSave(guest.guestId, {
 				fullName: editName.trim() || guest.fullName,
