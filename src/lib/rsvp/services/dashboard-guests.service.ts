@@ -162,7 +162,7 @@ export async function createDashboardGuest(input: {
 			throw new ApiError(
 				409,
 				'conflict',
-				'This phone number is already registered for this event.',
+				'Ya existe un invitado con ese número de teléfono.',
 			);
 		}
 	}
@@ -273,7 +273,7 @@ export async function updateDashboardGuest(input: {
 				throw new ApiError(
 					409,
 					'conflict',
-					'This phone number is already registered for this event.',
+					'Ya existe un invitado con ese número de teléfono.',
 				);
 			}
 		}

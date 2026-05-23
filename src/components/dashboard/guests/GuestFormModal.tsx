@@ -138,10 +138,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				}
 			}
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : String(err);
-			if (msg.includes('ya está registrado') || msg.toLowerCase().includes('conflict')) {
+			if ((err as { code?: string })?.code === 'conflict') {
 				setFieldErrors({ phone: 'Este teléfono ya está registrado.' });
 			} else {
+				const msg = err instanceof Error ? err.message : String(err);
 				setLocalError(msg === '[object Object]' ? 'Error al guardar invitado.' : msg);
 			}
 		} finally {

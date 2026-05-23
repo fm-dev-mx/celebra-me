@@ -18,7 +18,7 @@ const CONSTRAINT_MAP: Record<
 > = {
 	guest_invitations_event_phone_unique: {
 		errorCode: 'conflict_duplicate_phone',
-		userMessage: 'A guest with that phone number already exists for this event.',
+		userMessage: 'Ya existe un invitado con ese número de teléfono.',
 		httpStatus: 409,
 	},
 	guest_invitations_phone_country_code_pair_check: {
@@ -77,7 +77,7 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 	}
 
 	if (errorMessage.includes('23505')) {
-		return new ApiError(409, 'conflict', 'A record with the same data already exists.', {
+		return new ApiError(409, 'conflict', 'Ya existe un registro con los mismos datos.', {
 			errorCode: 'conflict_unique_violation',
 		});
 	}
