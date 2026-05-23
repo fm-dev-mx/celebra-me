@@ -21,6 +21,7 @@
 	--rsvp-title-color: rgb(var(--color-eternal-ink-rgb) / 92%);
 	--rsvp-label-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--rsvp-placeholder-color: rgb(var(--color-eternal-ink-rgb) / 46%);
+	--rsvp-radius-card: 14px;
 
 	background:
 		radial-gradient(
@@ -39,7 +40,6 @@
 			rgb(var(--color-ivory-warm-rgb) / 76%) 100%
 		);
 	border-color: rgb(var(--color-sacred-blue-rgb) / 32%);
-	border-radius: 14px;
 
 	&::before {
 		inset: 0.55rem;
@@ -101,22 +101,6 @@
 	.rsvp__field label,
 	.rsvp__legend {
 		color: rgb(var(--color-eternal-ink-rgb) / 74%);
-	}
-
-	.rsvp__field--floating {
-		gap: 0.55rem;
-	}
-
-	.rsvp__field--floating .rsvp__label {
-		order: -1;
-	}
-
-	.rsvp__field input[type='text'],
-	.rsvp__field input[type='tel'],
-	.rsvp__field input[type='number'],
-	.rsvp__field textarea {
-		padding-inline: 0.8rem;
-		border-radius: 6px;
 	}
 
 	.rsvp__button {

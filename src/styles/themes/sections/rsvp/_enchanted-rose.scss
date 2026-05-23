@@ -1,19 +1,4 @@
 .rsvp[data-variant='enchanted-rose'] {
-	max-width: min(42rem, calc(100% - 2rem));
-	margin-inline: auto;
-	padding: clamp(3rem, 8vw, 5rem) clamp(1.2rem, 5vw, 3rem);
-	background:
-		linear-gradient(
-			145deg,
-			rgb(var(--color-warm-ivory-rgb) / 82%),
-			rgb(var(--color-blush-pink-rgb) / 18%)
-		),
-		var(--color-surface-primary);
-	border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
-	border-radius: 8px;
-	box-shadow: var(--shadow-editorial, var(--shadow-premium));
-	color: var(--color-text-primary);
-
 	--rsvp-emoji-yes: 'Si';
 	--rsvp-emoji-no: 'No';
 	--rsvp-label-color: rgb(var(--color-walnut-brown-rgb) / 76%);
@@ -29,6 +14,17 @@
 	--rsvp-radio-selected-border: var(--color-deep-rose-red);
 	--rsvp-radius-card: 8px;
 	--rsvp-radius-field: 6px;
+
+	background:
+		linear-gradient(
+			145deg,
+			rgb(var(--color-warm-ivory-rgb) / 82%),
+			rgb(var(--color-blush-pink-rgb) / 18%)
+		),
+		var(--color-surface-primary);
+	border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
+	box-shadow: var(--shadow-editorial, var(--shadow-premium));
+	color: var(--color-text-primary);
 
 	.rsvp__title {
 		margin-bottom: clamp(2rem, 6vw, 3rem);
@@ -63,7 +59,6 @@
 	textarea {
 		background: var(--rsvp-field-bg);
 		border: 1px solid var(--rsvp-field-border);
-		border-radius: var(--rsvp-radius-field);
 		color: var(--color-text-primary);
 		font-family: var(--font-body);
 		box-shadow: inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 76%);
@@ -100,7 +95,6 @@
 		overflow: hidden;
 		background: var(--color-velvet-burgundy);
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 62%);
-		border-radius: 6px;
 		color: var(--color-warm-ivory);
 		font-family: var(--font-body);
 		font-size: 0.78rem;
@@ -145,11 +139,6 @@
 		box-shadow:
 			0 0 0 2px rgb(var(--color-warm-ivory-rgb) / 90%),
 			0 0 0 6px rgb(var(--color-antique-gold-rgb) / 34%);
-	}
-
-	@media (width <= 480px) {
-		--rsvp-radio-columns: 1fr;
-		--rsvp-radio-card-justify: flex-start;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

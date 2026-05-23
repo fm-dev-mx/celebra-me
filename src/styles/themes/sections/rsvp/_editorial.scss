@@ -9,11 +9,8 @@
 	padding-block: var(--section-padding-block);
 	position: relative;
 	overflow: hidden;
-	max-width: 600px;
-	margin-inline: auto;
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
-	border-radius: var(--section-card-radius, 4px);
 	backdrop-filter: blur(var(--glass-blur, 12px));
 	box-shadow: var(--shadow-premium);
 
@@ -39,7 +36,6 @@
 	textarea {
 		background: var(--rsvp-field-bg);
 		border: 1px solid var(--rsvp-field-border);
-		border-radius: 2px;
 		color: var(--color-text-primary, var(--color-surface-elevated));
 		font-family: var(--font-body);
 
@@ -51,27 +47,12 @@
 	}
 
 	.rsvp__radio-group {
-		display: flex;
-		gap: 1rem;
-		margin-top: 0.5rem;
 		color: var(--color-text-primary);
 
 		.rsvp__radio-card {
-			flex: 1;
-			display: flex;
-			align-items: center;
-			gap: 0.75rem;
-			padding: 1rem;
 			background: var(--rsvp-radio-bg);
 			border: 1px solid var(--rsvp-radio-border);
-			border-radius: var(--rsvp-radius-field, 2px);
 			color: rgb(var(--color-text-primary-rgb) / 70%);
-			cursor: pointer;
-			transition:
-				background-color,
-				border-color,
-				box-shadow,
-				color var(--duration-standard) var(--ease-premium);
 
 			&:hover {
 				background: var(--rsvp-radio-bg-hover);
@@ -135,11 +116,6 @@
 	}
 
 	.rsvp__button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		padding: 1.1rem 2.2rem;
 		color: var(--rsvp-button-color);
 		border: 1px solid var(--section-card-border-alt);
 		background: transparent;
@@ -148,17 +124,8 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.22em;
-		text-decoration: none;
-		border-radius: 2px;
-		transition:
-			color,
-			border-color,
-			transform,
-			box-shadow var(--duration-standard) var(--ease-premium);
-		position: relative;
-		overflow: hidden;
-		cursor: pointer;
 		box-shadow: none;
+		overflow: hidden;
 
 		&::before {
 			content: '';

@@ -105,6 +105,12 @@
 		z-index: 1;
 	}
 
+	&__grid {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
 	&__field {
 		display: flex;
 		flex-direction: column;
@@ -406,6 +412,11 @@
 				font-size: 0.78rem;
 			}
 		}
+	}
+
+	@media (width <= 480px) {
+		--rsvp-radio-columns: 1fr;
+		--rsvp-radio-card-justify: flex-start;
 	}
 
 	&__demo-footer {
