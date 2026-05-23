@@ -19,7 +19,7 @@ const GuestSummary: React.FC<GuestSummaryProps> = ({ totals }) => {
 							<span className="guest-summary__value-separator">/</span>
 							{totals.totalInvitations}
 						</span>
-						<span className="guest-summary__label">Invitaciones</span>
+						<span className="guest-summary__label">Invitaciones enviadas</span>
 					</div>
 
 					<div className="guest-summary__divider" aria-hidden="true" />
