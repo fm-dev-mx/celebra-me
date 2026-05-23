@@ -49,13 +49,13 @@ describe('rsvp repository', () => {
 				created_at: '2026-01-01T00:00:00.000Z',
 				updated_at: '2026-01-01T00:00:00.000Z',
 			},
-		] as never);
+		] as Record<string, unknown>[]);
 		const found = await findEventById('evt-1', 'token');
 		expect(found?.ownerUserId).toBe('host-1');
 	});
 
 	it('filters soft-deleted events in host-facing queries', async () => {
-		supabaseRestRequestMock.mockResolvedValue([] as never);
+		supabaseRestRequestMock.mockResolvedValue([]);
 
 		await findEventsByOwner('host-1', 'token');
 		await findEventsForHost('token');
@@ -90,7 +90,7 @@ describe('rsvp repository', () => {
 				created_at: '2026-01-01T00:00:00.000Z',
 				updated_at: '2026-01-01T00:00:00.000Z',
 			},
-		] as never);
+		] as Record<string, unknown>[]);
 		const created = await createGuestInvitation(
 			{
 				eventId: 'evt-1',
@@ -123,7 +123,7 @@ describe('rsvp repository', () => {
 				created_at: '2026-01-01T00:00:00.000Z',
 				updated_at: '2026-01-01T00:00:00.000Z',
 			},
-		] as never);
+		] as Record<string, unknown>[]);
 		const updated = await updateGuestByInviteIdPublic('invite-1', {
 			attendance_status: 'confirmed',
 		});
@@ -153,14 +153,14 @@ describe('rsvp repository', () => {
 				created_at: '2026-01-01T00:00:00.000Z',
 				updated_at: '2026-01-01T00:00:00.000Z',
 			},
-		] as never);
+		] as Record<string, unknown>[]);
 		const byInvite = await findGuestByInviteIdPublic('invite-1');
 		expect(byInvite?.id).toBe('guest-1');
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',
 		);
 
-		supabaseRestRequestMock.mockResolvedValueOnce([] as never);
+		supabaseRestRequestMock.mockResolvedValueOnce([]);
 		const byId = await findGuestById('guest-404', 'token');
 		expect(byId).toBeNull();
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
@@ -176,7 +176,7 @@ describe('rsvp repository', () => {
 				payload: { source: 'test' },
 				created_at: '2026-01-01T00:00:00.000Z',
 			},
-		] as never);
+		] as Record<string, unknown>[]);
 		const audit = await appendGuestAuditPublic('guest-1', 'viewed', { source: 'test' });
 		expect(audit.eventType).toBe('viewed');
 	});
@@ -188,7 +188,7 @@ describe('rsvp repository', () => {
 			'deleted_at=is.null',
 		);
 
-		supabaseRestRequestMock.mockResolvedValueOnce([] as never);
+		supabaseRestRequestMock.mockResolvedValueOnce([]);
 		await softDeleteGuestById('guest-1', 'token');
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
 			expect.objectContaining({
