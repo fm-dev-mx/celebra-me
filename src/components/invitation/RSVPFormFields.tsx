@@ -34,7 +34,7 @@ function FloatingField({
 	label,
 	labelSuffix,
 	value,
-	placeholder = ' ',
+	placeholder,
 	error,
 	touched,
 	prefersReducedMotion,
@@ -48,7 +48,7 @@ function FloatingField({
 	const hasError = touched && error;
 	return (
 		<motion.div
-			className={`rsvp__field rsvp__field--floating ${hasError ? 'rsvp__field--error' : ''} ${
+			className={`rsvp__field ${hasError ? 'rsvp__field--error' : ''} ${
 				value ? 'rsvp__field--has-value' : ''
 			}`}
 			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
@@ -60,6 +60,10 @@ function FloatingField({
 					: { delay: FIELD_ANIMATION_BASE_DELAY + delayIndex * FIELD_ANIMATION_STEP }
 			}
 		>
+			<label htmlFor={id} className="rsvp__label">
+				{label}
+				{labelSuffix}
+			</label>
 			<input
 				ref={fieldRef}
 				type={type}
@@ -76,10 +80,6 @@ function FloatingField({
 				min={min}
 				max={max}
 			/>
-			<label htmlFor={id} className="rsvp__label">
-				{label}
-				{labelSuffix}
-			</label>
 			<div className="rsvp__field-line" />
 			{hasError && (
 				<p className="rsvp__field-error" id={`${id}-error`} role="alert">
@@ -169,6 +169,9 @@ export function PhoneField(props: {
 			viewport={prefersReducedMotion ? undefined : { once: true }}
 			transition={prefersReducedMotion ? undefined : { delay: 0.1 }}
 		>
+			<label htmlFor="phone" className="rsvp__label">
+				{phoneLabel}
+			</label>
 			<div className="rsvp__phone-group">
 				<select
 					className="rsvp__country-code"
@@ -190,7 +193,7 @@ export function PhoneField(props: {
 						id="phone"
 						inputMode="numeric"
 						autoComplete="tel"
-						placeholder=" "
+						placeholder=""
 						value={phone}
 						onChange={(e) => onPhoneChange(e.target.value)}
 						onBlur={() => onBlur('phone')}
@@ -198,9 +201,6 @@ export function PhoneField(props: {
 						aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
 						suppressHydrationWarning
 					/>
-					<label htmlFor="phone" className="rsvp__label">
-						{phoneLabel}
-					</label>
 					<div className="rsvp__field-line" />
 				</div>
 			</div>
@@ -272,7 +272,7 @@ export function AttendanceField(props: {
 						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
-					<span className="rsvp__radio-label">No podré asistir</span>
+					<span className="rsvp__radio-label">No podré</span>
 				</label>
 			</div>
 			{touched.attendance && errors.attendance && (

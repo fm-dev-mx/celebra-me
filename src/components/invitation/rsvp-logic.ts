@@ -31,6 +31,7 @@ export interface ValidationContext {
 	attendeeCount: number | string;
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
+	isPublicRsvp?: boolean;
 }
 
 // RSVP form helpers.
@@ -55,12 +56,12 @@ export function resolveLabels(
 	celebrantName?: string,
 ): ResolvedLabels {
 	return {
-		nameLabel: labels?.name ?? 'Nombre completo \u002a',
-		guestCountLabel: labels?.guestCount ?? 'N\u00famero total de asistentes',
+		nameLabel: labels?.name ?? 'Tu nombre',
+		guestCountLabel: labels?.guestCount ?? 'N\u00famero de asistentes',
 		phoneLabel: labels?.phone ?? 'Tel\u00e9fono de contacto',
-		attendanceLabel: labels?.attendance ?? '\u00bfAsistir\u00e1s al evento? \u002a',
+		attendanceLabel: labels?.attendance ?? 'Asistencia',
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
-		notesLabel: labels?.notesLabel ?? 'Notas',
+		notesLabel: labels?.notesLabel ?? 'Mensaje para el festejado',
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
 			`Escribe un mensaje para ${formatCelebrantName(celebrantName)}...`,
@@ -136,17 +137,24 @@ export function validateRsvpForm({
 	attendeeCount,
 	supportsPlusOnes,
 	effectiveGuestCap,
+	isPublicRsvp,
 }: ValidationContext) {
 	const errors: Record<string, string> = {};
 
-	if (!nameLocked && !name.trim()) {
+	// For public RSVP, identity fields are hidden until attendance is selected.
+	// Only validate them once attendance has been chosen.
+	const identityFieldsVisible = isPublicRsvp ? attendanceStatus !== null : true;
+
+	if (!nameLocked && identityFieldsVisible && !name.trim()) {
 		errors.name = 'Por favor, escribe tu nombre completo.';
 	}
-	const normalizedPhone = normalizePhoneInput(phone);
-	if (phoneRequired && !normalizedPhone) {
-		errors.phone = 'Por favor, escribe tu tel\u00e9fono.';
-	} else if (normalizedPhone && normalizedPhone.length !== 10) {
-		errors.phone = 'Escribe un tel\u00e9fono de 10 d\u00edgitos.';
+	if (identityFieldsVisible) {
+		const normalizedPhone = normalizePhoneInput(phone);
+		if (phoneRequired && !normalizedPhone) {
+			errors.phone = 'Por favor, escribe tu tel\u00e9fono.';
+		} else if (normalizedPhone && normalizedPhone.length !== 10) {
+			errors.phone = 'Escribe un tel\u00e9fono de 10 d\u00edgitos.';
+		}
 	}
 	if (!attendanceStatus) {
 		errors.attendance = 'Por favor, selecciona si asistir\u00e1s.';
@@ -171,4 +179,17 @@ export function normalizeGuestCount(
 	if (attendanceStatus !== 'confirmed') return 0;
 	const parsedCount = parseAttendeeCount(attendeeCount) || 1;
 	return supportsPlusOnes ? parsedCount : 1;
+}
+
+export function coerceAttendeeCount(
+	status: AttendanceStatus,
+	previousCount: number | string,
+	supportsPlusOnes: boolean,
+	effectiveGuestCap: number,
+): number {
+	if (status !== 'confirmed') return 0;
+	if (!supportsPlusOnes) return 1;
+	const parsed = parseAttendeeCount(previousCount);
+	const safe = parsed && parsed >= 1 ? parsed : 1;
+	return Math.min(safe, effectiveGuestCap);
 }
