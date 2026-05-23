@@ -1,5 +1,3 @@
-@use '../../../global/mixins' as mixins;
-
 .rsvp[data-variant='premiere-floral'] {
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
@@ -62,6 +60,14 @@
 		text-transform: uppercase;
 		font-size: 2.1rem;
 		margin-bottom: 3.5rem;
+	}
+
+	.rsvp__subcopy {
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		color: rgb(var(--color-text-on-dark-rgb) / 72%);
+		max-width: 36ch;
+		margin-bottom: 2.5rem;
 	}
 
 	label,
@@ -236,7 +242,7 @@
 	.rsvp__legend {
 		font-family: var(--font-calligraphy);
 		text-transform: lowercase;
-		font-size: 1.6rem;
+		font-size: 2.5rem;
 		letter-spacing: 0;
 		margin-bottom: 1.25rem;
 	}
