@@ -296,14 +296,15 @@ describe('Style boundary governance', () => {
 		}
 	});
 
-	it('family section skin lives in the base contract and presets', () => {
+	it('family section has theme variant infrastructure and base contract variables', () => {
 		const sectionIndex = read('src/styles/themes/sections/_index.scss');
 		const familyBase = read('src/styles/invitation/_family.scss');
 
-		expect(sectionIndex).not.toContain("@forward 'family'");
-		expect(fs.existsSync(path.join(projectRoot, 'src/styles/themes/sections/family'))).toBe(
-			false,
-		);
+		// Family is now part of the section theming system with a forward and directory
+		expect(sectionIndex).toContain("@forward 'family'");
+		expect(
+			fs.existsSync(path.join(projectRoot, 'src/styles/themes/sections/family/_index.scss')),
+		).toBe(true);
 
 		for (const variableName of FAMILY_REQUIRED_VARS) {
 			expect(familyBase).toContain(variableName);
