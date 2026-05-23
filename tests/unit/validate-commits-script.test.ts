@@ -1,37 +1,13 @@
-import { cpSync, mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'fs';
+import { cpSync, mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import { spawnSync } from 'child_process';
+import { runCommand } from '../helpers/run-command';
+import { initGitRepo, cleanupFixture } from '../helpers/git-fixture';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = join(ROOT, 'scripts/validate-commits.mjs');
 const RUNTIME_FILES = ['commitlint.config.cjs', 'package.json'];
 const describeRangeValidation = process.platform === 'win32' ? describe.skip : describe;
-
-function runCommand(
-	cmd: string,
-	args: string[],
-	options: { cwd: string; allowFailure?: boolean } = { cwd: ROOT },
-) {
-	const result = spawnSync(cmd, args, {
-		cwd: options.cwd,
-		encoding: 'utf8',
-		env: process.env,
-	});
-
-	if (result.error) throw result.error;
-	if (!options.allowFailure && (result.status ?? 1) !== 0) {
-		throw new Error(
-			`Command failed: ${cmd} ${args.join(' ')}\n${result.stdout || ''}\n${result.stderr || ''}`,
-		);
-	}
-
-	return {
-		status: result.status ?? 1,
-		stdout: String(result.stdout || ''),
-		stderr: String(result.stderr || ''),
-	};
-}
 
 function createRepoFixture() {
 	const repoRoot = mkdtempSync(join(tmpdir(), 'commit-validation-range-'));
@@ -49,11 +25,7 @@ function createRepoFixture() {
 		process.platform === 'win32' ? 'junction' : 'dir',
 	);
 
-	runCommand('git', ['init'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.name', 'Commit Validation Test'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.email', 'commit-validation@example.com'], {
-		cwd: repoRoot,
-	});
+	initGitRepo(repoRoot, 'Commit Validation Test', 'commit-validation@example.com');
 
 	return repoRoot;
 }
@@ -94,7 +66,7 @@ describeRangeValidation('validate-commits script', () => {
 			expect(result.stdout).toContain('Checking commit:');
 			expect(result.stdout).toContain('Commit validation completed');
 		} finally {
-			rmSync(repoRoot, { recursive: true, force: true });
+			cleanupFixture(repoRoot);
 		}
 	});
 });

@@ -17,15 +17,14 @@ tests/
 ├── components/   # React island/component tests
 ├── content/      # Content-schema validation tests
 ├── e2e/          # Playwright scenarios and premium invitation audits
-├── fixtures/     # Fixture repos and governance test fixtures
 ├── helpers/      # Shared test-only helpers
+├── hooks/        # Hook-level integration tests
 ├── integration/  # Cross-module integration tests such as middleware
 ├── lib/          # Library and service-layer tests
 ├── mocks/        # Shared mocks
 ├── unit/         # Pure unit tests
 ├── utils/        # Utility helper tests
-├── setup.ts      # Global Jest setup
-└── sanity.test.ts
+└── setup.ts      # Global Jest setup
 ```
 
 ## Active Test Layers
@@ -34,6 +33,7 @@ tests/
 | ----------- | ---------------------------- | ------------------------------------------------------- |
 | Unit        | Jest                         | helpers, adapters, validation, commit/tooling contracts |
 | Component   | Jest + React Testing Library | interactive React islands and client helpers            |
+| Hooks       | Jest + React Testing Library | React hook behavior and integration                     |
 | API         | Jest                         | `src/pages/api/**` request/response behavior            |
 | Integration | Jest                         | middleware and multi-module flows                       |
 | Content     | Jest + Zod                   | content collection and schema contracts                 |
@@ -56,7 +56,6 @@ pnpm exec playwright test
 
 ## Fixture Guidance
 
-- Put reusable repo fixtures under `tests/fixtures/`.
 - Keep mocks and helpers under `tests/mocks/` and `tests/helpers/`.
 - When a test relies on a real route pattern, mirror the current public surface instead of legacy
   aliases.

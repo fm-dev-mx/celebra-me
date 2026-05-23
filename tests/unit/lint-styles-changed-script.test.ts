@@ -1,36 +1,12 @@
 import { cpSync, mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import { spawnSync } from 'child_process';
+import { runCommand } from '../helpers/run-command';
+import { initGitRepo, cleanupFixture } from '../helpers/git-fixture';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = join(ROOT, 'scripts/lint-styles-changed.mjs');
 const RUNTIME_FILES = ['package.json', '.stylelintrc.json', '.gitignore'];
-
-function runCommand(
-	cmd: string,
-	args: string[],
-	options: { cwd: string; allowFailure?: boolean; env?: NodeJS.ProcessEnv },
-) {
-	const result = spawnSync(cmd, args, {
-		cwd: options.cwd,
-		encoding: 'utf8',
-		env: options.env ?? process.env,
-	});
-
-	if (result.error) throw result.error;
-	if (!options.allowFailure && (result.status ?? 1) !== 0) {
-		throw new Error(
-			`Command failed: ${cmd} ${args.join(' ')}\n${result.stdout || ''}\n${result.stderr || ''}`,
-		);
-	}
-
-	return {
-		status: result.status ?? 1,
-		stdout: String(result.stdout || ''),
-		stderr: String(result.stderr || ''),
-	};
-}
 
 function createRepoFixture() {
 	const repoRoot = mkdtempSync(join(tmpdir(), 'lint-styles-changed-'));
@@ -48,9 +24,7 @@ function createRepoFixture() {
 		process.platform === 'win32' ? 'junction' : 'dir',
 	);
 
-	runCommand('git', ['init'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.name', 'Stylelint Changed Test'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.email', 'stylelint@example.com'], { cwd: repoRoot });
+	initGitRepo(repoRoot, 'Stylelint Changed Test', 'stylelint@example.com');
 
 	return repoRoot;
 }
@@ -59,14 +33,10 @@ function cleanupRepoFixture(repoRoot: string) {
 	try {
 		rmSync(join(repoRoot, 'node_modules'), { recursive: true, force: true });
 	} catch {
-		// Best-effort cleanup for Windows junctions created during the fixture setup.
+		// Best-effort cleanup for Windows junctions.
 	}
 
-	try {
-		rmSync(repoRoot, { recursive: true, force: true });
-	} catch {
-		// Ignore teardown races from temporary git fixtures.
-	}
+	cleanupFixture(repoRoot);
 }
 
 describe('lint-styles-changed script', () => {

@@ -1,31 +1,11 @@
-import { cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { cpSync, mkdtempSync, mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import { spawnSync } from 'child_process';
+import { runCommand } from '../helpers/run-command';
+import { initGitRepo, cleanupFixture } from '../helpers/git-fixture';
 
 const ROOT = process.cwd();
 const CLI_PATH = join(ROOT, 'scripts/cli.mjs');
-
-function runCommand(cmd: string, args: string[], options: { cwd: string; allowFailure?: boolean }) {
-	const result = spawnSync(cmd, args, {
-		cwd: options.cwd,
-		encoding: 'utf8',
-		env: process.env,
-	});
-
-	if (result.error) throw result.error;
-	if (!options.allowFailure && (result.status ?? 1) !== 0) {
-		throw new Error(
-			`Command failed: ${cmd} ${args.join(' ')}\n${result.stdout || ''}\n${result.stderr || ''}`,
-		);
-	}
-
-	return {
-		status: result.status ?? 1,
-		stdout: String(result.stdout || ''),
-		stderr: String(result.stderr || ''),
-	};
-}
 
 function createRepoFixture() {
 	const repoRoot = mkdtempSync(join(tmpdir(), 'check-links-'));
@@ -38,19 +18,9 @@ function createRepoFixture() {
 		},
 	);
 
-	runCommand('git', ['init'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.name', 'Check Links Test'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.email', 'check-links@example.com'], { cwd: repoRoot });
+	initGitRepo(repoRoot, 'Check Links Test', 'check-links@example.com');
 
 	return repoRoot;
-}
-
-function cleanupRepoFixture(repoRoot: string) {
-	try {
-		rmSync(repoRoot, { recursive: true, force: true });
-	} catch {
-		// Ignore teardown races from temporary git fixtures.
-	}
 }
 
 describe('check-links script', () => {
@@ -80,7 +50,7 @@ describe('check-links script', () => {
 			expect(result.status).toBe(0);
 			expect(result.stdout).toContain('Checked 1 changed Markdown file');
 		} finally {
-			cleanupRepoFixture(repoRoot);
+			cleanupFixture(repoRoot);
 		}
 	});
 
@@ -104,7 +74,7 @@ describe('check-links script', () => {
 			expect(result.status).not.toBe(0);
 			expect(`${result.stdout}\n${result.stderr}`).toContain('docs/missing.md');
 		} finally {
-			cleanupRepoFixture(repoRoot);
+			cleanupFixture(repoRoot);
 		}
 	});
 });
