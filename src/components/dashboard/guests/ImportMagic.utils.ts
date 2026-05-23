@@ -1,4 +1,5 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { normalizeName, splitPhoneForExport, SUPPORTED_COUNTRY_CODES } from '@/lib/rsvp/core/utils';
 
 export type ImportRowStatus =
@@ -125,6 +126,13 @@ export function normalizeImportPhone(phone: string, countryCode: string): PhoneN
 function normalizeInternationalPhone(phone: string, countryCode: string): PhoneNormResult {
 	if (countryCode) {
 		const cc = countryCode.startsWith('+') ? countryCode : '+' + countryCode;
+		if (!isSupportedCountryCode(cc)) {
+			return {
+				ok: false,
+				field: 'phoneCountryCode',
+				message: 'Código de país no válido.',
+			};
+		}
 		if (!phone.startsWith(cc)) {
 			return {
 				ok: false,
@@ -265,9 +273,7 @@ function parseTags(value: string): string[] {
 		.filter(Boolean);
 }
 
-const FIELD_SETTERS: Partial<
-	Record<keyof ParsedGuest, (result: ParsedGuest, value: string) => void>
-> = {
+const FIELD_SETTERS: Record<string, (r: ParsedGuest, v: string) => void> = {
 	fullName: (r, v) => {
 		r.fullName = v;
 	},
@@ -293,6 +299,10 @@ function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: str
 	FIELD_SETTERS[key]?.(result, value);
 }
 
+function ensurePrefix(cc: string): string {
+	return cc && !cc.startsWith('+') ? '+' + cc : cc;
+}
+
 export function parsePositional(parts: string[]): ParsedGuest {
 	const result: ParsedGuest = {
 		fullName: parts[0]?.trim() ?? '',
@@ -302,20 +312,17 @@ export function parsePositional(parts: string[]): ParsedGuest {
 	};
 
 	if (parts.length >= 4) {
-		result.phoneCountryCode = parts[2]?.trim() ?? '';
+		result.phoneCountryCode = ensurePrefix(parts[2]?.trim() ?? '');
 		result.email = parts[3]?.trim() || null;
 	} else if (parts.length === 3) {
 		const third = parts[2]?.trim() ?? '';
-		if (third.startsWith('+') || /^\d{1,4}$/.test(third)) result.phoneCountryCode = third;
+		if (third.startsWith('+') || /^\d{1,4}$/.test(third))
+			result.phoneCountryCode = ensurePrefix(third);
 		else result.email = third || null;
 	} else {
 		result.email = parts[2]?.trim() || null;
 	}
 
-	result.phoneCountryCode =
-		result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')
-			? '+' + result.phoneCountryCode
-			: result.phoneCountryCode;
 	return result;
 }
 
@@ -336,10 +343,7 @@ export function parseMappedRow(
 		applyFieldValue(result, field, parts[Number(idxStr)]?.trim() ?? '');
 	}
 
-	result.phoneCountryCode =
-		result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')
-			? '+' + result.phoneCountryCode
-			: result.phoneCountryCode;
+	result.phoneCountryCode = ensurePrefix(result.phoneCountryCode);
 	return result;
 }
 

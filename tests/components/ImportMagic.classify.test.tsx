@@ -1,5 +1,6 @@
 import {
 	classifyImportedRows,
+	normalizeImportPhone,
 	reclassifyEditedRow,
 	parseCsvLikeContent,
 	computeDisplayCategories,
@@ -630,5 +631,45 @@ describe('computeDisplayCategories', () => {
 		];
 		const d = computeDisplayCategories(guests);
 		expect(d.update).toBe(0);
+	});
+});
+
+describe('normalizeImportPhone', () => {
+	it('rejects +66 international phone with +66 countryCode', () => {
+		expect(normalizeImportPhone('+6681167471', '+66')).toMatchObject({
+			ok: false,
+			field: 'phoneCountryCode',
+		});
+	});
+
+	it('rejects 10-digit national phone with +66 countryCode', () => {
+		expect(normalizeImportPhone('8116747100', '+66')).toMatchObject({
+			ok: false,
+			field: 'phoneCountryCode',
+		});
+	});
+
+	it('accepts +52 international phone with +52 countryCode', () => {
+		expect(normalizeImportPhone('+526811234567', '+52')).toMatchObject({
+			ok: true,
+			phone: '6811234567',
+			countryCode: '+52',
+		});
+	});
+
+	it('accepts 10-digit national phone with +52 countryCode', () => {
+		expect(normalizeImportPhone('8112345678', '+52')).toMatchObject({
+			ok: true,
+			phone: '8112345678',
+			countryCode: '+52',
+		});
+	});
+
+	it('returns ok for empty phone (no country code stored)', () => {
+		expect(normalizeImportPhone('', '+52')).toMatchObject({
+			ok: true,
+			phone: undefined,
+			countryCode: undefined,
+		});
 	});
 });
