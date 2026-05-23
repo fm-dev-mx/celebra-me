@@ -152,6 +152,11 @@
 			&::placeholder {
 				color: var(--rsvp-placeholder-color);
 			}
+
+			&:disabled {
+				opacity: 75%;
+				cursor: not-allowed;
+			}
 		}
 	}
 
@@ -339,6 +344,17 @@
 			box-shadow: var(--rsvp-button-shadow-hover);
 			filter: var(--rsvp-button-filter-hover);
 		}
+
+		&:disabled {
+			opacity: 50%;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+
+			&:hover {
+				filter: none;
+			}
+		}
 	}
 
 	&__greeting {
@@ -388,6 +404,11 @@
 			outline: none;
 			border-color: var(--color-action-accent);
 			box-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 10%);
+		}
+
+		&:disabled {
+			opacity: 75%;
+			cursor: not-allowed;
 		}
 	}
 
