@@ -83,9 +83,6 @@ describe('dashboard guests happy path', () => {
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1'),
 		} as never);
-		if (response.status !== 200) {
-			console.error('FAILED lists guests:', await response.json());
-		}
 		expect(response.status).toBe(200);
 	});
 
