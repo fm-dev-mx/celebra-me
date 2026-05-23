@@ -1,5 +1,4 @@
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import { makeGuest } from '@tests/helpers/guest-factory';
 
