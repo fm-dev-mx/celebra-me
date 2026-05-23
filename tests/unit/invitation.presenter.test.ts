@@ -49,14 +49,14 @@ describe('prepareInvitationPageContext', () => {
 
 		expect(context.guestName).toBe('Mariana Soto');
 		expect(context.heroTime).toBe('8:00 PM');
-		expect(context.envelope?.guestName).toBe('Mariana Soto');
 		expect(context.envelope?.card).toEqual({
 			documentLabel: 'Invitación',
 			name: event.data.hero.name,
-			details: '11 de abril de 2026 • Los Mochis',
+			details: '11 abr 2026 • Los Mochis',
 			guestName: 'Mariana Soto',
 			sealIcon: 'flower',
 			sealInitials: 'X·M',
+			venueName: "D'Galaz Alberca y Eventos",
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
@@ -109,10 +109,11 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.envelope?.card).toEqual({
 			documentLabel: 'Invitación',
 			name: fixture.hero.name,
-			details: '25 de abril de 2026 • Monterrey',
+			details: '25 abr 2026 • Monterrey',
 			guestName: undefined,
 			sealIcon: 'heart',
 			sealInitials: 'L·G',
+			venueName: 'Quinta Las Flores',
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toEqual([
