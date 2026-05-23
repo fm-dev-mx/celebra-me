@@ -105,12 +105,7 @@
 .guest-summary__divider {
 	width: 1px;
 	height: 36px;
-	background: linear-gradient(
-		180deg,
-		transparent 0%,
-		rgb(var(--color-action-accent-rgb) / 25%) 50%,
-		transparent 100%
-	);
+	background: var(--color-border-subtle);
 	flex-shrink: 0;
 
 	@media (width <= 480px) {
@@ -144,10 +139,6 @@
 @media (width <= 768px) {
 	.guest-summary {
 		padding: 1rem 1.25rem;
-	}
-
-	.guest-summary__primary {
-		gap: 0;
 	}
 
 	.guest-summary__metric {
@@ -184,11 +175,29 @@
 		}
 
 		.guest-summary__metric--compact & {
-			font-size: 0.95rem;
+			font-size: 0.8rem;
+			color: var(--color-text-muted);
 		}
 	}
 
 	.guest-summary__label {
 		font-size: 0.6rem;
+	}
+
+	.guest-summary__secondary {
+		gap: 0.5rem;
+		padding-top: 0.5rem;
+		margin-top: 0.3rem;
+
+		.guest-summary__label {
+			font-size: 0.55rem;
+			color: var(--color-text-muted);
+			opacity: 70%;
+		}
+	}
+
+	.guest-summary__badge {
+		font-size: 0.6rem;
+		padding: 0.25rem 0.55rem;
 	}
 }
