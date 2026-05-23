@@ -1,5 +1,5 @@
 import {
-	createGuestInvitationPublic,
+	createGuestInvitation,
 	findGuestByInviteIdPublic,
 	findGuestByPhonePublic,
 	updateGuestByIdService,
@@ -126,7 +126,7 @@ export async function persistRsvpResponse(
 }> {
 	let invitation = target.invitation;
 	if (!invitation && target.createInput) {
-		invitation = await createGuestInvitationPublic({
+		invitation = await createGuestInvitation({
 			...target.createInput,
 			shortId: generateShortId(8),
 		});

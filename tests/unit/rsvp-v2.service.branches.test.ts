@@ -46,10 +46,6 @@ describe('rsvp service branches', () => {
 	const createGuestInvitationMock = guestRepo.createGuestInvitation as jest.MockedFunction<
 		typeof guestRepo.createGuestInvitation
 	>;
-	const createGuestInvitationPublicMock =
-		guestRepo.createGuestInvitationPublic as jest.MockedFunction<
-			typeof guestRepo.createGuestInvitationPublic
-		>;
 	const findGuestByIdMock = guestRepo.findGuestById as jest.MockedFunction<
 		typeof guestRepo.findGuestById
 	>;
@@ -321,7 +317,7 @@ describe('rsvp service branches', () => {
 		});
 
 		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '6680000000');
-		expect(createGuestInvitationPublicMock).not.toHaveBeenCalled();
+		expect(createGuestInvitationMock).not.toHaveBeenCalled();
 		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				guestId: 'guest-1',
@@ -335,7 +331,7 @@ describe('rsvp service branches', () => {
 
 	it('submitGuestRsvpByPublicEvent creates a generic public guest when the phone is new', async () => {
 		findGuestByPhonePublicMock.mockResolvedValue(null);
-		createGuestInvitationPublicMock.mockResolvedValue({
+		createGuestInvitationMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
 			inviteId: 'invite-2',
@@ -370,7 +366,7 @@ describe('rsvp service branches', () => {
 			},
 		});
 
-		expect(createGuestInvitationPublicMock).toHaveBeenCalledWith(
+		expect(createGuestInvitationMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				eventId: 'evt-1',
 				fullName: 'Mariana Soto',

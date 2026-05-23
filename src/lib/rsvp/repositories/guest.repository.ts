@@ -135,15 +135,9 @@ export async function findGuestsByEvent(
 	});
 }
 
-export async function createGuestInvitationPublic(
-	input: CreateGuestInput,
-): Promise<GuestInvitationRecord> {
-	return insertGuestInvitation(input);
-}
-
 export async function createGuestInvitation(
 	input: CreateGuestInput,
-	hostAccessToken: string,
+	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
 	return insertGuestInvitation(input, hostAccessToken);
 }
@@ -199,19 +193,6 @@ export async function softDeleteGuestById(guestId: string, hostAccessToken: stri
 		authToken: hostAccessToken,
 		prefer: 'return=minimal',
 	});
-}
-
-export async function findGuestByEventAndNamePublic(
-	eventId: string,
-	fullName: string,
-): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`event_id=eq.${encodeURIComponent(eventId)}&full_name=ilike.${encodeURIComponent(fullName)}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
 }
 
 function findGuestSingleSafe(
