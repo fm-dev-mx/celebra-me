@@ -56,7 +56,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			'conflict',
 			'Ya existe un invitado con ese número de teléfono en este evento.',
 			{
-				constraint: 'guest_invitations_event_phone_unique',
+				constraint: 'guest_invitations_event_country_phone_active_unique',
 				errorCode: 'conflict_duplicate_phone',
 			},
 		);
@@ -87,7 +87,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			'conflict',
 			'Ya existe un invitado con ese número de teléfono en este evento.',
 			{
-				constraint: 'guest_invitations_event_phone_unique',
+				constraint: 'guest_invitations_event_country_phone_active_unique',
 				errorCode: 'conflict_duplicate_phone',
 			},
 		);

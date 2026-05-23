@@ -11,8 +11,8 @@ import { z } from 'zod';
 
 const BulkGuestSchema = z.object({
 	full_name: z.string().min(1),
-	phone: z.string().optional().default(''),
-	country_code: z.string().optional(),
+	phone: z.string().optional().nullable(),
+	country_code: z.string().optional().nullable(),
 	email: z.email().optional().nullable(),
 	tags: z.array(z.string()).optional(),
 	max_allowed_attendees: z.number().optional().default(2),
@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		const rowErrors: string[] = [];
 		const normalizedGuests = body.guests.map((guest, i) => {
-			const phoneResult = normalizeOptionalNationalPhone(guest.phone || null);
+			const phoneResult = normalizeOptionalNationalPhone(guest.phone);
 			if (!phoneResult.ok) {
 				const reason =
 					phoneResult.reason === 'country_code_in_phone'
@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ request }) => {
 			return {
 				full_name: guest.full_name,
 				phone: phoneResult.phone,
-				country_code: guest.country_code || null,
+				country_code: guest.country_code ?? null,
 				email: guest.email ?? null,
 				tags: guest.tags ?? [],
 				max_allowed_attendees: guest.max_allowed_attendees,

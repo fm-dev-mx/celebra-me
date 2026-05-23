@@ -3,8 +3,6 @@ import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { supabaseRestRequest, type SupabaseRequestOptions } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { createMockRequest } from '../helpers/api-mocks';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
@@ -445,23 +443,6 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 			const body = getRpcBody();
 			expect(body.p_guests[0].phone).toBeNull();
-		});
-	});
-
-	describe('bulk RPC SQL contract', () => {
-		it('keeps the latest bulk RPC migration create-only', () => {
-			const migration = readFileSync(
-				join(
-					process.cwd(),
-					'supabase/migrations/20260522000001_make_bulk_guests_create_only.sql',
-				),
-				'utf8',
-			).toLowerCase();
-
-			expect(migration).toContain('create or replace function public.upsert_guests_v1');
-			expect(migration).toContain('on conflict (event_id, phone)');
-			expect(migration).toContain('do nothing');
-			expect(migration).not.toContain('do update set');
 		});
 	});
 

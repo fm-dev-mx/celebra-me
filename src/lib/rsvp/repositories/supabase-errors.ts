@@ -16,7 +16,7 @@ const CONSTRAINT_MAP: Record<
 	string,
 	{ errorCode: string; userMessage: string; httpStatus: number }
 > = {
-	guest_invitations_event_phone_unique: {
+	guest_invitations_event_country_phone_active_unique: {
 		errorCode: 'conflict_duplicate_phone',
 		userMessage: 'Ya existe un invitado con ese número de teléfono.',
 		httpStatus: 409,
