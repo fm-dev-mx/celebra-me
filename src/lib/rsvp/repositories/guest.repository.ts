@@ -123,7 +123,18 @@ export async function findGuestsByEvent(
 		}
 	}
 	if (filters.search) {
-		queryParts.push(`full_name=ilike.*${encodeURIComponent(filters.search)}*`);
+		const raw = filters.search.trim();
+		if (raw) {
+			const digitsOnly = raw.replace(/\D/g, '');
+			if (digitsOnly) {
+				const phoneTerm = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
+				queryParts.push(
+					`or=(full_name.ilike.*${encodeURIComponent(raw)}*,phone.ilike.*${encodeURIComponent(phoneTerm)}*)`,
+				);
+			} else {
+				queryParts.push(`full_name.ilike.*${encodeURIComponent(raw)}*`);
+			}
+		}
 	}
 	if (filters.delivery && filters.delivery !== 'all') {
 		queryParts.push(`delivery_status=eq.${encodeURIComponent(filters.delivery)}`);

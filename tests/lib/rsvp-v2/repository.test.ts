@@ -8,10 +8,12 @@ import {
 	createGuestInvitation,
 	findGuestById,
 	findGuestByInviteIdPublic,
-	findGuestByPhone,
+	findGuestByPhoneAuth,
+	findGuestsByEvent,
 	softDeleteGuestById,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
+import type { GuestFilters } from '@/lib/rsvp/repositories/shared/rows';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
@@ -181,7 +183,7 @@ describe('rsvp repository', () => {
 
 	it('filters soft-deleted guests in phone lookups and soft deletes via patch', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([]);
-		await findGuestByPhone('evt-1', '6680000000', 'token');
+		await findGuestByPhoneAuth('evt-1', '6680000000', 'token');
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',
 		);
@@ -199,5 +201,74 @@ describe('rsvp repository', () => {
 				prefer: 'return=minimal',
 			}),
 		);
+	});
+
+	describe('findGuestsByEvent search', () => {
+		function getQuery(search: string, status?: string, delivery?: string): string {
+			supabaseRestRequestMock.mockResolvedValue([]);
+			findGuestsByEvent(
+				{ eventId: 'evt-1', search, status, delivery } as unknown as GuestFilters,
+				'token',
+			);
+			return supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery ?? '';
+		}
+
+		it('searches by name', () => {
+			const query = getQuery('Hannah');
+			expect(query).toContain('full_name.ilike.*Hannah*');
+			expect(query).not.toContain('or=');
+		});
+
+		it('searches by exact national phone', () => {
+			const query = getQuery('6681023442');
+			expect(query).toContain('or=(full_name.ilike.*6681023442*,phone.ilike.*6681023442*)');
+		});
+
+		it('searches by partial phone', () => {
+			const query = getQuery('6681');
+			expect(query).toContain('or=(full_name.ilike.*6681*,phone.ilike.*6681*)');
+		});
+
+		it('strips formatting from phone input', () => {
+			const query = getQuery('668 102 3442');
+			expect(query).toContain(
+				'or=(full_name.ilike.*668%20102%203442*,phone.ilike.*6681023442*)',
+			);
+		});
+
+		it('extracts last 10 digits from international formatted input', () => {
+			const query = getQuery('+52 6681023442');
+			expect(query).toContain(
+				'or=(full_name.ilike.*%2B52%206681023442*,phone.ilike.*6681023442*)',
+			);
+		});
+
+		it('composes search with attendance_status filter', () => {
+			const query = getQuery('Ana', 'confirmed');
+			expect(query).toContain('full_name.ilike.*Ana*');
+			expect(query).not.toContain('or=');
+			expect(query).toContain('attendance_status=eq.confirmed');
+		});
+
+		it('composes search with delivery_status filter', () => {
+			const query = getQuery('Ana', undefined, 'generated');
+			expect(query).toContain('full_name.ilike.*Ana*');
+			expect(query).not.toContain('or=');
+			expect(query).toContain('delivery_status=eq.generated');
+		});
+
+		it('does not add or() when search is empty', () => {
+			const query = getQuery('');
+			expect(query).not.toContain('or=');
+		});
+
+		it('returns empty results when no rows match', async () => {
+			supabaseRestRequestMock.mockResolvedValue([]);
+			const results = await findGuestsByEvent(
+				{ eventId: 'evt-1', search: 'nonexistent' },
+				'token',
+			);
+			expect(results).toEqual([]);
+		});
 	});
 });
