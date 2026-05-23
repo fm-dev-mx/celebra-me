@@ -186,6 +186,7 @@ export async function redeemClaimCodeRpc(input: { userId: string; codeKey: strin
 		console.error('[RedeemClaimCode] RPC call failed:', error);
 		throw new Error(
 			`Failed to call redeem_claim_code: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			{ cause: error },
 		);
 	}
 }

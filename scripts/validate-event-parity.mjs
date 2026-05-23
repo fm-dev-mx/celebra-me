@@ -137,6 +137,7 @@ function loadContentEvents({ includeDemos, includeTemplates, slugFilter, eventTy
 		} catch (error) {
 			throw new Error(
 				`[Content] Invalid JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+				{ cause: error },
 			);
 		}
 

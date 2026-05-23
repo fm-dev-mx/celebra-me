@@ -62,7 +62,9 @@ export function useEventsAdmin() {
 				await adminApi.createEvent(payload);
 				await loadEvents();
 			} catch (err) {
-				throw new Error(err instanceof Error ? err.message : 'Error al crear el evento.');
+				throw new Error(err instanceof Error ? err.message : 'Error al crear el evento.', {
+					cause: err,
+				});
 			}
 		},
 		[loadEvents],
@@ -76,6 +78,7 @@ export function useEventsAdmin() {
 			} catch (err) {
 				throw new Error(
 					err instanceof Error ? err.message : 'Error al actualizar el evento.',
+					{ cause: err },
 				);
 			}
 		},
@@ -90,6 +93,7 @@ export function useEventsAdmin() {
 			} catch (err) {
 				throw new Error(
 					err instanceof Error ? err.message : 'Error al archivar el evento.',
+					{ cause: err },
 				);
 			}
 		},
@@ -104,6 +108,7 @@ export function useEventsAdmin() {
 			} catch (err) {
 				throw new Error(
 					err instanceof Error ? err.message : 'Error al publicar el evento.',
+					{ cause: err },
 				);
 			}
 		},

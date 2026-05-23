@@ -133,7 +133,9 @@ export async function syncMfaSession(accessToken: string, refreshToken?: string)
 		if (error instanceof Error && error.message) {
 			throw error;
 		}
-		throw new Error('sync-session: No se pudo sincronizar la sesión MFA.');
+		throw new Error('sync-session: No se pudo sincronizar la sesión MFA.', {
+			cause: error,
+		});
 	}
 }
 

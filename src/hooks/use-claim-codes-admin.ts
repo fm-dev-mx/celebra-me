@@ -53,6 +53,7 @@ export function useClaimCodesAdmin() {
 			} catch (err) {
 				throw new Error(
 					err instanceof Error ? err.message : 'No se pudo crear el código de acceso.',
+					{ cause: err },
 				);
 			}
 		},
@@ -70,6 +71,7 @@ export function useClaimCodesAdmin() {
 					err instanceof Error
 						? err.message
 						: 'No se pudo actualizar el código de acceso.',
+					{ cause: err },
 				);
 			}
 		},
@@ -87,6 +89,7 @@ export function useClaimCodesAdmin() {
 					err instanceof Error
 						? err.message
 						: 'No se pudo desactivar el código de acceso.',
+					{ cause: err },
 				);
 			}
 		},
