@@ -35,6 +35,7 @@ export function toGuestDto(
 			origin,
 			inviteId: guest.inviteId,
 			phone: guest.phone,
+			countryCode: guest.countryCode,
 			fullName: guest.fullName,
 			eventTitle,
 			shortId: guest.shortId,

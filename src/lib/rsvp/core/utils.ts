@@ -34,12 +34,11 @@ export function toSafeAttendeeCount(raw: unknown, max = 20): number {
 	return Math.max(0, Math.min(Math.trunc(raw as number), max));
 }
 
-// Supported country calling codes for import/export.
-// Longer prefixes must come before shorter ones so matching/splitting prefers the more specific prefix.
-// When adding a new code, insert it before any shorter prefix.
-export const SUPPORTED_COUNTRY_CODES = ['+52', '+34', '+1'] as const;
+import { SUPPORTED_COUNTRY_CODES } from '@/lib/phone/country-codes';
+export type { SupportedCountryCode } from '@/lib/phone/country-codes';
+export { SUPPORTED_COUNTRY_CODES };
+
 const COUNTRY_CODE_NUMBERS: readonly string[] = SUPPORTED_COUNTRY_CODES.map((cc) => cc.slice(1));
-export type SupportedCountryCode = (typeof SUPPORTED_COUNTRY_CODES)[number];
 
 /**
  * Normalizes an optional phone + countryCode pair.
@@ -121,13 +120,6 @@ export function normalizeOptionalNationalPhone(
 	}
 
 	return { ok: true, phone: stripped };
-}
-
-/**
- * Normalizes a phone number by removing non-digit characters.
- */
-export function normalizePhone(phone: string): string {
-	return sanitize(phone, 40).replace(/[^\d]/g, '');
 }
 
 /**

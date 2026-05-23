@@ -1,5 +1,6 @@
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
-import { normalizePhone, sanitize } from '@/lib/rsvp/core/utils';
+import { buildWhatsAppNumber } from '@/lib/phone/validation';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { getEnv } from '@/lib/server/env';
 import { generateInvitationLink } from '@utils/invitation-link';
@@ -8,6 +9,7 @@ export interface BuildShareMessageInput {
 	origin: string;
 	inviteId: string;
 	phone: string;
+	countryCode?: string;
 	fullName: string;
 	shortId?: string;
 	eventTitle?: string;
@@ -94,7 +96,7 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 }
 
 export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
-	const targetPhone = normalizePhone(input.phone).replace(/^\+/, '');
+	const targetPhone = buildWhatsAppNumber(input.phone, input.countryCode);
 	if (!targetPhone) return '';
 
 	const message = buildShareMessage({ ...input, includeLink: true });
