@@ -5,7 +5,7 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
-	coerceAttendeeCount,
+	normalizeGuestCount,
 	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
@@ -54,14 +54,14 @@ const RSVP: React.FC<RSVPProps> = ({
 	isDemoPreview,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
-	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
-	const isPublicRsvp = !hasPersonalizedInvite && accessMode === 'hybrid';
 
 	const {
 		name,
 		phone,
 		countryCode,
 		showPhoneField,
+		isPersonalized,
+		isPublicRsvp,
 		attendanceStatus,
 		attendeeCount,
 		notes,
@@ -96,16 +96,17 @@ const RSVP: React.FC<RSVPProps> = ({
 		prefersReducedMotion: !!prefersReducedMotion,
 		isDemoPreview,
 	});
-	const hasSelectedAttendance = attendanceStatus !== null;
-	const showIdentityFields = isPublicRsvp ? hasSelectedAttendance && !nameLocked : !nameLocked;
-	const labelsResolved = resolveLabels(labels, celebrantName);
+	const showIdentityFields = isPublicRsvp
+		? attendanceStatus !== null && !nameLocked
+		: !nameLocked;
+	const labelsResolved = resolveLabels(labels, celebrantName, variant);
 	const showWhatsAppCta =
 		submitted &&
 		attendanceStatus === 'confirmed' &&
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	if (!hasPersonalizedInvite && !isPublicRsvp && !isDemoPreview) {
+	if (!isPersonalized && !isPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
 
@@ -194,7 +195,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						onAttendanceChange={(status) => {
 							setAttendanceStatus(status);
 							setAttendeeCount(
-								coerceAttendeeCount(
+								normalizeGuestCount(
 									status,
 									attendeeCount,
 									supportsPlusOnes,

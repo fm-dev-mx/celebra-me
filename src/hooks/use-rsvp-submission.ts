@@ -57,11 +57,11 @@ export function useRsvpSubmission({
 	const [notes, setNotes] = useState('');
 	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
 	const [rsvpId, setRsvpId] = useState('');
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [submitted, setSubmitted] = useState(false);
 	const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
 		'idle',
 	);
+	const isSubmitting = submitStatus === 'loading';
+	const submitted = submitStatus === 'success';
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -80,11 +80,9 @@ export function useRsvpSubmission({
 	const guestCountRef = useRef<HTMLInputElement>(null);
 
 	const supportsPlusOnes = effectiveGuestCap > 1;
-	// Show phone field for public/hybrid access RSVPs
 	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
 	const isPublicRsvp = !isPersonalized && accessMode === 'hybrid';
 	const showPhoneField = isPublicRsvp;
-	// Extract country code from pasted phone values
 	const handlePhoneChange = useCallback((value: string) => {
 		const parsed = parseRsvpPhoneInput(value);
 		setCountryCode(parsed.countryCode);
@@ -133,7 +131,6 @@ export function useRsvpSubmission({
 			if (isDemoPreview) {
 				await new Promise((resolve) => setTimeout(resolve, 800));
 				setSubmitStatus('success');
-				window.setTimeout(() => setSubmitted(true), 400);
 				return;
 			}
 
@@ -177,8 +174,6 @@ export function useRsvpSubmission({
 				return;
 			}
 
-			setIsSubmitting(true);
-
 			try {
 				const normalizedCount = normalizeGuestCount(
 					attendanceStatus,
@@ -199,7 +194,7 @@ export function useRsvpSubmission({
 					const trimmedNotes = notes.trim();
 					const normalizedPhone = normalizePhoneInput(phone);
 
-					await rsvpApi.submitPublicRsvp(eventType, eventSlug, {
+					const publicResult = await rsvpApi.submitPublicRsvp(eventType, eventSlug, {
 						fullName: name.trim(),
 						attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 						attendeeCount: normalizedCount,
@@ -207,8 +202,11 @@ export function useRsvpSubmission({
 						...(normalizedPhone ? { phone: normalizedPhone, countryCode } : {}),
 					} as import('@/lib/client/rsvp-api').PublicRsvpPayload);
 
+					if (publicResult.inviteId) {
+						setRsvpId(publicResult.inviteId);
+					}
+
 					setSubmitStatus('success');
-					window.setTimeout(() => setSubmitted(true), 400);
 					return;
 				}
 
@@ -224,14 +222,11 @@ export function useRsvpSubmission({
 				}
 
 				setSubmitStatus('success');
-				window.setTimeout(() => setSubmitted(true), 400);
 			} catch (err) {
 				const message =
 					err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';
 				setSubmitStatus('error');
 				setErrors((prev) => ({ ...prev, global: message }));
-			} finally {
-				setIsSubmitting(false);
 			}
 		},
 		[
@@ -268,6 +263,8 @@ export function useRsvpSubmission({
 		name,
 		phone,
 		showPhoneField,
+		isPersonalized,
+		isPublicRsvp,
 		attendanceStatus,
 		attendeeCount,
 		notes,

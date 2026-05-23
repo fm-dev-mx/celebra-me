@@ -36,10 +36,6 @@ export interface ValidationContext {
 
 // RSVP form helpers.
 
-export function formatCelebrantName(name?: string): string {
-	return name ? name.trim().split(/\s+/)[0] : 'el festejado';
-}
-
 export function resolveLabels(
 	labels?: {
 		name?: string;
@@ -51,22 +47,30 @@ export function resolveLabels(
 		notesPlaceholder?: string;
 	},
 	celebrantName?: string,
+	variant?: string,
 ): ResolvedLabels {
+	const isEditorial = variant === 'editorial';
+
 	return {
 		nameLabel: labels?.name ?? 'Tu nombre',
 		guestCountLabel: labels?.guestCount ?? 'N\u00famero de asistentes',
 		phoneLabel: labels?.phone ?? 'Tel\u00e9fono de contacto',
 		attendanceLabel: labels?.attendance ?? 'Asistencia',
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
-		notesLabel: labels?.notesLabel ?? 'Mensaje para el festejado',
+		notesLabel:
+			labels?.notesLabel ??
+			(isEditorial ? 'DEDICATORIA OPCIONAL' : 'Mensaje para el festejado'),
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
-			`Escribe un mensaje para ${formatCelebrantName(celebrantName)}...`,
+			(isEditorial
+				? `Escribe unas palabras para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}…`
+				: `Escribe un mensaje para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}...`),
 	};
 }
 
-export function parseAttendeeCount(attendeeCount: number | string) {
-	return typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
+export function parseAttendeeCount(attendeeCount: number | string): number {
+	const n = typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
+	return Number.isNaN(n) ? 0 : n;
 }
 
 /**
@@ -172,21 +176,11 @@ export function normalizeGuestCount(
 	attendanceStatus: AttendanceStatus,
 	attendeeCount: number | string,
 	supportsPlusOnes: boolean,
-) {
-	if (attendanceStatus !== 'confirmed') return 0;
-	const parsedCount = parseAttendeeCount(attendeeCount) || 1;
-	return supportsPlusOnes ? parsedCount : 1;
-}
-
-export function coerceAttendeeCount(
-	status: AttendanceStatus,
-	previousCount: number | string,
-	supportsPlusOnes: boolean,
-	effectiveGuestCap: number,
+	effectiveGuestCap?: number,
 ): number {
-	if (status !== 'confirmed') return 0;
+	if (attendanceStatus !== 'confirmed') return 0;
 	if (!supportsPlusOnes) return 1;
-	const parsed = parseAttendeeCount(previousCount);
-	const safe = parsed && parsed >= 1 ? parsed : 1;
-	return Math.min(safe, effectiveGuestCap);
+	const parsed = parseAttendeeCount(attendeeCount);
+	const safe = parsed >= 1 ? parsed : 1;
+	return effectiveGuestCap !== undefined ? Math.min(safe, effectiveGuestCap) : safe;
 }

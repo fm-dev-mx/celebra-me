@@ -13,7 +13,7 @@ import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak'
 export {
 	buildWhatsAppUrl,
 	resolveLabels,
-	coerceAttendeeCount,
+	normalizeGuestCount,
 } from '@/components/invitation/rsvp-logic';
 export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
