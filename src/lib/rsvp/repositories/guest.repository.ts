@@ -13,7 +13,6 @@ import {
 	updateSingle,
 	deleteByQuery,
 } from '@/lib/rsvp/repositories/shared/operations';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { normalizeOptionalPhonePair } from '@/lib/rsvp/core/utils';
 
 const TABLE = 'guest_invitations';
@@ -41,23 +40,6 @@ function buildGuestInsertBody(input: CreateGuestInput) {
 	return body;
 }
 
-function getGuestMutationOptions(hostAccessToken?: string) {
-	return hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true as const };
-}
-
-async function insertGuestInvitation(
-	input: CreateGuestInput,
-	hostAccessToken?: string,
-): Promise<GuestInvitationRecord> {
-	return insertSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		buildGuestInsertBody(input),
-		toGuestRecord,
-		getGuestMutationOptions(hostAccessToken),
-	);
-}
-
 async function updateGuestRecord(
 	filter: string,
 	body: Record<string, unknown>,
@@ -69,7 +51,7 @@ async function updateGuestRecord(
 		filter,
 		body,
 		toGuestRecord,
-		getGuestMutationOptions(hostAccessToken),
+		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
 	);
 }
 
@@ -126,14 +108,12 @@ export async function findGuestsByEvent(
 		const raw = filters.search.trim();
 		if (raw) {
 			const digitsOnly = raw.replace(/\D/g, '');
+			const conditions = [`full_name.ilike.*${encodeURIComponent(raw)}*`];
 			if (digitsOnly) {
 				const phoneTerm = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
-				queryParts.push(
-					`or=(full_name.ilike.*${encodeURIComponent(raw)}*,phone.ilike.*${encodeURIComponent(phoneTerm)}*)`,
-				);
-			} else {
-				queryParts.push(`full_name.ilike.*${encodeURIComponent(raw)}*`);
+				conditions.push(`phone.ilike.*${encodeURIComponent(phoneTerm)}*`);
 			}
+			queryParts.push(conditions.length > 1 ? `or=(${conditions.join(',')})` : conditions[0]);
 		}
 	}
 	if (filters.delivery && filters.delivery !== 'all') {
@@ -150,22 +130,36 @@ export async function createGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	return insertGuestInvitation(input, hostAccessToken);
+	return insertSingle(
+		TABLE,
+		GUEST_COLUMNS,
+		buildGuestInsertBody(input),
+		toGuestRecord,
+		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
+	);
 }
 
 export async function findGuestById(
 	guestId: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`, {
-		authToken: hostAccessToken,
-	});
+	return findSingle(
+		TABLE,
+		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{ authToken: hostAccessToken },
+	);
 }
 
 export async function findGuestByIdService(guestId: string): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`, {
-		useServiceRole: true,
-	});
+	return findSingle(
+		TABLE,
+		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{ useServiceRole: true },
+	);
 }
 
 export async function updateGuestById(
@@ -195,43 +189,37 @@ export async function deleteGuestById(guestId: string, hostAccessToken: string):
 }
 
 export async function softDeleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
-	await supabaseRestRequest({
-		pathWithQuery: `${TABLE}?id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		method: 'PATCH',
-		body: {
-			deleted_at: new Date().toISOString(),
-		},
-		authToken: hostAccessToken,
-		prefer: 'return=minimal',
-	});
-}
-
-function findGuestSingleSafe(
-	filter: string,
-	options: { authToken?: string; useServiceRole?: boolean },
-): Promise<GuestInvitationRecord | null> {
-	return findSingle(TABLE, filter, GUEST_COLUMNS, toGuestRecord, options);
+	await updateSingle(
+		TABLE,
+		GUEST_COLUMNS,
+		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		{ deleted_at: new Date().toISOString() },
+		toGuestRecord,
+		{ authToken: hostAccessToken },
+	);
 }
 
 export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(
+	return findSingle(
+		TABLE,
 		`invite_id=eq.${encodeURIComponent(inviteId)}&${ACTIVE_GUEST_FILTER}`,
-		{
-			useServiceRole: true,
-		},
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{ useServiceRole: true },
 	);
 }
 
 export async function findGuestByShortIdPublic(
 	shortId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(
+	return findSingle(
+		TABLE,
 		`short_id=eq.${encodeURIComponent(shortId)}&${ACTIVE_GUEST_FILTER}`,
-		{
-			useServiceRole: true,
-		},
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{ useServiceRole: true },
 	);
 }
 
@@ -239,8 +227,11 @@ export async function findGuestByPhonePublic(
 	eventId: string,
 	phone: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(
+	return findSingle(
+		TABLE,
 		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
 		{ useServiceRole: true },
 	);
 }
@@ -250,8 +241,11 @@ export async function findGuestByPhoneAuth(
 	phone: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(
+	return findSingle(
+		TABLE,
 		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
 		{ authToken: hostAccessToken },
 	);
 }

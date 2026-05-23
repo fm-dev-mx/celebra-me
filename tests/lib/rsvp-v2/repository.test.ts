@@ -188,7 +188,28 @@ describe('rsvp repository', () => {
 			'deleted_at=is.null',
 		);
 
-		supabaseRestRequestMock.mockResolvedValueOnce([]);
+		supabaseRestRequestMock.mockResolvedValueOnce([
+			{
+				id: 'guest-1',
+				invite_id: 'invite-1',
+				event_id: 'evt-1',
+				full_name: 'Guest One',
+				phone: '6680000000',
+				max_allowed_attendees: 2,
+				attendance_status: 'pending',
+				attendee_count: 0,
+				guest_comment: '',
+				delivery_status: 'generated',
+				first_viewed_at: null,
+				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
+				responded_at: null,
+				last_response_source: 'link',
+				created_at: '2026-01-01T00:00:00.000Z',
+				updated_at: '2026-01-01T00:00:00.000Z',
+			},
+		] as Record<string, unknown>[]);
 		await softDeleteGuestById('guest-1', 'token');
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
 			expect.objectContaining({
@@ -198,7 +219,7 @@ describe('rsvp repository', () => {
 					deleted_at: expect.any(String),
 				}),
 				authToken: 'token',
-				prefer: 'return=minimal',
+				prefer: 'return=representation',
 			}),
 		);
 	});
