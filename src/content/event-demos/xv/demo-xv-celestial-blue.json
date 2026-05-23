@@ -11,14 +11,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Tu nombre completo",
-                "guestCount": "Número de asistentes",
-                "attendance": "Asistencia",
-                "confirmButton": "Confirmar presencia"
-            }
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "Camila Torres Rivas",

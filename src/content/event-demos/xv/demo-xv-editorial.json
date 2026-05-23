@@ -11,13 +11,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Tu nombre en la lista *",
-                "guestCount": "Número de asistentes",
-                "confirmButton": "Reservar mi lugar"
-            }
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "Valentina Noir",

@@ -10,14 +10,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Nombre completo *",
-                "attendance": "¿Asistirás al evento? *",
-                "guestCount": "Número total de asistentes",
-                "confirmButton": "Confirmar asistencia"
-            }
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "Nombre de la Festejada",

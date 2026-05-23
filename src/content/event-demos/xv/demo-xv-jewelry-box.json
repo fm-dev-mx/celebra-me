@@ -11,13 +11,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Nombre completo *",
-                "guestCount": "Número total de asistentes",
-                "confirmButton": "Confirmar asistencia"
-            }
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "Lucía García",

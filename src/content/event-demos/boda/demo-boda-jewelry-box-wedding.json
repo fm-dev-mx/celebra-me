@@ -10,13 +10,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Nombres de los invitados *",
-                "guestCount": "Pases solicitados",
-                "confirmButton": "Confirmar nuestra asistencia"
-            }
-        }
+        "rsvp": {}
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },

@@ -10,11 +10,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "attendance": "¿Nos acompañarás?"
-            }
-        }
+        "rsvp": {}
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },

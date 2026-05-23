@@ -10,13 +10,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {
-            "labels": {
-                "name": "Nombre de los invitados *",
-                "guestCount": "Número de asistentes",
-                "confirmButton": "Confirmar asistencia"
-            }
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "Alberto Valenzuela",
