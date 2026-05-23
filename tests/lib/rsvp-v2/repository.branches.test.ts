@@ -12,7 +12,7 @@ import {
 import { incrementClaimCodeUsageService } from '@/lib/rsvp/repositories/claim-code.repository';
 import {
 	createGuestInvitation,
-	findGuestByIdService,
+	findGuestById,
 	findGuestsByEvent,
 	updateGuestById,
 	updateGuestByInviteIdPublic,
@@ -111,7 +111,7 @@ describe('rsvp repository branches', () => {
 		expect(await findEventBySlugService('slug')).toBeNull();
 		expect(await findEventByInvitationPublic('evt')).toBeNull();
 		expect(await listAllEventsService()).toEqual([]);
-		expect(await findGuestByIdService('guest')).toBeNull();
+		expect(await findGuestById('guest')).toBeNull();
 		expect(await findMembershipByEventForHost('evt', 'token')).toBeNull();
 		expect(await listMembershipsForHost('token')).toEqual([]);
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(

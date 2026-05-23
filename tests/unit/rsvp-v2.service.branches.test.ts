@@ -49,9 +49,6 @@ describe('rsvp service branches', () => {
 	const findGuestByIdMock = guestRepo.findGuestById as jest.MockedFunction<
 		typeof guestRepo.findGuestById
 	>;
-	const findGuestByIdServiceMock = guestRepo.findGuestByIdService as jest.MockedFunction<
-		typeof guestRepo.findGuestByIdService
-	>;
 	const findGuestByInviteIdPublicMock =
 		guestRepo.findGuestByInviteIdPublic as jest.MockedFunction<
 			typeof guestRepo.findGuestByInviteIdPublic
@@ -64,9 +61,6 @@ describe('rsvp service branches', () => {
 	>;
 	const updateGuestByIdMock = guestRepo.updateGuestById as jest.MockedFunction<
 		typeof guestRepo.updateGuestById
-	>;
-	const updateGuestByIdServiceMock = guestRepo.updateGuestByIdService as jest.MockedFunction<
-		typeof guestRepo.updateGuestByIdService
 	>;
 	const softDeleteGuestByIdMock = guestRepo.softDeleteGuestById as jest.MockedFunction<
 		typeof guestRepo.softDeleteGuestById
@@ -226,7 +220,6 @@ describe('rsvp service branches', () => {
 
 	it('markGuestShared returns not_found when guest does not exist', async () => {
 		findGuestByIdMock.mockResolvedValue(null);
-		findGuestByIdServiceMock.mockResolvedValue(null);
 		await expect(
 			markGuestShared({
 				guestId: 'guest-missing',
@@ -249,7 +242,6 @@ describe('rsvp service branches', () => {
 		expect(softDeleteGuestByIdMock).toHaveBeenCalledWith('guest-1', 'token');
 
 		findGuestByIdMock.mockResolvedValueOnce(null);
-		findGuestByIdServiceMock.mockResolvedValueOnce(null);
 
 		await expect(
 			deleteDashboardGuest({
@@ -295,7 +287,7 @@ describe('rsvp service branches', () => {
 
 	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
 		findGuestByPhonePublicMock.mockResolvedValue(baseGuest);
-		updateGuestByIdServiceMock.mockResolvedValue({
+		updateGuestByIdMock.mockResolvedValue({
 			...baseGuest,
 			attendanceStatus: 'confirmed',
 			attendeeCount: 2,
@@ -318,7 +310,7 @@ describe('rsvp service branches', () => {
 
 		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '6680000000');
 		expect(createGuestInvitationMock).not.toHaveBeenCalled();
-		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
+		expect(updateGuestByIdMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				guestId: 'guest-1',
 				attendanceStatus: 'confirmed',
@@ -340,7 +332,7 @@ describe('rsvp service branches', () => {
 			maxAllowedAttendees: 3,
 			entrySource: 'generic_public',
 		});
-		updateGuestByIdServiceMock.mockResolvedValue({
+		updateGuestByIdMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
 			inviteId: 'invite-2',
@@ -375,7 +367,7 @@ describe('rsvp service branches', () => {
 				entrySource: 'generic_public',
 			}),
 		);
-		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
+		expect(updateGuestByIdMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				guestId: 'guest-2',
 				lastResponseSource: 'generic_link',

@@ -141,44 +141,25 @@ export async function createGuestInvitation(
 
 export async function findGuestById(
 	guestId: string,
-	hostAccessToken: string,
+	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord | null> {
 	return findSingle(
 		TABLE,
 		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
 		GUEST_COLUMNS,
 		toGuestRecord,
-		{ authToken: hostAccessToken },
-	);
-}
-
-export async function findGuestByIdService(guestId: string): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
+		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
 	);
 }
 
 export async function updateGuestById(
 	input: UpdateGuestInput,
-	hostAccessToken: string,
+	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
 	return updateGuestRecord(
 		`id=eq.${encodeURIComponent(input.guestId)}`,
 		buildGuestUpdateBody(input),
 		hostAccessToken,
-	);
-}
-
-export async function updateGuestByIdService(
-	input: UpdateGuestInput,
-): Promise<GuestInvitationRecord> {
-	return updateGuestRecord(
-		`id=eq.${encodeURIComponent(input.guestId)}`,
-		buildGuestUpdateBody(input),
 	);
 }
 
@@ -248,17 +229,6 @@ export async function findGuestByPhoneAuth(
 		toGuestRecord,
 		{ authToken: hostAccessToken },
 	);
-}
-
-/** @deprecated Use findGuestByPhonePublic or findGuestByPhoneAuth */
-export async function findGuestByPhone(
-	eventId: string,
-	phone: string,
-	hostAccessToken?: string,
-): Promise<GuestInvitationRecord | null> {
-	return hostAccessToken
-		? findGuestByPhoneAuth(eventId, phone, hostAccessToken)
-		: findGuestByPhonePublic(eventId, phone);
 }
 
 export async function updateGuestByInviteIdPublic(

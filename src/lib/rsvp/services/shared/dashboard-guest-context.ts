@@ -1,6 +1,6 @@
 import { findEventById } from '@/lib/rsvp/repositories/event.repository';
 import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
-import { findGuestById, findGuestByIdService } from '@/lib/rsvp/repositories/guest.repository';
+import { findGuestById } from '@/lib/rsvp/repositories/guest.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 
@@ -19,7 +19,7 @@ export async function getGuestAccessOrThrow(guestId: string, hostAccessToken: st
 	const existing = await findGuestById(guestId, hostAccessToken);
 	if (existing) return existing;
 
-	const serviceGuest = await findGuestByIdService(guestId);
+	const serviceGuest = await findGuestById(guestId);
 	if (serviceGuest) {
 		throw new ApiError(403, 'forbidden', 'Access to the requested guest is denied.');
 	}

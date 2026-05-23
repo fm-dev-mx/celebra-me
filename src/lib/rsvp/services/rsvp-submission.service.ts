@@ -2,7 +2,7 @@ import {
 	createGuestInvitation,
 	findGuestByInviteIdPublic,
 	findGuestByPhonePublic,
-	updateGuestByIdService,
+	updateGuestById,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { generateShortId } from '@/lib/server/ids';
@@ -175,7 +175,7 @@ export async function persistRsvpResponse(
 					responded_at: updateBody.respondedAt,
 					last_response_source: updateBody.lastResponseSource,
 				})
-			: await updateGuestByIdService(updateBody);
+			: await updateGuestById(updateBody);
 
 	console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
 
