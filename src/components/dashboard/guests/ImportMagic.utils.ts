@@ -1,5 +1,5 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { normalizeImportedPhone, normalizePhone, normalizeName } from '@/lib/rsvp/core/utils';
+import { normalizeName, splitPhoneForExport, SUPPORTED_COUNTRY_CODES } from '@/lib/rsvp/core/utils';
 
 export type ImportRowStatus =
 	| 'new'
@@ -33,7 +33,6 @@ export interface ParsedGuest {
 	hiddenByDefault?: boolean;
 	matchedGuestId?: string;
 	matchedGuestName?: string;
-	normalizedPhone?: string;
 	normalizedName?: string;
 }
 
@@ -89,8 +88,110 @@ export const IGNORED_EXPORT_HEADERS = new Set([
 	'guest_comment',
 ]);
 
-function pluralS(count: number): string {
-	return count !== 1 ? 's' : '';
+export interface NormalizedPhone {
+	phone: string | undefined;
+	countryCode: string | undefined;
+}
+
+export type PhoneNormResult =
+	| ({ ok: true } & NormalizedPhone)
+	| { ok: false; field: 'phone' | 'phoneCountryCode'; message: string };
+
+/** Normalises raw import phone + countryCode into national phone + prefix.
+ *
+ *  - empty phone → { ok: true, phone: undefined, countryCode: undefined }
+ *  - national phone + countryCode → validated 10‑digit + normalised prefix
+ *  - international phone (+) + empty countryCode → split via known prefixes
+ *  - international phone (+) + matching countryCode → prefix stripped
+ *  - international phone (+) + mismatched countryCode → error
+ *  - national phone without countryCode → error
+ *  - non‑10‑digit national phone with countryCode → error
+ */
+export function normalizeImportPhone(phone: string, countryCode: string): PhoneNormResult {
+	const rawPhone = phone.trim();
+	const rawCC = countryCode.trim();
+
+	if (!rawPhone) {
+		return { ok: true, phone: undefined, countryCode: undefined };
+	}
+
+	if (rawPhone.startsWith('+')) {
+		return normalizeInternationalPhone(rawPhone, rawCC);
+	}
+
+	return normalizeNationalPhone(rawPhone, rawCC);
+}
+
+function normalizeInternationalPhone(phone: string, countryCode: string): PhoneNormResult {
+	if (countryCode) {
+		const cc = countryCode.startsWith('+') ? countryCode : '+' + countryCode;
+		if (!phone.startsWith(cc)) {
+			return {
+				ok: false,
+				field: 'phone',
+				message:
+					'El teléfono internacional no coincide con el código de país proporcionado.',
+			};
+		}
+		const national = phone.slice(cc.length).replace(/[^\d]/g, '');
+		if (national.length !== 10) {
+			return {
+				ok: false,
+				field: 'phone',
+				message: 'El teléfono debe tener exactamente 10 dígitos.',
+			};
+		}
+		return { ok: true, phone: national, countryCode: cc };
+	}
+
+	const split = splitPhoneForExport(phone);
+	if (!split) {
+		return {
+			ok: false,
+			field: 'phone',
+			message:
+				'Código de país no reconocido. Escribe solo el número local y usa la columna clave_pais.',
+		};
+	}
+	if (split.localPhone.length !== 10) {
+		return {
+			ok: false,
+			field: 'phone',
+			message: 'El teléfono debe tener exactamente 10 dígitos.',
+		};
+	}
+	return { ok: true, phone: split.localPhone, countryCode: split.countryCode };
+}
+
+function normalizeNationalPhone(phone: string, countryCode: string): PhoneNormResult {
+	if (!countryCode) {
+		return {
+			ok: false,
+			field: 'phoneCountryCode',
+			message: 'La clave país es obligatoria cuando el teléfono no empieza con +.',
+		};
+	}
+
+	const cc = countryCode.startsWith('+') ? countryCode : '+' + countryCode;
+	const digits = phone.replace(/[^\d]/g, '');
+
+	if (digits.length !== 10) {
+		return {
+			ok: false,
+			field: 'phone',
+			message: 'El teléfono debe tener exactamente 10 dígitos.',
+		};
+	}
+
+	if (!SUPPORTED_COUNTRY_CODES.includes(cc as (typeof SUPPORTED_COUNTRY_CODES)[number])) {
+		return {
+			ok: false,
+			field: 'phoneCountryCode',
+			message: 'Código de país no válido.',
+		};
+	}
+
+	return { ok: true, phone: digits, countryCode: cc };
 }
 
 export function normalizePhoneForComparison(
@@ -100,12 +201,11 @@ export function normalizePhoneForComparison(
 	const rawPhone = (phone ?? '').trim();
 	const rawCountryCode = (countryCode ?? '').trim();
 	if (!rawPhone) return '';
-	try {
-		const normalized = normalizeImportedPhone(rawPhone, rawCountryCode || undefined);
-		return normalized ? normalizePhone(normalized) : '';
-	} catch {
-		return normalizePhone(rawPhone);
-	}
+
+	const norm = normalizeImportPhone(rawPhone, rawCountryCode);
+	if (norm.ok && norm.phone) return norm.phone;
+
+	return rawPhone.replace(/[^\d]/g, '');
 }
 
 function splitCsvRows(content: string): string[][] {
@@ -249,32 +349,14 @@ export function validateGuestRow(guest: ParsedGuest): {
 } {
 	const fieldErrors: NonNullable<ParsedGuest['fieldErrors']> = {};
 	const name = guest.fullName.trim();
-	const phone = guest.phone.trim();
-	const countryCode = guest.phoneCountryCode.trim();
 
 	if (!name) {
 		fieldErrors.fullName = 'El nombre es obligatorio.';
 	}
 
-	if (phone && !phone.startsWith('+') && !countryCode) {
-		fieldErrors.phone =
-			'Agrega el código de país o escribe el número completo empezando con +.';
-		fieldErrors.phoneCountryCode =
-			'La clave país es obligatoria cuando el teléfono no empieza con +.';
-	} else if (phone && !phone.startsWith('+') && countryCode) {
-		try {
-			normalizeImportedPhone(phone, countryCode);
-		} catch {
-			fieldErrors.phoneCountryCode = 'Código de país no válido.';
-		}
-	} else if (phone.startsWith('+') && countryCode) {
-		try {
-			normalizeImportedPhone(phone, countryCode);
-		} catch {
-			fieldErrors.phone =
-				'El teléfono internacional no coincide con el código de país proporcionado.';
-			fieldErrors.phoneCountryCode = 'El código de país no coincide con el teléfono.';
-		}
+	const result = normalizeImportPhone(guest.phone, guest.phoneCountryCode);
+	if (!result.ok) {
+		fieldErrors[result.field] = result.message;
 	}
 
 	const hasErrors = Object.keys(fieldErrors).length > 0;
@@ -415,14 +497,6 @@ function applyActionPreference(
 	return defaultActionForStatus(status);
 }
 
-function normalizePhoneForRow(phone: string, phoneCountryCode: string): string | undefined {
-	try {
-		return normalizeImportedPhone(phone, phoneCountryCode) || undefined;
-	} catch {
-		return undefined;
-	}
-}
-
 function detectRowStatus(
 	result: ParsedGuest,
 	byPhone: Map<string, DashboardGuestItem>,
@@ -489,11 +563,9 @@ export function classifyImportedRows(
 		const result: ParsedGuest = { ...guest };
 		const normalizedName = normalizeName(result.fullName ?? '');
 		const comparePhone = normalizePhoneForComparison(result.phone, result.phoneCountryCode);
-		const normalizedPhone = normalizePhoneForRow(result.phone, result.phoneCountryCode);
 		const exactKey = `${normalizedName}|${comparePhone}`;
 
 		result.normalizedName = normalizedName;
-		result.normalizedPhone = normalizedPhone;
 		result.requiresReview = false;
 		result.hiddenByDefault = false;
 		result.matchedGuestId = undefined;
@@ -587,5 +659,3 @@ export function computeDisplayCategories(guests: ParsedGuest[]): DisplayCategori
 		hiddenReview,
 	};
 }
-
-export { pluralS };

@@ -2,12 +2,12 @@ import React, { useState, useRef, useCallback, useMemo } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
-	pluralS,
 	classifyImportedRows,
 	reclassifyEditedRow,
 	parseCsvLikeContent,
 	parseMappedRow,
 	validateGuestRow,
+	normalizeImportPhone,
 	looksLikeDataValue,
 	KNOWN_IMPORT_HEADERS,
 	IGNORED_EXPORT_HEADERS,
@@ -52,6 +52,10 @@ export function detectHeaders(firstLine: string): Map<string, keyof ParsedGuest>
 		if (target) mapping.set(String(i), target);
 	}
 	return mapping;
+}
+
+function pluralS(count: number): string {
+	return count !== 1 ? 's' : '';
 }
 
 export function isHeaderRow(parts: string[]): boolean {
@@ -230,9 +234,11 @@ function parseImportContent(
 }
 
 function toGuestPayload(g: ParsedGuest) {
+	const norm = normalizeImportPhone(g.phone, g.phoneCountryCode);
 	return {
 		fullName: g.fullName,
-		phone: g.normalizedPhone,
+		phone: norm.ok ? norm.phone : undefined,
+		countryCode: norm.ok ? norm.countryCode : undefined,
 		email: g.email,
 		maxAllowedAttendees: g.maxAllowedAttendees ?? 2,
 		tags: g.tags ?? [],

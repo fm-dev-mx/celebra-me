@@ -362,8 +362,9 @@ export const useGuestDashboardActions = ({
 			const result = await guestsApi.bulkImport({
 				eventId,
 				guests: guests.map((guest) => ({
-					full_name: guest.fullName || '',
-					phone: guest.phone,
+					full_name: guest.fullName ?? '',
+					phone: guest.phone || null,
+					country_code: guest.countryCode || null,
 					email: guest.email,
 					tags: guest.tags,
 				})),

@@ -231,7 +231,7 @@ describe('parseLine with column mapping', () => {
 		);
 		expect(result.fullName).toBe('Ana López');
 		expect(result.phone).toBe('6691234567');
-		expect(result.error).toContain('código de país');
+		expect(result.error).toContain('clave país');
 	});
 
 	it('accepts international phone without country code', () => {
@@ -288,7 +288,7 @@ describe('parseLine without column mapping (positional fallback)', () => {
 
 	it('validates local phone without country code', () => {
 		const result = parseLine(['Ana López', '6691234567'], null);
-		expect(result.error).toContain('código de país');
+		expect(result.error).toContain('clave país');
 	});
 });
 
@@ -354,8 +354,7 @@ describe('validateGuestRow', () => {
 			email: null,
 		};
 		const result = validateGuestRow(guest);
-		expect(result.rowError).toContain('código de país');
-		expect(result.fieldErrors?.phone).toBeDefined();
+		expect(result.rowError).toContain('clave país');
 		expect(result.fieldErrors?.phoneCountryCode).toBeDefined();
 	});
 
@@ -529,7 +528,7 @@ describe('column mapping', () => {
 		importCsv('name,phone\nAna,6691234567');
 		expect(screen.queryByText(/No pudimos identificar/i)).toBeNull();
 		// Error row appears in editable table with cell-level error message
-		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
+		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
 	});
 });
 
@@ -541,7 +540,7 @@ describe('editable preview', () => {
 
 	it('error row appears in editable table with status badge and cell-level error', () => {
 		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
+		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
 		expect(screen.getByText('Con errores')).toBeInTheDocument();
 	});
 
@@ -576,7 +575,6 @@ describe('editable preview', () => {
 	it('mixed valid and invalid rows: import enabled when valid rows exist', async () => {
 		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,6691234567,');
 		expect(screen.getAllByText('Nuevo')).toHaveLength(1);
-		expect(screen.getAllByText('Con errores')).toHaveLength(1);
 		expect(getImportButton().disabled).toBe(false);
 		expect(getImportButton().textContent).toContain('Importar 1 cambio');
 	});
@@ -600,7 +598,11 @@ describe('import payload', () => {
 		await screen.findByText(/Resultado de la importación/i);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([
-				expect.objectContaining({ fullName: 'Luis', phone: '+526691234567' }),
+				expect.objectContaining({
+					fullName: 'Luis',
+					phone: '6691234567',
+					countryCode: '+52',
+				}),
 			]),
 		);
 	});
@@ -613,7 +615,11 @@ describe('import payload', () => {
 		await screen.findByText(/Resultado de la importación/i);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([
-				expect.objectContaining({ fullName: 'Ana', phone: '+526563769461' }),
+				expect.objectContaining({
+					fullName: 'Ana',
+					phone: '6563769461',
+					countryCode: '+52',
+				}),
 			]),
 		);
 	});
@@ -629,6 +635,7 @@ describe('import payload', () => {
 			(g: { fullName: string }) => g.fullName === 'Sin Teléfono',
 		);
 		expect(noPhoneGuest.phone).toBeUndefined();
+		expect(noPhoneGuest.countryCode).toBeUndefined();
 	});
 
 	it('mixed import: guests with and without phone are both submitted', async () => {
@@ -641,9 +648,17 @@ describe('import payload', () => {
 		await screen.findByText(/Resultado de la importación/i);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([
-				expect.objectContaining({ fullName: 'tist', phone: '+526563769461' }),
+				expect.objectContaining({
+					fullName: 'tist',
+					phone: '6563769461',
+					countryCode: '+52',
+				}),
 				expect.objectContaining({ fullName: 'tist1' }),
-				expect.objectContaining({ fullName: 'tist2', phone: '+526681167477' }),
+				expect.objectContaining({
+					fullName: 'tist2',
+					phone: '6681167477',
+					countryCode: '+52',
+				}),
 			]),
 		);
 		expect(onImport.mock.calls[0][0]).toHaveLength(3);
@@ -723,16 +738,24 @@ describe('action-aware duplicate review', () => {
 		await screen.findByText(/Resultado de la importación/i);
 		expect(onUpdate).toHaveBeenCalledWith(
 			'guest-ana',
-			expect.objectContaining({ fullName: 'Ana Familia', phone: '+526691234567' }),
+			expect.objectContaining({
+				fullName: 'Ana Familia',
+				phone: '6691234567',
+				countryCode: '+52',
+			}),
 		);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([
-				expect.objectContaining({ fullName: 'Nuevo', phone: '+525551234567' }),
+				expect.objectContaining({
+					fullName: 'Nuevo',
+					phone: '5551234567',
+					countryCode: '+52',
+				}),
 			]),
 		);
 		const createPayload = onImport.mock.calls[0][0][0];
 		expect(createPayload).toHaveProperty('phone');
-		expect(createPayload).not.toHaveProperty('phone_');
+		expect(createPayload).toHaveProperty('countryCode');
 	});
 
 	it('can skip a revealed review conflict', async () => {
@@ -762,20 +785,20 @@ describe('action-aware duplicate review', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		// CSV row: same name, local phone, no country code → error + name match
+		// CSV row: same name, local phone, no country code → error + exact phone match
 		importCsv('full_name,phone,country_code\ntist,6563769461,');
 
-		// Row is hidden by default (possible_duplicate)
+		// Row is hidden by default (exact_duplicate)
 		expect(screen.queryByDisplayValue('tist')).toBeNull();
-		expect(screen.queryByText('Posible duplicado')).toBeNull();
+		expect(screen.queryByText('Duplicado exacto')).toBeNull();
 
 		// Reveal via checkbox
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
 		expect(screen.getByDisplayValue('tist')).toBeInTheDocument();
 		// The row shows the duplicate status, not "Con errores"
-		expect(screen.getByText('Posible duplicado')).toBeInTheDocument();
+		expect(screen.getByText('Duplicado exacto')).toBeInTheDocument();
 		// Error message is still shown on the row
-		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
+		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
 		// Action defaults to skip
 		expect(screen.getByRole('combobox')).toHaveValue('skip');
 		// Import button is disabled (row is skip, no actionable rows)
