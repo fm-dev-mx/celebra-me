@@ -1,4 +1,9 @@
-import { validateNationalPhone, parsePhoneInput, hasValidPhone } from '@/lib/phone/validation';
+import {
+	validateNationalPhone,
+	parsePhoneInput,
+	hasValidPhone,
+	buildWhatsAppNumber,
+} from '@/lib/phone/validation';
 
 describe('validateNationalPhone', () => {
 	it('accepts 10-digit phone', () => {
@@ -10,19 +15,23 @@ describe('validateNationalPhone', () => {
 	});
 
 	it('rejects empty', () => {
-		expect(validateNationalPhone('')).toEqual({ ok: false, reason: '' });
+		expect(validateNationalPhone('')).toEqual({ ok: false, reason: 'empty' });
 	});
 
 	it('rejects 9 digits', () => {
 		const result = validateNationalPhone('669123456');
 		expect(result.ok).toBe(false);
-		expect(result.reason).toContain('10 dígitos');
+		if (!result.ok) {
+			expect(result.reason).toContain('10 dígitos');
+		}
 	});
 
 	it('rejects letters', () => {
 		const result = validateNationalPhone('669abc4567');
 		expect(result.ok).toBe(false);
-		expect(result.reason).toContain('solo puede contener números');
+		if (!result.ok) {
+			expect(result.reason).toContain('solo puede contener números');
+		}
 	});
 });
 
@@ -65,13 +74,17 @@ describe('parsePhoneInput', () => {
 	it('rejects unsupported country code', () => {
 		const result = parsePhoneInput('+447123456789');
 		expect(result.ok).toBe(false);
-		expect(result.reason).toContain('no está soportado');
+		if (!result.ok) {
+			expect(result.reason).toContain('no está soportado');
+		}
 	});
 
 	it('rejects international phone with wrong national length', () => {
 		const result = parsePhoneInput('+52669123456');
 		expect(result.ok).toBe(false);
-		expect(result.reason).toContain('10 dígitos');
+		if (!result.ok) {
+			expect(result.reason).toContain('10 dígitos');
+		}
 	});
 
 	it('rejects phone with invalid characters', () => {
@@ -99,5 +112,48 @@ describe('hasValidPhone', () => {
 
 	it('counts digits ignoring non-digit chars', () => {
 		expect(hasValidPhone('+526691234567')).toBe(true);
+	});
+});
+
+describe('buildWhatsAppNumber', () => {
+	it('composes national phone with +52 country code', () => {
+		expect(buildWhatsAppNumber('8112345678', '+52')).toBe('528112345678');
+	});
+
+	it('handles phone that already includes +52 prefix', () => {
+		expect(buildWhatsAppNumber('+528112345678', '+52')).toBe('528112345678');
+	});
+
+	it('handles phone that already includes 52 prefix without +', () => {
+		expect(buildWhatsAppNumber('528112345678', '+52')).toBe('528112345678');
+	});
+
+	it('returns phone digits when country code is empty', () => {
+		expect(buildWhatsAppNumber('8112345678', '')).toBe('8112345678');
+	});
+
+	it('returns phone digits when country code is undefined', () => {
+		expect(buildWhatsAppNumber('8112345678')).toBe('8112345678');
+	});
+
+	it('returns empty string when phone is empty', () => {
+		expect(buildWhatsAppNumber('', '+52')).toBe('');
+	});
+
+	it('returns empty string when phone is null', () => {
+		expect(buildWhatsAppNumber(null, '+52')).toBe('');
+	});
+
+	it('strips formatting characters from phone', () => {
+		expect(buildWhatsAppNumber('(811) 234-5678', '+52')).toBe('528112345678');
+	});
+
+	it('strips formatting characters from country code', () => {
+		expect(buildWhatsAppNumber('8112345678', '+52 (MX)')).toBe('528112345678');
+	});
+
+	it('output contains only digits', () => {
+		const result = buildWhatsAppNumber('8112345678', '+52');
+		expect(result).toMatch(/^\d+$/);
 	});
 });

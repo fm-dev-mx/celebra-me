@@ -14,7 +14,7 @@ export function stripAllNonDigits(input: string): string {
 export function validateNationalPhone(input: string): PhoneValidationResult {
 	const trimmed = input.trim();
 	if (!trimmed) {
-		return { ok: false, reason: '' };
+		return { ok: false, reason: 'empty' };
 	}
 
 	const stripped = trimmed.replace(/[\s()\-.]/g, '');
@@ -73,9 +73,24 @@ export function parsePhoneInput(
 	};
 }
 
-/**
- * Returns true when phone has at least 10 digits.
- */
+/** Loose pre-check: true when phone contains at least 10 digits. */
 export function hasValidPhone(phone: string): boolean {
 	return stripAllNonDigits(phone).length >= 10;
+}
+
+/** Builds a digits-only number for wa.me URLs. */
+export function buildWhatsAppNumber(
+	phone: string | null | undefined,
+	countryCode?: string,
+): string {
+	const stripped = stripAllNonDigits(phone ?? '');
+	if (!stripped) return '';
+
+	const cc = countryCode ? stripAllNonDigits(countryCode) : '';
+
+	if (cc && stripped.startsWith(cc)) {
+		return stripped;
+	}
+
+	return cc + stripped;
 }

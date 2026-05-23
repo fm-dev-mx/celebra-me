@@ -2,6 +2,10 @@ export const SUPPORTED_COUNTRY_CODES = ['+52', '+34', '+1'] as const;
 export type SupportedCountryCode = (typeof SUPPORTED_COUNTRY_CODES)[number];
 export const DEFAULT_COUNTRY_CODE = '+52';
 
+export function isSupportedCountryCode(code: string): code is SupportedCountryCode {
+	return (SUPPORTED_COUNTRY_CODES as readonly string[]).includes(code);
+}
+
 export interface CountryOption {
 	value: string;
 	label: string;
