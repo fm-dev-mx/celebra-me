@@ -357,6 +357,57 @@
 		}
 	}
 
+	&__field--phone .rsvp__phone-group {
+		display: flex;
+		gap: 0;
+	}
+
+	&__field--phone .rsvp__country-code {
+		flex: 0 0 auto;
+		width: 76px;
+		min-width: 60px;
+		border: 1px solid var(--rsvp-field-border);
+		border-right: none;
+		border-radius: var(--rsvp-radius-field) 0 0 var(--rsvp-radius-field);
+		background: var(--rsvp-field-bg);
+		color: var(--color-text-secondary);
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		padding: 0.75rem 0.25rem;
+		appearance: none;
+		cursor: pointer;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.3rem center;
+		background-size: 0.65rem;
+		text-align: center;
+
+		&:focus {
+			outline: none;
+			border-color: var(--color-action-accent);
+			box-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 10%);
+		}
+	}
+
+	&__field--phone .rsvp__phone-input-wrapper {
+		flex: 1;
+		position: relative;
+
+		input[type='tel'] {
+			border-radius: 0 var(--rsvp-radius-field) var(--rsvp-radius-field) 0;
+		}
+	}
+
+	&__field--phone {
+		@media (width <= 480px) {
+			.rsvp__country-code {
+				width: 64px;
+				min-width: 56px;
+				font-size: 0.78rem;
+			}
+		}
+	}
+
 	&__demo-footer {
 		margin-top: 1rem;
 		text-align: center;

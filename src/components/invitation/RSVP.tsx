@@ -59,6 +59,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const {
 		name,
 		phone,
+		countryCode,
 		showPhoneField,
 		attendanceStatus,
 		attendeeCount,
@@ -76,7 +77,8 @@ const RSVP: React.FC<RSVPProps> = ({
 		attendanceRef,
 		guestCountRef,
 		setName,
-		setPhone,
+		setCountryCode,
+		handlePhoneChange,
 		setAttendanceStatus,
 		setAttendeeCount,
 		setNotes,
@@ -156,6 +158,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						notesPlaceholder={labelsResolved.notesPlaceholder}
 						name={name}
 						phone={phone}
+						countryCode={countryCode}
 						showPhoneField={showPhoneField}
 						touched={touched}
 						errors={errors}
@@ -177,7 +180,11 @@ const RSVP: React.FC<RSVPProps> = ({
 							if (touched.name) validate();
 						}}
 						onPhoneChange={(value) => {
-							setPhone(value);
+							handlePhoneChange(value);
+							if (touched.phone) validate();
+						}}
+						onCountryCodeChange={(value) => {
+							setCountryCode(value);
 							if (touched.phone) validate();
 						}}
 						onAttendanceChange={(status) => {

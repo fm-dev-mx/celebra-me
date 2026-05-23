@@ -1,3 +1,6 @@
+import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
+
 // Shared RSVP state types.
 
 export type AttendanceStatus = 'confirmed' | 'declined' | null;
@@ -68,8 +71,27 @@ export function parseAttendeeCount(attendeeCount: number | string) {
 	return typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
 }
 
+/**
+ * Normalizes a phone input for RSVP submission.
+ * Strips formatting and returns clean digits.
+ */
 export function normalizePhoneInput(phone: string) {
-	return phone.replace(/[^\d]/g, '').slice(0, 10);
+	return stripAllNonDigits(phone).slice(0, 10);
+}
+
+/**
+ * Parses an RSVP phone input.
+ * - Empty → returns empty phone + default country code
+ * - Starts with '+' → delegates to parsePhoneInput, fallback to raw digits
+ * - Plain digits → returns as-is with DEFAULT_COUNTRY_CODE
+ */
+export function parseRsvpPhoneInput(input: string): { phone: string; countryCode: string } {
+	const result = parsePhoneInput(input);
+	if (result.ok) {
+		return { phone: result.phone, countryCode: result.countryCode };
+	}
+	const digits = stripAllNonDigits(input);
+	return { phone: digits.slice(0, 10), countryCode: DEFAULT_COUNTRY_CODE };
 }
 
 export function buildWhatsAppUrl(params: {

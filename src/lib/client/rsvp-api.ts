@@ -10,6 +10,7 @@ export interface RsvpPayload {
 export interface PublicRsvpPayload extends RsvpPayload {
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 }
 
 export interface ContactPayload {

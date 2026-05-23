@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RefObject } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
+import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
 
 const FIELD_ANIMATION_BASE_DELAY = 0.05;
 const FIELD_ANIMATION_STEP = 0.05;
@@ -136,9 +137,11 @@ export function PhoneField(props: {
 	errors: Record<string, string>;
 	phoneLabel: string;
 	phone: string;
+	countryCode: string;
 	phoneRef: RefObject<HTMLInputElement | null>;
 	prefersReducedMotion: boolean;
 	onPhoneChange: (value: string) => void;
+	onCountryCodeChange: (value: string) => void;
 	onBlur: (field: string) => void;
 }) {
 	const {
@@ -147,29 +150,66 @@ export function PhoneField(props: {
 		errors,
 		phoneLabel,
 		phone,
+		countryCode,
 		phoneRef,
 		prefersReducedMotion,
 		onPhoneChange,
+		onCountryCodeChange,
 		onBlur,
 	} = props;
 	if (!showPhoneField) return null;
 
 	return (
-		<FloatingField
-			id="phone"
-			type="tel"
-			inputMode="numeric"
-			autoComplete="tel"
-			label={phoneLabel}
-			value={phone}
-			error={errors.phone}
-			touched={touched.phone}
-			prefersReducedMotion={prefersReducedMotion}
-			fieldRef={phoneRef}
-			onChange={onPhoneChange}
-			onBlur={onBlur}
-			delayIndex={1}
-		/>
+		<motion.div
+			className={`rsvp__field rsvp__field--phone ${
+				touched.phone && errors.phone ? 'rsvp__field--error' : ''
+			}`}
+			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+			viewport={prefersReducedMotion ? undefined : { once: true }}
+			transition={prefersReducedMotion ? undefined : { delay: 0.1 }}
+		>
+			<div className="rsvp__phone-group">
+				<select
+					className="rsvp__country-code"
+					value={countryCode}
+					onChange={(e) => onCountryCodeChange(e.target.value)}
+					onBlur={() => onBlur('phone')}
+					aria-label="Código de país"
+				>
+					{COUNTRY_OPTIONS.map((opt) => (
+						<option key={opt.value} value={opt.value}>
+							{opt.label}
+						</option>
+					))}
+				</select>
+				<div className="rsvp__phone-input-wrapper">
+					<input
+						ref={phoneRef}
+						type="tel"
+						id="phone"
+						inputMode="numeric"
+						autoComplete="tel"
+						placeholder=" "
+						value={phone}
+						onChange={(e) => onPhoneChange(e.target.value)}
+						onBlur={() => onBlur('phone')}
+						aria-invalid={!!(touched.phone && errors.phone)}
+						aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
+						suppressHydrationWarning
+					/>
+					<label htmlFor="phone" className="rsvp__label">
+						{phoneLabel}
+					</label>
+					<div className="rsvp__field-line" />
+				</div>
+			</div>
+			{touched.phone && errors.phone && (
+				<p className="rsvp__field-error" id="phone-error" role="alert">
+					{errors.phone}
+				</p>
+			)}
+		</motion.div>
 	);
 }
 

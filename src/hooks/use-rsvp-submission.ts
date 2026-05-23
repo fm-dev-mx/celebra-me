@@ -11,9 +11,11 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	normalizeGuestCount,
 	normalizePhoneInput,
+	parseRsvpPhoneInput,
 	type AttendanceStatus,
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
 
 interface InitialGuestData {
@@ -45,6 +47,7 @@ export function useRsvpSubmission({
 
 	const [name, setName] = useState(initialName);
 	const [phone, setPhone] = useState('');
+	const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
 	const contextGuestCap = Number(
 		isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap,
@@ -80,14 +83,18 @@ export function useRsvpSubmission({
 	// Show phone field for public/hybrid access RSVPs
 	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
 	const showPhoneField = !isPersonalized && accessMode === 'hybrid';
-	// Make it optional even if shown (reduce friction)
-	const phoneRequired = false;
+	// Extract country code from pasted phone values
+	const handlePhoneChange = useCallback((value: string) => {
+		const parsed = parseRsvpPhoneInput(value);
+		setCountryCode(parsed.countryCode);
+		setPhone(parsed.phone);
+	}, []);
 
 	const validate = useCallback(() => {
 		const newErrors = validateRsvpForm({
 			name,
 			phone,
-			phoneRequired,
+			phoneRequired: false,
 			nameLocked,
 			attendanceStatus,
 			attendeeCount,
@@ -103,7 +110,6 @@ export function useRsvpSubmission({
 		name,
 		nameLocked,
 		phone,
-		phoneRequired,
 		supportsPlusOnes,
 	]);
 
@@ -190,6 +196,7 @@ export function useRsvpSubmission({
 					await rsvpApi.submitPublicRsvp(eventType, eventSlug, {
 						fullName: name.trim(),
 						phone: normalizePhoneInput(phone),
+						countryCode: phone ? countryCode : undefined,
 						attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 						attendeeCount: normalizedCount,
 						guestComment: notes,
@@ -226,6 +233,7 @@ export function useRsvpSubmission({
 			accessMode,
 			attendanceStatus,
 			attendeeCount,
+			countryCode,
 			eventSlug,
 			eventType,
 			initialData?.inviteId,
@@ -255,7 +263,6 @@ export function useRsvpSubmission({
 		name,
 		phone,
 		showPhoneField,
-		phoneRequired,
 		attendanceStatus,
 		attendeeCount,
 		notes,
@@ -272,7 +279,9 @@ export function useRsvpSubmission({
 		attendanceRef,
 		guestCountRef,
 		setName,
-		setPhone,
+		countryCode,
+		setCountryCode,
+		handlePhoneChange,
 		setAttendanceStatus,
 		setAttendeeCount,
 		setNotes,

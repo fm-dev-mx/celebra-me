@@ -149,6 +149,7 @@ export function RsvpFormView(props: {
 	notesPlaceholder: string;
 	name: string;
 	phone: string;
+	countryCode: string;
 	showPhoneField: boolean;
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
@@ -167,6 +168,7 @@ export function RsvpFormView(props: {
 	onSubmit: (e: SyntheticEvent) => void;
 	onNameChange: (value: string) => void;
 	onPhoneChange: (value: string) => void;
+	onCountryCodeChange: (value: string) => void;
 	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
 	onGuestCountChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
@@ -189,7 +191,11 @@ export function RsvpFormView(props: {
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
 				<div className="rsvp__grid">
 					<NameField {...props} />
-					<PhoneField {...props} />
+					<PhoneField
+						{...props}
+						countryCode={props.countryCode}
+						onCountryCodeChange={props.onCountryCodeChange}
+					/>
 				</div>
 				<AttendanceField {...props} />
 				<ConfirmedFields {...props} />
