@@ -172,6 +172,24 @@ describe('rsvp repository', () => {
 		);
 	});
 
+	it('findGuestByPhoneAuth scopes by event — same phone in different events is allowed', async () => {
+		supabaseRestRequestMock.mockResolvedValueOnce([]);
+		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow({ event_id: 'evt-2' })]);
+
+		const notHere = await findGuestByPhoneAuth('evt-1', '6680000000', 'token');
+		const inOtherEvent = await findGuestByPhoneAuth('evt-2', '6680000000', 'token');
+
+		expect(notHere).toBeNull();
+		expect(inOtherEvent).toMatchObject({ id: 'guest-1' });
+
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'event_id=eq.evt-1',
+		);
+		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
+			'event_id=eq.evt-2',
+		);
+	});
+
 	describe('findGuestsByEvent search', () => {
 		function getQuery(
 			search?: string,
@@ -259,6 +277,18 @@ describe('rsvp repository', () => {
 				'token',
 			);
 			expect(results).toEqual([]);
+		});
+
+		it('deleted row remains hidden from dashboard search/list', async () => {
+			supabaseRestRequestMock.mockResolvedValue([]);
+			const results = await findGuestsByEvent(
+				{ eventId: 'evt-1', search: '6681023442' },
+				'token',
+			);
+			expect(results).toEqual([]);
+			expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+				'deleted_at=is.null',
+			);
 		});
 	});
 });
