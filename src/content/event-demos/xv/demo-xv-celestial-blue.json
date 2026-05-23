@@ -14,7 +14,7 @@
         "rsvp": {
             "labels": {
                 "name": "Tu nombre completo",
-                "guestCount": "Acompañantes",
+                "guestCount": "Número de asistentes",
                 "attendance": "Asistencia",
                 "confirmButton": "Confirmar presencia"
             }

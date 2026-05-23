@@ -29,7 +29,7 @@
             "variant": "celestial-blue",
             "labels": {
                 "name": "Tu nombre",
-                "guestCount": "Acompañantes",
+                "guestCount": "Número de asistentes",
                 "attendance": "Asistencia",
                 "confirmButton": "Confirmar asistencia"
             }

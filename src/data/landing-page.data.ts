@@ -205,7 +205,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Incluye sistema para registrar y enviar invitaciones?',
-				answer: 'Sí. Incluye un panel para registrar invitados, organizarlos por grupos, definir acompañantes, enviar enlaces personalizados por WhatsApp y consultar si cada invitación ya fue vista, incluyendo un avance aproximado de visualización.',
+				answer: 'Sí. Incluye un panel para registrar invitados, organizarlos por grupos, definir el número de invitados por invitación, enviar enlaces personalizados por WhatsApp y consultar si cada invitación ya fue vista, incluyendo un avance aproximado de visualización.',
 			},
 			{
 				question: '¿Cómo reciben la invitación mis invitados?',
