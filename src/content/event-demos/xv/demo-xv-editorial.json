@@ -106,7 +106,7 @@
         ]
     },
     "rsvp": {
-        "title": "Confirma Tu Asistencia",
+        "title": "Confirma tu asistencia",
         "guestCap": 4,
         "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
         "confirmationMode": "api"

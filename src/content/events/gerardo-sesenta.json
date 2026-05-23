@@ -133,7 +133,7 @@
         ]
     },
     "rsvp": {
-        "title": "Confirma Tu Asistencia",
+        "title": "Confirma tu asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por acompañar a Gerardo en esta noche tan especial.",

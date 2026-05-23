@@ -79,7 +79,7 @@
         ]
     },
     "rsvp": {
-        "title": "Acompáñanos a celebrar esta fecha tan especial.",
+        "title": "Confirma tu asistencia.",
         "guestCap": 8,
         "confirmationMessage": "Será un honor contar con su presencia.",
         "confirmationMode": "both",

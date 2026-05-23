@@ -119,7 +119,7 @@
         ]
     },
     "rsvp": {
-        "title": "Confirma tu presencia",
+        "title": "Confirma tu asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
