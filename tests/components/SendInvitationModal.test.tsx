@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import { makeGuest } from '@tests/helpers/guest-factory';
@@ -483,5 +484,108 @@ describe('SendInvitationModal', () => {
 		await waitFor(() => {
 			expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 		});
+	});
+
+	it('advances to the next pending guest and shows their data after current guest is sent', async () => {
+		const GuestA = makeGuest({
+			guestId: 'g-a',
+			fullName: 'Ana López',
+			phone: '6691111111',
+			countryCode: '+52',
+		});
+		const GuestB = makeGuest({
+			guestId: 'g-b',
+			fullName: 'María García',
+			phone: '6692222222',
+			countryCode: '+52',
+		});
+		const updatedA = makeGuest({
+			...GuestA,
+			guestId: 'g-a',
+			waShareUrl: 'https://wa.me/526691111111',
+		});
+
+		const Wrapper = () => {
+			const [guest, setGuest] = useState<ReturnType<typeof makeGuest> | null>(GuestA);
+			return (
+				<SendInvitationModal
+					key={guest?.guestId ?? 'empty'}
+					guest={guest}
+					pendingGuests={[GuestA, GuestB]}
+					inviteBaseUrl="http://localhost"
+					onClose={onClose}
+					onSave={onSave}
+					onMarkShared={onMarkShared}
+					onAdvanceFromGuest={(id) => {
+						if (id === 'g-a') setGuest(GuestB);
+					}}
+					onPostponeGuest={onPostponeGuest}
+				/>
+			);
+		};
+
+		onSave.mockResolvedValue(updatedA);
+		onMarkShared.mockResolvedValue(undefined);
+
+		render(<Wrapper />);
+
+		expect(screen.getByDisplayValue('Ana López')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue('María García')).toBeInTheDocument();
+		});
+
+		const phoneInput = screen.getByRole('textbox', { name: /Teléfono/i }) as HTMLInputElement;
+		expect(phoneInput.value).toBe('6692222222');
+		expect(screen.queryByDisplayValue('Ana López')).not.toBeInTheDocument();
+	});
+
+	it('shows empty state after the last pending guest is processed', async () => {
+		const onlyGuest = makeGuest({
+			guestId: 'g-only',
+			fullName: 'Solo Invitado',
+			phone: '6691111111',
+			countryCode: '+52',
+		});
+		const updatedGuest = makeGuest({
+			...onlyGuest,
+			waShareUrl: 'https://wa.me/526691111111',
+		});
+
+		const Wrapper = () => {
+			const [guest, setGuest] = useState<ReturnType<typeof makeGuest> | null>(onlyGuest);
+			return (
+				<SendInvitationModal
+					key={guest?.guestId ?? 'empty'}
+					guest={guest}
+					pendingGuests={guest ? [guest] : []}
+					inviteBaseUrl="http://localhost"
+					onClose={onClose}
+					onSave={onSave}
+					onMarkShared={onMarkShared}
+					onAdvanceFromGuest={() => setGuest(null)}
+					onPostponeGuest={onPostponeGuest}
+				/>
+			);
+		};
+
+		onSave.mockResolvedValue(updatedGuest);
+		onMarkShared.mockResolvedValue(undefined);
+
+		render(<Wrapper />);
+
+		expect(screen.getByDisplayValue('Solo Invitado')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(
+				screen.getByText('No hay invitaciones pendientes por enviar.'),
+			).toBeInTheDocument();
+		});
+
+		expect(screen.queryByDisplayValue('Solo Invitado')).not.toBeInTheDocument();
 	});
 });
