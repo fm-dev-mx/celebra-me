@@ -121,6 +121,19 @@
 	color: var(--color-text-emphasis);
 }
 
+.view-status--bare {
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: none;
+}
+
+.view-status--bare.view-status--viewed {
+	background: none;
+	border: none;
+	color: var(--color-text-emphasis);
+}
+
 .view-status__content {
 	display: inline-flex;
 	align-items: center;

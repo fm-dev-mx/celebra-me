@@ -88,13 +88,16 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</span>
 				</div>
 
-				<div className={`view-status ${item.isViewed ? 'view-status--viewed' : ''}`}>
+				<div
+					className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}
+				>
 					{getViewStateLabel(item)}
 				</div>
 
 				{hasMessageFlag && (
 					<span className="guest-card__indicator">
-						<MessageIcon size={12} /> Tienes 1 mensaje
+						<MessageIcon size={24} />
+						Tienes un mensaje de este invitado
 					</span>
 				)}
 			</div>
