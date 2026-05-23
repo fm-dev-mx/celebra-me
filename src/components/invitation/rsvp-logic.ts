@@ -37,10 +37,7 @@ export interface ValidationContext {
 // RSVP form helpers.
 
 export function formatCelebrantName(name?: string): string {
-	if (!name) return 'el festejado';
-	const parts = name.trim().split(/\s+/);
-	if (parts.length === 1) return parts[0];
-	return `${parts[0]} ${parts[1]}`;
+	return name ? name.trim().split(/\s+/)[0] : 'el festejado';
 }
 
 export function resolveLabels(
