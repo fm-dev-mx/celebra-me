@@ -57,18 +57,18 @@ describe('getPrimaryStatusLabel', () => {
 		expect(getPrimaryStatusLabel(guest)).toBe('Por enviar');
 	});
 
-	it('returns "Recibida" for shared but not viewed guest', () => {
+	it('returns "Enviada" for shared but not viewed guest', () => {
 		const guest = makeGuest({ deliveryStatus: 'shared', isViewed: false });
-		expect(getPrimaryStatusLabel(guest)).toBe('Recibida');
+		expect(getPrimaryStatusLabel(guest)).toBe('Enviada');
 	});
 
-	it('returns "Enviada" for shared, viewed, pending RSVP guest', () => {
+	it('returns "Recibida" for shared, viewed, pending RSVP guest', () => {
 		const guest = makeGuest({
 			deliveryStatus: 'shared',
 			isViewed: true,
 			attendanceStatus: 'pending',
 		});
-		expect(getPrimaryStatusLabel(guest)).toBe('Enviada');
+		expect(getPrimaryStatusLabel(guest)).toBe('Recibida');
 	});
 
 	it('prioritises confirmed over delivery status', () => {

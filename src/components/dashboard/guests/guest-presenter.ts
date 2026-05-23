@@ -26,15 +26,15 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
  * Priority order:
  *   1. confirmed / declined  (terminal RSVP)
  *   2. generated             (not yet sent)
- *   3. shared + not viewed   (sent, awaiting open)
- *   4. shared + viewed       (opened, awaiting RSVP)
+ *   3. shared + not viewed   (sent, awaiting open — Enviada)
+ *   4. shared + viewed       (opened, awaiting RSVP — Recibida)
  */
 export function getPrimaryStatusLabel(item: DashboardGuestItem) {
 	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
 	if (item.attendanceStatus === 'declined') return 'Denegada';
 	if (item.deliveryStatus === 'generated') return 'Por enviar';
-	if (!item.isViewed) return 'Recibida';
-	return 'Enviada';
+	if (!item.isViewed) return 'Enviada';
+	return 'Recibida';
 }
 
 export function getPrimaryStatusClass(item: DashboardGuestItem) {
