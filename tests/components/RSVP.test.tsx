@@ -22,13 +22,14 @@ describe('RSVP Component', () => {
 		jest.clearAllMocks();
 		window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-		// Mock global fetch for API submissions
-		global.fetch = jest.fn(() =>
+		// Mock global fetch for API submissions using spy so tests can
+		// override via mockImplementationOnce without cross-test leakage.
+		jest.spyOn(global, 'fetch').mockImplementation(() =>
 			Promise.resolve({
 				ok: true,
 				json: () => Promise.resolve({ rsvpId: 'mock-rsvp-id' }),
-			}),
-		) as jest.Mock;
+			} as Response),
+		);
 	});
 
 	describe('Initial Render', () => {
@@ -42,7 +43,7 @@ describe('RSVP Component', () => {
 			const { container } = render(<RSVP {...defaultProps} />);
 
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/No podré asistir/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/No podré/i)).toBeInTheDocument();
 			expect(container.querySelectorAll('.rsvp__radio-indicator')).toHaveLength(2);
 		});
 
@@ -55,7 +56,7 @@ describe('RSVP Component', () => {
 		it('should not show guest count field initially', () => {
 			render(<RSVP {...defaultProps} />);
 
-			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
+			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 		});
 
 		it('shows a locked preview when no personalized inviteId is provided', async () => {
@@ -77,7 +78,7 @@ describe('RSVP Component', () => {
 			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
 		});
 
-		it('unlocks the form for hybrid public RSVP and requires the phone field', async () => {
+		it('unlocks the form for hybrid public RSVP', () => {
 			render(
 				<RSVP
 					eventType="xv"
@@ -90,9 +91,115 @@ describe('RSVP Component', () => {
 			);
 
 			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
-			expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
 			expect(screen.queryByText(/utiliza enlaces personalizados/i)).not.toBeInTheDocument();
+		});
+
+		it('public RSVP initial state does not render name field', () => {
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			expect(screen.queryByLabelText(/Tu nombre/i)).not.toBeInTheDocument();
+		});
+
+		it('public RSVP initial state does not render phone field', () => {
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			expect(screen.queryByLabelText(/Teléfono de contacto/i)).not.toBeInTheDocument();
+		});
+
+		it('public RSVP initial state does not render country code selector', () => {
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			expect(
+				screen.queryByRole('combobox', { name: /código de país/i }),
+			).not.toBeInTheDocument();
+		});
+
+		it('public RSVP selecting "Sí, asistiré" renders name field', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Tu nombre/i)).toBeInTheDocument();
+		});
+
+		it('public RSVP selecting "Sí, asistiré" renders phone field', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
+		});
+
+		it('public RSVP selecting "No podré" renders name field', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			await user.click(screen.getByLabelText(/No podré/i));
+			expect(screen.getByLabelText(/Tu nombre/i)).toBeInTheDocument();
+		});
+
+		it('public RSVP selecting "No podré" renders phone field', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+			await user.click(screen.getByLabelText(/No podré/i));
+			expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
 		});
 
 		const demoProps = {
@@ -140,35 +247,65 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
+		});
+
+		it('"Sí, asistiré" shows attendee count with value 1', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} guestCap={10} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+
+			const guestInput = screen.getByLabelText(/Número de asistentes/i) as HTMLInputElement;
+			expect(guestInput.value).toBe('1');
 		});
 
 		it('should mark the decline option as checked when selected', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			await user.click(screen.getByLabelText(/No podré asistir/i));
+			await user.click(screen.getByLabelText(/No podré/i));
 
-			expect(screen.getByLabelText(/No podré asistir/i)).toBeChecked();
+			expect(screen.getByLabelText(/No podré/i)).toBeChecked();
 			// Guest count should still be hidden
-			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
+			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 			// Notes should now be visible
-			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
+		});
+
+		it('"No podré" hides attendee count', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
+
+			await user.click(screen.getByLabelText(/No podré/i));
+			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
+		});
+
+		it('switching "No podré" to "Sí, asistiré" resets attendee count to 1', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} guestCap={10} />);
+
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+
+			const guestInput = screen.getByLabelText(/Número de asistentes/i) as HTMLInputElement;
+			expect(guestInput.value).toBe('1');
 		});
 
 		it('should show notes textarea when "Yes" or "No" is selected', async () => {
 			const user = userEvent.setup();
 			const { rerender } = render(<RSVP {...defaultProps} />);
 
-			// Test Yes
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
 
-			// Reset and test No
 			rerender(<RSVP {...defaultProps} />);
-			await user.click(screen.getByLabelText(/No podré asistir/i));
-			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
+			await user.click(screen.getByLabelText(/No podré/i));
+			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
 		});
 
 		it('should show error when confirm button is clicked without selection', async () => {
@@ -195,26 +332,44 @@ describe('RSVP Component', () => {
 		});
 	});
 
+	describe('Canonical Copy', () => {
+		it('all variants use "No podré" for decline option', () => {
+			render(<RSVP {...defaultProps} variant="editorial" />);
+			expect(screen.getByLabelText(/No podré/i)).toBeInTheDocument();
+		});
+
+		it('all variants use "Confirmar asistencia" for submit button', () => {
+			const { rerender } = render(<RSVP {...defaultProps} variant="editorial" />);
+			expect(
+				screen.getByRole('button', { name: /Confirmar asistencia/i }),
+			).toBeInTheDocument();
+
+			rerender(<RSVP {...defaultProps} variant="premiere-floral" />);
+			expect(
+				screen.getByRole('button', { name: /Confirmar asistencia/i }),
+			).toBeInTheDocument();
+
+			rerender(<RSVP {...defaultProps} variant="celestial-blue" />);
+			expect(
+				screen.getByRole('button', { name: /Confirmar asistencia/i }),
+			).toBeInTheDocument();
+		});
+	});
+
 	describe('Guest Cap Validation', () => {
 		it('should show error when guest count exceeds cap', async () => {
 			const user = userEvent.setup();
 			const { container } = render(<RSVP {...defaultProps} />);
 
-			// Select "Yes"
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 
-			// Fill name
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
-
-			// Set guest count above cap
-			const guestInput = screen.getByLabelText(/Número total de asistentes/i);
+			const guestInput = screen.getByLabelText(/Número de asistentes/i);
 			fireEvent.change(guestInput, { target: { value: '5' } });
 
-			// Submit
 			const form = container.querySelector('form');
 			fireEvent.submit(form!);
 
-			// Should show error
 			await waitFor(() => {
 				expect(screen.getByText(/El límite de invitados/i)).toBeInTheDocument();
 			});
@@ -225,15 +380,14 @@ describe('RSVP Component', () => {
 			render(<RSVP {...defaultProps} />);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 
-			const guestInput = screen.getByLabelText(/Número total de asistentes/i);
+			const guestInput = screen.getByLabelText(/Número de asistentes/i);
 			await user.clear(guestInput);
 			await user.type(guestInput, '2');
 
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			// Should not show error, should show confirmation (which means no error was triggered)
 			await waitFor(() => {
 				expect(screen.queryByText(/El límite de invitados/i)).not.toBeInTheDocument();
 			});
@@ -244,16 +398,16 @@ describe('RSVP Component', () => {
 		it('should switch the submit button to loading before the request resolves', async () => {
 			const user = userEvent.setup();
 			let resolveFetch: ((value: unknown) => void) | undefined;
-			global.fetch = jest.fn(
+			(global.fetch as jest.Mock).mockImplementation(
 				() =>
 					new Promise((resolve) => {
 						resolveFetch = resolve;
 					}),
-			) as jest.Mock;
+			);
 
 			const { container } = render(<RSVP {...defaultProps} />);
 
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
@@ -276,7 +430,7 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
@@ -291,8 +445,8 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
-			await user.click(screen.getByLabelText(/No podré asistir/i));
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
+			await user.click(screen.getByLabelText(/No podré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
@@ -309,7 +463,7 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			const { container } = render(<RSVP {...defaultProps} />);
 
-			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
@@ -333,8 +487,232 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
+		});
+	});
+
+	describe('Submit Payload', () => {
+		function findRsvpSubmitCall(urlPattern: RegExp) {
+			return (global.fetch as jest.Mock).mock.calls.find(
+				([url, init]) => typeof url === 'string' && urlPattern.test(url) && init?.body,
+			);
+		}
+
+		it('personalized RSVP payload excludes name, phone, and countryCode', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body).not.toHaveProperty('fullName');
+				expect(body).not.toHaveProperty('phone');
+				expect(body).not.toHaveProperty('countryCode');
+				expect(body).toHaveProperty('attendanceStatus');
+				expect(body).toHaveProperty('attendeeCount');
+				expect(body).toHaveProperty('guestComment');
+			});
+		});
+
+		it('declined RSVP sends attendeeCount as 0', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body.attendanceStatus).toBe('declined');
+				expect(body.attendeeCount).toBe(0);
+			});
+		});
+
+		it('public RSVP initial submit without attendance does not show name-required error', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText(/Por favor, selecciona si asistirás/i)).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/escribe tu nombre completo/i)).not.toBeInTheDocument();
+		});
+
+		it('public RSVP after selecting attendance requires name', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText(/escribe tu nombre completo/i)).toBeInTheDocument();
+			});
+		});
+
+		it('public RSVP after selecting attendance allows empty phone', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/public\//);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body).toHaveProperty('fullName', 'María Solís');
+				expect(body).not.toHaveProperty('phone');
+				expect(body).not.toHaveProperty('countryCode');
+			});
+		});
+
+		it('public RSVP validates invalid phone only when provided', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.type(screen.getByLabelText(/Teléfono de contacto/i), '123');
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText(/Escribe un teléfono de 10 dígitos/i)).toBeInTheDocument();
+			});
+		});
+
+		it('provided public phone includes phone and countryCode in payload', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.type(screen.getByLabelText(/Teléfono de contacto/i), '6680000000');
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/public\//);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body).toHaveProperty('phone', '6680000000');
+				expect(body).toHaveProperty('countryCode', '+52');
+			});
+		});
+
+		it('whitespace-only notes send guestComment as empty string', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			const notesInput = screen.getByLabelText(/Mensaje para el festejado/i);
+			await user.type(notesInput, '   ');
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body).toHaveProperty('guestComment', '');
+			});
+		});
+
+		it('personalized RSVP does not render name field', () => {
+			render(
+				<RSVP
+					{...defaultProps}
+					initialGuestData={{ inviteId: 'mock-invite-id', fullName: 'María Solís' }}
+				/>,
+			);
+			expect(screen.queryByLabelText(/Tu nombre/i)).not.toBeInTheDocument();
+		});
+
+		it('personalized RSVP does not render phone field', () => {
+			render(
+				<RSVP
+					{...defaultProps}
+					initialGuestData={{ inviteId: 'mock-invite-id', fullName: 'María Solís' }}
+				/>,
+			);
+			expect(screen.queryByLabelText(/Teléfono de contacto/i)).not.toBeInTheDocument();
+		});
+
+		it('personalized RSVP with nameLocked still submits with correct attendeeCount', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					{...defaultProps}
+					initialGuestData={{ inviteId: 'mock-invite-id', fullName: 'María Solís' }}
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				expect(fetchCall).toBeDefined();
+				const body = JSON.parse(fetchCall[1].body);
+				expect(body.attendanceStatus).toBe('confirmed');
+				expect(body.attendeeCount).toBe(1);
+			});
 		});
 	});
 
@@ -347,7 +725,7 @@ describe('RSVP Component', () => {
 			await user.click(button);
 
 			await waitFor(() => {
-				expect(screen.getByLabelText(/Nombre completo/i)).toHaveFocus();
+				expect(screen.getByLabelText(/Tu nombre/i)).toHaveFocus();
 			});
 		});
 
@@ -355,14 +733,13 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			const nameInput = screen.getByLabelText(/Nombre completo/i);
+			const nameInput = screen.getByLabelText(/Tu nombre/i);
 			await user.type(nameInput, 'Test User');
 
 			const button = screen.getByRole('button', { name: /Confirmar/i });
 			await user.click(button);
 
 			await waitFor(() => {
-				// The first radio button (Yes) should have focus
 				expect(screen.getByLabelText(/Sí, asistiré/i)).toHaveFocus();
 			});
 		});
