@@ -36,6 +36,20 @@ export interface ValidationContext {
 
 // RSVP form helpers.
 
+const DEFAULT_SUBCOPY: Record<string, string> = {
+	xv: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n especial.',
+	boda: 'Tu confirmaci\u00f3n nos ayuda a preparar cada detalle para compartir este d\u00eda contigo.',
+	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n familiar.',
+	cumple: 'Tu confirmaci\u00f3n nos ayuda a preparar cada detalle de esta velada tan especial.',
+};
+
+export function getDefaultRsvpSubcopy(eventType: string): string {
+	return (
+		DEFAULT_SUBCOPY[eventType] ??
+		'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n especial.'
+	);
+}
+
 export function resolveLabels(
 	labels?: {
 		name?: string;

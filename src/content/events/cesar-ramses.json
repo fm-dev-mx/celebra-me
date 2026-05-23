@@ -157,6 +157,7 @@
         "author": "Proverbios 22:6"
     },
     "rsvp": {
+        "subcopy": "Tu confirmación nos ayuda a preparar cada detalle para compartir este día de bendición.",
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",

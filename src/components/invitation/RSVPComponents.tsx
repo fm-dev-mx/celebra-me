@@ -14,6 +14,7 @@ export {
 	buildWhatsAppUrl,
 	resolveLabels,
 	normalizeGuestCount,
+	getDefaultRsvpSubcopy,
 } from '@/components/invitation/rsvp-logic';
 export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
@@ -144,6 +145,7 @@ export function SubmittedState(props: {
 
 export function RsvpFormView(props: {
 	title: string;
+	subcopy: string;
 	variant?: string;
 	eyebrow?: string;
 	prefersReducedMotion: boolean;
@@ -185,6 +187,7 @@ export function RsvpFormView(props: {
 }) {
 	const {
 		title,
+		subcopy,
 		variant,
 		eyebrow = 'RSVP PRIVADO',
 		prefersReducedMotion,
@@ -288,9 +291,7 @@ export function RsvpFormView(props: {
 					◆
 				</span>
 				<h2 className="rsvp__title">{title}</h2>
-				<p className="rsvp__subcopy">
-					Tu respuesta nos ayuda a preparar cada detalle de esta noche especial.
-				</p>
+				<p className="rsvp__subcopy">{subcopy}</p>
 			</div>
 			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
 				{showIdentityFields && (

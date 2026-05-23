@@ -6,6 +6,7 @@ import {
 	resolveLabels,
 	buildWhatsAppUrl,
 	normalizeGuestCount,
+	getDefaultRsvpSubcopy,
 	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
@@ -15,6 +16,7 @@ import {
 interface RSVPProps {
 	eventType: EventRecord['eventType'];
 	eventSlug: string;
+	subcopy?: string;
 	title: string;
 	celebrantName?: string;
 	guestCap: number;
@@ -41,6 +43,7 @@ interface RSVPProps {
 const RSVP: React.FC<RSVPProps> = ({
 	eventType,
 	eventSlug,
+	subcopy,
 	title,
 	celebrantName,
 	guestCap,
@@ -100,6 +103,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		? attendanceStatus !== null && !nameLocked
 		: !nameLocked;
 	const labelsResolved = resolveLabels(labels, celebrantName, variant);
+	const resolvedSubcopy = subcopy ?? getDefaultRsvpSubcopy(eventType);
 	const showWhatsAppCta =
 		submitted &&
 		attendanceStatus === 'confirmed' &&
@@ -150,6 +154,7 @@ const RSVP: React.FC<RSVPProps> = ({
 				>
 					<RsvpFormView
 						title={title}
+						subcopy={resolvedSubcopy}
 						variant={variant}
 						prefersReducedMotion={!!prefersReducedMotion}
 						nameLocked={nameLocked}
