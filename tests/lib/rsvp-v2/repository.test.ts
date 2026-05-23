@@ -13,6 +13,7 @@ import {
 	softDeleteGuestById,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
+import type { AttendanceStatus, DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import type { GuestFilters } from '@/lib/rsvp/repositories/shared/rows';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
@@ -23,6 +24,30 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 const supabaseRestRequestMock = supabaseRestRequest as jest.MockedFunction<
 	typeof supabaseRestRequest
 >;
+
+function makeGuestRow(overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+	return {
+		id: 'guest-1',
+		invite_id: 'invite-1',
+		event_id: 'evt-1',
+		full_name: 'Guest One',
+		phone: '6680000000',
+		max_allowed_attendees: 2,
+		attendance_status: 'pending',
+		attendee_count: 0,
+		guest_comment: '',
+		delivery_status: 'generated',
+		first_viewed_at: null,
+		last_viewed_at: null,
+		view_percentage: 0,
+		is_viewed: false,
+		responded_at: null,
+		last_response_source: 'link',
+		created_at: '2026-01-01T00:00:00.000Z',
+		updated_at: '2026-01-01T00:00:00.000Z',
+		...overrides,
+	};
+}
 
 describe('rsvp repository', () => {
 	afterEach(() => {
@@ -69,28 +94,7 @@ describe('rsvp repository', () => {
 	});
 
 	it('creates and updates guests through expected repository contracts', async () => {
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
-				id: 'guest-1',
-				invite_id: 'invite-1',
-				event_id: 'evt-1',
-				full_name: 'Guest One',
-				phone: '6680000000',
-				max_allowed_attendees: 2,
-				attendance_status: 'pending',
-				attendee_count: 0,
-				guest_comment: '',
-				delivery_status: 'generated',
-				first_viewed_at: null,
-				last_viewed_at: null,
-				view_percentage: 0,
-				is_viewed: false,
-				responded_at: null,
-				last_response_source: 'link',
-				created_at: '2026-01-01T00:00:00.000Z',
-				updated_at: '2026-01-01T00:00:00.000Z',
-			},
-		] as Record<string, unknown>[]);
+		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
 		const created = await createGuestInvitation(
 			{
 				eventId: 'evt-1',
@@ -103,27 +107,13 @@ describe('rsvp repository', () => {
 		expect(created.id).toBe('guest-1');
 
 		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
-				id: 'guest-1',
-				invite_id: 'invite-1',
-				event_id: 'evt-1',
-				full_name: 'Guest One',
-				phone: '6680000000',
-				max_allowed_attendees: 2,
+			makeGuestRow({
 				attendance_status: 'confirmed',
 				attendee_count: 2,
 				guest_comment: 'ok',
 				delivery_status: 'shared',
-				first_viewed_at: null,
-				last_viewed_at: null,
-				view_percentage: 0,
-				is_viewed: false,
-				responded_at: null,
-				last_response_source: 'link',
-				created_at: '2026-01-01T00:00:00.000Z',
-				updated_at: '2026-01-01T00:00:00.000Z',
-			},
-		] as Record<string, unknown>[]);
+			}),
+		]);
 		const updated = await updateGuestByInviteIdPublic('invite-1', {
 			attendance_status: 'confirmed',
 		});
@@ -132,28 +122,7 @@ describe('rsvp repository', () => {
 	});
 
 	it('finds guest by ids and appends public audit', async () => {
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
-				id: 'guest-1',
-				invite_id: 'invite-1',
-				event_id: 'evt-1',
-				full_name: 'Guest One',
-				phone: '6680000000',
-				max_allowed_attendees: 2,
-				attendance_status: 'pending',
-				attendee_count: 0,
-				guest_comment: '',
-				delivery_status: 'generated',
-				first_viewed_at: null,
-				last_viewed_at: null,
-				view_percentage: 0,
-				is_viewed: false,
-				responded_at: null,
-				last_response_source: 'link',
-				created_at: '2026-01-01T00:00:00.000Z',
-				updated_at: '2026-01-01T00:00:00.000Z',
-			},
-		] as Record<string, unknown>[]);
+		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
 		const byInvite = await findGuestByInviteIdPublic('invite-1');
 		expect(byInvite?.id).toBe('guest-1');
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
@@ -188,28 +157,7 @@ describe('rsvp repository', () => {
 			'deleted_at=is.null',
 		);
 
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
-				id: 'guest-1',
-				invite_id: 'invite-1',
-				event_id: 'evt-1',
-				full_name: 'Guest One',
-				phone: '6680000000',
-				max_allowed_attendees: 2,
-				attendance_status: 'pending',
-				attendee_count: 0,
-				guest_comment: '',
-				delivery_status: 'generated',
-				first_viewed_at: null,
-				last_viewed_at: null,
-				view_percentage: 0,
-				is_viewed: false,
-				responded_at: null,
-				last_response_source: 'link',
-				created_at: '2026-01-01T00:00:00.000Z',
-				updated_at: '2026-01-01T00:00:00.000Z',
-			},
-		] as Record<string, unknown>[]);
+		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
 		await softDeleteGuestById('guest-1', 'token');
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
 			expect.objectContaining({
@@ -225,10 +173,14 @@ describe('rsvp repository', () => {
 	});
 
 	describe('findGuestsByEvent search', () => {
-		function getQuery(search: string, status?: string, delivery?: string): string {
+		function getQuery(
+			search?: string,
+			status?: AttendanceStatus | 'all' | 'viewed',
+			delivery?: DeliveryFilter,
+		): string {
 			supabaseRestRequestMock.mockResolvedValue([]);
 			findGuestsByEvent(
-				{ eventId: 'evt-1', search, status, delivery } as unknown as GuestFilters,
+				{ eventId: 'evt-1', search, status, delivery } as GuestFilters,
 				'token',
 			);
 			return supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery ?? '';
@@ -280,6 +232,11 @@ describe('rsvp repository', () => {
 
 		it('does not add or() when search is empty', () => {
 			const query = getQuery('');
+			expect(query).not.toContain('or=');
+		});
+
+		it('does not add or() when search is whitespace only', () => {
+			const query = getQuery('   ');
 			expect(query).not.toContain('or=');
 		});
 

@@ -105,6 +105,39 @@ describe('rsvp repository branches', () => {
 		);
 	});
 
+	it('updateGuestById omits phone when input has no phone', async () => {
+		supabaseRestRequestMock.mockResolvedValueOnce([
+			{
+				id: 'g1',
+				invite_id: 'i1',
+				event_id: 'e1',
+				full_name: 'Updated Name',
+				phone: '6680000000',
+				country_code: null,
+				max_allowed_attendees: 2,
+				attendance_status: 'confirmed',
+				attendee_count: 2,
+				guest_comment: '',
+				delivery_status: 'shared',
+				first_viewed_at: null,
+				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
+				responded_at: null,
+				last_response_source: 'admin',
+				entry_source: 'dashboard',
+				created_at: new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+				tags: [],
+			},
+		] as never);
+		await updateGuestById({ guestId: 'g1', fullName: 'Updated Name' }, 'token');
+		const body = supabaseRestRequestMock.mock.calls[0]?.[0]?.body as Record<string, unknown>;
+		expect(body).not.toHaveProperty('phone');
+		expect(body).not.toHaveProperty('country_code');
+		expect(body).toHaveProperty('full_name', 'Updated Name');
+	});
+
 	it('returns null for service lookups when no rows', async () => {
 		supabaseRestRequestMock.mockResolvedValue([] as never);
 		expect(await findEventByIdService('evt')).toBeNull();
