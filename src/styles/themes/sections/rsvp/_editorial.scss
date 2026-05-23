@@ -1,27 +1,88 @@
-@use '../../../tokens' as tokens;
-@use '../../../global/mixins' as mixins;
+// ============================================================================
+// Editorial RSVP — Premium Cinematographic Variant
+// All changes scoped to .rsvp[data-variant='editorial']
+// ============================================================================
 
 .rsvp[data-variant='editorial'] {
+	// ------------------------------------------------------------------
+	// Custom properties
+	// ------------------------------------------------------------------
 	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
-	--rsvp-placeholder-color: rgb(var(--color-text-on-dark-rgb) / 65%);
+	--rsvp-placeholder-color: rgb(var(--color-text-on-dark-rgb) / 35%);
+	--rsvp-editorial-gold-glow: radial-gradient(
+		ellipse at 50% 20%,
+		rgb(var(--color-action-accent-rgb) / 7%) 0%,
+		transparent 60%
+	);
 
-	background: var(--rsvp-bg, var(--color-surface-dark));
+	// ------------------------------------------------------------------
+	// Card — deeper warm dark background with subtle radial gradient,
+	// refined gold border, subtle inner border, premium shadow
+	// ------------------------------------------------------------------
+	background:
+		var(--rsvp-editorial-gold-glow),
+		linear-gradient(180deg, rgb(14 12 10) 0%, var(--color-surface-dark) 100%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 32%);
+	box-shadow:
+		0 24px 60px -12px rgb(0 0 0 / 50%),
+		0 0 0 1px rgb(var(--color-action-accent-rgb) / 8%) inset,
+		0 0 40px rgb(var(--color-action-accent-rgb) / 6%);
+	padding: 3rem 2rem;
 	color: var(--color-text-on-dark);
-	padding-block: var(--section-padding-block);
 	position: relative;
 	overflow: hidden;
-	background-color: var(--color-glass-bg);
-	border: 1px solid var(--color-glass-border);
 	backdrop-filter: blur(var(--glass-blur, 12px));
-	box-shadow: var(--shadow-premium);
+
+	// ------------------------------------------------------------------
+	// Header — eyebrow, separator, title, subcopy
+	// ------------------------------------------------------------------
+	.rsvp__header {
+		text-align: center;
+		margin-bottom: 2.5rem;
+		position: relative;
+	}
+
+	.rsvp__eyebrow {
+		font-family: var(--section-subtitle-font);
+		font-size: var(--section-subtitle-size, 0.7rem);
+		font-weight: 500;
+		letter-spacing: 0.35em;
+		color: rgb(var(--color-action-accent-rgb) / 80%);
+		text-transform: uppercase;
+		margin-bottom: 0.65rem;
+	}
+
+	.rsvp__separator {
+		display: block;
+		font-size: 0.5rem;
+		color: rgb(var(--color-action-accent-rgb) / 50%);
+		line-height: 1;
+		margin-bottom: 1rem;
+		letter-spacing: 0;
+	}
 
 	.rsvp__title {
 		font-family: var(--section-title-font);
-		color: var(--color-action-accent);
-		font-size: var(--section-title-size);
-		margin-bottom: 2.5rem;
+		color: var(--color-text-primary);
+		font-size: var(--section-title-size, 1.6rem);
+		font-weight: 400;
+		letter-spacing: 0.02em;
+		margin: var(--rsvp-title-margin, 0 0 0.9rem);
+		line-height: 1.2;
 	}
 
+	.rsvp__subcopy {
+		font-family: var(--font-body);
+		font-size: 0.88rem;
+		line-height: 1.6;
+		color: rgb(var(--color-text-primary-rgb) / 60%);
+		max-width: 30rem;
+		margin: 0 auto;
+	}
+
+	// ------------------------------------------------------------------
+	// Labels, legends, locked eyebrows
+	// ------------------------------------------------------------------
 	label,
 	legend,
 	.rsvp__locked-eyebrow {
@@ -32,39 +93,90 @@
 		color: var(--color-action-accent);
 	}
 
+	// ------------------------------------------------------------------
+	// Text inputs, number inputs, textarea — polished note field
+	// ------------------------------------------------------------------
 	input[type='text'],
 	input[type='number'],
 	textarea {
-		background: var(--rsvp-field-bg);
-		border: 1px solid var(--rsvp-field-border);
-		color: var(--color-text-primary, var(--color-surface-elevated));
+		background: rgb(var(--color-surface-dark-rgb) / 70%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+		color: var(--color-text-primary);
 		font-family: var(--font-body);
+		padding: 0.85rem 0.9rem;
+		border-radius: 2px;
+		transition:
+			background-color var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-premium),
+			box-shadow var(--duration-standard) var(--ease-premium);
 
 		&:focus {
-			background: var(--rsvp-field-bg-focus);
-			border-color: var(--color-action-accent);
-			box-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 10%);
+			outline: none;
+			background: rgb(var(--color-surface-dark-rgb) / 90%);
+			border-color: rgb(var(--color-action-accent-rgb) / 50%);
+			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 18%);
+		}
+
+		&::placeholder {
+			color: var(--rsvp-placeholder-color);
 		}
 	}
 
+	textarea {
+		min-height: 5rem;
+		resize: vertical;
+	}
+
+	// ------------------------------------------------------------------
+	// Radio group — premium decision cards
+	// ------------------------------------------------------------------
 	.rsvp__radio-group {
 		color: var(--color-text-primary);
+		display: grid;
+		grid-template-columns: var(--rsvp-radio-columns);
+		gap: 1.2rem;
+		margin: 1.5rem 0;
 
 		.rsvp__radio-card {
-			background: var(--rsvp-radio-bg);
-			border: 1px solid var(--rsvp-radio-border);
+			background: rgb(var(--color-surface-dark-rgb) / 60%);
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+			border-radius: 2px;
+			padding: 1.4rem 1.2rem;
+			min-height: 4.8rem;
+			display: flex;
+			align-items: center;
+			justify-content: var(--rsvp-radio-card-justify);
+			gap: 1rem;
+			cursor: pointer;
+			position: relative;
+			transition:
+				background-color var(--duration-standard) var(--ease-premium),
+				border-color var(--duration-standard) var(--ease-premium),
+				box-shadow var(--duration-standard) var(--ease-premium),
+				transform var(--duration-standard) var(--ease-premium);
 			color: rgb(var(--color-text-primary-rgb) / 70%);
 
 			&:hover {
-				background: var(--rsvp-radio-bg-hover);
-				border-color: var(--color-action-accent);
+				background: rgb(var(--color-surface-dark-rgb) / 80%);
+				border-color: rgb(var(--color-action-accent-rgb) / 35%);
+			}
+
+			&:focus-within {
+				outline: none;
+				box-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 16%);
+			}
+
+			&:has(input:disabled) {
+				opacity: 45%;
+				cursor: not-allowed;
+				pointer-events: none;
 			}
 
 			/* stylelint-disable max-nesting-depth */
 			&:has(input:checked) {
-				background: var(--rsvp-radio-selected-bg);
-				border-color: var(--rsvp-radio-selected-border);
-				box-shadow: var(--rsvp-radio-selected-shadow);
+				background: rgb(var(--color-action-accent-rgb) / 12%);
+				border-color: rgb(var(--color-action-accent-rgb) / 60%);
+				box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 18%) inset;
 				color: var(--color-text-primary);
 
 				.rsvp__radio-indicator {
@@ -79,7 +191,7 @@
 
 				.rsvp__radio-label {
 					color: var(--color-action-accent);
-					font-weight: 600;
+					font-weight: 500;
 				}
 			}
 			/* stylelint-enable max-nesting-depth */
@@ -87,20 +199,21 @@
 
 		.rsvp__radio-indicator {
 			flex-shrink: 0;
-			width: 1.15rem;
-			height: 1.15rem;
-			border: 1.5px solid var(--rsvp-radio-border);
+			width: 1.3rem;
+			height: 1.3rem;
+			border: 1.5px solid rgb(var(--color-action-accent-rgb) / 30%);
 			border-radius: 50%;
 			position: relative;
-			transition:
-				border-color,
-				background-color var(--duration-standard) var(--ease-premium);
 			background: transparent;
+			transition:
+				border-color var(--duration-standard) var(--ease-premium),
+				background-color var(--duration-standard) var(--ease-premium),
+				box-shadow var(--duration-standard) var(--ease-premium);
 
 			&::after {
 				content: '';
 				position: absolute;
-				inset: 3px;
+				inset: 3.5px;
 				background: var(--color-action-accent);
 				border-radius: 50%;
 				transform: scale(0);
@@ -110,12 +223,20 @@
 
 		.rsvp__radio-label {
 			font-family: var(--font-body);
-			font-size: 0.9rem;
-			letter-spacing: 0.02em;
+			font-size: 0.95rem;
+			letter-spacing: 0.04em;
 			text-transform: none;
+			font-weight: 400;
+			color: inherit;
+			transition:
+				color var(--duration-standard) var(--ease-premium),
+				font-weight var(--duration-standard) var(--ease-premium);
 		}
 	}
 
+	// ------------------------------------------------------------------
+	// Submit button — editorial sliding accent
+	// ------------------------------------------------------------------
 	.rsvp__button {
 		color: var(--rsvp-button-color);
 		border: 1px solid var(--section-card-border-alt);
@@ -148,8 +269,42 @@
 				transform: translateX(0);
 			}
 		}
+
+		&--loading {
+			cursor: wait;
+			opacity: 85%;
+			pointer-events: none;
+			transform: scale(0.98);
+			background: rgb(var(--color-action-accent-rgb) / 10%);
+		}
+
+		&--success {
+			background: var(--color-action-accent);
+			border-color: var(--color-action-accent);
+			color: var(--color-surface-dark);
+			pointer-events: none;
+		}
+
+		&--error {
+			border-color: var(--rsvp-error-field);
+		}
 	}
 
+	// ------------------------------------------------------------------
+	// Demo footer — discreet
+	// ------------------------------------------------------------------
+	.rsvp__demo-footer {
+		margin-top: 1.25rem;
+		text-align: center;
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		letter-spacing: 0.12em;
+		color: rgb(var(--color-text-on-dark-rgb) / 45%);
+	}
+
+	// ------------------------------------------------------------------
+	// Locked preview card
+	// ------------------------------------------------------------------
 	&.rsvp--locked-preview {
 		max-width: 760px;
 
@@ -160,9 +315,13 @@
 			gap: 0.9rem;
 			padding: 2.5rem;
 			border-radius: 4px;
-			background: var(--color-glass-bg);
-			border: 1px solid var(--color-glass-border);
-			box-shadow: var(--shadow-premium);
+			background:
+				var(--rsvp-editorial-gold-glow),
+				linear-gradient(180deg, rgb(14 12 10) 0%, var(--color-surface-dark) 100%);
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 32%);
+			box-shadow:
+				0 24px 60px -12px rgb(0 0 0 / 50%),
+				0 0 0 1px rgb(var(--color-action-accent-rgb) / 8%) inset;
 			text-align: center;
 			backdrop-filter: blur(var(--glass-blur, 12px));
 			overflow: hidden;
@@ -201,7 +360,31 @@
 		}
 	}
 
-	.rsvp__demo-footer {
-		color: rgb(var(--color-text-on-dark-rgb) / 65%);
+	// ------------------------------------------------------------------
+	// Responsive — mobile
+	// ------------------------------------------------------------------
+	@media (width <= 480px) {
+		padding: 2rem 1.25rem;
+
+		.rsvp__header {
+			margin-bottom: 2rem;
+		}
+
+		.rsvp__title {
+			font-size: calc(var(--section-title-size, 1.6rem) * 0.85);
+		}
+
+		.rsvp__radio-group {
+			.rsvp__radio-card {
+				padding: 1.1rem 1rem;
+				min-height: 4rem;
+			}
+		}
+
+		input[type='text'],
+		input[type='number'],
+		textarea {
+			padding: 0.75rem 0.8rem;
+		}
 	}
 }
