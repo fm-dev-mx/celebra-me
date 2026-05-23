@@ -705,4 +705,49 @@ describe('normalizeImportPhone', () => {
 			countryCode: undefined,
 		});
 	});
+
+	// --- P0: International phone normalization ---
+
+	it.each([
+		{ phone: '+15551234567', countryCode: '', desc: 'auto-detect' },
+		{ phone: '+15551234567', countryCode: '+1', desc: 'matching countryCode' },
+		{ phone: '5551234567', countryCode: '+1', desc: 'local phone' },
+	])('accepts $desc (+1 US/Canada)', ({ phone, countryCode }) => {
+		expect(normalizeImportPhone(phone, countryCode)).toMatchObject({
+			ok: true,
+			phone: '5551234567',
+			countryCode: '+1',
+		});
+	});
+
+	it.each([
+		{ phone: '+34612345678', countryCode: '+34', expected: { ok: false, field: 'phone' } },
+		{ phone: '+34612345678', countryCode: '+52', expected: { ok: false } },
+	])(
+		'$expected.ok === false for +34 phone with countryCode $countryCode',
+		({ phone, countryCode, expected }) => {
+			expect(normalizeImportPhone(phone, countryCode)).toMatchObject(expected);
+		},
+	);
+
+	it.each([
+		{ phone: '+52 669 123 4567', desc: 'spaces' },
+		{ phone: '+52 (669) 123-4567', desc: 'parentheses and hyphens' },
+	])('accepts +52 MX number with $desc', ({ phone }) => {
+		expect(normalizeImportPhone(phone, '+52')).toMatchObject({
+			ok: true,
+			phone: '6691234567',
+			countryCode: '+52',
+		});
+	});
+
+	it.each([
+		{ phone: '6123456789', desc: 'local phone' },
+		{ phone: '+447123456789', desc: 'international phone' },
+	])('rejects $desc with unsupported countryCode +44', ({ phone }) => {
+		expect(normalizeImportPhone(phone, '+44')).toMatchObject({
+			ok: false,
+			field: 'phoneCountryCode',
+		});
+	});
 });
