@@ -286,6 +286,15 @@ describe('rsvp service branches', () => {
 				attendeeCount: 0,
 			}),
 		).rejects.toMatchObject({ status: 400 });
+		await expect(
+			submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 10,
+			}),
+		).rejects.toMatchObject({
+			status: 400,
+			message: 'The limit for this invitation is 2.',
+		});
 	});
 
 	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
