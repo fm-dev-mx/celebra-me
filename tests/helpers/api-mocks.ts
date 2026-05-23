@@ -11,7 +11,7 @@ export function createMockRequest(
 	payload?: unknown,
 	headers?: Record<string, string>,
 	url = 'http://localhost/api/test',
-): Pick<Request, 'json' | 'text' | 'headers' | 'url'> {
+): Request {
 	const defaultHeaders: Record<string, string> = {};
 
 	// Only add Content-Type if not explicitly overridden or removed
@@ -52,5 +52,5 @@ export function createMockRequest(
 				return key ? (defaultHeaders[key] ?? null) : null;
 			},
 		} as Headers,
-	};
+	} as unknown as Request;
 }

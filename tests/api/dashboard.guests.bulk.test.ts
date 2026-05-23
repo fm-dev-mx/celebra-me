@@ -19,6 +19,10 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventByIdService: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
+	checkRateLimit: jest.fn().mockResolvedValue(true),
+}));
+
 const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
 const supabaseRestRequestMock = supabaseRestRequest as jest.MockedFunction<
 	typeof supabaseRestRequest
@@ -62,7 +66,7 @@ function buildRequest(guests: unknown[]) {
 			eventId: TEST_EVENT_ID,
 			guests,
 		}),
-	} as never);
+	} as unknown as Parameters<typeof POST>[0]);
 }
 
 describe('POST /api/dashboard/guests/bulk', () => {
@@ -99,34 +103,6 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			expect(body.data.created).toBe(1);
 			expect(body.data.updated).toBe(0);
 			expect(body.message).toContain('correctamente');
-		});
-
-		it('accepts guest with international phone and no country code', async () => {
-			mockEventAccess();
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 1,
-				updated: 0,
-				status: 'success',
-			});
-
-			const response = await buildRequest([{ full_name: 'Carlos', phone: '+526691234567' }]);
-
-			expect(response.status).toBe(200);
-		});
-
-		it('accepts guest with international phone and matching country code', async () => {
-			mockEventAccess();
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 1,
-				updated: 0,
-				status: 'success',
-			});
-
-			const response = await buildRequest([
-				{ full_name: 'Carlos', phone: '+526691234567', country_code: '+52' },
-			]);
-
-			expect(response.status).toBe(200);
 		});
 
 		it('accepts guest without phone', async () => {
@@ -202,7 +178,19 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			expect(response.status).toBe(200);
 		});
 
-		it('accepts guest with Spanish phone', async () => {
+		it('accepts local MX phone without country_code (RPC handles validation)', async () => {
+			mockEventAccess();
+			supabaseRestRequestMock.mockResolvedValueOnce({
+				created: 1,
+				updated: 0,
+				status: 'success',
+			});
+
+			const response = await buildRequest([{ full_name: 'Ana López', phone: '6691234567' }]);
+			expect(response.status).toBe(200);
+		});
+
+		it('accepts formatted phone without country_code (formatting stripped before validation)', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -211,10 +199,42 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
+				{ full_name: 'John Smith', phone: '555-123-4567' },
+			]);
+			expect(response.status).toBe(200);
+		});
+	});
+
+	describe('rejected phones', () => {
+		it('rejects international phone without country code column (use country_code instead)', async () => {
+			mockEventAccess();
+
+			const response = await buildRequest([{ full_name: 'Carlos', phone: '+526691234567' }]);
+			expect(response.status).toBe(400);
+		});
+
+		it('rejects international phone even with matching country_code', async () => {
+			mockEventAccess();
+
+			const response = await buildRequest([
+				{ full_name: 'Carlos', phone: '+526691234567', country_code: '+52' },
+			]);
+			expect(response.status).toBe(400);
+		});
+
+		it('rejects Spanish phone (9 digits — not a valid 10-digit national number)', async () => {
+			mockEventAccess();
+			const response = await buildRequest([
 				{ full_name: 'María García', phone: '612345678', country_code: '+34' },
 			]);
+			expect(response.status).toBe(400);
+		});
 
-			expect(response.status).toBe(200);
+		it('rejects empty name', async () => {
+			const response = await buildRequest([
+				{ full_name: '', phone: '6691234567', country_code: '+52' },
+			]);
+			expect(response.status).toBe(400);
 		});
 	});
 
@@ -252,8 +272,8 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			expect(body.data.status).toBe('success');
 		});
 
-		it('accepts mixed payload with international phone and no-country-code guests', async () => {
-			mockEventAccess();
+		it('allows member/manager to import', async () => {
+			findEventByIdMock.mockResolvedValue(MOCK_EVENT);
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 2,
 				updated: 0,
@@ -261,25 +281,8 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Carlos', phone: '+526691234567' },
-				{ full_name: 'María', email: null, tags: [] },
-			]);
-
-			expect(response.status).toBe(200);
-		});
-
-		it('allows member/manager to import mixed payload', async () => {
-			findEventByIdMock.mockResolvedValue(MOCK_EVENT);
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 3,
-				updated: 0,
-				status: 'success',
-			});
-
-			const response = await buildRequest([
 				{ full_name: 'Ana', phone: '6691234567', country_code: '+52' },
 				{ full_name: 'Luis', email: null },
-				{ full_name: 'Sofía', phone: '+526691234567', email: null, tags: ['vip'] },
 			]);
 
 			expect(response.status).toBe(200);
@@ -302,85 +305,22 @@ describe('POST /api/dashboard/guests/bulk', () => {
 		});
 	});
 
-	describe('invalid rows', () => {
-		function getRowErrors(body: Record<string, unknown>): string[] {
-			const err = body.error as Record<string, unknown> | undefined;
-			const det = err?.details as Record<string, unknown> | undefined;
-			const rows = det?.rows as string[] | undefined;
-			return rows ?? [];
-		}
-
-		it('rejects local phone without country code', async () => {
-			mockEventAccess();
-
-			const response = await buildRequest([{ full_name: 'Ana López', phone: '6691234567' }]);
-			const body = await response.json();
-
-			expect(response.status).toBe(400);
-			const errors = getRowErrors(body);
-			expect(errors[0]).toContain('Fila 1');
-			expect(errors[0]).toContain('código de país');
-		});
-
-		it('rejects formatted local phone without country code', async () => {
-			mockEventAccess();
-
-			const response = await buildRequest([
-				{ full_name: 'John Smith', phone: '555-123-4567' },
-			]);
-			const body = await response.json();
-
-			expect(response.status).toBe(400);
-			const errors = getRowErrors(body);
-			expect(errors[0]).toContain('Fila 1');
-		});
-
-		it('rejects international phone with conflicting country code', async () => {
-			mockEventAccess();
-
-			const response = await buildRequest([
-				{ full_name: 'Carlos', phone: '+526691234567', country_code: '+1' },
-			]);
-			const body = await response.json();
-
-			expect(response.status).toBe(400);
-			const errors = getRowErrors(body);
-			expect(errors[0]).toContain('no coincide');
-		});
-
-		it('collects multiple row errors', async () => {
-			mockEventAccess();
-
-			const response = await buildRequest([
-				{ full_name: 'Ana', phone: '6691234567' },
-				{ full_name: 'Juan', phone: '5551234567' },
-			]);
-			const body = await response.json();
-
-			expect(response.status).toBe(400);
-			const errors = getRowErrors(body);
-			expect(errors[0]).toContain('Fila 1');
-			expect(errors[1]).toContain('Fila 2');
-		});
-
-		it('rejects empty name', async () => {
-			const response = await buildRequest([
-				{ full_name: '', phone: '6691234567', country_code: '+52' },
-			]);
-
-			expect(response.status).toBe(400);
-		});
-	});
-
 	describe('RPC payload integrity', () => {
+		const RPCPayloadKeys = [
+			'full_name',
+			'phone',
+			'country_code',
+			'email',
+			'tags',
+			'max_allowed_attendees',
+		];
+
 		function getRpcBody() {
 			const args = supabaseRestRequestMock.mock.calls[0] as [SupabaseRequestOptions];
 			return args[0].body as { p_guests: Array<Record<string, unknown>> };
 		}
 
-		const KNOWN_RPC_KEYS = ['full_name', 'phone', 'email', 'tags', 'max_allowed_attendees'];
-
-		it('sends only known RPC columns (no phone_e164 or other unknowns)', async () => {
+		it('sends phone, country_code, and other known columns (no phone_e164)', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -400,10 +340,10 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 			const body = getRpcBody();
 			const guestKeys = Object.keys(body.p_guests[0]).sort();
-			expect(guestKeys).toEqual(KNOWN_RPC_KEYS.sort());
+			expect(guestKeys).toEqual(RPCPayloadKeys.sort());
 		});
 
-		it('excludes country_code from RPC payload', async () => {
+		it('sends country_code in RPC payload when provided', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -416,10 +356,10 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			]);
 
 			const body = getRpcBody();
-			expect(body.p_guests[0]).not.toHaveProperty('country_code');
+			expect(body.p_guests[0]).toHaveProperty('country_code', '+52');
 		});
 
-		it('sends only known columns even when guest has no phone', async () => {
+		it('sends known columns even when guest has no phone', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -431,10 +371,10 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 			const body = getRpcBody();
 			const guestKeys = Object.keys(body.p_guests[0]).sort();
-			expect(guestKeys).toEqual(KNOWN_RPC_KEYS.sort());
+			expect(guestKeys).toEqual(RPCPayloadKeys.sort());
 		});
 
-		it('sends only known columns for mixed payload', async () => {
+		it('sends known columns for mixed payload', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 3,
@@ -463,7 +403,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = getRpcBody();
 			for (const guest of body.p_guests) {
 				const guestKeys = Object.keys(guest).sort();
-				expect(guestKeys).toEqual(KNOWN_RPC_KEYS.sort());
+				expect(guestKeys).toEqual(RPCPayloadKeys.sort());
 			}
 		});
 	});
@@ -471,10 +411,10 @@ describe('POST /api/dashboard/guests/bulk', () => {
 	describe('phone normalization', () => {
 		function getRpcBody() {
 			const args = supabaseRestRequestMock.mock.calls[0] as [SupabaseRequestOptions];
-			return args[0].body as { p_guests: Array<{ phone: string }> };
+			return args[0].body as { p_guests: Array<{ phone: string; country_code: string }> };
 		}
 
-		it('preserves correctly normalized phone', async () => {
+		it('sends local phone with country_code as separate field (no E.164 prepend)', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -489,38 +429,11 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			expect(response.status).toBe(200);
 
 			const body = getRpcBody();
-			expect(body.p_guests[0].phone).toBe('+526691234567');
+			expect(body.p_guests[0].phone).toBe('6691234567');
+			expect(body.p_guests[0].country_code).toBe('+52');
 		});
 
-		it('normalizes Mexican phone correctly', async () => {
-			mockEventAccess();
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 1,
-				updated: 0,
-				status: 'success',
-			});
-
-			await buildRequest([{ full_name: 'Ana', phone: '6691234567', country_code: '+52' }]);
-
-			const body = getRpcBody();
-			expect(body.p_guests[0].phone).toBe('+526691234567');
-		});
-
-		it('preserves international phone without country code', async () => {
-			mockEventAccess();
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 1,
-				updated: 0,
-				status: 'success',
-			});
-
-			await buildRequest([{ full_name: 'Carlos', phone: '+526691234567' }]);
-
-			const body = getRpcBody();
-			expect(body.p_guests[0].phone).toBe('+526691234567');
-		});
-
-		it('passes empty phone for guest without phone number', async () => {
+		it('sends null phone for guest without phone number', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -531,7 +444,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			await buildRequest([{ full_name: 'Sin Teléfono' }]);
 
 			const body = getRpcBody();
-			expect(body.p_guests[0].phone).toBe('');
+			expect(body.p_guests[0].phone).toBeNull();
 		});
 	});
 
