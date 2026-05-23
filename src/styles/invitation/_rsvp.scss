@@ -97,6 +97,39 @@
 		text-align: center;
 	}
 
+	&__header {
+		text-align: center;
+		margin-bottom: 2.2rem;
+	}
+
+	&__eyebrow {
+		font-family: var(--font-label);
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-action-accent);
+		margin-bottom: 0.5rem;
+	}
+
+	&__separator {
+		display: block;
+		font-size: 0.5rem;
+		line-height: 1;
+		margin-bottom: 0.85rem;
+		color: var(--color-action-accent);
+		opacity: 45%;
+	}
+
+	&__subcopy {
+		font-family: var(--font-body);
+		font-size: 0.88rem;
+		line-height: 1.6;
+		color: var(--color-text-secondary);
+		max-width: 30rem;
+		margin-inline: auto;
+	}
+
 	&__form {
 		display: flex;
 		flex-direction: column;

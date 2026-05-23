@@ -1,7 +1,7 @@
 // tests/components/RSVP.test.tsx
 // Component tests for the RSVP form
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RSVP from '@/components/invitation/RSVP';
 
@@ -205,7 +205,7 @@ describe('RSVP Component', () => {
 		const demoProps = {
 			eventType: 'xv' as const,
 			eventSlug: 'demo-xv-editorial',
-			title: 'Confirma Tu Asistencia',
+			title: 'Confirma tu asistencia',
 			guestCap: 4,
 			accessMode: 'personalized-only' as const,
 			confirmationMessage: 'Gracias por confirmar.',
@@ -221,7 +221,7 @@ describe('RSVP Component', () => {
 				).not.toBeInTheDocument();
 			});
 			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
-			expect(screen.getByText('Vista de muestra.')).toBeInTheDocument();
+			expect(screen.getByText(/Demo interactiva/)).toBeInTheDocument();
 		});
 
 		it('shows success state in demo preview mode after form submission', async () => {
@@ -231,12 +231,9 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			await waitFor(
-				() => {
-					expect(screen.getByText(/Gracias por acompañarnos/i)).toBeInTheDocument();
-				},
-				{ timeout: 3000 },
-			);
+			await waitFor(() => {
+				expect(screen.getByText(/Gracias por acompañarnos/i)).toBeInTheDocument();
+			});
 		});
 	});
 
@@ -359,16 +356,16 @@ describe('RSVP Component', () => {
 	describe('Guest Cap Validation', () => {
 		it('should show error when guest count exceeds cap', async () => {
 			const user = userEvent.setup();
-			const { container } = render(<RSVP {...defaultProps} />);
+			render(<RSVP {...defaultProps} />);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 
 			const guestInput = screen.getByLabelText(/Número de asistentes/i);
-			fireEvent.change(guestInput, { target: { value: '5' } });
+			await user.clear(guestInput);
+			await user.type(guestInput, '5');
 
-			const form = container.querySelector('form');
-			fireEvent.submit(form!);
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
 				expect(screen.getByText(/El límite de invitados/i)).toBeInTheDocument();
@@ -447,7 +444,7 @@ describe('RSVP Component', () => {
 
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/No podré/i));
-			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
 
 			await waitFor(() => {
 				expect(
@@ -492,6 +489,9 @@ describe('RSVP Component', () => {
 		});
 	});
 
+	const PERSONALIZED_RSVP_URL = /\/api\/invitacion\/.*\/rsvp$/;
+	const PUBLIC_RSVP_URL = /\/api\/invitacion\/public\//;
+
 	describe('Submit Payload', () => {
 		function findRsvpSubmitCall(urlPattern: RegExp) {
 			return (global.fetch as jest.Mock).mock.calls.find(
@@ -508,7 +508,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				const fetchCall = findRsvpSubmitCall(PERSONALIZED_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body).not.toHaveProperty('fullName');
@@ -526,10 +526,10 @@ describe('RSVP Component', () => {
 
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
 			await user.click(screen.getByLabelText(/No podré/i));
-			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				const fetchCall = findRsvpSubmitCall(PERSONALIZED_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body.attendanceStatus).toBe('declined');
@@ -597,7 +597,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/public\//);
+				const fetchCall = findRsvpSubmitCall(PUBLIC_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body).toHaveProperty('fullName', 'María Solís');
@@ -648,7 +648,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/public\//);
+				const fetchCall = findRsvpSubmitCall(PUBLIC_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body).toHaveProperty('phone', '6680000000');
@@ -667,7 +667,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				const fetchCall = findRsvpSubmitCall(PERSONALIZED_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body).toHaveProperty('guestComment', '');
@@ -707,7 +707,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const fetchCall = findRsvpSubmitCall(/\/api\/invitacion\/.*\/rsvp$/);
+				const fetchCall = findRsvpSubmitCall(PERSONALIZED_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body.attendanceStatus).toBe('confirmed');

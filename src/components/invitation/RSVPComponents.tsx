@@ -22,13 +22,16 @@ export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/r
 export function SubmitButtonText({
 	submitStatus,
 	buttonLabel,
+	attendanceStatus,
 }: {
 	submitStatus: 'idle' | 'loading' | 'success' | 'error';
 	buttonLabel: string;
+	attendanceStatus?: 'confirmed' | 'declined' | null;
 }) {
 	if (submitStatus === 'loading') return 'Enviando...';
 	if (submitStatus === 'success') return '\u00a1Confirmado!';
 	if (submitStatus === 'error') return 'Confirmar asistencia';
+	if (attendanceStatus === 'declined') return 'ENVIAR RESPUESTA';
 	return buttonLabel;
 }
 
@@ -142,6 +145,7 @@ export function SubmittedState(props: {
 export function RsvpFormView(props: {
 	title: string;
 	variant?: string;
+	eyebrow?: string;
 	prefersReducedMotion: boolean;
 	nameLocked: boolean;
 	nameLabel: string;
@@ -182,34 +186,125 @@ export function RsvpFormView(props: {
 	const {
 		title,
 		variant,
+		eyebrow = 'RSVP PRIVADO',
 		prefersReducedMotion,
 		buttonLabel,
 		isSubmitting,
 		submitStatus,
 		isDemoPreview,
 		showIdentityFields,
+		touched,
+		errors,
+		nameLocked,
+		nameLabel,
+		name,
+		nameRef,
+		phoneLabel,
+		phone,
+		countryCode,
+		showPhoneField,
+		phoneRef,
+		attendanceLabel,
+		attendanceStatus,
+		attendanceRef,
+		guestCountLabel,
+		guestCountRef,
+		effectiveGuestCap,
+		supportsPlusOnes,
+		attendeeCount,
+		notes,
+		notesLabel,
+		notesPlaceholder,
+		onSubmit,
+		onNameChange,
+		onPhoneChange,
+		onCountryCodeChange,
+		onAttendanceChange,
+		onGuestCountChange,
+		onNotesChange,
+		onBlur,
 	} = props;
+
+	const nameFieldProps = {
+		nameLocked,
+		touched,
+		errors,
+		nameLabel,
+		name,
+		nameRef,
+		prefersReducedMotion,
+		onNameChange,
+		onBlur,
+	};
+
+	const phoneFieldProps = {
+		showPhoneField,
+		touched,
+		errors,
+		phoneLabel,
+		phone,
+		countryCode,
+		phoneRef,
+		prefersReducedMotion,
+		onPhoneChange,
+		onCountryCodeChange,
+		onBlur,
+	};
+
+	const attendanceFieldProps = {
+		touched,
+		errors,
+		attendanceLabel,
+		attendanceStatus,
+		attendanceRef,
+		prefersReducedMotion,
+		onAttendanceChange,
+		onBlur,
+	};
+
+	const confirmedFieldsProps = {
+		attendanceStatus,
+		prefersReducedMotion,
+		supportsPlusOnes,
+		touched,
+		errors,
+		guestCountLabel,
+		effectiveGuestCap,
+		guestCountRef,
+		attendeeCount,
+		notes,
+		notesLabel,
+		notesPlaceholder,
+		onGuestCountChange,
+		onNotesChange,
+		onBlur,
+	};
 
 	return (
 		<section id="rsvp" className="rsvp" data-variant={variant}>
-			<h2 className="rsvp__title">{title}</h2>
-			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
+			<div className="rsvp__header">
+				<p className="rsvp__eyebrow">{eyebrow}</p>
+				<span className="rsvp__separator" aria-hidden="true">
+					◆
+				</span>
+				<h2 className="rsvp__title">{title}</h2>
+				<p className="rsvp__subcopy">
+					Tu respuesta nos ayuda a preparar cada detalle de esta noche especial.
+				</p>
+			</div>
+			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
 				{showIdentityFields && (
 					<div className="rsvp__grid">
-						<NameField {...props} />
-						<PhoneField
-							{...props}
-							countryCode={props.countryCode}
-							onCountryCodeChange={props.onCountryCodeChange}
-						/>
+						<NameField {...nameFieldProps} />
+						<PhoneField {...phoneFieldProps} />
 					</div>
 				)}
-				<AttendanceField {...props} />
-				<ConfirmedFields {...props} />
+				<AttendanceField {...attendanceFieldProps} />
+				<ConfirmedFields {...confirmedFieldsProps} />
 				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">
-					{props.errors.global && (
+					{errors.global && (
 						<p className="rsvp__error" role="alert">
-							{props.errors.global}
+							{errors.global}
 						</p>
 					)}
 				</div>
@@ -223,11 +318,19 @@ export function RsvpFormView(props: {
 					transition={prefersReducedMotion ? undefined : { delay: 0.2 }}
 				>
 					<span className="rsvp__button-text">
-						<SubmitButtonText submitStatus={submitStatus} buttonLabel={buttonLabel} />
+						<SubmitButtonText
+							submitStatus={submitStatus}
+							buttonLabel={buttonLabel}
+							attendanceStatus={attendanceStatus}
+						/>
 					</span>
 				</motion.button>
 			</form>
-			{isDemoPreview && <p className="rsvp__demo-footer">Vista de muestra.</p>}
+			{isDemoPreview && (
+				<p className="rsvp__demo-footer">
+					Demo interactiva. No se enviará ninguna respuesta
+				</p>
+			)}
 		</section>
 	);
 }
