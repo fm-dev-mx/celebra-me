@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRightIcon, PlusIcon, SearchIcon } from '@/components/common/icons/ui';
+import { ArrowRightIcon, PlusIcon } from '@/components/common/icons/ui';
 
 interface GuestMobileDockProps {
 	loading: boolean;
 	hasPendingGenerated: boolean;
-	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	createDisabled?: boolean;
 	onCreate: () => void;
 	onOpenNextAction: () => void;
-	onStatusChange: (status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
 }
 
 const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 	loading,
 	hasPendingGenerated,
-	status,
 	createDisabled = false,
 	onCreate,
 	onOpenNextAction,
-	onStatusChange,
 }) => {
 	const [isMounted, setIsMounted] = useState(false);
 
@@ -27,7 +23,7 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 		setIsMounted(true);
 	}, []);
 
-	if (!isMounted || typeof document === 'undefined') return null;
+	if (!isMounted) return null;
 
 	return createPortal(
 		<div className="dashboard-guests__mobile-dock">
@@ -62,24 +58,6 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 					{hasPendingGenerated ? 'Enviar pendientes' : 'Sin pendientes'}
 				</span>
 			</button>
-
-			<div className="dock-item dock-item--filter">
-				<span className="dock-icon" aria-hidden="true">
-					<SearchIcon size={18} />
-				</span>
-				<select
-					aria-label="Filtrar invitados por estado"
-					value={status}
-					onChange={(event) => onStatusChange(event.target.value as typeof status)}
-				>
-					<option value="all">Todos</option>
-					<option value="pending">En espera</option>
-					<option value="confirmed">Confirmados</option>
-					<option value="declined">No asistirán</option>
-					<option value="viewed">Vistos</option>
-				</select>
-				<span className="dock-label">Filtrar</span>
-			</div>
 		</div>,
 		document.body,
 	);

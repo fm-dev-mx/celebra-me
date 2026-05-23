@@ -208,11 +208,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestMobileDock
 					loading={loading}
 					hasPendingGenerated={items.some((item) => item.deliveryStatus === 'generated')}
-					status={status}
 					createDisabled={!eventId}
 					onCreate={openCreateModal}
 					onOpenNextAction={openNextGeneratedGuest}
-					onStatusChange={setStatus}
 				/>
 			</section>
 		</ErrorBoundary>
