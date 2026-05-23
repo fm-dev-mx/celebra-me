@@ -188,7 +188,7 @@ describe('rsvp repository', () => {
 
 		it('searches by name', () => {
 			const query = getQuery('Hannah');
-			expect(query).toContain('full_name.ilike.*Hannah*');
+			expect(query).toContain('full_name=ilike.*Hannah*');
 			expect(query).not.toContain('or=');
 		});
 
@@ -218,15 +218,27 @@ describe('rsvp repository', () => {
 
 		it('composes search with attendance_status filter', () => {
 			const query = getQuery('Ana', 'confirmed');
-			expect(query).toContain('full_name.ilike.*Ana*');
+			expect(query).toContain('full_name=ilike.*Ana*');
 			expect(query).not.toContain('or=');
 			expect(query).toContain('attendance_status=eq.confirmed');
 		});
 
 		it('composes search with delivery_status filter', () => {
 			const query = getQuery('Ana', undefined, 'generated');
-			expect(query).toContain('full_name.ilike.*Ana*');
+			expect(query).toContain('full_name=ilike.*Ana*');
 			expect(query).not.toContain('or=');
+			expect(query).toContain('delivery_status=eq.generated');
+		});
+
+		it('name-only search does not include phone filter', () => {
+			const query = getQuery('Hannah');
+			expect(query).toContain('full_name=ilike.*Hannah*');
+			expect(query).not.toContain('phone.ilike');
+		});
+
+		it('delivery filter composes with digit search', () => {
+			const query = getQuery('6681', undefined, 'generated');
+			expect(query).toContain('or=(full_name.ilike.*6681*,phone.ilike.*6681*)');
 			expect(query).toContain('delivery_status=eq.generated');
 		});
 

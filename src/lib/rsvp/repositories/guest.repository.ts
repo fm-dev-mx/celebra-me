@@ -108,12 +108,16 @@ export async function findGuestsByEvent(
 		const raw = filters.search.trim();
 		if (raw) {
 			const digitsOnly = raw.replace(/\D/g, '');
-			const conditions = [`full_name.ilike.*${encodeURIComponent(raw)}*`];
+			const orConditions = [`full_name.ilike.*${encodeURIComponent(raw)}*`];
 			if (digitsOnly) {
 				const phoneTerm = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
-				conditions.push(`phone.ilike.*${encodeURIComponent(phoneTerm)}*`);
+				orConditions.push(`phone.ilike.*${encodeURIComponent(phoneTerm)}*`);
 			}
-			queryParts.push(conditions.length > 1 ? `or=(${conditions.join(',')})` : conditions[0]);
+			queryParts.push(
+				orConditions.length > 1
+					? `or=(${orConditions.join(',')})`
+					: orConditions[0].replace('.ilike.', '=ilike.'),
+			);
 		}
 	}
 	if (filters.delivery && filters.delivery !== 'all') {
