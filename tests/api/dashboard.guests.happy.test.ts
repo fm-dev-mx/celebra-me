@@ -120,11 +120,154 @@ describe('dashboard guests happy path', () => {
 				eventId: 'evt-1',
 				fullName: 'Guest',
 				phone: '6680000000',
+				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
 		} as never);
 		expect(response.status).toBe(201);
+	});
+
+	it('creates a guest without phone and strips countryCode', async () => {
+		createDashboardGuestMock.mockResolvedValue({
+			source: 'mutation',
+			updatedAt: new Date().toISOString(),
+			item: {
+				guestId: 'guest-1',
+				inviteId: 'invite-1',
+				fullName: 'Guest',
+				phone: '',
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+				eventType: 'xv',
+				eventSlug: 'demo',
+				tags: [],
+			},
+		});
+
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				fullName: 'Guest',
+				countryCode: '+52',
+				maxAllowedAttendees: 2,
+			}),
+			url: new URL('http://localhost/api/dashboard/guests'),
+		} as never);
+
+		expect(response.status).toBe(201);
+		expect(createDashboardGuestMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				phone: null,
+				countryCode: undefined,
+			}),
+		);
+	});
+
+	it('rejects creating a guest with phone but no countryCode', async () => {
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				fullName: 'Guest',
+				phone: '6680000000',
+				maxAllowedAttendees: 2,
+			}),
+			url: new URL('http://localhost/api/dashboard/guests'),
+		} as never);
+
+		expect(response.status).toBe(400);
+		expect(createDashboardGuestMock).not.toHaveBeenCalled();
+	});
+
+	it('preserves explicit phone clear on update', async () => {
+		updateDashboardGuestMock.mockResolvedValue({
+			source: 'mutation',
+			updatedAt: new Date().toISOString(),
+			item: {
+				guestId: 'guest-1',
+				inviteId: 'invite-1',
+				fullName: 'Guest',
+				phone: '',
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+				tags: [],
+			},
+		});
+
+		const response = await PATCH({
+			params: { guestId: 'guest-1' },
+			request: createMockRequest({ phone: null, countryCode: '+52' }),
+			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(updateDashboardGuestMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				phone: null,
+				countryCode: undefined,
+			}),
+		);
+	});
+
+	it('does not include phone when update does not touch phone', async () => {
+		updateDashboardGuestMock.mockResolvedValue({
+			source: 'mutation',
+			updatedAt: new Date().toISOString(),
+			item: {
+				guestId: 'guest-1',
+				inviteId: 'invite-1',
+				fullName: 'Guest',
+				phone: '6680000000',
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+				tags: [],
+			},
+		});
+
+		const response = await PATCH({
+			params: { guestId: 'guest-1' },
+			request: createMockRequest({ fullName: 'Updated Guest' }),
+			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(updateDashboardGuestMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				fullName: 'Updated Guest',
+				phone: undefined,
+				countryCode: undefined,
+			}),
+		);
 	});
 
 	it('updates, marks shared and deletes a guest', async () => {

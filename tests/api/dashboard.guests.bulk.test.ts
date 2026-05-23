@@ -176,19 +176,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			expect(response.status).toBe(200);
 		});
 
-		it('accepts local MX phone without country_code (RPC handles validation)', async () => {
-			mockEventAccess();
-			supabaseRestRequestMock.mockResolvedValueOnce({
-				created: 1,
-				updated: 0,
-				status: 'success',
-			});
-
-			const response = await buildRequest([{ full_name: 'Ana López', phone: '6691234567' }]);
-			expect(response.status).toBe(200);
-		});
-
-		it('accepts formatted phone without country_code (formatting stripped before validation)', async () => {
+		it('strips country_code when guest has no phone', async () => {
 			mockEventAccess();
 			supabaseRestRequestMock.mockResolvedValueOnce({
 				created: 1,
@@ -197,9 +185,13 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'John Smith', phone: '555-123-4567' },
+				{ full_name: 'Invitado Sin Teléfono', country_code: '+52' },
 			]);
 			expect(response.status).toBe(200);
+			const args = supabaseRestRequestMock.mock.calls[0] as [SupabaseRequestOptions];
+			const rpcBody = args[0].body as { p_guests: Array<Record<string, unknown>> };
+			expect(rpcBody.p_guests[0].phone).toBeNull();
+			expect(rpcBody.p_guests[0].country_code).toBeNull();
 		});
 	});
 
@@ -209,6 +201,26 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 			const response = await buildRequest([{ full_name: 'Carlos', phone: '+526691234567' }]);
 			expect(response.status).toBe(400);
+		});
+
+		it('rejects local phone without country_code', async () => {
+			mockEventAccess();
+
+			const response = await buildRequest([{ full_name: 'Ana López', phone: '6691234567' }]);
+
+			expect(response.status).toBe(400);
+			expect(supabaseRestRequestMock).not.toHaveBeenCalled();
+		});
+
+		it('rejects formatted phone without country_code', async () => {
+			mockEventAccess();
+
+			const response = await buildRequest([
+				{ full_name: 'John Smith', phone: '555-123-4567' },
+			]);
+
+			expect(response.status).toBe(400);
+			expect(supabaseRestRequestMock).not.toHaveBeenCalled();
 		});
 
 		it('rejects international phone even with matching country_code', async () => {

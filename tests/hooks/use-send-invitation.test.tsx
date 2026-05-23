@@ -59,7 +59,7 @@ describe('useSendInvitation', () => {
 		expect(result.current.editMaxAttendees).toBe(4);
 		expect(result.current.shareStatus).toBe('idle');
 		expect(result.current.pendingCount).toBe(1);
-		expect(result.current.hasValidPhone).toBe(true);
+		expect(result.current.canSendToPhone).toBe(true);
 	});
 
 	it('uses defaults when guest has no phone', () => {
@@ -68,7 +68,7 @@ describe('useSendInvitation', () => {
 
 		expect(result.current.editPhone).toBe('');
 		expect(result.current.editCountryCode).toBe('+52');
-		expect(result.current.hasValidPhone).toBe(false);
+		expect(result.current.canSendToPhone).toBe(false);
 	});
 
 	it('defaults to +52 country code when guest has no countryCode', () => {

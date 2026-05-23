@@ -152,9 +152,12 @@ describe('rsvp repository', () => {
 
 	it('filters soft-deleted guests in phone lookups and soft deletes via patch', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([]);
-		await findGuestByPhoneAuth('evt-1', '6680000000', 'token');
+		await findGuestByPhoneAuth('evt-1', '+52', '6680000000', 'token');
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'country_code=eq.%2B52',
 		);
 
 		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
@@ -176,8 +179,8 @@ describe('rsvp repository', () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([]);
 		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow({ event_id: 'evt-2' })]);
 
-		const notHere = await findGuestByPhoneAuth('evt-1', '6680000000', 'token');
-		const inOtherEvent = await findGuestByPhoneAuth('evt-2', '6680000000', 'token');
+		const notHere = await findGuestByPhoneAuth('evt-1', '+52', '6680000000', 'token');
+		const inOtherEvent = await findGuestByPhoneAuth('evt-2', '+52', '6680000000', 'token');
 
 		expect(notHere).toBeNull();
 		expect(inOtherEvent).toMatchObject({ id: 'guest-1' });
@@ -188,6 +191,17 @@ describe('rsvp repository', () => {
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
 			'event_id=eq.evt-2',
 		);
+	});
+
+	it('findGuestByPhoneAuth scopes by country code as well as event', async () => {
+		supabaseRestRequestMock.mockResolvedValueOnce([]);
+
+		await findGuestByPhoneAuth('evt-1', '+1', '6680000000', 'token');
+
+		const query = supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery ?? '';
+		expect(query).toContain('event_id=eq.evt-1');
+		expect(query).toContain('country_code=eq.%2B1');
+		expect(query).toContain('phone=eq.6680000000');
 	});
 
 	describe('findGuestsByEvent search', () => {

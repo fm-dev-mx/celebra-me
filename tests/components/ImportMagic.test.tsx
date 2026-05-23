@@ -785,23 +785,22 @@ describe('action-aware duplicate review', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		// CSV row: same name, local phone, no country code → error + exact phone match
+		// CSV row: same name, local phone, no country code -> error + name match
 		importCsv('full_name,phone,country_code\ntist,6563769461,');
 
-		// Row is hidden by default (exact_duplicate)
+		// Row is hidden by default (possible_duplicate)
 		expect(screen.queryByDisplayValue('tist')).toBeNull();
-		expect(screen.queryByText('Duplicado exacto')).toBeNull();
+		expect(screen.queryByText('Posible duplicado')).toBeNull();
 
 		// Reveal via checkbox
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
 		expect(screen.getByDisplayValue('tist')).toBeInTheDocument();
 		// The row shows the duplicate status, not "Con errores"
-		expect(screen.getByText('Duplicado exacto')).toBeInTheDocument();
+		expect(screen.getByText('Posible duplicado')).toBeInTheDocument();
 		// Error message is still shown on the row
 		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
-		// Action defaults to skip
+		// Action defaults to skip, and the validation error still blocks import.
 		expect(screen.getByRole('combobox')).toHaveValue('skip');
-		// Import button is disabled (row is skip, no actionable rows)
 		expect(getImportButton()).toBeDisabled();
 	});
 

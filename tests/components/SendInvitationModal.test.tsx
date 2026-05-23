@@ -424,7 +424,7 @@ describe('SendInvitationModal', () => {
 			desc: 'cleared phone field',
 			guestPhone: '6691234567',
 			clearPhone: true,
-			sendPhone: undefined,
+			sendPhone: null,
 			sendCountryCode: undefined,
 		},
 	])(

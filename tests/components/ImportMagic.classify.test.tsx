@@ -313,8 +313,7 @@ describe('classifyImportedRows', () => {
 			],
 			existing,
 		);
-		// Phone matches existing guest (both normalize to the same digits) → exact_duplicate
-		expect(result[0]._status).toBe('exact_duplicate');
+		expect(result[0]._status).toBe('possible_duplicate');
 		expect(result[0].action).toBe('skip');
 		expect(result[0].hiddenByDefault).toBe(true);
 		expect(result[0].error).toBeDefined(); // error preserved on the row
@@ -344,9 +343,8 @@ describe('classifyImportedRows', () => {
 			],
 			existing,
 		);
-		// Phone normalizes to same key as existing → exact_duplicate overrides user action
-		expect(result[0]._status).toBe('exact_duplicate');
-		expect(result[0].action).toBe('skip');
+		expect(result[0]._status).toBe('possible_duplicate');
+		expect(result[0].action).toBe('create');
 		expect(result[0].error).toBeDefined();
 	});
 
@@ -379,6 +377,43 @@ describe('classifyImportedRows', () => {
 		expect(result[0].action).toBe('skip');
 		expect(result[0].hiddenByDefault).toBe(false);
 		expect(result[0].requiresReview).toBe(true);
+		expect(result[0].matchedGuestId).toBe('ex-1');
+	});
+
+	it('same national phone with different country codes is not a phone conflict', () => {
+		const existing = [
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'US Guest',
+				phone: '5551234567',
+				countryCode: '+1',
+			}),
+		];
+		const result = classifyImportedRows(
+			[mkGuest({ fullName: 'MX Guest', phone: '5551234567', phoneCountryCode: '+52' })],
+			existing,
+		);
+
+		expect(result[0]._status).toBe('new');
+		expect(result[0].action).toBe('create');
+		expect(result[0].matchedGuestId).toBeUndefined();
+	});
+
+	it('same national phone and country code with different name remains phone conflict', () => {
+		const existing = [
+			makeDashboardGuestItem({
+				guestId: 'ex-1',
+				fullName: 'Existing Guest',
+				phone: '5551234567',
+				countryCode: '+52',
+			}),
+		];
+		const result = classifyImportedRows(
+			[mkGuest({ fullName: 'New Guest', phone: '5551234567', phoneCountryCode: '+52' })],
+			existing,
+		);
+
+		expect(result[0]._status).toBe('phone_conflict');
 		expect(result[0].matchedGuestId).toBe('ex-1');
 	});
 
@@ -440,8 +475,7 @@ describe('classifyImportedRows', () => {
 			[mkGuest({ fullName: 'Juan Perez', phone: '6681234567', phoneCountryCode: '' })],
 			existing,
 		);
-		// Phone matches (both are digits-only "6681234567") → exact_duplicate
-		expect(result[0]._status).toBe('exact_duplicate');
+		expect(result[0]._status).toBe('probable_duplicate');
 		expect(result[0].hiddenByDefault).toBe(true);
 		expect(result[0].action).toBe('skip');
 	});
@@ -496,8 +530,7 @@ describe('classifyImportedRows', () => {
 			actionTouched: true,
 		};
 		const result = classifyImportedRows([row], existing);
-		// Phone normalizes to same key → exact_duplicate, action overridden to skip
-		expect(result[0].action).toBe('skip');
+		expect(result[0].action).toBe('create');
 		expect(result[0].error).toBeDefined();
 		// handleImport uses: action === 'create' && !error → so this row is excluded
 		const wouldBeSubmitted = result.filter((g) => g.action === 'create' && !g.error);

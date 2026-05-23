@@ -76,6 +76,7 @@ describe('Invitation API: public landing RSVP', () => {
 				{
 					fullName: 'Mariana Soto',
 					phone: '668 000 0000',
+					countryCode: '+52',
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
 				},
@@ -123,7 +124,7 @@ describe('Invitation API: public landing RSVP', () => {
 		);
 	});
 
-	it('passes countryCode when phone is empty but countryCode is provided', async () => {
+	it('strips countryCode when phone is empty but countryCode is provided', async () => {
 		submitGuestRsvpByPublicEventMock.mockResolvedValue({
 			attendanceStatus: 'confirmed',
 			attendeeCount: 1,
@@ -149,7 +150,7 @@ describe('Invitation API: public landing RSVP', () => {
 
 		const callArg = submitGuestRsvpByPublicEventMock.mock.calls[0][0];
 		expect(callArg.phone).toBe('');
-		expect(callArg.countryCode).toBe('+34');
+		expect(callArg.countryCode).toBeUndefined();
 	});
 
 	it('does not pass countryCode when phone is empty', async () => {
@@ -198,11 +199,30 @@ describe('Invitation API: public landing RSVP', () => {
 			request: createMockRequest({
 				fullName: 'Mariana Soto',
 				phone: '6680000000',
+				countryCode: '+52',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 1,
 			}),
 		} as never);
 
 		expect(response.status).toBe(403);
+	});
+
+	it('rejects public phone submissions without countryCode', async () => {
+		const response = await publicRsvp({
+			params: { eventType: 'xv', slug: 'demo' },
+			request: createMockRequest(
+				{
+					fullName: 'Mariana Soto',
+					phone: '6680000000',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+				},
+				{ 'Content-Type': 'application/json', 'x-real-ip': '127.0.0.1' },
+			),
+		} as never);
+
+		expect(response.status).toBe(400);
+		expect(submitGuestRsvpByPublicEventMock).not.toHaveBeenCalled();
 	});
 });

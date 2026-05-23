@@ -98,6 +98,7 @@ describe('rsvp service branches', () => {
 		eventId: 'evt-1',
 		fullName: 'Guest',
 		phone: '6680000000',
+		countryCode: '+52',
 		maxAllowedAttendees: 2,
 		attendanceStatus: 'pending' as const,
 		attendeeCount: 0,
@@ -159,7 +160,8 @@ describe('rsvp service branches', () => {
 		const result = await createDashboardGuest({
 			eventId: 'evt-1',
 			fullName: 'Guest',
-			phone: '+526680000000',
+			phone: '6680000000',
+			countryCode: '+52',
 			maxAllowedAttendees: 100,
 			hostAccessToken: 'token',
 			origin: 'http://localhost',
@@ -195,7 +197,8 @@ describe('rsvp service branches', () => {
 		findGuestByPhoneAuthMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
-			phone: '+526680000001',
+			phone: '6680000001',
+			countryCode: '+52',
 		});
 		updateGuestByIdMock.mockRejectedValue(
 			new ApiError(500, 'internal_error', 'Should not reach update.'),
@@ -216,6 +219,38 @@ describe('rsvp service branches', () => {
 			code: 'conflict',
 		});
 		expect(updateGuestByIdMock).not.toHaveBeenCalled();
+		expect(findGuestByPhoneAuthMock).toHaveBeenCalledWith(
+			'evt-1',
+			'+52',
+			'6680000001',
+			'token',
+		);
+	});
+
+	it('updateDashboardGuest clears phone without duplicate lookup', async () => {
+		findGuestByIdMock.mockResolvedValue(baseGuest);
+		updateGuestByIdMock.mockResolvedValue({
+			...baseGuest,
+			phone: '',
+			countryCode: undefined,
+		});
+
+		await updateDashboardGuest({
+			guestId: 'guest-1',
+			hostAccessToken: 'token',
+			origin: 'http://localhost',
+			phone: null,
+		});
+
+		expect(findGuestByPhoneAuthMock).not.toHaveBeenCalled();
+		expect(updateGuestByIdMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				guestId: 'guest-1',
+				phone: null,
+				countryCode: undefined,
+			}),
+			'token',
+		);
 	});
 
 	it('markGuestShared returns not_found when guest does not exist', async () => {
@@ -300,6 +335,7 @@ describe('rsvp service branches', () => {
 			event: baseEvent,
 			fullName: 'Guest',
 			phone: '6680000000',
+			countryCode: '+52',
 			maxAllowedAttendees: 3,
 			payload: {
 				attendanceStatus: 'confirmed',
@@ -308,7 +344,7 @@ describe('rsvp service branches', () => {
 			},
 		});
 
-		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '6680000000');
+		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '+52', '6680000000');
 		expect(createGuestInvitationMock).not.toHaveBeenCalled();
 		expect(updateGuestByIdMock).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -350,6 +386,7 @@ describe('rsvp service branches', () => {
 			event: baseEvent,
 			fullName: 'Mariana Soto',
 			phone: '(668) 111-2233',
+			countryCode: '+52',
 			maxAllowedAttendees: 3,
 			payload: {
 				attendanceStatus: 'confirmed',
@@ -363,6 +400,7 @@ describe('rsvp service branches', () => {
 				eventId: 'evt-1',
 				fullName: 'Mariana Soto',
 				phone: '6681112233',
+				countryCode: '+52',
 				maxAllowedAttendees: 3,
 				entrySource: 'generic_public',
 			}),
