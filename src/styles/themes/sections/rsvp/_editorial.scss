@@ -3,6 +3,7 @@
 
 .rsvp[data-variant='editorial'] {
 	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
+	--rsvp-placeholder-color: rgb(var(--color-text-on-dark-rgb) / 65%);
 
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
@@ -198,5 +199,9 @@
 			max-width: 42rem;
 			margin-inline: auto;
 		}
+	}
+
+	.rsvp__demo-footer {
+		color: rgb(var(--color-text-on-dark-rgb) / 65%);
 	}
 }
