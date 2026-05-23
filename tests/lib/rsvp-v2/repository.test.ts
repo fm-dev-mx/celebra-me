@@ -9,6 +9,7 @@ import {
 	findGuestById,
 	findGuestByInviteIdPublic,
 	findGuestByPhoneAuth,
+	findGuestByPhonePublic,
 	findGuestsByEvent,
 	softDeleteGuestById,
 	updateGuestByInviteIdPublic,
@@ -304,5 +305,41 @@ describe('rsvp repository', () => {
 				'deleted_at=is.null',
 			);
 		});
+	});
+
+	describe('findGuestByPhonePublic', () => {
+		it('finds a guest when eventId, countryCode, and phone all match', async () => {
+			supabaseRestRequestMock.mockResolvedValue([makeGuestRow({ id: 'guest-1' })]);
+
+			const result = await findGuestByPhonePublic('evt-1', '+52', '6680000000');
+
+			expect(result).toMatchObject({ id: 'guest-1' });
+		});
+
+		it('returns null when countryCode differs even though eventId and phone match', async () => {
+			supabaseRestRequestMock.mockResolvedValueOnce([]);
+
+			const result = await findGuestByPhonePublic('evt-1', '+1', '6680000000');
+
+			expect(result).toBeNull();
+		});
+
+		it.each([
+			{ eventId: 'evt-2', countryCode: '+34', phone: '612345678' },
+			{ eventId: 'evt-1', countryCode: '+52', phone: '6680000000' },
+			{ eventId: 'evt-1', countryCode: '+1', phone: '5551234567' },
+		])(
+			'includes country_code=$countryCode filter in the query',
+			async ({ eventId, countryCode, phone }) => {
+				supabaseRestRequestMock.mockResolvedValueOnce([]);
+
+				await findGuestByPhonePublic(eventId, countryCode, phone);
+
+				const query = supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery ?? '';
+				expect(query).toContain(`event_id=eq.${eventId}`);
+				expect(query).toContain(`country_code=eq.${encodeURIComponent(countryCode)}`);
+				expect(query).toContain(`phone=eq.${phone}`);
+			},
+		);
 	});
 });
