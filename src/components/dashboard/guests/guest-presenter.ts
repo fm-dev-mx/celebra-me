@@ -45,12 +45,6 @@ export function getPrimaryStatusClass(item: DashboardGuestItem) {
 	return 'pending';
 }
 
-/** Returns true when the phone number contains at least 8 digits */
-export function validatePhone(phone: string): boolean {
-	const digits = phone.replace(/\D/g, '');
-	return digits.length >= 8;
-}
-
 /** Displayable contact: phone > email > "Sin contacto" */
 export function getContactDisplay(item: DashboardGuestItem): string {
 	if (item.phone?.trim()) return item.phone.trim();

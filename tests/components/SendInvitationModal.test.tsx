@@ -109,7 +109,7 @@ describe('SendInvitationModal', () => {
 		renderModal(guest);
 
 		if (changeTo) {
-			const phoneInput = screen.getByPlaceholderText('N\u00famero de tel\u00e9fono');
+			const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
 			fireEvent.change(phoneInput, { target: { value: changeTo } });
 		}
 
@@ -446,7 +446,7 @@ describe('SendInvitationModal', () => {
 			);
 
 			if (clearPhone) {
-				const phoneInput = screen.getByPlaceholderText('N\u00famero de tel\u00e9fono');
+				const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
 				fireEvent.change(phoneInput, { target: { value: '' } });
 			}
 

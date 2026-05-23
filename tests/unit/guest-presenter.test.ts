@@ -1,4 +1,5 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { hasValidPhone } from '@/lib/phone/validation';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
@@ -12,7 +13,6 @@ import {
 	getRsvpStateLabel,
 	getViewStateLabel,
 	getGuestInviteUrl,
-	validatePhone,
 } from '@/components/dashboard/guests/guest-presenter';
 
 function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
@@ -262,29 +262,33 @@ describe('getGuestVisibleTags', () => {
 	});
 });
 
-describe('validatePhone', () => {
+describe('hasValidPhone', () => {
 	it('returns false for empty phone', () => {
-		expect(validatePhone('')).toBe(false);
+		expect(hasValidPhone('')).toBe(false);
 	});
 
 	it('returns false for whitespace-only phone', () => {
-		expect(validatePhone('   ')).toBe(false);
+		expect(hasValidPhone('   ')).toBe(false);
 	});
 
 	it('returns false for too few digits', () => {
-		expect(validatePhone('12345')).toBe(false);
+		expect(hasValidPhone('12345')).toBe(false);
 	});
 
-	it('returns true for valid phone with 8 digits', () => {
-		expect(validatePhone('66912345')).toBe(true);
+	it('returns false for 8-digit phone (now requires 10)', () => {
+		expect(hasValidPhone('66912345')).toBe(false);
+	});
+
+	it('returns true for valid phone with 10 digits', () => {
+		expect(hasValidPhone('6691234567')).toBe(true);
 	});
 
 	it('returns true for valid phone with formatting', () => {
-		expect(validatePhone('669 123 4567')).toBe(true);
+		expect(hasValidPhone('669 123 4567')).toBe(true);
 	});
 
 	it('returns true for valid phone with country prefix', () => {
-		expect(validatePhone('+526691234567')).toBe(true);
+		expect(hasValidPhone('+526691234567')).toBe(true);
 	});
 });
 

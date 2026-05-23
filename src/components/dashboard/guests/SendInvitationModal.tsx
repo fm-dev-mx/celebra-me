@@ -1,11 +1,9 @@
 import React from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
+import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
 import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
-import {
-	ATTENDEE_OPTIONS,
-	COUNTRY_OPTIONS,
-} from '@/components/dashboard/guests/guest-form-constants';
+import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
 import { useSendInvitation } from '@/components/dashboard/guests/use-send-invitation';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -69,7 +67,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		markError,
 		advancing,
 		pendingCount,
-		hasValidPhone,
+		canSendToPhone,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,
@@ -132,37 +130,22 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 						</div>
 
 						<div className="dashboard-form-field">
-							<label htmlFor="send-phone">
-								Tel&eacute;fono (WhatsApp){' '}
-								<span className="field-optional">opcional</span>
-							</label>
-							<div className="phone-input-group">
-								<select
-									id="send-country"
-									className="phone-prefix"
-									value={editCountryCode}
-									onChange={(e) => setEditCountryCode(e.target.value)}
-								>
-									{COUNTRY_OPTIONS.map((opt) => (
-										<option key={opt.value} value={opt.value}>
-											{opt.label}
-										</option>
-									))}
-								</select>
-								<input
-									id="send-phone"
-									className="phone-number"
-									type="tel"
-									value={editPhone}
-									onChange={(e) => {
-										const val = e.target.value.replace(/[^\d+ ]/g, '');
-										setEditPhone(val);
-										if (phoneError) setPhoneError(null);
-									}}
-									placeholder="N&uacute;mero de tel&eacute;fono"
-								/>
-							</div>
-							{phoneError && <span className="guest-field-error">{phoneError}</span>}
+							<PhoneInputGroup
+								id="send"
+								countryCode={editCountryCode}
+								phone={editPhone}
+								onCountryCodeChange={(val) => {
+									setEditCountryCode(val);
+									if (phoneError) setPhoneError(null);
+								}}
+								onPhoneChange={(val) => {
+									setEditPhone(val);
+									if (phoneError) setPhoneError(null);
+								}}
+								error={phoneError}
+								label="Teléfono / WhatsApp"
+								showOptional
+							/>
 						</div>
 					</>
 				)}
@@ -226,12 +209,12 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 							</button>
 						)}
 						<button type="button" className="btn-primary" onClick={handleSaveAndShare}>
-							{hasValidPhone ? (
+							{canSendToPhone ? (
 								<WhatsAppIcon className="share-icon" size={16} />
 							) : (
 								<MessageIcon className="share-icon" size={16} />
 							)}
-							{hasValidPhone ? 'Enviar por WhatsApp' : 'Compartir invitaci\u00f3n'}
+							{canSendToPhone ? 'Enviar por WhatsApp' : 'Compartir invitaci\u00f3n'}
 						</button>
 					</>
 				)}

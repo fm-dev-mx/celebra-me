@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
-import {
-	ATTENDEE_OPTIONS,
-	COUNTRY_OPTIONS,
-} from '@/components/dashboard/guests/guest-form-constants';
+import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
+import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
+import { parsePhoneInput } from '@/lib/phone/validation';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -96,9 +95,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		}
 
 		if (phone.trim()) {
-			const digits = phone.replace(/[\s\-()]/g, '').replace(/[^\d+]/g, '');
-			if (!digits) {
-				errors.phone = 'El teléfono no es válido.';
+			const result = parsePhoneInput(phone.trim());
+			if (!result.ok) {
+				errors.phone = result.reason;
 			}
 		}
 
@@ -115,12 +114,13 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setFieldErrors({});
 		setLocalError('');
 		try {
-			const trimmedPhone = phone.trim() || undefined;
+			const sendPhone = phone.trim() || undefined;
+			const sendCountryCode = sendPhone ? countryCode : undefined;
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phone: trimmedPhone,
-					countryCode: trimmedPhone ? countryCode : undefined,
+					phone: sendPhone,
+					countryCode: sendCountryCode,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
@@ -206,45 +206,23 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									</span>
 								)}
 							</div>
-							<div className="dashboard-form-field">
-								<label htmlFor="countryCode">Código de país</label>
-								<select
-									id="countryCode"
-									value={countryCode}
-									onChange={(e) => setCountryCode(e.target.value)}
-								>
-									{COUNTRY_OPTIONS.map((opt) => (
-										<option key={opt.value} value={opt.value}>
-											{opt.label}
-										</option>
-									))}
-								</select>
-							</div>
-							<div className="dashboard-form-field">
-								<label htmlFor="phone">Teléfono (WhatsApp)</label>
-								<input
-									id="phone"
-									ref={phoneInputRef}
-									value={phone}
-									onChange={(event) => {
-										const val = event.target.value.replace(/[^\d+ ]/g, '');
-										setPhone(val);
-									}}
-									onKeyDown={(e) => {
-										if (e.key === 'Enter') {
-											e.preventDefault();
-										}
-									}}
-									placeholder="Opcional (ej. 6691234567)"
+							<div className="dashboard-form-field dashboard-form-field--full">
+								<PhoneInputGroup
+									id="guest"
+									countryCode={countryCode}
+									phone={phone}
+									onCountryCodeChange={setCountryCode}
+									onPhoneChange={setPhone}
+									error={fieldErrors.phone}
+									label="Teléfono / WhatsApp"
+									showOptional
+									inputRef={phoneInputRef}
 								/>
-								{fieldErrors.phone && (
-									<span className="guest-field-error">{fieldErrors.phone}</span>
-								)}
 							</div>
 
 							<div className="dashboard-form-field dashboard-form-field--full">
 								<label htmlFor="maxAllowedAttendees">
-									¿Cuántos acompañantes permite?
+									Número máximo de asistentes
 								</label>
 								<div className="guest-response-cards guest-response-cards--compact">
 									{ATTENDEE_OPTIONS.map((num) => (

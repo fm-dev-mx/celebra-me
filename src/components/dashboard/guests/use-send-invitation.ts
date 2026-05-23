@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { getGuestInviteUrl, validatePhone } from '@/components/dashboard/guests/guest-presenter';
+import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import { hasValidPhone } from '@/lib/phone/validation';
 import { copyToClipboard } from '@/utils/clipboard';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -47,10 +48,10 @@ export function useSendInvitation({
 		[pendingGuests],
 	);
 
-	const hasValidPhone = useMemo(() => {
+	const validPhone = useMemo(() => {
 		const trimmed = editPhone.trim();
 		if (!trimmed) return false;
-		return validatePhone(trimmed);
+		return hasValidPhone(trimmed);
 	}, [editPhone]);
 
 	const resetForm = useCallback(() => {
@@ -123,7 +124,7 @@ export function useSendInvitation({
 		if (!guest || shareStatus !== 'idle') return;
 
 		const trimmed = editPhone.trim();
-		if (trimmed && !validatePhone(trimmed)) {
+		if (trimmed && !hasValidPhone(trimmed)) {
 			setPhoneError('El teléfono debe tener 10 dígitos.');
 			return;
 		}
@@ -132,7 +133,7 @@ export function useSendInvitation({
 		setMarkError(null);
 
 		let waWindow: Window | null = null;
-		if (hasValidPhone) {
+		if (validPhone) {
 			try {
 				waWindow = window.open('', '_blank');
 			} catch {
@@ -150,7 +151,7 @@ export function useSendInvitation({
 			});
 
 			const inviteUrl = getGuestInviteUrl(updated, inviteBaseUrl);
-			await executeAfterSave(waWindow, hasValidPhone, updated, inviteUrl);
+			await executeAfterSave(waWindow, validPhone, updated, inviteUrl);
 		} catch {
 			setPhoneError('Error al guardar los datos. Intenta de nuevo.');
 			waWindow?.close();
@@ -163,7 +164,7 @@ export function useSendInvitation({
 		editName,
 		editMaxAttendees,
 		editCountryCode,
-		hasValidPhone,
+		validPhone,
 		onSave,
 		inviteBaseUrl,
 		executeAfterSave,
@@ -221,7 +222,7 @@ export function useSendInvitation({
 		markError,
 		advancing,
 		pendingCount,
-		hasValidPhone,
+		canSendToPhone: validPhone,
 		resetForm,
 		handleSaveAndShare,
 		handleCopyOnly,
