@@ -60,8 +60,11 @@ describe('rsvp service branches', () => {
 		guestRepo.findGuestByInviteIdPublic as jest.MockedFunction<
 			typeof guestRepo.findGuestByInviteIdPublic
 		>;
-	const findGuestByPhoneMock = guestRepo.findGuestByPhone as jest.MockedFunction<
-		typeof guestRepo.findGuestByPhone
+	const findGuestByPhoneAuthMock = guestRepo.findGuestByPhoneAuth as jest.MockedFunction<
+		typeof guestRepo.findGuestByPhoneAuth
+	>;
+	const findGuestByPhonePublicMock = guestRepo.findGuestByPhonePublic as jest.MockedFunction<
+		typeof guestRepo.findGuestByPhonePublic
 	>;
 	const updateGuestByIdMock = guestRepo.updateGuestById as jest.MockedFunction<
 		typeof guestRepo.updateGuestById
@@ -199,7 +202,7 @@ describe('rsvp service branches', () => {
 
 	it('updateDashboardGuest preserves duplicate phone conflicts as 409', async () => {
 		findGuestByIdMock.mockResolvedValue(baseGuest);
-		findGuestByPhoneMock.mockResolvedValue({
+		findGuestByPhoneAuthMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
 			phone: '+526680000001',
@@ -286,7 +289,7 @@ describe('rsvp service branches', () => {
 	});
 
 	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
-		findGuestByPhoneMock.mockResolvedValue(baseGuest);
+		findGuestByPhonePublicMock.mockResolvedValue(baseGuest);
 		updateGuestByIdServiceMock.mockResolvedValue({
 			...baseGuest,
 			attendanceStatus: 'confirmed',
@@ -308,7 +311,7 @@ describe('rsvp service branches', () => {
 			},
 		});
 
-		expect(findGuestByPhoneMock).toHaveBeenCalledWith('evt-1', '6680000000');
+		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '6680000000');
 		expect(createGuestInvitationPublicMock).not.toHaveBeenCalled();
 		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -322,7 +325,7 @@ describe('rsvp service branches', () => {
 	});
 
 	it('submitGuestRsvpByPublicEvent creates a generic public guest when the phone is new', async () => {
-		findGuestByPhoneMock.mockResolvedValue(null);
+		findGuestByPhonePublicMock.mockResolvedValue(null);
 		createGuestInvitationPublicMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
