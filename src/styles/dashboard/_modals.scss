@@ -296,6 +296,11 @@
 	&--full {
 		grid-column: 1 / -1;
 	}
+
+	.guest-field-error {
+		color: var(--color-state-danger-text);
+		font-size: 0.65rem;
+	}
 }
 
 .dashboard-form-section {
