@@ -9,13 +9,13 @@ const VIEWPORTS = [
 ] as const;
 
 const HEADER_NAV_VIEWPORTS = [
-	{ width: 1024, height: 900, mode: 'mobile' },
-	{ width: 1199, height: 900, mode: 'mobile' },
-	{ width: 1200, height: 900, mode: 'desktop' },
+	{ width: 768, height: 900, mode: 'mobile' },
+	{ width: 991, height: 900, mode: 'mobile' },
+	{ width: 992, height: 900, mode: 'desktop' },
 	{ width: 1280, height: 900, mode: 'desktop' },
 ] as const;
 
-const EXPECTED_DESKTOP_NAV_LINKS = 6;
+const EXPECTED_DESKTOP_NAV_LINKS = 5;
 
 const SECTION_SELECTORS = [
 	'#inicio',

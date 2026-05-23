@@ -46,9 +46,11 @@ test.describe('RSVP v2 Flow', () => {
 		// Attendance - check the radio natively (force: true needed for sr-only inputs and dev-toolbar)
 		await page.locator('#attendance-yes').check({ force: true });
 
-		// Name
+		// Name is only visible for public RSVP or unlocked personalized invitations.
 		const nameInput = page.locator('#name');
-		await nameInput.fill('Test Guest');
+		if (await nameInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+			await nameInput.fill('Test Guest');
+		}
 
 		// Guest count / names
 		try {

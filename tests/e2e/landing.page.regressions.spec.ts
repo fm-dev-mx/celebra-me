@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.describe('Landing page regressions', () => {
-	const expectedNavLabels = ['Demos', 'Servicios', 'Planes', 'Nosotros'];
+	const expectedNavLabels = ['Demos', 'Planes', 'Nosotros'];
+	const expectedMobileNavLabels = ['DEMOS', 'PLANES', 'NOSOTROS'];
 	const loginHref = '/login?next=%2Fdashboard%2Finvitados';
 	const loginLabel = 'Iniciar sesión';
 	const ctaHref = '#contacto';
@@ -33,7 +34,12 @@ test.describe('Landing page regressions', () => {
 
 			await page.locator('[data-nav-mobile-toggle]').click();
 			await expect(page.locator('[data-nav-mobile-menu]')).toBeVisible();
-			await expect(page.locator('.mobile-nav-links__link')).toHaveText(expectedNavLabels);
+			await expect(page.locator('.mobile-nav-links__link')).toHaveText(
+				expectedMobileNavLabels,
+				{
+					useInnerText: true,
+				},
+			);
 			await expect(page.locator('.mobile-nav-actions__login')).toHaveText(loginLabel);
 			await expect(page.locator('.mobile-nav-actions__login')).toHaveAttribute(
 				'href',
