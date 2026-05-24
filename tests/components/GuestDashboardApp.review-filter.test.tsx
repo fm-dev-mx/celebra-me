@@ -107,6 +107,7 @@ function setupDashboard() {
 		openCreateModal: jest.fn(),
 		openEditModal: jest.fn(),
 		openImportModal: jest.fn(),
+		openNextGeneratedGuest: jest.fn(),
 		pendingGuests: guests.filter((item) => item.deliveryStatus === 'generated'),
 		requestDelete: jest.fn(),
 		setImportModalOpen: jest.fn(),

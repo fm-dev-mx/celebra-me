@@ -65,13 +65,110 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		: `Ver más detalles de ${item.fullName}`;
 	const compactViewLabel = item.isViewed ? 'Vista: Sí' : 'Vista: No';
 	const messageLabel = messageVisible ? 'Ocultar mensaje' : 'Mensaje del invitado';
+	const articleClass = [
+		'guest-card',
+		item.deliveryStatus === 'shared' ? 'guest-card--shared' : '',
+		isCelebrating || isHighlighted ? 'celebrate-success' : '',
+	].filter(Boolean).join(' ');
+
+	const messageToggle = hasMessageFlag && (
+		<button
+			type="button"
+			className={`guest-card__msg-toggle ${messageVisible ? 'guest-card__msg-toggle--open' : ''}`}
+			onClick={() => setMessageVisible((v) => !v)}
+			aria-expanded={messageVisible}
+		>
+			<MessageIcon size={16} aria-hidden="true" />
+			<span>{messageLabel}</span>
+		</button>
+	);
+
+	const messageBlock = hasMessageFlag && messageVisible && (
+		<div className="guest-card__message-block">
+			<p className="guest-card__message-text">{item.guestComment}</p>
+		</div>
+	);
+
+	const renderExpandedPanel = () => (
+		<section
+			id={expandId}
+			className={`guest-card__expanded ${isExpanded ? 'guest-card__expanded--open' : ''}`}
+			role="region"
+			aria-label={`Detalles de ${item.fullName}`}
+		>
+			<div className="guest-card__expanded-inner">
+				<div className="guest-card__expanded-details">
+					<div className="guest-card__detail">
+						<span className="guest-card__detail-label">Entrega</span>
+						<span className="guest-card__detail-value">{getDeliveryStateLabel(item)}</span>
+					</div>
+					<div className="guest-card__detail">
+						<span className="guest-card__detail-label">RSVP</span>
+						<span className="guest-card__detail-value">{getRsvpStateLabel(item)}</span>
+					</div>
+					<div className="guest-card__detail">
+						<span className="guest-card__detail-label">Visualización</span>
+						<span className="guest-card__detail-value">{getViewStateLabel(item)}</span>
+					</div>
+					{item.email && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Email</span>
+							<span className="guest-card__detail-value">{item.email}</span>
+						</div>
+					)}
+					<div className="guest-card__detail">
+						<span className="guest-card__detail-label">Origen</span>
+						<span className="guest-card__detail-value">{formatGuestEntrySource(item)}</span>
+					</div>
+					{item.firstViewedAt && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Visto</span>
+							<span className="guest-card__detail-value" title={formatGuestDate(item.firstViewedAt)}>
+								{formatGuestDate(item.firstViewedAt).split(',')[0]}
+							</span>
+						</div>
+					)}
+					{item.respondedAt && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Respuesta</span>
+							<span className="guest-card__detail-value" title={formatGuestDate(item.respondedAt)}>
+								{formatGuestDate(item.respondedAt).split(',')[0]}
+							</span>
+						</div>
+					)}
+				</div>
+				{hasTags && (
+					<div className="guest-card__tags">
+						{visibleTags.map((tag) => (
+							<span key={tag} className="guest-tag">{tag}</span>
+						))}
+					</div>
+				)}
+				<div className="guest-card__expanded-actions">
+					<GuestExpandedActions
+						guestName={item.fullName}
+						inviteUrl={inviteUrl}
+						isShared={isShared}
+						attendanceStatus={item.attendanceStatus}
+						onEdit={() => onEdit(item)}
+						onDelete={() => onDelete(item)}
+						onMarkShared={async () => onMarkShared(item)}
+						onRevertShared={onRevertShared ? async () => onRevertShared(item) : undefined}
+						guestId={item.guestId}
+						hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
+						isBrandingRemovalEligible={isBrandingRemovalEligible}
+						onToggleBrandingRemoval={onToggleBrandingRemoval}
+					/>
+				</div>
+			</div>
+		</section>
+	);
 
 	return (
 		<article
-			className={`guest-card ${item.deliveryStatus === 'shared' ? 'guest-card--shared' : ''} ${isCelebrating || isHighlighted ? 'celebrate-success' : ''}`}
+			className={articleClass}
 			data-guest-id={item.guestId}
 		>
-			{/* ── Zone 1: Identity + primary status ── */}
 			<header className="guest-card__header">
 				<div className="guest-card__identity">
 					<span className="guest-card__index">#{String(index + 1).padStart(2, '0')}</span>
@@ -84,14 +181,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</span>
 			</header>
 
-			{/* ── Zone 2: Contact ── */}
 			<div
 				className={`guest-card__contact${!hasAnyContact ? ' guest-card__contact--fallback' : ''}`}
 			>
 				{contactDisplay}
 			</div>
 
-			{/* ── Zone 3: Metrics ── */}
 			<div className="guest-card__metrics">
 				<div className="guest-card__stat">
 					<span className="guest-card__stat-label">Asistentes:</span>
@@ -101,34 +196,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						{item.maxAllowedAttendees}
 					</span>
 				</div>
-
-				<div
-					className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}
-				>
+				<div className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}>
 					{compactViewLabel}
 				</div>
-
-				{hasMessageFlag && (
-					<button
-						type="button"
-						className={`guest-card__msg-toggle ${messageVisible ? 'guest-card__msg-toggle--open' : ''}`}
-						onClick={() => setMessageVisible((v) => !v)}
-						aria-expanded={messageVisible}
-					>
-						<MessageIcon size={16} aria-hidden="true" />
-						<span>{messageLabel}</span>
-					</button>
-				)}
+				{messageToggle}
 			</div>
 
-			{/* ── Zone 3b: Guest message (read-only, togglable) ── */}
-			{hasMessageFlag && messageVisible && (
-				<div className="guest-card__message-block">
-					<p className="guest-card__message-text">{item.guestComment}</p>
-				</div>
-			)}
+			{messageBlock}
 
-			{/* ── Zone 4: Actions ── */}
 			<footer className="guest-card__actions">
 				<ShareAction
 					phone={item.phone}
@@ -151,102 +226,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</button>
 			</footer>
 
-			{/* ── Zone 5: Expanded panel ── */}
-			<section
-				id={expandId}
-				className={`guest-card__expanded ${isExpanded ? 'guest-card__expanded--open' : ''}`}
-				role="region"
-				aria-label={`Detalles de ${item.fullName}`}
-			>
-				<div className="guest-card__expanded-inner">
-					{/* Detail grid */}
-					<div className="guest-card__expanded-details">
-						<div className="guest-card__detail">
-							<span className="guest-card__detail-label">Entrega</span>
-							<span className="guest-card__detail-value">
-								{getDeliveryStateLabel(item)}
-							</span>
-						</div>
-						<div className="guest-card__detail">
-							<span className="guest-card__detail-label">RSVP</span>
-							<span className="guest-card__detail-value">
-								{getRsvpStateLabel(item)}
-							</span>
-						</div>
-						<div className="guest-card__detail">
-							<span className="guest-card__detail-label">Visualización</span>
-							<span className="guest-card__detail-value">
-								{getViewStateLabel(item)}
-							</span>
-						</div>
-						{item.email && (
-							<div className="guest-card__detail">
-								<span className="guest-card__detail-label">Email</span>
-								<span className="guest-card__detail-value">{item.email}</span>
-							</div>
-						)}
-						<div className="guest-card__detail">
-							<span className="guest-card__detail-label">Origen</span>
-							<span className="guest-card__detail-value">
-								{formatGuestEntrySource(item)}
-							</span>
-						</div>
-						{item.firstViewedAt && (
-							<div className="guest-card__detail">
-								<span className="guest-card__detail-label">Visto</span>
-								<span
-									className="guest-card__detail-value"
-									title={formatGuestDate(item.firstViewedAt)}
-								>
-									{formatGuestDate(item.firstViewedAt).split(',')[0]}
-								</span>
-							</div>
-						)}
-						{item.respondedAt && (
-							<div className="guest-card__detail">
-								<span className="guest-card__detail-label">Respuesta</span>
-								<span
-									className="guest-card__detail-value"
-									title={formatGuestDate(item.respondedAt)}
-								>
-									{formatGuestDate(item.respondedAt).split(',')[0]}
-								</span>
-							</div>
-						)}
-					</div>
-
-					{/* Tags */}
-					{hasTags && (
-						<div className="guest-card__tags">
-							{visibleTags.map((tag) => (
-								<span key={tag} className="guest-tag">
-									{tag}
-								</span>
-							))}
-						</div>
-					)}
-
-					{/* Actions */}
-					<div className="guest-card__expanded-actions">
-						<GuestExpandedActions
-							guestName={item.fullName}
-							inviteUrl={inviteUrl}
-							isShared={isShared}
-							attendanceStatus={item.attendanceStatus}
-							onEdit={() => onEdit(item)}
-							onDelete={() => onDelete(item)}
-							onMarkShared={async () => onMarkShared(item)}
-							onRevertShared={
-								onRevertShared ? async () => onRevertShared(item) : undefined
-							}
-							guestId={item.guestId}
-							hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
-							isBrandingRemovalEligible={isBrandingRemovalEligible}
-							onToggleBrandingRemoval={onToggleBrandingRemoval}
-						/>
-					</div>
-				</div>
-			</section>
+			{renderExpandedPanel()}
 		</article>
 	);
 };
