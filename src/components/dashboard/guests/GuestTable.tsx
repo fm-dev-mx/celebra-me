@@ -96,6 +96,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								onDelete={onDelete}
 								onMarkShared={onMarkShared}
 								onRevertShared={onRevertShared}
+								isBrandingRemovalEligible={isBrandingRemovalEligible}
+								onToggleBrandingRemoval={onToggleBrandingRemoval}
 							/>
 						))}
 					</tbody>
