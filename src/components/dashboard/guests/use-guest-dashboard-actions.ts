@@ -71,6 +71,10 @@ export const useGuestDashboardActions = ({
 		setModalOpen(true);
 	}, []);
 
+	const openImportModal = useCallback(() => {
+		setImportModalOpen(true);
+	}, []);
+
 	const closeModal = useCallback(() => {
 		setModalOpen(false);
 		setIsNextActionActive(false);
@@ -418,8 +422,8 @@ export const useGuestDashboardActions = ({
 				);
 				setNotification({
 					message: hideCelebraMeBranding
-						? 'Marca oculta para este invitado.'
-						: 'Marca visible para este invitado.',
+						? 'Creador oculto para este invitado.'
+						: 'Creador visible para este invitado.',
 					type: 'success',
 				});
 			} catch (error) {
@@ -429,6 +433,11 @@ export const useGuestDashboardActions = ({
 			}
 		},
 		[setItems, setNotification],
+	);
+
+	const setImportModalOpenCallback = useCallback(
+		(value: boolean) => setImportModalOpen(value),
+		[],
 	);
 
 	const pendingGuests = items.filter((item) => item.deliveryStatus === 'generated');
@@ -461,11 +470,10 @@ export const useGuestDashboardActions = ({
 		notification,
 		openCreateModal,
 		openEditModal,
-		openImportModal: () => setImportModalOpen(true),
-		openNextGeneratedGuest,
+		openImportModal,
 		pendingGuests,
 		requestDelete,
-		setImportModalOpen,
+		setImportModalOpen: setImportModalOpenCallback,
 		setNotification,
 	};
 };

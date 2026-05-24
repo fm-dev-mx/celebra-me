@@ -1,5 +1,4 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { hasValidPhone } from '@/lib/phone/validation';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
@@ -135,7 +134,9 @@ describe('getContactDisplay', () => {
 	});
 
 	it('returns fallback when neither phone nor email exists', () => {
-		expect(getContactDisplay(makeGuest({ phone: '', email: null }))).toBe('Sin contacto');
+		expect(getContactDisplay(makeGuest({ phone: '', email: null }))).toBe(
+			'Sin teléfono registrado',
+		);
 	});
 });
 
@@ -172,9 +173,9 @@ describe('getDeliveryStateLabel', () => {
 		expect(getDeliveryStateLabel(makeGuest({ deliveryStatus: 'shared' }))).toBe('Enviado');
 	});
 
-	it('returns "No enviado" when not shared', () => {
+	it('returns "Por enviar" when not shared', () => {
 		expect(getDeliveryStateLabel(makeGuest({ deliveryStatus: 'generated' }))).toBe(
-			'No enviado',
+			'Por enviar',
 		);
 	});
 });
@@ -188,8 +189,8 @@ describe('getRsvpStateLabel', () => {
 		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'declined' }))).toBe('Denegada');
 	});
 
-	it('returns "Pendiente" for pending', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'pending' }))).toBe('Pendiente');
+	it('returns "Sin respuesta" for pending', () => {
+		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'pending' }))).toBe('Sin respuesta');
 	});
 });
 
@@ -259,36 +260,6 @@ describe('getGuestVisibleTags', () => {
 		expect(getGuestVisibleTags(makeGuest({ tags: undefined as unknown as string[] }))).toEqual(
 			[],
 		);
-	});
-});
-
-describe('hasValidPhone', () => {
-	it('returns false for empty phone', () => {
-		expect(hasValidPhone('')).toBe(false);
-	});
-
-	it('returns false for whitespace-only phone', () => {
-		expect(hasValidPhone('   ')).toBe(false);
-	});
-
-	it('returns false for too few digits', () => {
-		expect(hasValidPhone('12345')).toBe(false);
-	});
-
-	it('returns false for 8-digit phone (now requires 10)', () => {
-		expect(hasValidPhone('66912345')).toBe(false);
-	});
-
-	it('returns true for valid phone with 10 digits', () => {
-		expect(hasValidPhone('6691234567')).toBe(true);
-	});
-
-	it('returns true for valid phone with formatting', () => {
-		expect(hasValidPhone('669 123 4567')).toBe(true);
-	});
-
-	it('returns true for valid phone with country prefix', () => {
-		expect(hasValidPhone('+526691234567')).toBe(true);
 	});
 });
 

@@ -125,7 +125,7 @@ describe('POST /api/dashboard/guests/[guestId]/toggle-branding', () => {
 			new ApiError(
 				400,
 				'bad_request' as const,
-				'Límite alcanzado: esta invitación permite ocultar la marca en máximo 5 invitados.',
+				'Límite alcanzado: esta invitación permite ocultar al creador en máximo 5 invitados.',
 			),
 		);
 

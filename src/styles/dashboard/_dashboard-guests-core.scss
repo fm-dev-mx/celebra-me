@@ -62,14 +62,14 @@
 	&--unshared {
 		background: color-mix(
 			in srgb,
-			var(--color-text-secondary) 5%,
+			var(--color-action-accent) 13%,
 			var(--color-surface-secondary)
 		);
-		border-color: color-mix(in srgb, var(--color-text-secondary) 14%, transparent);
-		color: var(--color-text-secondary);
+		border-color: color-mix(in srgb, var(--color-action-accent) 34%, transparent);
+		color: color-mix(in srgb, var(--color-action-accent) 82%, var(--color-text-primary));
 
 		.status-pill__dot {
-			background: var(--color-text-muted);
+			background: var(--color-action-accent);
 		}
 	}
 
