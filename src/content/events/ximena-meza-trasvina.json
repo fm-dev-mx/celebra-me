@@ -6,11 +6,6 @@
     "theme": {
         "preset": "premiere-floral"
     },
-    "branding": {
-        "showFooterBranding": false,
-        "showContactCta": false,
-        "showThankYouBranding": false
-    },
     "sectionStyles": {
         "location": {
             "showFlourishes": true

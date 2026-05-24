@@ -172,7 +172,7 @@ export interface Interlude {
 	overlayOpacity?: string;
 }
 
-export interface InvitationViewModelBranding {
+export interface InvitationViewModelBrandingVisibility {
 	showFooterBranding: boolean;
 	showContactCta: boolean;
 	showThankYouBranding: boolean;
@@ -186,7 +186,7 @@ export interface InvitationViewModel {
 	theme: ThemeConfig;
 	hero: HeroViewModel;
 	envelope: EnvelopeViewModel;
-	branding: InvitationViewModelBranding;
+	brandingVisibility: InvitationViewModelBrandingVisibility;
 
 	// Sections (Normalized and resolved)
 	sections: {

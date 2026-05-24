@@ -18,6 +18,7 @@ import type {
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
+import { resolveBrandingVisibility } from '@/lib/adapters/branding';
 
 interface AdaptationContext {
 	data: EventContentEntry['data'];
@@ -429,11 +430,11 @@ export function adaptEvent(
 	const envelope = buildEnvelope(context);
 	const showEnvelope = envelope.enabled;
 
-	const resolvedBranding = adapterData.branding ?? {};
+	const isDemo = adapterData.isDemo ?? false;
 
 	return {
 		id: eventSlug,
-		isDemo: adapterData.isDemo ?? false,
+		isDemo,
 		title: adapterData.title,
 		description: adapterData.description,
 		theme: {
@@ -442,11 +443,10 @@ export function adaptEvent(
 		},
 		hero: buildHero(context),
 		envelope,
-		branding: {
-			showFooterBranding: resolvedBranding.showFooterBranding ?? true,
-			showContactCta: resolvedBranding.showContactCta ?? true,
-			showThankYouBranding: resolvedBranding.showThankYouBranding ?? true,
-		},
+		brandingVisibility: resolveBrandingVisibility({
+			isDemo,
+			branding: adapterData.branding,
+		}),
 		sections: {
 			quote: buildQuoteSectionData(context),
 			countdown: buildCountdownSectionData(context),
