@@ -152,7 +152,7 @@ describe('guest dashboard expanded actions', () => {
 		});
 	});
 
-	it('shows branding action when guest is eligible for branding removal', () => {
+	it('shows "Ocultar creador" when branding is currently shown', () => {
 		render(
 			<GuestExpandedActions
 				guestName={sampleGuest.fullName}
@@ -169,6 +169,25 @@ describe('guest dashboard expanded actions', () => {
 		);
 
 		expect(screen.getByText('Ocultar creador')).toBeInTheDocument();
+	});
+
+	it('shows "Mostrar creador" when branding is already hidden', () => {
+		render(
+			<GuestExpandedActions
+				guestName={sampleGuest.fullName}
+				inviteUrl="https://example.com/invite/1"
+				isShared={false}
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onMarkShared={onMarkShared}
+				guestId={sampleGuest.guestId}
+				hideCelebraMeBranding={true}
+				isBrandingRemovalEligible={true}
+				onToggleBrandingRemoval={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Mostrar creador')).toBeInTheDocument();
 	});
 
 	it('does not show branding action when guest is not eligible', () => {
@@ -188,6 +207,22 @@ describe('guest dashboard expanded actions', () => {
 		);
 
 		expect(screen.queryByText('Ocultar creador')).not.toBeInTheDocument();
+	});
+
+	it('disables revert button when onRevertShared is not provided', () => {
+		render(
+			<GuestExpandedActions
+				guestName={sentGuest.fullName}
+				inviteUrl="https://example.com/invite/2"
+				isShared={true}
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onMarkShared={onMarkShared}
+			/>,
+		);
+		expect(
+			screen.getByRole('button', { name: /marcar invitación.*como no enviada/i }),
+		).toBeDisabled();
 	});
 
 	it('toggles branding removal with the next value', () => {

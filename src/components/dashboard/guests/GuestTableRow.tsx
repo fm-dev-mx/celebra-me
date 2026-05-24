@@ -29,6 +29,8 @@ interface GuestTableRowProps {
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
+	isBrandingRemovalEligible?: boolean;
+	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 }
 
 const GuestTableRow: React.FC<GuestTableRowProps> = ({
@@ -43,6 +45,8 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onDelete,
 	onMarkShared,
 	onRevertShared,
+	isBrandingRemovalEligible,
+	onToggleBrandingRemoval,
 }) => {
 	const progressRef = useRef<HTMLDivElement>(null);
 	const isViewed = item.firstViewedAt != null;
@@ -239,6 +243,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 											? async () => onRevertShared(item)
 											: undefined
 									}
+									guestId={item.guestId}
+									hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
+									isBrandingRemovalEligible={isBrandingRemovalEligible}
+									onToggleBrandingRemoval={onToggleBrandingRemoval}
 								/>
 							</div>
 						</div>
