@@ -404,6 +404,33 @@ export const useGuestDashboardActions = ({
 		}
 	}, [eventId, setNotification]);
 
+	const handleToggleBrandingRemoval = useCallback(
+		async (guestId: string, hideCelebraMeBranding: boolean) => {
+			try {
+				const updated = await guestsApi.toggleBrandingRemoval(
+					guestId,
+					hideCelebraMeBranding,
+				);
+				setItems((prev) =>
+					prev.map((entry) =>
+						entry.guestId === guestId ? { ...entry, ...updated } : entry,
+					),
+				);
+				setNotification({
+					message: hideCelebraMeBranding
+						? 'Marca oculta para este invitado.'
+						: 'Marca visible para este invitado.',
+					type: 'success',
+				});
+			} catch (error) {
+				const message =
+					error instanceof Error ? error.message : 'Error al actualizar la marca.';
+				setNotification({ message, type: 'warning' });
+			}
+		},
+		[setItems, setNotification],
+	);
+
 	const pendingGuests = items.filter((item) => item.deliveryStatus === 'generated');
 
 	return {
@@ -426,6 +453,7 @@ export const useGuestDashboardActions = ({
 		handleRevertShared,
 		handleSaveInvitation,
 		handleSubmit,
+		handleToggleBrandingRemoval,
 		importModalOpen,
 		isNextActionActive,
 		modalMode,
