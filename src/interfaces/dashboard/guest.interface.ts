@@ -30,6 +30,7 @@ export interface DashboardGuestItem {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;
+	hideCelebraMeBranding?: boolean;
 }
 
 export interface DashboardGuestListResponse {

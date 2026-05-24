@@ -282,7 +282,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('accepts the product-level Celebra-me branding removal flag', () => {
+	it('strips event-level branding key since branding is now per-guest only', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				branding: {
@@ -292,20 +292,9 @@ describe('Event content schema (real contract)', () => {
 		);
 
 		expect(result.success).toBe(true);
-	});
-
-	it('rejects rendering-level branding keys in event content', () => {
-		const result = eventSchema.safeParse(
-			createMinimalEvent({
-				branding: {
-					showFooterBranding: false,
-					showContactCta: false,
-					showThankYouBranding: false,
-				},
-			}),
-		);
-
-		expect(result.success).toBe(false);
+		if (result.success) {
+			expect((result.data as Record<string, unknown>).branding).toBeUndefined();
+		}
 	});
 
 	it('accepts rich text in location indications text', () => {

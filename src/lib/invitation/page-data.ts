@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { resolveBrandingVisibility } from '@/lib/adapters/branding';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
@@ -6,6 +7,7 @@ import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
+import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
@@ -207,6 +209,14 @@ export function prepareInvitationPageContext(input: {
 	previewTheme?: ThemeConfig['preset'];
 }): InvitationPageContext {
 	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
+	viewModel.brandingVisibility = resolveBrandingVisibility({
+		isDemo: viewModel.isDemo,
+		guest: input.guestContext?.guest ?? null,
+		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(
+			input.eventEntry.data.eventType,
+			input.slug,
+		),
+	});
 	const { theme, hero, envelope, sections } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const isDemo = viewModel.isDemo;

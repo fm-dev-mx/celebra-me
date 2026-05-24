@@ -56,6 +56,7 @@ describe('invitation route personalization', () => {
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
 				guestComment: '',
+				hideCelebraMeBranding: false,
 			},
 		});
 
@@ -104,6 +105,7 @@ describe('invitation route personalization', () => {
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
 				guestComment: '',
+				hideCelebraMeBranding: false,
 			},
 		});
 

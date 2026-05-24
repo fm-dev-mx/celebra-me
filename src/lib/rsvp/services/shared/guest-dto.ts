@@ -19,6 +19,7 @@ export function toGuestDto(
 	return {
 		guestId: guest.id,
 		inviteId: guest.inviteId,
+		hideCelebraMeBranding: guest.hideCelebraMeBranding,
 		fullName: guest.fullName,
 		phone: guest.phone,
 		countryCode: guest.countryCode,

@@ -9,7 +9,6 @@ import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import {
 	baseEventFieldsSchema,
-	brandingSchema,
 	countdownSchema,
 	musicSchema,
 	navigationSchema,
@@ -20,7 +19,6 @@ import {
 import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema';
 
 export const eventContentSchema = baseEventFieldsSchema.extend({
-	branding: brandingSchema,
 	sectionStyles: sectionStylesSchema,
 	hero: heroSchema,
 	location: locationSchema,

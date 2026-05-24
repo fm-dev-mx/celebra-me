@@ -51,6 +51,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
 				guestComment: '',
+				hideCelebraMeBranding: false,
 			},
 		});
 

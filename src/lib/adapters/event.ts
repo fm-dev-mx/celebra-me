@@ -18,7 +18,7 @@ import type {
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
-import { resolveBrandingVisibility } from '@/lib/adapters/branding';
+import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 
 interface AdaptationContext {
 	data: EventContentEntry['data'];
@@ -443,10 +443,7 @@ export function adaptEvent(
 		},
 		hero: buildHero(context),
 		envelope,
-		brandingVisibility: resolveBrandingVisibility({
-			isDemo,
-			branding: adapterData.branding,
-		}),
+		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
 		sections: {
 			quote: buildQuoteSectionData(context),
 			countdown: buildCountdownSectionData(context),

@@ -136,6 +136,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					attendanceStatus: 'pending',
 					attendeeCount: 0,
 					guestComment: '',
+					hideCelebraMeBranding: false,
 				},
 			},
 		});

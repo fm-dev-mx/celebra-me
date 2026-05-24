@@ -25,6 +25,7 @@ function toInvitationContext(
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
 		guestComment: string;
+		hideCelebraMeBranding: boolean;
 	};
 } {
 	return {
@@ -38,6 +39,7 @@ function toInvitationContext(
 			attendanceStatus: invitation.attendanceStatus,
 			attendeeCount: invitation.attendeeCount,
 			guestComment: invitation.guestComment,
+			hideCelebraMeBranding: invitation.hideCelebraMeBranding ?? false,
 		},
 	};
 }
@@ -53,6 +55,7 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
 		guestComment: string;
+		hideCelebraMeBranding: boolean;
 	};
 }> {
 	const safeInviteId = sanitize(inviteId, 64);
@@ -78,6 +81,7 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
 		guestComment: string;
+		hideCelebraMeBranding: boolean;
 	};
 }> {
 	const safeShortId = sanitize(shortId, 12);

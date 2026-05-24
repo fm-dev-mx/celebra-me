@@ -47,6 +47,7 @@ export interface UpdateGuestInput {
 	lastResponseSource?: ResponseSource;
 	respondedAt?: string | null;
 	tags?: string[];
+	hideCelebraMeBranding?: boolean;
 }
 
 export type EventRow = {
@@ -84,6 +85,7 @@ export type GuestRow = {
 	updated_at: string;
 	tags: string[];
 	short_id?: string;
+	hide_celebra_me_branding: boolean;
 };
 
 export type GuestAuditRow = {
@@ -140,7 +142,7 @@ export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
 	(column) => column !== 'published_at',
 ).join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -180,6 +182,7 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		updatedAt: row.updated_at,
 		tags: row.tags || [],
 		shortId: row.short_id,
+		hideCelebraMeBranding: row.hide_celebra_me_branding,
 	};
 }
 

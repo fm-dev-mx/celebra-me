@@ -6,9 +6,6 @@
     "theme": {
         "preset": "sacred-keepsake"
     },
-    "branding": {
-        "hideCelebraMeBranding": true
-    },
     "sectionStyles": {
         "location": {
             "showFlourishes": true
