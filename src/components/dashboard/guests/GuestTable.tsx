@@ -15,6 +15,8 @@ interface GuestTableProps {
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
+	isBrandingRemovalEligible?: boolean;
+	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -30,6 +32,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onDelete,
 	onMarkShared,
 	onRevertShared,
+	isBrandingRemovalEligible,
+	onToggleBrandingRemoval,
 }) => {
 	if (!items || items.length === 0) {
 		return (
@@ -56,6 +60,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						onDelete={onDelete}
 						onMarkShared={onMarkShared}
 						onRevertShared={onRevertShared}
+						isBrandingRemovalEligible={isBrandingRemovalEligible}
+						onToggleBrandingRemoval={onToggleBrandingRemoval}
 					/>
 				))}
 			</div>

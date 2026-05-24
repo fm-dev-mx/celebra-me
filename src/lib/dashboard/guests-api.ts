@@ -132,6 +132,17 @@ export class GuestsApi {
 	 * Uses raw fetch (blob response) because the shared fetchJSON helper
 	 * only handles JSON payloads.
 	 */
+	async toggleBrandingRemoval(
+		guestId: string,
+		hideCelebraMeBranding: boolean,
+	): Promise<DashboardGuestItem> {
+		const result = await dashboardApi.post<{ item: DashboardGuestItem }>(
+			`/api/dashboard/guests/${encodeURIComponent(guestId)}/toggle-branding`,
+			{ hideCelebraMeBranding },
+		);
+		return this.handleResponse(result, 'guests.toggleBrandingRemoval').item;
+	}
+
 	async exportCsv(eventId: string): Promise<void> {
 		const query = new URLSearchParams({ eventId });
 		const response = await fetch(`/api/dashboard/guests/export.csv?${query.toString()}`);

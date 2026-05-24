@@ -12,6 +12,11 @@ jest.mock('@/components/dashboard/guests/GuestExpandedActions', () => ({
 	default: () => <div data-testid="expanded-actions" />,
 }));
 
+jest.mock('@/components/dashboard/guests/GuestBrandingMenu', () => ({
+	__esModule: true,
+	default: () => <div data-testid="branding-menu" />,
+}));
+
 describe('GuestCard status labels', () => {
 	const baseProps = {
 		index: 0,
@@ -71,5 +76,33 @@ describe('GuestCard status labels', () => {
 		render(<GuestCard item={makeGuest({ attendanceStatus: 'declined' })} {...baseProps} />);
 		const labels = screen.getAllByText('Denegada');
 		expect(labels.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it('shows "Sin marca" badge when branding removal is active', () => {
+		render(<GuestCard item={makeGuest({ hideCelebraMeBranding: true })} {...baseProps} />);
+		expect(screen.getByText('Sin marca')).toBeInTheDocument();
+	});
+
+	it('does not show "Sin marca" badge when branding removal is inactive', () => {
+		render(<GuestCard item={makeGuest({ hideCelebraMeBranding: false })} {...baseProps} />);
+		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
+	});
+
+	it('renders branding menu only when eligible', () => {
+		const onToggle = jest.fn();
+		const { rerender } = render(
+			<GuestCard
+				item={makeGuest({})}
+				{...baseProps}
+				isBrandingRemovalEligible={true}
+				onToggleBrandingRemoval={onToggle}
+			/>,
+		);
+		expect(screen.getByTestId('branding-menu')).toBeInTheDocument();
+
+		rerender(
+			<GuestCard item={makeGuest({})} {...baseProps} isBrandingRemovalEligible={false} />,
+		);
+		expect(screen.queryByTestId('branding-menu')).not.toBeInTheDocument();
 	});
 });

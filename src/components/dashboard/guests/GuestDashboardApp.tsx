@@ -15,6 +15,7 @@ import {
 	type GuestFormPayload,
 } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
+import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import { useShortcuts } from '@/hooks/use-shortcuts';
 import '@/styles/dashboard/_guests.scss';
@@ -48,6 +49,11 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		status,
 		delivery,
 	});
+	const currentEvent = hostEvents.find((e) => e.id === eventId);
+	const isBrandingRemovalEligible = currentEvent
+		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
+		: false;
+
 	const {
 		celebratingGuestId,
 		closeDeleteConfirm,
@@ -66,6 +72,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handleRevertShared,
 		handleSaveInvitation,
 		handleSubmit,
+		handleToggleBrandingRemoval,
 		importModalOpen,
 		isNextActionActive,
 		modalMode,
@@ -149,6 +156,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onDelete={requestDelete}
 					onMarkShared={handleMarkShared}
 					onRevertShared={handleRevertShared}
+					isBrandingRemovalEligible={isBrandingRemovalEligible}
+					onToggleBrandingRemoval={handleToggleBrandingRemoval}
 				/>
 
 				{deleteConfirmOpen && (

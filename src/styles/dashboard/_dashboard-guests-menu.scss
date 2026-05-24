@@ -113,6 +113,36 @@
 	}
 }
 
+/* Guest branding menu trigger */
+.guest-branding-menu__trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.25rem;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--color-text-tertiary);
+	cursor: pointer;
+	transition:
+		color 0.15s ease,
+		background-color 0.15s ease;
+
+	&:hover {
+		color: var(--color-text-primary);
+		background: rgb(var(--color-text-secondary-rgb) / 6%);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--color-action-accent);
+		outline-offset: 2px;
+	}
+
+	svg {
+		display: block;
+	}
+}
+
 /* Toolbar actions menu trigger */
 .toolbar-actions-menu__trigger {
 	display: inline-flex;

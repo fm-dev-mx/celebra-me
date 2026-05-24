@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
+import GuestBrandingMenu from '@/components/dashboard/guests/GuestBrandingMenu';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -29,6 +30,8 @@ interface GuestCardProps {
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
+	isBrandingRemovalEligible?: boolean;
+	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -43,6 +46,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onDelete,
 	onMarkShared,
 	onRevertShared,
+	isBrandingRemovalEligible,
+	onToggleBrandingRemoval,
 }) => {
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
@@ -52,6 +57,19 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 	const contactDisplay = getContactDisplay(item);
 	const hasAnyContact = hasContact(item);
+	const brandingBadge = item.hideCelebraMeBranding && (
+		<span className="guest-card__branding-badge">Sin marca</span>
+	);
+	const brandingKebab = isBrandingRemovalEligible && onToggleBrandingRemoval && (
+		<GuestBrandingMenu
+			hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
+			guestId={item.guestId}
+			onToggle={onToggleBrandingRemoval}
+		/>
+	);
+	const expandLabel = isExpanded
+		? `Ver menos detalles de ${item.fullName}`
+		: `Ver más detalles de ${item.fullName}`;
 
 	return (
 		<article
@@ -63,6 +81,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__identity">
 					<span className="guest-card__index">#{String(index + 1).padStart(2, '0')}</span>
 					<span className="guest-card__name">{item.fullName}</span>
+					{brandingBadge}
 				</div>
 				<span className={`status-pill status-pill--${getPrimaryStatusClass(item)}`}>
 					<span className="status-pill__dot" />
@@ -112,15 +131,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					isShared={isShared}
 					onShared={async () => onMarkShared(item)}
 				/>
+				{brandingKebab}
 				<button
 					type="button"
 					className={`guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
-					title={isExpanded ? 'Ver menos detalles' : 'Ver más detalles'}
-					aria-label={
-						isExpanded
-							? `Ver menos detalles de ${item.fullName}`
-							: `Ver más detalles de ${item.fullName}`
-					}
+					title={expandLabel}
+					aria-label={expandLabel}
 					aria-expanded={isExpanded}
 					aria-controls={expandId}
 					onClick={onToggleExpanded}

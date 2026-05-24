@@ -23,6 +23,10 @@ import {
 	getGuestAccessOrThrow,
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
+import {
+	isEventEligibleForBrandingRemoval,
+	getBrandingRemovalGuestLimit,
+} from '@/lib/constants/branding-removal-rules';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
@@ -416,6 +420,83 @@ export async function markGuestShared(input: {
 		await logAdminAction({
 			actorId: input.actorUserId,
 			action: 'mark_guest_shared',
+			targetTable: 'guest_invitations',
+			targetId: input.guestId,
+			oldData: existing as unknown as Record<string, unknown>,
+			newData: updated as unknown as Record<string, unknown>,
+		});
+	}
+
+	return {
+		item,
+		updatedAt: item.updatedAt,
+		source: 'mutation',
+	};
+}
+
+export async function toggleGuestBrandingRemoval(input: {
+	guestId: string;
+	hostAccessToken: string;
+	origin: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
+	hideCelebraMeBranding: boolean;
+}): Promise<DashboardGuestMutationResponse> {
+	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
+
+	const event = await findEventById(existing.eventId, input.hostAccessToken);
+	if (!event) {
+		throw new ApiError(404, 'not_found', 'Event not found.');
+	}
+
+	if (!isEventEligibleForBrandingRemoval(event.eventType, event.slug)) {
+		throw new ApiError(403, 'forbidden', 'Esta función no está disponible para este evento.');
+	}
+
+	if (input.hideCelebraMeBranding) {
+		const currentEventId = existing.eventId;
+		const allEventGuests = await findGuestsByEvent(
+			{ eventId: currentEventId },
+			input.hostAccessToken,
+		);
+		const enabledCount = allEventGuests.filter(
+			(g) => g.hideCelebraMeBranding === true && g.id !== input.guestId,
+		).length;
+		const limit = getBrandingRemovalGuestLimit(event.eventType, event.slug);
+
+		if (enabledCount >= limit) {
+			throw new ApiError(
+				400,
+				'limit_reached',
+				'Límite alcanzado: esta invitación permite ocultar la marca en máximo 5 invitados.',
+			);
+		}
+	}
+
+	const updated = await updateGuestById(
+		{
+			guestId: input.guestId,
+			hideCelebraMeBranding: input.hideCelebraMeBranding,
+		},
+		input.hostAccessToken,
+	);
+
+	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
+	const item = toGuestDto(
+		updated,
+		input.origin,
+		presentation.eventTitle,
+		presentation.eventType,
+		presentation.eventSlug,
+		presentation.template,
+	);
+
+	if (input.isSuperAdmin && input.actorUserId) {
+		await logAdminAction({
+			actorId: input.actorUserId,
+			action: input.hideCelebraMeBranding
+				? 'enable_guest_branding_removal'
+				: 'disable_guest_branding_removal',
 			targetTable: 'guest_invitations',
 			targetId: input.guestId,
 			oldData: existing as unknown as Record<string, unknown>,
