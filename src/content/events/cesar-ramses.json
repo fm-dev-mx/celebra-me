@@ -7,9 +7,7 @@
         "preset": "sacred-keepsake"
     },
     "branding": {
-        "showFooterBranding": false,
-        "showContactCta": false,
-        "showThankYouBranding": false
+        "hideCelebraMeBranding": true
     },
     "sectionStyles": {
         "location": {

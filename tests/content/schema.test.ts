@@ -282,6 +282,32 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
+	it('accepts the product-level Celebra-me branding removal flag', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				branding: {
+					hideCelebraMeBranding: true,
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects rendering-level branding keys in event content', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				branding: {
+					showFooterBranding: false,
+					showContactCta: false,
+					showThankYouBranding: false,
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('accepts rich text in location indications text', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

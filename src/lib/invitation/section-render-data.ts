@@ -286,7 +286,7 @@ function renderSection(
 							...sections.thankYou,
 							variant: sectionVariant(sections.thankYou, variant),
 							showThankYouBranding:
-								pageContext.viewModel.branding.showThankYouBranding,
+								pageContext.viewModel.brandingVisibility.showThankYouBranding,
 						},
 					}
 				: null;

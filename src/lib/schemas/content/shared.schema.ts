@@ -134,9 +134,7 @@ export const sharingSchema = z
 
 export const brandingSchema = z
 	.object({
-		showFooterBranding: z.boolean().default(true),
-		showContactCta: z.boolean().default(true),
-		showThankYouBranding: z.boolean().default(true),
+		hideCelebraMeBranding: z.boolean().default(false),
 	})
 	.strict()
 	.optional();
