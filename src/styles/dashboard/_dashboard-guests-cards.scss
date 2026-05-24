@@ -1,39 +1,29 @@
 @use '../global/mixins' as mixins;
 
 .guest-card {
-	background: linear-gradient(
-		180deg,
-		var(--color-surface-warm-ivory),
-		var(--color-surface-elevated)
-	);
-	border: 1px solid var(--color-border-premium);
+	background: var(--color-surface-secondary);
+	border: 1px solid var(--color-border-subtle);
 	border-radius: 14px;
-	padding: 1rem 1.1rem;
+	padding: 1rem 1.15rem;
 	display: flex;
 	flex-direction: column;
-	gap: 0.6rem;
+	gap: 0.65rem;
 	transition:
 		border-color 0.25s ease,
 		box-shadow 0.25s ease;
 	position: relative;
-	box-shadow: var(--shadow-warm);
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: 14px;
-		background: linear-gradient(180deg, rgb(243 239 228 / 3%), transparent 50%);
-		pointer-events: none;
-	}
+	box-shadow: var(--shadow-subtle);
+	width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 
 	&:hover {
-		border-color: var(--color-border-subtle);
-		box-shadow: var(--shadow-warm-emphasis);
+		border-color: var(--color-border-premium);
+		box-shadow: var(--shadow-warm);
 	}
 
 	@media (width <= 480px) {
-		padding: 0.85rem 0.9rem;
+		padding: 0.85rem 1rem;
 		gap: 0.5rem;
 	}
 }
@@ -42,24 +32,25 @@
 .guest-card__header {
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-start;
+	align-items: center;
 	gap: 0.75rem;
 }
 
 .guest-card__identity {
 	display: flex;
 	align-items: center;
-	gap: 0.6rem;
+	gap: 0.5rem;
 	min-width: 0;
+	flex: 1;
 }
 
 .guest-card__index {
-	font-size: 0.55rem;
-	font-weight: 400;
+	font-size: 0.58rem;
+	font-weight: 500;
 	color: var(--color-text-muted);
 	flex-shrink: 0;
 	letter-spacing: 0.02em;
-	opacity: 60%;
+	opacity: 70%;
 }
 
 .guest-card__name {
@@ -67,21 +58,19 @@
 	font-size: 0.95rem;
 	color: var(--color-text-primary);
 	line-height: 1.3;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow-wrap: break-word;
 }
 
 .guest-card__branding-badge {
 	display: inline-block;
-	font-size: 0.65rem;
+	font-size: 0.6rem;
 	font-weight: 500;
-	color: var(--color-text-tertiary);
-	background: var(--color-surface-muted);
-	border: 1px solid var(--color-border-subtle);
+	color: var(--color-text-muted);
+	background: rgb(var(--color-text-secondary-rgb) / 8%);
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 16%);
 	border-radius: 4px;
 	padding: 0.08rem 0.35rem;
-	margin-left: 0.4rem;
+	margin-left: 0.3rem;
 	vertical-align: middle;
 	line-height: 1.3;
 	white-space: nowrap;
@@ -89,14 +78,14 @@
 
 /* ───── Contact row ───── */
 .guest-card__contact {
-	font-size: 0.75rem;
+	font-size: 0.78rem;
 	color: var(--color-text-secondary);
 	font-weight: 400;
 	line-height: 1.4;
 }
 
 .guest-card__contact--fallback {
-	font-size: 0.7rem;
+	font-size: 0.72rem;
 	color: var(--color-text-muted);
 	font-style: italic;
 }
@@ -105,7 +94,7 @@
 .guest-card__metrics {
 	display: flex;
 	align-items: center;
-	gap: 0.55rem;
+	gap: 0.6rem;
 	flex-wrap: wrap;
 	font-size: 0.68rem;
 	color: var(--color-text-secondary);
@@ -118,7 +107,7 @@
 }
 
 .guest-card__stat-label {
-	font-size: 0.6rem;
+	font-size: 0.62rem;
 	color: var(--color-text-muted);
 	font-weight: 500;
 	letter-spacing: 0.01em;
@@ -126,7 +115,7 @@
 
 .guest-card__stat-value {
 	font-family: var(--font-ui);
-	font-size: 0.72rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: var(--color-text-secondary);
 }
@@ -135,6 +124,13 @@
 	font-size: 0.75em;
 	color: var(--color-text-muted);
 	margin: 0 1px;
+}
+
+/* ───── View-status with inline progress bar ───── */
+.guest-card__metrics .view-status--bare {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
 }
 
 /* ───── Message toggle button ───── */
@@ -237,9 +233,9 @@
 .guest-card__actions {
 	display: flex;
 	align-items: center;
-	gap: 0.35rem;
+	gap: 0.4rem;
 	justify-content: flex-end;
-	margin-top: 0.1rem;
+	margin-top: 0.15rem;
 }
 
 .guest-card__menu-btn {
@@ -248,6 +244,8 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
 	padding: 0;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 8px;
@@ -258,8 +256,10 @@
 	flex-shrink: 0;
 
 	@media (width <= 480px) {
-		width: 44px;
-		height: 44px;
+		width: 36px;
+		height: 36px;
+		min-width: 36px;
+		min-height: 36px;
 	}
 
 	svg {
@@ -306,11 +306,11 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 0.7rem;
-	padding: 0.75rem;
-	margin: 0.2rem -0.1rem 0;
+	gap: 0.75rem;
+	padding: 0.85rem;
+	margin: 0.3rem -0.1rem 0;
 	border-radius: 10px;
-	background: var(--color-surface-secondary);
+	background: var(--color-surface-soft);
 	border: 1px solid var(--color-border-subtle);
 	position: relative;
 }
@@ -320,6 +320,11 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 0.5rem 1rem;
+
+	@media (width <= 480px) {
+		grid-template-columns: 1fr;
+		gap: 0.4rem 0;
+	}
 }
 
 .guest-card__detail {
@@ -369,16 +374,25 @@
 /* ───── Cards container (CSS grid, no duplicated DOM) ───── */
 .dashboard-guests__cards {
 	display: none;
+	width: 100%;
+	margin-inline: auto;
 
 	@include mixins.respond-below(xl) {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 0.6rem;
+		grid-template-columns: minmax(0, min(100%, 420px));
+		justify-content: center;
+		gap: 0.85rem;
+	}
+
+	@media (width >= 600px) and (width <= 1199px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 960px;
 		align-items: start;
 	}
 
-	@media (width <= 599px) {
-		grid-template-columns: 1fr;
+	/* Bottom spacing so mobile dock doesn't cover last card */
+	@media (width <= 992px) {
+		padding-bottom: calc(76px + 1rem);
 	}
 }
 

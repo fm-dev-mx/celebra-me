@@ -47,19 +47,21 @@
 	}
 
 	input:checked + &__content {
-		background: rgb(var(--color-action-accent-rgb) / 8%);
-		border-color: var(--color-action-accent);
-		color: var(--color-text-emphasis);
-		box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 10%);
-		font-weight: var(--font-weight-bold);
+		background: var(--color-accent-soft-bg, rgb(var(--color-action-accent-rgb) / 14%));
+		border-color: var(--color-border-emphasis);
+		color: var(--color-action-primary);
+		box-shadow:
+			0 0 0 1px rgb(var(--color-action-accent-rgb) / 20%),
+			0 4px 12px rgb(var(--color-action-accent-rgb) / 12%);
+		font-weight: 700;
 
 		&::after {
 			content: '✓';
 			position: absolute;
 			top: -6px;
 			right: -6px;
-			background: var(--color-text-emphasis);
-			color: white;
+			background: var(--color-action-primary);
+			color: var(--color-surface-primary);
 			width: 18px;
 			height: 18px;
 			border-radius: 50%;

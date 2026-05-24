@@ -7,7 +7,7 @@
 	background: rgb(var(--color-surface-dark-rgb) / 88%);
 	backdrop-filter: blur(var(--glass-blur, 16px)) saturate(var(--glass-saturate, 180%));
 	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
-	padding: 0.45rem 0.65rem calc(0.45rem + env(safe-area-inset-bottom));
+	padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom));
 	z-index: var(--dashboard-z-mobile-dock);
 	justify-content: center;
 	align-items: center;
@@ -32,7 +32,8 @@
 		position: relative;
 		gap: 0.15rem;
 		border-radius: 8px;
-		min-width: 56px;
+		min-width: 60px;
+		min-height: 44px;
 
 		&:hover {
 			background: rgb(var(--color-action-accent-rgb) / 10%);
@@ -57,7 +58,7 @@
 		}
 
 		.dock-label {
-			font-size: 0.58rem;
+			font-size: 0.6rem;
 			font-weight: 500;
 			letter-spacing: 0.03em;
 		}
@@ -65,12 +66,12 @@
 		&--main {
 			flex-direction: row;
 			gap: 0.35rem;
-			padding: 0.5rem 0.9rem;
+			padding: 0.5rem 1rem;
 			min-height: 44px;
-			border-radius: 8px;
+			border-radius: 10px;
 			background: var(--dashboard-button-primary-bg);
 			color: var(--dashboard-button-primary-text);
-			border: 1px solid var(--dashboard-button-primary-border);
+			border: none;
 
 			.dock-icon {
 				width: 1.1rem;
@@ -78,7 +79,8 @@
 			}
 
 			.dock-label {
-				font-size: 0.68rem;
+				font-size: 0.72rem;
+				font-weight: 600;
 			}
 
 			&:hover {
