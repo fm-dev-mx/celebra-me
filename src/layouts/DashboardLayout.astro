@@ -95,6 +95,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 	const sidebar = document.getElementById('dashboard-sidebar');
 	const menuButton = document.querySelector('[data-dashboard-menu-toggle]');
 	const backdrop = document.querySelector('[data-dashboard-backdrop]');
+	const shell = document.querySelector('.dashboard-shell');
 
 	const closeDashboardNav = () => {
 		if (!(sidebar instanceof HTMLElement) || !(menuButton instanceof HTMLButtonElement)) {
@@ -106,11 +107,26 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		document.body.classList.remove('dashboard-shell-body--nav-open');
 	};
 
+	const toggleSidebarCollapse = () => {
+		if (!(sidebar instanceof HTMLElement) || !(shell instanceof HTMLElement)) return;
+		const isCollapsed = sidebar.classList.toggle('dashboard-sidebar--collapsed');
+		shell.classList.toggle('dashboard-shell--sidebar-collapsed', isCollapsed);
+		localStorage.setItem('dashboard-sidebar-collapsed', isCollapsed ? 'true' : 'false');
+	};
+
 	if (
 		sidebar instanceof HTMLElement &&
 		menuButton instanceof HTMLButtonElement &&
-		backdrop instanceof HTMLElement
+		backdrop instanceof HTMLElement &&
+		shell instanceof HTMLElement
 	) {
+		// Restore collapsed state from localStorage on desktop
+		const stored = localStorage.getItem('dashboard-sidebar-collapsed');
+		if (stored === 'true' && window.innerWidth > 992) {
+			sidebar.classList.add('dashboard-sidebar--collapsed');
+			shell.classList.add('dashboard-shell--sidebar-collapsed');
+		}
+
 		const toggleDashboardNav = () => {
 			const isOpen = sidebar.classList.toggle('dashboard-sidebar--open');
 			menuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -121,6 +137,9 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		backdrop.addEventListener('click', closeDashboardNav);
 		sidebar.querySelectorAll('[data-dashboard-close]').forEach((btn) => {
 			btn.addEventListener('click', closeDashboardNav);
+		});
+		sidebar.querySelectorAll('[data-dashboard-collapse-toggle]').forEach((btn) => {
+			btn.addEventListener('click', toggleSidebarCollapse);
 		});
 		sidebar.querySelectorAll('a').forEach((link) => {
 			link.addEventListener('click', closeDashboardNav);
