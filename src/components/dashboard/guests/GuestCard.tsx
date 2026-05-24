@@ -69,7 +69,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		'guest-card',
 		item.deliveryStatus === 'shared' ? 'guest-card--shared' : '',
 		isCelebrating || isHighlighted ? 'celebrate-success' : '',
-	].filter(Boolean).join(' ');
+	]
+		.filter(Boolean)
+		.join(' ');
 
 	const messageToggle = hasMessageFlag && (
 		<button
@@ -100,7 +102,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__expanded-details">
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Entrega</span>
-						<span className="guest-card__detail-value">{getDeliveryStateLabel(item)}</span>
+						<span className="guest-card__detail-value">
+							{getDeliveryStateLabel(item)}
+						</span>
 					</div>
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">RSVP</span>
@@ -118,12 +122,17 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					)}
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Origen</span>
-						<span className="guest-card__detail-value">{formatGuestEntrySource(item)}</span>
+						<span className="guest-card__detail-value">
+							{formatGuestEntrySource(item)}
+						</span>
 					</div>
 					{item.firstViewedAt && (
 						<div className="guest-card__detail">
 							<span className="guest-card__detail-label">Visto</span>
-							<span className="guest-card__detail-value" title={formatGuestDate(item.firstViewedAt)}>
+							<span
+								className="guest-card__detail-value"
+								title={formatGuestDate(item.firstViewedAt)}
+							>
 								{formatGuestDate(item.firstViewedAt).split(',')[0]}
 							</span>
 						</div>
@@ -131,7 +140,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					{item.respondedAt && (
 						<div className="guest-card__detail">
 							<span className="guest-card__detail-label">Respuesta</span>
-							<span className="guest-card__detail-value" title={formatGuestDate(item.respondedAt)}>
+							<span
+								className="guest-card__detail-value"
+								title={formatGuestDate(item.respondedAt)}
+							>
 								{formatGuestDate(item.respondedAt).split(',')[0]}
 							</span>
 						</div>
@@ -140,7 +152,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				{hasTags && (
 					<div className="guest-card__tags">
 						{visibleTags.map((tag) => (
-							<span key={tag} className="guest-tag">{tag}</span>
+							<span key={tag} className="guest-tag">
+								{tag}
+							</span>
 						))}
 					</div>
 				)}
@@ -149,11 +163,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						guestName={item.fullName}
 						inviteUrl={inviteUrl}
 						isShared={isShared}
-						attendanceStatus={item.attendanceStatus}
 						onEdit={() => onEdit(item)}
 						onDelete={() => onDelete(item)}
 						onMarkShared={async () => onMarkShared(item)}
-						onRevertShared={onRevertShared ? async () => onRevertShared(item) : undefined}
+						onRevertShared={
+							onRevertShared ? async () => onRevertShared(item) : undefined
+						}
 						guestId={item.guestId}
 						hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
 						isBrandingRemovalEligible={isBrandingRemovalEligible}
@@ -165,10 +180,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	);
 
 	return (
-		<article
-			className={articleClass}
-			data-guest-id={item.guestId}
-		>
+		<article className={articleClass} data-guest-id={item.guestId}>
 			<header className="guest-card__header">
 				<div className="guest-card__identity">
 					<span className="guest-card__index">#{String(index + 1).padStart(2, '0')}</span>
@@ -196,7 +208,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						{item.maxAllowedAttendees}
 					</span>
 				</div>
-				<div className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}>
+				<div
+					className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}
+				>
 					{compactViewLabel}
 				</div>
 				{messageToggle}
