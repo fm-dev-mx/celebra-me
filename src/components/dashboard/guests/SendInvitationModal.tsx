@@ -2,7 +2,7 @@ import React from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
-import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
+import { CopyIcon } from '@/components/common/icons/ui';
 import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
 import { useSendInvitation } from '@/components/dashboard/guests/use-send-invitation';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -107,25 +107,27 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 							/>
 						</div>
 
-						<div className="dashboard-form-field dashboard-form-field--full">
-							<label htmlFor="send-attendees">
-								Cu&aacute;ntos acompa&ntilde;antes permite
-							</label>
-							<div className="guest-response-cards guest-response-cards--compact">
-								{ATTENDEE_OPTIONS.map((num) => (
-									<label key={num} className="guest-response-card">
-										<input
-											type="radio"
-											name="sendMaxAttendees"
-											value={num}
-											checked={editMaxAttendees === num}
-											onChange={() => setEditMaxAttendees(num)}
-										/>
-										<div className="guest-response-card__content">
-											{num === 10 ? '10+' : num}
-										</div>
-									</label>
-								))}
+						<div className="dashboard-form-section">
+							<h4 className="dashboard-form-section__title">
+								Acompa&ntilde;antes permitidos
+							</h4>
+							<div className="dashboard-form-field dashboard-form-field--full">
+								<div className="guest-response-cards guest-response-cards--compact">
+									{ATTENDEE_OPTIONS.map((num) => (
+										<label key={num} className="guest-response-card">
+											<input
+												type="radio"
+												name="sendMaxAttendees"
+												value={num}
+												checked={editMaxAttendees === num}
+												onChange={() => setEditMaxAttendees(num)}
+											/>
+											<div className="guest-response-card__content">
+												{num === 10 ? '10+' : num}
+											</div>
+										</label>
+									))}
+								</div>
 							</div>
 						</div>
 
@@ -212,9 +214,9 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 							{canSendToPhone ? (
 								<WhatsAppIcon className="share-icon" size={16} />
 							) : (
-								<MessageIcon className="share-icon" size={16} />
+								<CopyIcon className="share-icon" size={16} />
 							)}
-							{canSendToPhone ? 'Enviar por WhatsApp' : 'Compartir invitaci\u00f3n'}
+							{canSendToPhone ? 'Enviar por WhatsApp' : 'Compartir enlace'}
 						</button>
 					</>
 				)}
