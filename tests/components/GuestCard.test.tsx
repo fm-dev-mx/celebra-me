@@ -85,9 +85,11 @@ describe('GuestCard status labels', () => {
 	});
 
 	it('uses clear mobile card metrics for attendance and view state', () => {
-		render(<GuestCard item={makeGuest({ isViewed: true })} {...baseProps} />);
+		render(
+			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 100 })} {...baseProps} />,
+		);
 		expect(screen.getByText('Asistentes:')).toBeInTheDocument();
-		expect(screen.getByText('Vista: Sí')).toBeInTheDocument();
+		expect(screen.getByText('Vista: 100%')).toBeInTheDocument();
 	});
 
 	it('shows "Sin marca" badge when branding removal is active', () => {
@@ -98,6 +100,15 @@ describe('GuestCard status labels', () => {
 	it('does not show "Sin marca" badge when branding removal is inactive', () => {
 		render(<GuestCard item={makeGuest({ hideCelebraMeBranding: false })} {...baseProps} />);
 		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
+	});
+
+	it('renders engagement progress bar with correct width when expanded', () => {
+		const { container } = render(
+			<GuestCard item={makeGuest({ viewPercentage: 75 })} isExpanded={true} {...baseProps} />,
+		);
+		const progress = container.querySelector('.engagement-mini__progress');
+		expect(progress).toBeInTheDocument();
+		expect(progress).toHaveStyle('width: 75%');
 	});
 
 	it('shows a guest message toggle only when guestComment exists', () => {

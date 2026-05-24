@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -49,6 +49,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onToggleBrandingRemoval,
 }) => {
 	const [messageVisible, setMessageVisible] = useState(false);
+	const progressRef = useRef<HTMLSpanElement>(null);
+
+	useLayoutEffect(() => {
+		if (progressRef.current) {
+			progressRef.current.style.width = `${Math.round(item.viewPercentage)}%`;
+		}
+	}, [item.viewPercentage]);
+
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
@@ -63,7 +71,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
-	const compactViewLabel = item.isViewed ? 'Vista: Sí' : 'Vista: No';
+	const compactViewLabel = `Vista: ${item.viewPercentage}%`;
 	const messageLabel = messageVisible ? 'Ocultar mensaje' : 'Mensaje del invitado';
 	const articleClass = [
 		'guest-card',
@@ -112,7 +120,16 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</div>
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Visualización</span>
-						<span className="guest-card__detail-value">{getViewStateLabel(item)}</span>
+						<span className="guest-card__detail-value">
+							<span className="engagement-mini">
+								<span className="engagement-mini__bar">
+									<span ref={progressRef} className="engagement-mini__progress" />
+								</span>
+								<span className="engagement-mini__label">
+									{getViewStateLabel(item)}
+								</span>
+							</span>
+						</span>
 					</div>
 					{item.email && (
 						<div className="guest-card__detail">
