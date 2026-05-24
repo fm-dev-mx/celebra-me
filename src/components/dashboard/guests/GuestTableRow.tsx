@@ -231,7 +231,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									guestName={item.fullName}
 									inviteUrl={inviteUrl}
 									isShared={isShared}
-									attendanceStatus={item.attendanceStatus}
 									onEdit={() => onEdit(item)}
 									onDelete={() => onDelete(item)}
 									onMarkShared={async () => onMarkShared(item)}

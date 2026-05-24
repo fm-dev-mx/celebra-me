@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
-import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 type ConfirmState = 'idle' | 'confirm-mark-sent' | 'confirm-revert';
 
 interface GuestExpandedActionsProps {
 	guestName: string;
 	inviteUrl: string;
 	isShared: boolean;
-	attendanceStatus: AttendanceStatus;
 	onEdit: () => void;
 	onDelete: () => void;
 	onMarkShared: () => void | Promise<void>;
@@ -129,8 +127,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 					</button>
 				)}
 			</div>
-
-			<div className="guest-expanded-actions__divider" role="separator" />
 
 			<div className="guest-expanded-actions__group">
 				<button
