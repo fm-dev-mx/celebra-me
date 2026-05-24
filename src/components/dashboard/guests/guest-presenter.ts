@@ -30,8 +30,8 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
  *   4. shared + viewed       (opened, awaiting RSVP — Recibida)
  */
 export function getPrimaryStatusLabel(item: DashboardGuestItem) {
-	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
-	if (item.attendanceStatus === 'declined') return 'Denegada';
+	if (item.attendanceStatus === 'confirmed') return 'Confirmada';
+	if (item.attendanceStatus === 'declined') return 'No asiste';
 	if (item.deliveryStatus === 'generated') return 'Por enviar';
 	if (!item.isViewed) return 'Enviada';
 	return 'Recibida';
@@ -67,8 +67,8 @@ export function getDeliveryStateLabel(item: DashboardGuestItem): string {
 }
 
 export function getRsvpStateLabel(item: DashboardGuestItem): string {
-	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
-	if (item.attendanceStatus === 'declined') return 'Denegada';
+	if (item.attendanceStatus === 'confirmed') return 'Confirmada';
+	if (item.attendanceStatus === 'declined') return 'No asiste';
 	return 'Sin respuesta';
 }
 
