@@ -104,7 +104,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 	) {
 		const collapseToggle = sidebar.querySelector('[data-dashboard-collapse-toggle]');
 
-		const updateCollapseToggleBtn = (isCollapsed) => {
+		const updateCollapseToggleBtn = (isCollapsed: boolean) => {
 			if (!collapseToggle) return;
 			collapseToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
 			collapseToggle.setAttribute(
