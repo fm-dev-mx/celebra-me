@@ -21,7 +21,6 @@ interface GuestFormModalProps {
 			maxAllowedAttendees: number;
 			attendanceStatus?: AttendanceStatus;
 			attendeeCount?: number;
-			guestComment?: string;
 			tags?: string[];
 		},
 		stayOpen?: boolean,
@@ -69,7 +68,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [maxAllowedAttendees, setMaxAllowedAttendees] = useState(1);
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>('pending');
 	const [attendeeCount, setAttendeeCount] = useState(0);
-	const [guestComment, setGuestComment] = useState('');
 	const [tags, setTags] = useState<string[]>([]);
 	const [saving, setSaving] = useState(false);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -85,7 +83,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setMaxAllowedAttendees(1);
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
-		setGuestComment('');
 		setTags([]);
 		setFieldErrors({});
 		setLocalError('');
@@ -105,7 +102,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
-		setGuestComment(initialGuest.guestComment || '');
 		setTags(initialGuest.tags || []);
 	}, [initialGuest, open]);
 
@@ -149,7 +145,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
-					guestComment: mode === 'edit' ? guestComment.trim() : undefined,
 					tags,
 				},
 				stayOpen,
@@ -293,6 +288,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 							{mode === 'edit' && (
 								<div className="dashboard-form-section dashboard-form-field--full">
+									<h4 className="dashboard-form-section__title">Respuesta del invitado</h4>
 									<div className="dashboard-form-grid dashboard-form-grid--nested">
 										<div className="dashboard-form-field">
 											<label htmlFor="attendanceStatus">Estado de RSVP</label>
@@ -332,20 +328,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 												/>
 											</div>
 										)}
-										<div className="dashboard-form-field dashboard-form-field--full">
-											<label htmlFor="guestComment">
-												Comentario / Nota del invitado
-											</label>
-											<textarea
-												id="guestComment"
-												value={guestComment}
-												onChange={(event) =>
-													setGuestComment(event.target.value)
-												}
-												rows={2}
-												placeholder="Mensaje o nota especial..."
-											/>
-										</div>
 									</div>
 								</div>
 							)}

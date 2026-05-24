@@ -14,12 +14,17 @@
 	width: 100vw;
 	height: 100dvh;
 	padding: var(--spacing-xl);
-	overflow: hidden;
+	overflow-y: auto;
 	overscroll-behavior: contain;
-	touch-action: none;
 	background: var(--dashboard-overlay-bg);
 	backdrop-filter: blur(12px) saturate(180%);
 	z-index: var(--dashboard-z-modal-backdrop) !important;
+
+	/* On mobile, remove padding so modal goes fullscreen */
+	@media (width <= 600px) {
+		padding: 0;
+		align-items: stretch;
+	}
 }
 
 .dashboard-modal {
@@ -40,6 +45,17 @@
 	box-shadow: 0 20px 50px rgb(0 0 0 / 20%);
 	animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
+	/* Fullscreen on mobile */
+	@media (width <= 600px) {
+		width: 100vw;
+		height: 100dvh;
+		max-height: none;
+		border-radius: 0;
+		border: none;
+		box-shadow: none;
+		padding: 1rem;
+	}
+
 	&::before {
 		content: '';
 		position: absolute;
@@ -47,6 +63,10 @@
 		border: 1px solid var(--dashboard-card-border);
 		border-radius: 10px;
 		pointer-events: none;
+
+		@media (width <= 600px) {
+			display: none;
+		}
 	}
 
 	h3 {
@@ -96,6 +116,13 @@
 		padding: 0;
 		margin: 0;
 		-webkit-overflow-scrolling: touch;
+	}
+
+	/* Ensure modal header is not overly tall on mobile */
+	@media (width <= 600px) {
+		&.dashboard-modal > &__header {
+			flex-shrink: 0;
+		}
 	}
 
 	&--confirm {
@@ -235,6 +262,19 @@
 }
 
 .dashboard-modal__footer {
+	/* Sticky footer on mobile */
+	@media (width <= 600px) {
+		position: sticky;
+		bottom: 0;
+		padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+		margin-top: 0.75rem;
+		margin-bottom: -1rem;
+		padding-left: 0;
+		padding-right: 0;
+		background: inherit;
+		z-index: 1;
+	}
+
 	.footer-actions {
 		display: flex;
 		flex: 1;
@@ -304,9 +344,18 @@
 }
 
 .dashboard-form-section {
-	margin-top: 0.5rem;
-	padding-top: 0.75rem;
+	margin-top: 1rem;
+	padding-top: 1rem;
 	border-top: 1px solid var(--color-border-subtle);
+
+	&__title {
+		color: var(--color-text-emphasis);
+		font-family: var(--font-display-elegant);
+		font-size: 0.85rem;
+		font-weight: 500;
+		margin: 0 0 0.75rem;
+		letter-spacing: -0.01em;
+	}
 }
 
 @keyframes slideUp {
