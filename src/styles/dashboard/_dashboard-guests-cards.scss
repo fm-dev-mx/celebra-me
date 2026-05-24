@@ -344,45 +344,19 @@
 	gap: 0.3rem;
 }
 
-/* ───── Cards container ───── */
+/* ───── Cards container (CSS grid, no duplicated DOM) ───── */
 .dashboard-guests__cards {
 	display: none;
 
 	@include mixins.respond-below(xl) {
-		display: flex;
-		flex-direction: row;
-		align-items: flex-start;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: 0.6rem;
+		align-items: start;
 	}
 
 	@media (width <= 599px) {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-}
-
-.dashboard-guests__column {
-	display: flex;
-	flex-direction: column;
-	gap: 0.6rem;
-	min-width: 0;
-
-	&--desktop {
-		@media (width <= 599px) {
-			display: none;
-		}
-	}
-
-	&--mobile {
-		@media (width >= 600px) {
-			display: none;
-		}
-	}
-
-	&--left,
-	&--right {
-		flex: 1;
+		grid-template-columns: 1fr;
 	}
 }
 

@@ -43,42 +43,27 @@ const GuestTable: React.FC<GuestTableProps> = ({
 		);
 	}
 
-	const renderGuestCard = (item: DashboardGuestItem, index: number) => (
-		<GuestCard
-			key={item.guestId}
-			item={item}
-			index={index}
-			inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
-			isCelebrating={celebratingGuestId === item.guestId}
-			isHighlighted={highlightedGuestId === item.guestId}
-			isExpanded={expandedGuestId === item.guestId}
-			onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
-			onEdit={onEdit}
-			onDelete={onDelete}
-			onMarkShared={onMarkShared}
-			onRevertShared={onRevertShared}
-			isBrandingRemovalEligible={isBrandingRemovalEligible}
-			onToggleBrandingRemoval={onToggleBrandingRemoval}
-		/>
-	);
-
-	const evenItems = items.filter((_, i) => i % 2 === 0);
-	const oddItems = items.filter((_, i) => i % 2 === 1);
-
 	return (
 		<>
 			<div className="dashboard-guests__cards">
-				{/* Desktop/tablet: two independent columns (even left, odd right) */}
-				<div className="dashboard-guests__column dashboard-guests__column--desktop dashboard-guests__column--left">
-					{evenItems.map((item) => renderGuestCard(item, items.indexOf(item)))}
-				</div>
-				<div className="dashboard-guests__column dashboard-guests__column--desktop dashboard-guests__column--right">
-					{oddItems.map((item) => renderGuestCard(item, items.indexOf(item)))}
-				</div>
-				{/* Mobile: single column preserving original order */}
-				<div className="dashboard-guests__column dashboard-guests__column--mobile">
-					{items.map((item, index) => renderGuestCard(item, index))}
-				</div>
+				{items.map((item, index) => (
+					<GuestCard
+						key={item.guestId}
+						item={item}
+						index={index}
+						inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+						isCelebrating={celebratingGuestId === item.guestId}
+						isHighlighted={highlightedGuestId === item.guestId}
+						isExpanded={expandedGuestId === item.guestId}
+						onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
+						onEdit={onEdit}
+						onDelete={onDelete}
+						onMarkShared={onMarkShared}
+						onRevertShared={onRevertShared}
+						isBrandingRemovalEligible={isBrandingRemovalEligible}
+						onToggleBrandingRemoval={onToggleBrandingRemoval}
+					/>
+				))}
 			</div>
 
 			<div className="dashboard-guests__table-wrap">
