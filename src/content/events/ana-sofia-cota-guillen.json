@@ -6,6 +6,11 @@
     "theme": {
         "preset": "celestial-blue"
     },
+    "branding": {
+        "showFooterBranding": false,
+        "showContactCta": false,
+        "showThankYouBranding": false
+    },
     "sectionStyles": {
         "location": {
             "showFlourishes": true

@@ -172,6 +172,12 @@ export interface Interlude {
 	overlayOpacity?: string;
 }
 
+export interface InvitationViewModelBranding {
+	showFooterBranding: boolean;
+	showContactCta: boolean;
+	showThankYouBranding: boolean;
+}
+
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
 	isDemo: boolean;
@@ -180,6 +186,7 @@ export interface InvitationViewModel {
 	theme: ThemeConfig;
 	hero: HeroViewModel;
 	envelope: EnvelopeViewModel;
+	branding: InvitationViewModelBranding;
 
 	// Sections (Normalized and resolved)
 	sections: {

@@ -429,6 +429,8 @@ export function adaptEvent(
 	const envelope = buildEnvelope(context);
 	const showEnvelope = envelope.enabled;
 
+	const resolvedBranding = adapterData.branding ?? {};
+
 	return {
 		id: eventSlug,
 		isDemo: adapterData.isDemo ?? false,
@@ -440,6 +442,11 @@ export function adaptEvent(
 		},
 		hero: buildHero(context),
 		envelope,
+		branding: {
+			showFooterBranding: resolvedBranding.showFooterBranding ?? true,
+			showContactCta: resolvedBranding.showContactCta ?? true,
+			showThankYouBranding: resolvedBranding.showThankYouBranding ?? true,
+		},
 		sections: {
 			quote: buildQuoteSectionData(context),
 			countdown: buildCountdownSectionData(context),

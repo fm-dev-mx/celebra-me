@@ -17,6 +17,7 @@ interface Props {
 		width: number;
 		height: number;
 	};
+	showThankYouBranding?: boolean;
 }
 
 const {
@@ -27,6 +28,7 @@ const {
 	focalPoint,
 	overlayAnchor,
 	overlaySafeArea,
+	showThankYouBranding = true,
 } = Astro.props;
 const EDITORIAL_THANK_YOU_VARIANTS = ['celestial-blue', 'enchanted-rose'] as const;
 const usesEditorialLayout = EDITORIAL_THANK_YOU_VARIANTS.includes(
@@ -106,9 +108,11 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 						</p>
 					</div>
 
+					{showThankYouBranding && (
 					<footer class="thank-you-footer">
 						<p>Concierge digital por Celebra-me</p>
 					</footer>
+				)}
 				</div>
 			</div>
 		) : (
@@ -134,9 +138,11 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 					</p>
 				</div>
 
+				{showThankYouBranding && (
 				<footer class="thank-you-footer">
 					<p>Concierge digital por Celebra-me</p>
 				</footer>
+				)}
 			</div>
 		)
 	}

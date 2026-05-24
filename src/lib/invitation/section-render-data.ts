@@ -82,7 +82,13 @@ export type InvitationSectionRenderDescriptor =
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
-	| { component: 'thankYou'; props: SectionData<'thankYou'> & { variant: ThemePreset } }
+	| {
+			component: 'thankYou';
+			props: SectionData<'thankYou'> & {
+				variant: ThemePreset;
+				showThankYouBranding: boolean;
+			};
+	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
 function renderInterlude(
@@ -279,6 +285,8 @@ function renderSection(
 						props: {
 							...sections.thankYou,
 							variant: sectionVariant(sections.thankYou, variant),
+							showThankYouBranding:
+								pageContext.viewModel.branding.showThankYouBranding,
 						},
 					}
 				: null;

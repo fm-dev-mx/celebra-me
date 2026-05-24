@@ -132,6 +132,15 @@ export const sharingSchema = z
 	})
 	.optional();
 
+export const brandingSchema = z
+	.object({
+		showFooterBranding: z.boolean().default(true),
+		showContactCta: z.boolean().default(true),
+		showThankYouBranding: z.boolean().default(true),
+	})
+	.strict()
+	.optional();
+
 export const baseEventFieldsSchema = z.object({
 	eventType: z.enum(EVENT_TYPES),
 	isDemo: z.boolean().default(false),
