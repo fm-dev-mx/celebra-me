@@ -17,74 +17,58 @@
 		flex-shrink: 0;
 	}
 
+	/* Recibida — viewed, awaiting RSVP — amber/warning */
 	&--pending {
-		background: color-mix(
-			in srgb,
-			var(--color-action-accent) 6%,
-			var(--color-surface-secondary)
-		);
-		border-color: color-mix(in srgb, var(--color-action-accent) 18%, transparent);
-		color: color-mix(in srgb, var(--color-action-accent) 80%, var(--color-text-primary));
+		background: var(--color-state-warning-bg);
+		border: 1px solid var(--color-state-warning-border);
+		color: var(--color-state-warning-text);
 
 		.status-pill__dot {
-			background: color-mix(in srgb, var(--color-action-accent) 80%, transparent);
+			background: var(--color-state-warning);
 		}
 	}
 
+	/* Confirmada — confirmed RSVP */
 	&--confirmed {
-		background: color-mix(
-			in srgb,
-			var(--color-state-success-text) 6%,
-			var(--color-surface-secondary)
-		);
-		border-color: color-mix(in srgb, var(--color-state-success-text) 18%, transparent);
-		color: color-mix(in srgb, var(--color-state-success-text) 85%, var(--color-text-primary));
+		background: var(--color-state-success-bg);
+		border: 1px solid var(--color-state-success-border);
+		color: var(--color-state-success-text);
 
 		.status-pill__dot {
-			background: color-mix(in srgb, var(--color-state-success-text) 80%, transparent);
+			background: var(--color-state-success);
 		}
 	}
 
+	/* No asiste — declined RSVP */
 	&--declined {
-		background: color-mix(
-			in srgb,
-			var(--color-state-danger-text) 6%,
-			var(--color-surface-secondary)
-		);
-		border-color: color-mix(in srgb, var(--color-state-danger-text) 18%, transparent);
-		color: color-mix(in srgb, var(--color-state-danger-text) 85%, var(--color-text-primary));
+		background: var(--color-state-danger-bg);
+		border: 1px solid var(--color-state-danger-border);
+		color: var(--color-state-danger-text);
 
 		.status-pill__dot {
-			background: color-mix(in srgb, var(--color-state-danger-text) 80%, transparent);
+			background: var(--color-state-danger);
 		}
 	}
 
+	/* Por enviar — requires attention, warning/gold */
 	&--unshared {
-		background: color-mix(
-			in srgb,
-			var(--color-action-accent) 16%,
-			var(--color-surface-secondary)
-		);
-		border-color: color-mix(in srgb, var(--color-action-accent) 40%, transparent);
-		color: color-mix(in srgb, var(--color-action-accent) 90%, var(--color-text-primary));
+		background: var(--color-state-warning-bg);
+		border: 1px solid var(--color-state-warning-border);
+		color: var(--color-state-warning-text);
 
 		.status-pill__dot {
-			background: var(--color-action-accent);
+			background: var(--color-state-warning);
 		}
 	}
 
-	/* Sent/shared but not yet viewed — muted info/blue */
+	/* Enviada — sent but not yet viewed, info/blue */
 	&--sent {
-		background: color-mix(
-			in srgb,
-			var(--color-state-info-text) 8%,
-			var(--color-surface-secondary)
-		);
-		border-color: color-mix(in srgb, var(--color-state-info-text) 24%, transparent);
-		color: color-mix(in srgb, var(--color-state-info-text) 90%, var(--color-text-primary));
+		background: var(--color-state-info-bg);
+		border: 1px solid var(--color-state-info-border);
+		color: var(--color-state-info-text);
 
 		.status-pill__dot {
-			background: color-mix(in srgb, var(--color-state-info-text) 80%, transparent);
+			background: var(--color-state-info);
 		}
 	}
 }

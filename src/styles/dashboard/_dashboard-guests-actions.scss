@@ -71,6 +71,12 @@
 	.share-label {
 		white-space: nowrap;
 	}
+
+	@media (width <= 480px) {
+		min-height: 36px;
+		padding: 0.35rem 0.9rem;
+		font-size: 0.78rem;
+	}
 }
 
 /* Expanded actions strip — replaces nested dropdown inside expanded rows/cards */
@@ -114,7 +120,7 @@
 		color 0.15s ease,
 		box-shadow 0.15s ease;
 	white-space: nowrap;
-	min-height: 30px;
+	min-height: 32px;
 	color: var(--color-text-secondary);
 
 	svg {
@@ -144,9 +150,9 @@
 	}
 
 	@media (width <= 480px) {
-		padding: 0.3rem 0.5rem;
-		font-size: 0.68rem;
-		min-height: 28px;
+		padding: 0.3rem 0.55rem;
+		font-size: 0.7rem;
+		min-height: 32px;
 	}
 }
 
@@ -184,22 +190,22 @@
 	}
 }
 
-/* Revert — restrained amber/notice */
+/* Revert — restrained notice */
 .guest-expanded-actions__btn--revert {
-	border-color: rgb(var(--color-action-accent-rgb) / 20%);
-	background: rgb(var(--color-action-accent-rgb) / 6%);
-	color: var(--color-text-secondary);
+	border-color: var(--color-border-subtle);
+	background: transparent;
+	color: var(--color-text-muted);
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 14%);
-		border-color: rgb(var(--color-action-accent-rgb) / 35%);
-		color: var(--color-text-emphasis);
+		background: rgb(var(--color-text-secondary-rgb) / 6%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
+		color: var(--color-text-secondary);
 	}
 }
 
-/* Confirming state — amber highlight for both mark and revert */
+/* Confirming state — gold highlight for both mark and revert */
 .guest-expanded-actions__btn--confirm {
-	border-color: rgb(var(--color-action-accent-rgb) / 40%);
+	border-color: var(--color-border-emphasis);
 	background: rgb(var(--color-action-accent-rgb) / 14%);
 	color: var(--color-text-emphasis);
 	font-weight: 600;
@@ -210,11 +216,11 @@
 
 	&:hover {
 		background: rgb(var(--color-action-accent-rgb) / 22%);
-		border-color: rgb(var(--color-action-accent-rgb) / 55%);
+		border-color: var(--color-action-accent);
 	}
 }
 
-/* Edit — ghost, minimal footprint */
+/* Edit + Branding — ghost, minimal footprint */
 .guest-expanded-actions__btn--branding,
 .guest-expanded-actions__btn--edit {
 	background: transparent;
@@ -234,26 +240,21 @@
 
 /* Delete — quiet danger */
 .guest-expanded-actions__btn--delete {
-	background: var(--dashboard-button-danger-bg);
-	border-color: var(--dashboard-button-danger-border);
-	color: var(--dashboard-button-danger-text);
+	background: transparent;
+	border-color: transparent;
+	color: var(--color-state-danger-text);
 
 	svg {
-		color: color-mix(in srgb, var(--dashboard-button-danger-text) 60%, transparent);
+		color: color-mix(in srgb, var(--color-state-danger-text) 50%, transparent);
 	}
 
 	&:hover {
 		background: var(--dashboard-button-danger-bg-hover);
 		border-color: var(--dashboard-button-danger-border-hover);
-		color: var(--dashboard-button-danger-text);
+		color: var(--color-state-danger-text);
 
 		svg {
-			color: var(--dashboard-button-danger-text);
+			color: var(--color-state-danger-text);
 		}
-	}
-
-	&:active {
-		background: rgb(var(--color-state-danger-rgb) / 18%);
-		border-color: rgb(var(--color-state-danger-rgb) / 40%);
 	}
 }
