@@ -468,7 +468,7 @@ export async function toggleGuestBrandingRemoval(input: {
 			throw new ApiError(
 				400,
 				'limit_reached',
-				'Límite alcanzado: esta invitación permite ocultar la marca en máximo 5 invitados.',
+				'Límite alcanzado: esta invitación permite ocultar al creador en máximo 5 invitados.',
 			);
 		}
 	}

@@ -45,11 +45,11 @@ export function getPrimaryStatusClass(item: DashboardGuestItem) {
 	return 'pending';
 }
 
-/** Displayable contact: phone > email > "Sin contacto" */
+/** Displayable contact: phone > email > "Sin teléfono registrado" */
 export function getContactDisplay(item: DashboardGuestItem): string {
 	if (item.phone?.trim()) return item.phone.trim();
 	if (item.email?.trim()) return item.email.trim();
-	return 'Sin contacto';
+	return 'Sin teléfono registrado';
 }
 
 export function hasContact(item: DashboardGuestItem): boolean {
@@ -63,13 +63,13 @@ export function hasMessage(item: DashboardGuestItem): boolean {
 
 /** Expanded-panel detail labels */
 export function getDeliveryStateLabel(item: DashboardGuestItem): string {
-	return item.deliveryStatus === 'shared' ? 'Enviado' : 'No enviado';
+	return item.deliveryStatus === 'shared' ? 'Enviado' : 'Por enviar';
 }
 
 export function getRsvpStateLabel(item: DashboardGuestItem): string {
 	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
 	if (item.attendanceStatus === 'declined') return 'Denegada';
-	return 'Pendiente';
+	return 'Sin respuesta';
 }
 
 export function getViewStateLabel(item: DashboardGuestItem): string {

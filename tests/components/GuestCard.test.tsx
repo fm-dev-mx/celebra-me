@@ -28,7 +28,7 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getByText('Por enviar')).toBeInTheDocument();
+		expect(screen.getAllByText('Por enviar').length).toBeGreaterThanOrEqual(1);
 	});
 
 	it('shows "Enviada" when shared but not viewed', () => {
@@ -71,6 +71,23 @@ describe('GuestCard status labels', () => {
 		render(<GuestCard item={makeGuest({ attendanceStatus: 'declined' })} {...baseProps} />);
 		const labels = screen.getAllByText('Denegada');
 		expect(labels.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it('shows "Sin respuesta" in RSVP details when attendanceStatus is pending', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'pending' })}
+				isExpanded={true}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Sin respuesta')).toBeInTheDocument();
+	});
+
+	it('uses clear mobile card metrics for attendance and view state', () => {
+		render(<GuestCard item={makeGuest({ isViewed: true })} {...baseProps} />);
+		expect(screen.getByText('Asistentes:')).toBeInTheDocument();
+		expect(screen.getByText('Vista: Sí')).toBeInTheDocument();
 	});
 
 	it('shows "Sin marca" badge when branding removal is active', () => {

@@ -62,6 +62,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
+	const compactViewLabel = item.isViewed ? 'Vista: Sí' : 'Vista: No';
 
 	return (
 		<article
@@ -91,7 +92,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			{/* ── Zone 3: Metrics ── */}
 			<div className="guest-card__metrics">
 				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Asist.</span>
+					<span className="guest-card__stat-label">Asistentes:</span>
 					<span className="guest-card__stat-value">
 						{item.attendeeCount}
 						<span className="guest-card__stat-sep">/</span>
@@ -102,13 +103,13 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div
 					className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}
 				>
-					{getViewStateLabel(item)}
+					{compactViewLabel}
 				</div>
 
 				{hasMessageFlag && (
 					<span className="guest-card__indicator">
-						<MessageIcon size={24} />
-						Tienes un mensaje de este invitado
+						<MessageIcon size={16} />
+						Mensaje del invitado
 					</span>
 				)}
 			</div>
