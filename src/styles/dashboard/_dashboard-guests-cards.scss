@@ -310,15 +310,39 @@
 
 	@include mixins.respond-below(xl) {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
+		align-items: flex-start;
 		gap: 0.6rem;
 	}
 
-	/* 2-column grid at tablet widths to prevent wide empty strips */
-	@media (width >= 600px) and (width <= 1199px) {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
+	@media (width <= 599px) {
+		display: flex;
+		flex-direction: column;
 		gap: 0.6rem;
+	}
+}
+
+.dashboard-guests__column {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	min-width: 0;
+
+	&--desktop {
+		@media (width <= 599px) {
+			display: none;
+		}
+	}
+
+	&--mobile {
+		@media (width >= 600px) {
+			display: none;
+		}
+	}
+
+	&--left,
+	&--right {
+		flex: 1;
 	}
 }
 
