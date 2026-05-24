@@ -55,7 +55,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 				});
 				await onShared();
 			} else {
-				if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+				if (!navigator.clipboard?.writeText) {
 					window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 				} else {
 					await navigator.clipboard.writeText(inviteUrl);
