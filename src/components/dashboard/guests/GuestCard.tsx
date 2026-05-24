@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -48,6 +48,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
 }) => {
+	const [messageVisible, setMessageVisible] = useState(false);
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
@@ -63,6 +64,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
 	const compactViewLabel = item.isViewed ? 'Vista: Sí' : 'Vista: No';
+	const messageLabel = messageVisible ? 'Ocultar mensaje' : 'Mensaje del invitado';
 
 	return (
 		<article
@@ -107,12 +109,24 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</div>
 
 				{hasMessageFlag && (
-					<span className="guest-card__indicator">
-						<MessageIcon size={16} />
-						Mensaje del invitado
-					</span>
+					<button
+						type="button"
+						className={`guest-card__msg-toggle ${messageVisible ? 'guest-card__msg-toggle--open' : ''}`}
+						onClick={() => setMessageVisible((v) => !v)}
+						aria-expanded={messageVisible}
+					>
+						<MessageIcon size={16} aria-hidden="true" />
+						<span>{messageLabel}</span>
+					</button>
 				)}
 			</div>
+
+			{/* ── Zone 3b: Guest message (read-only, togglable) ── */}
+			{hasMessageFlag && messageVisible && (
+				<div className="guest-card__message-block">
+					<p className="guest-card__message-text">{item.guestComment}</p>
+				</div>
+			)}
 
 			{/* ── Zone 4: Actions ── */}
 			<footer className="guest-card__actions">
@@ -200,18 +214,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							</div>
 						)}
 					</div>
-
-					{/* Guest comment / message */}
-					{hasMessageFlag && (
-						<div className="guest-card__expanded-message">
-							<div className="guest-card__expanded-message-label">
-								Mensaje del invitado
-							</div>
-							<p className="guest-card__expanded-message-text">
-								"{item.guestComment}"
-							</p>
-						</div>
-					)}
 
 					{/* Tags */}
 					{hasTags && (
