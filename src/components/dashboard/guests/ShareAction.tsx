@@ -75,8 +75,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 		if (status === 'sending') return 'Enviando';
 		if (status === 'delivered') return 'Registrado';
 		if (primaryAction === 'whatsapp') return isShared ? 'Reenviar' : 'Enviar';
-		if (primaryAction === 'copy') return 'Copiar';
-		return 'Compartir';
+		if (primaryAction === 'copy') return 'Copiar enlace';
+		return 'Compartir invitación';
 	};
 
 	const renderButtonIcon = () => {
