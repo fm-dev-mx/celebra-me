@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import { makeGuest } from '@tests/helpers/guest-factory';
 
@@ -102,13 +102,18 @@ describe('GuestCard status labels', () => {
 		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
 	});
 
-	it('renders engagement progress bar with correct width when expanded', () => {
+	it('renders engagement progress bar with correct width and aria attributes when expanded', () => {
 		const { container } = render(
-			<GuestCard item={makeGuest({ viewPercentage: 75 })} isExpanded={true} {...baseProps} />,
+			<GuestCard item={makeGuest({ viewPercentage: 67 })} isExpanded={true} {...baseProps} />,
 		);
-		const progress = container.querySelector('.engagement-mini__progress');
-		expect(progress).toBeInTheDocument();
-		expect(progress).toHaveStyle('width: 75%');
+		const mini = container.querySelector('.engagement-mini');
+		expect(mini).toBeInTheDocument();
+		expect(mini).toHaveAttribute('value', '67');
+		expect(mini).toHaveAttribute('max', '100');
+		expect(mini).toHaveAttribute('role', 'progressbar');
+		expect(mini).toHaveAttribute('aria-valuenow', '67');
+		expect(mini).toHaveAttribute('aria-valuemin', '0');
+		expect(mini).toHaveAttribute('aria-valuemax', '100');
 	});
 
 	it('shows a guest message toggle only when guestComment exists', () => {
@@ -116,11 +121,102 @@ describe('GuestCard status labels', () => {
 			<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />,
 		);
 		expect(container.querySelector('.guest-card__msg-toggle')).not.toBeInTheDocument();
+		expect(container.querySelector('.guest-card__message-block')).not.toBeInTheDocument();
 
 		rerender(
 			<GuestCard item={makeGuest({ guestComment: 'Nos vemos pronto' })} {...baseProps} />,
 		);
 		const toggle = container.querySelector('.guest-card__msg-toggle');
 		expect(toggle).toHaveTextContent('Mensaje del invitado');
+
+		const block = container.querySelector('.guest-card__message-block');
+		expect(block).toBeInTheDocument();
+		expect(block).not.toHaveClass('guest-card__message-block--open');
+		expect(container.querySelector('.guest-card__message-label')).toHaveTextContent(
+			'Mensaje del invitado',
+		);
+		expect(container.querySelector('.guest-card__message-text')).toHaveTextContent(
+			'Nos vemos pronto',
+		);
+	});
+
+	it('opens message block on toggle click', () => {
+		const { container } = render(
+			<GuestCard
+				item={makeGuest({ guestComment: 'Hola, confirmamos asistencia' })}
+				{...baseProps}
+			/>,
+		);
+		const toggle = container.querySelector<HTMLElement>('.guest-card__msg-toggle');
+		expect(toggle).toBeInTheDocument();
+		act(() => {
+			toggle?.click();
+		});
+		const block = container.querySelector('.guest-card__message-block');
+		expect(block).toHaveClass('guest-card__message-block--open');
+	});
+
+	it('renders progress bar width correctly at 0%, 50%, and 100%', () => {
+		const renderAt = (pct: number) => {
+			const { container } = render(
+				<GuestCard
+					item={makeGuest({ viewPercentage: pct })}
+					isExpanded={true}
+					{...baseProps}
+				/>,
+			);
+			return container.querySelector<HTMLProgressElement>('.engagement-mini');
+		};
+
+		const p0 = renderAt(0);
+		expect(p0).toHaveAttribute('value', '0');
+
+		const p50 = renderAt(50);
+		expect(p50).toHaveAttribute('value', '50');
+
+		const p100 = renderAt(100);
+		expect(p100).toHaveAttribute('value', '100');
+	});
+
+	it('renders closed-card view status as percentage, not boolean text', () => {
+		render(
+			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 67 })} {...baseProps} />,
+		);
+		expect(screen.getByText('Vista: 67%')).toBeInTheDocument();
+		expect(screen.queryByText('Vista: Sí')).not.toBeInTheDocument();
+	});
+
+	it('clamps viewPercentage above 100 to 100 in closed card', () => {
+		render(
+			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 150 })} {...baseProps} />,
+		);
+		expect(screen.getByText('Vista: 100%')).toBeInTheDocument();
+	});
+
+	it('clamps viewPercentage below 0 to 0 in closed card', () => {
+		render(
+			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: -10 })} {...baseProps} />,
+		);
+		expect(screen.getByText('Vista: 0%')).toBeInTheDocument();
+	});
+
+	it('clamps viewPercentage above 100 in expanded progress bar value', () => {
+		const { container } = render(
+			<GuestCard
+				item={makeGuest({ viewPercentage: 200 })}
+				isExpanded={true}
+				{...baseProps}
+			/>,
+		);
+		const mini = container.querySelector('.engagement-mini');
+		expect(mini).toHaveAttribute('value', '100');
+		expect(mini).toHaveAttribute('aria-valuenow', '100');
+	});
+
+	it('clamps non-finite viewPercentage to 0', () => {
+		render(
+			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: NaN })} {...baseProps} />,
+		);
+		expect(screen.getByText('Vista: 0%')).toBeInTheDocument();
 	});
 });
