@@ -157,4 +157,67 @@ describe('guest dashboard expanded actions', () => {
 			expect(onRevertShared).toHaveBeenCalledTimes(1);
 		});
 	});
+
+	it('shows branding action when guest is eligible for branding removal', () => {
+		render(
+			<GuestExpandedActions
+				guestName={sampleGuest.fullName}
+				inviteUrl="https://example.com/invite/1"
+				isShared={false}
+				attendanceStatus="pending"
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onMarkShared={onMarkShared}
+				guestId={sampleGuest.guestId}
+				hideCelebraMeBranding={false}
+				isBrandingRemovalEligible={true}
+				onToggleBrandingRemoval={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Ocultar creador')).toBeInTheDocument();
+	});
+
+	it('does not show branding action when guest is not eligible', () => {
+		render(
+			<GuestExpandedActions
+				guestName={sampleGuest.fullName}
+				inviteUrl="https://example.com/invite/1"
+				isShared={false}
+				attendanceStatus="pending"
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onMarkShared={onMarkShared}
+				guestId={sampleGuest.guestId}
+				hideCelebraMeBranding={false}
+				isBrandingRemovalEligible={false}
+				onToggleBrandingRemoval={jest.fn()}
+			/>,
+		);
+
+		expect(screen.queryByText('Ocultar creador')).not.toBeInTheDocument();
+	});
+
+	it('toggles branding removal with the next value', () => {
+		const onToggleBrandingRemoval = jest.fn();
+		render(
+			<GuestExpandedActions
+				guestName={sampleGuest.fullName}
+				inviteUrl="https://example.com/invite/1"
+				isShared={false}
+				attendanceStatus="pending"
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onMarkShared={onMarkShared}
+				guestId={sampleGuest.guestId}
+				hideCelebraMeBranding={false}
+				isBrandingRemovalEligible={true}
+				onToggleBrandingRemoval={onToggleBrandingRemoval}
+			/>,
+		);
+
+		fireEvent.click(screen.getByText('Ocultar creador'));
+
+		expect(onToggleBrandingRemoval).toHaveBeenCalledWith(sampleGuest.guestId, true);
+	});
 });

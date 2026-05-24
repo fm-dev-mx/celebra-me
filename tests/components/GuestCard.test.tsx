@@ -12,11 +12,6 @@ jest.mock('@/components/dashboard/guests/GuestExpandedActions', () => ({
 	default: () => <div data-testid="expanded-actions" />,
 }));
 
-jest.mock('@/components/dashboard/guests/GuestBrandingMenu', () => ({
-	__esModule: true,
-	default: () => <div data-testid="branding-menu" />,
-}));
-
 describe('GuestCard status labels', () => {
 	const baseProps = {
 		index: 0,
@@ -88,21 +83,17 @@ describe('GuestCard status labels', () => {
 		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
 	});
 
-	it('renders branding menu only when eligible', () => {
-		const onToggle = jest.fn();
-		const { rerender } = render(
-			<GuestCard
-				item={makeGuest({})}
-				{...baseProps}
-				isBrandingRemovalEligible={true}
-				onToggleBrandingRemoval={onToggle}
-			/>,
+	it('shows a neutral guest message indicator only when guestComment exists', () => {
+		const { container, rerender } = render(
+			<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />,
 		);
-		expect(screen.getByTestId('branding-menu')).toBeInTheDocument();
+		expect(container.querySelector('.guest-card__indicator')).not.toBeInTheDocument();
 
 		rerender(
-			<GuestCard item={makeGuest({})} {...baseProps} isBrandingRemovalEligible={false} />,
+			<GuestCard item={makeGuest({ guestComment: 'Nos vemos pronto' })} {...baseProps} />,
 		);
-		expect(screen.queryByTestId('branding-menu')).not.toBeInTheDocument();
+		expect(container.querySelector('.guest-card__indicator')).toHaveTextContent(
+			'Mensaje del invitado',
+		);
 	});
 });
