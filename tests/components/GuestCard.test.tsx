@@ -59,17 +59,17 @@ describe('GuestCard status labels', () => {
 		expect(screen.getByText('Recibida')).toBeInTheDocument();
 	});
 
-	it('shows "Aceptada" when attendanceStatus is confirmed (overrides delivery status)', () => {
+	it('shows "Confirmada" when attendanceStatus is confirmed (overrides delivery status)', () => {
 		render(<GuestCard item={makeGuest({ attendanceStatus: 'confirmed' })} {...baseProps} />);
 		// The status label appears in the status pill header AND in the expanded RSVP detail.
 		// getAllByText ensures we find at least one occurrence.
-		const labels = screen.getAllByText('Aceptada');
+		const labels = screen.getAllByText('Confirmada');
 		expect(labels.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('shows "Denegada" when attendanceStatus is declined', () => {
+	it('shows "No asiste" when attendanceStatus is declined', () => {
 		render(<GuestCard item={makeGuest({ attendanceStatus: 'declined' })} {...baseProps} />);
-		const labels = screen.getAllByText('Denegada');
+		const labels = screen.getAllByText('No asiste');
 		expect(labels.length).toBeGreaterThanOrEqual(1);
 	});
 
