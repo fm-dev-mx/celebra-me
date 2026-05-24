@@ -217,7 +217,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 										}
 									}}
 									required
-									placeholder="Ej. Juan Pérez"
+									placeholder="Ej. Juan P&eacute;rez"
 									autoFocus
 								/>
 								{fieldErrors.fullName && (
@@ -226,6 +226,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									</span>
 								)}
 							</div>
+
 							<div className="dashboard-form-field dashboard-form-field--full">
 								<PhoneInputGroup
 									id="guest"
@@ -234,61 +235,68 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									onCountryCodeChange={setCountryCode}
 									onPhoneChange={setPhone}
 									error={fieldErrors.phone}
-									label="Teléfono / WhatsApp"
+									label="Tel&eacute;fono / WhatsApp"
 									showOptional
 									inputRef={phoneInputRef}
 								/>
 							</div>
 
-							<div className="dashboard-form-field dashboard-form-field--full">
-								<label htmlFor="maxAllowedAttendees">
-									Número máximo de asistentes
-								</label>
-								<div className="guest-response-cards guest-response-cards--compact">
-									{ATTENDEE_OPTIONS.map((num) => (
-										<label key={num} className="guest-response-card">
-											<input
-												type="radio"
-												name="maxAllowedAttendees"
-												value={num}
-												checked={maxAllowedAttendees === num}
-												onChange={() => setMaxAllowedAttendees(num)}
-											/>
-											<div className="guest-response-card__content">
-												{num === 10 ? '10+' : num}
-											</div>
-										</label>
-									))}
+							<div className="dashboard-form-section">
+								<h4 className="dashboard-form-section__title">
+									N&uacute;mero m&aacute;ximo de asistentes
+								</h4>
+								<div className="dashboard-form-field dashboard-form-field--full">
+									<div className="guest-response-cards guest-response-cards--compact">
+										{ATTENDEE_OPTIONS.map((num) => (
+											<label key={num} className="guest-response-card">
+												<input
+													type="radio"
+													name="maxAllowedAttendees"
+													value={num}
+													checked={maxAllowedAttendees === num}
+													onChange={() => setMaxAllowedAttendees(num)}
+												/>
+												<div className="guest-response-card__content">
+													{num === 10 ? '10+' : num}
+												</div>
+											</label>
+										))}
+									</div>
 								</div>
 							</div>
-							<div className="dashboard-form-field dashboard-form-field--full">
-								<label>Categorías (opcional)</label>
-								<div className="guest-response-cards guest-response-cards--tags">
-									{PREDEFINED_TAGS.map((tag) => (
-										<label key={tag} className="guest-response-card">
-											<input
-												type="checkbox"
-												className="hidden-input"
-												checked={tags.includes(tag)}
-												onChange={(e) => {
-													if (e.target.checked) {
-														setTags([...tags, tag]);
-													} else {
-														setTags(tags.filter((t) => t !== tag));
-													}
-												}}
-											/>
-											<div className="guest-response-card__content">
-												{tag}
-											</div>
-										</label>
-									))}
+
+							<div className="dashboard-form-section">
+								<h4 className="dashboard-form-section__title">Categor&iacute;as</h4>
+								<div className="dashboard-form-field dashboard-form-field--full">
+									<div className="guest-response-cards guest-response-cards--tags">
+										{PREDEFINED_TAGS.map((tag) => (
+											<label key={tag} className="guest-response-card">
+												<input
+													type="checkbox"
+													className="hidden-input"
+													checked={tags.includes(tag)}
+													onChange={(e) => {
+														if (e.target.checked) {
+															setTags([...tags, tag]);
+														} else {
+															setTags(tags.filter((t) => t !== tag));
+														}
+													}}
+												/>
+												<div className="guest-response-card__content">
+													{tag}
+												</div>
+											</label>
+										))}
+									</div>
 								</div>
 							</div>
 
 							{mode === 'edit' && (
 								<div className="dashboard-form-section dashboard-form-field--full">
-									<h4 className="dashboard-form-section__title">Respuesta del invitado</h4>
+									<h4 className="dashboard-form-section__title">
+										Respuesta del invitado
+									</h4>
 									<div className="dashboard-form-grid dashboard-form-grid--nested">
 										<div className="dashboard-form-field">
 											<label htmlFor="attendanceStatus">Estado de RSVP</label>
