@@ -263,4 +263,9 @@
 			color: var(--dashboard-button-danger-text);
 		}
 	}
+
+	&:active {
+		background: rgb(var(--color-state-danger-rgb) / 18%);
+		border-color: rgb(var(--color-state-danger-rgb) / 40%);
+	}
 }

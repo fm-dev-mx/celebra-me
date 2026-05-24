@@ -62,11 +62,11 @@
 	&--unshared {
 		background: color-mix(
 			in srgb,
-			var(--color-action-accent) 13%,
+			var(--color-action-accent) 16%,
 			var(--color-surface-secondary)
 		);
-		border-color: color-mix(in srgb, var(--color-action-accent) 34%, transparent);
-		color: color-mix(in srgb, var(--color-action-accent) 82%, var(--color-text-primary));
+		border-color: color-mix(in srgb, var(--color-action-accent) 40%, transparent);
+		color: color-mix(in srgb, var(--color-action-accent) 90%, var(--color-text-primary));
 
 		.status-pill__dot {
 			background: var(--color-action-accent);
@@ -77,11 +77,11 @@
 	&--sent {
 		background: color-mix(
 			in srgb,
-			var(--color-state-info-text) 6%,
+			var(--color-state-info-text) 8%,
 			var(--color-surface-secondary)
 		);
-		border-color: color-mix(in srgb, var(--color-state-info-text) 18%, transparent);
-		color: color-mix(in srgb, var(--color-state-info-text) 85%, var(--color-text-primary));
+		border-color: color-mix(in srgb, var(--color-state-info-text) 24%, transparent);
+		color: color-mix(in srgb, var(--color-state-info-text) 90%, var(--color-text-primary));
 
 		.status-pill__dot {
 			background: color-mix(in srgb, var(--color-state-info-text) 80%, transparent);
