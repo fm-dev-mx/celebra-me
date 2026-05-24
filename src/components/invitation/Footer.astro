@@ -10,6 +10,8 @@ interface Props {
 	showEnvelope?: boolean;
 	variant?: SharedSectionVariant;
 	closingPhrase?: string;
+	showFooterBranding?: boolean;
+	showContactCta?: boolean;
 }
 
 const {
@@ -17,6 +19,8 @@ const {
 	showEnvelope = false,
 	variant = 'standard',
 	closingPhrase,
+	showFooterBranding = true,
+	showContactCta = true,
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const logoVariant = variant === 'editorial' ? 'footer' : 'default';
@@ -37,7 +41,9 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 	<div class="footer__divider" aria-hidden="true"></div>
 
 	<div class="footer__content">
+		{showFooterBranding || showContactCta ? (
 		<div class="footer__primary-row">
+			{showFooterBranding && (
 			<div class="footer__info">
 				<p class="powered-by">Powered by</p>
 				<Logo
@@ -46,7 +52,9 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 					class:list={[{ 'footer-brand-logo': variant === 'editorial' }]}
 				/>
 			</div>
+			)}
 
+			{showContactCta && (
 			<div class="footer__actions">
 				<a
 					class="whatsapp-button"
@@ -68,7 +76,9 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 					<span>Contáctanos</span>
 				</a>
 			</div>
+			)}
 		</div>
+		) : null}
 
 		{hasReplay && (
 			<button

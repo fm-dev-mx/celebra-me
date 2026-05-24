@@ -6,6 +6,11 @@
     "theme": {
         "preset": "sacred-keepsake"
     },
+    "branding": {
+        "showFooterBranding": false,
+        "showContactCta": false,
+        "showThankYouBranding": false
+    },
     "sectionStyles": {
         "location": {
             "showFlourishes": true
