@@ -91,28 +91,10 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 	</body>
 </html>
 <script>
-	const topbar = document.querySelector('.dashboard-topbar');
 	const sidebar = document.getElementById('dashboard-sidebar');
 	const menuButton = document.querySelector('[data-dashboard-menu-toggle]');
 	const backdrop = document.querySelector('[data-dashboard-backdrop]');
 	const shell = document.querySelector('.dashboard-shell');
-
-	const closeDashboardNav = () => {
-		if (!(sidebar instanceof HTMLElement) || !(menuButton instanceof HTMLButtonElement)) {
-			return;
-		}
-
-		sidebar.classList.remove('dashboard-sidebar--open');
-		menuButton.setAttribute('aria-expanded', 'false');
-		document.body.classList.remove('dashboard-shell-body--nav-open');
-	};
-
-	const toggleSidebarCollapse = () => {
-		if (!(sidebar instanceof HTMLElement) || !(shell instanceof HTMLElement)) return;
-		const isCollapsed = sidebar.classList.toggle('dashboard-sidebar--collapsed');
-		shell.classList.toggle('dashboard-shell--sidebar-collapsed', isCollapsed);
-		localStorage.setItem('dashboard-sidebar-collapsed', isCollapsed ? 'true' : 'false');
-	};
 
 	if (
 		sidebar instanceof HTMLElement &&
@@ -120,11 +102,27 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		backdrop instanceof HTMLElement &&
 		shell instanceof HTMLElement
 	) {
+		const closeDashboardNav = () => {
+			sidebar.classList.remove('dashboard-sidebar--open');
+			menuButton.setAttribute('aria-expanded', 'false');
+			document.body.classList.remove('dashboard-shell-body--nav-open');
+		};
+
+		const toggleSidebarCollapse = () => {
+			const isCollapsed = sidebar.classList.toggle('dashboard-sidebar--collapsed');
+			shell.classList.toggle('dashboard-shell--sidebar-collapsed', isCollapsed);
+			const toggleBtn = sidebar.querySelector('[data-dashboard-collapse-toggle]');
+			if (toggleBtn) toggleBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+			localStorage.setItem('dashboard-sidebar-collapsed', isCollapsed ? 'true' : 'false');
+		};
+
 		// Restore collapsed state from localStorage on desktop
 		const stored = localStorage.getItem('dashboard-sidebar-collapsed');
 		if (stored === 'true' && window.innerWidth > 992) {
 			sidebar.classList.add('dashboard-sidebar--collapsed');
 			shell.classList.add('dashboard-shell--sidebar-collapsed');
+			const toggleBtn = sidebar.querySelector('[data-dashboard-collapse-toggle]');
+			if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
 		}
 
 		const toggleDashboardNav = () => {
@@ -156,6 +154,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		});
 	}
 
+	const topbar = document.querySelector('.dashboard-topbar');
 	if (topbar instanceof HTMLElement) {
 		let lastScrollY = window.scrollY;
 		let isHidden = false;
