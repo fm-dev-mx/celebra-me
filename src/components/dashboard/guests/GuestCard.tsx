@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -14,7 +14,6 @@ import {
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
-	getViewStateLabel,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestCardProps {
@@ -49,19 +48,15 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onToggleBrandingRemoval,
 }) => {
 	const [messageVisible, setMessageVisible] = useState(false);
-	const progressRef = useRef<HTMLSpanElement>(null);
-
-	useLayoutEffect(() => {
-		if (progressRef.current) {
-			progressRef.current.style.width = `${Math.round(item.viewPercentage)}%`;
-		}
-	}, [item.viewPercentage]);
-
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
 	const hasMessageFlag = hasMessage(item);
 	const expandId = `guest-details-${item.guestId}`;
+
+	const viewPercentage = Number.isFinite(item.viewPercentage)
+		? Math.min(100, Math.max(0, Math.round(item.viewPercentage)))
+		: 0;
 
 	const contactDisplay = getContactDisplay(item);
 	const hasAnyContact = hasContact(item);
@@ -71,7 +66,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
-	const compactViewLabel = `Vista: ${item.viewPercentage}%`;
+	const compactViewLabel = `Vista: ${viewPercentage}%`;
 	const messageLabel = messageVisible ? 'Ocultar mensaje' : 'Mensaje del invitado';
 	const articleClass = [
 		'guest-card',
@@ -93,9 +88,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		</button>
 	);
 
-	const messageBlock = hasMessageFlag && messageVisible && (
-		<div className="guest-card__message-block">
-			<p className="guest-card__message-text">{item.guestComment}</p>
+	const messageBlock = hasMessageFlag && (
+		<div
+			className={`guest-card__message-block ${messageVisible ? 'guest-card__message-block--open' : ''}`}
+		>
+			<div className="guest-card__message-inner">
+				<span className="guest-card__message-label">Mensaje del invitado</span>
+				<p className="guest-card__message-text">{item.guestComment}</p>
+			</div>
 		</div>
 	);
 
@@ -118,25 +118,22 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						<span className="guest-card__detail-label">RSVP</span>
 						<span className="guest-card__detail-value">{getRsvpStateLabel(item)}</span>
 					</div>
-					<div className="guest-card__detail">
+					<div className="guest-card__detail guest-card__detail--view-progress">
 						<span className="guest-card__detail-label">Visualización</span>
-						<span className="guest-card__detail-value">
-							<span className="engagement-mini">
-								<span className="engagement-mini__bar">
-									<span ref={progressRef} className="engagement-mini__progress" />
-								</span>
-								<span className="engagement-mini__label">
-									{getViewStateLabel(item)}
-								</span>
-							</span>
+						<span className="guest-card__detail-value engagement-mini-wrap">
+							<progress
+								className="engagement-mini"
+								value={viewPercentage}
+								max={100}
+								role="progressbar"
+								aria-valuenow={viewPercentage}
+								aria-valuemin={0}
+								aria-valuemax={100}
+								aria-label={`Visualización: ${viewPercentage}%`}
+							/>
+							<span className="engagement-mini__label">{viewPercentage}%</span>
 						</span>
 					</div>
-					{item.email && (
-						<div className="guest-card__detail">
-							<span className="guest-card__detail-label">Email</span>
-							<span className="guest-card__detail-value">{item.email}</span>
-						</div>
-					)}
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Origen</span>
 						<span className="guest-card__detail-value">
@@ -225,11 +222,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						{item.maxAllowedAttendees}
 					</span>
 				</div>
-				<div
-					className={`view-status view-status--bare ${item.isViewed ? 'view-status--viewed' : ''}`}
-				>
-					{compactViewLabel}
-				</div>
+				<span className="view-status view-status--bare">{compactViewLabel}</span>
 				{messageToggle}
 			</div>
 
