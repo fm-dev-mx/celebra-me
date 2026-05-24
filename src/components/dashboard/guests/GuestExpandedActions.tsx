@@ -13,6 +13,10 @@ interface GuestExpandedActionsProps {
 	onDelete: () => void;
 	onMarkShared: () => void | Promise<void>;
 	onRevertShared?: () => void | Promise<void>;
+	guestId?: string;
+	hideCelebraMeBranding?: boolean;
+	isBrandingRemovalEligible?: boolean;
+	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 }
 
 const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
@@ -23,6 +27,10 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	onDelete,
 	onMarkShared,
 	onRevertShared,
+	guestId,
+	hideCelebraMeBranding = false,
+	isBrandingRemovalEligible,
+	onToggleBrandingRemoval,
 }) => {
 	const [copied, setCopied] = useState(false);
 	const [busy, setBusy] = useState(false);
@@ -72,6 +80,8 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 			: busy
 				? 'Revirtiendo…'
 				: 'Marcar como no enviada';
+	const canToggleBranding = isBrandingRemovalEligible && guestId && !!onToggleBrandingRemoval;
+	const brandingLabel = hideCelebraMeBranding ? 'Mostrar creador' : 'Ocultar creador';
 
 	return (
 		<div
@@ -136,6 +146,21 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 					<EditGlyph size={14} />
 					<span>Editar</span>
 				</button>
+
+				{canToggleBranding && (
+					<button
+						type="button"
+						className="guest-expanded-actions__btn guest-expanded-actions__btn--branding"
+						onClick={() => {
+							resetConfirm();
+							onToggleBrandingRemoval(guestId, !hideCelebraMeBranding);
+						}}
+						title={brandingLabel}
+						aria-label={`${brandingLabel} para ${guestName}`}
+					>
+						<span>{brandingLabel}</span>
+					</button>
+				)}
 
 				<button
 					type="button"

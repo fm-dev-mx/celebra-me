@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
-import GuestBrandingMenu from '@/components/dashboard/guests/GuestBrandingMenu';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -59,13 +58,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const hasAnyContact = hasContact(item);
 	const brandingBadge = item.hideCelebraMeBranding && (
 		<span className="guest-card__branding-badge">Sin marca</span>
-	);
-	const brandingKebab = isBrandingRemovalEligible && onToggleBrandingRemoval && (
-		<GuestBrandingMenu
-			hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
-			guestId={item.guestId}
-			onToggle={onToggleBrandingRemoval}
-		/>
 	);
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
@@ -131,7 +123,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					isShared={isShared}
 					onShared={async () => onMarkShared(item)}
 				/>
-				{brandingKebab}
 				<button
 					type="button"
 					className={`guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
@@ -245,6 +236,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							onRevertShared={
 								onRevertShared ? async () => onRevertShared(item) : undefined
 							}
+							guestId={item.guestId}
+							hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
+							isBrandingRemovalEligible={isBrandingRemovalEligible}
+							onToggleBrandingRemoval={onToggleBrandingRemoval}
 						/>
 					</div>
 				</div>
