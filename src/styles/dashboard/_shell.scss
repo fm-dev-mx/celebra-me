@@ -261,10 +261,8 @@
 		opacity: 100%;
 	}
 
-	.dashboard-sidebar__logo-link :global(.logo) {
-		opacity: 0%;
-		width: 0;
-		overflow: hidden;
+	.dashboard-sidebar__logo-link {
+		display: none;
 	}
 
 	.dashboard-sidebar__header {
