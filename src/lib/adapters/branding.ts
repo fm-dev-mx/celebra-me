@@ -1,7 +1,3 @@
-export interface BrandingConfig {
-	hideCelebraMeBranding?: boolean;
-}
-
 export interface BrandingVisibility {
 	showFooterBranding: boolean;
 	showContactCta: boolean;
@@ -14,19 +10,22 @@ export const DEFAULT_BRANDING_VISIBILITY: BrandingVisibility = {
 	showThankYouBranding: true,
 };
 
+export const BRANDING_HIDDEN_VISIBILITY: BrandingVisibility = {
+	showFooterBranding: false,
+	showContactCta: false,
+	showThankYouBranding: false,
+};
+
 export function resolveBrandingVisibility(input: {
 	isDemo?: boolean;
-	branding?: BrandingConfig;
+	guest?: { hideCelebraMeBranding?: boolean } | null;
+	isEventEligibleForGuestBrandingRemoval?: boolean;
 }): BrandingVisibility {
-	if (input.isDemo) return DEFAULT_BRANDING_VISIBILITY;
+	const shouldHideGuestBranding =
+		!input.isDemo &&
+		!!input.guest &&
+		input.isEventEligibleForGuestBrandingRemoval &&
+		input.guest.hideCelebraMeBranding === true;
 
-	if (input.branding?.hideCelebraMeBranding !== true) {
-		return DEFAULT_BRANDING_VISIBILITY;
-	}
-
-	return {
-		showFooterBranding: false,
-		showContactCta: false,
-		showThankYouBranding: false,
-	};
+	return shouldHideGuestBranding ? BRANDING_HIDDEN_VISIBILITY : DEFAULT_BRANDING_VISIBILITY;
 }

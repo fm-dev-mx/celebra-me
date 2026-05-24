@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
-import { resolveBrandingVisibility } from '@/lib/adapters/branding';
 
 function loadFixture(relativePath: string) {
 	const filePath = path.resolve(process.cwd(), relativePath);
@@ -10,103 +9,26 @@ function loadFixture(relativePath: string) {
 }
 
 describe('adaptEvent', () => {
-	it('defaults Celebra-me branding visibility on when no branding config is present', () => {
-		expect(resolveBrandingVisibility({ isDemo: false })).toEqual({
-			showFooterBranding: true,
-			showContactCta: true,
-			showThankYouBranding: true,
-		});
-	});
-
-	it('keeps demo Celebra-me branding visible even when hiding is configured', () => {
-		expect(
-			resolveBrandingVisibility({
-				isDemo: true,
-				branding: { hideCelebraMeBranding: true },
-			}),
-		).toEqual({
-			showFooterBranding: true,
-			showContactCta: true,
-			showThankYouBranding: true,
-		});
-	});
-
-	it('hides all Celebra-me branding surfaces for live events with the product flag enabled', () => {
-		expect(
-			resolveBrandingVisibility({
-				isDemo: false,
-				branding: { hideCelebraMeBranding: true },
-			}),
-		).toEqual({
-			showFooterBranding: false,
-			showContactCta: false,
-			showThankYouBranding: false,
-		});
-	});
-
-	it('resolves current branding visibility exceptions from event content', () => {
-		const cases = [
-			{
-				slug: 'cesar-ramses',
-				expected: {
-					showFooterBranding: false,
-					showContactCta: false,
-					showThankYouBranding: false,
-				},
-			},
-			{
-				slug: 'ana-sofia-cota-guillen',
-				expected: {
-					showFooterBranding: true,
-					showContactCta: true,
-					showThankYouBranding: true,
-				},
-			},
-			{
-				slug: 'gerardo-sesenta',
-				expected: {
-					showFooterBranding: true,
-					showContactCta: true,
-					showThankYouBranding: true,
-				},
-			},
-			{
-				slug: 'ximena-meza-trasvina',
-				expected: {
-					showFooterBranding: true,
-					showContactCta: true,
-					showThankYouBranding: true,
-				},
-			},
+	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
+		const slugs = [
+			'cesar-ramses',
+			'ana-sofia-cota-guillen',
+			'gerardo-sesenta',
+			'ximena-meza-trasvina',
 		];
 
-		for (const { slug, expected } of cases) {
+		for (const slug of slugs) {
 			const event = {
 				id: `events/${slug}`,
 				data: loadFixture(`src/content/events/${slug}.json`),
 			} as Parameters<typeof adaptEvent>[0];
 
-			expect(adaptEvent(event).brandingVisibility).toEqual(expected);
+			expect(adaptEvent(event).brandingVisibility).toEqual({
+				showFooterBranding: true,
+				showContactCta: true,
+				showThankYouBranding: true,
+			});
 		}
-	});
-
-	it('keeps demo event branding visible even if demo content accidentally configures hiding', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
-		const event = {
-			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: {
-				...fixture,
-				branding: {
-					hideCelebraMeBranding: true,
-				},
-			},
-		} as Parameters<typeof adaptEvent>[0];
-
-		expect(adaptEvent(event).brandingVisibility).toEqual({
-			showFooterBranding: true,
-			showContactCta: true,
-			showThankYouBranding: true,
-		});
 	});
 
 	it('preserves family godparents in the invitation view model', () => {

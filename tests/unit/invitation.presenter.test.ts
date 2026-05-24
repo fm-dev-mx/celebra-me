@@ -36,6 +36,7 @@ describe('prepareInvitationPageContext', () => {
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
 					guestComment: '',
+					hideCelebraMeBranding: false,
 				},
 			},
 		});

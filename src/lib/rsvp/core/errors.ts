@@ -5,6 +5,7 @@ export type ApiErrorCode =
 	| 'not_found'
 	| 'conflict'
 	| 'rate_limited'
+	| 'limit_reached'
 	| 'internal_error';
 
 export class ApiError extends Error {

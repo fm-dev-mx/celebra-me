@@ -132,13 +132,6 @@ export const sharingSchema = z
 	})
 	.optional();
 
-export const brandingSchema = z
-	.object({
-		hideCelebraMeBranding: z.boolean().default(false),
-	})
-	.strict()
-	.optional();
-
 export const baseEventFieldsSchema = z.object({
 	eventType: z.enum(EVENT_TYPES),
 	isDemo: z.boolean().default(false),

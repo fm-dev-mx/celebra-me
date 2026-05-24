@@ -39,6 +39,7 @@ export interface GuestInvitationRecord {
 	updatedAt: string;
 	tags?: string[];
 	shortId?: string;
+	hideCelebraMeBranding?: boolean;
 }
 
 export interface GuestInvitationAuditRecord {
@@ -84,6 +85,7 @@ export interface GuestInvitationDTO {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;
+	hideCelebraMeBranding?: boolean;
 }
 
 export interface DashboardGuestMutationResponse {
