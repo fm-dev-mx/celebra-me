@@ -267,6 +267,51 @@ describe('dashboard guests happy path', () => {
 		);
 	});
 
+	it('ignores guestComment when sent in dashboard update PATCH', async () => {
+		updateDashboardGuestMock.mockResolvedValue({
+			source: 'mutation',
+			updatedAt: new Date().toISOString(),
+			item: {
+				guestId: 'guest-1',
+				inviteId: 'invite-1',
+				fullName: 'Guest',
+				phone: '6680000000',
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+				tags: [],
+			},
+		});
+
+		const response = await PATCH({
+			params: { guestId: 'guest-1' },
+			request: createMockRequest({
+				fullName: 'Updated Guest',
+				guestComment: 'This should be ignored',
+			}),
+			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(updateDashboardGuestMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				fullName: 'Updated Guest',
+			}),
+		);
+		// Verify that guestComment is NOT in the args passed to the service
+		const callArgs = updateDashboardGuestMock.mock.calls[0][0];
+		expect(callArgs).not.toHaveProperty('guestComment');
+	});
+
 	it('updates, marks shared and deletes a guest', async () => {
 		updateDashboardGuestMock.mockResolvedValue({
 			source: 'mutation',

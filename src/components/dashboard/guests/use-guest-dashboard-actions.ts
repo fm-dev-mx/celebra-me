@@ -14,7 +14,6 @@ export interface GuestFormPayload {
 	maxAllowedAttendees: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
-	guestComment?: string;
 	tags?: string[];
 }
 

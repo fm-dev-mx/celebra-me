@@ -278,7 +278,6 @@ export async function updateDashboardGuest(input: {
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
-	guestComment?: string;
 	tags?: string[];
 	deliveryStatus?: DeliveryStatus;
 }): Promise<DashboardGuestMutationResponse> {
@@ -324,10 +323,6 @@ export async function updateDashboardGuest(input: {
 				maxAllowedAttendees: nextCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,
-				guestComment:
-					input.guestComment !== undefined
-						? sanitize(input.guestComment, 500)
-						: undefined,
 				lastResponseSource: 'admin',
 				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
 				tags: input.tags,
