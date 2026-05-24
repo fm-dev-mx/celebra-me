@@ -37,6 +37,7 @@
 
 .dashboard-shell {
 	--sidebar-width: 260px;
+
 	display: grid;
 	grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
 	min-height: 100vh;
@@ -232,7 +233,7 @@
 /* --- Collapsed Sidebar --- */
 .dashboard-sidebar--collapsed {
 	.dashboard-sidebar__nav-label {
-		opacity: 0;
+		opacity: 0%;
 		width: 0;
 		margin: 0;
 		pointer-events: none;
@@ -246,7 +247,7 @@
 
 		&:hover .dashboard-sidebar__nav-tooltip,
 		&:focus-within .dashboard-sidebar__nav-tooltip {
-			opacity: 1;
+			opacity: 100%;
 			visibility: visible;
 			transform: translateX(0);
 		}
@@ -261,7 +262,7 @@
 	}
 
 	.dashboard-sidebar__logo-link :global(.logo) {
-		opacity: 0;
+		opacity: 0%;
 		width: 0;
 		overflow: hidden;
 	}
@@ -320,7 +321,7 @@
 	font-weight: 500;
 	white-space: nowrap;
 	z-index: 100;
-	opacity: 0;
+	opacity: 0%;
 	visibility: hidden;
 	pointer-events: none;
 	transition:
@@ -679,7 +680,7 @@
 		width: min(80vw, 280px);
 
 		.dashboard-sidebar__nav-label {
-			opacity: 1;
+			opacity: 100%;
 			width: auto;
 			margin: initial;
 			pointer-events: auto;
@@ -696,7 +697,7 @@
 		}
 
 		.dashboard-sidebar__logo-link :global(.logo) {
-			opacity: 1;
+			opacity: 100%;
 			width: auto;
 			overflow: visible;
 		}

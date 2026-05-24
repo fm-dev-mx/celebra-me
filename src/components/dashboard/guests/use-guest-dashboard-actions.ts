@@ -470,6 +470,7 @@ export const useGuestDashboardActions = ({
 		openCreateModal,
 		openEditModal,
 		openImportModal,
+		openNextGeneratedGuest,
 		pendingGuests,
 		requestDelete,
 		setImportModalOpen: setImportModalOpenCallback,

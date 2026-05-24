@@ -100,17 +100,16 @@ describe('GuestCard status labels', () => {
 		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
 	});
 
-	it('shows a neutral guest message indicator only when guestComment exists', () => {
+	it('shows a guest message toggle only when guestComment exists', () => {
 		const { container, rerender } = render(
 			<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />,
 		);
-		expect(container.querySelector('.guest-card__indicator')).not.toBeInTheDocument();
+		expect(container.querySelector('.guest-card__msg-toggle')).not.toBeInTheDocument();
 
 		rerender(
 			<GuestCard item={makeGuest({ guestComment: 'Nos vemos pronto' })} {...baseProps} />,
 		);
-		expect(container.querySelector('.guest-card__indicator')).toHaveTextContent(
-			'Mensaje del invitado',
-		);
+		const toggle = container.querySelector('.guest-card__msg-toggle');
+		expect(toggle).toHaveTextContent('Mensaje del invitado');
 	});
 });
