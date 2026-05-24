@@ -1,6 +1,12 @@
 import React from 'react';
+import GuestReviewBlock, {
+	type GuestReviewFilter,
+} from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestSummary from '@/components/dashboard/guests/GuestSummary';
-import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
+import type {
+	DashboardGuestItem,
+	DashboardGuestListResponse,
+} from '@/interfaces/dashboard/guest.interface';
 
 interface HostEventItem {
 	id: string;
@@ -12,15 +18,21 @@ interface HostEventItem {
 interface GuestDashboardHeaderProps {
 	eventId: string;
 	hostEvents: HostEventItem[];
+	items: DashboardGuestItem[];
+	activeReviewFilter: GuestReviewFilter;
 	totals: DashboardGuestListResponse['totals'];
 	onEventChange: (eventId: string) => void;
+	onReviewFilterChange: (filter: GuestReviewFilter) => void;
 }
 
 const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	eventId,
 	hostEvents,
+	items,
+	activeReviewFilter,
 	totals,
 	onEventChange,
+	onReviewFilterChange,
 }) => {
 	return (
 		<>
@@ -45,6 +57,11 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 			</div>
 
 			<GuestSummary totals={totals} />
+			<GuestReviewBlock
+				items={items}
+				activeFilter={activeReviewFilter}
+				onFilterChange={onReviewFilterChange}
+			/>
 		</>
 	);
 };

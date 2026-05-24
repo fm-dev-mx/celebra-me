@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
+import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestFilters from '@/components/dashboard/guests/GuestFilters';
@@ -31,6 +32,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 	const [delivery, setDelivery] = useState<DeliveryFilter>('all');
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
+	const [reviewFilter, setReviewFilter] = useState<GuestReviewFilter>('all');
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const {
 		error,
@@ -53,6 +55,12 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const isBrandingRemovalEligible = currentEvent
 		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
 		: false;
+	const visibleItems = items.filter((item) => {
+		if (reviewFilter === 'delivery-pending') return item.deliveryStatus === 'generated';
+		if (reviewFilter === 'rsvp-pending') return item.attendanceStatus === 'pending';
+		if (reviewFilter === 'with-message') return item.guestComment.trim().length > 0;
+		return true;
+	});
 
 	const {
 		celebratingGuestId,
@@ -112,8 +120,11 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestDashboardHeader
 					eventId={eventId}
 					hostEvents={hostEvents}
+					items={items}
+					activeReviewFilter={reviewFilter}
 					totals={totals}
 					onEventChange={setEventId}
+					onReviewFilterChange={setReviewFilter}
 				/>
 
 				<div className="dashboard-guests__toolbar">
@@ -145,7 +156,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				{error && <p className="dashboard-error">{error}</p>}
 
 				<GuestTable
-					items={items}
+					items={visibleItems}
 					inviteBaseUrl={inviteBaseUrl}
 					celebratingGuestId={celebratingGuestId}
 					expandedGuestId={expandedGuestId}
