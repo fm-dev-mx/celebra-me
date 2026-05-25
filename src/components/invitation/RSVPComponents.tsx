@@ -341,23 +341,31 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						</p>
 					)}
 				</div>
-				<motion.button
-					type="submit"
-					disabled={isSubmitting}
-					className={`rsvp__button rsvp__button--${submitStatus}`}
-					initial={prefersReducedMotion ? false : { opacity: 0 }}
-					whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
-					viewport={prefersReducedMotion ? undefined : { once: true }}
-					transition={prefersReducedMotion ? undefined : { delay: 0.2 }}
-				>
-					<span className="rsvp__button-text">
-						<SubmitButtonText
-							submitStatus={submitStatus}
-							buttonLabel={buttonLabel}
-							attendanceStatus={attendanceStatus}
-						/>
-					</span>
-				</motion.button>
+				{attendanceStatus !== null && (
+					<motion.div
+						className="rsvp__actions"
+						initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+					>
+						<motion.button
+							type="submit"
+							disabled={isSubmitting}
+							className={`rsvp__button rsvp__button--${submitStatus}`}
+							initial={prefersReducedMotion ? false : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.15, duration: 0.3 }}
+						>
+							<span className="rsvp__button-text">
+								<SubmitButtonText
+									submitStatus={submitStatus}
+									buttonLabel={buttonLabel}
+									attendanceStatus={attendanceStatus}
+								/>
+							</span>
+						</motion.button>
+					</motion.div>
+				)}
 			</form>
 			{isDemoPreview && (
 				<p className="rsvp__demo-footer">
