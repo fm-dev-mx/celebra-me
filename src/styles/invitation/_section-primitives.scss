@@ -1,12 +1,10 @@
 @use '../global/mixins' as mixins;
 
-$header-height: 70px;
-$anchor-scroll-margin: calc(#{$header-height} + 1.5rem);
 $section-padding-v-mobile: clamp(4rem, 8vw, 5.5rem);
 $section-padding-v-desktop: clamp(6rem, 10vw, 8.5rem);
 
 @mixin section-spacing($include-padding: true) {
-	scroll-margin-top: $anchor-scroll-margin;
+	scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem));
 
 	@if $include-padding {
 		padding-top: $section-padding-v-mobile;
