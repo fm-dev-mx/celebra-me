@@ -691,11 +691,50 @@ describe('RSVP Component', () => {
 			expect(card).not.toHaveClass('rsvp--compact');
 		});
 
-		it('applies rsvp--expanded class when form is unlocked', () => {
+		it('renders the canonical RSVP shell for the form state', () => {
 			const { container } = render(<RSVP {...defaultProps} />);
 
+			const section = container.querySelector('#rsvp.rsvp-section');
 			const card = container.querySelector('.rsvp') as HTMLElement;
-			expect(card).toHaveClass('rsvp--expanded');
+			expect(section).toBeInTheDocument();
+			expect(section?.querySelector(':scope > .rsvp')).toBe(card);
+			expect(card).toHaveAttribute('data-state', 'form');
+			expect(card).not.toHaveClass('rsvp--expanded');
+			expect(card.querySelector(':scope > .rsvp__header')).toBeInTheDocument();
+			expect(card.querySelector(':scope > form.rsvp__form')).toBeInTheDocument();
+		});
+
+		it('renders the canonical RSVP shell for locked and submitted states', async () => {
+			const user = userEvent.setup();
+			const locked = render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-jewelry-box"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="personalized-only"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			const lockedCard = locked.container.querySelector('#rsvp.rsvp-section > .rsvp');
+			expect(lockedCard).toHaveAttribute('data-state', 'locked');
+			expect(lockedCard?.querySelector(':scope > .rsvp__header')).toBeInTheDocument();
+			locked.unmount();
+
+			const submitted = render(<RSVP {...defaultProps} />);
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
+
+			await waitFor(() => {
+				const submittedCard = submitted.container.querySelector(
+					'#rsvp.rsvp-section > .rsvp',
+				);
+				expect(submittedCard).toHaveAttribute('data-state', 'declined');
+				expect(submittedCard?.querySelector(':scope > .rsvp__header')).toBeInTheDocument();
+				expect(submittedCard?.querySelector(':scope > .rsvp__status')).toBeInTheDocument();
+			});
 		});
 	});
 

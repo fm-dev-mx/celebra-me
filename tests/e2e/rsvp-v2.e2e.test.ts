@@ -1,4 +1,22 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function openEnvelope(page: Page) {
+	const openButton = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
+	await expect(openButton).toBeVisible();
+	await openButton.click();
+	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+		'data-reveal-state',
+		'revealed',
+	);
+	await page.waitForTimeout(1500);
+}
+
+async function scrollToRsvp(page: Page) {
+	const rsvpSection = page.locator('#rsvp');
+	await rsvpSection.scrollIntoViewIfNeeded();
+	await expect(rsvpSection).toBeVisible();
+	await page.waitForTimeout(1500);
+}
 
 test.describe('RSVP v2 Flow', () => {
 	test.setTimeout(60000);
@@ -13,34 +31,13 @@ test.describe('RSVP v2 Flow', () => {
 			});
 		});
 
-		// 1. Visit demo invitation with mock inviteId
-		// We use the XV demo as a stable target
 		await page.goto(
 			'/xv/demo-xv-jewelry-box?invite=00000000-0000-0000-0000-000000000000&forceEnvelope=true',
-			{
-				waitUntil: 'domcontentloaded',
-			},
+			{ waitUntil: 'domcontentloaded' },
 		);
 
-		// 2. Open Envelope
-		const openButton = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
-		await expect(openButton).toBeVisible();
-		await openButton.click();
-
-		// Wait for revelation animation
-		await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
-			'data-reveal-state',
-			'revealed',
-		);
-		await page.waitForTimeout(1500);
-
-		// 3. Scroll to RSVP Section
-		const rsvpSection = page.locator('#rsvp');
-		await rsvpSection.scrollIntoViewIfNeeded();
-		await expect(rsvpSection).toBeVisible();
-
-		// Wait for Astro to hydrate the client:visible React island
-		await page.waitForTimeout(1500);
+		await openEnvelope(page);
+		await scrollToRsvp(page);
 
 		// 4. Fill RSVP Form
 		// Attendance - check the radio natively (force: true needed for sr-only inputs and dev-toolbar)
@@ -83,5 +80,100 @@ test.describe('RSVP v2 Flow', () => {
 		await expect(
 			page.locator('#rsvp').locator('text=/confirmado|gracias/i').first(),
 		).toBeVisible();
+	});
+
+	test('mobile menu closes when RSVP attendance radio is selected', async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 667 });
+		await page.goto('/xv/demo-xv-editorial', { waitUntil: 'networkidle' });
+
+		// Dismiss envelope (same pattern as layout-verify-fix.spec.ts)
+		await page.evaluate(() => {
+			document.querySelectorAll('ds-envelope-reveal').forEach((envelope) => {
+				envelope.setAttribute('data-reveal-state', 'revealed');
+				(envelope as HTMLElement).style.pointerEvents = 'none';
+			});
+			document.querySelectorAll('.envelope-tease').forEach((tease) => {
+				(tease as HTMLElement).style.pointerEvents = 'none';
+			});
+		});
+		await page.waitForSelector('.rsvp-section', { timeout: 5000 });
+		await page.evaluate(() => {
+			const section = document.querySelector('#rsvp');
+			if (section) section.scrollIntoView({ block: 'center', behavior: 'instant' });
+		});
+
+		// Wait for React hydration to complete
+		await page.waitForTimeout(2000);
+
+		// Open mobile menu
+		await page.evaluate(() => {
+			const toggle = document.querySelector<HTMLButtonElement>('[data-nav-mobile-toggle]');
+			if (toggle) toggle.click();
+		});
+		await page.waitForFunction(
+			() =>
+				document.querySelector('[data-nav-mobile-menu]')?.getAttribute('data-state') ===
+				'open',
+			{ timeout: 3000 },
+		);
+
+		// Interact with RSVP control — select attendance
+		await page.locator('#attendance-yes').check({ force: true });
+		await page.waitForTimeout(1000);
+
+		// Menu should now be closed
+		await expect(page.locator('[data-nav-mobile-menu]')).toHaveAttribute(
+			'data-state',
+			'closed',
+			{ timeout: 5000 },
+		);
+	});
+
+	test('mobile menu closes when RSVP attendance radio is selected — manual event dispatch', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 667 });
+		await page.goto('/xv/demo-xv-editorial', { waitUntil: 'networkidle' });
+
+		await page.evaluate(() => {
+			document.querySelectorAll('ds-envelope-reveal').forEach((envelope) => {
+				envelope.setAttribute('data-reveal-state', 'revealed');
+				(envelope as HTMLElement).style.pointerEvents = 'none';
+			});
+			document.querySelectorAll('.envelope-tease').forEach((tease) => {
+				(tease as HTMLElement).style.pointerEvents = 'none';
+			});
+		});
+		await page.waitForSelector('.rsvp-section', { timeout: 5000 });
+		await page.evaluate(() => {
+			const section = document.querySelector('#rsvp');
+			if (section) section.scrollIntoView({ block: 'center', behavior: 'instant' });
+		});
+		await page.waitForTimeout(2000);
+
+		// Open mobile menu
+		await page.evaluate(() => {
+			const toggle = document.querySelector<HTMLButtonElement>('[data-nav-mobile-toggle]');
+			if (toggle) toggle.click();
+		});
+		await page.waitForFunction(
+			() =>
+				document.querySelector('[data-nav-mobile-menu]')?.getAttribute('data-state') ===
+				'open',
+			{ timeout: 3000 },
+		);
+
+		// Manually dispatch the custom event (bypass React to test the NavBarMobile listener)
+		await page.evaluate(() => {
+			window.dispatchEvent(new CustomEvent('celebrame:close-navigation'));
+		});
+		await page.waitForTimeout(500);
+
+		// Menu should close via the custom event listener
+		await expect(page.locator('[data-nav-mobile-menu]')).toHaveAttribute(
+			'data-state',
+			'closed',
+			{ timeout: 3000 },
+		);
 	});
 });
