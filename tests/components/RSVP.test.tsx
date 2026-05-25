@@ -298,14 +298,14 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
 		});
 
-		it('"Sí, asistiré" shows attendee count with value 1 by default', async () => {
+		it('"Sí, asistiré" shows attendee count with guestCap value by default', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} guestCap={10} />);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			const guestInput = screen.getByLabelText(/Número de asistentes/i) as HTMLInputElement;
-			expect(guestInput.value).toBe('1');
+			expect(guestInput.value).toBe('10');
 		});
 
 		it('should mark the decline option as checked when selected', async () => {
@@ -332,7 +332,7 @@ describe('RSVP Component', () => {
 			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 		});
 
-		it('switching "No podré" to "Sí, asistiré" resets attendee count to 1', async () => {
+		it('switching "No podré" to "Sí, asistiré" preserves attendee count at guestCap', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} guestCap={10} />);
 
@@ -340,7 +340,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			const guestInput = screen.getByLabelText(/Número de asistentes/i) as HTMLInputElement;
-			expect(guestInput.value).toBe('1');
+			expect(guestInput.value).toBe('10');
 		});
 
 		it('should show notes textarea when "Yes" or "No" is selected', async () => {
@@ -624,10 +624,9 @@ describe('RSVP Component', () => {
 		beforeEach(() => {
 			jest.clearAllMocks();
 			window.innerHeight = 800;
-			window.HTMLElement.prototype.scrollIntoView = jest.fn();
 		});
 
-		it('scrolls focused text input field into view with center block when it fits', async () => {
+		it('scrolls RSVP card into view via window.scrollTo when a field receives focus', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
@@ -636,11 +635,9 @@ describe('RSVP Component', () => {
 			nameInput.focus();
 
 			await waitFor(() => {
-				expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
-					behavior: 'smooth',
-					block: 'center',
-					inline: 'nearest',
-				});
+				expect(window.scrollTo).toHaveBeenCalledWith(
+					expect.objectContaining({ behavior: 'smooth', top: expect.any(Number) }),
+				);
 			});
 		});
 
@@ -922,7 +919,7 @@ describe('RSVP Component', () => {
 			expect(screen.queryByLabelText(/Teléfono de contacto/i)).not.toBeInTheDocument();
 		});
 
-		it('personalized RSVP with nameLocked still submits with correct attendeeCount', async () => {
+		it('personalized RSVP with nameLocked submits with effectiveGuestCap as attendeeCount', async () => {
 			const user = userEvent.setup();
 			render(
 				<RSVP
@@ -939,7 +936,7 @@ describe('RSVP Component', () => {
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
 				expect(body.attendanceStatus).toBe('confirmed');
-				expect(body.attendeeCount).toBe(1);
+				expect(body.attendeeCount).toBe(defaultProps.guestCap);
 			});
 		});
 	});
