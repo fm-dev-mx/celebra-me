@@ -191,11 +191,10 @@ describe('Invitation header navigation contract', () => {
 		expect(fs.existsSync(path.join(projectRoot, 'src/config/navigation.ts'))).toBe(false);
 	});
 
-	it('includes a close button logic with data-nav-mobile-close attribute in NavBarMobile', () => {
+	it('NavBarMobile script has closeMenu function used for keyboard and custom-event dismiss', () => {
 		const source = read('src/components/ui/header/NavBarMobile.astro');
 
-		expect(source).toContain('data-nav-mobile-close');
-		// We check for the setAttribute call because the label is set dynamically in the script.
+		expect(source).toContain('closeMenu(');
 		expect(source).toContain("setAttribute('aria-label', 'Cerrar menú')");
 	});
 

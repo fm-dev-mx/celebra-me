@@ -142,7 +142,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 		const toggle = root.querySelector('[data-nav-mobile-toggle]');
 		const menu = root.querySelector('[data-nav-mobile-menu]');
 		const overlay = root.querySelector('[data-nav-mobile-overlay]');
-		const closeBtn = root.querySelector('[data-nav-mobile-close]');
 		const links = Array.from(root.querySelectorAll('[data-nav-mobile-link]'));
 
 		if (
@@ -186,7 +185,7 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 				header.classList.add('header-base--menu-open');
 			}
 			document.body.style.overflow = 'hidden';
-			(closeBtn instanceof HTMLButtonElement ? closeBtn : toggle).focus();
+			toggle.focus();
 		};
 
 		const syncForViewport = () => {
@@ -204,10 +203,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 			}
 		});
 
-		if (closeBtn instanceof HTMLButtonElement) {
-			closeBtn.addEventListener('click', () => closeMenu(toggle));
-		}
-
 		overlay.addEventListener('click', () => closeMenu(toggle));
 		links.forEach((link) => link.addEventListener('click', () => closeMenu(toggle)));
 
@@ -215,6 +210,11 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 			if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
 				closeMenu(toggle);
 			}
+		});
+
+		window.addEventListener('celebrame:close-navigation', () => {
+			if (toggle.getAttribute('aria-expanded') !== 'true') return;
+			closeMenu();
 		});
 
 		syncForViewport();
