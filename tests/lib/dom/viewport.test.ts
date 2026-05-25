@@ -3,6 +3,8 @@ import {
 	fitsViewport,
 	getSmartScrollBlock,
 	DEFAULT_VIEWPORT_FIT_FACTOR,
+	getVisibleViewportBounds,
+	getCardAwareScrollTop,
 } from '@/lib/dom/viewport';
 
 describe('getViewportHeight', () => {
@@ -145,5 +147,74 @@ describe('getSmartScrollBlock', () => {
 describe('DEFAULT_VIEWPORT_FIT_FACTOR', () => {
 	it('is 0.9', () => {
 		expect(DEFAULT_VIEWPORT_FIT_FACTOR).toBe(0.9);
+	});
+});
+
+describe('RSVP card-aware viewport helpers', () => {
+	const ORIGINAL_INNER_HEIGHT = window.innerHeight;
+	const ORIGINAL_SCROLL_Y = window.scrollY;
+
+	beforeEach(() => {
+		window.innerHeight = 667;
+		Object.defineProperty(window, 'scrollY', {
+			value: 1200,
+			configurable: true,
+		});
+	});
+
+	afterEach(() => {
+		window.innerHeight = ORIGINAL_INNER_HEIGHT;
+		Object.defineProperty(window, 'scrollY', {
+			value: ORIGINAL_SCROLL_Y,
+			configurable: true,
+		});
+	});
+
+	it('subtracts header, music player, and safe-area clearance from visible bounds', () => {
+		expect(
+			getVisibleViewportBounds({
+				headerHeight: 70,
+				playerClearance: 56,
+				safeAreaInsetBottom: 8,
+			}),
+		).toEqual({
+			top: 70,
+			bottom: 603,
+			height: 533,
+		});
+	});
+
+	it('centers a fitting card inside the visible viewport bounds', () => {
+		const card = document.createElement('div');
+		jest.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+			top: 300,
+			bottom: 780,
+			height: 480,
+		} as DOMRect);
+
+		expect(
+			getCardAwareScrollTop(card, {
+				headerHeight: 70,
+				playerClearance: 56,
+				safeAreaInsetBottom: 0,
+			}),
+		).toBe(1400);
+	});
+
+	it('aligns an oversized card to the visible top instead of hiding its start', () => {
+		const card = document.createElement('div');
+		jest.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+			top: 300,
+			bottom: 950,
+			height: 650,
+		} as DOMRect);
+
+		expect(
+			getCardAwareScrollTop(card, {
+				headerHeight: 70,
+				playerClearance: 56,
+				safeAreaInsetBottom: 0,
+			}),
+		).toBe(1430);
 	});
 });
