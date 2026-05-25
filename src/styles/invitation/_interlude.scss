@@ -5,7 +5,6 @@
 //   --interlude-image-filter         Image CSS filter
 //   --interlude-overlay-opacity      ::after vignette darkness
 //   --interlude-overlay              ::after overlay background (multi-gradient)
-//   --interlude-scroll-margin-top    Anchor scroll margin for fixed header
 //   --interlude-min-height           Base section min-height
 //   --interlude-min-height-sm        Mobile base min-height (<=640px)
 //   --interlude-min-height-tall      Tall variant min-height
@@ -41,7 +40,7 @@
 	--interlude-frame-inset-sm: var(--interlude-frame-inset);
 	--interlude-frame-border: none;
 
-	scroll-margin-top: var(--interlude-scroll-margin-top, calc(70px + 1.5rem));
+	scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem));
 	position: relative;
 	min-height: var(--interlude-min-height);
 	overflow: hidden;

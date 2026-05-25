@@ -18,3 +18,12 @@
 	--section-card-border-alt: rgb(var(--color-action-accent-rgb) / 30%);
 	--section-eyebrow-color: var(--section-accent);
 }
+
+// Assumption: .event-theme-wrapper exists at initial render and is not dynamically
+// toggled. If that changes, move these to a JS-set class on <html> instead.
+:root:has(.event-theme-wrapper) {
+	--invitation-header-height: calc(70px + env(safe-area-inset-top, 0px));
+	--invitation-header-offset: calc(var(--invitation-header-height) + 1.5rem);
+
+	scroll-padding-top: var(--invitation-header-offset);
+}
