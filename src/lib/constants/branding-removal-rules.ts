@@ -1,7 +1,7 @@
 export const BRANDING_REMOVAL_RULES: Record<string, { enabled: boolean; guestLimit: number }> = {
 	'bautizo/cesar-ramses': {
 		enabled: true,
-		guestLimit: 5,
+		guestLimit: 10,
 	},
 };
 
