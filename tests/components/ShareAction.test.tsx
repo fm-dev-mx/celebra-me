@@ -5,11 +5,20 @@ function createMockWindow() {
 	return { closed: false, location: { href: '' }, close: jest.fn() };
 }
 
+function setupNavigatorShare(value: jest.Mock) {
+	Object.defineProperty(navigator, 'share', {
+		value,
+		configurable: true,
+		writable: true,
+	});
+}
+
 describe('ShareAction', () => {
 	let onShared: jest.Mock;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		delete (navigator as unknown as Record<string, unknown>).share;
 		onShared = jest.fn().mockResolvedValue(undefined);
 		window.open = jest.fn().mockReturnValue(createMockWindow());
 	});
@@ -69,6 +78,59 @@ describe('ShareAction', () => {
 		fireEvent.click(screen.getByRole('button'));
 
 		await waitFor(() => expect(onShared).toHaveBeenCalledTimes(1));
+	});
+
+	it('calls navigator.share with the invitation payload for no-phone guests', async () => {
+		const shareMock = jest.fn().mockResolvedValue(undefined);
+		setupNavigatorShare(shareMock);
+
+		render(
+			<ShareAction
+				phone=""
+				waShareUrl=""
+				inviteUrl="https://example.com/invite"
+				shareText="Share text"
+				onShared={onShared}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }));
+
+		await waitFor(() =>
+			expect(shareMock).toHaveBeenCalledWith({
+				title: 'Invitación Celebra-me',
+				text: 'Share text',
+				url: 'https://example.com/invite',
+			}),
+		);
+		await waitFor(() => expect(onShared).toHaveBeenCalledTimes(1));
+		expect(window.open).not.toHaveBeenCalled();
+	});
+
+	it('treats native share cancellation as pending without marking shared', async () => {
+		setupNavigatorShare(
+			jest.fn().mockRejectedValue(new DOMException('Canceled', 'AbortError')),
+		);
+
+		render(
+			<ShareAction
+				phone=""
+				waShareUrl=""
+				inviteUrl="https://example.com/invite"
+				shareText="Share text"
+				onShared={onShared}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }));
+
+		await waitFor(() => expect(navigator.share).toHaveBeenCalled());
+		expect(onShared).not.toHaveBeenCalled();
+		await waitFor(() =>
+			expect(
+				screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }),
+			).toBeInTheDocument(),
+		);
 	});
 
 	it('does not set or imply isViewed state — ShareAction has no isViewed prop', () => {

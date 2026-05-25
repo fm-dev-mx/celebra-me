@@ -1,6 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
+import {
+	buildInvitationSharePayload,
+	canUseNativeShare,
+	shareInvitationLink,
+} from '@/components/dashboard/guests/invitation-share';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ShareActionProps {
 	phone: string;
@@ -12,7 +18,17 @@ interface ShareActionProps {
 }
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
-type ShareMethod = 'whatsapp' | 'web-share' | 'copy';
+
+const ICONS: Record<string, React.ReactNode> = {
+	whatsapp: <WhatsAppIcon className="share-icon" size={16} />,
+	copy: <CopyIcon className="share-icon" size={16} />,
+	'web-share': <MessageIcon className="share-icon" size={16} />,
+};
+
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+	sending: <span className="share-icon share-icon--state">...</span>,
+	delivered: <span className="share-icon share-icon--state">OK</span>,
+};
 
 const ShareAction: React.FC<ShareActionProps> = ({
 	phone,
@@ -23,20 +39,19 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	onShared,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
+	const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const hasPhoneAndWa = useMemo(() => !!(phone && waShareUrl), [phone, waShareUrl]);
-
-	// Guarded access to navigator for environments where it's undefined (tests/SSR-ish cases).
-	const supportsWebShare = useMemo(() => {
-		if (typeof navigator === 'undefined') return false;
-		return !!(navigator.share && typeof navigator.share === 'function');
+	useEffect(() => {
+		return () => {
+			if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+		};
 	}, []);
 
-	const primaryAction: ShareMethod = useMemo(() => {
-		if (hasPhoneAndWa) return 'whatsapp';
-		if (supportsWebShare) return 'web-share';
-		return 'copy';
-	}, [hasPhoneAndWa, supportsWebShare]);
+	const hasPhoneAndWa = !!(phone && waShareUrl);
+	const sharePayload = buildInvitationSharePayload({ shareText, inviteUrl });
+	const supportsWebShare = canUseNativeShare(sharePayload);
+
+	const primaryAction = hasPhoneAndWa ? 'whatsapp' : supportsWebShare ? 'web-share' : 'copy';
 
 	const handleShare = async () => {
 		if (status !== 'idle') return;
@@ -48,56 +63,44 @@ const ShareAction: React.FC<ShareActionProps> = ({
 				window.open(waShareUrl, '_blank', 'noopener,noreferrer');
 				await onShared();
 			} else if (primaryAction === 'web-share') {
-				await navigator.share({
-					title: 'Invitación Celebra-me',
-					text: shareText,
-					url: inviteUrl,
-				});
+				const shareResult = await shareInvitationLink(sharePayload);
+				if (shareResult === 'canceled') {
+					setStatus('idle');
+					return;
+				}
+				if (shareResult !== 'shared') {
+					throw new Error(`Native share ${shareResult}`);
+				}
 				await onShared();
 			} else {
-				if (!navigator.clipboard?.writeText) {
+				const copied = await copyToClipboard(inviteUrl);
+				if (!copied) {
 					window.open(inviteUrl, '_blank', 'noopener,noreferrer');
-				} else {
-					await navigator.clipboard.writeText(inviteUrl);
 				}
 				await onShared();
 			}
 
 			setStatus('delivered');
-			window.setTimeout(() => setStatus('idle'), 3000);
+			statusTimeoutRef.current = setTimeout(() => setStatus('idle'), 3000);
 		} catch (err) {
 			console.info('Share action aborted or failed:', err);
 			setStatus('idle');
 		}
 	};
 
-	const getButtonLabel = () => {
-		if (status === 'sending') return 'Enviando';
-		if (status === 'delivered') return 'Registrado';
-		if (primaryAction === 'whatsapp') return isShared ? 'Reenviar' : 'Enviar';
-		if (primaryAction === 'copy') return 'Copiar enlace';
-		return 'Compartir invitación';
-	};
-
-	const renderButtonIcon = () => {
-		if (status === 'delivered') {
-			return <span className="share-icon share-icon--state">OK</span>;
-		}
-
-		if (status === 'sending') {
-			return <span className="share-icon share-icon--state">...</span>;
-		}
-
-		if (primaryAction === 'whatsapp') {
-			return <WhatsAppIcon className="share-icon" size={16} />;
-		}
-
-		if (primaryAction === 'copy') {
-			return <CopyIcon className="share-icon" size={16} />;
-		}
-
-		return <MessageIcon className="share-icon" size={16} />;
-	};
+	const statusIcon = STATUS_ICONS[status] ?? ICONS[primaryAction];
+	const label =
+		status === 'sending'
+			? 'Enviando'
+			: status === 'delivered'
+				? 'Registrado'
+				: primaryAction === 'whatsapp'
+					? isShared
+						? 'Reenviar'
+						: 'Enviar'
+					: primaryAction === 'copy'
+						? 'Copiar enlace'
+						: 'Compartir invitación';
 
 	const title =
 		primaryAction === 'whatsapp'
@@ -115,8 +118,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 			title={title}
 			aria-label={title}
 		>
-			{renderButtonIcon()}
-			<span className="share-label">{getButtonLabel()}</span>
+			{statusIcon}
+			<span className="share-label">{label}</span>
 		</button>
 	);
 };
