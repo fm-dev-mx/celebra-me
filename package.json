@@ -90,7 +90,7 @@
         "stylelint-config-standard-scss": "^17.0.0",
         "ts-jest": "^29.4.9",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.59.2"
+        "typescript-eslint": "^8.59.4"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
