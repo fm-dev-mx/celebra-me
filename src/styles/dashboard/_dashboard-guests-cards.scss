@@ -223,12 +223,6 @@
 	white-space: pre-wrap;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.guest-card__message-block {
-		transition: none;
-	}
-}
-
 /* ───── Footer actions ───── */
 .guest-card__actions {
 	display: flex;
@@ -292,13 +286,6 @@
 		max-height: 520px;
 		opacity: 100%;
 		transform: translateY(0);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.guest-card__expanded {
-		transition: none;
-		transform: none;
 	}
 }
 
