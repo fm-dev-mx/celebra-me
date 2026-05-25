@@ -3,11 +3,9 @@ import { generateInvitationLink } from '@/utils/invitation-link';
 
 export function formatGuestDate(value: string | null): string {
 	if (!value) return '-';
-	try {
-		return new Date(value).toLocaleString('es-MX');
-	} catch {
-		return value;
-	}
+	const date = new Date(value);
+	if (isNaN(date.getTime())) return value;
+	return date.toLocaleString('es-MX');
 }
 
 export function formatGuestEntrySource(item: DashboardGuestItem) {
@@ -55,7 +53,7 @@ export function hasContact(item: DashboardGuestItem): boolean {
 
 /** True when the guest left an RSVP comment/message */
 export function hasMessage(item: DashboardGuestItem): boolean {
-	return item.guestComment.trim().length > 0;
+	return (item.guestComment ?? '').trim().length > 0;
 }
 
 /** Expanded-panel detail labels */
@@ -81,7 +79,7 @@ export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: strin
 	}
 
 	return generateInvitationLink({
-		origin: baseUrl,
+		origin: inviteBaseUrl,
 		eventType: item.eventType,
 		eventSlug: item.eventSlug,
 		inviteId: item.inviteId,
