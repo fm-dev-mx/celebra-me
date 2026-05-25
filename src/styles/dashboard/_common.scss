@@ -71,21 +71,6 @@
 	font-size: 0.875rem;
 }
 
-.dashboard-spinner {
-	width: 1.5rem;
-	height: 1.5rem;
-	border: 2px solid var(--color-state-info-border);
-	border-top-color: var(--color-state-info);
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 .dashboard-error--full,
 .dashboard-actions--full,
 .dashboard-modal__actions--full {
