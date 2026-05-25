@@ -12,6 +12,7 @@ import {
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
+	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestCardProps {
@@ -53,7 +54,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const primaryStatus = getPrimaryStatus(item);
 	const expandId = `guest-details-${item.guestId}`;
 
-	const viewPercentage = Math.round(item.viewPercentage);
+	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 
 	const contactDisplay = getContactDisplay(item);
 	const hasAnyContact = !!(item.phone || item.email);

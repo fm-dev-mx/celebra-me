@@ -13,6 +13,7 @@ import {
 	getRsvpStateLabel,
 	getViewStateLabel,
 	hasMessage,
+	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
 import { MessageIcon } from '@/components/common/icons/ui';
 
@@ -49,12 +50,13 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 }) => {
 	const progressRef = useRef<HTMLDivElement>(null);
 	const isViewed = item.firstViewedAt != null;
+	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 
 	useLayoutEffect(() => {
 		if (progressRef.current) {
-			progressRef.current.style.width = `${Math.round(item.viewPercentage)}%`;
+			progressRef.current.style.width = `${viewPercentage}%`;
 		}
-	}, [item.viewPercentage]);
+	}, [viewPercentage]);
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
@@ -109,11 +111,11 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</div>
 				</td>
 				<td data-label="% Vista">
-					<div className="engagement-mini" data-progress={item.viewPercentage}>
+					<div className="engagement-mini" data-progress={viewPercentage}>
 						<div className="engagement-mini__bar">
 							<div ref={progressRef} className="engagement-mini__progress" />
 						</div>
-						<span className="engagement-mini__label">{item.viewPercentage}%</span>
+						<span className="engagement-mini__label">{viewPercentage}%</span>
 					</div>
 				</td>
 				<td data-label="Enviar">
