@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { forwardRef } from 'react';
 import type { RefObject, SyntheticEvent } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
 import {
@@ -54,19 +55,22 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 	);
 }
 
-export function SubmittedState(props: {
-	title: string;
-	variant?: string;
-	name: string;
-	attendanceStatus: AttendanceStatus;
-	confirmationMessage: string;
-	celebrantName?: string;
-	showWhatsAppCta: boolean;
-	whatsAppUrl: string;
-	onWhatsAppClick: () => void;
-	confirmedMessage?: string;
-	declinedMessage?: string;
-}) {
+export const SubmittedState = forwardRef<
+	HTMLElement,
+	{
+		title: string;
+		variant?: string;
+		name: string;
+		attendanceStatus: AttendanceStatus;
+		confirmationMessage: string;
+		celebrantName?: string;
+		showWhatsAppCta: boolean;
+		whatsAppUrl: string;
+		onWhatsAppClick: () => void;
+		confirmedMessage?: string;
+		declinedMessage?: string;
+	}
+>((props, ref) => {
 	const {
 		title,
 		variant,
@@ -82,7 +86,16 @@ export function SubmittedState(props: {
 	} = props;
 
 	return (
-		<section id="rsvp" className="rsvp" data-variant={variant}>
+		<section
+			id="rsvp"
+			className="rsvp"
+			data-variant={variant}
+			ref={ref}
+			tabIndex={-1}
+			role="status"
+			aria-live="polite"
+			aria-atomic="true"
+		>
 			<h2 className="sr-only">{title}</h2>
 			<div className="rsvp__greeting">
 				<div className="rsvp__greeting-icon">
@@ -141,7 +154,9 @@ export function SubmittedState(props: {
 			</div>
 		</section>
 	);
-}
+});
+
+SubmittedState.displayName = 'SubmittedState';
 
 export function RsvpFormView(props: {
 	title: string;

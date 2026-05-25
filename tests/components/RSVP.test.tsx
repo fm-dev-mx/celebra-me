@@ -494,6 +494,54 @@ describe('RSVP Component', () => {
 				expect(container.querySelector('form')).not.toBeInTheDocument();
 			});
 		});
+
+		it('focuses and scrolls the success status into view after submission', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			const successRegion = await screen.findByRole('status');
+			expect(successRegion).toHaveAttribute('aria-live', 'polite');
+			expect(successRegion).toHaveAttribute('aria-atomic', 'true');
+			expect(successRegion).toHaveAttribute('tabindex', '-1');
+			await waitFor(() => expect(successRegion).toHaveFocus());
+			expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
+				behavior: 'smooth',
+				block: 'center',
+			});
+		});
+
+		it('prevents duplicate RSVP submissions while loading', async () => {
+			const user = userEvent.setup();
+			let resolveFetch: ((value: unknown) => void) | undefined;
+			(global.fetch as jest.Mock).mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					}),
+			);
+
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			const button = screen.getByRole('button', { name: /Confirmar/i });
+			await user.click(button);
+			await user.click(button);
+
+			const submitCalls = (global.fetch as jest.Mock).mock.calls.filter(
+				([url]) => typeof url === 'string' && PERSONALIZED_RSVP_URL.test(url),
+			);
+			expect(submitCalls).toHaveLength(1);
+
+			resolveFetch?.({
+				ok: true,
+				json: async () => ({ rsvpId: 'mock-rsvp-id' }),
+			});
+		});
 	});
 
 	describe('Accessibility', () => {

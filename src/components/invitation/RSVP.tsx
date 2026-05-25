@@ -1,4 +1,5 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import '@/styles/invitation/_rsvp.scss';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -57,6 +58,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	isDemoPreview,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
+	const successRef = useRef<HTMLElement>(null);
 
 	const {
 		name,
@@ -110,6 +112,16 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
+	useEffect(() => {
+		if (!submitted || !successRef.current) return;
+
+		successRef.current.focus({ preventScroll: true });
+		successRef.current.scrollIntoView({
+			behavior: prefersReducedMotion ? 'auto' : 'smooth',
+			block: 'center',
+		});
+	}, [submitted, prefersReducedMotion]);
+
 	if (!isPersonalized && !isPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
@@ -125,6 +137,7 @@ const RSVP: React.FC<RSVPProps> = ({
 					transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
 				>
 					<SubmittedState
+						ref={successRef}
 						title={title}
 						variant={variant}
 						name={name}
