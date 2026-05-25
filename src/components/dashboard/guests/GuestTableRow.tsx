@@ -58,6 +58,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
+	const status = getPrimaryStatus(item);
 	const expandId = `row-details-${item.guestId}`;
 
 	const rowClassName = [
@@ -95,9 +96,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					)}
 				</td>
 				<td data-label="Estado">
-					<div className={`status-pill status-pill--${getPrimaryStatus(item).class}`}>
+					<div className={`status-pill status-pill--${status.class}`}>
 						<span className="status-pill__dot"></span>
-						{getPrimaryStatus(item).label}
+						{status.label}
 					</div>
 				</td>
 				<td data-label="Asistentes">

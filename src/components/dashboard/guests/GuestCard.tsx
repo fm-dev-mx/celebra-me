@@ -9,7 +9,6 @@ import {
 	getGuestVisibleTags,
 	getPrimaryStatus,
 	getContactDisplay,
-	hasContact,
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
@@ -51,14 +50,13 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
 	const hasMessageFlag = hasMessage(item);
+	const primaryStatus = getPrimaryStatus(item);
 	const expandId = `guest-details-${item.guestId}`;
 
-	const viewPercentage = Number.isFinite(item.viewPercentage)
-		? Math.min(100, Math.max(0, Math.round(item.viewPercentage)))
-		: 0;
+	const viewPercentage = Math.round(item.viewPercentage);
 
 	const contactDisplay = getContactDisplay(item);
-	const hasAnyContact = hasContact(item);
+	const hasAnyContact = !!(item.phone || item.email);
 	const brandingBadge = item.hideCelebraMeBranding && (
 		<span className="guest-card__branding-badge">Sin marca</span>
 	);
@@ -200,9 +198,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					<span className="guest-card__name">{item.fullName}</span>
 					{brandingBadge}
 				</div>
-				<span className={`status-pill status-pill--${getPrimaryStatus(item).class}`}>
+				<span className={`status-pill status-pill--${primaryStatus.class}`}>
 					<span className="status-pill__dot" />
-					{getPrimaryStatus(item).label}
+					{primaryStatus.label}
 				</span>
 			</header>
 
