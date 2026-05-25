@@ -5,6 +5,89 @@
  */
 @use '../global/mixins' as mixins;
 
+// ------------------------------------------------------------------
+// RSVP Viewport Section
+// Full-screen wrapper that centers the card and fills the viewport.
+// The `#rsvp` hash targets this element.
+// ------------------------------------------------------------------
+.rsvp-section {
+	--rsvp-section-padding-inline: clamp(1rem, 4vw, 3rem);
+	--rsvp-section-padding-block: clamp(1.5rem, 6vh, 4rem);
+
+	display: grid;
+	place-items: center;
+	min-block-size: 100dvh;
+	padding: var(--rsvp-section-padding-block) var(--rsvp-section-padding-inline)
+		calc(var(--rsvp-section-padding-block) + env(safe-area-inset-bottom, 0px))
+		var(--rsvp-section-padding-inline);
+	box-sizing: border-box;
+	scroll-margin-block-start: 0;
+
+	/* Override card sizing — grid handles centering */
+	.rsvp {
+		margin: 0 auto;
+		width: 100%;
+		max-width: var(--rsvp-card-max-width, 680px);
+	}
+
+	/* Compact viewports: progressive tightening via CSS, no JS toggle needed */
+	@media (height <= 760px) {
+		--rsvp-section-padding-block: clamp(1rem, 4vh, 2.5rem);
+
+		.rsvp {
+			--rsvp-card-margin: 3rem auto;
+			--rsvp-card-margin-exp: 1.5rem auto 2rem;
+			--rsvp-card-padding-y: 1.5rem;
+			--rsvp-card-padding-x: 1.25rem;
+			--rsvp-header-margin: 0 0 1.5rem;
+			--rsvp-title-size: 1.8rem;
+			--rsvp-form-gap: 1.5rem;
+			--rsvp-radio-card-padding: 0.9rem;
+		}
+	}
+
+	@media (height <= 680px) {
+		--rsvp-section-padding-block: clamp(0.75rem, 3vh, 1.5rem);
+
+		.rsvp {
+			--rsvp-card-margin: 2rem auto;
+			--rsvp-card-margin-exp: 1rem auto 1.5rem;
+			--rsvp-card-padding-y: 1rem;
+			--rsvp-card-padding-x: 1rem;
+			--rsvp-header-margin: 0 0 1rem;
+			--rsvp-title-size: 1.5rem;
+			--rsvp-title-margin: 0 0 1rem;
+			--rsvp-form-gap: 1rem;
+			--rsvp-grid-gap: 0.75rem;
+			--rsvp-radio-group-gap: 0.75rem;
+			--rsvp-radio-group-margin: 0.5rem 0;
+			--rsvp-radio-card-padding: 0.7rem;
+			--rsvp-input-padding: 0.5rem 0.25rem;
+			--rsvp-button-padding: 0.85rem 1.5rem;
+			--rsvp-greeting-padding: 1.25rem 0;
+		}
+	}
+
+	@media (height <= 600px) {
+		.rsvp {
+			--rsvp-card-padding-y: 0.75rem;
+			--rsvp-card-margin: 1rem auto;
+			--rsvp-card-margin-exp: 0.5rem auto 1rem;
+			--rsvp-header-margin: 0 0 0.75rem;
+			--rsvp-title-size: 1.3rem;
+			--rsvp-title-margin: 0 0 0.75rem;
+			--rsvp-form-gap: 0.75rem;
+			--rsvp-grid-gap: 0.5rem;
+			--rsvp-radio-group-gap: 0.5rem;
+			--rsvp-radio-group-margin: 0.25rem 0;
+			--rsvp-radio-card-padding: 0.6rem;
+			--rsvp-input-padding: 0.4rem 0.2rem;
+			--rsvp-button-padding: 0.7rem 1.25rem;
+			--rsvp-greeting-padding: 0.75rem 0;
+		}
+	}
+}
+
 .rsvp {
 	--rsvp-bg: var(--color-surface-dark);
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
@@ -88,13 +171,12 @@
 
 	position: relative;
 	width: calc(100% - 2rem);
-	max-width: 600px;
+	max-width: var(--rsvp-card-max-width, 680px);
 	min-height: var(--rsvp-min-height);
 	padding: var(--rsvp-card-padding-y) var(--rsvp-card-padding-x);
 	padding-bottom: calc(var(--rsvp-card-padding-y) + var(--rsvp-bottom-clearance));
 	border-radius: var(--rsvp-radius-card);
 	overflow: hidden;
-	scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem));
 	margin: var(--rsvp-card-margin);
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
@@ -509,50 +591,10 @@
 		--rsvp-radio-card-justify: flex-start;
 	}
 
-	/* Compact mode: short mobile viewport */
-	@media (height <= 720px) {
-		@include mixins.respond-below(sm) {
-			--rsvp-card-padding-y: 1.5rem;
-			--rsvp-card-padding-x: 1rem;
-			--rsvp-card-margin: 4rem auto;
-			--rsvp-card-margin-exp: 1rem auto 2.5rem;
-			--rsvp-header-margin: 0 0 1.2rem;
-			--rsvp-title-size: 1.6rem;
-			--rsvp-title-margin: 0 0 1.4rem;
-			--rsvp-form-gap: 1.2rem;
-			--rsvp-grid-gap: 0.75rem;
-			--rsvp-radio-group-gap: 0.75rem;
-			--rsvp-radio-group-margin: 0.5rem 0;
-			--rsvp-radio-card-padding: 0.8rem;
-			--rsvp-input-padding: 0.6rem 0.25rem;
-			--rsvp-button-padding: 0.85rem 1.5rem;
-			--rsvp-greeting-padding: 1.25rem 0;
-			--rsvp-bottom-clearance: 3.5rem;
-		}
-	}
-
 	/* Expanded state: tighter vertical rhythm when attendance is selected */
 	&.rsvp--expanded {
 		margin: var(--rsvp-card-margin-exp);
-	}
-
-	&.rsvp--compact {
-		--rsvp-card-margin: 2.5rem auto;
-		--rsvp-card-margin-exp: 1rem auto 2rem;
-		--rsvp-card-padding-y: 1rem;
-		--rsvp-card-padding-x: 1rem;
-		--rsvp-header-margin: 0 0 0.75rem;
-		--rsvp-title-size: 1.4rem;
-		--rsvp-title-margin: 0 0 0.75rem;
-		--rsvp-form-gap: 0.75rem;
-		--rsvp-grid-gap: 0.5rem;
-		--rsvp-radio-group-gap: 0.5rem;
-		--rsvp-radio-group-margin: 0.25rem 0;
-		--rsvp-radio-card-padding: 0.6rem;
-		--rsvp-input-padding: 0.5rem 0.25rem;
-		--rsvp-button-padding: 0.75rem 1.5rem;
-		--rsvp-greeting-padding: 1rem 0;
-		--rsvp-bottom-clearance: 4rem;
+		padding-bottom: 3rem;
 	}
 
 	&__demo-footer {

@@ -135,6 +135,7 @@ function renderPersonalizedAccess(
 
 function renderRsvpSection(
 	pageContext: InvitationPageContext,
+	themePreset: ThemePreset,
 ): InvitationSectionRenderDescriptor | null {
 	const { sections, hero } = pageContext.viewModel;
 
@@ -146,6 +147,7 @@ function renderRsvpSection(
 		component: 'rsvp',
 		props: {
 			...sections.rsvp,
+			variant: sectionVariant(sections.rsvp, themePreset),
 			celebrantName: hero.name,
 			guestCap: guestContext?.guest.maxAllowedAttendees ?? sections.rsvp.guestCap,
 			initialGuestData: guestContext
@@ -273,7 +275,7 @@ function renderSection(
 		}
 
 		case 'rsvp':
-			return renderRsvpSection(pageContext);
+			return renderRsvpSection(pageContext, variant);
 
 		case 'gifts':
 			return renderGiftsSection(sections);

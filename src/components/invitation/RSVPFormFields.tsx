@@ -319,51 +319,55 @@ export function ConfirmedFields(props: {
 		onBlur,
 	} = props;
 
-	if (!attendanceStatus) return null;
-
 	return (
-		<AnimatePresence>
-			<motion.div
-				initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
-				animate={{ opacity: 1, height: 'auto' }}
-				exit={
-					prefersReducedMotion
-						? { opacity: 1, height: 'auto' }
-						: { opacity: 0, height: 0 }
-				}
-				transition={prefersReducedMotion ? { duration: 0 } : undefined}
-				className="rsvp__extra-fields"
-			>
-				{attendanceStatus === 'confirmed' && supportsPlusOnes && (
-					<FloatingField
-						id="guestCount"
-						type="number"
-						label={guestCountLabel}
-						labelSuffix={
-							effectiveGuestCap <= 10 ? ` (M\u00e1x. ${effectiveGuestCap})` : ''
+		<div className="rsvp__extra-fields">
+			<AnimatePresence>
+				{attendanceStatus !== null && (
+					<motion.div
+						key={attendanceStatus}
+						initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: 'auto' }}
+						exit={
+							prefersReducedMotion
+								? { opacity: 1, height: 'auto' }
+								: { opacity: 0, height: 0 }
 						}
-						value={String(attendeeCount)}
-						error={errors.guestCount}
-						touched={touched.guestCount}
-						prefersReducedMotion={prefersReducedMotion}
-						fieldRef={guestCountRef}
-						onChange={onGuestCountChange}
-						onBlur={onBlur}
-						min={1}
-						max={effectiveGuestCap}
-					/>
+						transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
+					>
+						{attendanceStatus === 'confirmed' && supportsPlusOnes && (
+							<FloatingField
+								id="guestCount"
+								type="number"
+								label={guestCountLabel}
+								labelSuffix={
+									effectiveGuestCap <= 10
+										? ` (M\u00e1x. ${effectiveGuestCap})`
+										: ''
+								}
+								value={String(attendeeCount)}
+								error={errors.guestCount}
+								touched={touched.guestCount}
+								prefersReducedMotion={prefersReducedMotion}
+								fieldRef={guestCountRef}
+								onChange={onGuestCountChange}
+								onBlur={onBlur}
+								min={1}
+								max={effectiveGuestCap}
+							/>
+						)}
+						<div className="rsvp__field">
+							<label htmlFor="notes">{notesLabel}</label>
+							<textarea
+								id="notes"
+								placeholder={notesPlaceholder}
+								rows={2}
+								value={notes}
+								onChange={(e) => onNotesChange(e.target.value)}
+							/>
+						</div>
+					</motion.div>
 				)}
-				<div className="rsvp__field">
-					<label htmlFor="notes">{notesLabel}</label>
-					<textarea
-						id="notes"
-						placeholder={notesPlaceholder}
-						rows={2}
-						value={notes}
-						onChange={(e) => onNotesChange(e.target.value)}
-					/>
-				</div>
-			</motion.div>
-		</AnimatePresence>
+			</AnimatePresence>
+		</div>
 	);
 }
