@@ -70,15 +70,32 @@
 	--rsvp-title-font-weight: inherit;
 	--rsvp-title-letter-spacing: 0;
 
+	/* Spacing variables — overridable per state/viewport */
+	--rsvp-card-margin: 8rem auto;
+	--rsvp-card-margin-exp: 4rem auto;
+	--rsvp-card-padding-y: 2.5rem;
+	--rsvp-card-padding-x: 1.5rem;
+	--rsvp-header-margin: 0 0 2.2rem;
+	--rsvp-form-gap: 2.2rem;
+	--rsvp-grid-gap: 1.5rem;
+	--rsvp-radio-group-gap: 1.2rem;
+	--rsvp-radio-group-margin: 1rem 0;
+	--rsvp-radio-card-padding: 1.1rem;
+	--rsvp-input-padding: 0.75rem 0.25rem;
+	--rsvp-button-padding: 1.1rem 2.2rem;
+	--rsvp-greeting-padding: 2rem 0;
+	--rsvp-bottom-clearance: 0;
+
 	position: relative;
 	width: calc(100% - 2rem);
 	max-width: 600px;
 	min-height: var(--rsvp-min-height);
-	padding: 2.5rem 1.5rem;
+	padding: var(--rsvp-card-padding-y) var(--rsvp-card-padding-x);
+	padding-bottom: calc(var(--rsvp-card-padding-y) + var(--rsvp-bottom-clearance));
 	border-radius: var(--rsvp-radius-card);
 	overflow: hidden;
 	scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem));
-	margin: 8rem auto;
+	margin: var(--rsvp-card-margin);
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
 	backdrop-filter: blur(var(--glass-blur, 12px));
@@ -99,7 +116,7 @@
 
 	&__header {
 		text-align: center;
-		margin-bottom: 2.2rem;
+		margin-bottom: var(--rsvp-header-margin);
 	}
 
 	&__eyebrow {
@@ -133,7 +150,7 @@
 	&__form {
 		display: flex;
 		flex-direction: column;
-		gap: 2.2rem;
+		gap: var(--rsvp-form-gap);
 		position: relative;
 		z-index: 1;
 		min-height: var(--rsvp-form-min-height);
@@ -142,7 +159,7 @@
 	&__grid {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: var(--rsvp-grid-gap);
 	}
 
 	&__field {
@@ -166,7 +183,7 @@
 			background: var(--rsvp-field-bg);
 			border: 1px solid var(--rsvp-field-border);
 			border-radius: var(--rsvp-radius-field);
-			padding: 0.75rem 0.25rem;
+			padding: var(--rsvp-input-padding);
 			font-family: var(--font-body);
 			font-size: 1.05rem;
 			color: var(--color-text-primary);
@@ -208,14 +225,14 @@
 	&__radio-group {
 		display: grid;
 		grid-template-columns: var(--rsvp-radio-columns);
-		gap: 1.2rem;
-		margin: 1rem 0;
+		gap: var(--rsvp-radio-group-gap);
+		margin: var(--rsvp-radio-group-margin);
 
 		.rsvp__radio-card {
 			background: var(--rsvp-radio-bg);
 			border: 1px solid var(--rsvp-radio-border);
 			border-radius: 4px;
-			padding: 1.1rem;
+			padding: var(--rsvp-radio-card-padding);
 			transition:
 				background-color var(--duration-standard) var(--ease-premium),
 				border-color var(--duration-standard) var(--ease-premium),
@@ -314,7 +331,7 @@
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		padding: 1.1rem 2.2rem;
+		padding: var(--rsvp-button-padding);
 		color: var(--rsvp-button-color);
 		background: var(--rsvp-button-bg);
 		border: 1px solid var(--rsvp-button-border);
@@ -393,7 +410,7 @@
 
 	&__greeting {
 		text-align: center;
-		padding: 2rem 0;
+		padding: var(--rsvp-greeting-padding);
 		min-height: var(--rsvp-success-min-height);
 		display: flex;
 		flex-direction: column;
@@ -447,7 +464,7 @@
 		color: var(--color-text-secondary);
 		font-family: var(--font-body);
 		font-size: 0.85rem;
-		padding: 0.75rem 0.25rem;
+		padding: var(--rsvp-input-padding);
 		appearance: none;
 		cursor: pointer;
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -492,55 +509,50 @@
 		--rsvp-radio-card-justify: flex-start;
 	}
 
-	@media (height <= 700px) {
+	/* Compact mode: short mobile viewport */
+	@media (height <= 720px) {
 		@include mixins.respond-below(sm) {
-			padding: 1.5rem 1rem;
+			--rsvp-card-padding-y: 1.5rem;
+			--rsvp-card-padding-x: 1rem;
+			--rsvp-card-margin: 4rem auto;
+			--rsvp-card-margin-exp: 1rem auto 2.5rem;
+			--rsvp-header-margin: 0 0 1.2rem;
+			--rsvp-title-size: 1.6rem;
+			--rsvp-title-margin: 0 0 1.4rem;
+			--rsvp-form-gap: 1.2rem;
+			--rsvp-grid-gap: 0.75rem;
+			--rsvp-radio-group-gap: 0.75rem;
+			--rsvp-radio-group-margin: 0.5rem 0;
+			--rsvp-radio-card-padding: 0.8rem;
+			--rsvp-input-padding: 0.6rem 0.25rem;
+			--rsvp-button-padding: 0.85rem 1.5rem;
+			--rsvp-greeting-padding: 1.25rem 0;
+			--rsvp-bottom-clearance: 3.5rem;
 		}
 	}
 
+	/* Expanded state: tighter vertical rhythm when attendance is selected */
 	&.rsvp--expanded {
-		margin: 4rem auto;
+		margin: var(--rsvp-card-margin-exp);
+	}
 
-		@media (height <= 700px) {
-			@include mixins.respond-below(sm) {
-				margin: 1rem auto 2.5rem;
-				padding: 1rem;
-
-				.rsvp__header {
-					margin-bottom: 0.75rem;
-				}
-
-				.rsvp__title {
-					font-size: 1.5rem;
-					margin: 0 0 1rem;
-				}
-
-				.rsvp__form {
-					gap: 0.75rem;
-				}
-
-				.rsvp__grid {
-					gap: 0.5rem;
-				}
-
-				.rsvp__radio-group {
-					gap: 0.5rem;
-					margin: 0.25rem 0;
-				}
-
-				.rsvp__radio-card {
-					padding: 0.6rem;
-				}
-
-				.rsvp__button {
-					padding: 0.75rem 1.5rem;
-				}
-
-				.rsvp__greeting {
-					padding: 1rem 0;
-				}
-			}
-		}
+	&.rsvp--compact {
+		--rsvp-card-margin: 2.5rem auto;
+		--rsvp-card-margin-exp: 1rem auto 2rem;
+		--rsvp-card-padding-y: 1rem;
+		--rsvp-card-padding-x: 1rem;
+		--rsvp-header-margin: 0 0 0.75rem;
+		--rsvp-title-size: 1.4rem;
+		--rsvp-title-margin: 0 0 0.75rem;
+		--rsvp-form-gap: 0.75rem;
+		--rsvp-grid-gap: 0.5rem;
+		--rsvp-radio-group-gap: 0.5rem;
+		--rsvp-radio-group-margin: 0.25rem 0;
+		--rsvp-radio-card-padding: 0.6rem;
+		--rsvp-input-padding: 0.5rem 0.25rem;
+		--rsvp-button-padding: 0.75rem 1.5rem;
+		--rsvp-greeting-padding: 1rem 0;
+		--rsvp-bottom-clearance: 4rem;
 	}
 
 	&__demo-footer {

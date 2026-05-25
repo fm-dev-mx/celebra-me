@@ -22,6 +22,7 @@
 	--rsvp-label-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--rsvp-placeholder-color: rgb(var(--color-eternal-ink-rgb) / 46%);
 	--rsvp-radius-card: 14px;
+	--rsvp-inner-border-inset: 0.55rem;
 
 	background:
 		radial-gradient(
@@ -42,7 +43,7 @@
 	border-color: rgb(var(--color-sacred-blue-rgb) / 32%);
 
 	&::before {
-		inset: 0.55rem;
+		inset: var(--rsvp-inner-border-inset);
 		border-color: rgb(var(--color-sacred-blue-rgb) / 18%);
 	}
 
