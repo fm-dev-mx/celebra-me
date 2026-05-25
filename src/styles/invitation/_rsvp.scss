@@ -9,11 +9,8 @@
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
 	--color-glass-border: var(--color-border-premium, rgb(var(--color-action-accent-rgb) / 18%));
 	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 18%));
-	--shadow-premium: var(
-		--shadow-premium,
-		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%),
-		0 8px 18px rgb(0 0 0 / 16%)
-	);
+	--shadow-premium:
+		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%), 0 8px 18px rgb(0 0 0 / 16%);
 	--rsvp-label-color: var(--color-text-secondary);
 	--rsvp-label-letter-spacing: 0.03em;
 	--rsvp-field-bg: var(--color-surface-soft, rgb(var(--color-surface-primary-rgb) / 50%));
@@ -75,6 +72,7 @@
 	position: relative;
 	width: calc(100% - 2rem);
 	max-width: 600px;
+	min-height: var(--rsvp-min-height);
 	margin: 8rem auto;
 	padding: 2.5rem 1.5rem;
 	border-radius: var(--rsvp-radius-card);
@@ -136,6 +134,7 @@
 		gap: 2.2rem;
 		position: relative;
 		z-index: 1;
+		min-height: var(--rsvp-form-min-height);
 	}
 
 	&__grid {
@@ -393,6 +392,10 @@
 	&__greeting {
 		text-align: center;
 		padding: 2rem 0;
+		min-height: var(--rsvp-success-min-height);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 
 		&-icon {
 			margin-bottom: 1rem;
@@ -406,6 +409,24 @@
 			font-size: 1.5rem;
 			line-height: 1.4;
 		}
+	}
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible {
+		box-shadow:
+			var(--shadow-premium),
+			0 0 0 3px rgb(var(--color-action-accent-rgb) / 18%);
+	}
+
+	&__extra-fields {
+		min-height: var(--rsvp-extra-fields-min-height);
+	}
+
+	&__error-region {
+		min-height: 1.5rem;
 	}
 
 	&__field--phone .rsvp__phone-group {
