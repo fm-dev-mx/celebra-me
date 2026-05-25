@@ -57,12 +57,6 @@
 		}
 
 		&.row-shared {
-			opacity: 100%;
-
-			&:hover {
-				background-color: rgb(var(--color-text-secondary-rgb) / 4%);
-			}
-
 			.guest-info__name {
 				color: var(--color-text-secondary);
 			}
@@ -261,17 +255,5 @@
 		flex-shrink: 0;
 		padding-top: 0;
 		border-top: none;
-	}
-}
-
-@keyframes motion-slide-down {
-	from {
-		opacity: 0%;
-		transform: translateY(-6px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
 	}
 }
