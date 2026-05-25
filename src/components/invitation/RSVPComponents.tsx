@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
-import type { RefObject, SyntheticEvent } from 'react';
+import type { FocusEventHandler, RefObject, SyntheticEvent } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
 import {
 	AttendanceField,
@@ -163,12 +163,12 @@ export const SubmittedState = forwardRef<
 
 SubmittedState.displayName = 'SubmittedState';
 
-export function RsvpFormView(props: {
+interface RsvpFormViewProps {
 	title: string;
 	subcopy: string;
 	variant?: string;
 	modifier?: string;
-	onFocusCapture?: React.FocusEventHandler<HTMLElement>;
+	onFocusCapture?: FocusEventHandler<HTMLElement>;
 	eyebrow?: string;
 	prefersReducedMotion: boolean;
 	nameLocked: boolean;
@@ -206,7 +206,9 @@ export function RsvpFormView(props: {
 	onGuestCountChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
-}) {
+}
+
+export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, ref) => {
 	const {
 		title,
 		subcopy,
@@ -310,6 +312,7 @@ export function RsvpFormView(props: {
 	return (
 		<section
 			id="rsvp"
+			ref={ref}
 			className={`rsvp${modifier ? ` ${modifier}` : ''}`}
 			data-variant={variant}
 			onFocusCapture={onFocusCapture}
@@ -363,4 +366,6 @@ export function RsvpFormView(props: {
 			)}
 		</section>
 	);
-}
+});
+
+RsvpFormView.displayName = 'RsvpFormView';

@@ -17,6 +17,7 @@ import {
 } from '@/components/invitation/rsvp-logic';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
+import { getSmartScrollBlock } from '@/lib/dom/viewport';
 
 interface InitialGuestData {
 	fullName?: string;
@@ -158,7 +159,7 @@ export function useRsvpSubmission({
 				if (targetRef?.current) {
 					targetRef.current.scrollIntoView({
 						behavior: prefersReducedMotion ? 'auto' : 'smooth',
-						block: 'center',
+						block: getSmartScrollBlock(targetRef.current),
 					});
 
 					if (firstError === 'attendance') {
