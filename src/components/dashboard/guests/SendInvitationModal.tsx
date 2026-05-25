@@ -1,8 +1,7 @@
-import React from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
-import { CopyIcon } from '@/components/common/icons/ui';
+import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
 import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
 import { useSendInvitation } from '@/components/dashboard/guests/use-send-invitation';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -25,21 +24,6 @@ interface SendInvitationModalProps {
 	onAdvanceFromGuest: (currentGuestId: string) => void;
 	onPostponeGuest: (currentGuestId: string) => void;
 }
-
-const EmptyState: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-	<ModalShell title="Enviar invitación" onClose={onClose}>
-		<div className="dashboard-modal__content">
-			<p className="dashboard-modal__confirm-text">
-				No hay invitaciones pendientes por enviar.
-			</p>
-		</div>
-		<div className="dashboard-modal__footer">
-			<button type="button" className="btn-primary" onClick={onClose}>
-				Cerrar
-			</button>
-		</div>
-	</ModalShell>
-);
 
 const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	guest,
@@ -68,6 +52,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		advancing,
 		pendingCount,
 		canSendToPhone,
+		isNoPhoneGuest,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,
@@ -84,18 +69,50 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	});
 
 	if (!guest) {
-		return <EmptyState onClose={onClose} />;
+		return (
+			<ModalShell title="Enviar invitación" onClose={onClose}>
+				<div className="dashboard-modal__content">
+					<p className="dashboard-modal__confirm-text">
+						No hay invitaciones pendientes por enviar.
+					</p>
+				</div>
+				<div className="dashboard-modal__footer">
+					<button type="button" className="btn-primary" onClick={onClose}>
+						Cerrar
+					</button>
+				</div>
+			</ModalShell>
+		);
 	}
 
 	return (
 		<ModalShell title="Enviar invitación" onClose={onClose}>
 			<div className="dashboard-modal__content">
 				{shareStatus === 'idle' && (
-					<>
-						<p className="dashboard-modal__description">
-							{pendingCount} invitaci&oacute;n(es) pendiente(s) por enviar
-						</p>
+					<p className="dashboard-modal__description">
+						{pendingCount} invitaci&oacute;n(es) pendiente(s) por enviar
+					</p>
+				)}
 
+				{shareStatus === 'idle' && isNoPhoneGuest && (
+					<div className="dashboard-modal__fallback">
+						<div className="send-share-guest">
+							<span className="send-share-guest__name">{guest.fullName}</span>
+							<span className="send-share-guest__phone">
+								Sin tel&eacute;fono registrado
+							</span>
+							<span className="send-share-guest__phone">
+								{guest.maxAllowedAttendees === 1
+									? '1 pase permitido'
+									: `${guest.maxAllowedAttendees} pases permitidos`}
+							</span>
+						</div>
+						{phoneError && <span className="guest-field-error">{phoneError}</span>}
+					</div>
+				)}
+
+				{shareStatus === 'idle' && !isNoPhoneGuest && (
+					<>
 						<div className="dashboard-form-field">
 							<label htmlFor="send-name">Nombre del invitado</label>
 							<input
@@ -214,9 +231,9 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 							{canSendToPhone ? (
 								<WhatsAppIcon className="share-icon" size={16} />
 							) : (
-								<CopyIcon className="share-icon" size={16} />
+								<MessageIcon className="share-icon" size={16} />
 							)}
-							{canSendToPhone ? 'Enviar por WhatsApp' : 'Compartir enlace'}
+							{canSendToPhone ? 'Enviar por WhatsApp' : 'Compartir invitación'}
 						</button>
 					</>
 				)}
