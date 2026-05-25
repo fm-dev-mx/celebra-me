@@ -31,9 +31,23 @@ function setupHook(
 	return { result, callbacks };
 }
 
+function setupNavigatorShare(value = jest.fn().mockResolvedValue(undefined)) {
+	Object.defineProperty(navigator, 'share', {
+		value,
+		configurable: true,
+		writable: true,
+	});
+	return value;
+}
+
+function removeNavigatorShare() {
+	delete (navigator as unknown as Record<string, unknown>).share;
+}
+
 describe('useSendInvitation', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		setupNavigatorShare();
 		window.open = jest.fn().mockReturnValue({
 			closed: false,
 			location: { href: '' },
@@ -117,11 +131,16 @@ describe('useSendInvitation', () => {
 		expect(callbacks.onAdvanceFromGuest).toHaveBeenCalledWith('g-1');
 	});
 
-	it('handleSaveAndShare with empty phone does not send countryCode', async () => {
-		const guest = makeGuest({ guestId: 'g-1', phone: '' });
-		const updatedGuest = makeGuest({ ...guest, guestId: 'g-1', phone: '', waShareUrl: '' });
+	it('handleSaveAndShare with empty phone shares saved invitation without saving', async () => {
+		const guest = makeGuest({
+			guestId: 'g-1',
+			phone: '',
+			waShareUrl: '',
+			shareText: 'Saved share text',
+			inviteId: 'invite-1',
+		});
 		const callbacks = createMockCallbacks();
-		callbacks.onSave.mockResolvedValue(updatedGuest);
+		callbacks.onMarkShared.mockResolvedValue(undefined);
 
 		const { result } = renderHook(() =>
 			useSendInvitation({
@@ -136,12 +155,48 @@ describe('useSendInvitation', () => {
 			await result.current.handleSaveAndShare();
 		});
 
-		expect(callbacks.onSave).toHaveBeenCalledWith('g-1', {
-			fullName: 'Guest One',
-			maxAllowedAttendees: 4,
-			phone: undefined,
-			countryCode: undefined,
+		expect(navigator.share).toHaveBeenCalledWith({
+			title: 'Invitación Celebra-me',
+			text: 'Saved share text',
+			url: 'http://localhost/invitacion/invite-1',
 		});
+		expect(callbacks.onSave).not.toHaveBeenCalled();
+		expect(callbacks.onMarkShared).toHaveBeenCalledWith(guest);
+		expect(callbacks.onAdvanceFromGuest).toHaveBeenCalledWith('g-1');
+	});
+
+	it('handleSaveAndShare with empty phone cancellation remains idle without fallback', async () => {
+		setupNavigatorShare(
+			jest.fn().mockRejectedValue(new DOMException('Canceled', 'AbortError')),
+		);
+		const guest = makeGuest({ guestId: 'g-1', phone: '', waShareUrl: '' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onSave).not.toHaveBeenCalled();
+		expect(callbacks.onMarkShared).not.toHaveBeenCalled();
+		expect(callbacks.onAdvanceFromGuest).not.toHaveBeenCalled();
+		expect(result.current.shareStatus).toBe('idle');
+		expect(result.current.fallbackGuest).toBeNull();
+	});
+
+	it('handleSaveAndShare with empty phone unsupported native share shows fallback', async () => {
+		removeNavigatorShare();
+		const guest = makeGuest({ guestId: 'g-1', phone: '', waShareUrl: '' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onSave).not.toHaveBeenCalled();
+		expect(callbacks.onMarkShared).not.toHaveBeenCalled();
+		expect(callbacks.onAdvanceFromGuest).not.toHaveBeenCalled();
+		expect(result.current.shareStatus).toBe('fallback');
+		expect(result.current.fallbackGuest).toEqual(guest);
 	});
 
 	// --- Postpone advances ---

@@ -1,10 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import {
+	buildInvitationSharePayload,
+	shareInvitationLink,
+} from '@/components/dashboard/guests/invitation-share';
 import { hasValidPhone } from '@/lib/phone/validation';
 import { copyToClipboard } from '@/utils/clipboard';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
-type ShareStatus = 'idle' | 'saving' | 'fallback';
+type ShareStatus = 'idle' | 'saving' | 'sharing' | 'fallback';
 
 interface UseSendInvitationOptions {
 	guest: DashboardGuestItem | null;
@@ -22,6 +26,15 @@ interface UseSendInvitationOptions {
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onAdvanceFromGuest: (currentGuestId: string) => void;
 	onPostponeGuest: (currentGuestId: string) => void;
+}
+
+function resolveSendPhone(
+	editPhone: string,
+	savedPhone: string | null | undefined,
+): string | null | undefined {
+	const trimmed = editPhone.trim();
+	if (trimmed) return trimmed;
+	return savedPhone ? null : undefined;
 }
 
 export function useSendInvitation({
@@ -53,6 +66,7 @@ export function useSendInvitation({
 		if (!trimmed) return false;
 		return hasValidPhone(trimmed);
 	}, [editPhone]);
+	const hasSavedPhone = useMemo(() => !!guest?.phone?.trim(), [guest?.phone]);
 
 	const resetForm = useCallback(() => {
 		setShareStatus('idle');
@@ -74,29 +88,11 @@ export function useSendInvitation({
 		[onMarkShared, onAdvanceFromGuest],
 	);
 
-	const shareViaNavigator = useCallback(
-		async (updated: DashboardGuestItem, inviteUrl: string): Promise<boolean> => {
-			if (typeof navigator === 'undefined' || !navigator.share) return false;
-			await navigator.share({
-				title: 'Invitación Celebra-me',
-				text: updated.shareText,
-				url: inviteUrl,
-			});
-			return true;
-		},
-		[],
-	);
-
 	const executeAfterSave = useCallback(
-		async (
-			waWindow: Window | null,
-			hasValidPhone: boolean,
-			updated: DashboardGuestItem,
-			inviteUrl: string,
-		) => {
+		async (waWindow: Window | null, updated: DashboardGuestItem) => {
 			setFallbackGuest(updated);
 
-			if (hasValidPhone && updated.waShareUrl) {
+			if (updated.waShareUrl) {
 				if (waWindow && !waWindow.closed) {
 					waWindow.location.href = updated.waShareUrl;
 					await markSharedOrFallback(updated);
@@ -106,22 +102,42 @@ export function useSendInvitation({
 				return;
 			}
 
-			try {
-				const shared = await shareViaNavigator(updated, inviteUrl);
-				if (shared) {
-					await markSharedOrFallback(updated);
-					return;
-				}
-			} catch {
-				// fallback below
-			}
 			setShareStatus('fallback');
 		},
-		[markSharedOrFallback, shareViaNavigator],
+		[markSharedOrFallback],
 	);
 
 	const handleSaveAndShare = useCallback(async () => {
 		if (!guest || shareStatus !== 'idle') return;
+
+		if (!hasSavedPhone) {
+			const inviteUrl = getGuestInviteUrl(guest, inviteBaseUrl);
+			const payload = buildInvitationSharePayload({
+				shareText: guest.shareText,
+				inviteUrl,
+			});
+
+			setPhoneError(null);
+			setShareStatus('sharing');
+			setFallbackGuest(guest);
+			setMarkError(null);
+
+			const result = await shareInvitationLink(payload);
+
+			if (result === 'shared') {
+				await markSharedOrFallback(guest);
+				return;
+			}
+
+			if (result === 'canceled') {
+				setFallbackGuest(null);
+				setShareStatus('idle');
+				return;
+			}
+
+			setShareStatus('fallback');
+			return;
+		}
 
 		const trimmed = editPhone.trim();
 		if (trimmed && !hasValidPhone(trimmed)) {
@@ -141,7 +157,7 @@ export function useSendInvitation({
 			}
 		}
 
-		const sendPhone = editPhone.trim() || (guest.phone ? null : undefined);
+		const sendPhone = resolveSendPhone(editPhone, guest.phone);
 		try {
 			const updated = await onSave(guest.guestId, {
 				fullName: editName.trim() || guest.fullName,
@@ -150,8 +166,13 @@ export function useSendInvitation({
 				countryCode: sendPhone ? editCountryCode : undefined,
 			});
 
-			const inviteUrl = getGuestInviteUrl(updated, inviteBaseUrl);
-			await executeAfterSave(waWindow, validPhone, updated, inviteUrl);
+			if (validPhone) {
+				await executeAfterSave(waWindow, updated);
+				return;
+			}
+
+			setFallbackGuest(updated);
+			setShareStatus('fallback');
 		} catch {
 			setPhoneError('Error al guardar los datos. Intenta de nuevo.');
 			waWindow?.close();
@@ -160,14 +181,16 @@ export function useSendInvitation({
 	}, [
 		guest,
 		shareStatus,
+		hasSavedPhone,
+		inviteBaseUrl,
 		editPhone,
 		editName,
 		editMaxAttendees,
 		editCountryCode,
 		validPhone,
 		onSave,
-		inviteBaseUrl,
 		executeAfterSave,
+		markSharedOrFallback,
 	]);
 
 	const handleCopyOnly = useCallback(async () => {
@@ -193,6 +216,7 @@ export function useSendInvitation({
 			onAdvanceFromGuest(fallbackGuest.guestId);
 		} catch {
 			setMarkError('Error al registrar el envío.');
+		} finally {
 			setAdvancing(false);
 		}
 	}, [fallbackGuest, advancing, inviteBaseUrl, onMarkShared, onAdvanceFromGuest]);
@@ -222,8 +246,8 @@ export function useSendInvitation({
 		markError,
 		advancing,
 		pendingCount,
-		canSendToPhone: validPhone,
-		resetForm,
+		canSendToPhone: hasSavedPhone,
+		isNoPhoneGuest: !hasSavedPhone,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,
