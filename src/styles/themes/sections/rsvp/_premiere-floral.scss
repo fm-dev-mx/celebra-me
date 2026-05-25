@@ -57,8 +57,6 @@
 		font-weight: 300;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-
-		--rsvp-title-size: 2.1rem;
 	}
 
 	.rsvp__subcopy {
@@ -185,7 +183,7 @@
 		}
 	}
 
-	&.rsvp--locked-preview {
+	&[data-state='locked'] {
 		max-width: 760px;
 
 		.rsvp__locked-card {

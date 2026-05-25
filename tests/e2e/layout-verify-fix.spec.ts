@@ -17,6 +17,23 @@ const ALL_VIEWPORTS = [
 test.describe.configure({ mode: 'parallel' });
 test.setTimeout(30000);
 
+async function waitForAnimationFrames(page: Page, frames = 2) {
+	await page.evaluate((frameCount) => {
+		return new Promise<void>((resolve) => {
+			let remaining = frameCount;
+			const tick = () => {
+				remaining -= 1;
+				if (remaining <= 0) {
+					resolve();
+					return;
+				}
+				requestAnimationFrame(tick);
+			};
+			requestAnimationFrame(tick);
+		});
+	}, frames);
+}
+
 async function openInvitation(page: Page) {
 	const btn = page.locator('button:has-text("Abre Tu Invitación")');
 	const btnCount = await btn.count();
@@ -26,6 +43,16 @@ async function openInvitation(page: Page) {
 			timeout: 10000,
 		});
 	}
+
+	await page.evaluate(() => {
+		document.querySelectorAll('ds-envelope-reveal').forEach((envelope) => {
+			envelope.setAttribute('data-reveal-state', 'revealed');
+			(envelope as HTMLElement).style.pointerEvents = 'none';
+		});
+		document.querySelectorAll('.envelope-tease').forEach((tease) => {
+			(tease as HTMLElement).style.pointerEvents = 'none';
+		});
+	});
 }
 
 for (const vp of ALL_VIEWPORTS) {
@@ -51,7 +78,7 @@ test('Editorial: landing directly on #rsvp scrolls section into view', async ({ 
 	await openInvitation(page);
 
 	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
-	await page.waitForTimeout(500);
+	await waitForAnimationFrames(page, 3);
 
 	await page.evaluate(() => {
 		document.querySelector('#rsvp')?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -77,7 +104,7 @@ for (const vp of MOBILE_VIEWPORTS) {
 			await openInvitation(page);
 
 			await page.evaluate(() => window.scrollTo({ top: 300 }));
-			await page.waitForTimeout(500);
+			await waitForAnimationFrames(page, 3);
 
 			await page.evaluate(() => {
 				document
@@ -148,7 +175,7 @@ test('Editorial RSVP title visible after scrolling to #rsvp', async ({ page }) =
 	await openInvitation(page);
 
 	await page.evaluate(() => window.scrollTo({ top: 300 }));
-	await page.waitForTimeout(500);
+	await waitForAnimationFrames(page, 3);
 
 	await page.evaluate(() => {
 		document.querySelector('#rsvp')?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -175,7 +202,7 @@ test('Editorial RSVP section visible after scrolling to #rsvp at smallest viewpo
 	await openInvitation(page);
 
 	await page.evaluate(() => window.scrollTo({ top: 300 }));
-	await page.waitForTimeout(500);
+	await waitForAnimationFrames(page, 3);
 
 	await page.evaluate(() => {
 		document.querySelector('#rsvp')?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -200,7 +227,7 @@ test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', as
 	await openInvitation(page);
 
 	await page.evaluate(() => window.scrollTo({ top: 300 }));
-	await page.waitForTimeout(500);
+	await waitForAnimationFrames(page, 3);
 
 	await page.evaluate(() => {
 		document.querySelector('#rsvp')?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -228,6 +255,7 @@ test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', as
 test('cesar-ramses desktop no oscillation after selecting No podré', async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
 	await page.goto('/bautizo/cesar-ramses#!/rsvp', { waitUntil: 'networkidle' });
+	await openInvitation(page);
 	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
 
 	const declineRadio = page.locator('.rsvp__radio-card', { hasText: 'No podré' });
@@ -275,43 +303,58 @@ test('cesar-ramses desktop no oscillation after selecting No podré', async ({ p
 
 /* ------------------------------------------------------------------ */
 /*  Cross-invitation RSVP viewport integrity                            */
-/*  Verifies that #rsvp.rsvp-section aligns flush to the viewport       */
-/*  top after CTA scroll, fills the viewport, and the card is visible.  */
+/*  Verifies that the RSVP card fits the visible viewport budget after  */
+/*  CTA/hash positioning and fixed UI clearance.                        */
 /* ------------------------------------------------------------------ */
 
 const RSVP_EVENT_SLUGS = [
-	{ name: 'xv-editorial (mobile)', slug: '/xv/demo-xv-editorial', width: 375, height: 667 },
-	{ name: 'xv-jewelry-box (mobile)', slug: '/xv/demo-xv-jewelry-box', width: 375, height: 667 },
-	{ name: 'cesar-ramses (mobile)', slug: '/bautizo/cesar-ramses', width: 375, height: 667 },
-	{ name: 'cesar-ramses (desktop)', slug: '/bautizo/cesar-ramses', width: 1280, height: 800 },
+	{ name: 'xv-editorial 360x740', slug: '/xv/demo-xv-editorial', width: 360, height: 740 },
+	{ name: 'xv-editorial 375x667', slug: '/xv/demo-xv-editorial', width: 375, height: 667 },
+	{ name: 'xv-editorial 390x844', slug: '/xv/demo-xv-editorial', width: 390, height: 844 },
+	{ name: 'xv-editorial 412x915', slug: '/xv/demo-xv-editorial', width: 412, height: 915 },
+	{ name: 'xv-editorial 414x896', slug: '/xv/demo-xv-editorial', width: 414, height: 896 },
+	{ name: 'xv-editorial 430x932', slug: '/xv/demo-xv-editorial', width: 430, height: 932 },
+	{ name: 'xv-editorial desktop', slug: '/xv/demo-xv-editorial', width: 1365, height: 768 },
+	{ name: 'xv-jewelry-box 375x667', slug: '/xv/demo-xv-jewelry-box', width: 375, height: 667 },
+	{ name: 'cesar-ramses 375x667', slug: '/bautizo/cesar-ramses', width: 375, height: 667 },
+	{ name: 'cesar-ramses desktop', slug: '/bautizo/cesar-ramses', width: 1365, height: 768 },
 	{
-		name: 'ana-sofia-cota-guillen (mobile)',
+		name: 'ana-sofia-cota-guillen 375x667',
 		slug: '/xv/ana-sofia-cota-guillen',
 		width: 375,
 		height: 667,
 	},
 	{
-		name: 'ana-sofia-cota-guillen (desktop)',
+		name: 'ana-sofia-cota-guillen desktop',
 		slug: '/xv/ana-sofia-cota-guillen',
-		width: 1280,
-		height: 800,
+		width: 1365,
+		height: 768,
 	},
 ];
 
 async function rsvpViewportCheck(page: Page) {
 	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
 
-	// Wait for any post-load corrections to settle
 	await page.waitForFunction(() => document.readyState === 'complete', { timeout: 5000 });
-	await page.waitForTimeout(500);
+	await waitForAnimationFrames(page, 4);
 
 	const result = await page.evaluate(() => {
 		const section = document.querySelector('#rsvp');
 		if (!section) return null;
 		const rect = section.getBoundingClientRect();
 		const vh = window.innerHeight;
+		const vw = window.innerWidth;
 		const card = section.querySelector('.rsvp');
 		const cardRect = card?.getBoundingClientRect();
+		const submit = section.querySelector('.rsvp__button');
+		const submitRect = submit?.getBoundingClientRect();
+		const textarea = section.querySelector('textarea');
+		const textareaRect = textarea?.getBoundingClientRect();
+		const headerRect = document.querySelector('#event-header')?.getBoundingClientRect();
+		const musicRect = document.querySelector('[data-music-player]')?.getBoundingClientRect();
+		const visibleTop = Math.max(0, Math.round(headerRect?.bottom ?? 0));
+		const visibleBottom = Math.min(vh, Math.round(musicRect?.top ?? vh));
+		const cardStyle = card ? getComputedStyle(card) : null;
 		const rootScrollPadding = parseFloat(
 			getComputedStyle(document.documentElement).scrollPaddingTop,
 		);
@@ -321,50 +364,66 @@ async function rsvpViewportCheck(page: Page) {
 			sectionTop: Math.round(rect.top),
 			sectionHeight: Math.round(rect.height),
 			vh: Math.round(vh),
+			vw: Math.round(vw),
+			visibleTop,
+			visibleBottom,
 			rootScrollPaddingTop: rootScrollPadding,
 			cardTop: cardRect ? Math.round(cardRect.top) : null,
 			cardBottom: cardRect ? Math.round(cardRect.bottom) : null,
+			cardOverflowY: cardStyle?.overflowY ?? null,
+			submitBottom: submitRect ? Math.round(submitRect.bottom) : null,
+			textareaBottom: textareaRect ? Math.round(textareaRect.bottom) : null,
+			musicTop: musicRect ? Math.round(musicRect.top) : null,
+			htmlScrollWidth: document.documentElement.scrollWidth,
+			bodyScrollWidth: document.body.scrollWidth,
 		};
 	});
 
 	expect(result).not.toBeNull();
 	expect(result!.isRsvpSection).toBe(true);
 
-	// Section must align flush to viewport top (±8px tolerance)
-	expect(Math.abs(result!.sectionTop)).toBeLessThanOrEqual(8);
-
 	// Section must fill at least the viewport height (allow 2px for subpixel rounding)
 	expect(result!.sectionHeight).toBeGreaterThanOrEqual(result!.vh - 2);
 
-	// Card must be fully visible inside the viewport (not cropped at top or bottom)
+	expect(result!.htmlScrollWidth).toBeLessThanOrEqual(result!.vw);
+	expect(result!.bodyScrollWidth).toBeLessThanOrEqual(result!.vw);
+	expect(result!.cardOverflowY).not.toMatch(/auto|scroll/);
+
 	if (result!.cardTop !== null && result!.cardBottom !== null) {
-		expect(result!.cardTop).toBeGreaterThanOrEqual(0);
-		expect(result!.cardBottom).toBeLessThanOrEqual(result!.vh);
+		expect(result!.cardTop).toBeGreaterThanOrEqual(result!.visibleTop - 1);
+		expect(result!.cardBottom).toBeLessThanOrEqual(result!.visibleBottom + 1);
 	}
 
-	// Debug: log scroll-padding-top for diagnosis if assertion fails
+	if (result!.submitBottom !== null) {
+		expect(result!.submitBottom).toBeLessThanOrEqual(result!.visibleBottom + 1);
+	}
+
+	if (result!.musicTop !== null) {
+		if (result!.submitBottom !== null) {
+			expect(result!.submitBottom).toBeLessThanOrEqual(result!.musicTop);
+		}
+		if (result!.textareaBottom !== null) {
+			expect(result!.textareaBottom).toBeLessThanOrEqual(result!.musicTop);
+		}
+	}
+
 	expect(result!.rootScrollPaddingTop).toBeGreaterThan(0);
 }
 
 for (const ev of RSVP_EVENT_SLUGS) {
-	test(`${ev.name}: RSVP section fills viewport after CTA`, async ({ page }) => {
+	test(`${ev.name}: RSVP default card fits visible viewport after deterministic scroll`, async ({
+		page,
+	}) => {
 		await page.setViewportSize({ width: ev.width, height: ev.height });
 		await page.goto(ev.slug, { waitUntil: 'networkidle' });
 		await openInvitation(page);
 
-		// Attempt CTA click; fall back to programmatic scroll
-		const cta = page
-			.locator('a[href="#rsvp"], a:has-text("Confirmar"), button:has-text("Confirmar")')
-			.first();
-		if ((await cta.count()) > 0) {
-			await cta.click();
-		} else {
-			await page.evaluate(() => {
-				document
-					.querySelector('#rsvp')
-					?.scrollIntoView({ block: 'start', behavior: 'instant' });
-			});
-		}
+		await page.evaluate(() => {
+			const section = document.querySelector('#rsvp');
+			if (!section) return;
+			window.location.hash = 'rsvp';
+			section.scrollIntoView({ block: 'center', behavior: 'instant' });
+		});
 
 		await rsvpViewportCheck(page);
 	});

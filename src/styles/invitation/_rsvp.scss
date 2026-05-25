@@ -11,80 +11,102 @@
 // The `#rsvp` hash targets this element.
 // ------------------------------------------------------------------
 .rsvp-section {
-	--rsvp-section-padding-inline: clamp(1rem, 4vw, 3rem);
-	--rsvp-section-padding-block: clamp(1.5rem, 6vh, 4rem);
+	--rsvp-header-offset: var(--nav-current-height, var(--invitation-header-height, 70px));
+	--rsvp-player-clearance: 0;
+	--rsvp-safe-area-bottom: env(safe-area-inset-bottom, 0);
+	--rsvp-section-padding-inline: clamp(0.875rem, 4vw, 2rem);
+	--rsvp-section-padding-block: clamp(0.75rem, 3svh, 1.5rem);
+	--rsvp-available-block-size: calc(
+		100svh - var(--rsvp-header-offset) - var(--rsvp-player-clearance) - var(
+				--rsvp-safe-area-bottom
+			)
+	);
 
 	display: grid;
 	place-items: center;
-	min-block-size: 100dvh;
-	padding: var(--rsvp-section-padding-block) var(--rsvp-section-padding-inline)
-		calc(var(--rsvp-section-padding-block) + env(safe-area-inset-bottom, 0px))
-		var(--rsvp-section-padding-inline);
+	min-block-size: 100svh;
+	padding-block: calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset))
+		calc(
+			var(--rsvp-section-padding-block) + var(--rsvp-player-clearance) +
+				var(--rsvp-safe-area-bottom)
+		);
+	padding-inline: var(--rsvp-section-padding-inline);
 	box-sizing: border-box;
 	scroll-margin-block-start: 0;
 
-	/* Override card sizing — grid handles centering */
 	.rsvp {
 		margin: 0 auto;
 		width: 100%;
 		max-width: var(--rsvp-card-max-width, 680px);
+		padding-bottom: 3rem;
 	}
 
-	/* Compact viewports: progressive tightening via CSS, no JS toggle needed */
 	@media (height <= 760px) {
-		--rsvp-section-padding-block: clamp(1rem, 4vh, 2.5rem);
+		--rsvp-section-padding-block: clamp(0.625rem, 2.5svh, 1.25rem);
 
 		.rsvp {
-			--rsvp-card-margin: 3rem auto;
-			--rsvp-card-margin-exp: 1.5rem auto 2rem;
-			--rsvp-card-padding-y: 1.5rem;
-			--rsvp-card-padding-x: 1.25rem;
-			--rsvp-header-margin: 0 0 1.5rem;
-			--rsvp-title-size: 1.8rem;
-			--rsvp-form-gap: 1.5rem;
-			--rsvp-radio-card-padding: 0.9rem;
+			--rsvp-card-padding-block: 1.25rem;
+			--rsvp-card-padding-inline: 1rem;
+			--rsvp-header-margin: 0 0 1rem;
+			--rsvp-title-size: 1.5rem;
+			--rsvp-title-margin: 0 0 0.75rem;
+			--rsvp-form-gap: 0.85rem;
+			--rsvp-grid-gap: 0.7rem;
+			--rsvp-radio-group-gap: 0.6rem;
+			--rsvp-radio-group-margin: 0.45rem 0;
+			--rsvp-radio-card-padding: 0.65rem 0.55rem;
+			--rsvp-input-padding: 0.58rem 0.5rem;
+			--rsvp-button-min-height: 2.75rem;
+			--rsvp-textarea-height: 3rem;
+			--rsvp-field-gap: 0.45rem;
 		}
 	}
 
 	@media (height <= 680px) {
-		--rsvp-section-padding-block: clamp(0.75rem, 3vh, 1.5rem);
+		--rsvp-section-padding-block: clamp(0.5rem, 2svh, 1rem);
 
 		.rsvp {
-			--rsvp-card-margin: 2rem auto;
-			--rsvp-card-margin-exp: 1rem auto 1.5rem;
-			--rsvp-card-padding-y: 1rem;
-			--rsvp-card-padding-x: 1rem;
-			--rsvp-header-margin: 0 0 1rem;
-			--rsvp-title-size: 1.5rem;
-			--rsvp-title-margin: 0 0 1rem;
-			--rsvp-form-gap: 1rem;
-			--rsvp-grid-gap: 0.75rem;
-			--rsvp-radio-group-gap: 0.75rem;
-			--rsvp-radio-group-margin: 0.5rem 0;
-			--rsvp-radio-card-padding: 0.7rem;
-			--rsvp-input-padding: 0.5rem 0.25rem;
-			--rsvp-button-padding: 0.85rem 1.5rem;
+			--rsvp-card-padding-block: 1rem;
+			--rsvp-header-margin: 0 0 0.8rem;
+			--rsvp-title-size: 1.32rem;
+			--rsvp-title-margin: 0 0 0.6rem;
+			--rsvp-form-gap: 0.7rem;
+			--rsvp-grid-gap: 0.55rem;
+			--rsvp-radio-group-gap: 0.5rem;
+			--rsvp-radio-group-margin: 0.35rem 0;
+			--rsvp-radio-card-padding: 0.55rem 0.45rem;
+			--rsvp-input-padding: 0.48rem 0.45rem;
+			--rsvp-button-min-height: 2.625rem;
+			--rsvp-textarea-height: 2.625rem;
 			--rsvp-greeting-padding: 1.25rem 0;
 		}
 	}
 
 	@media (height <= 600px) {
 		.rsvp {
-			--rsvp-card-padding-y: 0.75rem;
-			--rsvp-card-margin: 1rem auto;
-			--rsvp-card-margin-exp: 0.5rem auto 1rem;
+			--rsvp-card-padding-block: 0.875rem;
+			--rsvp-card-padding-inline: 0.875rem;
 			--rsvp-header-margin: 0 0 0.75rem;
-			--rsvp-title-size: 1.3rem;
-			--rsvp-title-margin: 0 0 0.75rem;
-			--rsvp-form-gap: 0.75rem;
-			--rsvp-grid-gap: 0.5rem;
-			--rsvp-radio-group-gap: 0.5rem;
-			--rsvp-radio-group-margin: 0.25rem 0;
-			--rsvp-radio-card-padding: 0.6rem;
-			--rsvp-input-padding: 0.4rem 0.2rem;
-			--rsvp-button-padding: 0.7rem 1.25rem;
+			--rsvp-title-size: 1.2rem;
+			--rsvp-form-gap: 0.625rem;
+			--rsvp-grid-gap: 0.45rem;
+			--rsvp-radio-group-gap: 0.45rem;
+			--rsvp-radio-card-padding: 0.5rem 0.4rem;
+			--rsvp-input-padding: 0.42rem 0.4rem;
+			--rsvp-button-min-height: 2.5rem;
+			--rsvp-textarea-height: 2.5rem;
 			--rsvp-greeting-padding: 0.75rem 0;
 		}
+	}
+}
+
+.event-theme-wrapper:has(.music-player) .rsvp-section {
+	--rsvp-player-clearance: 4rem;
+}
+
+@media (width >= 768px) {
+	.event-theme-wrapper:has(.music-player) .rsvp-section {
+		--rsvp-player-clearance: 5.5rem;
 	}
 }
 
@@ -146,38 +168,41 @@
 	--rsvp-error-border: rgb(var(--color-state-danger-rgb) / 28%);
 	--rsvp-title-font: var(--font-display);
 	--rsvp-title-color: var(--color-action-accent);
-	--rsvp-title-size: 2.2rem;
-	--rsvp-title-margin: 0 0 2.5rem;
+	--rsvp-title-size: clamp(1.45rem, 5vw, 2rem);
+	--rsvp-title-margin: 0 0 0.85rem;
 	--rsvp-title-line-height: normal;
 	--rsvp-title-font-style: normal;
 	--rsvp-title-font-weight: inherit;
 	--rsvp-title-letter-spacing: 0;
 
 	/* Spacing variables — overridable per state/viewport */
-	--rsvp-card-margin: 8rem auto;
-	--rsvp-card-margin-exp: 4rem auto;
-	--rsvp-card-padding-y: 2.5rem;
-	--rsvp-card-padding-x: 1.5rem;
-	--rsvp-header-margin: 0 0 2.2rem;
-	--rsvp-form-gap: 2.2rem;
-	--rsvp-grid-gap: 1.5rem;
-	--rsvp-radio-group-gap: 1.2rem;
-	--rsvp-radio-group-margin: 1rem 0;
-	--rsvp-radio-card-padding: 1.1rem;
-	--rsvp-input-padding: 0.75rem 0.25rem;
-	--rsvp-button-padding: 1.1rem 2.2rem;
+	--rsvp-card-padding-block: 1.75rem;
+	--rsvp-card-padding-inline: clamp(1rem, 4vw, 1.5rem);
+	--rsvp-card-padding-y: var(--rsvp-card-padding-block);
+	--rsvp-card-padding-x: var(--rsvp-card-padding-inline);
+	--rsvp-header-margin: 0 0 1.15rem;
+	--rsvp-form-gap: 1rem;
+	--rsvp-grid-gap: 0.8rem;
+	--rsvp-field-gap: 0.5rem;
+	--rsvp-radio-group-gap: 0.7rem;
+	--rsvp-radio-group-margin: 0.5rem 0;
+	--rsvp-radio-card-padding: 0.75rem 0.65rem;
+	--rsvp-input-padding: 0.62rem 0.6rem;
+	--rsvp-button-padding: 0.65rem 1.2rem;
+	--rsvp-button-min-height: 3rem;
+	--rsvp-textarea-height: 3.25rem;
 	--rsvp-greeting-padding: 2rem 0;
 	--rsvp-bottom-clearance: 0;
 
 	position: relative;
-	width: calc(100% - 2rem);
+	width: 100%;
 	max-width: var(--rsvp-card-max-width, 680px);
-	min-height: var(--rsvp-min-height);
+	min-height: 0;
 	padding: var(--rsvp-card-padding-y) var(--rsvp-card-padding-x);
 	padding-bottom: calc(var(--rsvp-card-padding-y) + var(--rsvp-bottom-clearance));
 	border-radius: var(--rsvp-radius-card);
-	overflow: hidden;
-	margin: var(--rsvp-card-margin);
+	overflow: visible;
+	margin: 0 auto;
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
 	backdrop-filter: blur(var(--glass-blur, 12px));
@@ -208,14 +233,14 @@
 		letter-spacing: 0.3em;
 		text-transform: uppercase;
 		color: var(--color-action-accent);
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.35rem;
 	}
 
 	&__separator {
 		display: block;
 		font-size: 0.5rem;
 		line-height: 1;
-		margin-bottom: 0.85rem;
+		margin-bottom: 0.55rem;
 		color: var(--color-action-accent);
 		opacity: 45%;
 	}
@@ -223,7 +248,7 @@
 	&__subcopy {
 		font-family: var(--font-body);
 		font-size: 0.88rem;
-		line-height: 1.6;
+		line-height: 1.45;
 		color: var(--color-text-secondary);
 		max-width: 30rem;
 		margin-inline: auto;
@@ -247,7 +272,7 @@
 	&__field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: var(--rsvp-field-gap);
 
 		label {
 			font-family: var(--font-body);
@@ -268,6 +293,7 @@
 			padding: var(--rsvp-input-padding);
 			font-family: var(--font-body);
 			font-size: 1.05rem;
+			min-height: 2.5rem;
 			color: var(--color-text-primary);
 			transition:
 				background-color var(--duration-standard) var(--ease-premium),
@@ -290,6 +316,14 @@
 				opacity: 75%;
 				cursor: not-allowed;
 			}
+		}
+
+		textarea {
+			height: var(--rsvp-textarea-height);
+			min-height: var(--rsvp-textarea-height);
+			max-height: var(--rsvp-textarea-height);
+			overflow: auto;
+			resize: none;
 		}
 	}
 
@@ -324,6 +358,7 @@
 			align-items: center;
 			justify-content: var(--rsvp-radio-card-justify);
 			gap: 0.8rem;
+			min-height: 2.75rem;
 			cursor: pointer;
 			position: relative;
 
@@ -413,6 +448,7 @@
 		align-items: center;
 		justify-content: center;
 		width: 100%;
+		min-height: var(--rsvp-button-min-height);
 		padding: var(--rsvp-button-padding);
 		color: var(--rsvp-button-color);
 		background: var(--rsvp-button-bg);
@@ -523,11 +559,34 @@
 	}
 
 	&__extra-fields {
-		min-height: var(--rsvp-extra-fields-min-height);
+		display: grid;
+		grid-template-rows: 0fr;
+		opacity: 0%;
+		overflow: hidden;
+		transition:
+			grid-template-rows 0.35s ease,
+			opacity 0.25s ease;
+		min-height: 0;
+
+		&--expanded {
+			grid-template-rows: 1fr;
+			opacity: 100%;
+		}
+
+		&-inner {
+			overflow: hidden;
+			min-height: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rsvp__extra-fields {
+			transition: none;
+		}
 	}
 
 	&__error-region {
-		min-height: 1.5rem;
+		min-height: 0;
 	}
 
 	&__field--phone .rsvp__phone-group {
@@ -586,15 +645,9 @@
 		}
 	}
 
-	@media (width <= 480px) {
+	@media (width <= 340px) {
 		--rsvp-radio-columns: 1fr;
 		--rsvp-radio-card-justify: flex-start;
-	}
-
-	/* Expanded state: tighter vertical rhythm when attendance is selected */
-	&.rsvp--expanded {
-		margin: var(--rsvp-card-margin-exp);
-		padding-bottom: 3rem;
 	}
 
 	&__demo-footer {

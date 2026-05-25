@@ -199,6 +199,23 @@ describe('Style boundary governance', () => {
 		expect(rsvpTheme).toContain("[data-variant='editorial']");
 	});
 
+	it('rsvp variant partials do not override structural layout tokens', () => {
+		const structuralTokenPattern =
+			/--rsvp-(?:section-padding|card-padding|card-margin|form-gap|grid-gap|radio-group-gap|radio-group-margin|radio-card-padding|textarea-(?:height|min-height)|title-size|title-margin|header-margin|input-padding|button-padding|bottom-clearance)\b/;
+		const structuralRulePattern =
+			/(?:min-height|height|padding|padding-block|padding-inline|margin|margin-block|gap):\s*var\(--rsvp-/;
+
+		for (const file of getFilesRecursively('src/styles/themes/sections/rsvp', ['.scss'])) {
+			if (file.endsWith('_base.scss')) continue;
+			const content = read(file)
+				.replace(/\/\*[\s\S]*?\*\//g, '')
+				.replace(/\/\/.*$/gm, '');
+
+			expect(content).not.toMatch(structuralTokenPattern);
+			expect(content).not.toMatch(structuralRulePattern);
+		}
+	});
+
 	it('rsvp source tree does not keep redundant component or sourcemap artifacts', () => {
 		expect(
 			fs.existsSync(path.join(projectRoot, 'src/components/invitation/GuestRSVPForm.tsx')),

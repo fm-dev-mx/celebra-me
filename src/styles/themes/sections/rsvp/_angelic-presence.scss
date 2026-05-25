@@ -1,10 +1,7 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
-@use '../../../invitation/section-primitives' as primitives;
 
 .rsvp[data-variant='angelic-presence'] {
-	@include primitives.anchor-navigation-only;
-
 	--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 72%);
 	--color-glass-border: rgb(var(--color-sacred-gold-rgb) / 26%);
 	--shadow-premium:
@@ -31,11 +28,6 @@
 	--rsvp-title-color: var(--color-sacred-gold);
 	--rsvp-title-letter-spacing: 0.01em;
 	--rsvp-radius-card: 8px;
-
-	@media (width > 480px) {
-		--rsvp-title-size: clamp(2rem, 6vw, 3rem);
-		--rsvp-title-margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
-	}
 
 	background:
 		radial-gradient(circle at 50% 0%, rgb(var(--color-sacred-gold-rgb) / 9%), transparent 62%),

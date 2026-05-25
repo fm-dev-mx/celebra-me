@@ -15,17 +15,6 @@
 		transparent 60%
 	);
 
-	// Desktop-only structural overrides (legacy expressive spacing)
-	@media (width > 480px) {
-		--rsvp-input-padding: 0.85rem 0.9rem;
-		--rsvp-textarea-min-height: 5rem;
-		--rsvp-radio-card-padding: 1.4rem 1.2rem;
-		--rsvp-radio-group-margin: 1.5rem 0;
-		--rsvp-card-padding-y: 3rem;
-		--rsvp-card-padding-x: 2rem;
-		--rsvp-header-margin: 0 0 2.5rem;
-	}
-
 	background:
 		var(--rsvp-editorial-gold-glow),
 		linear-gradient(180deg, rgb(14 12 10) 0%, var(--color-surface-dark) 100%);
@@ -72,7 +61,6 @@
 		font-size: var(--section-title-size, 1.6rem);
 		font-weight: 400;
 		letter-spacing: 0.02em;
-		margin: var(--rsvp-title-margin, 0 0 0.9rem);
 		line-height: 1.2;
 	}
 
@@ -126,29 +114,19 @@
 		}
 	}
 
-	textarea {
-		min-height: var(--rsvp-textarea-min-height);
-		resize: vertical;
-	}
-
 	// ------------------------------------------------------------------
 	// Radio group — premium decision cards
 	// ------------------------------------------------------------------
 	.rsvp__radio-group {
 		color: var(--color-text-primary);
 		display: grid;
-		grid-template-columns: var(--rsvp-radio-columns);
-		gap: var(--rsvp-radio-group-gap);
-		margin: var(--rsvp-radio-group-margin);
 
 		.rsvp__radio-card {
 			background: rgb(var(--color-surface-dark-rgb) / 60%);
 			border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 			border-radius: 2px;
-			padding: var(--rsvp-radio-card-padding);
 			display: flex;
 			align-items: center;
-			justify-content: var(--rsvp-radio-card-justify);
 			gap: 1rem;
 			cursor: pointer;
 			position: relative;
@@ -308,7 +286,7 @@
 	// ------------------------------------------------------------------
 	// Locked preview card
 	// ------------------------------------------------------------------
-	&.rsvp--locked-preview {
+	&[data-state='locked'] {
 		max-width: 760px;
 
 		.rsvp__locked-card {

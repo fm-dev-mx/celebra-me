@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
-import type { FocusEventHandler, RefObject, SyntheticEvent } from 'react';
+import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
 import {
 	AttendanceField,
@@ -21,6 +21,55 @@ export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/r
 
 // --- Sub-components ---
 
+type RsvpShellState = 'form' | 'locked' | 'confirmed' | 'declined';
+
+const RsvpShell = forwardRef<
+	HTMLElement,
+	{
+		state: RsvpShellState;
+		variant?: string;
+		onFocusCapture?: FocusEventHandler<HTMLElement>;
+		header: ReactNode;
+		children: ReactNode;
+		demoFooter?: ReactNode;
+	}
+>(function RsvpShell({ state, variant, onFocusCapture, header, children, demoFooter }, ref) {
+	return (
+		<section id="rsvp" ref={ref} className="rsvp-section" onFocusCapture={onFocusCapture}>
+			<div className="rsvp" data-variant={variant} data-state={state}>
+				<header className="rsvp__header">{header}</header>
+				{children}
+				{demoFooter}
+			</div>
+		</section>
+	);
+});
+
+function RsvpVisibleHeader({
+	title,
+	subcopy,
+	eyebrow,
+}: {
+	title: string;
+	subcopy?: string;
+	eyebrow: string;
+}) {
+	return (
+		<>
+			<p className="rsvp__eyebrow">{eyebrow}</p>
+			<span className="rsvp__separator" aria-hidden="true">
+				◆
+			</span>
+			<h2 className="rsvp__title">{title}</h2>
+			{subcopy !== undefined && <p className="rsvp__subcopy">{subcopy}</p>}
+		</>
+	);
+}
+
+function RsvpStatusHeader({ title }: { title: string }) {
+	return <h2 className="sr-only">{title}</h2>;
+}
+
 export function SubmitButtonText({
 	submitStatus,
 	buttonLabel,
@@ -32,33 +81,33 @@ export function SubmitButtonText({
 }) {
 	if (submitStatus === 'loading') return 'Enviando...';
 	if (submitStatus === 'success') return '\u00a1Confirmado!';
-	if (submitStatus === 'error') return 'Confirmar asistencia';
 	if (attendanceStatus === 'declined') return 'ENVIAR RESPUESTA';
 	return buttonLabel;
 }
 
 export function LockedPreview({ title, variant }: { title: string; variant?: string }) {
 	return (
-		<section id="rsvp" className="rsvp-section">
-			<div className="rsvp rsvp--locked-preview" data-variant={variant}>
-				<h2 className="rsvp__title">{title}</h2>
-				<div className="rsvp__locked-card" role="status" aria-live="polite">
-					<p className="rsvp__locked-eyebrow">RSVP</p>
-					<p className="rsvp__locked-message">
-						Las reservas para este evento se gestionan de forma personalizada.
-					</p>
-					<p className="rsvp__locked-detail">
-						Si recibiste tu invitación directa, utiliza el enlace exclusivo que te fue
-						compartido.
-					</p>
-				</div>
+		<RsvpShell
+			state="locked"
+			variant={variant}
+			header={<RsvpVisibleHeader title={title} eyebrow="RSVP" />}
+		>
+			<div className="rsvp__locked-card" role="status" aria-live="polite">
+				<p className="rsvp__locked-eyebrow">RSVP</p>
+				<p className="rsvp__locked-message">
+					Las reservas para este evento se gestionan de forma personalizada.
+				</p>
+				<p className="rsvp__locked-detail">
+					Si recibiste tu invitación directa, utiliza el enlace exclusivo que te fue
+					compartido.
+				</p>
 			</div>
-		</section>
+		</RsvpShell>
 	);
 }
 
 export const SubmittedState = forwardRef<
-	HTMLElement,
+	HTMLDivElement,
 	{
 		title: string;
 		variant?: string;
@@ -85,82 +134,81 @@ export const SubmittedState = forwardRef<
 		showWhatsAppCta,
 		whatsAppUrl,
 		onWhatsAppClick,
-		modifier,
 		onFocusCapture,
 		confirmedMessage = '¡Gracias por acompañarnos,',
 		declinedMessage = 'Sentimos mucho que no puedas acompañarnos.',
 	} = props;
 
 	return (
-		<section
-			id="rsvp"
-			className="rsvp-section"
-			ref={ref}
-			tabIndex={-1}
-			role="status"
-			aria-live="polite"
-			aria-atomic="true"
+		<RsvpShell
+			state={attendanceStatus === 'confirmed' ? 'confirmed' : 'declined'}
+			variant={variant}
 			onFocusCapture={onFocusCapture}
+			header={<RsvpStatusHeader title={title} />}
 		>
-			<div className={`rsvp${modifier ? ` ${modifier}` : ''}`} data-variant={variant}>
-				<h2 className="sr-only">{title}</h2>
-				<div className="rsvp__greeting">
-					<div className="rsvp__greeting-icon">
-						{attendanceStatus === 'confirmed' ? (
-							<CheckSealIcon size={64} />
-						) : (
-							<HeartbreakIcon size={64} />
-						)}
-					</div>
-					<h2 className="rsvp__greeting-message">
-						{attendanceStatus === 'confirmed' ? (
-							<>
-								{confirmedMessage}{' '}
-								<strong className="rsvp__greeting-name">{name}</strong>!
-								<br />
-								{confirmationMessage}
-							</>
-						) : (
-							<>
-								{declinedMessage} <br />
-								Gracias por avisarnos,{' '}
-								<strong className="rsvp__greeting-name">{name}</strong>.
-							</>
-						)}
-					</h2>
-
-					<p className="rsvp__greeting-submessage">Tu confirmación ha sido registrada.</p>
-
-					{showWhatsAppCta && (
-						<div className="rsvp__contact-host">
-							<p className="rsvp__contact-text">
-								Comparte tu respuesta con{' '}
-								<strong>{celebrantName || 'el festejado'}</strong>.
-							</p>
-							<a
-								href={whatsAppUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="rsvp__whatsapp-cta"
-								onClick={onWhatsAppClick}
-								aria-label={`Enviar mensaje de WhatsApp a ${celebrantName || 'el festejado'}`}
-							>
-								<svg
-									className="rsvp__whatsapp-icon"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									width="20"
-									height="20"
-								>
-									<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-								</svg>
-								Enviar WhatsApp
-							</a>
-						</div>
+			<div
+				className="rsvp__status rsvp__greeting"
+				ref={ref}
+				tabIndex={-1}
+				role="status"
+				aria-live="polite"
+				aria-atomic="true"
+			>
+				<div className="rsvp__greeting-icon">
+					{attendanceStatus === 'confirmed' ? (
+						<CheckSealIcon size={64} />
+					) : (
+						<HeartbreakIcon size={64} />
 					)}
 				</div>
+				<h2 className="rsvp__greeting-message">
+					{attendanceStatus === 'confirmed' ? (
+						<>
+							{confirmedMessage}{' '}
+							<strong className="rsvp__greeting-name">{name}</strong>!
+							<br />
+							{confirmationMessage}
+						</>
+					) : (
+						<>
+							{declinedMessage} <br />
+							Gracias por avisarnos,{' '}
+							<strong className="rsvp__greeting-name">{name}</strong>.
+						</>
+					)}
+				</h2>
+
+				<p className="rsvp__greeting-submessage">Tu confirmación ha sido registrada.</p>
+
+				{showWhatsAppCta && (
+					<div className="rsvp__contact-host">
+						<p className="rsvp__contact-text">
+							Comparte tu respuesta con{' '}
+							<strong>{celebrantName || 'el festejado'}</strong>.
+						</p>
+						<a
+							href={whatsAppUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="rsvp__whatsapp-cta"
+							onClick={onWhatsAppClick}
+							aria-label={`Enviar mensaje de WhatsApp a ${celebrantName || 'el festejado'}`}
+						>
+							<svg
+								className="rsvp__whatsapp-icon"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								width="20"
+								height="20"
+							>
+								<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+							</svg>
+							Enviar WhatsApp
+						</a>
+					</div>
+				)}
 			</div>
-		</section>
+		</RsvpShell>
 	);
 });
 
@@ -216,7 +264,6 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		title,
 		subcopy,
 		variant,
-		modifier,
 		onFocusCapture,
 		eyebrow = 'RSVP PRIVADO',
 		prefersReducedMotion,
@@ -313,65 +360,63 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 	};
 
 	return (
-		<section id="rsvp" ref={ref} className="rsvp-section" onFocusCapture={onFocusCapture}>
-			<div className={`rsvp${modifier ? ` ${modifier}` : ''}`} data-variant={variant}>
-				<div className="rsvp__header">
-					<p className="rsvp__eyebrow">{eyebrow}</p>
-					<span className="rsvp__separator" aria-hidden="true">
-						◆
-					</span>
-					<h2 className="rsvp__title">{title}</h2>
-					<p className="rsvp__subcopy">{subcopy}</p>
-				</div>
-				<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
-					{showIdentityFields && (
-						<div className="rsvp__grid">
-							<NameField {...nameFieldProps} />
-							<PhoneField {...phoneFieldProps} />
-						</div>
-					)}
-					<AttendanceField {...attendanceFieldProps} />
-					<ConfirmedFields {...confirmedFieldsProps} />
-					<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">
-						{errors.global && (
-							<p className="rsvp__error" role="alert">
-								{errors.global}
-							</p>
-						)}
-					</div>
-					{attendanceStatus !== null && (
-						<motion.div
-							className="rsvp__actions"
-							initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-						>
-							<motion.button
-								type="submit"
-								disabled={isSubmitting}
-								className={`rsvp__button rsvp__button--${submitStatus}`}
-								initial={prefersReducedMotion ? false : { opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-							>
-								<span className="rsvp__button-text">
-									<SubmitButtonText
-										submitStatus={submitStatus}
-										buttonLabel={buttonLabel}
-										attendanceStatus={attendanceStatus}
-									/>
-								</span>
-							</motion.button>
-						</motion.div>
-					)}
-				</form>
-				{isDemoPreview && (
+		<RsvpShell
+			ref={ref}
+			state="form"
+			variant={variant}
+			onFocusCapture={onFocusCapture}
+			header={<RsvpVisibleHeader title={title} subcopy={subcopy} eyebrow={eyebrow} />}
+			demoFooter={
+				isDemoPreview ? (
 					<p className="rsvp__demo-footer">
 						Demo interactiva. No se enviará ninguna respuesta
 					</p>
+				) : null
+			}
+		>
+			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
+				{showIdentityFields && (
+					<div className="rsvp__grid">
+						<NameField {...nameFieldProps} />
+						<PhoneField {...phoneFieldProps} />
+					</div>
 				)}
-			</div>
-		</section>
+				<AttendanceField {...attendanceFieldProps} />
+				<ConfirmedFields {...confirmedFieldsProps} />
+				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">
+					{errors.global && (
+						<p className="rsvp__error" role="alert">
+							{errors.global}
+						</p>
+					)}
+				</div>
+				{attendanceStatus !== null && (
+					<motion.div
+						className="rsvp__actions"
+						initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+					>
+						<motion.button
+							type="submit"
+							disabled={isSubmitting}
+							className={`rsvp__button rsvp__button--${submitStatus}`}
+							initial={prefersReducedMotion ? false : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+						>
+							<span className="rsvp__button-text">
+								<SubmitButtonText
+									submitStatus={submitStatus}
+									buttonLabel={buttonLabel}
+									attendanceStatus={attendanceStatus}
+								/>
+							</span>
+						</motion.button>
+					</motion.div>
+				)}
+			</form>
+		</RsvpShell>
 	);
 });
 

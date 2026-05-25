@@ -1,14 +1,13 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
-import { getSmartScrollBlock } from '@/lib/dom/viewport';
+import { getCardAwareScrollTop } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
-	normalizeGuestCount,
 	getDefaultRsvpSubcopy,
 	LockedPreview,
 	SubmittedState,
@@ -44,18 +43,51 @@ interface RSVPProps {
 }
 
 /* ------------------------------------------------------------------ */
-/*  RSVP section-scroll helper                                          */
-/*  Uses window.scrollTo to bypass global scroll-padding-top on :root   */
-/*  so the RSVP section aligns flush to the viewport top.               */
+/*  RSVP card-scroll helper                                             */
+/*  Positions the card inside the actual visible area after fixed UI.    */
 /* ------------------------------------------------------------------ */
 
-function scrollSectionToViewportTop(
-	section: HTMLElement,
-	behavior: ScrollBehavior = 'smooth',
-): void {
-	const top = window.scrollY + section.getBoundingClientRect().top;
+function readCssPixelValue(value: string): number {
+	const parsed = Number.parseFloat(value);
+	return Number.isFinite(parsed) ? parsed : 0;
+}
 
-	window.scrollTo({ top, behavior });
+function getFixedRsvpOffsets(): {
+	headerHeight: number;
+	playerClearance: number;
+	safeAreaInsetBottom: number;
+} {
+	const rootStyles = getComputedStyle(document.documentElement);
+	const configuredHeader = readCssPixelValue(
+		rootStyles.getPropertyValue('--nav-current-height') ||
+			rootStyles.getPropertyValue('--invitation-header-height'),
+	);
+	const header = document.querySelector<HTMLElement>('#event-header');
+	const headerRect = header?.getBoundingClientRect();
+	const headerHeight =
+		headerRect && headerRect.bottom > 0
+			? Math.max(configuredHeader, headerRect.bottom)
+			: configuredHeader;
+	const player = document.querySelector<HTMLElement>('[data-music-player]');
+	const playerRect = player?.getBoundingClientRect();
+	const playerClearance = playerRect ? Math.max(0, window.innerHeight - playerRect.top) : 0;
+
+	return {
+		headerHeight,
+		playerClearance,
+		safeAreaInsetBottom: readCssPixelValue(
+			rootStyles.getPropertyValue('--rsvp-safe-area-bottom'),
+		),
+	};
+}
+
+function scrollRsvpCardIntoView(target: HTMLElement, behavior: ScrollBehavior = 'smooth'): void {
+	const section = target.closest('.rsvp-section') as HTMLElement | null;
+	const card = section?.querySelector<HTMLElement>('.rsvp');
+	const scrollTarget = card ?? section ?? target;
+	const top = getCardAwareScrollTop(scrollTarget, getFixedRsvpOffsets());
+
+	window.scrollTo({ top: Math.max(0, top), behavior });
 }
 
 /* ------------------------------------------------------------------ */
@@ -79,7 +111,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	isDemoPreview,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
-	const successRef = useRef<HTMLElement>(null);
+	const successRef = useRef<HTMLDivElement>(null);
 	const sectionRef = useRef<HTMLElement>(null);
 
 	const {
@@ -134,32 +166,26 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	/* ----- field-level scroll (text inputs) ----- */
-	const scrollIntoViewSmart = useCallback(
-		(element: HTMLElement) => {
-			element.scrollIntoView({
-				behavior: prefersReducedMotion ? 'auto' : 'smooth',
-				block: getSmartScrollBlock(element),
-				inline: 'nearest',
+	/* ----- scheduled RSVP recenter ----- */
+	const recenterRef = useRef<number | null>(null);
+
+	const scheduleRsvpRecenter = useCallback(() => {
+		window.dispatchEvent(new CustomEvent('celebrame:close-navigation'));
+
+		if (recenterRef.current !== null) {
+			cancelAnimationFrame(recenterRef.current);
+		}
+
+		recenterRef.current = requestAnimationFrame(() => {
+			recenterRef.current = requestAnimationFrame(() => {
+				const section = sectionRef.current;
+				if (section) {
+					scrollRsvpCardIntoView(section, prefersReducedMotion ? 'auto' : 'smooth');
+				}
+				recenterRef.current = null;
 			});
-		},
-		[prefersReducedMotion],
-	);
-
-	const handleFocusCapture = useCallback(
-		(e: React.FocusEvent<HTMLElement>) => {
-			const target = e.target as HTMLElement;
-			const isTextInput = target.matches(
-				'input[type="text"], input[type="tel"], input[type="number"], textarea',
-			);
-
-			if (isTextInput) {
-				const field = target.closest('.rsvp__field') as HTMLElement | null;
-				if (field) scrollIntoViewSmart(field);
-			}
-		},
-		[scrollIntoViewSmart],
-	);
+		});
+	}, [prefersReducedMotion]);
 
 	/* ----- post-hydration hash correction + post-load recheck + hash change listener ----- */
 	useEffect(() => {
@@ -171,7 +197,7 @@ const RSVP: React.FC<RSVPProps> = ({
 			if (!section) return;
 
 			requestAnimationFrame(() => {
-				scrollSectionToViewportTop(section, prefersReducedMotion ? 'auto' : 'smooth');
+				scrollRsvpCardIntoView(section, prefersReducedMotion ? 'auto' : 'smooth');
 			});
 		};
 
@@ -202,8 +228,17 @@ const RSVP: React.FC<RSVPProps> = ({
 		if (!submitted || !successRef.current) return;
 
 		successRef.current.focus({ preventScroll: true });
-		scrollSectionToViewportTop(successRef.current, prefersReducedMotion ? 'auto' : 'smooth');
+		scrollRsvpCardIntoView(successRef.current, prefersReducedMotion ? 'auto' : 'smooth');
 	}, [submitted, prefersReducedMotion]);
+
+	/* ----- cleanup ----- */
+	useEffect(() => {
+		return () => {
+			if (recenterRef.current !== null) {
+				cancelAnimationFrame(recenterRef.current);
+			}
+		};
+	}, []);
 
 	/* ----- render paths ----- */
 	if (!isPersonalized && !isPublicRsvp) {
@@ -214,12 +249,10 @@ const RSVP: React.FC<RSVPProps> = ({
 	const handleAttendanceChange = useCallback(
 		(status: 'confirmed' | 'declined') => {
 			setAttendanceStatus(status);
-			setAttendeeCount(
-				normalizeGuestCount(status, attendeeCount, supportsPlusOnes, effectiveGuestCap),
-			);
 			if (touched.attendance) validate();
+			scheduleRsvpRecenter();
 		},
-		[attendeeCount, effectiveGuestCap, supportsPlusOnes, touched.attendance, validate],
+		[touched.attendance, validate, scheduleRsvpRecenter],
 	);
 
 	return (
@@ -236,8 +269,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						ref={successRef}
 						title={title}
 						variant={variant}
-						modifier="rsvp--expanded"
-						onFocusCapture={handleFocusCapture}
+						onFocusCapture={scheduleRsvpRecenter}
 						name={name}
 						attendanceStatus={attendanceStatus}
 						confirmationMessage={confirmationMessage}
@@ -268,8 +300,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						title={title}
 						subcopy={resolvedSubcopy}
 						variant={variant}
-						modifier="rsvp--expanded"
-						onFocusCapture={handleFocusCapture}
+						onFocusCapture={scheduleRsvpRecenter}
 						prefersReducedMotion={!!prefersReducedMotion}
 						nameLocked={nameLocked}
 						nameLabel={labelsResolved.nameLabel}
