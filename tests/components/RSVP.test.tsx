@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 // tests/components/RSVP.test.tsx
 // Component tests for the RSVP form
 
@@ -30,6 +31,22 @@ describe('RSVP Component', () => {
 				json: () => Promise.resolve({ rsvpId: 'mock-rsvp-id' }),
 			} as Response),
 		);
+
+		// No-op ResizeObserver so the compact mode effect does not crash in jsdom
+		global.ResizeObserver = class {
+			constructor(_: ResizeObserverCallback) {
+				/* noop */
+			}
+			observe() {
+				/* noop */
+			}
+			disconnect() {
+				/* noop */
+			}
+			unobserve() {
+				/* noop */
+			}
+		} as unknown as typeof ResizeObserver;
 	});
 
 	describe('Initial Render', () => {
@@ -73,9 +90,12 @@ describe('RSVP Component', () => {
 			expect(container.querySelectorAll('.rsvp__radio-indicator')).toHaveLength(2);
 		});
 
-		it('should render the confirm button', () => {
+		it('should render the confirm button after attendance is selected', async () => {
+			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
+			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
 		});
 
@@ -104,7 +124,8 @@ describe('RSVP Component', () => {
 			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
 		});
 
-		it('unlocks the form for hybrid public RSVP', () => {
+		it('unlocks the form for hybrid public RSVP', async () => {
+			const user = userEvent.setup();
 			render(
 				<RSVP
 					eventType="xv"
@@ -116,8 +137,10 @@ describe('RSVP Component', () => {
 				/>,
 			);
 
-			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
 			expect(screen.queryByText(/utiliza enlaces personalizados/i)).not.toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
 		});
 
 		it('public RSVP initial state does not render name field', () => {
@@ -239,6 +262,7 @@ describe('RSVP Component', () => {
 		};
 
 		it('renders RSVP form for demo preview mode regardless of accessMode', async () => {
+			const user = userEvent.setup();
 			render(<RSVP {...demoProps} />);
 
 			await waitFor(() => {
@@ -246,6 +270,7 @@ describe('RSVP Component', () => {
 					screen.queryByText(/utiliza enlaces personalizados/i),
 				).not.toBeInTheDocument();
 			});
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
 			expect(screen.getByText(/Demo interactiva/)).toBeInTheDocument();
 		});
@@ -331,15 +356,24 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
 		});
 
-		it('should show error when confirm button is clicked without selection', async () => {
+		it('button appears after attendance selection', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			const button = screen.getByRole('button', { name: /Confirmar/i });
-			await user.click(button);
+			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
 
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
+		});
+
+		it('shows name validation error on submit without name', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 			await waitFor(() => {
-				expect(screen.getByText(/Por favor, selecciona si asistirás/i)).toBeInTheDocument();
+				expect(screen.getByText(/escribe tu nombre completo/i)).toBeInTheDocument();
 			});
 		});
 
@@ -361,18 +395,22 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/No podré/i)).toBeInTheDocument();
 		});
 
-		it('all variants use "Confirmar asistencia" for submit button', () => {
+		it('all variants use "Confirmar asistencia" for submit button', async () => {
+			const user = userEvent.setup();
 			const { rerender } = render(<RSVP {...defaultProps} variant="editorial" />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(
 				screen.getByRole('button', { name: /Confirmar asistencia/i }),
 			).toBeInTheDocument();
 
 			rerender(<RSVP {...defaultProps} variant="premiere-floral" />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(
 				screen.getByRole('button', { name: /Confirmar asistencia/i }),
 			).toBeInTheDocument();
 
 			rerender(<RSVP {...defaultProps} variant="celestial-blue" />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(
 				screen.getByRole('button', { name: /Confirmar asistencia/i }),
 			).toBeInTheDocument();
@@ -543,6 +581,26 @@ describe('RSVP Component', () => {
 				json: async () => ({ rsvpId: 'mock-rsvp-id' }),
 			});
 		});
+
+		it('should submit declined response successfully', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
+			await user.click(screen.getByLabelText(/No podré/i));
+
+			const button = screen.getByRole('button', { name: /ENVIAR RESPUESTA/i });
+			await user.click(button);
+
+			await waitFor(() => {
+				expect(
+					screen.getByText(
+						(content) =>
+							content.includes('Sentimos mucho') && content.includes('no puedas'),
+					),
+				).toBeInTheDocument();
+			});
+		});
 	});
 
 	describe('Accessibility', () => {
@@ -592,6 +650,7 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
@@ -620,6 +679,149 @@ describe('RSVP Component', () => {
 				const lastCall = scrollCalls[scrollCalls.length - 1];
 				expect(lastCall.block).toBe('start');
 			});
+		});
+	});
+
+	describe('Compact Mode', () => {
+		let originalInnerHeight: number;
+		let triggerResizeCallback: (() => void) | null;
+
+		beforeEach(() => {
+			jest.clearAllMocks();
+			originalInnerHeight = window.innerHeight;
+			triggerResizeCallback = null;
+
+			window.innerHeight = 600;
+
+			jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+				cb(0);
+				return 0;
+			});
+
+			global.ResizeObserver = class {
+				constructor(callback: () => void) {
+					triggerResizeCallback = callback;
+				}
+				observe() {
+					/* noop */
+				}
+				disconnect() {
+					/* noop */
+				}
+				unobserve() {
+					/* noop */
+				}
+			} as unknown as typeof ResizeObserver;
+		});
+
+		afterEach(() => {
+			window.innerHeight = originalInnerHeight;
+		});
+
+		it('applies rsvp--compact when card exceeds the enter threshold', async () => {
+			const user = userEvent.setup();
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/No podré/i));
+
+			const section = container.querySelector('.rsvp') as HTMLElement;
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 560,
+			} as DOMRect);
+
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+		});
+
+		it('keeps rsvp--compact when compacted height is above exit threshold', async () => {
+			const user = userEvent.setup();
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/No podré/i));
+
+			const section = container.querySelector('.rsvp') as HTMLElement;
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 560,
+			} as DOMRect);
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 440,
+			} as DOMRect);
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+		});
+
+		it('removes rsvp--compact when card shrinks below exit threshold', async () => {
+			const user = userEvent.setup();
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/No podré/i));
+
+			const section = container.querySelector('.rsvp') as HTMLElement;
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 560,
+			} as DOMRect);
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 400,
+			} as DOMRect);
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).not.toHaveClass('rsvp--compact');
+			});
+		});
+
+		it('does not apply rsvp--compact when the form is not expanded', async () => {
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			const section = container.querySelector('.rsvp') as HTMLElement;
+			expect(section).not.toHaveClass('rsvp--compact');
+		});
+
+		it('does not oscillate when class change reduces height within hysteresis band', async () => {
+			const user = userEvent.setup();
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+
+			const section = container.querySelector('.rsvp') as HTMLElement;
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 560,
+			} as DOMRect);
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+
+			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+				height: 440,
+			} as DOMRect);
+
+			triggerResizeCallback?.();
+
+			await waitFor(() => {
+				expect(section).toHaveClass('rsvp--compact');
+			});
+
+			expect(section.classList.contains('rsvp--compact')).toBe(true);
 		});
 	});
 
@@ -671,28 +873,7 @@ describe('RSVP Component', () => {
 			});
 		});
 
-		it('public RSVP initial submit without attendance does not show name-required error', async () => {
-			const user = userEvent.setup();
-			render(
-				<RSVP
-					eventType="xv"
-					eventSlug="demo-xv-jewelry-box"
-					title="¿Vienes a celebrar conmigo?"
-					guestCap={2}
-					accessMode="hybrid"
-					confirmationMessage="Gracias"
-				/>,
-			);
-
-			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
-
-			await waitFor(() => {
-				expect(screen.getByText(/Por favor, selecciona si asistirás/i)).toBeInTheDocument();
-			});
-			expect(screen.queryByText(/escribe tu nombre completo/i)).not.toBeInTheDocument();
-		});
-
-		it('public RSVP after selecting attendance requires name', async () => {
+		it('public RSVP after selecting attendance requires name before submit', async () => {
 			const user = userEvent.setup();
 			render(
 				<RSVP
@@ -855,26 +1036,12 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			const button = screen.getByRole('button', { name: /Confirmar/i });
 			await user.click(button);
 
 			await waitFor(() => {
 				expect(screen.getByLabelText(/Tu nombre/i)).toHaveFocus();
-			});
-		});
-
-		it('should focus the attendance radio if name is present but attendance is missing', async () => {
-			const user = userEvent.setup();
-			render(<RSVP {...defaultProps} />);
-
-			const nameInput = screen.getByLabelText(/Tu nombre/i);
-			await user.type(nameInput, 'Test User');
-
-			const button = screen.getByRole('button', { name: /Confirmar/i });
-			await user.click(button);
-
-			await waitFor(() => {
-				expect(screen.getByLabelText(/Sí, asistiré/i)).toHaveFocus();
 			});
 		});
 	});
