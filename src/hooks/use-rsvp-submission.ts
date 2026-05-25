@@ -50,11 +50,11 @@ export function useRsvpSubmission({
 	const [phone, setPhone] = useState('');
 	const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
-	const contextGuestCap = Number(
-		isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap,
+	const effectiveGuestCap = Math.max(
+		1,
+		isDemoPreview ? guestCap : (initialData?.maxAllowedAttendees ?? guestCap),
 	);
-	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
-	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
+	const [attendeeCount, setAttendeeCount] = useState<number | string>(effectiveGuestCap);
 	const [notes, setNotes] = useState('');
 	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
 	const [rsvpId, setRsvpId] = useState('');
