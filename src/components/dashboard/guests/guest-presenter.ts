@@ -20,6 +20,11 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
 	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
 }
 
+export type PrimaryStatus = {
+	label: string;
+	class: string;
+};
+
 /**
  * 5-state primary status for the closed card.
  *
@@ -29,20 +34,12 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
  *   3. shared + not viewed   (sent, awaiting open — Enviada)
  *   4. shared + viewed       (opened, awaiting RSVP — Recibida)
  */
-export function getPrimaryStatusLabel(item: DashboardGuestItem) {
-	if (item.attendanceStatus === 'confirmed') return 'Confirmada';
-	if (item.attendanceStatus === 'declined') return 'No asiste';
-	if (item.deliveryStatus === 'generated') return 'Por enviar';
-	if (!item.isViewed) return 'Enviada';
-	return 'Recibida';
-}
-
-export function getPrimaryStatusClass(item: DashboardGuestItem) {
-	if (item.attendanceStatus === 'confirmed') return 'confirmed';
-	if (item.attendanceStatus === 'declined') return 'declined';
-	if (item.deliveryStatus === 'generated') return 'unshared';
-	if (!item.isViewed) return 'sent';
-	return 'pending';
+export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
+	if (item.attendanceStatus === 'confirmed') return { label: 'Confirmada', class: 'confirmed' };
+	if (item.attendanceStatus === 'declined') return { label: 'No asiste', class: 'declined' };
+	if (item.deliveryStatus === 'generated') return { label: 'Por enviar', class: 'unshared' };
+	if (!item.isViewed) return { label: 'Enviada', class: 'sent' };
+	return { label: 'Recibida', class: 'pending' };
 }
 
 /** Displayable contact: phone > email > "Sin teléfono registrado" */

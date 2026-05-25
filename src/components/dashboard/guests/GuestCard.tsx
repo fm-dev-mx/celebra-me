@@ -7,8 +7,7 @@ import {
 	formatGuestDate,
 	formatGuestEntrySource,
 	getGuestVisibleTags,
-	getPrimaryStatusLabel,
-	getPrimaryStatusClass,
+	getPrimaryStatus,
 	getContactDisplay,
 	hasContact,
 	hasMessage,
@@ -201,9 +200,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					<span className="guest-card__name">{item.fullName}</span>
 					{brandingBadge}
 				</div>
-				<span className={`status-pill status-pill--${getPrimaryStatusClass(item)}`}>
+				<span className={`status-pill status-pill--${getPrimaryStatus(item).class}`}>
 					<span className="status-pill__dot" />
-					{getPrimaryStatusLabel(item)}
+					{getPrimaryStatus(item).label}
 				</span>
 			</header>
 

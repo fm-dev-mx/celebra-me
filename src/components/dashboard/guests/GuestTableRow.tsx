@@ -7,8 +7,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
-	getPrimaryStatusLabel,
-	getPrimaryStatusClass,
+	getPrimaryStatus,
 	getGuestVisibleTags,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
@@ -96,9 +95,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					)}
 				</td>
 				<td data-label="Estado">
-					<div className={`status-pill status-pill--${getPrimaryStatusClass(item)}`}>
+					<div className={`status-pill status-pill--${getPrimaryStatus(item).class}`}>
 						<span className="status-pill__dot"></span>
-						{getPrimaryStatusLabel(item)}
+						{getPrimaryStatus(item).label}
 					</div>
 				</td>
 				<td data-label="Asistentes">
