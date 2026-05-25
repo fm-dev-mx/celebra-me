@@ -15,10 +15,17 @@
 		transparent 60%
 	);
 
-	// ------------------------------------------------------------------
-	// Card — deeper warm dark background with subtle radial gradient,
-	// refined gold border, subtle inner border, premium shadow
-	// ------------------------------------------------------------------
+	// Desktop-only structural overrides (legacy expressive spacing)
+	@media (width > 480px) {
+		--rsvp-input-padding: 0.85rem 0.9rem;
+		--rsvp-textarea-min-height: 5rem;
+		--rsvp-radio-card-padding: 1.4rem 1.2rem;
+		--rsvp-radio-group-margin: 1.5rem 0;
+		--rsvp-card-padding-y: 3rem;
+		--rsvp-card-padding-x: 2rem;
+		--rsvp-header-margin: 0 0 2.5rem;
+	}
+
 	background:
 		var(--rsvp-editorial-gold-glow),
 		linear-gradient(180deg, rgb(14 12 10) 0%, var(--color-surface-dark) 100%);
@@ -27,7 +34,6 @@
 		0 24px 60px -12px rgb(0 0 0 / 50%),
 		0 0 0 1px rgb(var(--color-action-accent-rgb) / 8%) inset,
 		0 0 40px rgb(var(--color-action-accent-rgb) / 6%);
-	padding: 3rem 2rem;
 	color: var(--color-text-on-dark);
 	position: relative;
 	overflow: hidden;
@@ -38,7 +44,6 @@
 	// ------------------------------------------------------------------
 	.rsvp__header {
 		text-align: center;
-		margin-bottom: 2.5rem;
 		position: relative;
 	}
 
@@ -103,7 +108,6 @@
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 		color: var(--color-text-primary);
 		font-family: var(--font-body);
-		padding: 0.85rem 0.9rem;
 		border-radius: 2px;
 		transition:
 			background-color var(--duration-standard) var(--ease-premium),
@@ -123,7 +127,7 @@
 	}
 
 	textarea {
-		min-height: 5rem;
+		min-height: var(--rsvp-textarea-min-height);
 		resize: vertical;
 	}
 
@@ -134,15 +138,14 @@
 		color: var(--color-text-primary);
 		display: grid;
 		grid-template-columns: var(--rsvp-radio-columns);
-		gap: 1.2rem;
-		margin: 1.5rem 0;
+		gap: var(--rsvp-radio-group-gap);
+		margin: var(--rsvp-radio-group-margin);
 
 		.rsvp__radio-card {
 			background: rgb(var(--color-surface-dark-rgb) / 60%);
 			border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 			border-radius: 2px;
-			padding: 1.4rem 1.2rem;
-			min-height: 4.8rem;
+			padding: var(--rsvp-radio-card-padding);
 			display: flex;
 			align-items: center;
 			justify-content: var(--rsvp-radio-card-justify);
@@ -357,34 +360,6 @@
 			color: rgb(var(--color-text-primary-rgb) / 72%);
 			max-width: 42rem;
 			margin-inline: auto;
-		}
-	}
-
-	// ------------------------------------------------------------------
-	// Responsive — mobile
-	// ------------------------------------------------------------------
-	@media (width <= 480px) {
-		padding: 2rem 1.25rem;
-
-		.rsvp__header {
-			margin-bottom: 2rem;
-		}
-
-		.rsvp__title {
-			font-size: calc(var(--section-title-size, 1.6rem) * 0.85);
-		}
-
-		.rsvp__radio-group {
-			.rsvp__radio-card {
-				padding: 1.1rem 1rem;
-				min-height: 4rem;
-			}
-		}
-
-		input[type='text'],
-		input[type='number'],
-		textarea {
-			padding: 0.75rem 0.8rem;
 		}
 	}
 }

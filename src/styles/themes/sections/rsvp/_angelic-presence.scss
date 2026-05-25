@@ -29,10 +29,13 @@
 	--rsvp-button-radius: 999px;
 	--rsvp-title-font: var(--font-display);
 	--rsvp-title-color: var(--color-sacred-gold);
-	--rsvp-title-size: clamp(2rem, 6vw, 3rem);
 	--rsvp-title-letter-spacing: 0.01em;
-	--rsvp-title-margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
 	--rsvp-radius-card: 8px;
+
+	@media (width > 480px) {
+		--rsvp-title-size: clamp(2rem, 6vw, 3rem);
+		--rsvp-title-margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+	}
 
 	background:
 		radial-gradient(circle at 50% 0%, rgb(var(--color-sacred-gold-rgb) / 9%), transparent 62%),
