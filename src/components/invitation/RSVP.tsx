@@ -1,8 +1,9 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
+
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveLabels,
@@ -146,6 +147,60 @@ const RSVP: React.FC<RSVPProps> = ({
 		[scrollIntoViewSmart],
 	);
 
+	const [isCompact, setIsCompact] = useState(false);
+
+	useEffect(() => {
+		const card = sectionRef.current;
+		if (!card) return;
+		const isExpanded = attendanceStatus !== null || showIdentityFields;
+
+		if (!isExpanded) {
+			setIsCompact(false);
+			return;
+		}
+
+		let rafId = 0;
+		let lastHeight = 0;
+		let stableFrames = 0;
+		const STABLE_FRAMES = 3;
+
+		const evaluateCompact = () => {
+			const visualHeight = window.visualViewport?.height ?? window.innerHeight;
+			const rect = card.getBoundingClientRect();
+			const currentHeight = Math.round(rect.height);
+
+			if (currentHeight !== lastHeight) {
+				lastHeight = currentHeight;
+				stableFrames = 0;
+				rafId = requestAnimationFrame(evaluateCompact);
+				return;
+			}
+
+			stableFrames++;
+			if (stableFrames < STABLE_FRAMES) {
+				rafId = requestAnimationFrame(evaluateCompact);
+				return;
+			}
+
+			setIsCompact((current) => {
+				if (!current && rect.height > visualHeight * 0.9) return true;
+				if (current && rect.height < visualHeight * 0.7) return false;
+				return current;
+			});
+		};
+
+		const resizeObserver = new ResizeObserver(() => {
+			cancelAnimationFrame(rafId);
+			rafId = requestAnimationFrame(evaluateCompact);
+		});
+		resizeObserver.observe(card);
+
+		return () => {
+			resizeObserver.disconnect();
+			cancelAnimationFrame(rafId);
+		};
+	}, [attendanceStatus, showIdentityFields]);
+
 	useEffect(() => {
 		if (!submitted || !successRef.current) return;
 
@@ -158,7 +213,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	}
 
 	const rsvpModifier =
-		attendanceStatus !== null || showIdentityFields ? 'rsvp--expanded' : undefined;
+		['rsvp--expanded', isCompact && 'rsvp--compact'].filter(Boolean).join(' ') || undefined;
 
 	return (
 		<AnimatePresence mode="wait">
@@ -260,6 +315,9 @@ const RSVP: React.FC<RSVPProps> = ({
 								),
 							);
 							if (touched.attendance) validate();
+							requestAnimationFrame(() => {
+								if (sectionRef.current) scrollIntoViewSmart(sectionRef.current);
+							});
 						}}
 						onGuestCountChange={(value) => {
 							setAttendeeCount(value);
