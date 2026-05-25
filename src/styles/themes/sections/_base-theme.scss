@@ -138,6 +138,14 @@
 }
 
 // EDITORIAL BASE
+// Prevents a visible 15px light-strip gap (from parchment-100 html background)
+// when `scrollbar-gutter: stable` creates extra space on <html>.
+// :root:has(...) scoping avoids affecting non-editorial presets.
+// Revisit if the global html background policy becomes dynamic or per-preset.
+:root:has(.theme-preset--editorial) {
+	background-color: #{tokens.$sys-color-onyx-950};
+}
+
 .theme-preset--editorial {
 	background:
 		radial-gradient(
