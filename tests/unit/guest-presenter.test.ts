@@ -39,7 +39,13 @@ function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestI
 	};
 }
 
-describe.each([
+type PrimaryStatusCase = readonly [
+	overrides: Partial<DashboardGuestItem>,
+	expectedLabel: string,
+	expectedClass: string,
+];
+
+const primaryStatusCases = [
 	[{ attendanceStatus: 'confirmed' }, 'Confirmada', 'confirmed'],
 	[{ attendanceStatus: 'declined' }, 'No asiste', 'declined'],
 	[{ deliveryStatus: 'generated' }, 'Por enviar', 'unshared'],
@@ -55,11 +61,13 @@ describe.each([
 		'No asiste',
 		'declined',
 	],
-])('getPrimaryStatus', (overrides, expectedLabel, expectedClass) => {
+] satisfies readonly PrimaryStatusCase[];
+
+describe.each(primaryStatusCases)('getPrimaryStatus', (overrides, expectedLabel, expectedClass) => {
 	it(`returns label="${expectedLabel}" class="${expectedClass}"`, () => {
-		const s = getPrimaryStatus(makeGuest(overrides));
-		expect(s.label).toBe(expectedLabel);
-		expect(s.class).toBe(expectedClass);
+		const status = getPrimaryStatus(makeGuest(overrides));
+		expect(status.label).toBe(expectedLabel);
+		expect(status.class).toBe(expectedClass);
 	});
 });
 
