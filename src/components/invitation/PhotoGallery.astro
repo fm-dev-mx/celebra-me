@@ -20,6 +20,17 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 	const src = image.src;
 	return typeof src === 'string' ? src : src.src;
 };
+
+const getImageDimensions = (image: ImageMetadata | ImageAsset): { width: number; height: number } => {
+	if ('width' in image && 'height' in image && typeof image.width === 'number') {
+		return { width: image.width, height: image.height };
+	}
+	const nested = image.src;
+	if (typeof nested !== 'string' && 'width' in nested && 'height' in nested) {
+		return { width: nested.width, height: nested.height };
+	}
+	return { width: 800, height: 1000 };
+};
 ---
 
 <div class="gallery-grid" data-gallery data-variant={variant}>
@@ -39,6 +50,8 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 				<img
 					src={getSrc(item.image)}
 					alt={item.caption || `Galería ${index + 1}`}
+					width={getImageDimensions(item.image).width}
+					height={getImageDimensions(item.image).height}
 					loading="lazy"
 				/>
 			</div>
