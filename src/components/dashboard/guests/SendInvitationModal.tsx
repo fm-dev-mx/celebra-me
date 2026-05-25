@@ -52,7 +52,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		advancing,
 		pendingCount,
 		canSendToPhone,
-		isNoPhoneGuest,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,
@@ -94,25 +93,13 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					</p>
 				)}
 
-				{shareStatus === 'idle' && isNoPhoneGuest && (
-					<div className="dashboard-modal__fallback">
-						<div className="send-share-guest">
-							<span className="send-share-guest__name">{guest.fullName}</span>
-							<span className="send-share-guest__phone">
-								Sin tel&eacute;fono registrado
-							</span>
-							<span className="send-share-guest__phone">
-								{guest.maxAllowedAttendees === 1
-									? '1 pase permitido'
-									: `${guest.maxAllowedAttendees} pases permitidos`}
-							</span>
-						</div>
-						{phoneError && <span className="guest-field-error">{phoneError}</span>}
-					</div>
-				)}
-
-				{shareStatus === 'idle' && !isNoPhoneGuest && (
-					<>
+				{shareStatus === 'idle' && (
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleSaveAndShare();
+						}}
+					>
 						<div className="dashboard-form-field">
 							<label htmlFor="send-name">Nombre del invitado</label>
 							<input
@@ -129,7 +116,11 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 								Acompa&ntilde;antes permitidos
 							</h4>
 							<div className="dashboard-form-field dashboard-form-field--full">
-								<div className="guest-response-cards guest-response-cards--compact">
+								<div
+									className="guest-response-cards guest-response-cards--compact"
+									role="radiogroup"
+									aria-label="Acompañantes permitidos"
+								>
 									{ATTENDEE_OPTIONS.map((num) => (
 										<label key={num} className="guest-response-card">
 											<input
@@ -166,7 +157,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 								showOptional
 							/>
 						</div>
-					</>
+					</form>
 				)}
 
 				{shareStatus === 'fallback' && fallbackGuest && (
