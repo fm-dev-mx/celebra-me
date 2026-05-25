@@ -67,9 +67,13 @@ export function getRsvpStateLabel(item: DashboardGuestItem): string {
 	return 'Sin respuesta';
 }
 
+export function normalizeViewPercentage(value: number): number {
+	return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.round(value))) : 0;
+}
+
 export function getViewStateLabel(item: DashboardGuestItem): string {
 	if (!item.isViewed) return 'Sin ver';
-	return `${item.viewPercentage}%`;
+	return `${normalizeViewPercentage(item.viewPercentage)}%`;
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
