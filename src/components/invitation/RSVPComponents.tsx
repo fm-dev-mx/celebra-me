@@ -60,6 +60,8 @@ export const SubmittedState = forwardRef<
 	{
 		title: string;
 		variant?: string;
+		modifier?: string;
+		onFocusCapture?: React.FocusEventHandler<HTMLElement>;
 		name: string;
 		attendanceStatus: AttendanceStatus;
 		confirmationMessage: string;
@@ -81,6 +83,8 @@ export const SubmittedState = forwardRef<
 		showWhatsAppCta,
 		whatsAppUrl,
 		onWhatsAppClick,
+		modifier,
+		onFocusCapture,
 		confirmedMessage = '¡Gracias por acompañarnos,',
 		declinedMessage = 'Sentimos mucho que no puedas acompañarnos.',
 	} = props;
@@ -88,13 +92,14 @@ export const SubmittedState = forwardRef<
 	return (
 		<section
 			id="rsvp"
-			className="rsvp"
+			className={`rsvp${modifier ? ` ${modifier}` : ''}`}
 			data-variant={variant}
 			ref={ref}
 			tabIndex={-1}
 			role="status"
 			aria-live="polite"
 			aria-atomic="true"
+			onFocusCapture={onFocusCapture}
 		>
 			<h2 className="sr-only">{title}</h2>
 			<div className="rsvp__greeting">
@@ -162,6 +167,8 @@ export function RsvpFormView(props: {
 	title: string;
 	subcopy: string;
 	variant?: string;
+	modifier?: string;
+	onFocusCapture?: React.FocusEventHandler<HTMLElement>;
 	eyebrow?: string;
 	prefersReducedMotion: boolean;
 	nameLocked: boolean;
@@ -204,6 +211,8 @@ export function RsvpFormView(props: {
 		title,
 		subcopy,
 		variant,
+		modifier,
+		onFocusCapture,
 		eyebrow = 'RSVP PRIVADO',
 		prefersReducedMotion,
 		buttonLabel,
@@ -299,7 +308,12 @@ export function RsvpFormView(props: {
 	};
 
 	return (
-		<section id="rsvp" className="rsvp" data-variant={variant}>
+		<section
+			id="rsvp"
+			className={`rsvp${modifier ? ` ${modifier}` : ''}`}
+			data-variant={variant}
+			onFocusCapture={onFocusCapture}
+		>
 			<div className="rsvp__header">
 				<p className="rsvp__eyebrow">{eyebrow}</p>
 				<span className="rsvp__separator" aria-hidden="true">

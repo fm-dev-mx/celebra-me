@@ -1,5 +1,5 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import '@/styles/invitation/_rsvp.scss';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -112,6 +112,23 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
+	const handleFocusCapture = useCallback(
+		(e: React.FocusEvent<HTMLElement>) => {
+			const target = e.target as HTMLElement;
+			const scrollTarget = target.closest('.rsvp__radio-card, .rsvp__field, .rsvp__button');
+			if (!scrollTarget) return;
+
+			requestAnimationFrame(() => {
+				scrollTarget.scrollIntoView({
+					behavior: prefersReducedMotion ? 'auto' : 'smooth',
+					block: 'center',
+					inline: 'nearest',
+				});
+			});
+		},
+		[prefersReducedMotion],
+	);
+
 	useEffect(() => {
 		if (!submitted || !successRef.current) return;
 
@@ -125,6 +142,9 @@ const RSVP: React.FC<RSVPProps> = ({
 	if (!isPersonalized && !isPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
+
+	const rsvpModifier =
+		attendanceStatus !== null || showIdentityFields ? 'rsvp--expanded' : undefined;
 
 	return (
 		<AnimatePresence mode="wait">
@@ -140,6 +160,8 @@ const RSVP: React.FC<RSVPProps> = ({
 						ref={successRef}
 						title={title}
 						variant={variant}
+						modifier={rsvpModifier}
+						onFocusCapture={handleFocusCapture}
 						name={name}
 						attendanceStatus={attendanceStatus}
 						confirmationMessage={confirmationMessage}
@@ -169,6 +191,8 @@ const RSVP: React.FC<RSVPProps> = ({
 						title={title}
 						subcopy={resolvedSubcopy}
 						variant={variant}
+						modifier={rsvpModifier}
+						onFocusCapture={handleFocusCapture}
 						prefersReducedMotion={!!prefersReducedMotion}
 						nameLocked={nameLocked}
 						nameLabel={labelsResolved.nameLabel}
