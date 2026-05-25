@@ -5,4 +5,13 @@
 		animation: none;
 		transition: none;
 	}
+
+	.guest-card__message-block {
+		transition: none;
+	}
+
+	.guest-card__expanded {
+		transition: none;
+		transform: none;
+	}
 }
