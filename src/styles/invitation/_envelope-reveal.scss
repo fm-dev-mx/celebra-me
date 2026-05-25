@@ -31,7 +31,7 @@
 		inset 0 2px 8px color-mix(in srgb, var(--color-surface-elevated) 42%, transparent);
 	--env-container-width: clamp(320px, 45vw, 720px);
 	--env-container-ratio: 1.35;
-	--env-container-max-height: min(55vh, 400px);
+	--env-container-max-height: min(55svh, 400px);
 	--env-grid: 35% 25% 40%;
 	--env-zone-width: 85cqw;
 	--env-seal-size: 58px;
@@ -556,7 +556,7 @@
 	.envelope-wrapper {
 		--env-container-width: min(88vw, 340px);
 		--env-container-ratio: 0.75;
-		--env-container-max-height: min(78vh, 580px);
+		--env-container-max-height: min(78svh, 580px);
 		--env-grid: 32% 28% 40%;
 		--env-zone-width: 100%;
 		--env-seal-size: 40px;
@@ -609,7 +609,7 @@
 @include mixins.short-viewport {
 	.envelope-wrapper {
 		--env-container-width: min(70%, 450px);
-		--env-container-max-height: 80vh;
+		--env-container-max-height: 80svh;
 		--env-grid: 28% 32% 40%;
 		--env-title-size: clamp(1.2rem, 5vw, 1.8rem);
 	}
