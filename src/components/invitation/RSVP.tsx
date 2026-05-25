@@ -1,5 +1,5 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
@@ -42,6 +42,25 @@ interface RSVPProps {
 	};
 	isDemoPreview?: boolean;
 }
+
+/* ------------------------------------------------------------------ */
+/*  RSVP section-scroll helper                                          */
+/*  Uses window.scrollTo to bypass global scroll-padding-top on :root   */
+/*  so the RSVP section aligns flush to the viewport top.               */
+/* ------------------------------------------------------------------ */
+
+function scrollSectionToViewportTop(
+	section: HTMLElement,
+	behavior: ScrollBehavior = 'smooth',
+): void {
+	const top = window.scrollY + section.getBoundingClientRect().top;
+
+	window.scrollTo({ top, behavior });
+}
+
+/* ------------------------------------------------------------------ */
+/*  RSVP component                                                      */
+/* ------------------------------------------------------------------ */
 
 const RSVP: React.FC<RSVPProps> = ({
 	eventType,
@@ -115,6 +134,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
+	/* ----- field-level scroll (text inputs) ----- */
 	const scrollIntoViewSmart = useCallback(
 		(element: HTMLElement) => {
 			element.scrollIntoView({
@@ -136,84 +156,71 @@ const RSVP: React.FC<RSVPProps> = ({
 			if (isTextInput) {
 				const field = target.closest('.rsvp__field') as HTMLElement | null;
 				if (field) scrollIntoViewSmart(field);
-				return;
-			}
-
-			const interactiveTarget = target.closest('.rsvp__radio-card, .rsvp__button');
-			if (interactiveTarget && sectionRef.current) {
-				scrollIntoViewSmart(sectionRef.current);
 			}
 		},
 		[scrollIntoViewSmart],
 	);
 
-	const [isCompact, setIsCompact] = useState(false);
-
+	/* ----- post-hydration hash correction + post-load recheck + hash change listener ----- */
 	useEffect(() => {
-		const card = sectionRef.current;
-		if (!card) return;
-		const isExpanded = attendanceStatus !== null || showIdentityFields;
+		if (typeof window === 'undefined') return;
 
-		if (!isExpanded) {
-			setIsCompact(false);
-			return;
-		}
+		const doHashCorrection = (): void => {
+			if (window.location.hash !== '#rsvp') return;
+			const section = sectionRef.current;
+			if (!section) return;
 
-		let rafId = 0;
-		let lastHeight = 0;
-		let stableFrames = 0;
-		const STABLE_FRAMES = 3;
-
-		const evaluateCompact = () => {
-			const visualHeight = window.visualViewport?.height ?? window.innerHeight;
-			const rect = card.getBoundingClientRect();
-			const currentHeight = Math.round(rect.height);
-
-			if (currentHeight !== lastHeight) {
-				lastHeight = currentHeight;
-				stableFrames = 0;
-				rafId = requestAnimationFrame(evaluateCompact);
-				return;
-			}
-
-			stableFrames++;
-			if (stableFrames < STABLE_FRAMES) {
-				rafId = requestAnimationFrame(evaluateCompact);
-				return;
-			}
-
-			setIsCompact((current) => {
-				if (!current && rect.height > visualHeight * 0.9) return true;
-				if (current && rect.height < visualHeight * 0.7) return false;
-				return current;
+			requestAnimationFrame(() => {
+				scrollSectionToViewportTop(section, prefersReducedMotion ? 'auto' : 'smooth');
 			});
 		};
 
-		const resizeObserver = new ResizeObserver(() => {
-			cancelAnimationFrame(rafId);
-			rafId = requestAnimationFrame(evaluateCompact);
-		});
-		resizeObserver.observe(card);
+		doHashCorrection();
+
+		// One recheck after all assets (images, fonts) have loaded,
+		// in case lazy content shifted the layout after the initial scroll.
+		const onLoad = (): void => {
+			doHashCorrection();
+		};
+
+		if (document.readyState === 'complete') {
+			onLoad();
+		} else {
+			window.addEventListener('load', onLoad, { once: true });
+		}
+
+		window.addEventListener('hashchange', doHashCorrection);
 
 		return () => {
-			resizeObserver.disconnect();
-			cancelAnimationFrame(rafId);
+			window.removeEventListener('hashchange', doHashCorrection);
+			window.removeEventListener('load', onLoad);
 		};
-	}, [attendanceStatus, showIdentityFields]);
+	}, [prefersReducedMotion]);
 
+	/* ----- success scroll ----- */
 	useEffect(() => {
 		if (!submitted || !successRef.current) return;
 
 		successRef.current.focus({ preventScroll: true });
-		scrollIntoViewSmart(successRef.current);
-	}, [submitted, scrollIntoViewSmart]);
+		scrollSectionToViewportTop(successRef.current, prefersReducedMotion ? 'auto' : 'smooth');
+	}, [submitted, prefersReducedMotion]);
 
+	/* ----- render paths ----- */
 	if (!isPersonalized && !isPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
 
-	const rsvpModifier =
-		['rsvp--expanded', isCompact && 'rsvp--compact'].filter(Boolean).join(' ') || undefined;
+	/* ----- track attendance transitions ----- */
+	const handleAttendanceChange = useCallback(
+		(status: 'confirmed' | 'declined') => {
+			setAttendanceStatus(status);
+			setAttendeeCount(
+				normalizeGuestCount(status, attendeeCount, supportsPlusOnes, effectiveGuestCap),
+			);
+			if (touched.attendance) validate();
+		},
+		[attendeeCount, effectiveGuestCap, supportsPlusOnes, touched.attendance, validate],
+	);
 
 	return (
 		<AnimatePresence mode="wait">
@@ -229,7 +236,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						ref={successRef}
 						title={title}
 						variant={variant}
-						modifier={rsvpModifier}
+						modifier="rsvp--expanded"
 						onFocusCapture={handleFocusCapture}
 						name={name}
 						attendanceStatus={attendanceStatus}
@@ -261,7 +268,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						title={title}
 						subcopy={resolvedSubcopy}
 						variant={variant}
-						modifier={rsvpModifier}
+						modifier="rsvp--expanded"
 						onFocusCapture={handleFocusCapture}
 						prefersReducedMotion={!!prefersReducedMotion}
 						nameLocked={nameLocked}
@@ -304,21 +311,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							setCountryCode(value);
 							if (touched.phone) validate();
 						}}
-						onAttendanceChange={(status) => {
-							setAttendanceStatus(status);
-							setAttendeeCount(
-								normalizeGuestCount(
-									status,
-									attendeeCount,
-									supportsPlusOnes,
-									effectiveGuestCap,
-								),
-							);
-							if (touched.attendance) validate();
-							requestAnimationFrame(() => {
-								if (sectionRef.current) scrollIntoViewSmart(sectionRef.current);
-							});
-						}}
+						onAttendanceChange={handleAttendanceChange}
 						onGuestCountChange={(value) => {
 							setAttendeeCount(value);
 							if (touched.guestCount) validate();

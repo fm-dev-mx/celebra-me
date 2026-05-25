@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 // tests/components/RSVP.test.tsx
 // Component tests for the RSVP form
 
@@ -299,7 +298,7 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
 		});
 
-		it('"Sí, asistiré" shows attendee count with value 1', async () => {
+		it('"Sí, asistiré" shows attendee count with value 1 by default', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} guestCap={10} />);
 
@@ -546,10 +545,9 @@ describe('RSVP Component', () => {
 			expect(successRegion).toHaveAttribute('aria-atomic', 'true');
 			expect(successRegion).toHaveAttribute('tabindex', '-1');
 			await waitFor(() => expect(successRegion).toHaveFocus());
-			expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
+			expect(window.scrollTo).toHaveBeenCalledWith({
+				top: expect.any(Number),
 				behavior: 'smooth',
-				block: 'center',
-				inline: 'nearest',
 			});
 		});
 
@@ -682,146 +680,22 @@ describe('RSVP Component', () => {
 		});
 	});
 
-	describe('Compact Mode', () => {
-		let originalInnerHeight: number;
-		let triggerResizeCallback: (() => void) | null;
-
-		beforeEach(() => {
-			jest.clearAllMocks();
-			originalInnerHeight = window.innerHeight;
-			triggerResizeCallback = null;
-
-			window.innerHeight = 600;
-
-			jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-				cb(0);
-				return 0;
-			});
-
-			global.ResizeObserver = class {
-				constructor(callback: () => void) {
-					triggerResizeCallback = callback;
-				}
-				observe() {
-					/* noop */
-				}
-				disconnect() {
-					/* noop */
-				}
-				unobserve() {
-					/* noop */
-				}
-			} as unknown as typeof ResizeObserver;
-		});
-
-		afterEach(() => {
-			window.innerHeight = originalInnerHeight;
-		});
-
-		it('applies rsvp--compact when card exceeds the enter threshold', async () => {
-			const user = userEvent.setup();
-			const { container } = render(<RSVP {...defaultProps} />);
-
-			await user.click(screen.getByLabelText(/No podré/i));
-
-			const section = container.querySelector('.rsvp') as HTMLElement;
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 560,
-			} as DOMRect);
-
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
-		});
-
-		it('keeps rsvp--compact when compacted height is above exit threshold', async () => {
-			const user = userEvent.setup();
-			const { container } = render(<RSVP {...defaultProps} />);
-
-			await user.click(screen.getByLabelText(/No podré/i));
-
-			const section = container.querySelector('.rsvp') as HTMLElement;
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 560,
-			} as DOMRect);
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
-
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 440,
-			} as DOMRect);
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
-		});
-
-		it('removes rsvp--compact when card shrinks below exit threshold', async () => {
-			const user = userEvent.setup();
-			const { container } = render(<RSVP {...defaultProps} />);
-
-			await user.click(screen.getByLabelText(/No podré/i));
-
-			const section = container.querySelector('.rsvp') as HTMLElement;
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 560,
-			} as DOMRect);
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
-
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 400,
-			} as DOMRect);
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).not.toHaveClass('rsvp--compact');
-			});
-		});
-
-		it('does not apply rsvp--compact when the form is not expanded', async () => {
-			const { container } = render(<RSVP {...defaultProps} />);
-
-			const section = container.querySelector('.rsvp') as HTMLElement;
-			expect(section).not.toHaveClass('rsvp--compact');
-		});
-
-		it('does not oscillate when class change reduces height within hysteresis band', async () => {
+	describe('Compact Mode — CSS-only', () => {
+		it('does not toggle rsvp--compact from JS', async () => {
 			const user = userEvent.setup();
 			const { container } = render(<RSVP {...defaultProps} />);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			const section = container.querySelector('.rsvp') as HTMLElement;
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 560,
-			} as DOMRect);
-			triggerResizeCallback?.();
+			const card = container.querySelector('.rsvp') as HTMLElement;
+			expect(card).not.toHaveClass('rsvp--compact');
+		});
 
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
+		it('applies rsvp--expanded class when form is unlocked', () => {
+			const { container } = render(<RSVP {...defaultProps} />);
 
-			jest.spyOn(section, 'getBoundingClientRect').mockReturnValue({
-				height: 440,
-			} as DOMRect);
-
-			triggerResizeCallback?.();
-
-			await waitFor(() => {
-				expect(section).toHaveClass('rsvp--compact');
-			});
-
-			expect(section.classList.contains('rsvp--compact')).toBe(true);
+			const card = container.querySelector('.rsvp') as HTMLElement;
+			expect(card).toHaveClass('rsvp--expanded');
 		});
 	});
 

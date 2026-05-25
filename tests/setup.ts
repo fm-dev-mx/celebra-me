@@ -104,6 +104,9 @@ Object.defineProperty(window, 'matchMedia', {
 	})),
 });
 
+// Mock window.scrollTo for JSDOM compatibility (not implemented by jsdom)
+window.scrollTo = jest.fn();
+
 // Mock HTMLAudioElement for MusicPlayer tests (guarded)
 if (window.HTMLAudioElement?.prototype) {
 	window.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined);
