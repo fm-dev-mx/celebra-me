@@ -3,8 +3,7 @@ import {
 	formatGuestDate,
 	formatGuestEntrySource,
 	getGuestVisibleTags,
-	getPrimaryStatusLabel,
-	getPrimaryStatusClass,
+	getPrimaryStatus,
 	getContactDisplay,
 	hasContact,
 	hasMessage,
@@ -40,85 +39,27 @@ function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestI
 	};
 }
 
-describe('getPrimaryStatusLabel', () => {
-	it('returns "Aceptada" for confirmed guest', () => {
-		const guest = makeGuest({ attendanceStatus: 'confirmed' });
-		expect(getPrimaryStatusLabel(guest)).toBe('Aceptada');
-	});
-
-	it('returns "Denegada" for declined guest', () => {
-		const guest = makeGuest({ attendanceStatus: 'declined' });
-		expect(getPrimaryStatusLabel(guest)).toBe('Denegada');
-	});
-
-	it('returns "Por enviar" for generated/unshared guest', () => {
-		const guest = makeGuest({ deliveryStatus: 'generated' });
-		expect(getPrimaryStatusLabel(guest)).toBe('Por enviar');
-	});
-
-	it('returns "Enviada" for shared but not viewed guest', () => {
-		const guest = makeGuest({ deliveryStatus: 'shared', isViewed: false });
-		expect(getPrimaryStatusLabel(guest)).toBe('Enviada');
-	});
-
-	it('returns "Recibida" for shared, viewed, pending RSVP guest', () => {
-		const guest = makeGuest({
-			deliveryStatus: 'shared',
-			isViewed: true,
-			attendanceStatus: 'pending',
-		});
-		expect(getPrimaryStatusLabel(guest)).toBe('Recibida');
-	});
-
-	it('prioritises confirmed over delivery status', () => {
-		const guest = makeGuest({
-			attendanceStatus: 'confirmed',
-			deliveryStatus: 'generated',
-		});
-		expect(getPrimaryStatusLabel(guest)).toBe('Aceptada');
-	});
-
-	it('prioritises declined over delivery status', () => {
-		const guest = makeGuest({
-			attendanceStatus: 'declined',
-			deliveryStatus: 'shared',
-			isViewed: true,
-		});
-		expect(getPrimaryStatusLabel(guest)).toBe('Denegada');
-	});
-});
-
-describe('getPrimaryStatusClass', () => {
-	it('returns "confirmed" for confirmed guest', () => {
-		expect(getPrimaryStatusClass(makeGuest({ attendanceStatus: 'confirmed' }))).toBe(
-			'confirmed',
-		);
-	});
-
-	it('returns "declined" for declined guest', () => {
-		expect(getPrimaryStatusClass(makeGuest({ attendanceStatus: 'declined' }))).toBe('declined');
-	});
-
-	it('returns "unshared" for generated guest', () => {
-		expect(getPrimaryStatusClass(makeGuest({ deliveryStatus: 'generated' }))).toBe('unshared');
-	});
-
-	it('returns "sent" for shared but not viewed guest', () => {
-		expect(
-			getPrimaryStatusClass(makeGuest({ deliveryStatus: 'shared', isViewed: false })),
-		).toBe('sent');
-	});
-
-	it('returns "pending" for shared, viewed, pending RSVP guest', () => {
-		expect(
-			getPrimaryStatusClass(
-				makeGuest({
-					deliveryStatus: 'shared',
-					isViewed: true,
-					attendanceStatus: 'pending',
-				}),
-			),
-		).toBe('pending');
+describe.each([
+	[{ attendanceStatus: 'confirmed' }, 'Confirmada', 'confirmed'],
+	[{ attendanceStatus: 'declined' }, 'No asiste', 'declined'],
+	[{ deliveryStatus: 'generated' }, 'Por enviar', 'unshared'],
+	[{ deliveryStatus: 'shared', isViewed: false }, 'Enviada', 'sent'],
+	[
+		{ deliveryStatus: 'shared', isViewed: true, attendanceStatus: 'pending' },
+		'Recibida',
+		'pending',
+	],
+	[{ attendanceStatus: 'confirmed', deliveryStatus: 'generated' }, 'Confirmada', 'confirmed'],
+	[
+		{ attendanceStatus: 'declined', deliveryStatus: 'shared', isViewed: true },
+		'No asiste',
+		'declined',
+	],
+])('getPrimaryStatus', (overrides, expectedLabel, expectedClass) => {
+	it(`returns label="${expectedLabel}" class="${expectedClass}"`, () => {
+		const s = getPrimaryStatus(makeGuest(overrides));
+		expect(s.label).toBe(expectedLabel);
+		expect(s.class).toBe(expectedClass);
 	});
 });
 
@@ -181,12 +122,12 @@ describe('getDeliveryStateLabel', () => {
 });
 
 describe('getRsvpStateLabel', () => {
-	it('returns "Aceptada" for confirmed', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'confirmed' }))).toBe('Aceptada');
+	it('returns "Confirmada" for confirmed', () => {
+		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'confirmed' }))).toBe('Confirmada');
 	});
 
-	it('returns "Denegada" for declined', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'declined' }))).toBe('Denegada');
+	it('returns "No asiste" for declined', () => {
+		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'declined' }))).toBe('No asiste');
 	});
 
 	it('returns "Sin respuesta" for pending', () => {
@@ -219,8 +160,8 @@ describe('formatGuestDate', () => {
 		expect(result).toContain('2026');
 	});
 
-	it('returns Invalid Date string when date parsing fails', () => {
-		expect(formatGuestDate('not-a-date')).toBe('Invalid Date');
+	it('returns the raw value when date parsing fails', () => {
+		expect(formatGuestDate('not-a-date')).toBe('not-a-date');
 	});
 });
 
@@ -256,10 +197,8 @@ describe('getGuestVisibleTags', () => {
 		expect(getGuestVisibleTags(makeGuest({ tags: [] }))).toEqual([]);
 	});
 
-	it('handles undefined tags', () => {
-		expect(getGuestVisibleTags(makeGuest({ tags: undefined as unknown as string[] }))).toEqual(
-			[],
-		);
+	it('handles null tags', () => {
+		expect(getGuestVisibleTags(makeGuest({ tags: null as unknown as string[] }))).toEqual([]);
 	});
 });
 
