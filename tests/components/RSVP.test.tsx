@@ -511,6 +511,7 @@ describe('RSVP Component', () => {
 			expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
 				behavior: 'smooth',
 				block: 'center',
+				inline: 'nearest',
 			});
 		});
 
@@ -560,6 +561,65 @@ describe('RSVP Component', () => {
 
 			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
+		});
+	});
+
+	describe('Scroll Behavior', () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+			window.innerHeight = 800;
+			window.HTMLElement.prototype.scrollIntoView = jest.fn();
+		});
+
+		it('scrolls focused text input field into view with center block when it fits', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			const nameInput = screen.getByLabelText(/Tu nombre/i);
+			nameInput.focus();
+
+			await waitFor(() => {
+				expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
+					behavior: 'smooth',
+					block: 'center',
+					inline: 'nearest',
+				});
+			});
+		});
+
+		it('scrolls validation error field into view with center block when it fits', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const calls = (window.HTMLElement.prototype.scrollIntoView as jest.Mock).mock.calls;
+				const lastCall = calls[calls.length - 1];
+				expect(lastCall[0].block).toBe('center');
+			});
+		});
+
+		it('validates block is start when the card does not fit the viewport', async () => {
+			const user = userEvent.setup();
+			jest.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+				height: 900,
+			} as DOMRect);
+
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const mockScroll = window.HTMLElement.prototype.scrollIntoView as jest.Mock;
+				const callArgs = mockScroll.mock.calls.map((c) => c[0]);
+				const scrollCalls = callArgs.filter((args) => args !== undefined);
+				expect(scrollCalls.length).toBeGreaterThan(0);
+				const lastCall = scrollCalls[scrollCalls.length - 1];
+				expect(lastCall.block).toBe('start');
+			});
 		});
 	});
 

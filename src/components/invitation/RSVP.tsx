@@ -1,6 +1,7 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
+import { getSmartScrollBlock } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
@@ -59,6 +60,7 @@ const RSVP: React.FC<RSVPProps> = ({
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const successRef = useRef<HTMLElement>(null);
+	const sectionRef = useRef<HTMLElement>(null);
 
 	const {
 		name,
@@ -112,32 +114,44 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	const handleFocusCapture = useCallback(
-		(e: React.FocusEvent<HTMLElement>) => {
-			const target = e.target as HTMLElement;
-			const scrollTarget = target.closest('.rsvp__radio-card, .rsvp__field, .rsvp__button');
-			if (!scrollTarget) return;
-
-			requestAnimationFrame(() => {
-				scrollTarget.scrollIntoView({
-					behavior: prefersReducedMotion ? 'auto' : 'smooth',
-					block: 'center',
-					inline: 'nearest',
-				});
+	const scrollIntoViewSmart = useCallback(
+		(element: HTMLElement) => {
+			element.scrollIntoView({
+				behavior: prefersReducedMotion ? 'auto' : 'smooth',
+				block: getSmartScrollBlock(element),
+				inline: 'nearest',
 			});
 		},
 		[prefersReducedMotion],
+	);
+
+	const handleFocusCapture = useCallback(
+		(e: React.FocusEvent<HTMLElement>) => {
+			const target = e.target as HTMLElement;
+			const isTextInput = target.matches(
+				'input[type="text"], input[type="tel"], input[type="number"], textarea',
+			);
+
+			if (isTextInput) {
+				const field = target.closest('.rsvp__field') as HTMLElement | null;
+				if (field) scrollIntoViewSmart(field);
+				return;
+			}
+
+			const interactiveTarget = target.closest('.rsvp__radio-card, .rsvp__button');
+			if (interactiveTarget && sectionRef.current) {
+				scrollIntoViewSmart(sectionRef.current);
+			}
+		},
+		[scrollIntoViewSmart],
 	);
 
 	useEffect(() => {
 		if (!submitted || !successRef.current) return;
 
 		successRef.current.focus({ preventScroll: true });
-		successRef.current.scrollIntoView({
-			behavior: prefersReducedMotion ? 'auto' : 'smooth',
-			block: 'center',
-		});
-	}, [submitted, prefersReducedMotion]);
+		scrollIntoViewSmart(successRef.current);
+	}, [submitted, scrollIntoViewSmart]);
 
 	if (!isPersonalized && !isPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
@@ -188,6 +202,7 @@ const RSVP: React.FC<RSVPProps> = ({
 					transition={{ duration: 0.5 }}
 				>
 					<RsvpFormView
+						ref={sectionRef}
 						title={title}
 						subcopy={resolvedSubcopy}
 						variant={variant}
