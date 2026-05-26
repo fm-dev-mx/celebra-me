@@ -86,7 +86,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</div>
 				</td>
 				<td data-label="Nota">
-					{item.guestComment ? (
+					{hasMessage(item) ? (
 						<div className="guest-tooltip">
 							<div className="guest-note-indicator guest-note-indicator--active">
 								<MessageIcon size={20} />
