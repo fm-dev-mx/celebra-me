@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
-import { parsePhoneInput } from '@/lib/phone/validation';
+import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -28,30 +28,6 @@ interface GuestFormModalProps {
 }
 
 const PREDEFINED_TAGS = ['Familia', 'Amigos', 'VIP', 'Trabajo'];
-
-function resolvePhonePayload(input: {
-	phone: string;
-	countryCode: string;
-	mode: 'create' | 'edit';
-	initialPhone?: string;
-}): { phone?: string | null; countryCode?: string; error?: string } {
-	if (!input.phone.trim()) {
-		return {
-			phone: input.mode === 'edit' && input.initialPhone ? null : undefined,
-			countryCode: undefined,
-		};
-	}
-
-	const result = parsePhoneInput(input.phone.trim());
-	if (!result.ok) {
-		return { error: result.reason };
-	}
-
-	return {
-		phone: result.phone,
-		countryCode: result.countryCode || input.countryCode,
-	};
-}
 
 const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	open,
@@ -120,7 +96,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			mode,
 			initialPhone: initialGuest?.phone,
 		});
-		if (phonePayload.error) {
+		if (!phonePayload.ok) {
 			errors.phone = phonePayload.error;
 		}
 
@@ -140,8 +116,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phone: phonePayload.phone,
-					countryCode: phonePayload.countryCode,
+					phone: phonePayload.ok ? phonePayload.phone : undefined,
+					countryCode: phonePayload.ok ? phonePayload.countryCode : undefined,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
