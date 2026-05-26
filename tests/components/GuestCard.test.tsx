@@ -116,28 +116,21 @@ describe('GuestCard status labels', () => {
 		expect(mini).toHaveAttribute('aria-valuemax', '100');
 	});
 
-	it('shows a guest message toggle only when guestComment exists', () => {
+	it('shows a guest message button only when guestComment exists', () => {
 		const { container, rerender } = render(
 			<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />,
 		);
-		expect(container.querySelector('.guest-card__msg-toggle')).not.toBeInTheDocument();
+		expect(container.querySelector('.guest-card__msg-btn')).not.toBeInTheDocument();
 		expect(container.querySelector('.guest-card__message-block')).not.toBeInTheDocument();
 
 		rerender(
 			<GuestCard item={makeGuest({ guestComment: 'Nos vemos pronto' })} {...baseProps} />,
 		);
-		const toggle = container.querySelector('.guest-card__msg-toggle');
-		expect(toggle).toHaveTextContent('Mensaje del invitado');
+		const btn = container.querySelector('.guest-card__msg-btn');
+		expect(btn).toHaveTextContent('Ver mensaje');
 
-		const block = container.querySelector('.guest-card__message-block');
-		expect(block).toBeInTheDocument();
-		expect(block).not.toHaveClass('guest-card__message-block--open');
-		expect(container.querySelector('.guest-card__message-label')).toHaveTextContent(
-			'Mensaje del invitado',
-		);
-		expect(container.querySelector('.guest-card__message-text')).toHaveTextContent(
-			'Nos vemos pronto',
-		);
+		// Block is not rendered until button is clicked
+		expect(container.querySelector('.guest-card__message-block')).not.toBeInTheDocument();
 	});
 
 	it('opens message block on toggle click', () => {
@@ -147,13 +140,19 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		const toggle = container.querySelector<HTMLElement>('.guest-card__msg-toggle');
-		expect(toggle).toBeInTheDocument();
+		const btn = container.querySelector<HTMLElement>('.guest-card__msg-btn');
+		expect(btn).toBeInTheDocument();
 		act(() => {
-			toggle?.click();
+			btn?.click();
 		});
 		const block = container.querySelector('.guest-card__message-block');
-		expect(block).toHaveClass('guest-card__message-block--open');
+		expect(block).toBeInTheDocument();
+		expect(container.querySelector('.guest-card__message-label')).toHaveTextContent(
+			'Mensaje del invitado',
+		);
+		expect(container.querySelector('.guest-card__message-text')).toHaveTextContent(
+			'Hola, confirmamos asistencia',
+		);
 	});
 
 	it('renders progress bar width correctly at 0%, 50%, and 100%', () => {

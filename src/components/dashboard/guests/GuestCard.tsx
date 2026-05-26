@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -48,12 +48,18 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onToggleBrandingRemoval,
 }) => {
 	const [messageVisible, setMessageVisible] = useState(false);
+	const messageId = useId();
 	const isShared = item.deliveryStatus === 'shared';
+
+	useEffect(() => {
+		setMessageVisible(false);
+	}, [isExpanded]);
+
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
 	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 2);
 	const hasCompactChips = compactChips.length > 0;
-	const hasMessageFlag = hasMessage(item);
+	const hasMsg = hasMessage(item);
 	const primaryStatus = getPrimaryStatus(item);
 	const expandId = `guest-details-${item.guestId}`;
 
@@ -68,37 +74,13 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
 	const compactViewLabel = `Vista: ${viewPercentage}%`;
-	const messageLabel = messageVisible ? 'Ocultar mensaje' : 'Mensaje del invitado';
 	const articleClass = [
 		'guest-card',
-		item.deliveryStatus === 'shared' ? 'guest-card--shared' : '',
+		isShared ? 'guest-card--shared' : '',
 		isCelebrating || isHighlighted ? 'celebrate-success' : '',
 	]
 		.filter(Boolean)
 		.join(' ');
-
-	const messageToggle = hasMessageFlag && (
-		<button
-			type="button"
-			className={`guest-card__msg-toggle ${messageVisible ? 'guest-card__msg-toggle--open' : ''}`}
-			onClick={() => setMessageVisible((v) => !v)}
-			aria-expanded={messageVisible}
-		>
-			<MessageIcon size={16} aria-hidden="true" />
-			<span>{messageLabel}</span>
-		</button>
-	);
-
-	const messageBlock = hasMessageFlag && (
-		<div
-			className={`guest-card__message-block ${messageVisible ? 'guest-card__message-block--open' : ''}`}
-		>
-			<div className="guest-card__message-inner">
-				<span className="guest-card__message-label">Mensaje del invitado</span>
-				<p className="guest-card__message-text">{item.guestComment}</p>
-			</div>
-		</div>
-	);
 
 	const renderExpandedPanel = () => (
 		<section
@@ -173,6 +155,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						))}
 					</div>
 				)}
+				{hasMsg && (
+					<div className="guest-card__expanded-msg">
+						<span className="guest-card__expanded-msg-label">Mensaje del invitado</span>
+						<p className="guest-card__expanded-msg-text">{item.guestComment}</p>
+					</div>
+				)}
 				<div className="guest-card__expanded-actions">
 					<GuestExpandedActions
 						guestName={item.fullName}
@@ -237,10 +225,32 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</span>
 				</div>
 				<span className="view-status view-status--bare">{compactViewLabel}</span>
-				{messageToggle}
 			</div>
 
-			{messageBlock}
+			{!isExpanded && hasMsg && (
+				<>
+					<button
+						type="button"
+						className={`guest-card__msg-btn ${messageVisible ? 'guest-card__msg-btn--open' : ''}`}
+						onClick={() => setMessageVisible((v) => !v)}
+						aria-expanded={messageVisible}
+						aria-controls={messageId}
+					>
+						<MessageIcon size={16} aria-hidden="true" />
+						<span>{messageVisible ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
+					</button>
+					{messageVisible && (
+						<div className="guest-card__message-block" id={messageId}>
+							<div className="guest-card__message-inner">
+								<span className="guest-card__message-label">
+									Mensaje del invitado
+								</span>
+								<p className="guest-card__message-text">{item.guestComment}</p>
+							</div>
+						</div>
+					)}
+				</>
+			)}
 
 			<footer className="guest-card__actions">
 				<ShareAction
