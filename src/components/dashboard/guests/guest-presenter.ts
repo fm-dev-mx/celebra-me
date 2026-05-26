@@ -1,5 +1,6 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { generateInvitationLink } from '@/utils/invitation-link';
+import { getVisibleTags } from '@/lib/guests/guest-tags';
 
 export function formatGuestDate(value: string | null): string {
 	if (!value) return '-';
@@ -15,7 +16,7 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 }
 
 export function getGuestVisibleTags(item: DashboardGuestItem) {
-	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
+	return getVisibleTags(item.tags ?? []);
 }
 
 export type PrimaryStatus = {
