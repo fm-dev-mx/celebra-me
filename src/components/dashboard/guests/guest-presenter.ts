@@ -87,6 +87,33 @@ export function getCompactGroupChips(
 	return { chips, overflow };
 }
 
+export interface GroupMetric {
+	tag: string;
+	total: number;
+	pending: number;
+}
+
+export function computeGroupMetrics(items: DashboardGuestItem[]): GroupMetric[] {
+	const tagCounts = new Map<string, { total: number; pending: number }>();
+
+	for (const item of items) {
+		const visible = getGuestVisibleTags(item);
+		const tags = visible.length > 0 ? visible : ['Sin grupo'];
+		for (const tag of tags) {
+			const entry = tagCounts.get(tag) ?? { total: 0, pending: 0 };
+			entry.total++;
+			if (item.attendanceStatus === 'pending') {
+				entry.pending++;
+			}
+			tagCounts.set(tag, entry);
+		}
+	}
+
+	return Array.from(tagCounts.entries())
+		.map(([tag, counts]) => ({ tag, ...counts }))
+		.sort((a, b) => b.total - a.total);
+}
+
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
 	const baseUrl = inviteBaseUrl.replace(/\/+$/, '');
 	if (!item.eventType || !item.eventSlug) {

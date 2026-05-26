@@ -5,6 +5,7 @@ import {
 	formatGuestEntrySource,
 	getGuestVisibleTags,
 	getCompactGroupChips,
+	computeGroupMetrics,
 	getPrimaryStatus,
 	getContactDisplay,
 	hasContact,
@@ -15,6 +16,7 @@ import {
 	getGuestInviteUrl,
 	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
+import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
 type PrimaryStatusCase = readonly [
 	overrides: Partial<DashboardGuestItem>,
@@ -243,6 +245,56 @@ describe('getCompactGroupChips', () => {
 		const result = getCompactGroupChips(makeGuest({ tags: [] }), 2);
 		expect(result.chips).toEqual([]);
 		expect(result.overflow).toBe(0);
+	});
+});
+
+describe('computeGroupMetrics', () => {
+	it('computes total and pending per group', () => {
+		const items = [
+			makeGuest({ tags: ['Familia'], attendanceStatus: 'pending' }),
+			makeGuest({ tags: ['Familia'], attendanceStatus: 'confirmed' }),
+			makeGuest({ tags: ['VIP'], attendanceStatus: 'pending' }),
+		];
+		const metrics = computeGroupMetrics(items);
+		const familia: GroupMetric | undefined = metrics.find(
+			(m: GroupMetric) => m.tag === 'Familia',
+		);
+		expect(familia).toBeDefined();
+		expect(familia!.total).toBe(2);
+		expect(familia!.pending).toBe(1);
+		const vip: GroupMetric | undefined = metrics.find((m: GroupMetric) => m.tag === 'VIP');
+		expect(vip).toBeDefined();
+		expect(vip!.total).toBe(1);
+		expect(vip!.pending).toBe(1);
+	});
+
+	it('groups guests with no visible tags under "Sin grupo"', () => {
+		const items = [makeGuest({ tags: [] }), makeGuest({ tags: ['system:public'] })];
+		const metrics = computeGroupMetrics(items);
+		const sinGrupo: GroupMetric | undefined = metrics.find(
+			(m: GroupMetric) => m.tag === 'Sin grupo',
+		);
+		expect(sinGrupo).toBeDefined();
+		expect(sinGrupo!.total).toBe(2);
+	});
+
+	it('returns empty array for empty guest list', () => {
+		expect(computeGroupMetrics([])).toEqual([]);
+	});
+
+	it('sorts by total descending', () => {
+		const items = [
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['Amigos'] }),
+			makeGuest({ tags: ['Amigos'] }),
+			makeGuest({ tags: ['Familia'] }),
+		];
+		const metrics = computeGroupMetrics(items);
+		expect(metrics[0].tag).toBe('VIP');
+		expect(metrics[1].tag).toBe('Amigos');
+		expect(metrics[2].tag).toBe('Familia');
 	});
 });
 
