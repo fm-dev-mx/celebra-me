@@ -54,7 +54,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 
 	useLayoutEffect(() => {
 		if (progressRef.current) {
-			progressRef.current.style.width = `${viewPercentage}%`;
+			progressRef.current.style.setProperty('--progress-width', `${viewPercentage}%`);
 		}
 	}, [viewPercentage]);
 	const isShared = item.deliveryStatus === 'shared';
@@ -111,7 +111,14 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</div>
 				</td>
 				<td data-label="% Vista">
-					<div className="engagement-mini" data-progress={viewPercentage}>
+					<div
+						className="engagement-mini"
+						role="progressbar"
+						aria-valuenow={viewPercentage}
+						aria-valuemin={0}
+						aria-valuemax={100}
+						aria-label={`Visualización de la invitación: ${viewPercentage}%`}
+					>
 						<div className="engagement-mini__bar">
 							<div ref={progressRef} className="engagement-mini__progress" />
 						</div>
