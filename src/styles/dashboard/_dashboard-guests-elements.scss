@@ -1,60 +1,26 @@
-.guest-tooltip {
-	position: relative;
+.guest-nota-btn {
 	display: inline-flex;
-	cursor: help;
-	color: var(--color-text-muted);
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.2rem 0.55rem;
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+	border-radius: 6px;
+	background: rgb(var(--color-action-accent-rgb) / 8%);
+	color: var(--color-action-accent);
+	font-size: 0.62rem;
+	font-weight: 600;
+	cursor: pointer;
 	transition:
-		transform var(--duration-snappy) var(--ease-standard),
-		color var(--duration-snappy) var(--ease-standard);
+		background-color 0.2s ease,
+		border-color 0.2s ease;
 
 	&:hover {
-		transform: scale(1.05);
-		color: var(--color-text-secondary);
+		background: rgb(var(--color-action-accent-rgb) / 14%);
+		border-color: rgb(var(--color-action-accent-rgb) / 32%);
 	}
 
-	&:hover .guest-tooltip-content {
-		opacity: 100%;
-		visibility: visible;
-		transform: translateX(-50%) translateY(-8px);
-	}
-}
-
-.guest-tooltip-content {
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%) translateY(0);
-	background: var(--color-text-emphasis);
-	color: white;
-	padding: 0.65rem 0.9rem;
-	border-radius: 10px;
-	font-size: 0.75rem;
-	white-space: normal;
-	width: max-content;
-	max-width: 220px;
-	z-index: 100;
-	opacity: 0%;
-	visibility: hidden;
-	transition:
-		opacity var(--duration-snappy) var(--ease-premium),
-		transform var(--duration-snappy) var(--ease-premium),
-		visibility var(--duration-snappy) var(--ease-premium);
-	box-shadow: var(--shadow-emphasis);
-	pointer-events: none;
-	text-align: left;
-	line-height: 1.5;
-	font-weight: 500;
-	font-family: var(--font-ui);
-
-	&::after {
-		content: '';
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border-width: 5px;
-		border-style: solid;
-		border-color: var(--color-text-emphasis) transparent transparent transparent;
+	svg {
+		flex-shrink: 0;
 	}
 }
 
@@ -212,30 +178,6 @@ progress.engagement-mini {
 	font-size: 0.68rem;
 	margin-right: 0.4rem;
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 14%);
-}
-
-.guest-note-indicator {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	&--active {
-		animation: guests-pulse-badge 2.5s infinite ease-in-out;
-	}
-}
-
-@keyframes guests-pulse-badge {
-	0% {
-		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb) / 0%));
-	}
-
-	50% {
-		filter: drop-shadow(0 0 4px rgb(var(--color-action-accent-rgb) / 25%));
-	}
-
-	100% {
-		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb) / 0%));
-	}
 }
 
 .attendee-count {

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -109,5 +109,98 @@ describe('GuestTableRow — % Vista column', () => {
 		renderRow({ tags: [] });
 		expect(screen.queryByText('Familia')).not.toBeInTheDocument();
 		expect(screen.queryByText('Amigos')).not.toBeInTheDocument();
+	});
+});
+
+describe('GuestTableRow — message toggle', () => {
+	const baseProps = {
+		index: 0,
+		inviteUrl: 'https://example.com/invite/1',
+		onEdit: jest.fn(),
+		onDelete: jest.fn().mockResolvedValue(undefined),
+		onMarkShared: jest.fn().mockResolvedValue(undefined),
+	};
+
+	const renderRow = (overrides: Partial<DashboardGuestItem> = {}) =>
+		render(
+			<table>
+				<tbody>
+					<GuestTableRow item={makeGuest(overrides)} {...baseProps} />
+				</tbody>
+			</table>,
+		);
+
+	it('renders message button when guestComment exists', () => {
+		renderRow({ guestComment: 'Nos vemos pronto' });
+		expect(screen.getByRole('button', { name: /ver mensaje/i })).toBeInTheDocument();
+	});
+
+	it('does not render message button when guestComment is empty', () => {
+		renderRow({ guestComment: '' });
+		expect(screen.queryByRole('button', { name: /mensaje/i })).not.toBeInTheDocument();
+		expect(screen.getByText('—')).toBeInTheDocument();
+	});
+
+	it('shows message row on button click', () => {
+		const { container } = renderRow({ guestComment: 'Hola, confirmamos' });
+		const btn = screen.getByRole('button', { name: /ver mensaje/i });
+		act(() => btn.click());
+		const panel = container.querySelector('.guest-message-panel');
+		expect(panel).toBeInTheDocument();
+		expect(panel).toHaveTextContent('Hola, confirmamos');
+	});
+
+	it('hides message row on second click', () => {
+		const { container } = renderRow({ guestComment: 'Saludos' });
+		const btn = screen.getByRole('button', { name: /ver mensaje/i });
+		act(() => btn.click());
+		expect(container.querySelector('.guest-message-panel')).toBeInTheDocument();
+		act(() => btn.click());
+		expect(container.querySelector('.guest-message-panel')).not.toBeInTheDocument();
+	});
+
+	it('shows message label and text content', () => {
+		const { container } = renderRow({ guestComment: '¡Nos vemos!' });
+		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
+		expect(container.querySelector('.guest-message-panel__label')).toHaveTextContent(
+			'Mensaje del invitado',
+		);
+		expect(container.querySelector('.guest-message-panel__text')).toHaveTextContent(
+			'¡Nos vemos!',
+		);
+	});
+
+	it('closes message when row is expanded', () => {
+		const { container, rerender } = render(
+			<table>
+				<tbody>
+					<GuestTableRow item={makeGuest({ guestComment: 'Test' })} {...baseProps} />
+				</tbody>
+			</table>,
+		);
+		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
+		expect(container.querySelector('.guest-message-panel')).toBeInTheDocument();
+
+		rerender(
+			<table>
+				<tbody>
+					<GuestTableRow
+						item={makeGuest({ guestComment: 'Test' })}
+						isExpanded={true}
+						{...baseProps}
+					/>
+				</tbody>
+			</table>,
+		);
+		expect(container.querySelector('.guest-message-panel')).not.toBeInTheDocument();
+	});
+
+	it('sets aria-expanded and aria-controls on the button', () => {
+		renderRow({ guestComment: 'Hola' });
+		const btn = screen.getByRole('button', { name: /ver mensaje/i });
+		expect(btn).toHaveAttribute('aria-expanded', 'false');
+		expect(btn).toHaveAttribute('aria-controls');
+		act(() => btn.click());
+		expect(btn).toHaveAttribute('aria-expanded', 'true');
 	});
 });

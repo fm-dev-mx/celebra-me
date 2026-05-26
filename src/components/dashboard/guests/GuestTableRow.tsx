@@ -1,5 +1,5 @@
-import React, { useLayoutEffect, useRef } from 'react';
-import { ChevronDownIcon } from '@/components/common/icons/ui';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -16,7 +16,6 @@ import {
 	hasMessage,
 	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
-import { MessageIcon } from '@/components/common/icons/ui';
 
 interface GuestTableRowProps {
 	item: DashboardGuestItem;
@@ -50,8 +49,14 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onToggleBrandingRemoval,
 }) => {
 	const progressRef = useRef<HTMLDivElement>(null);
+	const msgId = useId();
+	const [msgOpen, setMsgOpen] = useState(false);
 	const isViewed = item.firstViewedAt != null;
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
+
+	useEffect(() => {
+		if (isExpanded) setMsgOpen(false);
+	}, [isExpanded]);
 
 	useLayoutEffect(() => {
 		if (progressRef.current) {
@@ -103,12 +108,16 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				</td>
 				<td data-label="Nota">
 					{hasMessage(item) ? (
-						<div className="guest-tooltip">
-							<div className="guest-note-indicator guest-note-indicator--active">
-								<MessageIcon size={20} />
-							</div>
-							<div className="guest-tooltip-content">{item.guestComment}</div>
-						</div>
+						<button
+							type="button"
+							className="guest-nota-btn"
+							onClick={() => setMsgOpen((v) => !v)}
+							aria-expanded={msgOpen}
+							aria-controls={msgId}
+						>
+							<MessageIcon size={16} aria-hidden="true" />
+							<span>{msgOpen ? 'Ocultar' : 'Ver mensaje'}</span>
+						</button>
 					) : (
 						<span className="guest-tag guest-tag--subtle">—</span>
 					)}
@@ -168,6 +177,22 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</button>
 				</td>
 			</tr>
+
+			{msgOpen && (
+				<tr className="guest-message-row">
+					<td colSpan={GUEST_TABLE_COL_COUNT}>
+						<div
+							className="guest-message-panel"
+							id={msgId}
+							role="region"
+							aria-label="Mensaje del invitado"
+						>
+							<span className="guest-message-panel__label">Mensaje del invitado</span>
+							<p className="guest-message-panel__text">{item.guestComment}</p>
+						</div>
+					</td>
+				</tr>
+			)}
 
 			{isExpanded && (
 				<tr
