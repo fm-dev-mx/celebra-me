@@ -11,6 +11,27 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.
 
 <!-- Items for the next release go here -->
 
+## [0.4.1-beta.1] - 2026-05-25
+
+### Fixed
+
+- Gallery lightbox image height constrained with `max-height: 85svh` to prevent overflow on tall
+  images
+
+### Validation
+
+| Check      | Result                                                                    |
+| :--------- | :------------------------------------------------------------------------ |
+| Type-check | Passed — 0 errors, 0 warnings, 0 hints                                    |
+| Tests      | 96 suites passed, 1 suite skipped; 1000 tests passed, 2 skipped           |
+| Build      | Passed — event parity validated, server + client built, sitemap generated |
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.4.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+
 ## [0.4.0-beta.1] - 2026-05-25
 
 ### Added
