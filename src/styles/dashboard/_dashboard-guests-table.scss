@@ -114,6 +114,16 @@
 	}
 }
 
+/* Chips inside name cell */
+.guest-info__chips {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.2rem;
+	margin-left: 0.25rem;
+	vertical-align: middle;
+}
+
 /* Expand toggle button (table row) */
 .guest-row__menu-btn {
 	display: inline-flex;
@@ -233,6 +243,55 @@
 	gap: 0.35rem;
 	padding-top: 0.65rem;
 	border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Message row — in-flow table row for guest message content */
+.guest-message-row {
+	background: var(--color-surface-secondary);
+
+	td {
+		padding: 0;
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+}
+
+.guest-message-panel {
+	padding: 0.75rem 1rem;
+	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+	margin: 0 0.75rem;
+	animation: guest-message-fade-in 0.2s ease-out;
+
+	&__label {
+		display: block;
+		font-size: 0.6rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		margin-bottom: 0.3rem;
+	}
+
+	&__text {
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--color-text-primary);
+		line-height: 1.6;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		font-weight: 500;
+	}
+}
+
+@keyframes guest-message-fade-in {
+	from {
+		opacity: 0%;
+		transform: translateY(-4px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
 }
 
 /* Wide: metadata and actions on the same row */

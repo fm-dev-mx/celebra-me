@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SearchIcon } from '@/components/common/icons/ui';
+import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
+
+export type GroupFilter = string;
 
 interface GuestFiltersProps {
 	search: string;
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	delivery: DeliveryFilter;
+	group: GroupFilter;
 	onSearchChange: (value: string) => void;
 	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
 	onDeliveryChange: (value: DeliveryFilter) => void;
+	onGroupChange: (value: GroupFilter) => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -16,13 +21,15 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	search,
 	status,
 	delivery,
+	group,
 	onSearchChange,
 	onStatusChange,
 	onDeliveryChange,
+	onGroupChange,
 	searchInputRef,
 }) => {
 	const [showAdvanced, setShowAdvanced] = useState(false);
-	const hasActiveFilters = status !== 'all' || delivery !== 'all';
+	const hasActiveFilters = status !== 'all' || delivery !== 'all' || group !== 'all';
 
 	useEffect(() => {
 		setShowAdvanced(hasActiveFilters);
@@ -32,7 +39,8 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 		onSearchChange('');
 		onStatusChange('all');
 		onDeliveryChange('all');
-	}, [onSearchChange, onStatusChange, onDeliveryChange]);
+		onGroupChange('all');
+	}, [onSearchChange, onStatusChange, onDeliveryChange, onGroupChange]);
 
 	return (
 		<div className="dashboard-guests__filters">
@@ -105,6 +113,22 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 							<option value="all">Todas</option>
 							<option value="generated">No enviadas</option>
 							<option value="shared">Enviadas</option>
+						</select>
+					</div>
+
+					<div className="filter-group filter-group--compact">
+						<label htmlFor="group-filter">Grupo</label>
+						<select
+							id="group-filter"
+							value={group}
+							onChange={(event) => onGroupChange(event.target.value)}
+						>
+							<option value="all">Todos</option>
+							{PREDEFINED_GUEST_TAGS.map((tag) => (
+								<option key={tag} value={tag}>
+									{tag}
+								</option>
+							))}
 						</select>
 					</div>
 

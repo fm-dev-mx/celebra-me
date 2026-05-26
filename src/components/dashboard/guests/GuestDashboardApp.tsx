@@ -3,7 +3,8 @@ import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
-import GuestFilters from '@/components/dashboard/guests/GuestFilters';
+import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
+import { getGuestVisibleTags } from '@/components/dashboard/guests/guest-presenter';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
@@ -31,6 +32,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		'all',
 	);
 	const [delivery, setDelivery] = useState<DeliveryFilter>('all');
+	const [group, setGroup] = useState<GroupFilter>('all');
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 	const [reviewFilter, setReviewFilter] = useState<GuestReviewFilter>('all');
 	const searchInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +61,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		if (reviewFilter === 'delivery-pending') return item.deliveryStatus === 'generated';
 		if (reviewFilter === 'rsvp-pending') return item.attendanceStatus === 'pending';
 		if (reviewFilter === 'with-message') return item.guestComment.trim().length > 0;
+		if (group !== 'all') {
+			const itemTags = getGuestVisibleTags(item);
+			if (!itemTags.includes(group)) return false;
+		}
 		return true;
 	});
 
@@ -121,6 +127,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					eventId={eventId}
 					hostEvents={hostEvents}
 					items={items}
+					filteredItems={visibleItems}
 					activeReviewFilter={reviewFilter}
 					totals={totals}
 					onEventChange={setEventId}
@@ -147,9 +154,11 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					search={search}
 					status={status}
 					delivery={delivery}
+					group={group}
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
 					onDeliveryChange={setDelivery}
+					onGroupChange={setGroup}
 				/>
 
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}

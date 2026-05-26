@@ -1,5 +1,6 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { generateInvitationLink } from '@/utils/invitation-link';
+import { getVisibleTags } from '@/lib/guests/guest-tags';
 
 export function formatGuestDate(value: string | null): string {
 	if (!value) return '-';
@@ -15,7 +16,7 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 }
 
 export function getGuestVisibleTags(item: DashboardGuestItem) {
-	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
+	return getVisibleTags(item.tags ?? []);
 }
 
 export type PrimaryStatus = {
@@ -74,6 +75,43 @@ export function normalizeViewPercentage(value: number): number {
 export function getViewStateLabel(item: DashboardGuestItem): string {
 	if (!item.isViewed) return 'Sin ver';
 	return `${normalizeViewPercentage(item.viewPercentage)}%`;
+}
+
+export function getCompactGroupChips(
+	item: DashboardGuestItem,
+	max = 2,
+): { chips: string[]; overflow: number } {
+	const visible = getGuestVisibleTags(item);
+	const chips = visible.slice(0, max);
+	const overflow = Math.max(0, visible.length - max);
+	return { chips, overflow };
+}
+
+export interface GroupMetric {
+	tag: string;
+	total: number;
+	pending: number;
+}
+
+export function computeGroupMetrics(items: DashboardGuestItem[]): GroupMetric[] {
+	const tagCounts = new Map<string, { total: number; pending: number }>();
+
+	for (const item of items) {
+		const visible = getGuestVisibleTags(item);
+		const tags = visible.length > 0 ? visible : ['Sin grupo'];
+		for (const tag of tags) {
+			const entry = tagCounts.get(tag) ?? { total: 0, pending: 0 };
+			entry.total++;
+			if (item.attendanceStatus === 'pending') {
+				entry.pending++;
+			}
+			tagCounts.set(tag, entry);
+		}
+	}
+
+	return Array.from(tagCounts.entries())
+		.map(([tag, counts]) => ({ tag, ...counts }))
+		.sort((a, b) => b.total - a.total);
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
