@@ -86,8 +86,11 @@ export function useRsvpSubmission({
 	const showPhoneField = isPublicRsvp;
 	const handlePhoneChange = useCallback((value: string) => {
 		const parsed = parseRsvpPhoneInput(value);
-		setCountryCode(parsed.countryCode);
 		setPhone(parsed.phone);
+
+		if (value.trim().startsWith('+')) {
+			setCountryCode(parsed.countryCode);
+		}
 	}, []);
 
 	const validate = useCallback(() => {
