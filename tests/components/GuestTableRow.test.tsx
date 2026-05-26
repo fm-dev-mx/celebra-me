@@ -50,33 +50,33 @@ describe('GuestTableRow — % Vista column', () => {
 		const { container } = renderRow({ isViewed: true, viewPercentage: 67 });
 		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
 		expect(fill).toBeInTheDocument();
-		expect(fill).toHaveStyle({ inlineSize: '67%' });
+		expect(fill).toHaveStyle({ '--progress-width': '67%' });
 	});
 
 	it('assigns inline-size 0% when percentage is 0', () => {
 		const { container } = renderRow({ isViewed: true, viewPercentage: 0 });
 		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toHaveStyle({ inlineSize: '0%' });
+		expect(fill).toHaveStyle({ '--progress-width': '0%' });
 	});
 
 	it('assigns inline-size 100% when percentage is 100', () => {
 		const { container } = renderRow({ isViewed: true, viewPercentage: 100 });
 		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toHaveStyle({ inlineSize: '100%' });
+		expect(fill).toHaveStyle({ '--progress-width': '100%' });
 	});
 
 	it('clamps percentage above 100 to 100', () => {
 		const { container } = renderRow({ isViewed: true, viewPercentage: 150 });
 		expect(screen.getByText('100%')).toBeInTheDocument();
 		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toHaveStyle({ inlineSize: '100%' });
+		expect(fill).toHaveStyle({ '--progress-width': '100%' });
 	});
 
 	it('clamps percentage below 0 to 0', () => {
 		const { container } = renderRow({ isViewed: true, viewPercentage: -10 });
 		expect(screen.getByText('0%')).toBeInTheDocument();
 		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toHaveStyle({ inlineSize: '0%' });
+		expect(fill).toHaveStyle({ '--progress-width': '0%' });
 	});
 
 	it('handles non-finite percentage as 0', () => {
