@@ -113,14 +113,41 @@
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-antique-gold-rgb) / 52%);
 	--hero-card-shadow-ambient: none;
-	--hero-title-color-start: rgb(var(--color-warm-ivory-rgb) / 94%);
-	--hero-title-color-mid: rgb(var(--color-candle-gold-rgb) / 88%);
-	--hero-title-color-end: rgb(var(--color-blush-pink-rgb) / 78%);
+	--hero-title-color-start: rgb(255 245 235 / 96%);
+	--hero-title-color-mid: rgb(240 200 122 / 90%);
+	--hero-title-color-end: rgb(240 190 200 / 86%);
 	--hero-badge-bg: rgb(var(--color-velvet-burgundy-rgb) / 28%);
 	--hero-badge-border: rgb(var(--color-antique-gold-rgb) / 58%);
 	--hero-badge-text: var(--color-warm-ivory);
-	--hero-label-color: rgb(var(--color-warm-ivory-rgb) / 68%);
-	--hero-image-filter: saturate(1.03) contrast(1.05) brightness(0.9) sepia(0.05);
+	--hero-label-color: rgb(255 255 255);
+	--hero-image-filter: saturate(1.04) contrast(1.32) brightness(1) sepia(0.03);
+
+	// Tokenized hero overlays — consumed by sections/hero/_enchanted-rose.scss
+	--hero-overlay-cinematic: linear-gradient(
+		135deg,
+		rgb(var(--color-midnight-navy-rgb) / 56%) 0%,
+		rgb(var(--color-velvet-burgundy-rgb) / 10%) 34%,
+		rgb(var(--color-rose-shadow-rgb) / 30%) 100%
+	);
+	--hero-glow-accent: radial-gradient(
+		circle at 82% 20%,
+		rgb(var(--color-candle-gold-rgb) / 46%) 0%,
+		rgb(var(--color-candle-gold-rgb) / 6%) 32%,
+		transparent 54%
+	);
+	--hero-glow-fill: radial-gradient(
+		ellipse at 50% 24%,
+		rgb(var(--color-warm-ivory-rgb) / 20%) 0%,
+		rgb(var(--color-warm-ivory-rgb) / 5%) 32%,
+		transparent 52%
+	);
+	--hero-lower-third-fade: linear-gradient(
+		180deg,
+		transparent 32%,
+		rgb(var(--color-velvet-burgundy-rgb) / 10%) 46%,
+		rgb(var(--color-velvet-burgundy-rgb) / 34%) 66%,
+		rgb(var(--color-rose-shadow-rgb) / 50%) 100%
+	);
 
 	// ---------------------------------------------------------------------
 	// Quote section
