@@ -1,6 +1,7 @@
 import { render, act } from '@testing-library/react';
 import React from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 
 function createTestHarness(
 	overrides: Partial<{
@@ -115,5 +116,56 @@ describe('RSVP guest count behavior', () => {
 			guestCap: 6,
 		});
 		expect(getHook()?.attendeeCount).toBe(6);
+	});
+});
+
+describe('RSVP phone country code preservation', () => {
+	it('preserves a non-default country code when typing plain digits', () => {
+		const { getHook } = createTestHarness();
+
+		act(() => {
+			getHook()!.setCountryCode('+1');
+		});
+		expect(getHook()!.countryCode).toBe('+1');
+
+		act(() => {
+			getHook()!.handlePhoneChange('9150011122');
+		});
+		expect(getHook()!.phone).toBe('9150011122');
+		expect(getHook()!.countryCode).toBe('+1');
+	});
+
+	it('does NOT reset countryCode to +52 when typing plain national digits', () => {
+		const { getHook } = createTestHarness();
+
+		act(() => {
+			getHook()!.setCountryCode('+1');
+		});
+
+		act(() => {
+			getHook()!.handlePhoneChange('9150011122');
+		});
+		expect(getHook()!.countryCode).not.toBe(DEFAULT_COUNTRY_CODE);
+		expect(getHook()!.countryCode).toBe('+1');
+	});
+
+	it('updates countryCode from input when value starts with +', () => {
+		const { getHook } = createTestHarness();
+
+		act(() => {
+			getHook()!.handlePhoneChange('+52 669 123 4567');
+		});
+		expect(getHook()!.phone).toBe('6691234567');
+		expect(getHook()!.countryCode).toBe('+52');
+	});
+
+	it('detects +1 country code from explicit international input', () => {
+		const { getHook } = createTestHarness();
+
+		act(() => {
+			getHook()!.handlePhoneChange('+1 915 001 1122');
+		});
+		expect(getHook()!.phone).toBe('9150011122');
+		expect(getHook()!.countryCode).toBe('+1');
 	});
 });
