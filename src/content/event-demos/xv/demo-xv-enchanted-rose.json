@@ -18,7 +18,10 @@
         "label": "Mis XV Años",
         "date": "2027-11-20T20:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait"
+        "portrait": "portrait",
+        "focalPoint": "50% 32%",
+        "focalPointMobile": "48% 28%",
+        "focalPointDesktop": "52% 35%"
     },
     "location": {
         "ceremony": {

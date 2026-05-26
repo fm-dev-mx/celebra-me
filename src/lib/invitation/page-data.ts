@@ -52,6 +52,7 @@ export interface InvitationPageContext {
 	};
 	guestName?: string;
 	heroTime?: string;
+	heroVenueName?: string;
 	envelope?:
 		| (NonNullable<InvitationViewModel['envelope']['data']> & {
 				eventSlug: string;
@@ -228,6 +229,8 @@ export function prepareInvitationPageContext(input: {
 
 	const guestName = input.guestContext?.guest.fullName;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
+	const heroVenueName =
+		sections.location?.reception?.venueName ?? sections.location?.ceremony?.venueName;
 
 	const isDemoPreview = isDemo && !input.guestContext;
 
@@ -244,6 +247,7 @@ export function prepareInvitationPageContext(input: {
 		},
 		guestName,
 		heroTime,
+		heroVenueName,
 		envelope: buildEnvelopeData(styles.showEnvelope, envelope, viewModel.id, guestName, isDemo),
 		footerVariant: resolveFooterVariant(
 			input.eventEntry,
