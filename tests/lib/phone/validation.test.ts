@@ -156,4 +156,24 @@ describe('buildWhatsAppNumber', () => {
 		const result = buildWhatsAppNumber('8112345678', '+52');
 		expect(result).toMatch(/^\d+$/);
 	});
+
+	it('preserves +1 country code for US number', () => {
+		expect(buildWhatsAppNumber('9150011122', '+1')).toBe('19150011122');
+	});
+
+	it('preserves +52 country code for MX number', () => {
+		expect(buildWhatsAppNumber('9150011122', '+52')).toBe('529150011122');
+	});
+});
+
+describe('parsePhoneInput — international detection', () => {
+	it('detects +1 from explicit international input', () => {
+		const result = parsePhoneInput('+1 915 001 1122');
+		expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+1' });
+	});
+
+	it('returns default +52 for plain digits without prefix', () => {
+		const result = parsePhoneInput('9150011122');
+		expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+52' });
+	});
 });
