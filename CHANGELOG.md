@@ -11,6 +11,55 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.
 
 <!-- Items for the next release go here -->
 
+## [0.4.0-beta.1] - 2026-05-25
+
+### Added
+
+- Group filter and group metrics in the guest dashboard for segment-based guest review
+- Compact group chips on `GuestCard` and `GuestTableRow` for quick group identification
+- Shared guest tag utilities (`src/lib/guests/guest-tags.ts`) unifying group and status helpers
+- Collapsible/expanded message toggle on `GuestCard` and `GuestTableRow`, replacing the previous
+  tooltip pattern
+- Dedicated `resolvePhonePayload` module with discriminated union result for country-code-aware
+  phone resolution
+
+### Fixed
+
+- RSVP phone country code preserved when typing plain national digits (dropdown no longer resets on
+  input)
+- Progress bar test assertion aligned with CSS custom property naming
+- Note indicator in `GuestTableRow` now correctly uses the `hasMessage` helper
+
+### Refactored
+
+- Guest progress bar: replaced `useLayoutEffect`/JS-driven sizing with CSS inline style and ARIA
+  attributes
+- Phone resolution logic extracted from guest presenter into `resolve-phone-payload.ts` with typed
+  discriminated union return
+
+### Tested
+
+- `makeGuest` extracted to shared test factory; `normalizeViewPercentage` coverage added
+- Phone: `buildWhatsAppNumber` country code, `parsePhoneInput` international detection
+- RSVP phone country code preservation through form input
+- Phone: `resolvePhonePayload` with country code priority and error handling
+- New test files: `GuestFilters.test.tsx`, `GuestGroupMetrics.test.tsx`, `GuestTableRow.test.tsx`,
+  `guest-tags.test.ts`
+
+### Validation
+
+| Check      | Result                                                                    |
+| :--------- | :------------------------------------------------------------------------ |
+| Type-check | Passed — 0 errors, 0 warnings, 0 hints                                    |
+| Tests      | 96 suites passed, 1 suite skipped; 1000 tests passed, 2 skipped           |
+| Build      | Passed — event parity validated, server + client built, sitemap generated |
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.3.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+
 ## [0.3.0-beta.1] - 2026-05-25
 
 ### Added
