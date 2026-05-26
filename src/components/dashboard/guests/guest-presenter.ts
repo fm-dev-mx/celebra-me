@@ -77,6 +77,16 @@ export function getViewStateLabel(item: DashboardGuestItem): string {
 	return `${normalizeViewPercentage(item.viewPercentage)}%`;
 }
 
+export function getCompactGroupChips(
+	item: DashboardGuestItem,
+	max = 2,
+): { chips: string[]; overflow: number } {
+	const visible = getGuestVisibleTags(item);
+	const chips = visible.slice(0, max);
+	const overflow = Math.max(0, visible.length - max);
+	return { chips, overflow };
+}
+
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
 	const baseUrl = inviteBaseUrl.replace(/\/+$/, '');
 	if (!item.eventType || !item.eventSlug) {

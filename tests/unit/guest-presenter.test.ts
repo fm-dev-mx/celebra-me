@@ -5,8 +5,6 @@ import {
 	formatGuestEntrySource,
 	getGuestVisibleTags,
 	getCompactGroupChips,
-	getFirstVisibleTag,
-	computeGroupMetrics,
 	getPrimaryStatus,
 	getContactDisplay,
 	hasContact,
@@ -17,7 +15,6 @@ import {
 	getGuestInviteUrl,
 	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
-import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
 type PrimaryStatusCase = readonly [
 	overrides: Partial<DashboardGuestItem>,
@@ -221,6 +218,31 @@ describe('getGuestVisibleTags', () => {
 
 	it('handles null tags', () => {
 		expect(getGuestVisibleTags(makeGuest({ tags: null as unknown as string[] }))).toEqual([]);
+	});
+});
+
+describe('getCompactGroupChips', () => {
+	it('returns chips and overflow for up to max tags', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['Familia', 'Amigos', 'VIP'] }), 2);
+		expect(result.chips).toEqual(['Familia', 'Amigos']);
+		expect(result.overflow).toBe(1);
+	});
+
+	it('returns no overflow when at or under max', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['VIP'] }), 2);
+		expect(result.chips).toEqual(['VIP']);
+		expect(result.overflow).toBe(0);
+	});
+
+	it('excludes system tags from compact chips', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['system:public', 'Familia'] }), 2);
+		expect(result.chips).toEqual(['Familia']);
+	});
+
+	it('returns empty when no visible tags', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: [] }), 2);
+		expect(result.chips).toEqual([]);
+		expect(result.overflow).toBe(0);
 	});
 });
 

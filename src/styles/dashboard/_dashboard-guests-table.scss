@@ -114,6 +114,16 @@
 	}
 }
 
+/* Chips inside name cell */
+.guest-info__chips {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.2rem;
+	margin-left: 0.25rem;
+	vertical-align: middle;
+}
+
 /* Expand toggle button (table row) */
 .guest-row__menu-btn {
 	display: inline-flex;

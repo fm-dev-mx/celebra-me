@@ -7,6 +7,7 @@ import {
 	formatGuestDate,
 	formatGuestEntrySource,
 	getGuestVisibleTags,
+	getCompactGroupChips,
 	getPrimaryStatus,
 	getContactDisplay,
 	hasMessage,
@@ -50,6 +51,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
+	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 2);
+	const hasCompactChips = compactChips.length > 0;
 	const hasMessageFlag = hasMessage(item);
 	const primaryStatus = getPrimaryStatus(item);
 	const expandId = `guest-details-${item.guestId}`;
@@ -59,7 +62,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const contactDisplay = getContactDisplay(item);
 	const hasAnyContact = !!(item.phone || item.email);
 	const brandingBadge = item.hideCelebraMeBranding && (
-		<span className="guest-card__branding-badge">Sin marca</span>
+		<span className="guest-tag guest-tag--branding">Sin marca</span>
 	);
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
@@ -164,7 +167,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				{hasTags && (
 					<div className="guest-card__tags">
 						{visibleTags.map((tag) => (
-							<span key={tag} className="guest-tag">
+							<span key={tag} className="guest-tag guest-tag--group">
 								{tag}
 							</span>
 						))}
@@ -197,7 +200,20 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__identity">
 					<span className="guest-card__index">#{String(index + 1).padStart(2, '0')}</span>
 					<span className="guest-card__name">{item.fullName}</span>
-					{brandingBadge}
+					<div className="guest-card__chips">
+						{hasCompactChips &&
+							compactChips.map((chip) => (
+								<span key={chip} className="guest-tag guest-tag--group">
+									{chip}
+								</span>
+							))}
+						{compactOverflow > 0 && (
+							<span className="guest-tag guest-tag--overflow">
+								+{compactOverflow}
+							</span>
+						)}
+						{brandingBadge}
+					</div>
 				</div>
 				<span className={`status-pill status-pill--${primaryStatus.class}`}>
 					<span className="status-pill__dot" />
