@@ -2,6 +2,7 @@ import React from 'react';
 import GuestReviewBlock, {
 	type GuestReviewFilter,
 } from '@/components/dashboard/guests/GuestReviewBlock';
+import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
 import GuestSummary from '@/components/dashboard/guests/GuestSummary';
 import type {
 	DashboardGuestItem,
@@ -23,12 +24,14 @@ interface GuestDashboardHeaderProps {
 	totals: DashboardGuestListResponse['totals'];
 	onEventChange: (eventId: string) => void;
 	onReviewFilterChange: (filter: GuestReviewFilter) => void;
+	filteredItems?: DashboardGuestItem[];
 }
 
 const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	eventId,
 	hostEvents,
 	items,
+	filteredItems,
 	activeReviewFilter,
 	totals,
 	onEventChange,
@@ -57,6 +60,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 			</div>
 
 			<GuestSummary totals={totals} />
+			<GuestGroupMetrics items={filteredItems ?? items} />
 			<GuestReviewBlock
 				items={items}
 				activeFilter={activeReviewFilter}
