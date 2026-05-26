@@ -219,4 +219,38 @@ describe('GuestCard status labels', () => {
 		);
 		expect(screen.getByText('Vista: 0%')).toBeInTheDocument();
 	});
+
+	it('shows group tag chips in compact header', () => {
+		render(<GuestCard item={makeGuest({ tags: ['Familia', 'Amigos'] })} {...baseProps} />);
+		const familiaChips = screen.getAllByText('Familia');
+		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
+		const amigosChips = screen.getAllByText('Amigos');
+		expect(amigosChips.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it('shows overflow chip when more than 2 tags', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ tags: ['Familia', 'Amigos', 'VIP', 'Trabajo'] })}
+				{...baseProps}
+			/>,
+		);
+		const familiaChips = screen.getAllByText('Familia');
+		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
+		const amigosChips = screen.getAllByText('Amigos');
+		expect(amigosChips.length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText('+2')).toBeInTheDocument();
+	});
+
+	it('does not show group chips when no tags', () => {
+		const { container } = render(<GuestCard item={makeGuest({ tags: [] })} {...baseProps} />);
+		const chips = container.querySelectorAll('.guest-tag');
+		const groupChips = Array.from(chips).filter(
+			(c) =>
+				c.textContent === 'Familia' ||
+				c.textContent === 'Amigos' ||
+				c.textContent === 'VIP',
+		);
+		expect(groupChips.length).toBe(0);
+	});
 });

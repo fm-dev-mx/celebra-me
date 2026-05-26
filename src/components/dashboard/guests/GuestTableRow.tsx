@@ -9,6 +9,7 @@ import {
 	formatGuestEntrySource,
 	getPrimaryStatus,
 	getGuestVisibleTags,
+	getCompactGroupChips,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
 	getViewStateLabel,
@@ -60,6 +61,8 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
+	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
+	const hasCompactChips = compactChips.length > 0;
 	const status = getPrimaryStatus(item);
 	const expandId = `row-details-${item.guestId}`;
 
@@ -81,6 +84,19 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								#{String(index + 1).padStart(2, '0')}
 							</span>
 							{item.fullName}
+							<span className="guest-info__chips">
+								{hasCompactChips &&
+									compactChips.map((chip) => (
+										<span key={chip} className="guest-tag guest-tag--group">
+											{chip}
+										</span>
+									))}
+								{compactOverflow > 0 && (
+									<span className="guest-tag guest-tag--overflow">
+										+{compactOverflow}
+									</span>
+								)}
+							</span>
 						</span>
 						<span className="guest-info__phone">{item.phone}</span>
 					</div>
@@ -205,7 +221,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 										<span className="guest-row__detail-label">Categoría</span>
 										<div className="guest-row__detail-tags">
 											{visibleTags.map((tag) => (
-												<span key={tag} className="guest-tag">
+												<span
+													key={tag}
+													className="guest-tag guest-tag--group"
+												>
 													{tag}
 												</span>
 											))}
