@@ -1,8 +1,11 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
 	getGuestVisibleTags,
+	getCompactGroupChips,
+	computeGroupMetrics,
 	getPrimaryStatus,
 	getContactDisplay,
 	hasContact,
@@ -11,33 +14,9 @@ import {
 	getRsvpStateLabel,
 	getViewStateLabel,
 	getGuestInviteUrl,
+	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
-
-function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
-	return {
-		guestId: 'guest-1',
-		inviteId: 'invite-1',
-		fullName: 'Test Guest',
-		phone: '5551234567',
-		email: null,
-		tags: [],
-		metadata: {},
-		maxAllowedAttendees: 4,
-		attendanceStatus: 'pending',
-		attendeeCount: 0,
-		guestComment: '',
-		deliveryStatus: 'generated',
-		entrySource: undefined,
-		viewPercentage: 0,
-		isViewed: false,
-		firstViewedAt: null,
-		respondedAt: null,
-		waShareUrl: 'https://wa.me/123',
-		shareText: 'Share text',
-		updatedAt: '2026-03-22T00:00:00.000Z',
-		...overrides,
-	};
-}
+import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
 type PrimaryStatusCase = readonly [
 	overrides: Partial<DashboardGuestItem>,
@@ -153,6 +132,40 @@ describe('getViewStateLabel', () => {
 	});
 });
 
+describe('normalizeViewPercentage', () => {
+	it('returns the value as-is for a normal value', () => {
+		expect(normalizeViewPercentage(42)).toBe(42);
+	});
+
+	it('clamps values above 100 to 100', () => {
+		expect(normalizeViewPercentage(150)).toBe(100);
+	});
+
+	it('clamps values below 0 to 0', () => {
+		expect(normalizeViewPercentage(-10)).toBe(0);
+	});
+
+	it('returns 0 for NaN', () => {
+		expect(normalizeViewPercentage(NaN)).toBe(0);
+	});
+
+	it('returns 0 for Infinity', () => {
+		expect(normalizeViewPercentage(Infinity)).toBe(0);
+	});
+
+	it('rounds float values', () => {
+		expect(normalizeViewPercentage(42.7)).toBe(43);
+	});
+
+	it('rounds float values near 0', () => {
+		expect(normalizeViewPercentage(0.4)).toBe(0);
+	});
+
+	it('rounds float values near 100', () => {
+		expect(normalizeViewPercentage(99.5)).toBe(100);
+	});
+});
+
 describe('formatGuestDate', () => {
 	it('returns dash for null value', () => {
 		expect(formatGuestDate(null)).toBe('-');
@@ -207,6 +220,81 @@ describe('getGuestVisibleTags', () => {
 
 	it('handles null tags', () => {
 		expect(getGuestVisibleTags(makeGuest({ tags: null as unknown as string[] }))).toEqual([]);
+	});
+});
+
+describe('getCompactGroupChips', () => {
+	it('returns chips and overflow for up to max tags', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['Familia', 'Amigos', 'VIP'] }), 2);
+		expect(result.chips).toEqual(['Familia', 'Amigos']);
+		expect(result.overflow).toBe(1);
+	});
+
+	it('returns no overflow when at or under max', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['VIP'] }), 2);
+		expect(result.chips).toEqual(['VIP']);
+		expect(result.overflow).toBe(0);
+	});
+
+	it('excludes system tags from compact chips', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: ['system:public', 'Familia'] }), 2);
+		expect(result.chips).toEqual(['Familia']);
+	});
+
+	it('returns empty when no visible tags', () => {
+		const result = getCompactGroupChips(makeGuest({ tags: [] }), 2);
+		expect(result.chips).toEqual([]);
+		expect(result.overflow).toBe(0);
+	});
+});
+
+describe('computeGroupMetrics', () => {
+	it('computes total and pending per group', () => {
+		const items = [
+			makeGuest({ tags: ['Familia'], attendanceStatus: 'pending' }),
+			makeGuest({ tags: ['Familia'], attendanceStatus: 'confirmed' }),
+			makeGuest({ tags: ['VIP'], attendanceStatus: 'pending' }),
+		];
+		const metrics = computeGroupMetrics(items);
+		const familia: GroupMetric | undefined = metrics.find(
+			(m: GroupMetric) => m.tag === 'Familia',
+		);
+		expect(familia).toBeDefined();
+		expect(familia!.total).toBe(2);
+		expect(familia!.pending).toBe(1);
+		const vip: GroupMetric | undefined = metrics.find((m: GroupMetric) => m.tag === 'VIP');
+		expect(vip).toBeDefined();
+		expect(vip!.total).toBe(1);
+		expect(vip!.pending).toBe(1);
+	});
+
+	it('groups guests with no visible tags under "Sin grupo"', () => {
+		const items = [makeGuest({ tags: [] }), makeGuest({ tags: ['system:public'] })];
+		const metrics = computeGroupMetrics(items);
+		const sinGrupo: GroupMetric | undefined = metrics.find(
+			(m: GroupMetric) => m.tag === 'Sin grupo',
+		);
+		expect(sinGrupo).toBeDefined();
+		expect(sinGrupo!.total).toBe(2);
+	});
+
+	it('returns empty array for empty guest list', () => {
+		expect(computeGroupMetrics([])).toEqual([]);
+	});
+
+	it('sorts by total descending', () => {
+		const items = [
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['VIP'] }),
+			makeGuest({ tags: ['Amigos'] }),
+			makeGuest({ tags: ['Amigos'] }),
+			makeGuest({ tags: ['Familia'] }),
+		];
+		const metrics = computeGroupMetrics(items);
+		expect(metrics[0].tag).toBe('VIP');
+		expect(metrics[1].tag).toBe('Amigos');
+		expect(metrics[2].tag).toBe('Familia');
 	});
 });
 

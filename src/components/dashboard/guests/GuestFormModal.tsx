@@ -3,6 +3,7 @@ import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
+import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -26,8 +27,6 @@ interface GuestFormModalProps {
 		stayOpen?: boolean,
 	) => Promise<void>;
 }
-
-const PREDEFINED_TAGS = ['Familia', 'Amigos', 'VIP', 'Trabajo'];
 
 const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	open,
@@ -245,7 +244,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								<h4 className="dashboard-form-section__title">Categor&iacute;as</h4>
 								<div className="dashboard-form-field dashboard-form-field--full">
 									<div className="guest-response-cards guest-response-cards--tags">
-										{PREDEFINED_TAGS.map((tag) => (
+										{PREDEFINED_GUEST_TAGS.map((tag) => (
 											<label key={tag} className="guest-response-card">
 												<input
 													type="checkbox"

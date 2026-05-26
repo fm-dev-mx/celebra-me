@@ -1,5 +1,5 @@
-import React, { useLayoutEffect, useRef } from 'react';
-import { ChevronDownIcon } from '@/components/common/icons/ui';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -9,13 +9,13 @@ import {
 	formatGuestEntrySource,
 	getPrimaryStatus,
 	getGuestVisibleTags,
+	getCompactGroupChips,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
 	getViewStateLabel,
 	hasMessage,
 	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
-import { MessageIcon } from '@/components/common/icons/ui';
 
 interface GuestTableRowProps {
 	item: DashboardGuestItem;
@@ -49,17 +49,25 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onToggleBrandingRemoval,
 }) => {
 	const progressRef = useRef<HTMLDivElement>(null);
+	const msgId = useId();
+	const [msgOpen, setMsgOpen] = useState(false);
 	const isViewed = item.firstViewedAt != null;
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 
+	useEffect(() => {
+		if (isExpanded) setMsgOpen(false);
+	}, [isExpanded]);
+
 	useLayoutEffect(() => {
 		if (progressRef.current) {
-			progressRef.current.style.width = `${viewPercentage}%`;
+			progressRef.current.style.setProperty('--progress-width', `${viewPercentage}%`);
 		}
 	}, [viewPercentage]);
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
+	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
+	const hasCompactChips = compactChips.length > 0;
 	const status = getPrimaryStatus(item);
 	const expandId = `row-details-${item.guestId}`;
 
@@ -81,18 +89,35 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								#{String(index + 1).padStart(2, '0')}
 							</span>
 							{item.fullName}
+							<span className="guest-info__chips">
+								{hasCompactChips &&
+									compactChips.map((chip) => (
+										<span key={chip} className="guest-tag guest-tag--group">
+											{chip}
+										</span>
+									))}
+								{compactOverflow > 0 && (
+									<span className="guest-tag guest-tag--overflow">
+										+{compactOverflow}
+									</span>
+								)}
+							</span>
 						</span>
 						<span className="guest-info__phone">{item.phone}</span>
 					</div>
 				</td>
 				<td data-label="Nota">
-					{item.guestComment ? (
-						<div className="guest-tooltip">
-							<div className="guest-note-indicator guest-note-indicator--active">
-								<MessageIcon size={20} />
-							</div>
-							<div className="guest-tooltip-content">{item.guestComment}</div>
-						</div>
+					{hasMessage(item) ? (
+						<button
+							type="button"
+							className="guest-nota-btn"
+							onClick={() => setMsgOpen((v) => !v)}
+							aria-expanded={msgOpen}
+							aria-controls={msgId}
+						>
+							<MessageIcon size={16} aria-hidden="true" />
+							<span>{msgOpen ? 'Ocultar' : 'Ver mensaje'}</span>
+						</button>
 					) : (
 						<span className="guest-tag guest-tag--subtle">—</span>
 					)}
@@ -111,7 +136,14 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</div>
 				</td>
 				<td data-label="% Vista">
-					<div className="engagement-mini" data-progress={viewPercentage}>
+					<div
+						className="engagement-mini"
+						role="progressbar"
+						aria-valuenow={viewPercentage}
+						aria-valuemin={0}
+						aria-valuemax={100}
+						aria-label={`Visualización de la invitación: ${viewPercentage}%`}
+					>
 						<div className="engagement-mini__bar">
 							<div ref={progressRef} className="engagement-mini__progress" />
 						</div>
@@ -145,6 +177,22 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</button>
 				</td>
 			</tr>
+
+			{msgOpen && (
+				<tr className="guest-message-row">
+					<td colSpan={GUEST_TABLE_COL_COUNT}>
+						<div
+							className="guest-message-panel"
+							id={msgId}
+							role="region"
+							aria-label="Mensaje del invitado"
+						>
+							<span className="guest-message-panel__label">Mensaje del invitado</span>
+							<p className="guest-message-panel__text">{item.guestComment}</p>
+						</div>
+					</td>
+				</tr>
+			)}
 
 			{isExpanded && (
 				<tr
@@ -198,7 +246,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 										<span className="guest-row__detail-label">Categoría</span>
 										<div className="guest-row__detail-tags">
 											{visibleTags.map((tag) => (
-												<span key={tag} className="guest-tag">
+												<span
+													key={tag}
+													className="guest-tag guest-tag--group"
+												>
 													{tag}
 												</span>
 											))}
