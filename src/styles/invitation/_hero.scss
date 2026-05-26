@@ -80,6 +80,7 @@
 		margin-bottom: 0.5rem;
 		opacity: 0%;
 		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.8s forwards;
+		color: var(--hero-label-color, var(--color-text-emphasis));
 	}
 
 	&__title {

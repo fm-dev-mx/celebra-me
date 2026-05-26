@@ -7,8 +7,6 @@
 		rgb(0 0 0 / 60%) 100%
 	);
 	--hero-title-size: clamp(4rem, 12vw, 8rem);
-	--hero-label-color: var(--color-text-emphasis);
-	--hero-label-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 	--hero-image-filter: grayscale(0.3) brightness(0.85);
 	--hero-portrait-filter: contrast(1.1) saturate(1.1) brightness(0.9);
 	--hero-card-bg-overlay: radial-gradient(

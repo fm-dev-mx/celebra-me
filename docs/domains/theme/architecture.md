@@ -103,6 +103,35 @@ Presets must not target concrete section DOM selectors, internal section classes
 selectors, or pseudo-elements. Section variant files are optional and should exist only when they
 add real section-specific behavior. Files should not exist only for symmetry.
 
+### Token Inheritance Constraint
+
+Section theme base files (`themes/sections/<section>/_base.scss`) must not declare CSS custom
+properties that preset files also declare. Because `:where()` targets the section element itself,
+declaring a token there shadows the preset's value on the `.theme-preset--*` ancestor, making the
+preset value unreachable to descendants.
+
+**If a token should be configurable by presets**, declare it only in the preset and use a
+`var(--token, <default>)` fallback at the point of consumption (in the component section or the base
+invitation stylesheet).
+
+✅ Correct — fallback at consumption point:
+
+```scss
+/* src/styles/invitation/_section.scss */
+.section__label {
+  color: var(--section-label-color, var(--color-text-emphasis));
+}
+```
+
+❌ Wrong — section theme base shadows preset:
+
+```scss
+/* src/styles/themes/sections/section/_base.scss */
+:where(.section) {
+  --section-label-color: var(--color-text-emphasis);
+}
+```
+
 ### Examples
 
 **Avoid in presets** — section DOM selectors do not belong here:
