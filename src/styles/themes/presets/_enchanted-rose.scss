@@ -120,7 +120,7 @@
 	--hero-badge-border: rgb(var(--color-antique-gold-rgb) / 58%);
 	--hero-badge-text: var(--color-warm-ivory);
 	--hero-label-color: var(--color-candle-gold);
-	--hero-image-filter: saturate(1.04) contrast(1.32) brightness(1) sepia(0.03);
+	--hero-image-filter: saturate(1.02) contrast(1.18) brightness(1.02);
 
 	// Tokenized hero overlays — consumed by sections/hero/_enchanted-rose.scss
 	--hero-overlay-cinematic: linear-gradient(
@@ -143,9 +143,9 @@
 	);
 	--hero-lower-third-fade: linear-gradient(
 		180deg,
-		transparent 32%,
-		rgb(var(--color-velvet-burgundy-rgb) / 10%) 46%,
-		rgb(var(--color-velvet-burgundy-rgb) / 34%) 66%,
+		transparent 44%,
+		rgb(var(--color-velvet-burgundy-rgb) / 6%) 54%,
+		rgb(var(--color-velvet-burgundy-rgb) / 26%) 72%,
 		rgb(var(--color-rose-shadow-rgb) / 50%) 100%
 	);
 

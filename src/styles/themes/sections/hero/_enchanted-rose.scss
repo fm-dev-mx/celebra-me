@@ -1,7 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 // ---------------------------------------------------------------------------
-// Corner ornament patterns — 8-point (full) and 4-point (perimeter)
+// Corner ornament patterns — 4-point (perimeter)
 // ---------------------------------------------------------------------------
 @mixin corner-ornaments-8($inset, $size, $border-width, $opacity) {
 	inset: $inset;
@@ -156,54 +156,86 @@
 		);
 	}
 
+	// ── Label: Cinzel formal with gold side lines ──
 	.invitation-hero__label {
+		position: relative;
+		display: inline-block;
+		margin-left: 1.5rem;
 		margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
-		font-family: var(--font-ui);
-		font-size: clamp(0.62rem, 1.6vw, 0.92rem);
-		font-weight: 600;
+		font-family: var(--font-display-formal);
+		font-size: clamp(0.65rem, 1.3vw, 0.78rem);
+		font-weight: 500;
 		line-height: 1.5;
-		letter-spacing: 0.34em;
+		letter-spacing: 0.42em;
 		color: var(--hero-label-color);
 		text-shadow:
 			0 1px 12px rgb(var(--color-rose-shadow-rgb) / 30%),
 			0 0 20px rgb(var(--color-candle-gold-rgb) / 18%);
 		text-transform: uppercase;
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			height: 1px;
+			width: clamp(1.5rem, 5vw, 3.5rem);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-candle-gold-rgb) / 60%),
+				transparent
+			);
+		}
+
+		&::before {
+			right: calc(100% + 0.75rem);
+		}
+
+		&::after {
+			left: calc(100% + 0.75rem);
+		}
 	}
 
+	// ── Title: monumental editorial serif, solid warm-ivory, surname in italic gold ──
 	.invitation-hero__title {
 		max-width: 14ch;
 		margin: 0 0 1.5rem;
 		font-family: var(--font-display);
-		font-size: clamp(3.6rem, 12vw, 8.5rem);
+		font-size: clamp(3.25rem, 13vw, 8.5rem);
 		font-weight: 400;
-		line-height: 0.82;
+		line-height: 0.86;
 		letter-spacing: 0.01em;
 		text-align: left;
 		text-transform: none;
-		background: linear-gradient(
-			115deg,
-			var(--hero-title-color-start) 0%,
-			var(--hero-title-color-mid) 48%,
-			var(--hero-title-color-end) 100%
-		);
+		color: var(--color-warm-ivory);
+		text-shadow:
+			0 2px 4px rgb(var(--color-rose-shadow-rgb) / 60%),
+			0 0 30px rgb(var(--color-candle-gold-rgb) / 12%);
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards;
+	}
 
-		@include mixins.text-gradient-clip;
-
-		filter: drop-shadow(0 4px 16px rgb(var(--color-rose-shadow-rgb) / 38%))
-			drop-shadow(0 0 28px rgb(var(--color-candle-gold-rgb) / 14%));
+	.invitation-hero__title-line--surname {
+		display: inline-block;
+		color: rgb(var(--color-candle-gold-rgb) / 82%);
+		font-style: italic;
+		font-weight: 400;
+		font-size: 0.72em;
+		letter-spacing: 0.03em;
+		text-shadow: 0 1px 3px rgb(var(--color-rose-shadow-rgb) / 50%);
 	}
 
 	.invitation-hero__portrait {
 		display: none;
 	}
 
+	// ── Divider: fine gold line with diamond ornament ──
 	.invitation-hero__divider {
 		position: relative;
 		width: clamp(5rem, 14vw, 10rem);
 		height: 1px;
-		margin: clamp(0.4rem, 1vw, 0.75rem) 0;
+		margin: clamp(0.4rem, 1vw, 0.75rem) auto;
 		background: var(--rose-gold-divider);
-		opacity: 78%;
 	}
 
 	.invitation-hero__divider::after {
@@ -212,35 +244,44 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		font-size: 0.55rem;
+		font-size: 0.5rem;
 		color: var(--color-candle-gold);
 		background: transparent;
 		padding: 0 0.6rem;
 		text-shadow: 0 0 10px rgb(var(--color-candle-gold-rgb) / 54%);
-		opacity: 88%;
+		opacity: 28%;
 	}
 
+	// ── Details: engraved ornamental block (no card background) ──
 	.invitation-hero__details {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: clamp(0.35rem, 0.7vw, 0.55rem);
-		margin-bottom: clamp(3.5rem, 8svh, 5rem);
+		gap: clamp(0.35rem, 0.6vw, 0.5rem);
+		margin-bottom: clamp(2rem, 5svh, 3rem);
 		margin-left: 0;
-		padding: clamp(0.8rem, 1.5vw, 1.2rem) clamp(1rem, 2vw, 1.6rem);
-		background: rgb(var(--color-velvet-burgundy-rgb) / 32%);
-		border-left: 2px solid rgb(var(--color-antique-gold-rgb) / 48%);
-		box-shadow:
-			inset 0 0 0 1px rgb(var(--color-antique-gold-rgb) / 14%),
-			inset 0 2px 12px rgb(var(--color-rose-shadow-rgb) / 10%),
-			0 4px 24px rgb(var(--color-rose-shadow-rgb) / 14%);
+		padding: 0;
+		background: transparent;
+		border: none;
+		box-shadow: none;
 		color: var(--color-text-on-dark);
+
+		// Subtle engraved bottom rule
+		&::after {
+			content: '';
+			width: clamp(3rem, 8vw, 6rem);
+			height: 1px;
+			margin-top: clamp(0.6rem, 1.2vw, 1rem);
+			background: var(--rose-gold-divider);
+			opacity: 60%;
+			flex-shrink: 0;
+		}
 	}
 
 	.invitation-hero__date {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(0.82rem, 2vw, 1.45rem);
+		font-size: clamp(0.95rem, 2.2vw, 1.6rem);
 		font-style: italic;
 		font-weight: 400;
 		letter-spacing: 0.06em;
@@ -253,28 +294,63 @@
 	.invitation-hero__venue {
 		margin: 0;
 		font-family: var(--font-ui);
-		font-size: clamp(0.72rem, 1.8vw, 1.3rem);
+		font-size: clamp(0.75rem, 1.7vw, 1.2rem);
 		font-style: normal;
-		font-weight: 600;
-		letter-spacing: 0.15em;
+		font-weight: 500;
+		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--color-warm-ivory-rgb) / 88%);
+		color: rgb(var(--color-warm-ivory-rgb) / 80%);
 		text-shadow: 0 2px 10px rgb(var(--color-rose-shadow-rgb) / 58%);
 	}
 
 	.calligraphy-accent {
-		font-family: var(--font-display);
-		font-size: 1em;
-		font-style: italic;
-		color: var(--color-candle-gold);
+		font-family: var(--font-ui);
+		font-size: 0.7em;
+		font-style: normal;
+		font-weight: 400;
+		color: rgb(var(--color-warm-ivory-rgb) / 50%);
+		text-transform: lowercase;
+		letter-spacing: 0;
+		margin-right: 0.25em;
 	}
 
+	// ── Scroll cue: fine directional cue (decorative, not interactive) ──
 	.invitation-hero__scroll-indicator {
-		color: rgb(var(--color-candle-gold-rgb) / 60%);
-		font-size: 0.65rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.35rem;
+		width: max-content;
+		bottom: 3.5rem;
+		padding: 0;
+		background: transparent;
+		border: none;
+		border-radius: 0;
+		backdrop-filter: none;
+		box-shadow: none;
+		color: rgb(var(--color-candle-gold-rgb) / 45%);
+		font-size: clamp(0.58rem, 1vw, 0.68rem);
 		letter-spacing: 0.34em;
-		text-shadow: 0 0 12px rgb(var(--color-candle-gold-rgb) / 16%);
+		text-shadow: none;
 		text-transform: uppercase;
+		pointer-events: none;
+	}
+
+	.invitation-hero__scroll-text {
+		font-family: var(--font-ui);
+		font-weight: 500;
+	}
+
+	.invitation-hero__scroll-chevron {
+		width: 10px;
+		height: 10px;
+		opacity: 50%;
+		animation: none;
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
 	}
 
 	// Full perimeter gold frame with corner ornaments
@@ -289,14 +365,14 @@
 			clamp(1.25rem, 3vw, 3rem),
 			clamp(2.5rem, 5vw, 4.5rem),
 			1px,
-			48%
+			52%
 		);
 
 		box-shadow: 0 0 20px rgb(var(--color-candle-gold-rgb) / 6%);
 		filter: drop-shadow(0 0 10px rgb(var(--color-candle-gold-rgb) / 8%));
 	}
 
-	// Theatrical inset shadow + subtle inner gold border — stage/vignette depth with double-frame feel
+	// Theatrical inset shadow + subtle inner gold border
 	&::after {
 		content: '';
 		position: absolute;
@@ -361,28 +437,44 @@
 			);
 		}
 
+		.invitation-hero__label {
+			&::before,
+			&::after {
+				width: clamp(1rem, 4vw, 2rem);
+			}
+
+			&::before {
+				right: calc(100% + 0.5rem);
+			}
+
+			&::after {
+				left: calc(100% + 0.5rem);
+			}
+		}
+
 		.invitation-hero__title {
 			max-width: 16ch;
-			font-size: clamp(2.6rem, 13vw, 4.2rem);
+			font-size: clamp(2.4rem, 12vw, 3.8rem);
 			line-height: 0.84;
-			background: linear-gradient(
-				115deg,
-				var(--hero-title-color-start) 0%,
-				var(--hero-title-color-mid) 48%,
-				var(--hero-title-color-end) 100%
-			);
+			color: var(--color-warm-ivory);
+			text-shadow:
+				0 2px 4px rgb(var(--color-rose-shadow-rgb) / 60%),
+				0 0 24px rgb(var(--color-candle-gold-rgb) / 10%);
+		}
 
-			@include mixins.text-gradient-clip;
-
-			filter: drop-shadow(0 4px 16px rgb(var(--color-rose-shadow-rgb) / 38%))
-				drop-shadow(0 0 28px rgb(var(--color-candle-gold-rgb) / 14%));
+		.invitation-hero__title-line--surname {
+			font-size: 0.62em;
 		}
 
 		.invitation-hero__details {
-			align-items: flex-start;
-			text-align: left;
-			padding: clamp(0.6rem, 2vw, 0.9rem) clamp(0.75rem, 3vw, 1.2rem);
-			border-left: 2px solid rgb(var(--color-antique-gold-rgb) / 48%);
+			margin-left: 3rem;
+			margin-bottom: clamp(1.25rem, 3svh, 1.5rem);
+		}
+
+		.invitation-hero__scroll-indicator {
+			bottom: 3rem;
+			font-size: 0.58rem;
+			gap: 0.25rem;
 		}
 
 		&::before {
@@ -406,6 +498,19 @@
 				inset 0 0 80px rgb(var(--color-rose-shadow-rgb) / 6%);
 		}
 	}
+
+	// Short / landscape viewport: avoid crowding on small vertical space
+	@include mixins.short-viewport {
+		.invitation-hero__content {
+			padding-block: clamp(2.5rem, 6svh, 4rem);
+		}
+
+		.invitation-hero__scroll-indicator {
+			bottom: 2.5rem;
+			font-size: 0.58rem;
+			gap: 0.25rem;
+		}
+	}
 }
 
 @keyframes enchanted-rose-candle-breathe {
@@ -424,6 +529,11 @@
 		.invitation-hero__background::before {
 			animation: none;
 			opacity: 20%;
+		}
+
+		.invitation-hero__title {
+			animation: none;
+			opacity: 100%;
 		}
 	}
 }
