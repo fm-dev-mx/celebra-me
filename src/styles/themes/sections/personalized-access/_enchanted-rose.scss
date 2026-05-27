@@ -1,0 +1,47 @@
+.personalized-access[data-variant='enchanted-rose'] {
+	.access-card {
+		&::before {
+			border-color: rgb(var(--color-antique-gold-rgb) / 10%);
+		}
+
+		&::after {
+			background:
+				radial-gradient(
+					circle at 24% 12%,
+					rgb(var(--color-candle-gold-rgb) / 12%) 0%,
+					transparent 38%
+				),
+				radial-gradient(
+					circle at 76% 84%,
+					rgb(var(--color-blush-pink-rgb) / 8%) 0%,
+					transparent 34%
+				);
+		}
+
+		&__corner {
+			border-color: rgb(var(--color-candle-gold-rgb) / 58%);
+			opacity: 68%;
+
+			&::before {
+				background: var(--color-candle-gold);
+				box-shadow: 0 0 10px rgb(var(--color-candle-gold-rgb) / 42%);
+			}
+		}
+
+		&__title {
+			text-shadow: 0 8px 24px rgb(var(--color-rose-shadow-rgb) / 36%);
+		}
+
+		&__divider::after {
+			background: var(--color-velvet-burgundy);
+			border-color: var(--color-candle-gold);
+			box-shadow: 0 0 12px rgb(var(--color-candle-gold-rgb) / 32%);
+		}
+
+		&__count-frame {
+			&::before {
+				border: 1px solid rgb(var(--color-candle-gold-rgb) / 10%);
+			}
+		}
+	}
+}
