@@ -33,11 +33,24 @@ const VALID_NAV_LABELS = new Set([
 	'Inicio',
 	'Gala',
 	'Ubicación',
+	'Detalles',
+	'Fecha',
+	'Familia',
+	'Programa',
 	'Galería',
 	'Regalos',
 	'Confirmar',
 ]);
-const VALID_NAV_HREFS = new Set(['#inicio', '#event-location', '#galeria', '#regalos', '#rsvp']);
+const VALID_NAV_HREFS = new Set([
+	'#inicio',
+	'#event-location',
+	'#countdown',
+	'#family-section',
+	'#itinerary',
+	'#galeria',
+	'#regalos',
+	'#rsvp',
+]);
 
 describe('Invitation header navigation contract', () => {
 	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
@@ -74,7 +87,7 @@ describe('Invitation header navigation contract', () => {
 			const hrefs = nav.map((n) => n.href);
 
 			expect(nav.length).toBeGreaterThanOrEqual(3);
-			expect(nav.length).toBeLessThanOrEqual(6);
+			expect(nav.length).toBeLessThanOrEqual(7);
 			expect(nav[nav.length - 1]).toEqual({ label: 'Confirmar', href: '#rsvp' });
 
 			labels.forEach((label) => expect(VALID_NAV_LABELS.has(label)).toBe(true));

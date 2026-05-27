@@ -4,6 +4,7 @@ import type {
 	CountdownVariant,
 	IndicationIconName,
 	IndicationStyleVariant,
+	InvitationRenderSectionKey,
 	ItineraryIconKey,
 	ItineraryVariant,
 	LocationVariant,
@@ -188,6 +189,7 @@ export interface InvitationViewModel {
 	hero: HeroViewModel;
 	envelope: EnvelopeViewModel;
 	brandingVisibility: InvitationViewModelBrandingVisibility;
+	sectionOrder?: InvitationRenderSectionKey[];
 
 	// Sections (Normalized and resolved)
 	sections: {

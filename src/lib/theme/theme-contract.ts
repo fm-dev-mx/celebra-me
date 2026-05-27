@@ -15,6 +15,13 @@ export const CONTENT_SECTION_KEYS = [
 
 export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 
+export const INVITATION_RENDER_SECTION_KEYS = [
+	...CONTENT_SECTION_KEYS,
+	'personalizedAccess',
+] as const;
+
+export type InvitationRenderSectionKey = (typeof INVITATION_RENDER_SECTION_KEYS)[number];
+
 // ==========================================
 // THEME PRESETS - Single source of truth
 // ==========================================

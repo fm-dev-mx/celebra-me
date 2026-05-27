@@ -184,6 +184,34 @@ describe('Event content schema (real contract)', () => {
 		expect(result.data.hero.variant).toBe('editorial');
 	});
 
+	it('accepts explicit invitation section order with personalized access', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				sectionOrder: ['quote', 'location', 'personalizedAccess', 'rsvp', 'thankYou'],
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.sectionOrder).toEqual([
+			'quote',
+			'location',
+			'personalizedAccess',
+			'rsvp',
+			'thankYou',
+		]);
+	});
+
+	it('rejects unknown section order keys', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				sectionOrder: ['quote', 'unknownSection'],
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects unsupported RSVP content fields instead of silently stripping them', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

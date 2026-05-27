@@ -70,6 +70,31 @@ describe('buildInvitationRenderPlan', () => {
 		]);
 	});
 
+	it('uses explicit sectionOrder when an event defines one', () => {
+		const event = {
+			id: 'event-demos/xv/demo-xv-enchanted-rose',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+		const plan = buildInvitationRenderPlan(viewModel, { isDemoPreview: true });
+
+		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
+			'quote',
+			'location',
+			'countdown',
+			'family',
+			'interlude',
+			'itinerary',
+			'gallery',
+			'interlude',
+			'gifts',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
+	});
+
 	it('uses cinematic interludes in the baptism angelic presence demo', () => {
 		const event = {
 			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',

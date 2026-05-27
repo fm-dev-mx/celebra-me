@@ -146,16 +146,18 @@ function hasRenderableSection(
 	return Boolean(viewModel.sections[section]);
 }
 
-function appendSection(
+function appendSectionWithInterludes(
 	items: InvitationRenderPlanItem[],
+	viewModel: InvitationViewModel,
 	section: keyof InvitationViewModel['sections'],
-	showPersonalizedAccess: boolean,
 ): void {
-	if (section === 'rsvp' && showPersonalizedAccess) {
-		items.push({ type: 'personalized-access' });
-	}
-
 	items.push({ type: 'section', section });
+
+	for (const interlude of (viewModel.interludes ?? []).filter(
+		(i) => i.afterSection === section,
+	)) {
+		items.push(interludeToRenderItem(interlude, viewModel.theme.preset ?? THEME_PRESETS[0]));
+	}
 }
 
 function interludeToRenderItem(
@@ -185,18 +187,28 @@ export function buildInvitationRenderPlan(
 	const hasGuestContext = options?.hasGuestContext ?? false;
 	const isDemoPreview = options?.isDemoPreview ?? false;
 	const items: InvitationRenderPlanItem[] = [];
-	const interludes = viewModel.interludes ?? [];
+	const showPersonalizedAccess = hasGuestContext || isDemoPreview;
+	const sectionOrder = viewModel.sectionOrder;
 
-	for (const section of DEFAULT_SECTION_ORDER) {
-		if (!hasRenderableSection(viewModel, section)) continue;
+	if (sectionOrder) {
+		for (const section of sectionOrder) {
+			if (section === 'personalizedAccess') {
+				items.push({ type: 'personalized-access' });
+				continue;
+			}
 
-		appendSection(items, section, hasGuestContext || isDemoPreview);
+			if (!hasRenderableSection(viewModel, section)) continue;
+			appendSectionWithInterludes(items, viewModel, section);
+		}
+	} else {
+		for (const section of DEFAULT_SECTION_ORDER) {
+			if (!hasRenderableSection(viewModel, section)) continue;
 
-		const sectionInterludes = interludes.filter((i) => i.afterSection === section);
-		for (const interlude of sectionInterludes) {
-			items.push(
-				interludeToRenderItem(interlude, viewModel.theme.preset ?? THEME_PRESETS[0]),
-			);
+			if (section === 'rsvp' && showPersonalizedAccess) {
+				items.push({ type: 'personalized-access' });
+			}
+
+			appendSectionWithInterludes(items, viewModel, section);
 		}
 	}
 

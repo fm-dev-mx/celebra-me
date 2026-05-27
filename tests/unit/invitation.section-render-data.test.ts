@@ -159,6 +159,30 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		});
 	});
 
+	it('renders explicit section order respecting interlude placement', () => {
+		const pageContext = setupDemoPageContext('demo-xv-enchanted-rose');
+
+		expect(pageContext.viewModel.sectionOrder).toBeDefined();
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const descriptorComponents = descriptors.map((descriptor) => descriptor.component);
+
+		expect(descriptorComponents).toEqual([
+			'quote',
+			'location',
+			'countdown',
+			'family',
+			'interlude',
+			'itinerary',
+			'gallery',
+			'interlude',
+			'gifts',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
+	});
+
 	it('includes interludes in ana-sofia-cota-guillen descriptors', () => {
 		const eventEntry = {
 			id: 'events/ana-sofia-cota-guillen',

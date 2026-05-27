@@ -7,6 +7,18 @@
         "fontFamily": "serif",
         "preset": "enchanted-rose"
     },
+    "sectionOrder": [
+        "quote",
+        "location",
+        "countdown",
+        "family",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
     "sectionStyles": {
         "location": {
             "showFlourishes": true
@@ -179,21 +191,14 @@
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },
-        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Detalles", "href": "#event-location" },
+        { "label": "Fecha", "href": "#countdown" },
+        { "label": "Familia", "href": "#family-section" },
+        { "label": "Programa", "href": "#itinerary" },
         { "label": "Galería", "href": "#galeria" },
-        { "label": "Regalos", "href": "#regalos" },
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "location",
-            "alt": "Rosa roja bajo una cúpula de cristal con luz de velas",
-            "height": "screen",
-            "focalPoint": "50% 35%",
-            "lightX": "44%",
-            "lightY": "44%"
-        },
         {
             "image": "interlude02",
             "afterSection": "family",
@@ -205,22 +210,13 @@
         },
         {
             "image": "interlude03",
-            "afterSection": "itinerary",
+            "afterSection": "gallery",
             "alt": "Mesa de gala con velas, detalles dorados y rosas",
             "height": "screen",
             "focalPoint": "54% 62%",
             "lightX": "68%",
             "lightY": "44%",
             "overlayOpacity": "18%"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "Pétalos de rosa con sombras borgoña y luz cálida",
-            "height": "screen",
-            "focalPoint": "50% 34%",
-            "lightX": "42%",
-            "lightY": "42%"
         }
     ],
     "envelope": {

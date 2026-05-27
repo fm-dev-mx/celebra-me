@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
-import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
+import {
+	EVENT_TYPES,
+	INVITATION_RENDER_SECTION_KEYS,
+	THEME_PRESETS,
+} from '@/lib/theme/theme-contract';
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 
 const secureUrlSchema = z
@@ -132,10 +136,13 @@ export const sharingSchema = z
 	})
 	.optional();
 
+const sectionOrderSchema = z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).optional();
+
 export const baseEventFieldsSchema = z.object({
 	eventType: z.enum(EVENT_TYPES),
 	isDemo: z.boolean().default(false),
 	title: z.string(),
 	description: z.string().optional(),
 	theme: themeSchema,
+	sectionOrder: sectionOrderSchema,
 });

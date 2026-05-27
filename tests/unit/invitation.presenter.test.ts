@@ -133,6 +133,36 @@ describe('prepareInvitationPageContext', () => {
 			'interlude',
 			'thankYou',
 		]);
+		expect(context.viewModel.sectionOrder).toBeUndefined();
+	});
+
+	it('builds explicit section order for the enchanted rose demo', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-enchanted-rose',
+			data: fixture,
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const context = prepareInvitationPageContext({
+			eventEntry: event,
+			slug: 'demo-xv-enchanted-rose',
+		});
+
+		expect(context.viewModel.sectionOrder).toBeDefined();
+		expect(describeRenderPlan(context.renderPlan)).toEqual([
+			'quote',
+			'location',
+			'countdown',
+			'family',
+			'interlude',
+			'itinerary',
+			'gallery',
+			'interlude',
+			'gifts',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
 	});
 
 	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {

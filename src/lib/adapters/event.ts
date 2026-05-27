@@ -446,6 +446,7 @@ export function adaptEvent(
 		hero: buildHero(context),
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
+		sectionOrder: adapterData.sectionOrder,
 		sections: {
 			quote: buildQuoteSectionData(context),
 			countdown: buildCountdownSectionData(context),

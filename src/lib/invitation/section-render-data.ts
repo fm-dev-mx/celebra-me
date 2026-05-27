@@ -345,6 +345,8 @@ export function buildInvitationSectionRenderDescriptors(
 		.map((block, index) => renderBlock(pageContext, block, index, pageContext.renderPlan))
 		.filter((block): block is InvitationSectionRenderDescriptor => block !== null);
 
+	if (pageContext.viewModel.sectionOrder) return descriptors;
+
 	return prioritizePersonalizedAccess(descriptors);
 }
 
