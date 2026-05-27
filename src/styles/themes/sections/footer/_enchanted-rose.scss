@@ -1,0 +1,78 @@
+.invitation-footer[data-variant='enchanted-rose'] {
+	--footer-text-color: rgb(var(--color-warm-ivory-rgb) / 84%);
+
+	background:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-candle-gold-rgb) / 10%) 0%,
+			transparent 38%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-midnight-navy) 0%,
+			var(--color-velvet-burgundy) 56%,
+			var(--color-rose-shadow) 100%
+		);
+	color: var(--footer-text-color);
+	border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
+
+	.footer__closing-phrase {
+		font-family: var(--font-display);
+		font-size: clamp(1.3rem, 3.2vw, 1.7rem);
+		font-weight: 400;
+		font-style: italic;
+		letter-spacing: 0.04em;
+		color: rgb(var(--color-candle-gold-rgb) / 86%);
+		text-shadow: 0 8px 20px rgb(var(--color-rose-shadow-rgb) / 40%);
+	}
+
+	.footer__divider {
+		width: clamp(3rem, 10vw, 5rem);
+		height: 1px;
+		background: var(--rose-gold-divider);
+		margin-bottom: 1.5rem;
+
+		&::before {
+			content: '';
+			display: block;
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			margin: -3px auto 0;
+			background: var(--color-candle-gold);
+			box-shadow: 0 0 8px rgb(var(--color-candle-gold-rgb) / 46%);
+		}
+	}
+
+	.powered-by {
+		color: rgb(var(--color-warm-ivory-rgb) / 50%);
+	}
+
+	.logo {
+		filter: invert(100%) brightness(120%);
+	}
+
+	.whatsapp-button {
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 38%);
+		background: rgb(var(--color-warm-ivory-rgb) / 8%);
+		color: rgb(var(--color-warm-ivory-rgb) / 64%);
+
+		&:hover {
+			background: var(--color-antique-gold);
+			color: var(--color-velvet-burgundy);
+			box-shadow: 0 4px 16px rgb(var(--color-candle-gold-rgb) / 28%);
+		}
+
+		img {
+			filter: invert(100%);
+		}
+	}
+
+	.footer__replay-link {
+		color: rgb(var(--color-warm-ivory-rgb) / 60%);
+
+		&:hover {
+			color: rgb(var(--color-candle-gold-rgb) / 84%);
+		}
+	}
+}
