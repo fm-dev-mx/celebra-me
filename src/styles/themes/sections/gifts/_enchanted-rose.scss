@@ -1,0 +1,296 @@
+@use '../../../global/mixins' as mixins;
+
+.gifts-section[data-variant='enchanted-rose'] {
+	--gifts-padding-block: clamp(5.5rem, 10vw, 8rem);
+	--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
+	--gifts-bg:
+		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
+		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
+	--gifts-text-color: var(--color-velvet-burgundy);
+	--gifts-title-color: var(--color-velvet-burgundy);
+	--gifts-subtitle-color: rgb(var(--color-walnut-brown-rgb) / 74%);
+	--gifts-title-letter-spacing: 0.02em;
+	--gifts-card-bg: rgb(var(--color-warm-ivory-rgb) / 72%);
+	--gifts-card-border: var(
+		--enchanted-border-soft,
+		1px solid rgb(var(--color-antique-gold-rgb) / 34%)
+	);
+	--gifts-card-radius: 8px;
+	--gifts-card-shadow:
+		0 22px 54px rgb(var(--color-rose-shadow-rgb) / 12%),
+		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 84%);
+	--gifts-card-title-color: var(--color-velvet-burgundy);
+	--gifts-icon-color: var(--color-antique-gold);
+	--gifts-button-color: var(--color-velvet-burgundy);
+	--gifts-button-border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
+	--gifts-button-border-radius: 999px;
+	--gifts-button-hover-bg: var(--color-velvet-burgundy);
+	--gifts-button-hover-color: var(--color-warm-ivory);
+	--gifts-bank-bg: rgb(var(--color-warm-ivory-rgb) / 66%);
+	--gifts-bank-text-color: rgb(var(--color-walnut-brown-rgb) / 82%);
+	--gifts-bank-label-color: rgb(var(--color-velvet-burgundy-rgb) / 72%);
+	--gifts-account-bg: rgb(var(--color-velvet-burgundy-rgb) / 6%);
+	--gifts-account-color: var(--color-velvet-burgundy);
+	--gifts-copy-color: var(--color-velvet-burgundy);
+	--gifts-copy-border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
+
+	background: var(--gifts-bg);
+	color: var(--gifts-text-color);
+
+	&::before,
+	&::after {
+		content: '';
+		position: absolute;
+		pointer-events: none;
+	}
+
+	&::before {
+		inset: 0;
+		background:
+			radial-gradient(
+				circle at 18% 12%,
+				rgb(var(--color-blush-pink-rgb) / 16%),
+				transparent 28%
+			),
+			radial-gradient(
+				circle at 86% 76%,
+				rgb(var(--color-candle-gold-rgb) / 12%),
+				transparent 34%
+			);
+	}
+
+	&::after {
+		inset-inline: clamp(1rem, 5vw, 4rem);
+		top: clamp(1rem, 3vw, 1.8rem);
+		height: 1px;
+		background: var(--rose-gold-divider);
+		opacity: 72%;
+	}
+
+	.gifts-section__container {
+		position: relative;
+		z-index: 1;
+		max-width: 940px;
+	}
+
+	.gifts-section__header {
+		margin-bottom: clamp(2.4rem, 5vw, 3.4rem);
+	}
+
+	.gifts-section__title {
+		margin-bottom: clamp(0.9rem, 2vw, 1.2rem);
+		font-size: clamp(2.35rem, 8vw, 4.7rem);
+		font-weight: 400;
+		line-height: 0.98;
+		text-transform: none;
+		color: var(--gifts-title-color);
+	}
+
+	.gifts-section__subtitle {
+		max-width: 35rem;
+		font-size: clamp(0.92rem, 1.6vw, 1.04rem);
+		line-height: 1.7;
+		color: var(--gifts-subtitle-color);
+		opacity: 100%;
+	}
+
+	.gifts-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: clamp(1rem, 2.4vw, 1.4rem);
+		align-items: stretch;
+	}
+
+	.gift-card {
+		padding: clamp(1.45rem, 3vw, 2rem);
+		border: var(--gifts-card-border);
+		border-radius: var(--gifts-card-radius);
+		background: var(--gifts-card-bg);
+		box-shadow: var(--gifts-card-shadow);
+		backdrop-filter: blur(8px) saturate(118%);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 7px;
+			border: 1px solid rgb(var(--color-antique-gold-rgb) / 14%);
+			border-radius: 5px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-4px);
+			border-color: rgb(var(--color-antique-gold-rgb) / 50%);
+			box-shadow:
+				0 28px 62px rgb(var(--color-rose-shadow-rgb) / 16%),
+				inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 90%);
+		}
+	}
+
+	.gift-card__inner {
+		position: relative;
+		z-index: 1;
+		gap: clamp(1rem, 2.5vw, 1.35rem);
+		min-height: 100%;
+	}
+
+	.gift-card__icon {
+		width: 38px;
+		height: 38px;
+		margin-bottom: 0.35rem;
+		color: var(--gifts-icon-color);
+		filter: drop-shadow(0 10px 18px rgb(var(--color-antique-gold-rgb) / 18%));
+		opacity: 88%;
+	}
+
+	.gift-card__title {
+		margin-bottom: 0.15rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.45rem, 3.2vw, 1.9rem);
+		font-weight: 400;
+		line-height: 1.05;
+		color: var(--gifts-card-title-color);
+	}
+
+	.gift-card__description {
+		max-width: 20rem;
+		margin: 0 auto;
+		font-size: clamp(0.95rem, 1.5vw, 1.02rem);
+		line-height: 1.65;
+		color: var(--gifts-subtitle-color);
+		opacity: 100%;
+	}
+
+	.bank-details {
+		width: 100%;
+		padding: clamp(1rem, 2.4vw, 1.25rem);
+		border-width: 1px;
+		border-style: solid;
+		border-color: rgb(var(--color-antique-gold-rgb) / 24%);
+		border-left-width: 2px;
+		border-left-color: rgb(var(--color-antique-gold-rgb) / 48%);
+		border-radius: 6px;
+		background: var(--gifts-bank-bg);
+		box-shadow: inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 74%);
+	}
+
+	.bank-details__item {
+		display: grid;
+		grid-template-columns: minmax(4.25rem, max-content) minmax(0, 1fr);
+		gap: 0.65rem;
+		align-items: baseline;
+		margin-bottom: 0.65rem;
+		font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+		line-height: 1.45;
+		color: var(--gifts-bank-text-color);
+
+		strong {
+			margin: 0;
+			font-family: var(--font-body);
+			font-size: 0.66rem;
+			font-weight: 700;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: var(--gifts-bank-label-color);
+		}
+
+		span {
+			min-width: 0;
+		}
+	}
+
+	.bank-details__clabe-wrapper {
+		align-items: center;
+		margin-top: clamp(0.9rem, 2vw, 1.1rem);
+		padding-top: clamp(0.9rem, 2vw, 1.1rem);
+		border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 22%);
+	}
+
+	.bank-details__clabe-wrapper .bank-details__item {
+		flex: 1 1 16rem;
+		margin-bottom: 0;
+	}
+
+	.clabe-number {
+		display: inline-block;
+		max-width: 100%;
+		padding: 0.45rem 0.6rem;
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+		border-radius: 5px;
+		background: var(--gifts-account-bg);
+		color: var(--gifts-account-color);
+		font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+		line-height: 1.35;
+		letter-spacing: 0.08em;
+		overflow-wrap: anywhere;
+	}
+
+	.copy-button,
+	.gift-card__button {
+		border-radius: var(--gifts-button-border-radius);
+		font-family: var(--font-body);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.copy-button {
+		padding: 0.62rem 1rem;
+		background: rgb(var(--color-warm-ivory-rgb) / 62%);
+		color: var(--gifts-copy-color);
+
+		&:hover {
+			background: var(--gifts-button-hover-bg);
+			color: var(--gifts-button-hover-color);
+			border-color: var(--color-velvet-burgundy);
+		}
+
+		&--success {
+			background: var(--color-velvet-burgundy);
+			border-color: var(--color-velvet-burgundy);
+			color: var(--color-warm-ivory);
+			fill: var(--color-warm-ivory);
+		}
+	}
+
+	@include mixins.respond-below(md) {
+		.gifts-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (width <= 420px) {
+		.gift-card {
+			padding: 1.25rem;
+		}
+
+		.bank-details__item {
+			grid-template-columns: 1fr;
+			gap: 0.25rem;
+		}
+
+		.bank-details__clabe-wrapper {
+			justify-content: stretch;
+		}
+
+		.copy-button {
+			width: 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gift-card,
+		.copy-button,
+		.gift-card__button {
+			transition:
+				border-color 0.2s ease,
+				box-shadow 0.2s ease,
+				background-color 0.2s ease,
+				color 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}

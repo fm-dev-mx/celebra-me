@@ -1,0 +1,228 @@
+@use '../../../global/mixins' as mixins;
+
+.countdown-section[data-variant='enchanted-rose'] {
+	--countdown-grid-columns-mobile: 2;
+	--countdown-grid-columns-tablet: 4;
+	--countdown-segment-padding-mobile: clamp(1.1rem, 4.2vw, 1.55rem) 0.75rem;
+	--countdown-segment-padding-desktop: clamp(1.35rem, 2.8vw, 2rem) clamp(1rem, 2vw, 1.35rem);
+	--countdown-value-wrapper-width-mobile: 100%;
+	--countdown-value-wrapper-width-desktop: 100%;
+	--countdown-value-wrapper-height-mobile: auto;
+	--countdown-value-wrapper-height-desktop: auto;
+
+	min-height: min(56rem, 84svh);
+	padding: clamp(5.1rem, 10vw, 8rem) clamp(1rem, 4vw, 2rem);
+	background:
+		linear-gradient(180deg, rgb(var(--color-warm-ivory-rgb) / 8%) 0%, transparent 14%),
+		var(--enchanted-section-dark-bg, var(--rose-velvet-wash));
+	color: var(--color-text-on-dark);
+	box-shadow:
+		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 18%),
+		inset 0 -1px 0 rgb(var(--color-antique-gold-rgb) / 14%);
+
+	&::before,
+	&::after {
+		content: '';
+		position: absolute;
+		pointer-events: none;
+	}
+
+	&::before {
+		inset: 0;
+		background:
+			radial-gradient(
+				circle at 50% 32%,
+				rgb(var(--color-candle-gold-rgb) / 16%) 0%,
+				transparent 34%
+			),
+			linear-gradient(180deg, transparent 72%, rgb(var(--color-warm-ivory-rgb) / 7%) 100%);
+	}
+
+	&::after {
+		inset-inline: clamp(1rem, 5vw, 4rem);
+		top: clamp(1rem, 3vw, 2rem);
+		bottom: clamp(1rem, 3vw, 2rem);
+		border-block: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
+	}
+
+	.countdown-texture {
+		background:
+			linear-gradient(
+				115deg,
+				transparent 0%,
+				rgb(var(--color-warm-ivory-rgb) / 5%) 50%,
+				transparent 58%
+			),
+			radial-gradient(
+				circle at 28% 18%,
+				rgb(var(--color-candle-gold-rgb) / 12%),
+				transparent 24%
+			);
+		opacity: 80%;
+	}
+
+	.countdown-container {
+		max-width: 840px;
+	}
+
+	.countdown-header {
+		margin-bottom: clamp(2rem, 5vw, 3rem);
+	}
+
+	.countdown-title {
+		max-width: 15ch;
+		margin-inline: auto;
+		margin-bottom: clamp(1.25rem, 3vw, 1.8rem);
+		font-family: var(--font-display);
+		font-size: clamp(2.05rem, 8.2vw, 4.5rem);
+		font-weight: 400;
+		line-height: 0.95;
+		letter-spacing: 0.02em;
+		text-transform: none;
+		color: rgb(var(--color-warm-ivory-rgb) / 94%);
+		text-shadow: 0 18px 38px rgb(var(--color-rose-shadow-rgb) / 48%);
+	}
+
+	.countdown-subtitle {
+		gap: clamp(0.75rem, 2.4vw, 1.25rem);
+
+		.subtitle-line {
+			display: block;
+			width: clamp(2.4rem, 12vw, 5rem);
+			background: var(--rose-gold-divider);
+			opacity: 72%;
+		}
+
+		.event-date {
+			max-width: min(72vw, 30rem);
+			font-family: var(--font-body);
+			font-size: clamp(0.68rem, 1.5vw, 0.78rem);
+			font-weight: 650;
+			letter-spacing: 0.2em;
+			color: rgb(var(--color-candle-gold-rgb) / 86%);
+		}
+	}
+
+	.countdown-timer-wrapper {
+		margin: clamp(2rem, 5vw, 3.4rem) auto 0;
+	}
+
+	.countdown__timer {
+		gap: clamp(0.65rem, 2vw, 1rem);
+		max-width: 46rem;
+		margin-inline: auto;
+	}
+
+	.countdown__segment {
+		overflow: hidden;
+		padding: var(--countdown-segment-padding-mobile);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
+		border-radius: 8px;
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-warm-ivory-rgb) / 9%),
+				rgb(var(--color-velvet-burgundy-rgb) / 28%)
+			),
+			rgb(var(--color-rose-shadow-rgb) / 32%);
+		box-shadow:
+			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 14%),
+			0 18px 40px rgb(var(--color-rose-shadow-rgb) / 34%),
+			0 0 26px rgb(var(--color-candle-gold-rgb) / 7%);
+		backdrop-filter: blur(10px) saturate(128%);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 5px;
+			border: 1px solid rgb(var(--color-antique-gold-rgb) / 14%);
+			border-radius: 5px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-4px);
+			border-color: rgb(var(--color-candle-gold-rgb) / 54%);
+			box-shadow:
+				inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 16%),
+				0 22px 46px rgb(var(--color-rose-shadow-rgb) / 42%),
+				0 0 30px rgb(var(--color-candle-gold-rgb) / 12%);
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: var(--countdown-segment-padding-desktop);
+		}
+	}
+
+	.countdown__value {
+		position: relative;
+		z-index: 1;
+		font-family: var(--font-display);
+		font-size: var(--countdown-value-size-mobile);
+		font-weight: 400;
+		line-height: 0.9;
+		letter-spacing: 0;
+		color: rgb(var(--color-warm-ivory-rgb) / 96%);
+		text-shadow:
+			0 1px 0 rgb(var(--color-antique-gold-rgb) / 28%),
+			0 10px 24px rgb(var(--color-candle-gold-rgb) / 18%);
+		font-variant-numeric: tabular-nums lining-nums;
+
+		@include mixins.respond-to(sm) {
+			font-size: var(--countdown-value-size-desktop);
+		}
+	}
+
+	.countdown__label {
+		position: relative;
+		z-index: 1;
+		margin-top: 0.45rem;
+		font-family: var(--font-body);
+		font-size: clamp(0.58rem, 1.5vw, 0.68rem);
+		font-weight: 700;
+		letter-spacing: var(--countdown-label-letter-spacing);
+		text-transform: uppercase;
+		color: rgb(var(--color-candle-gold-rgb) / 78%);
+		opacity: 100%;
+		white-space: nowrap;
+		text-wrap: nowrap;
+	}
+
+	.countdown-footer {
+		margin-top: clamp(2rem, 5vw, 3.25rem);
+	}
+
+	.countdown-invitation-text {
+		max-width: 31rem;
+		margin-inline: auto;
+		font-family: var(--font-body);
+		font-size: clamp(0.88rem, 2vw, 1rem);
+		font-style: normal;
+		font-weight: 500;
+		line-height: 1.65;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgb(var(--color-warm-ivory-rgb) / 72%);
+	}
+
+	@media (width <= 420px) {
+		min-height: auto;
+		padding-block: clamp(4.25rem, 14vw, 5.25rem);
+
+		.countdown__timer {
+			gap: 0.55rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.countdown__segment {
+			transition:
+				border-color 0.2s ease,
+				box-shadow 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}

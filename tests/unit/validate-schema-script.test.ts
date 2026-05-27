@@ -14,7 +14,7 @@ describe('validate-schema script', () => {
 		const warningsMatch = stdout.match(/Warnings: (\d+)/);
 		expect(warningsMatch).not.toBeNull();
 		const warningCount = Number(warningsMatch![1]);
-		expect(warningCount).toBeGreaterThanOrEqual(10);
+		expect(warningCount).toBeGreaterThanOrEqual(8);
 		expect(warningCount).toBeLessThan(30);
 
 		expect(stdout).toContain('Expected base-style fallbacks:');

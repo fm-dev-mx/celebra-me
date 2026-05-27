@@ -29,7 +29,9 @@
 	--color-surface-secondary: rgb(239 224 208);
 	--color-surface-secondary-rgb: 239 224 208;
 	--color-surface-soft: rgb(251 244 235);
+	--color-surface-soft-rgb: 251 244 235;
 	--color-surface-elevated: rgb(255 249 239);
+	--color-surface-elevated-rgb: 255 249 239;
 	--color-surface-canvas: var(--color-midnight-navy);
 	--color-surface-canvas-rgb: var(--color-midnight-navy-rgb);
 	--color-surface-dark: var(--color-midnight-navy);
@@ -48,7 +50,9 @@
 	--color-text-on-dark-rgb: var(--color-warm-ivory-rgb);
 	--color-text-on-light: var(--color-velvet-burgundy);
 	--color-border-subtle: rgb(var(--color-antique-gold-rgb) / 24%);
+	--color-border-subtle-rgb: var(--color-antique-gold-rgb);
 	--color-border-premium: rgb(var(--color-antique-gold-rgb) / 46%);
+	--color-border-premium-rgb: var(--color-antique-gold-rgb);
 
 	// ---------------------------------------------------------------------
 	// Typography
@@ -72,7 +76,7 @@
 		0 1px 0 rgb(var(--color-warm-ivory-rgb) / 82%);
 	--shadow-editorial: 0 20px 54px rgb(var(--color-rose-shadow-rgb) / 14%);
 	--border-fine-gold: 1px solid rgb(var(--color-antique-gold-rgb) / 42%);
-	--border-fine-silver: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
+	--border-fine-gold-light: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
 	--border-image: 1px solid rgb(var(--color-antique-gold-rgb) / 46%);
 	--color-frame-bg: linear-gradient(
 		135deg,
@@ -106,6 +110,36 @@
 		rgb(var(--color-blush-pink-rgb) / 18%) 54%,
 		rgb(var(--color-warm-ivory-rgb) / 0%) 100%
 	);
+	--enchanted-section-dark-bg:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+			transparent 42%
+		),
+		radial-gradient(
+			ellipse at 15% 76%,
+			rgb(var(--color-deep-rose-red-rgb) / 20%) 0%,
+			transparent 46%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-midnight-navy) 0%,
+			var(--color-velvet-burgundy) 58%,
+			var(--color-rose-shadow) 100%
+		);
+	--enchanted-section-ivory-bg:
+		radial-gradient(
+			ellipse at 82% 8%,
+			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+			transparent 38%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-warm-ivory) 0%,
+			rgb(var(--color-blush-pink-rgb) / 12%) 52%,
+			rgb(var(--color-antique-gold-rgb) / 10%) 100%
+		);
+	--enchanted-border-soft: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
 
 	// ---------------------------------------------------------------------
 	// Hero section
@@ -261,22 +295,8 @@
 
 	// ---------------------------------------------------------------------
 	// Gifts section
+	// (all --gifts-* tokens are owned by the section variant)
 	// ---------------------------------------------------------------------
-	--gifts-bg: linear-gradient(
-		180deg,
-		var(--color-warm-ivory) 0%,
-		rgb(var(--color-blush-pink-rgb) / 16%) 100%
-	);
-	--gifts-text-color: var(--color-text-primary);
-	--gifts-title-color: var(--color-velvet-burgundy);
-	--gifts-subtitle-color: rgb(var(--color-walnut-brown-rgb) / 72%);
-	--gifts-card-bg: rgb(var(--color-warm-ivory-rgb) / 66%);
-	--gifts-card-border: 1px solid rgb(var(--color-antique-gold-rgb) / 32%);
-	--gifts-card-radius: 8px;
-	--gifts-card-title-color: var(--color-velvet-burgundy);
-	--gifts-icon-color: var(--color-antique-gold);
-	--gifts-account-bg: rgb(var(--color-velvet-burgundy-rgb) / 6%);
-	--gifts-account-color: var(--color-velvet-burgundy);
 
 	// ---------------------------------------------------------------------
 	// Thank-you section
