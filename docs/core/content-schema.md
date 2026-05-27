@@ -68,3 +68,31 @@ Defines the minimum height of the interlude section.
   - `"screen"`: 100svh (fills the viewport)
   - `"tall"`: 80svh
 - **Default**: `"screen"`
+
+## Section Order
+
+The optional `sectionOrder` field controls the render order of invitation sections. It is defined in
+`shared.schema.ts` via `INVITATION_RENDER_SECTION_KEYS` (exported from `theme-contract.ts`).
+
+```jsonc
+// Example custom section order (all keys optional; `personalizedAccess` must be explicit)
+"sectionOrder": ["quote", "location", "countdown", "family", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"]
+```
+
+### Rules
+
+- **Optional**. If omitted, `DEFAULT_SECTION_ORDER` (defined in `page-data.ts`) is used and
+  `PersonalizedAccess` is placed automatically before `rsvp` (or after `quote` if no guest context
+  exists).
+- When present, the renderer follows the array verbatim — `personalizedAccess` must be explicitly
+  listed to appear.
+- Interludes are appended after their `afterSection` parent regardless of the section's position in
+  the order.
+- Only listed sections are rendered. Unlisted sections with data are silently skipped.
+
+### When to use explicit ordering
+
+- A demo needs a specific section progression (e.g., countdown → itinerary before gallery).
+- The conversion path (Gifts → PersonalizedAccess → RSVP → ThankYou) must be contiguous without
+  interludes.
+- The default order does not match the event narrative.
