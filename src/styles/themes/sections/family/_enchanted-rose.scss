@@ -1,0 +1,61 @@
+.family[data-variant='enchanted-rose'] {
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			circle at 50% 0%,
+			rgb(var(--color-blush-pink-rgb) / 22%) 0%,
+			transparent 38%
+		);
+	}
+
+	.family__header-divider {
+		background: var(--rose-gold-divider);
+		opacity: 74%;
+	}
+
+	.family__panel {
+		border-color: rgb(var(--color-antique-gold-rgb) / 30%);
+		box-shadow:
+			0 24px 64px rgb(var(--color-rose-shadow-rgb) / 12%),
+			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 82%);
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			pointer-events: none;
+			border: 1px solid rgb(var(--color-antique-gold-rgb) / 36%);
+			border-radius: calc(var(--family-panel-radius, 18px) - 2px);
+		}
+	}
+
+	.family__content-overlay::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			circle at 72% 12%,
+			rgb(var(--color-candle-gold-rgb) / 20%) 0%,
+			transparent 34%
+		);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.family__media-frame {
+		border-color: rgb(var(--color-antique-gold-rgb) / 36%);
+		box-shadow: 0 18px 48px rgb(var(--color-rose-shadow-rgb) / 14%);
+	}
+
+	.family__group-title {
+		color: var(--color-antique-gold);
+	}
+
+	.family__group + .family__group::before {
+		background: var(--rose-gold-divider);
+		opacity: 48%;
+	}
+}
