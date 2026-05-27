@@ -34,6 +34,7 @@ export interface HeroViewModel {
 	focalPointMobile?: string;
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
+	scrollLabel?: string;
 }
 
 export interface Coordinate {

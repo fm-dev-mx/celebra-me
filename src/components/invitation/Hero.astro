@@ -19,6 +19,7 @@ interface Props {
 	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
 	guestName?: string;
+	scrollLabel?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -37,6 +38,7 @@ const {
 	backgroundImageDesktop,
 	portrait,
 	variant,
+	scrollLabel,
 	focalPoint,
 	focalPointMobile,
 	focalPointTablet,
@@ -139,7 +141,7 @@ const surnames = names.slice(2);
 	</div>
 
 	<div class="invitation-hero__scroll-indicator">
-		<span class="invitation-hero__scroll-text">Desliza</span>
+		<span class="invitation-hero__scroll-text">{scrollLabel || 'Desliza'}</span>
 		<div class="invitation-hero__scroll-chevron">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<path d="m6 9 6 6 6-6"/>

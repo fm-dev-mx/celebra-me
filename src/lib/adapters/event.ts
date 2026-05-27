@@ -165,6 +165,12 @@ function sectionVariant(
 
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
+	const preset = pickVariant(
+		'hero.variant',
+		data.hero.variant ?? normalizedPreset,
+		THEME_PRESETS,
+		normalizedPreset,
+	);
 	return {
 		name: data.hero.name,
 		secondaryName: data.hero.secondaryName,
@@ -177,16 +183,12 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
 			: undefined,
 		portrait: resolveAsset(eventSlug, data.hero.portrait, data.title),
-		variant: pickVariant(
-			'hero.variant',
-			data.hero.variant ?? normalizedPreset,
-			THEME_PRESETS,
-			normalizedPreset,
-		),
+		variant: preset,
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
+		scrollLabel: preset === 'enchanted-rose' ? 'Continúa' : undefined,
 	};
 }
 
