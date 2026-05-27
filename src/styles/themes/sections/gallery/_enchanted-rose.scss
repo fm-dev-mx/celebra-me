@@ -1,92 +1,106 @@
 @use '../../../global/mixins' as mixins;
 
+// -----------------------------------------------------------------------------
+// Enchanted Rose — Gallery Salon Wall
+// Visual metaphor: a curated royal portrait salon inside an enchanted castle.
+// Dark velvet wall, gold-framed portraits with warm-ivory mats, candlelit
+// spotlights, and museum-style caption labels.
+// -----------------------------------------------------------------------------
+
 .gallery-section[data-variant='enchanted-rose'] {
 	position: relative;
-	padding-block: clamp(6rem, 10vw, 10rem);
+
+	--gallery-section-bg: var(--enchanted-section-dark-bg);
+
+	padding-block: clamp(3rem, 5vw, 5rem);
+	padding-block-end: max(clamp(3rem, 5vw, 5rem), 6rem);
 	background: var(--gallery-section-bg);
 
-	--gallery-container-max-width: 1180px;
-	--gallery-grid-columns-tablet: 6;
-	--gallery-grid-columns-desktop: 12;
-	--gallery-grid-column-gap: clamp(0.55rem, 1vw, 0.85rem);
-	--gallery-grid-row-gap: clamp(0.55rem, 1vw, 0.85rem);
+	// -------------------------------------------------------------------------
+	// Override tokens
+	// -------------------------------------------------------------------------
+	--gallery-container-max-width: 1280px;
+	--gallery-grid-columns-tablet: 2;
+	--gallery-grid-columns-desktop: 4;
+	--gallery-grid-column-gap: clamp(1rem, 1.5vw, 2rem);
+	--gallery-grid-row-gap: clamp(1.5rem, 2.5vw, 3rem);
 	--gallery-item-aspect-ratio: 3 / 4;
-	--gallery-item-aspect-ratio-feature: 2 / 3;
-	--gallery-item-aspect-ratio-wide: 16 / 11;
 	--gallery-item-aspect-ratio-standard: 4 / 5;
-	--gallery-item-radius: var(--gallery-card-radius);
-	--gallery-item-padding: var(--gallery-card-padding);
-	--gallery-item-bg: var(--gallery-card-bg);
-	--gallery-item-border-color: rgb(var(--color-antique-gold-rgb) / 42%);
-	--gallery-item-shadow:
-		0 20px 46px rgb(var(--color-rose-shadow-rgb) / 16%),
-		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 80%);
-	--gallery-item-hover-shadow:
-		0 28px 64px rgb(var(--color-rose-shadow-rgb) / 22%),
-		0 0 22px rgb(var(--color-candle-gold-rgb) / 12%);
-	--gallery-item-image-radius: var(--gallery-image-radius);
-	--gallery-item-image-filter-rest: saturate(0.96) contrast(1.03) brightness(0.88) sepia(0.06);
-	--gallery-item-image-filter-in-view: saturate(1.03) contrast(1.04) brightness(0.94) sepia(0.04);
-	--gallery-item-image-filter-hover: saturate(1.08) contrast(1.05) brightness(0.98) sepia(0.03);
-	--gallery-item-image-scale-hover: 1.018;
-	--gallery-overlay-bg: linear-gradient(
-		to top,
-		rgb(var(--color-rose-shadow-rgb) / 78%) 0%,
-		rgb(var(--color-velvet-burgundy-rgb) / 34%) 48%,
-		transparent 100%
-	);
-	--gallery-overlay-padding: clamp(0.8rem, 1.8vw, 1.25rem);
-	--gallery-overlay-opacity: 0.58;
-	--gallery-overlay-emphasis-opacity: 0.86;
-	--gallery-overlay-hover-opacity: 0.92;
-	--gallery-lightbox-bg: rgb(var(--color-rose-shadow-rgb) / 88%);
-	--gallery-lightbox-close-color: rgb(var(--color-warm-ivory-rgb) / 92%);
-	--gallery-lightbox-image-border: 1px solid rgb(var(--color-antique-gold-rgb) / 52%);
-	--gallery-lightbox-image-radius: 6px;
-	--gallery-lightbox-footer-color: rgb(var(--color-warm-ivory-rgb) / 88%);
+	--gallery-item-radius: 0;
+	--gallery-item-padding: clamp(0.4rem, 0.8vw, 0.7rem);
+	--gallery-item-focus-outline: 2px solid rgb(var(--color-candle-gold-rgb) / 70%);
+	--gallery-item-focus-outline-offset: 4px;
+	--gallery-item-image-filter-rest: saturate(0.94) contrast(1.08) brightness(0.88) sepia(0.08);
+	--gallery-item-image-filter-in-view: saturate(1.02) contrast(1.06) brightness(0.93) sepia(0.05);
+	--gallery-item-image-filter-hover: saturate(1.08) contrast(1.08) brightness(0.98) sepia(0.02);
+	--gallery-item-image-scale-rest: 1;
+	--gallery-item-image-scale-in-view: 1;
+	--gallery-item-image-scale-hover: 1.02;
+	--gallery-overlay-opacity: 0.78;
+	--gallery-overlay-emphasis-opacity: 0.94;
+	--gallery-overlay-hover-opacity: 0.97;
+	--gallery-lightbox-bg: rgb(var(--color-rose-shadow-rgb) / 92%);
+	--gallery-lightbox-image-border: 3px solid rgb(var(--color-antique-gold-rgb) / 58%);
+	--gallery-lightbox-image-radius: 0;
+	--gallery-lightbox-footer-color: rgb(var(--color-warm-ivory-rgb) / 86%);
 	--gallery-lightbox-footer-size: clamp(0.82rem, 1.4vw, 1rem);
+	--gallery-item-transition-duration: 500ms;
+	--gallery-item-transition-ease: var(--ease-premium);
 
+	// -------------------------------------------------------------------------
+	// Section atmosphere layers
+	// -------------------------------------------------------------------------
+
+	// Gold divider at top & ambient glow
 	&::before,
 	&::after {
 		content: '';
 		position: absolute;
 		pointer-events: none;
+		z-index: 0;
 	}
 
 	&::before {
-		inset: 0;
-		background:
-			radial-gradient(
-				circle at 78% 12%,
-				rgb(var(--color-candle-gold-rgb) / 18%),
-				transparent 30%
-			),
-			radial-gradient(
-				circle at 12% 80%,
-				rgb(var(--color-deep-rose-red-rgb) / 10%),
-				transparent 34%
-			);
-		opacity: 78%;
-	}
-
-	&::after {
 		inset-inline: clamp(1rem, 5vw, 4rem);
 		top: clamp(1rem, 2vw, 1.5rem);
 		height: 1px;
 		background: var(--rose-gold-divider);
 	}
 
+	&::after {
+		inset: 0;
+		background:
+			radial-gradient(
+				ellipse 65% 35% at 50% 15%,
+				rgb(var(--color-candle-gold-rgb) / 11%),
+				transparent 65%
+			),
+			radial-gradient(
+				ellipse 40% 18% at 50% 88%,
+				rgb(var(--color-candle-gold-rgb) / 6%),
+				transparent 52%
+			);
+		opacity: 90%;
+	}
+
+	// -------------------------------------------------------------------------
+	// Container
+	// -------------------------------------------------------------------------
 	.gallery-section__container {
 		isolation: isolate;
 	}
 
+	// -------------------------------------------------------------------------
+	// Header
+	// -------------------------------------------------------------------------
 	.gallery-section__header {
 		display: grid;
 		gap: clamp(0.55rem, 1.2vw, 0.9rem);
 		max-width: 42rem;
 		margin-inline: auto;
-		margin-bottom: clamp(2.7rem, 6vw, 5rem);
+		margin-bottom: clamp(1.5rem, 3vw, 3rem);
 		padding-inline: clamp(0.4rem, 2vw, 1rem);
+		text-align: center;
 	}
 
 	.gallery-section__header::after {
@@ -100,80 +114,181 @@
 
 	.gallery-section__title {
 		font-family: var(--gallery-title-font);
-		font-size: clamp(2.65rem, 10vw, 5.8rem);
+		font-size: clamp(1.8rem, 5vw, 3.2rem);
 		font-weight: 400;
-		line-height: 0.94;
+		line-height: 1.02;
 		letter-spacing: 0.035em;
 		color: var(--gallery-title-color);
+		text-shadow: 0 2px 30px rgb(var(--color-candle-gold-rgb) / 18%);
 		text-wrap: balance;
 	}
 
 	.gallery-section__subtitle {
 		max-width: 31rem;
+		margin-inline: auto;
 		font-family: var(--font-body);
 		font-size: clamp(0.76rem, 1.35vw, 0.92rem);
 		font-weight: 600;
 		line-height: 1.65;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
-		color: var(--gallery-subtitle-color);
+		color: rgb(var(--color-warm-ivory-rgb) / 80%);
 	}
 
+	// -------------------------------------------------------------------------
+	// Grid — Salon wall layout
+	// -------------------------------------------------------------------------
 	.gallery-grid {
 		align-items: start;
-		grid-auto-flow: dense;
-
-		--gallery-editorial-overlap: clamp(3rem, 6vw, 6rem);
+		align-content: start;
 	}
 
+	// -------------------------------------------------------------------------
+	// Item — Framed portrait
+	// -------------------------------------------------------------------------
 	.gallery-grid__item {
+		position: relative;
+		overflow: visible;
 		cursor: zoom-in;
-		outline-offset: 5px;
+		outline-offset: 4px;
+
+		// Antique gilded portrait frame — layered depth system
+		border: clamp(3px, 0.6vw, 5px) solid rgb(var(--color-antique-gold-rgb) / 75%);
+		padding: clamp(0.4rem, 0.8vw, 0.7rem);
+		background: linear-gradient(
+			135deg,
+			rgb(var(--color-walnut-brown-rgb) / 88%) 0%,
+			rgb(var(--color-velvet-burgundy-rgb) / 90%) 48%,
+			rgb(var(--color-rose-shadow-rgb) / 92%) 100%
+		);
+
+		// 5-layer depth: gold inner bevel + dark inset + ambient + top cast + bottom cast
+		box-shadow:
+			inset 0 0 0 1px rgb(var(--color-antique-gold-rgb) / 22%),
+			inset 0 2px 6px -2px rgb(var(--color-rose-shadow-rgb) / 55%),
+			inset 0 0 22px -4px rgb(var(--color-rose-shadow-rgb) / 35%),
+			0 3px 8px -3px rgb(var(--color-rose-shadow-rgb) / 40%),
+			0 14px 40px -8px rgb(var(--color-rose-shadow-rgb) / 38%);
 		transition:
-			transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
-			border-color var(--gallery-item-transition-duration) ease,
-			box-shadow var(--gallery-item-transition-duration) ease;
+			box-shadow var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+			border-color var(--gallery-item-transition-duration) ease;
 	}
 
-	.gallery-grid__item::before,
-	.gallery-grid__item::after {
+	// Image inside the mat
+	.gallery-grid__item img {
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: cover;
+		object-position: var(--gallery-item-image-position, center);
+		border-radius: 0;
+
+		// Subtle gold inner rabbet line — hairline, not dominant
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+	}
+
+	// Candlelit spotlight (visible on scroll-intersection and hover)
+	.gallery-grid__item::before {
 		content: '';
 		position: absolute;
 		inset: var(--gallery-item-padding);
 		z-index: 1;
-		border-radius: var(--gallery-item-image-radius);
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+			transparent 50%
+		);
 		pointer-events: none;
+		opacity: 0%;
+		transition: opacity 0.6s ease;
 	}
 
-	.gallery-grid__item::before {
-		box-shadow:
-			inset 0 0 0 1px rgb(var(--color-warm-ivory-rgb) / 42%),
-			inset 0 14px 34px rgb(var(--color-candle-gold-rgb) / 10%);
+	.gallery-grid__item[data-in-view='true']::before {
+		opacity: 100%;
 	}
 
-	.gallery-grid__item::after {
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 30%);
-	}
-
+	// -------------------------------------------------------------------------
+	// Caption overlay — museum label bar at bottom of image
+	// -------------------------------------------------------------------------
 	.gallery-grid__overlay {
+		position: absolute;
+		inset-inline: clamp(0.55rem, 1.2vw, 1rem);
+		bottom: clamp(0.55rem, 1.2vw, 1rem);
+		width: auto;
 		z-index: 2;
+		padding: clamp(0.4rem, 0.7vw, 0.6rem) clamp(0.55rem, 1vw, 0.8rem);
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-velvet-burgundy-rgb) / 88%),
+			rgb(var(--color-rose-shadow-rgb) / 84%)
+		);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 38%);
+		box-shadow:
+			inset 0 0 0 1px rgb(var(--color-antique-gold-rgb) / 14%),
+			0 4px 12px -2px rgb(var(--color-rose-shadow-rgb) / 28%);
+		pointer-events: none;
+		opacity: var(--gallery-overlay-opacity);
+		transition: opacity 0.4s ease;
+	}
+
+	.gallery-grid__item[data-in-view='true'] .gallery-grid__overlay {
+		opacity: var(--gallery-overlay-emphasis-opacity);
 	}
 
 	.gallery-grid__caption {
-		max-width: 100%;
 		font-family: var(--gallery-caption-font);
 		font-size: var(--gallery-caption-size);
-		font-weight: 600;
+		font-weight: 500;
 		line-height: 1.35;
-		letter-spacing: var(--gallery-caption-letter-spacing);
-		text-transform: uppercase;
-		color: var(--gallery-caption-color);
-		text-shadow: 0 1px 14px rgb(var(--color-rose-shadow-rgb) / 70%);
+		letter-spacing: 0.05em;
+		text-transform: none;
+		color: rgb(var(--color-warm-ivory-rgb) / 92%);
+		text-shadow:
+			0 1px 3px rgb(var(--color-rose-shadow-rgb) / 50%),
+			0 0 8px rgb(var(--color-candle-gold-rgb) / 18%);
+		margin: 0;
 	}
 
+	// Guard against base state overrides — frame and shadow stay premium
+	.gallery-grid__item[data-in-view='true'],
+	.gallery-grid__item:focus-visible {
+		border-color: rgb(var(--color-antique-gold-rgb) / 66%);
+		box-shadow:
+			inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 22%),
+			0 2px 4px -2px rgb(var(--color-rose-shadow-rgb) / 32%),
+			0 8px 24px -8px rgb(var(--color-rose-shadow-rgb) / 30%),
+			0 24px 64px rgb(var(--color-rose-shadow-rgb) / 36%);
+	}
+
+	// -------------------------------------------------------------------------
+	// Interactive states (hover-capable devices only)
+	// -------------------------------------------------------------------------
+	@media (hover: hover) and (pointer: fine) {
+		.gallery-grid__item:hover {
+			border-color: rgb(var(--color-candle-gold-rgb) / 76%);
+			box-shadow:
+				inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 30%),
+				0 2px 4px -2px rgb(var(--color-rose-shadow-rgb) / 38%),
+				0 8px 24px -8px rgb(var(--color-rose-shadow-rgb) / 34%),
+				0 28px 72px rgb(var(--color-rose-shadow-rgb) / 40%),
+				0 0 32px rgb(var(--color-candle-gold-rgb) / 14%);
+		}
+
+		.gallery-grid__item:hover::before {
+			opacity: 100%;
+		}
+
+		.gallery-grid__item:hover .gallery-grid__overlay {
+			opacity: var(--gallery-overlay-hover-opacity);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Lightbox — Private viewing chamber
+	// -------------------------------------------------------------------------
 	.gallery-lightbox {
-		backdrop-filter: blur(18px) saturate(130%);
-		transition: opacity 240ms var(--ease-premium);
+		backdrop-filter: blur(24px) saturate(140%);
+		transition: opacity 300ms var(--ease-premium, ease);
 	}
 
 	.gallery-lightbox__close {
@@ -182,25 +297,101 @@
 		width: 2.75rem;
 		height: 2.75rem;
 		padding: 0;
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 42%);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 46%);
 		border-radius: 999px;
-		background: rgb(var(--color-velvet-burgundy-rgb) / 58%);
-		box-shadow: 0 14px 34px rgb(var(--color-rose-shadow-rgb) / 34%);
+		background: rgb(var(--color-rose-shadow-rgb) / 70%);
+		box-shadow:
+			0 14px 34px rgb(var(--color-rose-shadow-rgb) / 34%),
+			0 0 18px rgb(var(--color-candle-gold-rgb) / 10%);
 		backdrop-filter: blur(12px);
+		color: var(--color-warm-ivory);
 	}
 
-	@include mixins.respond-below(md) {
-		padding-block: clamp(4.7rem, 18vw, 6rem);
-
-		.gallery-grid {
-			grid-template-columns: repeat(2, 1fr);
-			gap: clamp(0.75rem, 3vw, 1.25rem);
+	// Intimate content sizing on desktop
+	.gallery-lightbox__content {
+		@include mixins.respond-to(lg) {
+			max-width: 75%;
 		}
 	}
 
+	// Museum-plaque caption
+	.gallery-lightbox__footer {
+		bottom: auto;
+		top: calc(100% + 1rem);
+		padding-inline: 0.5rem;
+
+		&::before {
+			content: '';
+			display: block;
+			width: 3rem;
+			height: 1px;
+			margin: 0 auto 0.75rem;
+			background: rgb(var(--color-antique-gold-rgb) / 42%);
+		}
+
+		p {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: var(--gallery-lightbox-footer-size);
+			color: var(--gallery-lightbox-footer-color);
+			line-height: 1.5;
+			letter-spacing: 0.02em;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Responsive — Mobile
+	// -------------------------------------------------------------------------
+	@include mixins.respond-below(md) {
+		padding-block: clamp(2.5rem, 8vw, 3.5rem);
+
+		.gallery-grid {
+			grid-template-columns: repeat(1, minmax(0, 1fr));
+			gap: clamp(1.5rem, 4vw, 2rem);
+		}
+
+		.gallery-grid__overlay {
+			opacity: var(--gallery-overlay-emphasis-opacity);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Responsive — Tablet
+	// -------------------------------------------------------------------------
 	@include mixins.respond-to(md) {
 		.gallery-grid {
-			grid-template-columns: repeat(12, minmax(0, 1fr));
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: clamp(1.25rem, 2vw, 2rem);
+		}
+
+		.gallery-grid__overlay {
+			opacity: var(--gallery-overlay-emphasis-opacity);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Responsive — Desktop salon wall
+	// -------------------------------------------------------------------------
+	@include mixins.respond-to(lg) {
+		padding-block-end: max(clamp(3rem, 5vw, 5rem), 8rem);
+
+		.gallery-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: clamp(1.5rem, 2.5vw, 3rem) clamp(1.25rem, 2vw, 2rem);
+			align-items: center;
+		}
+
+		// Subtle vertical drift — galleries feel curated, not factory-made
+		.gallery-grid__item:nth-child(3n + 1) {
+			margin-block-start: 0;
+		}
+
+		.gallery-grid__item:nth-child(3n + 2) {
+			margin-block-start: 2rem;
+		}
+
+		.gallery-grid__item:nth-child(3n + 3) {
+			margin-block-start: 4rem;
 		}
 	}
 }
