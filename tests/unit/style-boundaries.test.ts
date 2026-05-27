@@ -201,6 +201,27 @@ describe('Style boundary governance', () => {
 		}
 	});
 
+	it('location enchanted-rose visuals live in a scoped section variant', () => {
+		const sectionsIndex = read('src/styles/themes/sections/_index.scss');
+		const locationIndex = read('src/styles/themes/sections/location/_index.scss');
+		const locationVariant = read('src/styles/themes/sections/location/_enchanted-rose.scss');
+
+		expect(sectionsIndex).toContain("@forward 'location';");
+		expect(locationIndex).toContain("@forward 'enchanted-rose';");
+		expect(locationVariant).toContain(".event-location[data-variant='enchanted-rose']");
+		expect(locationVariant).toContain('--location-er-frame-bg');
+		expect(locationVariant).toContain(':focus-visible');
+	});
+
+	it('location section exposes a real heading and legacy hash alias', () => {
+		const eventLocation = read('src/components/invitation/EventLocation.astro');
+
+		expect(eventLocation).toContain('id="location"');
+		expect(eventLocation).toContain('event-location__intro');
+		expect(eventLocation).toContain('event-location__heading');
+		expect(eventLocation).toContain('Ubicación');
+	});
+
 	it('rsvp theme ownership stays out of the base invitation stylesheet', () => {
 		const rsvpBase = read('src/styles/invitation/_rsvp.scss');
 		const rsvpTheme = getFilesRecursively('src/styles/themes/sections/rsvp', ['.scss'])
