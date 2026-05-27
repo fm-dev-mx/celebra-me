@@ -2,15 +2,16 @@
 // Export all section-specific theme styles
 
 @forward 'base-theme';
-@forward 'hero';
 @forward 'countdown';
 @forward 'family';
-@forward 'gallery';
-@forward 'rsvp';
-@forward 'personalized-access';
-@forward 'thank-you';
 @forward 'footer';
+@forward 'gallery';
 @forward 'gifts';
-@forward 'reveal';
-@forward 'itinerary';
 @forward 'header';
+@forward 'hero';
+@forward 'itinerary';
+@forward 'personalized-access';
+@forward 'quote';
+@forward 'reveal';
+@forward 'rsvp';
+@forward 'thank-you';
