@@ -1,0 +1,127 @@
+@use '../../../global/mixins' as mixins;
+
+.quote-section[data-variant='enchanted-rose'] {
+	--quote-corner-opacity: 30%;
+	--quote-corner-color: rgb(var(--color-antique-gold-rgb) / var(--quote-corner-opacity));
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				circle at 50% 0%,
+				rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+				transparent 38%
+			),
+			radial-gradient(
+				ellipse at 82% 14%,
+				rgb(var(--color-candle-gold-rgb) / 6%) 0%,
+				transparent 32%
+			);
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: clamp(0.75rem, 1vw + 0.25rem, 1.25rem);
+		pointer-events: none;
+		background:
+			linear-gradient(to right, var(--quote-corner-color), var(--quote-corner-color)) 0 0 /
+				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
+			linear-gradient(to bottom, var(--quote-corner-color), var(--quote-corner-color)) 0 0 /
+				1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
+			linear-gradient(to left, var(--quote-corner-color), var(--quote-corner-color)) 100% 0 /
+				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
+			linear-gradient(to bottom, var(--quote-corner-color), var(--quote-corner-color)) 100%
+				0 / 1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
+			linear-gradient(to right, var(--quote-corner-color), var(--quote-corner-color)) 0 100% /
+				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
+			linear-gradient(to top, var(--quote-corner-color), var(--quote-corner-color)) 0 100% /
+				1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
+			linear-gradient(to left, var(--quote-corner-color), var(--quote-corner-color)) 100%
+				100% / clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
+			linear-gradient(to top, var(--quote-corner-color), var(--quote-corner-color)) 100%
+				100% / 1px clamp(1.2rem, 3vw, 2.2rem) no-repeat;
+	}
+
+	.quote-texture {
+		opacity: 12%;
+		background: var(--rose-satin-sheen);
+		background-size: 200% 100%;
+	}
+
+	.quote-container {
+		max-width: 39rem;
+	}
+
+	.quote-content {
+		text-shadow:
+			0 2px 24px rgb(var(--color-rose-shadow-rgb) / 32%),
+			0 0 48px rgb(var(--color-candle-gold-rgb) / 8%);
+	}
+
+	.quote-divider-top,
+	.quote-divider-bottom {
+		color: var(--color-antique-gold);
+		opacity: 56%;
+		width: clamp(9rem, 24vw, 14rem);
+
+		svg {
+			height: clamp(24px, 3vw, 32px);
+		}
+	}
+
+	.quote-author {
+		font-family: var(--font-display);
+		letter-spacing: 0.26em;
+		color: var(--color-candle-gold);
+		opacity: 100%;
+	}
+
+	.quote-ornament {
+		width: clamp(2rem, 6vw, 3.5rem);
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-candle-gold-rgb) / 54%),
+			transparent
+		);
+	}
+
+	.quote-line.is-visible {
+		animation: enchanted-rose-quote-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	@include mixins.respond-below(xs) {
+		.quote-container {
+			padding-inline: 0.25rem;
+		}
+	}
+}
+
+@keyframes enchanted-rose-quote-fade {
+	0% {
+		opacity: 0%;
+		transform: translateY(16px);
+		filter: blur(2px);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.quote-section[data-variant='enchanted-rose'] {
+		.quote-line.is-visible {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+			animation: none;
+		}
+	}
+}
