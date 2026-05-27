@@ -6,7 +6,6 @@ import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
 	caption?: string;
-	focalPoint?: string;
 }
 
 interface Props {
@@ -16,46 +15,43 @@ interface Props {
 
 const { items, variant = 'standard' } = Astro.props;
 
-const getSrc = (image: ImageMetadata | ImageAsset): string => {
-	const src = image.src;
-	return typeof src === 'string' ? src : src.src;
-};
-
-const getImageDimensions = (image: ImageMetadata | ImageAsset): { width: number; height: number } => {
-	if ('width' in image && 'height' in image && typeof image.width === 'number') {
-		return { width: image.width, height: image.height };
-	}
-	const nested = image.src;
-	if (typeof nested !== 'string' && 'width' in nested && 'height' in nested) {
-		return { width: nested.width, height: nested.height };
-	}
-	return { width: 800, height: 1000 };
+const resolveImage = (image: ImageMetadata | ImageAsset) => {
+	const src = typeof image.src === 'string' ? image.src : image.src.src;
+	const meta = 'width' in image ? image : (typeof image.src !== 'string' ? image.src : null);
+	return { src, width: meta?.width ?? 800, height: meta?.height ?? 1000 };
 };
 ---
 
 <div class="gallery-grid" data-gallery data-variant={variant}>
 	{
-		items.map((item, index) => (
+		items.map((item, index) => {
+			const { src, width, height } = resolveImage(item.image);
+			return (
 			<div
 				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
 				data-gallery-item
 				data-gallery-index={index}
-				data-gallery-src={getSrc(item.image)}
+				data-gallery-src={src}
 				data-gallery-caption={item.caption ?? ''}
-				data-focal-point={item.focalPoint}
 				tabindex="0"
 				role="button"
 				aria-label={item.caption || `Ver imagen ${index + 1}`}
 			>
 				<img
-					src={getSrc(item.image)}
-					alt={item.caption || `Galería ${index + 1}`}
-					width={getImageDimensions(item.image).width}
-					height={getImageDimensions(item.image).height}
+					src={src}
+					alt={item.caption || `Imagen ${index + 1}`}
+					width={width}
+					height={height}
 					loading="lazy"
 				/>
+				{item.caption && (
+					<div class="gallery-grid__overlay">
+						<p class="gallery-grid__caption">{item.caption}</p>
+					</div>
+				)}
 			</div>
-		))
+			);
+		})
 	}
 </div>
 
