@@ -7,6 +7,23 @@ function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 }
 
+/** Extract all @forward names from a section _index.scss */
+function getForwardedPartials(sectionDir: string): string[] {
+	const index = read(`${sectionDir}/_index.scss`);
+	const matches = [...index.matchAll(/@forward\s+'([^']+)'/g)];
+	return matches.map((m) => m[1]);
+}
+
+/** List existing variant partials (files matching _<name>.scss, excluding _index) */
+function getExistingPartials(sectionDir: string): string[] {
+	const absoluteDir = path.join(projectRoot, sectionDir);
+	if (!fs.existsSync(absoluteDir)) return [];
+	return fs
+		.readdirSync(absoluteDir)
+		.filter((f) => f.startsWith('_') && f.endsWith('.scss') && f !== '_index.scss')
+		.map((f) => f.replace(/^_|\.scss$/g, ''));
+}
+
 function getFilesRecursively(dir: string, extensions: string[]): string[] {
 	const absoluteDir = path.join(projectRoot, dir);
 	if (!fs.existsSync(absoluteDir)) return [];
@@ -59,9 +76,6 @@ const PA_REQUIRED_VARS = [
 	'--pa-footer-border-top',
 	'--pa-footer-text-color',
 ];
-
-// Family and Personalized Access share the same preset list
-const FAMILY_PRESET_NAMES = PA_PRESET_NAMES;
 
 const FAMILY_REQUIRED_VARS = [
 	'--family-bg',
@@ -258,10 +272,22 @@ describe('Style boundary governance', () => {
 		}
 	});
 
-	it('personalized-access index only forwards base', () => {
-		const index = read('src/styles/themes/sections/personalized-access/_index.scss');
-		expect(index).toContain("@forward 'base'");
-		expect(index).not.toMatch(/@forward\s+'[^b]/);
+	it('personalized-access index only forwards base and current variants', () => {
+		const dir = 'src/styles/themes/sections/personalized-access';
+		const forwarded = getForwardedPartials(dir);
+		const existing = getExistingPartials(dir);
+
+		expect(forwarded).toContain('base');
+
+		// Every forwarded partial must have a matching file
+		for (const name of forwarded) {
+			expect(fs.existsSync(path.join(projectRoot, dir, `_${name}.scss`))).toBe(true);
+		}
+
+		// Every existing partial must be forwarded (no orphans)
+		for (const name of existing) {
+			expect(forwarded).toContain(name);
+		}
 	});
 
 	it('personalized-access base avoids theme-preset selectors', () => {
@@ -285,14 +311,18 @@ describe('Style boundary governance', () => {
 		expect(base).not.toMatch(/@use\s/);
 	});
 
-	it('no legacy personalized-access variant partials remain', () => {
-		for (const name of PA_PRESET_NAMES) {
-			const filePath = path.join(
-				projectRoot,
-				`src/styles/themes/sections/personalized-access/_${name}.scss`,
-			);
-			expect(fs.existsSync(filePath)).toBe(false);
+	it('no orphaned or legacy personalized-access variant partials', () => {
+		const dir = 'src/styles/themes/sections/personalized-access';
+		const forwarded = getForwardedPartials(dir);
+		const existing = getExistingPartials(dir);
+
+		// Every file on disk must be intentionally forwarded
+		for (const name of existing) {
+			expect(forwarded).toContain(name);
 		}
+
+		// No extra files beyond what's forwarded
+		expect(existing.length).toBe(forwarded.length);
 	});
 
 	it('preset files contain --pa-* overrides for all required variables', () => {
@@ -340,13 +370,15 @@ describe('Style boundary governance', () => {
 		expect(familyBase).toContain('box-shadow: var(--family-panel-shadow');
 	});
 
-	it('no legacy family variant partials remain', () => {
-		for (const name of FAMILY_PRESET_NAMES) {
-			const filePath = path.join(
-				projectRoot,
-				`src/styles/themes/sections/family/_${name}.scss`,
-			);
-			expect(fs.existsSync(filePath)).toBe(false);
+	it('no orphaned or legacy family variant partials', () => {
+		const dir = 'src/styles/themes/sections/family';
+		const forwarded = getForwardedPartials(dir);
+		const existing = getExistingPartials(dir);
+
+		for (const name of existing) {
+			expect(forwarded).toContain(name);
 		}
+
+		expect(existing.length).toBe(forwarded.length);
 	});
 });
