@@ -262,23 +262,7 @@
 	// ---------------------------------------------------------------------
 	// Gallery section
 	// ---------------------------------------------------------------------
-	--gallery-section-bg:
-		radial-gradient(
-			ellipse at 50% 0%,
-			rgb(var(--color-candle-gold-rgb) / 6%) 0%,
-			transparent 42%
-		),
-		radial-gradient(
-			ellipse at 15% 76%,
-			rgb(var(--color-deep-rose-red-rgb) / 12%) 0%,
-			transparent 46%
-		),
-		linear-gradient(
-			180deg,
-			var(--color-midnight-navy) 0%,
-			var(--color-velvet-burgundy) 58%,
-			var(--color-rose-shadow) 100%
-		);
+	--gallery-section-bg: var(--enchanted-section-dark-bg);
 	--gallery-title-font: var(--font-display);
 	--gallery-title-color: var(--color-warm-ivory);
 	--gallery-caption-font: var(--font-body);
@@ -290,11 +274,6 @@
 	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.25rem);
 	--countdown-value-size-desktop: clamp(2.9rem, 4.7vw, 4.2rem);
 	--countdown-label-letter-spacing: 0.22em;
-
-	// ---------------------------------------------------------------------
-	// Gifts section
-	// (all --gifts-* tokens are owned by the section variant)
-	// ---------------------------------------------------------------------
 
 	// ---------------------------------------------------------------------
 	// Thank-you section
