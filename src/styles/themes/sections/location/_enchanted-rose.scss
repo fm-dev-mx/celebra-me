@@ -57,9 +57,7 @@
 		transparent 36%,
 		rgb(var(--color-candle-gold-rgb) / 8%) 100%
 	);
-	--location-card-before-z-index: 0;
 	--location-card-after-inset: 0.55rem;
-	--location-card-after-z-index: 0;
 	--location-card-after-bg:
 		linear-gradient(var(--location-er-inner-border), var(--location-er-inner-border)) 0 0 / 36%
 			1px no-repeat,
@@ -178,10 +176,10 @@
 		background:
 			linear-gradient(
 				90deg,
-				rgb(var(--color-rose-shadow-rgb) / 44%) 0%,
+				rgb(var(--color-rose-shadow-rgb) / 34%) 0%,
 				transparent 24%,
 				transparent 76%,
-				rgb(var(--color-rose-shadow-rgb) / 44%) 100%
+				rgb(var(--color-rose-shadow-rgb) / 34%) 100%
 			),
 			radial-gradient(
 				circle at 50% 40%,
