@@ -219,7 +219,7 @@
         }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
         "sealInitials": "I·R",
