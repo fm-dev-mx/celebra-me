@@ -343,6 +343,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 	const items = data.gallery.items.map(
 		(item: { image: string | AssetSource; caption?: string; focalPoint?: string }) => ({
 			...item,
+			key: typeof item.image === 'string' ? item.image : undefined,
 			image: requireAsset(eventSlug, item.image, data.title),
 		}),
 	);

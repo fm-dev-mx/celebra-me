@@ -32,8 +32,9 @@
         "backgroundImage": "hero",
         "portrait": "portrait",
         "focalPoint": "50% 32%",
-        "focalPointMobile": "48% 28%",
-        "focalPointDesktop": "52% 35%"
+        "focalPointMobile": "50% 32%",
+        "focalPointTablet": "50% 24%",
+        "focalPointDesktop": "50% 21%"
     },
     "location": {
         "ceremony": {
@@ -54,7 +55,7 @@
             "date": "20 de noviembre de 2027",
             "time": "8:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
-            "image": "reception"
+            "image": "interlude02"
         },
         "indications": [
             {
@@ -104,14 +105,12 @@
         "items": [
             { "image": "gallery01", "caption": "Una entrada iluminada por candelabros." },
             { "image": "gallery02", "caption": "Rosas rojas como detalle principal." },
-            { "image": "gallery03", "caption": "El brillo antiguo de una noche de gala." },
-            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida." },
-            { "image": "gallery05", "caption": "Una celebración pensada con elegancia." },
             { "image": "gallery06", "caption": "Detalles dorados para recordar." },
-            { "image": "gallery07", "caption": "Momentos que florecen con cariño." },
-            { "image": "gallery08", "caption": "La magia serena de mis XV años." },
-            { "image": "gallery09", "caption": "Familia, gratitud y luz de velas." },
-            { "image": "gallery10", "caption": "Un nuevo capítulo entre rosas." }
+            { "image": "gallery03", "caption": "El brillo antiguo de una noche de gala." },
+            { "image": "gallery08", "caption": "Momentos que florecen con cariño." },
+            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida." },
+            { "image": "gallery10", "caption": "La rosa encantada bajo luz de velas." },
+            { "image": "interlude01", "caption": "Un nuevo capítulo entre rosas." }
         ]
     },
     "gifts": {
@@ -213,7 +212,7 @@
             "afterSection": "gallery",
             "alt": "Mesa de gala con velas, detalles dorados y rosas",
             "height": "screen",
-            "focalPoint": "54% 62%",
+            "focalPoint": "54% 22%",
             "lightX": "68%",
             "lightY": "44%",
             "overlayOpacity": "18%"

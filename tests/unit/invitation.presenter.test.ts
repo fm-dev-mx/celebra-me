@@ -165,6 +165,38 @@ describe('prepareInvitationPageContext', () => {
 		]);
 	});
 
+	it('enchanted rose hero and interlude focal points', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-enchanted-rose',
+			data: fixture,
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const context = prepareInvitationPageContext({
+			eventEntry: event,
+			slug: 'demo-xv-enchanted-rose',
+		});
+
+		expect(context.viewModel.hero.focalPointMobile).toBe('50% 32%');
+		expect(context.viewModel.hero.focalPointTablet).toBe('50% 24%');
+		expect(context.viewModel.hero.focalPointDesktop).toBe('50% 21%');
+		expect(context.viewModel.interludes?.[1]).toMatchObject({
+			focalPoint: '54% 22%',
+		});
+	});
+
+	it('enchanted rose gallery data integrity', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+
+		expect(fixture.location.reception.image).toBe('interlude02');
+		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).not.toEqual(
+			expect.arrayContaining(['gallery08', 'gallery09']),
+		);
+		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).toContain(
+			'interlude01',
+		);
+	});
+
 	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

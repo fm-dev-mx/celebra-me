@@ -385,6 +385,14 @@ describe('Enchanted rose section coverage', () => {
 		path.join(projectRoot, 'src/styles/themes/presets/_enchanted-rose.scss'),
 		'utf8',
 	);
+	const enchantedHeroContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/themes/sections/hero/_enchanted-rose.scss'),
+		'utf8',
+	);
+	const enchantedGalleryContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/themes/sections/gallery/_enchanted-rose.scss'),
+		'utf8',
+	);
 
 	it('styles every intentionally created section with enchanted-rose selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
@@ -407,6 +415,23 @@ describe('Enchanted rose section coverage', () => {
 
 	it('styles family through the base family contract', () => {
 		expectFamilyContract(enchantedContent);
+	});
+
+	it('keeps the hero image on the responsive focal-point contract', () => {
+		expect(enchantedHeroContent).toContain(
+			'object-position: var(--hero-focal-point, var(--hero-focal-point-default, center 32%))',
+		);
+		expect(enchantedHeroContent).not.toContain(
+			'object-position: var(--hero-focal-point-default, center 32%)',
+		);
+	});
+
+	it('protects tall full-body gallery portraits from center-crop face loss', () => {
+		expect(enchantedGalleryContent).toContain(
+			".gallery-grid__item[data-image-key='gallery07']",
+		);
+		expect(enchantedGalleryContent).toContain('--gallery-item-aspect-ratio-portrait-tall');
+		expect(enchantedGalleryContent).toContain('--gallery-item-position-portrait-tall');
 	});
 });
 

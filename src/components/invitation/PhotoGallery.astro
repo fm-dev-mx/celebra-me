@@ -6,6 +6,7 @@ import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
 	caption?: string;
+	key?: string;
 }
 
 interface Props {
@@ -31,6 +32,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
 				data-gallery-item
 				data-gallery-index={index}
+				data-image-key={item.key}
 				data-gallery-src={src}
 				data-gallery-caption={item.caption ?? ''}
 				tabindex="0"

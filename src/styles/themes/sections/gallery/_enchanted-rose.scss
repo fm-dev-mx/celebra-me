@@ -6,7 +6,7 @@
 	--gallery-section-bg: var(--enchanted-section-dark-bg);
 
 	padding-block: clamp(3rem, 5vw, 5rem);
-	padding-block-end: max(clamp(3rem, 5vw, 5rem), 6rem);
+	padding-block-end: max(6rem, 5vw);
 	background: var(--gallery-section-bg);
 
 	--gallery-container-max-width: 1280px;
@@ -23,9 +23,9 @@
 	--gallery-item-image-filter-rest: saturate(0.94) contrast(1.08) brightness(0.88) sepia(0.08);
 	--gallery-item-image-filter-in-view: saturate(1.02) contrast(1.06) brightness(0.93) sepia(0.05);
 	--gallery-item-image-filter-hover: saturate(1.08) contrast(1.08) brightness(0.98) sepia(0.02);
-	--gallery-item-image-scale-rest: 1;
-	--gallery-item-image-scale-in-view: 1;
 	--gallery-item-image-scale-hover: 1.02;
+	--gallery-item-aspect-ratio-portrait-tall: 2 / 3;
+	--gallery-item-position-portrait-tall: 50% 18%;
 	--gallery-overlay-opacity: 0.78;
 	--gallery-overlay-emphasis-opacity: 0.94;
 	--gallery-overlay-hover-opacity: 0.97;
@@ -140,6 +140,14 @@
 		object-position: var(--gallery-item-image-position, center);
 		border-radius: 0;
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+	}
+
+	.gallery-grid__item[data-image-key='gallery07'] {
+		aspect-ratio: var(--gallery-item-aspect-ratio-portrait-tall);
+
+		img {
+			object-position: var(--gallery-item-position-portrait-tall);
+		}
 	}
 
 	.gallery-grid__item::before {
@@ -306,7 +314,7 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		padding-block-end: max(clamp(3rem, 5vw, 5rem), 8rem);
+		padding-block-end: max(8rem, 5vw);
 
 		.gallery-grid {
 			grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -116,7 +116,7 @@
 
 		img {
 			filter: var(--hero-image-filter);
-			object-position: var(--hero-focal-point-default, center 32%);
+			object-position: var(--hero-focal-point, var(--hero-focal-point-default, center 32%));
 		}
 	}
 
