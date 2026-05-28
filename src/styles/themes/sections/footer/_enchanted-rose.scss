@@ -1,6 +1,18 @@
 .invitation-footer[data-variant='enchanted-rose'] {
 	--footer-text-color: rgb(var(--color-warm-ivory-rgb) / 84%);
 
+	position: relative;
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 20%;
+		background: linear-gradient(180deg, transparent 0%, var(--color-rose-shadow) 100%);
+		pointer-events: none;
+		z-index: -1;
+	}
+
 	background:
 		radial-gradient(
 			ellipse at 50% 0%,

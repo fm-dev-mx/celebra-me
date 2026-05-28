@@ -51,11 +51,11 @@
 
 	&::after {
 		inset: auto 0 0;
-		block-size: 30%;
+		block-size: 35%;
 		background:
-			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 30%) 100%),
+			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 35%) 100%),
 			var(--rose-satin-sheen);
-		opacity: 34%;
+		opacity: 40%;
 	}
 }
 
@@ -84,8 +84,6 @@
 	--rsvp-er-candle-glow: rgb(var(--color-candle-gold-rgb) / 22%);
 	--rsvp-er-arch-line: rgb(var(--color-antique-gold-rgb) / 18%);
 	--rsvp-er-focus-ring: rgb(var(--color-candle-gold-rgb) / 38%);
-	--rsvp-emoji-yes: 'Si';
-	--rsvp-emoji-no: 'No';
 	--rsvp-label-color: rgb(var(--color-walnut-brown-rgb) / 78%);
 	--rsvp-label-letter-spacing: 0.15em;
 	--rsvp-field-bg: rgb(var(--color-warm-ivory-rgb) / 86%);
@@ -122,9 +120,9 @@
 	--rsvp-button-border-success: var(--color-candle-gold);
 	--rsvp-button-color-success: var(--color-warm-ivory);
 	--rsvp-card-max-width: 760px;
-	--rsvp-error-text: rgb(126 24 36);
-	--rsvp-error-bg: rgb(126 24 36 / 9%);
-	--rsvp-error-border: rgb(126 24 36 / 22%);
+	--rsvp-error-text: rgb(var(--color-deep-rose-red-rgb) / 100%);
+	--rsvp-error-bg: rgb(var(--color-deep-rose-red-rgb) / 9%);
+	--rsvp-error-border: rgb(var(--color-deep-rose-red-rgb) / 22%);
 
 	background: var(--rsvp-er-frame-bg);
 	border: 1px solid var(--rsvp-er-frame-border);
@@ -177,7 +175,11 @@
 		opacity: 72%;
 	}
 
-	> * {
+	.rsvp__header,
+	.rsvp__form,
+	.rsvp__locked-card,
+	.rsvp__status,
+	.rsvp__demo-footer {
 		position: relative;
 		z-index: 1;
 	}
@@ -285,19 +287,15 @@
 		box-shadow:
 			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 82%),
 			0 8px 18px rgb(var(--color-rose-shadow-rgb) / 7%);
-	}
 
-	input[type='text']:focus,
-	input[type='tel']:focus,
-	input[type='number']:focus,
-	textarea:focus,
-	.rsvp__country-code:focus {
-		background: var(--rsvp-field-bg-focus);
-		border-color: var(--color-deep-rose-red);
-		box-shadow:
-			0 0 0 2px rgb(var(--color-warm-ivory-rgb) / 94%),
-			0 0 0 5px var(--rsvp-er-focus-ring),
-			0 10px 24px rgb(var(--color-rose-shadow-rgb) / 12%);
+		&:focus {
+			background: var(--rsvp-field-bg-focus);
+			border-color: var(--color-deep-rose-red);
+			box-shadow:
+				0 0 0 2px rgb(var(--color-warm-ivory-rgb) / 94%),
+				0 0 0 5px var(--rsvp-er-focus-ring),
+				0 10px 24px rgb(var(--color-rose-shadow-rgb) / 12%);
+		}
 	}
 
 	.rsvp__radio-card {

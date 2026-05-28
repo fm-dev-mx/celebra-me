@@ -1,12 +1,5 @@
 @use '../../../global/mixins' as mixins;
 
-// -----------------------------------------------------------------------------
-// Enchanted Rose — Gallery Salon Wall
-// Visual metaphor: a curated royal portrait salon inside an enchanted castle.
-// Dark velvet wall, gold-framed portraits with warm-ivory mats, candlelit
-// spotlights, and museum-style caption labels.
-// -----------------------------------------------------------------------------
-
 .gallery-section[data-variant='enchanted-rose'] {
 	position: relative;
 
@@ -16,9 +9,6 @@
 	padding-block-end: max(clamp(3rem, 5vw, 5rem), 6rem);
 	background: var(--gallery-section-bg);
 
-	// -------------------------------------------------------------------------
-	// Override tokens
-	// -------------------------------------------------------------------------
 	--gallery-container-max-width: 1280px;
 	--gallery-grid-columns-tablet: 2;
 	--gallery-grid-columns-desktop: 4;
@@ -47,27 +37,11 @@
 	--gallery-item-transition-duration: 500ms;
 	--gallery-item-transition-ease: var(--ease-premium);
 
-	// -------------------------------------------------------------------------
-	// Section atmosphere layers
-	// -------------------------------------------------------------------------
-
-	// Gold divider at top & ambient glow
-	&::before,
 	&::after {
 		content: '';
 		position: absolute;
 		pointer-events: none;
 		z-index: 0;
-	}
-
-	&::before {
-		inset-inline: clamp(1rem, 5vw, 4rem);
-		top: clamp(1rem, 2vw, 1.5rem);
-		height: 1px;
-		background: var(--rose-gold-divider);
-	}
-
-	&::after {
 		inset: 0;
 		background:
 			radial-gradient(
@@ -83,16 +57,10 @@
 		opacity: 90%;
 	}
 
-	// -------------------------------------------------------------------------
-	// Container
-	// -------------------------------------------------------------------------
 	.gallery-section__container {
 		isolation: isolate;
 	}
 
-	// -------------------------------------------------------------------------
-	// Header
-	// -------------------------------------------------------------------------
 	.gallery-section__header {
 		display: grid;
 		gap: clamp(0.55rem, 1.2vw, 0.9rem);
@@ -135,24 +103,16 @@
 		color: rgb(var(--color-warm-ivory-rgb) / 80%);
 	}
 
-	// -------------------------------------------------------------------------
-	// Grid — Salon wall layout
-	// -------------------------------------------------------------------------
 	.gallery-grid {
 		align-items: start;
 		align-content: start;
 	}
 
-	// -------------------------------------------------------------------------
-	// Item — Framed portrait
-	// -------------------------------------------------------------------------
 	.gallery-grid__item {
 		position: relative;
 		overflow: visible;
 		cursor: zoom-in;
 		outline-offset: 4px;
-
-		// Antique gilded portrait frame — layered depth system
 		border: clamp(3px, 0.6vw, 5px) solid rgb(var(--color-antique-gold-rgb) / 75%);
 		padding: clamp(0.4rem, 0.8vw, 0.7rem);
 		background: linear-gradient(
@@ -161,8 +121,6 @@
 			rgb(var(--color-velvet-burgundy-rgb) / 90%) 48%,
 			rgb(var(--color-rose-shadow-rgb) / 92%) 100%
 		);
-
-		// 5-layer depth: gold inner bevel + dark inset + ambient + top cast + bottom cast
 		box-shadow:
 			inset 0 0 0 1px rgb(var(--color-antique-gold-rgb) / 22%),
 			inset 0 2px 6px -2px rgb(var(--color-rose-shadow-rgb) / 55%),
@@ -174,7 +132,6 @@
 			border-color var(--gallery-item-transition-duration) ease;
 	}
 
-	// Image inside the mat
 	.gallery-grid__item img {
 		width: 100%;
 		height: 100%;
@@ -182,12 +139,9 @@
 		object-fit: cover;
 		object-position: var(--gallery-item-image-position, center);
 		border-radius: 0;
-
-		// Subtle gold inner rabbet line — hairline, not dominant
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
 	}
 
-	// Candlelit spotlight (visible on scroll-intersection and hover)
 	.gallery-grid__item::before {
 		content: '';
 		position: absolute;
@@ -207,9 +161,6 @@
 		opacity: 100%;
 	}
 
-	// -------------------------------------------------------------------------
-	// Caption overlay — museum label bar at bottom of image
-	// -------------------------------------------------------------------------
 	.gallery-grid__overlay {
 		position: absolute;
 		inset-inline: clamp(0.55rem, 1.2vw, 1rem);
@@ -249,7 +200,6 @@
 		margin: 0;
 	}
 
-	// Guard against base state overrides — frame and shadow stay premium
 	.gallery-grid__item[data-in-view='true'],
 	.gallery-grid__item:focus-visible {
 		border-color: rgb(var(--color-antique-gold-rgb) / 66%);
@@ -260,9 +210,6 @@
 			0 24px 64px rgb(var(--color-rose-shadow-rgb) / 36%);
 	}
 
-	// -------------------------------------------------------------------------
-	// Interactive states (hover-capable devices only)
-	// -------------------------------------------------------------------------
 	@media (hover: hover) and (pointer: fine) {
 		.gallery-grid__item:hover {
 			border-color: rgb(var(--color-candle-gold-rgb) / 76%);
@@ -283,9 +230,6 @@
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Lightbox — Private viewing chamber
-	// -------------------------------------------------------------------------
 	.gallery-lightbox {
 		backdrop-filter: blur(24px) saturate(140%);
 		transition: opacity 300ms var(--ease-premium, ease);
@@ -307,14 +251,12 @@
 		color: var(--color-warm-ivory);
 	}
 
-	// Intimate content sizing on desktop
 	.gallery-lightbox__content {
 		@include mixins.respond-to(lg) {
 			max-width: 75%;
 		}
 	}
 
-	// Museum-plaque caption
 	.gallery-lightbox__footer {
 		bottom: auto;
 		top: calc(100% + 1rem);
@@ -339,14 +281,11 @@
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Responsive — Mobile
-	// -------------------------------------------------------------------------
 	@include mixins.respond-below(md) {
 		padding-block: clamp(2.5rem, 8vw, 3.5rem);
 
 		.gallery-grid {
-			grid-template-columns: repeat(1, minmax(0, 1fr));
+			grid-template-columns: 1fr;
 			gap: clamp(1.5rem, 4vw, 2rem);
 		}
 
@@ -355,9 +294,6 @@
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Responsive — Tablet
-	// -------------------------------------------------------------------------
 	@include mixins.respond-to(md) {
 		.gallery-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -369,9 +305,6 @@
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Responsive — Desktop salon wall
-	// -------------------------------------------------------------------------
 	@include mixins.respond-to(lg) {
 		padding-block-end: max(clamp(3rem, 5vw, 5rem), 8rem);
 
@@ -381,7 +314,6 @@
 			align-items: center;
 		}
 
-		// Subtle vertical drift — galleries feel curated, not factory-made
 		.gallery-grid__item:nth-child(3n + 1) {
 			margin-block-start: 0;
 		}
@@ -392,6 +324,15 @@
 
 		.gallery-grid__item:nth-child(3n + 3) {
 			margin-block-start: 4rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gallery-grid__item,
+		.gallery-grid__item::before,
+		.gallery-grid__overlay,
+		.gallery-lightbox {
+			transition-duration: 1ms;
 		}
 	}
 }

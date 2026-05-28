@@ -47,9 +47,10 @@
 	&::before {
 		inset: 0;
 		background:
+			linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 18%) 0%, transparent 14%),
 			radial-gradient(
 				circle at 18% 12%,
-				rgb(var(--color-blush-pink-rgb) / 16%),
+				rgb(var(--color-blush-pink-rgb) / 26%),
 				transparent 28%
 			),
 			radial-gradient(
@@ -62,9 +63,9 @@
 	&::after {
 		inset-inline: clamp(1rem, 5vw, 4rem);
 		top: clamp(1rem, 3vw, 1.8rem);
-		height: 1px;
+		height: 2px;
 		background: var(--rose-gold-divider);
-		opacity: 72%;
+		opacity: 92%;
 	}
 
 	.gifts-section__container {
@@ -91,7 +92,6 @@
 		font-size: clamp(0.92rem, 1.6vw, 1.04rem);
 		line-height: 1.7;
 		color: var(--gifts-subtitle-color);
-		opacity: 100%;
 	}
 
 	.gifts-grid {
@@ -157,7 +157,6 @@
 		font-size: clamp(0.95rem, 1.5vw, 1.02rem);
 		line-height: 1.65;
 		color: var(--gifts-subtitle-color);
-		opacity: 100%;
 	}
 
 	.bank-details {

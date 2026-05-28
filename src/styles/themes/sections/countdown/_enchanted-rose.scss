@@ -35,7 +35,7 @@
 				rgb(var(--color-candle-gold-rgb) / 12%) 0%,
 				transparent 34%
 			),
-			linear-gradient(180deg, transparent 72%, rgb(var(--color-warm-ivory-rgb) / 7%) 100%);
+			linear-gradient(180deg, transparent 66%, rgb(var(--color-warm-ivory-rgb) / 10%) 100%);
 	}
 
 	&::after {
@@ -183,7 +183,6 @@
 		letter-spacing: var(--countdown-label-letter-spacing);
 		text-transform: uppercase;
 		color: rgb(var(--color-candle-gold-rgb) / 78%);
-		opacity: 100%;
 		white-space: nowrap;
 	}
 
