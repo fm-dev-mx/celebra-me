@@ -1,3 +1,5 @@
+import { createIntersectionObserver } from '@/utils/animations';
+
 export function initInterludeObserver(): void {
 	const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
 
@@ -66,17 +68,7 @@ export function initInterludeObserver(): void {
 		window.addEventListener('resize', requestParallaxUpdate);
 	}
 
-	const observer = new IntersectionObserver(
-		(entries) => {
-			for (const entry of entries) {
-				if (entry.isIntersecting) {
-					entry.target.classList.add('is-visible');
-					observer.unobserve(entry.target);
-				}
-			}
-		},
-		{ threshold: 0.15 },
-	);
-
-	interludes.forEach((el) => observer.observe(el));
+	createIntersectionObserver('.invitation-interlude', (target) => {
+		target.classList.add('is-visible');
+	});
 }
