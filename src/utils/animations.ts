@@ -1,7 +1,3 @@
-/**
- * Reusable Intersection Observer utility for triggering animations.
- */
-
 interface ObserverOptions {
 	threshold?: number | number[];
 	rootMargin?: string;
@@ -25,7 +21,6 @@ export function createIntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						// Retrieve the callback associated with this specific element
 						const targetCallback = (
 							entry.target as Element & {
 								_revealCallback?: (target: Element) => void;
@@ -47,11 +42,38 @@ export function createIntersectionObserver(
 
 	const elements = document.querySelectorAll(selector);
 	elements.forEach((el) => {
-		// Attach the callback to the element so the shared observer can call the right one
 		(el as Element & { _revealCallback?: (target: Element) => void })._revealCallback =
 			callback;
 		observer!.observe(el);
 	});
 
 	return observer;
+}
+
+export function initSectionReveal(
+	selector: string,
+	callbacks?: { onReveal?: (target: Element) => void },
+	options?: ObserverOptions,
+): void {
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (prefersReducedMotion) {
+		document.querySelectorAll(selector).forEach((el) => {
+			el.classList.add('is-visible', 'has-motion');
+		});
+		return;
+	}
+
+	document.querySelectorAll(selector).forEach((el) => {
+		el.classList.add('has-motion');
+	});
+
+	createIntersectionObserver(
+		`${selector}.has-motion`,
+		(target) => {
+			target.classList.add('is-visible');
+			callbacks?.onReveal?.(target);
+		},
+		options,
+	);
 }
