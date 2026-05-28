@@ -1,10 +1,16 @@
 @use '../../../global/mixins' as mixins;
 
 .gifts-section[data-variant='enchanted-rose'] {
-	--gifts-padding-block: clamp(5.5rem, 10vw, 8rem);
+	--gifts-padding-block: clamp(4.4rem, 8vw, 6.6rem);
 	--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
 	--gifts-bg:
-		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 24%) 0%, transparent 10%),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
+			transparent 10%,
+			transparent 88%,
+			rgb(var(--color-rose-shadow-rgb) / 8%) 100%
+		),
 		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
 		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
 	--gifts-text-color: var(--color-velvet-burgundy);
@@ -199,11 +205,8 @@
 	.bank-details {
 		width: 100%;
 		padding: clamp(1rem, 2.4vw, 1.25rem);
-		border-width: 1px;
-		border-style: solid;
-		border-color: rgb(var(--color-antique-gold-rgb) / 24%);
-		border-left-width: 2px;
-		border-left-color: rgb(var(--color-antique-gold-rgb) / 48%);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+		border-left: 2px solid rgb(var(--color-antique-gold-rgb) / 48%);
 		border-radius: 6px;
 		background: var(--gifts-bank-bg);
 		box-shadow: inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 74%);
