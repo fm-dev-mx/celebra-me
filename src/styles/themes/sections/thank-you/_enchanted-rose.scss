@@ -5,6 +5,7 @@
 	align-items: stretch;
 	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
 	background:
+		linear-gradient(180deg, rgb(var(--color-warm-ivory-rgb) / 92%) 0%, transparent 10%),
 		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 12%) 0%, transparent 14%),
 		radial-gradient(
 			ellipse at 78% 8%,

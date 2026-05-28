@@ -75,7 +75,7 @@
 	}
 
 	.quote-line.is-visible {
-		animation: enchanted-rose-quote-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation: enchanted-rose-quote-fade 1.4s var(--ease-out) forwards;
 	}
 
 	@include mixins.respond-below(xs) {

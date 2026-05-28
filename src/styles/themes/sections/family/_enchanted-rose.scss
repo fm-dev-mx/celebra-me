@@ -1,8 +1,23 @@
 .family[data-variant='enchanted-rose'] {
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 4rem;
+		z-index: 0;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-warm-ivory-rgb) / 92%) 0%,
+			transparent 100%
+		);
+	}
+
 	&::after {
 		content: '';
 		position: absolute;
 		inset: 0;
+		z-index: 0;
 		pointer-events: none;
 		background: radial-gradient(
 			circle at 50% 0%,

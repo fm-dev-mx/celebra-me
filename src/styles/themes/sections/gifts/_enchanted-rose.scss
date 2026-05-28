@@ -4,6 +4,7 @@
 	--gifts-padding-block: clamp(5.5rem, 10vw, 8rem);
 	--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
 	--gifts-bg:
+		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 24%) 0%, transparent 10%),
 		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
 		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
 	--gifts-text-color: var(--color-velvet-burgundy);
@@ -58,6 +59,7 @@
 				rgb(var(--color-candle-gold-rgb) / 12%),
 				transparent 34%
 			);
+		z-index: 0;
 	}
 
 	&::after {
@@ -118,7 +120,6 @@
 		}
 
 		&:hover {
-			transform: translateY(-4px);
 			border-color: rgb(var(--color-antique-gold-rgb) / 50%);
 			box-shadow:
 				0 28px 62px rgb(var(--color-rose-shadow-rgb) / 16%),

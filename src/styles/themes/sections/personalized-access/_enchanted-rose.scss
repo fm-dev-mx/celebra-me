@@ -2,6 +2,18 @@
 	background: var(--enchanted-section-ivory-bg);
 	position: relative;
 
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 1px;
+		width: min(16rem, 60%);
+		margin-inline: auto;
+		background: var(--rose-gold-divider);
+		opacity: 72%;
+		pointer-events: none;
+	}
+
 	&::after {
 		content: '';
 		position: absolute;

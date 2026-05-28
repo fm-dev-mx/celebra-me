@@ -2,6 +2,7 @@
 	isolation: isolate;
 	overflow: hidden;
 	background:
+		linear-gradient(180deg, rgb(var(--color-midnight-navy-rgb) / 48%) 0%, transparent 10%),
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-candle-gold-rgb) / 24%) 0%,
