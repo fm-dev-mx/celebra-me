@@ -11,6 +11,69 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.
 
 <!-- Items for the next release go here -->
 
+## [0.5.0-beta.1] - 2026-05-28
+
+### Added
+
+- Enchanted-rose section variants: location (intro header, map images), rsvp (ornate card layout),
+  gallery (salon wall aesthetic), hero (overlays, ornaments, details panel), header, family, quote,
+  footer, personalized-access, gifts, itinerary, countdown, music-player — full section variant
+  coverage for the enchanted-rose theme
+- `initSectionReveal` animation utility for section reveal animations on scroll
+- Section reveal animations wired into enchanted-rose variants and `ThankYou` component
+- Explicit section ordering via `sectionOrder` field in invitation content schema
+- Configurable scroll label on hero with enchanted-rose variant
+- Corner-brackets SCSS mixin applied to quote section
+- Map images for ceremony and reception locations (enchanted-rose)
+- Venue name prop and focal point data to demo hero
+- Shared `createIntersectionObserver` extracted from interlude observer for cross-component reuse
+- Music-player variant styling for enchanted-rose
+
+### Changed
+
+- Photo gallery crops improved with responsive focal points and gallery overrides for enchanted-rose
+- Photo gallery layout class type system tightened
+- Enchanted-rose gallery redesigned with salon wall aesthetic
+- Ceremony/reception resolution unified in adapter layer; asset helpers simplified
+- Corner-ornaments mixin unified across theme; redundant hero CSS removed
+- Section index sorted forwards alphabetically
+- Enchanted-rose location overlays and aspect ratios simplified
+- Gallery background token simplified
+- Hero engraved style simplified; token inheritance constraint enforced for `hero-label-color`
+- Music-player CSS custom properties replaced with `var()` fallbacks
+- Asset images recompressed (hero, interlude, thank-you portrait, gallery images)
+- Validate-schema script deduplicated and cleaned up
+
+### Fixed
+
+- Countdown glow softened and label text-wrap corrected
+- Unused location card z-index removed and shadow softened
+- RSVP card panel and overlay visuals refined
+
+### Tested
+
+- Schema validation expectations updated for new section variants
+- Variant partial boundary tests generalized
+- Invitation presenter, render-plan, and section-render-data tests added
+- Style-boundary tests expanded
+- Theme-presets tests added
+- Validate-schema script tests updated and deduplicated
+- Header-navigation tests updated
+
+### Validation
+
+| Check      | Result                                                                    |
+| :--------- | :------------------------------------------------------------------------ |
+| Type-check | Passed — 0 errors, 0 warnings, 0 hints                                    |
+| Tests      | 96 suites passed, 1 skipped; 1011 tests passed, 2 skipped                 |
+| Build      | Passed — event parity validated, server + client built, sitemap generated |
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.4.1-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+
 ## [0.4.1-beta.1] - 2026-05-25
 
 ### Fixed
