@@ -48,8 +48,8 @@
 	opacity: 0%;
 	transform: translate3d(0, 24px, 0);
 	transition:
-		opacity 600ms var(--ease-premium),
-		transform 600ms var(--ease-premium);
+		opacity 800ms var(--ease-premium),
+		transform 800ms var(--ease-premium);
 
 	&.is-visible {
 		opacity: 100%;
@@ -85,8 +85,8 @@
 		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0);
 		transition:
 			filter 260ms ease-out,
-			opacity 600ms var(--ease-premium),
-			transform 600ms var(--ease-premium);
+			opacity 800ms var(--ease-premium),
+			transform 800ms var(--ease-premium);
 	}
 
 	// ---- responsive focal adjustments ----

@@ -214,6 +214,11 @@
 	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
+	--family-reveal-duration: 1s;
+	--family-reveal-ease: var(--ease-premium);
+	--family-reveal-initial-filter: blur(2px);
+	--family-reveal-initial-translate-y: 14px;
+	--family-reveal-initial-opacity: 0%;
 	--family-bg:
 		radial-gradient(
 			circle at 50% 0%,

@@ -212,4 +212,31 @@
 			max-width: none;
 		}
 	}
+
+	&.has-motion .itinerary__item {
+		opacity: 0%;
+		transform: translateY(18px);
+		transition:
+			opacity var(--duration-reveal) var(--ease-premium),
+			transform var(--duration-reveal) var(--ease-premium);
+	}
+
+	&.has-motion.is-visible .itinerary__item {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+
+	@for $i from 1 through 10 {
+		&.has-motion.is-visible .itinerary__item:nth-child(#{$i}) {
+			transition-delay: #{$i * 0.12s};
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.itinerary__item {
+			opacity: 100%;
+			transform: none;
+			transition: none;
+		}
+	}
 }

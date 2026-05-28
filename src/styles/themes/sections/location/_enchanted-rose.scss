@@ -289,6 +289,8 @@
 	}
 
 	.event-location__card-flourish {
+		margin: 1rem auto;
+
 		.flourish-line {
 			background: linear-gradient(
 				90deg,
@@ -392,10 +394,72 @@
 		}
 	}
 
+	&.has-motion:not(.is-visible) .event-location__intro {
+		opacity: 0%;
+		transform: translateY(18px);
+	}
+
+	&.has-motion.is-visible .event-location__intro {
+		opacity: 100%;
+		transform: translateY(0);
+		transition:
+			opacity var(--duration-reveal) var(--ease-premium),
+			transform var(--duration-reveal) var(--ease-premium);
+	}
+
+	&.has-motion .event-location__card {
+		animation: none;
+		transition:
+			opacity var(--duration-reveal) var(--ease-premium),
+			transform var(--duration-reveal) var(--ease-premium),
+			box-shadow var(--duration-premium) var(--ease-premium);
+	}
+
+	&.has-motion:not(.is-visible) .event-location__card {
+		opacity: 0%;
+		transform: translateY(18px);
+	}
+
+	&.has-motion.is-visible .event-location__card--ceremony {
+		opacity: 100%;
+		transform: translateY(0);
+		transition-delay: 0.1s;
+	}
+
+	&.has-motion.is-visible .event-location__card--reception {
+		opacity: 100%;
+		transform: translateY(0);
+		transition-delay: 0.2s;
+	}
+
+	&.has-motion .event-location__indications-container {
+		animation: none;
+		opacity: 0%;
+		transform: translateY(18px);
+		transition:
+			opacity var(--duration-reveal) var(--ease-premium),
+			transform var(--duration-reveal) var(--ease-premium);
+	}
+
+	&.has-motion.is-visible .event-location__indications-container {
+		opacity: 100%;
+		transform: translateY(0);
+		transition-delay: 0.3s;
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.event-location__card,
-		.event-location__card-image {
+		.event-location__card-image,
+		.event-location__intro,
+		.event-location__indications-container {
 			transition: none;
+			opacity: 100%;
+			transform: none;
+		}
+
+		.event-location__card--ceremony,
+		.event-location__card--reception {
+			animation: none;
 		}
 	}
 }
