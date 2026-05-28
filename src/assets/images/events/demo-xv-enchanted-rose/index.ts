@@ -15,6 +15,8 @@ import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
 import interlude03 from './interlude-03.webp';
 import interlude04 from './interlude-04.webp';
+import mapCeremony from './map-ceremony.webp';
+import mapReception from './map-reception.webp';
 import portrait from './portrait.webp';
 import reception from './reception.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
@@ -37,6 +39,8 @@ export const assets = {
 	interlude02,
 	interlude03,
 	interlude04,
+	mapCeremony,
+	mapReception,
 	portrait,
 	reception,
 	thankYouPortrait,

@@ -5,6 +5,7 @@ import {
 	type InvitationRenderPlanItem,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
+import { isEventAssetKey } from '@/lib/assets/asset-registry';
 
 function describeRenderPlan(items: InvitationRenderPlanItem[]): string[] {
 	return items.map((item) => (item.type === 'section' ? item.section : item.type));
@@ -188,7 +189,8 @@ describe('prepareInvitationPageContext', () => {
 	it('enchanted rose gallery data integrity', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
 
-		expect(fixture.location.reception.image).toBe('interlude02');
+		expect(isEventAssetKey(fixture.location.ceremony.image)).toBe(true);
+		expect(isEventAssetKey(fixture.location.reception.image)).toBe(true);
 		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).not.toEqual(
 			expect.arrayContaining(['gallery08', 'gallery09']),
 		);

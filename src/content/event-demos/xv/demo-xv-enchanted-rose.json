@@ -45,7 +45,7 @@
             "date": "20 de noviembre de 2027",
             "time": "6:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
-            "image": "ceremony"
+            "image": "mapCeremony"
         },
         "reception": {
             "venueEvent": "Recepción",
@@ -55,7 +55,7 @@
             "date": "20 de noviembre de 2027",
             "time": "8:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
-            "image": "interlude02"
+            "image": "mapReception"
         },
         "indications": [
             {

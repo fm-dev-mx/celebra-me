@@ -33,6 +33,8 @@ export const EVENT_KEYS = [
 	'family',
 	'ceremony',
 	'reception',
+	'mapCeremony',
+	'mapReception',
 	'jardin',
 	'signature',
 	'gallery01',
