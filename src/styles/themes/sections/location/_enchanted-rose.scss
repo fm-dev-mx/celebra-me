@@ -78,25 +78,16 @@
 	--location-outer-frame-padding: clamp(0.55rem, 1.4vw, 0.8rem);
 	--location-outer-frame-bg: var(--location-er-map-surface);
 	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
-	--location-image-aspect-ratio: 4 / 2.85;
-	--location-image-aspect-ratio-sm: 4 / 2.65;
+	--location-image-aspect-ratio: 4 / 3;
 	--location-image-aspect-ratio-xs: 16 / 10;
-	--location-image-filter: saturate(0.92) contrast(1.12) brightness(0.72) sepia(0.08);
-	--location-image-hover-scale: 1.035;
-	--location-container-overlay-before:
-		radial-gradient(
-			circle at 50% 16%,
-			rgb(var(--color-candle-gold-rgb) / 14%),
-			transparent 42%
-		),
-		linear-gradient(180deg, transparent 42%, rgb(var(--color-rose-shadow-rgb) / 28%));
-	--location-container-overlay-after: linear-gradient(
-		90deg,
-		rgb(var(--color-rose-shadow-rgb) / 26%),
-		transparent 28%,
-		transparent 72%,
-		rgb(var(--color-rose-shadow-rgb) / 26%)
+	--location-image-filter: saturate(0.88) contrast(1.06) brightness(0.88) sepia(0.18);
+	--location-image-hover-scale: 1.02;
+	--location-container-overlay-before: radial-gradient(
+		circle at 50% 16%,
+		rgb(var(--color-candle-gold-rgb) / 10%),
+		transparent 50%
 	);
+	--location-container-overlay-after: transparent;
 	--location-content-padding: clamp(1.45rem, 3vw, 2.15rem);
 	--location-title-color: rgb(var(--color-candle-gold-rgb) / 88%);
 	--location-title-font-size: clamp(0.66rem, 1vw, 0.74rem);
