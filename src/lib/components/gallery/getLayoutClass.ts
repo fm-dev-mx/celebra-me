@@ -1,40 +1,31 @@
-export type GalleryVariant =
-	| 'luxury-hacienda'
-	| 'celestial-blue'
-	| 'enchanted-rose'
-	| 'jewelry-box';
-
-// Gallery layout strategies are a local subset of theme variants. Other presets intentionally
-// fall back to the standard grid while still using their preset/section color tokens.
-
 export type LayoutClass =
 	| 'gallery-grid__item--feature'
 	| 'gallery-grid__item--wide'
 	| 'gallery-grid__item--standard';
 
-type LayoutStrategy = (index: number) => LayoutClass;
-
-const strategies: Record<GalleryVariant, LayoutStrategy> = {
-	'luxury-hacienda': (index) => {
+const strategies = {
+	'luxury-hacienda': (index: number): LayoutClass => {
 		if (index === 0) return 'gallery-grid__item--feature';
 		if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
 		return 'gallery-grid__item--standard';
 	},
-	'celestial-blue': (index) => {
+	'celestial-blue': (index: number): LayoutClass => {
 		if (index === 0 || index === 5 || index === 6) return 'gallery-grid__item--feature';
 		if (index === 2 || index === 3 || index === 8 || index === 9)
 			return 'gallery-grid__item--wide';
 		return 'gallery-grid__item--standard';
 	},
-	'enchanted-rose': () => 'gallery-grid__item--standard',
-	'jewelry-box': (index) => {
+	'enchanted-rose': (): LayoutClass => 'gallery-grid__item--standard',
+	'jewelry-box': (index: number): LayoutClass => {
 		if (index % 5 === 0) return 'gallery-grid__item--feature';
 		if (index % 3 === 0) return 'gallery-grid__item--wide';
 		return 'gallery-grid__item--standard';
 	},
 };
 
-export function getLayoutClass(index: number, variant?: string): string {
+export type GalleryVariant = keyof typeof strategies;
+
+export function getLayoutClass(index: number, variant?: string): LayoutClass {
 	const strategy = strategies[variant as GalleryVariant];
 	return strategy ? strategy(index) : 'gallery-grid__item--standard';
 }
