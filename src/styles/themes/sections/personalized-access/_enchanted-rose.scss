@@ -1,5 +1,8 @@
 .personalized-access[data-variant='enchanted-rose'] {
-	background: var(--enchanted-section-ivory-bg);
+	background:
+		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
+		linear-gradient(180deg, transparent 76%, rgb(var(--color-midnight-navy-rgb) / 12%) 100%),
+		var(--enchanted-section-ivory-bg);
 	position: relative;
 
 	&::before {
@@ -58,6 +61,12 @@
 
 		&__title {
 			text-shadow: 0 8px 24px rgb(var(--color-rose-shadow-rgb) / 36%);
+		}
+
+		&__subtitle,
+		&__guest,
+		&__footer p {
+			text-shadow: 0 8px 22px rgb(var(--color-rose-shadow-rgb) / 28%);
 		}
 
 		&__divider::after {

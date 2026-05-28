@@ -518,8 +518,11 @@
 	--pa-count-color: var(--color-candle-gold);
 	--pa-count-frame-inner-display: block;
 	--pa-footer-border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
-	--pa-footer-text-color: rgb(var(--color-warm-ivory-rgb) / 76%);
+	--pa-footer-text-color: rgb(var(--color-warm-ivory-rgb) / 88%);
 	--pa-label-color: rgb(var(--color-candle-gold-rgb) / 86%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
+	--pa-subtitle-color: rgb(var(--color-warm-ivory-rgb) / 82%);
+	--pa-padding-block: clamp(3.4rem, 7vw, 4.8rem);
+	--pa-padding-block-lg: clamp(4rem, 7vw, 6rem);
 }
