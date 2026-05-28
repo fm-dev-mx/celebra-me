@@ -1,4 +1,20 @@
 .personalized-access[data-variant='enchanted-rose'] {
+	background: var(--enchanted-section-ivory-bg);
+	position: relative;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0;
+		height: 30%;
+		background: linear-gradient(
+			180deg,
+			transparent 50%,
+			rgb(var(--color-rose-shadow-rgb) / 7%) 100%
+		);
+		pointer-events: none;
+	}
+
 	.access-card {
 		&::before {
 			border-color: rgb(var(--color-antique-gold-rgb) / 10%);
