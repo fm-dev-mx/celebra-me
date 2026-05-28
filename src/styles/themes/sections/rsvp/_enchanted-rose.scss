@@ -29,33 +29,33 @@
 	}
 
 	&::before {
-		inset: clamp(4.5rem, 10vw, 7rem) max(1rem, calc((100vw - 880px) / 2)) auto;
-		block-size: min(64svh, 42rem);
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 20%);
+		inset: clamp(3.5rem, 8vw, 5rem) max(1rem, calc((100vw - 880px) / 2)) auto;
+		block-size: min(54svh, 34rem);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 16%);
 		border-block-end: 0;
 		border-radius: 999px 999px 0 0;
 		background:
 			linear-gradient(
 				90deg,
 				transparent 0%,
-				rgb(var(--color-candle-gold-rgb) / 9%) 50%,
+				rgb(var(--color-candle-gold-rgb) / 6%) 50%,
 				transparent 100%
 			),
 			radial-gradient(
 				ellipse at 50% 18%,
-				rgb(var(--color-warm-ivory-rgb) / 9%) 0%,
+				rgb(var(--color-warm-ivory-rgb) / 6%) 0%,
 				transparent 58%
 			);
-		opacity: 84%;
+		opacity: 50%;
 	}
 
 	&::after {
 		inset: auto 0 0;
-		block-size: 42%;
+		block-size: 30%;
 		background:
-			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 46%) 100%),
+			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 30%) 100%),
 			var(--rose-satin-sheen);
-		opacity: 42%;
+		opacity: 34%;
 	}
 }
 
@@ -75,9 +75,8 @@
 	--rsvp-er-panel-bg:
 		linear-gradient(
 			135deg,
-			rgb(var(--color-warm-ivory-rgb) / 97%) 0%,
-			rgb(var(--color-blush-pink-rgb) / 20%) 54%,
-			rgb(var(--color-antique-gold-rgb) / 14%) 100%
+			rgb(var(--color-rose-shadow-rgb) / 38%) 0%,
+			rgb(var(--color-warm-ivory-rgb) / 24%) 100%
 		),
 		var(--color-warm-ivory);
 	--rsvp-er-frame-border: rgb(var(--color-antique-gold-rgb) / 48%);
@@ -370,7 +369,7 @@
 		width: 100%;
 		height: 100%;
 		background: var(--rose-satin-sheen);
-		transition: left var(--duration-premium) var(--ease-out, ease-out);
+		transition: left var(--duration-premium) var(--ease-out);
 	}
 
 	.rsvp__button-text,
