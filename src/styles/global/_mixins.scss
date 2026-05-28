@@ -25,6 +25,18 @@
 	}
 }
 
+@mixin corner-brackets($color, $size) {
+	background:
+		linear-gradient(to right, $color, $color) 0 0 / #{$size} 1px no-repeat,
+		linear-gradient(to bottom, $color, $color) 0 0 / 1px #{$size} no-repeat,
+		linear-gradient(to left, $color, $color) 100% 0 / #{$size} 1px no-repeat,
+		linear-gradient(to bottom, $color, $color) 100% 0 / 1px #{$size} no-repeat,
+		linear-gradient(to right, $color, $color) 0 100% / #{$size} 1px no-repeat,
+		linear-gradient(to top, $color, $color) 0 100% / 1px #{$size} no-repeat,
+		linear-gradient(to left, $color, $color) 100% 100% / #{$size} 1px no-repeat,
+		linear-gradient(to top, $color, $color) 100% 100% / 1px #{$size} no-repeat;
+}
+
 @mixin reduced-motion {
 	@media (prefers-reduced-motion: reduce) {
 		@content;

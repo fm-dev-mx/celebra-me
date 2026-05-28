@@ -12,7 +12,7 @@
 		background:
 			radial-gradient(
 				circle at 50% 0%,
-				rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+				rgb(var(--color-candle-gold-rgb) / 14%) 0%,
 				transparent 38%
 			),
 			radial-gradient(
@@ -27,29 +27,13 @@
 		position: absolute;
 		inset: clamp(0.75rem, 1vw + 0.25rem, 1.25rem);
 		pointer-events: none;
-		background:
-			linear-gradient(to right, var(--quote-corner-color), var(--quote-corner-color)) 0 0 /
-				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
-			linear-gradient(to bottom, var(--quote-corner-color), var(--quote-corner-color)) 0 0 /
-				1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
-			linear-gradient(to left, var(--quote-corner-color), var(--quote-corner-color)) 100% 0 /
-				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
-			linear-gradient(to bottom, var(--quote-corner-color), var(--quote-corner-color)) 100%
-				0 / 1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
-			linear-gradient(to right, var(--quote-corner-color), var(--quote-corner-color)) 0 100% /
-				clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
-			linear-gradient(to top, var(--quote-corner-color), var(--quote-corner-color)) 0 100% /
-				1px clamp(1.2rem, 3vw, 2.2rem) no-repeat,
-			linear-gradient(to left, var(--quote-corner-color), var(--quote-corner-color)) 100%
-				100% / clamp(1.2rem, 3vw, 2.2rem) 1px no-repeat,
-			linear-gradient(to top, var(--quote-corner-color), var(--quote-corner-color)) 100%
-				100% / 1px clamp(1.2rem, 3vw, 2.2rem) no-repeat;
+
+		@include mixins.corner-brackets(var(--quote-corner-color), clamp(1.2rem, 3vw, 2.2rem));
 	}
 
 	.quote-texture {
 		opacity: 12%;
 		background: var(--rose-satin-sheen);
-		background-size: 200% 100%;
 	}
 
 	.quote-container {
