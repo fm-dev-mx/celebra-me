@@ -32,7 +32,7 @@
 		background:
 			radial-gradient(
 				circle at 50% 32%,
-				rgb(var(--color-candle-gold-rgb) / 16%) 0%,
+				rgb(var(--color-candle-gold-rgb) / 12%) 0%,
 				transparent 34%
 			),
 			linear-gradient(180deg, transparent 72%, rgb(var(--color-warm-ivory-rgb) / 7%) 100%);
@@ -185,7 +185,6 @@
 		color: rgb(var(--color-candle-gold-rgb) / 78%);
 		opacity: 100%;
 		white-space: nowrap;
-		text-wrap: nowrap;
 	}
 
 	.countdown-footer {
