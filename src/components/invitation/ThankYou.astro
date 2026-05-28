@@ -77,7 +77,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-variant={variant}
 	data-focal-point={focalPoint || 'center'}
 	data-overlay-anchor={overlayAnchor}
-	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
+	data-has-overlay-safe-area={overlaySafeArea ? '' : undefined}
 >
 	{
 		usesEditorialLayout ? (
@@ -163,7 +163,11 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 </style>
 
 <script>
+import { initSectionReveal } from '@/utils/animations';
+
 document.querySelectorAll<HTMLElement>('.thank-you-section[data-focal-point]').forEach((section) => {
 	section.style.setProperty('--thank-you-focal-point', section.dataset.focalPoint || 'center');
 });
+
+initSectionReveal('.thank-you-section');
 </script>
