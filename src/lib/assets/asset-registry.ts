@@ -114,23 +114,17 @@ import { discoverEventModules } from '@/lib/assets/discovery';
 /**
  * Automatically find all event asset modules.
  */
-const EVENT_ASSET_MODULES = (discoverEventModules() || {}) as Record<
+const EVENT_ASSET_MODULES = (discoverEventModules() ?? {}) as Record<
 	string,
 	EventAssets & { gallery?: ImageMetadata[] }
 >;
-
-/**
- * Helper to extract slug from path:
- * "../../assets/images/events/example-event/index.ts" -> "example-event"
- */
-const getSlugFromPath = (path: string) => path.split('/').slice(-2, -1)[0];
 
 /**
  * Processes raw assets from modules into a flattened Registry structure.
  */
 const EVENT_REGISTRY: Record<string, EventAssets> = Object.entries(EVENT_ASSET_MODULES).reduce(
 	(acc, [path, rawAssets]) => {
-		const slug = getSlugFromPath(path);
+		const slug = path.split('/').slice(-2, -1)[0];
 		const assets: Partial<EventAssets> = {};
 
 		// Map explicit EVENT_KEYS if present in rawAssets
