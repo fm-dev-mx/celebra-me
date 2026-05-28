@@ -77,21 +77,13 @@ const DEFAULT_SECTION_ORDER: Array<keyof InvitationViewModel['sections']> = [
 	'thankYou',
 ];
 
-function resolveImageSrc(image: ImageAsset): string {
-	return typeof image.src === 'string' ? image.src : image.src.src;
-}
-
-function resolveHeroImageSrc(hero: InvitationViewModel['hero']): string {
-	return resolveImageSrc(hero.backgroundImage);
-}
-
 function buildLayoutData(
 	viewModel: InvitationViewModel,
 	hero: InvitationViewModel['hero'],
 	guestName: string | undefined,
 ) {
-	const sharingImage = viewModel.sharing?.ogImage;
-	const imageSrc = sharingImage ? resolveImageSrc(sharingImage) : resolveHeroImageSrc(hero);
+	const image = viewModel.sharing?.ogImage ?? hero.backgroundImage;
+	const imageSrc = typeof image.src === 'string' ? image.src : image.src.src;
 
 	return {
 		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
