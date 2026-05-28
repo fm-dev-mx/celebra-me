@@ -20,6 +20,8 @@ import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 
+const SCROLL_LABEL_PRESETS: ReadonlySet<string> = new Set(['enchanted-rose']);
+
 interface AdaptationContext {
 	data: EventContentEntry['data'];
 	eventSlug: string;
@@ -88,36 +90,13 @@ function resolveAsset(
 }
 
 function resolveAssetSrc(eventSlug: string, source: AssetSource | string | undefined): string {
-	const normalizedSource = normalizeAssetSource(source);
-	if (!normalizedSource) {
+	const asset = resolveAsset(eventSlug, source, '');
+	if (!asset) {
 		throw new Error(
 			`[AssetRegistry] Required asset source is missing for event "${eventSlug}".`,
 		);
 	}
-
-	if (normalizedSource.type === 'external') {
-		return normalizedSource.src;
-	}
-
-	if (isCommonAssetKey(normalizedSource.key)) {
-		const asset = getCommonAsset(normalizedSource.key);
-		return typeof asset.src === 'string' ? asset.src : asset.src.src;
-	}
-
-	if (!isEventAssetKey(normalizedSource.key)) {
-		throw new Error(
-			`[AssetRegistry] Unknown asset key "${normalizedSource.key}" for event "${eventSlug}".`,
-		);
-	}
-
-	const metadata = getEventAsset(eventSlug, normalizedSource.key);
-	if (!metadata) {
-		throw new Error(
-			`[AssetRegistry] Event asset "${normalizedSource.key}" not found for event "${eventSlug}".`,
-		);
-	}
-
-	return metadata.src;
+	return typeof asset.src === 'string' ? asset.src : asset.src.src;
 }
 
 function requireAsset(
@@ -188,7 +167,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
-		scrollLabel: preset === 'enchanted-rose' ? 'Continúa' : undefined,
+		scrollLabel: SCROLL_LABEL_PRESETS.has(preset) ? 'Continúa' : undefined,
 	};
 }
 
@@ -277,27 +256,17 @@ function buildCountdownSectionData(context: AdaptationContext) {
 	};
 }
 
-function resolveCeremonyData(
+function resolveVenueData(
 	eventSlug: string,
-	ceremony: EventContentEntry['data']['location']['ceremony'],
+	venue:
+		| EventContentEntry['data']['location']['ceremony']
+		| EventContentEntry['data']['location']['reception'],
 	title: string,
 ) {
-	if (!ceremony) return undefined;
+	if (!venue) return undefined;
 	return {
-		...ceremony,
-		image: resolveAsset(eventSlug, ceremony.image as string | AssetSource, title),
-	};
-}
-
-function resolveReceptionData(
-	eventSlug: string,
-	reception: EventContentEntry['data']['location']['reception'],
-	title: string,
-) {
-	if (!reception) return undefined;
-	return {
-		...reception,
-		image: resolveAsset(eventSlug, reception.image as string | AssetSource, title),
+		...venue,
+		image: resolveAsset(eventSlug, venue.image as string | AssetSource, title),
 	};
 }
 
@@ -311,8 +280,8 @@ function buildLocationSectionData(context: AdaptationContext) {
 		}),
 	);
 	return {
-		ceremony: resolveCeremonyData(eventSlug, data.location.ceremony, data.title),
-		reception: resolveReceptionData(eventSlug, data.location.reception, data.title),
+		ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
+		reception: resolveVenueData(eventSlug, data.location.reception, data.title),
 		indications,
 		variant: sectionVariant(
 			'location',
@@ -431,8 +400,6 @@ export function adaptEvent(
 	};
 
 	const envelope = buildEnvelope(context);
-	const showEnvelope = envelope.enabled;
-
 	const isDemo = adapterData.isDemo ?? false;
 
 	return {
@@ -462,7 +429,7 @@ export function adaptEvent(
 		music: adapterData.music
 			? {
 					...adapterData.music,
-					revealMode: showEnvelope ? 'envelope' : 'immediate',
+					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,
 		interludes: buildInterludes(context),
