@@ -1,88 +1,26 @@
 @use '../../../global/mixins' as mixins;
 
 // ---------------------------------------------------------------------------
-// Corner ornament patterns — 4-point (perimeter)
+// Corner ornament patterns
 // ---------------------------------------------------------------------------
-@mixin corner-ornaments-8($inset, $size, $border-width, $opacity) {
+@mixin corner-ornaments($inset, $size, $border-width, $opacity, $all-corners: true) {
 	inset: $inset;
-	background:
-		linear-gradient(
-				to right,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 0 / $size $border-width no-repeat,
-		linear-gradient(
-				to bottom,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 0 / #{$border-width} #{$size} no-repeat,
-		linear-gradient(
-				to left,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 0 / $size $border-width no-repeat,
-		linear-gradient(
-				to bottom,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 0 / #{$border-width} #{$size} no-repeat,
-		linear-gradient(
-				to right,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 100% / $size $border-width no-repeat,
-		linear-gradient(
-				to top,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 100% / #{$border-width} #{$size} no-repeat,
-		linear-gradient(
-				to left,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 100% / $size $border-width no-repeat,
-		linear-gradient(
-				to top,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 100% / #{$border-width} #{$size} no-repeat;
-}
 
-@mixin corner-ornaments-4($inset, $size, $border-width, $opacity) {
-	inset: $inset;
-	background:
-		linear-gradient(
-				to right,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 0 / $size $border-width no-repeat,
-		linear-gradient(
-				to bottom,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			0 0 / #{$border-width} #{$size} no-repeat,
-		linear-gradient(
-				to left,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 100% / $size $border-width no-repeat,
-		linear-gradient(
-				to top,
-				rgb(var(--color-antique-gold-rgb) / $opacity),
-				rgb(var(--color-antique-gold-rgb) / $opacity)
-			)
-			100% 100% / #{$border-width} #{$size} no-repeat;
+	$c: rgb(var(--color-antique-gold-rgb) / $opacity);
+	$tl-h: linear-gradient(to right, $c, $c) 0 0 / $size $border-width no-repeat;
+	$tl-v: linear-gradient(to bottom, $c, $c) 0 0 / #{$border-width} #{$size} no-repeat;
+	$tr-h: linear-gradient(to left, $c, $c) 100% 0 / $size $border-width no-repeat;
+	$tr-v: linear-gradient(to bottom, $c, $c) 100% 0 / #{$border-width} #{$size} no-repeat;
+	$br-h: linear-gradient(to left, $c, $c) 100% 100% / $size $border-width no-repeat;
+	$br-v: linear-gradient(to top, $c, $c) 100% 100% / #{$border-width} #{$size} no-repeat;
+	$bl-h: linear-gradient(to right, $c, $c) 0 100% / $size $border-width no-repeat;
+	$bl-v: linear-gradient(to top, $c, $c) 0 100% / #{$border-width} #{$size} no-repeat;
+
+	@if $all-corners {
+		background: $tl-h, $tl-v, $tr-h, $tr-v, $bl-h, $bl-v, $br-h, $br-v;
+	} @else {
+		background: $tl-h, $tl-v, $br-h, $br-v;
+	}
 }
 
 .invitation-hero[data-variant='enchanted-rose'] {
@@ -131,16 +69,7 @@
 		min-height: 100svh;
 		margin: 0 auto;
 		padding: clamp(4rem, 8svh, 6rem) clamp(1.5rem, 5vw, 4.5rem) clamp(4.5rem, 10svh, 7rem);
-		background: transparent;
-		backdrop-filter: none;
-		border: none;
-		border-radius: 0;
-		box-shadow: none;
 		overflow: visible;
-	}
-
-	.invitation-hero__content::after {
-		content: none;
 	}
 
 	.invitation-hero__content::before {
@@ -148,11 +77,12 @@
 		position: absolute;
 		pointer-events: none;
 
-		@include corner-ornaments-8(
+		@include corner-ornaments(
 			clamp(0.75rem, 2vw, 1.5rem),
 			clamp(1.6rem, 3vw, 2.6rem),
 			1px,
-			34%
+			34%,
+			$all-corners: true
 		);
 	}
 
@@ -361,11 +291,12 @@
 		z-index: 1;
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
 
-		@include corner-ornaments-4(
+		@include corner-ornaments(
 			clamp(1.25rem, 3vw, 3rem),
 			clamp(2.5rem, 5vw, 4.5rem),
 			1px,
-			52%
+			52%,
+			$all-corners: false
 		);
 
 		box-shadow: 0 0 20px rgb(var(--color-candle-gold-rgb) / 6%);
@@ -429,11 +360,12 @@
 		}
 
 		.invitation-hero__content::before {
-			@include corner-ornaments-8(
+			@include corner-ornaments(
 				clamp(0.4rem, 1.5vw, 0.8rem),
 				clamp(0.8rem, 3vw, 1.4rem),
 				0.5px,
-				26%
+				26%,
+				$all-corners: true
 			);
 		}
 
@@ -480,11 +412,12 @@
 		&::before {
 			border-width: 0.5px;
 
-			@include corner-ornaments-4(
+			@include corner-ornaments(
 				clamp(0.75rem, 2vw, 1.25rem),
 				clamp(1.5rem, 4vw, 2.5rem),
 				0.5px,
-				34%
+				34%,
+				$all-corners: false
 			);
 
 			box-shadow: 0 0 8px rgb(var(--color-candle-gold-rgb) / 3%);
