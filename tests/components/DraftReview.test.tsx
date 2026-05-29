@@ -4,9 +4,12 @@ import DraftReview from '@/components/dashboard/intake/DraftReview';
 const mockLoadDraft = jest.fn();
 let mockCurrentDraft: Record<string, unknown> | null = null;
 
+let mockLoading = false;
+
 jest.mock('@/hooks/use-invitation-admin', () => ({
 	useInvitationAdmin: () => ({
 		currentDraft: mockCurrentDraft,
+		loading: mockLoading,
 		loadDraft: mockLoadDraft,
 	}),
 }));
@@ -110,9 +113,18 @@ function makeDraftContent(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockCurrentDraft = null;
+	mockLoading = false;
 });
 
 describe('DraftReview', () => {
+	it('shows loading state while draft is loading', () => {
+		mockLoading = true;
+		render(<DraftReview projectId="proj-1" />);
+
+		expect(screen.getByText('Cargando borrador...')).toBeInTheDocument();
+		expect(mockLoadDraft).toHaveBeenCalledWith('proj-1');
+	});
+
 	it('shows empty state when no draft exists', () => {
 		render(<DraftReview projectId="proj-1" />);
 
@@ -197,7 +209,7 @@ describe('DraftReview', () => {
 		});
 		render(<DraftReview projectId="proj-1" />);
 
-		const yesLabels = screen.getAllByText('Si');
+		const yesLabels = screen.getAllByText('Sí');
 		expect(yesLabels.length).toBeGreaterThan(0);
 	});
 

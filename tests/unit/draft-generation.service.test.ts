@@ -292,7 +292,12 @@ describe('generateDraft', () => {
 
 		await generateDraft('proj-1');
 
-		const content = mockUpsertDraft.mock.calls[0][0].content as Record<string, unknown>;
+		type UpsertParams = {
+			content: Record<string, unknown>;
+			invitationProjectId: string;
+			submissionId: string;
+		};
+		const content = (mockUpsertDraft.mock.calls[0][0] as UpsertParams).content;
 		expect(content.title).toBe('XV Anos — Ana Sofia');
 		expect((content.hero as Record<string, unknown>).name).toBe('Ana Sofia');
 		expect((content.hero as Record<string, unknown>).label).toBe('Mis XV Anos');
@@ -307,7 +312,12 @@ describe('generateDraft', () => {
 
 		await generateDraft('proj-1');
 
-		const content = mockUpsertDraft.mock.calls[0][0].content as Record<string, unknown>;
+		type UpsertParams = {
+			content: Record<string, unknown>;
+			invitationProjectId: string;
+			submissionId: string;
+		};
+		const content = (mockUpsertDraft.mock.calls[0][0] as UpsertParams).content;
 		expect((content.quote as Record<string, unknown>).text).toBe('Entre rosas y luz de velas');
 		expect((content.thankYou as Record<string, unknown>).message).toBe(
 			'Gracias por compartir esta noche',

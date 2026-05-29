@@ -1,6 +1,8 @@
 import type { FC } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
+import DraftEditor from '@/components/dashboard/intake/DraftEditor';
+import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
 interface Props {
 	projectId: string;
@@ -13,7 +15,7 @@ interface FieldProps {
 
 function fieldValue(value: unknown): string | null {
 	if (value === undefined || value === null) return null;
-	if (typeof value === 'boolean') return value ? 'Si' : 'No';
+	if (typeof value === 'boolean') return value ? 'Sí' : 'No';
 	if (typeof value === 'number') return String(value);
 	if (typeof value === 'string') {
 		const trimmed = value.trim();
@@ -97,11 +99,23 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 const DraftReview: FC<Props> = ({ projectId }) => {
-	const { currentDraft, loadDraft } = useInvitationAdmin();
+	const { currentDraft, loading, loadDraft } = useInvitationAdmin();
+	const [editing, setEditing] = useState(false);
 
 	useEffect(() => {
 		void loadDraft(projectId);
 	}, [projectId, loadDraft]);
+
+	if (loading && !currentDraft) {
+		return (
+			<div className="intake-review">
+				<header className="intake-review__header">
+					<h2 className="intake-review__title">Borrador de invitacion</h2>
+				</header>
+				<p className="intake-review__loading">Cargando borrador...</p>
+			</div>
+		);
+	}
 
 	if (!currentDraft) {
 		return (
@@ -184,6 +198,20 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 		closingName: 'Nombre de despedida',
 	};
 
+	if (editing) {
+		return (
+			<DraftEditor
+				projectId={projectId}
+				initialContent={currentDraft.content as DraftContent}
+				onCancel={() => setEditing(false)}
+				onSaved={() => {
+					setEditing(false);
+					void loadDraft(projectId);
+				}}
+			/>
+		);
+	}
+
 	return (
 		<div className="intake-review">
 			<header className="intake-review__header">
@@ -197,6 +225,15 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 						Generado: {new Date(currentDraft.createdAt).toLocaleString('es-MX')}
 					</span>
 				</div>
+				{currentDraft.status === 'draft' && (
+					<button
+						type="button"
+						className="intake-detail__generate-btn intake-editor__edit-btn"
+						onClick={() => setEditing(true)}
+					>
+						Editar borrador
+					</button>
+				)}
 			</header>
 
 			{/* Hero / Main data */}

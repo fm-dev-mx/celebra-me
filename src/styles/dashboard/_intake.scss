@@ -743,3 +743,126 @@
 	color: var(--color-text-muted);
 	padding: 2rem;
 }
+
+/* DraftReview: venue sub-sections */
+.intake-review__venue {
+	margin-bottom: 0.75rem;
+}
+
+.intake-review__venue-title {
+	font-size: 0.875rem;
+	font-weight: 600;
+	margin: 0 0 0.5rem;
+	color: var(--color-text-primary);
+}
+
+/* DraftReview: gift list */
+.intake-review__gift-list {
+	list-style: none;
+	margin: 0.5rem 0 0;
+	padding: 0;
+}
+
+.intake-review__gift-item {
+	padding: 0.5rem 0;
+	font-size: 0.875rem;
+	border-bottom: 1px solid var(--color-border-subtle);
+
+	&:last-child {
+		border-bottom: none;
+	}
+}
+
+.intake-review__gift-type {
+	color: var(--color-text-muted);
+	font-size: 0.8125rem;
+}
+
+/* DraftSection: draft status area */
+.intake-detail__draft-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin-bottom: 0.75rem;
+}
+
+.intake-detail__draft-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+
+	.intake-detail__review-link {
+		flex: 1;
+		min-width: 140px;
+		text-align: center;
+	}
+
+	.intake-detail__generate-btn {
+		flex: 1;
+		min-width: 140px;
+		margin-top: 0;
+	}
+}
+
+/* DraftEditor: field layout */
+.intake-editor__field {
+	margin-bottom: 0.75rem;
+}
+
+.intake-editor__field .intake-field__label {
+	display: block;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-text-muted);
+	margin-bottom: 0.25rem;
+}
+
+.intake-editor__venue {
+	margin-bottom: 1rem;
+	padding: 0.75rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 8px;
+	background: var(--color-surface-primary);
+}
+
+.intake-editor__checkbox {
+	accent-color: var(--color-action-accent);
+	width: 1.125rem;
+	height: 1.125rem;
+	cursor: pointer;
+}
+
+.intake-editor__edit-btn {
+	margin-top: 0.75rem;
+}
+
+/* Responsive: intake-review field stacking on narrow screens */
+@media (width <= 480px) {
+	.intake-review__field {
+		flex-direction: column;
+		gap: 0.125rem;
+		padding: 0.5rem 0;
+	}
+
+	.intake-review__key {
+		min-width: 0;
+		font-size: 0.8125rem;
+	}
+
+	.intake-review__value {
+		font-size: 0.875rem;
+	}
+
+	.intake-detail__draft-actions {
+		flex-direction: column;
+
+		.intake-detail__review-link,
+		.intake-detail__generate-btn {
+			width: 100%;
+			min-width: 0;
+		}
+	}
+}
