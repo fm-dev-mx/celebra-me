@@ -1,0 +1,14 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import SubmissionReview from '@/components/dashboard/intake/SubmissionReview';
+
+const { id } = Astro.params;
+
+if (!id) {
+	return Astro.redirect('/dashboard/invitaciones');
+}
+---
+
+<DashboardLayout title="Dashboard Revision">
+	<SubmissionReview client:load projectId={id} />
+</DashboardLayout>

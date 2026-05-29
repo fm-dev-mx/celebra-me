@@ -21,6 +21,7 @@ const ADMIN_ONLY_PATHS = [
 	'/dashboard/usuarios',
 	'/dashboard/claimcodes',
 	'/dashboard/eventos',
+	'/dashboard/invitaciones',
 ];
 
 function isAdminOnlyPath(pathname: string): boolean {

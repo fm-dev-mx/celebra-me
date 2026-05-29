@@ -31,6 +31,7 @@ const navItems: DashboardNavItem[] = [
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },
 	{ label: 'Eventos', href: '/dashboard/eventos', adminOnly: true },
+	{ label: 'Invitaciones', href: '/dashboard/invitaciones', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
 ];
 const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ?? title;

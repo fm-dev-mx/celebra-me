@@ -1,0 +1,14 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import InvitationDetail from '@/components/dashboard/intake/InvitationDetail';
+
+const { id } = Astro.params;
+
+if (!id) {
+	return Astro.redirect('/dashboard/invitaciones');
+}
+---
+
+<DashboardLayout title="Dashboard Invitacion">
+	<InvitationDetail client:load projectId={id} />
+</DashboardLayout>
