@@ -7,6 +7,7 @@ export interface DbEventSource {
 	eventType: string;
 	isDemo: boolean;
 	content: Record<string, unknown>;
+	assetSlug?: string;
 }
 
 export function adaptDbEvent(source: DbEventSource): InvitationViewModel {
@@ -15,5 +16,5 @@ export function adaptDbEvent(source: DbEventSource): InvitationViewModel {
 		data: source.content,
 	};
 
-	return adaptEvent(pseudoEntry as unknown as EventContentEntry);
+	return adaptEvent(pseudoEntry as unknown as EventContentEntry, undefined, source.assetSlug);
 }

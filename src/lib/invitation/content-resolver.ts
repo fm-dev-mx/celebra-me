@@ -4,13 +4,9 @@ import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 
-export type ContentSource = 'static' | 'published';
-
-export interface ContentResolution {
-	source: ContentSource;
-	viewModel: InvitationViewModel;
-	rawContent?: Record<string, unknown>;
-}
+export type ContentResolution =
+	| { source: 'static'; viewModel: InvitationViewModel }
+	| { source: 'published'; viewModel: InvitationViewModel; rawContent: Record<string, unknown> };
 
 export async function resolveInvitationContent(
 	slug: string,
@@ -25,13 +21,17 @@ export async function resolveInvitationContent(
 	if (eventType) {
 		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 		if (publishedEntry) {
+			const rawContent = publishedEntry.content;
+			const assetSlug =
+				typeof rawContent._assetSlug === 'string' ? rawContent._assetSlug : slug;
 			const viewModel = adaptDbEvent({
 				slug,
 				eventType: publishedEntry.eventType,
 				isDemo: publishedEntry.isDemo,
-				content: publishedEntry.content,
+				content: rawContent,
+				assetSlug,
 			});
-			return { source: 'published', viewModel, rawContent: publishedEntry.content };
+			return { source: 'published', viewModel, rawContent };
 		}
 	}
 

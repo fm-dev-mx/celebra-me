@@ -204,6 +204,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const demoGifts = demoContent.gifts as Record<string, unknown> | undefined;
 	const demoQuote = demoContent.quote as Record<string, unknown> | undefined;
 	const demoThankYou = demoContent.thankYou as Record<string, unknown> | undefined;
+	const demoHero = demoContent.hero as Record<string, unknown> | undefined;
 
 	const locationSection = mapLocationFromDraft(
 		draftContent.location as Record<string, unknown> | undefined,
@@ -235,7 +236,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 
 	const heroSection = mapHeroSection(
 		draftContent.hero as Record<string, unknown> | undefined,
-		demoContent.hero as Record<string, unknown> | undefined,
+		demoHero,
 		project.title,
 		snapshot.themeId,
 	);
@@ -277,5 +278,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		sectionStyles: demoContent.sectionStyles,
 		navigation: demoContent.navigation,
 		sharing: demoContent.sharing,
+
+		_assetSlug: snapshot.previewSlug,
 	};
 }

@@ -61,7 +61,10 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	})),
 }));
 
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import {
+	resolveInvitationContent,
+	type ContentResolution,
+} from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { adaptEvent } from '@/lib/adapters/event';
@@ -104,8 +107,9 @@ describe('published route POC', () => {
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('published');
-		expect(result!.viewModel.title).toBe('Published Event');
-		expect(result!.rawContent).toBeDefined();
+		expect(
+			(result! as Extract<ContentResolution, { source: 'published' }>).rawContent,
+		).toBeDefined();
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 	});
 

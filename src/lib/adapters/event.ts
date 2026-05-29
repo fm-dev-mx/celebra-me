@@ -340,8 +340,8 @@ function buildItinerarySectionData(context: AdaptationContext) {
 	};
 }
 
-function buildRsvpSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset, eventSlug } = context;
+function buildRsvpSectionData(context: AdaptationContext, eventSlug: string) {
+	const { data, normalizedPreset } = context;
 	if (!data.rsvp) return undefined;
 	return {
 		...data.rsvp,
@@ -380,9 +380,11 @@ function buildThankYouSectionData(context: AdaptationContext) {
 export function adaptEvent(
 	event: EventContentEntry,
 	previewTheme?: ThemePreset,
+	assetSlugOverride?: string,
 ): InvitationViewModel {
 	const { data: originalData, id: contentEntryId } = event;
-	const eventSlug = getContentEntrySlug(contentEntryId);
+	const entrySlug = getContentEntrySlug(contentEntryId);
+	const eventSlug = assetSlugOverride ?? entrySlug;
 
 	const adapterData = previewTheme
 		? {
@@ -403,7 +405,7 @@ export function adaptEvent(
 	const isDemo = adapterData.isDemo ?? false;
 
 	return {
-		id: eventSlug,
+		id: entrySlug,
 		isDemo,
 		title: adapterData.title,
 		description: adapterData.description,
@@ -422,7 +424,7 @@ export function adaptEvent(
 			family: buildFamilySectionData(context),
 			gallery: buildGallerySectionData(context),
 			itinerary: buildItinerarySectionData(context),
-			rsvp: buildRsvpSectionData(context),
+			rsvp: buildRsvpSectionData(context, entrySlug),
 			gifts: buildGiftsSectionData(context),
 			thankYou: buildThankYouSectionData(context),
 		},
