@@ -11,6 +11,7 @@ jest.mock('@/hooks/use-invitation-admin', () => ({
 		currentDraft: mockCurrentDraft,
 		loading: mockLoading,
 		loadDraft: mockLoadDraft,
+		publishDraft: jest.fn(),
 	}),
 }));
 

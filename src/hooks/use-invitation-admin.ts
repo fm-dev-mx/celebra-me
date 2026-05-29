@@ -189,6 +189,22 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
+	const publishDraftAction = useCallback(async (projectId: string) => {
+		setSaving(true);
+		setError('');
+		try {
+			const result = await adminApi.publishDraft(projectId);
+			setCurrentDraft(result.draft);
+			return result;
+		} catch (err) {
+			throw new Error(err instanceof Error ? err.message : 'Error al publicar el borrador.', {
+				cause: err,
+			});
+		} finally {
+			setSaving(false);
+		}
+	}, []);
+
 	return {
 		items,
 		error,
@@ -210,6 +226,7 @@ export function useInvitationAdmin() {
 		loadDraft,
 		generateDraft: generateDraftAction,
 		updateDraft,
+		publishDraft: publishDraftAction,
 		reloadProjects: loadProjects,
 	};
 }

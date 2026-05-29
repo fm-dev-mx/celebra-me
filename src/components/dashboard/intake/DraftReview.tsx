@@ -99,8 +99,10 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 const DraftReview: FC<Props> = ({ projectId }) => {
-	const { currentDraft, loading, loadDraft } = useInvitationAdmin();
+	const { currentDraft, loading, loadDraft, publishDraft } = useInvitationAdmin();
 	const [editing, setEditing] = useState(false);
+	const [publishing, setPublishing] = useState(false);
+	const [publishError, setPublishError] = useState('');
 
 	useEffect(() => {
 		void loadDraft(projectId);
@@ -225,14 +227,44 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 					</span>
 				</div>
 				{currentDraft.status === 'draft' && (
-					<button
-						type="button"
-						className="intake-detail__generate-btn intake-editor__edit-btn"
-						onClick={() => setEditing(true)}
-					>
-						Editar borrador
-					</button>
+					<>
+						<button
+							type="button"
+							className="intake-detail__generate-btn intake-editor__edit-btn"
+							onClick={() => setEditing(true)}
+						>
+							Editar borrador
+						</button>
+						<button
+							type="button"
+							className="intake-review__btn intake-review__btn--approve"
+							onClick={async () => {
+								if (
+									!window.confirm(
+										'¿Publicar este borrador como invitacion final?',
+									)
+								)
+									return;
+								setPublishing(true);
+								setPublishError('');
+								try {
+									await publishDraft(projectId);
+									void loadDraft(projectId);
+								} catch (err) {
+									setPublishError(
+										err instanceof Error ? err.message : 'Error al publicar.',
+									);
+								} finally {
+									setPublishing(false);
+								}
+							}}
+							disabled={publishing}
+						>
+							{publishing ? 'Publicando...' : 'Publicar borrador'}
+						</button>
+					</>
 				)}
+				{publishError && <p className="intake-review__error">{publishError}</p>}
 			</header>
 
 			{/* Hero / Main data */}
