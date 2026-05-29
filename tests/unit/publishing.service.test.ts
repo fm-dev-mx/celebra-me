@@ -15,6 +15,12 @@ jest.mock('astro:content', () => ({
 	getCollection: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
+	findEventBySlugService: jest.fn(),
+	createEventService: jest.fn(),
+	updateEventService: jest.fn(),
+}));
+
 import {
 	findDraftByProjectId,
 	updateDraftStatus,

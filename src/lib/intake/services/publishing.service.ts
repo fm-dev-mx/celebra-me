@@ -6,15 +6,17 @@ import {
 import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
+import {
+	findEventBySlugService,
+	createEventService,
+	updateEventService,
+} from '@/lib/rsvp/repositories/event.repository';
+import { getContentEntrySlug } from '@/lib/content/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-
-function getContentEntrySlug(id: string): string {
-	const segments = id.split('/');
-	return (segments[segments.length - 1] || id).replace(/\.(json|md|mdx)$/, '');
-}
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
 async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {
 	const entries = await getCollection('event-demos');
@@ -80,6 +82,23 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 	});
 
 	const publishSlug = project.slug || `${project.eventType}-${project.id.slice(0, 8)}`;
+
+	const existingEvent = await findEventBySlugService(publishSlug);
+	if (existingEvent) {
+		await updateEventService({
+			eventId: existingEvent.id,
+			title: project.title,
+			status: 'published',
+		});
+	} else if (project.createdBy) {
+		await createEventService({
+			ownerUserId: project.createdBy,
+			slug: publishSlug,
+			eventType: project.eventType as EventRecord['eventType'],
+			title: project.title,
+			status: 'published',
+		});
+	}
 
 	const result = await upsertPublishedContent({
 		invitationProjectId: projectId,
