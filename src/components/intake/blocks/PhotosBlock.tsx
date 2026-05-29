@@ -6,10 +6,76 @@ interface Props {
 	disabled?: boolean;
 }
 
-const PhotosBlock: FC<Props> = ({ data, onChange, disabled }) => {
-	const getValue = (key: string, fallback = '') => (data[key] as string) ?? fallback;
-	const getBool = (key: string) => Boolean(data[key]);
+interface FieldConfig {
+	key: string;
+	label: string;
+	type?: 'textarea' | 'checkbox';
+	rows?: number;
+	placeholder?: string;
+}
 
+const FIELDS: FieldConfig[] = [
+	{ key: 'whatsappSent', label: 'Ya envié mis fotos por WhatsApp', type: 'checkbox' },
+	{
+		key: 'heroPhoto',
+		label: 'Foto principal / hero',
+		type: 'textarea',
+		rows: 3,
+		placeholder: 'Describe la foto que ira en la portada de la invitacion...',
+	},
+	{
+		key: 'portraitPhoto',
+		label: 'Foto retrato',
+		type: 'textarea',
+		rows: 3,
+		placeholder: 'Describe la foto retrato...',
+	},
+	{
+		key: 'galleryPhotos',
+		label: 'Fotos de galeria',
+		type: 'textarea',
+		rows: 4,
+		placeholder: 'Describe las fotos para la galeria, orden preferido, etc...',
+	},
+	{
+		key: 'familyPhoto',
+		label: 'Foto familiar',
+		type: 'textarea',
+		rows: 3,
+		placeholder: 'Describe la foto familiar...',
+	},
+	{ key: 'specialPhoto', label: 'Foto especial / seccion especial', type: 'textarea', rows: 3 },
+	{
+		key: 'generalNotes',
+		label: 'Instrucciones generales de fotografia',
+		type: 'textarea',
+		rows: 3,
+		placeholder: 'Cualquier indicacion adicional sobre las fotos...',
+	},
+	{
+		key: 'photoOrder',
+		label: 'Orden sugerido de las fotos',
+		type: 'textarea',
+		rows: 2,
+		placeholder: 'Describe el orden en que deben aparecer las fotos...',
+	},
+	{
+		key: 'cropNotes',
+		label: 'Notas de recorte y edicion',
+		type: 'textarea',
+		rows: 2,
+		placeholder: 'Indica si alguna foto necesita recorte o edicion especifica...',
+	},
+	{
+		key: 'priorityNotes',
+		label: 'Prioridad de las fotos',
+		type: 'textarea',
+		rows: 2,
+		placeholder: 'Indica que fotos son prioritarias o deben destacarse...',
+	},
+];
+
+const PhotosBlock: FC<Props> = ({ data, onChange, disabled }) => {
 	return (
 		<div className="intake-block intake-block--photos">
 			<h3 className="intake-block__title">Fotografias</h3>
@@ -21,106 +87,40 @@ const PhotosBlock: FC<Props> = ({ data, onChange, disabled }) => {
 				</p>
 			</div>
 
-			<div className="intake-field intake-field--checkbox">
-				<label className="intake-field__checkbox-label">
-					<input
-						type="checkbox"
-						checked={getBool('whatsappSent')}
-						onChange={(e) => onChange('whatsappSent', e.target.checked)}
-						disabled={disabled}
-					/>
-					<span>Ya envie mis fotos por WhatsApp</span>
-				</label>
-			</div>
+			{FIELDS.map((field) => {
+				if (field.type === 'checkbox') {
+					return (
+						<div key={field.key} className="intake-field intake-field--checkbox">
+							<label className="intake-field__checkbox-label">
+								<input
+									type="checkbox"
+									checked={Boolean(data[field.key])}
+									onChange={(e) => onChange(field.key, e.target.checked)}
+									disabled={disabled}
+								/>
+								<span>{field.label}</span>
+							</label>
+						</div>
+					);
+				}
 
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="heroPhoto">
-					Foto principal / hero
-				</label>
-				<textarea
-					id="heroPhoto"
-					className="intake-field__textarea"
-					value={getValue('heroPhoto')}
-					onChange={(e) => onChange('heroPhoto', e.target.value)}
-					placeholder="Describe la foto que ira en la portada de la invitacion..."
-					disabled={disabled}
-					rows={3}
-				/>
-			</div>
-
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="portraitPhoto">
-					Foto retrato
-				</label>
-				<textarea
-					id="portraitPhoto"
-					className="intake-field__textarea"
-					value={getValue('portraitPhoto')}
-					onChange={(e) => onChange('portraitPhoto', e.target.value)}
-					placeholder="Describe la foto retrato..."
-					disabled={disabled}
-					rows={3}
-				/>
-			</div>
-
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="galleryPhotos">
-					Fotos de galeria
-				</label>
-				<textarea
-					id="galleryPhotos"
-					className="intake-field__textarea"
-					value={getValue('galleryPhotos')}
-					onChange={(e) => onChange('galleryPhotos', e.target.value)}
-					placeholder="Describe las fotos para la galeria, orden preferido, etc..."
-					disabled={disabled}
-					rows={4}
-				/>
-			</div>
-
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="familyPhoto">
-					Foto familiar
-				</label>
-				<textarea
-					id="familyPhoto"
-					className="intake-field__textarea"
-					value={getValue('familyPhoto')}
-					onChange={(e) => onChange('familyPhoto', e.target.value)}
-					placeholder="Describe la foto familiar..."
-					disabled={disabled}
-					rows={3}
-				/>
-			</div>
-
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="specialPhoto">
-					Foto especial / seccion especial
-				</label>
-				<textarea
-					id="specialPhoto"
-					className="intake-field__textarea"
-					value={getValue('specialPhoto')}
-					onChange={(e) => onChange('specialPhoto', e.target.value)}
-					disabled={disabled}
-					rows={3}
-				/>
-			</div>
-
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="generalNotes">
-					Instrucciones generales de fotografia
-				</label>
-				<textarea
-					id="generalNotes"
-					className="intake-field__textarea"
-					value={getValue('generalNotes')}
-					onChange={(e) => onChange('generalNotes', e.target.value)}
-					placeholder="Cualquier indicacion adicional sobre las fotos..."
-					disabled={disabled}
-					rows={3}
-				/>
-			</div>
+				return (
+					<div key={field.key} className="intake-field">
+						<label className="intake-field__label" htmlFor={field.key}>
+							{field.label}
+						</label>
+						<textarea
+							id={field.key}
+							className="intake-field__textarea"
+							value={(data[field.key] as string) ?? ''}
+							onChange={(e) => onChange(field.key, e.target.value)}
+							placeholder={field.placeholder}
+							disabled={disabled}
+							rows={field.rows ?? 3}
+						/>
+					</div>
+				);
+			})}
 		</div>
 	);
 };
