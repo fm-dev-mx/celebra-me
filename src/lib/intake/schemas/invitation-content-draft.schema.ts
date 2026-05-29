@@ -4,6 +4,11 @@ export const GenerateDraftActionSchema = z.object({
 	action: z.literal('generate'),
 });
 
+export const DraftActionSchema = z.discriminatedUnion('action', [
+	z.object({ action: z.literal('generate') }),
+	z.object({ action: z.literal('publish') }),
+]);
+
 export const InvitationContentDraftContentSchema = z
 	.object({
 		title: z.string().optional(),

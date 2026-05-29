@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { InvitationContentDraft } from '@/lib/intake/types';
+import type { InvitationContentDraft, InvitationContentDraftStatus } from '@/lib/intake/types';
 
 interface InvitationContentDraftRow {
 	id: string;
@@ -91,5 +91,22 @@ export async function upsertDraft(input: {
 	});
 
 	if (!rows[0]) throw new Error('Failed to create invitation content draft.');
+	return toDraft(rows[0]);
+}
+
+export async function updateDraftStatus(
+	draftId: string,
+	status: InvitationContentDraftStatus,
+): Promise<InvitationContentDraft> {
+	const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
+		pathWithQuery: `invitation_content_drafts?id=eq.${encodeURIComponent(draftId)}&select=${SELECT_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			status,
+		},
+	});
+	if (!rows[0]) throw new Error('Invitation content draft not found.');
 	return toDraft(rows[0]);
 }
