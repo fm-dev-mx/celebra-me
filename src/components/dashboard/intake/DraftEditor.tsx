@@ -7,7 +7,6 @@ interface Props {
 	projectId: string;
 	initialContent: DraftContent;
 	onCancel: () => void;
-	onSaved: () => void;
 }
 
 function str(value: unknown): string {
@@ -23,13 +22,14 @@ function num(value: unknown): number {
 	return typeof value === 'number' ? value : 0;
 }
 
-const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel, onSaved }) => {
+const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 	const { updateDraft, saving } = useInvitationAdmin();
 	const [content, setContent] = useState<DraftContent>(() =>
 		JSON.parse(JSON.stringify(initialContent)),
 	);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
+	const [saved, setSaved] = useState(false);
 
 	const setField = useCallback((section: string, field: string, value: unknown) => {
 		setContent((prev) => {
@@ -51,17 +51,21 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel, onSaved }
 		try {
 			await updateDraft(projectId, content as Record<string, unknown>);
 			setSuccess('Borrador guardado exitosamente.');
-			onSaved();
+			setSaved(true);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar el borrador.');
 		}
 	};
 
 	const handleCancel = () => {
-		setContent(JSON.parse(JSON.stringify(initialContent)));
-		setError('');
-		setSuccess('');
-		onCancel();
+		if (saved) {
+			onCancel();
+		} else {
+			setContent(JSON.parse(JSON.stringify(initialContent)));
+			setError('');
+			setSuccess('');
+			onCancel();
+		}
 	};
 
 	const hero = content.hero ?? {};
@@ -581,22 +585,34 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel, onSaved }
 			{/* Actions */}
 			<div className="intake-review__actions">
 				<div className="intake-review__buttons">
-					<button
-						type="button"
-						className="intake-review__btn intake-review__btn--approve"
-						onClick={handleSave}
-						disabled={saving}
-					>
-						{saving ? 'Guardando...' : 'Guardar cambios'}
-					</button>
-					<button
-						type="button"
-						className="intake-review__btn intake-review__btn--changes"
-						onClick={handleCancel}
-						disabled={saving}
-					>
-						Cancelar
-					</button>
+					{saved ? (
+						<button
+							type="button"
+							className="intake-review__btn intake-review__btn--approve"
+							onClick={onCancel}
+						>
+							Cerrar
+						</button>
+					) : (
+						<>
+							<button
+								type="button"
+								className="intake-review__btn intake-review__btn--approve"
+								onClick={handleSave}
+								disabled={saving}
+							>
+								{saving ? 'Guardando...' : 'Guardar cambios'}
+							</button>
+							<button
+								type="button"
+								className="intake-review__btn intake-review__btn--changes"
+								onClick={handleCancel}
+								disabled={saving}
+							>
+								Cancelar
+							</button>
+						</>
+					)}
 				</div>
 			</div>
 		</div>

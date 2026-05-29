@@ -203,8 +203,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 			<DraftEditor
 				projectId={projectId}
 				initialContent={currentDraft.content as DraftContent}
-				onCancel={() => setEditing(false)}
-				onSaved={() => {
+				onCancel={() => {
 					setEditing(false);
 					void loadDraft(projectId);
 				}}
