@@ -89,3 +89,17 @@ export interface CreateIntakeRequestDTO {
 	enabledBlocks: IntakeBlockType[];
 	expiresInDays?: number;
 }
+
+export interface InvitationContentDraftDTO {
+	id: string;
+	invitationProjectId: string;
+	submissionId: string;
+	content: Record<string, unknown>;
+	status: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface DraftResponse {
+	draft: InvitationContentDraftDTO | null;
+}

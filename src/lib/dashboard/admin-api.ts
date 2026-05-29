@@ -29,6 +29,7 @@ import type {
 	IntakeRequestCreateResponse,
 	CreateIntakeRequestDTO,
 	IntakeRequestDTO,
+	DraftResponse,
 } from './dto/intake';
 
 export class AdminApi {
@@ -231,6 +232,22 @@ export class AdminApi {
 		const result = await dashboardApi.post<{ item: unknown }>(
 			`/api/dashboard/intake/${encodeURIComponent(projectId)}/review`,
 			payload,
+		);
+		return this.handleResponse(result);
+	}
+
+	// Intake — Draft
+	async getDraft(projectId: string): Promise<DraftResponse> {
+		const result = await dashboardApi.get<DraftResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/draft`,
+		);
+		return this.handleResponse(result);
+	}
+
+	async generateDraft(projectId: string): Promise<DraftResponse> {
+		const result = await dashboardApi.post<DraftResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/draft`,
+			{ action: 'generate' },
 		);
 		return this.handleResponse(result);
 	}

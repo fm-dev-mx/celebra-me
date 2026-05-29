@@ -1,8 +1,14 @@
-import type { InvitationProject, IntakeRequest, IntakeSubmission } from '@/lib/intake/types';
+import type {
+	InvitationProject,
+	IntakeRequest,
+	IntakeSubmission,
+	InvitationContentDraft,
+} from '@/lib/intake/types';
 import type {
 	InvitationProjectDTO,
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
+	InvitationContentDraftDTO,
 } from '@/lib/dashboard/dto/intake';
 
 export function toInvitationProjectDTO(project: InvitationProject): InvitationProjectDTO {
@@ -48,5 +54,19 @@ export function toIntakeSubmissionDTO(submission: IntakeSubmission): IntakeSubmi
 		reviewNotes: submission.reviewNotes,
 		createdAt: submission.createdAt,
 		updatedAt: submission.updatedAt,
+	};
+}
+
+export function toInvitationContentDraftDTO(
+	draft: InvitationContentDraft,
+): InvitationContentDraftDTO {
+	return {
+		id: draft.id,
+		invitationProjectId: draft.invitationProjectId,
+		submissionId: draft.submissionId,
+		content: draft.content,
+		status: draft.status,
+		createdAt: draft.createdAt,
+		updatedAt: draft.updatedAt,
 	};
 }

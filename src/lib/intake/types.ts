@@ -118,3 +118,17 @@ export interface IntakeBlockDefinition {
 	supportedEventTypes: EventType[];
 	fields: IntakeBlockFieldDefinition[];
 }
+
+export const INVITATION_CONTENT_DRAFT_STATUSES = ['draft', 'reviewed', 'approved'] as const;
+
+export type InvitationContentDraftStatus = (typeof INVITATION_CONTENT_DRAFT_STATUSES)[number];
+
+export interface InvitationContentDraft {
+	id: string;
+	invitationProjectId: string;
+	submissionId: string;
+	content: Record<string, unknown>;
+	status: InvitationContentDraftStatus;
+	createdAt: string;
+	updatedAt: string;
+}
