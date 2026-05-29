@@ -2,28 +2,13 @@ import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { IntakeBlockType } from '@/lib/intake/types';
+import { SUBMISSION_STATUS_LABELS, BLOCK_LABELS, PHOTO_LABELS } from '@/lib/intake/labels';
+import { FieldRow, formatValue } from '@/components/intake/shared/FieldRow';
+import { VenueSection } from '@/components/intake/shared/VenueSection';
 
 interface Props {
 	projectId: string;
 }
-
-const BLOCK_LABELS: Record<IntakeBlockType, string> = {
-	'event-details': 'Detalles del evento',
-	'main-people': 'Personas principales',
-	'date-locations': 'Fecha y ubicaciones',
-	photos: 'Fotografias',
-	'rsvp-config': 'Confirmacion de asistencia',
-	music: 'Musica de fondo',
-	gifts: 'Mesa de regalos',
-	'special-messages': 'Mensajes especiales',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-	in_progress: 'En progreso',
-	submitted: 'Enviada',
-	needs_changes: 'Requiere cambios',
-	approved: 'Aprobada',
-};
 
 const SubmissionReview: FC<Props> = ({ projectId }) => {
 	const {
@@ -88,6 +73,44 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 	const photoNotes = currentSubmission.photoNotes ?? {};
 	const enabledBlocks = currentRequest?.enabledBlocks ?? [];
 
+	const renderBlockSection = (blockType: IntakeBlockType, data: Record<string, unknown>) => {
+		if (blockType === 'date-locations') {
+			const ceremony = data.ceremony as Record<string, unknown> | undefined;
+			const reception = data.reception as Record<string, unknown> | undefined;
+			return (
+				<section className="intake-review__section">
+					<h3 className="intake-review__section-title">{BLOCK_LABELS[blockType]}</h3>
+					<VenueSection title="Ceremonia" venue={ceremony} />
+					<VenueSection title="Recepción" venue={reception} />
+					<dl className="intake-review__fields">
+						<FieldRow label="Código de vestimenta" value={data.dressCode} />
+						<FieldRow
+							label="Indicaciones adicionales"
+							value={data.additionalIndications}
+						/>
+					</dl>
+				</section>
+			);
+		}
+
+		const entries = Object.entries(data).filter(
+			([key, value]) =>
+				value !== '' && value !== undefined && value !== null && key !== '_pending',
+		);
+		if (entries.length === 0) return null;
+
+		return (
+			<section className="intake-review__section">
+				<h3 className="intake-review__section-title">{BLOCK_LABELS[blockType]}</h3>
+				<dl className="intake-review__fields">
+					{entries.map(([key, value]) => (
+						<FieldRow key={key} label={key} value={value} />
+					))}
+				</dl>
+			</section>
+		);
+	};
+
 	return (
 		<div className="intake-review">
 			<header className="intake-review__header">
@@ -95,7 +118,8 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 				<div className="intake-review__meta">
 					<span className="intake-review__badge">
 						Estado:{' '}
-						{STATUS_LABELS[currentSubmission.status] ?? currentSubmission.status}
+						{SUBMISSION_STATUS_LABELS[currentSubmission.status] ??
+							currentSubmission.status}
 					</span>
 					{currentSubmission.submittedAt && (
 						<span className="intake-review__date">
@@ -115,47 +139,9 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 
 			<div className="intake-review__sections">
 				{enabledBlocks.map((blockType) => {
-					const data = blockData[blockType];
+					const data = blockData[blockType] as Record<string, unknown> | undefined;
 					if (!data) return null;
-
-					return (
-						<section key={blockType} className="intake-review__section">
-							<h3 className="intake-review__section-title">
-								{BLOCK_LABELS[blockType] ?? blockType}
-							</h3>
-							<dl className="intake-review__fields">
-								{Object.entries(data as Record<string, unknown>).map(
-									([key, value]) => {
-										if (
-											value === '' ||
-											value === undefined ||
-											value === null ||
-											key === '_pending'
-										)
-											return null;
-										return (
-											<div key={key} className="intake-review__field">
-												<dt className="intake-review__key">{key}</dt>
-												<dd className="intake-review__value">
-													{typeof value === 'boolean' ? (
-														value ? (
-															'Si'
-														) : (
-															'No'
-														)
-													) : typeof value === 'object' ? (
-														<pre>{JSON.stringify(value, null, 2)}</pre>
-													) : (
-														String(value)
-													)}
-												</dd>
-											</div>
-										);
-									},
-								)}
-							</dl>
-						</section>
-					);
+					return <div key={blockType}>{renderBlockSection(blockType, data)}</div>;
 				})}
 			</div>
 
@@ -163,12 +149,18 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">Notas de fotos</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(photoNotes).map(([key, value]) => (
-							<div key={key} className="intake-review__field">
-								<dt className="intake-review__key">{key}</dt>
-								<dd className="intake-review__value">{String(value)}</dd>
-							</div>
-						))}
+						{Object.entries(photoNotes).map(([key, value]) => {
+							const display = formatValue(value);
+							if (display === null) return null;
+							return (
+								<div key={key} className="intake-review__field">
+									<dt className="intake-review__key">
+										{PHOTO_LABELS[key] ?? key}
+									</dt>
+									<dd className="intake-review__value">{display}</dd>
+								</div>
+							);
+						})}
 					</dl>
 				</section>
 			)}
