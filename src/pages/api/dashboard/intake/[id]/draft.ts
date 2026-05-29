@@ -10,9 +10,10 @@ import {
 	getDraft,
 	updateDraftContentByProject,
 } from '@/lib/intake/services/draft-generation.service';
+import { publishDraft } from '@/lib/intake/services/publishing.service';
 import { toInvitationContentDraftDTO } from '@/lib/dashboard/dto/intake-mapper';
 import {
-	GenerateDraftActionSchema,
+	DraftActionSchema,
 	UpdateDraftContentSchema,
 } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
@@ -47,8 +48,16 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
 
-		const parsed = await validateBodyOrRespond(request, GenerateDraftActionSchema);
+		const parsed = await validateBodyOrRespond(request, DraftActionSchema);
 		if (parsed instanceof Response) return parsed;
+
+		if (parsed.action === 'publish') {
+			const result = await publishDraft(id);
+			return jsonResponse({
+				draft: toInvitationContentDraftDTO(result.draft),
+				publishedContent: result.publishedContent,
+			});
+		}
 
 		const draft = await generateDraft(id);
 
