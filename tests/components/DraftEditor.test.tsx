@@ -239,10 +239,10 @@ describe('DraftEditor', () => {
 		expect(screen.getByText('Datos principales / Hero')).toBeInTheDocument();
 		expect(screen.getByText('Familia')).toBeInTheDocument();
 		expect(screen.getByText('Fecha y ubicaciones')).toBeInTheDocument();
-		expect(screen.getByText('Confirmacion de asistencia')).toBeInTheDocument();
-		expect(screen.getByText('Musica de fondo')).toBeInTheDocument();
+		expect(screen.getByText('Confirmación de asistencia')).toBeInTheDocument();
+		expect(screen.getByText('Música de fondo')).toBeInTheDocument();
 		expect(screen.getByText('Regalos')).toBeInTheDocument();
 		expect(screen.getByText('Mensajes especiales')).toBeInTheDocument();
-		expect(screen.getByText('Notas de fotografias')).toBeInTheDocument();
+		expect(screen.getByText('Notas de fotografías')).toBeInTheDocument();
 	});
 });

@@ -1,7 +1,9 @@
 import type { FC } from 'react';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import { strFallback, boolFallback, numFallback } from '@/lib/intake/utils';
+import { SECTION_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	projectId: string;
@@ -9,17 +11,59 @@ interface Props {
 	onCancel: () => void;
 }
 
-function str(value: unknown): string {
-	if (typeof value === 'string') return value;
-	return '';
+interface ValidationError {
+	section: string;
+	field: string;
+	message: string;
 }
 
-function bool(value: unknown): boolean {
-	return typeof value === 'boolean' ? value : false;
-}
+function validateContent(content: DraftContent): ValidationError[] {
+	const errors: ValidationError[] = [];
+	const hero = (content.hero ?? {}) as Record<string, unknown>;
+	const rsvp = (content.rsvp ?? {}) as Record<string, unknown>;
+	const quote = (content.quote ?? {}) as Record<string, unknown>;
+	const thankYou = (content.thankYou ?? {}) as Record<string, unknown>;
 
-function num(value: unknown): number {
-	return typeof value === 'number' ? value : 0;
+	if (!strFallback(content.title)) {
+		errors.push({ section: 'Hero', field: 'title', message: 'El título es obligatorio.' });
+	}
+	if (!strFallback(hero.name)) {
+		errors.push({
+			section: 'Hero',
+			field: 'name',
+			message: 'El nombre del festejado es obligatorio.',
+		});
+	}
+	if (!strFallback(hero.label)) {
+		errors.push({
+			section: 'Hero',
+			field: 'label',
+			message: 'El título del evento es obligatorio.',
+		});
+	}
+	if (!strFallback(quote.text)) {
+		errors.push({
+			section: 'quote',
+			field: 'text',
+			message: 'La frase de apertura es obligatoria.',
+		});
+	}
+	if (!strFallback(thankYou.message)) {
+		errors.push({
+			section: 'thankYou',
+			field: 'message',
+			message: 'El mensaje de agradecimiento es obligatorio.',
+		});
+	}
+	if (!strFallback(rsvp.title)) {
+		errors.push({
+			section: 'rsvp',
+			field: 'title',
+			message: 'El título de RSVP es obligatorio.',
+		});
+	}
+
+	return errors;
 }
 
 const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
@@ -29,9 +73,9 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 	);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
-	const [saved, setSaved] = useState(false);
+	const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
-	const setField = useCallback((section: string, field: string, value: unknown) => {
+	const setField = (section: string, field: string, value: unknown) => {
 		setContent((prev) => {
 			const sectionData = {
 				...(((prev as Record<string, unknown>)[section] as Record<string, unknown>) ?? {}),
@@ -39,33 +83,42 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 			sectionData[field] = value;
 			return { ...prev, [section]: sectionData };
 		});
-	}, []);
+		setValidationErrors([]);
+		setSuccess('');
+	};
 
-	const setTopField = useCallback((field: string, value: unknown) => {
+	const setTopField = (field: string, value: unknown) => {
 		setContent((prev) => ({ ...prev, [field]: value }));
-	}, []);
+		setValidationErrors([]);
+		setSuccess('');
+	};
 
 	const handleSave = async () => {
+		const errors = validateContent(content);
+		setValidationErrors(errors);
+		if (errors.length > 0) {
+			setError('Corrige los campos marcados antes de guardar.');
+			return;
+		}
+
 		setError('');
 		setSuccess('');
 		try {
 			await updateDraft(projectId, content as Record<string, unknown>);
 			setSuccess('Borrador guardado exitosamente.');
-			setSaved(true);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar el borrador.');
 		}
 	};
 
 	const handleCancel = () => {
-		if (saved) {
-			onCancel();
-		} else {
+		if (!success) {
 			setContent(JSON.parse(JSON.stringify(initialContent)));
 			setError('');
 			setSuccess('');
-			onCancel();
+			setValidationErrors([]);
 		}
+		onCancel();
 	};
 
 	const hero = content.hero ?? {};
@@ -78,514 +131,505 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 	const thankYou = content.thankYou ?? {};
 	const photoNotes = content.photoNotes ?? {};
 
+	const getErrors = (section: string): ValidationError[] =>
+		validationErrors.filter((e) => e.section === section);
+
+	const renderField = (
+		section: string,
+		fieldKey: string,
+		label: string,
+		value: string,
+		onChange: (v: string) => void,
+		type: 'text' | 'textarea' = 'text',
+		rows?: number,
+	) => {
+		const sectionErrors = getErrors(section);
+		const hasError = sectionErrors.some((e) => e.field === fieldKey);
+
+		return (
+			<div
+				className={`intake-editor__field${hasError ? ' intake-editor__field--error' : ''}`}
+			>
+				<label className="intake-field__label">{label}</label>
+				{type === 'textarea' ? (
+					<textarea
+						className="intake-field__textarea"
+						value={value}
+						onChange={(e) => onChange(e.target.value)}
+						rows={rows ?? 2}
+					/>
+				) : (
+					<input
+						className="intake-field__input"
+						type="text"
+						value={value}
+						onChange={(e) => onChange(e.target.value)}
+					/>
+				)}
+				{hasError && (
+					<p className="intake-field__error">
+						{sectionErrors.find((e) => e.field === fieldKey)?.message}
+					</p>
+				)}
+			</div>
+		);
+	};
+
 	return (
 		<div className="intake-editor">
 			{error && <p className="intake-review__error">{error}</p>}
 			{success && <p className="intake-review__success">{success}</p>}
 
-			{/* Hero */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Datos principales / Hero</h3>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Titulo</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={content.title ?? ''}
-						onChange={(e) => setTopField('title', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Descripcion</label>
-					<textarea
-						className="intake-field__textarea"
-						value={content.description ?? ''}
-						onChange={(e) => setTopField('description', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Nombre del festejado</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(hero.name)}
-						onChange={(e) => setField('hero', 'name', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Segundo nombre</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(hero.secondaryName)}
-						onChange={(e) => setField('hero', 'secondaryName', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Titulo del evento</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(hero.label)}
-						onChange={(e) => setField('hero', 'label', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Apodo</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(hero.nickname)}
-						onChange={(e) => setField('hero', 'nickname', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Fecha del evento</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(hero.date)}
-						onChange={(e) => setField('hero', 'date', e.target.value)}
-					/>
-				</div>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.Hero}</h3>
+				<p className="intake-editor__section-desc">
+					Información principal de la invitación.
+				</p>
+				{renderField('Hero', 'title', 'Título', content.title ?? '', (v) =>
+					setTopField('title', v),
+				)}
+				{renderField(
+					'Hero',
+					'description',
+					'Descripción',
+					content.description ?? '',
+					(v) => setTopField('description', v),
+					'textarea',
+				)}
+				{renderField('Hero', 'name', 'Nombre del festejado', strFallback(hero.name), (v) =>
+					setField('hero', 'name', v),
+				)}
+				{renderField(
+					'Hero',
+					'secondaryName',
+					'Segundo nombre',
+					strFallback(hero.secondaryName),
+					(v) => setField('hero', 'secondaryName', v),
+				)}
+				{renderField('Hero', 'label', 'Título del evento', strFallback(hero.label), (v) =>
+					setField('hero', 'label', v),
+				)}
+				{renderField('Hero', 'nickname', 'Apodo', strFallback(hero.nickname), (v) =>
+					setField('hero', 'nickname', v),
+				)}
+				{renderField('Hero', 'date', 'Fecha del evento', strFallback(hero.date), (v) =>
+					setField('hero', 'date', v),
+				)}
 			</section>
 
-			{/* Family */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Familia</h3>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Nombre del padre</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(family.fatherName)}
-						onChange={(e) => setField('family', 'fatherName', e.target.value)}
-					/>
-				</div>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.family}</h3>
+				<p className="intake-editor__section-desc">Padres, padrinos, cónyuge e hijos.</p>
+				{renderField(
+					'family',
+					'fatherName',
+					'Nombre del padre',
+					strFallback(family.fatherName),
+					(v) => setField('family', 'fatherName', v),
+				)}
 				<div className="intake-editor__field">
 					<label className="intake-field__label">Padre fallecido</label>
 					<input
 						type="checkbox"
 						className="intake-editor__checkbox"
-						checked={bool(family.fatherDeceased)}
+						checked={boolFallback(family.fatherDeceased)}
 						onChange={(e) => setField('family', 'fatherDeceased', e.target.checked)}
 					/>
 				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Nombre de la madre</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(family.motherName)}
-						onChange={(e) => setField('family', 'motherName', e.target.value)}
-					/>
-				</div>
+				{renderField(
+					'family',
+					'motherName',
+					'Nombre de la madre',
+					strFallback(family.motherName),
+					(v) => setField('family', 'motherName', v),
+				)}
 				<div className="intake-editor__field">
 					<label className="intake-field__label">Madre fallecida</label>
 					<input
 						type="checkbox"
 						className="intake-editor__checkbox"
-						checked={bool(family.motherDeceased)}
+						checked={boolFallback(family.motherDeceased)}
 						onChange={(e) => setField('family', 'motherDeceased', e.target.checked)}
 					/>
 				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Nombre del conyuge</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(family.spouseName)}
-						onChange={(e) => setField('family', 'spouseName', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Padrinos (uno por linea)</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(family.godparents)}
-						onChange={(e) => setField('family', 'godparents', e.target.value)}
-						rows={3}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Hijos (uno por linea)</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(family.children)}
-						onChange={(e) => setField('family', 'children', e.target.value)}
-						rows={3}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Mensaje familiar</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(family.sectionMessage)}
-						onChange={(e) => setField('family', 'sectionMessage', e.target.value)}
-						rows={2}
-					/>
-				</div>
+				{renderField(
+					'family',
+					'spouseName',
+					'Nombre del cónyuge',
+					strFallback(family.spouseName),
+					(v) => setField('family', 'spouseName', v),
+				)}
+				{renderField(
+					'family',
+					'godparents',
+					'Padrinos (uno por línea)',
+					strFallback(family.godparents),
+					(v) => setField('family', 'godparents', v),
+					'textarea',
+					3,
+				)}
+				{renderField(
+					'family',
+					'children',
+					'Hijos (uno por línea)',
+					strFallback(family.children),
+					(v) => setField('family', 'children', v),
+					'textarea',
+					3,
+				)}
+				{renderField(
+					'family',
+					'sectionMessage',
+					'Mensaje familiar',
+					strFallback(family.sectionMessage),
+					(v) => setField('family', 'sectionMessage', v),
+					'textarea',
+					2,
+				)}
 			</section>
 
-			{/* Location */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Fecha y ubicaciones</h3>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.location}</h3>
+				<p className="intake-editor__section-desc">
+					Ceremonia, recepción, código de vestimenta.
+				</p>
 				{['ceremony', 'reception'].map((venueKey) => {
 					const venue = content.location?.[venueKey as keyof typeof location] as
 						| Record<string, unknown>
 						| undefined;
-					const label = venueKey === 'ceremony' ? 'Ceremonia' : 'Recepcion';
+					const label = venueKey === 'ceremony' ? 'Ceremonia' : 'Recepción';
 					return (
 						<div key={venueKey} className="intake-editor__venue">
 							<h4 className="intake-review__venue-title">{label}</h4>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">Nombre del lugar</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.venueName)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											venueName: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">Direccion</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.address)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											address: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">Ciudad</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.city)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											city: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">Fecha</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.date)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											date: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">Hora</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.time)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											time: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
-							<div className="intake-editor__field">
-								<label className="intake-field__label">URL del mapa</label>
-								<input
-									className="intake-field__input"
-									type="text"
-									value={str(venue?.mapUrl)}
-									onChange={(e) => {
-										const updated = {
-											...(((location as Record<string, unknown>)[
-												venueKey
-											] as Record<string, unknown>) ?? {}),
-											mapUrl: e.target.value,
-										};
-										setField('location', venueKey, updated);
-									}}
-								/>
-							</div>
+							{renderField(
+								'location',
+								'venueName',
+								'Nombre del lugar',
+								strFallback(venue?.venueName),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										venueName: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
+							{renderField(
+								'location',
+								'address',
+								'Dirección',
+								strFallback(venue?.address),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										address: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
+							{renderField(
+								'location',
+								'city',
+								'Ciudad',
+								strFallback(venue?.city),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										city: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
+							{renderField(
+								'location',
+								'date',
+								'Fecha',
+								strFallback(venue?.date),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										date: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
+							{renderField(
+								'location',
+								'time',
+								'Hora',
+								strFallback(venue?.time),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										time: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
+							{renderField(
+								'location',
+								'mapUrl',
+								'URL del mapa',
+								strFallback(venue?.mapUrl),
+								(v) => {
+									const updated = {
+										...(((location as Record<string, unknown>)[
+											venueKey
+										] as Record<string, unknown>) ?? {}),
+										mapUrl: v,
+									};
+									setField('location', venueKey, updated);
+								},
+							)}
 						</div>
 					);
 				})}
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Codigo de vestimenta</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(location.dressCode)}
-						onChange={(e) => setField('location', 'dressCode', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Indicaciones adicionales</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(location.additionalIndications)}
-						onChange={(e) =>
-							setField('location', 'additionalIndications', e.target.value)
-						}
-						rows={2}
-					/>
-				</div>
+				{renderField(
+					'location',
+					'dressCode',
+					'Código de vestimenta',
+					strFallback(location.dressCode),
+					(v) => setField('location', 'dressCode', v),
+				)}
+				{renderField(
+					'location',
+					'additionalIndications',
+					'Indicaciones adicionales',
+					strFallback(location.additionalIndications),
+					(v) => setField('location', 'additionalIndications', v),
+					'textarea',
+					2,
+				)}
 			</section>
 
-			{/* RSVP */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Confirmacion de asistencia</h3>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.rsvp}</h3>
+				<p className="intake-editor__section-desc">
+					Configuración de confirmación de asistencia.
+				</p>
+				{renderField('rsvp', 'title', 'Título', strFallback(rsvp.title), (v) =>
+					setField('rsvp', 'title', v),
+				)}
 				<div className="intake-editor__field">
-					<label className="intake-field__label">Titulo</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(rsvp.title)}
-						onChange={(e) => setField('rsvp', 'title', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Acompanantes maximo</label>
+					<label className="intake-field__label">Acompañantes máximo</label>
 					<input
 						className="intake-field__input"
 						type="number"
-						value={num(rsvp.guestCap)}
+						value={numFallback(rsvp.guestCap)}
 						onChange={(e) => setField('rsvp', 'guestCap', Number(e.target.value))}
 						min={0}
 					/>
 				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Mensaje de confirmacion</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(rsvp.confirmationMessage)}
-						onChange={(e) => setField('rsvp', 'confirmationMessage', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Modo de confirmacion</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(rsvp.confirmationMode)}
-						onChange={(e) => setField('rsvp', 'confirmationMode', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">WhatsApp</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(rsvp.whatsappPhone)}
-						onChange={(e) => setField('rsvp', 'whatsappPhone', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Texto adicional</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(rsvp.subcopy)}
-						onChange={(e) => setField('rsvp', 'subcopy', e.target.value)}
-						rows={2}
-					/>
-				</div>
+				{renderField(
+					'rsvp',
+					'confirmationMessage',
+					'Mensaje de confirmación',
+					strFallback(rsvp.confirmationMessage),
+					(v) => setField('rsvp', 'confirmationMessage', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'rsvp',
+					'confirmationMode',
+					'Modo de confirmación',
+					strFallback(rsvp.confirmationMode),
+					(v) => setField('rsvp', 'confirmationMode', v),
+				)}
+				{renderField(
+					'rsvp',
+					'whatsappPhone',
+					'WhatsApp',
+					strFallback(rsvp.whatsappPhone),
+					(v) => setField('rsvp', 'whatsappPhone', v),
+				)}
+				{renderField(
+					'rsvp',
+					'subcopy',
+					'Texto adicional',
+					strFallback(rsvp.subcopy),
+					(v) => setField('rsvp', 'subcopy', v),
+					'textarea',
+					2,
+				)}
 			</section>
 
-			{/* Music */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Musica de fondo</h3>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">URL de la cancion</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(music.url)}
-						onChange={(e) => setField('music', 'url', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Titulo de la cancion</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(music.title)}
-						onChange={(e) => setField('music', 'title', e.target.value)}
-					/>
-				</div>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.music}</h3>
+				<p className="intake-editor__section-desc">Canción de fondo para la invitación.</p>
+				{renderField('music', 'url', 'URL de la canción', strFallback(music.url), (v) =>
+					setField('music', 'url', v),
+				)}
+				{renderField(
+					'music',
+					'title',
+					'Título de la canción',
+					strFallback(music.title),
+					(v) => setField('music', 'title', v),
+				)}
 			</section>
 
-			{/* Gifts */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Regalos</h3>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Titulo</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(gifts.title)}
-						onChange={(e) => setField('gifts', 'title', e.target.value)}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Subtitulo</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(gifts.subtitle)}
-						onChange={(e) => setField('gifts', 'subtitle', e.target.value)}
-						rows={2}
-					/>
-				</div>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.gifts}</h3>
+				<p className="intake-editor__section-desc">Información de mesa de regalos.</p>
+				{renderField('gifts', 'title', 'Título', strFallback(gifts.title), (v) =>
+					setField('gifts', 'title', v),
+				)}
+				{renderField(
+					'gifts',
+					'subtitle',
+					'Subtítulo',
+					strFallback(gifts.subtitle),
+					(v) => setField('gifts', 'subtitle', v),
+					'textarea',
+					2,
+				)}
 			</section>
 
-			{/* Messages */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Mensajes especiales</h3>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Frase de apertura</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(quote.text)}
-						onChange={(e) => setField('quote', 'text', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Autor</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(quote.author)}
-						onChange={(e) => setField('quote', 'author', e.target.value)}
-					/>
-				</div>
-				<h4 className="intake-review__venue-title">Agradecimiento</h4>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Mensaje de agradecimiento</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(thankYou.message)}
-						onChange={(e) => setField('thankYou', 'message', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Nombre de despedida</label>
-					<input
-						className="intake-field__input"
-						type="text"
-						value={str(thankYou.closingName)}
-						onChange={(e) => setField('thankYou', 'closingName', e.target.value)}
-					/>
-				</div>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.quote}</h3>
+				<p className="intake-editor__section-desc">Frase de apertura y agradecimiento.</p>
+				{renderField(
+					'quote',
+					'text',
+					'Frase de apertura',
+					strFallback(quote.text),
+					(v) => setField('quote', 'text', v),
+					'textarea',
+					2,
+				)}
+				{renderField('quote', 'author', 'Autor', strFallback(quote.author), (v) =>
+					setField('quote', 'author', v),
+				)}
+				<h4 className="intake-review__venue-title">{SECTION_LABELS.thankYou}</h4>
+				{renderField(
+					'thankYou',
+					'message',
+					'Mensaje de agradecimiento',
+					strFallback(thankYou.message),
+					(v) => setField('thankYou', 'message', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'thankYou',
+					'closingName',
+					'Nombre de despedida',
+					strFallback(thankYou.closingName),
+					(v) => setField('thankYou', 'closingName', v),
+				)}
 			</section>
 
-			{/* Photo notes */}
 			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">Notas de fotografias</h3>
+				<h3 className="intake-review__section-title">{SECTION_LABELS.photoNotes}</h3>
+				<p className="intake-editor__section-desc">
+					Notas sobre las fotografías para el diseñador.
+				</p>
 				<div className="intake-editor__field">
 					<label className="intake-field__label">Fotos enviadas por WhatsApp</label>
 					<input
 						type="checkbox"
 						className="intake-editor__checkbox"
-						checked={bool(photoNotes.whatsappSent)}
+						checked={boolFallback(photoNotes.whatsappSent)}
 						onChange={(e) => setField('photoNotes', 'whatsappSent', e.target.checked)}
 					/>
 				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Foto principal</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.heroPhoto)}
-						onChange={(e) => setField('photoNotes', 'heroPhoto', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Retrato</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.portraitPhoto)}
-						onChange={(e) => setField('photoNotes', 'portraitPhoto', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Fotos de galeria</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.galleryPhotos)}
-						onChange={(e) => setField('photoNotes', 'galleryPhotos', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Foto familiar</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.familyPhoto)}
-						onChange={(e) => setField('photoNotes', 'familyPhoto', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Foto especial</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.specialPhoto)}
-						onChange={(e) => setField('photoNotes', 'specialPhoto', e.target.value)}
-						rows={2}
-					/>
-				</div>
-				<div className="intake-editor__field">
-					<label className="intake-field__label">Notas generales</label>
-					<textarea
-						className="intake-field__textarea"
-						value={str(photoNotes.generalNotes)}
-						onChange={(e) => setField('photoNotes', 'generalNotes', e.target.value)}
-						rows={2}
-					/>
-				</div>
+				{renderField(
+					'photoNotes',
+					'heroPhoto',
+					'Foto principal',
+					strFallback(photoNotes.heroPhoto),
+					(v) => setField('photoNotes', 'heroPhoto', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'portraitPhoto',
+					'Retrato',
+					strFallback(photoNotes.portraitPhoto),
+					(v) => setField('photoNotes', 'portraitPhoto', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'galleryPhotos',
+					'Fotos de galería',
+					strFallback(photoNotes.galleryPhotos),
+					(v) => setField('photoNotes', 'galleryPhotos', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'familyPhoto',
+					'Foto familiar',
+					strFallback(photoNotes.familyPhoto),
+					(v) => setField('photoNotes', 'familyPhoto', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'specialPhoto',
+					'Foto especial',
+					strFallback(photoNotes.specialPhoto),
+					(v) => setField('photoNotes', 'specialPhoto', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'generalNotes',
+					'Notas generales',
+					strFallback(photoNotes.generalNotes),
+					(v) => setField('photoNotes', 'generalNotes', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'photoOrder',
+					'Orden sugerido',
+					strFallback(photoNotes.photoOrder),
+					(v) => setField('photoNotes', 'photoOrder', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'cropNotes',
+					'Notas de recorte',
+					strFallback(photoNotes.cropNotes),
+					(v) => setField('photoNotes', 'cropNotes', v),
+					'textarea',
+					2,
+				)}
+				{renderField(
+					'photoNotes',
+					'priorityNotes',
+					'Prioridad',
+					strFallback(photoNotes.priorityNotes),
+					(v) => setField('photoNotes', 'priorityNotes', v),
+					'textarea',
+					2,
+				)}
 			</section>
 
-			{/* Actions */}
 			<div className="intake-review__actions">
 				<div className="intake-review__buttons">
-					{saved ? (
+					{success ? (
 						<button
 							type="button"
 							className="intake-review__btn intake-review__btn--approve"
