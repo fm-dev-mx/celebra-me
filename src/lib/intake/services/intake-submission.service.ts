@@ -6,6 +6,7 @@ import {
 	createIntakeSubmission,
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 export async function getIntakeSubmissionById(id: string): Promise<IntakeSubmission | null> {
 	return findIntakeSubmissionById(id);
@@ -79,13 +80,17 @@ export async function approveSubmission(
 ): Promise<IntakeSubmission> {
 	const submission = await findIntakeSubmissionById(id);
 	if (!submission) {
-		throw new Error('Intake submission not found.');
+		throw new ApiError(404, 'not_found', 'Intake submission not found.');
 	}
 	if (submission.status === 'approved') {
-		throw new Error('Submission is already approved.');
+		throw new ApiError(409, 'submission_already_approved', 'Submission is already approved.');
 	}
 	if (submission.status !== 'submitted') {
-		throw new Error('Can only approve a submitted submission.');
+		throw new ApiError(
+			422,
+			'invalid_submission_status',
+			'Can only approve a submitted submission.',
+		);
 	}
 	return updateIntakeSubmission(id, {
 		status: 'approved',
@@ -97,13 +102,21 @@ export async function approveSubmission(
 export async function requestChanges(id: string, reviewNotes: string): Promise<IntakeSubmission> {
 	const submission = await findIntakeSubmissionById(id);
 	if (!submission) {
-		throw new Error('Intake submission not found.');
+		throw new ApiError(404, 'not_found', 'Intake submission not found.');
 	}
 	if (submission.status === 'approved') {
-		throw new Error('Cannot request changes on an approved submission.');
+		throw new ApiError(
+			409,
+			'submission_already_approved',
+			'Cannot request changes on an approved submission.',
+		);
 	}
 	if (submission.status !== 'submitted') {
-		throw new Error('Can only request changes on a submitted submission.');
+		throw new ApiError(
+			422,
+			'invalid_submission_status',
+			'Can only request changes on a submitted submission.',
+		);
 	}
 	return updateIntakeSubmission(id, {
 		status: 'needs_changes',

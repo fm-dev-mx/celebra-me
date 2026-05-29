@@ -6,7 +6,9 @@ export type ApiErrorCode =
 	| 'conflict'
 	| 'rate_limited'
 	| 'limit_reached'
-	| 'internal_error';
+	| 'internal_error'
+	| 'submission_already_approved'
+	| 'invalid_submission_status';
 
 export class ApiError extends Error {
 	readonly status: number;

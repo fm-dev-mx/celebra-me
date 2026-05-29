@@ -194,37 +194,49 @@ describe('approveSubmission', () => {
 		});
 	});
 
-	it('throws when submission is already approved', async () => {
+	it('throws 409 conflict when submission is already approved', async () => {
 		const approved = { ...baseSubmission, status: 'approved' as const };
 		mockFindById.mockResolvedValue(approved);
 
-		await expect(approveSubmission('sub-1')).rejects.toThrow('Submission is already approved.');
+		await expect(approveSubmission('sub-1')).rejects.toMatchObject({
+			status: 409,
+			code: 'submission_already_approved',
+			message: 'Submission is already approved.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
-	it('throws when submission is in_progress', async () => {
+	it('throws 422 invalid_submission_status when submission is in_progress', async () => {
 		mockFindById.mockResolvedValue(baseSubmission);
 
-		await expect(approveSubmission('sub-1')).rejects.toThrow(
-			'Can only approve a submitted submission.',
-		);
+		await expect(approveSubmission('sub-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'invalid_submission_status',
+			message: 'Can only approve a submitted submission.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
-	it('throws when submission is needs_changes', async () => {
+	it('throws 422 invalid_submission_status when submission is needs_changes', async () => {
 		const needsChanges = { ...baseSubmission, status: 'needs_changes' as const };
 		mockFindById.mockResolvedValue(needsChanges);
 
-		await expect(approveSubmission('sub-1')).rejects.toThrow(
-			'Can only approve a submitted submission.',
-		);
+		await expect(approveSubmission('sub-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'invalid_submission_status',
+			message: 'Can only approve a submitted submission.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
-	it('throws when submission not found', async () => {
+	it('throws 404 not_found when submission not found', async () => {
 		mockFindById.mockResolvedValue(null);
 
-		await expect(approveSubmission('sub-999')).rejects.toThrow('Intake submission not found.');
+		await expect(approveSubmission('sub-999')).rejects.toMatchObject({
+			status: 404,
+			code: 'not_found',
+			message: 'Intake submission not found.',
+		});
 	});
 });
 
@@ -248,32 +260,38 @@ describe('requestChanges', () => {
 		});
 	});
 
-	it('throws when submission is already approved', async () => {
+	it('throws 409 conflict when submission is already approved', async () => {
 		const approved = { ...baseSubmission, status: 'approved' as const };
 		mockFindById.mockResolvedValue(approved);
 
-		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
-			'Cannot request changes on an approved submission.',
-		);
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toMatchObject({
+			status: 409,
+			code: 'submission_already_approved',
+			message: 'Cannot request changes on an approved submission.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
-	it('throws when submission is in_progress', async () => {
+	it('throws 422 invalid_submission_status when submission is in_progress', async () => {
 		mockFindById.mockResolvedValue(baseSubmission);
 
-		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
-			'Can only request changes on a submitted submission.',
-		);
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toMatchObject({
+			status: 422,
+			code: 'invalid_submission_status',
+			message: 'Can only request changes on a submitted submission.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
-	it('throws when submission is needs_changes', async () => {
+	it('throws 422 invalid_submission_status when submission is needs_changes', async () => {
 		const needsChanges = { ...baseSubmission, status: 'needs_changes' as const };
 		mockFindById.mockResolvedValue(needsChanges);
 
-		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
-			'Can only request changes on a submitted submission.',
-		);
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toMatchObject({
+			status: 422,
+			code: 'invalid_submission_status',
+			message: 'Can only request changes on a submitted submission.',
+		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 });
