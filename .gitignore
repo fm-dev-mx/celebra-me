@@ -22,6 +22,10 @@ node_modules/
 # Application and test logs
 logs/
 *.log
+cookies.txt
+
+# Debug/pages build artifacts
+dashboard.html
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
