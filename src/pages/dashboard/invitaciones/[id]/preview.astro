@@ -1,0 +1,204 @@
+---
+export const prerender = false;
+
+import { getCollection } from 'astro:content';
+import { findDraftByProjectId } from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import { getContentEntrySlug } from '@/lib/content/events';
+import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
+import type { InvitationPageContext } from '@/lib/invitation/page-data';
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import Layout from '@/layouts/Layout.astro';
+import InvitationSections from '@/components/invitation/InvitationSections.astro';
+import Footer from '@/components/invitation/Footer.astro';
+import Hero from '@/components/invitation/Hero.astro';
+import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
+import EventHeader from '@/components/invitation/EventHeader.astro';
+import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import '@/styles/invitation.scss';
+
+const { id } = Astro.params;
+
+let errorMessage: string | null = null;
+
+if (!id) {
+	return Astro.redirect('/dashboard/invitaciones');
+}
+
+const project = await getInvitationProjectById(id);
+if (!project) {
+	errorMessage = 'Proyecto no encontrado.';
+}
+
+const draft = await findDraftByProjectId(id);
+if (!draft && !errorMessage) {
+	errorMessage = 'No se ha encontrado un borrador para este proyecto. Genera un borrador primero.';
+}
+
+let pageCtx: InvitationPageContext | undefined;
+
+if (!errorMessage && project && draft) {
+	const snapshot = project.snapshot;
+	if (!snapshot || !snapshot.previewSlug) {
+		errorMessage = 'La plantilla base de este proyecto no está soportada.';
+	} else {
+		const entries = await getCollection('event-demos');
+		const demoEntry = entries.find(
+			(e: { id: string }) => getContentEntrySlug(e.id) === snapshot.previewSlug,
+		);
+		const demoContent = (demoEntry?.data as Record<string, unknown>) ?? {};
+
+		if (Object.keys(demoContent).length === 0) {
+			errorMessage = 'No se encontró el contenido de la plantilla base.';
+		} else {
+			const result = buildDraftPreviewPageContext(project, draft.content, demoContent);
+
+			if (result.ok) {
+				pageCtx = result.pageContext;
+			} else {
+				errorMessage = result.error.message;
+			}
+		}
+	}
+}
+
+if (!errorMessage && !pageCtx) {
+	errorMessage = 'Error inesperado al generar la vista previa.';
+}
+---
+
+{
+	errorMessage ? (
+		<DashboardLayout title="Vista previa no disponible">
+			<main class="preview-error">
+				<h2>Vista previa no disponible</h2>
+				<p>{errorMessage}</p>
+				<a href={`/dashboard/invitaciones/${id}`} class="preview-error__back">
+					&larr; Volver al proyecto
+				</a>
+			</main>
+		</DashboardLayout>
+	) : pageCtx ? (
+		<Layout
+			title={`Vista previa — ${pageCtx.viewModel.title ?? ''}`}
+			description={pageCtx.layout.description}
+			image={pageCtx.layout.image}
+			hideHeader={true}
+			className={pageCtx.layout.className}
+			isDemo={false}
+			themeMode="dark"
+		>
+			<div class="preview-banner">Vista previa interna — no publicada</div>
+
+			<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
+			<main class={pageCtx.wrapper.className} {...pageCtx.wrapper.dataAttributes}>
+				{
+					pageCtx.envelope && (
+						<EnvelopeReveal
+							name={pageCtx.envelope.name}
+							sealStyle={pageCtx.envelope.sealStyle}
+							sealIcon={pageCtx.envelope.sealIcon}
+							sealInitials={pageCtx.envelope.sealInitials}
+							microcopy={pageCtx.envelope.microcopy}
+							documentLabel={pageCtx.envelope.documentLabel}
+							stampText={pageCtx.envelope.stampText}
+							stampYear={pageCtx.envelope.stampYear}
+							tooltipText={pageCtx.envelope.tooltipText}
+							eventSlug={pageCtx.envelope.eventSlug}
+							variant={pageCtx.envelope.variant}
+							card={pageCtx.envelope.card}
+						/>
+					)
+				}
+
+				<EventHeader
+					links={pageCtx.viewModel.navigation ?? []}
+					variant={pageCtx.viewModel.theme.preset}
+					initials={pageCtx.viewModel.envelope?.data?.sealInitials}
+					eventName={pageCtx.viewModel.hero?.name}
+					eventSubtitle={pageCtx.viewModel.hero?.label}
+					isDemo={false}
+				/>
+
+				<Hero
+					{...pageCtx.viewModel.hero}
+					time={pageCtx.heroTime}
+					venueName={pageCtx.heroVenueName}
+					guestName={pageCtx.guestName}
+				/>
+
+				<InvitationSections pageContext={pageCtx} />
+
+				<Footer
+					eventSlug={pageCtx.viewModel.id}
+					showEnvelope={pageCtx.wrapper.showEnvelope}
+					variant={pageCtx.footerVariant}
+					closingPhrase="Con cariño"
+					showFooterBranding={pageCtx.viewModel.brandingVisibility.showFooterBranding}
+					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}
+				/>
+
+				{pageCtx.viewModel.music && (
+					<MusicPlayer
+						url={pageCtx.viewModel.music.url}
+						autoPlay={pageCtx.viewModel.music.autoPlay}
+						title={pageCtx.viewModel.music.title}
+						revealMode={pageCtx.viewModel.music.revealMode}
+						variant={pageCtx.viewModel.theme.preset}
+					/>
+				)}
+			</main>
+		</Layout>
+	) : null
+}
+
+<style>
+	.preview-banner {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 99999;
+		background: #e53e3e;
+		color: #fff;
+		text-align: center;
+		padding: 8px 16px;
+		font-family: system-ui, sans-serif;
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+		pointer-events: none;
+	}
+
+	.preview-error {
+		padding: 40px 24px;
+		text-align: center;
+		font-family: system-ui, sans-serif;
+	}
+
+	.preview-error h2 {
+		font-size: 24px;
+		margin-bottom: 16px;
+		color: #e53e3e;
+	}
+
+	.preview-error p {
+		font-size: 16px;
+		color: #555;
+		margin-bottom: 24px;
+	}
+
+	.preview-error__back {
+		display: inline-block;
+		padding: 10px 20px;
+		background: #3182ce;
+		color: #fff;
+		border-radius: 6px;
+		text-decoration: none;
+	}
+
+	.preview-error__back:hover {
+		background: #2b6cb0;
+	}
+</style>

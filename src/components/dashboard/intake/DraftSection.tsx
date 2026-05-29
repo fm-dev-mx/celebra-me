@@ -43,6 +43,12 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 						>
 							Ver borrador
 						</a>
+						<a
+							href={`/dashboard/invitaciones/${projectId}/preview`}
+							className="intake-detail__review-link"
+						>
+							Vista previa
+						</a>
 						<button
 							type="button"
 							className="intake-detail__generate-btn"

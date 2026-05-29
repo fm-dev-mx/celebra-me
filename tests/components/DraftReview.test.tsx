@@ -244,4 +244,19 @@ describe('DraftReview', () => {
 		const backLink = screen.getByRole('link', { name: /volver/i });
 		expect(backLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1');
 	});
+
+	it('renders vista previa link pointing to preview route when status is draft', () => {
+		mockCurrentDraft = makeDraftContent();
+		render(<DraftReview projectId="proj-1" />);
+
+		const previewLink = screen.getByRole('link', { name: /vista previa/i });
+		expect(previewLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1/preview');
+	});
+
+	it('does not render vista previa link when status is not draft', () => {
+		mockCurrentDraft = makeDraftContent({ status: 'published' });
+		render(<DraftReview projectId="proj-1" />);
+
+		expect(screen.queryByRole('link', { name: /vista previa/i })).not.toBeInTheDocument();
+	});
 });

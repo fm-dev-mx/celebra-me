@@ -97,6 +97,12 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				</div>
 				{currentDraft.status === 'draft' && (
 					<>
+						<a
+							href={`/dashboard/invitaciones/${projectId}/preview`}
+							className="intake-review__preview-link"
+						>
+							Vista previa
+						</a>
 						<button
 							type="button"
 							className="intake-detail__generate-btn intake-editor__edit-btn"
