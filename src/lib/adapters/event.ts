@@ -226,7 +226,14 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				return null;
 			}
 			return {
-				...interlude,
+				afterSection: interlude.afterSection,
+				alt: interlude.alt,
+				height: interlude.height,
+				variant: interlude.variant,
+				focalPoint: interlude.focalPoint,
+				lightX: interlude.lightX,
+				lightY: interlude.lightY,
+				overlayOpacity: interlude.overlayOpacity,
 				image: resolvedImage,
 			} as Interlude;
 		})
