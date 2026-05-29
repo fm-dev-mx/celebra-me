@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import type { IntakeRequestDTO } from '@/lib/dashboard/dto/intake';
+import { REQUEST_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	projectId: string;
@@ -9,14 +10,6 @@ interface Props {
 	onRegenerate: () => void;
 	regenerating?: boolean;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-	draft: 'Borrador',
-	active: 'Activo',
-	submitted: 'Enviado',
-	closed: 'Cerrado',
-	expired: 'Expirado',
-};
 
 const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerating }) => {
 	const [copied, setCopied] = useState(false);
@@ -43,8 +36,8 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 			await navigator.clipboard.writeText(link);
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
-		} catch {
-			// fallback
+		} catch (err) {
+			console.warn('Failed to copy link to clipboard:', err);
 		}
 	};
 
@@ -55,8 +48,8 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 			await navigator.clipboard.writeText(message);
 			setCopiedWa(true);
 			setTimeout(() => setCopiedWa(false), 2000);
-		} catch {
-			// fallback
+		} catch (err) {
+			console.warn('Failed to copy WhatsApp message to clipboard:', err);
 		}
 	};
 
@@ -65,7 +58,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 			<div className="intake-link-panel__status">
 				<span className="intake-link-panel__label">Estado:</span>
 				<span className="intake-link-panel__value">
-					{STATUS_LABELS[request.status] ?? request.status}
+					{REQUEST_STATUS_LABELS[request.status] ?? request.status}
 				</span>
 				{request.expiresAt && (
 					<span className="intake-link-panel__expires">

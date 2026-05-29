@@ -5,23 +5,12 @@ import BlockSelector from '@/components/dashboard/intake/BlockSelector';
 import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
 import type { IntakeBlockType } from '@/lib/intake/types';
+import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 
 interface Props {
 	projectId: string;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-	draft: 'Borrador',
-	waiting_for_client: 'Esperando cliente',
-	client_submitted: 'Captura recibida',
-	in_review: 'En revision',
-	in_production: 'En produccion',
-	preview_sent: 'Vista previa enviada',
-	approved: 'Aprobado',
-	published: 'Publicado',
-	archived: 'Archivado',
-};
 
 const InvitationDetail: FC<Props> = ({ projectId }) => {
 	const {
@@ -99,10 +88,17 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 
 	const handleTogglePhotos = async () => {
 		if (!currentProject) return;
+		setActionError('');
+		setActionSuccess('');
 		try {
 			await updateProject(projectId, {
 				photosReceived: !currentProject.photosReceived,
 			});
+			setActionSuccess(
+				currentProject.photosReceived
+					? 'Fotos marcadas como no recibidas.'
+					: 'Fotos marcadas como recibidas.',
+			);
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al actualizar.');
 		}
@@ -133,7 +129,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 				<h2 className="intake-detail__title">{currentProject.title}</h2>
 				<div className="intake-detail__meta">
 					<span className="intake-detail__badge">
-						{STATUS_LABELS[currentProject.status] ?? currentProject.status}
+						{PROJECT_STATUS_LABELS[currentProject.status] ?? currentProject.status}
 					</span>
 					<span className="intake-detail__type">{currentProject.eventType}</span>
 					{preset && <span className="intake-detail__demo">{preset.displayName}</span>}

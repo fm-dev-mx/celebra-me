@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import DemoSelector from '@/components/dashboard/intake/DemoSelector';
+import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
 
 const EVENT_TYPES = [
 	{ value: 'xv', label: 'XV anos' },
@@ -9,18 +10,6 @@ const EVENT_TYPES = [
 	{ value: 'bautizo', label: 'Bautizo' },
 	{ value: 'cumple', label: 'Cumpleanos' },
 ];
-
-const STATUS_LABELS: Record<string, string> = {
-	draft: 'Borrador',
-	waiting_for_client: 'Esperando cliente',
-	client_submitted: 'Captura recibida',
-	in_review: 'En revision',
-	in_production: 'En produccion',
-	preview_sent: 'Vista previa enviada',
-	approved: 'Aprobado',
-	published: 'Publicado',
-	archived: 'Archivado',
-};
 
 const InvitationList: FC = () => {
 	const { items, loading, error, createProject } = useInvitationAdmin();
@@ -219,7 +208,8 @@ const InvitationList: FC = () => {
 									<td>{project.eventType}</td>
 									<td>
 										<span className="intake-list__status">
-											{STATUS_LABELS[project.status] ?? project.status}
+											{PROJECT_STATUS_LABELS[project.status] ??
+												project.status}
 										</span>
 									</td>
 									<td>
