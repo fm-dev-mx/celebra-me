@@ -14,6 +14,7 @@ export function useInvitationAdmin() {
 	const [items, setItems] = useState<InvitationProjectDTO[]>([]);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+	const [saving, setSaving] = useState(false);
 
 	const [currentProject, setCurrentProject] = useState<InvitationProjectDTO | null>(null);
 	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
@@ -172,10 +173,27 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
+	const updateDraft = useCallback(async (projectId: string, content: Record<string, unknown>) => {
+		setSaving(true);
+		setError('');
+		try {
+			const result = await adminApi.updateDraftContent(projectId, content);
+			setCurrentDraft(result.draft);
+			return result.draft;
+		} catch (err) {
+			throw new Error(err instanceof Error ? err.message : 'Error al guardar el borrador.', {
+				cause: err,
+			});
+		} finally {
+			setSaving(false);
+		}
+	}, []);
+
 	return {
 		items,
 		error,
 		loading,
+		saving,
 		currentProject,
 		currentRequest,
 		currentSubmission,
@@ -191,6 +209,7 @@ export function useInvitationAdmin() {
 		reviewSubmission,
 		loadDraft,
 		generateDraft: generateDraftAction,
+		updateDraft,
 		reloadProjects: loadProjects,
 	};
 }

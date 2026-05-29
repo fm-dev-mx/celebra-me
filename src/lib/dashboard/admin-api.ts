@@ -251,6 +251,17 @@ export class AdminApi {
 		);
 		return this.handleResponse(result);
 	}
+
+	async updateDraftContent(
+		projectId: string,
+		content: Record<string, unknown>,
+	): Promise<DraftResponse> {
+		const result = await dashboardApi.patch<DraftResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/draft`,
+			{ content },
+		);
+		return this.handleResponse(result);
+	}
 }
 
 export const adminApi = new AdminApi();
