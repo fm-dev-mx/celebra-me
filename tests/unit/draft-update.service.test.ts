@@ -74,4 +74,81 @@ describe('updateDraftContentByProject', () => {
 		});
 		expect(mockUpdateDraft).not.toHaveBeenCalled();
 	});
+
+	it('partial update preserves existing sibling sections', async () => {
+		const draftWithFullContent = {
+			...existingDraft,
+			content: {
+				title: 'Original Title',
+				description: 'Original Description',
+				hero: { name: 'Ana', label: 'XV Anos' },
+				location: { ceremony: { venueName: 'Iglesia' } },
+			},
+		};
+		mockFindDraft.mockResolvedValue(draftWithFullContent);
+		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+
+		await updateDraftContentByProject('proj-1', { title: 'Updated Title' });
+
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
+			title: 'Updated Title',
+			description: 'Original Description',
+			hero: { name: 'Ana', label: 'XV Anos' },
+			location: { ceremony: { venueName: 'Iglesia' } },
+		});
+	});
+
+	it('updating one nested field does not delete unrelated nested fields', async () => {
+		const draftWithFullContent = {
+			...existingDraft,
+			content: {
+				hero: {
+					name: 'Ana',
+					secondaryName: 'Sofia',
+					label: 'XV Anos',
+					nickname: 'Anita',
+					date: '2027-11-20',
+				},
+				family: { fatherName: 'Fernando', motherName: 'Maria' },
+			},
+		};
+		mockFindDraft.mockResolvedValue(draftWithFullContent);
+		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+
+		await updateDraftContentByProject('proj-1', {
+			hero: { name: 'Ana Maria' },
+		});
+
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
+			hero: {
+				name: 'Ana Maria',
+				secondaryName: 'Sofia',
+				label: 'XV Anos',
+				nickname: 'Anita',
+				date: '2027-11-20',
+			},
+			family: { fatherName: 'Fernando', motherName: 'Maria' },
+		});
+	});
+
+	it('empty content object is safely non-destructive (preserves existing)', async () => {
+		const draftWithFullContent = {
+			...existingDraft,
+			content: {
+				title: 'Original Title',
+				description: 'Original Description',
+				hero: { name: 'Ana' },
+			},
+		};
+		mockFindDraft.mockResolvedValue(draftWithFullContent);
+		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+
+		await updateDraftContentByProject('proj-1', {});
+
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
+			title: 'Original Title',
+			description: 'Original Description',
+			hero: { name: 'Ana' },
+		});
+	});
 });

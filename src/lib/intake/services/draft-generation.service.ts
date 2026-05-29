@@ -10,6 +10,33 @@ import {
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
+function deepMerge(
+	base: Record<string, unknown>,
+	overlay: Record<string, unknown>,
+): Record<string, unknown> {
+	const result: Record<string, unknown> = { ...base };
+	for (const key of Object.keys(overlay)) {
+		const baseVal = result[key];
+		const overlayVal = overlay[key];
+		if (
+			baseVal !== null &&
+			overlayVal !== null &&
+			typeof baseVal === 'object' &&
+			typeof overlayVal === 'object' &&
+			!Array.isArray(baseVal) &&
+			!Array.isArray(overlayVal)
+		) {
+			result[key] = deepMerge(
+				baseVal as Record<string, unknown>,
+				overlayVal as Record<string, unknown>,
+			);
+		} else {
+			result[key] = overlayVal;
+		}
+	}
+	return result;
+}
+
 export async function generateDraft(projectId: string): Promise<InvitationContentDraft> {
 	const project = await getInvitationProjectById(projectId);
 	if (!project) {
@@ -66,5 +93,8 @@ export async function updateDraftContentByProject(
 		);
 	}
 
-	return updateDraftContent(draft.id, content);
+	const existing = (draft.content ?? {}) as Record<string, unknown>;
+	const merged = deepMerge(existing, content);
+
+	return updateDraftContent(draft.id, merged);
 }
