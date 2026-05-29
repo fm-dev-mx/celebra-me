@@ -1,19 +1,7 @@
+import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-
-function str(value: unknown): string | undefined {
-	if (typeof value === 'string' && value.length > 0) return value;
-	return undefined;
-}
-
-function bool(value: unknown): boolean | undefined {
-	if (typeof value === 'boolean') return value;
-	return undefined;
-}
-
-function num(value: unknown): number | undefined {
-	if (typeof value === 'number') return value;
-	return undefined;
-}
+import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+import { str, bool, num } from '@/lib/intake/utils';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -86,6 +74,9 @@ function mapPhotos(data: Record<string, unknown>): Partial<DraftContent> {
 			familyPhoto: str(data.familyPhoto),
 			specialPhoto: str(data.specialPhoto),
 			generalNotes: str(data.generalNotes),
+			photoOrder: str(data.photoOrder),
+			cropNotes: str(data.cropNotes),
+			priorityNotes: str(data.priorityNotes),
 		},
 	};
 }
@@ -118,7 +109,7 @@ function mapGifts(data: Record<string, unknown>): Partial<DraftContent> {
 		gifts: {
 			title: str(data.title),
 			subtitle: str(data.subtitle),
-			items: Array.isArray(items) ? (items as Array<Record<string, unknown>>) : undefined,
+			items: Array.isArray(items) ? (items as z.infer<typeof giftItemSchema>[]) : undefined,
 		},
 	};
 }

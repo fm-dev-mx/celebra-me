@@ -62,6 +62,9 @@ export const photosBlockSchema = z.object({
 	familyPhoto: optionalString,
 	specialPhoto: optionalString,
 	generalNotes: optionalString,
+	photoOrder: optionalString,
+	cropNotes: optionalString,
+	priorityNotes: optionalString,
 	_pending: pendingFieldMarker,
 });
 
@@ -81,7 +84,7 @@ export const musicBlockSchema = z.object({
 	_pending: pendingFieldMarker,
 });
 
-const giftItemSchema = z.discriminatedUnion('type', [
+export const giftItemSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('store'),
 		title: z.string().min(1).max(200),

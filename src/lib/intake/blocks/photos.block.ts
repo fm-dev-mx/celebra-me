@@ -59,5 +59,29 @@ export const photosBlock: IntakeBlockDefinition = {
 			placeholder:
 				'Indicaciones adicionales sobre calidad, estilo, filtros, o cualquier preferencia.',
 		},
+		{
+			name: 'photoOrder',
+			label: 'Orden sugerido de las fotos',
+			type: 'textarea',
+			required: false,
+			placeholder:
+				'Describe el orden en que deben aparecer las fotos (por nombre o descripción). Ej: 1. Retrato principal, 2. Foto con padres, 3. Foto grupal.',
+		},
+		{
+			name: 'cropNotes',
+			label: 'Notas de recorte y edición',
+			type: 'textarea',
+			required: false,
+			placeholder:
+				'Indica si alguna foto necesita recorte, ajuste de color, o cualquier edición específica.',
+		},
+		{
+			name: 'priorityNotes',
+			label: 'Prioridad de las fotos',
+			type: 'textarea',
+			required: false,
+			placeholder:
+				'Indica qué fotos son prioritarias o deben destacarse. Ej: La foto familiar es la más importante.',
+		},
 	],
 };

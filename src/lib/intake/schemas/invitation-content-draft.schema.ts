@@ -1,8 +1,5 @@
 import { z } from 'zod';
-
-export const GenerateDraftActionSchema = z.object({
-	action: z.literal('generate'),
-});
+import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
 	z.object({ action: z.literal('generate') }),
@@ -83,7 +80,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
-				items: z.array(z.record(z.string(), z.unknown())).optional(),
+				items: z.array(giftItemSchema).optional(),
 			})
 			.optional(),
 		rsvp: z
@@ -105,15 +102,18 @@ export const InvitationContentDraftContentSchema = z
 				familyPhoto: z.string().optional(),
 				specialPhoto: z.string().optional(),
 				generalNotes: z.string().optional(),
+				photoOrder: z.string().optional(),
+				cropNotes: z.string().optional(),
+				priorityNotes: z.string().optional(),
 			})
 			.optional(),
 	})
-	.passthrough();
+	.catchall(z.unknown());
 
 export const UpdateDraftContentSchema = z.object({
 	content: InvitationContentDraftContentSchema,
 });
 
 export type DraftContent = z.infer<typeof InvitationContentDraftContentSchema>;
-export type GenerateDraftActionInput = z.infer<typeof GenerateDraftActionSchema>;
+export type GenerateDraftActionInput = z.infer<typeof DraftActionSchema>;
 export type UpdateDraftContentInput = z.infer<typeof UpdateDraftContentSchema>;
