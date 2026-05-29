@@ -1,10 +1,10 @@
 ---
-// src/pages/[eventType]/[slug].astro
 export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
+import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
@@ -13,46 +13,85 @@ import Hero from '@/components/invitation/Hero.astro';
 import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import type { InvitationGuestContext } from '@/lib/invitation/page-data';
+import type { ThemePreset } from '@/lib/theme/theme-contract';
 
-const { eventType, slug } = Astro.params;
+const slug = Astro.params.slug!;
+const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
 
-const eventEntry = await getRoutableEventEntry(slug as string, eventType as string);
+const resolution = await resolveInvitationContent(slug, eventType);
 
-if (!eventEntry) {
+if (!resolution) {
 	return Astro.redirect('/404');
 }
 
-const canonicalEventType = eventEntry.data.eventType;
-if (eventType !== canonicalEventType) {
-	const canonicalUrl = new URL(`/${canonicalEventType}/${slug as string}`, Astro.url);
+const { viewModel } = resolution;
+
+let page: ReturnType<typeof prepareInvitationPageContext>;
+let guestContext: InvitationGuestContext | null = null;
+const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
+
+if (resolution.source === 'static') {
+	const eventEntry = await getRoutableEventEntry(slug, eventType);
+	if (!eventEntry) {
+		return Astro.redirect('/404');
+	}
+
+	if (eventType !== eventEntry.data.eventType) {
+		const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
+		if (inviteId) {
+			canonicalUrl.searchParams.set('invite', inviteId);
+		}
+		return Astro.redirect(canonicalUrl.href, 301);
+	}
+
 	if (inviteId) {
-		canonicalUrl.searchParams.set('invite', inviteId);
+		const personalization = await resolveRoutePersonalization({
+			inviteId,
+			currentPathWithQuery,
+			routeEventType: eventEntry.data.eventType,
+			routeSlug: slug,
+			routeIsDemo: Boolean(eventEntry.data.isDemo),
+		});
+		if (personalization.redirectPath) {
+			return Astro.redirect(personalization.redirectPath, 302);
+		}
+		guestContext = personalization.guestContext;
 	}
-	return Astro.redirect(canonicalUrl.href, 301);
-}
 
-let guestContext = null;
-if (inviteId) {
-	const personalization = await resolveRoutePersonalization({
-		inviteId,
-		currentPathWithQuery: Astro.url.pathname + Astro.url.search,
-		routeEventType: canonicalEventType,
-		routeSlug: slug as string,
-		routeIsDemo: Boolean(eventEntry.data.isDemo),
+	page = prepareInvitationPageContext({
+		eventEntry,
+		slug,
+		guestContext,
 	});
-	if (personalization.redirectPath) {
-		return Astro.redirect(personalization.redirectPath, 302);
-	}
-	guestContext = personalization.guestContext;
-}
+} else {
+	const routeEventType = (resolution.rawContent?.eventType as string | undefined) ?? eventType;
 
-const page = prepareInvitationPageContext({
-	eventEntry,
-	slug: slug as string,
-	guestContext,
-});
-const { viewModel } = page;
+	if (inviteId) {
+		const personalization = await resolveRoutePersonalization({
+			inviteId,
+			currentPathWithQuery,
+			routeEventType,
+			routeSlug: slug,
+			routeIsDemo: false,
+		});
+		if (personalization.redirectPath) {
+			return Astro.redirect(personalization.redirectPath, 302);
+		}
+		guestContext = personalization.guestContext;
+	}
+
+	page = buildPageContextFromViewModel({
+		viewModel,
+		slug,
+		guestContext,
+		eventType: routeEventType,
+		sectionStyles: resolution.rawContent?.sectionStyles as
+			| { footer?: { variant?: ThemePreset } }
+			| undefined,
+	});
+}
 ---
 
 <Layout
