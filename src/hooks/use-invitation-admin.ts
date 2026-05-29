@@ -4,6 +4,7 @@ import type {
 	InvitationProjectDTO,
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
+	InvitationContentDraftDTO,
 	CreateInvitationProjectDTO,
 	UpdateInvitationProjectDTO,
 	CreateIntakeRequestDTO,
@@ -17,6 +18,7 @@ export function useInvitationAdmin() {
 	const [currentProject, setCurrentProject] = useState<InvitationProjectDTO | null>(null);
 	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
 	const [currentSubmission, setCurrentSubmission] = useState<IntakeSubmissionDTO | null>(null);
+	const [currentDraft, setCurrentDraft] = useState<InvitationContentDraftDTO | null>(null);
 	const [rawToken, setRawToken] = useState<string | null>(null);
 
 	const loadProjects = useCallback(async () => {
@@ -145,6 +147,31 @@ export function useInvitationAdmin() {
 		[loadSubmissionForReview],
 	);
 
+	const loadDraft = useCallback(async (projectId: string) => {
+		setLoading(true);
+		setError('');
+		try {
+			const result = await adminApi.getDraft(projectId);
+			setCurrentDraft(result.draft);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Error al cargar el borrador.');
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	const generateDraftAction = useCallback(async (projectId: string) => {
+		try {
+			const result = await adminApi.generateDraft(projectId);
+			setCurrentDraft(result.draft);
+			return result.draft;
+		} catch (err) {
+			throw new Error(err instanceof Error ? err.message : 'Error al generar el borrador.', {
+				cause: err,
+			});
+		}
+	}, []);
+
 	return {
 		items,
 		error,
@@ -152,6 +179,7 @@ export function useInvitationAdmin() {
 		currentProject,
 		currentRequest,
 		currentSubmission,
+		currentDraft,
 		rawToken,
 		setRawToken,
 		createProject,
@@ -161,6 +189,8 @@ export function useInvitationAdmin() {
 		regenerateToken,
 		loadSubmissionForReview,
 		reviewSubmission,
+		loadDraft,
+		generateDraft: generateDraftAction,
 		reloadProjects: loadProjects,
 	};
 }

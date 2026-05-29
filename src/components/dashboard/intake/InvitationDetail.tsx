@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import BlockSelector from '@/components/dashboard/intake/BlockSelector';
 import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
+import DraftSection from '@/components/dashboard/intake/DraftSection';
 import type { IntakeBlockType } from '@/lib/intake/types';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 
@@ -35,6 +36,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		updateProject,
 		createIntakeRequest,
 		regenerateToken,
+		loadDraft,
 	} = useInvitationAdmin();
 
 	const [selectedBlocks, setSelectedBlocks] = useState<IntakeBlockType[]>([]);
@@ -45,7 +47,8 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 
 	useEffect(() => {
 		void loadProjectDetail(projectId);
-	}, [projectId, loadProjectDetail]);
+		void loadDraft(projectId);
+	}, [projectId, loadProjectDetail, loadDraft]);
 
 	useEffect(() => {
 		if (currentRequest?.enabledBlocks) {
@@ -219,6 +222,8 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 					</a>
 				</section>
 			)}
+
+			{currentSubmission?.status === 'approved' && <DraftSection projectId={projectId} />}
 
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}
