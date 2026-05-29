@@ -34,6 +34,13 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'claimcodes:update': { maxHits: 30, windowSec: 60 },
 	'claimcodes:delete': { maxHits: 10, windowSec: 60 },
 	'claimcodes:validate': { maxHits: 30, windowSec: 60 },
+	'intake:list': { maxHits: 60, windowSec: 60 },
+	'intake:create': { maxHits: 20, windowSec: 60 },
+	'intake:update': { maxHits: 30, windowSec: 60 },
+	'intake:request': { maxHits: 10, windowSec: 60 },
+	'intake:regenerate': { maxHits: 5, windowSec: 60 },
+	'intake:review': { maxHits: 20, windowSec: 60 },
+	'intake:captura': { maxHits: 30, windowSec: 60 },
 };
 
 /**
