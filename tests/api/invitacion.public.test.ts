@@ -1,12 +1,11 @@
 import { POST as publicRsvp } from '@/pages/api/invitacion/public/[eventType]/[slug]/rsvp';
-import { getRoutableEventEntry } from '@/lib/content/events';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submission.service';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 
-jest.mock('@/lib/content/events', () => ({
-	getRoutableEventEntry: jest.fn(),
+jest.mock('@/lib/invitations/content-resolver', () => ({
+	resolveInvitationContent: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
@@ -21,8 +20,10 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
-const getRoutableEventEntryMock = getRoutableEventEntry as jest.MockedFunction<
-	typeof getRoutableEventEntry
+import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
+
+const resolveInvitationContentMock = resolveInvitationContent as jest.MockedFunction<
+	typeof resolveInvitationContent
 >;
 const findEventBySlugServiceMock = findEventBySlugService as jest.MockedFunction<
 	typeof findEventBySlugService
@@ -32,21 +33,38 @@ const submitGuestRsvpByPublicEventMock = submitGuestRsvpByPublicEvent as jest.Mo
 >;
 const checkRateLimitMock = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 
+function mockContentResolution(overrides?: {
+	accessMode?: string;
+	guestCap?: number;
+	isDemo?: boolean;
+}) {
+	const { accessMode = 'hybrid', guestCap = 3, isDemo = false } = overrides ?? {};
+	return {
+		source: 'static' as const,
+		viewModel: {
+			id: 'demo',
+			isDemo,
+			title: 'Evento Demo',
+			theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+			hero: { name: 'Demo', label: 'Evento', date: '2027-01-01' },
+			envelope: { enabled: false },
+			brandingVisibility: {
+				showFooterBranding: true,
+				showContactCta: true,
+				showThankYouBranding: true,
+			},
+			sections: {
+				rsvp: { guestCap, accessMode },
+			},
+		},
+	};
+}
+
 describe('Invitation API: public landing RSVP', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		checkRateLimitMock.mockResolvedValue(true);
-		getRoutableEventEntryMock.mockResolvedValue({
-			id: 'events/demo',
-			data: {
-				eventType: 'xv',
-				isDemo: false,
-				rsvp: {
-					guestCap: 3,
-					accessMode: 'hybrid',
-				},
-			},
-		} as never);
+		resolveInvitationContentMock.mockResolvedValue(mockContentResolution() as any);
 		findEventBySlugServiceMock.mockResolvedValue({
 			id: 'evt-1',
 			ownerUserId: 'host-1',
@@ -182,17 +200,9 @@ describe('Invitation API: public landing RSVP', () => {
 	});
 
 	it('rejects events that do not opt into hybrid RSVP', async () => {
-		getRoutableEventEntryMock.mockResolvedValueOnce({
-			id: 'events/demo',
-			data: {
-				eventType: 'xv',
-				isDemo: false,
-				rsvp: {
-					guestCap: 3,
-					accessMode: 'personalized-only',
-				},
-			},
-		} as never);
+		resolveInvitationContentMock.mockResolvedValueOnce(
+			mockContentResolution({ accessMode: 'personalized-only' }) as any,
+		);
 
 		const response = await publicRsvp({
 			params: { eventType: 'xv', slug: 'demo' },

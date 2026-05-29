@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getRoutableEventEntry } from '@/lib/content/events';
+import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
@@ -25,13 +25,13 @@ export const POST: APIRoute = async ({ params, request }) => {
 		const parsedRequest = await parsePublicGuestRsvpRequest(request);
 		if (parsedRequest instanceof Response) return parsedRequest;
 
-		const eventEntry = await getRoutableEventEntry(slug, eventType);
-		if (!eventEntry || eventEntry.data.isDemo) {
+		const resolution = await resolveInvitationContent(slug, eventType);
+		if (!resolution || (resolution.source === 'static' && resolution.viewModel.isDemo)) {
 			throw new ApiError(404, 'not_found', 'Public RSVP is not available for this event.');
 		}
 
-		const rsvpConfig = eventEntry.data.rsvp;
-		if (!rsvpConfig || rsvpConfig.accessMode !== 'hybrid') {
+		const rsvpSection = resolution.viewModel.sections.rsvp;
+		if (!rsvpSection || rsvpSection.accessMode !== 'hybrid') {
 			throw new ApiError(
 				403,
 				'forbidden',
@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			fullName: parsedRequest.fullName,
 			phone: parsedRequest.phone,
 			countryCode: parsedRequest.countryCode,
-			maxAllowedAttendees: rsvpConfig.guestCap,
+			maxAllowedAttendees: rsvpSection.guestCap ?? 1,
 			payload: parsedRequest.payload,
 		});
 
