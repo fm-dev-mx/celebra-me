@@ -18,6 +18,7 @@ function num(value: unknown): number | undefined {
 
 function mapFamilyFromDraft(
 	draftFamily: Record<string, unknown> | undefined,
+	celebrantName: string,
 ): Record<string, unknown> | undefined {
 	if (!draftFamily) return undefined;
 
@@ -58,6 +59,7 @@ function mapFamilyFromDraft(
 	}
 
 	if (str(draftFamily.sectionMessage)) result.sectionMessage = str(draftFamily.sectionMessage);
+	result.celebrantName = celebrantName;
 
 	return Object.keys(result).length > 0 ? result : undefined;
 }
@@ -98,120 +100,153 @@ export interface PublishInput {
 		snapshot: DemoPreset;
 	};
 	draftContent: DraftContent;
+	demoContent: Record<string, unknown>;
 }
 
-function mapHero(
-	draftContent: DraftContent,
-	snapshot: DemoPreset,
+function mapHeroSection(
+	draftHero: Record<string, unknown> | undefined,
+	demoHero: Record<string, unknown> | undefined,
 	projectTitle: string,
+	themeId: string,
 ): Record<string, unknown> | undefined {
-	const draftHero = draftContent.hero as Record<string, unknown> | undefined;
-	if (!draftHero || Object.keys(draftHero).length === 0) return undefined;
+	if (!draftHero || Object.keys(draftHero).length === 0) return demoHero;
+	const fallback = (a: unknown, b: unknown) => str(a) || (b as string) || '';
 	return {
-		name: str(draftHero.name) || projectTitle,
-		secondaryName: str(draftHero.secondaryName),
-		label: str(draftHero.label) || 'Invitacion Especial',
-		nickname: str(draftHero.nickname),
-		date: str(draftHero.date) || '',
-		backgroundImage: { type: 'internal', key: 'hero' },
-		variant: snapshot.themeId,
-	};
-}
-
-function mapRsvp(draftContent: DraftContent): Record<string, unknown> | undefined {
-	const draftRsvp = draftContent.rsvp as Record<string, unknown> | undefined;
-	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
-	return {
-		title: str(draftRsvp.title),
-		guestCap: num(draftRsvp.guestCap),
-		confirmationMessage: str(draftRsvp.confirmationMessage),
-		confirmationMode: str(draftRsvp.confirmationMode) || 'api',
-		whatsappPhone: str(draftRsvp.whatsappPhone),
-		subcopy: str(draftRsvp.subcopy),
-	};
-}
-
-function mapMusic(draftContent: DraftContent): Record<string, unknown> | undefined {
-	const draftMusic = draftContent.music as Record<string, unknown> | undefined;
-	if (!draftMusic || !str(draftMusic.url)) return undefined;
-	return {
-		url: str(draftMusic.url),
-		title: str(draftMusic.title),
-	};
-}
-
-function mapGifts(draftContent: DraftContent): Record<string, unknown> | undefined {
-	const draftGifts = draftContent.gifts as Record<string, unknown> | undefined;
-	if (!draftGifts || (!str(draftGifts.title) && !str(draftGifts.subtitle) && !draftGifts.items))
-		return undefined;
-	return {
-		title: str(draftGifts.title),
-		subtitle: str(draftGifts.subtitle),
-		items: draftGifts.items,
-	};
-}
-
-function mapQuote(draftContent: DraftContent): Record<string, unknown> | undefined {
-	const draftQuote = draftContent.quote as Record<string, unknown> | undefined;
-	if (!draftQuote || !str(draftQuote.text)) return undefined;
-	return {
-		text: str(draftQuote.text),
-		author: str(draftQuote.author),
-	};
-}
-
-function mapThankYou(draftContent: DraftContent): Record<string, unknown> | undefined {
-	const draftThankYou = draftContent.thankYou as Record<string, unknown> | undefined;
-	if (!draftThankYou || !str(draftThankYou.message)) return undefined;
-	return {
-		message: str(draftThankYou.message),
-		closingName: str(draftThankYou.closingName),
+		name: str(draftHero.name) || (demoHero?.name as string) || projectTitle,
+		secondaryName: fallback(draftHero.secondaryName, demoHero?.secondaryName),
+		label: str(draftHero.label) || (demoHero?.label as string) || 'Invitacion Especial',
+		nickname: fallback(draftHero.nickname, demoHero?.nickname),
+		date: str(draftHero.date) || (demoHero?.date as string) || '',
+		backgroundImage: demoHero?.backgroundImage || { type: 'internal', key: 'hero' },
+		backgroundImageDesktop: demoHero?.backgroundImageDesktop,
+		portrait: demoHero?.portrait,
+		variant: demoHero?.variant || themeId,
 	};
 }
 
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
-	const { draftContent, project } = input;
+	const { draftContent, project, demoContent } = input;
 	const snapshot = project.snapshot;
 
-	const result: Record<string, unknown> = {
-		eventType: project.eventType,
-		title: project.title,
-		description: str(draftContent.description),
-		theme: { preset: snapshot.themeId },
-		isDemo: false,
-	};
+	const celebName =
+		str((draftContent.hero as Record<string, unknown> | undefined)?.name) || project.title;
 
-	const heroSection = mapHero(draftContent, snapshot, project.title);
-	if (heroSection) result.hero = heroSection;
-
-	const familySection = mapFamilyFromDraft(
-		draftContent.family as Record<string, unknown> | undefined,
-	);
-	if (familySection) {
-		familySection.celebrantName =
-			str((draftContent.hero as Record<string, unknown> | undefined)?.name) || project.title;
-		result.family = familySection;
-	}
+	const demoRsvp = demoContent.rsvp as Record<string, unknown> | undefined;
+	const demoMusic = demoContent.music as Record<string, unknown> | undefined;
+	const demoGifts = demoContent.gifts as Record<string, unknown> | undefined;
+	const demoQuote = demoContent.quote as Record<string, unknown> | undefined;
+	const demoThankYou = demoContent.thankYou as Record<string, unknown> | undefined;
 
 	const locationSection = mapLocationFromDraft(
 		draftContent.location as Record<string, unknown> | undefined,
 	);
-	if (locationSection) result.location = locationSection;
+	const rsvpSection = (() => {
+		const draftRsvp = draftContent.rsvp as Record<string, unknown> | undefined;
+		if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
+		return {
+			title: str(draftRsvp.title) || str(demoRsvp?.title),
+			guestCap: num(draftRsvp.guestCap) ?? (demoRsvp?.guestCap as number | undefined),
+			confirmationMessage:
+				str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage),
+			confirmationMode:
+				str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
+			whatsappPhone: str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone),
+			subcopy: str(draftRsvp.subcopy) || str(demoRsvp?.subcopy),
+		};
+	})();
 
-	const rsvpSection = mapRsvp(draftContent);
-	if (rsvpSection) result.rsvp = rsvpSection;
+	const musicSection = (() => {
+		const draftMusic = draftContent.music as Record<string, unknown> | undefined;
+		if (draftMusic && str(draftMusic.url)) {
+			return {
+				url: str(draftMusic.url),
+				title: str(draftMusic.title) || str(demoMusic?.title),
+				autoPlay: false,
+			};
+		}
+		return demoMusic ? { ...demoMusic } : undefined;
+	})();
 
-	const musicSection = mapMusic(draftContent);
-	if (musicSection) result.music = musicSection;
+	const giftsSection = (() => {
+		const draftGifts = draftContent.gifts as Record<string, unknown> | undefined;
+		if (draftGifts && (str(draftGifts.title) || draftGifts.items)) {
+			return {
+				title: str(draftGifts.title) || str(demoGifts?.title),
+				subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
+				items:
+					(draftGifts.items as Array<Record<string, unknown>>) ||
+					(demoGifts?.items as Array<Record<string, unknown>>) ||
+					[],
+			};
+		}
+		return demoGifts ? { ...demoGifts } : undefined;
+	})();
 
-	const giftsSection = mapGifts(draftContent);
-	if (giftsSection) result.gifts = giftsSection;
+	const quoteSection = (() => {
+		const draftQuote = draftContent.quote as Record<string, unknown> | undefined;
+		if (draftQuote && str(draftQuote.text)) {
+			return {
+				text: str(draftQuote.text),
+				author: str(draftQuote.author) || str(demoQuote?.author),
+			};
+		}
+		return demoQuote ? { ...demoQuote } : undefined;
+	})();
 
-	const quoteSection = mapQuote(draftContent);
-	if (quoteSection) result.quote = quoteSection;
+	const thankYouSection = (() => {
+		const draftThankYou = draftContent.thankYou as Record<string, unknown> | undefined;
+		if (draftThankYou && str(draftThankYou.message)) {
+			return {
+				message: str(draftThankYou.message),
+				closingName: str(draftThankYou.closingName) || str(demoThankYou?.closingName),
+			};
+		}
+		return demoThankYou ? { ...demoThankYou } : undefined;
+	})();
 
-	const thankYouSection = mapThankYou(draftContent);
-	if (thankYouSection) result.thankYou = thankYouSection;
+	const heroSection = mapHeroSection(
+		draftContent.hero as Record<string, unknown> | undefined,
+		demoContent.hero as Record<string, unknown> | undefined,
+		project.title,
+		snapshot.themeId,
+	);
 
-	return result;
+	const familySection = mapFamilyFromDraft(
+		draftContent.family as Record<string, unknown> | undefined,
+		celebName,
+	);
+
+	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
+
+	return {
+		eventType: project.eventType,
+		title: project.title,
+		description: str(draftContent.description) || str(demoContent.description),
+		isDemo: false,
+
+		theme: {
+			fontFamily: str(demoTheme?.fontFamily),
+			preset: snapshot.themeId,
+		},
+
+		sectionOrder: demoContent.sectionOrder,
+
+		hero: heroSection,
+		envelope: demoContent.envelope ?? { disabled: true },
+		family: familySection,
+		location: locationSection,
+		gallery: demoContent.gallery,
+		itinerary: demoContent.itinerary,
+		countdown: demoContent.countdown,
+		rsvp: rsvpSection,
+		music: musicSection,
+		gifts: giftsSection,
+		quote: quoteSection,
+		thankYou: thankYouSection,
+
+		interludes: demoContent.interludes,
+		sectionStyles: demoContent.sectionStyles,
+		navigation: demoContent.navigation,
+		sharing: demoContent.sharing,
+	};
 }

@@ -32,6 +32,45 @@ const snapshot: DemoPreset = {
 	previewSlug: 'demo-xv-jewelry-box',
 };
 
+const baseDemoContent = {
+	eventType: 'xv',
+	title: 'Demo Jewelry Box',
+	description: 'Demo description',
+	theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+	sectionOrder: [
+		'quote',
+		'family',
+		'gallery',
+		'countdown',
+		'location',
+		'itinerary',
+		'rsvp',
+		'gifts',
+		'thankYou',
+	],
+	hero: {
+		name: 'Lucía García',
+		label: 'Mis XV Años',
+		date: '2026-06-15',
+		backgroundImage: { type: 'internal', key: 'hero' },
+		variant: 'jewelry-box',
+	},
+	envelope: {
+		disabled: false,
+		sealStyle: 'wax',
+		sealIcon: 'heart',
+		sealInitials: 'L·G',
+		microcopy: 'Toca para abrir',
+	},
+	gallery: { title: 'Galería', items: [] },
+	itinerary: { title: 'Itinerario', items: [] },
+	countdown: { title: 'Falta poco', subtitlePrefix: 'El', footerText: 'Prepárate' },
+	interludes: [],
+	sectionStyles: {},
+	navigation: [{ label: 'Inicio', href: '#inicio' }],
+	sharing: { whatsappTemplate: '¡Hola!' },
+};
+
 const baseInput = {
 	project: {
 		title: 'Test Project',
@@ -43,6 +82,7 @@ const baseInput = {
 		description: 'Test Description',
 		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
 	},
+	demoContent: baseDemoContent,
 };
 
 describe('mapDraftToPublished', () => {
@@ -61,7 +101,7 @@ describe('mapDraftToPublished', () => {
 	it('sets theme from project snapshot', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.theme).toEqual({ preset: 'jewelry-box' });
+		expect(result.theme).toMatchObject({ preset: 'jewelry-box' });
 	});
 
 	it('sets eventType and isDemo from input', () => {
@@ -223,5 +263,121 @@ describe('mapDraftToPublished', () => {
 		expect(result.quote).toBeUndefined();
 		expect(result.thankYou).toBeUndefined();
 		expect(result.location).toBeUndefined();
+	});
+
+	it('includes envelope from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.envelope).toBeDefined();
+		expect((result.envelope as Record<string, unknown>).disabled).toBe(false);
+		expect((result.envelope as Record<string, unknown>).sealStyle).toBe('wax');
+	});
+
+	it('includes gallery from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.gallery).toBeDefined();
+		expect((result.gallery as Record<string, unknown>).title).toBe('Galería');
+	});
+
+	it('includes itinerary from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.itinerary).toBeDefined();
+		expect((result.itinerary as Record<string, unknown>).title).toBe('Itinerario');
+	});
+
+	it('includes countdown from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.countdown).toBeDefined();
+		expect((result.countdown as Record<string, unknown>).title).toBe('Falta poco');
+	});
+
+	it('includes interludes from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.interludes).toBeDefined();
+		expect(Array.isArray(result.interludes)).toBe(true);
+	});
+
+	it('includes sectionStyles from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.sectionStyles).toBeDefined();
+	});
+
+	it('includes navigation from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.navigation).toBeDefined();
+		expect(Array.isArray(result.navigation)).toBe(true);
+		expect((result.navigation as Array<Record<string, unknown>>)[0].label).toBe('Inicio');
+	});
+
+	it('includes sharing from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.sharing).toBeDefined();
+		expect((result.sharing as Record<string, unknown>).whatsappTemplate).toBe('¡Hola!');
+	});
+
+	it('includes theme fontFamily from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.theme).toMatchObject({
+			fontFamily: 'serif',
+			preset: 'jewelry-box',
+		});
+	});
+
+	it('includes sectionOrder from demo content', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.sectionOrder).toBeDefined();
+		expect(Array.isArray(result.sectionOrder)).toBe(true);
+	});
+
+	it('draft hero fields override demo defaults', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect((result.hero as Record<string, unknown>).name).toBe('Ana Sofia');
+		expect((result.hero as Record<string, unknown>).label).toBe('Mis XV Anos');
+		expect((result.hero as Record<string, unknown>).date).toBe('2027-11-20');
+	});
+
+	it('draft title overrides demo title', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.title).toBe('Test Project');
+	});
+
+	it('draft description overrides demo description', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.description).toBe('Test Description');
+	});
+
+	it('isDemo is always false', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.isDemo).toBe(false);
+	});
+
+	it('all enriched sections renderer-compatible', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result).toMatchObject({
+			eventType: expect.any(String),
+			title: expect.any(String),
+			isDemo: false,
+			theme: expect.objectContaining({
+				preset: expect.any(String),
+			}),
+			hero: expect.objectContaining({
+				name: expect.any(String),
+				backgroundImage: expect.any(Object),
+			}),
+		});
 	});
 });
