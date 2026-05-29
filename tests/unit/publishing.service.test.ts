@@ -9,6 +9,7 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 
 jest.mock('@/lib/intake/services/invitation-project.service', () => ({
 	getInvitationProjectById: jest.fn(),
+	updateProject: jest.fn(),
 }));
 
 jest.mock('astro:content', () => ({
@@ -26,12 +27,16 @@ import {
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import {
+	getInvitationProjectById,
+	updateProject,
+} from '@/lib/intake/services/invitation-project.service';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 
 const mockGetProject = getInvitationProjectById as jest.MockedFunction<
 	typeof getInvitationProjectById
 >;
+const mockUpdateProject = updateProject as jest.MockedFunction<typeof updateProject>;
 const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
 const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<
@@ -175,6 +180,7 @@ describe('publishDraft', () => {
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		const result = await publishDraft('proj-1');
 
@@ -187,6 +193,7 @@ describe('publishDraft', () => {
 			}),
 		);
 		expect(mockUpdateDraftStatus).toHaveBeenCalledWith('draft-1', 'approved');
+		expect(mockUpdateProject).toHaveBeenCalledWith('proj-1', { status: 'published' });
 	});
 
 	it('rejects when no draft exists', async () => {
@@ -236,6 +243,7 @@ describe('publishDraft', () => {
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 		await publishDraft('proj-1');
@@ -249,6 +257,7 @@ describe('publishDraft', () => {
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
@@ -273,6 +282,7 @@ describe('publishDraft', () => {
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
 
 		await publishDraft('proj-1');
 

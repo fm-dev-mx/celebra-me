@@ -4,7 +4,10 @@ import {
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import {
+	getInvitationProjectById,
+	updateProject,
+} from '@/lib/intake/services/invitation-project.service';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import {
 	findEventBySlugService,
@@ -65,7 +68,14 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		throw new ApiError(
 			422,
 			'bad_request',
-			'No se encontro la configuracion del proyecto para publicar.',
+			'No se encontro la configuración del proyecto para publicar.',
+		);
+	}
+	if (!snapshot.previewSlug) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración del proyecto no tiene slug de vista previa.',
 		);
 	}
 
@@ -107,6 +117,8 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		isDemo: false,
 		content: publishedContent,
 	});
+
+	await updateProject(projectId, { status: 'published' });
 
 	const updatedDraft = await updateDraftStatus(draft.id, 'approved');
 
