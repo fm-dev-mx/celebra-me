@@ -77,6 +77,8 @@ const DEFAULT_SECTION_ORDER: Array<keyof InvitationViewModel['sections']> = [
 	'thankYou',
 ];
 
+const DEFAULT_THEME_PRESET: ThemePreset = THEME_PRESETS[0];
+
 function buildLayoutData(
 	viewModel: InvitationViewModel,
 	hero: InvitationViewModel['hero'],
@@ -115,20 +117,14 @@ function buildEnvelopeData(
 }
 
 function resolveFooterVariant(
-	eventEntry: EventContentEntry,
-	themePreset: ThemeConfig['preset'],
+	sectionStyles: { footer?: { variant?: ThemePreset } } | undefined,
+	themePreset: ThemePreset,
 	isPreview: boolean,
 ): ThemePreset {
-	if (!isPreview) {
-		const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
-		if (configuredVariant) return configuredVariant;
+	if (!isPreview && sectionStyles?.footer?.variant) {
+		return sectionStyles.footer.variant;
 	}
-
-	if (themePreset && (THEME_PRESETS as readonly string[]).includes(themePreset)) {
-		return themePreset as ThemePreset;
-	}
-
-	return THEME_PRESETS[0];
+	return themePreset;
 }
 
 function hasRenderableSection(
@@ -148,7 +144,9 @@ function appendSectionWithInterludes(
 	for (const interlude of (viewModel.interludes ?? []).filter(
 		(i) => i.afterSection === section,
 	)) {
-		items.push(interludeToRenderItem(interlude, viewModel.theme.preset ?? THEME_PRESETS[0]));
+		items.push(
+			interludeToRenderItem(interlude, viewModel.theme.preset ?? DEFAULT_THEME_PRESET),
+		);
 	}
 }
 
@@ -207,23 +205,24 @@ export function buildInvitationRenderPlan(
 	return items;
 }
 
-export function prepareInvitationPageContext(input: {
-	eventEntry: EventContentEntry;
+export function buildPageContextFromViewModel(input: {
+	viewModel: InvitationViewModel;
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
-	previewTheme?: ThemeConfig['preset'];
+	eventType: string;
+	sectionStyles?: { footer?: { variant?: ThemePreset } };
+	isPreview?: boolean;
 }): InvitationPageContext {
-	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
+	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
+
 	viewModel.brandingVisibility = resolveBrandingVisibility({
 		isDemo: viewModel.isDemo,
-		guest: input.guestContext?.guest ?? null,
-		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(
-			input.eventEntry.data.eventType,
-			input.slug,
-		),
+		guest: guestContext?.guest ?? null,
+		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(eventType, slug),
 	});
+
 	const { theme, hero, envelope, sections } = viewModel;
-	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
+	const eventScopeClass = `event--${slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const isDemo = viewModel.isDemo;
 
 	const styles = generateThemeScopedStyles(theme, envelope, viewModel.id, isDemo);
@@ -231,16 +230,16 @@ export function prepareInvitationPageContext(input: {
 		.filter(Boolean)
 		.join(' ');
 
-	const guestName = input.guestContext?.guest.fullName;
+	const guestName = guestContext?.guest.fullName;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const heroVenueName =
 		sections.location?.reception?.venueName ?? sections.location?.ceremony?.venueName;
 
-	const isDemoPreview = isDemo && !input.guestContext;
+	const isDemoPreview = isDemo && !guestContext;
 
 	return {
 		viewModel,
-		guestContext: input.guestContext,
+		guestContext,
 		isDemoPreview,
 		layout: buildLayoutData(viewModel, hero, guestName),
 		wrapper: {
@@ -253,14 +252,28 @@ export function prepareInvitationPageContext(input: {
 		heroTime,
 		heroVenueName,
 		envelope: buildEnvelopeData(styles.showEnvelope, envelope, viewModel.id, guestName, isDemo),
-		footerVariant: resolveFooterVariant(
-			input.eventEntry,
-			theme.preset,
-			Boolean(input.previewTheme),
-		),
+		footerVariant: resolveFooterVariant(sectionStyles, theme.preset, isPreview),
 		renderPlan: buildInvitationRenderPlan(viewModel, {
-			hasGuestContext: Boolean(input.guestContext),
+			hasGuestContext: Boolean(guestContext),
 			isDemoPreview,
 		}),
 	};
+}
+
+export function prepareInvitationPageContext(input: {
+	eventEntry: EventContentEntry;
+	slug: string;
+	guestContext?: InvitationGuestContext | null;
+	previewTheme?: ThemeConfig['preset'];
+}): InvitationPageContext {
+	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
+
+	return buildPageContextFromViewModel({
+		viewModel,
+		slug: input.slug,
+		guestContext: input.guestContext,
+		eventType: input.eventEntry.data.eventType,
+		sectionStyles: input.eventEntry.data.sectionStyles,
+		isPreview: Boolean(input.previewTheme),
+	});
 }
