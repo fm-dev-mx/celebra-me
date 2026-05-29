@@ -54,11 +54,12 @@ export async function findPublishedByProjectId(
 	return rows[0] ? toRow(rows[0]) : null;
 }
 
-export async function findPublishedBySlug(
+export async function findPublishedBySlugAndEventType(
 	slug: string,
+	eventType: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;

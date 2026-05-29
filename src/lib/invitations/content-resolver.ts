@@ -1,5 +1,5 @@
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { findPublishedBySlug } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
@@ -9,6 +9,7 @@ export type ContentSource = 'static' | 'published';
 export interface ContentResolution {
 	source: ContentSource;
 	viewModel: InvitationViewModel;
+	rawContent?: Record<string, unknown>;
 }
 
 export async function resolveInvitationContent(
@@ -21,27 +22,8 @@ export async function resolveInvitationContent(
 		return { source: 'static', viewModel };
 	}
 
-	const publishedEntry = await findPublishedBySlug(slug);
-	if (publishedEntry) {
-		const viewModel = adaptDbEvent({
-			slug,
-			eventType: publishedEntry.eventType,
-			isDemo: publishedEntry.isDemo,
-			content: publishedEntry.content,
-		});
-		return { source: 'published', viewModel };
-	}
-
-	return null;
-}
-
-export async function resolveInvitationContentBySource(
-	slug: string,
-	eventType?: string,
-	preferSource?: ContentSource,
-): Promise<ContentResolution | null> {
-	if (preferSource === 'published') {
-		const publishedEntry = await findPublishedBySlug(slug);
+	if (eventType) {
+		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 		if (publishedEntry) {
 			const viewModel = adaptDbEvent({
 				slug,
@@ -49,9 +31,9 @@ export async function resolveInvitationContentBySource(
 				isDemo: publishedEntry.isDemo,
 				content: publishedEntry.content,
 			});
-			return { source: 'published', viewModel };
+			return { source: 'published', viewModel, rawContent: publishedEntry.content };
 		}
 	}
 
-	return resolveInvitationContent(slug, eventType);
+	return null;
 }

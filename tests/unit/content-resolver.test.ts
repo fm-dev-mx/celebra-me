@@ -3,7 +3,7 @@ jest.mock('@/lib/content/events', () => ({
 }));
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
-	findPublishedBySlug: jest.fn(),
+	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
 jest.mock('@/lib/adapters/event', () => ({
@@ -40,17 +40,16 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	})),
 }));
 
-import {
-	resolveInvitationContent,
-	resolveInvitationContentBySource,
-} from '@/lib/invitations/content-resolver';
+import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { findPublishedBySlug } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
-const mockFindPublished = findPublishedBySlug as jest.MockedFunction<typeof findPublishedBySlug>;
+const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
+	typeof findPublishedBySlugAndEventType
+>;
 const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
 
@@ -72,14 +71,14 @@ describe('resolveInvitationContent', () => {
 
 	it('falls back to published content when static does not exist', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublished.mockResolvedValue({
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
 			content: {},
 		} as any);
 
-		const result = await resolveInvitationContent('my-invitation');
+		const result = await resolveInvitationContent('my-invitation', 'xv');
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('published');
@@ -87,57 +86,87 @@ describe('resolveInvitationContent', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 	});
 
-	it('returns null when neither static nor published content exists', async () => {
+	it('returns null when eventType is not provided (published skip)', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublished.mockResolvedValue(null);
 
-		const result = await resolveInvitationContent('non-existent');
+		const result = await resolveInvitationContent('my-invitation');
 
 		expect(result).toBeNull();
+		expect(mockFindPublishedBySlugAndEventType).not.toHaveBeenCalled();
 	});
 
-	it('prefers static over published when both exist', async () => {
-		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia-cota-guillen', data: {} } as any);
-		mockFindPublished.mockResolvedValue({ slug: 'my-invitation', content: {} } as any);
+	it('does not cross-resolve when slug exists for different eventType', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
 
-		const result = await resolveInvitationContent('ana-sofia-cota-guillen', 'xv');
+		const result = await resolveInvitationContent('shared-slug', 'boda');
 
-		expect(result!.source).toBe('static');
-		expect(mockFindPublished).not.toHaveBeenCalled();
+		expect(result).toBeNull();
+		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledWith('shared-slug', 'boda');
 	});
-});
 
-describe('resolveInvitationContentBySource', () => {
-	it('prefers published when preferSource is set', async () => {
-		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia-cota-guillen', data: {} } as any);
-		mockFindPublished.mockResolvedValue({
+	it('resolves published content only when both slug and eventType match', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
 			content: {},
 		} as any);
 
-		const result = await resolveInvitationContentBySource(
-			'my-invitation',
-			undefined,
-			'published',
-		);
+		const resultXv = await resolveInvitationContent('my-invitation', 'xv');
+		expect(resultXv).not.toBeNull();
+		expect(resultXv!.source).toBe('published');
 
-		expect(result).not.toBeNull();
-		expect(result!.source).toBe('published');
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		const resultBoda = await resolveInvitationContent('my-invitation', 'boda');
+		expect(resultBoda).toBeNull();
 	});
 
-	it('falls back to static when published is preferred but missing', async () => {
+	it('returns null when neither static nor published content exists', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+
+		const result = await resolveInvitationContent('non-existent', 'xv');
+
+		expect(result).toBeNull();
+	});
+
+	it('prefers static over published when both exist', async () => {
 		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia-cota-guillen', data: {} } as any);
-		mockFindPublished.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'my-invitation',
+			content: {},
+		} as any);
 
-		const result = await resolveInvitationContentBySource(
-			'ana-sofia-cota-guillen',
-			'xv',
-			'published',
-		);
+		const result = await resolveInvitationContent('ana-sofia-cota-guillen', 'xv');
 
-		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');
+		expect(mockFindPublishedBySlugAndEventType).not.toHaveBeenCalled();
+	});
+
+	it('published lookup filters by both slug and eventType', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+
+		await resolveInvitationContent('some-slug', 'bautizo');
+
+		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledWith('some-slug', 'bautizo');
+	});
+
+	it('no admin fields exposed in published resolution', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'safe',
+			eventType: 'xv',
+			isDemo: false,
+			content: { title: 'Safe Event', hero: {} },
+		} as any);
+
+		const result = await resolveInvitationContent('safe', 'xv');
+
+		const vm = result!.viewModel as unknown as Record<string, unknown>;
+		expect(vm.tokenHash).toBeUndefined();
+		expect((vm as any).invitation_project_id).toBeUndefined();
 	});
 });
