@@ -6,16 +6,6 @@ function str(value: unknown): string | undefined {
 	return undefined;
 }
 
-function bool(value: unknown): boolean | undefined {
-	if (typeof value === 'boolean') return value;
-	return undefined;
-}
-
-function num(value: unknown): number | undefined {
-	if (typeof value === 'number') return value;
-	return undefined;
-}
-
 function mapFamilyFromDraft(
 	draftFamily: Record<string, unknown> | undefined,
 	celebrantName: string,
@@ -26,11 +16,11 @@ function mapFamilyFromDraft(
 	const parents: Record<string, unknown> = {};
 
 	if (str(draftFamily.fatherName)) parents.father = str(draftFamily.fatherName);
-	if (bool(draftFamily.fatherDeceased) !== undefined)
-		parents.fatherDeceased = bool(draftFamily.fatherDeceased);
+	if (typeof draftFamily.fatherDeceased === 'boolean')
+		parents.fatherDeceased = draftFamily.fatherDeceased;
 	if (str(draftFamily.motherName)) parents.mother = str(draftFamily.motherName);
-	if (bool(draftFamily.motherDeceased) !== undefined)
-		parents.motherDeceased = bool(draftFamily.motherDeceased);
+	if (typeof draftFamily.motherDeceased === 'boolean')
+		parents.motherDeceased = draftFamily.motherDeceased;
 
 	if (Object.keys(parents).length > 0) result.parents = parents;
 	if (str(draftFamily.spouseName)) result.spouse = str(draftFamily.spouseName);
@@ -124,6 +114,84 @@ function mapHeroSection(
 	};
 }
 
+function mapRsvpSection(
+	draftRsvp: Record<string, unknown> | undefined,
+	demoRsvp: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
+	return {
+		title: str(draftRsvp.title) || str(demoRsvp?.title),
+		guestCap:
+			typeof draftRsvp.guestCap === 'number'
+				? draftRsvp.guestCap
+				: (demoRsvp?.guestCap as number | undefined),
+		confirmationMessage:
+			str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage),
+		confirmationMode:
+			str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
+		accessMode: str(demoRsvp?.accessMode) || 'personalized-only',
+		whatsappPhone: str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone),
+		subcopy: str(draftRsvp.subcopy) || str(demoRsvp?.subcopy),
+	};
+}
+
+function mapMusicSection(
+	draftMusic: Record<string, unknown> | undefined,
+	demoMusic: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (draftMusic && str(draftMusic.url)) {
+		return {
+			url: str(draftMusic.url),
+			title: str(draftMusic.title) || str(demoMusic?.title),
+			autoPlay: false,
+		};
+	}
+	return demoMusic ? { ...demoMusic } : undefined;
+}
+
+function mapGiftsSection(
+	draftGifts: Record<string, unknown> | undefined,
+	demoGifts: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (draftGifts && (str(draftGifts.title) || draftGifts.items)) {
+		return {
+			title: str(draftGifts.title) || str(demoGifts?.title),
+			subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
+			items:
+				(draftGifts.items as Array<Record<string, unknown>>) ||
+				(demoGifts?.items as Array<Record<string, unknown>>) ||
+				[],
+		};
+	}
+	return demoGifts ? { ...demoGifts } : undefined;
+}
+
+function mapQuoteSection(
+	draftQuote: Record<string, unknown> | undefined,
+	demoQuote: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (draftQuote && str(draftQuote.text)) {
+		return {
+			text: str(draftQuote.text),
+			author: str(draftQuote.author) || str(demoQuote?.author),
+		};
+	}
+	return demoQuote ? { ...demoQuote } : undefined;
+}
+
+function mapThankYouSection(
+	draftThankYou: Record<string, unknown> | undefined,
+	demoThankYou: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (draftThankYou && str(draftThankYou.message)) {
+		return {
+			message: str(draftThankYou.message),
+			closingName: str(draftThankYou.closingName) || str(demoThankYou?.closingName),
+		};
+	}
+	return demoThankYou ? { ...demoThankYou } : undefined;
+}
+
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
 	const { draftContent, project, demoContent } = input;
 	const snapshot = project.snapshot;
@@ -140,69 +208,30 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const locationSection = mapLocationFromDraft(
 		draftContent.location as Record<string, unknown> | undefined,
 	);
-	const rsvpSection = (() => {
-		const draftRsvp = draftContent.rsvp as Record<string, unknown> | undefined;
-		if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
-		return {
-			title: str(draftRsvp.title) || str(demoRsvp?.title),
-			guestCap: num(draftRsvp.guestCap) ?? (demoRsvp?.guestCap as number | undefined),
-			confirmationMessage:
-				str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage),
-			confirmationMode:
-				str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
-			whatsappPhone: str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone),
-			subcopy: str(draftRsvp.subcopy) || str(demoRsvp?.subcopy),
-		};
-	})();
+	const rsvpSection = mapRsvpSection(
+		draftContent.rsvp as Record<string, unknown> | undefined,
+		demoRsvp,
+	);
 
-	const musicSection = (() => {
-		const draftMusic = draftContent.music as Record<string, unknown> | undefined;
-		if (draftMusic && str(draftMusic.url)) {
-			return {
-				url: str(draftMusic.url),
-				title: str(draftMusic.title) || str(demoMusic?.title),
-				autoPlay: false,
-			};
-		}
-		return demoMusic ? { ...demoMusic } : undefined;
-	})();
+	const musicSection = mapMusicSection(
+		draftContent.music as Record<string, unknown> | undefined,
+		demoMusic,
+	);
 
-	const giftsSection = (() => {
-		const draftGifts = draftContent.gifts as Record<string, unknown> | undefined;
-		if (draftGifts && (str(draftGifts.title) || draftGifts.items)) {
-			return {
-				title: str(draftGifts.title) || str(demoGifts?.title),
-				subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
-				items:
-					(draftGifts.items as Array<Record<string, unknown>>) ||
-					(demoGifts?.items as Array<Record<string, unknown>>) ||
-					[],
-			};
-		}
-		return demoGifts ? { ...demoGifts } : undefined;
-	})();
+	const giftsSection = mapGiftsSection(
+		draftContent.gifts as Record<string, unknown> | undefined,
+		demoGifts,
+	);
 
-	const quoteSection = (() => {
-		const draftQuote = draftContent.quote as Record<string, unknown> | undefined;
-		if (draftQuote && str(draftQuote.text)) {
-			return {
-				text: str(draftQuote.text),
-				author: str(draftQuote.author) || str(demoQuote?.author),
-			};
-		}
-		return demoQuote ? { ...demoQuote } : undefined;
-	})();
+	const quoteSection = mapQuoteSection(
+		draftContent.quote as Record<string, unknown> | undefined,
+		demoQuote,
+	);
 
-	const thankYouSection = (() => {
-		const draftThankYou = draftContent.thankYou as Record<string, unknown> | undefined;
-		if (draftThankYou && str(draftThankYou.message)) {
-			return {
-				message: str(draftThankYou.message),
-				closingName: str(draftThankYou.closingName) || str(demoThankYou?.closingName),
-			};
-		}
-		return demoThankYou ? { ...demoThankYou } : undefined;
-	})();
+	const thankYouSection = mapThankYouSection(
+		draftContent.thankYou as Record<string, unknown> | undefined,
+		demoThankYou,
+	);
 
 	const heroSection = mapHeroSection(
 		draftContent.hero as Record<string, unknown> | undefined,
