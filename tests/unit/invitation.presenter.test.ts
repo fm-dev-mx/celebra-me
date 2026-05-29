@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import {
 	type InvitationRenderPlanItem,
+	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
 import { isEventAssetKey } from '@/lib/assets/asset-registry';
@@ -244,5 +245,112 @@ describe('prepareInvitationPageContext', () => {
 		});
 
 		expect(context.viewModel.sections.location?.indicationsHeading).toBe('Indicaciones');
+	});
+});
+
+const baseViewModel = {
+	isDemo: false,
+	theme: { preset: 'jewelry-box' as const, themeClass: 'theme-preset--jewelry-box' },
+	hero: {
+		name: 'Test',
+		label: 'Event',
+		date: '2027-01-01',
+		backgroundImage: { src: '/img.jpg' },
+	},
+	envelope: { enabled: false },
+	brandingVisibility: {
+		showFooterBranding: true,
+		showContactCta: true,
+		showThankYouBranding: true,
+	},
+	interludes: [],
+};
+
+describe('buildPageContextFromViewModel', () => {
+	it('builds correct SEO/meta data for published content', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'my-invitation',
+			title: 'Published Event',
+			description: 'A published invitation',
+			hero: { ...baseViewModel.hero, backgroundImage: { src: '/og.jpg' } },
+			sections: {
+				rsvp: {
+					title: 'Confirma',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'my-invitation',
+					eventType: 'xv',
+				},
+			},
+			sharing: { whatsappTemplate: 'Hola', ogImage: { src: '/og.jpg', alt: 'OG' } },
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'my-invitation',
+			eventType: 'xv',
+		});
+
+		expect(context.layout.title).toBe('Published Event');
+		expect(context.layout.image).toBe('/og.jpg');
+		expect(context.layout.className).toBe('layout--jewelry-box');
+		expect(context.isDemoPreview).toBe(false);
+	});
+
+	it('builds renderPlan from sectionOrder when provided', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'ordered-invitation',
+			isDemo: true,
+			title: 'Ordered',
+			sections: { quote: { text: 'A quote' }, rsvp: { title: 'RSVP' } },
+			sectionOrder: ['quote', 'rsvp'],
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'ordered-invitation',
+			eventType: 'xv',
+		});
+
+		expect(describeRenderPlan(context.renderPlan)).toEqual(['quote', 'rsvp']);
+	});
+
+	it('includes expected sections when sectionOrder is missing', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'default-invitation',
+			title: 'Default',
+			sections: { location: { ceremony: { venueName: 'Church' } }, rsvp: { title: 'RSVP' } },
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'default-invitation',
+			eventType: 'boda',
+		});
+
+		const plan = describeRenderPlan(context.renderPlan);
+		expect(plan).toContain('location');
+		expect(plan).toContain('rsvp');
+	});
+
+	it('resolves footerVariant from sectionStyles when not preview', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'footer-test',
+			title: 'Footer Test',
+			theme: { preset: 'editorial' as const, themeClass: 'theme-preset--editorial' },
+			sections: {},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'footer-test',
+			eventType: 'xv',
+			sectionStyles: { footer: { variant: 'enchanted-rose' as const } },
+		});
+
+		expect(context.footerVariant).toBe('enchanted-rose');
 	});
 });
