@@ -169,4 +169,23 @@ describe('resolveInvitationContent', () => {
 		expect(vm.tokenHash).toBeUndefined();
 		expect((vm as any).invitation_project_id).toBeUndefined();
 	});
+
+	it('does not propagate _assetSlug from rawContent to viewModel', async () => {
+		mockGetRoutable.mockResolvedValue(null);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'my-invitation',
+			eventType: 'xv',
+			isDemo: false,
+			content: {
+				_assetSlug: 'demo-xv-jewelry-box',
+				title: 'Published',
+				hero: { name: 'Test', label: 'Event', date: '2027-01-01' },
+			},
+		} as any);
+
+		const result = await resolveInvitationContent('my-invitation', 'xv');
+
+		const vm = result!.viewModel as unknown as Record<string, unknown>;
+		expect(vm._assetSlug).toBeUndefined();
+	});
 });
