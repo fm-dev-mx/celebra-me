@@ -1,3 +1,4 @@
+import { getCollection } from 'astro:content';
 import {
 	findDraftByProjectId,
 	updateDraftStatus,
@@ -9,6 +10,17 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+
+function getContentEntrySlug(id: string): string {
+	const segments = id.split('/');
+	return (segments[segments.length - 1] || id).replace(/\.(json|md|mdx)$/, '');
+}
+
+async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {
+	const entries = await getCollection('event-demos');
+	const entry = entries.find((e: { id: string }) => getContentEntrySlug(e.id) === previewSlug);
+	return (entry?.data as Record<string, unknown>) ?? {};
+}
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -55,6 +67,8 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		);
 	}
 
+	const demoContent = await loadDemoContent(snapshot.previewSlug);
+
 	const publishedContent = mapDraftToPublished({
 		project: {
 			title: project.title,
@@ -62,6 +76,7 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 			snapshot,
 		},
 		draftContent: content,
+		demoContent,
 	});
 
 	const publishSlug = project.slug || `${project.eventType}-${project.id.slice(0, 8)}`;

@@ -11,13 +11,17 @@ jest.mock('@/lib/intake/services/invitation-project.service', () => ({
 	getInvitationProjectById: jest.fn(),
 }));
 
-import { publishDraft } from '@/lib/intake/services/publishing.service';
+jest.mock('astro:content', () => ({
+	getCollection: jest.fn(),
+}));
+
 import {
 	findDraftByProjectId,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import { publishDraft } from '@/lib/intake/services/publishing.service';
 
 const mockGetProject = getInvitationProjectById as jest.MockedFunction<
 	typeof getInvitationProjectById
@@ -117,6 +121,46 @@ const approvedDraft = { ...validDraft, status: 'approved' as const };
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	const astroContent = jest.requireMock('astro:content');
+	astroContent.getCollection.mockResolvedValue([
+		{
+			id: 'xv/demo-xv-jewelry-box.json',
+			data: {
+				eventType: 'xv',
+				title: 'Demo Jewelry Box',
+				theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+				hero: {
+					name: 'Lucía García',
+					label: 'Mis XV Años',
+					date: '2026-06-15',
+					backgroundImage: { type: 'internal', key: 'hero' },
+					variant: 'jewelry-box',
+				},
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					sealIcon: 'heart',
+					sealInitials: 'L·G',
+					microcopy: 'Toca para abrir',
+				},
+				gallery: { title: 'Galería', items: [] },
+				sectionOrder: [
+					'quote',
+					'family',
+					'gallery',
+					'countdown',
+					'location',
+					'itinerary',
+					'rsvp',
+					'gifts',
+					'thankYou',
+				],
+				interludes: [],
+				sectionStyles: {},
+				navigation: [],
+			},
+		},
+	]);
 });
 
 describe('publishDraft', () => {
