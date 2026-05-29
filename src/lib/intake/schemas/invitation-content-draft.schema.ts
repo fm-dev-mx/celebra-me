@@ -103,5 +103,10 @@ export const InvitationContentDraftContentSchema = z.object({
 		.optional(),
 });
 
+export const UpdateDraftContentSchema = z.object({
+	content: InvitationContentDraftContentSchema,
+});
+
 export type DraftContent = z.infer<typeof InvitationContentDraftContentSchema>;
 export type GenerateDraftActionInput = z.infer<typeof GenerateDraftActionSchema>;
+export type UpdateDraftContentInput = z.infer<typeof UpdateDraftContentSchema>;

@@ -8,7 +8,8 @@ export type ApiErrorCode =
 	| 'limit_reached'
 	| 'internal_error'
 	| 'submission_already_approved'
-	| 'invalid_submission_status';
+	| 'invalid_submission_status'
+	| 'invalid_draft_status';
 
 export class ApiError extends Error {
 	readonly status: number;
