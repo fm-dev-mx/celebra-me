@@ -4,6 +4,7 @@ import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-reque
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
 	findDraftByProjectId,
+	updateDraftContent,
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
@@ -46,4 +47,24 @@ export async function generateDraft(projectId: string): Promise<InvitationConten
 
 export async function getDraft(projectId: string): Promise<InvitationContentDraft | null> {
 	return findDraftByProjectId(projectId);
+}
+
+export async function updateDraftContentByProject(
+	projectId: string,
+	content: Record<string, unknown>,
+): Promise<InvitationContentDraft> {
+	const draft = await findDraftByProjectId(projectId);
+	if (!draft) {
+		throw new ApiError(404, 'not_found', 'No se encontro un borrador para este proyecto.');
+	}
+
+	if (draft.status !== 'draft') {
+		throw new ApiError(
+			422,
+			'invalid_draft_status',
+			'Solo se puede editar un borrador en estado "draft". Estado actual: ' + draft.status,
+		);
+	}
+
+	return updateDraftContent(draft.id, content);
 }
