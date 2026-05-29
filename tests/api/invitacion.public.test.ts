@@ -4,7 +4,7 @@ import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submissio
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 
-jest.mock('@/lib/invitations/content-resolver', () => ({
+jest.mock('@/lib/invitation/content-resolver', () => ({
 	resolveInvitationContent: jest.fn(),
 }));
 
@@ -20,7 +20,7 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
-import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
+import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 
 const resolveInvitationContentMock = resolveInvitationContent as jest.MockedFunction<
 	typeof resolveInvitationContent

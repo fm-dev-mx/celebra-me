@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
+import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';

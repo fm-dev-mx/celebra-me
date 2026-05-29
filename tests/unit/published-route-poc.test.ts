@@ -61,7 +61,7 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	})),
 }));
 
-import { resolveInvitationContent } from '@/lib/invitations/content-resolver';
+import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { adaptEvent } from '@/lib/adapters/event';
