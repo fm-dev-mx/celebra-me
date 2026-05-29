@@ -1,0 +1,90 @@
+---
+import '@/styles/intake.scss';
+import IntakeForm from '@/components/intake/IntakeForm';
+import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
+import { findIntakeRequestByTokenHash } from '@/lib/intake/repositories/intake-request.repository';
+import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findSubmissionByRequestId, createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
+import type { IntakeBlockType } from '@/lib/intake/types';
+
+const { token } = Astro.params;
+
+if (!token) {
+	return Astro.redirect('/404');
+}
+
+let projectTitle = '';
+let enabledBlocks: IntakeBlockType[] = [];
+let initialBlockData: Record<string, unknown> = {};
+let initialStatus = 'in_progress';
+let isLocked = false;
+let errorMessage = '';
+
+try {
+	const tokenHash = hashIntakeToken(token);
+	const intakeRequest = await findIntakeRequestByTokenHash(tokenHash);
+
+	if (!intakeRequest) {
+		errorMessage = 'Enlace no valido o no encontrado.';
+	} else if (intakeRequest.status === 'closed' || intakeRequest.status === 'expired') {
+		errorMessage = 'Este enlace ha expirado o fue cerrado.';
+	} else if (intakeRequest.expiresAt && new Date(intakeRequest.expiresAt) < new Date()) {
+		errorMessage = 'Este enlace ha expirado.';
+	} else {
+		const project = await findInvitationProjectById(intakeRequest.invitationProjectId);
+		if (!project) {
+			errorMessage = 'Proyecto no encontrado.';
+		} else {
+			projectTitle = project.title;
+			enabledBlocks = intakeRequest.enabledBlocks;
+
+			const lockedStatuses = ['in_review', 'in_production', 'preview_sent', 'approved', 'published', 'archived'];
+			isLocked = lockedStatuses.includes(project.status);
+
+			let submission = await findSubmissionByRequestId(intakeRequest.id);
+			if (!submission) {
+				submission = await createIntakeSubmission({ intakeRequestId: intakeRequest.id });
+			}
+
+			initialBlockData = submission.blockData;
+			initialStatus = submission.status;
+		}
+	}
+} catch (err) {
+	console.error('[captura] Token resolution error:', err);
+	errorMessage = 'Error al procesar el enlace. Intenta de nuevo mas tarde.';
+}
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<title>{projectTitle ? `${projectTitle} — Captura` : 'Captura — Celebra-me'}</title>
+	</head>
+	<body class="intake-page-body">
+		{errorMessage ? (
+			<div class="intake-page-error">
+				<div class="intake-page-error__card">
+					<h1 class="intake-page-error__title">No se pudo acceder</h1>
+					<p class="intake-page-error__message">{errorMessage}</p>
+					<p class="intake-page-error__hint">
+						Si crees que esto es un error, contacta a tu administrador.
+					</p>
+				</div>
+			</div>
+		) : (
+			<IntakeForm
+				client:load
+				token={token}
+				enabledBlocks={enabledBlocks}
+				initialBlockData={initialBlockData}
+				initialStatus={initialStatus}
+				isLocked={isLocked}
+				projectTitle={projectTitle}
+			/>
+		)}
+	</body>
+</html>

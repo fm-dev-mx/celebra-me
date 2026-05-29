@@ -41,8 +41,8 @@ export async function saveSubmissionStep(
 		throw new Error('Intake submission not found.');
 	}
 
-	if (submission.status === 'submitted' || submission.status === 'approved') {
-		throw new Error('Cannot edit a submitted or approved submission.');
+	if (submission.status === 'approved') {
+		throw new Error('Cannot edit an approved submission.');
 	}
 
 	const updatedBlockData = {
