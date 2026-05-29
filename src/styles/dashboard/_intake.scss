@@ -865,4 +865,45 @@
 			min-width: 0;
 		}
 	}
+
+	/* Mobile: DraftEditor fields */
+	.intake-editor__field .intake-field__input,
+	.intake-editor__field .intake-field__textarea {
+		width: 100%;
+		font-size: 1rem;
+	}
+
+	.intake-editor__checkbox {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.intake-editor__venue {
+		padding: 0.5rem;
+		overflow-x: hidden;
+	}
+
+	.intake-editor__field {
+		margin-bottom: 0.625rem;
+	}
+
+	.intake-review__buttons {
+		flex-direction: column;
+	}
+
+	.intake-review__btn {
+		width: 100%;
+		min-width: 0;
+	}
+}
+
+@media (width <= 360px) {
+	.intake-editor__field .intake-field__input,
+	.intake-editor__field .intake-field__textarea {
+		font-size: 0.9375rem;
+	}
+
+	.intake-editor__venue {
+		padding: 0.375rem;
+	}
 }
