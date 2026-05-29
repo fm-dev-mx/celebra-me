@@ -77,6 +77,16 @@ export async function approveSubmission(
 	id: string,
 	reviewNotes?: string,
 ): Promise<IntakeSubmission> {
+	const submission = await findIntakeSubmissionById(id);
+	if (!submission) {
+		throw new Error('Intake submission not found.');
+	}
+	if (submission.status === 'approved') {
+		throw new Error('Submission is already approved.');
+	}
+	if (submission.status !== 'submitted') {
+		throw new Error('Can only approve a submitted submission.');
+	}
 	return updateIntakeSubmission(id, {
 		status: 'approved',
 		reviewNotes: reviewNotes ?? '',
@@ -85,6 +95,16 @@ export async function approveSubmission(
 }
 
 export async function requestChanges(id: string, reviewNotes: string): Promise<IntakeSubmission> {
+	const submission = await findIntakeSubmissionById(id);
+	if (!submission) {
+		throw new Error('Intake submission not found.');
+	}
+	if (submission.status === 'approved') {
+		throw new Error('Cannot request changes on an approved submission.');
+	}
+	if (submission.status !== 'submitted') {
+		throw new Error('Can only request changes on a submitted submission.');
+	}
 	return updateIntakeSubmission(id, {
 		status: 'needs_changes',
 		reviewNotes,

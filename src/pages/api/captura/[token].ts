@@ -19,10 +19,12 @@ import {
 import {
 	SaveIntakeStepSchema,
 	SubmitIntakeSchema,
+	validateBlockData,
 } from '@/lib/intake/schemas/intake-submission.schema';
 import { sendIntakeNotification } from '@/lib/server/email';
 import { getEnv } from '@/lib/server/env';
 import { toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
+import type { IntakeBlockType } from '@/lib/intake/types';
 
 interface ResolvedContext {
 	request: Awaited<ReturnType<typeof findIntakeRequestByTokenHash>>;
@@ -148,6 +150,27 @@ export const POST: APIRoute = async ({ request, params }) => {
 
 		const parsed = await validateBodyOrRespond(request, SubmitIntakeSchema);
 		if (parsed instanceof Response) return parsed;
+
+		const enabledBlocks = ctx.request!.enabledBlocks;
+		const blockData = ctx.submission!.blockData ?? {};
+		const validationErrors: Array<{ blockType: string; issues: string[] }> = [];
+
+		for (const blockType of enabledBlocks) {
+			const data = blockData[blockType];
+			const result = validateBlockData(blockType as IntakeBlockType, data ?? {});
+			if (!result.success) {
+				validationErrors.push({
+					blockType,
+					issues: result.error.issues.map((i: { message: string }) => i.message),
+				});
+			}
+		}
+
+		if (validationErrors.length > 0) {
+			throw new ApiError(422, 'bad_request', 'Uno o mas bloques contienen datos invalidos.', {
+				validationErrors,
+			});
+		}
 
 		const updated = await submitSubmission(ctx.submission!.id, parsed.clientComments);
 

@@ -4,8 +4,6 @@ import { INTAKE_BLOCK_TYPES, INTAKE_REQUEST_STATUSES } from '@/lib/intake/types'
 const DEFAULT_EXPIRY_DAYS = 30;
 
 export const CreateIntakeRequestSchema = z.object({
-	invitationProjectId: z.uuid('Debe ser un UUID válido.'),
-
 	enabledBlocks: z
 		.array(z.enum(INTAKE_BLOCK_TYPES))
 		.min(1, 'Selecciona al menos un bloque.')

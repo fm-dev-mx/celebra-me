@@ -176,6 +176,8 @@ describe('submitSubmission', () => {
 
 describe('approveSubmission', () => {
 	it('sets status to approved with review notes', async () => {
+		const submitted = { ...baseSubmission, status: 'submitted' as const };
+		mockFindById.mockResolvedValue(submitted);
 		const approved = {
 			...baseSubmission,
 			status: 'approved' as const,
@@ -191,10 +193,45 @@ describe('approveSubmission', () => {
 			reviewedAt: expect.any(String),
 		});
 	});
+
+	it('throws when submission is already approved', async () => {
+		const approved = { ...baseSubmission, status: 'approved' as const };
+		mockFindById.mockResolvedValue(approved);
+
+		await expect(approveSubmission('sub-1')).rejects.toThrow('Submission is already approved.');
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('throws when submission is in_progress', async () => {
+		mockFindById.mockResolvedValue(baseSubmission);
+
+		await expect(approveSubmission('sub-1')).rejects.toThrow(
+			'Can only approve a submitted submission.',
+		);
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('throws when submission is needs_changes', async () => {
+		const needsChanges = { ...baseSubmission, status: 'needs_changes' as const };
+		mockFindById.mockResolvedValue(needsChanges);
+
+		await expect(approveSubmission('sub-1')).rejects.toThrow(
+			'Can only approve a submitted submission.',
+		);
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('throws when submission not found', async () => {
+		mockFindById.mockResolvedValue(null);
+
+		await expect(approveSubmission('sub-999')).rejects.toThrow('Intake submission not found.');
+	});
 });
 
 describe('requestChanges', () => {
 	it('sets status to needs_changes with review notes', async () => {
+		const submitted = { ...baseSubmission, status: 'submitted' as const };
+		mockFindById.mockResolvedValue(submitted);
 		const needsChanges = {
 			...baseSubmission,
 			status: 'needs_changes' as const,
@@ -209,5 +246,34 @@ describe('requestChanges', () => {
 			reviewNotes: 'Fix date',
 			reviewedAt: expect.any(String),
 		});
+	});
+
+	it('throws when submission is already approved', async () => {
+		const approved = { ...baseSubmission, status: 'approved' as const };
+		mockFindById.mockResolvedValue(approved);
+
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
+			'Cannot request changes on an approved submission.',
+		);
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('throws when submission is in_progress', async () => {
+		mockFindById.mockResolvedValue(baseSubmission);
+
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
+			'Can only request changes on a submitted submission.',
+		);
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('throws when submission is needs_changes', async () => {
+		const needsChanges = { ...baseSubmission, status: 'needs_changes' as const };
+		mockFindById.mockResolvedValue(needsChanges);
+
+		await expect(requestChanges('sub-1', 'Fix')).rejects.toThrow(
+			'Can only request changes on a submitted submission.',
+		);
+		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 });

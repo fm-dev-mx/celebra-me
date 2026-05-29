@@ -23,6 +23,7 @@ import {
 	revokeRequest,
 	getIntakeRequestByToken,
 } from '@/lib/intake/services/intake-request.service';
+import { CreateIntakeRequestSchema } from '@/lib/intake/schemas/intake-request.schema';
 
 const mockCreate = createIntakeRequest as jest.MockedFunction<typeof createIntakeRequest>;
 const mockUpdate = updateIntakeRequest as jest.MockedFunction<typeof updateIntakeRequest>;
@@ -131,5 +132,48 @@ describe('getIntakeRequestByToken', () => {
 
 		const result = await getIntakeRequestByToken('invalid-token');
 		expect(result).toBeNull();
+	});
+});
+
+describe('CreateIntakeRequestSchema', () => {
+	it('accepts enabledBlocks and expiresInDays without invitationProjectId', () => {
+		const result = CreateIntakeRequestSchema.safeParse({
+			enabledBlocks: ['event-details', 'photos'],
+			expiresInDays: 14,
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it('defaults expiresInDays to 30 when not provided', () => {
+		const result = CreateIntakeRequestSchema.safeParse({
+			enabledBlocks: ['music'],
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.expiresInDays).toBe(30);
+		}
+	});
+
+	it('rejects empty enabledBlocks', () => {
+		const result = CreateIntakeRequestSchema.safeParse({
+			enabledBlocks: [],
+			expiresInDays: 14,
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects expiresInDays outside valid range', () => {
+		const result = CreateIntakeRequestSchema.safeParse({
+			enabledBlocks: ['event-details'],
+			expiresInDays: 500,
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects unknown block types', () => {
+		const result = CreateIntakeRequestSchema.safeParse({
+			enabledBlocks: ['invalid-block'],
+		});
+		expect(result.success).toBe(false);
 	});
 });
