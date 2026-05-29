@@ -41,6 +41,49 @@ export const PHOTO_LABELS: Record<string, string> = {
 	priorityNotes: 'Prioridad de las fotos',
 };
 
+export const HERO_FIELD_LABELS: Record<string, string> = {
+	name: 'Nombre del festejado',
+	secondaryName: 'Segundo nombre',
+	label: 'Título del evento',
+	nickname: 'Apodo',
+	date: 'Fecha del evento',
+};
+
+export const FAMILY_FIELD_LABELS: Record<string, string> = {
+	fatherName: 'Nombre del padre',
+	fatherDeceased: 'Padre fallecido',
+	motherName: 'Nombre de la madre',
+	motherDeceased: 'Madre fallecida',
+	spouseName: 'Nombre del cónyuge',
+	godparents: 'Padrinos',
+	children: 'Hijos',
+	sectionMessage: 'Mensaje familiar',
+};
+
+export const RSVP_FIELD_LABELS: Record<string, string> = {
+	title: 'Título',
+	guestCap: 'Acompañantes máximo',
+	confirmationMessage: 'Mensaje de confirmación',
+	confirmationMode: 'Modo de confirmación',
+	whatsappPhone: 'WhatsApp',
+	subcopy: 'Texto adicional',
+};
+
+export const MUSIC_FIELD_LABELS: Record<string, string> = {
+	url: 'URL de la canción',
+	title: 'Título de la canción',
+};
+
+export const QUOTE_FIELD_LABELS: Record<string, string> = {
+	text: 'Frase de apertura',
+	author: 'Autor',
+};
+
+export const THANK_YOU_FIELD_LABELS: Record<string, string> = {
+	message: 'Mensaje de agradecimiento',
+	closingName: 'Nombre de despedida',
+};
+
 export const VENUE_LABELS: Record<string, string> = {
 	venueName: 'Nombre del lugar',
 	address: 'Dirección',

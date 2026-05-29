@@ -5,54 +5,20 @@ import DraftEditor from '@/components/dashboard/intake/DraftEditor';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { FieldRow } from '@/components/intake/shared/FieldRow';
 import { VenueSection } from '@/components/intake/shared/VenueSection';
-import { SECTION_LABELS, PHOTO_LABELS } from '@/lib/intake/labels';
+import {
+	SECTION_LABELS,
+	PHOTO_LABELS,
+	HERO_FIELD_LABELS,
+	FAMILY_FIELD_LABELS,
+	RSVP_FIELD_LABELS,
+	MUSIC_FIELD_LABELS,
+	QUOTE_FIELD_LABELS,
+	THANK_YOU_FIELD_LABELS,
+} from '@/lib/intake/labels';
 
 interface Props {
 	projectId: string;
 }
-
-const heroLabels: Record<string, string> = {
-	name: 'Nombre del festejado',
-	secondaryName: 'Segundo nombre',
-	label: 'Título del evento',
-	nickname: 'Apodo',
-	date: 'Fecha del evento',
-};
-
-const familyLabels: Record<string, string> = {
-	fatherName: 'Nombre del padre',
-	fatherDeceased: 'Padre fallecido',
-	motherName: 'Nombre de la madre',
-	motherDeceased: 'Madre fallecida',
-	spouseName: 'Nombre del cónyuge',
-	godparents: 'Padrinos',
-	children: 'Hijos',
-	sectionMessage: 'Mensaje familiar',
-};
-
-const rsvpLabels: Record<string, string> = {
-	title: 'Título',
-	guestCap: 'Acompañantes máximo',
-	confirmationMessage: 'Mensaje de confirmación',
-	confirmationMode: 'Modo de confirmación',
-	whatsappPhone: 'WhatsApp',
-	subcopy: 'Texto adicional',
-};
-
-const musicLabels: Record<string, string> = {
-	url: 'URL de la canción',
-	title: 'Título de la canción',
-};
-
-const quoteLabels: Record<string, string> = {
-	text: 'Frase de apertura',
-	author: 'Autor',
-};
-
-const thankYouLabels: Record<string, string> = {
-	message: 'Mensaje de agradecimiento',
-	closingName: 'Nombre de despedida',
-};
 
 const DraftReview: FC<Props> = ({ projectId }) => {
 	const { currentDraft, loading, loadDraft, publishDraft } = useInvitationAdmin();
@@ -174,7 +140,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.Hero}</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(heroLabels).map(([key, label]) => (
+						{Object.entries(HERO_FIELD_LABELS).map(([key, label]) => (
 							<FieldRow key={key} label={label} value={heroContent[key]} />
 						))}
 					</dl>
@@ -189,7 +155,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.family}</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(familyLabels).map(([key, label]) => (
+						{Object.entries(FAMILY_FIELD_LABELS).map(([key, label]) => (
 							<FieldRow key={key} label={label} value={family[key]} />
 						))}
 					</dl>
@@ -221,7 +187,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.rsvp}</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(rsvpLabels).map(([key, label]) => (
+						{Object.entries(RSVP_FIELD_LABELS).map(([key, label]) => (
 							<FieldRow key={key} label={label} value={rsvp[key]} />
 						))}
 					</dl>
@@ -232,7 +198,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.music}</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(musicLabels).map(([key, label]) => (
+						{Object.entries(MUSIC_FIELD_LABELS).map(([key, label]) => (
 							<FieldRow key={key} label={label} value={music[key]} />
 						))}
 					</dl>
@@ -254,7 +220,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.quote}</h3>
 					<dl className="intake-review__fields">
-						{Object.entries(quoteLabels).map(([key, label]) => (
+						{Object.entries(QUOTE_FIELD_LABELS).map(([key, label]) => (
 							<FieldRow key={key} label={label} value={quote[key]} />
 						))}
 					</dl>
@@ -262,7 +228,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 						<>
 							<h4 className="intake-review__venue-title">Agradecimiento</h4>
 							<dl className="intake-review__fields">
-								{Object.entries(thankYouLabels).map(([key, label]) => (
+								{Object.entries(THANK_YOU_FIELD_LABELS).map(([key, label]) => (
 									<FieldRow key={key} label={label} value={thankYou[key]} />
 								))}
 							</dl>

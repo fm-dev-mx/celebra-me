@@ -242,6 +242,6 @@ describe('DraftReview', () => {
 		render(<DraftReview projectId="proj-1" />);
 
 		const backLink = screen.getByRole('link', { name: /volver/i });
-		expect(backLink.closest('a')).toHaveAttribute('href', '/dashboard/invitaciones/proj-1');
+		expect(backLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1');
 	});
 });
