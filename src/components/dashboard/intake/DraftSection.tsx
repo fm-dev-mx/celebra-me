@@ -36,14 +36,22 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 					<span>
 						Generado: {new Date(currentDraft.createdAt).toLocaleString('es-MX')}
 					</span>
-					<button
-						type="button"
-						className="intake-detail__generate-btn"
-						onClick={handleGenerateDraft}
-						disabled={draftGenerating}
-					>
-						{draftGenerating ? 'Regenerando...' : 'Regenerar borrador'}
-					</button>
+					<div className="intake-detail__draft-actions">
+						<a
+							href={`/dashboard/invitaciones/${projectId}/draft`}
+							className="intake-detail__review-link"
+						>
+							Ver borrador
+						</a>
+						<button
+							type="button"
+							className="intake-detail__generate-btn"
+							onClick={handleGenerateDraft}
+							disabled={draftGenerating}
+						>
+							{draftGenerating ? 'Regenerando...' : 'Regenerar borrador'}
+						</button>
+					</div>
 				</div>
 			) : (
 				<button

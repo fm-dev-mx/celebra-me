@@ -1,0 +1,14 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DraftReview from '@/components/dashboard/intake/DraftReview';
+
+const { id } = Astro.params;
+
+if (!id) {
+	return Astro.redirect('/dashboard/invitaciones');
+}
+---
+
+<DashboardLayout title="Dashboard Borrador">
+	<DraftReview client:load projectId={id} />
+</DashboardLayout>
