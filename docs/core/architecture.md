@@ -125,6 +125,14 @@ Historical note:
 These modules must never be imported by purely client-side presentation code when doing so would
 pull in server concerns.
 
+### 5.4 Published Invitation Content
+
+Public published invitation lookups against `published_invitation_content` must use both
+`event_type` and `slug` — never `slug` alone. The unique constraint
+`published_invitation_content_event_type_slug_key UNIQUE (event_type, slug)` enforces route
+identity. See `src/lib/invitation/content-resolver.ts` and
+`src/lib/intake/repositories/published-invitation-content.repository.ts`.
+
 ---
 
 ## 6) Client → Server Communication
