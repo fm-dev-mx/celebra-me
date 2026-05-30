@@ -73,7 +73,7 @@ const EventsAdminTable: React.FC = () => {
 	return (
 		<div className="dashboard-card">
 			<div className="dashboard-card-header">
-				<h2>Eventos Globales</h2>
+				<h2>Eventos RSVP</h2>
 				<button type="button" onClick={() => setCreateModalOpen(true)}>
 					+ Nuevo Evento
 				</button>

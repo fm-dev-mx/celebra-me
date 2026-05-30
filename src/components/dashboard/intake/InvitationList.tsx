@@ -72,7 +72,7 @@ const InvitationList: FC = () => {
 	return (
 		<div className="intake-list">
 			<header className="intake-list__header">
-				<h2 className="intake-list__title">Invitaciones</h2>
+				<h2 className="intake-list__title">Producción de invitaciones</h2>
 				<button
 					type="button"
 					className="intake-list__create-btn"
