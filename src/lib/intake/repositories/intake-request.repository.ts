@@ -5,6 +5,7 @@ interface IntakeRequestRow {
 	id: string;
 	invitation_project_id: string;
 	token_hash: string;
+	token_ciphertext: string | null;
 	status: string;
 	enabled_blocks: IntakeBlockType[];
 	expires_at: string | null;
@@ -17,6 +18,7 @@ function toIntakeRequest(row: IntakeRequestRow): IntakeRequest {
 		id: row.id,
 		invitationProjectId: row.invitation_project_id,
 		tokenHash: row.token_hash,
+		tokenCiphertext: row.token_ciphertext,
 		status: row.status as IntakeRequest['status'],
 		enabledBlocks: row.enabled_blocks,
 		expiresAt: row.expires_at,
@@ -26,7 +28,7 @@ function toIntakeRequest(row: IntakeRequestRow): IntakeRequest {
 }
 
 const SELECT_COLUMNS =
-	'id,invitation_project_id,token_hash,status,enabled_blocks,expires_at,created_at,updated_at';
+	'id,invitation_project_id,token_hash,token_ciphertext,status,enabled_blocks,expires_at,created_at,updated_at';
 
 export async function findIntakeRequestById(id: string): Promise<IntakeRequest | null> {
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
@@ -59,6 +61,7 @@ export async function findIntakeRequestsByProjectId(
 export async function createIntakeRequest(input: {
 	invitationProjectId: string;
 	tokenHash: string;
+	tokenCiphertext: string;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;
 }): Promise<IntakeRequest> {
@@ -70,6 +73,7 @@ export async function createIntakeRequest(input: {
 		body: {
 			invitation_project_id: input.invitationProjectId,
 			token_hash: input.tokenHash,
+			token_ciphertext: input.tokenCiphertext,
 			enabled_blocks: input.enabledBlocks,
 			expires_at: input.expiresAt,
 			status: 'active',
@@ -87,6 +91,7 @@ export async function updateIntakeRequest(
 		enabledBlocks?: IntakeBlockType[];
 		expiresAt?: string | null;
 		tokenHash?: string;
+		tokenCiphertext?: string;
 	},
 ): Promise<IntakeRequest> {
 	const body: Record<string, unknown> = {};
@@ -94,6 +99,7 @@ export async function updateIntakeRequest(
 	if (input.enabledBlocks !== undefined) body.enabled_blocks = input.enabledBlocks;
 	if (input.expiresAt !== undefined) body.expires_at = input.expiresAt;
 	if (input.tokenHash !== undefined) body.token_hash = input.tokenHash;
+	if (input.tokenCiphertext !== undefined) body.token_ciphertext = input.tokenCiphertext;
 
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
 		pathWithQuery: `intake_requests?id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`,

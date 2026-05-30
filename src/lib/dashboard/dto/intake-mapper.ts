@@ -10,6 +10,7 @@ import type {
 	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
 } from '@/lib/dashboard/dto/intake';
+import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 
 export function toInvitationProjectDTO(project: InvitationProject): InvitationProjectDTO {
 	return {
@@ -30,6 +31,7 @@ export function toInvitationProjectDTO(project: InvitationProject): InvitationPr
 }
 
 export function toIntakeRequestDTO(request: IntakeRequest): IntakeRequestDTO {
+	const captureLink = resolveCaptureLink(request);
 	return {
 		id: request.id,
 		invitationProjectId: request.invitationProjectId,
@@ -38,6 +40,7 @@ export function toIntakeRequestDTO(request: IntakeRequest): IntakeRequestDTO {
 		expiresAt: request.expiresAt,
 		createdAt: request.createdAt,
 		updatedAt: request.updatedAt,
+		...captureLink,
 	};
 }
 

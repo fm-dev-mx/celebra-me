@@ -36,6 +36,7 @@ describe('intake-request repository', () => {
 				id: 'req-123',
 				invitation_project_id: 'proj-456',
 				token_hash: 'abc123hash',
+				token_ciphertext: 'v1.iv.tag.ciphertext',
 				status: 'active',
 				enabled_blocks: ['event-details', 'photos'],
 				expires_at: '2026-06-30T00:00:00Z',
@@ -51,6 +52,7 @@ describe('intake-request repository', () => {
 			expect(result?.id).toBe('req-123');
 			expect(result?.invitationProjectId).toBe('proj-456');
 			expect(result?.tokenHash).toBe('abc123hash');
+			expect(result?.tokenCiphertext).toBe('v1.iv.tag.ciphertext');
 			expect(result?.status).toBe('active');
 			expect(result?.enabledBlocks).toEqual(['event-details', 'photos']);
 		});
@@ -74,6 +76,7 @@ describe('intake-request repository', () => {
 				id: 'req-789',
 				invitation_project_id: 'proj-101',
 				token_hash: 'matching-hash',
+				token_ciphertext: null,
 				status: 'active',
 				enabled_blocks: ['main-people'],
 				expires_at: null,
@@ -96,6 +99,7 @@ describe('intake-request repository', () => {
 				id: 'new-req-id',
 				invitation_project_id: 'proj-123',
 				token_hash: 'new-hash',
+				token_ciphertext: 'v1.iv.tag.ciphertext',
 				status: 'active',
 				enabled_blocks: ['event-details', 'photos'],
 				expires_at: '2026-06-30T00:00:00Z',
@@ -108,6 +112,7 @@ describe('intake-request repository', () => {
 			const result = await createIntakeRequest({
 				invitationProjectId: 'proj-123',
 				tokenHash: 'new-hash',
+				tokenCiphertext: 'v1.iv.tag.ciphertext',
 				enabledBlocks: ['event-details', 'photos'],
 				expiresAt: '2026-06-30T00:00:00Z',
 			});
@@ -122,6 +127,7 @@ describe('intake-request repository', () => {
 				body: {
 					invitation_project_id: 'proj-123',
 					token_hash: 'new-hash',
+					token_ciphertext: 'v1.iv.tag.ciphertext',
 					enabled_blocks: ['event-details', 'photos'],
 					expires_at: '2026-06-30T00:00:00Z',
 					status: 'active',
@@ -136,6 +142,7 @@ describe('intake-request repository', () => {
 				createIntakeRequest({
 					invitationProjectId: 'proj-123',
 					tokenHash: 'hash',
+					tokenCiphertext: 'v1.iv.tag.ciphertext',
 					enabledBlocks: ['event-details'],
 					expiresAt: null,
 				}),
@@ -149,6 +156,7 @@ describe('intake-request repository', () => {
 				id: 'req-123',
 				invitation_project_id: 'proj-456',
 				token_hash: 'hash',
+				token_ciphertext: null,
 				status: 'closed',
 				enabled_blocks: ['event-details'],
 				expires_at: null,
@@ -177,6 +185,7 @@ describe('intake-request repository', () => {
 				id: 'req-123',
 				invitation_project_id: 'proj-456',
 				token_hash: 'new-hash',
+				token_ciphertext: 'v1.iv.tag.ciphertext',
 				status: 'active',
 				enabled_blocks: ['event-details'],
 				expires_at: null,
@@ -188,6 +197,7 @@ describe('intake-request repository', () => {
 
 			const result = await updateIntakeRequest('req-123', {
 				tokenHash: 'new-hash',
+				tokenCiphertext: 'v1.iv.tag.ciphertext',
 			});
 
 			expect(result.tokenHash).toBe('new-hash');
@@ -196,7 +206,7 @@ describe('intake-request repository', () => {
 				method: 'PATCH',
 				useServiceRole: true,
 				prefer: 'return=representation',
-				body: { token_hash: 'new-hash' },
+				body: { token_hash: 'new-hash', token_ciphertext: 'v1.iv.tag.ciphertext' },
 			});
 		});
 

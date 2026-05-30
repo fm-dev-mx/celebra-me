@@ -9,6 +9,12 @@ jest.mock('@/lib/intake/repositories/intake-request.repository', () => ({
 jest.mock('@/lib/intake/services/intake-token.service', () => ({
 	generateIntakeToken: jest.fn(() => 'mock-raw-token-abc123'),
 	hashIntakeToken: jest.fn((token: string) => `hashed-${token}`),
+	encryptIntakeToken: jest.fn(() => 'v1.iv.tag.ciphertext'),
+	decryptIntakeToken: jest.fn(() => 'mock-raw-token-abc123'),
+}));
+
+jest.mock('@/lib/server/env', () => ({
+	getEnv: jest.fn(() => ''),
 }));
 
 import {
@@ -16,12 +22,17 @@ import {
 	createIntakeRequest,
 	updateIntakeRequest,
 } from '@/lib/intake/repositories/intake-request.repository';
-import { generateIntakeToken, hashIntakeToken } from '@/lib/intake/services/intake-token.service';
+import {
+	decryptIntakeToken,
+	generateIntakeToken,
+	hashIntakeToken,
+} from '@/lib/intake/services/intake-token.service';
 import {
 	createRequest,
 	regenerateToken,
 	revokeRequest,
 	getIntakeRequestByToken,
+	resolveCaptureLink,
 } from '@/lib/intake/services/intake-request.service';
 import { CreateIntakeRequestSchema } from '@/lib/intake/schemas/intake-request.schema';
 
@@ -30,11 +41,13 @@ const mockUpdate = updateIntakeRequest as jest.MockedFunction<typeof updateIntak
 const mockFindByTokenHash = findIntakeRequestByTokenHash as jest.MockedFunction<
 	typeof findIntakeRequestByTokenHash
 >;
+const mockDecrypt = decryptIntakeToken as jest.MockedFunction<typeof decryptIntakeToken>;
 
 const baseRequest = {
 	id: 'req-1',
 	invitationProjectId: 'proj-1',
 	tokenHash: 'hashed-mock-raw-token-abc123',
+	tokenCiphertext: 'v1.iv.tag.ciphertext',
 	status: 'active' as const,
 	enabledBlocks: ['event-details' as const, 'photos' as const],
 	expiresAt: '2026-06-28T00:00:00Z',
@@ -62,6 +75,7 @@ describe('createRequest', () => {
 		expect(mockCreate).toHaveBeenCalledWith({
 			invitationProjectId: 'proj-1',
 			tokenHash: 'hashed-mock-raw-token-abc123',
+			tokenCiphertext: 'v1.iv.tag.ciphertext',
 			enabledBlocks: ['event-details', 'photos'],
 			expiresAt: expect.any(String),
 		});
@@ -91,6 +105,7 @@ describe('regenerateToken', () => {
 		const updated = {
 			...baseRequest,
 			tokenHash: 'hashed-mock-raw-token-abc123',
+			tokenCiphertext: 'v1.iv.tag.ciphertext',
 			status: 'active' as const,
 		};
 		mockUpdate.mockResolvedValue(updated);
@@ -100,6 +115,7 @@ describe('regenerateToken', () => {
 		expect(result.rawToken).toBe('mock-raw-token-abc123');
 		expect(mockUpdate).toHaveBeenCalledWith('req-1', {
 			tokenHash: 'hashed-mock-raw-token-abc123',
+			tokenCiphertext: 'v1.iv.tag.ciphertext',
 			status: 'active',
 			expiresAt: expect.any(String),
 		});
@@ -175,5 +191,37 @@ describe('CreateIntakeRequestSchema', () => {
 			enabledBlocks: ['invalid-block'],
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+describe('resolveCaptureLink', () => {
+	it('returns an active capture URL when ciphertext can be decrypted', () => {
+		mockDecrypt.mockReturnValue('recoverable-token');
+
+		expect(resolveCaptureLink(baseRequest)).toEqual({
+			captureUrl: 'https://www.celebra-me.com/captura/recoverable-token',
+			captureLinkStatus: 'active',
+		});
+	});
+
+	it('reports unavailable for legacy rows without ciphertext', () => {
+		expect(resolveCaptureLink({ ...baseRequest, tokenCiphertext: null })).toEqual({
+			captureUrl: null,
+			captureLinkStatus: 'unavailable',
+		});
+	});
+
+	it('reports revoked without exposing a stored token', () => {
+		expect(resolveCaptureLink({ ...baseRequest, status: 'closed' })).toEqual({
+			captureUrl: null,
+			captureLinkStatus: 'revoked',
+		});
+	});
+
+	it('reports expired without exposing a stored token', () => {
+		expect(resolveCaptureLink({ ...baseRequest, expiresAt: '2020-01-01T00:00:00Z' })).toEqual({
+			captureUrl: null,
+			captureLinkStatus: 'expired',
+		});
 	});
 });

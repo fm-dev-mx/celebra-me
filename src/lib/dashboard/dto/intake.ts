@@ -4,6 +4,7 @@ import type {
 	IntakeRequestStatus,
 	IntakeSubmissionStatus,
 } from '@/lib/intake/types';
+import type { CaptureLinkStatus } from '@/lib/intake/types';
 
 export interface InvitationProjectDTO {
 	id: string;
@@ -53,6 +54,8 @@ export interface IntakeRequestDTO {
 	expiresAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+	captureUrl: string | null;
+	captureLinkStatus: CaptureLinkStatus;
 }
 
 export interface IntakeRequestCreateResponse {
