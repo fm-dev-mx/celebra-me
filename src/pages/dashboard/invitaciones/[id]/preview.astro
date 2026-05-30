@@ -3,7 +3,7 @@ export const prerender = false;
 
 import { getCollection } from 'astro:content';
 import { findDraftByProjectId } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
@@ -26,7 +26,7 @@ if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
 }
 
-const project = await getInvitationProjectById(id);
+const project = await findInvitationProjectById(id);
 if (!project) {
 	errorMessage = 'Proyecto no encontrado.';
 }
