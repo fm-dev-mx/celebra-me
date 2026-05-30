@@ -4,14 +4,20 @@ import type { IntakeRequestDTO } from '@/lib/dashboard/dto/intake';
 import { REQUEST_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
-	projectId: string;
 	request: IntakeRequestDTO | null;
-	rawToken: string | null;
 	onRegenerate: () => void;
 	regenerating?: boolean;
 }
 
-const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerating }) => {
+const LINK_STATUS_LABELS: Record<IntakeRequestDTO['captureLinkStatus'], string> = {
+	active: 'Activo',
+	expired: 'Expirado',
+	missing: 'Sin enlace',
+	revoked: 'Revocado',
+	unavailable: 'No recuperable',
+};
+
+const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => {
 	const [copied, setCopied] = useState(false);
 	const [copiedWa, setCopiedWa] = useState(false);
 
@@ -26,9 +32,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 		);
 	}
 
-	const baseUrl =
-		typeof window !== 'undefined' ? window.location.origin : 'https://www.celebra-me.com';
-	const link = rawToken ? `${baseUrl}/captura/${rawToken}` : null;
+	const link = request.captureUrl;
 
 	const copyLink = async () => {
 		if (!link) return;
@@ -60,6 +64,9 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 				<span className="intake-link-panel__value">
 					{REQUEST_STATUS_LABELS[request.status] ?? request.status}
 				</span>
+				<span className="intake-link-panel__value">
+					Enlace: {LINK_STATUS_LABELS[request.captureLinkStatus]}
+				</span>
 				{request.expiresAt && (
 					<span className="intake-link-panel__expires">
 						Expira: {new Date(request.expiresAt).toLocaleDateString('es-MX')}
@@ -79,6 +86,14 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 						>
 							{copied ? 'Copiado!' : 'Copiar'}
 						</button>
+						<a
+							className="intake-link-panel__open-btn"
+							href={link}
+							target="_blank"
+							rel="noreferrer"
+						>
+							Abrir enlace
+						</a>
 					</div>
 				</div>
 			)}
@@ -93,10 +108,10 @@ const IntakeLinkPanel: FC<Props> = ({ request, rawToken, onRegenerate, regenerat
 				</button>
 			)}
 
-			{!rawToken && (
+			{request.captureLinkStatus === 'unavailable' && (
 				<p className="intake-link-panel__notice">
-					El token original ya no esta disponible. Si necesitas un nuevo enlace, regenera
-					el token.
+					Enlace no recuperable. Regenera el token solo si deseas invalidar el enlace
+					anterior.
 				</p>
 			)}
 

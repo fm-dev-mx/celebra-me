@@ -19,8 +19,6 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		currentProject,
 		currentRequest,
 		currentSubmission,
-		rawToken,
-		setRawToken,
 		loadProjectDetail,
 		updateProject,
 		createIntakeRequest,
@@ -56,10 +54,9 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		setActionSuccess('');
 
 		try {
-			const result = await createIntakeRequest(projectId, {
+			await createIntakeRequest(projectId, {
 				enabledBlocks: selectedBlocks,
 			});
-			setRawToken(result.rawToken);
 			setActionSuccess('Enlace de captura generado exitosamente.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el enlace.');
@@ -76,8 +73,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		setActionSuccess('');
 
 		try {
-			const result = await regenerateToken(projectId);
-			setRawToken(result.rawToken);
+			await regenerateToken(projectId);
 			setActionSuccess('Token regenerado. El enlace anterior ya no funciona.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al regenerar el token.');
@@ -190,9 +186,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			<section className="intake-detail__section">
 				<h3 className="intake-detail__section-title">Enlace de captura</h3>
 				<IntakeLinkPanel
-					projectId={projectId}
 					request={currentRequest}
-					rawToken={rawToken}
 					onRegenerate={handleRegenerate}
 					regenerating={regenerating}
 				/>

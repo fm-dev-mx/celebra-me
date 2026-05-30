@@ -480,7 +480,8 @@
 	gap: 0.5rem;
 }
 
-.intake-link-panel__copy-btn {
+.intake-link-panel__copy-btn,
+.intake-link-panel__open-btn {
 	flex-shrink: 0;
 	padding: 0.625rem 1rem;
 	border: 1px solid var(--color-action-accent);
@@ -491,6 +492,7 @@
 	font-size: 0.8125rem;
 	cursor: pointer;
 	transition: all 0.15s;
+	text-decoration: none;
 
 	&:hover {
 		background: var(--dashboard-accent-soft-bg);
@@ -702,6 +704,10 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.75rem;
+}
+
+.intake-review__edit-btn {
+	margin-bottom: 1rem;
 }
 
 .intake-review__btn {

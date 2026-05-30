@@ -1,13 +1,43 @@
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
-import type { IntakeBlockType } from '@/lib/intake/types';
-import { SUBMISSION_STATUS_LABELS, BLOCK_LABELS, PHOTO_LABELS } from '@/lib/intake/labels';
-import { FieldRow, formatValue } from '@/components/intake/shared/FieldRow';
-import { VenueSection } from '@/components/intake/shared/VenueSection';
+import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
+import { SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
+import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
+import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
 
 interface Props {
 	projectId: string;
+}
+
+function renderLoadState(loading: boolean, error: string, submission: IntakeSubmissionDTO | null) {
+	if (loading) return <div className="intake-review__loading">Cargando captura...</div>;
+	if (error) return <div className="intake-review__error">{error}</div>;
+	if (!submission) {
+		return (
+			<div className="intake-review__empty">No se encontro captura para este proyecto.</div>
+		);
+	}
+	return null;
+}
+
+function PreviousReviewNotes({ notes }: { notes: string }) {
+	if (!notes) return null;
+	return (
+		<div className="intake-review__previous-notes">
+			<h4>Notas de revision anterior:</h4>
+			<p>{notes}</p>
+		</div>
+	);
+}
+
+function ActionFeedback({ error, success }: { error: string; success: string }) {
+	return (
+		<>
+			{error && <p className="intake-review__error">{error}</p>}
+			{success && <p className="intake-review__success">{success}</p>}
+		</>
+	);
 }
 
 const SubmissionReview: FC<Props> = ({ projectId }) => {
@@ -19,9 +49,13 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 		currentRequest,
 		loadSubmissionForReview,
 		reviewSubmission,
+		saveSubmissionCorrections,
 	} = useInvitationAdmin();
-
+	const [editing, setEditing] = useState(false);
+	const [blockData, setBlockData] = useState<Record<string, unknown>>({});
+	const [clientComments, setClientComments] = useState('');
 	const [reviewNotes, setReviewNotes] = useState('');
+	const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 	const [actionLoading, setActionLoading] = useState('');
 	const [actionError, setActionError] = useState('');
 	const [actionSuccess, setActionSuccess] = useState('');
@@ -30,96 +64,127 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 		void loadSubmissionForReview(projectId);
 	}, [projectId, loadSubmissionForReview]);
 
+	useEffect(() => {
+		if (!currentSubmission || editing) return;
+		setBlockData(currentSubmission.blockData ?? {});
+		setClientComments(currentSubmission.clientComments ?? '');
+	}, [currentSubmission, editing]);
+
+	const dirty = useMemo(() => {
+		if (!currentSubmission) return false;
+		return (
+			JSON.stringify(blockData) !== JSON.stringify(currentSubmission.blockData ?? {}) ||
+			clientComments !== (currentSubmission.clientComments ?? '')
+		);
+	}, [blockData, clientComments, currentSubmission]);
+
+	const resetLocalState = useCallback(() => {
+		if (!currentSubmission) return;
+		setBlockData(currentSubmission.blockData ?? {});
+		setClientComments(currentSubmission.clientComments ?? '');
+		setValidationErrors({});
+	}, [currentSubmission]);
+
+	const updateBlockField = (blockType: string, field: string, value: unknown) => {
+		setBlockData((previous) => ({
+			...previous,
+			[blockType]: {
+				...((previous[blockType] as Record<string, unknown>) ?? {}),
+				[field]: value,
+			},
+		}));
+		setValidationErrors((previous) => {
+			const next = { ...previous };
+			delete next[blockType];
+			return next;
+		});
+	};
+
+	const validateCorrections = () => {
+		const errors: Record<string, string> = {};
+		for (const blockType of currentRequest?.enabledBlocks ?? []) {
+			const result = validateBlockData(blockType, blockData[blockType] ?? {});
+			if (!result.success) {
+				errors[blockType] = result.error.issues.map((issue) => issue.message).join(', ');
+			}
+		}
+		setValidationErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
+	const withAction = useCallback(
+		async <T,>(actionName: string, fn: () => Promise<T>, onSuccess?: (result: T) => void) => {
+			setActionLoading(actionName);
+			setActionError('');
+			setActionSuccess('');
+			try {
+				const result = await fn();
+				onSuccess?.(result);
+			} catch (err) {
+				setActionError(err instanceof Error ? err.message : 'Error inesperado.');
+			} finally {
+				setActionLoading('');
+			}
+		},
+		[],
+	);
+
+	const handleSave = async () => {
+		if (!validateCorrections()) return;
+		await withAction(
+			'save',
+			() => saveSubmissionCorrections(projectId, { blockData, clientComments }),
+			() => {
+				setEditing(false);
+				setActionSuccess('Correcciones guardadas exitosamente.');
+			},
+		);
+	};
+
+	const handleCancel = useCallback(() => {
+		setEditing(false);
+		resetLocalState();
+	}, [resetLocalState]);
+
 	const handleAction = async (action: 'approve' | 'request_changes') => {
+		if (dirty || editing) {
+			setActionError('Guarda o cancela las correcciones antes de continuar.');
+			return;
+		}
 		if (action === 'request_changes' && !reviewNotes.trim()) {
 			setActionError('Las notas son obligatorias al solicitar cambios.');
 			return;
 		}
-
-		setActionLoading(action);
-		setActionError('');
-		setActionSuccess('');
-
-		try {
-			await reviewSubmission(projectId, action, reviewNotes);
-			setActionSuccess(
-				action === 'approve'
-					? 'Captura aprobada exitosamente.'
-					: 'Se solicitaron cambios al cliente.',
-			);
-			setReviewNotes('');
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al procesar la accion.');
-		} finally {
-			setActionLoading('');
-		}
-	};
-
-	if (loading) {
-		return <div className="intake-review__loading">Cargando captura...</div>;
-	}
-
-	if (error) {
-		return <div className="intake-review__error">{error}</div>;
-	}
-
-	if (!currentSubmission) {
-		return (
-			<div className="intake-review__empty">No se encontro captura para este proyecto.</div>
-		);
-	}
-
-	const blockData = currentSubmission.blockData ?? {};
-	const photoNotes = currentSubmission.photoNotes ?? {};
-	const enabledBlocks = currentRequest?.enabledBlocks ?? [];
-
-	const renderBlockSection = (blockType: IntakeBlockType, data: Record<string, unknown>) => {
-		if (blockType === 'date-locations') {
-			const ceremony = data.ceremony as Record<string, unknown> | undefined;
-			const reception = data.reception as Record<string, unknown> | undefined;
-			return (
-				<section className="intake-review__section">
-					<h3 className="intake-review__section-title">{BLOCK_LABELS[blockType]}</h3>
-					<VenueSection title="Ceremonia" venue={ceremony} />
-					<VenueSection title="Recepción" venue={reception} />
-					<dl className="intake-review__fields">
-						<FieldRow label="Código de vestimenta" value={data.dressCode} />
-						<FieldRow
-							label="Indicaciones adicionales"
-							value={data.additionalIndications}
-						/>
-					</dl>
-				</section>
-			);
-		}
-
-		const entries = Object.entries(data).filter(
-			([key, value]) =>
-				value !== '' && value !== undefined && value !== null && key !== '_pending',
-		);
-		if (entries.length === 0) return null;
-
-		return (
-			<section className="intake-review__section">
-				<h3 className="intake-review__section-title">{BLOCK_LABELS[blockType]}</h3>
-				<dl className="intake-review__fields">
-					{entries.map(([key, value]) => (
-						<FieldRow key={key} label={key} value={value} />
-					))}
-				</dl>
-			</section>
+		await withAction(
+			action,
+			() => reviewSubmission(projectId, action, reviewNotes),
+			() => {
+				setActionSuccess(
+					action === 'approve'
+						? 'Captura aprobada exitosamente.'
+						: 'Se solicitaron cambios al cliente.',
+				);
+				setReviewNotes('');
+			},
 		);
 	};
+
+	const loadState = renderLoadState(loading, error, currentSubmission);
+	if (loadState) return loadState;
+
+	if (!currentSubmission) return null;
+	const editable = currentSubmission.status === 'submitted';
 
 	return (
 		<div className="intake-review">
 			<header className="intake-review__header">
+				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
+					&larr; Volver
+				</a>
 				<h2 className="intake-review__title">Revision: {currentProject?.title}</h2>
 				<div className="intake-review__meta">
 					<span className="intake-review__badge">
-						Estado:{' '}
-						{SUBMISSION_STATUS_LABELS[currentSubmission.status] ??
-							currentSubmission.status}
+						Estado: {SUBMISSION_STATUS_LABELS[currentSubmission.status]}
 					</span>
 					{currentSubmission.submittedAt && (
 						<span className="intake-review__date">
@@ -130,72 +195,93 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 				</div>
 			</header>
 
-			{currentSubmission.reviewNotes && (
-				<div className="intake-review__previous-notes">
-					<h4>Notas de revision anterior:</h4>
-					<p>{currentSubmission.reviewNotes}</p>
-				</div>
+			<PreviousReviewNotes notes={currentSubmission.reviewNotes} />
+
+			{editable && !editing && (
+				<button
+					type="button"
+					className="intake-review__btn intake-review__edit-btn"
+					onClick={() => setEditing(true)}
+				>
+					Editar correcciones
+				</button>
 			)}
 
 			<div className="intake-review__sections">
-				{enabledBlocks.map((blockType) => {
-					const data = blockData[blockType] as Record<string, unknown> | undefined;
-					if (!data) return null;
-					return <div key={blockType}>{renderBlockSection(blockType, data)}</div>;
+				{(currentRequest?.enabledBlocks ?? []).map((blockType) => {
+					const BlockComponent = INTAKE_BLOCK_COMPONENTS[blockType];
+					return (
+						<section key={blockType} className="intake-review__section">
+							<BlockComponent
+								data={(blockData[blockType] as Record<string, unknown>) ?? {}}
+								onChange={(field, value) =>
+									updateBlockField(blockType, field, value)
+								}
+								disabled={!editing}
+							/>
+							{validationErrors[blockType] && (
+								<p className="intake-review__error">
+									{validationErrors[blockType]}
+								</p>
+							)}
+						</section>
+					);
 				})}
 			</div>
 
-			{Object.keys(photoNotes).length > 0 && (
-				<section className="intake-review__section">
-					<h3 className="intake-review__section-title">Notas de fotos</h3>
-					<dl className="intake-review__fields">
-						{Object.entries(photoNotes).map(([key, value]) => {
-							const display = formatValue(value);
-							if (display === null) return null;
-							return (
-								<div key={key} className="intake-review__field">
-									<dt className="intake-review__key">
-										{PHOTO_LABELS[key] ?? key}
-									</dt>
-									<dd className="intake-review__value">{display}</dd>
-								</div>
-							);
-						})}
-					</dl>
-				</section>
-			)}
+			<section className="intake-review__section">
+				<label className="intake-field__label" htmlFor="clientComments">
+					Comentarios del cliente
+				</label>
+				<textarea
+					id="clientComments"
+					className="intake-field__textarea"
+					value={clientComments}
+					onChange={(event) => setClientComments(event.target.value)}
+					disabled={!editing}
+					rows={4}
+				/>
+			</section>
 
-			{currentSubmission.clientComments && (
-				<section className="intake-review__section">
-					<h3 className="intake-review__section-title">Comentarios del cliente</h3>
-					<p className="intake-review__comments">{currentSubmission.clientComments}</p>
-				</section>
+			{editing && (
+				<div className="intake-review__buttons">
+					<button
+						type="button"
+						className="intake-review__btn intake-review__btn--approve"
+						onClick={handleSave}
+						disabled={actionLoading !== ''}
+					>
+						{actionLoading === 'save' ? 'Guardando...' : 'Guardar correcciones'}
+					</button>
+					<button
+						type="button"
+						className="intake-review__btn intake-review__btn--changes"
+						onClick={handleCancel}
+						disabled={actionLoading !== ''}
+					>
+						Cancelar
+					</button>
+				</div>
 			)}
 
 			<div className="intake-review__actions">
-				<div className="intake-review__notes-field">
-					<label className="intake-field__label" htmlFor="reviewNotes">
-						Notas de revision
-					</label>
-					<textarea
-						id="reviewNotes"
-						className="intake-field__textarea"
-						value={reviewNotes}
-						onChange={(e) => setReviewNotes(e.target.value)}
-						placeholder="Notas para el cliente (obligatorio si solicitas cambios)..."
-						rows={3}
-					/>
-				</div>
-
-				{actionError && <p className="intake-review__error">{actionError}</p>}
-				{actionSuccess && <p className="intake-review__success">{actionSuccess}</p>}
-
+				<label className="intake-field__label" htmlFor="reviewNotes">
+					Notas de revision
+				</label>
+				<textarea
+					id="reviewNotes"
+					className="intake-field__textarea"
+					value={reviewNotes}
+					onChange={(event) => setReviewNotes(event.target.value)}
+					rows={3}
+				/>
+				<ActionFeedback error={actionError} success={actionSuccess} />
 				<div className="intake-review__buttons">
 					<button
 						type="button"
 						className="intake-review__btn intake-review__btn--approve"
 						onClick={() => handleAction('approve')}
-						disabled={actionLoading !== '' || currentSubmission.status === 'approved'}
+						disabled={actionLoading !== '' || !editable || dirty || editing}
 					>
 						{actionLoading === 'approve' ? 'Aprobando...' : 'Aprobar captura'}
 					</button>
@@ -203,7 +289,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 						type="button"
 						className="intake-review__btn intake-review__btn--changes"
 						onClick={() => handleAction('request_changes')}
-						disabled={actionLoading !== '' || currentSubmission.status === 'approved'}
+						disabled={actionLoading !== '' || !editable || dirty || editing}
 					>
 						{actionLoading === 'request_changes' ? 'Enviando...' : 'Solicitar cambios'}
 					</button>
