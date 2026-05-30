@@ -169,7 +169,7 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview projectId="proj-1" />);
 
-		expect(screen.getByText('Confirmacion de asistencia')).toBeInTheDocument();
+		expect(screen.getByText('Confirmación de asistencia')).toBeInTheDocument();
 		expect(screen.getByText('Confirma tu asistencia')).toBeInTheDocument();
 		expect(screen.getByText('4')).toBeInTheDocument();
 	});
@@ -178,7 +178,7 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview projectId="proj-1" />);
 
-		expect(screen.getByText('Musica de fondo')).toBeInTheDocument();
+		expect(screen.getByText('Música de fondo')).toBeInTheDocument();
 		expect(screen.getByText('Nuvole Bianche')).toBeInTheDocument();
 	});
 
@@ -218,7 +218,7 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview projectId="proj-1" />);
 
-		expect(screen.getByText('Notas de fotografias')).toBeInTheDocument();
+		expect(screen.getByText('Notas de fotografías')).toBeInTheDocument();
 		expect(screen.getByText('Prefieren tonos calidos')).toBeInTheDocument();
 	});
 
