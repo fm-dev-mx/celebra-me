@@ -5,6 +5,7 @@ jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () =>
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
 	upsertPublishedContent: jest.fn(),
+	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/services/invitation-project.service', () => ({
@@ -26,11 +27,19 @@ import {
 	findDraftByProjectId,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	upsertPublishedContent,
+	findPublishedBySlugAndEventType,
+} from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
 	getInvitationProjectById,
 	updateProject,
 } from '@/lib/intake/services/invitation-project.service';
+import {
+	findEventBySlugService,
+	createEventService,
+	updateEventService,
+} from '@/lib/rsvp/repositories/event.repository';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 
 const mockGetProject = getInvitationProjectById as jest.MockedFunction<
@@ -42,6 +51,14 @@ const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof up
 const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<
 	typeof upsertPublishedContent
 >;
+const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
+	typeof findPublishedBySlugAndEventType
+>;
+const mockFindEventBySlug = findEventBySlugService as jest.MockedFunction<
+	typeof findEventBySlugService
+>;
+const mockCreateEvent = createEventService as jest.MockedFunction<typeof createEventService>;
+const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
 
 const baseProject = {
 	id: 'proj-1',
@@ -93,10 +110,12 @@ const baseProject = {
 	clientEmail: '',
 	clientWhatsapp: '5214421234567',
 	photosReceived: false,
-	createdBy: null,
+	createdBy: 'user-1',
 	createdAt: '2026-05-28T00:00:00Z',
 	updatedAt: '2026-05-28T00:00:00Z',
 };
+
+const projectNoOwner = { ...baseProject, createdBy: null };
 
 const validDraft = {
 	id: 'draft-1',
@@ -132,6 +151,9 @@ const approvedDraft = { ...validDraft, status: 'approved' as const };
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+	mockFindEventBySlug.mockResolvedValue(null);
+	mockCreateEvent.mockResolvedValue({ id: 'event-1' } as any);
 	const astroContent = jest.requireMock('astro:content');
 	astroContent.getCollection.mockResolvedValue([
 		{
@@ -289,5 +311,111 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).toHaveBeenCalledWith(
 			expect.objectContaining({ slug: 'my-invitation' }),
 		);
+	});
+
+	it('blocks publishing when project has no owner', async () => {
+		mockGetProject.mockResolvedValue(projectNoOwner as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+		});
+
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('creates event when no existing event exists', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockCreateEvent).toHaveBeenCalledWith({
+			ownerUserId: 'user-1',
+			slug: 'xv-proj-1',
+			eventType: 'xv',
+			title: 'Test Project',
+			status: 'published',
+		});
+		expect(mockUpdateEvent).not.toHaveBeenCalled();
+	});
+
+	it('updates event when event exists with matching slug and type', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+		mockFindEventBySlug.mockResolvedValue({
+			id: 'event-1',
+			eventType: 'xv',
+		} as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpdateEvent).toHaveBeenCalledWith({
+			eventId: 'event-1',
+			title: 'Test Project',
+			status: 'published',
+		});
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+	});
+
+	it('blocks publishing when event exists with different event type', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockFindEventBySlug.mockResolvedValue({
+			id: 'event-1',
+			eventType: 'boda',
+		} as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 409,
+			code: 'conflict',
+		});
+
+		expect(mockUpdateEvent).not.toHaveBeenCalled();
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('blocks publishing when slug collides with published content from another project', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			id: 'pub-existing',
+			invitationProjectId: 'other-proj',
+			slug: 'xv-proj-1a2b3c4d',
+			eventType: 'xv',
+		} as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 409,
+			code: 'conflict',
+		});
+
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('allows publishing when published content exists for the same project', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			id: 'pub-existing',
+			invitationProjectId: 'proj-1',
+			slug: 'xv-proj-1a2b3c4d',
+			eventType: 'xv',
+		} as any);
+
+		await expect(publishDraft('proj-1')).resolves.toBeDefined();
 	});
 });

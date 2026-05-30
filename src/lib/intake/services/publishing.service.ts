@@ -3,7 +3,10 @@ import {
 	findDraftByProjectId,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	upsertPublishedContent,
+	findPublishedBySlugAndEventType,
+} from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
 	getInvitationProjectById,
 	updateProject,
@@ -19,7 +22,6 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
 async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {
 	const entries = await getCollection('event-demos');
@@ -79,6 +81,14 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		);
 	}
 
+	if (!project.createdBy) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'No se puede publicar sin un propietario asignado al proyecto. Asigna un propietario antes de publicar.',
+		);
+	}
+
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
 	const publishedContent = mapDraftToPublished({
@@ -93,18 +103,34 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 
 	const publishSlug = project.slug || `${project.eventType}-${project.id.slice(0, 8)}`;
 
+	const existingPublished = await findPublishedBySlugAndEventType(publishSlug, project.eventType);
+	if (existingPublished && existingPublished.invitationProjectId !== projectId) {
+		throw new ApiError(
+			409,
+			'conflict',
+			`El slug "${publishSlug}" ya está siendo utilizado por otro proyecto de tipo ${project.eventType}. Cambia el slug del proyecto antes de publicar.`,
+		);
+	}
+
 	const existingEvent = await findEventBySlugService(publishSlug);
 	if (existingEvent) {
+		if (existingEvent.eventType !== project.eventType) {
+			throw new ApiError(
+				409,
+				'conflict',
+				`El slug "${publishSlug}" ya está asociado a un evento de tipo "${existingEvent.eventType}" (se esperaba "${project.eventType}"). Cambia el slug del proyecto o el tipo de evento.`,
+			);
+		}
 		await updateEventService({
 			eventId: existingEvent.id,
 			title: project.title,
 			status: 'published',
 		});
-	} else if (project.createdBy) {
+	} else {
 		await createEventService({
 			ownerUserId: project.createdBy,
 			slug: publishSlug,
-			eventType: project.eventType as EventRecord['eventType'],
+			eventType: project.eventType,
 			title: project.title,
 			status: 'published',
 		});
