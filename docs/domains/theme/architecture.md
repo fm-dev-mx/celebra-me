@@ -38,8 +38,11 @@ Invitation presets are the canonical source of visual identity for invitation th
 - `src/styles/themes/presets/_sacred-keepsake.scss`
 - `src/styles/themes/presets/_angelic-presence.scss`
 
-Non-invitation presets are separate: `auth-dark` for auth surfaces and `jewelry-box-landing` for
-landing pages.
+Non-invitation presets are separate:
+
+- `auth-dark` for auth surfaces
+- `dashboard-dark` for dashboard surfaces
+- `invitation` for shared invitation base tokens
 
 Preset files may override semantic color, type, surface, shadow, and motion intent. They may also
 override public component tokens when a theme needs specific behavior. They must not introduce

@@ -29,6 +29,7 @@ The RSVP domain covers:
 - `/{eventType}/{slug}`
 - `/{eventType}/{slug}?invite={inviteId}`
 - `/{eventType}/{slug}/i/{shortId}`
+- `/captura/[token]` — intake capture form for clients
 
 `generateInvitationLink()` in `src/utils/invitation-link.ts` emits the direct guest URL when no
 short code is available and emits the short URL when `shortId` exists.
@@ -67,6 +68,17 @@ short code is available and emits the short URL when `shortId` exists.
 - `POST /api/invitacion/:inviteId/rsvp`
 - `POST /api/invitacion/:inviteId/view`
 - `POST /api/invitacion/public/:eventType/:slug/rsvp`
+
+### Intake/Capture APIs
+
+- `GET /api/captura/:token` — resolve intake request from raw token
+- `POST /api/captura/:token` — submit intake block data
+- `GET|POST /api/dashboard/intake` — list/create invitation projects
+- `GET /api/dashboard/intake/:id` — get project details
+- `POST /api/dashboard/intake/:id/request` — create intake request
+- `POST /api/dashboard/intake/:id/request/regenerate-token` — regenerate token
+- `POST /api/dashboard/intake/:id/draft` — generate draft from submission
+- `POST /api/dashboard/intake/:id/review` — review/approve submission
 
 There is no active `/api/invitacion/resolve` or `/api/invitation/:inviteId/*` public contract in the
 live tree.

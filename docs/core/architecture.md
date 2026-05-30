@@ -43,10 +43,9 @@ This matches Astro's hybrid model and the repository's current route structure.
 
 - Astro pages define public routes using file-based routing.
 - Public invitation rendering lives under:
-  - `src/pages/[eventType]/[slug].astro`
-  - `src/pages/[eventType]/[slug]/invitado.astro` as a compatibility redirect to the canonical
-    invite URL
-  - `src/pages/[eventType]/[slug]/i/[shortId].astro`
+- `src/pages/[eventType]/[slug].astro`
+- `src/pages/[eventType]/[slug]/i/[shortId].astro`
+- `src/pages/captura/[token].astro` for intake capture forms
 - Host dashboard pages live under `src/pages/dashboard/**`.
 - API routes live under `src/pages/api/**`.
 
@@ -109,7 +108,9 @@ The active server-only hubs in the repository are:
 - `src/lib/assets/**` for asset registry and discovery
 - `src/lib/content/**` and `src/lib/adapters/**` for event/content resolution and normalization
 - `src/lib/invitation/page-data.ts` for invitation route-facing page assembly
-- `src/utils/**` for shared utilities such as invitation-link and environment helpers
+- `src/lib/intake/**` for invitation intake/project management (services, repositories, schemas,
+  mappers)
+- `src/utils/**` for shared utilities such as invitation-link, environment, and WhatsApp helpers
 
 Historical note:
 
@@ -189,11 +190,18 @@ Astro content collections (`src/content/**`) are used for:
   - `src/styles/tokens/system/` for raw SCSS foundation tokens
   - `src/styles/tokens/semantic/` for `:root` semantic CSS custom properties
   - component/layout/section stylesheets for scoped component tokens
-  - `src/styles/themes/` for presets and section themes
+  - `src/styles/themes/` for presets, sections, landing, and assets theme files
   - `src/styles/components/` for shared UI styles
   - `src/styles/invitation/` for invitation section/layout styles
   - `src/styles/dashboard/` for dashboard shell/components
-  - `src/styles/events/` for event-specific overrides
+  - `src/styles/intake/` for intake form styles
+  - `src/styles/auth/` for authentication surface styles
+  - `src/styles/home/` for landing page styles
+  - `src/styles/ui/` for base UI component styles
+  - `src/styles/common/` for shared common styles
+  - `src/styles/global/` for global/reset styles
+  - `src/styles/layout/` for layout shell styles
+  - `src/styles/tools/` for SCSS tools and functions
 
 ### 8.1 Preset Strategy
 
@@ -277,20 +285,50 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `/dashboard/usuarios`
 - `/dashboard/admin`
 - `/dashboard/mfa-setup`
+- `/dashboard/invitaciones`
+- `/dashboard/invitaciones/[id]`
+- `/dashboard/invitaciones/[id]/draft`
+- `/dashboard/invitaciones/[id]/preview`
+- `/dashboard/invitaciones/[id]/review`
 
 ### Host Dashboard API Endpoints
 
 - `GET /api/dashboard/guests?eventId=...&status=...&search=...`
 - `GET /api/dashboard/guests/stream`
 - `POST /api/dashboard/guests`
+- `POST /api/dashboard/guests/bulk`
 - `PATCH /api/dashboard/guests/:guestId`
 - `DELETE /api/dashboard/guests/:guestId`
 - `POST /api/dashboard/guests/:guestId/mark-shared`
+- `POST /api/dashboard/guests/:guestId/toggle-branding`
 - `GET /api/dashboard/guests/export.csv?eventId=...`
 - `GET /api/dashboard/events`
 - `GET /api/dashboard/claimcodes`
+- `POST /api/dashboard/claimcodes`
+- `PATCH /api/dashboard/claimcodes/:claimCodeId`
+- `DELETE /api/dashboard/claimcodes/:claimCodeId`
+- `POST /api/dashboard/claimcodes/validate`
 - `GET /api/dashboard/admin/events`
+- `PATCH /api/dashboard/admin/events/:eventId`
 - `GET /api/dashboard/admin/users`
+- `PATCH /api/dashboard/admin/users/:userId/role`
+- `GET /api/dashboard/intake`
+- `POST /api/dashboard/intake`
+- `GET /api/dashboard/intake/:id`
+- `POST /api/dashboard/intake/:id/request`
+- `POST /api/dashboard/intake/:id/request/regenerate-token`
+- `POST /api/dashboard/intake/:id/review`
+
+### Intake/Capture API
+
+- `GET /api/captura/[token]` — resolves intake request from raw token
+- `POST /api/captura/[token]` — submits intake data
+
+### Other API Endpoints
+
+- `GET /api/health`
+- `POST /api/contact`
+- `GET /api/invitacion/public/[eventType]/[slug]/rsvp` — public hybrid RSVP
 
 ### Guest Invitation Access
 

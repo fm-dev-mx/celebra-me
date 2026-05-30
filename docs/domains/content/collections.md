@@ -7,7 +7,8 @@ templates.
 
 ## Source of Truth
 
-- Collection registration: `src/content.config.ts`
+- Collection registration: `src/content.config.ts` (Astro 6 `defineCollection` + `glob` loader
+  format)
 - Canonical schema assembly: `src/lib/schemas/content/base-event.schema.ts`
 - Related modular schemas: `src/lib/schemas/content/**`
 - Routable collection resolution: `src/lib/content/events.ts`

@@ -21,16 +21,33 @@ Animations should always consume semantic tokens defined in
 
 ### Durations
 
-- `--duration-snappy`: 200ms (UI feedback, buttons)
-- `--duration-standard`: 400ms (standard transitions)
-- `--duration-premium`: 800ms (Jewelry Box reveals)
-- `--duration-reveal`: 1200ms (Staggered entrance)
+| Token                 | Value | Usage                                |
+| --------------------- | ----- | ------------------------------------ |
+| `--duration-fast`     | 0.1s  | Instant feedback, micro-interactions |
+| `--duration-snappy`   | 0.2s  | UI feedback, buttons                 |
+| `--duration-standard` | 0.4s  | Standard transitions                 |
+| `--duration-slower`   | 0.6s  | Slower reveals                       |
+| `--duration-premium`  | 1s    | Premium reveals (Jewelry Box, etc.)  |
+| `--duration-reveal`   | 1.6s  | Staggered entrance sequences         |
+| `--duration-long`     | 2s    | Extended animations                  |
 
 ### Easing Functions
 
-- `--ease-snappy`: Fast entrance, smooth finish.
-- `--ease-premium`: Luxury cubic-bezier for floating effects.
-- `--ease-bouncy`: Traditional overshoot for youth-oriented themes.
+| Token              | Bezier                                  | Usage                              |
+| ------------------ | --------------------------------------- | ---------------------------------- |
+| `--ease-out`       | `cubic-bezier(0, 0, 0.2, 1)`            | Exit animations                    |
+| `--ease-standard`  | `cubic-bezier(0.4, 0, 0.2, 1)`          | Standard transitions               |
+| `--ease-snappy`    | `cubic-bezier(0.25, 1, 0.5, 1)`         | Fast entrance, smooth finish       |
+| `--ease-premium`   | `cubic-bezier(0.16, 1, 0.3, 1)`         | Luxury floating effects            |
+| `--ease-overshoot` | `cubic-bezier(0.3, 1.5, 0.7, 1)`        | Overshoot emphasis                 |
+| `--ease-bouncy`    | `cubic-bezier(0.68, -0.55, 0.27, 1.55)` | Youth-oriented elastic transitions |
+
+### Shorthand Transition Variables
+
+| Token                   | Applies to                                                     |
+| ----------------------- | -------------------------------------------------------------- |
+| `--transition-snappy`   | opacity, transform, border-color, box-shadow                   |
+| `--transition-standard` | opacity, transform, border-color, box-shadow, background-color |
 
 ## Implementation Pattern
 

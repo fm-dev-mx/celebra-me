@@ -19,8 +19,8 @@ support event operations.
 
 ## Prerequisites
 
-- Node.js `>=22.12.0 <23`
-- pnpm `10.x`
+- Node.js `>=22.12.0 <25`
+- pnpm `11.x`
 - Supabase CLI for local database workflows (`db:start`, `db:push`, `db:reset:local`,
   `db:migrate:new`)
 
@@ -100,12 +100,29 @@ celebra-me/
 - `/dashboard/usuarios`
 - `/dashboard/claimcodes`
 - `/dashboard/mfa-setup`
+- `/dashboard/invitaciones`
+- `/dashboard/invitaciones/[id]`
+- `/dashboard/invitaciones/[id]/draft`
+- `/dashboard/invitaciones/[id]/preview`
+- `/dashboard/invitaciones/[id]/review`
+
+### Public Utility Routes
+
+- `/captura/[token]`
 
 ### API Routes
 
 - Auth APIs under `src/pages/api/auth/**`
 - Dashboard APIs under `src/pages/api/dashboard/**`
+  - Guest management: `/api/dashboard/guests`, `/api/dashboard/guests/bulk`,
+    `/api/dashboard/guests/:guestId`, etc.
+  - Intake: `/api/dashboard/intake`, `/api/dashboard/intake/:id`
+  - Events, claim codes, admin
 - Guest invitation APIs under `src/pages/api/invitacion/[inviteId]/**`
+- Public RSVP: `/api/invitacion/public/[eventType]/[slug]/rsvp`
+- Intake capture: `/api/captura/[token]`
+- Health: `/api/health`
+- Contact: `/api/contact`
 
 ## Database Workflow
 

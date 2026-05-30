@@ -41,6 +41,31 @@ Current migrations under `supabase/migrations/`:
 - `20260226000000_add_short_id.sql`
 - `20260226000001_touch_schema.sql`
 - `20260401000100_add_generic_rsvp_sources.sql`
+- `20260402000100_reconcile_event_slug_parity.sql`
+- `20260402010100_rsvp_engagement_standardization.sql`
+- `20260521000001_normalize_phone_format.sql`
+- `20260521000002_fix_upsert_guests_phone_column.sql`
+- `20260522000001_make_bulk_guests_create_only.sql`
+- `20260523000001_add_country_code.sql`
+- `20260524000000_soft_delete_unique_constraint.sql`
+- `20260525000000_add_guest_branding_flag.sql`
+- `20260528000000_intake_core.sql`
+- `20260528000001_intake_drafts.sql`
+- `20260528000002_published_invitation_content.sql`
+- `20260528000003_published_content_event_type_index.sql`
+- `20260529000000_published_content_unique_route_key.sql`
+- `20260530000000_cleanup_published_content_indexes.sql`
+
+### Intake Tables
+
+The following tables were added as part of the intake module:
+
+- `invitation_projects` — project lifecycle management
+- `intake_requests` — per-project intake requests with token-based auth
+- `intake_submissions` — client-submitted block data
+- `invitation_content_drafts` — draft content generated from approved submissions
+- `published_invitation_content` — published invitation data with unique `(event_type, slug)`
+  constraint
 
 Do not patch production with ad-hoc SQL outside a migration unless the change is part of a
 controlled incident response.

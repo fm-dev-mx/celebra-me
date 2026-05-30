@@ -2,8 +2,8 @@
 
 ## Overview
 
-Event content schemas are assembled in `src/content.config.ts` from modular Zod definitions under
-`src/lib/schemas/content`.
+Event content schemas are assembled in `src/content.config.ts` (Astro 6 content collections entry
+point) from modular Zod definitions under `src/lib/schemas/content`.
 
 ## Module Boundaries
 
@@ -15,6 +15,11 @@ Event content schemas are assembled in `src/content.config.ts` from modular Zod 
 - `gifts.schema.ts`: gift option variants
 - `section-styles.schema.ts`: semantic section-style configuration
 - `shared.schema.ts`: asset, theme, and shared section primitives
+- `envelope.schema.ts`: envelope/reveal configuration
+- `gallery.schema.ts`: gallery image items
+- `interludes.schema.ts`: interlude section configuration
+- `itinerary.schema.ts`: itinerary event schedule
+- `content-block.schema.ts`: generic content block schema
 
 ## Deprecation Policy
 
