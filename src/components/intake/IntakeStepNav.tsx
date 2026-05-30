@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import type { IntakeBlockType } from '@/lib/intake/types';
+import { BLOCK_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	steps: IntakeBlockType[];
@@ -7,17 +8,6 @@ interface Props {
 	onStepClick: (step: number) => void;
 	disabled?: boolean;
 }
-
-const BLOCK_LABELS: Record<IntakeBlockType, string> = {
-	'event-details': 'Detalles',
-	'main-people': 'Personas',
-	'date-locations': 'Ubicaciones',
-	photos: 'Fotos',
-	'rsvp-config': 'RSVP',
-	music: 'Musica',
-	gifts: 'Regalos',
-	'special-messages': 'Mensajes',
-};
 
 const IntakeStepNav: FC<Props> = ({ steps, currentStep, onStepClick, disabled }) => {
 	return (

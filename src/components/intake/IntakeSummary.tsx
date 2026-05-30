@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import type { IntakeBlockType } from '@/lib/intake/types';
+import { BLOCK_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	blockData: Record<string, unknown>;
@@ -11,17 +12,6 @@ interface Props {
 	submitting: boolean;
 	disabled?: boolean;
 }
-
-const BLOCK_LABELS: Record<IntakeBlockType, string> = {
-	'event-details': 'Detalles del evento',
-	'main-people': 'Personas principales',
-	'date-locations': 'Fecha y ubicaciones',
-	photos: 'Fotografias',
-	'rsvp-config': 'Confirmacion de asistencia',
-	music: 'Musica de fondo',
-	gifts: 'Mesa de regalos',
-	'special-messages': 'Mensajes especiales',
-};
 
 function renderBlockSummary(_blockType: IntakeBlockType, data: unknown): React.ReactNode {
 	if (!data || typeof data !== 'object') {

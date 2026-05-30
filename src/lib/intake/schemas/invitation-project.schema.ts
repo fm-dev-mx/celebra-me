@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { INVITATION_PROJECT_STATUSES, INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
+import { INVITATION_PROJECT_STATUSES } from '@/lib/intake/types';
 import { EventTypeSchema } from '@/lib/intake/schemas/intake-block.schema';
 
 export const CreateInvitationProjectSchema = z.object({
@@ -48,5 +48,3 @@ export const UpdateInvitationProjectSchema = z.object({
 
 export type CreateInvitationProjectInput = z.infer<typeof CreateInvitationProjectSchema>;
 export type UpdateInvitationProjectInput = z.infer<typeof UpdateInvitationProjectSchema>;
-
-export const IntakeBlockTypeArraySchema = z.array(z.enum(INTAKE_BLOCK_TYPES));
