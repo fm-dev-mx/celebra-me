@@ -86,6 +86,12 @@
 	--dashboard-badge-border: var(--color-state-info-border);
 }
 
+.dashboard-badge--inconsistent {
+	--dashboard-badge-bg: var(--color-state-warning-bg);
+	--dashboard-badge-text: var(--color-state-warning-text);
+	--dashboard-badge-border: var(--color-state-warning-border);
+}
+
 .dashboard-card-header {
 	display: flex;
 	justify-content: space-between;
