@@ -125,6 +125,7 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 			eventId: existingEvent.id,
 			title: project.title,
 			status: 'published',
+			invitationProjectId: projectId,
 		});
 	} else {
 		await createEventService({
@@ -133,6 +134,7 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 			eventType: project.eventType,
 			title: project.title,
 			status: 'published',
+			invitationProjectId: projectId,
 		});
 	}
 

@@ -341,6 +341,7 @@ describe('publishDraft', () => {
 			eventType: 'xv',
 			title: 'Test Project',
 			status: 'published',
+			invitationProjectId: 'proj-1',
 		});
 		expect(mockUpdateEvent).not.toHaveBeenCalled();
 	});
@@ -362,6 +363,7 @@ describe('publishDraft', () => {
 			eventId: 'event-1',
 			title: 'Test Project',
 			status: 'published',
+			invitationProjectId: 'proj-1',
 		});
 		expect(mockCreateEvent).not.toHaveBeenCalled();
 	});
