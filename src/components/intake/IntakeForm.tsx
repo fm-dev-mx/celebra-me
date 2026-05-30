@@ -3,14 +3,7 @@ import type { IntakeBlockType } from '@/lib/intake/types';
 import { useIntakeForm } from '@/hooks/use-intake-form';
 import IntakeStepNav from '@/components/intake/IntakeStepNav';
 import IntakeSummary from '@/components/intake/IntakeSummary';
-import EventDetailsBlock from '@/components/intake/blocks/EventDetailsBlock';
-import MainPeopleBlock from '@/components/intake/blocks/MainPeopleBlock';
-import DateLocationsBlock from '@/components/intake/blocks/DateLocationsBlock';
-import PhotosBlock from '@/components/intake/blocks/PhotosBlock';
-import RsvpConfigBlock from '@/components/intake/blocks/RsvpConfigBlock';
-import MusicBlock from '@/components/intake/blocks/MusicBlock';
-import GiftsBlock from '@/components/intake/blocks/GiftsBlock';
-import SpecialMessagesBlock from '@/components/intake/blocks/SpecialMessagesBlock';
+import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
 
 interface Props {
 	token: string;
@@ -20,24 +13,6 @@ interface Props {
 	isLocked: boolean;
 	projectTitle: string;
 }
-
-const BLOCK_COMPONENTS: Record<
-	IntakeBlockType,
-	FC<{
-		data: Record<string, unknown>;
-		onChange: (field: string, value: unknown) => void;
-		disabled?: boolean;
-	}>
-> = {
-	'event-details': EventDetailsBlock,
-	'main-people': MainPeopleBlock,
-	'date-locations': DateLocationsBlock,
-	photos: PhotosBlock,
-	'rsvp-config': RsvpConfigBlock,
-	music: MusicBlock,
-	gifts: GiftsBlock,
-	'special-messages': SpecialMessagesBlock,
-};
 
 const IntakeForm: FC<Props> = ({
 	token,
@@ -79,7 +54,9 @@ const IntakeForm: FC<Props> = ({
 		);
 	}
 
-	const BlockComponent = form.currentBlockType ? BLOCK_COMPONENTS[form.currentBlockType] : null;
+	const BlockComponent = form.currentBlockType
+		? INTAKE_BLOCK_COMPONENTS[form.currentBlockType]
+		: null;
 	const currentData = (form.blockData[form.currentBlockType] ?? {}) as Record<string, unknown>;
 
 	return (
