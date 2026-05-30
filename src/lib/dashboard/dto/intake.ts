@@ -20,6 +20,11 @@ export interface InvitationProjectDTO {
 	photosReceived: boolean;
 	createdAt: string;
 	updatedAt: string;
+	hasRequest: boolean;
+	hasSubmission: boolean;
+	published: boolean;
+	rsvpEventStatus: string | null;
+	rsvpEventId: string | null;
 }
 
 export interface InvitationProjectListResponse {

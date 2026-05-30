@@ -7,6 +7,7 @@ import EmptyState from '@/components/dashboard/EmptyState';
 import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { InvitationProjectStatus } from '@/lib/intake/types';
+import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 const STATUS_VARIANT: Record<
 	string,
@@ -93,6 +94,17 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 	cumple: 'Cumpleaños',
 };
 
+const RSVP_LABELS: Record<string, string> = {
+	published: 'RSVP activo',
+	archived: 'RSVP desactivado',
+	draft: 'RSVP borrador',
+};
+
+const CAPTURE_LABELS: Record<string, string> = {
+	pending: 'Captura pendiente',
+	sent: 'Captura enviada',
+};
+
 const InvitationList: FC = () => {
 	const { items, loading, error, createProject } = useInvitationAdmin();
 	const [showForm, setShowForm] = useState(false);
@@ -155,7 +167,7 @@ const InvitationList: FC = () => {
 				window.location.href = `/dashboard/invitaciones/${project.id}`;
 			}
 		} catch (err) {
-			setFormError(err instanceof Error ? err.message : 'Error al crear el proyecto.');
+			setFormError(toErrorMessage(err, 'Error al crear el proyecto.'));
 		} finally {
 			setCreating(false);
 		}
@@ -309,10 +321,13 @@ const InvitationList: FC = () => {
 					<table className="intake-list__table">
 						<thead>
 							<tr>
-								<th>Título</th>
+								<th>Invitación</th>
 								<th>Cliente</th>
 								<th>Tipo</th>
 								<th>Estado</th>
+								<th>Captura</th>
+								<th>Publicación</th>
+								<th>RSVP</th>
 								<th>Creado</th>
 								<th>Siguiente paso</th>
 								<th></th>
@@ -321,11 +336,25 @@ const InvitationList: FC = () => {
 						<tbody>
 							{filteredItems.map((project) => {
 								const nextStep = getNextStep(project);
+								const captureLabel = project.hasRequest
+									? CAPTURE_LABELS.sent
+									: CAPTURE_LABELS.pending;
+								const pubLabel = project.published ? 'Publicada' : 'Sin publicar';
+								const rsvpLabel = project.rsvpEventStatus
+									? (RSVP_LABELS[project.rsvpEventStatus] ??
+										project.rsvpEventStatus)
+									: '\u2014';
+								const publicUrl = project.slug
+									? `/${project.eventType}/${project.slug}`
+									: null;
 								return (
 									<tr key={project.id}>
 										<td className="intake-list__cell-title">{project.title}</td>
-										<td>{project.clientName || '—'}</td>
-										<td>{project.eventType}</td>
+										<td>{project.clientName || '\u2014'}</td>
+										<td>
+											{EVENT_TYPE_LABELS[project.eventType] ??
+												project.eventType}
+										</td>
 										<td>
 											<StatusBadge
 												variant={
@@ -337,6 +366,9 @@ const InvitationList: FC = () => {
 												}
 											/>
 										</td>
+										<td>{captureLabel}</td>
+										<td>{pubLabel}</td>
+										<td>{rsvpLabel}</td>
 										<td>
 											{new Date(project.createdAt).toLocaleDateString(
 												'es-MX',
@@ -356,13 +388,23 @@ const InvitationList: FC = () => {
 												</span>
 											)}
 										</td>
-										<td>
+										<td className="intake-list__actions">
 											<a
 												href={`/dashboard/invitaciones/${project.id}`}
 												className="intake-list__link"
 											>
-												Ver
+												Ver detalle
 											</a>
+											{publicUrl && (
+												<a
+													href={publicUrl}
+													className="intake-list__link"
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													Ver pública
+												</a>
+											)}
 										</td>
 									</tr>
 								);

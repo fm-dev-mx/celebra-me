@@ -5,11 +5,10 @@ import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import {
-	getAllInvitationProjects,
+	getEnrichedProjectList,
 	createProject,
 } from '@/lib/intake/services/invitation-project.service';
 import { CreateInvitationProjectSchema } from '@/lib/intake/schemas/invitation-project.schema';
-import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
 import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export const GET: APIRoute = async ({ request }) => {
@@ -17,8 +16,7 @@ export const GET: APIRoute = async ({ request }) => {
 		await requireAdminRateLimit(request, 'intake:list');
 		await requireAdminStrongSession(request);
 
-		const projects = await getAllInvitationProjects();
-		const items: InvitationProjectDTO[] = projects.map(toInvitationProjectDTO);
+		const items = await getEnrichedProjectList();
 
 		return jsonResponse({ items });
 	} catch (error) {

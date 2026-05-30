@@ -27,6 +27,11 @@ export function toInvitationProjectDTO(project: InvitationProject): InvitationPr
 		photosReceived: project.photosReceived,
 		createdAt: project.createdAt,
 		updatedAt: project.updatedAt,
+		hasRequest: false,
+		hasSubmission: false,
+		published: false,
+		rsvpEventStatus: null,
+		rsvpEventId: null,
 	};
 }
 
