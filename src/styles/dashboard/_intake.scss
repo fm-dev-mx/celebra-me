@@ -1124,3 +1124,59 @@
 		text-decoration: underline;
 	}
 }
+
+.intake-list__cell-link {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	white-space: nowrap;
+}
+
+.intake-list__link-badge {
+	display: inline-block;
+	padding: 0.125rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.6875rem;
+	font-weight: 500;
+
+	&--active {
+		background: var(--color-state-success-bg);
+		color: var(--color-state-success-text);
+		border: 1px solid var(--color-state-success-border);
+	}
+
+	&--expired {
+		background: var(--color-state-error-bg);
+		color: var(--color-state-error-text);
+		border: 1px solid var(--color-state-error-border);
+	}
+
+	&--revoked,
+	&--missing {
+		background: var(--color-bg-subtle);
+		color: var(--color-text-muted);
+		border: 1px solid var(--color-border-subtle);
+	}
+
+	&--unavailable {
+		background: var(--color-state-warning-bg);
+		color: var(--color-state-warning-text);
+		border: 1px solid var(--color-state-warning-border);
+	}
+}
+
+.intake-list__link-copy-btn {
+	padding: 0.1875rem 0.5rem;
+	border: 1px solid var(--color-action-accent);
+	border-radius: 6px;
+	background: transparent;
+	color: var(--color-action-accent);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s;
+
+	&:hover {
+		background: var(--dashboard-accent-soft-bg);
+	}
+}
