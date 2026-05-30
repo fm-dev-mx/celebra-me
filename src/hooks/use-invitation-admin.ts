@@ -148,6 +148,25 @@ export function useInvitationAdmin() {
 		[loadSubmissionForReview],
 	);
 
+	const saveSubmissionCorrections = useCallback(
+		async (
+			projectId: string,
+			payload: { blockData: Record<string, unknown>; clientComments: string },
+		) => {
+			try {
+				const result = await adminApi.updateSubmissionCorrections(projectId, payload);
+				setCurrentSubmission(result.item);
+				return result.item;
+			} catch (err) {
+				throw new Error(
+					err instanceof Error ? err.message : 'Error al guardar las correcciones.',
+					{ cause: err },
+				);
+			}
+		},
+		[],
+	);
+
 	const loadDraft = useCallback(async (projectId: string) => {
 		setLoading(true);
 		setError('');
@@ -223,6 +242,7 @@ export function useInvitationAdmin() {
 		regenerateToken,
 		loadSubmissionForReview,
 		reviewSubmission,
+		saveSubmissionCorrections,
 		loadDraft,
 		generateDraft: generateDraftAction,
 		updateDraft,

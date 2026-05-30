@@ -17,6 +17,7 @@ import {
 	approveSubmission,
 	requestChanges,
 	createSubmission,
+	updateSubmissionCorrections,
 } from '@/lib/intake/services/intake-submission.service';
 
 const mockFindById = findIntakeSubmissionById as jest.MockedFunction<
@@ -291,6 +292,54 @@ describe('requestChanges', () => {
 			status: 422,
 			code: 'invalid_submission_status',
 			message: 'Can only request changes on a submitted submission.',
+		});
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+});
+
+describe('updateSubmissionCorrections', () => {
+	it('persists validated admin corrections without changing submitted status', async () => {
+		const submitted = { ...baseSubmission, status: 'submitted' as const };
+		mockFindById.mockResolvedValue(submitted);
+		const blockData = {
+			'event-details': {
+				celebrantName: 'Ana Sofia',
+				secondaryName: '',
+				eventLabel: 'Mis XV',
+				eventDate: '2027-11-20T18:00:00Z',
+				eventTitle: 'XV Ana Sofia',
+				description: '',
+				nickname: '',
+			},
+		};
+		mockUpdate.mockResolvedValue({ ...submitted, blockData, clientComments: 'Corregido' });
+
+		await updateSubmissionCorrections('sub-1', ['event-details'], blockData, 'Corregido');
+
+		expect(mockUpdate).toHaveBeenCalledWith('sub-1', {
+			blockData,
+			clientComments: 'Corregido',
+		});
+	});
+
+	it('rejects corrections when an enabled block is missing', async () => {
+		mockFindById.mockResolvedValue({ ...baseSubmission, status: 'submitted' });
+
+		await expect(
+			updateSubmissionCorrections('sub-1', ['event-details'], {}, ''),
+		).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+		});
+		expect(mockUpdate).not.toHaveBeenCalled();
+	});
+
+	it('rejects corrections after approval', async () => {
+		mockFindById.mockResolvedValue({ ...baseSubmission, status: 'approved' });
+
+		await expect(updateSubmissionCorrections('sub-1', [], {}, '')).rejects.toMatchObject({
+			status: 422,
+			code: 'invalid_submission_status',
 		});
 		expect(mockUpdate).not.toHaveBeenCalled();
 	});

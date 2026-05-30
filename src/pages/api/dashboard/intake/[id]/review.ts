@@ -17,8 +17,12 @@ import {
 	getSubmissionByRequestId,
 	approveSubmission,
 	requestChanges,
+	updateSubmissionCorrections,
 } from '@/lib/intake/services/intake-submission.service';
-import { ReviewIntakeSchema } from '@/lib/intake/schemas/intake-submission.schema';
+import {
+	ReviewIntakeSchema,
+	UpdateAdminSubmissionSchema,
+} from '@/lib/intake/schemas/intake-submission.schema';
 import {
 	toInvitationProjectDTO,
 	toIntakeRequestDTO,
@@ -105,6 +109,46 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		}
 
 		return jsonResponse({ item: toIntakeSubmissionDTO(updatedSubmission) });
+	} catch (error) {
+		return errorResponse(error);
+	}
+};
+
+export const PATCH: APIRoute = async ({ request, cookies, params }) => {
+	try {
+		await requireAdminRateLimit(request, 'intake:review');
+
+		if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
+			validateCsrfToken(request, cookies);
+		}
+
+		await requireAdminStrongSession(request);
+
+		const { id } = params;
+		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+
+		const parsed = await validateBodyOrRespond(request, UpdateAdminSubmissionSchema);
+		if (parsed instanceof Response) return parsed;
+
+		const requests = await getIntakeRequestsByProjectId(id);
+		const activeRequest = requests[0];
+		if (!activeRequest) {
+			throw new ApiError(404, 'not_found', 'No intake request found for this project.');
+		}
+
+		const submission = await getSubmissionByRequestId(activeRequest.id);
+		if (!submission) {
+			throw new ApiError(404, 'not_found', 'No submission found for this request.');
+		}
+
+		const updated = await updateSubmissionCorrections(
+			submission.id,
+			activeRequest.enabledBlocks,
+			parsed.blockData,
+			parsed.clientComments,
+		);
+
+		return jsonResponse({ item: toIntakeSubmissionDTO(updated) });
 	} catch (error) {
 		return errorResponse(error);
 	}

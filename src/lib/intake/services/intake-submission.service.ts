@@ -7,6 +7,8 @@ import {
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import type { IntakeBlockType } from '@/lib/intake/types';
+import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
 
 export async function getIntakeSubmissionById(id: string): Promise<IntakeSubmission | null> {
 	return findIntakeSubmissionById(id);
@@ -123,4 +125,57 @@ export async function requestChanges(id: string, reviewNotes: string): Promise<I
 		reviewNotes,
 		reviewedAt: new Date().toISOString(),
 	});
+}
+
+export async function updateSubmissionCorrections(
+	id: string,
+	enabledBlocks: IntakeBlockType[],
+	blockData: Record<string, unknown>,
+	clientComments: string,
+): Promise<IntakeSubmission> {
+	const submission = await findIntakeSubmissionById(id);
+	if (!submission) {
+		throw new ApiError(404, 'not_found', 'Intake submission not found.');
+	}
+	if (submission.status !== 'submitted') {
+		throw new ApiError(
+			422,
+			'invalid_submission_status',
+			'Can only edit a submitted submission.',
+		);
+	}
+
+	const enabled = new Set(enabledBlocks);
+	const unknownBlocks = Object.keys(blockData).filter(
+		(blockType) => !enabled.has(blockType as IntakeBlockType),
+	);
+	if (unknownBlocks.length > 0) {
+		throw new ApiError(422, 'bad_request', 'La captura contiene bloques no habilitados.', {
+			unknownBlocks,
+		});
+	}
+
+	const validationErrors: Array<{ blockType: string; issues: string[] }> = [];
+	for (const blockType of enabledBlocks) {
+		const data = blockData[blockType];
+		if (data === undefined) {
+			validationErrors.push({ blockType, issues: ['El bloque es obligatorio.'] });
+			continue;
+		}
+		const result = validateBlockData(blockType, data);
+		if (!result.success) {
+			validationErrors.push({
+				blockType,
+				issues: result.error.issues.map((issue) => issue.message),
+			});
+		}
+	}
+
+	if (validationErrors.length > 0) {
+		throw new ApiError(422, 'bad_request', 'Uno o mas bloques contienen datos invalidos.', {
+			validationErrors,
+		});
+	}
+
+	return updateIntakeSubmission(id, { blockData, clientComments });
 }

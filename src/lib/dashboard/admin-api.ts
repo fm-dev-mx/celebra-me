@@ -29,6 +29,7 @@ import type {
 	IntakeRequestCreateResponse,
 	CreateIntakeRequestDTO,
 	IntakeRequestDTO,
+	IntakeSubmissionDTO,
 	DraftResponse,
 } from './dto/intake';
 
@@ -230,6 +231,17 @@ export class AdminApi {
 		payload: { action: 'approve' | 'request_changes'; reviewNotes?: string },
 	): Promise<{ item: unknown }> {
 		const result = await dashboardApi.post<{ item: unknown }>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/review`,
+			payload,
+		);
+		return this.handleResponse(result);
+	}
+
+	async updateSubmissionCorrections(
+		projectId: string,
+		payload: { blockData: Record<string, unknown>; clientComments: string },
+	): Promise<{ item: IntakeSubmissionDTO }> {
+		const result = await dashboardApi.patch<{ item: IntakeSubmissionDTO }>(
 			`/api/dashboard/intake/${encodeURIComponent(projectId)}/review`,
 			payload,
 		);
