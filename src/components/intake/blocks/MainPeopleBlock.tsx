@@ -111,7 +111,7 @@ const MainPeopleBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="sectionMessage">
-					Mensaje para la seccion de familia
+					Mensaje para la sección de familia
 				</label>
 				<textarea
 					id="sectionMessage"

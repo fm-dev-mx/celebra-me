@@ -15,11 +15,11 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 	return (
 		<div className="intake-block intake-block--rsvp-config">
-			<h3 className="intake-block__title">Confirmacion de asistencia (RSVP)</h3>
+			<h3 className="intake-block__title">Confirmación de asistencia (RSVP)</h3>
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="title">
-					Titulo de la seccion RSVP <span className="intake-field__required">*</span>
+					Título de la sección RSVP <span className="intake-field__required">*</span>
 				</label>
 				<input
 					id="title"
@@ -53,7 +53,7 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="confirmationMessage">
-					Mensaje de confirmacion <span className="intake-field__required">*</span>
+					Mensaje de confirmación <span className="intake-field__required">*</span>
 				</label>
 				<textarea
 					id="confirmationMessage"
@@ -69,7 +69,7 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="confirmationMode">
-					Modo de confirmacion <span className="intake-field__required">*</span>
+					Modo de confirmación <span className="intake-field__required">*</span>
 				</label>
 				<select
 					id="confirmationMode"
@@ -86,7 +86,7 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="whatsappPhone">
-					Telefono de WhatsApp
+					Teléfono de WhatsApp
 				</label>
 				<input
 					id="whatsappPhone"

@@ -130,7 +130,7 @@ describe('DraftReview', () => {
 		render(<DraftReview projectId="proj-1" />);
 
 		expect(
-			screen.getByText('Aun no se ha generado un borrador para esta invitacion.'),
+			screen.getByText('Aún no se ha generado un borrador para esta invitación.'),
 		).toBeInTheDocument();
 		expect(mockLoadDraft).toHaveBeenCalledWith('proj-1');
 	});

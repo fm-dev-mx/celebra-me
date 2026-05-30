@@ -15,7 +15,9 @@ function renderLoadState(loading: boolean, error: string, submission: IntakeSubm
 	if (error) return <div className="intake-review__error">{error}</div>;
 	if (!submission) {
 		return (
-			<div className="intake-review__empty">No se encontro captura para este proyecto.</div>
+			<div className="intake-review__empty">
+				No se encontró una captura enviada para este proyecto.
+			</div>
 		);
 	}
 	return null;
@@ -25,7 +27,7 @@ function PreviousReviewNotes({ notes }: { notes: string }) {
 	if (!notes) return null;
 	return (
 		<div className="intake-review__previous-notes">
-			<h4>Notas de revision anterior:</h4>
+			<h4>Notas de revisión anterior:</h4>
 			<p>{notes}</p>
 		</div>
 	);
@@ -181,7 +183,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
 					&larr; Volver
 				</a>
-				<h2 className="intake-review__title">Revision: {currentProject?.title}</h2>
+				<h2 className="intake-review__title">Revisión: {currentProject?.title}</h2>
 				<div className="intake-review__meta">
 					<span className="intake-review__badge">
 						Estado: {SUBMISSION_STATUS_LABELS[currentSubmission.status]}
@@ -266,7 +268,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 
 			<div className="intake-review__actions">
 				<label className="intake-field__label" htmlFor="reviewNotes">
-					Notas de revision
+					Notas de revisión
 				</label>
 				<textarea
 					id="reviewNotes"

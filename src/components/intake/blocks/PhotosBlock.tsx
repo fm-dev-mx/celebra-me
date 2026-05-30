@@ -21,7 +21,7 @@ const FIELDS: FieldConfig[] = [
 		label: 'Foto principal / hero',
 		type: 'textarea',
 		rows: 3,
-		placeholder: 'Describe la foto que ira en la portada de la invitacion...',
+		placeholder: 'Describe la foto que irá en la portada de la invitación...',
 	},
 	{
 		key: 'portraitPhoto',
@@ -32,10 +32,10 @@ const FIELDS: FieldConfig[] = [
 	},
 	{
 		key: 'galleryPhotos',
-		label: 'Fotos de galeria',
+		label: 'Fotos de galería',
 		type: 'textarea',
 		rows: 4,
-		placeholder: 'Describe las fotos para la galeria, orden preferido, etc...',
+		placeholder: 'Describe las fotos para la galería, orden preferido, etc...',
 	},
 	{
 		key: 'familyPhoto',
@@ -47,7 +47,7 @@ const FIELDS: FieldConfig[] = [
 	{ key: 'specialPhoto', label: 'Foto especial / seccion especial', type: 'textarea', rows: 3 },
 	{
 		key: 'generalNotes',
-		label: 'Instrucciones generales de fotografia',
+		label: 'Instrucciones generales de fotografía',
 		type: 'textarea',
 		rows: 3,
 		placeholder: 'Cualquier indicacion adicional sobre las fotos...',
@@ -61,10 +61,10 @@ const FIELDS: FieldConfig[] = [
 	},
 	{
 		key: 'cropNotes',
-		label: 'Notas de recorte y edicion',
+		label: 'Notas de recorte y edición',
 		type: 'textarea',
 		rows: 2,
-		placeholder: 'Indica si alguna foto necesita recorte o edicion especifica...',
+		placeholder: 'Indica si alguna foto necesita recorte o edición específica...',
 	},
 	{
 		key: 'priorityNotes',
@@ -78,7 +78,7 @@ const FIELDS: FieldConfig[] = [
 const PhotosBlock: FC<Props> = ({ data, onChange, disabled }) => {
 	return (
 		<div className="intake-block intake-block--photos">
-			<h3 className="intake-block__title">Fotografias</h3>
+			<h3 className="intake-block__title">Fotografías</h3>
 
 			<div className="intake-block__notice">
 				<p>

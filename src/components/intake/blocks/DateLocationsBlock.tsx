@@ -46,7 +46,7 @@ const DateLocationsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 			</div>
 
 			<div className="intake-field">
-				<label className="intake-field__label">Direccion</label>
+				<label className="intake-field__label">Dirección</label>
 				<input
 					type="text"
 					className="intake-field__input"
@@ -108,11 +108,11 @@ const DateLocationsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 			<h3 className="intake-block__title">Fecha y ubicaciones</h3>
 
 			{renderVenueFields('Ceremonia', 'ceremony', ceremony)}
-			{renderVenueFields('Recepcion', 'reception', reception)}
+			{renderVenueFields('Recepción', 'reception', reception)}
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="dressCode">
-					Codigo de vestimenta
+					Código de vestimenta
 				</label>
 				<input
 					id="dressCode"

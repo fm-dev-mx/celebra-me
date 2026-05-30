@@ -11,7 +11,7 @@ const MusicBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 	return (
 		<div className="intake-block intake-block--music">
-			<h3 className="intake-block__title">Musica de fondo</h3>
+			<h3 className="intake-block__title">Música de fondo</h3>
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="url">
@@ -28,13 +28,13 @@ const MusicBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					required
 				/>
 				<p className="intake-field__hint">
-					Pega el enlace de YouTube o Spotify de la cancion deseada.
+					Pega el enlace de YouTube o Spotify de la canción deseada.
 				</p>
 			</div>
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="title">
-					Titulo de la cancion
+					Título de la canción
 				</label>
 				<input
 					id="title"

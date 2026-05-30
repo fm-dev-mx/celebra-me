@@ -35,7 +35,7 @@ const IntakeForm: FC<Props> = ({
 			<div className="intake-form__success">
 				<h2 className="intake-form__success-title">Captura enviada</h2>
 				<p className="intake-form__success-text">
-					Gracias por enviar tu informacion. Tu administrador la revisara pronto. Si
+					Gracias por enviar tu información. Tu administrador la revisará pronto. Si
 					necesitas hacer cambios, espera a que te contacten.
 				</p>
 			</div>
@@ -63,7 +63,7 @@ const IntakeForm: FC<Props> = ({
 		<div className="intake-form">
 			<header className="intake-form__header">
 				<h1 className="intake-form__title">{projectTitle}</h1>
-				<p className="intake-form__subtitle">Captura de informacion</p>
+				<p className="intake-form__subtitle">Captura de información</p>
 			</header>
 
 			<IntakeStepNav

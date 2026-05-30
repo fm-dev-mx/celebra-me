@@ -54,7 +54,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					className="intake-field__input"
 					value={getValue('eventLabel')}
 					onChange={(e) => onChange('eventLabel', e.target.value)}
-					placeholder="Mis XV Anos"
+					placeholder="Mis XV Años"
 					disabled={disabled}
 					required
 				/>
@@ -77,7 +77,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="eventTitle">
-					Titulo de la invitacion <span className="intake-field__required">*</span>
+					Título de la invitación <span className="intake-field__required">*</span>
 				</label>
 				<input
 					id="eventTitle"
@@ -85,7 +85,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					className="intake-field__input"
 					value={getValue('eventTitle')}
 					onChange={(e) => onChange('eventTitle', e.target.value)}
-					placeholder="Mis XV Anos"
+					placeholder="Mis XV Años"
 					disabled={disabled}
 					required
 				/>
@@ -93,7 +93,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="description">
-					Descripcion breve (para redes sociales)
+					Descripción breve (para redes sociales)
 				</label>
 				<textarea
 					id="description"

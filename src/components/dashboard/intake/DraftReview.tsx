@@ -34,7 +34,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 		return (
 			<div className="intake-review">
 				<header className="intake-review__header">
-					<h2 className="intake-review__title">Borrador de invitacion</h2>
+					<h2 className="intake-review__title">Borrador de invitación</h2>
 				</header>
 				<p className="intake-review__loading">Cargando borrador...</p>
 			</div>
@@ -45,10 +45,10 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 		return (
 			<div className="intake-review">
 				<header className="intake-review__header">
-					<h2 className="intake-review__title">Borrador de invitacion</h2>
+					<h2 className="intake-review__title">Borrador de invitación</h2>
 				</header>
 				<p className="intake-review__empty">
-					Aun no se ha generado un borrador para esta invitacion.
+					Aún no se ha generado un borrador para esta invitación.
 				</p>
 				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
 					&larr; Volver al proyecto
@@ -116,7 +116,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 							onClick={async () => {
 								if (
 									!window.confirm(
-										'¿Publicar este borrador como invitacion final?',
+										'¿Publicar este borrador como invitación final?',
 									)
 								)
 									return;

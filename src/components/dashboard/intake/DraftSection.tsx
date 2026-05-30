@@ -19,7 +19,7 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 
 		try {
 			await generateDraft(projectId);
-			setActionSuccess('Borrador de invitacion generado exitosamente.');
+			setActionSuccess('Borrador de invitación generado exitosamente.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el borrador.');
 		} finally {
@@ -29,7 +29,7 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 
 	return (
 		<section className="intake-detail__section">
-			<h3 className="intake-detail__section-title">Borrador de invitacion</h3>
+			<h3 className="intake-detail__section-title">Borrador de invitación</h3>
 			{currentDraft ? (
 				<div className="intake-detail__draft-info">
 					<span>Estado: {currentDraft.status}</span>
@@ -66,7 +66,7 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 					onClick={handleGenerateDraft}
 					disabled={draftGenerating}
 				>
-					{draftGenerating ? 'Generando...' : 'Generar borrador de invitacion'}
+					{draftGenerating ? 'Generando...' : 'Generar borrador de invitación'}
 				</button>
 			)}
 			{actionError && <p className="intake-detail__error">{actionError}</p>}

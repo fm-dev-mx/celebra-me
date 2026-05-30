@@ -86,7 +86,7 @@ function resolveEventsLoadError(
 		if (debug?.requestedSlugCheck?.slugExistsInDb) {
 			return 'La sesion actual no tiene ownership ni membership sobre el evento solicitado.';
 		}
-		return 'No hay eventos asignados a esta cuenta. Si la invitacion existe en contenido, falta sincronizar la tabla events o la membresia del host.';
+		return 'No hay eventos asignados a esta cuenta. Si la invitación existe en contenido, falta sincronizar la tabla events o la membresía del host.';
 	}
 	if (initialEventId && !hostEvents.some((event) => event.id === initialEventId)) {
 		return 'El evento solicitado no esta disponible para esta cuenta o no existe en la base sincronizada.';

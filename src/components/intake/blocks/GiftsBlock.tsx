@@ -48,7 +48,7 @@ const GiftsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="giftsTitle">
-					Titulo de la seccion
+					Título de la sección
 				</label>
 				<input
 					id="giftsTitle"
@@ -63,7 +63,7 @@ const GiftsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="subtitle">
-					Subtitulo
+					Subtítulo
 				</label>
 				<textarea
 					id="subtitle"
@@ -96,7 +96,7 @@ const GiftsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 						</div>
 
 						<div className="intake-field">
-							<label className="intake-field__label">Titulo</label>
+							<label className="intake-field__label">Título</label>
 							<input
 								type="text"
 								className="intake-field__input"

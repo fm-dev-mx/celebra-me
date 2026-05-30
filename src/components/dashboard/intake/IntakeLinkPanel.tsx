@@ -25,7 +25,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 		return (
 			<div className="intake-link-panel">
 				<p className="intake-link-panel__hint">
-					Aun no se ha generado un enlace de captura. Configura los bloques y genera el
+					Aún no se ha generado un enlace de captura. Configura los bloques y genera el
 					enlace.
 				</p>
 			</div>
@@ -47,7 +47,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 
 	const copyWhatsAppMessage = async () => {
 		if (!link) return;
-		const message = `Hola! Aqui tienes el enlace para capturar la informacion de tu invitacion:\n\n${link}\n\nPor favor completa el formulario cuando tengas tiempo. Si tienes alguna duda, no dudes en preguntar.`;
+		const message = `¡Hola! Aquí tienes el enlace para capturar la información de tu invitación:\n\n${link}\n\nPor favor completa el formulario cuando tengas tiempo. Si tienes alguna duda, no dudes en preguntar.`;
 		try {
 			await navigator.clipboard.writeText(message);
 			setCopiedWa(true);

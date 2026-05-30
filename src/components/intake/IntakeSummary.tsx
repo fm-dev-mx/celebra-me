@@ -33,7 +33,7 @@ function renderBlockSummary(_blockType: IntakeBlockType, data: unknown): React.R
 				<div key={key} className="intake-summary__field">
 					<dt className="intake-summary__key">{key}</dt>
 					<dd className="intake-summary__value">
-						{typeof value === 'boolean' ? (value ? 'Si' : 'No') : String(value)}
+						{typeof value === 'boolean' ? (value ? 'Sí' : 'No') : String(value)}
 					</dd>
 				</div>
 			))}
@@ -55,7 +55,7 @@ const IntakeSummary: FC<Props> = ({
 		<div className="intake-summary">
 			<h3 className="intake-summary__title">Resumen de tu captura</h3>
 			<p className="intake-summary__description">
-				Revisa la informacion antes de enviarla. Puedes regresar a cualquier paso para hacer
+				Revisa la información antes de enviarla. Puedes regresar a cualquier paso para hacer
 				cambios.
 			</p>
 
