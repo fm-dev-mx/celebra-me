@@ -12,6 +12,7 @@ export interface EventRecord {
 	title: string;
 	status: 'draft' | 'published' | 'archived';
 	publishedAt: string | null;
+	invitationProjectId: string | null;
 	createdAt: string;
 	updatedAt: string;
 }

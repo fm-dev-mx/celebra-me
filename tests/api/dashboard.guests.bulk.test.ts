@@ -40,6 +40,7 @@ const MOCK_EVENT = {
 	title: 'Test Event',
 	status: 'published' as const,
 	publishedAt: null,
+	invitationProjectId: null,
 	createdAt: new Date().toISOString(),
 	updatedAt: new Date().toISOString(),
 };
