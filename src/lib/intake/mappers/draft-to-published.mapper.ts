@@ -1,13 +1,22 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
+import { str } from '@/lib/intake/utils';
 
-function str(value: unknown): string | undefined {
-	if (typeof value === 'string' && value.length > 0) return value;
-	return undefined;
+function isPopulated(section: Record<string, unknown> | null | undefined): boolean {
+	return !!section && Object.keys(section).length > 0;
 }
 
+type VenueDraft = {
+	venueName?: string;
+	address?: string;
+	city?: string;
+	date?: string;
+	time?: string;
+	mapUrl?: string;
+};
+
 function mapFamilyFromDraft(
-	draftFamily: Record<string, unknown> | undefined,
+	draftFamily: DraftContent['family'],
 	celebrantName: string,
 ): Record<string, unknown> | undefined {
 	if (!draftFamily) return undefined;
@@ -25,26 +34,28 @@ function mapFamilyFromDraft(
 	if (Object.keys(parents).length > 0) result.parents = parents;
 	if (str(draftFamily.spouseName)) result.spouse = str(draftFamily.spouseName);
 
-	if (str(draftFamily.godparents)) {
-		const lines = String(draftFamily.godparents)
+	const godparentsText = str(draftFamily.godparents);
+	if (godparentsText) {
+		const lines = godparentsText
 			.split('\n')
 			.map((l) => l.trim())
 			.filter(Boolean);
 		if (lines.length > 0) {
-			result.godparents = lines.map((line: string) => {
+			result.godparents = lines.map((line) => {
 				const parts = line.split(' — ').map((s) => s.trim());
 				return parts.length > 1 ? { name: parts[0], role: parts[1] } : { name: parts[0] };
 			});
 		}
 	}
 
-	if (str(draftFamily.children)) {
-		const lines = String(draftFamily.children)
+	const childrenText = str(draftFamily.children);
+	if (childrenText) {
+		const lines = childrenText
 			.split('\n')
 			.map((l) => l.trim())
 			.filter(Boolean);
 		if (lines.length > 0) {
-			result.children = lines.map((name: string) => ({ name }));
+			result.children = lines.map((name) => ({ name }));
 		}
 	}
 
@@ -54,9 +65,7 @@ function mapFamilyFromDraft(
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function mapVenue(
-	draftVenue: Record<string, unknown> | undefined,
-): Record<string, unknown> | undefined {
+function mapVenue(draftVenue: VenueDraft | undefined): Record<string, unknown> | undefined {
 	if (!draftVenue) return undefined;
 	const result: Record<string, unknown> = {};
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
@@ -69,13 +78,13 @@ function mapVenue(
 }
 
 function mapLocationFromDraft(
-	draftLocation: Record<string, unknown> | undefined,
+	draftLocation: DraftContent['location'],
 ): Record<string, unknown> | undefined {
 	if (!draftLocation) return undefined;
 	const result: Record<string, unknown> = {};
-	const ceremony = mapVenue(draftLocation.ceremony as Record<string, unknown> | undefined);
+	const ceremony = mapVenue(draftLocation.ceremony);
 	if (ceremony) result.ceremony = ceremony;
-	const reception = mapVenue(draftLocation.reception as Record<string, unknown> | undefined);
+	const reception = mapVenue(draftLocation.reception);
 	if (reception) result.reception = reception;
 	if (str(draftLocation.dressCode)) result.dressCode = str(draftLocation.dressCode);
 	if (str(draftLocation.additionalIndications))
@@ -94,18 +103,18 @@ export interface PublishInput {
 }
 
 function mapHeroSection(
-	draftHero: Record<string, unknown> | undefined,
+	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
 	projectTitle: string,
 	themeId: string,
 ): Record<string, unknown> | undefined {
-	if (!draftHero || Object.keys(draftHero).length === 0) return demoHero;
-	const fallback = (a: unknown, b: unknown) => str(a) || (b as string) || '';
+	if (!draftHero || !isPopulated(draftHero as Record<string, unknown>)) return demoHero;
+	const fromDemo = (key: string) => (demoHero?.[key] as string) || '';
 	return {
 		name: str(draftHero.name) || (demoHero?.name as string) || projectTitle,
-		secondaryName: fallback(draftHero.secondaryName, demoHero?.secondaryName),
+		secondaryName: str(draftHero.secondaryName) || fromDemo('secondaryName'),
 		label: str(draftHero.label) || (demoHero?.label as string) || 'Invitacion Especial',
-		nickname: fallback(draftHero.nickname, demoHero?.nickname),
+		nickname: str(draftHero.nickname) || fromDemo('nickname'),
 		date: str(draftHero.date) || (demoHero?.date as string) || '',
 		backgroundImage: demoHero?.backgroundImage || { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoHero?.backgroundImageDesktop,
@@ -115,7 +124,7 @@ function mapHeroSection(
 }
 
 function mapRsvpSection(
-	draftRsvp: Record<string, unknown> | undefined,
+	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
@@ -136,57 +145,57 @@ function mapRsvpSection(
 }
 
 function mapMusicSection(
-	draftMusic: Record<string, unknown> | undefined,
+	draftMusic: DraftContent['music'],
 	demoMusic: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (draftMusic && str(draftMusic.url)) {
-		return {
-			url: str(draftMusic.url),
-			title: str(draftMusic.title) || str(demoMusic?.title),
-			autoPlay: false,
-		};
+	const url = str(draftMusic?.url);
+	const title = str(draftMusic?.title);
+	if (url) {
+		return { url, title: title || str(demoMusic?.title), autoPlay: false };
 	}
 	return demoMusic ? { ...demoMusic } : undefined;
 }
 
 function mapGiftsSection(
-	draftGifts: Record<string, unknown> | undefined,
+	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (draftGifts && (str(draftGifts.title) || draftGifts.items)) {
-		return {
-			title: str(draftGifts.title) || str(demoGifts?.title),
-			subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
-			items:
-				(draftGifts.items as Array<Record<string, unknown>>) ||
-				(demoGifts?.items as Array<Record<string, unknown>>) ||
-				[],
-		};
+	if (!draftGifts || Object.keys(draftGifts).length === 0) {
+		return demoGifts ? { ...demoGifts } : undefined;
 	}
-	return demoGifts ? { ...demoGifts } : undefined;
+	return {
+		title: str(draftGifts.title) || str(demoGifts?.title),
+		subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
+		items:
+			(draftGifts.items as unknown as Array<Record<string, unknown>>) ||
+			(demoGifts?.items as Array<Record<string, unknown>>) ||
+			[],
+	};
 }
 
 function mapQuoteSection(
-	draftQuote: Record<string, unknown> | undefined,
+	draftQuote: DraftContent['quote'],
 	demoQuote: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (draftQuote && str(draftQuote.text)) {
+	const text = str(draftQuote?.text);
+	if (text) {
 		return {
-			text: str(draftQuote.text),
-			author: str(draftQuote.author) || str(demoQuote?.author),
+			text,
+			author: str(draftQuote?.author) || str(demoQuote?.author),
 		};
 	}
 	return demoQuote ? { ...demoQuote } : undefined;
 }
 
 function mapThankYouSection(
-	draftThankYou: Record<string, unknown> | undefined,
+	draftThankYou: DraftContent['thankYou'],
 	demoThankYou: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (draftThankYou && str(draftThankYou.message)) {
+	const message = str(draftThankYou?.message);
+	if (message) {
 		return {
-			message: str(draftThankYou.message),
-			closingName: str(draftThankYou.closingName) || str(demoThankYou?.closingName),
+			message,
+			closingName: str(draftThankYou?.closingName) || str(demoThankYou?.closingName),
 		};
 	}
 	return demoThankYou ? { ...demoThankYou } : undefined;
@@ -196,55 +205,36 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const { draftContent, project, demoContent } = input;
 	const snapshot = project.snapshot;
 
-	const celebName =
-		str((draftContent.hero as Record<string, unknown> | undefined)?.name) || project.title;
+	const celebName = str(draftContent.hero?.name) || project.title;
 
-	const demoRsvp = demoContent.rsvp as Record<string, unknown> | undefined;
-	const demoMusic = demoContent.music as Record<string, unknown> | undefined;
-	const demoGifts = demoContent.gifts as Record<string, unknown> | undefined;
-	const demoQuote = demoContent.quote as Record<string, unknown> | undefined;
-	const demoThankYou = demoContent.thankYou as Record<string, unknown> | undefined;
-	const demoHero = demoContent.hero as Record<string, unknown> | undefined;
-
-	const locationSection = mapLocationFromDraft(
-		draftContent.location as Record<string, unknown> | undefined,
-	);
+	const locationSection = mapLocationFromDraft(draftContent.location);
 	const rsvpSection = mapRsvpSection(
-		draftContent.rsvp as Record<string, unknown> | undefined,
-		demoRsvp,
+		draftContent.rsvp,
+		demoContent.rsvp as Record<string, unknown> | undefined,
 	);
-
 	const musicSection = mapMusicSection(
-		draftContent.music as Record<string, unknown> | undefined,
-		demoMusic,
+		draftContent.music,
+		demoContent.music as Record<string, unknown> | undefined,
 	);
-
 	const giftsSection = mapGiftsSection(
-		draftContent.gifts as Record<string, unknown> | undefined,
-		demoGifts,
+		draftContent.gifts,
+		demoContent.gifts as Record<string, unknown> | undefined,
 	);
-
 	const quoteSection = mapQuoteSection(
-		draftContent.quote as Record<string, unknown> | undefined,
-		demoQuote,
+		draftContent.quote,
+		demoContent.quote as Record<string, unknown> | undefined,
 	);
-
 	const thankYouSection = mapThankYouSection(
-		draftContent.thankYou as Record<string, unknown> | undefined,
-		demoThankYou,
+		draftContent.thankYou,
+		demoContent.thankYou as Record<string, unknown> | undefined,
 	);
-
 	const heroSection = mapHeroSection(
-		draftContent.hero as Record<string, unknown> | undefined,
-		demoHero,
+		draftContent.hero,
+		demoContent.hero as Record<string, unknown> | undefined,
 		project.title,
 		snapshot.themeId,
 	);
-
-	const familySection = mapFamilyFromDraft(
-		draftContent.family as Record<string, unknown> | undefined,
-		celebName,
-	);
+	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
 
 	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
 
