@@ -6,14 +6,25 @@ import {
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
+import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
+import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> {
 	const projects = await listInvitationProjects();
 	const projectIds = projects.map((p) => p.id);
 
 	const [requestRows, eventRows, pubRows, submissionRows] = await Promise.all([
-		supabaseRestRequest<Array<{ invitation_project_id: string; id: string }>>({
-			pathWithQuery: `intake_requests?select=id,invitation_project_id&invitation_project_id=in.(${projectIds.map(encodeURIComponent).join(',')})`,
+		supabaseRestRequest<
+			Array<{
+				id: string;
+				invitation_project_id: string;
+				token_ciphertext: string | null;
+				status: string;
+				expires_at: string | null;
+				enabled_blocks: unknown;
+			}>
+		>({
+			pathWithQuery: `intake_requests?select=id,invitation_project_id,token_ciphertext,status,expires_at,enabled_blocks&invitation_project_id=in.(${projectIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<Array<{ id: string; invitation_project_id: string; status: string }>>({
@@ -42,27 +53,28 @@ export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> 
 		if (pid) submissionProjectIds.add(pid);
 	}
 
-	const eventForProject = (id: string) => eventsByProject.get(id) ?? null;
-	return projects.map((project) => ({
-		id: project.id,
-		slug: project.slug,
-		title: project.title,
-		eventType: project.eventType,
-		status: project.status,
-		baseDemoId: project.baseDemoId,
-		themeId: project.themeId,
-		clientName: project.clientName,
-		clientEmail: project.clientEmail,
-		clientWhatsapp: project.clientWhatsapp,
-		photosReceived: project.photosReceived,
-		createdAt: project.createdAt,
-		updatedAt: project.updatedAt,
-		hasRequest: requestProjectIds.has(project.id),
-		hasSubmission: submissionProjectIds.has(project.id),
-		published: publishedSet.has(project.id),
-		rsvpEventStatus: eventForProject(project.id)?.status ?? null,
-		rsvpEventId: eventForProject(project.id)?.id ?? null,
-	}));
+	return projects.map((project) => {
+		const rawRequest = requestRows.find((r) => r.invitation_project_id === project.id) ?? null;
+		const captureLink = resolveCaptureLink(
+			rawRequest
+				? {
+						status: rawRequest.status,
+						expiresAt: rawRequest.expires_at,
+						tokenCiphertext: rawRequest.token_ciphertext,
+					}
+				: null,
+		);
+		const event = eventsByProject.get(project.id);
+		return {
+			...toInvitationProjectDTO(project),
+			hasRequest: requestProjectIds.has(project.id),
+			hasSubmission: submissionProjectIds.has(project.id),
+			published: publishedSet.has(project.id),
+			rsvpEventStatus: event?.status ?? null,
+			rsvpEventId: event?.id ?? null,
+			...captureLink,
+		};
+	});
 }
 
 export async function createProject(input: {

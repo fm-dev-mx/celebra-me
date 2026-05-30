@@ -195,13 +195,32 @@ describe('CreateIntakeRequestSchema', () => {
 });
 
 describe('resolveCaptureLink', () => {
-	it('returns an active capture URL when ciphertext can be decrypted', () => {
+	it('returns an active capture URL using localhost fallback when BASE_URL is not set', () => {
 		mockDecrypt.mockReturnValue('recoverable-token');
 
-		expect(resolveCaptureLink(baseRequest)).toEqual({
-			captureUrl: 'https://www.celebra-me.com/captura/recoverable-token',
-			captureLinkStatus: 'active',
+		const result = resolveCaptureLink(baseRequest);
+		expect(result.captureUrl).toBe('http://localhost:4321/captura/recoverable-token');
+		expect(result.captureLinkStatus).toBe('active');
+	});
+
+	it('uses options.baseUrl when provided', () => {
+		mockDecrypt.mockReturnValue('recoverable-token');
+
+		const result = resolveCaptureLink(baseRequest, {
+			baseUrl: 'https://www.celebra-me.com',
 		});
+		expect(result.captureUrl).toBe('https://www.celebra-me.com/captura/recoverable-token');
+		expect(result.captureLinkStatus).toBe('active');
+	});
+
+	it('normalizes trailing slash from options.baseUrl', () => {
+		mockDecrypt.mockReturnValue('recoverable-token');
+
+		const result = resolveCaptureLink(baseRequest, {
+			baseUrl: 'https://www.celebra-me.com/',
+		});
+		expect(result.captureUrl).toBe('https://www.celebra-me.com/captura/recoverable-token');
+		expect(result.captureLinkStatus).toBe('active');
 	});
 
 	it('reports unavailable for legacy rows without ciphertext', () => {

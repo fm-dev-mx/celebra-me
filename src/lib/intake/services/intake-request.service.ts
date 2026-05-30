@@ -13,9 +13,15 @@ import {
 	hashIntakeToken,
 } from '@/lib/intake/services/intake-token.service';
 import { getEnv } from '@/lib/server/env';
+import { resolveSiteOrigin } from '@/lib/shared/origin';
+
+export interface CaptureLinkData {
+	status: string;
+	expiresAt: string | null;
+	tokenCiphertext: string | null;
+}
 
 const DEFAULT_EXPIRY_DAYS = 30;
-const DEFAULT_BASE_URL = 'https://www.celebra-me.com';
 
 export interface CreateIntakeRequestResult {
 	request: IntakeRequest;
@@ -95,7 +101,7 @@ export async function regenerateToken(id: string): Promise<CreateIntakeRequestRe
 }
 
 export function resolveCaptureLink(
-	request: IntakeRequest | null,
+	request: CaptureLinkData | null,
 	options?: { encryptionKey?: string; baseUrl?: string },
 ): {
 	captureUrl: string | null;
@@ -115,10 +121,7 @@ export function resolveCaptureLink(
 	const token = decryptIntakeToken(request.tokenCiphertext, encryptionKey);
 	if (!token) return { captureUrl: null, captureLinkStatus: 'unavailable' };
 
-	const baseUrl = (options?.baseUrl ?? (getEnv('BASE_URL') || DEFAULT_BASE_URL)).replace(
-		/\/+$/,
-		'',
-	);
+	const baseUrl = resolveSiteOrigin({ baseUrl: options?.baseUrl });
 	return {
 		captureUrl: `${baseUrl}/captura/${token}`,
 		captureLinkStatus: 'active',

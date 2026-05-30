@@ -32,6 +32,8 @@ export function toInvitationProjectDTO(project: InvitationProject): InvitationPr
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		captureUrl: null,
+		captureLinkStatus: null,
 	};
 }
 

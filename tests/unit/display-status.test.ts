@@ -23,6 +23,8 @@ function makeProject(overrides: Partial<InvitationProjectDTO>): InvitationProjec
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		captureUrl: null,
+		captureLinkStatus: null,
 		...overrides,
 	};
 }

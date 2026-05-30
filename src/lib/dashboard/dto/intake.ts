@@ -25,6 +25,8 @@ export interface InvitationProjectDTO {
 	published: boolean;
 	rsvpEventStatus: string | null;
 	rsvpEventId: string | null;
+	captureUrl: string | null;
+	captureLinkStatus: CaptureLinkStatus | null;
 }
 
 export interface InvitationProjectListResponse {
