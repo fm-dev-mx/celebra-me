@@ -25,9 +25,10 @@ const {
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const logoVariant = variant === 'editorial' ? 'footer' : 'default';
 
-const contactNumber = '526681167477';
+import { getWhatsAppLink } from '@/utils/whatsapp';
+
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
-const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
+const whatsappLink = getWhatsAppLink(whatsappMessage);
 ---
 
 <footer

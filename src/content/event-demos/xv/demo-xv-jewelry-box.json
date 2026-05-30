@@ -169,7 +169,7 @@
         "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "5216681167477",
+            "phone": "+521000000000",
             "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta. Asistiremos {guestCount} persona(s).",
             "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta, pero no podré asistir."
         }

@@ -2,6 +2,7 @@
 export const prerender = true;
 import Layout from '@/layouts/Layout.astro';
 import Icon from '@/components/common/icons/Icon.astro';
+import { getWhatsAppLink } from '@/utils/whatsapp';
 
 // SEO: Avoid indexing utility pages
 const title = "Sección en Desarrollo | Celebra-me";
@@ -34,7 +35,7 @@ const description = "Estamos puliendo cada detalle para ofrecerte una experienci
                     <a href="/" class="status-page__btn">
                         Volver al Portal
                     </a>
-                    <a href="https://wa.me/5216681167477" target="_blank" class="status-page__btn status-page__btn--outline">
+                    <a href={getWhatsAppLink()} target="_blank" class="status-page__btn status-page__btn--outline">
                         Saber más por WhatsApp
                     </a>
                 </div>

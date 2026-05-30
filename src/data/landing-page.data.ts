@@ -15,7 +15,7 @@ export const landingData: LandingPageData = {
 		primaryCtaUrl: '#contacto',
 		secondaryCtaLabel: 'Ver Catálogo',
 		secondaryCtaUrl: '#servicios',
-		whatsappPhone: '5216681167477',
+		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
 			'¡Hola! Me gustaría crear una invitación digital premium para mi próximo evento. ¿Podrían asesorarme?',
 		socialProofText: 'Más de 500 eventos inolvidables',

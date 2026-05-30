@@ -237,7 +237,7 @@ describe('normalizeImportedPhone', () => {
 		});
 
 		it('local phone + matching countryCode works', () => {
-			expect(normalizeImportedPhone('6681167477', '+52')).toBe('+526681167477');
+			expect(normalizeImportedPhone('0000000000', '+52')).toBe('+520000000000');
 		});
 	});
 });

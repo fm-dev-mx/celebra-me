@@ -25,6 +25,7 @@ interface ImportMetaEnv {
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
 	readonly BASE_URL: string;
 	readonly NODE_ENV: string;
+	readonly CONTACT_WHATSAPP: string;
 }
 
 interface ImportMeta {
