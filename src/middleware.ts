@@ -20,7 +20,6 @@ const ADMIN_ONLY_PATHS = [
 	'/dashboard/admin',
 	'/dashboard/usuarios',
 	'/dashboard/claimcodes',
-	'/dashboard/eventos',
 	'/dashboard/invitaciones',
 ];
 

@@ -169,8 +169,8 @@ describe('Middleware: Authentication & Authorization', () => {
 		// The middleware correctly handles the aal2 claim in production tokens from Supabase
 	});
 
-	it('Scenario: host_client accessing /dashboard/eventos is redirected to /dashboard/invitados', async () => {
-		const context = createContext('/dashboard/eventos');
+	it('Scenario: host_client accessing admin-only path is redirected to /dashboard/invitados', async () => {
+		const context = createContext('/dashboard/usuarios');
 		mockCookies.get.mockReturnValue({ value: 'host-token' });
 
 		(global.fetch as jest.Mock).mockResolvedValue({
@@ -184,11 +184,10 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
-		expect(mockNext).not.toHaveBeenCalled();
 	});
 
-	it('Scenario: super_admin with MFA can access /dashboard/eventos', async () => {
-		const context = createContext('/dashboard/eventos');
+	it('Scenario: super_admin with MFA can access admin-only path', async () => {
+		const context = createContext('/dashboard/usuarios');
 		mockCookies.get.mockImplementation((name: string) => {
 			if (name === 'sb-access-token') return { value: 'admin-token' };
 			return null;

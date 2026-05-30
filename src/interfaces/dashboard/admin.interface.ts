@@ -52,14 +52,3 @@ export interface DashboardEventListResponse {
 	items: DashboardEventListItem[];
 	debug?: DashboardEventListDebug;
 }
-
-export interface AdminEventListItemDTO {
-	id: string;
-	title: string;
-	slug: string;
-	eventType: EventRecord['eventType'];
-	status: EventRecord['status'];
-	ownerUserId: string;
-	createdAt: string;
-	updatedAt: string;
-}

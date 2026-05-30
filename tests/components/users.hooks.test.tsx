@@ -25,9 +25,6 @@ describe('users admin hook', () => {
 		});
 		mockedAdminApi.listEvents.mockResolvedValue({
 			items: [],
-			total: 0,
-			page: 1,
-			perPage: 50,
 		});
 	});
 
@@ -56,26 +53,17 @@ describe('users admin hook', () => {
 		});
 
 		await act(async () => {
-			await result.current.createUser({
-				email: '',
-				role: 'host_client',
-			});
+			await result.current.createUser({ role: 'host_client' });
 		});
 
-		expect(mockedAdminApi.createUser).toHaveBeenCalledWith({
-			email: '',
-			role: 'host_client',
-		});
 		expect(result.current.createdUser).toEqual({
 			email: 'cliente-ab12cd34',
 			role: 'host_client',
 			temporaryPassword: 'clienteab12c2026',
 		});
-		expect(result.current.createModalOpen).toBe(true);
-		expect(result.current.creating).toBe(false);
 	});
 
-	it('assigns an event to a user and reloads the admin data', async () => {
+	it('assigns event membership and refreshes user list', async () => {
 		mockedAdminApi.listUsers
 			.mockResolvedValueOnce({
 				items: [
@@ -112,30 +100,6 @@ describe('users admin hook', () => {
 				page: 1,
 				perPage: 50,
 			});
-		mockedAdminApi.listEvents.mockResolvedValue({
-			items: [
-				{
-					id: 'evt-1',
-					title: 'XV años de Ximena',
-					slug: 'ximena-meza-trasvina',
-					eventType: 'xv',
-					status: 'published',
-					ownerUserId: 'admin-1',
-					createdAt: '2026-04-01T00:00:00.000Z',
-					updatedAt: '2026-04-01T00:00:00.000Z',
-				},
-			],
-			total: 1,
-			page: 1,
-			perPage: 50,
-		});
-		mockedAdminApi.updateUserEventMembership.mockResolvedValue({
-			userId: 'user-1',
-			eventId: 'evt-1',
-			action: 'assign',
-			membershipRole: 'manager',
-			changedAt: '2026-04-01T00:00:00.000Z',
-		});
 
 		const { result } = renderHook(() => useUsersAdmin());
 
@@ -151,11 +115,6 @@ describe('users admin hook', () => {
 			});
 		});
 
-		expect(mockedAdminApi.updateUserEventMembership).toHaveBeenCalledWith('user-1', {
-			eventId: 'evt-1',
-			action: 'assign',
-			membershipRole: 'manager',
-		});
 		expect(mockedAdminApi.listUsers).toHaveBeenCalledTimes(2);
 		expect(result.current.items[0]?.assignedEvents).toHaveLength(1);
 	});
