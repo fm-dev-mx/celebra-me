@@ -80,10 +80,9 @@ export async function requireAdminRateLimit(
 	const ip = extractClientIp(request);
 
 	// Prefer user-level throttling when a user id is available.
-	const entityId = userId || hashIp(ip);
+	const entityId = `${operation}:${userId || hashIp(ip)}`;
 
-	// Operations currently share the same dashboard namespace.
-	const namespace = operation.startsWith('claimcodes:') ? 'dashboard' : 'dashboard';
+	const namespace = 'dashboard';
 
 	const allowed = await checkRateLimit({
 		namespace,
