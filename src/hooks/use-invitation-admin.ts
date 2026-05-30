@@ -19,6 +19,9 @@ export function useInvitationAdmin() {
 	const [currentProject, setCurrentProject] = useState<InvitationProjectDTO | null>(null);
 	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
 	const [currentSubmission, setCurrentSubmission] = useState<IntakeSubmissionDTO | null>(null);
+	const [currentRsvpEvent, setCurrentRsvpEvent] = useState<
+		import('@/lib/dashboard/dto/intake').RsvpEventDTO | null
+	>(null);
 	const [currentDraft, setCurrentDraft] = useState<InvitationContentDraftDTO | null>(null);
 	const [rawToken, setRawToken] = useState<string | null>(null);
 
@@ -80,6 +83,7 @@ export function useInvitationAdmin() {
 			setCurrentProject(result.item);
 			setCurrentRequest(result.request);
 			setCurrentSubmission(result.submission);
+			setCurrentRsvpEvent(result.rsvpEvent ?? null);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al cargar el proyecto.');
 		} finally {
@@ -232,6 +236,7 @@ export function useInvitationAdmin() {
 		currentProject,
 		currentRequest,
 		currentSubmission,
+		currentRsvpEvent,
 		currentDraft,
 		rawToken,
 		setRawToken,

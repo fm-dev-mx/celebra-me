@@ -4,6 +4,7 @@ import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import BlockSelector from '@/components/dashboard/intake/BlockSelector';
 import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
+import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
 import type { IntakeBlockType, IntakeSubmissionStatus } from '@/lib/intake/types';
 import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
 import { PROJECT_STATUS_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
@@ -20,6 +21,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		currentProject,
 		currentRequest,
 		currentSubmission,
+		currentRsvpEvent,
 		loadProjectDetail,
 		updateProject,
 		createIntakeRequest,
@@ -197,7 +199,9 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 				<SubmissionSection projectId={projectId} submission={currentSubmission} />
 			)}
 
-			{currentSubmission?.status === 'approved' && <DraftSection projectId={projectId} />}
+			<DraftSection projectId={projectId} />
+
+			<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
 
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}
