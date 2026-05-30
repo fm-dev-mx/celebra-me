@@ -1,10 +1,10 @@
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
-import { listAdminEvents } from '@/lib/rsvp/services/event-admin.service';
 import { listAdminUsers } from '@/lib/rsvp/services/user-admin.service';
+import { getAllInvitationProjects } from '@/lib/intake/services/invitation-project.service';
 
 export interface DashboardAdminPageData {
 	stats: {
-		events: number;
+		invitations: number;
 		users: number;
 		claimCodes: number;
 		activeClaimCodes: number;
@@ -12,18 +12,19 @@ export interface DashboardAdminPageData {
 }
 
 export async function prepareDashboardAdminPageData(): Promise<DashboardAdminPageData> {
-	const [events, users, claimCodes] = await Promise.all([
-		listAdminEvents(),
+	const [projects, users, claimCodes] = await Promise.all([
+		getAllInvitationProjects(),
 		listAdminUsers(),
 		listClaimCodesAdmin({}),
 	]);
 
 	return {
 		stats: {
-			events: events.length,
+			invitations: projects.length,
 			users: users.length,
 			claimCodes: claimCodes.length,
-			activeClaimCodes: claimCodes.filter((claimCode) => claimCode.status === 'active').length,
+			activeClaimCodes: claimCodes.filter((claimCode) => claimCode.status === 'active')
+				.length,
 		},
 	};
 }
