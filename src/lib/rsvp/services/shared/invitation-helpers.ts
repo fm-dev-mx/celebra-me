@@ -2,7 +2,7 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { getEnv } from '@/lib/server/env';
+import { resolveSiteOrigin } from '@/lib/shared/origin';
 import { generateInvitationLink } from '@utils/invitation-link';
 
 export interface BuildShareMessageInput {
@@ -25,14 +25,7 @@ export function isUuid(value: string): boolean {
 }
 
 export function resolveOrigin(providedOrigin?: string): string {
-	const baseUrl = getEnv('BASE_URL');
-	const isProd = process.env.NODE_ENV === 'production';
-
-	if (baseUrl && baseUrl.startsWith('http')) {
-		if (isProd || !baseUrl.includes('localhost')) {
-			return baseUrl.replace(/\/+$/, '');
-		}
-	}
+	const configured = resolveSiteOrigin();
 
 	if (
 		providedOrigin &&
@@ -42,7 +35,7 @@ export function resolveOrigin(providedOrigin?: string): string {
 		return providedOrigin.replace(/\/+$/, '');
 	}
 
-	return (baseUrl || providedOrigin || 'http://localhost:4321').replace(/\/+$/, '');
+	return configured;
 }
 
 export function buildInviteUrl(

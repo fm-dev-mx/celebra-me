@@ -22,7 +22,7 @@ import {
 	validateBlockData,
 } from '@/lib/intake/schemas/intake-submission.schema';
 import { sendIntakeNotification } from '@/lib/server/email';
-import { getEnv } from '@/lib/server/env';
+import { resolveSiteOrigin } from '@/lib/shared/origin';
 import { toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
 import type { IntakeBlockType } from '@/lib/intake/types';
 
@@ -177,7 +177,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 		await updateIntakeRequest(ctx.request!.id, { status: 'submitted' });
 		await updateInvitationProject(ctx.project!.id, { status: 'client_submitted' });
 
-		const baseUrl = getEnv('BASE_URL') || 'https://www.celebra-me.com';
+		const baseUrl = resolveSiteOrigin();
 		const reviewUrl = `${baseUrl}/dashboard/invitaciones/${ctx.project!.id}/review`;
 
 		try {
