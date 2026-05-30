@@ -43,8 +43,11 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 	useEffect(() => {
 		if (currentRequest?.enabledBlocks) {
 			setSelectedBlocks(currentRequest.enabledBlocks);
+		} else if (currentProject) {
+			const p = findDemoPreset(currentProject.baseDemoId);
+			if (p) setSelectedBlocks(p.recommendedBlocks);
 		}
-	}, [currentRequest]);
+	}, [currentRequest, currentProject]);
 
 	const handleCreateRequest = async () => {
 		if (selectedBlocks.length === 0) {
