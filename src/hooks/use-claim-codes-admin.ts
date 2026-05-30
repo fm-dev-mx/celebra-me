@@ -2,15 +2,32 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type { CreateClaimCodeDTO, UpdateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
-import type { EventListItemDTO } from '@/lib/dashboard/dto/events';
+import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
+import { toErrorMessage } from '@/lib/rsvp/core/errors';
+
+interface ProjectOption {
+	id: string;
+	title: string;
+	eventType: string;
+	rsvpEventId: string | null;
+}
+
+function toProjectOption(project: InvitationProjectDTO): ProjectOption {
+	return {
+		id: project.id,
+		title: project.title,
+		eventType: project.eventType,
+		rsvpEventId: project.rsvpEventId,
+	};
+}
 
 export function useClaimCodesAdmin() {
 	const [items, setItems] = useState<ClaimCodeDTO[]>([]);
-	const [events, setEvents] = useState<EventListItemDTO[]>([]);
+	const [projects, setProjects] = useState<ProjectOption[]>([]);
 	const [error, setError] = useState('');
 	const [lastPlainCode, setLastPlainCode] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [eventsLoading, setEventsLoading] = useState(false);
+	const [projectsLoading, setProjectsLoading] = useState(false);
 
 	const loadClaimCodes = useCallback(async () => {
 		setError('');
@@ -19,29 +36,29 @@ export function useClaimCodesAdmin() {
 			const result = await adminApi.listClaimCodes();
 			setItems(result.items);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error inesperado.');
+			setError(toErrorMessage(err, 'Error inesperado.'));
 		} finally {
 			setLoading(false);
 		}
 	}, []);
 
-	const loadEvents = useCallback(async () => {
-		setEventsLoading(true);
+	const loadProjects = useCallback(async () => {
+		setProjectsLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.listEvents();
-			setEvents(result.items);
+			const result = await adminApi.listInvitationProjects();
+			setProjects(result.items.map(toProjectOption));
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'No se pudieron cargar los eventos.');
+			setError(toErrorMessage(err, 'No se pudieron cargar los proyectos.'));
 		} finally {
-			setEventsLoading(false);
+			setProjectsLoading(false);
 		}
 	}, []);
 
 	useEffect(() => {
 		void loadClaimCodes();
-		void loadEvents();
-	}, [loadClaimCodes, loadEvents]);
+		void loadProjects();
+	}, [loadClaimCodes, loadProjects]);
 
 	const createClaimCode = useCallback(
 		async (payload: CreateClaimCodeDTO) => {
@@ -51,10 +68,9 @@ export function useClaimCodesAdmin() {
 				setLastPlainCode(result.plainCode);
 				await loadClaimCodes();
 			} catch (err) {
-				throw new Error(
-					err instanceof Error ? err.message : 'No se pudo crear el código de acceso.',
-					{ cause: err },
-				);
+				throw new Error(toErrorMessage(err, 'No se pudo crear el código de acceso.'), {
+					cause: err,
+				});
 			}
 		},
 		[loadClaimCodes],
@@ -67,12 +83,9 @@ export function useClaimCodesAdmin() {
 				await adminApi.updateClaimCode(claimCodeId, payload);
 				await loadClaimCodes();
 			} catch (err) {
-				throw new Error(
-					err instanceof Error
-						? err.message
-						: 'No se pudo actualizar el código de acceso.',
-					{ cause: err },
-				);
+				throw new Error(toErrorMessage(err, 'No se pudo actualizar el código de acceso.'), {
+					cause: err,
+				});
 			}
 		},
 		[loadClaimCodes],
@@ -85,12 +98,9 @@ export function useClaimCodesAdmin() {
 				await adminApi.disableClaimCode(claimCodeId);
 				await loadClaimCodes();
 			} catch (err) {
-				throw new Error(
-					err instanceof Error
-						? err.message
-						: 'No se pudo desactivar el código de acceso.',
-					{ cause: err },
-				);
+				throw new Error(toErrorMessage(err, 'No se pudo desactivar el código de acceso.'), {
+					cause: err,
+				});
 			}
 		},
 		[loadClaimCodes],
@@ -98,15 +108,15 @@ export function useClaimCodesAdmin() {
 
 	return {
 		items,
-		events,
+		projects,
 		error,
 		lastPlainCode,
 		loading,
-		eventsLoading,
+		projectsLoading,
 		createClaimCode,
 		updateClaimCode,
 		disableClaimCode,
 		reloadClaimCodes: loadClaimCodes,
-		reloadEvents: loadEvents,
+		reloadProjects: loadProjects,
 	};
 }

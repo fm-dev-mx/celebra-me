@@ -6,15 +6,11 @@ import {
 	createClaimCodeAdmin,
 	listClaimCodesAdmin,
 } from '@/lib/rsvp/services/claim-code-admin.service';
-
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
+import { findEventByProjectIdService } from '@/lib/rsvp/repositories/event.repository';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		// Rate limiting: 60 req/min for list operations.
 		await requireAdminRateLimit(request, 'claimcodes:list');
 		await requireAdminStrongSession(request);
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
@@ -27,14 +23,27 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// Rate limiting: 20 req/min for create operations.
 		await requireAdminRateLimit(request, 'claimcodes:create');
 		const session = await requireAdminStrongSession(request);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
-		const eventId = sanitize(body.eventId as string, 120);
-		if (!eventId) return badRequest('eventId is required.');
+
+		const eventIdRaw = sanitize(body.eventId as string, 120);
+		const invitationProjectId = sanitize(body.invitationProjectId as string, 120);
+
+		let eventId = eventIdRaw;
+
+		if (!eventId && invitationProjectId) {
+			const event = await findEventByProjectIdService(invitationProjectId);
+			if (!event) {
+				return badRequest('El proyecto de invitación no tiene un evento RSVP asociado.');
+			}
+			eventId = event.id;
+		}
+
+		if (!eventId) return badRequest('eventId o invitationProjectId es requerido.');
+
 		const created = await createClaimCodeAdmin({
 			eventId,
 			expiresAt:

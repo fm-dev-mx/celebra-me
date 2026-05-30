@@ -7,11 +7,11 @@ import { useClaimCodesAdmin } from '@/hooks/use-claim-codes-admin';
 const ClaimCodesApp: React.FC = () => {
 	const {
 		items,
-		events,
+		projects,
 		error,
 		lastPlainCode,
 		loading,
-		eventsLoading,
+		projectsLoading,
 		createClaimCode,
 		updateClaimCode,
 		disableClaimCode,
@@ -25,8 +25,8 @@ const ClaimCodesApp: React.FC = () => {
 					El código plano se muestra una sola vez. Guarda el valor al momento de crearlo.
 				</p>
 				<ClaimCodeFormModal
-					events={events}
-					loading={eventsLoading}
+					projects={projects}
+					loading={projectsLoading}
 					onCreate={createClaimCode}
 				/>
 				{lastPlainCode && (

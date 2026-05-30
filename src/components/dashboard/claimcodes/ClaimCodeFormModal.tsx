@@ -1,45 +1,64 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import type { CreateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
-import type { EventListItemDTO } from '@/lib/dashboard/dto/events';
+import { toErrorMessage } from '@/lib/rsvp/core/errors';
+
+interface ProjectOption {
+	id: string;
+	title: string;
+	eventType: string;
+	rsvpEventId: string | null;
+}
 
 interface ClaimCodeFormModalProps {
-	events: EventListItemDTO[];
+	projects: ProjectOption[];
 	loading: boolean;
 	onCreate: (payload: CreateClaimCodeDTO) => Promise<void>;
 }
 
-const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ events, loading, onCreate }) => {
-	const [eventId, setEventId] = useState('');
+const EVENT_TYPE_LABELS: Record<string, string> = {
+	xv: 'XV años',
+	boda: 'Boda',
+	bautizo: 'Bautizo',
+	cumple: 'Cumpleaños',
+};
+
+const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ projects, loading, onCreate }) => {
+	const [projectId, setProjectId] = useState('');
 	const [maxUses, setMaxUses] = useState(1);
 	const [expiresAt, setExpiresAt] = useState('');
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 
+	const projectsWithRsvp = projects.filter((p) => p.rsvpEventId);
+
 	useEffect(() => {
-		if (events.length > 0 && !eventId) {
-			setEventId(events[0].id);
+		if (projectsWithRsvp.length > 0 && !projectId) {
+			setProjectId(projectsWithRsvp[0].id);
 		}
-		if (events.length === 0 && eventId) {
-			setEventId('');
+		if (projectsWithRsvp.length === 0 && projectId) {
+			setProjectId('');
 		}
-	}, [eventId, events]);
+	}, [projectId, projectsWithRsvp]);
 
 	const handleSubmit = async (event: SyntheticEvent) => {
 		event.preventDefault();
-		if (busy || !eventId) return;
+		if (busy || !projectId) return;
 		setBusy(true);
 		setError('');
 		try {
+			const selected = projectsWithRsvp.find((p) => p.id === projectId);
 			await onCreate({
-				eventId: eventId.trim(),
+				invitationProjectId: projectId.trim(),
+				eventId: selected?.rsvpEventId ?? undefined,
 				maxUses,
 				expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
 			});
-			setEventId(events.length > 0 ? events[0].id : '');
+			const next = projectsWithRsvp.find((p) => p.id !== projectId);
+			setProjectId(next?.id ?? (projectsWithRsvp.length > 0 ? projectsWithRsvp[0].id : ''));
 			setMaxUses(1);
 			setExpiresAt('');
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al crear el código de acceso.');
+			setError(toErrorMessage(err, 'Error al crear el código de acceso.'));
 		} finally {
 			setBusy(false);
 		}
@@ -48,30 +67,31 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ events, loading
 	return (
 		<form className="dashboard-form-grid" onSubmit={handleSubmit}>
 			<div className="dashboard-form-field">
-				<label htmlFor="claim-event">Evento</label>
+				<label htmlFor="claim-project">Proyecto de invitación</label>
 				{loading ? (
-					<select id="claim-event" disabled>
-						<option>Cargando eventos...</option>
+					<select id="claim-project" disabled>
+						<option>Cargando proyectos...</option>
 					</select>
 				) : (
 					<select
-						id="claim-event"
-						value={eventId}
-						onChange={(event) => setEventId(event.target.value)}
+						id="claim-project"
+						value={projectId}
+						onChange={(event) => setProjectId(event.target.value)}
 						required
-						disabled={events.length === 0}
+						disabled={projectsWithRsvp.length === 0}
 					>
-						<option value="">Selecciona un evento</option>
-						{events.map((event) => (
-							<option key={event.id} value={event.id}>
-								{event.title} ({event.slug})
+						<option value="">Selecciona un proyecto</option>
+						{projectsWithRsvp.map((project) => (
+							<option key={project.id} value={project.id}>
+								{project.title} (
+								{EVENT_TYPE_LABELS[project.eventType] ?? project.eventType})
 							</option>
 						))}
 					</select>
 				)}
-				{events.length === 0 && !loading && (
+				{projectsWithRsvp.length === 0 && !loading && (
 					<p className="dashboard-form-help">
-						No hay eventos disponibles. Crea un evento primero.
+						No hay proyectos con RSVP disponibles. Publica una invitación primero.
 					</p>
 				)}
 			</div>
@@ -104,7 +124,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ events, loading
 				<button
 					type="submit"
 					className="btn-primary"
-					disabled={busy || !eventId || events.length === 0}
+					disabled={busy || !projectId || projectsWithRsvp.length === 0}
 				>
 					{busy ? 'Generando...' : 'Generar código de acceso'}
 				</button>
