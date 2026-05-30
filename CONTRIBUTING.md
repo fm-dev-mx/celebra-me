@@ -52,6 +52,13 @@ Please follow these steps to have your contribution considered by the maintainer
 > blocks direct commits to protected branches and runs staged-file checks before the commit is
 > created.
 
+### Sensitive Data
+
+> [!CAUTION] This repository may contain **Personally Identifiable Information (PII)** if care is
+> not taken. Before committing, review your changes against the
+> [`docs/core/sensitive-data-guide.md`](docs/core/sensitive-data-guide.md) to ensure no real client
+> names, phone numbers, addresses, or asset URLs are hardcoded in source files.
+
 ### Coding Style
 
 Please follow these coding standards:
