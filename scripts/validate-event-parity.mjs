@@ -26,6 +26,25 @@ function isPlaceholderEnvValue(value) {
 	);
 }
 
+async function fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey) {
+	const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/published_invitation_content?select=slug,event_type`;
+	const response = await fetch(endpoint, {
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+			Accept: 'application/json',
+		},
+	});
+	if (!response.ok) {
+		throw new Error(`[DB] Failed to fetch published_invitation_content (${response.status})`);
+	}
+	const rows = await response.json();
+	if (!Array.isArray(rows)) return [];
+	return rows
+		.map((r) => entryKey(String(r.event_type || '').trim(), String(r.slug || '').trim()))
+		.filter(Boolean);
+}
+
 function loadEnvFile(relativePath) {
 	const envPath = path.join(PROJECT_ROOT, relativePath);
 	if (!fs.existsSync(envPath)) return;
@@ -247,6 +266,8 @@ Options:
 	}
 
 	const dbEvents = await fetchDbEvents(supabaseUrl, serviceRoleKey);
+	const publishedSlugList = await fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey);
+	const publishedSlugs = new Set(publishedSlugList);
 	const filteredDbEvents = dbEvents.filter((event) => {
 		if (values.slug && event.slug !== values.slug) return false;
 		if (values.eventType && event.eventType !== values.eventType) return false;
@@ -261,7 +282,9 @@ Options:
 	);
 
 	const missingInContent = filteredDbEvents.filter(
-		(event) => !contentMap.has(entryKey(event.eventType, event.slug)),
+		(event) =>
+			!contentMap.has(entryKey(event.eventType, event.slug)) &&
+			!publishedSlugs.has(entryKey(event.eventType, event.slug)),
 	);
 	const missingInDb = contentEvents.filter(
 		(event) => !dbMap.has(entryKey(event.eventType, event.slug)),
