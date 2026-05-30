@@ -40,7 +40,7 @@ describe('César Ramses baptism invitation content', () => {
 		expect(event).toMatchObject({
 			eventType: 'bautizo',
 			isDemo: false,
-			title: 'Mi Bautizo y 1er Año de César Ramses',
+			title: 'Mi Bautizo y 1er Año • César Ramses',
 			theme: { preset: 'sacred-keepsake' },
 			hero: {
 				name: 'César Ramses',
