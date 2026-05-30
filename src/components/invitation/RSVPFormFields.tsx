@@ -332,9 +332,7 @@ export function ConfirmedFields(props: {
 						id="guestCount"
 						type="number"
 						label={guestCountLabel}
-						labelSuffix={
-							effectiveGuestCap <= 10 ? ` (M\u00e1x. ${effectiveGuestCap})` : ''
-						}
+						labelSuffix={effectiveGuestCap <= 10 ? ` (Máx. ${effectiveGuestCap})` : ''}
 						value={String(attendeeCount)}
 						error={errors.guestCount}
 						touched={touched.guestCount}

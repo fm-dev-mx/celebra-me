@@ -94,7 +94,7 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }));
+		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
 
 		await waitFor(() =>
 			expect(shareMock).toHaveBeenCalledWith({
@@ -122,13 +122,13 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }));
+		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
 
 		await waitFor(() => expect(navigator.share).toHaveBeenCalled());
 		expect(onShared).not.toHaveBeenCalled();
 		await waitFor(() =>
 			expect(
-				screen.getByRole('button', { name: /compartir invitaci\u00f3n/i }),
+				screen.getByRole('button', { name: /compartir invitación/i }),
 			).toBeInTheDocument(),
 		);
 	});

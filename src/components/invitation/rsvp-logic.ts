@@ -37,16 +37,16 @@ export interface ValidationContext {
 // RSVP form helpers.
 
 const DEFAULT_SUBCOPY: Record<string, string> = {
-	xv: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n especial.',
-	boda: 'Tu confirmaci\u00f3n nos ayuda a preparar cada detalle para compartir este d\u00eda contigo.',
-	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n familiar.',
-	cumple: 'Tu confirmaci\u00f3n nos ayuda a preparar cada detalle de esta velada tan especial.',
+	xv: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
+	boda: 'Tu confirmación nos ayuda a preparar cada detalle para compartir este día contigo.',
+	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
+	cumple: 'Tu confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
 };
 
 export function getDefaultRsvpSubcopy(eventType: string): string {
 	return (
 		DEFAULT_SUBCOPY[eventType] ??
-		'Tu respuesta nos ayuda a preparar cada detalle de esta celebraci\u00f3n especial.'
+		'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.'
 	);
 }
 
@@ -67,8 +67,8 @@ export function resolveLabels(
 
 	return {
 		nameLabel: labels?.name ?? 'Tu nombre',
-		guestCountLabel: labels?.guestCount ?? 'N\u00famero de asistentes',
-		phoneLabel: labels?.phone ?? 'Tel\u00e9fono de contacto',
+		guestCountLabel: labels?.guestCount ?? 'Número de asistentes',
+		phoneLabel: labels?.phone ?? 'Teléfono de contacto',
 		attendanceLabel: labels?.attendance ?? 'Asistencia',
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
 		notesLabel:
@@ -127,8 +127,8 @@ export function buildWhatsAppUrl(params: {
 		? 'Hola, soy {name}. Confirmo mi asistencia. Asistiremos {guestCount} persona(s).'
 		: 'Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).';
 	const defaultDeclinedTemplate = omitTitleByDefault
-		? 'Hola, soy {name}. Lamentablemente no podr\u00e9 asistir.'
-		: 'Hola, soy {name}. Lamentablemente no podr\u00e9 asistir a {title}.';
+		? 'Hola, soy {name}. Lamentablemente no podré asistir.'
+		: 'Hola, soy {name}. Lamentablemente no podré asistir a {title}.';
 
 	const template =
 		(isConfirmed ? whatsappConfig.confirmedTemplate : whatsappConfig.declinedTemplate) ??
@@ -166,20 +166,20 @@ export function validateRsvpForm({
 	if (identityFieldsVisible) {
 		const normalizedPhone = normalizePhoneInput(phone);
 		if (phoneRequired && !normalizedPhone) {
-			errors.phone = 'Por favor, escribe tu tel\u00e9fono.';
+			errors.phone = 'Por favor, escribe tu teléfono.';
 		} else if (normalizedPhone && normalizedPhone.length !== 10) {
-			errors.phone = 'Escribe un tel\u00e9fono de 10 d\u00edgitos.';
+			errors.phone = 'Escribe un teléfono de 10 dígitos.';
 		}
 	}
 	if (!attendanceStatus) {
-		errors.attendance = 'Por favor, selecciona si asistir\u00e1s.';
+		errors.attendance = 'Por favor, selecciona si asistirás.';
 	}
 	if (attendanceStatus === 'confirmed') {
 		const normalizedCount = supportsPlusOnes ? parseAttendeeCount(attendeeCount) : 1;
 		if (!normalizedCount || normalizedCount < 1) {
-			errors.guestCount = 'El n\u00famero de invitados debe ser al menos 1.';
+			errors.guestCount = 'El número de invitados debe ser al menos 1.';
 		} else if (normalizedCount > effectiveGuestCap) {
-			errors.guestCount = `El l\u00edmite de invitados es de ${effectiveGuestCap}.`;
+			errors.guestCount = `El límite de invitados es de ${effectiveGuestCap}.`;
 		}
 	}
 

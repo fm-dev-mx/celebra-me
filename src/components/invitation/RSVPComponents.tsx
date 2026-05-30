@@ -80,7 +80,7 @@ export function SubmitButtonText({
 	attendanceStatus?: 'confirmed' | 'declined' | null;
 }) {
 	if (submitStatus === 'loading') return 'Enviando...';
-	if (submitStatus === 'success') return '\u00a1Confirmado!';
+	if (submitStatus === 'success') return '!Confirmado!';
 	if (attendanceStatus === 'declined') return 'ENVIAR RESPUESTA';
 	return buttonLabel;
 }

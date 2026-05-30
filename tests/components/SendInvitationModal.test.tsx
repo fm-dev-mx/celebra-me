@@ -139,7 +139,7 @@ describe('SendInvitationModal', () => {
 		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
 		expect(props.onMarkShared).not.toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 	});
 
 	it('blocks submit with invalid non-empty phone and shows inline error', async () => {
@@ -236,7 +236,7 @@ describe('SendInvitationModal', () => {
 		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
 		expect(props.onMarkShared).not.toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 	});
 
 	it('navigator.share cancellation after save keeps invitation pending without fallback', async () => {
@@ -257,7 +257,7 @@ describe('SendInvitationModal', () => {
 		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
 		expect(props.onMarkShared).not.toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		expect(screen.queryByText('Copiar invitaci\u00f3n')).not.toBeInTheDocument();
+		expect(screen.queryByText('Copiar invitación')).not.toBeInTheDocument();
 		await waitFor(() =>
 			expect(
 				screen.getByRole('button', { name: /compartir invitación/i }),
@@ -347,9 +347,9 @@ describe('SendInvitationModal', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 
-		fireEvent.click(screen.getByText('Copiar invitaci\u00f3n'));
+		fireEvent.click(screen.getByText('Copiar invitación'));
 
 		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
 		expect(props.onMarkShared).not.toHaveBeenCalled();
@@ -364,7 +364,7 @@ describe('SendInvitationModal', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 
 		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
 
@@ -542,7 +542,7 @@ describe('SendInvitationModal', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 
 		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
 
