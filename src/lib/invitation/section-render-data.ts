@@ -147,7 +147,7 @@ function renderRsvpSection(
 		component: 'rsvp',
 		props: {
 			...sections.rsvp,
-			variant: sectionVariant(sections.rsvp, themePreset),
+			variant: resolveSectionVariant(sections.rsvp, themePreset),
 			celebrantName: hero.name,
 			guestCap: guestContext?.guest.maxAllowedAttendees ?? sections.rsvp.guestCap,
 			initialGuestData: guestContext
@@ -187,7 +187,12 @@ function getMonogram(name: string): string {
 		.toUpperCase();
 }
 
-function sectionVariant<T extends { variant?: ThemePreset }>(
+/**
+ * Resolves section variant by checking the section's own variant field.
+ * Unlike adapters/event.ts sectionVariant(), this does NOT validate against
+ * THEME_PRESETS — it is a simple null-coalescing for the render descriptor.
+ */
+function resolveSectionVariant<T extends { variant?: ThemePreset }>(
 	sectionData: T,
 	fallback: ThemePreset,
 ): ThemePreset {
@@ -209,7 +214,7 @@ function renderSection(
 						component: 'quote',
 						props: {
 							...sections.quote,
-							variant: sectionVariant(sections.quote, variant),
+							variant: resolveSectionVariant(sections.quote, variant),
 						},
 					}
 				: null;
@@ -221,7 +226,7 @@ function renderSection(
 						props: {
 							...sections.family,
 							celebrantName: hero.name,
-							variant: sectionVariant(sections.family, variant),
+							variant: resolveSectionVariant(sections.family, variant),
 						},
 					}
 				: null;
@@ -232,7 +237,7 @@ function renderSection(
 						component: 'gallery',
 						props: {
 							...sections.gallery,
-							variant: sectionVariant(sections.gallery, variant),
+							variant: resolveSectionVariant(sections.gallery, variant),
 						},
 					}
 				: null;
@@ -243,7 +248,7 @@ function renderSection(
 						component: 'countdown',
 						props: {
 							...sections.countdown,
-							variant: sectionVariant(sections.countdown, variant),
+							variant: resolveSectionVariant(sections.countdown, variant),
 						},
 					}
 				: null;
@@ -255,7 +260,7 @@ function renderSection(
 						props: {
 							...sections.location,
 							nextSectionLink,
-							variant: sectionVariant(sections.location, variant),
+							variant: resolveSectionVariant(sections.location, variant),
 						},
 					}
 				: null;
@@ -266,7 +271,7 @@ function renderSection(
 						component: 'itinerary',
 						props: {
 							...sections.itinerary,
-							variant: sectionVariant(sections.itinerary, variant),
+							variant: resolveSectionVariant(sections.itinerary, variant),
 							monogram: getMonogram(hero.name),
 							subtitle: sections.itinerary.subtitle,
 						},
@@ -286,7 +291,7 @@ function renderSection(
 						component: 'thankYou',
 						props: {
 							...sections.thankYou,
-							variant: sectionVariant(sections.thankYou, variant),
+							variant: resolveSectionVariant(sections.thankYou, variant),
 							showThankYouBranding:
 								pageContext.viewModel.brandingVisibility.showThankYouBranding,
 						},
@@ -324,18 +329,16 @@ function prioritizePersonalizedAccess(
 	const paIndex = descriptors.findIndex((d) => d.component === 'personalized-access');
 	if (paIndex === -1) return descriptors;
 
-	const [personalizedAccess] = descriptors.splice(paIndex, 1);
+	const before = descriptors.slice(0, paIndex);
+	const after = descriptors.slice(paIndex + 1);
+	const [personalizedAccess] = descriptors.slice(paIndex, paIndex + 1);
 
-	// Find the best insertion point: after Quote if possible, otherwise after the first content block.
-	const quoteIndex = descriptors.findIndex((d) => d.component === 'quote');
+	const quoteIndex = before.findIndex((d) => d.component === 'quote');
 	const targetIndex =
-		quoteIndex !== -1
-			? quoteIndex + 1
-			: descriptors.findIndex((d) => d.component !== 'interlude');
+		quoteIndex !== -1 ? quoteIndex + 1 : before.findIndex((d) => d.component !== 'interlude');
 
-	descriptors.splice(targetIndex === -1 ? 0 : targetIndex, 0, personalizedAccess);
-
-	return descriptors;
+	const insertAt = targetIndex === -1 ? before.length : targetIndex;
+	return [...before.slice(0, insertAt), personalizedAccess, ...before.slice(insertAt), ...after];
 }
 
 export function buildInvitationSectionRenderDescriptors(
