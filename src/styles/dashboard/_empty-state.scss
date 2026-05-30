@@ -1,0 +1,14 @@
+.dashboard-empty-state {
+	text-align: center;
+	padding: 3rem 1.5rem;
+
+	&__message {
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+		margin: 0 0 1rem;
+	}
+
+	&__action {
+		margin-top: 0.5rem;
+	}
+}

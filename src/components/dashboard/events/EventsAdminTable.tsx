@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
 import EventConfirmDialog from '@/components/dashboard/events/EventConfirmDialog';
 import EventFormModal from '@/components/dashboard/events/EventFormModal';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import StatusBadge from '@/components/dashboard/StatusBadge';
+import EmptyState from '@/components/dashboard/EmptyState';
 import { getEventStatusLabel, getEventTypeLabel, useEventsAdmin } from '@/hooks/use-events-admin';
 import type { CreateEventDTO, UpdateEventDTO } from '@/lib/dashboard/dto/events';
 
@@ -72,12 +75,15 @@ const EventsAdminTable: React.FC = () => {
 
 	return (
 		<div className="dashboard-card">
-			<div className="dashboard-card-header">
-				<h2>Eventos RSVP</h2>
-				<button type="button" onClick={() => setCreateModalOpen(true)}>
-					+ Nuevo Evento
-				</button>
-			</div>
+			<DashboardPageHeader
+				title="Eventos RSVP — administración técnica"
+				subtitle="Usa esta opción solo para eventos RSVP técnicos o casos especiales. Las invitaciones de cliente deben crearse desde Producción de invitaciones."
+				action={
+					<button type="button" onClick={() => setCreateModalOpen(true)}>
+						+ Crear evento manual
+					</button>
+				}
+			/>
 			{error && <p className="dashboard-error">{error}</p>}
 			{loading && <p className="dashboard-status">Cargando...</p>}
 			<table className="dashboard-table">
@@ -98,9 +104,10 @@ const EventsAdminTable: React.FC = () => {
 							<td>{item.slug}</td>
 							<td>{getEventTypeLabel(item.eventType)}</td>
 							<td>
-								<span className={`dashboard-badge dashboard-badge--${item.status}`}>
-									{getEventStatusLabel(item.status)}
-								</span>
+								<StatusBadge
+									variant={item.status}
+									label={getEventStatusLabel(item.status)}
+								/>
 							</td>
 							<td>{item.ownerUserId.slice(0, 8)}...</td>
 							<td>
@@ -144,7 +151,9 @@ const EventsAdminTable: React.FC = () => {
 					))}
 					{items.length === 0 && !loading && (
 						<tr>
-							<td colSpan={6}>No hay eventos registrados.</td>
+							<td colSpan={6}>
+								<EmptyState message="No hay eventos registrados." />
+							</td>
 						</tr>
 					)}
 				</tbody>
