@@ -4,88 +4,49 @@ import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import DemoSelector from '@/components/dashboard/intake/DemoSelector';
 import StatusBadge from '@/components/dashboard/StatusBadge';
 import EmptyState from '@/components/dashboard/EmptyState';
-import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { InvitationProjectStatus } from '@/lib/intake/types';
+import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
+import {
+	resolveDisplayInfo,
+	resolvePrimaryAction,
+	hasInconsistency,
+} from '@/lib/intake/display-status';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
-const STATUS_VARIANT: Record<
-	string,
-	| 'draft'
-	| 'published'
-	| 'archived'
-	| 'waiting'
-	| 'submitted'
-	| 'review'
-	| 'production'
-	| 'preview'
-	| 'approved'
-> = {
-	draft: 'draft',
-	waiting_for_client: 'waiting',
-	client_submitted: 'submitted',
-	in_review: 'review',
-	in_production: 'production',
-	preview_sent: 'preview',
-	approved: 'approved',
-	published: 'published',
-	archived: 'archived',
-};
+type FilterTab = 'all' | InvitationProjectStatus | 'needs_attention';
 
-type FilterTab = 'all' | InvitationProjectStatus;
-
-const FILTER_TABS: Array<{ key: FilterTab; label: string; statuses: InvitationProjectStatus[] }> = [
-	{ key: 'all', label: 'Todas', statuses: [] },
-	{ key: 'draft', label: 'Borrador', statuses: ['draft'] },
-	{ key: 'waiting_for_client', label: 'Esperando cliente', statuses: ['waiting_for_client'] },
-	{ key: 'in_review', label: 'En revisión', statuses: ['client_submitted', 'in_review'] },
+const FILTER_TABS: Array<{
+	key: FilterTab;
+	label: string;
+	match: (project: InvitationProjectDTO) => boolean;
+}> = [
+	{ key: 'all', label: 'Todas', match: () => true },
+	{ key: 'draft', label: 'Borrador', match: (p) => p.status === 'draft' },
+	{
+		key: 'waiting_for_client',
+		label: 'Esperando cliente',
+		match: (p) => p.status === 'waiting_for_client',
+	},
+	{
+		key: 'in_review',
+		label: 'En revisión',
+		match: (p) => p.status === 'client_submitted' || p.status === 'in_review',
+	},
 	{
 		key: 'in_production',
 		label: 'En producción',
-		statuses: ['in_production', 'preview_sent', 'approved'],
+		match: (p) =>
+			p.status === 'in_production' || p.status === 'preview_sent' || p.status === 'approved',
 	},
-	{ key: 'published', label: 'Publicadas', statuses: ['published'] },
-	{ key: 'archived', label: 'Archivadas', statuses: ['archived'] },
+	{ key: 'published', label: 'Publicadas', match: (p) => p.status === 'published' },
+	{ key: 'archived', label: 'Archivadas', match: (p) => p.status === 'archived' },
+	{
+		key: 'needs_attention',
+		label: 'Requieren atención',
+		match: (p) => hasInconsistency(p),
+	},
 ];
-
-function getNextStep(project: {
-	status: InvitationProjectStatus;
-	id: string;
-	slug: string | null;
-	eventType: string;
-}): { text: string; href?: string } | null {
-	switch (project.status) {
-		case 'draft':
-			return {
-				text: 'Generar link de captura',
-				href: `/dashboard/invitaciones/${project.id}`,
-			};
-		case 'waiting_for_client':
-			return { text: 'Esperando respuesta del cliente' };
-		case 'client_submitted':
-			return {
-				text: 'Revisar captura',
-				href: `/dashboard/invitaciones/${project.id}/review`,
-			};
-		case 'in_review':
-			return { text: 'En revisión' };
-		case 'in_production':
-			return { text: 'Continuar producción', href: `/dashboard/invitaciones/${project.id}` };
-		case 'preview_sent':
-			return { text: 'Esperando aprobación final' };
-		case 'approved':
-			return {
-				text: 'Generar borrador',
-				href: `/dashboard/invitaciones/${project.id}/draft`,
-			};
-		case 'published': {
-			const publicSlug = project.slug ?? `${project.eventType}-${project.id.slice(0, 8)}`;
-			return { text: 'Ver invitación pública', href: `/${project.eventType}/${publicSlug}` };
-		}
-		case 'archived':
-			return { text: 'Archivada' };
-	}
-}
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
 	xv: 'XV años',
@@ -98,11 +59,6 @@ const RSVP_LABELS: Record<string, string> = {
 	published: 'RSVP activo',
 	archived: 'RSVP desactivado',
 	draft: 'RSVP borrador',
-};
-
-const CAPTURE_LABELS: Record<string, string> = {
-	pending: 'Captura pendiente',
-	sent: 'Captura enviada',
 };
 
 const InvitationList: FC = () => {
@@ -123,7 +79,7 @@ const InvitationList: FC = () => {
 		if (activeTab === 'all') return items;
 		const tab = FILTER_TABS.find((t) => t.key === activeTab);
 		if (!tab) return items;
-		return items.filter((p) => tab.statuses.includes(p.status));
+		return items.filter(tab.match);
 	}, [items, activeTab]);
 
 	const activeTabLabel = FILTER_TABS.find((t) => t.key === activeTab)?.label ?? 'Todas';
@@ -325,28 +281,22 @@ const InvitationList: FC = () => {
 								<th>Cliente</th>
 								<th>Tipo</th>
 								<th>Estado</th>
-								<th>Captura</th>
-								<th>Publicación</th>
 								<th>RSVP</th>
 								<th>Creado</th>
-								<th>Siguiente paso</th>
-								<th></th>
+								<th>Acción</th>
 							</tr>
 						</thead>
 						<tbody>
 							{filteredItems.map((project) => {
-								const nextStep = getNextStep(project);
-								const captureLabel = project.hasRequest
-									? CAPTURE_LABELS.sent
-									: CAPTURE_LABELS.pending;
-								const pubLabel = project.published ? 'Publicada' : 'Sin publicar';
+								const displayInfo = resolveDisplayInfo(project);
+								const primaryAction = resolvePrimaryAction(project);
 								const rsvpLabel = project.rsvpEventStatus
 									? (RSVP_LABELS[project.rsvpEventStatus] ??
 										project.rsvpEventStatus)
 									: '\u2014';
-								const publicUrl = project.slug
-									? `/${project.eventType}/${project.slug}`
-									: null;
+								const isPublicLink = primaryAction?.href?.startsWith(
+									`/${project.eventType}/`,
+								);
 								return (
 									<tr key={project.id}>
 										<td className="intake-list__cell-title">{project.title}</td>
@@ -356,55 +306,49 @@ const InvitationList: FC = () => {
 												project.eventType}
 										</td>
 										<td>
-											<StatusBadge
-												variant={
-													STATUS_VARIANT[project.status] ?? 'generic'
-												}
-												label={
-													PROJECT_STATUS_LABELS[project.status] ??
-													project.status
-												}
-											/>
+											<div className="intake-list__status-cell">
+												<StatusBadge
+													variant={displayInfo.variant}
+													label={displayInfo.label}
+												/>
+												{displayInfo.warning && (
+													<span className="intake-list__status-warning">
+														{displayInfo.warning}
+													</span>
+												)}
+											</div>
 										</td>
-										<td>{captureLabel}</td>
-										<td>{pubLabel}</td>
 										<td>{rsvpLabel}</td>
 										<td>
 											{new Date(project.createdAt).toLocaleDateString(
 												'es-MX',
 											)}
 										</td>
-										<td>
-											{nextStep?.href ? (
+										<td className="intake-list__actions">
+											{primaryAction?.href ? (
 												<a
-													href={nextStep.href}
-													className="intake-list__next-step"
+													href={primaryAction.href}
+													className="intake-list__action-primary"
+													target={isPublicLink ? '_blank' : undefined}
+													rel={
+														isPublicLink
+															? 'noopener noreferrer'
+															: undefined
+													}
 												>
-													{nextStep.text}
+													{primaryAction.text}
 												</a>
 											) : (
-												<span className="intake-list__next-step intake-list__next-step--muted">
-													{nextStep?.text}
+												<span className="intake-list__action-primary intake-list__action-primary--muted">
+													{primaryAction?.text}
 												</span>
 											)}
-										</td>
-										<td className="intake-list__actions">
 											<a
 												href={`/dashboard/invitaciones/${project.id}`}
-												className="intake-list__link"
+												className="intake-list__action-secondary"
 											>
 												Ver detalle
 											</a>
-											{publicUrl && (
-												<a
-													href={publicUrl}
-													className="intake-list__link"
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													Ver pública
-												</a>
-											)}
 										</td>
 									</tr>
 								);

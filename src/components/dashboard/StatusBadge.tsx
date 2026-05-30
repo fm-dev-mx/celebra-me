@@ -1,18 +1,8 @@
 import type { FC } from 'react';
+import type { StatusBadgeVariant } from '@/lib/intake/display-status';
 
 interface Props {
-	variant:
-		| 'draft'
-		| 'published'
-		| 'archived'
-		| 'active'
-		| 'waiting'
-		| 'submitted'
-		| 'review'
-		| 'production'
-		| 'preview'
-		| 'approved'
-		| 'generic';
+	variant: StatusBadgeVariant;
 	label: string;
 }
 
@@ -27,6 +17,7 @@ const VARIANT_MAP: Record<Props['variant'], string> = {
 	production: 'dashboard-badge--generated',
 	preview: 'dashboard-badge--generated',
 	approved: 'dashboard-badge--active',
+	inconsistent: 'dashboard-badge--inconsistent',
 	generic: '',
 };
 
