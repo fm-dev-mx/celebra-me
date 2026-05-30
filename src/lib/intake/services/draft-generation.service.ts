@@ -1,5 +1,5 @@
 import type { InvitationContentDraft } from '@/lib/intake/types';
-import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
 import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
@@ -39,7 +39,7 @@ function deepMerge(
 }
 
 export async function generateDraft(projectId: string): Promise<InvitationContentDraft> {
-	const project = await getInvitationProjectById(projectId);
+	const project = await findInvitationProjectById(projectId);
 	if (!project) {
 		throw new ApiError(404, 'not_found', 'Invitation project not found.');
 	}

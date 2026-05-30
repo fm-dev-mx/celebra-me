@@ -8,9 +8,9 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
-jest.mock('@/lib/intake/services/invitation-project.service', () => ({
-	getInvitationProjectById: jest.fn(),
-	updateProject: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
+	findInvitationProjectById: jest.fn(),
+	updateInvitationProject: jest.fn(),
 }));
 
 jest.mock('astro:content', () => ({
@@ -32,9 +32,9 @@ import {
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
-	getInvitationProjectById,
-	updateProject,
-} from '@/lib/intake/services/invitation-project.service';
+	findInvitationProjectById,
+	updateInvitationProject,
+} from '@/lib/intake/repositories/invitation-project.repository';
 import {
 	findEventBySlugService,
 	createEventService,
@@ -42,10 +42,12 @@ import {
 } from '@/lib/rsvp/repositories/event.repository';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 
-const mockGetProject = getInvitationProjectById as jest.MockedFunction<
-	typeof getInvitationProjectById
+const mockGetProject = findInvitationProjectById as jest.MockedFunction<
+	typeof findInvitationProjectById
 >;
-const mockUpdateProject = updateProject as jest.MockedFunction<typeof updateProject>;
+const mockUpdateProject = updateInvitationProject as jest.MockedFunction<
+	typeof updateInvitationProject
+>;
 const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
 const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<

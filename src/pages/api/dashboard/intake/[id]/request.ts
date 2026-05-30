@@ -6,9 +6,9 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
-	getInvitationProjectById,
-	updateProject,
-} from '@/lib/intake/services/invitation-project.service';
+	findInvitationProjectById,
+	updateInvitationProject,
+} from '@/lib/intake/repositories/invitation-project.repository';
 import {
 	getIntakeRequestsByProjectId,
 	createRequest,
@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
 
-		const project = await getInvitationProjectById(id);
+		const project = await findInvitationProjectById(id);
 		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
 
 		const parsed = await validateBodyOrRespond(request, CreateIntakeRequestSchema);
@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		});
 
 		if (project.status === 'draft') {
-			await updateProject(id, { status: 'waiting_for_client' });
+			await updateInvitationProject(id, { status: 'waiting_for_client' });
 		}
 
 		return jsonResponse(

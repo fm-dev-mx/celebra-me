@@ -8,9 +8,9 @@ import {
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
-	getInvitationProjectById,
-	updateProject,
-} from '@/lib/intake/services/invitation-project.service';
+	findInvitationProjectById,
+	updateInvitationProject,
+} from '@/lib/intake/repositories/invitation-project.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import {
 	findEventBySlugService,
@@ -41,7 +41,7 @@ export interface PublishResult {
 }
 
 export async function publishDraft(projectId: string): Promise<PublishResult> {
-	const project = await getInvitationProjectById(projectId);
+	const project = await findInvitationProjectById(projectId);
 	if (!project) {
 		throw new ApiError(404, 'not_found', 'Invitation project not found.');
 	}
@@ -146,7 +146,7 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		content: publishedContent,
 	});
 
-	await updateProject(projectId, { status: 'published' });
+	await updateInvitationProject(projectId, { status: 'published' });
 
 	const updatedDraft = await updateDraftStatus(draft.id, 'approved');
 

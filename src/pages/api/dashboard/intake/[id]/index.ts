@@ -7,9 +7,9 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
-	getInvitationProjectById,
-	updateProject,
-} from '@/lib/intake/services/invitation-project.service';
+	findInvitationProjectById,
+	updateInvitationProject,
+} from '@/lib/intake/repositories/invitation-project.repository';
 import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import { UpdateInvitationProjectSchema } from '@/lib/intake/schemas/invitation-project.schema';
@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
 
-		const project = await getInvitationProjectById(id);
+		const project = await findInvitationProjectById(id);
 		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
 
 		const requests = await getIntakeRequestsByProjectId(id);
@@ -100,7 +100,7 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		const parsed = await validateBodyOrRespond(request, UpdateInvitationProjectSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const project = await updateProject(id, parsed);
+		const project = await updateInvitationProject(id, parsed);
 
 		return jsonResponse({ item: toInvitationProjectDTO(project) });
 	} catch (error) {

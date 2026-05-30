@@ -1,6 +1,6 @@
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 import { listAdminUsers } from '@/lib/rsvp/services/user-admin.service';
-import { getAllInvitationProjects } from '@/lib/intake/services/invitation-project.service';
+import { listInvitationProjects } from '@/lib/intake/repositories/invitation-project.repository';
 
 export interface DashboardAdminPageData {
 	stats: {
@@ -13,7 +13,7 @@ export interface DashboardAdminPageData {
 
 export async function prepareDashboardAdminPageData(): Promise<DashboardAdminPageData> {
 	const [projects, users, claimCodes] = await Promise.all([
-		getAllInvitationProjects(),
+		listInvitationProjects(),
 		listAdminUsers(),
 		listClaimCodesAdmin({}),
 	]);

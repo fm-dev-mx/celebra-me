@@ -1,5 +1,5 @@
-jest.mock('@/lib/intake/services/invitation-project.service', () => ({
-	getInvitationProjectById: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
+	findInvitationProjectById: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/services/intake-request.service', () => ({
@@ -26,7 +26,7 @@ import type {
 	InvitationContentDraft,
 } from '@/lib/intake/types';
 import { generateDraft, getDraft } from '@/lib/intake/services/draft-generation.service';
-import { getInvitationProjectById } from '@/lib/intake/services/invitation-project.service';
+import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
 import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
@@ -35,8 +35,8 @@ import {
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
-const mockGetProject = getInvitationProjectById as jest.MockedFunction<
-	typeof getInvitationProjectById
+const mockGetProject = findInvitationProjectById as jest.MockedFunction<
+	typeof findInvitationProjectById
 >;
 const mockGetRequests = getIntakeRequestsByProjectId as jest.MockedFunction<
 	typeof getIntakeRequestsByProjectId
