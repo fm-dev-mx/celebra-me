@@ -3,6 +3,7 @@ import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security/csrf';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
@@ -12,6 +13,7 @@ import {
 import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import { UpdateInvitationProjectSchema } from '@/lib/intake/schemas/invitation-project.schema';
+import { findEventByProjectIdService } from '@/lib/rsvp/repositories/event.repository';
 import {
 	toInvitationProjectDTO,
 	toIntakeRequestDTO,
@@ -38,10 +40,44 @@ export const GET: APIRoute = async ({ request, params }) => {
 			if (sub) submission = toIntakeSubmissionDTO(sub);
 		}
 
+		// Look up associated RSVP event by invitation_project_id
+		const event = await findEventByProjectIdService(id);
+		let rsvpEvent = null;
+		if (event) {
+			const eventId = event.id;
+			const [guestRows, claimRows] = await Promise.all([
+				supabaseRestRequest<Array<{ attendance_status: string }>>({
+					pathWithQuery: `guest_invitations?select=attendance_status&event_id=eq.${encodeURIComponent(eventId)}&deleted_at=is.null`,
+					useServiceRole: true,
+				}),
+				supabaseRestRequest<Array<{ id: string }>>({
+					pathWithQuery: `event_claim_codes?select=id&event_id=eq.${encodeURIComponent(eventId)}&deleted_at=is.null`,
+					useServiceRole: true,
+				}),
+			]);
+
+			const guests = Array.isArray(guestRows) ? guestRows : [];
+			const claimCodes = Array.isArray(claimRows) ? claimRows : [];
+
+			rsvpEvent = {
+				id: event.id,
+				slug: event.slug,
+				eventType: event.eventType,
+				title: event.title,
+				status: event.status,
+				guestCount: guests.length,
+				confirmedCount: guests.filter((g) => g.attendance_status === 'confirmed').length,
+				declinedCount: guests.filter((g) => g.attendance_status === 'declined').length,
+				pendingCount: guests.filter((g) => g.attendance_status === 'pending').length,
+				claimCodeCount: claimCodes.length,
+			};
+		}
+
 		return jsonResponse({
 			item: toInvitationProjectDTO(project),
 			request: activeRequest ? toIntakeRequestDTO(activeRequest) : null,
 			submission,
+			rsvpEvent,
 		});
 	} catch (error) {
 		return errorResponse(error);

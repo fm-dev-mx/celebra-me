@@ -77,10 +77,24 @@ export interface IntakeSubmissionDTO {
 	updatedAt: string;
 }
 
+export interface RsvpEventDTO {
+	id: string;
+	slug: string;
+	eventType: string;
+	title: string;
+	status: string;
+	guestCount: number;
+	confirmedCount: number;
+	declinedCount: number;
+	pendingCount: number;
+	claimCodeCount: number;
+}
+
 export interface InvitationProjectDetailResponse {
 	item: InvitationProjectDTO;
 	request: IntakeRequestDTO | null;
 	submission: IntakeSubmissionDTO | null;
+	rsvpEvent: RsvpEventDTO | null;
 }
 
 export interface ReviewActionDTO {
