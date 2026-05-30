@@ -4,8 +4,9 @@ import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import BlockSelector from '@/components/dashboard/intake/BlockSelector';
 import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
-import type { IntakeBlockType } from '@/lib/intake/types';
-import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
+import type { IntakeBlockType, IntakeSubmissionStatus } from '@/lib/intake/types';
+import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
+import { PROJECT_STATUS_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 
 interface Props {
@@ -66,7 +67,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 	};
 
 	const handleRegenerate = async () => {
-		if (!window.confirm('Esto invalidara el enlace anterior. Continuar?')) return;
+		if (!window.confirm('Esto invalidará el enlace anterior. ¿Continuar?')) return;
 
 		setRegenerating(true);
 		setActionError('');
@@ -133,7 +134,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			</header>
 
 			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Informacion del cliente</h3>
+				<h3 className="intake-detail__section-title">Información del cliente</h3>
 				<dl className="intake-detail__info">
 					<div className="intake-detail__info-row">
 						<dt>Cliente</dt>
@@ -155,7 +156,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 								className="intake-detail__toggle"
 								onClick={handleTogglePhotos}
 							>
-								{currentProject.photosReceived ? 'Si' : 'No'}
+								{currentProject.photosReceived ? 'Sí' : 'No'}
 							</button>
 						</dd>
 					</div>
@@ -193,24 +194,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			</section>
 
 			{currentSubmission && (
-				<section className="intake-detail__section">
-					<h3 className="intake-detail__section-title">Captura del cliente</h3>
-					<div className="intake-detail__submission-info">
-						<span>Estado: {currentSubmission.status}</span>
-						{currentSubmission.submittedAt && (
-							<span>
-								Enviada:{' '}
-								{new Date(currentSubmission.submittedAt).toLocaleString('es-MX')}
-							</span>
-						)}
-					</div>
-					<a
-						href={`/dashboard/invitaciones/${projectId}/review`}
-						className="intake-detail__review-link"
-					>
-						Revisar captura
-					</a>
-				</section>
+				<SubmissionSection projectId={projectId} submission={currentSubmission} />
 			)}
 
 			{currentSubmission?.status === 'approved' && <DraftSection projectId={projectId} />}
@@ -218,6 +202,40 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}
 		</div>
+	);
+};
+
+interface SubmissionSectionProps {
+	projectId: string;
+	submission: IntakeSubmissionDTO;
+}
+
+const SubmissionSection: FC<SubmissionSectionProps> = ({ projectId, submission }) => {
+	const status = submission.status as IntakeSubmissionStatus;
+	const showReview = status === 'submitted' || status === 'needs_changes';
+	return (
+		<section className="intake-detail__section">
+			<h3 className="intake-detail__section-title">Captura del cliente</h3>
+			<div className="intake-detail__submission-info">
+				<span>Estado: {SUBMISSION_STATUS_LABELS[status] ?? status}</span>
+				{submission.submittedAt && (
+					<span>Enviada: {new Date(submission.submittedAt).toLocaleString('es-MX')}</span>
+				)}
+			</div>
+			{status === 'in_progress' && (
+				<p className="intake-detail__submission-hint">
+					El cliente ha comenzado pero aún no ha enviado la captura.
+				</p>
+			)}
+			{showReview && (
+				<a
+					href={`/dashboard/invitaciones/${projectId}/review`}
+					className="intake-detail__review-link"
+				>
+					Revisar captura
+				</a>
+			)}
+		</section>
 	);
 };
 
