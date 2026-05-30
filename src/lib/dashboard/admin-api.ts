@@ -1,10 +1,5 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
-import type {
-	CreateEventDTO,
-	UpdateEventDTO,
-	EventListItemDTO,
-	EventsListResponse,
-} from './dto/events';
+import type { EventListItemDTO } from './dto/events';
 import type {
 	UsersListResponse,
 	CreateUserDTO,
@@ -41,36 +36,12 @@ export class AdminApi {
 		return result.data;
 	}
 
-	// Events
-	async listEvents(page = 1, perPage = 50): Promise<EventsListResponse> {
-		const result = await dashboardApi.get<EventsListResponse>(
+	// Events (read-only, for user-event membership)
+	async listEvents(page = 1, perPage = 50): Promise<{ items: EventListItemDTO[] }> {
+		const result = await dashboardApi.get<{ items: EventListItemDTO[] }>(
 			`/api/dashboard/admin/events?page=${page}&perPage=${perPage}`,
 		);
 		return this.handleResponse(result);
-	}
-
-	async createEvent(payload: CreateEventDTO): Promise<EventListItemDTO> {
-		const result = await dashboardApi.post<{ item: EventListItemDTO }>(
-			'/api/dashboard/admin/events',
-			payload,
-		);
-		return this.handleResponse(result).item;
-	}
-
-	async updateEvent(eventId: string, payload: UpdateEventDTO): Promise<EventListItemDTO> {
-		const result = await dashboardApi.patch<{ item: EventListItemDTO }>(
-			`/api/dashboard/admin/events/${encodeURIComponent(eventId)}`,
-			payload,
-		);
-		return this.handleResponse(result).item;
-	}
-
-	async archiveEvent(eventId: string): Promise<EventListItemDTO> {
-		return this.updateEvent(eventId, { status: 'archived' });
-	}
-
-	async publishEvent(eventId: string): Promise<EventListItemDTO> {
-		return this.updateEvent(eventId, { status: 'published' });
 	}
 
 	// Users
@@ -191,7 +162,6 @@ export class AdminApi {
 		return this.handleResponse(result).item;
 	}
 
-	// Intake — Requests
 	async createIntakeRequest(
 		projectId: string,
 		payload: CreateIntakeRequestDTO,
