@@ -10,6 +10,16 @@ script documentation for governance-sensitive tooling.
 `package.json` owns the public script alias (`"ops": "node scripts/cli.mjs"`). `scripts/cli.mjs`
 owns the command inventory.
 
+## Dev Scripts
+
+| Command                                | Purpose                                                |
+| -------------------------------------- | ------------------------------------------------------ |
+| `node scripts/dev/seed-invitation.mjs` | Create a mock invitation project with placeholder data |
+
+> **Note:** Dev scripts are not exposed through `pnpm ops` — run them directly with `node`. They
+> require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`. All data generated is
+> synthetic placeholder data; no real client PII should be hardcoded.
+
 ## Available Ops Commands
 
 | Command                          | Canonical Script                    | Purpose                                                                                                                 |
