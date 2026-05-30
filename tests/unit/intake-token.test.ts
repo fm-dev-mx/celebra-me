@@ -1,10 +1,14 @@
 import {
+	decryptIntakeToken,
+	encryptIntakeToken,
 	generateIntakeToken,
 	hashIntakeToken,
 	isValidTokenFormat,
 } from '@/lib/intake/services/intake-token.service';
 
 describe('intake token service', () => {
+	const encryptionKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
 	describe('generateIntakeToken', () => {
 		it('generates a URL-safe base64 token', () => {
 			const token = generateIntakeToken();
@@ -116,6 +120,33 @@ describe('intake token service', () => {
 			const hash2 = hashIntakeToken(token2);
 
 			expect(hash1).not.toBe(hash2);
+		});
+	});
+
+	describe('token encryption', () => {
+		it('encrypts and decrypts a token with AES-GCM', () => {
+			const token = generateIntakeToken();
+			const ciphertext = encryptIntakeToken(token, encryptionKey);
+
+			expect(ciphertext).toMatch(/^v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+			expect(ciphertext).not.toContain(token);
+			expect(decryptIntakeToken(ciphertext, encryptionKey)).toBe(token);
+		});
+
+		it('returns null when decryption uses the wrong key', () => {
+			const ciphertext = encryptIntakeToken(generateIntakeToken(), encryptionKey);
+			const wrongKey = 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
+
+			expect(decryptIntakeToken(ciphertext, wrongKey)).toBeNull();
+		});
+
+		it('rejects missing or malformed encryption keys', () => {
+			expect(() => encryptIntakeToken('token', '')).toThrow(
+				'INTAKE_TOKEN_ENCRYPTION_KEY must be a 32-byte hex or base64url value.',
+			);
+			expect(() => encryptIntakeToken('token', 'short')).toThrow(
+				'INTAKE_TOKEN_ENCRYPTION_KEY must be a 32-byte hex or base64url value.',
+			);
 		});
 	});
 });

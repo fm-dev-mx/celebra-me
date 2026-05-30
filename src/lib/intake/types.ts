@@ -1,6 +1,8 @@
 import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-registry';
 
+export type CaptureLinkStatus = 'active' | 'expired' | 'missing' | 'revoked' | 'unavailable';
+
 export const INTAKE_BLOCK_TYPES = [
 	'event-details',
 	'main-people',
@@ -81,6 +83,7 @@ export interface IntakeRequest {
 	id: string;
 	invitationProjectId: string;
 	tokenHash: string;
+	tokenCiphertext: string | null;
 	status: IntakeRequestStatus;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;

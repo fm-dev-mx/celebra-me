@@ -24,6 +24,7 @@ interface ImportMetaEnv {
 	readonly SUPER_ADMIN_EMAILS: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
 	readonly BASE_URL: string;
+	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
 }
