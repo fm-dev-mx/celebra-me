@@ -11,6 +11,7 @@ import {
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
+import { getBlockTypesForEventType } from '@/lib/intake/blocks';
 
 async function findOrCreateInternalRequest(
 	projectId: string,
@@ -54,10 +55,12 @@ export async function ensureInternalEditContext(projectId: string) {
 		? await findSubmissionByRequestId(clientRequest.id)
 		: null;
 
-	const request = await findOrCreateInternalRequest(
-		projectId,
-		clientRequest?.enabledBlocks ?? project.snapshot.recommendedBlocks,
-	);
+	let enabledBlocks = clientRequest?.enabledBlocks ?? project.snapshot.recommendedBlocks;
+	if (!enabledBlocks || enabledBlocks.length === 0) {
+		enabledBlocks = getBlockTypesForEventType(project.eventType);
+	}
+
+	const request = await findOrCreateInternalRequest(projectId, enabledBlocks);
 	const submission = await findOrCreateSubmission(request.id, clientSubmission?.blockData ?? {});
 
 	return { project, request, submission };
