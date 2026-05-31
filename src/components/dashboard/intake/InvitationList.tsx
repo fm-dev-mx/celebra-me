@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import DemoSelector from '@/components/dashboard/intake/DemoSelector';
 import StatusBadge from '@/components/dashboard/StatusBadge';
@@ -50,11 +50,14 @@ const FILTER_TABS: Array<{
 ];
 
 const InvitationList: FC = () => {
-	const { items, loading, error, createProject } = useInvitationAdmin();
+	const { items, loading, error, createProject, softDeleteProject, restoreProject } =
+		useInvitationAdmin();
 	const [showForm, setShowForm] = useState(false);
 	const [creating, setCreating] = useState(false);
 	const [formError, setFormError] = useState('');
 	const [activeTab, setActiveTab] = useState<FilterTab>('all');
+	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+	const [deleteError, setDeleteError] = useState('');
 
 	const [title, setTitle] = useState('');
 	const [clientName, setClientName] = useState('');
@@ -116,6 +119,31 @@ const InvitationList: FC = () => {
 			setCreating(false);
 		}
 	};
+
+	const handleDelete = useCallback(
+		async (projectId: string) => {
+			setDeleteError('');
+			try {
+				await softDeleteProject(projectId);
+				setConfirmDeleteId(null);
+			} catch (err) {
+				setDeleteError(toErrorMessage(err, 'Error al eliminar el proyecto.'));
+			}
+		},
+		[softDeleteProject],
+	);
+
+	const handleRestore = useCallback(
+		async (projectId: string) => {
+			setDeleteError('');
+			try {
+				await restoreProject(projectId);
+			} catch (err) {
+				setDeleteError(toErrorMessage(err, 'Error al restaurar el proyecto.'));
+			}
+		},
+		[restoreProject],
+	);
 
 	return (
 		<div className="intake-list">
@@ -236,6 +264,7 @@ const InvitationList: FC = () => {
 			)}
 
 			{error && <p className="intake-list__error">{error}</p>}
+			{deleteError && <p className="intake-list__error">{deleteError}</p>}
 
 			<nav className="intake-list__tabs">
 				{FILTER_TABS.map((tab) => (
@@ -346,6 +375,41 @@ const InvitationList: FC = () => {
 											>
 												Administrar proyecto
 											</a>
+											{project.status === 'archived' ? (
+												<button
+													type="button"
+													className="intake-list__action-warning"
+													onClick={() => handleRestore(project.id)}
+												>
+													Restaurar
+												</button>
+											) : confirmDeleteId === project.id ? (
+												<span className="intake-list__confirm-delete">
+													<span>¿Eliminar?</span>
+													<button
+														type="button"
+														className="intake-list__action-danger"
+														onClick={() => handleDelete(project.id)}
+													>
+														Sí
+													</button>
+													<button
+														type="button"
+														className="intake-list__action-secondary"
+														onClick={() => setConfirmDeleteId(null)}
+													>
+														No
+													</button>
+												</span>
+											) : (
+												<button
+													type="button"
+													className="intake-list__action-danger"
+													onClick={() => setConfirmDeleteId(project.id)}
+												>
+													Eliminar
+												</button>
+											)}
 										</td>
 									</tr>
 								);

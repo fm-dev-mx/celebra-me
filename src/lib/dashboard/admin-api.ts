@@ -261,6 +261,23 @@ export class AdminApi {
 		);
 		return this.handleResponse(result);
 	}
+
+	// Delete / Restore
+	async softDeleteProject(projectId: string): Promise<{ success: boolean }> {
+		const result = await dashboardApi.post<{ success: boolean }>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/delete`,
+			{ action: 'soft_delete' },
+		);
+		return this.handleResponse(result);
+	}
+
+	async restoreProject(projectId: string): Promise<{ success: boolean }> {
+		const result = await dashboardApi.post<{ success: boolean }>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/delete`,
+			{ action: 'restore' },
+		);
+		return this.handleResponse(result);
+	}
 }
 
 export const adminApi = new AdminApi();

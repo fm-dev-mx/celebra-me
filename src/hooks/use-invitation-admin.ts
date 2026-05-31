@@ -245,6 +245,22 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
+	const softDeleteProject = useCallback(
+		async (projectId: string) => {
+			await adminApi.softDeleteProject(projectId);
+			await loadProjects();
+		},
+		[loadProjects],
+	);
+
+	const restoreProject = useCallback(
+		async (projectId: string) => {
+			await adminApi.restoreProject(projectId);
+			await loadProjects();
+		},
+		[loadProjects],
+	);
+
 	return {
 		items,
 		error,
@@ -271,5 +287,7 @@ export function useInvitationAdmin() {
 		publishDraft: publishDraftAction,
 		createDraftRevision,
 		reloadProjects: loadProjects,
+		softDeleteProject,
+		restoreProject,
 	};
 }
