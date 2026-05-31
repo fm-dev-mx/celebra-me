@@ -79,8 +79,18 @@ astro/types.d.ts
 
 
 # --- AI AGENTS & TOOLING ------------------------------------------------------
-# Local-only agent state and configuration
+# Versioned agent contract — local-only state is ignored
 .agent/
+!.agent/
+!.agent/**
+.agent/local/
+.agent/tmp/
+.agent/cache/
+.agent/plans/tmp/
+.agent/plans/drafts/
+.agent/plans/local/
+
+# Other local/provider-specific agent state
 _agent/
 .agents/
 _agents/
@@ -124,4 +134,4 @@ docs/implementation-log.md
 # ==============================================================================
 # End of Git Ignore Configuration
 # ==============================================================================
-.vercel
+

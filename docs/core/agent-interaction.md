@@ -19,10 +19,9 @@ A high-quality prompt reduces cycles and prevents "hallucinations". Use this str
 
 ## 2) Planning First
 
-Before executing any complex task, ensure you have an active plan under `.agent/plans/`. If you are
-starting a new feature, work with the agent to create a new plan directory (e.g.,
-`.agent/plans/<plan-id>/`) containing a `README.md`, `manifest.json`, and any necessary `phases/` or
-`CHANGELOG.md` files.
+Before executing any complex task, ensure you have an active plan under `.agent/plans/`. See
+`.agent/plans/README.md` for the current plan governance and frontmatter requirements. Plans live as
+single Markdown files under `.agent/plans/active/`.
 
 ---
 
