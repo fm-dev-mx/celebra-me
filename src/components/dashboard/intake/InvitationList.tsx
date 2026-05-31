@@ -163,13 +163,13 @@ const InvitationList: FC = () => {
 					className="intake-list__create-btn"
 					onClick={() => setShowForm(!showForm)}
 				>
-					{showForm ? 'Cancelar' : 'Nueva invitación'}
+					{showForm ? 'Cancelar' : 'Crear proyecto de invitación'}
 				</button>
 			</header>
 
 			{showForm && (
 				<div className="intake-list__form">
-					<h3 className="intake-list__form-title">Crear nueva invitación</h3>
+					<h3 className="intake-list__form-title">Crear nuevo proyecto</h3>
 
 					<div className="intake-field">
 						<label className="intake-field__label" htmlFor="title">
@@ -296,7 +296,7 @@ const InvitationList: FC = () => {
 					<table className="intake-list__table">
 						<thead>
 							<tr>
-								<th>Invitación</th>
+								<th>Proyecto</th>
 								<th>Cliente</th>
 								<th>Tipo</th>
 								<th>Estado</th>
