@@ -1,7 +1,15 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import { str, bool, num } from '@/lib/intake/utils';
+import { str, strFallback, bool, num } from '@/lib/intake/utils';
+
+export function normalizeDate(date: unknown): string {
+	const raw = strFallback(date);
+	if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+		return `${raw}T00:00:00.000Z`;
+	}
+	return raw;
+}
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -12,7 +20,7 @@ function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 			secondaryName: str(data.secondaryName),
 			label: str(data.eventLabel),
 			nickname: str(data.nickname),
-			date: str(data.eventDate),
+			date: normalizeDate(data.eventDate),
 		},
 	};
 }
@@ -43,7 +51,7 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 						venueName: str(ceremony.venueName),
 						address: str(ceremony.address),
 						city: str(ceremony.city),
-						date: str(ceremony.date),
+						date: normalizeDate(ceremony.date),
 						time: str(ceremony.time),
 						mapUrl: str(ceremony.mapUrl),
 					}
@@ -53,7 +61,7 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 						venueName: str(reception.venueName),
 						address: str(reception.address),
 						city: str(reception.city),
-						date: str(reception.date),
+						date: normalizeDate(reception.date),
 						time: str(reception.time),
 						mapUrl: str(reception.mapUrl),
 					}

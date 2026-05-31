@@ -18,7 +18,14 @@ export const eventDetailsBlockSchema = z.object({
 	celebrantName: z.string().min(1, 'El nombre del festejado es obligatorio.').max(200).trim(),
 	secondaryName: optionalString,
 	eventLabel: z.string().min(1, 'El título del evento es obligatorio.').max(200).trim(),
-	eventDate: z.iso.datetime('La fecha del evento es obligatoria.'),
+	eventDate: z
+		.string()
+		.min(1, 'La fecha del evento es obligatoria.')
+		.refine(
+			(val) =>
+				/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(val),
+			'La fecha del evento no es válida.',
+		),
 	eventTitle: z.string().min(1, 'El título de la invitación es obligatorio.').max(200).trim(),
 	description: optionalString,
 	nickname: optionalString,
