@@ -8,13 +8,13 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 
 jest.mock('@/lib/adapters/event', () => ({
 	adaptEvent: jest.fn(() => ({
-		id: 'ana-sofia',
-		isDemo: false,
-		title: 'Static Event',
+		id: 'demo-xv',
+		isDemo: true,
+		title: 'Demo Event',
 		theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
 		hero: {
-			name: 'Ana',
-			label: 'XV',
+			name: 'Lucia',
+			label: 'Demo',
 			date: '2027-01-01',
 			backgroundImage: { src: '/img.jpg' },
 		},
@@ -67,14 +67,12 @@ import {
 } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
 const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
 	typeof findPublishedBySlugAndEventType
 >;
-const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
 
 beforeEach(() => {
@@ -113,15 +111,33 @@ describe('published route POC', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 	});
 
-	it('resolver uses static content when available', async () => {
+	it('resolver uses DB content even when static content exists', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'ana-sofia',
+			eventType: 'xv',
+			isDemo: false,
+			content: { eventType: 'xv', title: 'DB Event' },
+		} as any);
 		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia', data: {} } as any);
 
 		const result = await resolveInvitationContent('ana-sofia', 'xv');
 
 		expect(result).not.toBeNull();
+		expect(result!.source).toBe('published');
+		expect(result!.viewModel.title).toBe('Published Event');
+	});
+
+	it('resolver uses static content only for demos when DB is empty', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/demo-xv',
+			data: { isDemo: true },
+		} as any);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
+
+		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');
-		expect(result!.viewModel.title).toBe('Static Event');
-		expect(mockAdaptEvent).toHaveBeenCalled();
 	});
 
 	it('published content produces complete InvitationViewModel', async () => {
@@ -184,11 +200,14 @@ describe('published route POC', () => {
 		expect(result).toBeNull();
 	});
 
-	it('static fallback works when published content is missing', async () => {
-		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia', data: {} } as any);
+	it('static fallback works for demos when published content is missing', async () => {
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
 
-		const result = await resolveInvitationContent('ana-sofia', 'xv');
+		const result = await resolveInvitationContent('demo-xv', 'xv');
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');

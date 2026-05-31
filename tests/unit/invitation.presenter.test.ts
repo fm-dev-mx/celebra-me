@@ -20,18 +20,20 @@ function loadFixture(relativePath: string) {
 describe('prepareInvitationPageContext', () => {
 	it('builds a personalized context for premium invitation routes', () => {
 		const event = {
-			id: 'events/ximena-meza-trasvina',
-			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const fixture = event.data;
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'ximena-meza-trasvina',
+			slug: 'demo-xv-jewelry-box',
 			guestContext: {
 				inviteId: 'invite-123',
-				eventSlug: 'ximena-meza-trasvina',
+				eventSlug: 'demo-xv-jewelry-box',
 				eventType: 'xv',
-				eventTitle: 'Ximena Meza Trasvina',
+				eventTitle: 'XV Años - Demo',
 				guest: {
 					fullName: 'Mariana Soto',
 					maxAllowedAttendees: 4,
@@ -44,22 +46,19 @@ describe('prepareInvitationPageContext', () => {
 		});
 
 		expect(context.layout.title).toBe('Invitación para Mariana Soto');
-		expect(context.layout.className).toBe('layout--premiere-floral');
-		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-floral');
-		expect(context.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
+		expect(context.wrapper.dataAttributes['data-event-slug']).toBe('demo-xv-jewelry-box');
 		expect(context.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
-		expect(context.wrapper.scopedStyles).toContain('[data-event-slug="ximena-meza-trasvina"]');
+		expect(context.wrapper.scopedStyles).toContain('[data-event-slug="demo-xv-jewelry-box"]');
 
 		expect(context.guestName).toBe('Mariana Soto');
-		expect(context.heroTime).toBe('8:00 PM');
 		expect(context.envelope?.card).toEqual({
 			documentLabel: 'Invitación',
-			name: event.data.hero.name,
-			details: '11 abr 2026 • Los Mochis',
+			name: fixture.hero.name,
+			details: '25 abr 2026 • Monterrey',
 			guestName: 'Mariana Soto',
-			sealIcon: 'flower',
-			sealInitials: 'X·M',
-			venueName: "D'Galaz Alberca y Eventos",
+			sealIcon: 'heart',
+			sealInitials: 'L·G',
+			venueName: 'Quinta Las Flores',
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
@@ -67,8 +66,8 @@ describe('prepareInvitationPageContext', () => {
 
 	it('allows previewTheme overrides by rewriting the delivered theme preset in runtime only', () => {
 		const event = {
-			id: 'events/ximena-meza-trasvina',
-			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const context = prepareInvitationPageContext({

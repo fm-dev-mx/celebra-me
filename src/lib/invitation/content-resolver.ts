@@ -12,12 +12,7 @@ export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
 ): Promise<ContentResolution | null> {
-	const staticEntry = await getRoutableEventEntry(slug, eventType);
-	if (staticEntry) {
-		const viewModel = adaptEvent(staticEntry);
-		return { source: 'static', viewModel };
-	}
-
+	// DB-published content first — this is the source of truth for real invitations
 	if (eventType) {
 		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 		if (publishedEntry) {
@@ -33,6 +28,17 @@ export async function resolveInvitationContent(
 			});
 			return { source: 'published', viewModel, rawContent };
 		}
+	}
+
+	// Static fallback — only for demos and legacy entries (must have isDemo: true)
+	const staticEntry = await getRoutableEventEntry(slug, eventType);
+	if (staticEntry?.data && 'isDemo' in staticEntry.data) {
+		if (staticEntry.data.isDemo === true) {
+			const viewModel = adaptEvent(staticEntry);
+			return { source: 'static', viewModel };
+		}
+		// Non-demo static entries are blocked — real client data must come from DB
+		return null;
 	}
 
 	return null;

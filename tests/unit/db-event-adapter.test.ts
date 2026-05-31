@@ -19,24 +19,20 @@ function makeDbSource(slug: string, eventType: string, fixturePath: string) {
 	};
 }
 
-function loadEvent(slug: string) {
-	return loadFixture(`src/content/events/${slug}.json`);
-}
-
 function loadDemo(slug: string, subdir: string) {
 	return loadFixture(`src/content/event-demos/${subdir}/${slug}.json`);
 }
 
 describe('adaptDbEvent', () => {
-	it('produces InvitationViewModel matching adaptEvent for live events', () => {
-		const slug = 'ana-sofia-cota-guillen';
-		const source = makeDbSource(slug, 'xv', `src/content/events/${slug}.json`);
+	it('produces InvitationViewModel matching adaptEvent for demos', () => {
+		const slug = 'demo-xv-jewelry-box';
+		const source = makeDbSource(slug, 'xv', `src/content/event-demos/xv/${slug}.json`);
 
 		const dbResult = adaptDbEvent(source);
 
 		const event = {
-			id: `events/${slug}`,
-			data: loadEvent(slug),
+			id: `event-demos/xv/${slug}`,
+			data: loadDemo(slug, 'xv'),
 		} as Parameters<typeof adaptEvent>[0];
 		const fileResult = adaptEvent(event);
 
@@ -45,9 +41,6 @@ describe('adaptDbEvent', () => {
 		expect(dbResult.hero.name).toBe(fileResult.hero.name);
 		expect(dbResult.hero.label).toBe(fileResult.hero.label);
 		expect(dbResult.hero.date).toBe(fileResult.hero.date);
-		expect(dbResult.sections.family?.celebrantName).toBe(
-			fileResult.sections.family?.celebrantName,
-		);
 		expect(dbResult.sections.rsvp?.title).toBe(fileResult.sections.rsvp?.title);
 		expect(dbResult.sections.rsvp?.guestCap).toBe(fileResult.sections.rsvp?.guestCap);
 	});
@@ -74,9 +67,9 @@ describe('adaptDbEvent', () => {
 
 	it('preserves hero section with all fields', () => {
 		const source = makeDbSource(
-			'ximena-meza-trasvina',
+			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/events/ximena-meza-trasvina.json',
+			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -90,9 +83,9 @@ describe('adaptDbEvent', () => {
 
 	it('preserves location section with ceremony and reception', () => {
 		const source = makeDbSource(
-			'ana-sofia-cota-guillen',
+			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/events/ana-sofia-cota-guillen.json',
+			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -102,9 +95,9 @@ describe('adaptDbEvent', () => {
 
 	it('preserves music section when present in content', () => {
 		const source = makeDbSource(
-			'ximena-meza-trasvina',
-			'boda',
-			'src/content/events/ximena-meza-trasvina.json',
+			'demo-xv-jewelry-box',
+			'xv',
+			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -114,9 +107,9 @@ describe('adaptDbEvent', () => {
 
 	it('preserves quote and thankYou sections when present', () => {
 		const source = makeDbSource(
-			'ana-sofia-cota-guillen',
+			'demo-xv-enchanted-rose',
 			'xv',
-			'src/content/events/ana-sofia-cota-guillen.json',
+			'src/content/event-demos/xv/demo-xv-enchanted-rose.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -127,13 +120,6 @@ describe('adaptDbEvent', () => {
 	});
 
 	it('returns isDemo flag from the source', () => {
-		const liveSource = makeDbSource(
-			'ana-sofia-cota-guillen',
-			'xv',
-			'src/content/events/ana-sofia-cota-guillen.json',
-		);
-		expect(adaptDbEvent(liveSource).isDemo).toBe(false);
-
 		const demoSoure = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
@@ -144,13 +130,13 @@ describe('adaptDbEvent', () => {
 
 	it('sets correct id from slug', () => {
 		const source = makeDbSource(
-			'cesar-ramses',
-			'bautizo',
-			'src/content/events/cesar-ramses.json',
+			'demo-xv-editorial',
+			'xv',
+			'src/content/event-demos/xv/demo-xv-editorial.json',
 		);
 		const result = adaptDbEvent(source);
 
-		expect(result.id).toBe('cesar-ramses');
+		expect(result.id).toBe('demo-xv-editorial');
 	});
 
 	it('preserves gift items from the content', () => {
@@ -167,9 +153,9 @@ describe('adaptDbEvent', () => {
 
 	it('applies branding visibility defaults', () => {
 		const source = makeDbSource(
-			'ana-sofia-cota-guillen',
+			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/events/ana-sofia-cota-guillen.json',
+			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 

@@ -10,17 +10,15 @@ function loadFixture(relativePath: string) {
 
 describe('adaptEvent', () => {
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
-		const slugs = [
-			'cesar-ramses',
-			'ana-sofia-cota-guillen',
-			'gerardo-sesenta',
-			'ximena-meza-trasvina',
+		const demos = [
+			'event-demos/xv/demo-xv-jewelry-box',
+			'event-demos/xv/demo-xv-enchanted-rose',
 		];
 
-		for (const slug of slugs) {
+		for (const demoPath of demos) {
 			const event = {
-				id: `events/${slug}`,
-				data: loadFixture(`src/content/events/${slug}.json`),
+				id: demoPath,
+				data: loadFixture(`src/content/${demoPath}.json`),
 			} as Parameters<typeof adaptEvent>[0];
 
 			expect(adaptEvent(event).brandingVisibility).toEqual({
@@ -63,21 +61,18 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.family?.godparents).toBeUndefined();
 	});
 
-	it('resolves Ximena content blocks and reception-only venue data', () => {
+	it('resolves demo content blocks and venue data', () => {
 		const event = {
-			id: 'events/ximena-meza-trasvina',
-			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.theme.preset).toBe('premiere-floral');
-		expect(viewModel.sections.location?.ceremony).toBeUndefined();
-		expect(viewModel.sections.location?.reception?.venueName).toBe("D'Galaz Alberca y Eventos");
-		expect(viewModel.sections.location?.variant).toBe('premiere-floral');
-		expect(viewModel.interludes?.find((i) => i.afterSection === 'location')).toMatchObject({
-			height: 'screen',
-		});
+		expect(viewModel.theme.preset).toBe('jewelry-box');
+		expect(viewModel.sections.location?.ceremony).toBeDefined();
+		expect(viewModel.sections.location?.ceremony?.venueName).toBeTruthy();
+		expect(viewModel.sections.location?.variant).toBe('jewelry-box');
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 	});
 

@@ -58,18 +58,52 @@ beforeEach(() => {
 });
 
 describe('resolveInvitationContent', () => {
-	it('resolves static/demo content when it exists', async () => {
-		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia-cota-guillen', data: {} } as any);
+	it('prefers DB-published content over static', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'my-invitation',
+			eventType: 'xv',
+			isDemo: false,
+			content: { title: 'DB Content' },
+		} as any);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
 
-		const result = await resolveInvitationContent('ana-sofia-cota-guillen', 'xv');
+		const result = await resolveInvitationContent('my-invitation', 'xv');
+
+		expect(result).not.toBeNull();
+		expect(result!.source).toBe('published');
+		expect(mockAdaptDbEvent).toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
+	});
+
+	it('resolves static demo content when no DB content exists', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');
-		expect(result!.viewModel.title).toBe('XV Anos — Ana Sofia');
-		expect(mockAdaptEvent).toHaveBeenCalled();
 	});
 
-	it('falls back to published content when static does not exist', async () => {
+	it('blocks non-demo static entries', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockGetRoutable.mockResolvedValue({
+			id: 'events/some-event',
+			data: { isDemo: false },
+		} as any);
+
+		const result = await resolveInvitationContent('some-event', 'xv');
+
+		expect(result).toBeNull();
+	});
+
+	it('falls back to published content when static is null', async () => {
 		mockGetRoutable.mockResolvedValue(null);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			slug: 'my-invitation',
@@ -130,19 +164,6 @@ describe('resolveInvitationContent', () => {
 		const result = await resolveInvitationContent('non-existent', 'xv');
 
 		expect(result).toBeNull();
-	});
-
-	it('prefers static over published when both exist', async () => {
-		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia-cota-guillen', data: {} } as any);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
-			slug: 'my-invitation',
-			content: {},
-		} as any);
-
-		const result = await resolveInvitationContent('ana-sofia-cota-guillen', 'xv');
-
-		expect(result!.source).toBe('static');
-		expect(mockFindPublishedBySlugAndEventType).not.toHaveBeenCalled();
 	});
 
 	it('published lookup filters by both slug and eventType', async () => {
