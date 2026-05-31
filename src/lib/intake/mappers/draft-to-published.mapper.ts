@@ -249,7 +249,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			preset: snapshot.themeId,
 		},
 
-		sectionOrder: demoContent.sectionOrder,
+		sectionOrder: draftContent.sectionOrder ?? demoContent.sectionOrder,
 
 		hero: heroSection,
 		envelope: demoContent.envelope ?? { disabled: true },

@@ -13,6 +13,7 @@ import {
 } from '@/lib/intake/repositories/invitation-project.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import {
+	findEventByProjectIdService,
 	findEventBySlugService,
 	createEventService,
 	updateEventService,
@@ -112,7 +113,19 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		);
 	}
 
-	const existingEvent = await findEventBySlugService(publishSlug);
+	const [linkedEvent, slugEvent] = await Promise.all([
+		findEventByProjectIdService(projectId),
+		findEventBySlugService(publishSlug),
+	]);
+	if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
+		throw new ApiError(
+			409,
+			'conflict',
+			`El slug "${publishSlug}" ya está asociado a otro evento. Cambia el slug del proyecto antes de publicar.`,
+		);
+	}
+
+	const existingEvent = linkedEvent ?? slugEvent;
 	if (existingEvent) {
 		if (existingEvent.eventType !== project.eventType) {
 			throw new ApiError(
@@ -124,6 +137,7 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 		await updateEventService({
 			eventId: existingEvent.id,
 			title: project.title,
+			slug: publishSlug,
 			status: 'published',
 			invitationProjectId: projectId,
 		});

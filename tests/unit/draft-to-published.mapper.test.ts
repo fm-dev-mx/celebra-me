@@ -338,6 +338,18 @@ describe('mapDraftToPublished', () => {
 		expect(Array.isArray(result.sectionOrder)).toBe(true);
 	});
 
+	it('uses draft sectionOrder when the admin configures visible sections', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				sectionOrder: ['quote', 'rsvp', 'thankYou'],
+			},
+		});
+
+		expect(result.sectionOrder).toEqual(['quote', 'rsvp', 'thankYou']);
+	});
+
 	it('draft hero fields override demo defaults', () => {
 		const result = mapDraftToPublished(baseInput);
 

@@ -19,6 +19,7 @@ jest.mock('astro:content', () => ({
 
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventBySlugService: jest.fn(),
+	findEventByProjectIdService: jest.fn(),
 	createEventService: jest.fn(),
 	updateEventService: jest.fn(),
 }));
@@ -37,6 +38,7 @@ import {
 } from '@/lib/intake/repositories/invitation-project.repository';
 import {
 	findEventBySlugService,
+	findEventByProjectIdService,
 	createEventService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
@@ -58,6 +60,9 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 >;
 const mockFindEventBySlug = findEventBySlugService as jest.MockedFunction<
 	typeof findEventBySlugService
+>;
+const mockFindEventByProjectId = findEventByProjectIdService as jest.MockedFunction<
+	typeof findEventByProjectIdService
 >;
 const mockCreateEvent = createEventService as jest.MockedFunction<typeof createEventService>;
 const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
@@ -155,6 +160,7 @@ beforeEach(() => {
 	jest.clearAllMocks();
 	mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
 	mockFindEventBySlug.mockResolvedValue(null);
+	mockFindEventByProjectId.mockResolvedValue(null);
 	mockCreateEvent.mockResolvedValue({ id: 'event-1' } as any);
 	const astroContent = jest.requireMock('astro:content');
 	astroContent.getCollection.mockResolvedValue([
@@ -364,6 +370,32 @@ describe('publishDraft', () => {
 		expect(mockUpdateEvent).toHaveBeenCalledWith({
 			eventId: 'event-1',
 			title: 'Test Project',
+			slug: 'xv-proj-1',
+			status: 'published',
+			invitationProjectId: 'proj-1',
+		});
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+	});
+
+	it('updates the linked RSVP event when republishing with a changed slug', async () => {
+		const projectWithSlug = { ...baseProject, slug: 'nuevo-slug' };
+		mockGetProject.mockResolvedValue(projectWithSlug as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
+		mockFindEventByProjectId.mockResolvedValue({
+			id: 'event-linked',
+			eventType: 'xv',
+			slug: 'slug-anterior',
+		} as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpdateEvent).toHaveBeenCalledWith({
+			eventId: 'event-linked',
+			title: 'Test Project',
+			slug: 'nuevo-slug',
 			status: 'published',
 			invitationProjectId: 'proj-1',
 		});
