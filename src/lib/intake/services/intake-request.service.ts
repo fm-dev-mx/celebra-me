@@ -7,7 +7,7 @@ import type {
 import {
 	findIntakeRequestById,
 	findIntakeRequestByTokenHash,
-	findIntakeRequestsByProjectId,
+	findIntakeRequestsByInvitationId,
 	createIntakeRequest,
 	updateIntakeRequest,
 } from '@/lib/intake/repositories/intake-request.repository';
@@ -54,15 +54,15 @@ export async function getIntakeRequestByToken(rawToken: string): Promise<IntakeR
 	return findIntakeRequestByTokenHash(tokenHash);
 }
 
-export async function getIntakeRequestsByProjectId(
-	invitationProjectId: string,
+export async function getIntakeRequestsByInvitationId(
+	invitationId: string,
 	origin?: IntakeRequestOrigin,
 ): Promise<IntakeRequest[]> {
-	return findIntakeRequestsByProjectId(invitationProjectId, origin);
+	return findIntakeRequestsByInvitationId(invitationId, origin);
 }
 
 export async function createRequest(input: {
-	invitationProjectId: string;
+	invitationId: string;
 	enabledBlocks: IntakeBlockType[];
 	expiresInDays?: number;
 }): Promise<CreateIntakeRequestResult> {
@@ -76,7 +76,7 @@ export async function createRequest(input: {
 	expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
 	const request = await createIntakeRequest({
-		invitationProjectId: input.invitationProjectId,
+		invitationId: input.invitationId,
 		tokenHash,
 		tokenCiphertext,
 		enabledBlocks: input.enabledBlocks,

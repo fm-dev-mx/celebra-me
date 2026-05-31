@@ -6,6 +6,10 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationBySlug: jest.fn(),
+}));
+
 jest.mock('@/lib/adapters/event', () => ({
 	adaptEvent: jest.fn(() => ({
 		id: 'ana-sofia-cota-guillen',
@@ -43,6 +47,7 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 
@@ -52,9 +57,13 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 >;
 const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
+const mockFindInvitationBySlug = findInvitationBySlug as jest.MockedFunction<
+	typeof findInvitationBySlug
+>;
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockFindInvitationBySlug.mockResolvedValue(null);
 });
 
 describe('resolveInvitationContent', () => {

@@ -1,9 +1,9 @@
-jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
-	findInvitationProjectById: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationById: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/intake-request.repository', () => ({
-	findIntakeRequestsByProjectId: jest.fn(),
+	findIntakeRequestsByInvitationId: jest.fn(),
 	createIntakeRequest: jest.fn(),
 }));
 
@@ -13,10 +13,10 @@ jest.mock('@/lib/intake/repositories/intake-submission.repository', () => ({
 	updateIntakeSubmission: jest.fn(),
 }));
 
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import {
 	createIntakeRequest,
-	findIntakeRequestsByProjectId,
+	findIntakeRequestsByInvitationId,
 } from '@/lib/intake/repositories/intake-request.repository';
 import {
 	createIntakeSubmission,
@@ -24,17 +24,15 @@ import {
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
 import {
-	ensureInternalEditContext,
+	ensureAdminEditContext,
 	saveInternalComments,
-} from '@/lib/intake/services/internal-edit.service';
+} from '@/lib/intake/services/admin-edit.service';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
-import type { InvitationProject } from '@/lib/intake/types';
+import type { Invitation } from '@/lib/intake/types';
 
-const mockFindProject = findInvitationProjectById as jest.MockedFunction<
-	typeof findInvitationProjectById
->;
-const mockFindRequests = findIntakeRequestsByProjectId as jest.MockedFunction<
-	typeof findIntakeRequestsByProjectId
+const mockFindProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
+const mockFindRequests = findIntakeRequestsByInvitationId as jest.MockedFunction<
+	typeof findIntakeRequestsByInvitationId
 >;
 const mockCreateRequest = createIntakeRequest as jest.MockedFunction<typeof createIntakeRequest>;
 const mockFindSubmission = findSubmissionByRequestId as jest.MockedFunction<
@@ -47,10 +45,12 @@ const mockUpdateSubmission = updateIntakeSubmission as jest.MockedFunction<
 	typeof updateIntakeSubmission
 >;
 
-const project: InvitationProject = {
+const invitation: Invitation = {
 	id: 'proj-1',
+	kind: 'client',
+	sourceInvitationId: null,
 	slug: null,
-	title: 'Proyecto interno',
+	title: 'Invitación interno',
 	eventType: 'xv' as const,
 	status: 'published' as const,
 	baseDemoId: 'demo-xv-jewelry-box',
@@ -71,13 +71,14 @@ const project: InvitationProject = {
 	clientWhatsapp: '',
 	photosReceived: false,
 	createdBy: null,
+	archivedAt: null,
 	createdAt: '2026-05-30T00:00:00Z',
 	updatedAt: '2026-05-30T00:00:00Z',
 };
 
 const request = {
 	id: 'req-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	tokenHash: 'existing-hash',
 	tokenCiphertext: null,
 	origin: 'client' as const,
@@ -104,23 +105,23 @@ const submission = {
 
 beforeEach(() => {
 	jest.clearAllMocks();
-	mockFindProject.mockResolvedValue(project);
+	mockFindProject.mockResolvedValue(invitation);
 });
 
-describe('ensureInternalEditContext', () => {
+describe('ensureAdminEditContext', () => {
 	it('reuses the latest request and approved submission without applying client locks', async () => {
 		const internalRequest = { ...request, origin: 'internal' as const };
 		mockFindRequests.mockResolvedValue([internalRequest]);
 		mockFindSubmission.mockResolvedValue(submission);
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 
-		expect(result).toEqual({ project, request: internalRequest, submission });
+		expect(result).toEqual({ invitation, request: internalRequest, submission });
 		expect(mockCreateRequest).not.toHaveBeenCalled();
 		expect(mockCreateSubmission).not.toHaveBeenCalled();
 	});
 
-	it('creates an internal-only request and submission when the project has no intake request', async () => {
+	it('creates an internal-only request and submission when the invitation has no intake request', async () => {
 		const internalRequest = {
 			...request,
 			tokenHash: hashIntakeToken('internal-edit:proj-1'),
@@ -135,10 +136,10 @@ describe('ensureInternalEditContext', () => {
 		mockFindSubmission.mockResolvedValue(null);
 		mockCreateSubmission.mockResolvedValue(internalSubmission);
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 
 		expect(mockCreateRequest).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			tokenHash: hashIntakeToken('internal-edit:proj-1'),
 			tokenCiphertext: null,
 			origin: 'internal',
@@ -176,7 +177,7 @@ describe('ensureInternalEditContext', () => {
 		mockCreateRequest.mockResolvedValue(internalRequest);
 		mockCreateSubmission.mockResolvedValue(internalSubmission);
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 
 		expect(mockCreateSubmission).toHaveBeenCalledWith({
 			intakeRequestId: 'req-internal',

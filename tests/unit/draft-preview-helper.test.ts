@@ -1,7 +1,7 @@
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
-import type { InvitationProject, DemoPreset } from '@/lib/intake/types';
+import type { Invitation, DemoPreset } from '@/lib/intake/types';
 
 jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	adaptDbEvent: jest.fn(),
@@ -64,9 +64,11 @@ const demoPreset: DemoPreset = {
 	previewSlug: 'demo-xv-enchanted-rose',
 };
 
-function makeProject(overrides?: Partial<InvitationProject>): InvitationProject {
+function makeProject(overrides?: Partial<Invitation>): Invitation {
 	return {
 		id: '01548214-bc22-4141-ba61-f36c27cd8627',
+		kind: 'client',
+		sourceInvitationId: null,
 		title: 'XV Años — Ayrin Samantha',
 		eventType: 'xv',
 		baseDemoId: 'demo-xv-enchanted-rose',
@@ -79,6 +81,7 @@ function makeProject(overrides?: Partial<InvitationProject>): InvitationProject 
 		clientWhatsapp: '+521234567890',
 		photosReceived: false,
 		createdBy: 'user-1',
+		archivedAt: null,
 		createdAt: '2026-05-28T14:00:00Z',
 		updatedAt: '2026-05-28T14:00:00Z',
 		...overrides,
@@ -161,22 +164,26 @@ beforeEach(() => {
 
 describe('buildDraftPreviewPageContext', () => {
 	it('builds a preview context from draft + demo content', () => {
-		const project = makeProject();
+		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(project, validDraftContent, validDemoContent);
+		const result = buildDraftPreviewPageContext(
+			invitation,
+			validDraftContent,
+			validDemoContent,
+		);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			expect(result.projectTitle).toBe('XV Años — Ayrin Samantha');
+			expect(result.invitationTitle).toBe('XV Años — Ayrin Samantha');
 			expect(result.eventType).toBe('xv');
 			expect(result.pageContext).toBeDefined();
 		}
 	});
 
 	it('passes correct args to adaptDbEvent', () => {
-		const project = makeProject();
+		const invitation = makeProject();
 
-		buildDraftPreviewPageContext(project, validDraftContent, validDemoContent);
+		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
@@ -187,9 +194,9 @@ describe('buildDraftPreviewPageContext', () => {
 	});
 
 	it('calls buildPageContextFromViewModel with isPreview=true', () => {
-		const project = makeProject();
+		const invitation = makeProject();
 
-		buildDraftPreviewPageContext(project, validDraftContent, validDemoContent);
+		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockBuildPageContext).toHaveBeenCalledTimes(1);
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
@@ -199,12 +206,16 @@ describe('buildDraftPreviewPageContext', () => {
 	});
 
 	it('returns RENDER_FAILED when adaptDbEvent throws', () => {
-		const project = makeProject();
+		const invitation = makeProject();
 		mockAdaptDbEvent.mockImplementation(() => {
 			throw new Error('Asset resolution failed');
 		});
 
-		const result = buildDraftPreviewPageContext(project, validDraftContent, validDemoContent);
+		const result = buildDraftPreviewPageContext(
+			invitation,
+			validDraftContent,
+			validDemoContent,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

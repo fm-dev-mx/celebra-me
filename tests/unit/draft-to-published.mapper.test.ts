@@ -72,7 +72,7 @@ const baseDemoContent = {
 };
 
 const baseInput = {
-	project: {
+	invitation: {
 		title: 'Test Project',
 		eventType: 'xv',
 		snapshot,
@@ -98,7 +98,7 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('sets theme from project snapshot', () => {
+	it('sets theme from invitation snapshot', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.theme).toMatchObject({ preset: 'jewelry-box' });
@@ -109,6 +109,12 @@ describe('mapDraftToPublished', () => {
 
 		expect(result.eventType).toBe('xv');
 		expect(result.isDemo).toBe(false);
+	});
+
+	it('marks demo content when publishing a demo invitation', () => {
+		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
+
+		expect(result.isDemo).toBe(true);
 	});
 
 	it('maps family godparents string to structured array', () => {

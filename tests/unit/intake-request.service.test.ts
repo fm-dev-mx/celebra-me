@@ -1,7 +1,7 @@
 jest.mock('@/lib/intake/repositories/intake-request.repository', () => ({
 	findIntakeRequestById: jest.fn(),
 	findIntakeRequestByTokenHash: jest.fn(),
-	findIntakeRequestsByProjectId: jest.fn(),
+	findIntakeRequestsByInvitationId: jest.fn(),
 	createIntakeRequest: jest.fn(),
 	updateIntakeRequest: jest.fn(),
 }));
@@ -45,9 +45,10 @@ const mockDecrypt = decryptIntakeToken as jest.MockedFunction<typeof decryptInta
 
 const baseRequest = {
 	id: 'req-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	tokenHash: 'hashed-mock-raw-token-abc123',
 	tokenCiphertext: 'v1.iv.tag.ciphertext',
+	origin: 'client' as const,
 	status: 'active' as const,
 	enabledBlocks: ['event-details' as const, 'photos' as const],
 	expiresAt: '2026-06-28T00:00:00Z',
@@ -64,7 +65,7 @@ describe('createRequest', () => {
 		mockCreate.mockResolvedValue(baseRequest);
 
 		const result = await createRequest({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			enabledBlocks: ['event-details', 'photos'],
 		});
 
@@ -73,7 +74,7 @@ describe('createRequest', () => {
 		expect(generateIntakeToken).toHaveBeenCalled();
 		expect(hashIntakeToken).toHaveBeenCalledWith('mock-raw-token-abc123');
 		expect(mockCreate).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			tokenHash: 'hashed-mock-raw-token-abc123',
 			tokenCiphertext: 'v1.iv.tag.ciphertext',
 			enabledBlocks: ['event-details', 'photos'],
@@ -85,7 +86,7 @@ describe('createRequest', () => {
 		mockCreate.mockResolvedValue(baseRequest);
 
 		await createRequest({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			enabledBlocks: ['event-details'],
 			expiresInDays: 7,
 		});
@@ -152,7 +153,7 @@ describe('getIntakeRequestByToken', () => {
 });
 
 describe('CreateIntakeRequestSchema', () => {
-	it('accepts enabledBlocks and expiresInDays without invitationProjectId', () => {
+	it('accepts enabledBlocks and expiresInDays without invitationId', () => {
 		const result = CreateIntakeRequestSchema.safeParse({
 			enabledBlocks: ['event-details', 'photos'],
 			expiresInDays: 14,

@@ -2,6 +2,7 @@ import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/them
 import type { EventAssetKey } from '@/lib/assets/asset-registry';
 
 export type CaptureLinkStatus = 'active' | 'expired' | 'missing' | 'revoked' | 'unavailable';
+export type InvitationKind = 'demo' | 'client';
 
 export const INTAKE_BLOCK_TYPES = [
 	'event-details',
@@ -16,7 +17,7 @@ export const INTAKE_BLOCK_TYPES = [
 
 export type IntakeBlockType = (typeof INTAKE_BLOCK_TYPES)[number];
 
-export const INVITATION_PROJECT_STATUSES = [
+export const INVITATION_STATUSES = [
 	'draft',
 	'waiting_for_client',
 	'client_submitted',
@@ -28,7 +29,7 @@ export const INVITATION_PROJECT_STATUSES = [
 	'archived',
 ] as const;
 
-export type InvitationProjectStatus = (typeof INVITATION_PROJECT_STATUSES)[number];
+export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
 
 export const INTAKE_REQUEST_STATUSES = [
 	'draft',
@@ -62,12 +63,14 @@ export interface DemoPreset {
 	previewSlug: string;
 }
 
-export interface InvitationProject {
+export interface Invitation {
 	id: string;
+	kind: InvitationKind;
+	sourceInvitationId: string | null;
 	slug: string | null;
 	title: string;
 	eventType: EventType;
-	status: InvitationProjectStatus;
+	status: InvitationStatus;
 	baseDemoId: string;
 	themeId: string;
 	snapshot: DemoPreset;
@@ -76,13 +79,14 @@ export interface InvitationProject {
 	clientWhatsapp: string;
 	photosReceived: boolean;
 	createdBy: string | null;
+	archivedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
 
 export interface IntakeRequest {
 	id: string;
-	invitationProjectId: string;
+	invitationId: string;
 	tokenHash: string;
 	tokenCiphertext: string | null;
 	origin: IntakeRequestOrigin;
@@ -131,8 +135,8 @@ export type InvitationContentDraftStatus = (typeof INVITATION_CONTENT_DRAFT_STAT
 
 export interface InvitationContentDraft {
 	id: string;
-	invitationProjectId: string;
-	submissionId: string;
+	invitationId: string;
+	submissionId: string | null;
 	content: Record<string, unknown>;
 	status: InvitationContentDraftStatus;
 	createdAt: string;

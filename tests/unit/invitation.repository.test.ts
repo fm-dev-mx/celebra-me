@@ -1,8 +1,8 @@
 import {
-	findInvitationProjectById,
-	createInvitationProject,
-	updateInvitationProject,
-} from '@/lib/intake/repositories/invitation-project.repository';
+	findInvitationById,
+	createInvitation,
+	updateInvitation,
+} from '@/lib/intake/repositories/invitation.repository';
 import type { DemoPreset } from '@/lib/intake/types';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
@@ -13,16 +13,16 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const mockSupabaseRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 
-describe('invitation-project repository', () => {
+describe('invitation repository', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	describe('findInvitationProjectById', () => {
-		it('returns null when no project is found', async () => {
+	describe('findInvitationById', () => {
+		it('returns null when no invitation is found', async () => {
 			mockSupabaseRequest.mockResolvedValue([]);
 
-			const result = await findInvitationProjectById('non-existent-id');
+			const result = await findInvitationById('non-existent-id');
 
 			expect(result).toBeNull();
 			expect(mockSupabaseRequest).toHaveBeenCalledWith({
@@ -31,7 +31,7 @@ describe('invitation-project repository', () => {
 			});
 		});
 
-		it('returns the project when found', async () => {
+		it('returns the invitation when found', async () => {
 			const mockRow = {
 				id: 'proj-123',
 				slug: 'test-event',
@@ -62,7 +62,7 @@ describe('invitation-project repository', () => {
 
 			mockSupabaseRequest.mockResolvedValue([mockRow]);
 
-			const result = await findInvitationProjectById('proj-123');
+			const result = await findInvitationById('proj-123');
 
 			expect(result).not.toBeNull();
 			expect(result?.id).toBe('proj-123');
@@ -77,8 +77,8 @@ describe('invitation-project repository', () => {
 		});
 	});
 
-	describe('createInvitationProject', () => {
-		it('creates a new project with all fields', async () => {
+	describe('createInvitation', () => {
+		it('creates a new invitation with all fields', async () => {
 			const mockRow = {
 				id: 'new-proj-id',
 				slug: 'new-event',
@@ -109,7 +109,7 @@ describe('invitation-project repository', () => {
 
 			mockSupabaseRequest.mockResolvedValue([mockRow]);
 
-			const result = await createInvitationProject({
+			const result = await createInvitation({
 				title: 'New Event',
 				eventType: 'boda',
 				baseDemoId: 'demo-boda-jewelry-box-wedding',
@@ -129,11 +129,12 @@ describe('invitation-project repository', () => {
 			expect(result.clientWhatsapp).toBe('+521987654321');
 
 			expect(mockSupabaseRequest).toHaveBeenCalledWith({
-				pathWithQuery: expect.stringContaining('invitation_projects'),
+				pathWithQuery: expect.stringContaining('invitations'),
 				method: 'POST',
 				useServiceRole: true,
 				prefer: 'return=representation',
 				body: {
+					kind: 'client',
 					title: 'New Event',
 					event_type: 'boda',
 					base_demo_id: 'demo-boda-jewelry-box-wedding',
@@ -148,7 +149,7 @@ describe('invitation-project repository', () => {
 			});
 		});
 
-		it('creates a project without optional fields', async () => {
+		it('creates a invitation without optional fields', async () => {
 			const mockRow = {
 				id: 'new-proj-id',
 				slug: null,
@@ -169,7 +170,7 @@ describe('invitation-project repository', () => {
 
 			mockSupabaseRequest.mockResolvedValue([mockRow]);
 
-			const result = await createInvitationProject({
+			const result = await createInvitation({
 				title: 'Minimal Event',
 				eventType: 'xv',
 				baseDemoId: 'demo-xv-jewelry-box',
@@ -188,19 +189,19 @@ describe('invitation-project repository', () => {
 			mockSupabaseRequest.mockResolvedValue([]);
 
 			await expect(
-				createInvitationProject({
+				createInvitation({
 					title: 'Test',
 					eventType: 'xv',
 					baseDemoId: 'demo',
 					themeId: 'theme',
 					snapshot: {} as never,
 				}),
-			).rejects.toThrow('Failed to create invitation project.');
+			).rejects.toThrow('Failed to create invitation.');
 		});
 	});
 
-	describe('updateInvitationProject', () => {
-		it('updates project fields', async () => {
+	describe('updateInvitation', () => {
+		it('updates invitation fields', async () => {
 			const mockRow = {
 				id: 'proj-123',
 				slug: 'updated-slug',
@@ -221,7 +222,7 @@ describe('invitation-project repository', () => {
 
 			mockSupabaseRequest.mockResolvedValue([mockRow]);
 
-			const result = await updateInvitationProject('proj-123', {
+			const result = await updateInvitation('proj-123', {
 				title: 'Updated Title',
 				slug: 'updated-slug',
 				status: 'waiting_for_client',
@@ -255,12 +256,12 @@ describe('invitation-project repository', () => {
 			});
 		});
 
-		it('throws an error when project is not found', async () => {
+		it('throws an error when invitation is not found', async () => {
 			mockSupabaseRequest.mockResolvedValue([]);
 
-			await expect(
-				updateInvitationProject('non-existent', { title: 'Test' }),
-			).rejects.toThrow('Invitation project not found.');
+			await expect(updateInvitation('non-existent', { title: 'Test' })).rejects.toThrow(
+				'Invitation not found.',
+			);
 		});
 	});
 });

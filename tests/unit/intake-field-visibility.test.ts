@@ -1,8 +1,8 @@
 import { eventDetailsBlockSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { getVisibleFields } from '@/lib/intake/blocks';
 import { normalizeDate } from '@/lib/intake/services/draft-content-mapper';
-import { ensureInternalEditContext } from '@/lib/intake/services/internal-edit.service';
-import type { IntakeRequest, IntakeSubmission, InvitationProject } from '@/lib/intake/types';
+import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
+import type { IntakeRequest, IntakeSubmission, Invitation } from '@/lib/intake/types';
 import type { IntakeBlockType } from '@/lib/intake/types';
 
 // ---------------------------------------------------------------------------
@@ -171,12 +171,12 @@ describe('normalizeDate', () => {
 // Internal edit context: non-empty enabledBlocks
 // ---------------------------------------------------------------------------
 
-jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
-	findInvitationProjectById: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationById: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/intake-request.repository', () => ({
-	findIntakeRequestsByProjectId: jest.fn(),
+	findIntakeRequestsByInvitationId: jest.fn(),
 	createIntakeRequest: jest.fn(),
 }));
 
@@ -186,21 +186,19 @@ jest.mock('@/lib/intake/repositories/intake-submission.repository', () => ({
 	updateIntakeSubmission: jest.fn(),
 }));
 
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import {
 	createIntakeRequest,
-	findIntakeRequestsByProjectId,
+	findIntakeRequestsByInvitationId,
 } from '@/lib/intake/repositories/intake-request.repository';
 import {
 	createIntakeSubmission,
 	findSubmissionByRequestId,
 } from '@/lib/intake/repositories/intake-submission.repository';
 
-const mockFindProject = findInvitationProjectById as jest.MockedFunction<
-	typeof findInvitationProjectById
->;
-const mockFindRequests = findIntakeRequestsByProjectId as jest.MockedFunction<
-	typeof findIntakeRequestsByProjectId
+const mockFindProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
+const mockFindRequests = findIntakeRequestsByInvitationId as jest.MockedFunction<
+	typeof findIntakeRequestsByInvitationId
 >;
 const mockCreateRequest = createIntakeRequest as jest.MockedFunction<typeof createIntakeRequest>;
 const mockFindSubmission = findSubmissionByRequestId as jest.MockedFunction<
@@ -221,8 +219,10 @@ const ALL_BLOCK_TYPES: IntakeBlockType[] = [
 	'special-messages',
 ];
 
-const makeProject = (overrides?: Partial<InvitationProject>): InvitationProject => ({
+const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	id: 'proj-1',
+	kind: 'client',
+	sourceInvitationId: null,
 	slug: null,
 	title: 'Test',
 	eventType: 'xv',
@@ -245,6 +245,7 @@ const makeProject = (overrides?: Partial<InvitationProject>): InvitationProject 
 	clientWhatsapp: '',
 	photosReceived: false,
 	createdBy: null,
+	archivedAt: null,
 	createdAt: '2026-05-30T00:00:00Z',
 	updatedAt: '2026-05-30T00:00:00Z',
 	...overrides,
@@ -252,7 +253,7 @@ const makeProject = (overrides?: Partial<InvitationProject>): InvitationProject 
 
 const makeRequest = (overrides?: Partial<IntakeRequest>): IntakeRequest => ({
 	id: 'req-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	tokenHash: 'internal-edit:proj-1',
 	tokenCiphertext: null,
 	origin: 'internal',
@@ -279,30 +280,30 @@ const makeSubmission = (overrides?: Partial<IntakeSubmission>): IntakeSubmission
 	...overrides,
 });
 
-describe('ensureInternalEditContext enabledBlocks fallback', () => {
+describe('ensureAdminEditContext enabledBlocks fallback', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('falls back to getBlockTypesForEventType when recommendedBlocks is empty', async () => {
-		const project = makeProject({
+		const invitation = makeProject({
 			snapshot: { ...makeProject().snapshot, recommendedBlocks: [] },
 		});
-		mockFindProject.mockResolvedValue(project);
+		mockFindProject.mockResolvedValue(invitation);
 		mockFindRequests.mockResolvedValue([]);
 		mockCreateRequest.mockResolvedValue(makeRequest());
 		mockFindSubmission.mockResolvedValue(null);
 		mockCreateSubmission.mockResolvedValue(makeSubmission());
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 
 		expect(result.request.enabledBlocks.length).toBeGreaterThan(0);
 		expect(result.request.enabledBlocks).toContain('event-details');
 	});
 
 	it('uses client request enabledBlocks when available', async () => {
-		const project = makeProject();
-		mockFindProject.mockResolvedValue(project);
+		const invitation = makeProject();
+		mockFindProject.mockResolvedValue(invitation);
 		mockFindRequests.mockResolvedValue([
 			makeRequest({
 				id: 'req-client',
@@ -318,21 +319,21 @@ describe('ensureInternalEditContext enabledBlocks fallback', () => {
 		mockFindSubmission.mockResolvedValue(null);
 		mockCreateSubmission.mockResolvedValue(makeSubmission({ intakeRequestId: 'req-internal' }));
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 		expect(result.request.enabledBlocks).toEqual(['event-details', 'main-people']);
 	});
 
 	it('never returns empty enabledBlocks', async () => {
-		const project = makeProject({
+		const invitation = makeProject({
 			snapshot: { ...makeProject().snapshot, recommendedBlocks: [] as IntakeBlockType[] },
 		});
-		mockFindProject.mockResolvedValue(project);
+		mockFindProject.mockResolvedValue(invitation);
 		mockFindRequests.mockResolvedValue([]);
 		mockCreateRequest.mockResolvedValue(makeRequest());
 		mockFindSubmission.mockResolvedValue(null);
 		mockCreateSubmission.mockResolvedValue(makeSubmission());
 
-		const result = await ensureInternalEditContext('proj-1');
+		const result = await ensureAdminEditContext('proj-1');
 		expect(result.request.enabledBlocks.length).toBeGreaterThan(0);
 	});
 });

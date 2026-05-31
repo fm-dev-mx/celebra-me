@@ -6,6 +6,10 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationBySlug: jest.fn(),
+}));
+
 jest.mock('@/lib/adapters/event', () => ({
 	adaptEvent: jest.fn(() => ({
 		id: 'demo-xv',
@@ -67,6 +71,7 @@ import {
 } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
@@ -74,9 +79,13 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 	typeof findPublishedBySlugAndEventType
 >;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
+const mockFindInvitationBySlug = findInvitationBySlug as jest.MockedFunction<
+	typeof findInvitationBySlug
+>;
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockFindInvitationBySlug.mockResolvedValue(null);
 });
 
 describe('published route POC', () => {
@@ -211,6 +220,34 @@ describe('published route POC', () => {
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');
+	});
+
+	it('does not serve the static demo fallback for an archived invitation', async () => {
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindInvitationBySlug.mockResolvedValue({ archivedAt: '2026-06-01T00:00:00Z' } as any);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
+
+		expect(result).toBeNull();
+	});
+
+	it('keeps static demos routable during the app-before-migration rollout window', async () => {
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindInvitationBySlug.mockRejectedValue(
+			new Error("Could not find the table 'public.invitations' in the schema cache"),
+		);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
+
+		expect(result?.source).toBe('static');
 	});
 
 	it('resolver does not expose admin fields in published content', async () => {

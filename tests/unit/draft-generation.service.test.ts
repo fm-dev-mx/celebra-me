@@ -1,9 +1,9 @@
-jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
-	findInvitationProjectById: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationById: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/services/intake-request.service', () => ({
-	getIntakeRequestsByProjectId: jest.fn(),
+	getIntakeRequestsByInvitationId: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/services/intake-submission.service', () => ({
@@ -11,7 +11,7 @@ jest.mock('@/lib/intake/services/intake-submission.service', () => ({
 }));
 
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
-	findDraftByProjectId: jest.fn(),
+	findDraftByInvitationId: jest.fn(),
 	upsertDraft: jest.fn(),
 }));
 
@@ -24,33 +24,35 @@ jest.mock('@/lib/intake/repositories/intake-submission.repository', () => ({
 }));
 
 import type {
-	InvitationProject,
+	Invitation,
 	IntakeRequest,
 	IntakeSubmission,
 	InvitationContentDraft,
 } from '@/lib/intake/types';
 import { generateDraft, getDraft } from '@/lib/intake/services/draft-generation.service';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
-import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
+import { getIntakeRequestsByInvitationId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
-	findDraftByProjectId,
+	findDraftByInvitationId,
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-const mockGetProject = findInvitationProjectById as jest.MockedFunction<
-	typeof findInvitationProjectById
->;
-const mockGetRequests = getIntakeRequestsByProjectId as jest.MockedFunction<
-	typeof getIntakeRequestsByProjectId
+const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
+const mockGetRequests = getIntakeRequestsByInvitationId as jest.MockedFunction<
+	typeof getIntakeRequestsByInvitationId
 >;
 const mockGetSubmission = getSubmissionByRequestId as jest.MockedFunction<
 	typeof getSubmissionByRequestId
 >;
-const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
+const mockFindDraft = findDraftByInvitationId as jest.MockedFunction<
+	typeof findDraftByInvitationId
+>;
 const mockUpsertDraft = upsertDraft as jest.MockedFunction<typeof upsertDraft>;
 
-const baseProject: InvitationProject = {
+const baseProject: Invitation = {
 	id: 'proj-1',
+	kind: 'client',
+	sourceInvitationId: null,
 	slug: null,
 	title: 'Test Project',
 	eventType: 'xv',
@@ -73,13 +75,14 @@ const baseProject: InvitationProject = {
 	clientWhatsapp: '5214421234567',
 	photosReceived: false,
 	createdBy: null,
+	archivedAt: null,
 	createdAt: '2026-05-28T00:00:00Z',
 	updatedAt: '2026-05-28T00:00:00Z',
 };
 
 const baseRequest: IntakeRequest = {
 	id: 'req-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	tokenHash: 'abc123hash',
 	tokenCiphertext: null,
 	origin: 'client',
@@ -139,7 +142,7 @@ const approvedSubmission: IntakeSubmission = {
 
 const draftRow: InvitationContentDraft = {
 	id: 'draft-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	submissionId: 'sub-1',
 	content: {
 		title: 'XV Anos — Ana Sofia',
@@ -190,7 +193,7 @@ describe('generateDraft', () => {
 
 		expect(result).toEqual(draftRow);
 		expect(mockUpsertDraft).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			submissionId: 'sub-1',
 			content: expect.objectContaining({
 				title: 'XV Anos — Ana Sofia',
@@ -231,7 +234,7 @@ describe('generateDraft', () => {
 		await expect(generateDraft('proj-1')).rejects.toThrow(/aprobada/i);
 	});
 
-	it('rejects when project is not found', async () => {
+	it('rejects when invitation is not found', async () => {
 		mockGetProject.mockResolvedValue(null);
 
 		await expect(generateDraft('non-existent')).rejects.toMatchObject({
@@ -267,7 +270,7 @@ describe('generateDraft', () => {
 
 		expect(mockUpsertDraft).toHaveBeenCalledTimes(2);
 		expect(mockUpsertDraft).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			submissionId: 'sub-1',
 			content: expect.any(Object),
 		});
@@ -283,7 +286,7 @@ describe('generateDraft', () => {
 
 		type UpsertParams = {
 			content: Record<string, unknown>;
-			invitationProjectId: string;
+			invitationId: string;
 			submissionId: string;
 		};
 		const content = (mockUpsertDraft.mock.calls[0][0] as UpsertParams).content;
@@ -303,7 +306,7 @@ describe('generateDraft', () => {
 
 		type UpsertParams = {
 			content: Record<string, unknown>;
-			invitationProjectId: string;
+			invitationId: string;
 			submissionId: string;
 		};
 		const content = (mockUpsertDraft.mock.calls[0][0] as UpsertParams).content;

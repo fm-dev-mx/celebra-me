@@ -1,9 +1,11 @@
-import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
-import { toEnrichedInvitationProjectDTO } from '@/lib/intake/services/invitation-project.service';
-import type { InvitationProject } from '@/lib/intake/types';
+import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
+import { toEnrichedInvitationDTO } from '@/lib/intake/services/invitation.service';
+import type { Invitation } from '@/lib/intake/types';
 
-const project: InvitationProject = {
-	id: 'project-123',
+const invitation: Invitation = {
+	id: 'invitation-123',
+	kind: 'client',
+	sourceInvitationId: null,
 	slug: null,
 	title: 'Invitacion interna',
 	eventType: 'xv',
@@ -26,20 +28,21 @@ const project: InvitationProject = {
 	clientWhatsapp: '',
 	photosReceived: false,
 	createdBy: null,
+	archivedAt: null,
 	createdAt: '2026-05-30T00:00:00Z',
 	updatedAt: '2026-05-30T00:00:00Z',
 };
 
-describe('toInvitationProjectDTO', () => {
+describe('toInvitationDTO', () => {
 	it('exposes a stable internal edit URL without requiring a slug or capture token', () => {
-		expect(toInvitationProjectDTO(project).internalEditUrl).toBe(
-			'/dashboard/invitaciones/project-123/editar',
+		expect(toInvitationDTO(invitation).internalEditUrl).toBe(
+			'/dashboard/invitaciones/invitation-123/editar',
 		);
 	});
 
 	it('marks detail state as published when public content exists', () => {
 		expect(
-			toEnrichedInvitationProjectDTO(project, {
+			toEnrichedInvitationDTO(invitation, {
 				published: true,
 				rsvpEvent: { id: 'event-1', status: 'published' },
 			}),

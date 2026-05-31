@@ -1,26 +1,28 @@
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
-	findDraftByProjectId: jest.fn(),
+	findDraftByInvitationId: jest.fn(),
 	updateDraftContent: jest.fn(),
 	updateDraftStatus: jest.fn(),
 }));
 
 import {
 	createDraftRevision,
-	updateDraftContentByProject,
+	updateDraftContentByInvitation,
 } from '@/lib/intake/services/draft-generation.service';
 import {
-	findDraftByProjectId,
+	findDraftByInvitationId,
 	updateDraftContent,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 
-const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
+const mockFindDraft = findDraftByInvitationId as jest.MockedFunction<
+	typeof findDraftByInvitationId
+>;
 const mockUpdateDraft = updateDraftContent as jest.MockedFunction<typeof updateDraftContent>;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
 
 const existingDraft = {
 	id: 'draft-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	submissionId: 'sub-1',
 	content: { title: 'Original' },
 	status: 'draft' as const,
@@ -59,7 +61,7 @@ describe('createDraftRevision', () => {
 	});
 });
 
-describe('updateDraftContentByProject', () => {
+describe('updateDraftContentByInvitation', () => {
 	it('updates content when draft exists and status is draft', async () => {
 		mockFindDraft.mockResolvedValue(existingDraft);
 		mockUpdateDraft.mockResolvedValue({
@@ -67,7 +69,7 @@ describe('updateDraftContentByProject', () => {
 			content: { title: 'Updated' },
 		});
 
-		const result = await updateDraftContentByProject('proj-1', { title: 'Updated' });
+		const result = await updateDraftContentByInvitation('proj-1', { title: 'Updated' });
 
 		expect(result.content.title).toBe('Updated');
 		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', { title: 'Updated' });
@@ -76,7 +78,7 @@ describe('updateDraftContentByProject', () => {
 	it('rejects when no draft exists', async () => {
 		mockFindDraft.mockResolvedValue(null);
 
-		await expect(updateDraftContentByProject('proj-1', {})).rejects.toMatchObject({
+		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
 			status: 404,
 			code: 'not_found',
 		});
@@ -86,7 +88,7 @@ describe('updateDraftContentByProject', () => {
 	it('rejects when draft status is reviewed', async () => {
 		mockFindDraft.mockResolvedValue(reviewedDraft);
 
-		await expect(updateDraftContentByProject('proj-1', {})).rejects.toMatchObject({
+		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
 			status: 422,
 			code: 'invalid_draft_status',
 		});
@@ -96,7 +98,7 @@ describe('updateDraftContentByProject', () => {
 	it('rejects when draft status is approved', async () => {
 		mockFindDraft.mockResolvedValue({ ...existingDraft, status: 'approved' });
 
-		await expect(updateDraftContentByProject('proj-1', {})).rejects.toMatchObject({
+		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
 			status: 422,
 			code: 'invalid_draft_status',
 		});
@@ -116,7 +118,7 @@ describe('updateDraftContentByProject', () => {
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
 		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
 
-		await updateDraftContentByProject('proj-1', { title: 'Updated Title' });
+		await updateDraftContentByInvitation('proj-1', { title: 'Updated Title' });
 
 		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
 			title: 'Updated Title',
@@ -143,7 +145,7 @@ describe('updateDraftContentByProject', () => {
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
 		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
 
-		await updateDraftContentByProject('proj-1', {
+		await updateDraftContentByInvitation('proj-1', {
 			hero: { name: 'Ana Maria' },
 		});
 
@@ -171,7 +173,7 @@ describe('updateDraftContentByProject', () => {
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
 		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
 
-		await updateDraftContentByProject('proj-1', {});
+		await updateDraftContentByInvitation('proj-1', {});
 
 		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
 			title: 'Original Title',

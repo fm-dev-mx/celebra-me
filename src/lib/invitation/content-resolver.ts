@@ -1,5 +1,6 @@
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
@@ -27,6 +28,21 @@ export async function resolveInvitationContent(
 				assetSlug,
 			});
 			return { source: 'published', viewModel, rawContent };
+		}
+	}
+
+	try {
+		const invitation = await findInvitationBySlug(slug, true);
+		if (invitation?.archivedAt) return null;
+	} catch (error) {
+		// Keep static demos routable during the short app-before-migration rollout window.
+		if (
+			!(
+				error instanceof Error &&
+				error.message.includes("Could not find the table 'public.invitations'")
+			)
+		) {
+			throw error;
 		}
 	}
 

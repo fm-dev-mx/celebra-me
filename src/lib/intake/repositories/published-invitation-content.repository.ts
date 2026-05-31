@@ -16,7 +16,7 @@ interface PublishedInvitationContentRow {
 
 interface PublishedInvitationContent {
 	id: string;
-	invitationProjectId: string;
+	invitationId: string;
 	slug: string;
 	eventType: string;
 	isDemo: boolean;
@@ -30,7 +30,7 @@ interface PublishedInvitationContent {
 function toRow(row: PublishedInvitationContentRow): PublishedInvitationContent {
 	return {
 		id: row.id,
-		invitationProjectId: row.invitation_project_id,
+		invitationId: row.invitation_project_id,
 		slug: row.slug,
 		eventType: row.event_type,
 		isDemo: row.is_demo,
@@ -45,11 +45,11 @@ function toRow(row: PublishedInvitationContentRow): PublishedInvitationContent {
 const SELECT_COLUMNS =
 	'id,invitation_project_id,slug,event_type,is_demo,content,version,published_at,created_at,updated_at';
 
-export async function findPublishedByProjectId(
-	invitationProjectId: string,
+export async function findPublishedByInvitationId(
+	invitationId: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&${ACTIVE_FILTER}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;
@@ -67,7 +67,7 @@ export async function findPublishedBySlugAndEventType(
 }
 
 export interface UpsertPublishedInput {
-	invitationProjectId: string;
+	invitationId: string;
 	slug: string;
 	eventType: string;
 	isDemo: boolean;
@@ -77,7 +77,7 @@ export interface UpsertPublishedInput {
 export async function upsertPublishedContent(
 	input: UpsertPublishedInput,
 ): Promise<PublishedInvitationContent> {
-	const existing = await findPublishedByProjectId(input.invitationProjectId);
+	const existing = await findPublishedByInvitationId(input.invitationId);
 
 	if (existing) {
 		const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
@@ -88,6 +88,8 @@ export async function upsertPublishedContent(
 			body: {
 				content: input.content,
 				slug: input.slug,
+				event_type: input.eventType,
+				is_demo: input.isDemo,
 				version: existing.version + 1,
 				published_at: new Date().toISOString(),
 			},
@@ -102,7 +104,7 @@ export async function upsertPublishedContent(
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body: {
-			invitation_project_id: input.invitationProjectId,
+			invitation_project_id: input.invitationId,
 			slug: input.slug,
 			event_type: input.eventType,
 			is_demo: input.isDemo,

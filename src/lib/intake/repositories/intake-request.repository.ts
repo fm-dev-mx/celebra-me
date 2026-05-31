@@ -18,7 +18,7 @@ interface IntakeRequestRow {
 function toIntakeRequest(row: IntakeRequestRow): IntakeRequest {
 	return {
 		id: row.id,
-		invitationProjectId: row.invitation_project_id,
+		invitationId: row.invitation_project_id,
 		tokenHash: row.token_hash,
 		tokenCiphertext: row.token_ciphertext,
 		origin: row.origin,
@@ -51,20 +51,20 @@ export async function findIntakeRequestByTokenHash(
 	return rows[0] ? toIntakeRequest(rows[0]) : null;
 }
 
-export async function findIntakeRequestsByProjectId(
-	invitationProjectId: string,
+export async function findIntakeRequestsByInvitationId(
+	invitationId: string,
 	origin?: IntakeRequestOrigin,
 ): Promise<IntakeRequest[]> {
 	const originFilter = origin ? `&origin=eq.${origin}` : '';
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
-		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}${originFilter}&${ACTIVE_FILTER}&order=created_at.desc`,
+		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationId)}${originFilter}&${ACTIVE_FILTER}&order=created_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toIntakeRequest);
 }
 
 export async function createIntakeRequest(input: {
-	invitationProjectId: string;
+	invitationId: string;
 	tokenHash: string;
 	tokenCiphertext: string | null;
 	origin?: IntakeRequestOrigin;
@@ -77,7 +77,7 @@ export async function createIntakeRequest(input: {
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body: {
-			invitation_project_id: input.invitationProjectId,
+			invitation_project_id: input.invitationId,
 			token_hash: input.tokenHash,
 			token_ciphertext: input.tokenCiphertext,
 			origin: input.origin ?? 'client',

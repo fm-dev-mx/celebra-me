@@ -1,5 +1,5 @@
 import type {
-	InvitationProjectStatus,
+	InvitationStatus,
 	IntakeSubmissionStatus,
 	IntakeRequestStatus,
 	IntakeBlockType,
@@ -96,16 +96,16 @@ export const VENUE_LABELS: Record<string, string> = {
 	mapUrl: 'Enlace de Google Maps',
 };
 
-export const PROJECT_STATUS_LABELS: Record<InvitationProjectStatus, string> = {
+export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {
 	draft: 'Borrador',
 	waiting_for_client: 'Esperando cliente',
 	client_submitted: 'Captura recibida',
 	in_review: 'En revisión',
 	in_production: 'En producción',
 	preview_sent: 'Vista previa enviada',
-	approved: 'Aprobado',
-	published: 'Publicado',
-	archived: 'Archivado',
+	approved: 'Aprobada',
+	published: 'Publicada',
+	archived: 'Archivada',
 };
 
 export const SUBMISSION_STATUS_LABELS: Record<IntakeSubmissionStatus, string> = {

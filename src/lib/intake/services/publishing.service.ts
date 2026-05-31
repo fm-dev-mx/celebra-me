@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 import {
-	findDraftByProjectId,
+	findDraftByInvitationId,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
@@ -8,12 +8,12 @@ import {
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
-	findInvitationProjectById,
-	updateInvitationProject,
-} from '@/lib/intake/repositories/invitation-project.repository';
+	findInvitationById,
+	updateInvitation,
+} from '@/lib/intake/repositories/invitation.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import {
-	findEventByProjectIdService,
+	findEventByInvitationIdService,
 	findEventBySlugService,
 	createEventService,
 	updateEventService,
@@ -21,7 +21,7 @@ import {
 import { getContentEntrySlug } from '@/lib/content/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
-import type { InvitationContentDraft } from '@/lib/intake/types';
+import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
 async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {
@@ -41,15 +41,64 @@ export interface PublishResult {
 	};
 }
 
-export async function publishDraft(projectId: string): Promise<PublishResult> {
-	const project = await findInvitationProjectById(projectId);
-	if (!project) {
-		throw new ApiError(404, 'not_found', 'Invitation project not found.');
+async function synchronizeClientRsvp(
+	invitation: Invitation,
+	invitationId: string,
+	publishSlug: string,
+): Promise<void> {
+	const [linkedEvent, slugEvent] = await Promise.all([
+		findEventByInvitationIdService(invitationId),
+		findEventBySlugService(publishSlug),
+	]);
+	if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
+		throw new ApiError(
+			409,
+			'conflict',
+			`El slug "${publishSlug}" ya está asociado a otro evento. Cambia el slug de la invitación antes de publicar.`,
+		);
 	}
 
-	const draft = await findDraftByProjectId(projectId);
+	const existingEvent = linkedEvent ?? slugEvent;
+	if (
+		existingEvent?.eventType !== undefined &&
+		existingEvent.eventType !== invitation.eventType
+	) {
+		throw new ApiError(
+			409,
+			'conflict',
+			`El slug "${publishSlug}" ya está asociado a un evento de tipo "${existingEvent.eventType}" (se esperaba "${invitation.eventType}"). Cambia el slug de la invitación o el tipo de evento.`,
+		);
+	}
+	if (existingEvent) {
+		await updateEventService({
+			eventId: existingEvent.id,
+			title: invitation.title,
+			slug: publishSlug,
+			status: 'published',
+			invitationId,
+		});
+		return;
+	}
+
+	await createEventService({
+		ownerUserId: invitation.createdBy!,
+		slug: publishSlug,
+		eventType: invitation.eventType,
+		title: invitation.title,
+		status: 'published',
+		invitationId,
+	});
+}
+
+export async function publishDraft(invitationId: string): Promise<PublishResult> {
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitation not found.');
+	}
+
+	const draft = await findDraftByInvitationId(invitationId);
 	if (!draft) {
-		throw new ApiError(404, 'not_found', 'No se encontro un borrador para este proyecto.');
+		throw new ApiError(404, 'not_found', 'No se encontró un borrador para esta invitación.');
 	}
 
 	if (draft.status !== 'draft') {
@@ -66,101 +115,70 @@ export async function publishDraft(projectId: string): Promise<PublishResult> {
 	}
 
 	const snapshot =
-		project.snapshot ?? DEMO_PRESET_CATALOG.find((p) => p.id === project.baseDemoId);
+		invitation.snapshot ?? DEMO_PRESET_CATALOG.find((p) => p.id === invitation.baseDemoId);
 	if (!snapshot) {
 		throw new ApiError(
 			422,
 			'bad_request',
-			'No se encontro la configuración del proyecto para publicar.',
+			'No se encontró la configuración de la invitación para publicar.',
 		);
 	}
 	if (!snapshot.previewSlug) {
 		throw new ApiError(
 			422,
 			'bad_request',
-			'La configuración del proyecto no tiene slug de vista previa.',
+			'La configuración de la invitación no tiene slug de vista previa.',
 		);
 	}
 
-	if (!project.createdBy) {
+	if (invitation.kind === 'client' && !invitation.createdBy) {
 		throw new ApiError(
 			422,
 			'bad_request',
-			'No se puede publicar sin un propietario asignado al proyecto. Asigna un propietario antes de publicar.',
+			'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.',
 		);
 	}
 
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
 	const publishedContent = mapDraftToPublished({
-		project: {
-			title: project.title,
-			eventType: project.eventType,
+		invitation: {
+			title: invitation.title,
+			eventType: invitation.eventType,
 			snapshot,
 		},
 		draftContent: content,
 		demoContent,
+		isDemo: invitation.kind === 'demo',
 	});
 
-	const publishSlug = project.slug || `${project.eventType}-${project.id.slice(0, 8)}`;
+	const publishSlug = invitation.slug || `${invitation.eventType}-${invitation.id.slice(0, 8)}`;
 
-	const existingPublished = await findPublishedBySlugAndEventType(publishSlug, project.eventType);
-	if (existingPublished && existingPublished.invitationProjectId !== projectId) {
+	const existingPublished = await findPublishedBySlugAndEventType(
+		publishSlug,
+		invitation.eventType,
+	);
+	if (existingPublished && existingPublished.invitationId !== invitationId) {
 		throw new ApiError(
 			409,
 			'conflict',
-			`El slug "${publishSlug}" ya está siendo utilizado por otro proyecto de tipo ${project.eventType}. Cambia el slug del proyecto antes de publicar.`,
+			`El slug "${publishSlug}" ya está siendo utilizado por otra invitación de tipo ${invitation.eventType}. Cambia el slug de la invitación antes de publicar.`,
 		);
 	}
 
-	const [linkedEvent, slugEvent] = await Promise.all([
-		findEventByProjectIdService(projectId),
-		findEventBySlugService(publishSlug),
-	]);
-	if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
-		throw new ApiError(
-			409,
-			'conflict',
-			`El slug "${publishSlug}" ya está asociado a otro evento. Cambia el slug del proyecto antes de publicar.`,
-		);
-	}
-
-	const existingEvent = linkedEvent ?? slugEvent;
-	if (existingEvent) {
-		if (existingEvent.eventType !== project.eventType) {
-			throw new ApiError(
-				409,
-				'conflict',
-				`El slug "${publishSlug}" ya está asociado a un evento de tipo "${existingEvent.eventType}" (se esperaba "${project.eventType}"). Cambia el slug del proyecto o el tipo de evento.`,
-			);
-		}
-		await updateEventService({
-			eventId: existingEvent.id,
-			title: project.title,
-			slug: publishSlug,
-			status: 'published',
-			invitationProjectId: projectId,
-		});
-	} else {
-		await createEventService({
-			ownerUserId: project.createdBy,
-			slug: publishSlug,
-			eventType: project.eventType,
-			title: project.title,
-			status: 'published',
-			invitationProjectId: projectId,
-		});
+	if (invitation.kind === 'client') {
+		await synchronizeClientRsvp(invitation, invitationId, publishSlug);
 	}
 
 	const result = await upsertPublishedContent({
-		invitationProjectId: projectId,
+		invitationId: invitationId,
 		slug: publishSlug,
-		eventType: project.eventType,
-		isDemo: false,
+		eventType: invitation.eventType,
+		isDemo: invitation.kind === 'demo',
 		content: publishedContent,
 	});
 
-	await updateInvitationProject(projectId, { status: 'published' });
+	await updateInvitation(invitationId, { status: 'published' });
 
 	const updatedDraft = await updateDraftStatus(draft.id, 'approved');
 

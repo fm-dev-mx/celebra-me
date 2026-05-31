@@ -1,5 +1,5 @@
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
-	findDraftByProjectId: jest.fn(),
+	findDraftByInvitationId: jest.fn(),
 	updateDraftStatus: jest.fn(),
 }));
 
@@ -8,9 +8,9 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 	findPublishedBySlugAndEventType: jest.fn(),
 }));
 
-jest.mock('@/lib/intake/repositories/invitation-project.repository', () => ({
-	findInvitationProjectById: jest.fn(),
-	updateInvitationProject: jest.fn(),
+jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
+	findInvitationById: jest.fn(),
+	updateInvitation: jest.fn(),
 }));
 
 jest.mock('astro:content', () => ({
@@ -19,13 +19,13 @@ jest.mock('astro:content', () => ({
 
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventBySlugService: jest.fn(),
-	findEventByProjectIdService: jest.fn(),
+	findEventByInvitationIdService: jest.fn(),
 	createEventService: jest.fn(),
 	updateEventService: jest.fn(),
 }));
 
 import {
-	findDraftByProjectId,
+	findDraftByInvitationId,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
@@ -33,24 +33,22 @@ import {
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
-	findInvitationProjectById,
-	updateInvitationProject,
-} from '@/lib/intake/repositories/invitation-project.repository';
+	findInvitationById,
+	updateInvitation,
+} from '@/lib/intake/repositories/invitation.repository';
 import {
 	findEventBySlugService,
-	findEventByProjectIdService,
+	findEventByInvitationIdService,
 	createEventService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 
-const mockGetProject = findInvitationProjectById as jest.MockedFunction<
-	typeof findInvitationProjectById
+const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
+const mockUpdateProject = updateInvitation as jest.MockedFunction<typeof updateInvitation>;
+const mockFindDraft = findDraftByInvitationId as jest.MockedFunction<
+	typeof findDraftByInvitationId
 >;
-const mockUpdateProject = updateInvitationProject as jest.MockedFunction<
-	typeof updateInvitationProject
->;
-const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
 const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<
 	typeof upsertPublishedContent
@@ -61,14 +59,16 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 const mockFindEventBySlug = findEventBySlugService as jest.MockedFunction<
 	typeof findEventBySlugService
 >;
-const mockFindEventByProjectId = findEventByProjectIdService as jest.MockedFunction<
-	typeof findEventByProjectIdService
+const mockFindEventByProjectId = findEventByInvitationIdService as jest.MockedFunction<
+	typeof findEventByInvitationIdService
 >;
 const mockCreateEvent = createEventService as jest.MockedFunction<typeof createEventService>;
 const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
 
 const baseProject = {
 	id: 'proj-1',
+	kind: 'client' as const,
+	sourceInvitationId: null,
 	slug: null,
 	title: 'Test Project',
 	eventType: 'xv' as const,
@@ -118,6 +118,7 @@ const baseProject = {
 	clientWhatsapp: '5214421234567',
 	photosReceived: false,
 	createdBy: 'user-1',
+	archivedAt: null,
 	createdAt: '2026-05-28T00:00:00Z',
 	updatedAt: '2026-05-28T00:00:00Z',
 };
@@ -126,7 +127,7 @@ const projectNoOwner = { ...baseProject, createdBy: null };
 
 const validDraft = {
 	id: 'draft-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	submissionId: 'sub-1',
 	content: {
 		title: 'Test Event',
@@ -143,7 +144,7 @@ const reviewedDraft = { ...validDraft, status: 'reviewed' as const };
 
 const publishedRow = {
 	id: 'pub-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	slug: 'xv-proj-1a2b3c4d',
 	eventType: 'xv',
 	isDemo: false,
@@ -218,7 +219,7 @@ describe('publishDraft', () => {
 		expect(result.publishedContent.slug).toBe('xv-proj-1a2b3c4d');
 		expect(mockUpsertPublished).toHaveBeenCalledWith(
 			expect.objectContaining({
-				invitationProjectId: 'proj-1',
+				invitationId: 'proj-1',
 				eventType: 'xv',
 			}),
 		);
@@ -237,7 +238,7 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
 	});
 
-	it('rejects when project not found', async () => {
+	it('rejects when invitation not found', async () => {
 		mockGetProject.mockResolvedValue(null);
 
 		await expect(publishDraft('proj-1')).rejects.toMatchObject({
@@ -306,7 +307,7 @@ describe('publishDraft', () => {
 		);
 	});
 
-	it('uses project slug when available', async () => {
+	it('uses invitation slug when available', async () => {
 		const projectWithSlug = { ...baseProject, slug: 'my-invitation' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
@@ -321,7 +322,7 @@ describe('publishDraft', () => {
 		);
 	});
 
-	it('blocks publishing when project has no owner', async () => {
+	it('blocks publishing when invitation has no owner', async () => {
 		mockGetProject.mockResolvedValue(projectNoOwner as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 
@@ -332,6 +333,33 @@ describe('publishDraft', () => {
 
 		expect(mockCreateEvent).not.toHaveBeenCalled();
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('publishes a demo without creating an RSVP event or requiring an owner', async () => {
+		const demoInvitation = {
+			...baseProject,
+			kind: 'demo' as const,
+			createdBy: null,
+			slug: 'demo-xv-jewelry-box',
+		};
+		mockGetProject.mockResolvedValue(demoInvitation as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue({ ...publishedRow, isDemo: true } as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(demoInvitation as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockFindEventByProjectId).not.toHaveBeenCalled();
+		expect(mockFindEventBySlug).not.toHaveBeenCalled();
+		expect(mockCreateEvent).not.toHaveBeenCalled();
+		expect(mockUpdateEvent).not.toHaveBeenCalled();
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				isDemo: true,
+				content: expect.objectContaining({ isDemo: true }),
+			}),
+		);
 	});
 
 	it('creates event when no existing event exists', async () => {
@@ -349,7 +377,7 @@ describe('publishDraft', () => {
 			eventType: 'xv',
 			title: 'Test Project',
 			status: 'published',
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 		});
 		expect(mockUpdateEvent).not.toHaveBeenCalled();
 	});
@@ -372,7 +400,7 @@ describe('publishDraft', () => {
 			title: 'Test Project',
 			slug: 'xv-proj-1',
 			status: 'published',
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 		});
 		expect(mockCreateEvent).not.toHaveBeenCalled();
 	});
@@ -397,7 +425,7 @@ describe('publishDraft', () => {
 			title: 'Test Project',
 			slug: 'nuevo-slug',
 			status: 'published',
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 		});
 		expect(mockCreateEvent).not.toHaveBeenCalled();
 	});
@@ -420,12 +448,12 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
 	});
 
-	it('blocks publishing when slug collides with published content from another project', async () => {
+	it('blocks publishing when slug collides with published content from another invitation', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			id: 'pub-existing',
-			invitationProjectId: 'other-proj',
+			invitationId: 'other-proj',
 			slug: 'xv-proj-1a2b3c4d',
 			eventType: 'xv',
 		} as any);
@@ -439,7 +467,7 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
 	});
 
-	it('allows publishing when published content exists for the same project', async () => {
+	it('allows publishing when published content exists for the same invitation', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
@@ -447,7 +475,7 @@ describe('publishDraft', () => {
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			id: 'pub-existing',
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			slug: 'xv-proj-1a2b3c4d',
 			eventType: 'xv',
 		} as any);

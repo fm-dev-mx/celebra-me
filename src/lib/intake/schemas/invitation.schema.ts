@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { INVITATION_PROJECT_STATUSES } from '@/lib/intake/types';
+import { INVITATION_STATUSES } from '@/lib/intake/types';
 import { EventTypeSchema } from '@/lib/intake/schemas/intake-block.schema';
 
-export const CreateInvitationProjectSchema = z.object({
+export const CreateInvitationSchema = z.object({
 	title: z
 		.string()
 		.min(1, 'El título es obligatorio.')
@@ -30,7 +30,7 @@ export const CreateInvitationProjectSchema = z.object({
 	clientWhatsapp: z.string().max(50).trim().optional().default(''),
 });
 
-export const UpdateInvitationProjectSchema = z.object({
+export const UpdateInvitationSchema = z.object({
 	title: z.string().min(1).max(200).trim().optional(),
 	slug: z
 		.string()
@@ -39,12 +39,20 @@ export const UpdateInvitationProjectSchema = z.object({
 		.trim()
 		.optional()
 		.nullable(),
-	status: z.enum(INVITATION_PROJECT_STATUSES).optional(),
+	status: z.enum(INVITATION_STATUSES).optional(),
 	clientName: z.string().max(200).trim().optional(),
 	clientEmail: z.string().max(320).trim().optional(),
 	clientWhatsapp: z.string().max(50).trim().optional(),
 	photosReceived: z.boolean().optional(),
 });
 
-export type CreateInvitationProjectInput = z.infer<typeof CreateInvitationProjectSchema>;
-export type UpdateInvitationProjectInput = z.infer<typeof UpdateInvitationProjectSchema>;
+export const DuplicateDemoSchema = z.object({
+	title: z.string().min(1, 'El título es obligatorio.').max(200).trim(),
+	clientName: z.string().max(200).trim().optional().default(''),
+	clientEmail: z.string().max(320).trim().optional().default(''),
+	clientWhatsapp: z.string().max(50).trim().optional().default(''),
+});
+
+export type CreateInvitationInput = z.infer<typeof CreateInvitationSchema>;
+export type UpdateInvitationInput = z.infer<typeof UpdateInvitationSchema>;
+export type DuplicateDemoInput = z.infer<typeof DuplicateDemoSchema>;

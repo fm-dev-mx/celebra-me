@@ -88,7 +88,7 @@ describe('rsvp service branches', () => {
 		title: 'Demo',
 		status: 'published' as const,
 		publishedAt: null,
-		invitationProjectId: null,
+		invitationId: null,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};

@@ -14,7 +14,7 @@ describe('requireAdminRateLimit', () => {
 	});
 
 	it('uses a distinct entity bucket for each dashboard operation', async () => {
-		const request = new Request('https://example.com/api/dashboard/intake/project', {
+		const request = new Request('https://example.com/api/dashboard/intake/invitation', {
 			headers: { 'x-forwarded-for': '10.0.0.1' },
 		});
 

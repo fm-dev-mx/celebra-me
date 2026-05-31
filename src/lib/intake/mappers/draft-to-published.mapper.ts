@@ -93,25 +93,26 @@ function mapLocationFromDraft(
 }
 
 export interface PublishInput {
-	project: {
+	invitation: {
 		title: string;
 		eventType: string;
 		snapshot: DemoPreset;
 	};
 	draftContent: DraftContent;
 	demoContent: Record<string, unknown>;
+	isDemo?: boolean;
 }
 
 function mapHeroSection(
 	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
-	projectTitle: string,
+	invitationTitle: string,
 	themeId: string,
 ): Record<string, unknown> | undefined {
 	if (!draftHero || !isPopulated(draftHero as Record<string, unknown>)) return demoHero;
 	const fromDemo = (key: string) => (demoHero?.[key] as string) || '';
 	return {
-		name: str(draftHero.name) || (demoHero?.name as string) || projectTitle,
+		name: str(draftHero.name) || (demoHero?.name as string) || invitationTitle,
 		secondaryName: str(draftHero.secondaryName) || fromDemo('secondaryName'),
 		label: str(draftHero.label) || (demoHero?.label as string) || 'Invitacion Especial',
 		nickname: str(draftHero.nickname) || fromDemo('nickname'),
@@ -202,10 +203,10 @@ function mapThankYouSection(
 }
 
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
-	const { draftContent, project, demoContent } = input;
-	const snapshot = project.snapshot;
+	const { draftContent, invitation, demoContent, isDemo = false } = input;
+	const snapshot = invitation.snapshot;
 
-	const celebName = str(draftContent.hero?.name) || project.title;
+	const celebName = str(draftContent.hero?.name) || invitation.title;
 
 	const locationSection = mapLocationFromDraft(draftContent.location);
 	const rsvpSection = mapRsvpSection(
@@ -231,7 +232,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const heroSection = mapHeroSection(
 		draftContent.hero,
 		demoContent.hero as Record<string, unknown> | undefined,
-		project.title,
+		invitation.title,
 		snapshot.themeId,
 	);
 	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
@@ -239,10 +240,10 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
 
 	return {
-		eventType: project.eventType,
-		title: project.title,
+		eventType: invitation.eventType,
+		title: invitation.title,
 		description: str(draftContent.description) || str(demoContent.description),
-		isDemo: false,
+		isDemo,
 
 		theme: {
 			fontFamily: str(demoTheme?.fontFamily),

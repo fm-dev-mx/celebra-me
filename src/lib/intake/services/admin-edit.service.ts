@@ -1,9 +1,9 @@
 import type { IntakeRequest, IntakeBlockType, IntakeSubmission } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import {
 	createIntakeRequest,
-	findIntakeRequestsByProjectId,
+	findIntakeRequestsByInvitationId,
 } from '@/lib/intake/repositories/intake-request.repository';
 import {
 	createIntakeSubmission,
@@ -14,16 +14,16 @@ import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 import { getBlockTypesForEventType } from '@/lib/intake/blocks';
 
 async function findOrCreateInternalRequest(
-	projectId: string,
+	invitationId: string,
 	enabledBlocks: IntakeBlockType[],
 ): Promise<IntakeRequest> {
-	const requests = await findIntakeRequestsByProjectId(projectId);
+	const requests = await findIntakeRequestsByInvitationId(invitationId);
 	const existing = requests.find((r) => r.origin === 'internal');
 	if (existing) return existing;
 
 	return createIntakeRequest({
-		invitationProjectId: projectId,
-		tokenHash: hashIntakeToken(`internal-edit:${projectId}`),
+		invitationId: invitationId,
+		tokenHash: hashIntakeToken(`internal-edit:${invitationId}`),
 		tokenCiphertext: null,
 		origin: 'internal',
 		enabledBlocks,
@@ -43,27 +43,27 @@ async function findOrCreateSubmission(
 	});
 }
 
-export async function ensureInternalEditContext(projectId: string) {
-	const project = await findInvitationProjectById(projectId);
-	if (!project) {
-		throw new ApiError(404, 'not_found', 'Proyecto no encontrado.');
+export async function ensureAdminEditContext(invitationId: string) {
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitación no encontrada.');
 	}
 
-	const requests = await findIntakeRequestsByProjectId(projectId);
+	const requests = await findIntakeRequestsByInvitationId(invitationId);
 	const clientRequest = requests.find((r) => r.origin === 'client');
 	const clientSubmission = clientRequest
 		? await findSubmissionByRequestId(clientRequest.id)
 		: null;
 
-	let enabledBlocks = clientRequest?.enabledBlocks ?? project.snapshot.recommendedBlocks;
+	let enabledBlocks = clientRequest?.enabledBlocks ?? invitation.snapshot.recommendedBlocks;
 	if (!enabledBlocks || enabledBlocks.length === 0) {
-		enabledBlocks = getBlockTypesForEventType(project.eventType);
+		enabledBlocks = getBlockTypesForEventType(invitation.eventType);
 	}
 
-	const request = await findOrCreateInternalRequest(projectId, enabledBlocks);
+	const request = await findOrCreateInternalRequest(invitationId, enabledBlocks);
 	const submission = await findOrCreateSubmission(request.id, clientSubmission?.blockData ?? {});
 
-	return { project, request, submission };
+	return { invitation, request, submission };
 }
 
 export async function saveInternalComments(

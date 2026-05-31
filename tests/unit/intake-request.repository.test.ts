@@ -1,7 +1,7 @@
 import {
 	findIntakeRequestById,
 	findIntakeRequestByTokenHash,
-	findIntakeRequestsByProjectId,
+	findIntakeRequestsByInvitationId,
 	createIntakeRequest,
 	updateIntakeRequest,
 } from '@/lib/intake/repositories/intake-request.repository';
@@ -51,7 +51,7 @@ describe('intake-request repository', () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.id).toBe('req-123');
-			expect(result?.invitationProjectId).toBe('proj-456');
+			expect(result?.invitationId).toBe('proj-456');
 			expect(result?.tokenHash).toBe('abc123hash');
 			expect(result?.tokenCiphertext).toBe('v1.iv.tag.ciphertext');
 			expect(result?.status).toBe('active');
@@ -94,11 +94,11 @@ describe('intake-request repository', () => {
 		});
 	});
 
-	describe('findIntakeRequestsByProjectId', () => {
+	describe('findIntakeRequestsByInvitationId', () => {
 		it('filters by origin when a workflow requests client links only', async () => {
 			mockSupabaseRequest.mockResolvedValue([]);
 
-			await findIntakeRequestsByProjectId('proj-123', 'client');
+			await findIntakeRequestsByInvitationId('proj-123', 'client');
 
 			expect(mockSupabaseRequest).toHaveBeenCalledWith({
 				pathWithQuery: expect.stringContaining(
@@ -126,7 +126,7 @@ describe('intake-request repository', () => {
 			mockSupabaseRequest.mockResolvedValue([mockRow]);
 
 			const result = await createIntakeRequest({
-				invitationProjectId: 'proj-123',
+				invitationId: 'proj-123',
 				tokenHash: 'new-hash',
 				tokenCiphertext: 'v1.iv.tag.ciphertext',
 				enabledBlocks: ['event-details', 'photos'],
@@ -157,7 +157,7 @@ describe('intake-request repository', () => {
 
 			await expect(
 				createIntakeRequest({
-					invitationProjectId: 'proj-123',
+					invitationId: 'proj-123',
 					tokenHash: 'hash',
 					tokenCiphertext: 'v1.iv.tag.ciphertext',
 					enabledBlocks: ['event-details'],

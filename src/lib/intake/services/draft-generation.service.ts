@@ -1,9 +1,9 @@
 import type { InvitationContentDraft } from '@/lib/intake/types';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
-import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-request.service';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
+import { getIntakeRequestsByInvitationId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
-	findDraftByProjectId,
+	findDraftByInvitationId,
 	updateDraftContent,
 	updateDraftStatus,
 	upsertDraft,
@@ -14,14 +14,14 @@ import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-
 import { deepMerge } from '@/lib/intake/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
-export async function generateDraft(projectId: string): Promise<InvitationContentDraft> {
-	const project = await findInvitationProjectById(projectId);
-	if (!project) {
-		throw new ApiError(404, 'not_found', 'Invitation project not found.');
+export async function generateDraft(invitationId: string): Promise<InvitationContentDraft> {
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitation not found.');
 	}
 
 	// Must have an approved intake submission to generate a draft
-	const requests = await getIntakeRequestsByProjectId(projectId);
+	const requests = await getIntakeRequestsByInvitationId(invitationId);
 	if (requests.length === 0) {
 		throw new ApiError(
 			422,
@@ -51,16 +51,16 @@ export async function generateDraft(projectId: string): Promise<InvitationConten
 	) as Record<string, unknown>;
 
 	return upsertDraft({
-		invitationProjectId: projectId,
+		invitationId: invitationId,
 		submissionId: result.submission.id,
 		content,
 	});
 }
 
-export async function createDraftRevision(projectId: string): Promise<InvitationContentDraft> {
-	const draft = await findDraftByProjectId(projectId);
+export async function createDraftRevision(invitationId: string): Promise<InvitationContentDraft> {
+	const draft = await findDraftByInvitationId(invitationId);
 	if (!draft) {
-		throw new ApiError(404, 'not_found', 'No se encontro un borrador para este proyecto.');
+		throw new ApiError(404, 'not_found', 'No se encontro un borrador para esta invitación.');
 	}
 	if (draft.status === 'draft') return draft;
 	return updateDraftStatus(draft.id, 'draft');
@@ -73,19 +73,19 @@ export async function createDraftRevision(projectId: string): Promise<Invitation
  * editing only — not exposed via any client API.
  */
 export async function createDraftFromAdmin(
-	projectId: string,
+	invitationId: string,
 	content: Record<string, unknown>,
 ): Promise<InvitationContentDraft> {
-	const project = await findInvitationProjectById(projectId);
-	if (!project) {
-		throw new ApiError(404, 'not_found', 'Invitation project not found.');
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitation not found.');
 	}
 
 	// Persist content through a real intake chain so it has a durable source.
 	// tokenHash prefix identifies this as admin-created vs client intake.
 	const request = await createIntakeRequest({
-		invitationProjectId: projectId,
-		tokenHash: 'admin-created-' + projectId.slice(0, 8),
+		invitationId: invitationId,
+		tokenHash: 'admin-created-' + invitationId.slice(0, 8),
 		tokenCiphertext: '',
 		origin: 'internal',
 		enabledBlocks: [],
@@ -98,23 +98,23 @@ export async function createDraftFromAdmin(
 	});
 
 	return upsertDraft({
-		invitationProjectId: projectId,
+		invitationId: invitationId,
 		submissionId: submission.id,
 		content,
 	});
 }
 
-export async function getDraft(projectId: string): Promise<InvitationContentDraft | null> {
-	return findDraftByProjectId(projectId);
+export async function getDraft(invitationId: string): Promise<InvitationContentDraft | null> {
+	return findDraftByInvitationId(invitationId);
 }
 
-export async function updateDraftContentByProject(
-	projectId: string,
+export async function updateDraftContentByInvitation(
+	invitationId: string,
 	content: Record<string, unknown>,
 ): Promise<InvitationContentDraft> {
-	const draft = await findDraftByProjectId(projectId);
+	const draft = await findDraftByInvitationId(invitationId);
 	if (!draft) {
-		throw new ApiError(404, 'not_found', 'No se encontro un borrador para este proyecto.');
+		throw new ApiError(404, 'not_found', 'No se encontro un borrador para esta invitación.');
 	}
 
 	if (draft.status !== 'draft') {

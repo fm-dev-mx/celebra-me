@@ -2,24 +2,24 @@ import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.map
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
-import type { InvitationProject } from '@/lib/intake/types';
+import type { Invitation } from '@/lib/intake/types';
 
 export type DraftPreviewResult =
-	| { ok: true; pageContext: InvitationPageContext; projectTitle: string; eventType: string }
+	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }
 	| { ok: false; error: { message: string } };
 
 export function buildDraftPreviewPageContext(
-	project: InvitationProject,
+	invitation: Invitation,
 	draftContent: Record<string, unknown>,
 	demoContent: Record<string, unknown>,
 ): DraftPreviewResult {
 	try {
-		const snapshot = project.snapshot;
+		const snapshot = invitation.snapshot;
 
 		const publishedData = mapDraftToPublished({
-			project: {
-				title: project.title,
-				eventType: project.eventType,
+			invitation: {
+				title: invitation.title,
+				eventType: invitation.eventType,
 				snapshot,
 			},
 			draftContent: draftContent as Parameters<typeof mapDraftToPublished>[0]['draftContent'],
@@ -28,7 +28,7 @@ export function buildDraftPreviewPageContext(
 
 		const viewModel = adaptDbEvent({
 			slug: snapshot.previewSlug,
-			eventType: project.eventType,
+			eventType: invitation.eventType,
 			isDemo: false,
 			content: publishedData,
 			assetSlug: snapshot.previewSlug,
@@ -37,11 +37,16 @@ export function buildDraftPreviewPageContext(
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
 			slug: snapshot.previewSlug,
-			eventType: project.eventType,
+			eventType: invitation.eventType,
 			isPreview: true,
 		});
 
-		return { ok: true, pageContext, projectTitle: project.title, eventType: project.eventType };
+		return {
+			ok: true,
+			pageContext,
+			invitationTitle: invitation.title,
+			eventType: invitation.eventType,
+		};
 	} catch {
 		return {
 			ok: false,

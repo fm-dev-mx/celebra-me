@@ -5,7 +5,7 @@ import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 interface InvitationContentDraftRow {
 	id: string;
 	invitation_project_id: string;
-	submission_id: string;
+	submission_id: string | null;
 	content: Record<string, unknown>;
 	status: string;
 	created_at: string;
@@ -15,7 +15,7 @@ interface InvitationContentDraftRow {
 function toDraft(row: InvitationContentDraftRow): InvitationContentDraft {
 	return {
 		id: row.id,
-		invitationProjectId: row.invitation_project_id,
+		invitationId: row.invitation_project_id,
 		submissionId: row.submission_id,
 		content: row.content,
 		status: row.status as InvitationContentDraft['status'],
@@ -27,11 +27,11 @@ function toDraft(row: InvitationContentDraftRow): InvitationContentDraft {
 const SELECT_COLUMNS =
 	'id,invitation_project_id,submission_id,content,status,created_at,updated_at';
 
-export async function findDraftByProjectId(
-	invitationProjectId: string,
+export async function findDraftByInvitationId(
+	invitationId: string,
 ): Promise<InvitationContentDraft | null> {
 	const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
-		pathWithQuery: `invitation_content_drafts?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&${ACTIVE_FILTER}&limit=1`,
+		pathWithQuery: `invitation_content_drafts?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toDraft(rows[0]) : null;
@@ -56,11 +56,11 @@ export async function updateDraftContent(
 }
 
 export async function upsertDraft(input: {
-	invitationProjectId: string;
-	submissionId: string;
+	invitationId: string;
+	submissionId: string | null;
 	content: Record<string, unknown>;
 }): Promise<InvitationContentDraft> {
-	const existing = await findDraftByProjectId(input.invitationProjectId);
+	const existing = await findDraftByInvitationId(input.invitationId);
 
 	if (existing) {
 		const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
@@ -84,7 +84,7 @@ export async function upsertDraft(input: {
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body: {
-			invitation_project_id: input.invitationProjectId,
+			invitation_project_id: input.invitationId,
 			submission_id: input.submissionId,
 			content: input.content,
 			status: 'draft',
