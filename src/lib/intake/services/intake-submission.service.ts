@@ -38,22 +38,36 @@ export async function saveSubmissionStep(
 	id: string,
 	blockType: string,
 	blockData: Record<string, unknown>,
+	allowApproved?: boolean,
 ): Promise<IntakeSubmission> {
 	const submission = await findIntakeSubmissionById(id);
 	if (!submission) {
-		throw new Error('Intake submission not found.');
+		throw new ApiError(404, 'not_found', 'Intake submission not found.');
 	}
 
-	if (submission.status === 'approved') {
-		throw new Error('Cannot edit an approved submission.');
+	if (!allowApproved && submission.status === 'approved') {
+		throw new ApiError(
+			409,
+			'submission_already_approved',
+			'Cannot edit an approved submission.',
+		);
 	}
 
-	const updatedBlockData = {
-		...submission.blockData,
-		[blockType]: blockData,
-	};
+	return updateIntakeSubmission(id, {
+		blockData: {
+			...submission.blockData,
+			[blockType]: blockData,
+		},
+	});
+}
 
-	return updateIntakeSubmission(id, { blockData: updatedBlockData });
+/** @deprecated Use saveSubmissionStep with allowApproved: true instead. */
+export async function saveInternalSubmissionStep(
+	id: string,
+	blockType: string,
+	blockData: Record<string, unknown>,
+): Promise<IntakeSubmission> {
+	return saveSubmissionStep(id, blockType, blockData, true);
 }
 
 export async function submitSubmission(
@@ -62,11 +76,15 @@ export async function submitSubmission(
 ): Promise<IntakeSubmission> {
 	const submission = await findIntakeSubmissionById(id);
 	if (!submission) {
-		throw new Error('Intake submission not found.');
+		throw new ApiError(404, 'not_found', 'Intake submission not found.');
 	}
 
 	if (submission.status === 'approved') {
-		throw new Error('Cannot resubmit an approved submission.');
+		throw new ApiError(
+			409,
+			'submission_already_approved',
+			'Cannot resubmit an approved submission.',
+		);
 	}
 
 	return updateIntakeSubmission(id, {

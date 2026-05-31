@@ -136,6 +136,33 @@ describe('saveSubmissionStep', () => {
 	});
 });
 
+describe('saveSubmissionStep with allowApproved', () => {
+	it('updates an approved submission for the admin-only editor', async () => {
+		const approved = { ...baseSubmission, status: 'approved' as const };
+		mockFindById.mockResolvedValue(approved);
+		mockUpdate.mockResolvedValue({
+			...approved,
+			blockData: { 'event-details': { celebrantName: 'Ana' } },
+		});
+
+		const result = await saveSubmissionStep(
+			'sub-1',
+			'event-details',
+			{
+				celebrantName: 'Ana',
+			},
+			true,
+		);
+
+		expect(result.blockData).toEqual({
+			'event-details': { celebrantName: 'Ana' },
+		});
+		expect(mockUpdate).toHaveBeenCalledWith('sub-1', {
+			blockData: { 'event-details': { celebrantName: 'Ana' } },
+		});
+	});
+});
+
 describe('submitSubmission', () => {
 	it('sets status to submitted with timestamp', async () => {
 		mockFindById.mockResolvedValue(baseSubmission);

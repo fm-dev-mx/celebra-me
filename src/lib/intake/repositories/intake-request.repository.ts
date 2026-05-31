@@ -61,7 +61,7 @@ export async function findIntakeRequestsByProjectId(
 export async function createIntakeRequest(input: {
 	invitationProjectId: string;
 	tokenHash: string;
-	tokenCiphertext: string;
+	tokenCiphertext: string | null;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;
 }): Promise<IntakeRequest> {
