@@ -26,15 +26,14 @@ function buildWaDeepLink(link: string): string {
 }
 
 const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => {
-	const [copied, setCopied] = useState(false);
-	const [copiedWa, setCopiedWa] = useState(false);
+	const [copied, setCopied] = useState<'link' | 'wa' | null>(null);
 
 	if (!request) {
 		return (
 			<div className="intake-link-panel">
 				<p className="intake-link-panel__hint">
-					Aún no se ha generado un enlace de captura. Configura los bloques y genera el
-					enlace.
+					Aún no se ha generado un enlace para cliente. Configura los bloques y genera el
+					enlace solo si deseas solicitarle sus datos.
 				</p>
 			</div>
 		);
@@ -42,27 +41,21 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 
 	const link = request.captureUrl;
 
-	const copyLink = async () => {
-		if (!link) return;
+	const copyToClipboard = async (text: string, label: 'link' | 'wa') => {
 		try {
-			await navigator.clipboard.writeText(link);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
+			await navigator.clipboard.writeText(text);
+			setCopied(label);
+			setTimeout(() => setCopied(null), 2000);
 		} catch (err) {
-			console.warn('Failed to copy link to clipboard:', err);
+			console.warn('Failed to copy to clipboard:', err);
 		}
 	};
 
-	const copyWhatsAppMessage = async () => {
-		if (!link) return;
-		const message = waMessage(link);
-		try {
-			await navigator.clipboard.writeText(message);
-			setCopiedWa(true);
-			setTimeout(() => setCopiedWa(false), 2000);
-		} catch (err) {
-			console.warn('Failed to copy WhatsApp message to clipboard:', err);
-		}
+	const copyLink = () => {
+		if (link) copyToClipboard(link, 'link');
+	};
+	const copyWhatsAppMessage = () => {
+		if (link) copyToClipboard(waMessage(link), 'wa');
 	};
 
 	return (
@@ -84,7 +77,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 
 			{link && (
 				<div className="intake-link-panel__link">
-					<label className="intake-field__label">Enlace de captura</label>
+					<label className="intake-field__label">Enlace para cliente</label>
 					<div className="intake-link-panel__link-row">
 						<input type="text" className="intake-field__input" value={link} readOnly />
 						<button
@@ -92,7 +85,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 							className="intake-link-panel__copy-btn"
 							onClick={copyLink}
 						>
-							{copied ? 'Copiado!' : 'Copiar'}
+							{copied === 'link' ? 'Copiado!' : 'Copiar'}
 						</button>
 						<a
 							className="intake-link-panel__open-btn"
@@ -113,7 +106,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 						className="intake-link-panel__wa-btn"
 						onClick={copyWhatsAppMessage}
 					>
-						{copiedWa ? 'Mensaje copiado!' : 'Copiar mensaje para WhatsApp'}
+						{copied === 'wa' ? 'Mensaje copiado!' : 'Copiar mensaje para WhatsApp'}
 					</button>
 					<a
 						href={buildWaDeepLink(link)}

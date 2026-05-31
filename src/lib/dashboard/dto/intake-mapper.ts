@@ -32,6 +32,7 @@ export function toInvitationProjectDTO(project: InvitationProject): InvitationPr
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		internalEditUrl: `/dashboard/invitaciones/${project.id}/editar`,
 		captureUrl: null,
 		captureLinkStatus: null,
 	};

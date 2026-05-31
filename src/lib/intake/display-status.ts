@@ -95,6 +95,17 @@ function getPublicSlug(project: InvitationProjectDTO): string {
 	return project.slug ?? `${project.eventType}-${project.id.slice(0, 8)}`;
 }
 
+const STATUS_DISPLAY: Record<string, { label: string; variant: StatusBadgeVariant }> = {
+	draft: { label: PROJECT_STATUS_LABELS.draft, variant: 'draft' },
+	waiting_for_client: { label: PROJECT_STATUS_LABELS.waiting_for_client, variant: 'waiting' },
+	client_submitted: { label: PROJECT_STATUS_LABELS.client_submitted, variant: 'submitted' },
+	in_review: { label: PROJECT_STATUS_LABELS.in_review, variant: 'review' },
+	in_production: { label: PROJECT_STATUS_LABELS.in_production, variant: 'production' },
+	preview_sent: { label: PROJECT_STATUS_LABELS.preview_sent, variant: 'preview' },
+	approved: { label: PROJECT_STATUS_LABELS.approved, variant: 'approved' },
+	published: { label: PROJECT_STATUS_LABELS.published, variant: 'published' },
+};
+
 export function resolveDisplayInfo(project: InvitationProjectDTO): DisplayStatusInfo {
 	if (project.status === 'archived') {
 		return { label: PROJECT_STATUS_LABELS.archived, variant: 'archived', warning: null };
@@ -103,38 +114,12 @@ export function resolveDisplayInfo(project: InvitationProjectDTO): DisplayStatus
 	const rule = findMatchingRule(project);
 	if (rule) return rule.getInfo(project);
 
-	switch (project.status) {
-		case 'draft':
-			return { label: PROJECT_STATUS_LABELS.draft, variant: 'draft', warning: null };
-		case 'waiting_for_client':
-			return {
-				label: PROJECT_STATUS_LABELS.waiting_for_client,
-				variant: 'waiting',
-				warning: null,
-			};
-		case 'client_submitted':
-			return {
-				label: PROJECT_STATUS_LABELS.client_submitted,
-				variant: 'submitted',
-				warning: null,
-			};
-		case 'in_review':
-			return { label: PROJECT_STATUS_LABELS.in_review, variant: 'review', warning: null };
-		case 'in_production':
-			return {
-				label: PROJECT_STATUS_LABELS.in_production,
-				variant: 'production',
-				warning: null,
-			};
-		case 'preview_sent':
-			return { label: PROJECT_STATUS_LABELS.preview_sent, variant: 'preview', warning: null };
-		case 'approved':
-			return { label: PROJECT_STATUS_LABELS.approved, variant: 'approved', warning: null };
-		case 'published':
-			return { label: PROJECT_STATUS_LABELS.published, variant: 'published', warning: null };
-		default:
-			return { label: project.status, variant: 'generic', warning: null };
+	const display = STATUS_DISPLAY[project.status];
+	if (display) {
+		return { ...display, warning: null };
 	}
+
+	return { label: project.status, variant: 'generic', warning: null };
 }
 
 export function resolveRepairAction(project: InvitationProjectDTO): RepairAction | null {
@@ -151,8 +136,8 @@ export function resolvePrimaryAction(project: InvitationProjectDTO): PrimaryActi
 	switch (project.status) {
 		case 'draft':
 			return {
-				text: 'Generar link de captura',
-				href: `/dashboard/invitaciones/${project.id}`,
+				text: 'Editar datos',
+				href: project.internalEditUrl,
 			};
 		case 'waiting_for_client':
 			return { text: 'Esperando respuesta del cliente' };

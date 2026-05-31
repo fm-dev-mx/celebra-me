@@ -4,10 +4,10 @@ import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import BlockSelector from '@/components/dashboard/intake/BlockSelector';
 import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
+import SubmissionSection from '@/components/dashboard/intake/SubmissionSection';
 import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
-import type { IntakeBlockType, IntakeSubmissionStatus } from '@/lib/intake/types';
-import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
-import { PROJECT_STATUS_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
+import type { IntakeBlockType } from '@/lib/intake/types';
+import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
@@ -64,7 +64,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			await createIntakeRequest(projectId, {
 				enabledBlocks: selectedBlocks,
 			});
-			setActionSuccess('Enlace de captura generado exitosamente.');
+			setActionSuccess('Enlace para cliente generado exitosamente.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el enlace.');
 		} finally {
@@ -201,13 +201,17 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 						onClick={handleCreateRequest}
 						disabled={creatingRequest}
 					>
-						{creatingRequest ? 'Generando...' : 'Generar enlace de captura'}
+						{creatingRequest ? 'Generando...' : 'Generar enlace para cliente'}
 					</button>
 				)}
 			</section>
 
 			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Enlace de captura</h3>
+				<h3 className="intake-detail__section-title">Enlace para cliente (opcional)</h3>
+				<p className="intake-detail__submission-hint">
+					La edición interna está siempre disponible desde la lista de invitaciones. Este
+					enlace solo es necesario si deseas solicitar datos al cliente.
+				</p>
 				<IntakeLinkPanel
 					request={currentRequest}
 					onRegenerate={handleRegenerate}
@@ -226,40 +230,6 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}
 		</div>
-	);
-};
-
-interface SubmissionSectionProps {
-	projectId: string;
-	submission: IntakeSubmissionDTO;
-}
-
-const SubmissionSection: FC<SubmissionSectionProps> = ({ projectId, submission }) => {
-	const status = submission.status as IntakeSubmissionStatus;
-	const showReview = status === 'submitted' || status === 'needs_changes';
-	return (
-		<section className="intake-detail__section">
-			<h3 className="intake-detail__section-title">Captura del cliente</h3>
-			<div className="intake-detail__submission-info">
-				<span>Estado: {SUBMISSION_STATUS_LABELS[status] ?? status}</span>
-				{submission.submittedAt && (
-					<span>Enviada: {new Date(submission.submittedAt).toLocaleString('es-MX')}</span>
-				)}
-			</div>
-			{status === 'in_progress' && (
-				<p className="intake-detail__submission-hint">
-					El cliente ha comenzado pero aún no ha enviado la captura.
-				</p>
-			)}
-			{showReview && (
-				<a
-					href={`/dashboard/invitaciones/${projectId}/review`}
-					className="intake-detail__review-link"
-				>
-					Revisar captura
-				</a>
-			)}
-		</section>
 	);
 };
 

@@ -23,6 +23,7 @@ function makeProject(overrides: Partial<InvitationProjectDTO>): InvitationProjec
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		internalEditUrl: '/dashboard/invitaciones/test-id/editar',
 		captureUrl: null,
 		captureLinkStatus: null,
 		...overrides,
@@ -146,12 +147,12 @@ describe('resolveDisplayInfo', () => {
 
 describe('resolvePrimaryAction', () => {
 	describe('normal statuses', () => {
-		it('returns generate capture link for draft', () => {
+		it('returns stable internal edit link for draft', () => {
 			const project = makeProject({ status: 'draft' });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Generar link de captura',
-				href: `/dashboard/invitaciones/${project.id}`,
+				text: 'Editar datos',
+				href: project.internalEditUrl,
 			});
 		});
 

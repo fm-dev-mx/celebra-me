@@ -5,7 +5,7 @@ import DemoSelector from '@/components/dashboard/intake/DemoSelector';
 import StatusBadge from '@/components/dashboard/StatusBadge';
 import EmptyState from '@/components/dashboard/EmptyState';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
-import type { InvitationProjectStatus, CaptureLinkStatus } from '@/lib/intake/types';
+import type { InvitationProjectStatus } from '@/lib/intake/types';
 import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
 import {
 	resolveDisplayInfo,
@@ -61,14 +61,6 @@ const RSVP_LABELS: Record<string, string> = {
 	draft: 'RSVP borrador',
 };
 
-const CAPTURE_LINK_LABELS: Record<CaptureLinkStatus, string> = {
-	active: 'Activo',
-	expired: 'Expirado',
-	missing: 'Sin enlace',
-	revoked: 'Revocado',
-	unavailable: 'No recuperable',
-};
-
 const InvitationList: FC = () => {
 	const { items, loading, error, createProject } = useInvitationAdmin();
 	const [showForm, setShowForm] = useState(false);
@@ -82,7 +74,6 @@ const InvitationList: FC = () => {
 	const [clientEmail, setClientEmail] = useState('');
 	const [eventType, setEventType] = useState('');
 	const [baseDemoId, setBaseDemoId] = useState('');
-	const [copiedProjectId, setCopiedProjectId] = useState<string | null>(null);
 
 	const filteredItems = useMemo(() => {
 		if (activeTab === 'all') return items;
@@ -92,16 +83,6 @@ const InvitationList: FC = () => {
 	}, [items, activeTab]);
 
 	const activeTabLabel = FILTER_TABS.find((t) => t.key === activeTab)?.label ?? 'Todas';
-
-	const handleCopyLink = async (projectId: string, url: string) => {
-		try {
-			await navigator.clipboard.writeText(url);
-			setCopiedProjectId(projectId);
-			setTimeout(() => setCopiedProjectId(null), 2000);
-		} catch {
-			// Clipboard not available
-		}
-	};
 
 	const handleCreate = async () => {
 		if (!title.trim()) {
@@ -154,9 +135,9 @@ const InvitationList: FC = () => {
 				<h2 className="intake-list__title">Producción de invitaciones</h2>
 				<p className="intake-list__subtitle">
 					Crea proyectos de invitación desde esta sección. Cada proyecto comienza con un
-					demo base que define la estructura visual, el cliente envía su contenido
-					mediante el enlace de captura, y al publicar se genera la invitación pública y
-					su evento RSVP.
+					demo base que define la estructura visual. Puedes editar los datos internamente
+					en cualquier momento y, al publicar, se genera la invitación pública y su evento
+					RSVP.
 				</p>
 				<button
 					type="button"
@@ -339,39 +320,12 @@ const InvitationList: FC = () => {
 											</div>
 										</td>
 										<td className="intake-list__cell-link">
-											{project.captureUrl &&
-											project.captureLinkStatus === 'active' ? (
-												<>
-													<span className="intake-list__link-badge intake-list__link-badge--active">
-														Activo
-													</span>
-													<button
-														type="button"
-														className="intake-list__link-copy-btn"
-														onClick={() =>
-															project.captureUrl &&
-															handleCopyLink(
-																project.id,
-																project.captureUrl,
-															)
-														}
-													>
-														{copiedProjectId === project.id
-															? 'Copiado'
-															: 'Copiar'}
-													</button>
-												</>
-											) : project.captureLinkStatus ? (
-												<span
-													className={`intake-list__link-badge intake-list__link-badge--${project.captureLinkStatus}`}
-												>
-													{CAPTURE_LINK_LABELS[project.captureLinkStatus]}
-												</span>
-											) : (
-												<span className="intake-list__link-badge intake-list__link-badge--missing">
-													—
-												</span>
-											)}
+											<a
+												href={project.internalEditUrl}
+												className="intake-list__action-primary"
+											>
+												Editar datos
+											</a>
 										</td>
 										<td>{rsvpLabel}</td>
 										<td>
