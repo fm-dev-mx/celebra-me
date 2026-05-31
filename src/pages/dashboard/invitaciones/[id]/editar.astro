@@ -1,0 +1,53 @@
+---
+import '@/styles/intake.scss';
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import IntakeForm from '@/components/intake/IntakeForm';
+import { ensureInternalEditContext } from '@/lib/intake/services/internal-edit.service';
+import { toErrorMessage } from '@/lib/rsvp/core/errors';
+
+const rawId = Astro.params.id;
+
+if (!rawId) {
+	return Astro.redirect('/dashboard/invitaciones');
+}
+
+const id = rawId;
+
+let project: Awaited<ReturnType<typeof ensureInternalEditContext>>['project'];
+let request: Awaited<ReturnType<typeof ensureInternalEditContext>>['request'];
+let submission: Awaited<ReturnType<typeof ensureInternalEditContext>>['submission'];
+let loadError: string | null = null;
+
+try {
+	const ctx = await ensureInternalEditContext(id);
+	project = ctx.project;
+	request = ctx.request;
+	submission = ctx.submission;
+} catch (err) {
+	loadError = toErrorMessage(err, 'No se pudo cargar el proyecto.');
+}
+---
+
+<DashboardLayout title={loadError ? 'Error' : `Editar datos - ${project!.title}`}>
+	<div class="intake-page-body">
+		{
+			loadError ? (
+				<div class="intake-page-error">
+					<p>{loadError}</p>
+					<a href="/dashboard/invitaciones">Volver a invitaciones</a>
+				</div>
+			) : (
+				<IntakeForm
+					client:load
+					mode="internal"
+					projectId={project!.id}
+					enabledBlocks={request!.enabledBlocks}
+					initialBlockData={submission!.blockData}
+					initialStatus={submission!.status}
+					isLocked={false}
+					projectTitle={project!.title}
+				/>
+			)
+		}
+	</div>
+</DashboardLayout>

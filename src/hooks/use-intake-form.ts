@@ -3,7 +3,9 @@ import type { IntakeBlockType } from '@/lib/intake/types';
 import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
 
 interface UseIntakeFormProps {
-	token: string;
+	mode?: 'client' | 'internal';
+	token?: string;
+	projectId?: string;
 	enabledBlocks: IntakeBlockType[];
 	initialBlockData: Record<string, unknown>;
 	initialStatus: string;
@@ -12,6 +14,8 @@ interface UseIntakeFormProps {
 
 export function useIntakeForm({
 	token,
+	mode = 'client',
+	projectId,
 	enabledBlocks,
 	initialBlockData,
 	initialStatus,
@@ -23,28 +27,49 @@ export function useIntakeForm({
 	const [saving, setSaving] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(
-		initialStatus === 'submitted' || initialStatus === 'approved',
+		mode === 'client' && (initialStatus === 'submitted' || initialStatus === 'approved'),
 	);
 	const [clientComments, setClientComments] = useState('');
 	const [showSummary, setShowSummary] = useState(false);
 
 	const totalSteps = enabledBlocks.length;
 	const currentBlockType = enabledBlocks[currentStep];
+	const endpoint =
+		mode === 'internal'
+			? `/api/dashboard/intake/${encodeURIComponent(projectId ?? '')}/edit`
+			: `/api/captura/${encodeURIComponent(token ?? '')}`;
 
-	const updateBlockField = useCallback((blockType: string, field: string, value: unknown) => {
-		setBlockData((prev) => ({
-			...prev,
-			[blockType]: {
-				...((prev[blockType] as Record<string, unknown>) ?? {}),
-				[field]: value,
-			},
-		}));
-		setErrors((prev) => {
-			const next = { ...prev };
-			delete next[blockType];
-			return next;
-		});
-	}, []);
+	if (mode === 'internal' && !projectId) {
+		throw new Error('projectId is required for internal editing mode.');
+	}
+	const mutationHeaders = (): Record<string, string> => {
+		const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+		if (mode === 'internal' && typeof document !== 'undefined') {
+			const csrfToken = document
+				.querySelector('meta[name="csrf-token"]')
+				?.getAttribute('content');
+			if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+		}
+		return headers;
+	};
+
+	const updateBlockField = useCallback(
+		(blockType: IntakeBlockType, field: string, value: unknown) => {
+			setBlockData((prev) => ({
+				...prev,
+				[blockType]: {
+					...((prev[blockType] as Record<string, unknown>) ?? {}),
+					[field]: value,
+				},
+			}));
+			setErrors((prev) => {
+				const next = { ...prev };
+				delete next[blockType];
+				return next;
+			});
+		},
+		[],
+	);
 
 	const saveStep = useCallback(
 		async (blockType: string, data: Record<string, unknown>) => {
@@ -56,9 +81,9 @@ export function useIntakeForm({
 			});
 
 			try {
-				const response = await fetch(`/api/captura/${encodeURIComponent(token)}`, {
+				const response = await fetch(endpoint, {
 					method: 'PATCH',
-					headers: { 'Content-Type': 'application/json' },
+					headers: mutationHeaders(),
 					body: JSON.stringify({ blockType, blockData: data }),
 				});
 
@@ -77,7 +102,7 @@ export function useIntakeForm({
 				setSaving(false);
 			}
 		},
-		[token],
+		[endpoint, mode],
 	);
 
 	const validateCurrentStep = useCallback((): boolean => {
@@ -147,9 +172,9 @@ export function useIntakeForm({
 
 		setSubmitting(true);
 		try {
-			const response = await fetch(`/api/captura/${encodeURIComponent(token)}`, {
+			const response = await fetch(endpoint, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: mutationHeaders(),
 				body: JSON.stringify({ clientComments }),
 			});
 
@@ -167,7 +192,7 @@ export function useIntakeForm({
 		} finally {
 			setSubmitting(false);
 		}
-	}, [token, clientComments, isLocked]);
+	}, [endpoint, clientComments, isLocked, mode]);
 
 	return {
 		currentStep,

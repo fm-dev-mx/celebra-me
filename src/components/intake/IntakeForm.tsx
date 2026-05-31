@@ -6,7 +6,9 @@ import IntakeSummary from '@/components/intake/IntakeSummary';
 import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
 
 interface Props {
-	token: string;
+	mode?: 'client' | 'internal';
+	token?: string;
+	projectId?: string;
 	enabledBlocks: IntakeBlockType[];
 	initialBlockData: Record<string, unknown>;
 	initialStatus: string;
@@ -16,6 +18,8 @@ interface Props {
 
 const IntakeForm: FC<Props> = ({
 	token,
+	mode = 'client',
+	projectId,
 	enabledBlocks,
 	initialBlockData,
 	initialStatus,
@@ -24,6 +28,8 @@ const IntakeForm: FC<Props> = ({
 }) => {
 	const form = useIntakeForm({
 		token,
+		mode,
+		projectId,
 		enabledBlocks,
 		initialBlockData,
 		initialStatus,
@@ -33,10 +39,13 @@ const IntakeForm: FC<Props> = ({
 	if (form.submitted) {
 		return (
 			<div className="intake-form__success">
-				<h2 className="intake-form__success-title">Captura enviada</h2>
+				<h2 className="intake-form__success-title">
+					{mode === 'internal' ? 'Captura guardada' : 'Captura enviada'}
+				</h2>
 				<p className="intake-form__success-text">
-					Gracias por enviar tu información. Tu administrador la revisará pronto. Si
-					necesitas hacer cambios, espera a que te contacten.
+					{mode === 'internal'
+						? 'Los cambios internos se guardaron correctamente.'
+						: 'Gracias por enviar tu información. Tu administrador la revisará pronto. Si necesitas hacer cambios, espera a que te contacten.'}
 				</p>
 			</div>
 		);
@@ -63,7 +72,9 @@ const IntakeForm: FC<Props> = ({
 		<div className="intake-form">
 			<header className="intake-form__header">
 				<h1 className="intake-form__title">{projectTitle}</h1>
-				<p className="intake-form__subtitle">Captura de información</p>
+				<p className="intake-form__subtitle">
+					{mode === 'internal' ? 'Edición interna' : 'Captura de información'}
+				</p>
 			</header>
 
 			<IntakeStepNav
