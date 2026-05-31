@@ -15,8 +15,12 @@ jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () =>
 	upsertDraft: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/repositories/supabase', () => ({
-	supabaseRestRequest: jest.fn(),
+jest.mock('@/lib/intake/repositories/intake-request.repository', () => ({
+	createIntakeRequest: jest.fn(),
+}));
+
+jest.mock('@/lib/intake/repositories/intake-submission.repository', () => ({
+	createIntakeSubmission: jest.fn(),
 }));
 
 import type {
@@ -33,8 +37,6 @@ import {
 	findDraftByProjectId,
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-
 const mockGetProject = findInvitationProjectById as jest.MockedFunction<
 	typeof findInvitationProjectById
 >;
@@ -46,7 +48,6 @@ const mockGetSubmission = getSubmissionByRequestId as jest.MockedFunction<
 >;
 const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
 const mockUpsertDraft = upsertDraft as jest.MockedFunction<typeof upsertDraft>;
-const mockSupabaseRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 
 const baseProject: InvitationProject = {
 	id: 'proj-1',
@@ -205,46 +206,28 @@ describe('generateDraft', () => {
 		});
 	});
 
-	it('creates minimal intake chain when submission is in_progress', async () => {
+	it('rejects draft generation when submission is in_progress', async () => {
 		mockGetProject.mockResolvedValue(baseProject);
 		mockGetRequests.mockResolvedValue([baseRequest]);
 		mockGetSubmission.mockResolvedValue({ ...approvedSubmission, status: 'in_progress' });
-		mockSupabaseRequest
-			.mockResolvedValueOnce([{ id: 'req-auto-1' }])
-			.mockResolvedValueOnce([{ id: 'sub-auto-1' }]);
-		mockUpsertDraft.mockResolvedValue(draftRow);
 
-		const result = await generateDraft('proj-1');
-		expect(result).toEqual(draftRow);
-		expect(mockUpsertDraft).toHaveBeenCalled();
+		await expect(generateDraft('proj-1')).rejects.toThrow(/aprobada/i);
 	});
 
-	it('creates minimal intake chain when submission is submitted (not yet approved)', async () => {
+	it('rejects draft generation when submission is submitted (not yet approved)', async () => {
 		mockGetProject.mockResolvedValue(baseProject);
 		mockGetRequests.mockResolvedValue([baseRequest]);
 		mockGetSubmission.mockResolvedValue({ ...approvedSubmission, status: 'submitted' });
-		mockSupabaseRequest
-			.mockResolvedValueOnce([{ id: 'req-auto-1' }])
-			.mockResolvedValueOnce([{ id: 'sub-auto-1' }]);
-		mockUpsertDraft.mockResolvedValue(draftRow);
 
-		const result = await generateDraft('proj-1');
-		expect(result).toEqual(draftRow);
-		expect(mockUpsertDraft).toHaveBeenCalled();
+		await expect(generateDraft('proj-1')).rejects.toThrow(/aprobada/i);
 	});
 
-	it('creates minimal intake chain when submission is needs_changes', async () => {
+	it('rejects draft generation when submission is needs_changes', async () => {
 		mockGetProject.mockResolvedValue(baseProject);
 		mockGetRequests.mockResolvedValue([baseRequest]);
 		mockGetSubmission.mockResolvedValue({ ...approvedSubmission, status: 'needs_changes' });
-		mockSupabaseRequest
-			.mockResolvedValueOnce([{ id: 'req-auto-1' }])
-			.mockResolvedValueOnce([{ id: 'sub-auto-1' }]);
-		mockUpsertDraft.mockResolvedValue(draftRow);
 
-		const result = await generateDraft('proj-1');
-		expect(result).toEqual(draftRow);
-		expect(mockUpsertDraft).toHaveBeenCalled();
+		await expect(generateDraft('proj-1')).rejects.toThrow(/aprobada/i);
 	});
 
 	it('rejects when project is not found', async () => {
@@ -257,43 +240,19 @@ describe('generateDraft', () => {
 		expect(mockUpsertDraft).not.toHaveBeenCalled();
 	});
 
-	it('creates minimal intake chain and draft when no intake request exists', async () => {
+	it('rejects when no intake request exists', async () => {
 		mockGetProject.mockResolvedValue(baseProject);
 		mockGetRequests.mockResolvedValue([]);
-		mockSupabaseRequest
-			.mockResolvedValueOnce([{ id: 'req-auto-1' }])
-			.mockResolvedValueOnce([{ id: 'sub-auto-1' }]);
-		mockUpsertDraft.mockResolvedValue(draftRow);
 
-		const result = await generateDraft('proj-1');
-
-		expect(result).toEqual(draftRow);
-		expect(mockSupabaseRequest).toHaveBeenCalledTimes(2);
-		expect(mockUpsertDraft).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
-			submissionId: 'sub-auto-1',
-			content: expect.any(Object),
-		});
+		await expect(generateDraft('proj-1')).rejects.toThrow(/captura/i);
 	});
 
-	it('creates minimal intake chain and draft when no submission exists', async () => {
+	it('rejects when no submission exists', async () => {
 		mockGetProject.mockResolvedValue(baseProject);
 		mockGetRequests.mockResolvedValue([baseRequest]);
 		mockGetSubmission.mockResolvedValue(null);
-		mockSupabaseRequest
-			.mockResolvedValueOnce([{ id: 'req-auto-1' }])
-			.mockResolvedValueOnce([{ id: 'sub-auto-1' }]);
-		mockUpsertDraft.mockResolvedValue(draftRow);
 
-		const result = await generateDraft('proj-1');
-
-		expect(result).toEqual(draftRow);
-		expect(mockSupabaseRequest).toHaveBeenCalledTimes(2);
-		expect(mockUpsertDraft).toHaveBeenCalledWith({
-			invitationProjectId: 'proj-1',
-			submissionId: 'sub-auto-1',
-			content: expect.any(Object),
-		});
+		await expect(generateDraft('proj-1')).rejects.toThrow(/aprobada/i);
 	});
 
 	it('idempotent: regenerating updates the same draft via upsert', async () => {

@@ -9,7 +9,9 @@ export type ApiErrorCode =
 	| 'internal_error'
 	| 'submission_already_approved'
 	| 'invalid_submission_status'
-	| 'invalid_draft_status';
+	| 'invalid_draft_status'
+	| 'config_error'
+	| 'no_approved_submission';
 
 export class ApiError extends Error {
 	readonly status: number;
