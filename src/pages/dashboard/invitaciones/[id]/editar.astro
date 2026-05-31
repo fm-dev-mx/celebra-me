@@ -2,6 +2,7 @@
 import '@/styles/intake.scss';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import IntakeForm from '@/components/intake/IntakeForm';
+import ProjectMetadataForm from '@/components/dashboard/intake/ProjectMetadataForm';
 import { ensureInternalEditContext } from '@/lib/intake/services/internal-edit.service';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
@@ -37,17 +38,35 @@ try {
 					<a href="/dashboard/invitaciones">Volver a invitaciones</a>
 				</div>
 			) : (
-				<IntakeForm
-					client:load
-					mode="internal"
-					projectId={project!.id}
-					enabledBlocks={request!.enabledBlocks}
-					initialBlockData={submission!.blockData}
-					initialStatus={submission!.status}
-					isLocked={false}
-					projectTitle={project!.title}
-					eventType={project!.eventType}
-				/>
+				<>
+					<section class="intake-page-section">
+						<ProjectMetadataForm
+							client:load
+							project={{
+								id: project!.id,
+								title: project!.title,
+								clientName: project!.clientName,
+								clientWhatsapp: project!.clientWhatsapp,
+								clientEmail: project!.clientEmail,
+								slug: project!.slug,
+								status: project!.status,
+								photosReceived: project!.photosReceived,
+							}}
+						/>
+					</section>
+					<hr class="intake-page-divider" />
+					<IntakeForm
+						client:load
+						mode="internal"
+						projectId={project!.id}
+						enabledBlocks={request!.enabledBlocks}
+						initialBlockData={submission!.blockData}
+						initialStatus={submission!.status}
+						isLocked={false}
+						projectTitle={project!.title}
+						eventType={project!.eventType}
+					/>
+				</>
 			)
 		}
 	</div>
