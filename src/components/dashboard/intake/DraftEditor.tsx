@@ -2,8 +2,9 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { strFallback, boolFallback, numFallback } from '@/lib/intake/utils';
+import { strFallback, boolFallback, numFallback, deepClone } from '@/lib/intake/utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
+import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 
 interface Props {
 	projectId: string;
@@ -68,9 +69,7 @@ function validateContent(content: DraftContent): ValidationError[] {
 
 const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 	const { updateDraft, saving } = useInvitationAdmin();
-	const [content, setContent] = useState<DraftContent>(() =>
-		JSON.parse(JSON.stringify(initialContent)),
-	);
+	const [content, setContent] = useState<DraftContent>(() => deepClone(initialContent));
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 	const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
@@ -113,7 +112,7 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 
 	const handleCancel = () => {
 		if (!success) {
-			setContent(JSON.parse(JSON.stringify(initialContent)));
+			setContent(deepClone(initialContent));
 			setError('');
 			setSuccess('');
 			setValidationErrors([]);
@@ -130,6 +129,29 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 	const quote = content.quote ?? {};
 	const thankYou = content.thankYou ?? {};
 	const photoNotes = content.photoNotes ?? {};
+	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
+
+	const setSectionOrder = (nextOrder: ContentSectionKey[]) => {
+		setContent((prev) => ({ ...prev, sectionOrder: nextOrder }));
+		setSuccess('');
+	};
+
+	const toggleSection = (section: ContentSectionKey) => {
+		setSectionOrder(
+			sectionOrder.includes(section)
+				? sectionOrder.filter((item) => item !== section)
+				: [...sectionOrder, section],
+		);
+	};
+
+	const moveSection = (section: ContentSectionKey, offset: -1 | 1) => {
+		const index = sectionOrder.indexOf(section);
+		const nextIndex = index + offset;
+		if (index === -1 || nextIndex < 0 || nextIndex >= sectionOrder.length) return;
+		const nextOrder = [...sectionOrder];
+		[nextOrder[index], nextOrder[nextIndex]] = [nextOrder[nextIndex], nextOrder[index]];
+		setSectionOrder(nextOrder);
+	};
 
 	const getErrors = (section: string): ValidationError[] =>
 		validationErrors.filter((e) => e.section === section);
@@ -181,6 +203,50 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 			{success && <p className="intake-review__success">{success}</p>}
 
 			<section className="intake-review__section">
+				<h3 className="intake-review__section-title">Secciones visibles</h3>
+				<p className="intake-editor__section-desc">
+					Activa, desactiva o cambia el orden de las secciones de la invitación.
+				</p>
+				{CONTENT_SECTION_KEYS.map((section) => {
+					const enabled = sectionOrder.includes(section);
+					const index = sectionOrder.indexOf(section);
+					return (
+						<div key={section} className="intake-editor__field">
+							<label className="intake-field__label">
+								<input
+									type="checkbox"
+									className="intake-editor__checkbox"
+									checked={enabled}
+									onChange={() => toggleSection(section)}
+								/>
+								{SECTION_LABELS[section] ?? section}
+							</label>
+							{enabled && (
+								<div>
+									<button
+										type="button"
+										className="intake-review__btn"
+										onClick={() => moveSection(section, -1)}
+										disabled={index === 0}
+									>
+										Subir
+									</button>
+									<button
+										type="button"
+										className="intake-review__btn"
+										onClick={() => moveSection(section, 1)}
+										disabled={index === sectionOrder.length - 1}
+									>
+										Bajar
+									</button>
+								</div>
+							)}
+						</div>
+					);
+				})}
+			</section>
+
+			<section className="intake-review__section">
 				<h3 className="intake-review__section-title">{SECTION_LABELS.Hero}</h3>
 				<p className="intake-editor__section-desc">
 					Información principal de la invitación.
@@ -228,13 +294,15 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 					(v) => setField('family', 'fatherName', v),
 				)}
 				<div className="intake-editor__field">
-					<label className="intake-field__label">Padre fallecido</label>
-					<input
-						type="checkbox"
-						className="intake-editor__checkbox"
-						checked={boolFallback(family.fatherDeceased)}
-						onChange={(e) => setField('family', 'fatherDeceased', e.target.checked)}
-					/>
+					<label className="intake-field__label">
+						<input
+							type="checkbox"
+							className="intake-editor__checkbox"
+							checked={boolFallback(family.fatherDeceased)}
+							onChange={(e) => setField('family', 'fatherDeceased', e.target.checked)}
+						/>
+						Padre fallecido
+					</label>
 				</div>
 				{renderField(
 					'family',
@@ -244,13 +312,15 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 					(v) => setField('family', 'motherName', v),
 				)}
 				<div className="intake-editor__field">
-					<label className="intake-field__label">Madre fallecida</label>
-					<input
-						type="checkbox"
-						className="intake-editor__checkbox"
-						checked={boolFallback(family.motherDeceased)}
-						onChange={(e) => setField('family', 'motherDeceased', e.target.checked)}
-					/>
+					<label className="intake-field__label">
+						<input
+							type="checkbox"
+							className="intake-editor__checkbox"
+							checked={boolFallback(family.motherDeceased)}
+							onChange={(e) => setField('family', 'motherDeceased', e.target.checked)}
+						/>
+						Madre fallecida
+					</label>
 				</div>
 				{renderField(
 					'family',

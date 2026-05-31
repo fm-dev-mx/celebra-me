@@ -8,6 +8,7 @@ interface Props {
 	selectedBlocks: IntakeBlockType[];
 	recommendedBlocks?: IntakeBlockType[];
 	onChange: (blocks: IntakeBlockType[]) => void;
+	disabled?: boolean;
 }
 
 const BlockSelector: FC<Props> = ({
@@ -15,16 +16,9 @@ const BlockSelector: FC<Props> = ({
 	selectedBlocks,
 	recommendedBlocks = [],
 	onChange,
+	disabled = false,
 }) => {
 	const availableBlocks = getBlocksForEventType(eventType as EventType);
-
-	if (!eventType) {
-		return (
-			<div className="block-selector">
-				<p className="block-selector__hint">Selecciona primero un tipo de evento.</p>
-			</div>
-		);
-	}
 
 	const toggleBlock = (blockType: IntakeBlockType) => {
 		if (selectedBlocks.includes(blockType)) {
@@ -39,6 +33,7 @@ const BlockSelector: FC<Props> = ({
 			<label className="intake-field__label">Bloques de captura</label>
 			<p className="block-selector__description">
 				Selecciona los bloques que el cliente debera completar.
+				{disabled ? ' La configuración queda fija después de crear el enlace.' : ''}
 			</p>
 			<div className="block-selector__list">
 				{availableBlocks.map((block) => {
@@ -57,6 +52,7 @@ const BlockSelector: FC<Props> = ({
 								type="checkbox"
 								checked={isSelected}
 								onChange={() => toggleBlock(block.type)}
+								disabled={disabled}
 								className="block-selector__checkbox"
 							/>
 							<div className="block-selector__info">

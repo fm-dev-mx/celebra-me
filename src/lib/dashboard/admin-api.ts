@@ -253,6 +253,14 @@ export class AdminApi {
 		>(`/api/dashboard/intake/${encodeURIComponent(projectId)}/draft`, { action: 'publish' });
 		return this.handleResponse(result);
 	}
+
+	async createDraftRevision(projectId: string): Promise<DraftResponse> {
+		const result = await dashboardApi.post<DraftResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(projectId)}/draft`,
+			{ action: 'revise' },
+		);
+		return this.handleResponse(result);
+	}
 }
 
 export const adminApi = new AdminApi();

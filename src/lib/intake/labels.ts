@@ -7,7 +7,10 @@ import type {
 
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
+	countdown: 'Cuenta regresiva',
 	family: 'Familia',
+	gallery: 'Galería',
+	itinerary: 'Itinerario',
 	location: 'Fecha y ubicaciones',
 	rsvp: 'Confirmación de asistencia',
 	music: 'Música de fondo',
@@ -118,4 +121,31 @@ export const REQUEST_STATUS_LABELS: Record<IntakeRequestStatus, string> = {
 	submitted: 'Enviado',
 	closed: 'Cerrado',
 	expired: 'Expirado',
+};
+
+export const CAPTURE_LINK_STATUS_LABELS: Record<string, string> = {
+	active: 'Activo',
+	expired: 'Expirado',
+	missing: 'Sin enlace',
+	revoked: 'Revocado',
+	unavailable: 'No recuperable',
+};
+
+export const EVENT_TYPE_LABELS: Record<string, string> = {
+	xv: 'XV años',
+	boda: 'Boda',
+	bautizo: 'Bautizo',
+	cumple: 'Cumpleaños',
+};
+
+export const RSVP_EVENT_STATUS_LABELS: Record<string, string> = {
+	published: 'Activo',
+	archived: 'Desactivado',
+	draft: 'Borrador',
+};
+
+export const RSVP_STATUS_LABELS: Record<string, string> = {
+	published: 'RSVP activo',
+	archived: 'RSVP desactivado',
+	draft: 'RSVP borrador',
 };

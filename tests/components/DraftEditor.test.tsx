@@ -127,8 +127,7 @@ describe('DraftEditor', () => {
 	it('toggle checkbox updates local state', () => {
 		render(<DraftEditor {...defaultProps} />);
 
-		const checkboxes = screen.getAllByRole('checkbox');
-		const fatherDeceased = checkboxes[0];
+		const fatherDeceased = screen.getByLabelText('Padre fallecido');
 		expect(fatherDeceased).not.toBeChecked();
 		fireEvent.click(fatherDeceased);
 		expect(fatherDeceased).toBeChecked();
@@ -236,13 +235,17 @@ describe('DraftEditor', () => {
 	it('renders section titles in Spanish', () => {
 		render(<DraftEditor {...defaultProps} />);
 
-		expect(screen.getByText('Datos principales / Hero')).toBeInTheDocument();
-		expect(screen.getByText('Familia')).toBeInTheDocument();
-		expect(screen.getByText('Fecha y ubicaciones')).toBeInTheDocument();
-		expect(screen.getByText('Confirmación de asistencia')).toBeInTheDocument();
-		expect(screen.getByText('Música de fondo')).toBeInTheDocument();
-		expect(screen.getByText('Regalos')).toBeInTheDocument();
-		expect(screen.getByText('Mensajes especiales')).toBeInTheDocument();
-		expect(screen.getByText('Notas de fotografías')).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { name: 'Datos principales / Hero' }),
+		).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Familia' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Fecha y ubicaciones' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { name: 'Confirmación de asistencia' }),
+		).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Música de fondo' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Regalos' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Mensajes especiales' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Notas de fotografías' })).toBeInTheDocument();
 	});
 });

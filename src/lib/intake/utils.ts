@@ -25,3 +25,35 @@ export function num(value: unknown): number | undefined {
 export function numFallback(value: unknown): number {
 	return typeof value === 'number' ? value : 0;
 }
+
+export function deepClone<T>(value: T): T {
+	if (typeof structuredClone === 'function') return structuredClone(value);
+	return JSON.parse(JSON.stringify(value));
+}
+
+export function deepMerge(
+	base: Record<string, unknown>,
+	overlay: Record<string, unknown>,
+): Record<string, unknown> {
+	const result: Record<string, unknown> = { ...base };
+	for (const key of Object.keys(overlay)) {
+		const baseVal = result[key];
+		const overlayVal = overlay[key];
+		if (
+			baseVal !== null &&
+			overlayVal !== null &&
+			typeof baseVal === 'object' &&
+			typeof overlayVal === 'object' &&
+			!Array.isArray(baseVal) &&
+			!Array.isArray(overlayVal)
+		) {
+			result[key] = deepMerge(
+				baseVal as Record<string, unknown>,
+				overlayVal as Record<string, unknown>,
+			);
+		} else {
+			result[key] = overlayVal;
+		}
+	}
+	return result;
+}

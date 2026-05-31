@@ -1,16 +1,11 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import type { RsvpEventDTO } from '@/lib/dashboard/dto/intake';
+import { RSVP_EVENT_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	rsvpEvent: RsvpEventDTO | null;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-	published: 'Activo',
-	archived: 'Desactivado',
-	draft: 'Borrador',
-};
 
 const STATUS_CLASSES: Record<string, string> = {
 	published: 'rsvp-panel__badge--active',
@@ -25,14 +20,18 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 	if (!rsvpEvent) {
 		return (
 			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">RSVP</h3>
-				<p className="intake-detail__empty">—</p>
+				<h3 className="intake-detail__section-title">RSVP e invitados</h3>
+				<p className="intake-detail__empty">Sin evento RSVP</p>
 			</section>
 		);
 	}
 
 	const handleDeactivate = async () => {
-		if (!window.confirm('¿Desactivar RSVP? Los invitados ya no podrán confirmar asistencia.'))
+		if (
+			!window.confirm(
+				'¿Desactivar RSVP? Los invitados ya no podrán confirmar asistencia. La invitación pública seguirá visible.',
+			)
+		)
 			return;
 		setDeactivating(true);
 		setActionError('');
@@ -55,11 +54,11 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 	};
 
 	const badgeClass = STATUS_CLASSES[rsvpEvent.status] ?? '';
-	const statusLabel = STATUS_LABELS[rsvpEvent.status] ?? rsvpEvent.status;
+	const statusLabel = RSVP_EVENT_STATUS_LABELS[rsvpEvent.status] ?? rsvpEvent.status;
 
 	return (
 		<section className="intake-detail__section">
-			<h3 className="intake-detail__section-title">RSVP</h3>
+			<h3 className="intake-detail__section-title">RSVP e invitados</h3>
 			<div className="rsvp-panel">
 				<div className="rsvp-panel__status">
 					<span className={`rsvp-panel__badge ${badgeClass}`}>{statusLabel}</span>
@@ -115,6 +114,9 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 						</button>
 					)}
 				</div>
+				<p className="intake-detail__empty">
+					Desactivar RSVP no oculta la invitación pública.
+				</p>
 
 				{actionError && <p className="intake-detail__error">{actionError}</p>}
 			</div>

@@ -27,6 +27,7 @@ import {
 	ensureInternalEditContext,
 	saveInternalComments,
 } from '@/lib/intake/services/internal-edit.service';
+import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 import type { InvitationProject } from '@/lib/intake/types';
 
 const mockFindProject = findInvitationProjectById as jest.MockedFunction<
@@ -79,6 +80,7 @@ const request = {
 	invitationProjectId: 'proj-1',
 	tokenHash: 'existing-hash',
 	tokenCiphertext: null,
+	origin: 'client' as const,
 	status: 'submitted' as const,
 	enabledBlocks: ['event-details' as const],
 	expiresAt: null,
@@ -107,12 +109,13 @@ beforeEach(() => {
 
 describe('ensureInternalEditContext', () => {
 	it('reuses the latest request and approved submission without applying client locks', async () => {
-		mockFindRequests.mockResolvedValue([request]);
+		const internalRequest = { ...request, origin: 'internal' as const };
+		mockFindRequests.mockResolvedValue([internalRequest]);
 		mockFindSubmission.mockResolvedValue(submission);
 
 		const result = await ensureInternalEditContext('proj-1');
 
-		expect(result).toEqual({ project, request, submission });
+		expect(result).toEqual({ project, request: internalRequest, submission });
 		expect(mockCreateRequest).not.toHaveBeenCalled();
 		expect(mockCreateSubmission).not.toHaveBeenCalled();
 	});
@@ -120,8 +123,9 @@ describe('ensureInternalEditContext', () => {
 	it('creates an internal-only request and submission when the project has no intake request', async () => {
 		const internalRequest = {
 			...request,
-			tokenHash: 'internal-edit',
+			tokenHash: hashIntakeToken('internal-edit:proj-1'),
 			tokenCiphertext: null,
+			origin: 'internal' as const,
 			status: 'active' as const,
 			enabledBlocks: ['event-details' as const, 'photos' as const],
 		};
@@ -135,24 +139,63 @@ describe('ensureInternalEditContext', () => {
 
 		expect(mockCreateRequest).toHaveBeenCalledWith({
 			invitationProjectId: 'proj-1',
-			tokenHash: 'internal-edit',
+			tokenHash: hashIntakeToken('internal-edit:proj-1'),
 			tokenCiphertext: null,
+			origin: 'internal',
 			enabledBlocks: ['event-details', 'photos'],
 			expiresAt: null,
 		});
-		expect(mockCreateSubmission).toHaveBeenCalledWith({ intakeRequestId: 'req-1' });
+		expect(mockCreateSubmission).toHaveBeenCalledWith({
+			intakeRequestId: 'req-1',
+			blockData: {},
+		});
 		expect(result.submission).toEqual(internalSubmission);
+	});
+
+	it('creates a separate internal request and seeds it from the client submission', async () => {
+		const clientSubmission = {
+			...submission,
+			blockData: { 'event-details': { celebrantName: 'Ana' } },
+		};
+		const internalRequest = {
+			...request,
+			id: 'req-internal',
+			tokenHash: hashIntakeToken('internal-edit:proj-1'),
+			origin: 'internal' as const,
+			enabledBlocks: ['event-details' as const],
+		};
+		const internalSubmission = {
+			...submission,
+			id: 'sub-internal',
+			intakeRequestId: 'req-internal',
+			status: 'in_progress' as const,
+			blockData: clientSubmission.blockData,
+		};
+		mockFindRequests.mockResolvedValue([request]);
+		mockFindSubmission.mockResolvedValueOnce(clientSubmission).mockResolvedValueOnce(null);
+		mockCreateRequest.mockResolvedValue(internalRequest);
+		mockCreateSubmission.mockResolvedValue(internalSubmission);
+
+		const result = await ensureInternalEditContext('proj-1');
+
+		expect(mockCreateSubmission).toHaveBeenCalledWith({
+			intakeRequestId: 'req-internal',
+			blockData: clientSubmission.blockData,
+		});
+		expect(result.request.origin).toBe('internal');
 	});
 });
 
 describe('saveInternalComments', () => {
-	it('updates comments without changing approved status', async () => {
+	it('finalizes internal source data as approved', async () => {
 		mockUpdateSubmission.mockResolvedValue({ ...submission, clientComments: 'Nota interna' });
 
 		await saveInternalComments('sub-1', 'Nota interna');
 
 		expect(mockUpdateSubmission).toHaveBeenCalledWith('sub-1', {
 			clientComments: 'Nota interna',
+			status: 'approved',
+			reviewedAt: expect.any(String),
 		});
 	});
 });

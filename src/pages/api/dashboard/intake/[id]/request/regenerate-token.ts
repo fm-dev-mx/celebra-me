@@ -23,7 +23,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const existingRequest = requests[0];
 		if (!existingRequest) {
 			throw new ApiError(404, 'not_found', 'No intake request found for this project.');

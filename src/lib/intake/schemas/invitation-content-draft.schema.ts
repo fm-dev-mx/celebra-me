@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
 	z.object({ action: z.literal('generate') }),
 	z.object({ action: z.literal('publish') }),
+	z.object({ action: z.literal('revise') }),
 ]);
 
 export const InvitationContentDraftContentSchema = z
@@ -11,6 +13,7 @@ export const InvitationContentDraftContentSchema = z
 		title: z.string().optional(),
 		description: z.string().optional(),
 		eventType: z.string().optional(),
+		sectionOrder: z.array(z.enum(CONTENT_SECTION_KEYS)).optional(),
 		hero: z
 			.object({
 				name: z.string().optional(),

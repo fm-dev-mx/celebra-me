@@ -21,10 +21,12 @@ interface Props {
 }
 
 const DraftReview: FC<Props> = ({ projectId }) => {
-	const { currentDraft, loading, loadDraft, publishDraft } = useInvitationAdmin();
+	const { currentDraft, loading, loadDraft, publishDraft, createDraftRevision } =
+		useInvitationAdmin();
 	const [editing, setEditing] = useState(false);
 	const [publishing, setPublishing] = useState(false);
 	const [publishError, setPublishError] = useState('');
+	const [revising, setRevising] = useState(false);
 
 	useEffect(() => {
 		void loadDraft(projectId);
@@ -95,14 +97,16 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 						Generado: {new Date(currentDraft.createdAt).toLocaleString('es-MX')}
 					</span>
 				</div>
-				{currentDraft.status === 'draft' && (
+				<a
+					href={`/dashboard/invitaciones/${projectId}/preview`}
+					className="intake-review__preview-link"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Vista previa
+				</a>
+				{currentDraft.status === 'draft' ? (
 					<>
-						<a
-							href={`/dashboard/invitaciones/${projectId}/preview`}
-							className="intake-review__preview-link"
-						>
-							Vista previa
-						</a>
 						<button
 							type="button"
 							className="intake-detail__generate-btn intake-editor__edit-btn"
@@ -138,6 +142,30 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 							{publishing ? 'Publicando...' : 'Publicar borrador'}
 						</button>
 					</>
+				) : (
+					<button
+						type="button"
+						className="intake-detail__generate-btn intake-editor__edit-btn"
+						onClick={async () => {
+							setRevising(true);
+							setPublishError('');
+							try {
+								await createDraftRevision(projectId);
+								void loadDraft(projectId);
+							} catch (err) {
+								setPublishError(
+									err instanceof Error
+										? err.message
+										: 'Error al crear la revisión.',
+								);
+							} finally {
+								setRevising(false);
+							}
+						}}
+						disabled={revising}
+					>
+						{revising ? 'Creando...' : 'Crear nueva revisión'}
+					</button>
 				)}
 				{publishError && <p className="intake-review__error">{publishError}</p>}
 			</header>

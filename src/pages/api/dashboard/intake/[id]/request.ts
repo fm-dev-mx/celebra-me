@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const items = requests.map(toIntakeRequestDTO);
 
 		return jsonResponse({ items });

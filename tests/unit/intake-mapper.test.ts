@@ -1,4 +1,5 @@
 import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
+import { toEnrichedInvitationProjectDTO } from '@/lib/intake/services/invitation-project.service';
 import type { InvitationProject } from '@/lib/intake/types';
 
 const project: InvitationProject = {
@@ -34,5 +35,18 @@ describe('toInvitationProjectDTO', () => {
 		expect(toInvitationProjectDTO(project).internalEditUrl).toBe(
 			'/dashboard/invitaciones/project-123/editar',
 		);
+	});
+
+	it('marks detail state as published when public content exists', () => {
+		expect(
+			toEnrichedInvitationProjectDTO(project, {
+				published: true,
+				rsvpEvent: { id: 'event-1', status: 'published' },
+			}),
+		).toMatchObject({
+			published: true,
+			rsvpEventId: 'event-1',
+			rsvpEventStatus: 'published',
+		});
 	});
 });

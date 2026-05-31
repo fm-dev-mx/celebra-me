@@ -8,6 +8,27 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
 import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
+import type { IntakeRequest } from '@/lib/intake/types';
+
+export function toEnrichedInvitationProjectDTO(
+	project: InvitationProject,
+	input: {
+		request?: Pick<IntakeRequest, 'status' | 'expiresAt' | 'tokenCiphertext'> | null;
+		hasSubmission?: boolean;
+		published?: boolean;
+		rsvpEvent?: { id: string; status: string } | null;
+	} = {},
+): InvitationProjectDTO {
+	return {
+		...toInvitationProjectDTO(project),
+		hasRequest: Boolean(input.request),
+		hasSubmission: input.hasSubmission ?? false,
+		published: input.published ?? false,
+		rsvpEventStatus: input.rsvpEvent?.status ?? null,
+		rsvpEventId: input.rsvpEvent?.id ?? null,
+		...resolveCaptureLink(input.request ?? null),
+	};
+}
 
 export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> {
 	const projects = await listInvitationProjects();
@@ -19,12 +40,13 @@ export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> 
 				id: string;
 				invitation_project_id: string;
 				token_ciphertext: string | null;
+				origin: string;
 				status: string;
 				expires_at: string | null;
 				enabled_blocks: unknown;
 			}>
 		>({
-			pathWithQuery: `intake_requests?select=id,invitation_project_id,token_ciphertext,status,expires_at,enabled_blocks&invitation_project_id=in.(${projectIds.map(encodeURIComponent).join(',')})`,
+			pathWithQuery: `intake_requests?select=id,invitation_project_id,token_ciphertext,origin,status,expires_at,enabled_blocks&origin=eq.client&invitation_project_id=in.(${projectIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<Array<{ id: string; invitation_project_id: string; status: string }>>({
@@ -41,7 +63,6 @@ export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> 
 		}),
 	]);
 
-	const requestProjectIds = new Set(requestRows.map((r) => r.invitation_project_id));
 	const requestIdToProject = new Map(
 		requestRows.map((r) => [r.id, r.invitation_project_id] as const),
 	);
@@ -55,25 +76,19 @@ export async function getEnrichedProjectList(): Promise<InvitationProjectDTO[]> 
 
 	return projects.map((project) => {
 		const rawRequest = requestRows.find((r) => r.invitation_project_id === project.id) ?? null;
-		const captureLink = resolveCaptureLink(
-			rawRequest
+		const event = eventsByProject.get(project.id);
+		return toEnrichedInvitationProjectDTO(project, {
+			request: rawRequest
 				? {
-						status: rawRequest.status,
+						status: rawRequest.status as IntakeRequest['status'],
 						expiresAt: rawRequest.expires_at,
 						tokenCiphertext: rawRequest.token_ciphertext,
 					}
 				: null,
-		);
-		const event = eventsByProject.get(project.id);
-		return {
-			...toInvitationProjectDTO(project),
-			hasRequest: requestProjectIds.has(project.id),
 			hasSubmission: submissionProjectIds.has(project.id),
 			published: publishedSet.has(project.id),
-			rsvpEventStatus: event?.status ?? null,
-			rsvpEventId: event?.id ?? null,
-			...captureLink,
-		};
+			rsvpEvent: event ?? null,
+		});
 	});
 }
 

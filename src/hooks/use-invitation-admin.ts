@@ -228,6 +228,23 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
+	const createDraftRevision = useCallback(async (projectId: string) => {
+		setSaving(true);
+		setError('');
+		try {
+			const result = await adminApi.createDraftRevision(projectId);
+			setCurrentDraft(result.draft);
+			return result.draft;
+		} catch (err) {
+			throw new Error(
+				err instanceof Error ? err.message : 'Error al crear la nueva revisión.',
+				{ cause: err },
+			);
+		} finally {
+			setSaving(false);
+		}
+	}, []);
+
 	return {
 		items,
 		error,
@@ -252,6 +269,7 @@ export function useInvitationAdmin() {
 		generateDraft: generateDraftAction,
 		updateDraft,
 		publishDraft: publishDraftAction,
+		createDraftRevision,
 		reloadProjects: loadProjects,
 	};
 }

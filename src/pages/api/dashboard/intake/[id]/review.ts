@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 		const project = await findInvitationProjectById(id);
 		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const activeRequest = requests[0] ?? null;
 
 		if (!activeRequest) {
@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		const project = await findInvitationProjectById(id);
 		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const activeRequest = requests[0];
 		if (!activeRequest) {
 			throw new ApiError(404, 'not_found', 'No intake request found for this project.');
@@ -130,7 +130,7 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		const parsed = await validateBodyOrRespond(request, UpdateAdminSubmissionSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const activeRequest = requests[0];
 		if (!activeRequest) {
 			throw new ApiError(404, 'not_found', 'No intake request found for this project.');

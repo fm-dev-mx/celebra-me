@@ -8,6 +8,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	generateDraft,
 	getDraft,
+	createDraftRevision,
 	updateDraftContentByProject,
 } from '@/lib/intake/services/draft-generation.service';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
@@ -57,6 +58,10 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 				draft: toInvitationContentDraftDTO(result.draft),
 				publishedContent: result.publishedContent,
 			});
+		}
+		if (parsed.action === 'revise') {
+			const draft = await createDraftRevision(id);
+			return jsonResponse({ draft: toInvitationContentDraftDTO(draft) });
 		}
 
 		const draft = await generateDraft(id);

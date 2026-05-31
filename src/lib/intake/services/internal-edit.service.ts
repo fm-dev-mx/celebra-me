@@ -1,4 +1,4 @@
-import type { IntakeSubmission } from '@/lib/intake/types';
+import type { IntakeRequest, IntakeBlockType, IntakeSubmission } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
 import {
@@ -10,8 +10,37 @@ import {
 	findSubmissionByRequestId,
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
+import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 
-const INTERNAL_TOKEN_HASH = 'internal-edit';
+async function findOrCreateInternalRequest(
+	projectId: string,
+	enabledBlocks: IntakeBlockType[],
+): Promise<IntakeRequest> {
+	const requests = await findIntakeRequestsByProjectId(projectId);
+	const existing = requests.find((r) => r.origin === 'internal');
+	if (existing) return existing;
+
+	return createIntakeRequest({
+		invitationProjectId: projectId,
+		tokenHash: hashIntakeToken(`internal-edit:${projectId}`),
+		tokenCiphertext: null,
+		origin: 'internal',
+		enabledBlocks,
+		expiresAt: null,
+	});
+}
+
+async function findOrCreateSubmission(
+	internalRequestId: string,
+	seedData: Record<string, unknown>,
+): Promise<IntakeSubmission> {
+	const existing = await findSubmissionByRequestId(internalRequestId);
+	if (existing) return existing;
+	return createIntakeSubmission({
+		intakeRequestId: internalRequestId,
+		blockData: seedData,
+	});
+}
 
 export async function ensureInternalEditContext(projectId: string) {
 	const project = await findInvitationProjectById(projectId);
@@ -20,19 +49,16 @@ export async function ensureInternalEditContext(projectId: string) {
 	}
 
 	const requests = await findIntakeRequestsByProjectId(projectId);
-	const request =
-		requests[0] ??
-		(await createIntakeRequest({
-			invitationProjectId: projectId,
-			tokenHash: INTERNAL_TOKEN_HASH,
-			tokenCiphertext: null,
-			enabledBlocks: project.snapshot.recommendedBlocks,
-			expiresAt: null,
-		}));
+	const clientRequest = requests.find((r) => r.origin === 'client');
+	const clientSubmission = clientRequest
+		? await findSubmissionByRequestId(clientRequest.id)
+		: null;
 
-	const submission =
-		(await findSubmissionByRequestId(request.id)) ??
-		(await createIntakeSubmission({ intakeRequestId: request.id }));
+	const request = await findOrCreateInternalRequest(
+		projectId,
+		clientRequest?.enabledBlocks ?? project.snapshot.recommendedBlocks,
+	);
+	const submission = await findOrCreateSubmission(request.id, clientSubmission?.blockData ?? {});
 
 	return { project, request, submission };
 }
@@ -41,5 +67,9 @@ export async function saveInternalComments(
 	submissionId: string,
 	clientComments: string,
 ): Promise<IntakeSubmission> {
-	return updateIntakeSubmission(submissionId, { clientComments });
+	return updateIntakeSubmission(submissionId, {
+		status: 'approved',
+		clientComments,
+		reviewedAt: new Date().toISOString(),
+	});
 }

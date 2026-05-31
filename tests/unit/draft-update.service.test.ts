@@ -1,16 +1,22 @@
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
 	findDraftByProjectId: jest.fn(),
 	updateDraftContent: jest.fn(),
+	updateDraftStatus: jest.fn(),
 }));
 
-import { updateDraftContentByProject } from '@/lib/intake/services/draft-generation.service';
+import {
+	createDraftRevision,
+	updateDraftContentByProject,
+} from '@/lib/intake/services/draft-generation.service';
 import {
 	findDraftByProjectId,
 	updateDraftContent,
+	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 
 const mockFindDraft = findDraftByProjectId as jest.MockedFunction<typeof findDraftByProjectId>;
 const mockUpdateDraft = updateDraftContent as jest.MockedFunction<typeof updateDraftContent>;
+const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
 
 const existingDraft = {
 	id: 'draft-1',
@@ -29,6 +35,28 @@ const reviewedDraft = {
 
 beforeEach(() => {
 	jest.clearAllMocks();
+});
+
+describe('createDraftRevision', () => {
+	it('reopens approved draft content as an editable revision', async () => {
+		const approvedDraft = { ...existingDraft, status: 'approved' as const };
+		mockFindDraft.mockResolvedValue(approvedDraft);
+		mockUpdateDraftStatus.mockResolvedValue(existingDraft);
+
+		const result = await createDraftRevision('proj-1');
+
+		expect(result.status).toBe('draft');
+		expect(mockUpdateDraftStatus).toHaveBeenCalledWith('draft-1', 'draft');
+	});
+
+	it('returns an existing editable draft without rewriting it', async () => {
+		mockFindDraft.mockResolvedValue(existingDraft);
+
+		const result = await createDraftRevision('proj-1');
+
+		expect(result).toBe(existingDraft);
+		expect(mockUpdateDraftStatus).not.toHaveBeenCalled();
+	});
 });
 
 describe('updateDraftContentByProject', () => {

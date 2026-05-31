@@ -42,7 +42,7 @@ it('shows a stable internal edit link instead of an unrecoverable capture-link s
 
 	render(<InvitationList />);
 
-	expect(screen.getAllByRole('link', { name: 'Editar datos' })).toEqual(
+	expect(screen.getAllByRole('link', { name: 'Editar datos base' })).toEqual(
 		expect.arrayContaining([
 			expect.objectContaining({
 				href: 'http://localhost/dashboard/invitaciones/proj-1/editar',

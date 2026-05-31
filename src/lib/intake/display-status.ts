@@ -130,13 +130,13 @@ export function resolveRepairAction(project: InvitationProjectDTO): RepairAction
 export function resolvePrimaryAction(project: InvitationProjectDTO): PrimaryAction | null {
 	const rule = findMatchingRule(project);
 	if (rule) {
-		return { text: 'Revisar proyecto', href: `/dashboard/invitaciones/${project.id}` };
+		return { text: 'Resolver inconsistencia', href: `/dashboard/invitaciones/${project.id}` };
 	}
 
 	switch (project.status) {
 		case 'draft':
 			return {
-				text: 'Editar datos',
+				text: 'Editar datos base',
 				href: project.internalEditUrl,
 			};
 		case 'waiting_for_client':
@@ -149,12 +149,12 @@ export function resolvePrimaryAction(project: InvitationProjectDTO): PrimaryActi
 		case 'in_review':
 			return { text: 'En revisión' };
 		case 'in_production':
-			return { text: 'Continuar producción', href: `/dashboard/invitaciones/${project.id}` };
+			return { text: 'Administrar proyecto', href: `/dashboard/invitaciones/${project.id}` };
 		case 'preview_sent':
 			return { text: 'Esperando aprobación final' };
 		case 'approved':
 			return {
-				text: 'Generar borrador',
+				text: 'Crear contenido',
 				href: `/dashboard/invitaciones/${project.id}/draft`,
 			};
 		case 'published':

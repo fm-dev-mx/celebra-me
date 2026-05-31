@@ -1,21 +1,13 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import type { IntakeRequestDTO } from '@/lib/dashboard/dto/intake';
-import { REQUEST_STATUS_LABELS } from '@/lib/intake/labels';
+import { REQUEST_STATUS_LABELS, CAPTURE_LINK_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	request: IntakeRequestDTO | null;
 	onRegenerate: () => void;
 	regenerating?: boolean;
 }
-
-const LINK_STATUS_LABELS: Record<IntakeRequestDTO['captureLinkStatus'], string> = {
-	active: 'Activo',
-	expired: 'Expirado',
-	missing: 'Sin enlace',
-	revoked: 'Revocado',
-	unavailable: 'No recuperable',
-};
 
 function waMessage(link: string): string {
 	return `¡Hola! Aquí tienes el enlace para capturar la información de tu invitación:\n\n${link}\n\nPor favor completa el formulario cuando tengas tiempo. Si tienes alguna duda, no dudes en preguntar.`;
@@ -66,7 +58,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 					{REQUEST_STATUS_LABELS[request.status] ?? request.status}
 				</span>
 				<span className="intake-link-panel__value">
-					Enlace: {LINK_STATUS_LABELS[request.captureLinkStatus]}
+					Enlace: {CAPTURE_LINK_STATUS_LABELS[request.captureLinkStatus]}
 				</span>
 				{request.expiresAt && (
 					<span className="intake-link-panel__expires">
@@ -132,7 +124,7 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 				onClick={onRegenerate}
 				disabled={regenerating}
 			>
-				{regenerating ? 'Regenerando...' : 'Regenerar token'}
+				{regenerating ? 'Creando...' : 'Crear nuevo enlace e invalidar el anterior'}
 			</button>
 		</div>
 	);

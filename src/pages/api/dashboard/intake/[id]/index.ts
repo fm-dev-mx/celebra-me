@@ -14,11 +14,9 @@ import { getIntakeRequestsByProjectId } from '@/lib/intake/services/intake-reque
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import { UpdateInvitationProjectSchema } from '@/lib/intake/schemas/invitation-project.schema';
 import { findEventByProjectIdService } from '@/lib/rsvp/repositories/event.repository';
-import {
-	toInvitationProjectDTO,
-	toIntakeRequestDTO,
-	toIntakeSubmissionDTO,
-} from '@/lib/dashboard/dto/intake-mapper';
+import { toIntakeRequestDTO, toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
+import { findPublishedByProjectId } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { toEnrichedInvitationProjectDTO } from '@/lib/intake/services/invitation-project.service';
 
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
@@ -31,7 +29,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 		const project = await findInvitationProjectById(id);
 		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
 
-		const requests = await getIntakeRequestsByProjectId(id);
+		const requests = await getIntakeRequestsByProjectId(id, 'client');
 		const activeRequest = requests[0] ?? null;
 
 		let submission = null;
@@ -73,8 +71,14 @@ export const GET: APIRoute = async ({ request, params }) => {
 			};
 		}
 
+		const publishedContent = await findPublishedByProjectId(id);
 		return jsonResponse({
-			item: toInvitationProjectDTO(project),
+			item: toEnrichedInvitationProjectDTO(project, {
+				request: activeRequest,
+				hasSubmission: Boolean(submission),
+				published: Boolean(publishedContent),
+				rsvpEvent: event,
+			}),
 			request: activeRequest ? toIntakeRequestDTO(activeRequest) : null,
 			submission,
 			rsvpEvent,
@@ -101,8 +105,22 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		if (parsed instanceof Response) return parsed;
 
 		const project = await updateInvitationProject(id, parsed);
+		const [requests, publishedContent, event] = await Promise.all([
+			getIntakeRequestsByProjectId(id, 'client'),
+			findPublishedByProjectId(id),
+			findEventByProjectIdService(id),
+		]);
+		const activeRequest = requests[0] ?? null;
+		const submission = activeRequest ? await getSubmissionByRequestId(activeRequest.id) : null;
 
-		return jsonResponse({ item: toInvitationProjectDTO(project) });
+		return jsonResponse({
+			item: toEnrichedInvitationProjectDTO(project, {
+				request: activeRequest,
+				hasSubmission: Boolean(submission),
+				published: Boolean(publishedContent),
+				rsvpEvent: event,
+			}),
+		});
 	} catch (error) {
 		return errorResponse(error);
 	}

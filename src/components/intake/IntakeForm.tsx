@@ -40,7 +40,7 @@ const IntakeForm: FC<Props> = ({
 		return (
 			<div className="intake-form__success">
 				<h2 className="intake-form__success-title">
-					{mode === 'internal' ? 'Captura guardada' : 'Captura enviada'}
+					{mode === 'internal' ? 'Datos base guardados' : 'Captura enviada'}
 				</h2>
 				<p className="intake-form__success-text">
 					{mode === 'internal'
@@ -94,6 +94,7 @@ const IntakeForm: FC<Props> = ({
 						onEdit={form.goToStep}
 						onSubmit={form.submit}
 						submitting={form.submitting}
+						mode={mode}
 					/>
 				) : (
 					<>

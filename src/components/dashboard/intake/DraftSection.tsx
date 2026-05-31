@@ -7,13 +7,21 @@ interface Props {
 }
 
 const DraftSection: FC<Props> = ({ projectId }) => {
-	const { currentDraft, generateDraft } = useInvitationAdmin();
-	const [draftGenerating, setDraftGenerating] = useState(false);
+	const { currentDraft, generateDraft, createDraftRevision } = useInvitationAdmin();
+	const [generating, setGenerating] = useState(false);
+	const [revising, setRevising] = useState(false);
 	const [actionError, setActionError] = useState('');
 	const [actionSuccess, setActionSuccess] = useState('');
 
 	const handleGenerateDraft = async () => {
-		setDraftGenerating(true);
+		if (
+			currentDraft &&
+			!window.confirm(
+				'Esto reemplazará el contenido editable con los datos base actuales. ¿Continuar?',
+			)
+		)
+			return;
+		setGenerating(true);
 		setActionError('');
 		setActionSuccess('');
 
@@ -23,13 +31,27 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el borrador.');
 		} finally {
-			setDraftGenerating(false);
+			setGenerating(false);
+		}
+	};
+
+	const handleCreateRevision = async () => {
+		setRevising(true);
+		setActionError('');
+		setActionSuccess('');
+		try {
+			await createDraftRevision(projectId);
+			setActionSuccess('Nueva revisión editable creada exitosamente.');
+		} catch (err) {
+			setActionError(err instanceof Error ? err.message : 'Error al crear la revisión.');
+		} finally {
+			setRevising(false);
 		}
 	};
 
 	return (
 		<section className="intake-detail__section">
-			<h3 className="intake-detail__section-title">Borrador de invitación</h3>
+			<h3 className="intake-detail__section-title">Contenido de la invitación</h3>
 			{currentDraft ? (
 				<div className="intake-detail__draft-info">
 					<span>Estado: {currentDraft.status}</span>
@@ -41,22 +63,37 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 							href={`/dashboard/invitaciones/${projectId}/draft`}
 							className="intake-detail__review-link"
 						>
-							Ver borrador
+							Revisar contenido
 						</a>
 						<a
 							href={`/dashboard/invitaciones/${projectId}/preview`}
 							className="intake-detail__review-link"
+							target="_blank"
+							rel="noopener noreferrer"
 						>
 							Vista previa
 						</a>
-						<button
-							type="button"
-							className="intake-detail__generate-btn"
-							onClick={handleGenerateDraft}
-							disabled={draftGenerating}
-						>
-							{draftGenerating ? 'Regenerando...' : 'Regenerar borrador'}
-						</button>
+						{currentDraft.status === 'draft' ? (
+							<button
+								type="button"
+								className="intake-detail__generate-btn"
+								onClick={handleGenerateDraft}
+								disabled={generating}
+							>
+								{generating
+									? 'Reemplazando...'
+									: 'Reemplazar contenido con datos base'}
+							</button>
+						) : (
+							<button
+								type="button"
+								className="intake-detail__generate-btn"
+								onClick={handleCreateRevision}
+								disabled={revising}
+							>
+								{revising ? 'Creando...' : 'Crear nueva revisión'}
+							</button>
+						)}
 					</div>
 				</div>
 			) : (
@@ -64,9 +101,9 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 					type="button"
 					className="intake-detail__generate-btn"
 					onClick={handleGenerateDraft}
-					disabled={draftGenerating}
+					disabled={generating}
 				>
-					{draftGenerating ? 'Generando...' : 'Generar borrador de invitación'}
+					{generating ? 'Generando...' : 'Crear contenido desde datos base'}
 				</button>
 			)}
 			{actionError && <p className="intake-detail__error">{actionError}</p>}

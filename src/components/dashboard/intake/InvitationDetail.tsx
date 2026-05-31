@@ -171,7 +171,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 						<dd>{currentProject.clientEmail || '—'}</dd>
 					</div>
 					<div className="intake-detail__info-row">
-						<dt>Fotos recibidas</dt>
+						<dt>Fotos del cliente recibidas</dt>
 						<dd>
 							<button
 								type="button"
@@ -186,14 +186,18 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			</section>
 
 			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Bloques de captura</h3>
+				<h3 className="intake-detail__section-title">Solicitud al cliente (opcional)</h3>
+				<p className="intake-detail__submission-hint">
+					La edición interna está siempre disponible desde la lista de invitaciones. Este
+					enlace solo es necesario si deseas solicitar datos al cliente.
+				</p>
 				<BlockSelector
 					eventType={currentProject.eventType}
 					selectedBlocks={selectedBlocks}
 					recommendedBlocks={preset?.recommendedBlocks}
 					onChange={setSelectedBlocks}
+					disabled={Boolean(currentRequest)}
 				/>
-
 				{!currentRequest && (
 					<button
 						type="button"
@@ -204,14 +208,6 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 						{creatingRequest ? 'Generando...' : 'Generar enlace para cliente'}
 					</button>
 				)}
-			</section>
-
-			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Enlace para cliente (opcional)</h3>
-				<p className="intake-detail__submission-hint">
-					La edición interna está siempre disponible desde la lista de invitaciones. Este
-					enlace solo es necesario si deseas solicitar datos al cliente.
-				</p>
 				<IntakeLinkPanel
 					request={currentRequest}
 					onRegenerate={handleRegenerate}

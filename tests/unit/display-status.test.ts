@@ -151,7 +151,7 @@ describe('resolvePrimaryAction', () => {
 			const project = makeProject({ status: 'draft' });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Editar datos',
+				text: 'Editar datos base',
 				href: project.internalEditUrl,
 			});
 		});
@@ -181,7 +181,7 @@ describe('resolvePrimaryAction', () => {
 			const project = makeProject({ status: 'in_production' });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Continuar producción',
+				text: 'Administrar proyecto',
 				href: `/dashboard/invitaciones/${project.id}`,
 			});
 		});
@@ -196,7 +196,7 @@ describe('resolvePrimaryAction', () => {
 			const project = makeProject({ status: 'approved' });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Generar borrador',
+				text: 'Crear contenido',
 				href: `/dashboard/invitaciones/${project.id}/draft`,
 			});
 		});
@@ -242,7 +242,7 @@ describe('resolvePrimaryAction', () => {
 			const project = makeProject({ status: 'published', published: false });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Revisar proyecto',
+				text: 'Resolver inconsistencia',
 				href: `/dashboard/invitaciones/${project.id}`,
 			});
 		});
@@ -255,7 +255,7 @@ describe('resolvePrimaryAction', () => {
 			});
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Revisar proyecto',
+				text: 'Resolver inconsistencia',
 				href: `/dashboard/invitaciones/${project.id}`,
 			});
 		});
@@ -264,7 +264,7 @@ describe('resolvePrimaryAction', () => {
 			const project = makeProject({ status: 'approved', published: true });
 			const action = resolvePrimaryAction(project);
 			expect(action).toEqual({
-				text: 'Revisar proyecto',
+				text: 'Resolver inconsistencia',
 				href: `/dashboard/invitaciones/${project.id}`,
 			});
 		});

@@ -253,10 +253,14 @@ describe('DraftReview', () => {
 		expect(previewLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1/preview');
 	});
 
-	it('does not render vista previa link when status is not draft', () => {
+	it('keeps preview available and offers a new revision when content is published', () => {
 		mockCurrentDraft = makeDraftContent({ status: 'published' });
 		render(<DraftReview projectId="proj-1" />);
 
-		expect(screen.queryByRole('link', { name: /vista previa/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /vista previa/i })).toHaveAttribute(
+			'target',
+			'_blank',
+		);
+		expect(screen.getByRole('button', { name: 'Crear nueva revisión' })).toBeInTheDocument();
 	});
 });

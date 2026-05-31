@@ -1,4 +1,9 @@
-import type { IntakeRequest, IntakeBlockType, CaptureLinkStatus } from '@/lib/intake/types';
+import type {
+	IntakeRequest,
+	IntakeBlockType,
+	CaptureLinkStatus,
+	IntakeRequestOrigin,
+} from '@/lib/intake/types';
 import {
 	findIntakeRequestById,
 	findIntakeRequestByTokenHash,
@@ -51,8 +56,9 @@ export async function getIntakeRequestByToken(rawToken: string): Promise<IntakeR
 
 export async function getIntakeRequestsByProjectId(
 	invitationProjectId: string,
+	origin?: IntakeRequestOrigin,
 ): Promise<IntakeRequest[]> {
-	return findIntakeRequestsByProjectId(invitationProjectId);
+	return findIntakeRequestsByProjectId(invitationProjectId, origin);
 }
 
 export async function createRequest(input: {

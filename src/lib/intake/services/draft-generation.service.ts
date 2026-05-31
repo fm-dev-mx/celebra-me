@@ -5,39 +5,14 @@ import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submissio
 import {
 	findDraftByProjectId,
 	updateDraftContent,
+	updateDraftStatus,
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { createIntakeRequest } from '@/lib/intake/repositories/intake-request.repository';
 import { createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import { deepMerge } from '@/lib/intake/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
-
-function deepMerge(
-	base: Record<string, unknown>,
-	overlay: Record<string, unknown>,
-): Record<string, unknown> {
-	const result: Record<string, unknown> = { ...base };
-	for (const key of Object.keys(overlay)) {
-		const baseVal = result[key];
-		const overlayVal = overlay[key];
-		if (
-			baseVal !== null &&
-			overlayVal !== null &&
-			typeof baseVal === 'object' &&
-			typeof overlayVal === 'object' &&
-			!Array.isArray(baseVal) &&
-			!Array.isArray(overlayVal)
-		) {
-			result[key] = deepMerge(
-				baseVal as Record<string, unknown>,
-				overlayVal as Record<string, unknown>,
-			);
-		} else {
-			result[key] = overlayVal;
-		}
-	}
-	return result;
-}
 
 export async function generateDraft(projectId: string): Promise<InvitationContentDraft> {
 	const project = await findInvitationProjectById(projectId);
@@ -47,8 +22,7 @@ export async function generateDraft(projectId: string): Promise<InvitationConten
 
 	// Must have an approved intake submission to generate a draft
 	const requests = await getIntakeRequestsByProjectId(projectId);
-	const activeRequest = requests[0];
-	if (!activeRequest) {
+	if (requests.length === 0) {
 		throw new ApiError(
 			422,
 			'no_approved_submission',
@@ -56,8 +30,14 @@ export async function generateDraft(projectId: string): Promise<InvitationConten
 		);
 	}
 
-	const sub = await getSubmissionByRequestId(activeRequest.id);
-	if (!sub || sub.status !== 'approved') {
+	const findByOrigin = async (origin: string) => {
+		const req = requests.find((r) => r.origin === origin);
+		if (!req) return null;
+		const sub = await getSubmissionByRequestId(req.id);
+		return sub?.status === 'approved' ? { request: req, submission: sub } : null;
+	};
+	const result = (await findByOrigin('internal')) ?? (await findByOrigin('client'));
+	if (!result) {
 		throw new ApiError(
 			422,
 			'no_approved_submission',
@@ -66,15 +46,24 @@ export async function generateDraft(projectId: string): Promise<InvitationConten
 	}
 
 	const content = mapBlockDataToDraftContent(
-		sub.blockData,
-		activeRequest.enabledBlocks,
+		result.submission.blockData,
+		result.request.enabledBlocks,
 	) as Record<string, unknown>;
 
 	return upsertDraft({
 		invitationProjectId: projectId,
-		submissionId: sub.id,
+		submissionId: result.submission.id,
 		content,
 	});
+}
+
+export async function createDraftRevision(projectId: string): Promise<InvitationContentDraft> {
+	const draft = await findDraftByProjectId(projectId);
+	if (!draft) {
+		throw new ApiError(404, 'not_found', 'No se encontro un borrador para este proyecto.');
+	}
+	if (draft.status === 'draft') return draft;
+	return updateDraftStatus(draft.id, 'draft');
 }
 
 /**
@@ -98,6 +87,7 @@ export async function createDraftFromAdmin(
 		invitationProjectId: projectId,
 		tokenHash: 'admin-created-' + projectId.slice(0, 8),
 		tokenCiphertext: '',
+		origin: 'internal',
 		enabledBlocks: [],
 		expiresAt: null,
 	});

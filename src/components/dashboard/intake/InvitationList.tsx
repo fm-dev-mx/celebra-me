@@ -12,6 +12,7 @@ import {
 	resolvePrimaryAction,
 	hasInconsistency,
 } from '@/lib/intake/display-status';
+import { EVENT_TYPE_LABELS, RSVP_STATUS_LABELS } from '@/lib/intake/labels';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 type FilterTab = 'all' | InvitationProjectStatus | 'needs_attention';
@@ -47,19 +48,6 @@ const FILTER_TABS: Array<{
 		match: (p) => hasInconsistency(p),
 	},
 ];
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-	xv: 'XV años',
-	boda: 'Boda',
-	bautizo: 'Bautizo',
-	cumple: 'Cumpleaños',
-};
-
-const RSVP_LABELS: Record<string, string> = {
-	published: 'RSVP activo',
-	archived: 'RSVP desactivado',
-	draft: 'RSVP borrador',
-};
 
 const InvitationList: FC = () => {
 	const { items, loading, error, createProject } = useInvitationAdmin();
@@ -292,9 +280,9 @@ const InvitationList: FC = () => {
 								const displayInfo = resolveDisplayInfo(project);
 								const primaryAction = resolvePrimaryAction(project);
 								const rsvpLabel = project.rsvpEventStatus
-									? (RSVP_LABELS[project.rsvpEventStatus] ??
+									? (RSVP_STATUS_LABELS[project.rsvpEventStatus] ??
 										project.rsvpEventStatus)
-									: '\u2014';
+									: 'Sin evento RSVP';
 								const isPublicLink = primaryAction?.href?.startsWith(
 									`/${project.eventType}/`,
 								);
@@ -324,7 +312,7 @@ const InvitationList: FC = () => {
 												href={project.internalEditUrl}
 												className="intake-list__action-primary"
 											>
-												Editar datos
+												Editar datos base
 											</a>
 										</td>
 										<td>{rsvpLabel}</td>
@@ -356,7 +344,7 @@ const InvitationList: FC = () => {
 												href={`/dashboard/invitaciones/${project.id}`}
 												className="intake-list__action-secondary"
 											>
-												Ver detalle
+												Administrar proyecto
 											</a>
 										</td>
 									</tr>
