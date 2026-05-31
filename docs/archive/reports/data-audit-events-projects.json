@@ -1,0 +1,100 @@
+{
+    "meta": {
+        "generatedAt": "2026-05-30T21:01:27.982Z",
+        "tool": "scripts/data-audit-events-projects.mjs",
+        "description": "Stage 0 data audit for migration of /dashboard/eventos into /dashboard/invitaciones",
+        "matchingStrategy": "PRIMARY: events → published_invitation_content via (event_type, slug) → invitation_project_id. FALLBACK: events → invitation_projects via (event_type, slug) for unmatched."
+    },
+    "counts": {
+        "eventsTotal": 5,
+        "invitationProjectsTotal": 9,
+        "publishedProjects": 5,
+        "publishedContentEntries": 1,
+        "matchedEvents": 5,
+        "ambiguousEvents": 0,
+        "orphanedEvents": 0,
+        "publishedProjectsWithoutEvent": 0,
+        "eventsWithGuests": 4,
+        "eventsWithClaimCodes": 2,
+        "projectsWithMultipleEvents": 0
+    },
+    "matching": {
+        "byPublishedContent": 1,
+        "byDirectProjectSlug": 4
+    },
+    "details": {
+        "matchedEvents": [
+            {
+                "eventId": "4a1adaa9-b621-4164-906a-7c02fbf52772",
+                "slug": "ayrin-samantha-lerma-castro",
+                "eventType": "xv",
+                "title": "XV Años de Ayrin Samantha",
+                "status": "published",
+                "invitationProjectId": "01548214-bc22-4141-ba61-f36c27cd8627",
+                "matchSource": "published_content",
+                "hasGuests": false,
+                "guestCount": 0,
+                "hasClaims": false,
+                "claimCount": 0
+            },
+            {
+                "eventId": "1b9a1ee7-8ed2-4b47-b2f0-c5e1b4a3ad36",
+                "slug": "gerardo-sesenta",
+                "eventType": "cumple",
+                "title": "Gerardo Mendoza | 60 Años",
+                "status": "published",
+                "invitationProjectId": "8a0931e8-556c-474f-9ddd-345a59ff5461",
+                "matchSource": "direct_project_slug",
+                "hasGuests": true,
+                "guestCount": 97,
+                "hasClaims": true,
+                "claimCount": 7
+            },
+            {
+                "eventId": "b459cfdd-19cb-4816-8461-155ab255f23e",
+                "slug": "ana-sofia-cota-guillen",
+                "eventType": "xv",
+                "title": "XV Años de Ana Sofía",
+                "status": "published",
+                "invitationProjectId": "40ef6637-4227-4c79-b377-a7726530d82f",
+                "matchSource": "direct_project_slug",
+                "hasGuests": true,
+                "guestCount": 251,
+                "hasClaims": false,
+                "claimCount": 0
+            },
+            {
+                "eventId": "946a655d-fdc0-4a73-95a9-69eaaa6eca51",
+                "slug": "cesar-ramses",
+                "eventType": "bautizo",
+                "title": "Mi Bautizo y 1er Año de César Ramses",
+                "status": "published",
+                "invitationProjectId": "fae40d35-aca4-4d47-86be-d0aa6ed36b3a",
+                "matchSource": "direct_project_slug",
+                "hasGuests": true,
+                "guestCount": 95,
+                "hasClaims": false,
+                "claimCount": 0
+            },
+            {
+                "eventId": "d61b3271-7d16-4123-98a0-4bb7aed3273e",
+                "slug": "ximena-meza-trasvina",
+                "eventType": "xv",
+                "title": "XV años de Ximena",
+                "status": "published",
+                "invitationProjectId": "4c62d0fd-0e7b-4fe8-8e4a-55cf44f136a8",
+                "matchSource": "direct_project_slug",
+                "hasGuests": true,
+                "guestCount": 246,
+                "hasClaims": true,
+                "claimCount": 1
+            }
+        ],
+        "ambiguousEvents": [],
+        "orphanedEvents": [],
+        "projectsWithoutEvent": [],
+        "projectsWithMultipleEvents": []
+    },
+    "orphanEventsWithGuests": [],
+    "orphanEventsWithClaimCodes": []
+}

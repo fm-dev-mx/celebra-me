@@ -1,0 +1,127 @@
+{
+    "meta": {
+        "generatedAt": "2026-05-30T18:20:00.000Z",
+        "description": "Stage 0.5 — Dry-run adoption mapping for orphan RSVP events. Proposes minimal invitation_project shells to adopt legacy events into the new architecture.",
+        "rules": [
+            "Do NOT create published_invitation_content for legacy events",
+            "Do NOT create dummy draft content",
+            "Do NOT create new RSVP events",
+            "Preserve existing events.id, guests, claim codes, slugs, event types"
+        ]
+    },
+    "mapping": [
+        {
+            "orphanEvent": {
+                "eventId": "1b9a1ee7-8ed2-4b47-b2f0-c5e1b4a3ad36",
+                "slug": "gerardo-sesenta",
+                "eventType": "cumple",
+                "title": "Gerardo Mendoza | 60 Años",
+                "status": "published",
+                "ownerUserId": null
+            },
+            "proposedProject": {
+                "title": "Gerardo Mendoza | 60 Años",
+                "slug": "gerardo-sesenta",
+                "eventType": "cumple",
+                "status": "published",
+                "baseDemoId": "demo-cumple-luxury-hacienda",
+                "clientName": "",
+                "createdBy": null
+            },
+            "guestCount": 97,
+            "claimCodeCount": 7,
+            "warnings": [
+                "No owner_user_id on event — project.createdBy will be null",
+                "No client info available — client fields left empty"
+            ],
+            "conflicts": "None"
+        },
+        {
+            "orphanEvent": {
+                "eventId": "b459cfdd-19cb-4816-8461-155ab255f23e",
+                "slug": "ana-sofia-cota-guillen",
+                "eventType": "xv",
+                "title": "XV Años de Ana Sofía",
+                "status": "published",
+                "ownerUserId": null
+            },
+            "proposedProject": {
+                "title": "XV Años de Ana Sofía",
+                "slug": "ana-sofia-cota-guillen",
+                "eventType": "xv",
+                "status": "published",
+                "baseDemoId": "demo-xv-jewelry-box",
+                "clientName": "",
+                "createdBy": null
+            },
+            "guestCount": 251,
+            "claimCodeCount": 0,
+            "warnings": [
+                "No owner_user_id on event — project.createdBy will be null",
+                "No client info available — client fields left empty"
+            ],
+            "conflicts": "None"
+        },
+        {
+            "orphanEvent": {
+                "eventId": "946a655d-fdc0-4a73-95a9-69eaaa6eca51",
+                "slug": "cesar-ramses",
+                "eventType": "bautizo",
+                "title": "Mi Bautizo y 1er Año de César Ramses",
+                "status": "published",
+                "ownerUserId": null
+            },
+            "proposedProject": {
+                "title": "Mi Bautizo y 1er Año de César Ramses",
+                "slug": "cesar-ramses",
+                "eventType": "bautizo",
+                "status": "published",
+                "baseDemoId": "demo-bautismo-angelic-presence",
+                "clientName": "",
+                "createdBy": null
+            },
+            "guestCount": 95,
+            "claimCodeCount": 0,
+            "warnings": [
+                "No owner_user_id on event — project.createdBy will be null",
+                "No client info available — client fields left empty"
+            ],
+            "conflicts": "None"
+        },
+        {
+            "orphanEvent": {
+                "eventId": "d61b3271-7d16-4123-98a0-4bb7aed3273e",
+                "slug": "ximena-meza-trasvina",
+                "eventType": "xv",
+                "title": "XV años de Ximena",
+                "status": "published",
+                "ownerUserId": null
+            },
+            "proposedProject": {
+                "title": "XV años de Ximena",
+                "slug": "ximena-meza-trasvina",
+                "eventType": "xv",
+                "status": "published",
+                "baseDemoId": "demo-xv-jewelry-box",
+                "clientName": "",
+                "createdBy": null
+            },
+            "guestCount": 246,
+            "claimCodeCount": 1,
+            "warnings": [
+                "No owner_user_id on event — project.createdBy will be null",
+                "No client info available — client fields left empty"
+            ],
+            "conflicts": "None"
+        }
+    ],
+    "summary": {
+        "orphanCount": 4,
+        "totalGuestsAffected": 689,
+        "totalClaimCodesAffected": 8,
+        "proposedProjectsCount": 4,
+        "noConflicts": true,
+        "deterministic": true,
+        "adoptionSafe": true
+    }
+}

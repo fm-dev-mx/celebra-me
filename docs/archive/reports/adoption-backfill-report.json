@@ -1,0 +1,55 @@
+{
+    "meta": {
+        "generatedAt": "2026-05-30T19:56:38.496Z",
+        "tool": "scripts/adopt-legacy-events.mjs",
+        "description": "Stage 1.5 — Controlled adoption backfill report"
+    },
+    "adoptions": [
+        {
+            "eventId": "1b9a1ee7-8ed2-4b47-b2f0-c5e1b4a3ad36",
+            "slug": "gerardo-sesenta",
+            "projectId": "8a0931e8-556c-474f-9ddd-345a59ff5461",
+            "guestCount": 97,
+            "claimCodeCount": 7
+        },
+        {
+            "eventId": "b459cfdd-19cb-4816-8461-155ab255f23e",
+            "slug": "ana-sofia-cota-guillen",
+            "projectId": "40ef6637-4227-4c79-b377-a7726530d82f",
+            "guestCount": 251,
+            "claimCodeCount": 0
+        },
+        {
+            "eventId": "946a655d-fdc0-4a73-95a9-69eaaa6eca51",
+            "slug": "cesar-ramses",
+            "projectId": "fae40d35-aca4-4d47-86be-d0aa6ed36b3a",
+            "guestCount": 95,
+            "claimCodeCount": 0
+        },
+        {
+            "eventId": "d61b3271-7d16-4123-98a0-4bb7aed3273e",
+            "slug": "ximena-meza-trasvina",
+            "projectId": "4c62d0fd-0e7b-4fe8-8e4a-55cf44f136a8",
+            "guestCount": 246,
+            "claimCodeCount": 1
+        }
+    ],
+    "errors": [
+        {
+            "eventId": "4a1adaa9-b621-4164-906a-7c02fbf52772",
+            "slug": "ayrin-samantha-lerma-castro",
+            "reason": "Slug \"ayrin-samantha-lerma-castro\" already in use by project 01548214-bc22-4141-ba61-f36c27cd8627"
+        }
+    ],
+    "verification": {
+        "totalEventsBefore": 5,
+        "totalEventsAfter": 5,
+        "orphansBefore": 5,
+        "orphansAfter": 1,
+        "linkedEvents": 4,
+        "eventsWithDuplicateProjectLinks": 0,
+        "duplicateLinkDetails": [],
+        "guestCountsPreserved": true,
+        "claimCodeCountsPreserved": true
+    }
+}
