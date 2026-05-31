@@ -15,6 +15,12 @@ const allowedHydratedComponents = new Set([
 	'MfaSetupBehavior',
 	'LoginFlowBehavior',
 	'RSVP',
+	'InvitationList',
+	'InvitationDetail',
+	'DraftReview',
+	'InvitationMetadataForm',
+	'IntakeForm',
+	'SubmissionReview',
 ]);
 
 const violations = [];

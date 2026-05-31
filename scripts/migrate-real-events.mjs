@@ -76,7 +76,7 @@ async function supabaseQuery(pathWithQuery, options = {}) {
 
 async function getProjectSnapshot(projectId) {
 	const rows = await supabaseQuery(
-		`invitation_projects?select=snapshot,title,event_type&id=eq.${encodeURIComponent(projectId)}&limit=1`,
+		`invitations?select=snapshot,title,event_type&id=eq.${encodeURIComponent(projectId)}&limit=1`,
 	);
 	if (!rows || !rows[0]) return null;
 	return rows[0];

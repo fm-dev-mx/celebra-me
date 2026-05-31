@@ -153,10 +153,7 @@ async function main() {
 	}
 
 	// 2. Load existing projects to check slug conflicts
-	const existingProjects = await restGet(
-		'invitation_projects',
-		'select=id,slug,event_type,title',
-	);
+	const existingProjects = await restGet('invitations', 'select=id,slug,event_type,title');
 	const existingSlugs = new Set(
 		(Array.isArray(existingProjects) ? existingProjects : [])
 			.map((p) => p.slug)
@@ -225,7 +222,7 @@ async function main() {
 			if (ev.owner_user_id) projectBody.created_by = ev.owner_user_id;
 
 			const created = await restPost(
-				'invitation_projects',
+				'invitations',
 				projectBody,
 				`select=id,slug,event_type,title,status`,
 			);

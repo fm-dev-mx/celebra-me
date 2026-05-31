@@ -14,7 +14,7 @@ const SCRIPTS = {
 	'validate-event-parity': 'validate-event-parity.mjs',
 	'validate-commits': 'validate-commits.mjs',
 	'new-invitation': 'new-invitation.mjs',
-	'data-audit-events-projects': 'data-audit-events-projects.mjs',
+	'data-audit-events-invitations': 'data-audit-events-invitations.mjs',
 	'adopt-legacy-events': 'adopt-legacy-events.mjs',
 };
 

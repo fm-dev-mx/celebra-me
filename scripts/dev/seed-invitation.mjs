@@ -190,7 +190,7 @@ async function main() {
 
 	// 1. Create invitation project
 	const { data: project, error: projectErr } = await supabase
-		.from('invitation_projects')
+		.from('invitations')
 		.insert({
 			title: MOCK_TITLE,
 			event_type: MOCK_EVENT_TYPE,

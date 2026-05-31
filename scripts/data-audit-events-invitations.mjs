@@ -14,7 +14,7 @@ const REPORT_FILE = path.join(
 	'.agent',
 	'plans',
 	'reports',
-	'data-audit-events-projects.json',
+	'data-audit-events-invitations.json',
 );
 
 function loadEnvFile(relativePath) {
@@ -87,12 +87,12 @@ function fmtSection(title) {
 	console.log(`${'━'.repeat(Math.min(len, 72))}`);
 }
 
-function buildMaps(published, projects, guestRows, claimRows) {
+function buildMaps(published, invitations, guestRows, claimRows) {
 	const pubByKey = new Map();
 	for (const p of published) pubByKey.set(`${p.event_type}:${p.slug}`, p);
 
 	const projectBySlug = new Map();
-	for (const p of projects) if (p.slug) projectBySlug.set(p.slug, p);
+	for (const p of invitations) if (p.slug) projectBySlug.set(p.slug, p);
 
 	const guestsByEvent = new Map();
 	for (const g of guestRows)
@@ -105,7 +105,7 @@ function buildMaps(published, projects, guestRows, claimRows) {
 	return { pubByKey, projectBySlug, guestsByEvent, claimsByEvent };
 }
 
-function classifyEvent(ev, projects, maps) {
+function classifyEvent(ev, invitations, maps) {
 	const { pubByKey, projectBySlug, guestsByEvent, claimsByEvent } = maps;
 	const key = `${ev.event_type}:${ev.slug}`;
 	const pubRow = pubByKey.get(key);
@@ -129,7 +129,7 @@ function classifyEvent(ev, projects, maps) {
 			claimCount,
 		};
 	}
-	const matches = projects.filter((p) => p.slug === ev.slug);
+	const matches = invitations.filter((p) => p.slug === ev.slug);
 	if (matches.length > 1) {
 		return {
 			tag: 'ambiguous',
@@ -144,15 +144,15 @@ function classifyEvent(ev, projects, maps) {
 	return { tag: 'orphan', event: ev, hasGuests, hasClaims, guestCount, claimCount };
 }
 
-function buildReport(events, projects, published, guestRows, claimRows) {
-	const maps = buildMaps(published, projects, guestRows, claimRows);
+function buildReport(events, invitations, published, guestRows, claimRows) {
+	const maps = buildMaps(published, invitations, guestRows, claimRows);
 	const matched = [],
 		ambiguous = [],
 		orphaned = [];
-	const matchedProjectIds = new Set();
+	const matchedInvitationIds = new Set();
 
 	for (const ev of events) {
-		const result = classifyEvent(ev, projects, maps);
+		const result = classifyEvent(ev, invitations, maps);
 		if (result.tag === 'matched') {
 			matched.push({
 				eventId: ev.id,
@@ -160,14 +160,14 @@ function buildReport(events, projects, published, guestRows, claimRows) {
 				eventType: ev.event_type,
 				title: ev.title,
 				status: ev.status,
-				invitationProjectId: result.pubRow.invitation_project_id,
+				invitationId: result.pubRow.invitation_project_id,
 				matchSource: 'published_content',
 				hasGuests: result.hasGuests,
 				guestCount: result.guestCount,
 				hasClaims: result.hasClaims,
 				claimCount: result.claimCount,
 			});
-			matchedProjectIds.add(result.pubRow.invitation_project_id);
+			matchedInvitationIds.add(result.pubRow.invitation_project_id);
 		} else if (result.tag === 'matched_fallback') {
 			matched.push({
 				eventId: ev.id,
@@ -175,14 +175,14 @@ function buildReport(events, projects, published, guestRows, claimRows) {
 				eventType: ev.event_type,
 				title: ev.title,
 				status: ev.status,
-				invitationProjectId: result.proj.id,
+				invitationId: result.proj.id,
 				matchSource: 'direct_project_slug',
 				hasGuests: result.hasGuests,
 				guestCount: result.guestCount,
 				hasClaims: result.hasClaims,
 				claimCount: result.claimCount,
 			});
-			matchedProjectIds.add(result.proj.id);
+			matchedInvitationIds.add(result.proj.id);
 		} else if (result.tag === 'ambiguous') {
 			ambiguous.push({
 				eventId: ev.id,
@@ -215,21 +215,20 @@ function buildReport(events, projects, published, guestRows, claimRows) {
 		}
 	}
 
-	const publishedProjects = projects.filter((p) => p.status === 'published');
-	const projectsWithoutEvent = publishedProjects.filter((p) => !matchedProjectIds.has(p.id));
+	const publishedProjects = invitations.filter((p) => p.status === 'published');
+	const projectsWithoutEvent = publishedProjects.filter((p) => !matchedInvitationIds.has(p.id));
 
 	const eventsByProject = new Map();
 	for (const m of matched) {
-		if (!m.invitationProjectId) continue;
-		if (!eventsByProject.has(m.invitationProjectId))
-			eventsByProject.set(m.invitationProjectId, []);
-		eventsByProject.get(m.invitationProjectId).push(m);
+		if (!m.invitationId) continue;
+		if (!eventsByProject.has(m.invitationId)) eventsByProject.set(m.invitationId, []);
+		eventsByProject.get(m.invitationId).push(m);
 	}
 	const multiEventProjects = [...eventsByProject.entries()]
 		.filter(([, evts]) => evts.length > 1)
 		.map(([pid, evts]) => ({
 			projectId: pid,
-			project: projects.find((p) => p.id === pid),
+			invitation: invitations.find((p) => p.id === pid),
 			eventCount: evts.length,
 			eventSlugs: evts.map((e) => e.slug),
 			eventIds: evts.map((e) => e.eventId),
@@ -238,15 +237,15 @@ function buildReport(events, projects, published, guestRows, claimRows) {
 	return {
 		meta: {
 			generatedAt: new Date().toISOString(),
-			tool: 'scripts/data-audit-events-projects.mjs',
+			tool: 'scripts/data-audit-events-invitations.mjs',
 			description:
 				'Stage 0 data audit for migration of /dashboard/eventos into /dashboard/invitaciones',
 			matchingStrategy:
-				'PRIMARY: events → published_invitation_content via (event_type, slug) → invitation_project_id. FALLBACK: events → invitation_projects via (event_type, slug) for unmatched.',
+				'PRIMARY: events → published_invitation_content via (event_type, slug) → invitation_project_id. FALLBACK: events → invitations via (event_type, slug) for unmatched.',
 		},
 		counts: {
 			eventsTotal: events.length,
-			invitationProjectsTotal: projects.length,
+			invitationsTotal: invitations.length,
 			publishedProjects: publishedProjects.length,
 			publishedContentEntries: published.length,
 			matchedEvents: matched.length,
@@ -287,18 +286,18 @@ function buildReport(events, projects, published, guestRows, claimRows) {
 function printReport(report) {
 	fmtSection('1. CORE COUNTS');
 	console.log(fmtCount(report.counts.eventsTotal, 'events'));
-	console.log(fmtCount(report.counts.invitationProjectsTotal, 'invitation_projects'));
-	console.log(fmtCount(report.counts.publishedProjects, 'published projects'));
+	console.log(fmtCount(report.counts.invitationsTotal, 'invitations'));
+	console.log(fmtCount(report.counts.publishedProjects, 'published invitations'));
 	console.log(
 		fmtCount(report.counts.publishedContentEntries, 'published_invitation_content rows'),
 	);
 
 	fmtSection('2. MATCH RESULTS (event_type + slug)');
-	console.log(fmtCount(report.counts.matchedEvents, 'events matched to a project'));
+	console.log(fmtCount(report.counts.matchedEvents, 'events matched to a invitation'));
 	console.log(`         ${report.matching.byPublishedContent} via published_invitation_content`);
-	console.log(`         ${report.matching.byDirectProjectSlug} via direct project slug`);
-	console.log(fmtCount(report.counts.ambiguousEvents, 'events matching multiple projects'));
-	console.log(fmtCount(report.counts.orphanedEvents, 'events matching NO project (orphaned)'));
+	console.log(`         ${report.matching.byDirectProjectSlug} via direct invitation slug`);
+	console.log(fmtCount(report.counts.ambiguousEvents, 'events matching multiple invitations'));
+	console.log(fmtCount(report.counts.orphanedEvents, 'events matching NO invitation (orphaned)'));
 
 	if (report.counts.ambiguousEvents > 0) {
 		fmtSection('3. AMBIGUOUS EVENTS');
@@ -309,7 +308,7 @@ function printReport(report) {
 		}
 	} else {
 		console.log(
-			'\n  (No ambiguous matches — events.slug and invitation_projects.slug are both UNIQUE.)',
+			'\n  (No ambiguous matches — events.slug and invitations.slug are both UNIQUE.)',
 		);
 	}
 
@@ -332,7 +331,7 @@ function printReport(report) {
 			console.log(`  ${p.title} (${p.eventType}) — slug: ${p.slug || '(auto)'}`);
 		}
 	} else {
-		console.log('  (All published projects have a matching event.)');
+		console.log('  (All published invitations have a matching event.)');
 	}
 
 	fmtSection('6. EVENTS WITH GUEST INVITATIONS / CLAIM CODES');
@@ -342,11 +341,11 @@ function printReport(report) {
 	const multi = report.details.projectsWithMultipleEvents;
 	fmtSection('7. ONE-TO-ONE ASSESSMENT');
 	if (report.counts.projectsWithMultipleEvents === 0) {
-		console.log('\n  No project has more than one event.');
-		console.log('  Domain supports exactly one RSVP event per invitation project.');
+		console.log('\n  No invitation has more than one event.');
+		console.log('  Domain supports exactly one RSVP event per invitation invitation.');
 		console.log('  A partial unique index on events.invitation_project_id IS safe.');
 	} else {
-		console.log(`\n  ${report.counts.projectsWithMultipleEvents} project(s) have >1 event.`);
+		console.log(`\n  ${report.counts.projectsWithMultipleEvents} invitation(s) have >1 event.`);
 		for (const m of multi) {
 			console.log(
 				`  Project ${m.projectId}: ${m.eventCount} events — ${m.eventSlugs.join(', ')}`,
@@ -364,7 +363,7 @@ function printReport(report) {
 	console.log('  Backfill will set invitation_project_id only for matched events.');
 	console.log('  Manual review required for:');
 	console.log(
-		`    - ${report.counts.matchedEvents} events with clear project link (auto-backfill)`,
+		`    - ${report.counts.matchedEvents} events with clear invitation link (auto-backfill)`,
 	);
 	if (report.counts.ambiguousEvents > 0)
 		console.log(`    - ${report.counts.ambiguousEvents} ambiguous events (needs resolution)`);
@@ -372,7 +371,7 @@ function printReport(report) {
 		console.log(`    - ${orphanData} orphaned events WITH guest/claim data (must not be lost)`);
 	if (report.counts.publishedProjectsWithoutEvent > 0) {
 		console.log(
-			`    - ${report.counts.publishedProjectsWithoutEvent} published projects without events (re-publish creates them)`,
+			`    - ${report.counts.publishedProjectsWithoutEvent} published invitations without events (re-publish creates them)`,
 		);
 	}
 
@@ -380,7 +379,7 @@ function printReport(report) {
 	if (orphanData > 0) {
 		console.log('\n  ⚠  HOLD — do not proceed to Stage 1 yet.');
 		console.log(`     ${orphanData} orphaned events have guest_invitations or claim_codes.`);
-		console.log('     These must be reviewed and linked to a project before backfill.');
+		console.log('     These must be reviewed and linked to a invitation before backfill.');
 		console.log(
 			'     See "orphanEventsWithGuests" and "orphanEventsWithClaimCodes" in the JSON report.',
 		);
@@ -392,7 +391,7 @@ function printReport(report) {
 		console.log('     They remain unlinked (NULL invitation_project_id). Acceptable.');
 		if (report.counts.publishedProjectsWithoutEvent > 0) {
 			console.log(
-				`     Note: ${report.counts.publishedProjectsWithoutEvent} published projects have no event yet.`,
+				`     Note: ${report.counts.publishedProjectsWithoutEvent} published invitations have no event yet.`,
 			);
 		}
 		console.log('     Add the partial unique index (domain supports 1:1).');
@@ -401,7 +400,7 @@ function printReport(report) {
 		console.log('     No orphaned events with data. Safe to add FK and backfill.');
 		if (report.counts.publishedProjectsWithoutEvent > 0) {
 			console.log(
-				`     Note: ${report.counts.publishedProjectsWithoutEvent} published projects have no event yet.`,
+				`     Note: ${report.counts.publishedProjectsWithoutEvent} published invitations have no event yet.`,
 			);
 		}
 	}
@@ -424,28 +423,28 @@ async function main() {
 	}
 
 	console.log('╔══════════════════════════════════════════════════════════════════╗');
-	console.log('║  Stage 0  Data Audit: events  invitation_projects              ║');
+	console.log('║  Stage 0  Data Audit: events  invitations              ║');
 	console.log('║  Migration readiness assessment for /dashboard/eventos            ║');
 	console.log('╚══════════════════════════════════════════════════════════════════╝');
 	console.log(`\nStarted: ${new Date().toISOString()}`);
 	console.log(`Environment: ${dbUrl.includes('supabase.co') ? 'Production' : 'Development'}`);
 	console.log('\nFetching data from Supabase REST API (read-only)...\n');
 
-	const [events, projects, published, guestRows, claimRows] = await Promise.all([
+	const [events, invitations, published, guestRows, claimRows] = await Promise.all([
 		fetchAll('events', 'id,slug,event_type,title,status,owner_user_id,created_at,updated_at'),
-		fetchAll('invitation_projects', 'id,slug,event_type,title,status'),
+		fetchAll('invitations', 'id,slug,event_type,title,status'),
 		fetchAll('published_invitation_content', 'id,invitation_project_id,slug,event_type'),
 		fetchAll('guest_invitations', 'event_id'),
 		fetchAll('event_claim_codes', 'event_id'),
 	]);
 
 	console.log(`  ${String(events.length).padStart(5)}  events`);
-	console.log(`  ${String(projects.length).padStart(5)}  invitation_projects`);
+	console.log(`  ${String(invitations.length).padStart(5)}  invitations`);
 	console.log(`  ${String(published.length).padStart(5)}  published_invitation_content`);
 	console.log(`  ${String(guestRows.length).padStart(5)}  guest_invitations`);
 	console.log(`  ${String(claimRows.length).padStart(5)}  event_claim_codes`);
 
-	const report = buildReport(events, projects, published, guestRows, claimRows);
+	const report = buildReport(events, invitations, published, guestRows, claimRows);
 
 	fs.mkdirSync(path.dirname(REPORT_FILE), { recursive: true });
 	fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
