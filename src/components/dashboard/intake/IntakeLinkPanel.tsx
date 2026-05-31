@@ -6,7 +6,9 @@ import { REQUEST_STATUS_LABELS, CAPTURE_LINK_STATUS_LABELS } from '@/lib/intake/
 interface Props {
 	request: IntakeRequestDTO | null;
 	onRegenerate: () => void;
+	onRevoke?: () => void;
 	regenerating?: boolean;
+	revoking?: boolean;
 }
 
 function waMessage(link: string): string {
@@ -17,7 +19,13 @@ function buildWaDeepLink(link: string): string {
 	return `https://wa.me/?text=${encodeURIComponent(waMessage(link))}`;
 }
 
-const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => {
+const IntakeLinkPanel: FC<Props> = ({
+	request,
+	onRegenerate,
+	onRevoke,
+	regenerating,
+	revoking,
+}) => {
 	const [copied, setCopied] = useState<'link' | 'wa' | null>(null);
 
 	if (!request) {
@@ -126,6 +134,16 @@ const IntakeLinkPanel: FC<Props> = ({ request, onRegenerate, regenerating }) => 
 			>
 				{regenerating ? 'Creando...' : 'Crear nuevo enlace e invalidar el anterior'}
 			</button>
+			{request.captureLinkStatus === 'active' && onRevoke && (
+				<button
+					type="button"
+					className="intake-link-panel__regen-btn"
+					onClick={onRevoke}
+					disabled={revoking}
+				>
+					{revoking ? 'Revocando...' : 'Revocar link cliente'}
+				</button>
+			)}
 		</div>
 	);
 };

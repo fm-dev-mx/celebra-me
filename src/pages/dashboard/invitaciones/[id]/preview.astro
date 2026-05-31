@@ -2,8 +2,8 @@
 export const prerender = false;
 
 import { getCollection } from 'astro:content';
-import { findDraftByProjectId } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
@@ -26,22 +26,22 @@ if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
 }
 
-const project = await findInvitationProjectById(id);
-if (!project) {
-	errorMessage = 'Proyecto no encontrado.';
+const invitation = await findInvitationById(id);
+if (!invitation) {
+	errorMessage = 'Invitación no encontrada.';
 }
 
-const draft = await findDraftByProjectId(id);
+const draft = await findDraftByInvitationId(id);
 if (!draft && !errorMessage) {
-	errorMessage = 'No se ha encontrado un borrador para este proyecto. Genera un borrador primero.';
+	errorMessage = 'No se ha encontrado un borrador para esta invitación. Genera un borrador primero.';
 }
 
 let pageCtx: InvitationPageContext | undefined;
 
-if (!errorMessage && project && draft) {
-	const snapshot = project.snapshot;
+if (!errorMessage && invitation && draft) {
+	const snapshot = invitation.snapshot;
 	if (!snapshot || !snapshot.previewSlug) {
-		errorMessage = 'La plantilla base de este proyecto no está soportada.';
+		errorMessage = 'La plantilla base de esta invitación no está soportada.';
 	} else {
 		const entries = await getCollection('event-demos');
 		const demoEntry = entries.find(
@@ -52,7 +52,7 @@ if (!errorMessage && project && draft) {
 		if (Object.keys(demoContent).length === 0) {
 			errorMessage = 'No se encontró el contenido de la plantilla base.';
 		} else {
-			const result = buildDraftPreviewPageContext(project, draft.content, demoContent);
+			const result = buildDraftPreviewPageContext(invitation, draft.content, demoContent);
 
 			if (result.ok) {
 				pageCtx = result.pageContext;
@@ -75,7 +75,7 @@ if (!errorMessage && !pageCtx) {
 				<h2>Vista previa no disponible</h2>
 				<p>{errorMessage}</p>
 				<a href={`/dashboard/invitaciones/${id}`} class="preview-error__back">
-					&larr; Volver al proyecto
+					&larr; Volver al invitación
 				</a>
 			</main>
 		</DashboardLayout>

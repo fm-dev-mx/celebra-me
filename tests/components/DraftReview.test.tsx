@@ -18,7 +18,7 @@ jest.mock('@/hooks/use-invitation-admin', () => ({
 function makeDraftContent(overrides: Record<string, unknown> = {}) {
 	return {
 		id: 'draft-1',
-		invitationProjectId: 'proj-1',
+		invitationId: 'proj-1',
 		submissionId: 'sub-1',
 		status: 'draft',
 		createdAt: '2026-05-28T14:00:00Z',
@@ -120,14 +120,14 @@ beforeEach(() => {
 describe('DraftReview', () => {
 	it('shows loading state while draft is loading', () => {
 		mockLoading = true;
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Cargando borrador...')).toBeInTheDocument();
 		expect(mockLoadDraft).toHaveBeenCalledWith('proj-1');
 	});
 
 	it('shows empty state when no draft exists', () => {
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(
 			screen.getByText('Aún no se ha generado un borrador para esta invitación.'),
@@ -137,7 +137,7 @@ describe('DraftReview', () => {
 
 	it('renders hero section with main data', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		const heroHeadings = screen.getAllByText('Datos principales / Hero');
 		expect(heroHeadings.length).toBeGreaterThanOrEqual(1);
@@ -149,7 +149,7 @@ describe('DraftReview', () => {
 
 	it('renders family section', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Familia')).toBeInTheDocument();
 		expect(screen.getByText('Fernando Valenzuela')).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('DraftReview', () => {
 
 	it('renders location section with ceremony and reception', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Fecha y ubicaciones')).toBeInTheDocument();
 		expect(screen.getByText('Parroquia del Sagrado Corazon')).toBeInTheDocument();
@@ -167,7 +167,7 @@ describe('DraftReview', () => {
 
 	it('renders RSVP section', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Confirmación de asistencia')).toBeInTheDocument();
 		expect(screen.getByText('Confirma tu asistencia')).toBeInTheDocument();
@@ -176,7 +176,7 @@ describe('DraftReview', () => {
 
 	it('renders music section', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Música de fondo')).toBeInTheDocument();
 		expect(screen.getByText('Nuvole Bianche')).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe('DraftReview', () => {
 
 	it('renders gifts section with items', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Regalos')).toBeInTheDocument();
 		expect(screen.getByText('Mesa de regalos')).toBeInTheDocument();
@@ -194,7 +194,7 @@ describe('DraftReview', () => {
 
 	it('renders quote and thank you sections', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Mensajes especiales')).toBeInTheDocument();
 		expect(screen.getByText('Entre rosas y luz de velas')).toBeInTheDocument();
@@ -208,7 +208,7 @@ describe('DraftReview', () => {
 				photoNotes: { whatsappSent: true },
 			},
 		});
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		const yesLabels = screen.getAllByText('Sí');
 		expect(yesLabels.length).toBeGreaterThan(0);
@@ -216,7 +216,7 @@ describe('DraftReview', () => {
 
 	it('renders photo notes section', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Notas de fotografías')).toBeInTheDocument();
 		expect(screen.getByText('Prefieren tonos calidos')).toBeInTheDocument();
@@ -225,21 +225,21 @@ describe('DraftReview', () => {
 	it('handles empty content gracefully', () => {
 		mockCurrentDraft = {
 			id: 'draft-empty',
-			invitationProjectId: 'proj-1',
+			invitationId: 'proj-1',
 			submissionId: 'sub-1',
 			status: 'draft',
 			createdAt: '2026-05-28T14:00:00Z',
 			updatedAt: '2026-05-28T14:00:00Z',
 			content: {},
 		};
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByText('Estado: draft')).toBeInTheDocument();
 	});
 
 	it('renders back link', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		const backLink = screen.getByRole('link', { name: /volver/i });
 		expect(backLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1');
@@ -247,7 +247,7 @@ describe('DraftReview', () => {
 
 	it('renders vista previa link pointing to preview route when status is draft', () => {
 		mockCurrentDraft = makeDraftContent();
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		const previewLink = screen.getByRole('link', { name: /vista previa/i });
 		expect(previewLink).toHaveAttribute('href', '/dashboard/invitaciones/proj-1/preview');
@@ -255,7 +255,7 @@ describe('DraftReview', () => {
 
 	it('keeps preview available and offers a new revision when content is published', () => {
 		mockCurrentDraft = makeDraftContent({ status: 'published' });
-		render(<DraftReview projectId="proj-1" />);
+		render(<DraftReview invitationId="proj-1" />);
 
 		expect(screen.getByRole('link', { name: /vista previa/i })).toHaveAttribute(
 			'target',

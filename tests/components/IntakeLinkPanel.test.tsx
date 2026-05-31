@@ -4,7 +4,7 @@ import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 
 const activeRequest = {
 	id: 'req-1',
-	invitationProjectId: 'proj-1',
+	invitationId: 'proj-1',
 	status: 'active' as const,
 	origin: 'client' as const,
 	enabledBlocks: ['event-details' as const],
@@ -46,5 +46,20 @@ describe('IntakeLinkPanel', () => {
 				'Enlace no recuperable. Regenera el token solo si deseas invalidar el enlace anterior.',
 			),
 		).toBeInTheDocument();
+	});
+
+	it('allows an active client link to be revoked explicitly', async () => {
+		const onRevoke = jest.fn();
+		render(
+			<IntakeLinkPanel
+				request={activeRequest}
+				onRegenerate={jest.fn()}
+				onRevoke={onRevoke}
+			/>,
+		);
+
+		await userEvent.click(screen.getByRole('button', { name: 'Revocar link cliente' }));
+
+		expect(onRevoke).toHaveBeenCalledTimes(1);
 	});
 });

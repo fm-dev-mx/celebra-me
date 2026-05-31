@@ -13,8 +13,10 @@ it('shows a stable internal edit link instead of an unrecoverable capture-link s
 		items: [
 			{
 				id: 'proj-1',
+				kind: 'client',
+				sourceInvitationId: null,
 				slug: null,
-				title: 'Proyecto interno',
+				title: 'Invitación interno',
 				eventType: 'xv',
 				status: 'draft',
 				baseDemoId: 'demo-xv-jewelry-box',
@@ -23,6 +25,7 @@ it('shows a stable internal edit link instead of an unrecoverable capture-link s
 				clientEmail: '',
 				clientWhatsapp: '',
 				photosReceived: false,
+				archivedAt: null,
 				createdAt: '2026-05-30T00:00:00Z',
 				updatedAt: '2026-05-30T00:00:00Z',
 				hasRequest: true,
@@ -37,12 +40,12 @@ it('shows a stable internal edit link instead of an unrecoverable capture-link s
 		],
 		loading: false,
 		error: '',
-		createProject: jest.fn(),
+		createInvitation: jest.fn(),
 	} as never);
 
 	render(<InvitationList />);
 
-	expect(screen.getAllByRole('link', { name: 'Editar datos base' })).toEqual(
+	expect(screen.getAllByRole('link', { name: 'Editar' })).toEqual(
 		expect.arrayContaining([
 			expect.objectContaining({
 				href: 'http://localhost/dashboard/invitaciones/proj-1/editar',
@@ -50,4 +53,8 @@ it('shows a stable internal edit link instead of an unrecoverable capture-link s
 		]),
 	);
 	expect(screen.queryByText('No recuperable')).not.toBeInTheDocument();
+	expect(screen.getByRole('columnheader', { name: 'Invitación' })).toBeInTheDocument();
+	expect(screen.getByRole('columnheader', { name: 'Actualizado' })).toBeInTheDocument();
+	expect(screen.queryByRole('columnheader', { name: 'Enlace' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('columnheader', { name: 'RSVP' })).not.toBeInTheDocument();
 });

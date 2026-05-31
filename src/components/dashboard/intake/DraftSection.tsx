@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 }
 
-const DraftSection: FC<Props> = ({ projectId }) => {
+const DraftSection: FC<Props> = ({ invitationId }) => {
 	const { currentDraft, generateDraft, createDraftRevision } = useInvitationAdmin();
 	const [generating, setGenerating] = useState(false);
 	const [revising, setRevising] = useState(false);
@@ -26,7 +26,7 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 		setActionSuccess('');
 
 		try {
-			await generateDraft(projectId);
+			await generateDraft(invitationId);
 			setActionSuccess('Borrador de invitación generado exitosamente.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el borrador.');
@@ -40,7 +40,7 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 		setActionError('');
 		setActionSuccess('');
 		try {
-			await createDraftRevision(projectId);
+			await createDraftRevision(invitationId);
 			setActionSuccess('Nueva revisión editable creada exitosamente.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al crear la revisión.');
@@ -60,13 +60,13 @@ const DraftSection: FC<Props> = ({ projectId }) => {
 					</span>
 					<div className="intake-detail__draft-actions">
 						<a
-							href={`/dashboard/invitaciones/${projectId}/draft`}
+							href={`/dashboard/invitaciones/${invitationId}/draft`}
 							className="intake-detail__review-link"
 						>
 							Revisar contenido
 						</a>
 						<a
-							href={`/dashboard/invitaciones/${projectId}/preview`}
+							href={`/dashboard/invitaciones/${invitationId}/preview`}
 							className="intake-detail__review-link"
 							target="_blank"
 							rel="noopener noreferrer"

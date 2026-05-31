@@ -8,32 +8,32 @@ import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 
 interface Props {
-	mode?: 'client' | 'internal';
+	mode?: 'client' | 'admin';
 	token?: string;
-	projectId?: string;
+	invitationId?: string;
 	enabledBlocks: IntakeBlockType[];
 	initialBlockData: Record<string, unknown>;
 	initialStatus: string;
 	isLocked: boolean;
-	projectTitle: string;
+	invitationTitle: string;
 	eventType: EventType;
 }
 
 const IntakeForm: FC<Props> = ({
 	token,
 	mode = 'client',
-	projectId,
+	invitationId,
 	enabledBlocks,
 	initialBlockData,
 	initialStatus,
 	isLocked,
-	projectTitle,
+	invitationTitle,
 	eventType,
 }) => {
 	const form = useIntakeForm({
 		token,
 		mode,
-		projectId,
+		invitationId,
 		enabledBlocks,
 		initialBlockData,
 		initialStatus,
@@ -43,13 +43,10 @@ const IntakeForm: FC<Props> = ({
 	if (form.submitted) {
 		return (
 			<div className="intake-form__success">
-				<h2 className="intake-form__success-title">
-					{mode === 'internal' ? 'Datos base guardados' : 'Captura enviada'}
-				</h2>
+				<h2 className="intake-form__success-title">Captura enviada</h2>
 				<p className="intake-form__success-text">
-					{mode === 'internal'
-						? 'Los cambios internos se guardaron correctamente.'
-						: 'Gracias por enviar tu información. Tu administrador la revisará pronto. Si necesitas hacer cambios, espera a que te contacten.'}
+					Gracias por enviar tu información. Tu administrador la revisará pronto. Si
+					necesitas hacer cambios, espera a que te contacten.
 				</p>
 			</div>
 		);
@@ -82,13 +79,18 @@ const IntakeForm: FC<Props> = ({
 	return (
 		<div className="intake-form">
 			<header className="intake-form__header">
-				<h1 className="intake-form__title">{projectTitle}</h1>
+				<h1 className="intake-form__title">{invitationTitle}</h1>
 				<p className="intake-form__subtitle">
-					{mode === 'internal' ? 'Edición interna' : 'Captura de información'}
+					{mode === 'admin' ? 'Edición interna' : 'Captura de información'}
 				</p>
 			</header>
 
 			<ErrorBoundary fallback={formFallback}>
+				{form.saved && (
+					<p className="intake-form__success-text">
+						Los cambios internos se guardaron correctamente.
+					</p>
+				)}
 				<IntakeStepNav
 					steps={form.enabledBlocks}
 					currentStep={form.currentStep}

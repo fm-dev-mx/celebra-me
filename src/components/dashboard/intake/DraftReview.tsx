@@ -17,10 +17,10 @@ import {
 } from '@/lib/intake/labels';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 }
 
-const DraftReview: FC<Props> = ({ projectId }) => {
+const DraftReview: FC<Props> = ({ invitationId }) => {
 	const { currentDraft, loading, loadDraft, publishDraft, createDraftRevision } =
 		useInvitationAdmin();
 	const [editing, setEditing] = useState(false);
@@ -29,8 +29,8 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 	const [revising, setRevising] = useState(false);
 
 	useEffect(() => {
-		void loadDraft(projectId);
-	}, [projectId, loadDraft]);
+		void loadDraft(invitationId);
+	}, [invitationId, loadDraft]);
 
 	if (loading && !currentDraft) {
 		return (
@@ -52,8 +52,8 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 				<p className="intake-review__empty">
 					Aún no se ha generado un borrador para esta invitación.
 				</p>
-				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
-					&larr; Volver al proyecto
+				<a href={`/dashboard/invitaciones/${invitationId}`} className="intake-detail__back">
+					&larr; Volver al invitación
 				</a>
 			</div>
 		);
@@ -74,11 +74,11 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 	if (editing) {
 		return (
 			<DraftEditor
-				projectId={projectId}
+				invitationId={invitationId}
 				initialContent={currentDraft.content as DraftContent}
 				onCancel={() => {
 					setEditing(false);
-					void loadDraft(projectId);
+					void loadDraft(invitationId);
 				}}
 			/>
 		);
@@ -87,7 +87,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 	return (
 		<div className="intake-review">
 			<header className="intake-review__header">
-				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
+				<a href={`/dashboard/invitaciones/${invitationId}`} className="intake-detail__back">
 					&larr; Volver
 				</a>
 				<h2 className="intake-review__title">{SECTION_LABELS.Hero}</h2>
@@ -98,7 +98,7 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 					</span>
 				</div>
 				<a
-					href={`/dashboard/invitaciones/${projectId}/preview`}
+					href={`/dashboard/invitaciones/${invitationId}/preview`}
 					className="intake-review__preview-link"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -127,8 +127,8 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 								setPublishing(true);
 								setPublishError('');
 								try {
-									await publishDraft(projectId);
-									void loadDraft(projectId);
+									await publishDraft(invitationId);
+									void loadDraft(invitationId);
 								} catch (err) {
 									setPublishError(
 										err instanceof Error ? err.message : 'Error al publicar.',
@@ -150,8 +150,8 @@ const DraftReview: FC<Props> = ({ projectId }) => {
 							setRevising(true);
 							setPublishError('');
 							try {
-								await createDraftRevision(projectId);
-								void loadDraft(projectId);
+								await createDraftRevision(invitationId);
+								void loadDraft(invitationId);
 							} catch (err) {
 								setPublishError(
 									err instanceof Error

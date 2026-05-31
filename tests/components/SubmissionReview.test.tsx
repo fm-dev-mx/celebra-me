@@ -30,7 +30,7 @@ jest.mock('@/hooks/use-invitation-admin', () => ({
 	useInvitationAdmin: () => ({
 		loading: false,
 		error: '',
-		currentProject: mockCurrentProject,
+		currentInvitation: mockCurrentProject,
 		currentRequest: mockCurrentRequest,
 		currentSubmission: mockCurrentSubmission,
 		loadSubmissionForReview: mockLoadSubmissionForReview,
@@ -45,7 +45,7 @@ describe('SubmissionReview', () => {
 	});
 
 	it('edits and saves corrected submission values through the admin action', async () => {
-		render(<SubmissionReview projectId="proj-1" />);
+		render(<SubmissionReview invitationId="proj-1" />);
 
 		await userEvent.click(screen.getByRole('button', { name: 'Editar correcciones' }));
 		const celebrantName = screen.getByLabelText(/Nombre del festejado/);

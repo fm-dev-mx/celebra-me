@@ -2,8 +2,8 @@
 import '@/styles/intake.scss';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import IntakeForm from '@/components/intake/IntakeForm';
-import ProjectMetadataForm from '@/components/dashboard/intake/ProjectMetadataForm';
-import { ensureInternalEditContext } from '@/lib/intake/services/internal-edit.service';
+import InvitationMetadataForm from '@/components/dashboard/intake/InvitationMetadataForm';
+import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 const rawId = Astro.params.id;
@@ -14,22 +14,22 @@ if (!rawId) {
 
 const id = rawId;
 
-let project: Awaited<ReturnType<typeof ensureInternalEditContext>>['project'];
-let request: Awaited<ReturnType<typeof ensureInternalEditContext>>['request'];
-let submission: Awaited<ReturnType<typeof ensureInternalEditContext>>['submission'];
+let invitation: Awaited<ReturnType<typeof ensureAdminEditContext>>['invitation'];
+let request: Awaited<ReturnType<typeof ensureAdminEditContext>>['request'];
+let submission: Awaited<ReturnType<typeof ensureAdminEditContext>>['submission'];
 let loadError: string | null = null;
 
 try {
-	const ctx = await ensureInternalEditContext(id);
-	project = ctx.project;
+	const ctx = await ensureAdminEditContext(id);
+	invitation = ctx.invitation;
 	request = ctx.request;
 	submission = ctx.submission;
 } catch (err) {
-	loadError = toErrorMessage(err, 'No se pudo cargar el proyecto.');
+	loadError = toErrorMessage(err, 'No se pudo cargar el invitación.');
 }
 ---
 
-<DashboardLayout title={loadError ? 'Error' : `Editar datos base - ${project!.title}`}>
+<DashboardLayout title={loadError ? 'Error' : `Editar datos base - ${invitation!.title}`}>
 	<div class="intake-page-body">
 		{
 			loadError ? (
@@ -40,31 +40,31 @@ try {
 			) : (
 				<>
 					<section class="intake-page-section">
-						<ProjectMetadataForm
+						<InvitationMetadataForm
 							client:load
-							project={{
-								id: project!.id,
-								title: project!.title,
-								clientName: project!.clientName,
-								clientWhatsapp: project!.clientWhatsapp,
-								clientEmail: project!.clientEmail,
-								slug: project!.slug,
-								status: project!.status,
-								photosReceived: project!.photosReceived,
+							invitation={{
+								id: invitation!.id,
+								title: invitation!.title,
+								clientName: invitation!.clientName,
+								clientWhatsapp: invitation!.clientWhatsapp,
+								clientEmail: invitation!.clientEmail,
+								slug: invitation!.slug,
+								status: invitation!.status,
+								photosReceived: invitation!.photosReceived,
 							}}
 						/>
 					</section>
 					<hr class="intake-page-divider" />
 					<IntakeForm
 						client:load
-						mode="internal"
-						projectId={project!.id}
+						mode="admin"
+						invitationId={invitation!.id}
 						enabledBlocks={request!.enabledBlocks}
 						initialBlockData={submission!.blockData}
 						initialStatus={submission!.status}
 						isLocked={false}
-						projectTitle={project!.title}
-						eventType={project!.eventType}
+						invitationTitle={invitation!.title}
+						eventType={invitation!.eventType}
 					/>
 				</>
 			)

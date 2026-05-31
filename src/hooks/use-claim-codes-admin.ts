@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type { CreateClaimCodeDTO, UpdateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
-import type { InvitationProjectDTO } from '@/lib/dashboard/dto/intake';
+import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 interface ProjectOption {
@@ -12,22 +12,22 @@ interface ProjectOption {
 	rsvpEventId: string | null;
 }
 
-function toProjectOption(project: InvitationProjectDTO): ProjectOption {
+function toProjectOption(invitation: InvitationDTO): ProjectOption {
 	return {
-		id: project.id,
-		title: project.title,
-		eventType: project.eventType,
-		rsvpEventId: project.rsvpEventId,
+		id: invitation.id,
+		title: invitation.title,
+		eventType: invitation.eventType,
+		rsvpEventId: invitation.rsvpEventId,
 	};
 }
 
 export function useClaimCodesAdmin() {
 	const [items, setItems] = useState<ClaimCodeDTO[]>([]);
-	const [projects, setProjects] = useState<ProjectOption[]>([]);
+	const [invitations, setProjects] = useState<ProjectOption[]>([]);
 	const [error, setError] = useState('');
 	const [lastPlainCode, setLastPlainCode] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [projectsLoading, setProjectsLoading] = useState(false);
+	const [invitationsLoading, setInvitationsLoading] = useState(false);
 
 	const loadClaimCodes = useCallback(async () => {
 		setError('');
@@ -42,23 +42,23 @@ export function useClaimCodesAdmin() {
 		}
 	}, []);
 
-	const loadProjects = useCallback(async () => {
-		setProjectsLoading(true);
+	const loadInvitations = useCallback(async () => {
+		setInvitationsLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.listInvitationProjects();
+			const result = await adminApi.listInvitations();
 			setProjects(result.items.map(toProjectOption));
 		} catch (err) {
-			setError(toErrorMessage(err, 'No se pudieron cargar los proyectos.'));
+			setError(toErrorMessage(err, 'No se pudieron cargar las invitaciones.'));
 		} finally {
-			setProjectsLoading(false);
+			setInvitationsLoading(false);
 		}
 	}, []);
 
 	useEffect(() => {
 		void loadClaimCodes();
-		void loadProjects();
-	}, [loadClaimCodes, loadProjects]);
+		void loadInvitations();
+	}, [loadClaimCodes, loadInvitations]);
 
 	const createClaimCode = useCallback(
 		async (payload: CreateClaimCodeDTO) => {
@@ -108,15 +108,15 @@ export function useClaimCodesAdmin() {
 
 	return {
 		items,
-		projects,
+		invitations,
 		error,
 		lastPlainCode,
 		loading,
-		projectsLoading,
+		invitationsLoading,
 		createClaimCode,
 		updateClaimCode,
 		disableClaimCode,
 		reloadClaimCodes: loadClaimCodes,
-		reloadProjects: loadProjects,
+		reloadInvitations: loadInvitations,
 	};
 }

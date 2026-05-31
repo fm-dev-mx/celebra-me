@@ -3,9 +3,9 @@ import type { IntakeBlockType } from '@/lib/intake/types';
 import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
 
 interface UseIntakeFormProps {
-	mode?: 'client' | 'internal';
+	mode?: 'client' | 'admin';
 	token?: string;
-	projectId?: string;
+	invitationId?: string;
 	enabledBlocks: IntakeBlockType[];
 	initialBlockData: Record<string, unknown>;
 	initialStatus: string;
@@ -15,7 +15,7 @@ interface UseIntakeFormProps {
 export function useIntakeForm({
 	token,
 	mode = 'client',
-	projectId,
+	invitationId,
 	enabledBlocks,
 	initialBlockData,
 	initialStatus,
@@ -29,22 +29,23 @@ export function useIntakeForm({
 	const [submitted, setSubmitted] = useState(
 		mode === 'client' && (initialStatus === 'submitted' || initialStatus === 'approved'),
 	);
+	const [saved, setSaved] = useState(false);
 	const [clientComments, setClientComments] = useState('');
 	const [showSummary, setShowSummary] = useState(false);
 
 	const totalSteps = enabledBlocks.length;
 	const currentBlockType = enabledBlocks[currentStep];
 	const endpoint =
-		mode === 'internal'
-			? `/api/dashboard/intake/${encodeURIComponent(projectId ?? '')}/edit`
+		mode === 'admin'
+			? `/api/dashboard/intake/${encodeURIComponent(invitationId ?? '')}/edit`
 			: `/api/captura/${encodeURIComponent(token ?? '')}`;
 
-	if (mode === 'internal' && !projectId) {
-		throw new Error('projectId is required for internal editing mode.');
+	if (mode === 'admin' && !invitationId) {
+		throw new Error('invitationId is required for admin editing mode.');
 	}
 	const mutationHeaders = (): Record<string, string> => {
 		const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-		if (mode === 'internal' && typeof document !== 'undefined') {
+		if (mode === 'admin' && typeof document !== 'undefined') {
 			const csrfToken = document
 				.querySelector('meta[name="csrf-token"]')
 				?.getAttribute('content');
@@ -184,7 +185,12 @@ export function useIntakeForm({
 				throw new Error(message);
 			}
 
-			setSubmitted(true);
+			if (mode === 'admin') {
+				setSaved(true);
+				setShowSummary(false);
+			} else {
+				setSubmitted(true);
+			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : 'Error al enviar.';
 			setErrors((prev) => ({ ...prev, _submit: message }));
@@ -203,6 +209,7 @@ export function useIntakeForm({
 		saving,
 		submitting,
 		submitted,
+		saved,
 		clientComments,
 		setClientComments,
 		showSummary,

@@ -7,48 +7,50 @@ import DraftSection from '@/components/dashboard/intake/DraftSection';
 import SubmissionSection from '@/components/dashboard/intake/SubmissionSection';
 import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
 import type { IntakeBlockType } from '@/lib/intake/types';
-import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
+import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 }
 
-const InvitationDetail: FC<Props> = ({ projectId }) => {
+const InvitationDetail: FC<Props> = ({ invitationId }) => {
 	const {
 		loading,
 		error,
-		currentProject,
+		currentInvitation,
 		currentRequest,
 		currentSubmission,
 		currentRsvpEvent,
-		loadProjectDetail,
-		updateProject,
+		loadInvitationDetail,
+		updateInvitation,
 		createIntakeRequest,
 		regenerateToken,
+		revokeToken,
 		loadDraft,
 	} = useInvitationAdmin();
 
 	const [selectedBlocks, setSelectedBlocks] = useState<IntakeBlockType[]>([]);
 	const [creatingRequest, setCreatingRequest] = useState(false);
 	const [regenerating, setRegenerating] = useState(false);
+	const [revoking, setRevoking] = useState(false);
 	const [actionError, setActionError] = useState('');
 	const [actionSuccess, setActionSuccess] = useState('');
 
 	useEffect(() => {
-		void loadProjectDetail(projectId);
-		void loadDraft(projectId);
-	}, [projectId, loadProjectDetail, loadDraft]);
+		void loadInvitationDetail(invitationId);
+		void loadDraft(invitationId);
+	}, [invitationId, loadInvitationDetail, loadDraft]);
 
 	useEffect(() => {
 		if (currentRequest?.enabledBlocks) {
 			setSelectedBlocks(currentRequest.enabledBlocks);
-		} else if (currentProject) {
-			const p = findDemoPreset(currentProject.baseDemoId);
+		} else if (currentInvitation) {
+			const p = findDemoPreset(currentInvitation.baseDemoId);
 			if (p) setSelectedBlocks(p.recommendedBlocks);
 		}
-	}, [currentRequest, currentProject]);
+	}, [currentRequest, currentInvitation]);
 
 	const handleCreateRequest = async () => {
 		if (selectedBlocks.length === 0) {
@@ -61,7 +63,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		setActionSuccess('');
 
 		try {
-			await createIntakeRequest(projectId, {
+			await createIntakeRequest(invitationId, {
 				enabledBlocks: selectedBlocks,
 			});
 			setActionSuccess('Enlace para cliente generado exitosamente.');
@@ -69,6 +71,23 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 			setActionError(err instanceof Error ? err.message : 'Error al generar el enlace.');
 		} finally {
 			setCreatingRequest(false);
+		}
+	};
+
+	const handleRevoke = async () => {
+		if (!window.confirm('Esto invalidará el enlace para cliente. ¿Continuar?')) return;
+
+		setRevoking(true);
+		setActionError('');
+		setActionSuccess('');
+
+		try {
+			await revokeToken(invitationId);
+			setActionSuccess('Link para cliente revocado.');
+		} catch (err) {
+			setActionError(err instanceof Error ? err.message : 'Error al revocar el enlace.');
+		} finally {
+			setRevoking(false);
 		}
 	};
 
@@ -80,7 +99,7 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		setActionSuccess('');
 
 		try {
-			await regenerateToken(projectId);
+			await regenerateToken(invitationId);
 			setActionSuccess('Token regenerado. El enlace anterior ya no funciona.');
 		} catch (err) {
 			setActionError(err instanceof Error ? err.message : 'Error al regenerar el token.');
@@ -90,15 +109,15 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 	};
 
 	const handleTogglePhotos = async () => {
-		if (!currentProject) return;
+		if (!currentInvitation) return;
 		setActionError('');
 		setActionSuccess('');
 		try {
-			await updateProject(projectId, {
-				photosReceived: !currentProject.photosReceived,
+			await updateInvitation(invitationId, {
+				photosReceived: !currentInvitation.photosReceived,
 			});
 			setActionSuccess(
-				currentProject.photosReceived
+				currentInvitation.photosReceived
 					? 'Fotos marcadas como no recibidas.'
 					: 'Fotos marcadas como recibidas.',
 			);
@@ -115,14 +134,14 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 		return <div className="intake-detail__error">{error}</div>;
 	}
 
-	if (!currentProject) {
-		return <div className="intake-detail__empty">Proyecto no encontrado.</div>;
+	if (!currentInvitation) {
+		return <div className="intake-detail__empty">Invitación no encontrada.</div>;
 	}
 
-	const preset = findDemoPreset(currentProject.baseDemoId);
+	const preset = findDemoPreset(currentInvitation.baseDemoId);
 
-	const inconsistencyDetected = hasInconsistency(currentProject);
-	const repairAction = resolveRepairAction(currentProject);
+	const inconsistencyDetected = hasInconsistency(currentInvitation);
+	const repairAction = resolveRepairAction(currentInvitation);
 
 	return (
 		<div className="intake-detail">
@@ -132,12 +151,13 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 						&larr; Volver
 					</a>
 				</div>
-				<h2 className="intake-detail__title">{currentProject.title}</h2>
+				<h2 className="intake-detail__title">{currentInvitation.title}</h2>
 				<div className="intake-detail__meta">
 					<span className="intake-detail__badge">
-						{PROJECT_STATUS_LABELS[currentProject.status] ?? currentProject.status}
+						{INVITATION_STATUS_LABELS[currentInvitation.status] ??
+							currentInvitation.status}
 					</span>
-					<span className="intake-detail__type">{currentProject.eventType}</span>
+					<span className="intake-detail__type">{currentInvitation.eventType}</span>
 					{preset && <span className="intake-detail__demo">{preset.displayName}</span>}
 				</div>
 
@@ -155,73 +175,82 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 				)}
 			</header>
 
-			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Información del cliente</h3>
-				<dl className="intake-detail__info">
-					<div className="intake-detail__info-row">
-						<dt>Cliente</dt>
-						<dd>{currentProject.clientName || '—'}</dd>
-					</div>
-					<div className="intake-detail__info-row">
-						<dt>WhatsApp</dt>
-						<dd>{currentProject.clientWhatsapp || '—'}</dd>
-					</div>
-					<div className="intake-detail__info-row">
-						<dt>Correo</dt>
-						<dd>{currentProject.clientEmail || '—'}</dd>
-					</div>
-					<div className="intake-detail__info-row">
-						<dt>Fotos del cliente recibidas</dt>
-						<dd>
+			{currentInvitation.kind === 'client' && (
+				<>
+					<section className="intake-detail__section">
+						<h3 className="intake-detail__section-title">Información del cliente</h3>
+						<dl className="intake-detail__info">
+							<div className="intake-detail__info-row">
+								<dt>Cliente</dt>
+								<dd>{currentInvitation.clientName || '—'}</dd>
+							</div>
+							<div className="intake-detail__info-row">
+								<dt>WhatsApp</dt>
+								<dd>{currentInvitation.clientWhatsapp || '—'}</dd>
+							</div>
+							<div className="intake-detail__info-row">
+								<dt>Correo</dt>
+								<dd>{currentInvitation.clientEmail || '—'}</dd>
+							</div>
+							<div className="intake-detail__info-row">
+								<dt>Fotos del cliente recibidas</dt>
+								<dd>
+									<button
+										type="button"
+										className="intake-detail__toggle"
+										onClick={handleTogglePhotos}
+									>
+										{currentInvitation.photosReceived ? 'Sí' : 'No'}
+									</button>
+								</dd>
+							</div>
+						</dl>
+					</section>
+
+					<section className="intake-detail__section">
+						<h3 className="intake-detail__section-title">
+							Solicitud al cliente (opcional)
+						</h3>
+						<p className="intake-detail__submission-hint">
+							La edición interna está siempre disponible desde la lista de
+							invitaciones. Este enlace solo es necesario si deseas solicitar datos al
+							cliente.
+						</p>
+						<BlockSelector
+							eventType={currentInvitation.eventType}
+							selectedBlocks={selectedBlocks}
+							recommendedBlocks={preset?.recommendedBlocks}
+							onChange={setSelectedBlocks}
+							disabled={Boolean(currentRequest)}
+						/>
+						{!currentRequest && (
 							<button
 								type="button"
-								className="intake-detail__toggle"
-								onClick={handleTogglePhotos}
+								className="intake-detail__generate-btn"
+								onClick={handleCreateRequest}
+								disabled={creatingRequest}
 							>
-								{currentProject.photosReceived ? 'Sí' : 'No'}
+								{creatingRequest ? 'Generando...' : 'Generar enlace para cliente'}
 							</button>
-						</dd>
-					</div>
-				</dl>
-			</section>
+						)}
+						<IntakeLinkPanel
+							request={currentRequest}
+							onRegenerate={handleRegenerate}
+							onRevoke={handleRevoke}
+							regenerating={regenerating}
+							revoking={revoking}
+						/>
+					</section>
 
-			<section className="intake-detail__section">
-				<h3 className="intake-detail__section-title">Solicitud al cliente (opcional)</h3>
-				<p className="intake-detail__submission-hint">
-					La edición interna está siempre disponible desde la lista de invitaciones. Este
-					enlace solo es necesario si deseas solicitar datos al cliente.
-				</p>
-				<BlockSelector
-					eventType={currentProject.eventType}
-					selectedBlocks={selectedBlocks}
-					recommendedBlocks={preset?.recommendedBlocks}
-					onChange={setSelectedBlocks}
-					disabled={Boolean(currentRequest)}
-				/>
-				{!currentRequest && (
-					<button
-						type="button"
-						className="intake-detail__generate-btn"
-						onClick={handleCreateRequest}
-						disabled={creatingRequest}
-					>
-						{creatingRequest ? 'Generando...' : 'Generar enlace para cliente'}
-					</button>
-				)}
-				<IntakeLinkPanel
-					request={currentRequest}
-					onRegenerate={handleRegenerate}
-					regenerating={regenerating}
-				/>
-			</section>
-
-			{currentSubmission && (
-				<SubmissionSection projectId={projectId} submission={currentSubmission} />
+					<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
+				</>
 			)}
 
-			<DraftSection projectId={projectId} />
+			{currentSubmission && (
+				<SubmissionSection invitationId={invitationId} submission={currentSubmission} />
+			)}
 
-			<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
+			<DraftSection invitationId={invitationId} />
 
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}

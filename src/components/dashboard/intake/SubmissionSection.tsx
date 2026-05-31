@@ -4,11 +4,11 @@ import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
 import { SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 	submission: IntakeSubmissionDTO;
 }
 
-const SubmissionSection: FC<Props> = ({ projectId, submission }) => {
+const SubmissionSection: FC<Props> = ({ invitationId, submission }) => {
 	const status = submission.status as IntakeSubmissionStatus;
 	const showReview = status === 'submitted' || status === 'needs_changes';
 	return (
@@ -27,7 +27,7 @@ const SubmissionSection: FC<Props> = ({ projectId, submission }) => {
 			)}
 			{showReview && (
 				<a
-					href={`/dashboard/invitaciones/${projectId}/review`}
+					href={`/dashboard/invitaciones/${invitationId}/review`}
 					className="intake-detail__review-link"
 				>
 					Revisar captura

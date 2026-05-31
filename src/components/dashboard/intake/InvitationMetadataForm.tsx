@@ -1,24 +1,24 @@
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
-import type { InvitationProjectStatus } from '@/lib/intake/types';
-import { PROJECT_STATUS_LABELS } from '@/lib/intake/labels';
+import type { InvitationStatus } from '@/lib/intake/types';
+import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 interface Props {
-	project: {
+	invitation: {
 		id: string;
 		title: string;
 		clientName: string;
 		clientWhatsapp: string;
 		clientEmail: string;
 		slug: string | null;
-		status: InvitationProjectStatus;
+		status: InvitationStatus;
 		photosReceived: boolean;
 	};
 }
 
-const ALLOWED_TRANSITIONS: Record<InvitationProjectStatus, InvitationProjectStatus[]> = {
+const ALLOWED_TRANSITIONS: Record<InvitationStatus, InvitationStatus[]> = {
 	draft: ['waiting_for_client', 'in_production', 'archived'],
 	waiting_for_client: ['draft', 'in_production', 'archived'],
 	client_submitted: ['in_review', 'archived'],
@@ -30,19 +30,19 @@ const ALLOWED_TRANSITIONS: Record<InvitationProjectStatus, InvitationProjectStat
 	archived: ['draft'],
 };
 
-const ProjectMetadataForm: FC<Props> = ({ project }) => {
-	const [title, setTitle] = useState(project.title);
-	const [clientName, setClientName] = useState(project.clientName);
-	const [clientWhatsapp, setClientWhatsapp] = useState(project.clientWhatsapp);
-	const [clientEmail, setClientEmail] = useState(project.clientEmail);
-	const [slug, setSlug] = useState(project.slug ?? '');
-	const [status, setStatus] = useState(project.status);
-	const [photosReceived, setPhotosReceived] = useState(project.photosReceived);
+const InvitationMetadataForm: FC<Props> = ({ invitation }) => {
+	const [title, setTitle] = useState(invitation.title);
+	const [clientName, setClientName] = useState(invitation.clientName);
+	const [clientWhatsapp, setClientWhatsapp] = useState(invitation.clientWhatsapp);
+	const [clientEmail, setClientEmail] = useState(invitation.clientEmail);
+	const [slug, setSlug] = useState(invitation.slug ?? '');
+	const [status, setStatus] = useState(invitation.status);
+	const [photosReceived, setPhotosReceived] = useState(invitation.photosReceived);
 	const [saving, setSaving] = useState(false);
 	const [saveError, setSaveError] = useState('');
 	const [saveSuccess, setSaveSuccess] = useState(false);
 
-	const allowedStatuses = ALLOWED_TRANSITIONS[project.status] ?? [];
+	const allowedStatuses = ALLOWED_TRANSITIONS[invitation.status] ?? [];
 	const canChangeStatus = allowedStatuses.length > 0;
 
 	const handleSave = useCallback(async () => {
@@ -52,22 +52,24 @@ const ProjectMetadataForm: FC<Props> = ({ project }) => {
 		try {
 			const payload: Record<string, unknown> = {};
 
-			if (title !== project.title) payload.title = title;
-			if (clientName !== project.clientName) payload.clientName = clientName;
-			if (clientWhatsapp !== project.clientWhatsapp) payload.clientWhatsapp = clientWhatsapp;
-			if (clientEmail !== project.clientEmail) payload.clientEmail = clientEmail;
-			if ((slug || null) !== project.slug) payload.slug = slug || null;
-			if (status !== project.status) payload.status = status;
-			if (photosReceived !== project.photosReceived) payload.photosReceived = photosReceived;
+			if (title !== invitation.title) payload.title = title;
+			if (clientName !== invitation.clientName) payload.clientName = clientName;
+			if (clientWhatsapp !== invitation.clientWhatsapp)
+				payload.clientWhatsapp = clientWhatsapp;
+			if (clientEmail !== invitation.clientEmail) payload.clientEmail = clientEmail;
+			if ((slug || null) !== invitation.slug) payload.slug = slug || null;
+			if (status !== invitation.status) payload.status = status;
+			if (photosReceived !== invitation.photosReceived)
+				payload.photosReceived = photosReceived;
 
 			if (Object.keys(payload).length === 0) {
 				setSaveSuccess(true);
 				return;
 			}
 
-			await adminApi.updateInvitationProject(
-				project.id,
-				payload as Parameters<typeof adminApi.updateInvitationProject>[1],
+			await adminApi.updateInvitation(
+				invitation.id,
+				payload as Parameters<typeof adminApi.updateInvitation>[1],
 			);
 			setSaveSuccess(true);
 		} catch (err) {
@@ -75,16 +77,16 @@ const ProjectMetadataForm: FC<Props> = ({ project }) => {
 		} finally {
 			setSaving(false);
 		}
-	}, [title, clientName, clientWhatsapp, clientEmail, slug, status, photosReceived, project]);
+	}, [title, clientName, clientWhatsapp, clientEmail, slug, status, photosReceived, invitation]);
 
 	return (
-		<div className="project-metadata-form">
-			<h3 className="project-metadata-form__title">Datos del proyecto</h3>
+		<div className="invitation-metadata-form">
+			<h3 className="invitation-metadata-form__title">Datos de la invitación</h3>
 
-			<div className="project-metadata-form__fields">
+			<div className="invitation-metadata-form__fields">
 				<div className="intake-field">
 					<label className="intake-field__label" htmlFor="meta-title">
-						Título del proyecto
+						Título de la invitación
 					</label>
 					<input
 						id="meta-title"
@@ -157,14 +159,14 @@ const ProjectMetadataForm: FC<Props> = ({ project }) => {
 							id="meta-status"
 							className="intake-field__select"
 							value={status}
-							onChange={(e) => setStatus(e.target.value as InvitationProjectStatus)}
+							onChange={(e) => setStatus(e.target.value as InvitationStatus)}
 						>
-							<option value={project.status}>
-								{PROJECT_STATUS_LABELS[project.status]}
+							<option value={invitation.status}>
+								{INVITATION_STATUS_LABELS[invitation.status]}
 							</option>
 							{allowedStatuses.map((s) => (
 								<option key={s} value={s}>
-									{PROJECT_STATUS_LABELS[s]}
+									{INVITATION_STATUS_LABELS[s]}
 								</option>
 							))}
 						</select>
@@ -200,4 +202,4 @@ const ProjectMetadataForm: FC<Props> = ({ project }) => {
 	);
 };
 
-export default ProjectMetadataForm;
+export default InvitationMetadataForm;

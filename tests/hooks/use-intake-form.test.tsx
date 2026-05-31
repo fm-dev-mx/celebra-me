@@ -8,13 +8,13 @@ beforeEach(() => {
 	global.fetch = fetchMock;
 });
 
-describe('useIntakeForm internal mode', () => {
+describe('useIntakeForm admin mode', () => {
 	it('saves steps through the stable dashboard endpoint', async () => {
 		fetchMock.mockResolvedValue({ ok: true });
 		const { result } = renderHook(() =>
 			useIntakeForm({
-				mode: 'internal',
-				projectId: 'proj-1',
+				mode: 'admin',
+				invitationId: 'proj-1',
 				enabledBlocks: ['event-details'],
 				initialBlockData: {
 					'event-details': {
@@ -54,12 +54,12 @@ describe('useIntakeForm internal mode', () => {
 		});
 	});
 
-	it('uses the internal endpoint to save comments without client submission semantics', async () => {
+	it('uses the admin endpoint to save comments without client submission semantics', async () => {
 		fetchMock.mockResolvedValue({ ok: true });
 		const { result } = renderHook(() =>
 			useIntakeForm({
-				mode: 'internal',
-				projectId: 'proj-1',
+				mode: 'admin',
+				invitationId: 'proj-1',
 				enabledBlocks: [],
 				initialBlockData: {},
 				initialStatus: 'approved',
@@ -79,6 +79,7 @@ describe('useIntakeForm internal mode', () => {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ clientComments: 'Nota interna' }),
 		});
-		expect(result.current.submitted).toBe(true);
+		expect(result.current.submitted).toBe(false);
+		expect(result.current.saved).toBe(true);
 	});
 });

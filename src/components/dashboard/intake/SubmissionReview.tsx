@@ -7,7 +7,7 @@ import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema
 import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 }
 
 function renderLoadState(loading: boolean, error: string, submission: IntakeSubmissionDTO | null) {
@@ -16,7 +16,7 @@ function renderLoadState(loading: boolean, error: string, submission: IntakeSubm
 	if (!submission) {
 		return (
 			<div className="intake-review__empty">
-				No se encontró una captura enviada para este proyecto.
+				No se encontró una captura enviada para esta invitación.
 			</div>
 		);
 	}
@@ -42,11 +42,11 @@ function ActionFeedback({ error, success }: { error: string; success: string }) 
 	);
 }
 
-const SubmissionReview: FC<Props> = ({ projectId }) => {
+const SubmissionReview: FC<Props> = ({ invitationId }) => {
 	const {
 		loading,
 		error,
-		currentProject,
+		currentInvitation,
 		currentSubmission,
 		currentRequest,
 		loadSubmissionForReview,
@@ -63,8 +63,8 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 	const [actionSuccess, setActionSuccess] = useState('');
 
 	useEffect(() => {
-		void loadSubmissionForReview(projectId);
-	}, [projectId, loadSubmissionForReview]);
+		void loadSubmissionForReview(invitationId);
+	}, [invitationId, loadSubmissionForReview]);
 
 	useEffect(() => {
 		if (!currentSubmission || editing) return;
@@ -135,7 +135,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 		if (!validateCorrections()) return;
 		await withAction(
 			'save',
-			() => saveSubmissionCorrections(projectId, { blockData, clientComments }),
+			() => saveSubmissionCorrections(invitationId, { blockData, clientComments }),
 			() => {
 				setEditing(false);
 				setActionSuccess('Correcciones guardadas exitosamente.');
@@ -159,7 +159,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 		}
 		await withAction(
 			action,
-			() => reviewSubmission(projectId, action, reviewNotes),
+			() => reviewSubmission(invitationId, action, reviewNotes),
 			() => {
 				setActionSuccess(
 					action === 'approve'
@@ -180,10 +180,10 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 	return (
 		<div className="intake-review">
 			<header className="intake-review__header">
-				<a href={`/dashboard/invitaciones/${projectId}`} className="intake-detail__back">
+				<a href={`/dashboard/invitaciones/${invitationId}`} className="intake-detail__back">
 					&larr; Volver
 				</a>
-				<h2 className="intake-review__title">Revisión: {currentProject?.title}</h2>
+				<h2 className="intake-review__title">Revisión: {currentInvitation?.title}</h2>
 				<div className="intake-review__meta">
 					<span className="intake-review__badge">
 						Estado: {SUBMISSION_STATUS_LABELS[currentSubmission.status]}
@@ -221,7 +221,7 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 								}
 								disabled={!editing}
 								eventType={
-									(currentProject?.eventType ?? 'xv') as
+									(currentInvitation?.eventType ?? 'xv') as
 										| 'xv'
 										| 'boda'
 										| 'bautizo'

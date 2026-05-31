@@ -3,7 +3,7 @@ import '@/styles/intake.scss';
 import IntakeForm from '@/components/intake/IntakeForm';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 import { findIntakeRequestByTokenHash } from '@/lib/intake/repositories/intake-request.repository';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findSubmissionByRequestId, createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import type { EventType } from '@/lib/theme/theme-contract';
 import type { IntakeBlockType } from '@/lib/intake/types';
@@ -14,8 +14,8 @@ if (!token) {
 	return Astro.redirect('/404');
 }
 
-let projectTitle = '';
-let projectEventType: EventType = 'xv';
+let invitationTitle = '';
+let invitationEventType: EventType = 'xv';
 let enabledBlocks: IntakeBlockType[] = [];
 let initialBlockData: Record<string, unknown> = {};
 let initialStatus = 'in_progress';
@@ -33,16 +33,16 @@ try {
 	} else if (intakeRequest.expiresAt && new Date(intakeRequest.expiresAt) < new Date()) {
 		errorMessage = 'Este enlace ha expirado.';
 	} else {
-		const project = await findInvitationProjectById(intakeRequest.invitationProjectId);
-		if (!project) {
-			errorMessage = 'Proyecto no encontrado.';
+		const invitation = await findInvitationById(intakeRequest.invitationId);
+		if (!invitation) {
+			errorMessage = 'Invitación no encontrada.';
 		} else {
-			projectTitle = project.title;
-			projectEventType = project.eventType;
+			invitationTitle = invitation.title;
+			invitationEventType = invitation.eventType;
 			enabledBlocks = intakeRequest.enabledBlocks;
 
 			const lockedStatuses = ['in_review', 'in_production', 'preview_sent', 'approved', 'published', 'archived'];
-			isLocked = lockedStatuses.includes(project.status);
+			isLocked = lockedStatuses.includes(invitation.status);
 
 			let submission = await findSubmissionByRequestId(intakeRequest.id);
 			if (!submission) {
@@ -65,7 +65,7 @@ try {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-		<title>{projectTitle ? `${projectTitle} — Captura` : 'Captura — Celebra-me'}</title>
+		<title>{invitationTitle ? `${invitationTitle} — Captura` : 'Captura — Celebra-me'}</title>
 	</head>
 	<body class="intake-page-body">
 		{errorMessage ? (
@@ -86,8 +86,8 @@ try {
 				initialBlockData={initialBlockData}
 				initialStatus={initialStatus}
 				isLocked={isLocked}
-				projectTitle={projectTitle}
-				eventType={projectEventType}
+				invitationTitle={invitationTitle}
+				eventType={invitationEventType}
 			/>
 		)}
 	</body>

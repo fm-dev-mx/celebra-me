@@ -22,6 +22,7 @@ it('does not show the client review lock message for internal editing', () => {
 		saving: false,
 		submitting: false,
 		submitted: false,
+		saved: false,
 		clientComments: '',
 		setClientComments: jest.fn(),
 		showSummary: false,
@@ -36,13 +37,13 @@ it('does not show the client review lock message for internal editing', () => {
 
 	render(
 		<IntakeForm
-			mode="internal"
-			projectId="proj-1"
+			mode="admin"
+			invitationId="proj-1"
 			enabledBlocks={[]}
 			initialBlockData={{}}
 			initialStatus="approved"
 			isLocked={false}
-			projectTitle="Proyecto"
+			invitationTitle="Invitación"
 			eventType="xv"
 		/>,
 	);

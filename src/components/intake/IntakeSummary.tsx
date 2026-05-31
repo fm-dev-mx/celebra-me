@@ -11,7 +11,7 @@ interface Props {
 	onSubmit: () => void;
 	submitting: boolean;
 	disabled?: boolean;
-	mode?: 'client' | 'internal';
+	mode?: 'client' | 'admin';
 }
 
 function renderBlockSummary(_blockType: IntakeBlockType, data: unknown): React.ReactNode {
@@ -56,10 +56,10 @@ const IntakeSummary: FC<Props> = ({
 	return (
 		<div className="intake-summary">
 			<h3 className="intake-summary__title">
-				{mode === 'internal' ? 'Resumen de datos base' : 'Resumen de tu captura'}
+				{mode === 'admin' ? 'Resumen de datos base' : 'Resumen de tu captura'}
 			</h3>
 			<p className="intake-summary__description">
-				{mode === 'internal'
+				{mode === 'admin'
 					? 'Revisa la información antes de guardarla. Puedes regresar a cualquier paso para hacer cambios.'
 					: 'Revisa la información antes de enviarla. Puedes regresar a cualquier paso para hacer cambios.'}
 			</p>
@@ -105,10 +105,10 @@ const IntakeSummary: FC<Props> = ({
 					disabled={submitting}
 				>
 					{submitting
-						? mode === 'internal'
+						? mode === 'admin'
 							? 'Guardando...'
 							: 'Enviando...'
-						: mode === 'internal'
+						: mode === 'admin'
 							? 'Guardar datos base'
 							: 'Enviar captura'}
 				</button>

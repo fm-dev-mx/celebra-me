@@ -91,7 +91,7 @@ const content = {
 };
 
 const defaultProps = {
-	projectId: 'proj-1',
+	invitationId: 'proj-1',
 	initialContent: content,
 	onCancel: jest.fn(),
 };

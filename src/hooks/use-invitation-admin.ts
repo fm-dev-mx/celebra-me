@@ -1,22 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
-	InvitationProjectDTO,
+	InvitationDTO,
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
-	CreateInvitationProjectDTO,
-	UpdateInvitationProjectDTO,
+	CreateInvitationDTO,
+	UpdateInvitationDTO,
 	CreateIntakeRequestDTO,
 } from '@/lib/dashboard/dto/intake';
 
 export function useInvitationAdmin() {
-	const [items, setItems] = useState<InvitationProjectDTO[]>([]);
+	const [items, setItems] = useState<InvitationDTO[]>([]);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 
-	const [currentProject, setCurrentProject] = useState<InvitationProjectDTO | null>(null);
+	const [currentInvitation, setCurrentInvitation] = useState<InvitationDTO | null>(null);
 	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
 	const [currentSubmission, setCurrentSubmission] = useState<IntakeSubmissionDTO | null>(null);
 	const [currentRsvpEvent, setCurrentRsvpEvent] = useState<
@@ -25,11 +25,11 @@ export function useInvitationAdmin() {
 	const [currentDraft, setCurrentDraft] = useState<InvitationContentDraftDTO | null>(null);
 	const [rawToken, setRawToken] = useState<string | null>(null);
 
-	const loadProjects = useCallback(async () => {
+	const loadInvitations = useCallback(async () => {
 		setLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.listInvitationProjects();
+			const result = await adminApi.listInvitations();
 			setItems(result.items);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error inesperado.');
@@ -39,65 +39,80 @@ export function useInvitationAdmin() {
 	}, []);
 
 	useEffect(() => {
-		void loadProjects();
-	}, [loadProjects]);
+		void loadInvitations();
+	}, [loadInvitations]);
 
-	const createProject = useCallback(
-		async (payload: CreateInvitationProjectDTO) => {
+	const createInvitation = useCallback(
+		async (payload: CreateInvitationDTO) => {
 			try {
-				const item = await adminApi.createInvitationProject(payload);
-				await loadProjects();
+				const item = await adminApi.createInvitation(payload);
+				await loadInvitations();
 				return item;
 			} catch (err) {
 				throw new Error(
-					err instanceof Error ? err.message : 'Error al crear el proyecto.',
+					err instanceof Error ? err.message : 'Error al crear el invitación.',
 					{ cause: err },
 				);
 			}
 		},
-		[loadProjects],
+		[loadInvitations],
 	);
 
-	const updateProject = useCallback(
-		async (projectId: string, payload: UpdateInvitationProjectDTO) => {
+	const updateInvitation = useCallback(
+		async (invitationId: string, payload: UpdateInvitationDTO) => {
 			try {
-				const item = await adminApi.updateInvitationProject(projectId, payload);
-				setCurrentProject(item);
-				await loadProjects();
+				const item = await adminApi.updateInvitation(invitationId, payload);
+				setCurrentInvitation(item);
+				await loadInvitations();
 				return item;
 			} catch (err) {
 				throw new Error(
-					err instanceof Error ? err.message : 'Error al actualizar el proyecto.',
+					err instanceof Error ? err.message : 'Error al actualizar el invitación.',
 					{ cause: err },
 				);
 			}
 		},
-		[loadProjects],
+		[loadInvitations],
 	);
 
-	const loadProjectDetail = useCallback(async (projectId: string) => {
+	const duplicateInvitationFromDemo = useCallback(
+		async (
+			invitationId: string,
+			payload: Pick<
+				CreateInvitationDTO,
+				'title' | 'clientName' | 'clientEmail' | 'clientWhatsapp'
+			>,
+		) => {
+			const item = await adminApi.duplicateInvitationFromDemo(invitationId, payload);
+			await loadInvitations();
+			return item;
+		},
+		[loadInvitations],
+	);
+
+	const loadInvitationDetail = useCallback(async (invitationId: string) => {
 		setLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.getInvitationProject(projectId);
-			setCurrentProject(result.item);
+			const result = await adminApi.getInvitation(invitationId);
+			setCurrentInvitation(result.item);
 			setCurrentRequest(result.request);
 			setCurrentSubmission(result.submission);
 			setCurrentRsvpEvent(result.rsvpEvent ?? null);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al cargar el proyecto.');
+			setError(err instanceof Error ? err.message : 'Error al cargar el invitación.');
 		} finally {
 			setLoading(false);
 		}
 	}, []);
 
 	const createIntakeRequest = useCallback(
-		async (projectId: string, payload: CreateIntakeRequestDTO) => {
+		async (invitationId: string, payload: CreateIntakeRequestDTO) => {
 			try {
-				const result = await adminApi.createIntakeRequest(projectId, payload);
+				const result = await adminApi.createIntakeRequest(invitationId, payload);
 				setCurrentRequest(result.request);
 				setRawToken(result.rawToken);
-				await loadProjectDetail(projectId);
+				await loadInvitationDetail(invitationId);
 				return result;
 			} catch (err) {
 				throw new Error(
@@ -106,12 +121,12 @@ export function useInvitationAdmin() {
 				);
 			}
 		},
-		[loadProjectDetail],
+		[loadInvitationDetail],
 	);
 
-	const regenerateToken = useCallback(async (projectId: string) => {
+	const regenerateToken = useCallback(async (invitationId: string) => {
 		try {
-			const result = await adminApi.regenerateIntakeToken(projectId);
+			const result = await adminApi.regenerateIntakeToken(invitationId);
 			setCurrentRequest(result.request);
 			setRawToken(result.rawToken);
 			return result;
@@ -122,12 +137,25 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
-	const loadSubmissionForReview = useCallback(async (projectId: string) => {
+	const revokeToken = useCallback(async (invitationId: string) => {
+		try {
+			const result = await adminApi.revokeIntakeToken(invitationId);
+			setCurrentRequest(result.request);
+			setRawToken(null);
+			return result;
+		} catch (err) {
+			throw new Error(err instanceof Error ? err.message : 'Error al revocar el enlace.', {
+				cause: err,
+			});
+		}
+	}, []);
+
+	const loadSubmissionForReview = useCallback(async (invitationId: string) => {
 		setLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.getSubmissionForReview(projectId);
-			setCurrentProject(result.item);
+			const result = await adminApi.getSubmissionForReview(invitationId);
+			setCurrentInvitation(result.item);
 			setCurrentRequest(result.request);
 			setCurrentSubmission(result.submission);
 		} catch (err) {
@@ -138,10 +166,14 @@ export function useInvitationAdmin() {
 	}, []);
 
 	const reviewSubmission = useCallback(
-		async (projectId: string, action: 'approve' | 'request_changes', reviewNotes?: string) => {
+		async (
+			invitationId: string,
+			action: 'approve' | 'request_changes',
+			reviewNotes?: string,
+		) => {
 			try {
-				await adminApi.reviewSubmission(projectId, { action, reviewNotes });
-				await loadSubmissionForReview(projectId);
+				await adminApi.reviewSubmission(invitationId, { action, reviewNotes });
+				await loadSubmissionForReview(invitationId);
 			} catch (err) {
 				throw new Error(
 					err instanceof Error ? err.message : 'Error al revisar la captura.',
@@ -154,11 +186,11 @@ export function useInvitationAdmin() {
 
 	const saveSubmissionCorrections = useCallback(
 		async (
-			projectId: string,
+			invitationId: string,
 			payload: { blockData: Record<string, unknown>; clientComments: string },
 		) => {
 			try {
-				const result = await adminApi.updateSubmissionCorrections(projectId, payload);
+				const result = await adminApi.updateSubmissionCorrections(invitationId, payload);
 				setCurrentSubmission(result.item);
 				return result.item;
 			} catch (err) {
@@ -171,11 +203,11 @@ export function useInvitationAdmin() {
 		[],
 	);
 
-	const loadDraft = useCallback(async (projectId: string) => {
+	const loadDraft = useCallback(async (invitationId: string) => {
 		setLoading(true);
 		setError('');
 		try {
-			const result = await adminApi.getDraft(projectId);
+			const result = await adminApi.getDraft(invitationId);
 			setCurrentDraft(result.draft);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al cargar el borrador.');
@@ -184,9 +216,9 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
-	const generateDraftAction = useCallback(async (projectId: string) => {
+	const generateDraftAction = useCallback(async (invitationId: string) => {
 		try {
-			const result = await adminApi.generateDraft(projectId);
+			const result = await adminApi.generateDraft(invitationId);
 			setCurrentDraft(result.draft);
 			return result.draft;
 		} catch (err) {
@@ -196,27 +228,33 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
-	const updateDraft = useCallback(async (projectId: string, content: Record<string, unknown>) => {
-		setSaving(true);
-		setError('');
-		try {
-			const result = await adminApi.updateDraftContent(projectId, content);
-			setCurrentDraft(result.draft);
-			return result.draft;
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al guardar el borrador.', {
-				cause: err,
-			});
-		} finally {
-			setSaving(false);
-		}
-	}, []);
+	const updateDraft = useCallback(
+		async (invitationId: string, content: Record<string, unknown>) => {
+			setSaving(true);
+			setError('');
+			try {
+				const result = await adminApi.updateDraftContent(invitationId, content);
+				setCurrentDraft(result.draft);
+				return result.draft;
+			} catch (err) {
+				throw new Error(
+					err instanceof Error ? err.message : 'Error al guardar el borrador.',
+					{
+						cause: err,
+					},
+				);
+			} finally {
+				setSaving(false);
+			}
+		},
+		[],
+	);
 
-	const publishDraftAction = useCallback(async (projectId: string) => {
+	const publishDraftAction = useCallback(async (invitationId: string) => {
 		setSaving(true);
 		setError('');
 		try {
-			const result = await adminApi.publishDraft(projectId);
+			const result = await adminApi.publishDraft(invitationId);
 			setCurrentDraft(result.draft);
 			return result;
 		} catch (err) {
@@ -228,11 +266,11 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
-	const createDraftRevision = useCallback(async (projectId: string) => {
+	const createDraftRevision = useCallback(async (invitationId: string) => {
 		setSaving(true);
 		setError('');
 		try {
-			const result = await adminApi.createDraftRevision(projectId);
+			const result = await adminApi.createDraftRevision(invitationId);
 			setCurrentDraft(result.draft);
 			return result.draft;
 		} catch (err) {
@@ -245,20 +283,28 @@ export function useInvitationAdmin() {
 		}
 	}, []);
 
-	const softDeleteProject = useCallback(
-		async (projectId: string) => {
-			await adminApi.softDeleteProject(projectId);
-			await loadProjects();
+	const archiveInvitation = useCallback(
+		async (invitationId: string) => {
+			await adminApi.archiveInvitation(invitationId);
+			await loadInvitations();
 		},
-		[loadProjects],
+		[loadInvitations],
 	);
 
-	const restoreProject = useCallback(
-		async (projectId: string) => {
-			await adminApi.restoreProject(projectId);
-			await loadProjects();
+	const restoreInvitation = useCallback(
+		async (invitationId: string) => {
+			await adminApi.restoreInvitation(invitationId);
+			await loadInvitations();
 		},
-		[loadProjects],
+		[loadInvitations],
+	);
+
+	const permanentlyDeleteInvitation = useCallback(
+		async (invitationId: string) => {
+			await adminApi.permanentlyDeleteInvitation(invitationId);
+			await loadInvitations();
+		},
+		[loadInvitations],
 	);
 
 	return {
@@ -266,18 +312,20 @@ export function useInvitationAdmin() {
 		error,
 		loading,
 		saving,
-		currentProject,
+		currentInvitation,
 		currentRequest,
 		currentSubmission,
 		currentRsvpEvent,
 		currentDraft,
 		rawToken,
 		setRawToken,
-		createProject,
-		updateProject,
-		loadProjectDetail,
+		createInvitation,
+		updateInvitation,
+		duplicateInvitationFromDemo,
+		loadInvitationDetail,
 		createIntakeRequest,
 		regenerateToken,
+		revokeToken,
 		loadSubmissionForReview,
 		reviewSubmission,
 		saveSubmissionCorrections,
@@ -286,8 +334,9 @@ export function useInvitationAdmin() {
 		updateDraft,
 		publishDraft: publishDraftAction,
 		createDraftRevision,
-		reloadProjects: loadProjects,
-		softDeleteProject,
-		restoreProject,
+		reloadInvitations: loadInvitations,
+		archiveInvitation,
+		restoreInvitation,
+		permanentlyDeleteInvitation,
 	};
 }

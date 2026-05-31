@@ -7,7 +7,7 @@ import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 
 interface Props {
-	projectId: string;
+	invitationId: string;
 	initialContent: DraftContent;
 	onCancel: () => void;
 }
@@ -67,7 +67,7 @@ function validateContent(content: DraftContent): ValidationError[] {
 	return errors;
 }
 
-const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
+const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 	const { updateDraft, saving } = useInvitationAdmin();
 	const [content, setContent] = useState<DraftContent>(() => deepClone(initialContent));
 	const [error, setError] = useState('');
@@ -103,7 +103,7 @@ const DraftEditor: FC<Props> = ({ projectId, initialContent, onCancel }) => {
 		setError('');
 		setSuccess('');
 		try {
-			await updateDraft(projectId, content as Record<string, unknown>);
+			await updateDraft(invitationId, content as Record<string, unknown>);
 			setSuccess('Borrador guardado exitosamente.');
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar el borrador.');
