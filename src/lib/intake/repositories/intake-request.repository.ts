@@ -1,11 +1,12 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { IntakeRequest, IntakeBlockType } from '@/lib/intake/types';
+import type { IntakeRequest, IntakeBlockType, IntakeRequestOrigin } from '@/lib/intake/types';
 
 interface IntakeRequestRow {
 	id: string;
 	invitation_project_id: string;
 	token_hash: string;
 	token_ciphertext: string | null;
+	origin: IntakeRequestOrigin;
 	status: string;
 	enabled_blocks: IntakeBlockType[];
 	expires_at: string | null;
@@ -19,6 +20,7 @@ function toIntakeRequest(row: IntakeRequestRow): IntakeRequest {
 		invitationProjectId: row.invitation_project_id,
 		tokenHash: row.token_hash,
 		tokenCiphertext: row.token_ciphertext,
+		origin: row.origin,
 		status: row.status as IntakeRequest['status'],
 		enabledBlocks: row.enabled_blocks,
 		expiresAt: row.expires_at,
@@ -28,7 +30,7 @@ function toIntakeRequest(row: IntakeRequestRow): IntakeRequest {
 }
 
 const SELECT_COLUMNS =
-	'id,invitation_project_id,token_hash,token_ciphertext,status,enabled_blocks,expires_at,created_at,updated_at';
+	'id,invitation_project_id,token_hash,token_ciphertext,origin,status,enabled_blocks,expires_at,created_at,updated_at';
 
 export async function findIntakeRequestById(id: string): Promise<IntakeRequest | null> {
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
@@ -50,9 +52,11 @@ export async function findIntakeRequestByTokenHash(
 
 export async function findIntakeRequestsByProjectId(
 	invitationProjectId: string,
+	origin?: IntakeRequestOrigin,
 ): Promise<IntakeRequest[]> {
+	const originFilter = origin ? `&origin=eq.${origin}` : '';
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
-		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&order=created_at.desc`,
+		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}${originFilter}&order=created_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toIntakeRequest);
@@ -62,6 +66,7 @@ export async function createIntakeRequest(input: {
 	invitationProjectId: string;
 	tokenHash: string;
 	tokenCiphertext: string | null;
+	origin?: IntakeRequestOrigin;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;
 }): Promise<IntakeRequest> {
@@ -74,6 +79,7 @@ export async function createIntakeRequest(input: {
 			invitation_project_id: input.invitationProjectId,
 			token_hash: input.tokenHash,
 			token_ciphertext: input.tokenCiphertext,
+			origin: input.origin ?? 'client',
 			enabled_blocks: input.enabledBlocks,
 			expires_at: input.expiresAt,
 			status: 'active',

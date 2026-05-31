@@ -2,6 +2,7 @@ import type {
 	IntakeBlockType,
 	InvitationProjectStatus,
 	IntakeRequestStatus,
+	IntakeRequestOrigin,
 	IntakeSubmissionStatus,
 } from '@/lib/intake/types';
 import type { CaptureLinkStatus } from '@/lib/intake/types';
@@ -58,6 +59,7 @@ export interface IntakeRequestDTO {
 	id: string;
 	invitationProjectId: string;
 	status: IntakeRequestStatus;
+	origin: IntakeRequestOrigin;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;
 	createdAt: string;

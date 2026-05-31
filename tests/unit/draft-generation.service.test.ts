@@ -82,6 +82,7 @@ const baseRequest: IntakeRequest = {
 	invitationProjectId: 'proj-1',
 	tokenHash: 'abc123hash',
 	tokenCiphertext: null,
+	origin: 'client',
 	status: 'submitted',
 	enabledBlocks: ['event-details', 'main-people', 'photos', 'special-messages'],
 	expiresAt: null,

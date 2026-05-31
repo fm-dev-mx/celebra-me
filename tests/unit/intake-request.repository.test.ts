@@ -1,6 +1,7 @@
 import {
 	findIntakeRequestById,
 	findIntakeRequestByTokenHash,
+	findIntakeRequestsByProjectId,
 	createIntakeRequest,
 	updateIntakeRequest,
 } from '@/lib/intake/repositories/intake-request.repository';
@@ -93,6 +94,21 @@ describe('intake-request repository', () => {
 		});
 	});
 
+	describe('findIntakeRequestsByProjectId', () => {
+		it('filters by origin when a workflow requests client links only', async () => {
+			mockSupabaseRequest.mockResolvedValue([]);
+
+			await findIntakeRequestsByProjectId('proj-123', 'client');
+
+			expect(mockSupabaseRequest).toHaveBeenCalledWith({
+				pathWithQuery: expect.stringContaining(
+					'invitation_project_id=eq.proj-123&origin=eq.client',
+				),
+				useServiceRole: true,
+			});
+		});
+	});
+
 	describe('createIntakeRequest', () => {
 		it('creates a new request with active status', async () => {
 			const mockRow = {
@@ -128,6 +144,7 @@ describe('intake-request repository', () => {
 					invitation_project_id: 'proj-123',
 					token_hash: 'new-hash',
 					token_ciphertext: 'v1.iv.tag.ciphertext',
+					origin: 'client',
 					enabled_blocks: ['event-details', 'photos'],
 					expires_at: '2026-06-30T00:00:00Z',
 					status: 'active',

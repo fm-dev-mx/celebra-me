@@ -39,6 +39,7 @@ export const INTAKE_REQUEST_STATUSES = [
 ] as const;
 
 export type IntakeRequestStatus = (typeof INTAKE_REQUEST_STATUSES)[number];
+export type IntakeRequestOrigin = 'client' | 'internal';
 
 export const INTAKE_SUBMISSION_STATUSES = [
 	'in_progress',
@@ -84,6 +85,7 @@ export interface IntakeRequest {
 	invitationProjectId: string;
 	tokenHash: string;
 	tokenCiphertext: string | null;
+	origin: IntakeRequestOrigin;
 	status: IntakeRequestStatus;
 	enabledBlocks: IntakeBlockType[];
 	expiresAt: string | null;

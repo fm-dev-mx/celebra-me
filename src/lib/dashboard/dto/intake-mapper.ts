@@ -44,6 +44,7 @@ export function toIntakeRequestDTO(request: IntakeRequest): IntakeRequestDTO {
 		id: request.id,
 		invitationProjectId: request.invitationProjectId,
 		status: request.status,
+		origin: request.origin,
 		enabledBlocks: request.enabledBlocks,
 		expiresAt: request.expiresAt,
 		createdAt: request.createdAt,

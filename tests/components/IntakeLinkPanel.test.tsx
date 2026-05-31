@@ -6,6 +6,7 @@ const activeRequest = {
 	id: 'req-1',
 	invitationProjectId: 'proj-1',
 	status: 'active' as const,
+	origin: 'client' as const,
 	enabledBlocks: ['event-details' as const],
 	expiresAt: '2026-06-30T00:00:00Z',
 	createdAt: '2026-05-30T00:00:00Z',
