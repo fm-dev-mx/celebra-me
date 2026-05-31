@@ -87,7 +87,7 @@ Los archivos JSON en `src/content/events/` son parte del repositorio público. P
 
 Para manejar datos de clientes reales, el sistema debe usar el módulo intake:
 
-- `invitation_projects` + `intake_requests` + `intake_submissions` en Supabase.
+- `invitations` + `intake_requests` + `intake_submissions` en Supabase.
 - Los datos se almacenan en la base de datos, no en archivos del repositorio.
 
 ## Referencias

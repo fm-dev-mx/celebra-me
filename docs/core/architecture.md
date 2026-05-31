@@ -108,8 +108,8 @@ The active server-only hubs in the repository are:
 - `src/lib/assets/**` for asset registry and discovery
 - `src/lib/content/**` and `src/lib/adapters/**` for event/content resolution and normalization
 - `src/lib/invitation/page-data.ts` for invitation route-facing page assembly
-- `src/lib/intake/**` for invitation intake/project management (services, repositories, schemas,
-  mappers)
+- `src/lib/intake/**` for invitation and optional client-capture management (services, repositories,
+  schemas, mappers)
 - `src/utils/**` for shared utilities such as invitation-link, environment, and WhatsApp helpers
 
 Historical note:

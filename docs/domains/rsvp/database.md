@@ -60,8 +60,8 @@ Current migrations under `supabase/migrations/`:
 
 The following tables were added as part of the intake module:
 
-- `invitation_projects` — project lifecycle management
-- `intake_requests` — per-project intake requests with token-based auth
+- `invitations` — editable demo and client invitation lifecycle management
+- `intake_requests` — optional per-invitation capture requests with token-based auth
 - `intake_submissions` — client-submitted block data
 - `invitation_content_drafts` — draft content generated from approved submissions
 - `published_invitation_content` — published invitation data with unique `(event_type, slug)`
