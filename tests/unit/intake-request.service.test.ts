@@ -14,7 +14,7 @@ jest.mock('@/lib/intake/services/intake-token.service', () => ({
 }));
 
 jest.mock('@/lib/server/env', () => ({
-	getEnv: jest.fn(() => ''),
+	getEnv: jest.fn(() => 'a'.repeat(64)),
 }));
 
 import {
