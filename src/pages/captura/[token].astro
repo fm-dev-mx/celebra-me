@@ -5,6 +5,7 @@ import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 import { findIntakeRequestByTokenHash } from '@/lib/intake/repositories/intake-request.repository';
 import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
 import { findSubmissionByRequestId, createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
+import type { EventType } from '@/lib/theme/theme-contract';
 import type { IntakeBlockType } from '@/lib/intake/types';
 
 const { token } = Astro.params;
@@ -14,6 +15,7 @@ if (!token) {
 }
 
 let projectTitle = '';
+let projectEventType: EventType = 'xv';
 let enabledBlocks: IntakeBlockType[] = [];
 let initialBlockData: Record<string, unknown> = {};
 let initialStatus = 'in_progress';
@@ -36,6 +38,7 @@ try {
 			errorMessage = 'Proyecto no encontrado.';
 		} else {
 			projectTitle = project.title;
+			projectEventType = project.eventType;
 			enabledBlocks = intakeRequest.enabledBlocks;
 
 			const lockedStatuses = ['in_review', 'in_production', 'preview_sent', 'approved', 'published', 'archived'];
@@ -84,6 +87,7 @@ try {
 				initialStatus={initialStatus}
 				isLocked={isLocked}
 				projectTitle={projectTitle}
+				eventType={projectEventType}
 			/>
 		)}
 	</body>

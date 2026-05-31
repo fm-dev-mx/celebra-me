@@ -1,9 +1,11 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
+import type { EventType } from '@/lib/theme/theme-contract';
 import type { IntakeBlockType } from '@/lib/intake/types';
 import { useIntakeForm } from '@/hooks/use-intake-form';
 import IntakeStepNav from '@/components/intake/IntakeStepNav';
 import IntakeSummary from '@/components/intake/IntakeSummary';
 import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
+import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 
 interface Props {
 	mode?: 'client' | 'internal';
@@ -14,6 +16,7 @@ interface Props {
 	initialStatus: string;
 	isLocked: boolean;
 	projectTitle: string;
+	eventType: EventType;
 }
 
 const IntakeForm: FC<Props> = ({
@@ -25,6 +28,7 @@ const IntakeForm: FC<Props> = ({
 	initialStatus,
 	isLocked,
 	projectTitle,
+	eventType,
 }) => {
 	const form = useIntakeForm({
 		token,
@@ -68,6 +72,13 @@ const IntakeForm: FC<Props> = ({
 		: null;
 	const currentData = (form.blockData[form.currentBlockType] ?? {}) as Record<string, unknown>;
 
+	const formFallback: ReactNode = (
+		<div className="intake-form__error">
+			<h3>Error al cargar el formulario</h3>
+			<p>Ocurrió un error inesperado. Intenta recargar la página.</p>
+		</div>
+	);
+
 	return (
 		<div className="intake-form">
 			<header className="intake-form__header">
@@ -77,49 +88,52 @@ const IntakeForm: FC<Props> = ({
 				</p>
 			</header>
 
-			<IntakeStepNav
-				steps={form.enabledBlocks}
-				currentStep={form.currentStep}
-				onStepClick={form.goToStep}
-				disabled={form.saving || form.submitting}
-			/>
+			<ErrorBoundary fallback={formFallback}>
+				<IntakeStepNav
+					steps={form.enabledBlocks}
+					currentStep={form.currentStep}
+					onStepClick={form.goToStep}
+					disabled={form.saving || form.submitting}
+				/>
 
-			<div className="intake-form__body">
-				{form.showSummary ? (
-					<IntakeSummary
-						blockData={form.blockData}
-						enabledBlocks={form.enabledBlocks}
-						clientComments={form.clientComments}
-						onCommentsChange={form.setClientComments}
-						onEdit={form.goToStep}
-						onSubmit={form.submit}
-						submitting={form.submitting}
-						mode={mode}
-					/>
-				) : (
-					<>
-						{BlockComponent && (
-							<BlockComponent
-								data={currentData}
-								onChange={(field, value) =>
-									form.updateBlockField(form.currentBlockType, field, value)
-								}
-								disabled={form.saving}
-							/>
-						)}
+				<div className="intake-form__body">
+					{form.showSummary ? (
+						<IntakeSummary
+							blockData={form.blockData}
+							enabledBlocks={form.enabledBlocks}
+							clientComments={form.clientComments}
+							onCommentsChange={form.setClientComments}
+							onEdit={form.goToStep}
+							onSubmit={form.submit}
+							submitting={form.submitting}
+							mode={mode}
+						/>
+					) : (
+						<>
+							{BlockComponent && (
+								<BlockComponent
+									data={currentData}
+									onChange={(field, value) =>
+										form.updateBlockField(form.currentBlockType, field, value)
+									}
+									disabled={form.saving}
+									eventType={eventType}
+								/>
+							)}
 
-						{form.errors[form.currentBlockType] && (
-							<p className="intake-form__error">
-								{form.errors[form.currentBlockType]}
-							</p>
-						)}
+							{form.errors[form.currentBlockType] && (
+								<p className="intake-form__error">
+									{form.errors[form.currentBlockType]}
+								</p>
+							)}
 
-						{form.errors._submit && (
-							<p className="intake-form__error">{form.errors._submit}</p>
-						)}
-					</>
-				)}
-			</div>
+							{form.errors._submit && (
+								<p className="intake-form__error">{form.errors._submit}</p>
+							)}
+						</>
+					)}
+				</div>
+			</ErrorBoundary>
 
 			{!form.showSummary && (
 				<footer className="intake-form__footer">

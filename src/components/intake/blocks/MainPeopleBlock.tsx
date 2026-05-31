@@ -1,14 +1,18 @@
 import type { FC } from 'react';
+import type { EventType } from '@/lib/theme/theme-contract';
+import { getVisibleFields } from '@/lib/intake/blocks';
 
 interface Props {
 	data: Record<string, unknown>;
 	onChange: (field: string, value: unknown) => void;
 	disabled?: boolean;
+	eventType: EventType;
 }
 
-const MainPeopleBlock: FC<Props> = ({ data, onChange, disabled }) => {
+const MainPeopleBlock: FC<Props> = ({ data, onChange, disabled, eventType }) => {
 	const getValue = (key: string, fallback = '') => (data[key] as string) ?? fallback;
 	const getBool = (key: string) => Boolean(data[key]);
+	const visibleFields = new Set(getVisibleFields(eventType, 'main-people').map((f) => f.name));
 
 	return (
 		<div className="intake-block intake-block--main-people">
@@ -66,19 +70,21 @@ const MainPeopleBlock: FC<Props> = ({ data, onChange, disabled }) => {
 				</label>
 			</div>
 
-			<div className="intake-field">
-				<label className="intake-field__label" htmlFor="spouseName">
-					Nombre del esposo(a)
-				</label>
-				<input
-					id="spouseName"
-					type="text"
-					className="intake-field__input"
-					value={getValue('spouseName')}
-					onChange={(e) => onChange('spouseName', e.target.value)}
-					disabled={disabled}
-				/>
-			</div>
+			{visibleFields.has('spouseName') && (
+				<div className="intake-field">
+					<label className="intake-field__label" htmlFor="spouseName">
+						Nombre del esposo(a)
+					</label>
+					<input
+						id="spouseName"
+						type="text"
+						className="intake-field__input"
+						value={getValue('spouseName')}
+						onChange={(e) => onChange('spouseName', e.target.value)}
+						disabled={disabled}
+					/>
+				</div>
+			)}
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="godparents">

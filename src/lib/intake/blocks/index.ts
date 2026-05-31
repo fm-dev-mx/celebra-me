@@ -1,4 +1,8 @@
-import type { IntakeBlockDefinition, IntakeBlockType } from '@/lib/intake/types';
+import type {
+	IntakeBlockDefinition,
+	IntakeBlockFieldDefinition,
+	IntakeBlockType,
+} from '@/lib/intake/types';
 import type { EventType } from '@/lib/theme/theme-contract';
 import { eventDetailsBlock } from '@/lib/intake/blocks/event-details.block';
 import { mainPeopleBlock } from '@/lib/intake/blocks/main-people.block';
@@ -36,4 +40,14 @@ export function getBlocksForEventType(eventType: EventType): IntakeBlockDefiniti
 
 export function getBlockTypesForEventType(eventType: EventType): IntakeBlockType[] {
 	return getBlocksForEventType(eventType).map((block) => block.type);
+}
+
+export function getVisibleFields(
+	eventType: EventType,
+	blockType: IntakeBlockType,
+): IntakeBlockFieldDefinition[] {
+	const block = BLOCK_REGISTRY[blockType];
+	return block.fields.filter(
+		(field) => !field.supportedEventTypes || field.supportedEventTypes.includes(eventType),
+	);
 }

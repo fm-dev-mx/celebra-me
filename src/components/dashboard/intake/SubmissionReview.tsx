@@ -220,6 +220,13 @@ const SubmissionReview: FC<Props> = ({ projectId }) => {
 									updateBlockField(blockType, field, value)
 								}
 								disabled={!editing}
+								eventType={
+									(currentProject?.eventType ?? 'xv') as
+										| 'xv'
+										| 'boda'
+										| 'bautizo'
+										| 'cumple'
+								}
 							/>
 							{validationErrors[blockType] && (
 								<p className="intake-review__error">

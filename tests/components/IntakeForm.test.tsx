@@ -43,6 +43,7 @@ it('does not show the client review lock message for internal editing', () => {
 			initialStatus="approved"
 			isLocked={false}
 			projectTitle="Proyecto"
+			eventType="xv"
 		/>,
 	);
 

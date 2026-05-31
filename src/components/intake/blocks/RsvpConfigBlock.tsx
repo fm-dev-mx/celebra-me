@@ -1,9 +1,11 @@
 import type { FC } from 'react';
+import type { EventType } from '@/lib/theme/theme-contract';
 
 interface Props {
 	data: Record<string, unknown>;
 	onChange: (field: string, value: unknown) => void;
 	disabled?: boolean;
+	eventType: EventType;
 }
 
 const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {

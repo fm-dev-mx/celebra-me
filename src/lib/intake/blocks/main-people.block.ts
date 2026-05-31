@@ -38,6 +38,7 @@ export const mainPeopleBlock: IntakeBlockDefinition = {
 			type: 'text',
 			required: false,
 			placeholder: 'Relevante para bodas',
+			supportedEventTypes: ['boda'],
 		},
 		{
 			name: 'godparents',

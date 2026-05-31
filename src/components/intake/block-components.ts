@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import type { EventType } from '@/lib/theme/theme-contract';
 import type { IntakeBlockType } from '@/lib/intake/types';
 import EventDetailsBlock from '@/components/intake/blocks/EventDetailsBlock';
 import MainPeopleBlock from '@/components/intake/blocks/MainPeopleBlock';
@@ -13,6 +14,7 @@ export interface IntakeBlockComponentProps {
 	data: Record<string, unknown>;
 	onChange: (field: string, value: unknown) => void;
 	disabled?: boolean;
+	eventType: EventType;
 }
 
 export const INTAKE_BLOCK_COMPONENTS: Record<IntakeBlockType, FC<IntakeBlockComponentProps>> = {

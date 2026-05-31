@@ -114,6 +114,7 @@ export interface IntakeBlockFieldDefinition {
 	required: boolean;
 	placeholder?: string;
 	options?: Array<{ value: string; label: string }>;
+	supportedEventTypes?: EventType[];
 }
 
 export interface IntakeBlockDefinition {
