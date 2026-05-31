@@ -9,6 +9,7 @@ import type { IntakeBlockType, IntakeSubmissionStatus } from '@/lib/intake/types
 import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
 import { PROJECT_STATUS_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
+import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
 interface Props {
 	projectId: string;
@@ -120,6 +121,9 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 
 	const preset = findDemoPreset(currentProject.baseDemoId);
 
+	const inconsistencyDetected = hasInconsistency(currentProject);
+	const repairAction = resolveRepairAction(currentProject);
+
 	return (
 		<div className="intake-detail">
 			<header className="intake-detail__header">
@@ -136,6 +140,19 @@ const InvitationDetail: FC<Props> = ({ projectId }) => {
 					<span className="intake-detail__type">{currentProject.eventType}</span>
 					{preset && <span className="intake-detail__demo">{preset.displayName}</span>}
 				</div>
+
+				{inconsistencyDetected && repairAction && (
+					<div className="intake-detail__repair">
+						<p className="intake-detail__repair-text">{repairAction.explanation}</p>
+						{repairAction.href ? (
+							<a href={repairAction.href} className="intake-detail__repair-link">
+								{repairAction.text}
+							</a>
+						) : (
+							<span className="intake-detail__repair-muted">{repairAction.text}</span>
+						)}
+					</div>
+				)}
 			</header>
 
 			<section className="intake-detail__section">
