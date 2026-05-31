@@ -1,6 +1,6 @@
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 import { listAdminUsers } from '@/lib/rsvp/services/user-admin.service';
-import { listInvitationProjects } from '@/lib/intake/repositories/invitation-project.repository';
+import { listInvitations } from '@/lib/intake/repositories/invitation.repository';
 
 export interface DashboardAdminPageData {
 	stats: {
@@ -12,15 +12,15 @@ export interface DashboardAdminPageData {
 }
 
 export async function prepareDashboardAdminPageData(): Promise<DashboardAdminPageData> {
-	const [projects, users, claimCodes] = await Promise.all([
-		listInvitationProjects(),
+	const [invitations, users, claimCodes] = await Promise.all([
+		listInvitations(),
 		listAdminUsers(),
 		listClaimCodesAdmin({}),
 	]);
 
 	return {
 		stats: {
-			invitations: projects.length,
+			invitations: invitations.length,
 			users: users.length,
 			claimCodes: claimCodes.length,
 			activeClaimCodes: claimCodes.filter((claimCode) => claimCode.status === 'active')

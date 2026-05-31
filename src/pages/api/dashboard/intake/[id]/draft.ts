@@ -9,7 +9,7 @@ import {
 	generateDraft,
 	getDraft,
 	createDraftRevision,
-	updateDraftContentByProject,
+	updateDraftContentByInvitation,
 } from '@/lib/intake/services/draft-generation.service';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 import { toInvitationContentDraftDTO } from '@/lib/dashboard/dto/intake-mapper';
@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
 		const draft = await getDraft(id);
 
@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
 		const parsed = await validateBodyOrRespond(request, DraftActionSchema);
 		if (parsed instanceof Response) return parsed;
@@ -83,12 +83,12 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
 		const parsed = await validateBodyOrRespond(request, UpdateDraftContentSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const draft = await updateDraftContentByProject(
+		const draft = await updateDraftContentByInvitation(
 			id,
 			parsed.content as Record<string, unknown>,
 		);

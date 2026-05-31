@@ -6,7 +6,7 @@ import {
 	createClaimCodeAdmin,
 	listClaimCodesAdmin,
 } from '@/lib/rsvp/services/claim-code-admin.service';
-import { findEventByProjectIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findEventByInvitationIdService } from '@/lib/rsvp/repositories/event.repository';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const GET: APIRoute = async ({ request, url }) => {
@@ -30,19 +30,19 @@ export const POST: APIRoute = async ({ request }) => {
 		const body = bodyResult;
 
 		const eventIdRaw = sanitize(body.eventId as string, 120);
-		const invitationProjectId = sanitize(body.invitationProjectId as string, 120);
+		const invitationId = sanitize(body.invitationId as string, 120);
 
 		let eventId = eventIdRaw;
 
-		if (!eventId && invitationProjectId) {
-			const event = await findEventByProjectIdService(invitationProjectId);
+		if (!eventId && invitationId) {
+			const event = await findEventByInvitationIdService(invitationId);
 			if (!event) {
-				return badRequest('El proyecto de invitación no tiene un evento RSVP asociado.');
+				return badRequest('La invitación no tiene un evento RSVP asociado.');
 			}
 			eventId = event.id;
 		}
 
-		if (!eventId) return badRequest('eventId o invitationProjectId es requerido.');
+		if (!eventId) return badRequest('eventId o invitationId es requerido.');
 
 		const created = await createClaimCodeAdmin({
 			eventId,

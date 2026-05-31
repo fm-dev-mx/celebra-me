@@ -1,38 +1,41 @@
 import type {
-	InvitationProject,
+	Invitation,
 	IntakeRequest,
 	IntakeSubmission,
 	InvitationContentDraft,
 } from '@/lib/intake/types';
 import type {
-	InvitationProjectDTO,
+	InvitationDTO,
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
 } from '@/lib/dashboard/dto/intake';
 import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 
-export function toInvitationProjectDTO(project: InvitationProject): InvitationProjectDTO {
+export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 	return {
-		id: project.id,
-		slug: project.slug,
-		title: project.title,
-		eventType: project.eventType,
-		status: project.status,
-		baseDemoId: project.baseDemoId,
-		themeId: project.themeId,
-		clientName: project.clientName,
-		clientEmail: project.clientEmail,
-		clientWhatsapp: project.clientWhatsapp,
-		photosReceived: project.photosReceived,
-		createdAt: project.createdAt,
-		updatedAt: project.updatedAt,
+		id: invitation.id,
+		kind: invitation.kind,
+		sourceInvitationId: invitation.sourceInvitationId,
+		slug: invitation.slug,
+		title: invitation.title,
+		eventType: invitation.eventType,
+		status: invitation.status,
+		baseDemoId: invitation.baseDemoId,
+		themeId: invitation.themeId,
+		clientName: invitation.clientName,
+		clientEmail: invitation.clientEmail,
+		clientWhatsapp: invitation.clientWhatsapp,
+		photosReceived: invitation.photosReceived,
+		archivedAt: invitation.archivedAt,
+		createdAt: invitation.createdAt,
+		updatedAt: invitation.updatedAt,
 		hasRequest: false,
 		hasSubmission: false,
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
-		internalEditUrl: `/dashboard/invitaciones/${project.id}/editar`,
+		internalEditUrl: `/dashboard/invitaciones/${invitation.id}/editar`,
 		captureUrl: null,
 		captureLinkStatus: null,
 	};
@@ -42,7 +45,7 @@ export function toIntakeRequestDTO(request: IntakeRequest): IntakeRequestDTO {
 	const captureLink = resolveCaptureLink(request);
 	return {
 		id: request.id,
-		invitationProjectId: request.invitationProjectId,
+		invitationId: request.invitationId,
 		status: request.status,
 		origin: request.origin,
 		enabledBlocks: request.enabledBlocks,
@@ -74,7 +77,7 @@ export function toInvitationContentDraftDTO(
 ): InvitationContentDraftDTO {
 	return {
 		id: draft.id,
-		invitationProjectId: draft.invitationProjectId,
+		invitationId: draft.invitationId,
 		submissionId: draft.submissionId,
 		content: draft.content,
 		status: draft.status,

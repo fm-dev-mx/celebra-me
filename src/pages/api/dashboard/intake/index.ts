@@ -5,18 +5,21 @@ import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import {
-	getEnrichedProjectList,
-	createProject,
-} from '@/lib/intake/services/invitation-project.service';
-import { CreateInvitationProjectSchema } from '@/lib/intake/schemas/invitation-project.schema';
-import { toInvitationProjectDTO } from '@/lib/dashboard/dto/intake-mapper';
+	getEnrichedInvitationList,
+	createInvitation,
+	synchronizeDemoInvitations,
+} from '@/lib/intake/services/invitation.service';
+import { CreateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
+import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminRateLimit(request, 'intake:list');
-		await requireAdminStrongSession(request);
+		const session = await requireAdminStrongSession(request);
 
-		const items = await getEnrichedProjectList();
+		const includeArchived = new URL(request.url).searchParams.get('includeArchived') === 'true';
+		await synchronizeDemoInvitations(session.userId);
+		const items = await getEnrichedInvitationList(includeArchived ? 'all' : 'active');
 
 		return jsonResponse({ items });
 	} catch (error) {
@@ -34,10 +37,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 		const session = await requireAdminStrongSession(request);
 
-		const parsed = await validateBodyOrRespond(request, CreateInvitationProjectSchema);
+		const parsed = await validateBodyOrRespond(request, CreateInvitationSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const project = await createProject({
+		const invitation = await createInvitation({
 			title: parsed.title,
 			eventType: parsed.eventType,
 			baseDemoId: parsed.baseDemoId,
@@ -48,7 +51,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			createdBy: session.userId,
 		});
 
-		return jsonResponse({ item: toInvitationProjectDTO(project) }, 201);
+		return jsonResponse({ item: toInvitationDTO(invitation) }, 201);
 	} catch (error) {
 		return errorResponse(error);
 	}

@@ -5,8 +5,8 @@ import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
 import { findIntakeRequestByTokenHash } from '@/lib/intake/repositories/intake-request.repository';
-import { findInvitationProjectById } from '@/lib/intake/repositories/invitation-project.repository';
-import { updateInvitationProject } from '@/lib/intake/repositories/invitation-project.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
+import { updateInvitation } from '@/lib/intake/repositories/invitation.repository';
 import {
 	findSubmissionByRequestId,
 	createIntakeSubmission,
@@ -28,7 +28,7 @@ import type { IntakeBlockType } from '@/lib/intake/types';
 
 interface ResolvedContext {
 	request: Awaited<ReturnType<typeof findIntakeRequestByTokenHash>>;
-	project: Awaited<ReturnType<typeof findInvitationProjectById>>;
+	invitation: Awaited<ReturnType<typeof findInvitationById>>;
 	submission: Awaited<ReturnType<typeof findSubmissionByRequestId>>;
 }
 
@@ -53,9 +53,9 @@ async function resolveTokenContext(token: string): Promise<ResolvedContext> {
 		}
 	}
 
-	const project = await findInvitationProjectById(intakeRequest.invitationProjectId);
-	if (!project) {
-		throw new ApiError(404, 'not_found', 'Proyecto no encontrado.');
+	const invitation = await findInvitationById(intakeRequest.invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitación no encontrada.');
 	}
 
 	let submission = await findSubmissionByRequestId(intakeRequest.id);
@@ -63,10 +63,10 @@ async function resolveTokenContext(token: string): Promise<ResolvedContext> {
 		submission = await createIntakeSubmission({ intakeRequestId: intakeRequest.id });
 	}
 
-	return { request: intakeRequest, project, submission };
+	return { request: intakeRequest, invitation, submission };
 }
 
-function isProjectLockedForClient(projectStatus: string): boolean {
+function isInvitationLockedForClient(invitationStatus: string): boolean {
 	return [
 		'in_review',
 		'in_production',
@@ -74,7 +74,7 @@ function isProjectLockedForClient(projectStatus: string): boolean {
 		'approved',
 		'published',
 		'archived',
-	].includes(projectStatus);
+	].includes(invitationStatus);
 }
 
 export const GET: APIRoute = async ({ request, params }) => {
@@ -85,11 +85,11 @@ export const GET: APIRoute = async ({ request, params }) => {
 		const ctx = await resolveTokenContext(token);
 
 		return jsonResponse({
-			project: {
-				id: ctx.project!.id,
-				title: ctx.project!.title,
-				eventType: ctx.project!.eventType,
-				status: ctx.project!.status,
+			invitation: {
+				id: ctx.invitation!.id,
+				title: ctx.invitation!.title,
+				eventType: ctx.invitation!.eventType,
+				status: ctx.invitation!.status,
 			},
 			request: {
 				id: ctx.request!.id,
@@ -110,7 +110,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 		const token = params.token ?? '';
 		const ctx = await resolveTokenContext(token);
 
-		if (isProjectLockedForClient(ctx.project!.status)) {
+		if (isInvitationLockedForClient(ctx.invitation!.status)) {
 			throw new ApiError(
 				403,
 				'forbidden',
@@ -140,7 +140,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const token = params.token ?? '';
 		const ctx = await resolveTokenContext(token);
 
-		if (isProjectLockedForClient(ctx.project!.status)) {
+		if (isInvitationLockedForClient(ctx.invitation!.status)) {
 			throw new ApiError(
 				403,
 				'forbidden',
@@ -175,21 +175,21 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const updated = await submitSubmission(ctx.submission!.id, parsed.clientComments);
 
 		await updateIntakeRequest(ctx.request!.id, { status: 'submitted' });
-		await updateInvitationProject(ctx.project!.id, { status: 'client_submitted' });
+		await updateInvitation(ctx.invitation!.id, { status: 'client_submitted' });
 
 		const baseUrl = resolveSiteOrigin();
-		const reviewUrl = `${baseUrl}/dashboard/invitaciones/${ctx.project!.id}/review`;
+		const reviewUrl = `${baseUrl}/dashboard/invitaciones/${ctx.invitation!.id}/review`;
 
 		try {
 			await sendIntakeNotification({
-				projectTitle: ctx.project!.title,
-				clientName: ctx.project!.clientName,
+				invitationTitle: ctx.invitation!.title,
+				clientName: ctx.invitation!.clientName,
 				reviewUrl,
 			});
 		} catch (emailError) {
 			console.error(
-				'[intake] Failed to send notification email for project:',
-				ctx.project!.id,
+				'[intake] Failed to send notification email for invitation:',
+				ctx.invitation!.id,
 				emailError,
 			);
 		}

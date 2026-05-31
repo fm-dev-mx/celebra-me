@@ -42,6 +42,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'intake:review': { maxHits: 20, windowSec: 60 },
 	'intake:draft': { maxHits: 10, windowSec: 60 },
 	'intake:publish': { maxHits: 5, windowSec: 60 },
+	'intake:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	'intake:captura': { maxHits: 30, windowSec: 60 },
 };
 

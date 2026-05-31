@@ -77,7 +77,7 @@ export async function createEventService(input: {
 	eventType: EventRecord['eventType'];
 	title: string;
 	status?: EventRecord['status'];
-	invitationProjectId?: string | null;
+	invitationId?: string | null;
 }): Promise<EventRecord> {
 	const rows = await supabaseRestRequest<EventRow[]>({
 		pathWithQuery: `events?select=${EVENT_MUTATION_COLUMNS}&${ACTIVE_EVENT_FILTER}`,
@@ -90,7 +90,7 @@ export async function createEventService(input: {
 			event_type: input.eventType,
 			title: input.title,
 			status: input.status || 'draft',
-			invitation_project_id: input.invitationProjectId ?? null,
+			invitation_project_id: input.invitationId ?? null,
 		},
 	});
 	if (!rows[0]) throw new Error('Failed to create event.');
@@ -103,15 +103,14 @@ export async function updateEventService(input: {
 	slug?: string;
 	eventType?: EventRecord['eventType'];
 	status?: EventRecord['status'];
-	invitationProjectId?: string | null;
+	invitationId?: string | null;
 }): Promise<EventRecord> {
 	const body: Record<string, unknown> = {};
 	if (input.title !== undefined) body.title = input.title;
 	if (input.slug !== undefined) body.slug = input.slug;
 	if (input.eventType !== undefined) body.event_type = input.eventType;
 	if (input.status !== undefined) body.status = input.status;
-	if (input.invitationProjectId !== undefined)
-		body.invitation_project_id = input.invitationProjectId;
+	if (input.invitationId !== undefined) body.invitation_project_id = input.invitationId;
 
 	const rows = await supabaseRestRequest<EventRow[]>({
 		pathWithQuery: `events?id=eq.${encodeURIComponent(input.eventId)}&select=*&${ACTIVE_EVENT_FILTER}`,
@@ -124,11 +123,11 @@ export async function updateEventService(input: {
 	return toEventRecord(rows[0]);
 }
 
-export async function findEventByProjectIdService(
-	invitationProjectId: string,
+export async function findEventByInvitationIdService(
+	invitationId: string,
 ): Promise<EventRecord | null> {
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
+		pathWithQuery: `events?select=*&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toEventRecord(rows[0]) : null;

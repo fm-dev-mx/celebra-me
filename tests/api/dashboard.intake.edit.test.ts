@@ -1,9 +1,9 @@
 import { GET, PATCH, POST } from '@/pages/api/dashboard/intake/[id]/edit';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import {
-	ensureInternalEditContext,
+	ensureAdminEditContext,
 	saveInternalComments,
-} from '@/lib/intake/services/internal-edit.service';
+} from '@/lib/intake/services/admin-edit.service';
 import { saveSubmissionStep } from '@/lib/intake/services/intake-submission.service';
 import { createMockRequest } from '../helpers/api-mocks';
 
@@ -20,8 +20,8 @@ jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
-jest.mock('@/lib/intake/services/internal-edit.service', () => ({
-	ensureInternalEditContext: jest.fn(),
+jest.mock('@/lib/intake/services/admin-edit.service', () => ({
+	ensureAdminEditContext: jest.fn(),
 	saveInternalComments: jest.fn(),
 }));
 
@@ -32,14 +32,14 @@ jest.mock('@/lib/intake/services/intake-submission.service', () => ({
 const mockRequireAdmin = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
 >;
-const mockEnsureContext = ensureInternalEditContext as jest.MockedFunction<
-	typeof ensureInternalEditContext
+const mockEnsureContext = ensureAdminEditContext as jest.MockedFunction<
+	typeof ensureAdminEditContext
 >;
 const mockSaveStep = saveSubmissionStep as jest.MockedFunction<typeof saveSubmissionStep>;
 const mockSaveComments = saveInternalComments as jest.MockedFunction<typeof saveInternalComments>;
 
 const context = {
-	project: {
+	invitation: {
 		id: 'proj-1',
 		title: 'Proyecto',
 		eventType: 'xv' as const,
@@ -74,7 +74,7 @@ describe('/api/dashboard/intake/[id]/edit', () => {
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toMatchObject({
-			project: { id: 'proj-1', status: 'published' },
+			invitation: { id: 'proj-1', status: 'published' },
 			submission: { id: 'sub-1', status: 'approved' },
 		});
 	});

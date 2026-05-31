@@ -86,7 +86,7 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 };
 
 export interface IntakeNotificationPayload {
-	projectTitle: string;
+	invitationTitle: string;
 	clientName: string;
 	reviewUrl: string;
 }
@@ -114,11 +114,11 @@ export const sendIntakeNotification = async (
 	const mailOptions = {
 		from: `"Celebra-me Intake" <${user}>`,
 		to: recipient,
-		subject: `Nueva captura recibida: ${payload.projectTitle}`,
+		subject: `Nueva captura recibida: ${payload.invitationTitle}`,
 		text: `
 			Se ha recibido una nueva captura de intake.
 
-			Proyecto: ${payload.projectTitle}
+			Invitación: ${payload.invitationTitle}
 			Cliente: ${payload.clientName}
 
 			Revisar captura:
@@ -130,7 +130,7 @@ export const sendIntakeNotification = async (
 		html: `
 			<div style="font-family: sans-serif; color: ${EMAIL_COLORS.text}; max-width: 600px; border: 1px solid ${EMAIL_COLORS.border}; padding: 20px; border-radius: 8px;">
 				<h2 style="color: ${EMAIL_COLORS.accent}; border-bottom: 2px solid ${EMAIL_COLORS.background}; padding-bottom: 10px;">Nueva Captura Recibida</h2>
-				<p><strong>Proyecto:</strong> ${payload.projectTitle}</p>
+				<p><strong>Invitación:</strong> ${payload.invitationTitle}</p>
 				<p><strong>Cliente:</strong> ${payload.clientName}</p>
 				<div style="background: ${EMAIL_COLORS.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${EMAIL_COLORS.accent}; margin: 20px 0;">
 					<a href="${payload.reviewUrl}" style="color: ${EMAIL_COLORS.accent}; font-weight: bold;">Revisar captura en el panel</a>

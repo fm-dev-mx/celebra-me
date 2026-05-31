@@ -155,7 +155,7 @@ export function toEventRecord(row: EventRow): EventRecord {
 		title: row.title,
 		status: row.status,
 		publishedAt: row.published_at,
-		invitationProjectId: row.invitation_project_id,
+		invitationId: row.invitation_project_id,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

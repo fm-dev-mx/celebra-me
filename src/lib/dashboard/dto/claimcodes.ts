@@ -2,7 +2,7 @@ import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 
 export interface CreateClaimCodeDTO {
 	eventId?: string;
-	invitationProjectId?: string;
+	invitationId?: string;
 	maxUses?: number;
 	expiresAt?: string | null;
 }

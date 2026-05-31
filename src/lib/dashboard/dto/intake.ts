@@ -1,24 +1,27 @@
 import type {
 	IntakeBlockType,
-	InvitationProjectStatus,
+	InvitationStatus,
 	IntakeRequestStatus,
 	IntakeRequestOrigin,
 	IntakeSubmissionStatus,
 } from '@/lib/intake/types';
 import type { CaptureLinkStatus } from '@/lib/intake/types';
 
-export interface InvitationProjectDTO {
+export interface InvitationDTO {
 	id: string;
+	kind: 'demo' | 'client';
+	sourceInvitationId: string | null;
 	slug: string | null;
 	title: string;
 	eventType: string;
-	status: InvitationProjectStatus;
+	status: InvitationStatus;
 	baseDemoId: string;
 	themeId: string;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;
 	photosReceived: boolean;
+	archivedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
 	hasRequest: boolean;
@@ -31,11 +34,11 @@ export interface InvitationProjectDTO {
 	captureLinkStatus: CaptureLinkStatus | null;
 }
 
-export interface InvitationProjectListResponse {
-	items: InvitationProjectDTO[];
+export interface InvitationListResponse {
+	items: InvitationDTO[];
 }
 
-export interface CreateInvitationProjectDTO {
+export interface CreateInvitationDTO {
 	title: string;
 	slug?: string | null;
 	eventType: string;
@@ -45,10 +48,10 @@ export interface CreateInvitationProjectDTO {
 	clientWhatsapp?: string;
 }
 
-export interface UpdateInvitationProjectDTO {
+export interface UpdateInvitationDTO {
 	title?: string;
 	slug?: string | null;
-	status?: InvitationProjectStatus;
+	status?: InvitationStatus;
 	clientName?: string;
 	clientEmail?: string;
 	clientWhatsapp?: string;
@@ -57,7 +60,7 @@ export interface UpdateInvitationProjectDTO {
 
 export interface IntakeRequestDTO {
 	id: string;
-	invitationProjectId: string;
+	invitationId: string;
 	status: IntakeRequestStatus;
 	origin: IntakeRequestOrigin;
 	enabledBlocks: IntakeBlockType[];
@@ -100,8 +103,8 @@ export interface RsvpEventDTO {
 	claimCodeCount: number;
 }
 
-export interface InvitationProjectDetailResponse {
-	item: InvitationProjectDTO;
+export interface InvitationDetailResponse {
+	item: InvitationDTO;
 	request: IntakeRequestDTO | null;
 	submission: IntakeSubmissionDTO | null;
 	rsvpEvent: RsvpEventDTO | null;
@@ -119,8 +122,8 @@ export interface CreateIntakeRequestDTO {
 
 export interface InvitationContentDraftDTO {
 	id: string;
-	invitationProjectId: string;
-	submissionId: string;
+	invitationId: string;
+	submissionId: string | null;
 	content: Record<string, unknown>;
 	status: string;
 	createdAt: string;

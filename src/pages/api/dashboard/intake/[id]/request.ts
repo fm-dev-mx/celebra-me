@@ -6,11 +6,11 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
-	findInvitationProjectById,
-	updateInvitationProject,
-} from '@/lib/intake/repositories/invitation-project.repository';
+	findInvitationById,
+	updateInvitation,
+} from '@/lib/intake/repositories/invitation.repository';
 import {
-	getIntakeRequestsByProjectId,
+	getIntakeRequestsByInvitationId,
 	createRequest,
 } from '@/lib/intake/services/intake-request.service';
 import { CreateIntakeRequestSchema } from '@/lib/intake/schemas/intake-request.schema';
@@ -22,9 +22,9 @@ export const GET: APIRoute = async ({ request, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
-		const requests = await getIntakeRequestsByProjectId(id, 'client');
+		const requests = await getIntakeRequestsByInvitationId(id, 'client');
 		const items = requests.map(toIntakeRequestDTO);
 
 		return jsonResponse({ items });
@@ -44,22 +44,22 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
-		const project = await findInvitationProjectById(id);
-		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
+		const invitation = await findInvitationById(id);
+		if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 		const parsed = await validateBodyOrRespond(request, CreateIntakeRequestSchema);
 		if (parsed instanceof Response) return parsed;
 
 		const result = await createRequest({
-			invitationProjectId: id,
+			invitationId: id,
 			enabledBlocks: parsed.enabledBlocks,
 			expiresInDays: parsed.expiresInDays,
 		});
 
-		if (project.status === 'draft') {
-			await updateInvitationProject(id, { status: 'waiting_for_client' });
+		if (invitation.status === 'draft') {
+			await updateInvitation(id, { status: 'waiting_for_client' });
 		}
 
 		return jsonResponse(

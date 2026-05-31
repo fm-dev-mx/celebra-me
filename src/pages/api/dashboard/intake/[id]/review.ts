@@ -6,11 +6,11 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
-	findInvitationProjectById,
-	updateInvitationProject,
-} from '@/lib/intake/repositories/invitation-project.repository';
+	findInvitationById,
+	updateInvitation,
+} from '@/lib/intake/repositories/invitation.repository';
 import {
-	getIntakeRequestsByProjectId,
+	getIntakeRequestsByInvitationId,
 	updateRequest,
 } from '@/lib/intake/services/intake-request.service';
 import {
@@ -24,7 +24,7 @@ import {
 	UpdateAdminSubmissionSchema,
 } from '@/lib/intake/schemas/intake-submission.schema';
 import {
-	toInvitationProjectDTO,
+	toInvitationDTO,
 	toIntakeRequestDTO,
 	toIntakeSubmissionDTO,
 } from '@/lib/dashboard/dto/intake-mapper';
@@ -35,16 +35,16 @@ export const GET: APIRoute = async ({ request, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
-		const project = await findInvitationProjectById(id);
-		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
+		const invitation = await findInvitationById(id);
+		if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
-		const requests = await getIntakeRequestsByProjectId(id, 'client');
+		const requests = await getIntakeRequestsByInvitationId(id, 'client');
 		const activeRequest = requests[0] ?? null;
 
 		if (!activeRequest) {
-			throw new ApiError(404, 'not_found', 'No intake request found for this project.');
+			throw new ApiError(404, 'not_found', 'No intake request found for this invitation.');
 		}
 
 		const submission = await getSubmissionByRequestId(activeRequest.id);
@@ -52,13 +52,13 @@ export const GET: APIRoute = async ({ request, params }) => {
 			throw new ApiError(404, 'not_found', 'No submission found for this request.');
 		}
 
-		if (project.status === 'client_submitted') {
-			await updateInvitationProject(id, { status: 'in_review' });
-			project.status = 'in_review';
+		if (invitation.status === 'client_submitted') {
+			await updateInvitation(id, { status: 'in_review' });
+			invitation.status = 'in_review';
 		}
 
 		return jsonResponse({
-			item: toInvitationProjectDTO(project),
+			item: toInvitationDTO(invitation),
 			request: toIntakeRequestDTO(activeRequest),
 			submission: toIntakeSubmissionDTO(submission),
 		});
@@ -78,18 +78,18 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
 		const parsed = await validateBodyOrRespond(request, ReviewIntakeSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const project = await findInvitationProjectById(id);
-		if (!project) throw new ApiError(404, 'not_found', 'Invitation project not found.');
+		const invitation = await findInvitationById(id);
+		if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
-		const requests = await getIntakeRequestsByProjectId(id, 'client');
+		const requests = await getIntakeRequestsByInvitationId(id, 'client');
 		const activeRequest = requests[0];
 		if (!activeRequest) {
-			throw new ApiError(404, 'not_found', 'No intake request found for this project.');
+			throw new ApiError(404, 'not_found', 'No intake request found for this invitation.');
 		}
 
 		const submission = await getSubmissionByRequestId(activeRequest.id);
@@ -101,10 +101,10 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 
 		if (parsed.action === 'approve') {
 			updatedSubmission = await approveSubmission(submission.id, parsed.reviewNotes);
-			await updateInvitationProject(id, { status: 'in_production' });
+			await updateInvitation(id, { status: 'in_production' });
 		} else {
 			updatedSubmission = await requestChanges(submission.id, parsed.reviewNotes ?? '');
-			await updateInvitationProject(id, { status: 'waiting_for_client' });
+			await updateInvitation(id, { status: 'waiting_for_client' });
 			await updateRequest(activeRequest.id, { status: 'active' });
 		}
 
@@ -125,15 +125,15 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		await requireAdminStrongSession(request);
 
 		const { id } = params;
-		if (!id) throw new ApiError(400, 'bad_request', 'Project ID is required.');
+		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
 		const parsed = await validateBodyOrRespond(request, UpdateAdminSubmissionSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const requests = await getIntakeRequestsByProjectId(id, 'client');
+		const requests = await getIntakeRequestsByInvitationId(id, 'client');
 		const activeRequest = requests[0];
 		if (!activeRequest) {
-			throw new ApiError(404, 'not_found', 'No intake request found for this project.');
+			throw new ApiError(404, 'not_found', 'No intake request found for this invitation.');
 		}
 
 		const submission = await getSubmissionByRequestId(activeRequest.id);

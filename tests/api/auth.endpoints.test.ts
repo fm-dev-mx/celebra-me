@@ -211,7 +211,7 @@ describe('auth endpoints', () => {
 			title: 'Fixture Event',
 			status: 'published',
 			publishedAt: null,
-			invitationProjectId: null,
+			invitationId: null,
 			createdAt: '2026-01-01',
 			updatedAt: '2026-01-01',
 		});
