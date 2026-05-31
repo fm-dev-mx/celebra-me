@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { IntakeSubmission } from '@/lib/intake/types';
+import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
 interface IntakeSubmissionRow {
 	id: string;
@@ -36,7 +37,7 @@ const SELECT_COLUMNS =
 
 export async function findIntakeSubmissionById(id: string): Promise<IntakeSubmission | null> {
 	const rows = await supabaseRestRequest<IntakeSubmissionRow[]>({
-		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`,
+		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toIntakeSubmission(rows[0]) : null;
@@ -46,7 +47,7 @@ export async function findSubmissionByRequestId(
 	intakeRequestId: string,
 ): Promise<IntakeSubmission | null> {
 	const rows = await supabaseRestRequest<IntakeSubmissionRow[]>({
-		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&intake_request_id=eq.${encodeURIComponent(intakeRequestId)}&limit=1`,
+		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&intake_request_id=eq.${encodeURIComponent(intakeRequestId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toIntakeSubmission(rows[0]) : null;
@@ -56,7 +57,7 @@ export async function findSubmissionsByRequestId(
 	intakeRequestId: string,
 ): Promise<IntakeSubmission[]> {
 	const rows = await supabaseRestRequest<IntakeSubmissionRow[]>({
-		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&intake_request_id=eq.${encodeURIComponent(intakeRequestId)}&order=created_at.desc`,
+		pathWithQuery: `intake_submissions?select=${SELECT_COLUMNS}&intake_request_id=eq.${encodeURIComponent(intakeRequestId)}&${ACTIVE_FILTER}&order=created_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toIntakeSubmission);

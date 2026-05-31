@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationProject, DemoPreset } from '@/lib/intake/types';
+import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
 interface InvitationProjectRow {
 	id: string;
@@ -44,7 +45,7 @@ const SELECT_COLUMNS =
 
 export async function listInvitationProjects(): Promise<InvitationProject[]> {
 	const rows = await supabaseRestRequest<InvitationProjectRow[]>({
-		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&order=created_at.desc`,
+		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&${ACTIVE_FILTER}&order=created_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toInvitationProject);
@@ -52,7 +53,7 @@ export async function listInvitationProjects(): Promise<InvitationProject[]> {
 
 export async function findInvitationProjectById(id: string): Promise<InvitationProject | null> {
 	const rows = await supabaseRestRequest<InvitationProjectRow[]>({
-		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`,
+		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toInvitationProject(rows[0]) : null;
@@ -60,7 +61,7 @@ export async function findInvitationProjectById(id: string): Promise<InvitationP
 
 export async function findInvitationProjectBySlug(slug: string): Promise<InvitationProject | null> {
 	const rows = await supabaseRestRequest<InvitationProjectRow[]>({
-		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&limit=1`,
+		pathWithQuery: `invitation_projects?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toInvitationProject(rows[0]) : null;

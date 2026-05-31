@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
 interface PublishedInvitationContentRow {
 	id: string;
@@ -48,7 +49,7 @@ export async function findPublishedByProjectId(
 	invitationProjectId: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;
@@ -59,7 +60,7 @@ export async function findPublishedBySlugAndEventType(
 	eventType: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;

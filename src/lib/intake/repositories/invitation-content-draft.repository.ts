@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationContentDraft, InvitationContentDraftStatus } from '@/lib/intake/types';
+import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
 interface InvitationContentDraftRow {
 	id: string;
@@ -30,7 +31,7 @@ export async function findDraftByProjectId(
 	invitationProjectId: string,
 ): Promise<InvitationContentDraft | null> {
 	const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
-		pathWithQuery: `invitation_content_drafts?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&limit=1`,
+		pathWithQuery: `invitation_content_drafts?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toDraft(rows[0]) : null;

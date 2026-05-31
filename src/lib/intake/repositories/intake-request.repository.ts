@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { IntakeRequest, IntakeBlockType, IntakeRequestOrigin } from '@/lib/intake/types';
+import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
 interface IntakeRequestRow {
 	id: string;
@@ -34,7 +35,7 @@ const SELECT_COLUMNS =
 
 export async function findIntakeRequestById(id: string): Promise<IntakeRequest | null> {
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
-		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`,
+		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toIntakeRequest(rows[0]) : null;
@@ -44,7 +45,7 @@ export async function findIntakeRequestByTokenHash(
 	tokenHash: string,
 ): Promise<IntakeRequest | null> {
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
-		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&token_hash=eq.${encodeURIComponent(tokenHash)}&limit=1`,
+		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&token_hash=eq.${encodeURIComponent(tokenHash)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toIntakeRequest(rows[0]) : null;
@@ -56,7 +57,7 @@ export async function findIntakeRequestsByProjectId(
 ): Promise<IntakeRequest[]> {
 	const originFilter = origin ? `&origin=eq.${origin}` : '';
 	const rows = await supabaseRestRequest<IntakeRequestRow[]>({
-		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}${originFilter}&order=created_at.desc`,
+		pathWithQuery: `intake_requests?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationProjectId)}${originFilter}&${ACTIVE_FILTER}&order=created_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toIntakeRequest);
