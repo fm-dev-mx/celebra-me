@@ -160,6 +160,7 @@ describe('InvitationEditor', () => {
 			expect(saveSection).toHaveBeenCalledWith(
 				'main',
 				expect.objectContaining({ title: 'XV Ana Samantha' }),
+				undefined,
 			);
 		});
 		expect(saveSection).toHaveBeenCalledTimes(1);
