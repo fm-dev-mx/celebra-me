@@ -242,16 +242,21 @@ export default function InvitationEditor({ initialContext }: Props) {
 		[content],
 	);
 
-	const saveSection = async (section: InvitationEditorSectionKey) => {
+	const saveSection = async (section: InvitationEditorSectionKey, expectedUpdatedAt?: string) => {
 		setErrors((current) => ({ ...current, [section]: '' }));
 		try {
-			await editor.saveSection(section, sectionValue(section));
+			const result = await editor.saveSection(
+				section,
+				sectionValue(section),
+				expectedUpdatedAt,
+			);
 			setDirty((current) => {
 				const next = new Set(current);
 				next.delete(section);
 				return next;
 			});
 			setSuccess((current) => ({ ...current, [section]: 'Sección guardada.' }));
+			return result;
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -260,10 +265,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 	};
 
-	const saveMetadata = async () => {
+	const saveMetadata = async (expectedUpdatedAt?: string) => {
 		setErrors((current) => ({ ...current, metadata: '' }));
 		try {
-			const invitation = await editor.saveMetadata(metadata);
+			const invitation = await editor.saveMetadata(metadata, expectedUpdatedAt);
 			setMetadata(metadataFromContext({ ...editor.context, invitation }));
 			setDirty((current) => {
 				const next = new Set(current);
@@ -271,6 +276,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				return next;
 			});
 			setSuccess((current) => ({ ...current, metadata: 'Datos guardados.' }));
+			return invitation;
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -399,6 +405,43 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 		return null;
 	}, [editor.context.contentSource, emptySectionsDetail, hasDraft]);
+
+	const [savingAll, setSavingAll] = useState(false);
+
+	const saveAllDirty = useCallback(async () => {
+		const dirtyArray = Array.from(dirty);
+		if (dirtyArray.length === 0) return;
+		setSavingAll(true);
+		setErrors({});
+		setSuccess({});
+
+		let nextExpectedUpdatedAt: string | undefined;
+		const initialExpectedUpdatedAt =
+			editor.context.draftUpdatedAt ?? editor.context.invitation.updatedAt;
+
+		for (const section of dirtyArray) {
+			const expectedUpdateAt = nextExpectedUpdatedAt ?? initialExpectedUpdatedAt;
+
+			if (section === 'metadata') {
+				const result = await saveMetadata(expectedUpdateAt);
+				if (!result) break;
+				nextExpectedUpdatedAt = result.updatedAt;
+			} else {
+				const sectionKey = section as InvitationEditorSectionKey;
+				const result = await saveSection(sectionKey, expectedUpdateAt);
+				if (!result) break;
+				nextExpectedUpdatedAt = result.draftUpdatedAt;
+			}
+		}
+
+		setSavingAll(false);
+	}, [
+		dirty,
+		saveMetadata,
+		saveSection,
+		editor.context.draftUpdatedAt,
+		editor.context.invitation.updatedAt,
+	]);
 
 	return (
 		<div className="invitation-editor">

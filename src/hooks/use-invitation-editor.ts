@@ -24,16 +24,18 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		async (
 			section: InvitationEditorSectionKey,
 			value: unknown,
+			overrideExpectedUpdatedAt?: string,
 		): Promise<InvitationEditorSectionSaveResponse> => {
 			setSavingSection(section);
 			try {
+				const expectedUpdatedAt =
+					overrideExpectedUpdatedAt ??
+					context.draftUpdatedAt ??
+					context.invitation.updatedAt;
 				const result = await adminApi.updateInvitationEditorSection(
 					context.invitation.id,
 					section,
-					{
-						expectedUpdatedAt: context.draftUpdatedAt ?? context.invitation.updatedAt,
-						value,
-					},
+					{ expectedUpdatedAt, value },
 				);
 				setContext((current) => ({
 					...current,
@@ -50,15 +52,16 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 	);
 
 	const saveMetadata = useCallback(
-		async (value: Parameters<typeof adminApi.updateInvitationEditorMetadata>[1]['value']) => {
+		async (
+			value: Parameters<typeof adminApi.updateInvitationEditorMetadata>[1]['value'],
+			overrideExpectedUpdatedAt?: string,
+		) => {
 			setSavingSection('metadata');
 			try {
+				const expectedUpdatedAt = overrideExpectedUpdatedAt ?? context.invitation.updatedAt;
 				const result = await adminApi.updateInvitationEditorMetadata(
 					context.invitation.id,
-					{
-						expectedUpdatedAt: context.invitation.updatedAt,
-						value,
-					},
+					{ expectedUpdatedAt, value },
 				);
 				setContext((current) => ({ ...current, invitation: result.invitation }));
 				return result.invitation;
