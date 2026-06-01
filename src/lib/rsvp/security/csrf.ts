@@ -7,8 +7,9 @@
  * - The server validates that both tokens match.
  */
 
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AstroCookies } from 'astro';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
@@ -87,7 +88,11 @@ export function validateCsrfToken(request: Request, cookies: AstroCookies): void
 	// A missing header token while a cookie token exists is suspicious.
 	if (!headerToken) {
 		if (isProduction) {
-			throw new Error('Missing CSRF token');
+			throw new ApiError(
+				403,
+				'forbidden',
+				'Token CSRF faltante. Por favor recarga la página e intenta de nuevo.',
+			);
 		}
 		console.warn('Missing CSRF token in development mode');
 		return;
@@ -97,25 +102,16 @@ export function validateCsrfToken(request: Request, cookies: AstroCookies): void
 	const hashedHeaderToken = hashToken(headerToken);
 
 	// Use constant-time comparison to reduce timing side channels.
-	if (!timingSafeEqual(cookieToken, hashedHeaderToken)) {
-		throw new Error('Invalid CSRF token');
+	if (
+		cookieToken.length !== hashedHeaderToken.length ||
+		!timingSafeEqual(Buffer.from(cookieToken), Buffer.from(hashedHeaderToken))
+	) {
+		throw new ApiError(
+			403,
+			'forbidden',
+			'Token CSRF inválido. Por favor recarga la página e intenta de nuevo.',
+		);
 	}
-}
-
-/**
- * Constant-time string comparison helper.
- */
-function timingSafeEqual(a: string, b: string): boolean {
-	if (a.length !== b.length) {
-		return false;
-	}
-
-	let result = 0;
-	for (let i = 0; i < a.length; i++) {
-		result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-	}
-
-	return result === 0;
 }
 
 /**
@@ -123,26 +119,6 @@ function timingSafeEqual(a: string, b: string): boolean {
  */
 export function clearCsrfToken(cookies: AstroCookies): void {
 	cookies.delete(CSRF_COOKIE_NAME, { path: '/' });
-}
-
-/**
- * Generates a meta tag containing the raw CSRF token for the client.
- */
-export function generateCsrfMetaTag(token: string): string {
-	return `<meta name="csrf-token" content="${token}">`;
-}
-
-/**
- * Astro middleware helper for CSRF validation.
- */
-export function csrfMiddleware(context: { request: Request; cookies: AstroCookies }): void {
-	try {
-		validateCsrfToken(context.request, context.cookies);
-	} catch (error) {
-		// Preserve centralized error handling while keeping a server log.
-		console.error('CSRF validation failed:', error);
-		throw error;
-	}
 }
 
 /**
