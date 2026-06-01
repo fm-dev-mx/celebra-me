@@ -3,6 +3,7 @@ import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { Invitation } from '@/lib/intake/types';
+import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
 export type DraftPreviewResult =
 	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }
@@ -10,11 +11,12 @@ export type DraftPreviewResult =
 
 export function buildDraftPreviewPageContext(
 	invitation: Invitation,
-	draftContent: Record<string, unknown>,
+	draftContent: DraftContent,
 	demoContent: Record<string, unknown>,
 ): DraftPreviewResult {
 	try {
 		const snapshot = invitation.snapshot;
+		const assetSlug = invitation.slug ?? snapshot.previewSlug;
 
 		const publishedData = mapDraftToPublished({
 			invitation: {
@@ -22,21 +24,22 @@ export function buildDraftPreviewPageContext(
 				eventType: invitation.eventType,
 				snapshot,
 			},
-			draftContent: draftContent as Parameters<typeof mapDraftToPublished>[0]['draftContent'],
+			assetSlug,
+			draftContent,
 			demoContent,
 		});
 
 		const viewModel = adaptDbEvent({
-			slug: snapshot.previewSlug,
+			slug: assetSlug,
 			eventType: invitation.eventType,
 			isDemo: false,
 			content: publishedData,
-			assetSlug: snapshot.previewSlug,
+			assetSlug,
 		});
 
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
-			slug: snapshot.previewSlug,
+			slug: assetSlug,
 			eventType: invitation.eventType,
 			isPreview: true,
 		});

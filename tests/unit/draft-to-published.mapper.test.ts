@@ -271,19 +271,13 @@ describe('mapDraftToPublished', () => {
 		expect(result.location).toBeUndefined();
 	});
 
-	it('includes envelope from demo content', () => {
+	it('includes envelope, gallery, itinerary, countdown from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.envelope).toBeDefined();
-		expect((result.envelope as Record<string, unknown>).disabled).toBe(false);
-		expect((result.envelope as Record<string, unknown>).sealStyle).toBe('wax');
-	});
-
-	it('includes gallery from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.gallery).toBeDefined();
-		expect((result.gallery as Record<string, unknown>).title).toBe('Galería');
+		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
+		expect(result.gallery).toMatchObject({ title: 'Galería' });
+		expect(result.itinerary).toMatchObject({ title: 'Itinerario' });
+		expect(result.countdown).toMatchObject({ title: 'Falta poco' });
 	});
 
 	it('uses gallery from draft content when the admin edits captions or order', () => {
@@ -310,13 +304,6 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('includes itinerary from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.itinerary).toBeDefined();
-		expect((result.itinerary as Record<string, unknown>).title).toBe('Itinerario');
-	});
-
 	it('uses itinerary from draft content when the admin edits the program', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
@@ -335,54 +322,19 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('includes countdown from demo content', () => {
+	it('includes interludes, sectionStyles, navigation, sharing from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.countdown).toBeDefined();
-		expect((result.countdown as Record<string, unknown>).title).toBe('Falta poco');
-	});
-
-	it('includes interludes from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.interludes).toBeDefined();
 		expect(Array.isArray(result.interludes)).toBe(true);
-	});
-
-	it('includes sectionStyles from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
 		expect(result.sectionStyles).toBeDefined();
+		expect(result.navigation).toMatchObject([{ label: 'Inicio' }]);
+		expect(result.sharing).toMatchObject({ whatsappTemplate: '¡Hola!' });
 	});
 
-	it('includes navigation from demo content', () => {
+	it('includes theme and sectionOrder from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.navigation).toBeDefined();
-		expect(Array.isArray(result.navigation)).toBe(true);
-		expect((result.navigation as Array<Record<string, unknown>>)[0].label).toBe('Inicio');
-	});
-
-	it('includes sharing from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.sharing).toBeDefined();
-		expect((result.sharing as Record<string, unknown>).whatsappTemplate).toBe('¡Hola!');
-	});
-
-	it('includes theme fontFamily from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.theme).toMatchObject({
-			fontFamily: 'serif',
-			preset: 'jewelry-box',
-		});
-	});
-
-	it('includes sectionOrder from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.sectionOrder).toBeDefined();
+		expect(result.theme).toMatchObject({ fontFamily: 'serif', preset: 'jewelry-box' });
 		expect(Array.isArray(result.sectionOrder)).toBe(true);
 	});
 
@@ -439,5 +391,21 @@ describe('mapDraftToPublished', () => {
 				backgroundImage: expect.any(Object),
 			}),
 		});
+	});
+
+	it('uses demo previewSlug as _assetSlug when invitation has no explicit assetSlug', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result._assetSlug).toBe('demo-xv-jewelry-box');
+	});
+
+	it('uses explicit assetSlug over snapshot.previewSlug when provided', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			assetSlug: 'ana-sofia-cota-guillen',
+		});
+
+		expect(result._assetSlug).toBe('ana-sofia-cota-guillen');
+		expect(result._assetSlug).not.toBe('demo-xv-jewelry-box');
 	});
 });

@@ -484,4 +484,49 @@ describe('publishDraft', () => {
 
 		await expect(publishDraft('proj-1')).resolves.toBeDefined();
 	});
+
+	it('sets _assetSlug to own slug (not demo previewSlug) for client invitations', async () => {
+		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
+		mockGetProject.mockResolvedValue(projectWithSlug as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({
+					_assetSlug: 'ana-sofia-cota-guillen',
+				}),
+			}),
+		);
+		const content = (mockUpsertPublished.mock.calls[0][0] as any).content;
+		expect(content._assetSlug).not.toBe('demo-xv-jewelry-box');
+	});
+
+	it('uses previewSlug as _assetSlug for demo invitations', async () => {
+		const demoInvitation = {
+			...baseProject,
+			kind: 'demo' as const,
+			slug: 'demo-xv-jewelry-box',
+			createdBy: null,
+		};
+		mockGetProject.mockResolvedValue(demoInvitation as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue({ ...publishedRow, isDemo: true } as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(demoInvitation as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({
+					_assetSlug: 'demo-xv-jewelry-box',
+				}),
+			}),
+		);
+	});
 });

@@ -106,6 +106,7 @@ export interface PublishInput {
 		eventType: string;
 		snapshot: DemoPreset;
 	};
+	assetSlug?: string;
 	draftContent: DraftContent;
 	demoContent: Record<string, unknown>;
 	isDemo?: boolean;
@@ -279,6 +280,6 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		navigation: demoContent.navigation,
 		sharing: demoContent.sharing,
 
-		_assetSlug: snapshot.previewSlug,
+		_assetSlug: input.assetSlug ?? snapshot.previewSlug,
 	};
 }

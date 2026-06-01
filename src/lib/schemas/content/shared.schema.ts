@@ -145,4 +145,11 @@ export const baseEventFieldsSchema = z.object({
 	description: z.string().optional(),
 	theme: themeSchema,
 	sectionOrder: sectionOrderSchema,
+	_assetSlug: z
+		.string()
+		.regex(
+			/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+			'_assetSlug must be a valid slug (lowercase, hyphens allowed)',
+		)
+		.optional(),
 });

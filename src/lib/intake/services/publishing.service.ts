@@ -136,12 +136,16 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
+	const publishSlug = getPublicSlug(invitation);
+	const assetSlug = invitation.kind === 'demo' ? snapshot.previewSlug : publishSlug;
+
 	const mappedContent = mapDraftToPublished({
 		invitation: {
 			title: invitation.title,
 			eventType: invitation.eventType,
 			snapshot,
 		},
+		assetSlug,
 		draftContent: content,
 		demoContent,
 		isDemo: invitation.kind === 'demo',
@@ -160,8 +164,6 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		);
 	}
 	const publishedContent = publishedContentResult.data;
-
-	const publishSlug = getPublicSlug(invitation);
 
 	const existingPublished = await findPublishedBySlugAndEventType(
 		publishSlug,

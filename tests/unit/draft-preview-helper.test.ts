@@ -222,4 +222,25 @@ describe('buildDraftPreviewPageContext', () => {
 			expect(result.error.message).toBeDefined();
 		}
 	});
+
+	it('uses invitation slug as assetSlug for client invitations', () => {
+		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
+
+		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+
+		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.assetSlug).toBe('ana-sofia-cota-guillen');
+		expect(callArgs.assetSlug).not.toBe('demo-xv-enchanted-rose');
+	});
+
+	it('falls back to demo previewSlug for client invitations without a slug', () => {
+		const invitation = makeProject({ slug: null });
+
+		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+
+		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
+	});
 });
