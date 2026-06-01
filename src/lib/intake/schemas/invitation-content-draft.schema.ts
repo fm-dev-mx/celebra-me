@@ -1,6 +1,13 @@
 import { z } from 'zod';
-import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import {
+	optionalText,
+	optionalUrl,
+	venueSchema,
+	gallerySchema,
+	itinerarySchema,
+	giftsSchema,
+} from '@/lib/intake/schemas/shared-content.schema';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
 	z.object({ action: z.literal('generate') }),
@@ -10,104 +17,82 @@ export const DraftActionSchema = z.discriminatedUnion('action', [
 
 export const InvitationContentDraftContentSchema = z
 	.object({
-		title: z.string().optional(),
-		description: z.string().optional(),
-		eventType: z.string().optional(),
-		sectionOrder: z.array(z.enum(CONTENT_SECTION_KEYS)).optional(),
+		title: optionalText(200),
+		description: optionalText(2000),
+		eventType: optionalText(50),
+		sectionOrder: z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).optional(),
 		hero: z
 			.object({
-				name: z.string().optional(),
-				secondaryName: z.string().optional(),
-				label: z.string().optional(),
-				nickname: z.string().optional(),
-				date: z.string().optional(),
+				name: optionalText(200),
+				secondaryName: optionalText(200),
+				label: optionalText(200),
+				nickname: optionalText(200),
+				date: optionalText(40),
 			})
 			.optional(),
 		quote: z
 			.object({
-				text: z.string().optional(),
-				author: z.string().optional(),
+				text: optionalText(1000),
+				author: optionalText(200),
 			})
 			.optional(),
 		thankYou: z
 			.object({
-				message: z.string().optional(),
-				closingName: z.string().optional(),
+				message: optionalText(2000),
+				closingName: optionalText(200),
 			})
 			.optional(),
 		music: z
 			.object({
-				url: z.string().optional(),
-				title: z.string().optional(),
+				url: optionalUrl,
+				title: optionalText(200),
 			})
 			.optional(),
 		location: z
 			.object({
-				ceremony: z
-					.object({
-						venueName: z.string().optional(),
-						address: z.string().optional(),
-						city: z.string().optional(),
-						date: z.string().optional(),
-						time: z.string().optional(),
-						mapUrl: z.string().optional(),
-					})
-					.optional(),
-				reception: z
-					.object({
-						venueName: z.string().optional(),
-						address: z.string().optional(),
-						city: z.string().optional(),
-						date: z.string().optional(),
-						time: z.string().optional(),
-						mapUrl: z.string().optional(),
-					})
-					.optional(),
-				dressCode: z.string().optional(),
-				additionalIndications: z.string().optional(),
+				ceremony: venueSchema.optional(),
+				reception: venueSchema.optional(),
+				dressCode: optionalText(500),
+				additionalIndications: optionalText(),
 			})
 			.optional(),
+		itinerary: itinerarySchema.optional(),
+		gallery: gallerySchema.optional(),
 		family: z
 			.object({
-				fatherName: z.string().optional(),
+				fatherName: optionalText(200),
 				fatherDeceased: z.boolean().optional(),
-				motherName: z.string().optional(),
+				motherName: optionalText(200),
 				motherDeceased: z.boolean().optional(),
-				spouseName: z.string().optional(),
-				godparents: z.string().optional(),
-				children: z.string().optional(),
-				sectionMessage: z.string().optional(),
+				spouseName: optionalText(200),
+				godparents: optionalText(),
+				children: optionalText(),
+				sectionMessage: optionalText(),
 			})
 			.optional(),
-		gifts: z
-			.object({
-				title: z.string().optional(),
-				subtitle: z.string().optional(),
-				items: z.array(giftItemSchema).optional(),
-			})
-			.optional(),
+		gifts: giftsSchema.optional(),
 		rsvp: z
 			.object({
-				title: z.string().optional(),
-				guestCap: z.number().optional(),
-				confirmationMessage: z.string().optional(),
-				confirmationMode: z.string().optional(),
-				whatsappPhone: z.string().optional(),
-				subcopy: z.string().optional(),
+				title: optionalText(200),
+				guestCap: z.number().int().min(1).max(20).optional(),
+				confirmationMessage: optionalText(1000),
+				confirmationMode: optionalText(20),
+				whatsappPhone: optionalText(30),
+				subcopy: optionalText(1000),
 			})
 			.optional(),
 		photoNotes: z
 			.object({
 				whatsappSent: z.boolean().optional(),
-				heroPhoto: z.string().optional(),
-				portraitPhoto: z.string().optional(),
-				galleryPhotos: z.string().optional(),
-				familyPhoto: z.string().optional(),
-				specialPhoto: z.string().optional(),
-				generalNotes: z.string().optional(),
-				photoOrder: z.string().optional(),
-				cropNotes: z.string().optional(),
-				priorityNotes: z.string().optional(),
+				heroPhoto: optionalText(),
+				portraitPhoto: optionalText(),
+				galleryPhotos: optionalText(),
+				familyPhoto: optionalText(),
+				specialPhoto: optionalText(),
+				generalNotes: optionalText(),
+				photoOrder: optionalText(),
+				cropNotes: optionalText(),
+				priorityNotes: optionalText(),
 			})
 			.optional(),
 	})

@@ -54,6 +54,7 @@ _tmp_*
 .jest/
 .npm/
 .pnpm-store/
+.worktrees/
 
 # IDE/Editor specific settings
 # Keep shared VS Code workspace files tracked while ignoring other local editor files.
@@ -135,4 +136,3 @@ docs/implementation-log.md
 # ==============================================================================
 # End of Git Ignore Configuration
 # ==============================================================================
-
