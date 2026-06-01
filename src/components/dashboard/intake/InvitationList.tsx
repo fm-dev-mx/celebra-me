@@ -84,44 +84,12 @@ interface InvitationTableRowProps {
 	onDuplicate: (invitation: InvitationDTO) => void;
 }
 
-const ClientCaptureActions: FC<{ invitation: InvitationDTO }> = ({ invitation }) => {
-	if (invitation.kind !== 'client' || invitation.archivedAt) return null;
-	if (!invitation.captureUrl) {
-		return (
-			<a
-				href={`/dashboard/invitaciones/${invitation.id}`}
-				className="intake-list__action-secondary"
-			>
-				Crear link cliente
-			</a>
-		);
-	}
-	return (
-		<>
-			<button
-				type="button"
-				className="intake-list__action-secondary"
-				onClick={() => void navigator.clipboard.writeText(invitation.captureUrl!)}
-			>
-				Copiar link cliente
-			</button>
-			<a
-				href={invitation.captureUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				className="intake-list__action-secondary"
-			>
-				Abrir captura
-			</a>
-			<a
-				href={`/dashboard/invitaciones/${invitation.id}`}
-				className="intake-list__action-secondary"
-			>
-				Regenerar link cliente
-			</a>
-		</>
-	);
-};
+function contentSummary(invitation: InvitationDTO): string {
+	if (invitation.published) return 'Publicado';
+	if (invitation.hasSubmission) return 'Captura recibida';
+	if (invitation.hasRequest) return 'Esperando captura';
+	return 'Sin contenido';
+}
 
 const InvitationLifecycleActions: FC<{
 	invitation: InvitationDTO;
@@ -173,13 +141,16 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	const isClient = invitation.kind === 'client';
 
 	return (
-		<tr>
+		<tr className={!isClient ? 'intake-list__row--demo' : ''}>
 			<td className="intake-list__cell-title">{invitation.title}</td>
 			<td>{invitation.clientName || '\u2014'}</td>
 			<td>{isClient ? 'Invitación' : 'Demo'}</td>
 			<td>
 				<div className="intake-list__status-cell">
 					<StatusBadge variant={displayInfo.variant} label={displayInfo.label} />
+					<span className="intake-list__content-summary">
+						{contentSummary(invitation)}
+					</span>
 					{displayInfo.warning && (
 						<span className="intake-list__status-warning">{displayInfo.warning}</span>
 					)}
@@ -202,16 +173,33 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 						Ver pública
 					</a>
 				)}
-				<ClientCaptureActions invitation={invitation} />
 				{!isClient && isActive && (
 					<button
 						type="button"
 						className="intake-list__action-secondary"
 						onClick={() => onDuplicate(invitation)}
 					>
-						Duplicar desde demo
+						Duplicar
 					</button>
 				)}
+				{isClient && isActive && !invitation.captureUrl && (
+					<a
+						href={`/dashboard/invitaciones/${invitation.id}`}
+						className="intake-list__action-secondary"
+					>
+						Link cliente
+					</a>
+				)}
+				{isClient && isActive && invitation.captureUrl && (
+					<button
+						type="button"
+						className="intake-list__action-secondary"
+						onClick={() => void navigator.clipboard.writeText(invitation.captureUrl!)}
+					>
+						Copiar link
+					</button>
+				)}
+				<span className="intake-list__action-separator" aria-hidden="true" />
 				<InvitationLifecycleActions
 					invitation={invitation}
 					onArchive={onArchive}
