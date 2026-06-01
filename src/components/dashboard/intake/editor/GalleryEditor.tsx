@@ -5,6 +5,7 @@ import {
 	isEventAssetKey,
 } from '@/lib/assets/asset-registry';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import FocalPointControl from '@/components/dashboard/intake/editor/FocalPointControl';
 
 type Gallery = NonNullable<DraftContent['gallery']>;
 type GalleryItem = Gallery['items'][number];
@@ -95,16 +96,12 @@ export default function GalleryEditor({ value, previewSlug, onChange }: Props) {
 									}
 								/>
 							</label>
-							<label className="invitation-editor__field">
-								<span>Punto focal</span>
-								<input
-									placeholder="50% 40%"
-									value={item.focalPoint ?? ''}
-									onChange={(event) =>
-										updateItem(index, { focalPoint: event.target.value })
-									}
-								/>
-							</label>
+							<FocalPointControl
+								value={item.focalPoint ?? ''}
+								onChange={(value) => updateItem(index, { focalPoint: value })}
+								imageSrc={src}
+								alt={item.caption || `Fotografía ${index + 1}`}
+							/>
 							<div className="invitation-editor__reorder">
 								<button
 									type="button"

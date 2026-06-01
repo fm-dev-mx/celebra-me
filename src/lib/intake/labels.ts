@@ -149,3 +149,33 @@ export const RSVP_STATUS_LABELS: Record<string, string> = {
 	archived: 'RSVP desactivado',
 	draft: 'RSVP borrador',
 };
+
+type FieldGroup = 'hero' | 'family';
+type EventType = 'xv' | 'boda' | 'bautizo' | 'cumple';
+
+const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
+	name: {
+		xv: 'Quinceañera',
+		boda: 'Novia',
+		bautizo: 'Nombre del bebé',
+		cumple: 'Nombre del festejado',
+	},
+	secondaryName: {
+		boda: 'Novio',
+	},
+};
+
+const EVENT_FAMILY_LABELS: Record<string, Partial<Record<EventType, string>>> = {
+	spouseName: {
+		boda: 'Cónyuge',
+	},
+};
+
+export function getFieldLabel(group: FieldGroup, field: string, eventType?: string): string {
+	const eventLabels = group === 'hero' ? EVENT_HERO_LABELS : EVENT_FAMILY_LABELS;
+	const override = eventLabels[field]?.[eventType as EventType];
+	if (override) return override;
+
+	const defaults = group === 'hero' ? HERO_FIELD_LABELS : FAMILY_FIELD_LABELS;
+	return defaults[field] ?? field;
+}

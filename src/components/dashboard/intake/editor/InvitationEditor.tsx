@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+/* eslint-disable max-lines -- Editor shell with 12+ sections; extracted SectionCard/Field/TextArea to separate files */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEditor';
 import MetadataSection from '@/components/dashboard/intake/editor/MetadataSection';
 import PublicationSection from '@/components/dashboard/intake/editor/PublicationSection';
+import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import Field from '@/components/dashboard/intake/editor/Field';
+import TextArea from '@/components/dashboard/intake/editor/TextArea';
+import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
+import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
@@ -13,7 +19,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
-import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
+import { INVITATION_STATUS_LABELS, getFieldLabel } from '@/lib/intake/labels';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
@@ -77,119 +83,13 @@ export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Se
 	return critical;
 }
 
-function SectionCard({
-	id,
-	title,
-	description,
-	children,
-	dirty,
-	saving,
-	error,
-	success,
-	onSave,
-	sourceBadge,
-}: {
-	id: string;
-	title: string;
-	description: string;
-	children: ReactNode;
-	dirty: boolean;
-	saving: boolean;
-	error?: string;
-	success?: string;
-	onSave: () => void;
-	sourceBadge?: { source: string; label: string };
-}) {
-	const headingId = `section-${id}-heading`;
-	return (
-		<section className="invitation-editor__card" id={id} aria-labelledby={headingId}>
-			<div className="invitation-editor__card-header">
-				<div>
-					<h2 id={headingId}>{title}</h2>
-					<p>{description}</p>
-				</div>
-				<div className="invitation-editor__card-header-badges">
-					{sourceBadge && (
-						<span
-							className={`invitation-editor__source-badge invitation-editor__source-badge--${sourceBadge.source}`}
-						>
-							{sourceBadge.label}
-						</span>
-					)}
-					{dirty && <span className="invitation-editor__dirty">Cambios sin guardar</span>}
-				</div>
-			</div>
-			{children}
-			<div className="invitation-editor__card-footer" aria-live="polite">
-				<div>
-					{error && <p className="invitation-editor__error">{error}</p>}
-					{success && <p className="invitation-editor__success">{success}</p>}
-				</div>
-				<button
-					type="button"
-					className="invitation-editor__section-save"
-					onClick={onSave}
-					disabled={!dirty || saving}
-				>
-					{saving ? 'Guardando...' : 'Guardar sección'}
-				</button>
-			</div>
-		</section>
-	);
-}
-
-function Field({
-	label,
-	value,
-	onChange,
-	type = 'text',
-	placeholder,
-}: {
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-	type?: 'text' | 'email' | 'url' | 'date' | 'datetime-local' | 'time' | 'number';
-	placeholder?: string;
-}) {
-	return (
-		<label className="invitation-editor__field">
-			<span>{label}</span>
-			<input
-				type={type}
-				value={value}
-				placeholder={placeholder}
-				onChange={(event) => onChange(event.target.value)}
-			/>
-		</label>
-	);
-}
-
-function TextArea({
-	label,
-	value,
-	onChange,
-}: {
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-}) {
-	return (
-		<label className="invitation-editor__field">
-			<span>{label}</span>
-			<textarea rows={3} value={value} onChange={(event) => onChange(event.target.value)} />
-		</label>
-	);
-}
-
 function metadataFromContext(context: InvitationEditorContextDTO): InvitationEditorMetadata {
 	const { title, slug, status, clientName, clientEmail, clientWhatsapp, photosReceived } =
 		context.invitation;
 	return { title, slug, status, clientName, clientEmail, clientWhatsapp, photosReceived };
 }
 
-/* eslint-disable max-lines -- Inline components (SectionCard, Field, TextArea) kept co-located for readability. */
-
-// eslint-disable-next-line complexity -- The shell coordinates dirty state across intentionally independent cards.
+// eslint-disable-next-line complexity -- Editor shell with 12+ sections tracking dirty/error/saving state independently
 export default function InvitationEditor({ initialContext }: Props) {
 	const editor = useInvitationEditor(initialContext);
 	const [content, setContent] = useState(editor.context.content);
@@ -334,7 +234,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
 	const photoNotes = content.photoNotes ?? {};
 	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
-	const hasDirtySections = dirty.size > 0;
 
 	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
 		updateContent('gifts', {
@@ -383,9 +282,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 		[editor.context.rsvpLink.status, editor.context.sectionStates.rsvp],
 	);
 
+	const eventType = editor.context.invitation.eventType;
+	const isBoda = eventType === 'boda';
+
 	const criticalSections = useMemo(
-		() => getCriticalSections(editor.context.invitation.eventType, rsvpEnabled),
-		[editor.context.invitation.eventType, rsvpEnabled],
+		() => getCriticalSections(eventType, rsvpEnabled),
+		[eventType, rsvpEnabled],
 	);
 
 	const emptySectionsDetail = useMemo(() => {
@@ -453,8 +355,21 @@ export default function InvitationEditor({ initialContext }: Props) {
 		editor.context.invitation.updatedAt,
 	]);
 
+	const previewUrl = `/dashboard/invitaciones/${editor.context.invitation.id}/preview`;
+	const backUrl = '/dashboard/invitaciones';
+
 	return (
 		<div className="invitation-editor">
+			<EditorActionBar
+				dirtyCount={dirty.size}
+				savingAll={savingAll}
+				publishing={editor.publishing}
+				publishWarning={publishWarning}
+				onSaveAll={saveAllDirty}
+				onPublish={publish}
+				previewUrl={previewUrl}
+				editUrl={backUrl}
+			/>
 			<header className="invitation-editor__header">
 				<div className="invitation-editor__header-info">
 					<div className="invitation-editor__header-badges">
@@ -467,11 +382,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 						{editor.context.invitation.kind === 'demo' && (
 							<span className="invitation-editor__content-badge invitation-editor__content-badge--demo-tag">
 								Demo
-							</span>
-						)}
-						{hasDirtySections && (
-							<span className="invitation-editor__unsaved-indicator">
-								{`${dirty.size} cambio${dirty.size > 1 ? 's' : ''} sin guardar`}
 							</span>
 						)}
 					</div>
@@ -493,38 +403,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 								: 'La versión pública está actualizada'}
 						</span>
 					</div>
-				</div>
-				<div className="invitation-editor__header-actions">
-					{hasDirtySections && (
-						<button
-							type="button"
-							className="invitation-editor__secondary-action"
-							onClick={saveAllDirty}
-							disabled={savingAll}
-						>
-							{savingAll ? 'Guardando...' : `Guardar todo (${dirty.size})`}
-						</button>
-					)}
-					<a
-						href={`/dashboard/invitaciones/${editor.context.invitation.id}/preview`}
-						className="invitation-editor__secondary-action"
-					>
-						Vista previa
-					</a>
-					<button
-						type="button"
-						className="invitation-editor__primary-action"
-						onClick={publish}
-						disabled={editor.publishing || hasDirtySections}
-					>
-						{editor.publishing ? 'Publicando...' : 'Publicar cambios'}
-					</button>
-					<a
-						href="/dashboard/invitaciones"
-						className="invitation-editor__secondary-action"
-					>
-						Volver
-					</a>
 				</div>
 				{noDraftWarning && (
 					<p className="invitation-editor__warning invitation-editor__warning--guard">
@@ -663,27 +541,29 @@ export default function InvitationEditor({ initialContext }: Props) {
 								onChange={(value) => updateContent('title', value)}
 							/>
 							<Field
-								label="Nombre principal"
+								label={getFieldLabel('hero', 'name', eventType)}
 								value={main.name ?? ''}
 								onChange={(value) => updateHero({ name: value })}
 							/>
+							{isBoda && (
+								<Field
+									label={getFieldLabel('hero', 'secondaryName', eventType)}
+									value={main.secondaryName ?? ''}
+									onChange={(value) => updateHero({ secondaryName: value })}
+								/>
+							)}
 							<Field
-								label="Segundo nombre"
-								value={main.secondaryName ?? ''}
-								onChange={(value) => updateHero({ secondaryName: value })}
-							/>
-							<Field
-								label="Etiqueta del evento"
+								label={getFieldLabel('hero', 'label', eventType)}
 								value={main.label ?? ''}
 								onChange={(value) => updateHero({ label: value })}
 							/>
 							<Field
-								label="Apodo"
+								label={getFieldLabel('hero', 'nickname', eventType)}
 								value={main.nickname ?? ''}
 								onChange={(value) => updateHero({ nickname: value })}
 							/>
 							<Field
-								label="Fecha"
+								label={getFieldLabel('hero', 'date', eventType)}
 								type="datetime-local"
 								value={(main.date ?? '').replace('Z', '').slice(0, 16)}
 								onChange={(value) => updateHero({ date: value })}
@@ -693,6 +573,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 							label="Descripción"
 							value={content.description ?? ''}
 							onChange={(value) => updateContent('description', value)}
+							labelExtra={
+								<TextPresetPicker
+									section="description"
+									eventType={eventType}
+									onSelect={(value) => updateContent('description', value)}
+								/>
+							}
 						/>
 					</SectionCard>
 
@@ -709,20 +596,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
-								label="Papá"
+								label={getFieldLabel('family', 'fatherName', eventType)}
 								value={family.fatherName ?? ''}
 								onChange={(value) => updateFamily({ fatherName: value })}
 							/>
 							<Field
-								label="Mamá"
+								label={getFieldLabel('family', 'motherName', eventType)}
 								value={family.motherName ?? ''}
 								onChange={(value) => updateFamily({ motherName: value })}
 							/>
-							<Field
-								label="Pareja"
-								value={family.spouseName ?? ''}
-								onChange={(value) => updateFamily({ spouseName: value })}
-							/>
+							{isBoda && (
+								<Field
+									label={getFieldLabel('family', 'spouseName', eventType)}
+									value={family.spouseName ?? ''}
+									onChange={(value) => updateFamily({ spouseName: value })}
+								/>
+							)}
 						</div>
 						<label className="invitation-editor__check">
 							<input
@@ -745,19 +634,28 @@ export default function InvitationEditor({ initialContext }: Props) {
 							<span>Mostrar cruz junto al nombre de la mamá</span>
 						</label>
 						<TextArea
-							label="Padrinos, uno por línea"
+							label={getFieldLabel('family', 'godparents', eventType)}
 							value={family.godparents ?? ''}
 							onChange={(value) => updateFamily({ godparents: value })}
 						/>
+						{isBoda && (
+							<TextArea
+								label={getFieldLabel('family', 'children', eventType)}
+								value={family.children ?? ''}
+								onChange={(value) => updateFamily({ children: value })}
+							/>
+						)}
 						<TextArea
-							label="Hijos, uno por línea"
-							value={family.children ?? ''}
-							onChange={(value) => updateFamily({ children: value })}
-						/>
-						<TextArea
-							label="Mensaje familiar"
+							label={getFieldLabel('family', 'sectionMessage', eventType)}
 							value={family.sectionMessage ?? ''}
 							onChange={(value) => updateFamily({ sectionMessage: value })}
+							labelExtra={
+								<TextPresetPicker
+									section="familyMessage"
+									eventType={eventType}
+									onSelect={(value) => updateFamily({ sectionMessage: value })}
+								/>
+							}
 						/>
 					</SectionCard>
 
@@ -821,6 +719,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 							label="Código de vestimenta"
 							value={location.dressCode ?? ''}
 							onChange={(value) => updateLocation({ dressCode: value })}
+							labelExtra={
+								<TextPresetPicker
+									section="dressCode"
+									onSelect={(value) => updateLocation({ dressCode: value })}
+								/>
+							}
 						/>
 						<TextArea
 							label="Indicaciones adicionales"
@@ -862,6 +766,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 								label="Título"
 								value={rsvp.title ?? ''}
 								onChange={(value) => updateRsvp({ title: value })}
+								labelExtra={
+									<TextPresetPicker
+										section="rsvpTitle"
+										onSelect={(value) => updateRsvp({ title: value })}
+									/>
+								}
 							/>
 							<Field
 								label="Máximo de acompañantes"
@@ -894,6 +804,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 							label="Mensaje de confirmación"
 							value={rsvp.confirmationMessage ?? ''}
 							onChange={(value) => updateRsvp({ confirmationMessage: value })}
+							labelExtra={
+								<TextPresetPicker
+									section="rsvpMessage"
+									onSelect={(value) => updateRsvp({ confirmationMessage: value })}
+								/>
+							}
 						/>
 						<TextArea
 							label="Texto secundario"
@@ -949,6 +865,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 								value={gifts.title ?? ''}
 								onChange={(value) =>
 									updateContent('gifts', { ...gifts, title: value })
+								}
+								labelExtra={
+									<TextPresetPicker
+										section="gifts"
+										onSelect={(value) =>
+											updateContent('gifts', { ...gifts, title: value })
+										}
+									/>
 								}
 							/>
 							<Field
@@ -1076,6 +1000,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onChange={(value) =>
 								updateContent('quote', { ...messages.quote, text: value })
 							}
+							labelExtra={
+								<TextPresetPicker
+									section="quote"
+									eventType={eventType}
+									onSelect={(value) =>
+										updateContent('quote', { ...messages.quote, text: value })
+									}
+								/>
+							}
 						/>
 						<Field
 							label="Autor"
@@ -1089,6 +1022,17 @@ export default function InvitationEditor({ initialContext }: Props) {
 							value={messages.thankYou.message ?? ''}
 							onChange={(value) =>
 								updateContent('thankYou', { ...messages.thankYou, message: value })
+							}
+							labelExtra={
+								<TextPresetPicker
+									section="thankYou"
+									onSelect={(value) =>
+										updateContent('thankYou', {
+											...messages.thankYou,
+											message: value,
+										})
+									}
+								/>
 							}
 						/>
 						<Field
