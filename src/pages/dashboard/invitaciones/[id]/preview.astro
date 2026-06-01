@@ -4,6 +4,7 @@ export const prerender = false;
 import { getCollection } from 'astro:content';
 import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
+import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
@@ -21,6 +22,8 @@ import '@/styles/invitation.scss';
 const { id } = Astro.params;
 
 let errorMessage: string | null = null;
+let previewSource: string | null = null;
+let hasNoContent = false;
 
 if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
@@ -31,14 +34,29 @@ if (!invitation) {
 	errorMessage = 'Invitación no encontrada.';
 }
 
+let content: Record<string, unknown> | null = null;
+
+// Draft takes priority
 const draft = await findDraftByInvitationId(id);
-if (!draft && !errorMessage) {
-	errorMessage = 'No se ha encontrado un borrador para esta invitación. Genera un borrador primero.';
+if (draft) {
+	content = draft.content;
+	previewSource = 'Borrador';
+} else if (!errorMessage) {
+	// Fall back to published content
+	const published = await findPublishedByInvitationId(id);
+	if (published) {
+		content = published.content;
+		previewSource = 'Versión pública';
+	}
+}
+
+if (!content && !errorMessage) {
+	hasNoContent = true;
 }
 
 let pageCtx: InvitationPageContext | undefined;
 
-if (!errorMessage && invitation && draft) {
+if (!errorMessage && invitation && content) {
 	const snapshot = invitation.snapshot;
 	if (!snapshot || !snapshot.previewSlug) {
 		errorMessage = 'La plantilla base de esta invitación no está soportada.';
@@ -52,7 +70,7 @@ if (!errorMessage && invitation && draft) {
 		if (Object.keys(demoContent).length === 0) {
 			errorMessage = 'No se encontró el contenido de la plantilla base.';
 		} else {
-			const result = buildDraftPreviewPageContext(invitation, draft.content, demoContent);
+			const result = buildDraftPreviewPageContext(invitation, content, demoContent);
 
 			if (result.ok) {
 				pageCtx = result.pageContext;
@@ -66,16 +84,32 @@ if (!errorMessage && invitation && draft) {
 if (!errorMessage && !pageCtx) {
 	errorMessage = 'Error inesperado al generar la vista previa.';
 }
+
+const editUrl = `/dashboard/invitaciones/${id}/editar`;
 ---
 
 {
-	errorMessage ? (
+	hasNoContent ? (
+		<DashboardLayout title="Vista previa">
+			<main class="preview-empty">
+				<p class="preview-empty__text">
+					Aún no hay contenido para esta invitación.
+				</p>
+				<p class="preview-empty__hint">
+					Crea un borrador para comenzar a editar.
+				</p>
+				<a href={editUrl} class="preview-empty__action">
+					Ir al editor
+				</a>
+			</main>
+		</DashboardLayout>
+	) : errorMessage ? (
 		<DashboardLayout title="Vista previa no disponible">
 			<main class="preview-error">
 				<h2>Vista previa no disponible</h2>
 				<p>{errorMessage}</p>
-				<a href={`/dashboard/invitaciones/${id}`} class="preview-error__back">
-					&larr; Volver al invitación
+				<a href={editUrl} class="preview-error__back">
+					&larr; Volver al editor
 				</a>
 			</main>
 		</DashboardLayout>
@@ -89,7 +123,12 @@ if (!errorMessage && !pageCtx) {
 			isDemo={false}
 			themeMode="dark"
 		>
-			<div class="preview-banner">Vista previa interna — no publicada</div>
+			<div class="preview-banner" role="banner">
+				<span class="preview-banner__text">
+					Vista previa interna — {previewSource}
+				</span>
+				<a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>
+			</div>
 
 			<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
 			<main class={pageCtx.wrapper.className} {...pageCtx.wrapper.dataAttributes}>
@@ -160,15 +199,60 @@ if (!errorMessage && !pageCtx) {
 		left: 0;
 		right: 0;
 		z-index: 99999;
-		background: #e53e3e;
-		color: #fff;
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
 		padding: 8px 16px;
+		background: color-mix(in srgb, var(--color-surface-primary) 92%, transparent);
+		backdrop-filter: blur(12px);
+		color: var(--color-text-primary);
 		font-family: system-ui, sans-serif;
-		font-size: 14px;
+		font-size: 13px;
 		font-weight: 600;
-		letter-spacing: 0.5px;
-		pointer-events: none;
+		letter-spacing: 0.3px;
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.preview-banner__back {
+		color: var(--color-action-accent);
+		text-decoration: none;
+		font-size: 12px;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.preview-empty {
+		padding: 60px 24px;
+		text-align: center;
+		font-family: system-ui, sans-serif;
+	}
+
+	.preview-empty__text {
+		font-size: 1.125rem;
+		color: var(--color-text-primary);
+		margin: 0 0 0.5rem;
+	}
+
+	.preview-empty__hint {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+		margin: 0 0 1.5rem;
+	}
+
+	.preview-empty__action {
+		display: inline-block;
+		padding: 0.625rem 1.25rem;
+		border: 1px solid var(--color-action-accent);
+		border-radius: 8px;
+		background: var(--color-action-accent);
+		color: var(--color-text-inverse);
+		font-weight: 600;
+		font-size: 0.875rem;
+		text-decoration: none;
 	}
 
 	.preview-error {
@@ -180,25 +264,25 @@ if (!errorMessage && !pageCtx) {
 	.preview-error h2 {
 		font-size: 24px;
 		margin-bottom: 16px;
-		color: #e53e3e;
+		color: var(--color-state-error-text);
 	}
 
 	.preview-error p {
 		font-size: 16px;
-		color: #555;
+		color: var(--color-text-secondary);
 		margin-bottom: 24px;
 	}
 
 	.preview-error__back {
 		display: inline-block;
 		padding: 10px 20px;
-		background: #3182ce;
-		color: #fff;
+		background: var(--color-action-accent);
+		color: var(--color-text-inverse);
 		border-radius: 6px;
 		text-decoration: none;
 	}
 
 	.preview-error__back:hover {
-		background: #2b6cb0;
+		opacity: 90%;
 	}
 </style>
