@@ -5,6 +5,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RSVP from '@/components/invitation/RSVP';
 
+const PERSONALIZED_RSVP_URL = /\/api\/invitacion\/.*\/rsvp$/;
+const PUBLIC_RSVP_URL = /\/api\/invitacion\/public\//;
+
 describe('RSVP Component', () => {
 	const defaultProps = {
 		eventType: 'xv' as const,
@@ -33,7 +36,7 @@ describe('RSVP Component', () => {
 
 		// No-op ResizeObserver so the compact mode effect does not crash in jsdom
 		global.ResizeObserver = class {
-			constructor(_: ResizeObserverCallback) {
+			constructor() {
 				/* noop */
 			}
 			observe() {
@@ -734,9 +737,6 @@ describe('RSVP Component', () => {
 			});
 		});
 	});
-
-	const PERSONALIZED_RSVP_URL = /\/api\/invitacion\/.*\/rsvp$/;
-	const PUBLIC_RSVP_URL = /\/api\/invitacion\/public\//;
 
 	describe('Submit Payload', () => {
 		function findRsvpSubmitCall(urlPattern: RegExp) {
