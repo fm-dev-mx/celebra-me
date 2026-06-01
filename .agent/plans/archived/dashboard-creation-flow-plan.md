@@ -1,8 +1,9 @@
 ---
 title: Dashboard Creation Flow Plan
-status: active
+status: superseded
 created: unknown
 updated: 2026-05-31
+superseded_by: invitation-dashboard-premium-plan.md
 ---
 
 # Dashboard Creation Flow Plan
