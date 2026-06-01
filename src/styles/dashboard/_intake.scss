@@ -1557,10 +1557,69 @@
 	flex-shrink: 0;
 }
 
+.invitation-editor__nav-saving {
+	color: var(--color-action-accent);
+	font-size: 0.875rem;
+	flex-shrink: 0;
+	animation: invitation-editor-spin 0.8s linear infinite;
+}
+
+@keyframes invitation-editor-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.invitation-editor__nav-error-icon {
+	color: var(--color-state-error-text);
+	font-weight: 700;
+	font-size: 0.75rem;
+	flex-shrink: 0;
+}
+
+.invitation-editor__nav-item--error {
+	background: var(--color-state-error-bg);
+}
+
 .invitation-editor__content,
 .invitation-editor__stack {
 	display: grid;
 	gap: 1rem;
+}
+
+.invitation-editor__content {
+	scroll-behavior: smooth;
+}
+
+.invitation-editor__publish-success {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1.5rem;
+	background: var(--color-state-success-bg);
+	border: 1px solid var(--color-state-success-border);
+	border-radius: 12px;
+	text-align: center;
+
+	h2 {
+		margin: 0;
+		color: var(--color-state-success-text);
+		font-size: 1.125rem;
+	}
+
+	p {
+		margin: 0;
+		color: var(--color-text-secondary);
+		font-size: 0.875rem;
+	}
+}
+
+.invitation-editor__publish-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.75rem;
+	margin-top: 0.5rem;
 }
 
 .invitation-editor__card {
@@ -1596,6 +1655,39 @@
 		margin-top: 0.2rem;
 		color: var(--color-text-muted);
 		font-size: 0.8125rem;
+	}
+}
+
+.invitation-editor__unsaved-indicator {
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	background: var(--color-state-warning-bg);
+	color: var(--color-state-warning-text);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.invitation-editor__section-save {
+	padding: 0.35rem 0.65rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 6px;
+	background: transparent;
+	color: var(--color-text-muted);
+	font-family: inherit;
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+
+	&:hover:not(:disabled) {
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
+		background: var(--dashboard-accent-soft-bg);
+	}
+
+	&:disabled {
+		opacity: 45%;
+		cursor: not-allowed;
 	}
 }
 
@@ -1856,5 +1948,15 @@
 	.invitation-editor__card-footer {
 		align-items: stretch;
 		flex-direction: column;
+	}
+
+	.invitation-editor__header-actions {
+		width: 100%;
+	}
+
+	.invitation-editor__header-actions .invitation-editor__primary-action,
+	.invitation-editor__header-actions .invitation-editor__secondary-action {
+		flex: 1;
+		text-align: center;
 	}
 }

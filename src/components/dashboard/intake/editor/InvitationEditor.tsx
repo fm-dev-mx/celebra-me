@@ -11,6 +11,7 @@ import { useInvitationEditor } from '@/hooks/use-invitation-editor';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
+import { getPublicSlug } from '@/lib/intake/slug';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 
@@ -46,6 +47,20 @@ const CONTENT_SOURCE_LABELS: Record<string, string> = {
 	demo: 'Demo',
 	empty: 'Sin contenido',
 	mixed: 'Contenido combinado',
+};
+
+const EDITOR_SECTION_KEYS: Record<string, string[]> = {
+	main: ['title', 'description', 'hero'],
+	family: ['family'],
+	location: ['location'],
+	itinerary: ['itinerary'],
+	rsvp: ['rsvp'],
+	music: ['music'],
+	gifts: ['gifts'],
+	messages: ['quote', 'thankYou'],
+	gallery: ['gallery'],
+	photoNotes: ['photoNotes'],
+	publication: ['sectionOrder'],
 };
 
 const CRITICAL_SECTION_LABELS: Record<string, string> = {
@@ -110,7 +125,12 @@ function SectionCard({
 					{error && <p className="invitation-editor__error">{error}</p>}
 					{success && <p className="invitation-editor__success">{success}</p>}
 				</div>
-				<button type="button" onClick={onSave} disabled={!dirty || saving}>
+				<button
+					type="button"
+					className="invitation-editor__section-save"
+					onClick={onSave}
+					disabled={!dirty || saving}
+				>
 					{saving ? 'Guardando...' : 'Guardar sección'}
 				</button>
 			</div>
@@ -285,11 +305,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 	};
 
+	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+
 	const publish = async () => {
 		setErrors((current) => ({ ...current, publish: '' }));
 		try {
-			await editor.publish();
-			setSuccess((current) => ({ ...current, publish: 'Cambios publicados correctamente.' }));
+			const ctx = await editor.publish();
+			setSuccess((current) => ({
+				...current,
+				publish: 'Cambios publicados correctamente.',
+			}));
+			const slug = getPublicSlug(ctx.invitation);
+			setPublishedSlug(slug);
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -329,26 +356,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const savingSection = editor.savingSection;
 
-	const editorSectionKeys: Record<string, string[]> = useMemo(
-		() => ({
-			main: ['title', 'description', 'hero'],
-			family: ['family'],
-			location: ['location'],
-			itinerary: ['itinerary'],
-			rsvp: ['rsvp'],
-			music: ['music'],
-			gifts: ['gifts'],
-			messages: ['quote', 'thankYou'],
-			gallery: ['gallery'],
-			photoNotes: ['photoNotes'],
-			publication: ['sectionOrder'],
-		}),
-		[],
-	);
-
 	const sectionSource = useCallback(
 		(section: string): { source: string; label: string } | undefined => {
-			const keys = editorSectionKeys[section];
+			const keys = EDITOR_SECTION_KEYS[section];
 			if (!keys) return undefined;
 			for (const source of ['draft', 'published', 'demo'] as const) {
 				if (keys.some((key) => editor.context.sectionStates[key] === source)) {
@@ -357,7 +367,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			}
 			return { source: 'empty', label: SOURCE_LABELS.empty };
 		},
-		[editorSectionKeys, editor.context.sectionStates],
+		[editor.context.sectionStates],
 	);
 
 	const hasDraft = editor.context.draftStatus !== null;
@@ -459,6 +469,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 								Demo
 							</span>
 						)}
+						{hasDirtySections && (
+							<span className="invitation-editor__unsaved-indicator">
+								{`${dirty.size} cambio${dirty.size > 1 ? 's' : ''} sin guardar`}
+							</span>
+						)}
 					</div>
 					<h1>{metadata.title}</h1>
 					<div className="invitation-editor__header-meta">
@@ -480,6 +495,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 					</div>
 				</div>
 				<div className="invitation-editor__header-actions">
+					{hasDirtySections && (
+						<button
+							type="button"
+							className="invitation-editor__secondary-action"
+							onClick={saveAllDirty}
+							disabled={savingAll}
+						>
+							{savingAll ? 'Guardando...' : `Guardar todo (${dirty.size})`}
+						</button>
+					)}
 					<a
 						href={`/dashboard/invitaciones/${editor.context.invitation.id}/preview`}
 						className="invitation-editor__secondary-action"
@@ -512,16 +537,50 @@ export default function InvitationEditor({ initialContext }: Props) {
 					</p>
 				)}
 				{errors.publish && <p className="invitation-editor__error">{errors.publish}</p>}
-				{success.publish && <p className="invitation-editor__success">{success.publish}</p>}
+				{success.publish && !publishedSlug && (
+					<p className="invitation-editor__success">{success.publish}</p>
+				)}
+				{success.publish && publishedSlug && (
+					<div className="invitation-editor__publish-success">
+						<h2>¡Publicado exitosamente!</h2>
+						<p>Los cambios ya están visibles en la página pública.</p>
+						<div className="invitation-editor__publish-actions">
+							<a
+								href={`/${editor.context.invitation.eventType}/${publishedSlug}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="invitation-editor__primary-action"
+							>
+								Ver página pública
+							</a>
+							<a
+								href="/dashboard/invitaciones"
+								className="invitation-editor__secondary-action"
+							>
+								Volver al listado
+							</a>
+							<button
+								type="button"
+								className="invitation-editor__secondary-action"
+								onClick={() => setPublishedSlug(null)}
+							>
+								Seguir editando
+							</button>
+						</div>
+					</div>
+				)}
 			</header>
 
 			<div className="invitation-editor__layout">
 				<nav className="invitation-editor__nav" aria-label="Secciones del editor">
 					{NAV_ITEMS.map((item) => {
 						const badge = sectionSource(item.id);
+						const isSaving = savingSection === item.id;
+						const hasError = Boolean(errors[item.id]);
 						const itemClasses = [
 							'invitation-editor__nav-item',
 							activeSection === item.id ? 'invitation-editor__nav-item--active' : '',
+							hasError ? 'invitation-editor__nav-item--error' : '',
 						]
 							.filter(Boolean)
 							.join(' ');
@@ -535,12 +594,29 @@ export default function InvitationEditor({ initialContext }: Props) {
 									/>
 								)}
 								<span className="invitation-editor__nav-label">{item.label}</span>
-								{dirty.has(item.id) && (
+								{isSaving && (
+									<span
+										className="invitation-editor__nav-saving"
+										aria-label="guardando"
+									>
+										↻
+									</span>
+								)}
+								{dirty.has(item.id) && !isSaving && (
 									<span
 										className="invitation-editor__nav-dirty"
 										aria-label="con cambios sin guardar"
 									>
 										*
+									</span>
+								)}
+								{hasError && (
+									<span
+										className="invitation-editor__nav-error-icon"
+										aria-label="error al guardar"
+										title={errors[item.id]}
+									>
+										!
 									</span>
 								)}
 							</a>
