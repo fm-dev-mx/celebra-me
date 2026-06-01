@@ -1,0 +1,11 @@
+---
+import '@/styles/intake.scss';
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import CreateInvitationFlow from '@/components/dashboard/intake/CreateInvitationFlow';
+---
+
+<DashboardLayout title="Nueva invitación">
+	<div class="intake-page-body">
+		<CreateInvitationFlow client:load />
+	</div>
+</DashboardLayout>
