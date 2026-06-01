@@ -6,6 +6,8 @@ import type {
 	IntakeSubmissionStatus,
 } from '@/lib/intake/types';
 import type { CaptureLinkStatus } from '@/lib/intake/types';
+import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
 export interface InvitationDTO {
 	id: string;
@@ -132,4 +134,45 @@ export interface InvitationContentDraftDTO {
 
 export interface DraftResponse {
 	draft: InvitationContentDraftDTO | null;
+}
+
+export interface InvitationEditorPublicationDTO {
+	hasPublishedContent: boolean;
+	version: number | null;
+	publishedAt: string | null;
+	hasUnpublishedChanges: boolean;
+}
+
+export interface InvitationEditorContextDTO {
+	invitation: Omit<
+		InvitationDTO,
+		| 'hasRequest'
+		| 'hasSubmission'
+		| 'published'
+		| 'rsvpEventStatus'
+		| 'rsvpEventId'
+		| 'internalEditUrl'
+		| 'captureUrl'
+		| 'captureLinkStatus'
+	> & { snapshot: { previewSlug: string } };
+	content: DraftContent;
+	draftUpdatedAt: string | null;
+	draftStatus: 'draft' | 'reviewed' | 'approved' | null;
+	publication: InvitationEditorPublicationDTO;
+	rsvpLink: {
+		status: 'linked' | 'unlinked_slug_match' | 'missing';
+		eventId: string | null;
+	};
+}
+
+export type InvitationEditorMetadata = Pick<
+	InvitationEditorContextDTO['invitation'],
+	'title' | 'slug' | 'status' | 'clientName' | 'clientEmail' | 'clientWhatsapp' | 'photosReceived'
+>;
+
+export interface InvitationEditorSectionSaveResponse {
+	section: InvitationEditorSectionKey;
+	value: unknown;
+	draftUpdatedAt: string;
+	publication: InvitationEditorPublicationDTO;
 }

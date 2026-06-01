@@ -26,7 +26,10 @@ import type {
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	DraftResponse,
+	InvitationEditorContextDTO,
+	InvitationEditorSectionSaveResponse,
 } from './dto/intake';
+import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
 export class AdminApi {
 	private handleResponse<T>(result: ApiResult<T>): T {
@@ -283,6 +286,67 @@ export class AdminApi {
 			{ action: 'revise' },
 		);
 		return this.handleResponse(result);
+	}
+
+	// Intake — Internal editor
+	async getInvitationEditor(invitationId: string): Promise<InvitationEditorContextDTO> {
+		const result = await dashboardApi.get<InvitationEditorContextDTO>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor`,
+		);
+		return this.handleResponse(result);
+	}
+
+	async updateInvitationEditorMetadata(
+		invitationId: string,
+		payload: {
+			expectedUpdatedAt: string;
+			value: Pick<
+				InvitationEditorContextDTO['invitation'],
+				| 'title'
+				| 'slug'
+				| 'status'
+				| 'clientName'
+				| 'clientEmail'
+				| 'clientWhatsapp'
+				| 'photosReceived'
+			>;
+		},
+	): Promise<{ invitation: InvitationEditorContextDTO['invitation'] }> {
+		const result = await dashboardApi.patch<{
+			invitation: InvitationEditorContextDTO['invitation'];
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/metadata`, payload);
+		return this.handleResponse(result);
+	}
+
+	async updateInvitationEditorSection(
+		invitationId: string,
+		section: InvitationEditorSectionKey,
+		payload: { expectedUpdatedAt: string; value: unknown },
+	): Promise<InvitationEditorSectionSaveResponse> {
+		const result = await dashboardApi.patch<InvitationEditorSectionSaveResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/sections/${encodeURIComponent(section)}`,
+			payload,
+		);
+		return this.handleResponse(result);
+	}
+
+	async publishInvitationEditor(
+		invitationId: string,
+	): Promise<{ context: InvitationEditorContextDTO; publishedContent: Record<string, unknown> }> {
+		const result = await dashboardApi.post<{
+			context: InvitationEditorContextDTO;
+			publishedContent: Record<string, unknown>;
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/publish`, {});
+		return this.handleResponse(result);
+	}
+
+	async reconcileInvitationEditorRsvp(
+		invitationId: string,
+	): Promise<InvitationEditorContextDTO['rsvpLink']> {
+		const result = await dashboardApi.post<{
+			rsvpLink: InvitationEditorContextDTO['rsvpLink'];
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/reconcile-rsvp`, {});
+		return this.handleResponse(result).rsvpLink;
 	}
 
 	// Delete / Restore
