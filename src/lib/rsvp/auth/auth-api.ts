@@ -1,4 +1,8 @@
-import { getEnv } from '@/lib/server/env';
+import {
+	getSupabaseUrl,
+	getSupabaseAnonKey,
+	getSupabaseServiceRoleKey,
+} from '@/lib/server/supabase-credentials';
 
 interface AuthApiOptions {
 	path: string;
@@ -15,27 +19,9 @@ export interface AuthAdminUser {
 	login_alias?: string;
 }
 
-function getSupabaseUrl(): string {
-	const value = getEnv('SUPABASE_URL');
-	if (!value) throw new Error('SUPABASE_URL no configurada.');
-	return value.replace(/\/+$/, '');
-}
-
-function getAnonKey(): string {
-	const value = getEnv('SUPABASE_ANON_KEY');
-	if (!value) throw new Error('SUPABASE_ANON_KEY no configurada.');
-	return value;
-}
-
-function getServiceRoleKey(): string {
-	const value = getEnv('SUPABASE_SERVICE_ROLE_KEY');
-	if (!value) throw new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.');
-	return value;
-}
-
 async function authRequest<T>(options: AuthApiOptions): Promise<T> {
 	const method = options.method ?? 'POST';
-	const apiKey = options.useServiceRole ? getServiceRoleKey() : getAnonKey();
+	const apiKey = options.useServiceRole ? getSupabaseServiceRoleKey() : getSupabaseAnonKey();
 	const response = await fetch(`${getSupabaseUrl()}/auth/v1/${options.path}`, {
 		method,
 		headers: {
