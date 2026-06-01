@@ -186,6 +186,8 @@ beforeEach(() => {
 					microcopy: 'Toca para abrir',
 				},
 				gallery: { title: 'Galería', items: [] },
+				location: {},
+				quote: { text: 'Una noche inolvidable' },
 				sectionOrder: [
 					'quote',
 					'family',

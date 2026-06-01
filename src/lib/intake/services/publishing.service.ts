@@ -1,4 +1,3 @@
-import { getCollection } from 'astro:content';
 import {
 	findDraftByInvitationId,
 	updateDraftStatus,
@@ -18,17 +17,12 @@ import {
 	createEventService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
-import { getContentEntrySlug } from '@/lib/content/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-
-async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {
-	const entries = await getCollection('event-demos');
-	const entry = entries.find((e: { id: string }) => getContentEntrySlug(e.id) === previewSlug);
-	return (entry?.data as Record<string, unknown>) ?? {};
-}
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { loadDemoContent } from '@/lib/intake/editor-api';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -141,7 +135,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
-	const publishedContent = mapDraftToPublished({
+	const mappedContent = mapDraftToPublished({
 		invitation: {
 			title: invitation.title,
 			eventType: invitation.eventType,
@@ -151,6 +145,20 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		demoContent,
 		isDemo: invitation.kind === 'demo',
 	});
+	const publishedContentResult = eventContentSchema.safeParse(mappedContent);
+	if (!publishedContentResult.success) {
+		const invalidPaths = publishedContentResult.error.issues
+			.map((issue) => issue.path.join('.'))
+			.filter(Boolean)
+			.join(', ');
+		throw new ApiError(
+			422,
+			'bad_request',
+			`La revisión contiene datos incompletos o inválidos. Corrige los campos marcados antes de publicar.${invalidPaths ? ` Campos: ${invalidPaths}.` : ''}`,
+			{ issues: publishedContentResult.error.issues },
+		);
+	}
+	const publishedContent = publishedContentResult.data;
 
 	const publishSlug = invitation.slug || `${invitation.eventType}-${invitation.id.slice(0, 8)}`;
 

@@ -127,19 +127,16 @@ export async function createInvitation(input: {
 	return toInvitation(rows[0]);
 }
 
-export async function updateInvitation(
-	id: string,
-	input: {
-		title?: string;
-		slug?: string | null;
-		status?: string;
-		clientName?: string;
-		clientEmail?: string;
-		clientWhatsapp?: string;
-		photosReceived?: boolean;
-		sourceInvitationId?: string | null;
-	},
-): Promise<Invitation> {
+function buildUpdateBody(input: {
+	title?: string;
+	slug?: string | null;
+	status?: string;
+	clientName?: string;
+	clientEmail?: string;
+	clientWhatsapp?: string;
+	photosReceived?: boolean;
+	sourceInvitationId?: string | null;
+}): Record<string, unknown> {
 	const body: Record<string, unknown> = {};
 	if (input.title !== undefined) body.title = input.title;
 	if (input.slug !== undefined) body.slug = input.slug;
@@ -150,6 +147,14 @@ export async function updateInvitation(
 	if (input.photosReceived !== undefined) body.photos_received = input.photosReceived;
 	if (input.sourceInvitationId !== undefined)
 		body.source_invitation_id = input.sourceInvitationId;
+	return body;
+}
+
+export async function updateInvitation(
+	id: string,
+	input: Parameters<typeof buildUpdateBody>[0],
+): Promise<Invitation> {
+	const body = buildUpdateBody(input);
 
 	const rows = await supabaseRestRequest<InvitationRow[]>({
 		pathWithQuery: `invitations?id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`,
@@ -161,4 +166,22 @@ export async function updateInvitation(
 
 	if (!rows[0]) throw new Error('Invitation not found.');
 	return toInvitation(rows[0]);
+}
+
+export async function updateInvitationConditionally(
+	id: string,
+	expectedUpdatedAt: string,
+	input: Parameters<typeof buildUpdateBody>[0],
+): Promise<Invitation | null> {
+	const body = buildUpdateBody(input);
+
+	const rows = await supabaseRestRequest<InvitationRow[]>({
+		pathWithQuery: `invitations?id=eq.${encodeURIComponent(id)}&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}&select=${SELECT_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+
+	return rows[0] ? toInvitation(rows[0]) : null;
 }

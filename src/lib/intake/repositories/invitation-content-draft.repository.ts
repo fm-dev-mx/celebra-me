@@ -55,6 +55,25 @@ export async function updateDraftContent(
 	return toDraft(rows[0]);
 }
 
+export async function updateDraftContentConditionally(
+	draftId: string,
+	expectedUpdatedAt: string,
+	input: {
+		content: Record<string, unknown>;
+		status?: InvitationContentDraftStatus;
+	},
+): Promise<InvitationContentDraft | null> {
+	const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
+		pathWithQuery: `invitation_content_drafts?id=eq.${encodeURIComponent(draftId)}&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}&select=${SELECT_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: input,
+	});
+
+	return rows[0] ? toDraft(rows[0]) : null;
+}
+
 export async function upsertDraft(input: {
 	invitationId: string;
 	submissionId: string | null;
