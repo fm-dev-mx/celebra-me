@@ -27,6 +27,7 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import {
 	findDraftByInvitationId,
 	updateDraftContentConditionally,
+	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
@@ -93,6 +94,11 @@ const published = {
 	createdAt: '2026-05-30T00:00:00Z',
 	updatedAt: '2026-05-30T02:00:00Z',
 	content: {
+		title: 'XV Ana Publicada',
+		description: 'Descripción publicada',
+		hero: { name: 'Ana P', label: 'Mis XV P', date: '2027-01-01' },
+		family: { parents: { father: 'Papá P', mother: 'Mamá P' }, spouse: 'Esposo P' },
+		location: { ceremony: { venueName: 'Iglesia P' }, dressCode: 'Formal P' },
 		gallery: {
 			title: 'Galería',
 			items: [{ image: 'gallery01', caption: 'Publicado' }],
@@ -101,9 +107,32 @@ const published = {
 			title: 'Programa',
 			items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
 		},
+		rsvp: {
+			title: 'Confirma P',
+			guestCap: 4,
+			confirmationMode: 'api',
+			whatsappConfig: { phone: '5215550000' },
+		},
+		music: { url: 'https://example.com/song.mp3', title: 'Canción P' },
+		gifts: { title: 'Regalos P', items: [{ type: 'cash', title: 'Sobres' }] },
+		quote: { text: 'Frase P', author: 'Autor P' },
+		thankYou: { message: 'Gracias P', closingName: 'Familia P' },
 		sectionOrder: ['quote', 'itinerary', 'gallery'],
 	},
 } as any;
+
+const demoContent = {
+	gallery: { title: 'Plantilla', items: [{ image: 'gallery02' }] },
+	itinerary: { title: 'Plantilla', items: [] },
+	sectionOrder: ['quote', 'gallery'],
+	location: { ceremony: { venueName: 'Demo Venue' }, dressCode: 'Demo Dress' },
+	rsvp: {
+		title: 'Confirma Demo',
+		guestCap: 2,
+		confirmationMode: 'whatsapp',
+		whatsappConfig: { phone: '5215551111' },
+	},
+};
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -112,24 +141,22 @@ beforeEach(() => {
 	(findPublishedByInvitationId as jest.Mock).mockResolvedValue(published);
 	(findEventByInvitationIdService as jest.Mock).mockResolvedValue(null);
 	(findEventBySlugService as jest.Mock).mockResolvedValue(null);
+	(upsertDraft as jest.Mock).mockResolvedValue(null);
 	(getCollection as jest.Mock).mockResolvedValue([
 		{
 			id: 'xv/demo-xv-jewelry-box.json',
-			data: {
-				gallery: { title: 'Plantilla', items: [{ image: 'gallery02' }] },
-				itinerary: { title: 'Plantilla', items: [] },
-				sectionOrder: ['quote', 'gallery'],
-			},
+			data: demoContent,
 		},
 	]);
 });
 
 describe('getInvitationEditorContext', () => {
-	it('hydrates gallery, itinerary, and section order missing from an older draft', async () => {
+	it('hydrates all keys with draft priority over published over demo', async () => {
 		const result = await getInvitationEditorContext('proj-1');
 
 		expect(result.content).toMatchObject({
 			title: 'XV Ana',
+			hero: { name: 'Ana' },
 			gallery: published.content.gallery,
 			itinerary: published.content.itinerary,
 			sectionOrder: published.content.sectionOrder,
@@ -139,6 +166,179 @@ describe('getInvitationEditorContext', () => {
 			version: 2,
 			hasUnpublishedChanges: false,
 		});
+	});
+
+	it('uses draft value when draft has the key', async () => {
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.title).toBe('XV Ana');
+		expect(result.content.hero?.name).toBe('Ana');
+	});
+
+	it('uses published value when draft lacks the key but published has it', async () => {
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.gallery).toEqual(published.content.gallery);
+		expect(result.content.itinerary).toEqual(published.content.itinerary);
+	});
+
+	it('uses demo value when neither draft nor published have the key', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: { title: 'XV Ana', hero: { name: 'Ana' } },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.gallery).toEqual(demoContent.gallery);
+		expect(result.content.sectionOrder).toEqual(demoContent.sectionOrder);
+	});
+
+	it('returns contentSource=mixed when some keys are from draft and some from published', async () => {
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.contentSource).toBe('mixed');
+	});
+
+	it('returns contentSource=published when all keys come from published content', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.contentSource).toBe('published');
+	});
+
+	it('returns contentSource=demo when only demo content is available', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.contentSource).toBe('demo');
+	});
+
+	it('returns contentSource=empty when no content is available at all', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+		(getCollection as jest.Mock).mockResolvedValue([]);
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.contentSource).toBe('empty');
+	});
+
+	it('reports section states indicating source for each key', async () => {
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.sectionStates.title).toBe('draft');
+		expect(result.sectionStates.hero).toBe('draft');
+		expect(result.sectionStates.gallery).toBe('published');
+		expect(result.sectionStates.itinerary).toBe('published');
+		expect(result.sectionStates.photoNotes).toBe('empty');
+	});
+});
+
+describe('hydration edge cases', () => {
+	it('preserves intentionally cleared draft fields (empty string) and does not refill from published', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: {
+				title: '',
+				hero: { name: 'Ana', date: '' },
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.title).toBe('');
+		expect(result.content.hero?.name).toBe('Ana');
+		expect(result.content.hero?.date).toBe('');
+		expect(result.sectionStates.title).toBe('draft');
+	});
+
+	it('preserves intentionally cleared draft fields (null) and marks them as draft source', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: {
+				title: null,
+				hero: { name: null, label: 'Mis XV' },
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.title).toBeNull();
+		expect(result.content.hero?.name).toBeNull();
+		expect(result.sectionStates.title).toBe('draft');
+		expect(result.sectionStates.hero).toBe('draft');
+	});
+
+	it('inherits description from published when draft has no description key', async () => {
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.description).toBe('Descripción publicada');
+		expect(result.sectionStates.description).toBe('published');
+	});
+
+	it('prefers demo content when neither draft nor published have a key', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: { title: 'XV Ana' },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.gallery).toEqual(demoContent.gallery);
+		expect(result.content.sectionOrder).toEqual(demoContent.sectionOrder);
+		expect(result.content.location?.ceremony?.venueName).toBe('Demo Venue');
+		expect(result.sectionStates.gallery).toBe('demo');
+		expect(result.sectionStates.location).toBe('demo');
+	});
+
+	it('saves only the targeted section without wiping other hydrated sections', async () => {
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+			content: {
+				...draft.content,
+				itinerary: {
+					title: 'Programa Editado',
+					items: [{ icon: 'party', label: 'Fiesta', time: '22:00' }],
+				},
+			},
+		});
+
+		const value = {
+			title: 'Programa Editado',
+			items: [{ icon: 'party', label: 'Fiesta', time: '22:00' }],
+		};
+		await saveInvitationEditorSection('proj-1', 'itinerary', {
+			expectedUpdatedAt: draft.updatedAt,
+			value,
+		});
+
+		const savedContent = (updateDraftContentConditionally as jest.Mock).mock.calls[0][2]
+			.content;
+		expect(savedContent.itinerary).toEqual(value);
+		expect(savedContent.title).toBe('XV Ana');
+		expect(savedContent.gallery).toEqual(published.content.gallery);
+		expect(savedContent.rsvp).toBeDefined();
+	});
+
+	it('creates a new draft via upsert when no draft exists, preserving all hydrated sections', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(upsertDraft as jest.Mock).mockResolvedValue({
+			id: 'draft-new',
+			invitationId: 'proj-1',
+			submissionId: null,
+			content: {
+				title: 'XV Ana',
+				gallery: { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] },
+			},
+			status: 'draft',
+			createdAt: '2026-05-30T04:00:00Z',
+			updatedAt: '2026-05-30T04:00:00Z',
+		});
+
+		const value = { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] };
+		await saveInvitationEditorSection('proj-1', 'gallery', {
+			expectedUpdatedAt: invitation.updatedAt,
+			value,
+		});
+
+		const upsertCallArg = (upsertDraft as jest.Mock).mock.calls[0][0];
+		expect(upsertCallArg.content.gallery).toEqual(value);
+		expect(upsertCallArg.content.title).toBe(published.content.title);
+		expect(upsertCallArg.content.description).toBe(published.content.description);
+		expect(upsertCallArg.content.sectionOrder).toEqual(published.content.sectionOrder);
 	});
 });
 

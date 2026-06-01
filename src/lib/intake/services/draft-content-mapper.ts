@@ -167,3 +167,130 @@ export function mapBlockDataToDraftContent(
 
 	return result;
 }
+
+function mapVenueToDraft(venue: Record<string, unknown> | undefined):
+	| {
+			venueName?: string;
+			address?: string;
+			city?: string;
+			date?: string;
+			time?: string;
+			mapUrl?: string;
+	  }
+	| undefined {
+	if (!venue || Object.keys(venue).length === 0) return undefined;
+	return {
+		venueName: str(venue.venueName),
+		address: str(venue.address),
+		city: str(venue.city),
+		date: normalizeDate(venue.date),
+		time: str(venue.time),
+		mapUrl: str(venue.mapUrl),
+	};
+}
+
+// eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.
+export function mapNestedToDraftContent(nestedContent: Record<string, unknown>): DraftContent {
+	const result: DraftContent = {};
+
+	result.title = str(nestedContent.title);
+	result.description = str(nestedContent.description);
+
+	const hero = nestedContent.hero as Record<string, unknown> | undefined;
+	if (hero && Object.keys(hero).length > 0) {
+		result.hero = {
+			name: str(hero.name),
+			secondaryName: str(hero.secondaryName),
+			label: str(hero.label),
+			nickname: str(hero.nickname),
+			date: normalizeDate(hero.date),
+		};
+	}
+
+	const family = nestedContent.family as Record<string, unknown> | undefined;
+	if (family && Object.keys(family).length > 0) {
+		const parents = family.parents as Record<string, unknown> | undefined;
+		const godparentsArr = family.godparents as
+			| Array<{ name: string; role?: string }>
+			| undefined;
+		const childrenArr = family.children as Array<{ name: string }> | undefined;
+		result.family = {
+			fatherName: str(parents?.father),
+			motherName: str(parents?.mother),
+			fatherDeceased: bool(parents?.fatherDeceased),
+			motherDeceased: bool(parents?.motherDeceased),
+			spouseName: str(family.spouse),
+			godparents: godparentsArr
+				?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))
+				.join('\n'),
+			children: childrenArr?.map((c) => c.name).join('\n'),
+			sectionMessage: str(family.sectionMessage),
+		};
+	}
+
+	const location = nestedContent.location as Record<string, unknown> | undefined;
+	if (location && Object.keys(location).length > 0) {
+		result.location = {
+			ceremony: mapVenueToDraft(location.ceremony as Record<string, unknown> | undefined),
+			reception: mapVenueToDraft(location.reception as Record<string, unknown> | undefined),
+			dressCode: str(location.dressCode),
+			additionalIndications: str(location.additionalIndications),
+		};
+	}
+
+	const rsvp = nestedContent.rsvp as Record<string, unknown> | undefined;
+	if (rsvp && Object.keys(rsvp).length > 0) {
+		const whatsappConfig = rsvp.whatsappConfig as Record<string, unknown> | undefined;
+		result.rsvp = {
+			title: str(rsvp.title),
+			guestCap: typeof rsvp.guestCap === 'number' ? rsvp.guestCap : undefined,
+			confirmationMessage: str(rsvp.confirmationMessage),
+			confirmationMode: str(rsvp.confirmationMode) as 'api' | 'whatsapp' | 'both' | undefined,
+			whatsappPhone: str(whatsappConfig?.phone),
+			subcopy: str(rsvp.subcopy),
+		};
+	}
+
+	const music = nestedContent.music as Record<string, unknown> | undefined;
+	if (music && Object.keys(music).length > 0) {
+		result.music = { url: str(music.url), title: str(music.title) };
+	}
+
+	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;
+	if (gifts && Object.keys(gifts).length > 0) {
+		result.gifts = {
+			title: str(gifts.title),
+			subtitle: str(gifts.subtitle),
+			items: Array.isArray(gifts.items)
+				? (gifts.items as z.infer<typeof giftItemSchema>[])
+				: undefined,
+		};
+	}
+
+	const gallery = nestedContent.gallery as Record<string, unknown> | undefined;
+	if (gallery && Object.keys(gallery).length > 0) {
+		result.gallery = gallery as DraftContent['gallery'];
+	}
+
+	const itinerary = nestedContent.itinerary as Record<string, unknown> | undefined;
+	if (itinerary && Object.keys(itinerary).length > 0) {
+		result.itinerary = itinerary as DraftContent['itinerary'];
+	}
+
+	const quote = nestedContent.quote as Record<string, unknown> | undefined;
+	if (quote && Object.keys(quote).length > 0) {
+		result.quote = { text: str(quote.text), author: str(quote.author) };
+	}
+
+	const thankYou = nestedContent.thankYou as Record<string, unknown> | undefined;
+	if (thankYou && Object.keys(thankYou).length > 0) {
+		result.thankYou = {
+			message: str(thankYou.message),
+			closingName: str(thankYou.closingName),
+		};
+	}
+
+	result.sectionOrder = nestedContent.sectionOrder as DraftContent['sectionOrder'];
+
+	return result;
+}

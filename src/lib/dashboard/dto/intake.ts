@@ -163,6 +163,8 @@ export interface InvitationEditorContextDTO {
 		status: 'linked' | 'unlinked_slug_match' | 'missing';
 		eventId: string | null;
 	};
+	contentSource: 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
+	sectionStates: Record<string, 'draft' | 'published' | 'demo' | 'empty'>;
 }
 
 export type InvitationEditorMetadata = Pick<

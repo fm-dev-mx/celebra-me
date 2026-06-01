@@ -133,6 +133,10 @@ export const INVITATION_CONTENT_DRAFT_STATUSES = ['draft', 'reviewed', 'approved
 
 export type InvitationContentDraftStatus = (typeof INVITATION_CONTENT_DRAFT_STATUSES)[number];
 
+export type ContentSource = 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
+
+export type SectionSource = 'draft' | 'published' | 'demo' | 'empty';
+
 export interface InvitationContentDraft {
 	id: string;
 	invitationId: string;

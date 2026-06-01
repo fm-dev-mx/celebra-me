@@ -14,7 +14,12 @@ import {
 	type InvitationEditorSectionKey,
 } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
+import type {
+	Invitation,
+	InvitationContentDraft,
+	ContentSource,
+	SectionSource,
+} from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	findEventByInvitationIdService,
@@ -23,8 +28,24 @@ import {
 } from '@/lib/rsvp/repositories/event.repository';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone } from '@/lib/intake/utils';
+import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 
-const HYDRATED_DRAFT_KEYS = ['gallery', 'itinerary', 'sectionOrder'] as const;
+const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
+	'title',
+	'description',
+	'hero',
+	'family',
+	'location',
+	'itinerary',
+	'rsvp',
+	'music',
+	'gifts',
+	'quote',
+	'thankYou',
+	'gallery',
+	'photoNotes',
+	'sectionOrder',
+];
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -45,24 +66,38 @@ export interface InvitationEditorContext {
 	draftStatus: InvitationContentDraft['status'] | null;
 	publication: PublicationState;
 	rsvpLink: RsvpLinkState;
+	contentSource: ContentSource;
+	sectionStates: Record<string, SectionSource>;
 }
 
 function hydrateEditableContent(
 	draftContent: Record<string, unknown>,
 	publishedContent: Record<string, unknown>,
 	demoContent: Record<string, unknown>,
-): DraftContent {
-	const effectiveContent = deepClone(draftContent) as DraftContent;
+): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
+	const draftBase = deepClone(draftContent) as DraftContent;
+	const publishedFlat = mapNestedToDraftContent(publishedContent);
+	const demoFlat = mapNestedToDraftContent(demoContent);
 
-	for (const key of HYDRATED_DRAFT_KEYS) {
-		if (effectiveContent[key] !== undefined) continue;
-		const inheritedValue = publishedContent[key] ?? demoContent[key];
-		if (inheritedValue !== undefined) {
-			(effectiveContent as Record<string, unknown>)[key] = deepClone(inheritedValue);
+	const result: DraftContent = {};
+	const sectionStates: Record<string, SectionSource> = {};
+
+	for (const key of ALL_EDITOR_KEYS) {
+		if (draftBase[key] !== undefined) {
+			result[key] = deepClone(draftBase[key]);
+			sectionStates[key] = 'draft';
+		} else if (publishedFlat[key] !== undefined) {
+			result[key] = deepClone(publishedFlat[key]);
+			sectionStates[key] = 'published';
+		} else if (demoFlat[key] !== undefined) {
+			result[key] = deepClone(demoFlat[key]);
+			sectionStates[key] = 'demo';
+		} else {
+			sectionStates[key] = 'empty';
 		}
 	}
 
-	return effectiveContent;
+	return { content: result, sectionStates };
 }
 
 function createPublicationState(
@@ -91,11 +126,23 @@ export async function getInvitationEditorContext(
 	}
 
 	const demoContent = await loadDemoContent(invitation.snapshot.previewSlug);
-	const content = hydrateEditableContent(
+	const { content, sectionStates } = hydrateEditableContent(
 		draft?.content ?? {},
 		published?.content ?? {},
 		demoContent,
 	);
+
+	let contentSource: ContentSource = 'empty';
+	for (const state of Object.values(sectionStates)) {
+		if (state === 'empty') continue;
+		if (contentSource === 'empty') {
+			contentSource = state;
+		} else if (contentSource !== state) {
+			contentSource = 'mixed';
+			break;
+		}
+	}
+
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =
 		!linkedEvent && invitation.slug ? await findEventBySlugService(invitation.slug) : null;
@@ -111,6 +158,8 @@ export async function getInvitationEditorContext(
 			: slugEvent
 				? { status: 'unlinked_slug_match', eventId: slugEvent.id }
 				: { status: 'missing', eventId: null },
+		contentSource,
+		sectionStates,
 	};
 }
 
