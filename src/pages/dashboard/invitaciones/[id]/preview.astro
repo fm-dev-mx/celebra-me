@@ -23,7 +23,9 @@ const { id } = Astro.params;
 
 let errorMessage: string | null = null;
 let previewSource: string | null = null;
+let previewWarning: string | null = null;
 let hasNoContent = false;
+let pageCtx: InvitationPageContext | undefined;
 
 if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
@@ -34,55 +36,61 @@ if (!invitation) {
 	errorMessage = 'Invitación no encontrada.';
 }
 
-let content: Record<string, unknown> | null = null;
+const entries = !errorMessage ? await getCollection('event-demos') : [];
+const demoEntryForSlug = (slug: string) =>
+	entries.find(
+		(e: { id: string }) => getContentEntrySlug(e.id) === slug,
+	);
 
-// Draft takes priority
-const draft = await findDraftByInvitationId(id);
-if (draft) {
-	content = draft.content;
-	previewSource = 'Borrador';
-} else if (!errorMessage) {
-	// Fall back to published content
-	const published = await findPublishedByInvitationId(id);
-	if (published) {
-		content = published.content;
-		previewSource = 'Versión pública';
-	}
-}
-
-if (!content && !errorMessage) {
-	hasNoContent = true;
-}
-
-let pageCtx: InvitationPageContext | undefined;
-
-if (!errorMessage && invitation && content) {
+async function tryBuildContext(
+	content: Record<string, unknown>,
+	label: string,
+): Promise<InvitationPageContext | null> {
+	if (!invitation) return null;
 	const snapshot = invitation.snapshot;
-	if (!snapshot || !snapshot.previewSlug) {
-		errorMessage = 'La plantilla base de esta invitación no está soportada.';
-	} else {
-		const entries = await getCollection('event-demos');
-		const demoEntry = entries.find(
-			(e: { id: string }) => getContentEntrySlug(e.id) === snapshot.previewSlug,
-		);
-		const demoContent = (demoEntry?.data as Record<string, unknown>) ?? {};
+	if (!snapshot?.previewSlug) return null;
 
-		if (Object.keys(demoContent).length === 0) {
-			errorMessage = 'No se encontró el contenido de la plantilla base.';
-		} else {
-			const result = buildDraftPreviewPageContext(invitation, content, demoContent);
+	const demoEntry = demoEntryForSlug(snapshot.previewSlug);
+	const demoContent = (demoEntry?.data as Record<string, unknown>) ?? {};
+	if (Object.keys(demoContent).length === 0) return null;
 
-			if (result.ok) {
-				pageCtx = result.pageContext;
-			} else {
-				errorMessage = result.error.message;
-			}
+	const result = buildDraftPreviewPageContext(invitation, content, demoContent);
+	if (!result.ok) return null;
+
+	previewSource = label;
+	return result.pageContext;
+}
+
+// Fallback chain: 1) valid draft, 2) published, 3) published with draft error, 4) empty
+const [draft, published] = await Promise.all([
+	!errorMessage ? findDraftByInvitationId(id) : null,
+	!errorMessage ? findPublishedByInvitationId(id) : null,
+]);
+
+if (draft?.content) {
+	const ctx = await tryBuildContext(draft.content, 'Borrador');
+	if (ctx) {
+		pageCtx = ctx;
+	} else if (published?.content) {
+		const pubCtx = await tryBuildContext(published.content, 'Versión pública');
+		if (pubCtx) {
+			pageCtx = pubCtx;
+			previewWarning = 'El borrador actual tiene errores. Mostrando la versión pública.';
 		}
 	}
+} else if (published?.content) {
+	const ctx = await tryBuildContext(published.content, 'Versión pública');
+	if (ctx) {
+		pageCtx = ctx;
+	}
 }
 
-if (!errorMessage && !pageCtx) {
-	errorMessage = 'Error inesperado al generar la vista previa.';
+if (!pageCtx && !errorMessage) {
+	if (draft || published) {
+		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
+	} else {
+		hasNoContent = true;
+	}
 }
 
 const editUrl = `/dashboard/invitaciones/${id}/editar`;
@@ -127,6 +135,7 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 				<span class="preview-banner__text">
 					Vista previa interna — {previewSource}
 				</span>
+				{previewWarning && <span class="preview-banner__warning">{previewWarning}</span>}
 				<a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>
 			</div>
 
@@ -223,6 +232,12 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 		&:hover {
 			text-decoration: underline;
 		}
+	}
+
+	.preview-banner__warning {
+		color: var(--color-state-warning-text, #b8860b);
+		font-size: 12px;
+		font-weight: 400;
 	}
 
 	.preview-empty {
