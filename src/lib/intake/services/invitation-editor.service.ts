@@ -27,7 +27,7 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { loadDemoContent } from '@/lib/intake/editor-api';
-import { deepClone } from '@/lib/intake/utils';
+import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 
 const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
@@ -60,7 +60,7 @@ type RsvpLinkState = {
 };
 
 export interface InvitationEditorContext {
-	invitation: Invitation;
+	invitation: Invitation & { rsvpSectionHasContent: boolean };
 	content: DraftContent;
 	draftUpdatedAt: string | null;
 	draftStatus: InvitationContentDraft['status'] | null;
@@ -112,6 +112,20 @@ function createPublicationState(
 	};
 }
 
+function resolveContentSource(sectionStates: Record<string, ContentSource>): ContentSource {
+	let result: ContentSource = 'empty';
+	for (const state of Object.values(sectionStates)) {
+		if (state === 'empty') continue;
+		if (result === 'empty') {
+			result = state;
+		} else if (result !== state) {
+			result = 'mixed';
+			break;
+		}
+	}
+	return result;
+}
+
 export async function getInvitationEditorContext(
 	invitationId: string,
 ): Promise<InvitationEditorContext> {
@@ -132,23 +146,18 @@ export async function getInvitationEditorContext(
 		demoContent,
 	);
 
-	let contentSource: ContentSource = 'empty';
-	for (const state of Object.values(sectionStates)) {
-		if (state === 'empty') continue;
-		if (contentSource === 'empty') {
-			contentSource = state;
-		} else if (contentSource !== state) {
-			contentSource = 'mixed';
-			break;
-		}
-	}
+	const contentSource = resolveContentSource(sectionStates);
 
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =
 		!linkedEvent && invitation.slug ? await findEventBySlugService(invitation.slug) : null;
 
+	const rsvpSectionHasContent =
+		hasRsvpContent(draft?.content as Record<string, unknown> | undefined) ||
+		hasRsvpContent(published?.content);
+
 	return {
-		invitation,
+		invitation: { ...invitation, rsvpSectionHasContent },
 		content,
 		draftUpdatedAt: draft?.updatedAt ?? null,
 		draftStatus: draft?.status ?? null,

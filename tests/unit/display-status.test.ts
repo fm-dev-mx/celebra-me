@@ -26,6 +26,7 @@ function makeProject(overrides: Partial<InvitationDTO>): InvitationDTO {
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		rsvpSectionHasContent: false,
 		internalEditUrl: '/dashboard/invitaciones/test-id/editar',
 		captureUrl: null,
 		captureLinkStatus: null,
@@ -115,16 +116,17 @@ describe('resolveDisplayInfo', () => {
 	});
 
 	describe('inconsistency: published status without RSVP event', () => {
-		it('returns warning when published but rsvpEventStatus is null', () => {
+		it('returns warning when published with RSVP content but no RSVP event', () => {
 			const invitation = makeProject({
 				status: 'published',
 				published: true,
 				rsvpEventStatus: null,
+				rsvpSectionHasContent: true,
 			});
 			const result = resolveDisplayInfo(invitation);
 			expect(result.label).toBe('Publicada');
 			expect(result.variant).toBe('published');
-			expect(result.warning).toMatch(/no se encontró.*evento rsvp/i);
+			expect(result.warning).toMatch(/rsvp.*configurado.*no se encontró.*evento/i);
 		});
 	});
 
@@ -282,11 +284,12 @@ describe('resolvePrimaryAction', () => {
 			});
 		});
 
-		it('returns review invitation for published without RSVP event', () => {
+		it('returns review invitation for published with RSVP content but no RSVP event', () => {
 			const invitation = makeProject({
 				status: 'published',
 				published: true,
 				rsvpEventStatus: null,
+				rsvpSectionHasContent: true,
 			});
 			const action = resolvePrimaryAction(invitation);
 			expect(action).toEqual({

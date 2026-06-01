@@ -31,6 +31,7 @@ export interface InvitationDTO {
 	published: boolean;
 	rsvpEventStatus: string | null;
 	rsvpEventId: string | null;
+	rsvpSectionHasContent: boolean;
 	internalEditUrl: string;
 	captureUrl: string | null;
 	captureLinkStatus: CaptureLinkStatus | null;

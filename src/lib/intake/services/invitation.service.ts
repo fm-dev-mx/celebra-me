@@ -11,6 +11,7 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
 import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
+import { hasRsvpContent } from '@/lib/intake/utils';
 import type { IntakeRequest } from '@/lib/intake/types';
 import { getCollection } from 'astro:content';
 import { getContentEntrySlug } from '@/lib/content/events';
@@ -28,6 +29,7 @@ export function toEnrichedInvitationDTO(
 		hasSubmission?: boolean;
 		published?: boolean;
 		rsvpEvent?: { id: string; status: string } | null;
+		rsvpSectionHasContent?: boolean;
 	} = {},
 ): InvitationDTO {
 	return {
@@ -37,6 +39,7 @@ export function toEnrichedInvitationDTO(
 		published: input.published ?? false,
 		rsvpEventStatus: input.rsvpEvent?.status ?? null,
 		rsvpEventId: input.rsvpEvent?.id ?? null,
+		rsvpSectionHasContent: input.rsvpSectionHasContent ?? false,
 		...resolveCaptureLink(input.request ?? null),
 	};
 }
@@ -48,7 +51,7 @@ export async function getEnrichedInvitationList(
 	const invitationIds = invitations.map((p) => p.id);
 	if (invitationIds.length === 0) return [];
 
-	const [requestRows, eventRows, pubRows, submissionRows] = await Promise.all([
+	const [requestRows, eventRows, pubRows, submissionRows, draftRows] = await Promise.all([
 		supabaseRestRequest<
 			Array<{
 				id: string;
@@ -67,12 +70,20 @@ export async function getEnrichedInvitationList(
 			pathWithQuery: `events?select=id,invitation_project_id,status&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})&deleted_at=is.null`,
 			useServiceRole: true,
 		}),
-		supabaseRestRequest<Array<{ invitation_project_id: string; id: string }>>({
-			pathWithQuery: `published_invitation_content?select=id,invitation_project_id&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+		supabaseRestRequest<
+			Array<{ invitation_project_id: string; id: string; content: Record<string, unknown> }>
+		>({
+			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,content&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<Array<{ id: string; intake_request_id: string }>>({
 			pathWithQuery: `intake_submissions?select=id,intake_request_id,intake_requests!inner(invitation_project_id)&intake_requests.invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+			useServiceRole: true,
+		}),
+		supabaseRestRequest<
+			Array<{ invitation_project_id: string; content: Record<string, unknown> }>
+		>({
+			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,content&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 	]);
@@ -86,6 +97,18 @@ export async function getEnrichedInvitationList(
 	for (const row of submissionRows) {
 		const pid = requestIdToInvitation.get(row.intake_request_id);
 		if (pid) submissionInvitationIds.add(pid);
+	}
+
+	const rsvpContentInvitations = new Set<string>();
+	for (const row of pubRows) {
+		if (hasRsvpContent(row.content)) {
+			rsvpContentInvitations.add(row.invitation_project_id);
+		}
+	}
+	for (const row of draftRows) {
+		if (hasRsvpContent(row.content)) {
+			rsvpContentInvitations.add(row.invitation_project_id);
+		}
 	}
 
 	return invitations.map((invitation) => {
@@ -103,6 +126,7 @@ export async function getEnrichedInvitationList(
 			hasSubmission: submissionInvitationIds.has(invitation.id),
 			published: publishedSet.has(invitation.id),
 			rsvpEvent: event ?? null,
+			rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),
 		});
 	});
 }

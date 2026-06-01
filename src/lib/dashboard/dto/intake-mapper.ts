@@ -35,6 +35,7 @@ export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
+		rsvpSectionHasContent: false,
 		internalEditUrl: `/dashboard/invitaciones/${invitation.id}/editar`,
 		captureUrl: null,
 		captureLinkStatus: null,

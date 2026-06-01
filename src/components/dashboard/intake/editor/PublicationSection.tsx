@@ -58,11 +58,11 @@ export default function PublicationSection({
 					<p>
 						{context.rsvpLink.status === 'unlinked_slug_match'
 							? 'Hay un evento RSVP con el mismo slug, pero todavía no está vinculado a esta invitación.'
-							: 'No se encontró un evento RSVP vinculado. Se sincronizará al publicar si la invitación tiene propietario.'}
+							: 'No se encontró un evento RSVP vinculado. Se puede sincronizar si existe un evento con el mismo slug.'}
 					</p>
 					{context.rsvpLink.status === 'unlinked_slug_match' && (
 						<button type="button" onClick={onReconcile} disabled={reconciling}>
-							{reconciling ? 'Vinculando...' : 'Vincular evento RSVP'}
+							{reconciling ? 'Vinculando...' : 'Buscar y vincular evento RSVP'}
 						</button>
 					)}
 				</div>

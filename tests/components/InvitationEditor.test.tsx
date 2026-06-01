@@ -27,6 +27,7 @@ const context: InvitationEditorContextDTO = {
 		archivedAt: null,
 		createdAt: '2026-05-30T00:00:00Z',
 		updatedAt: '2026-05-30T01:00:00Z',
+		rsvpSectionHasContent: false,
 		snapshot: { previewSlug: 'demo-xv-jewelry-box' },
 	},
 	content: {

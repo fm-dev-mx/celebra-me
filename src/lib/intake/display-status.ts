@@ -55,18 +55,26 @@ const INCONSISTENCY_RULES: InconsistencyRule[] = [
 		}),
 	},
 	{
+		// Only warn when the published invitation has RSVP content configured
+		// but the RSVP event is missing. An empty RSVP section means it was
+		// intentionally omitted — no warning needed.
 		check: (p) =>
-			p.kind === 'client' && p.status === 'published' && p.published && !p.rsvpEventStatus,
+			p.kind === 'client' &&
+			p.status === 'published' &&
+			p.published &&
+			!p.rsvpEventStatus &&
+			p.rsvpSectionHasContent,
 		getInfo: () => ({
 			label: INVITATION_STATUS_LABELS.published,
 			variant: 'published' as StatusBadgeVariant,
-			warning: 'No se encontró el evento RSVP asociado a esta publicación.',
+			warning:
+				'El RSVP está configurado en el contenido pero no se encontró el evento asociado. Vuelve a publicar para repararlo.',
 		}),
 		getRepair: (p) => ({
 			text: 'Reparar publicación',
 			explanation:
-				'La invitación está publicada pero no se encontró el evento RSVP asociado. Vuelve a publicar para crear o restaurar el evento RSVP.',
-			href: `/dashboard/invitaciones/${p.id}/draft`,
+				'La invitación tiene contenido RSVP pero no se encontró el evento asociado. Vuelve a publicar para crear o restaurar el evento RSVP.',
+			href: `/dashboard/invitaciones/${p.id}/editar#publication`,
 		}),
 	},
 	{

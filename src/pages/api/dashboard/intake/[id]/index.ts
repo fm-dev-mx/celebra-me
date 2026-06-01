@@ -17,6 +17,7 @@ import { findEventByInvitationIdService } from '@/lib/rsvp/repositories/event.re
 import { toIntakeRequestDTO, toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { toEnrichedInvitationDTO } from '@/lib/intake/services/invitation.service';
+import { hasRsvpContent } from '@/lib/intake/utils';
 
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
@@ -78,6 +79,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 				hasSubmission: Boolean(submission),
 				published: Boolean(publishedContent),
 				rsvpEvent: event,
+				rsvpSectionHasContent: hasRsvpContent(publishedContent?.content),
 			}),
 			request: activeRequest ? toIntakeRequestDTO(activeRequest) : null,
 			submission,
@@ -119,6 +121,7 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 				hasSubmission: Boolean(submission),
 				published: Boolean(publishedContent),
 				rsvpEvent: event,
+				rsvpSectionHasContent: hasRsvpContent(publishedContent?.content),
 			}),
 		});
 	} catch (error) {

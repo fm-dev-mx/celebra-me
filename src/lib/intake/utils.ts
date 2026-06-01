@@ -26,6 +26,12 @@ export function numFallback(value: unknown): number {
 	return typeof value === 'number' ? value : 0;
 }
 
+export function hasRsvpContent(content: Record<string, unknown> | undefined): boolean {
+	if (!content) return false;
+	const rsvp = content.rsvp as Record<string, unknown> | undefined;
+	return Boolean(rsvp?.title || rsvp?.guestCap);
+}
+
 export function deepClone<T>(value: T): T {
 	if (typeof structuredClone === 'function') return structuredClone(value);
 	return JSON.parse(JSON.stringify(value));
