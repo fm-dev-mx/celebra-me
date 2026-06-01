@@ -54,6 +54,8 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockRedirect).toHaveBeenCalledWith('/login');
+		// Should NOT store session in locals when unauthenticated
+		expect((context as any).locals.session).toBeUndefined();
 	});
 
 	it('Scenario: Normal User (aal1) Access to Dashboard', async () => {
@@ -64,6 +66,7 @@ describe('Middleware: Authentication & Authorization', () => {
 			ok: true,
 			json: async () => ({
 				id: 'user-1',
+				email: 'host@test.com',
 				app_metadata: { role: 'host_client' },
 				amr: [{ method: 'password' }], // aal1
 			}),
@@ -72,6 +75,15 @@ describe('Middleware: Authentication & Authorization', () => {
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockNext).toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
+
+		// Verify locals.session was populated correctly
+		expect((context as any).locals.session).toBeDefined();
+		expect((context as any).locals.session.userId).toBe('user-1');
+		expect((context as any).locals.session.email).toBe('host@test.com');
+		expect((context as any).locals.session.role).toBe('host_client');
+		expect((context as any).locals.session.isSuperAdmin).toBe(false);
+		expect((context as any).locals.session.accessToken).toBe('valid-token');
+		expect((context as any).locals.hasAdminStrongAuth).toBe(false);
 	});
 
 	it('Scenario: Superadmin without MFA (aal1) redirected to MFA Setup', async () => {
@@ -136,6 +148,7 @@ describe('Middleware: Authentication & Authorization', () => {
 			ok: true,
 			json: async () => ({
 				id: 'admin-1',
+				email: 'admin@test.com',
 				app_metadata: { role: 'super_admin' },
 				amr: [{ method: 'totp' }], // aal2
 			}),
@@ -144,6 +157,15 @@ describe('Middleware: Authentication & Authorization', () => {
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockNext).toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
+
+		// Verify locals.session for super_admin
+		expect((context as any).locals.session).toBeDefined();
+		expect((context as any).locals.session.userId).toBe('admin-1');
+		expect((context as any).locals.session.email).toBe('admin@test.com');
+		expect((context as any).locals.session.role).toBe('super_admin');
+		expect((context as any).locals.session.isSuperAdmin).toBe(true);
+		expect((context as any).locals.session.accessToken).toBe('admin-token');
+		expect((context as any).locals.hasAdminStrongAuth).toBe(true);
 	});
 
 	it('Scenario: Superadmin with OTP MFA (aal2) allowed to Dashboard', async () => {

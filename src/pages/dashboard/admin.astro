@@ -1,9 +1,6 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import { requireAdminSession } from '@/lib/rsvp/auth/authorization';
 import { prepareDashboardAdminPageData } from '@/lib/dashboard/admin-page-data';
-
-await requireAdminSession(Astro.request);
 
 const pageData = await prepareDashboardAdminPageData();
 ---

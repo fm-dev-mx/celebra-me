@@ -36,5 +36,7 @@ interface ImportMeta {
 declare namespace App {
 	interface Locals {
 		csrfToken?: string;
+		session?: import('@/lib/rsvp/auth/auth').SessionContext;
+		hasAdminStrongAuth?: boolean;
 	}
 }

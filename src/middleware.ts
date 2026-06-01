@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getSupabaseUserByAccessToken } from '@/lib/rsvp/auth/auth';
+import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
@@ -28,7 +29,11 @@ function isAdminOnlyPath(pathname: string): boolean {
 }
 
 function shouldInspectAuthPath(pathname: string): boolean {
-	return pathname === '/login' || pathname.startsWith('/dashboard');
+	return (
+		pathname === '/login' ||
+		pathname.startsWith('/dashboard') ||
+		pathname.startsWith('/api/dashboard')
+	);
 }
 
 function buildCookieOptions(maxAge: number) {
@@ -216,8 +221,10 @@ async function handleProtectedAuthRequest(
 	redirect: (path: string) => Response,
 	request: Request,
 	next: () => Promise<Response>,
+	locals: { session?: SessionContext; hasAdminStrongAuth?: boolean },
 ) {
 	const now = Math.floor(Date.now() / 1000);
+	const isApiRoute = url.pathname.startsWith('/api/dashboard');
 
 	if (
 		url.pathname === '/login' &&
@@ -227,19 +234,22 @@ async function handleProtectedAuthRequest(
 		return next();
 	}
 
-	if (isIdleSessionExpired(cookies, now)) {
+	// API routes handle auth failures internally (401/403 JSON) — never redirect.
+	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
 		return redirect('/login');
 	}
 
 	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
+		if (isApiRoute) return next();
 		return url.pathname === '/login' ? next() : redirect('/login');
 	}
 
 	const authContext = resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
+		if (isApiRoute) return next();
 		return redirect('/login');
 	}
 
@@ -247,14 +257,31 @@ async function handleProtectedAuthRequest(
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);
 	}
 
-	const redirectTarget = resolveAuthenticatedRedirect(
-		url.pathname,
-		authContext.role,
-		authContext.hasAdminStrongAuth,
-	);
-	if (redirectTarget) return redirect(redirectTarget);
+	// Skip role/strong-auth redirects for API routes — the endpoint handles them.
+	if (!isApiRoute) {
+		const redirectTarget = resolveAuthenticatedRedirect(
+			url.pathname,
+			authContext.role,
+			authContext.hasAdminStrongAuth,
+		);
+		if (redirectTarget) return redirect(redirectTarget);
+	}
 
 	syncPostAuthCookies(cookies, authContext, now);
+
+	// Store resolved session in locals so downstream pages/layouts
+	// can read it without re-deriving from stale request cookies.
+	const resolvedEmail = typeof user.email === 'string' ? user.email.trim().slice(0, 320) : '';
+	locals.session = {
+		userId: user.id,
+		email: resolvedEmail,
+		accessToken,
+		role: authContext.role,
+		isSuperAdmin: authContext.role === 'super_admin',
+		amr: user.amr,
+	};
+	locals.hasAdminStrongAuth = authContext.hasAdminStrongAuth;
+
 	return next();
 }
 
@@ -264,8 +291,13 @@ export const onRequest = defineMiddleware(
 			return next();
 		}
 
-		// Always generate CSRF token for dashboard and login paths to ensure it's available in layouts
-		locals.csrfToken = setCsrfToken(cookies);
+		// Generate CSRF token only for page routes, not API routes.
+		// API routes must validate against the cookie set during the page render;
+		// overwriting the cookie on every API call would desynchronise the token
+		// that the client received from the page meta tag.
+		if (!url.pathname.startsWith('/api/')) {
+			locals.csrfToken = setCsrfToken(cookies);
+		}
 
 		try {
 			return await handleProtectedAuthRequest(
@@ -274,6 +306,7 @@ export const onRequest = defineMiddleware(
 				redirect,
 				request,
 				next as () => Promise<Response>,
+				locals,
 			);
 		} catch (error) {
 			console.error('[Middleware] Auth error:', error);
