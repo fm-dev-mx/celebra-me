@@ -232,6 +232,45 @@ describe('Admin API Strong Session Guard', () => {
 		});
 	});
 
+	describe('CSRF validation for admin mutation endpoints', () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+		});
+
+		it('returns normalized 403 (not 500) when CSRF token is invalid', async () => {
+			requireAdminStrongSessionMock.mockRejectedValue(
+				new ApiError(
+					403,
+					'forbidden',
+					'Token CSRF inválido. Por favor recarga la página e intenta de nuevo.',
+				),
+			);
+
+			const response = await getEvents({
+				request: createMockRequest(undefined, { 'X-CSRF-Token': 'bad-token' }),
+			} as never);
+
+			expect(response.status).toBe(403);
+			const body = (await response.json()) as { error: { code: string; message: string } };
+			expect(body.error.code).toBe('forbidden');
+			expect(body.error.message).toContain('CSRF');
+		});
+
+		it('returns 403 (not 500) when CSRF validation fails', async () => {
+			requireAdminStrongSessionMock.mockRejectedValue(
+				new ApiError(403, 'forbidden', 'Token CSRF inválido.'),
+			);
+
+			const response = await getEvents({
+				request: createMockRequest(undefined, { 'X-CSRF-Token': 'bad-token' }),
+			} as never);
+
+			expect(response.status).toBe(403);
+			const body = (await response.json()) as { error: { code: string } };
+			expect(body.error.code).toBe('forbidden');
+		});
+	});
+
 	describe('Authorization guard is called', () => {
 		it('GET /api/dashboard/admin/events calls requireAdminStrongSession', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
