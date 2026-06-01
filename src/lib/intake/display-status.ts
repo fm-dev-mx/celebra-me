@@ -1,4 +1,5 @@
 import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
+import { getPublicSlug } from '@/lib/intake/slug';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 
 export type StatusBadgeVariant =
@@ -91,10 +92,6 @@ function findMatchingRule(invitation: InvitationDTO): InconsistencyRule | undefi
 
 export function hasInconsistency(invitation: InvitationDTO): boolean {
 	return findMatchingRule(invitation) !== undefined;
-}
-
-function getPublicSlug(invitation: InvitationDTO): string {
-	return invitation.slug ?? `${invitation.eventType}-${invitation.id.slice(0, 8)}`;
 }
 
 const STATUS_DISPLAY: Record<string, { label: string; variant: StatusBadgeVariant }> = {

@@ -19,6 +19,7 @@ import {
 } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
+import { getPublicSlug } from '@/lib/intake/slug';
 import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -160,7 +161,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	}
 	const publishedContent = publishedContentResult.data;
 
-	const publishSlug = invitation.slug || `${invitation.eventType}-${invitation.id.slice(0, 8)}`;
+	const publishSlug = getPublicSlug(invitation);
 
 	const existingPublished = await findPublishedBySlugAndEventType(
 		publishSlug,
