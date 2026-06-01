@@ -1215,3 +1215,361 @@
 		background: var(--dashboard-accent-soft-bg);
 	}
 }
+
+.invitation-editor {
+	display: grid;
+	gap: 1.25rem;
+	color: var(--color-text-primary);
+}
+
+.invitation-editor__header {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--color-surface-primary) 94%, transparent);
+	box-shadow: 0 10px 30px rgb(15 23 42 / 8%);
+	backdrop-filter: blur(14px);
+
+	h1,
+	p {
+		margin: 0;
+	}
+
+	h1 {
+		font-size: clamp(1.25rem, 2vw, 1.7rem);
+	}
+
+	p:not(.invitation-editor__eyebrow) {
+		margin-top: 0.25rem;
+		color: var(--color-text-muted);
+		font-size: 0.875rem;
+	}
+}
+
+.invitation-editor__eyebrow {
+	color: var(--color-action-accent);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.invitation-editor__header-actions,
+.invitation-editor__reorder {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.invitation-editor__header-actions a,
+.invitation-editor__header-actions button,
+.invitation-editor__card-footer button,
+.invitation-editor__secondary-button,
+.invitation-editor__warning button {
+	padding: 0.65rem 0.9rem;
+	border: 1px solid var(--color-action-accent);
+	border-radius: 8px;
+	background: var(--color-action-accent);
+	color: var(--color-action-accent-contrast, rgb(255 255 255));
+	font: inherit;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 55%;
+	}
+}
+
+.invitation-editor__layout {
+	display: grid;
+	grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+	gap: 1rem;
+	align-items: start;
+}
+
+.invitation-editor__nav {
+	position: sticky;
+	top: 8.5rem;
+	display: grid;
+	gap: 0.125rem;
+	padding: 0.5rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 12px;
+	background: var(--color-surface-primary);
+
+	a {
+		padding: 0.55rem 0.65rem;
+		border-radius: 7px;
+		color: var(--color-text-muted);
+		font-size: 0.8125rem;
+		text-decoration: none;
+
+		&:hover,
+		&:focus-visible {
+			background: var(--dashboard-accent-soft-bg);
+			color: var(--color-action-accent);
+		}
+	}
+}
+
+.invitation-editor__content,
+.invitation-editor__stack {
+	display: grid;
+	gap: 1rem;
+}
+
+.invitation-editor__card {
+	scroll-margin-top: 8.5rem;
+	padding: 1rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 12px;
+	background: var(--color-surface-primary);
+}
+
+.invitation-editor__card-header,
+.invitation-editor__card-footer,
+.invitation-editor__order-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.invitation-editor__card-header {
+	margin-bottom: 1rem;
+
+	h2,
+	p {
+		margin: 0;
+	}
+
+	h2 {
+		font-size: 1.05rem;
+	}
+
+	p {
+		margin-top: 0.2rem;
+		color: var(--color-text-muted);
+		font-size: 0.8125rem;
+	}
+}
+
+.invitation-editor__dirty {
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	background: var(--color-state-warning-bg);
+	color: var(--color-state-warning-text);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.invitation-editor__field-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.invitation-editor__field {
+	display: grid;
+	gap: 0.3rem;
+	margin-bottom: 0.75rem;
+
+	span {
+		color: var(--color-text-muted);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	input,
+	textarea,
+	select {
+		width: 100%;
+		padding: 0.6rem 0.7rem;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 7px;
+		background: var(--color-surface-primary);
+		color: var(--color-text-primary);
+		font: inherit;
+		font-size: 0.875rem;
+
+		&:focus-visible {
+			border-color: var(--color-action-accent);
+			outline: 3px solid var(--dashboard-accent-soft-bg);
+		}
+	}
+}
+
+.invitation-editor__check {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0.5rem 0;
+	font-size: 0.8125rem;
+
+	input {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-action-accent);
+	}
+}
+
+.invitation-editor__card-footer {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border-subtle);
+}
+
+.invitation-editor__error,
+.invitation-editor__success {
+	margin: 0;
+	font-size: 0.8125rem;
+	font-weight: 700;
+}
+
+.invitation-editor__error {
+	color: var(--color-state-error-text);
+}
+
+.invitation-editor__success {
+	color: var(--color-state-success-text);
+}
+
+.invitation-editor__subsection,
+.invitation-editor__list-item,
+.invitation-editor__warning {
+	padding: 0.8rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 9px;
+	background: var(--color-bg-subtle);
+
+	h3,
+	h4,
+	p {
+		margin-top: 0;
+	}
+}
+
+.invitation-editor__reorder button,
+.invitation-editor__link-button {
+	padding: 0.35rem 0.55rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 6px;
+	background: var(--color-surface-primary);
+	color: var(--color-text-muted);
+	font: inherit;
+	font-size: 0.75rem;
+	cursor: pointer;
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 45%;
+	}
+}
+
+.invitation-editor__secondary-button {
+	background: transparent;
+	color: var(--color-action-accent);
+}
+
+.invitation-editor__gallery-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+	gap: 0.75rem;
+}
+
+.invitation-editor__gallery-item {
+	padding: 0.6rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 9px;
+	background: var(--color-bg-subtle);
+}
+
+.invitation-editor__gallery-image {
+	position: relative;
+	display: grid;
+	place-items: center;
+	aspect-ratio: 4 / 3;
+	margin-bottom: 0.6rem;
+	overflow: hidden;
+	border-radius: 7px;
+	background: var(--color-surface-primary);
+	color: var(--color-text-muted);
+	font-size: 0.75rem;
+	text-align: center;
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	strong {
+		position: absolute;
+		top: 0.35rem;
+		left: 0.35rem;
+		display: grid;
+		place-items: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 50%;
+		background: rgb(15 23 42 / 75%);
+		color: rgb(255 255 255);
+		font-size: 0.75rem;
+	}
+}
+
+.invitation-editor__publication-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+
+	p {
+		margin: 0;
+		font-size: 0.8125rem;
+	}
+}
+
+@media (width <= 860px) {
+	.invitation-editor__layout {
+		grid-template-columns: 1fr;
+	}
+
+	.invitation-editor__nav {
+		position: static;
+		display: flex;
+		overflow-x: auto;
+
+		a {
+			white-space: nowrap;
+		}
+	}
+}
+
+@media (width <= 520px) {
+	.invitation-editor__header {
+		position: static;
+	}
+
+	.invitation-editor__field-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.invitation-editor__card-header,
+	.invitation-editor__card-footer {
+		align-items: stretch;
+		flex-direction: column;
+	}
+}
