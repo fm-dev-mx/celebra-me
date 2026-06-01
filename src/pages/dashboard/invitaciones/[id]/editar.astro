@@ -1,9 +1,8 @@
 ---
 import '@/styles/intake.scss';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import IntakeForm from '@/components/intake/IntakeForm';
-import InvitationMetadataForm from '@/components/dashboard/intake/InvitationMetadataForm';
-import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
+import InvitationEditor from '@/components/dashboard/intake/editor/InvitationEditor';
+import { getInvitationEditorContext } from '@/lib/intake/services/invitation-editor.service';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 const rawId = Astro.params.id;
@@ -12,61 +11,26 @@ if (!rawId) {
 	return Astro.redirect('/dashboard/invitaciones');
 }
 
-const id = rawId;
-
-let invitation: Awaited<ReturnType<typeof ensureAdminEditContext>>['invitation'];
-let request: Awaited<ReturnType<typeof ensureAdminEditContext>>['request'];
-let submission: Awaited<ReturnType<typeof ensureAdminEditContext>>['submission'];
+let editorContext: Awaited<ReturnType<typeof getInvitationEditorContext>> | null = null;
 let loadError: string | null = null;
 
 try {
-	const ctx = await ensureAdminEditContext(id);
-	invitation = ctx.invitation;
-	request = ctx.request;
-	submission = ctx.submission;
-} catch (err) {
-	loadError = toErrorMessage(err, 'No se pudo cargar el invitación.');
+	editorContext = await getInvitationEditorContext(rawId);
+} catch (error) {
+	loadError = toErrorMessage(error, 'No se pudo cargar la invitación.');
 }
 ---
 
-<DashboardLayout title={loadError ? 'Error' : `Editar datos base - ${invitation!.title}`}>
+<DashboardLayout title={loadError ? 'Error' : `Editar invitación - ${editorContext!.invitation.title}`}>
 	<div class="intake-page-body">
 		{
-			loadError ? (
+			loadError || !editorContext ? (
 				<div class="intake-page-error">
 					<p>{loadError}</p>
 					<a href="/dashboard/invitaciones">Volver a invitaciones</a>
 				</div>
 			) : (
-				<>
-					<section class="intake-page-section">
-						<InvitationMetadataForm
-							client:load
-							invitation={{
-								id: invitation!.id,
-								title: invitation!.title,
-								clientName: invitation!.clientName,
-								clientWhatsapp: invitation!.clientWhatsapp,
-								clientEmail: invitation!.clientEmail,
-								slug: invitation!.slug,
-								status: invitation!.status,
-								photosReceived: invitation!.photosReceived,
-							}}
-						/>
-					</section>
-					<hr class="intake-page-divider" />
-					<IntakeForm
-						client:load
-						mode="admin"
-						invitationId={invitation!.id}
-						enabledBlocks={request!.enabledBlocks}
-						initialBlockData={submission!.blockData}
-						initialStatus={submission!.status}
-						isLocked={false}
-						invitationTitle={invitation!.title}
-						eventType={invitation!.eventType}
-					/>
-				</>
+				<InvitationEditor client:load initialContext={editorContext} />
 			)
 		}
 	</div>

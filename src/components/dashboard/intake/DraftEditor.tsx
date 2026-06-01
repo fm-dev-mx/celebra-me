@@ -129,7 +129,10 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 	const quote = content.quote ?? {};
 	const thankYou = content.thankYou ?? {};
 	const photoNotes = content.photoNotes ?? {};
-	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
+	const sectionOrder = (content.sectionOrder ?? [...CONTENT_SECTION_KEYS]).filter(
+		(section): section is ContentSectionKey =>
+			(CONTENT_SECTION_KEYS as readonly string[]).includes(section),
+	);
 
 	const setSectionOrder = (nextOrder: ContentSectionKey[]) => {
 		setContent((prev) => ({ ...prev, sectionOrder: nextOrder }));
