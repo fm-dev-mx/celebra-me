@@ -12,7 +12,7 @@ describe('RSVP v2 endpoint baseline', () => {
 		const request = createMockRequest();
 		const url = new URL('http://localhost/api/dashboard/guests?eventId=evt-1');
 
-		const response = await getDashboardGuests({ request, url } as never);
+		const response = await getDashboardGuests({ request, url, locals: {} } as never);
 		expect(response.status).toBe(401);
 	});
 
@@ -25,7 +25,7 @@ describe('RSVP v2 endpoint baseline', () => {
 		});
 		const url = new URL('http://localhost/api/dashboard/guests');
 
-		const response = await postDashboardGuest({ request, url } as never);
+		const response = await postDashboardGuest({ request, url, locals: {} } as never);
 		expect(response.status).toBe(401);
 	});
 

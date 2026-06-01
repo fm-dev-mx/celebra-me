@@ -1,37 +1,14 @@
 import type { APIRoute } from 'astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
-import { ApiError } from '@/lib/rsvp/core/errors';
-import {
-	badRequest,
-	errorResponse,
-	getIp,
-	jsonResponse,
-	parseJsonBody,
-} from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { toggleGuestBrandingRemoval } from '@/lib/rsvp/services/dashboard-guests.service';
+import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
 
-export const POST: APIRoute = async ({ params, request, url }) => {
+export const POST: APIRoute = async ({ params, request, url, locals }) => {
 	try {
-		const session = await getSessionContextFromRequest(request);
-		if (!session) {
-			throw new ApiError(
-				401,
-				'unauthorized',
-				'No tienes autorización para realizar esta acción.',
-			);
-		}
-		const allowed = await checkRateLimit({
-			namespace: 'dashboard',
-			entityId: `toggle-branding:${session.userId}`,
-			ip: getIp(request),
-			maxHits: 30,
-			windowSec: 60,
-		});
-		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Too many requests.');
-		}
+		const session = requireDashboardSessionFromLocals(locals);
+		await requireDashboardRateLimit(`toggle-branding:${session.userId}`, request);
 
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId is required.');

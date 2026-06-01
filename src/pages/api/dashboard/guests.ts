@@ -1,17 +1,12 @@
 import type { APIRoute } from 'astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { sanitize } from '@/lib/rsvp/core/utils';
+import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import {
-	badRequest,
-	errorResponse,
-	getIp,
-	jsonResponse,
-	parseJsonBody,
-} from '@/lib/rsvp/core/http';
-import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
-import { isSupportedCountryCode } from '@/lib/phone/country-codes';
-import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+	requireDashboardRateLimit,
+	validateGuestPhoneInput,
+} from '@/pages/api/dashboard/guests/dashboard-guests-lib';
 import {
 	createDashboardGuest,
 	listDashboardGuests,
@@ -29,16 +24,9 @@ function parseDelivery(raw: string): DeliveryFilter {
 	return 'all';
 }
 
-export const GET: APIRoute = async ({ request, url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
 	try {
-		const session = await getSessionContextFromRequest(request);
-		if (!session) {
-			throw new ApiError(
-				401,
-				'unauthorized',
-				'No tienes autorización para realizar esta acción.',
-			);
-		}
+		const session = requireDashboardSessionFromLocals(locals);
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const search = sanitize(url.searchParams.get('search'), 120);
 		const status = parseStatus(sanitize(url.searchParams.get('status'), 20));
@@ -60,26 +48,10 @@ export const GET: APIRoute = async ({ request, url }) => {
 	}
 };
 
-export const POST: APIRoute = async ({ request, url }) => {
+export const POST: APIRoute = async ({ request, url, locals }) => {
 	try {
-		const session = await getSessionContextFromRequest(request);
-		if (!session) {
-			throw new ApiError(
-				401,
-				'unauthorized',
-				'No tienes autorización para realizar esta acción.',
-			);
-		}
-		const allowed = await checkRateLimit({
-			namespace: 'dashboard',
-			entityId: `create:${session.userId}`,
-			ip: getIp(request),
-			maxHits: 30,
-			windowSec: 60,
-		});
-		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Too many requests.');
-		}
+		const session = requireDashboardSessionFromLocals(locals);
+		await requireDashboardRateLimit(`create:${session.userId}`, request);
 
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
@@ -87,7 +59,6 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const eventId = sanitize(body.eventId as string, 120);
 		const fullName = sanitize(body.fullName as string, 140);
-		const rawPhone = sanitize(body.phone as string, 40);
 		const countryCode =
 			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
 
@@ -95,16 +66,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 			return badRequest('eventId and fullName are required.');
 		}
 
-		const phoneResult = normalizeOptionalNationalPhone(rawPhone || null);
-		if (!phoneResult.ok) {
-			return badRequest(formatPhoneError(phoneResult.reason));
-		}
-		const normalizedCountryCode = phoneResult.phone ? countryCode : undefined;
-		if (phoneResult.phone && !normalizedCountryCode) {
-			return badRequest('La clave país es obligatoria cuando hay teléfono.');
-		}
-		if (normalizedCountryCode && !isSupportedCountryCode(normalizedCountryCode)) {
-			return badRequest('Código de país no válido.');
+		const rawPhone = sanitize(body.phone as string, 40);
+		const phoneValidation = validateGuestPhoneInput(rawPhone, countryCode);
+		if (!phoneValidation.ok) {
+			return badRequest(phoneValidation.message);
 		}
 
 		const maxAllowedAttendees =
@@ -113,8 +78,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const result = await createDashboardGuest({
 			eventId,
 			fullName,
-			phone: phoneResult.phone,
-			countryCode: normalizedCountryCode,
+			phone: phoneValidation.phone,
+			countryCode: phoneValidation.countryCode,
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,

@@ -1,21 +1,16 @@
 import type { APIRoute } from 'astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
-import { ApiError } from '@/lib/rsvp/core/errors';
-import {
-	badRequest,
-	errorResponse,
-	getIp,
-	jsonResponse,
-	parseJsonBody,
-} from '@/lib/rsvp/core/http';
-import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
-import { isSupportedCountryCode } from '@/lib/phone/country-codes';
-import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { sanitize } from '@/lib/rsvp/core/utils';
+import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import {
 	deleteDashboardGuest,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
+import {
+	requireDashboardRateLimit,
+	validateGuestPhoneInput,
+} from '@/pages/api/dashboard/guests/dashboard-guests-lib';
 
 function parseStatus(raw: string): AttendanceStatus | undefined {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;
@@ -26,49 +21,19 @@ function parsePhoneUpdate(
 	body: Record<string, unknown>,
 ): { ok: true; phone?: string | null; countryCode?: string } | { ok: false; message: string } {
 	const countryCode = typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
-	let phone: string | null | undefined;
 
-	if (body.phone !== undefined) {
-		const phoneResult = normalizeOptionalNationalPhone(body.phone as string);
-		if (!phoneResult.ok) {
-			return { ok: false, message: formatPhoneError(phoneResult.reason) };
-		}
-		phone = phoneResult.phone;
+	if (body.phone === undefined) {
+		return { ok: true, phone: undefined, countryCode: undefined };
 	}
 
-	if (!phone) {
-		return { ok: true, phone, countryCode: undefined };
-	}
-	if (!countryCode) {
-		return { ok: false, message: 'La clave país es obligatoria cuando hay teléfono.' };
-	}
-	if (!isSupportedCountryCode(countryCode)) {
-		return { ok: false, message: 'Código de país no válido.' };
-	}
-
-	return { ok: true, phone, countryCode };
+	const rawPhone = typeof body.phone === 'string' ? body.phone : '';
+	return validateGuestPhoneInput(rawPhone, countryCode);
 }
 
-export const PATCH: APIRoute = async ({ params, request, url }) => {
+export const PATCH: APIRoute = async ({ params, request, url, locals }) => {
 	try {
-		const session = await getSessionContextFromRequest(request);
-		if (!session) {
-			throw new ApiError(
-				401,
-				'unauthorized',
-				'No tienes autorización para realizar esta acción.',
-			);
-		}
-		const allowed = await checkRateLimit({
-			namespace: 'dashboard',
-			entityId: `patch:${session.userId}`,
-			ip: getIp(request),
-			maxHits: 30,
-			windowSec: 60,
-		});
-		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Too many requests.');
-		}
+		const session = requireDashboardSessionFromLocals(locals);
+		await requireDashboardRateLimit(`patch:${session.userId}`, request);
 
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId is required.');
@@ -108,26 +73,10 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 	}
 };
 
-export const DELETE: APIRoute = async ({ params, request }) => {
+export const DELETE: APIRoute = async ({ params, request, locals }) => {
 	try {
-		const session = await getSessionContextFromRequest(request);
-		if (!session) {
-			throw new ApiError(
-				401,
-				'unauthorized',
-				'No tienes autorización para realizar esta acción.',
-			);
-		}
-		const allowed = await checkRateLimit({
-			namespace: 'dashboard',
-			entityId: `delete:${session.userId}`,
-			ip: getIp(request),
-			maxHits: 30,
-			windowSec: 60,
-		});
-		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Too many requests.');
-		}
+		const session = requireDashboardSessionFromLocals(locals);
+		await requireDashboardRateLimit(`delete:${session.userId}`, request);
 
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId is required.');

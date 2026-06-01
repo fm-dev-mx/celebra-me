@@ -1,7 +1,11 @@
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
 import { GET as getDashboardGuests } from '@/pages/api/dashboard/guests';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { requireHostSession, getSessionContextFromRequest, getSessionDebugSnapshotFromRequest } from '@/lib/rsvp/auth/auth';
+import {
+	requireHostSession,
+	getSessionContextFromRequest,
+	getSessionDebugSnapshotFromRequest,
+} from '@/lib/rsvp/auth/auth';
 import { buildHostLoginRedirect } from '@/lib/rsvp/auth/login';
 import { createMockRequest } from '../helpers/api-mocks';
 
@@ -43,6 +47,7 @@ describe('dashboard auth flow', () => {
 		const guestsResp = await getDashboardGuests({
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1'),
+			locals: {},
 		} as never);
 
 		expect(eventsResp.status).toBe(401);

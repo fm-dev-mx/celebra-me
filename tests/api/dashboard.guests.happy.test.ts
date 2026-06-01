@@ -1,7 +1,6 @@
 import { GET, POST } from '@/pages/api/dashboard/guests';
 import { PATCH, DELETE } from '@/pages/api/dashboard/guests/[guestId]';
 import { POST as markShared } from '@/pages/api/dashboard/guests/[guestId]/mark-shared';
-import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	createDashboardGuest,
@@ -12,11 +11,6 @@ import {
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import { createMockRequest } from '../helpers/api-mocks';
 
-jest.mock('@/lib/rsvp/auth/auth', () => ({
-	requireHostSession: jest.fn(),
-	getSessionContextFromRequest: jest.fn(),
-}));
-
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	listDashboardGuests: jest.fn(),
 	createDashboardGuest: jest.fn(),
@@ -25,10 +19,6 @@ jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	markGuestShared: jest.fn(),
 }));
 
-const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
-const getSessionContextFromRequestMock = getSessionContextFromRequest as jest.MockedFunction<
-	typeof getSessionContextFromRequest
->;
 const listDashboardGuestsMock = listDashboardGuests as jest.MockedFunction<
 	typeof listDashboardGuests
 >;
@@ -43,17 +33,19 @@ const deleteDashboardGuestMock = deleteDashboardGuest as jest.MockedFunction<
 >;
 const markGuestSharedMock = markGuestShared as jest.MockedFunction<typeof markGuestShared>;
 
+const mockLocals = {
+	session: {
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client' as const,
+		isSuperAdmin: false,
+	},
+};
+
 describe('dashboard guests happy path', () => {
 	beforeEach(() => {
-		const session = {
-			userId: 'host-1',
-			email: 'host@test.com',
-			accessToken: 'token',
-			role: 'host_client' as const,
-			isSuperAdmin: false,
-		};
-		requireHostSessionMock.mockResolvedValue(session);
-		getSessionContextFromRequestMock.mockResolvedValue(session);
+		jest.clearAllMocks();
 	});
 
 	afterEach(() => {
@@ -82,6 +74,7 @@ describe('dashboard guests happy path', () => {
 		const response = await GET({
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1'),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(200);
 	});
@@ -121,6 +114,7 @@ describe('dashboard guests happy path', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(201);
 	});
@@ -160,6 +154,7 @@ describe('dashboard guests happy path', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(201);
@@ -180,6 +175,7 @@ describe('dashboard guests happy path', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(400);
@@ -215,6 +211,7 @@ describe('dashboard guests happy path', () => {
 			params: { guestId: 'guest-1' },
 			request: createMockRequest({ phone: null, countryCode: '+52' }),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(200);
@@ -255,6 +252,7 @@ describe('dashboard guests happy path', () => {
 			params: { guestId: 'guest-1' },
 			request: createMockRequest({ fullName: 'Updated Guest' }),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(200);
@@ -299,6 +297,7 @@ describe('dashboard guests happy path', () => {
 				guestComment: 'This should be ignored',
 			}),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(200);
@@ -367,6 +366,7 @@ describe('dashboard guests happy path', () => {
 			params: { guestId: 'guest-1' },
 			request: createMockRequest({ attendanceStatus: 'confirmed', attendeeCount: 2 }),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+			locals: mockLocals,
 		} as never);
 		expect(patchResp.status).toBe(200);
 
@@ -374,12 +374,14 @@ describe('dashboard guests happy path', () => {
 			params: { guestId: 'guest-1' },
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1/mark-shared'),
+			locals: mockLocals,
 		} as never);
 		expect(shareResp.status).toBe(200);
 
 		const deleteResp = await DELETE({
 			params: { guestId: 'guest-1' },
 			request: createMockRequest(),
+			locals: mockLocals,
 		} as never);
 		expect(deleteResp.status).toBe(200);
 	});
@@ -407,6 +409,7 @@ describe('dashboard guests happy path', () => {
 		const response = await GET({
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1&delivery=generated'),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(200);
 		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
@@ -437,6 +440,7 @@ describe('dashboard guests happy path', () => {
 		const response = await GET({
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1&delivery=shared'),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(200);
 		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
@@ -469,6 +473,7 @@ describe('dashboard guests happy path', () => {
 			url: new URL(
 				'http://localhost/api/dashboard/guests?eventId=evt-1&delivery=invalid_value',
 			),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(200);
 		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
@@ -477,13 +482,6 @@ describe('dashboard guests happy path', () => {
 	});
 
 	it('returns 403 when host tries to access another owner event', async () => {
-		getSessionContextFromRequestMock.mockResolvedValue({
-			userId: 'host-a',
-			email: 'a@test.com',
-			accessToken: 'token-a',
-			role: 'host_client',
-			isSuperAdmin: false,
-		});
 		listDashboardGuestsMock.mockRejectedValue(
 			new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.'),
 		);
@@ -491,6 +489,7 @@ describe('dashboard guests happy path', () => {
 		const response = await GET({
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-b'),
+			locals: mockLocals,
 		} as never);
 		expect(response.status).toBe(403);
 		const body = (await response.json()) as { error: { code: string } };

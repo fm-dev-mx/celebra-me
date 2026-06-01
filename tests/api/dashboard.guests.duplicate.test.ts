@@ -1,6 +1,5 @@
 import { POST } from '@/pages/api/dashboard/guests';
 import { PATCH } from '@/pages/api/dashboard/guests/[guestId]';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import {
 	createDashboardGuest,
 	updateDashboardGuest,
@@ -12,18 +11,11 @@ import { mockAdminSecurityPass } from '../helpers/mock-admin-security';
 // Mock funciones de seguridad
 mockAdminSecurityPass();
 
-jest.mock('@/lib/rsvp/auth/auth', () => ({
-	getSessionContextFromRequest: jest.fn(),
-}));
-
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	createDashboardGuest: jest.fn(),
 	updateDashboardGuest: jest.fn(),
 }));
 
-const getSessionContextFromRequestMock = getSessionContextFromRequest as jest.MockedFunction<
-	typeof getSessionContextFromRequest
->;
 const createDashboardGuestMock = createDashboardGuest as jest.MockedFunction<
 	typeof createDashboardGuest
 >;
@@ -31,19 +23,20 @@ const updateDashboardGuestMock = updateDashboardGuest as jest.MockedFunction<
 	typeof updateDashboardGuest
 >;
 
+const mockLocals = {
+	session: {
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client' as const,
+		isSuperAdmin: false,
+	},
+};
+
 describe('dashboard guests duplicate phone handling', () => {
 	beforeEach(() => {
 		// Mock funciones de seguridad
 		mockAdminSecurityPass();
-
-		const session = {
-			userId: 'host-1',
-			email: 'host@test.com',
-			accessToken: 'token',
-			role: 'host_client' as const,
-			isSuperAdmin: false,
-		};
-		getSessionContextFromRequestMock.mockResolvedValue(session);
 	});
 
 	afterEach(() => {
@@ -71,6 +64,7 @@ describe('dashboard guests duplicate phone handling', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(409);
@@ -102,6 +96,7 @@ describe('dashboard guests duplicate phone handling', () => {
 				fullName: 'Updated Guest',
 			}),
 			url: new URL('http://localhost/api/dashboard/guests/guest-1'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(409);
@@ -132,6 +127,7 @@ describe('dashboard guests duplicate phone handling', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(409);
@@ -155,6 +151,7 @@ describe('dashboard guests duplicate phone handling', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(500);
@@ -177,6 +174,7 @@ describe('dashboard guests duplicate phone handling', () => {
 				maxAllowedAttendees: 2,
 			}),
 			url: new URL('http://localhost/api/dashboard/guests'),
+			locals: mockLocals,
 		} as never);
 
 		expect(response.status).toBe(500);

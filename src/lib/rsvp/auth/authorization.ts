@@ -112,3 +112,51 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 export async function requireHostOrAdminSession(request: Request): Promise<SessionContext> {
 	return requireSessionContext(request);
 }
+
+// ---------------------------------------------------------------------------
+// Locals-based auth helpers
+// These consume the already-resolved session from Astro.locals.session (set by
+// middleware) instead of re-deriving from request cookies. This avoids the
+// cookie-staleness race condition between middleware and downstream consumers.
+// ---------------------------------------------------------------------------
+
+interface LocalsWithSession {
+	session?: SessionContext;
+}
+
+interface LocalsWithAdminAuth extends LocalsWithSession {
+	hasAdminStrongAuth?: boolean;
+}
+
+export function requireDashboardSessionFromLocals(locals: LocalsWithSession): SessionContext {
+	if (!locals.session) {
+		throw new ApiError(
+			401,
+			'unauthorized',
+			'No tienes autorización para realizar esta acción.',
+		);
+	}
+	return locals.session;
+}
+
+export function requireAdminDashboardSessionFromLocals(locals: LocalsWithSession): SessionContext {
+	const session = requireDashboardSessionFromLocals(locals);
+	if (!session.isSuperAdmin) {
+		throw new ApiError(403, 'forbidden', 'Not authorized for global administration.');
+	}
+	return session;
+}
+
+export function requireAdminStrongDashboardSessionFromLocals(
+	locals: LocalsWithAdminAuth,
+): SessionContext {
+	const session = requireAdminDashboardSessionFromLocals(locals);
+	if (!locals.hasAdminStrongAuth) {
+		throw new ApiError(
+			403,
+			'forbidden',
+			'Strong authentication (MFA or trusted device) is required to access this resource.',
+		);
+	}
+	return session;
+}
