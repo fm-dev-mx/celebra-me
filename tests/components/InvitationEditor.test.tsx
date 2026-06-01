@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import InvitationEditor from '@/components/dashboard/intake/editor/InvitationEditor';
+import InvitationEditor, {
+	getCriticalSections,
+} from '@/components/dashboard/intake/editor/InvitationEditor';
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
 
 const saveSection = jest.fn();
@@ -43,7 +45,49 @@ const context: InvitationEditorContextDTO = {
 		hasUnpublishedChanges: false,
 	},
 	rsvpLink: { status: 'linked', eventId: 'event-1' },
+	contentSource: 'draft',
+	sectionStates: {
+		title: 'draft',
+		description: 'empty',
+		hero: 'draft',
+		family: 'empty',
+		location: 'empty',
+		itinerary: 'draft',
+		rsvp: 'empty',
+		music: 'empty',
+		gifts: 'empty',
+		quote: 'empty',
+		thankYou: 'empty',
+		gallery: 'draft',
+		photoNotes: 'empty',
+		sectionOrder: 'draft',
+	},
 };
+
+beforeAll(() => {
+	class MockIntersectionObserver {
+		readonly root: Element | null = null;
+		readonly rootMargin: string = '';
+		readonly thresholds: ReadonlyArray<number> = [];
+		observe() {
+			/* noop */
+		}
+		unobserve() {
+			/* noop */
+		}
+		disconnect() {
+			/* noop */
+		}
+		takeRecords(): IntersectionObserverEntry[] {
+			return [];
+		}
+	}
+	Object.defineProperty(window, 'IntersectionObserver', {
+		value: MockIntersectionObserver,
+		writable: true,
+		configurable: true,
+	});
+});
 
 jest.mock('@/hooks/use-invitation-editor', () => ({
 	useInvitationEditor: () => ({
@@ -62,6 +106,35 @@ beforeEach(() => {
 	jest.clearAllMocks();
 	saveSection.mockResolvedValue({});
 	saveMetadata.mockResolvedValue(context.invitation);
+});
+
+describe('getCriticalSections', () => {
+	it('includes hero and location for all event types', () => {
+		const result = getCriticalSections('xv', false);
+		expect(result.has('hero')).toBe(true);
+		expect(result.has('location')).toBe(true);
+	});
+
+	it('includes family for xv, boda, bautizo event types', () => {
+		expect(getCriticalSections('xv', false).has('family')).toBe(true);
+		expect(getCriticalSections('boda', false).has('family')).toBe(true);
+		expect(getCriticalSections('bautizo', false).has('family')).toBe(true);
+	});
+
+	it('excludes family for cumple event type', () => {
+		expect(getCriticalSections('cumple', false).has('family')).toBe(false);
+	});
+
+	it('includes rsvp only when enabled', () => {
+		expect(getCriticalSections('xv', false).has('rsvp')).toBe(false);
+		expect(getCriticalSections('xv', true).has('rsvp')).toBe(true);
+	});
+
+	it('does not include main as a sectionStates key (hero is the canonical key)', () => {
+		const result = getCriticalSections('xv', true);
+		expect(result.has('main')).toBe(false);
+		expect(result.has('hero')).toBe(true);
+	});
 });
 
 describe('InvitationEditor', () => {
@@ -90,5 +163,33 @@ describe('InvitationEditor', () => {
 			);
 		});
 		expect(saveSection).toHaveBeenCalledTimes(1);
+	});
+
+	it('section cards have aria-labelledby pointing to section heading', () => {
+		const { container } = render(<InvitationEditor initialContext={context} />);
+		const sections = container.querySelectorAll('.invitation-editor__card');
+		expect(sections.length).toBeGreaterThan(0);
+		sections.forEach((section) => {
+			const labelledby = section.getAttribute('aria-labelledby');
+			expect(labelledby).not.toBeNull();
+			const heading = document.getElementById(labelledby!);
+			expect(heading).not.toBeNull();
+		});
+	});
+
+	it('nav dots have aria-label with Fuente prefix', () => {
+		render(<InvitationEditor initialContext={context} />);
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		const dots = nav.querySelectorAll('.invitation-editor__nav-dot');
+		expect(dots.length).toBeGreaterThan(0);
+		dots.forEach((dot) => {
+			expect(dot.getAttribute('aria-label')).toMatch(/^Fuente: /);
+		});
+	});
+
+	it('nav items have active class on scroll intersection (check initial render has no active item)', () => {
+		const { container } = render(<InvitationEditor initialContext={context} />);
+		const activeItems = container.querySelectorAll('.invitation-editor__nav-item--active');
+		expect(activeItems.length).toBe(0);
 	});
 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEditor';
 import MetadataSection from '@/components/dashboard/intake/editor/MetadataSection';
@@ -12,6 +12,7 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
@@ -32,6 +33,35 @@ const NAV_ITEMS: Array<{ id: string; label: string }> = [
 	{ id: 'publication', label: 'Publicación' },
 ];
 
+const SOURCE_LABELS: Record<string, string> = {
+	draft: 'Borrador',
+	published: 'Versión pública',
+	demo: 'Demo',
+	empty: 'Vacío',
+};
+
+const CONTENT_SOURCE_LABELS: Record<string, string> = {
+	draft: 'Con borrador local',
+	published: 'Basado en versión pública',
+	demo: 'Demo',
+	empty: 'Sin contenido',
+	mixed: 'Contenido combinado',
+};
+
+const CRITICAL_SECTION_LABELS: Record<string, string> = {
+	hero: 'Datos principales',
+	family: 'Personas principales',
+	location: 'Fecha y ubicaciones',
+	rsvp: 'Confirmación de asistencia',
+};
+
+export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
+	const critical = new Set<string>(['hero', 'location']);
+	if (eventType !== 'cumple') critical.add('family');
+	if (rsvpEnabled) critical.add('rsvp');
+	return critical;
+}
+
 function SectionCard({
 	id,
 	title,
@@ -42,6 +72,7 @@ function SectionCard({
 	error,
 	success,
 	onSave,
+	sourceBadge,
 }: {
 	id: string;
 	title: string;
@@ -52,15 +83,26 @@ function SectionCard({
 	error?: string;
 	success?: string;
 	onSave: () => void;
+	sourceBadge?: { source: string; label: string };
 }) {
+	const headingId = `section-${id}-heading`;
 	return (
-		<section className="invitation-editor__card" id={id}>
+		<section className="invitation-editor__card" id={id} aria-labelledby={headingId}>
 			<div className="invitation-editor__card-header">
 				<div>
-					<h2>{title}</h2>
+					<h2 id={headingId}>{title}</h2>
 					<p>{description}</p>
 				</div>
-				{dirty && <span className="invitation-editor__dirty">Cambios sin guardar</span>}
+				<div className="invitation-editor__card-header-badges">
+					{sourceBadge && (
+						<span
+							className={`invitation-editor__source-badge invitation-editor__source-badge--${sourceBadge.source}`}
+						>
+							{sourceBadge.label}
+						</span>
+					)}
+					{dirty && <span className="invitation-editor__dirty">Cambios sin guardar</span>}
+				</div>
 			</div>
 			{children}
 			<div className="invitation-editor__card-footer" aria-live="polite">
@@ -125,6 +167,8 @@ function metadataFromContext(context: InvitationEditorContextDTO): InvitationEdi
 	return { title, slug, status, clientName, clientEmail, clientWhatsapp, photosReceived };
 }
 
+/* eslint-disable max-lines -- Inline components (SectionCard, Field, TextArea) kept co-located for readability. */
+
 // eslint-disable-next-line complexity -- The shell coordinates dirty state across intentionally independent cards.
 export default function InvitationEditor({ initialContext }: Props) {
 	const editor = useInvitationEditor(initialContext);
@@ -142,6 +186,27 @@ export default function InvitationEditor({ initialContext }: Props) {
 		window.addEventListener('beforeunload', warn);
 		return () => window.removeEventListener('beforeunload', warn);
 	}, [dirty]);
+
+	const [activeSection, setActiveSection] = useState('');
+
+	useEffect(() => {
+		const ids = NAV_ITEMS.map((n) => n.id);
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						setActiveSection(entry.target.id);
+					}
+				}
+			},
+			{ rootMargin: '-40% 0px -55% 0px' },
+		);
+		const elements = ids
+			.map((id) => document.getElementById(id))
+			.filter((el): el is HTMLElement => el !== null);
+		for (const el of elements) observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
 
 	const markDirty = (section: string) => {
 		setDirty((current) => new Set(current).add(section));
@@ -256,46 +321,188 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const updateRsvp = (patch: Partial<typeof rsvp>) =>
 		updateContent('rsvp', { ...rsvp, ...patch });
 
-	const cards = { saving: editor.savingSection };
+	const savingSection = editor.savingSection;
+
+	const editorSectionKeys: Record<string, string[]> = useMemo(
+		() => ({
+			main: ['title', 'description', 'hero'],
+			family: ['family'],
+			location: ['location'],
+			itinerary: ['itinerary'],
+			rsvp: ['rsvp'],
+			music: ['music'],
+			gifts: ['gifts'],
+			messages: ['quote', 'thankYou'],
+			gallery: ['gallery'],
+			photoNotes: ['photoNotes'],
+			publication: ['sectionOrder'],
+		}),
+		[],
+	);
+
+	const sectionSource = useCallback(
+		(section: string): { source: string; label: string } | undefined => {
+			const keys = editorSectionKeys[section];
+			if (!keys) return undefined;
+			for (const source of ['draft', 'published', 'demo'] as const) {
+				if (keys.some((key) => editor.context.sectionStates[key] === source)) {
+					return { source, label: SOURCE_LABELS[source] };
+				}
+			}
+			return { source: 'empty', label: SOURCE_LABELS.empty };
+		},
+		[editorSectionKeys, editor.context.sectionStates],
+	);
+
+	const hasDraft = editor.context.draftStatus !== null;
+	const noDraftWarning =
+		!hasDraft && editor.context.contentSource !== 'empty'
+			? 'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.'
+			: null;
+
+	const rsvpEnabled = useMemo(
+		() =>
+			editor.context.rsvpLink.status !== 'missing' ||
+			editor.context.sectionStates.rsvp !== 'empty',
+		[editor.context.rsvpLink.status, editor.context.sectionStates.rsvp],
+	);
+
+	const criticalSections = useMemo(
+		() => getCriticalSections(editor.context.invitation.eventType, rsvpEnabled),
+		[editor.context.invitation.eventType, rsvpEnabled],
+	);
+
+	const emptySectionsDetail = useMemo(() => {
+		const critical: string[] = [];
+		const optional: string[] = [];
+		for (const [section, state] of Object.entries(editor.context.sectionStates)) {
+			if (state !== 'empty') continue;
+			if (criticalSections.has(section)) critical.push(section);
+			else optional.push(section);
+		}
+		return { critical, optional };
+	}, [editor.context.sectionStates, criticalSections]);
+
+	const publishWarning = useMemo(() => {
+		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
+		if (emptySectionsDetail.critical.length > 0) {
+			const labels = emptySectionsDetail.critical
+				.map((s) => CRITICAL_SECTION_LABELS[s] ?? s)
+				.join(', ');
+			return `Secciones críticas vacías: ${labels}. Revisa el contenido antes de publicar.`;
+		}
+		if (emptySectionsDetail.optional.length > 0) {
+			return `${emptySectionsDetail.optional.length} sección(es) opcional(es) vacías. Puedes publicar sin ellas.`;
+		}
+		if (!hasDraft && editor.context.contentSource !== 'draft') {
+			return 'No hay cambios sin publicar. Guarda una sección primero.';
+		}
+		return null;
+	}, [editor.context.contentSource, emptySectionsDetail, hasDraft]);
 
 	return (
 		<div className="invitation-editor">
 			<header className="invitation-editor__header">
-				<div>
-					<p className="invitation-editor__eyebrow">Editor interno</p>
+				<div className="invitation-editor__header-info">
+					<div className="invitation-editor__header-badges">
+						<span
+							className={`invitation-editor__content-badge invitation-editor__content-badge--${editor.context.contentSource}`}
+						>
+							{CONTENT_SOURCE_LABELS[editor.context.contentSource] ??
+								editor.context.contentSource}
+						</span>
+						{editor.context.invitation.kind === 'demo' && (
+							<span className="invitation-editor__content-badge invitation-editor__content-badge--demo-tag">
+								Demo
+							</span>
+						)}
+					</div>
 					<h1>{metadata.title}</h1>
-					<p>
-						{editor.context.publication.hasUnpublishedChanges
-							? 'Hay una revisión sin publicar.'
-							: 'La versión pública está actualizada.'}
-					</p>
+					<div className="invitation-editor__header-meta">
+						<span
+							className={`invitation-editor__status-badge invitation-editor__status-badge--${metadata.status}`}
+						>
+							{INVITATION_STATUS_LABELS[metadata.status] ?? metadata.status}
+						</span>
+						{editor.context.publication.version != null && (
+							<span className="invitation-editor__version-badge">
+								v{editor.context.publication.version}
+							</span>
+						)}
+						<span className="invitation-editor__publication-state">
+							{editor.context.publication.hasUnpublishedChanges
+								? 'Hay cambios sin publicar'
+								: 'La versión pública está actualizada'}
+						</span>
+					</div>
 				</div>
 				<div className="invitation-editor__header-actions">
-					<a href={`/dashboard/invitaciones/${editor.context.invitation.id}/preview`}>
+					<a
+						href={`/dashboard/invitaciones/${editor.context.invitation.id}/preview`}
+						className="invitation-editor__secondary-action"
+					>
 						Vista previa
 					</a>
 					<button
 						type="button"
+						className="invitation-editor__primary-action"
 						onClick={publish}
 						disabled={editor.publishing || hasDirtySections}
 					>
 						{editor.publishing ? 'Publicando...' : 'Publicar cambios'}
 					</button>
+					<a
+						href="/dashboard/invitaciones"
+						className="invitation-editor__secondary-action"
+					>
+						Volver
+					</a>
 				</div>
+				{noDraftWarning && (
+					<p className="invitation-editor__warning invitation-editor__warning--guard">
+						{noDraftWarning}
+					</p>
+				)}
+				{publishWarning && (
+					<p className="invitation-editor__warning invitation-editor__warning--guard">
+						{publishWarning}
+					</p>
+				)}
 				{errors.publish && <p className="invitation-editor__error">{errors.publish}</p>}
 				{success.publish && <p className="invitation-editor__success">{success.publish}</p>}
 			</header>
 
 			<div className="invitation-editor__layout">
 				<nav className="invitation-editor__nav" aria-label="Secciones del editor">
-					{NAV_ITEMS.map((item) => (
-						<a href={`#${item.id}`} key={item.id}>
-							{item.label}
-							{dirty.has(item.id) && (
-								<span aria-label="con cambios sin guardar"> *</span>
-							)}
-						</a>
-					))}
+					{NAV_ITEMS.map((item) => {
+						const badge = sectionSource(item.id);
+						const itemClasses = [
+							'invitation-editor__nav-item',
+							activeSection === item.id ? 'invitation-editor__nav-item--active' : '',
+						]
+							.filter(Boolean)
+							.join(' ');
+						return (
+							<a href={`#${item.id}`} key={item.id} className={itemClasses}>
+								{badge && (
+									<span
+										className={`invitation-editor__nav-dot invitation-editor__nav-dot--${badge.source}`}
+										title={badge.label}
+										aria-label={`Fuente: ${badge.label}`}
+									/>
+								)}
+								<span className="invitation-editor__nav-label">{item.label}</span>
+								{dirty.has(item.id) && (
+									<span
+										className="invitation-editor__nav-dirty"
+										aria-label="con cambios sin guardar"
+									>
+										*
+									</span>
+								)}
+							</a>
+						);
+					})}
 				</nav>
 
 				<main className="invitation-editor__content">
@@ -304,10 +511,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Datos de la invitación"
 						description="Información administrativa, URL pública y seguimiento de producción."
 						dirty={dirty.has('metadata')}
-						saving={cards.saving === 'metadata'}
+						saving={savingSection === 'metadata'}
 						error={errors.metadata}
 						success={success.metadata}
 						onSave={saveMetadata}
+						sourceBadge={undefined}
 					>
 						<MetadataSection
 							value={metadata}
@@ -323,10 +531,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Datos principales"
 						description="Texto principal que abre la invitación."
 						dirty={dirty.has('main')}
-						saving={cards.saving === 'main'}
+						saving={savingSection === 'main'}
 						error={errors.main}
 						success={success.main}
 						onSave={() => saveSection('main')}
+						sourceBadge={sectionSource('main')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -373,10 +582,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Personas principales"
 						description="Familia y personas destacadas."
 						dirty={dirty.has('family')}
-						saving={cards.saving === 'family'}
+						saving={savingSection === 'family'}
 						error={errors.family}
 						success={success.family}
 						onSave={() => saveSection('family')}
+						sourceBadge={sectionSource('family')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -437,10 +647,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Fecha y ubicaciones"
 						description="Ceremonia, recepción e indicaciones."
 						dirty={dirty.has('location')}
-						saving={cards.saving === 'location'}
+						saving={savingSection === 'location'}
 						error={errors.location}
 						success={success.location}
 						onSave={() => saveSection('location')}
+						sourceBadge={sectionSource('location')}
 					>
 						{(['ceremony', 'reception'] as const).map((venueKey) => {
 							const venue = location[venueKey] ?? {};
@@ -504,10 +715,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Programa"
 						description="Orden y horario de actividades."
 						dirty={dirty.has('itinerary')}
-						saving={cards.saving === 'itinerary'}
+						saving={savingSection === 'itinerary'}
 						error={errors.itinerary}
 						success={success.itinerary}
 						onSave={() => saveSection('itinerary')}
+						sourceBadge={sectionSource('itinerary')}
 					>
 						<ItineraryEditor
 							value={content.itinerary ?? { items: [] }}
@@ -520,10 +732,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Confirmación de asistencia"
 						description="Configuración visible para invitados; las respuestas permanecen separadas."
 						dirty={dirty.has('rsvp')}
-						saving={cards.saving === 'rsvp'}
+						saving={savingSection === 'rsvp'}
 						error={errors.rsvp}
 						success={success.rsvp}
 						onSave={() => saveSection('rsvp')}
+						sourceBadge={sectionSource('rsvp')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -575,10 +788,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Música"
 						description="Pista musical de la experiencia pública."
 						dirty={dirty.has('music')}
-						saving={cards.saving === 'music'}
+						saving={savingSection === 'music'}
 						error={errors.music}
 						success={success.music}
 						onSave={() => saveSection('music')}
+						sourceBadge={sectionSource('music')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -604,10 +818,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Mesa de regalos"
 						description="Opciones de regalo visibles para invitados."
 						dirty={dirty.has('gifts')}
-						saving={cards.saving === 'gifts'}
+						saving={savingSection === 'gifts'}
 						error={errors.gifts}
 						success={success.gifts}
 						onSave={() => saveSection('gifts')}
+						sourceBadge={sectionSource('gifts')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -730,10 +945,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Mensajes especiales"
 						description="Frase y cierre de agradecimiento."
 						dirty={dirty.has('messages')}
-						saving={cards.saving === 'messages'}
+						saving={savingSection === 'messages'}
 						error={errors.messages}
 						success={success.messages}
 						onSave={() => saveSection('messages')}
+						sourceBadge={sectionSource('messages')}
 					>
 						<TextArea
 							label="Frase"
@@ -773,10 +989,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Galería"
 						description="Fotografías, orden, pies de foto y punto focal. Se guardan juntas."
 						dirty={dirty.has('gallery')}
-						saving={cards.saving === 'gallery'}
+						saving={savingSection === 'gallery'}
 						error={errors.gallery}
 						success={success.gallery}
 						onSave={() => saveSection('gallery')}
+						sourceBadge={sectionSource('gallery')}
 					>
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
@@ -790,10 +1007,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Notas de fotografías"
 						description="Notas internas de producción; no se publican."
 						dirty={dirty.has('photoNotes')}
-						saving={cards.saving === 'photoNotes'}
+						saving={savingSection === 'photoNotes'}
 						error={errors.photoNotes}
 						success={success.photoNotes}
 						onSave={() => saveSection('photoNotes')}
+						sourceBadge={sectionSource('photoNotes')}
 					>
 						<label className="invitation-editor__check">
 							<input
@@ -837,10 +1055,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Publicación"
 						description="Orden público, versión vigente y salud del evento RSVP."
 						dirty={dirty.has('publication')}
-						saving={cards.saving === 'publication'}
+						saving={savingSection === 'publication'}
 						error={errors.publication}
 						success={success.publication}
 						onSave={() => saveSection('publication')}
+						sourceBadge={sectionSource('publication')}
 					>
 						<PublicationSection
 							context={editor.context}
