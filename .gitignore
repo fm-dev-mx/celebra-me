@@ -76,6 +76,7 @@ _tmp_*
 astro/types.d.ts
 .astro/settings.json
 /supabase/.temp/
+/supabase/.branches/
 
 
 # --- AI AGENTS & TOOLING ------------------------------------------------------
