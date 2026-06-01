@@ -2,8 +2,16 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import type { DemoPreset } from '@/lib/intake/types';
 import { str } from '@/lib/intake/utils';
 
-function isPopulated(section: Record<string, unknown> | null | undefined): boolean {
-	return !!section && Object.keys(section).length > 0;
+function isBlankSection<T extends Record<string, unknown> | null | undefined>(
+	value: T,
+): value is Extract<T, null | undefined> {
+	return !value || Object.keys(value).length === 0;
+}
+
+function normalizeHeroDate(value: string): string {
+	if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00:00.000Z`;
+	if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:00.000Z`;
+	return value;
 }
 
 type VenueDraft = {
@@ -19,7 +27,7 @@ function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	celebrantName: string,
 ): Record<string, unknown> | undefined {
-	if (!draftFamily) return undefined;
+	if (isBlankSection(draftFamily)) return undefined;
 
 	const result: Record<string, unknown> = {};
 	const parents: Record<string, unknown> = {};
@@ -66,7 +74,7 @@ function mapFamilyFromDraft(
 }
 
 function mapVenue(draftVenue: VenueDraft | undefined): Record<string, unknown> | undefined {
-	if (!draftVenue) return undefined;
+	if (isBlankSection(draftVenue)) return undefined;
 	const result: Record<string, unknown> = {};
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
 	if (str(draftVenue.address)) result.address = str(draftVenue.address);
@@ -80,7 +88,7 @@ function mapVenue(draftVenue: VenueDraft | undefined): Record<string, unknown> |
 function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
 ): Record<string, unknown> | undefined {
-	if (!draftLocation) return undefined;
+	if (isBlankSection(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
 	const ceremony = mapVenue(draftLocation.ceremony);
 	if (ceremony) result.ceremony = ceremony;
@@ -109,14 +117,14 @@ function mapHeroSection(
 	invitationTitle: string,
 	themeId: string,
 ): Record<string, unknown> | undefined {
-	if (!draftHero || !isPopulated(draftHero as Record<string, unknown>)) return demoHero;
+	if (isBlankSection(draftHero)) return demoHero;
 	const fromDemo = (key: string) => (demoHero?.[key] as string) || '';
 	return {
 		name: str(draftHero.name) || (demoHero?.name as string) || invitationTitle,
 		secondaryName: str(draftHero.secondaryName) || fromDemo('secondaryName'),
 		label: str(draftHero.label) || (demoHero?.label as string) || 'Invitacion Especial',
 		nickname: str(draftHero.nickname) || fromDemo('nickname'),
-		date: str(draftHero.date) || (demoHero?.date as string) || '',
+		date: normalizeHeroDate(str(draftHero.date) || (demoHero?.date as string) || ''),
 		backgroundImage: demoHero?.backgroundImage || { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoHero?.backgroundImageDesktop,
 		portrait: demoHero?.portrait,
@@ -128,7 +136,8 @@ function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
+	if (isBlankSection(draftRsvp)) return undefined;
+	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone);
 	return {
 		title: str(draftRsvp.title) || str(demoRsvp?.title),
 		guestCap:
@@ -140,7 +149,7 @@ function mapRsvpSection(
 		confirmationMode:
 			str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
 		accessMode: str(demoRsvp?.accessMode) || 'personalized-only',
-		whatsappPhone: str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone),
+		whatsappConfig: whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig,
 		subcopy: str(draftRsvp.subcopy) || str(demoRsvp?.subcopy),
 	};
 }
@@ -161,7 +170,7 @@ function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (!draftGifts || Object.keys(draftGifts).length === 0) {
+	if (isBlankSection(draftGifts)) {
 		return demoGifts ? { ...demoGifts } : undefined;
 	}
 	return {
@@ -254,10 +263,10 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 
 		hero: heroSection,
 		envelope: demoContent.envelope ?? { disabled: true },
-		family: familySection,
-		location: locationSection,
-		gallery: demoContent.gallery,
-		itinerary: demoContent.itinerary,
+		family: familySection ?? demoContent.family,
+		location: locationSection ?? demoContent.location,
+		gallery: draftContent.gallery ?? demoContent.gallery,
+		itinerary: draftContent.itinerary ?? demoContent.itinerary,
 		countdown: demoContent.countdown,
 		rsvp: rsvpSection,
 		music: musicSection,

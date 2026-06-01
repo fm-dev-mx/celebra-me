@@ -92,7 +92,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.hero).toMatchObject({
 			name: 'Ana Sofia',
 			label: 'Mis XV Anos',
-			date: '2027-11-20',
+			date: '2027-11-20T00:00:00.000Z',
 			backgroundImage: { type: 'internal', key: 'hero' },
 			variant: 'jewelry-box',
 		});
@@ -286,11 +286,53 @@ describe('mapDraftToPublished', () => {
 		expect((result.gallery as Record<string, unknown>).title).toBe('Galería');
 	});
 
+	it('uses gallery from draft content when the admin edits captions or order', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				gallery: {
+					title: 'Nuestros recuerdos',
+					items: [
+						{ image: 'gallery02', caption: 'Segundo recuerdo' },
+						{ image: 'gallery01', caption: 'Primer recuerdo' },
+					],
+				},
+			},
+		});
+
+		expect(result.gallery).toEqual({
+			title: 'Nuestros recuerdos',
+			items: [
+				{ image: 'gallery02', caption: 'Segundo recuerdo' },
+				{ image: 'gallery01', caption: 'Primer recuerdo' },
+			],
+		});
+	});
+
 	it('includes itinerary from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.itinerary).toBeDefined();
 		expect((result.itinerary as Record<string, unknown>).title).toBe('Itinerario');
+	});
+
+	it('uses itinerary from draft content when the admin edits the program', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				itinerary: {
+					title: 'Programa',
+					items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
+				},
+			},
+		});
+
+		expect(result.itinerary).toEqual({
+			title: 'Programa',
+			items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
+		});
 	});
 
 	it('includes countdown from demo content', () => {
@@ -361,7 +403,7 @@ describe('mapDraftToPublished', () => {
 
 		expect((result.hero as Record<string, unknown>).name).toBe('Ana Sofia');
 		expect((result.hero as Record<string, unknown>).label).toBe('Mis XV Anos');
-		expect((result.hero as Record<string, unknown>).date).toBe('2027-11-20');
+		expect((result.hero as Record<string, unknown>).date).toBe('2027-11-20T00:00:00.000Z');
 	});
 
 	it('draft title overrides demo title', () => {
