@@ -8,6 +8,8 @@ import { findPublishedByInvitationId } from '@/lib/intake/repositories/published
 import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
+import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
+import type { DemoPreset } from '@/lib/intake/types';
 
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import Layout from '@/layouts/Layout.astro';
@@ -24,17 +26,26 @@ const { id } = Astro.params;
 let errorMessage: string | null = null;
 let previewSource: string | null = null;
 let previewWarning: string | null = null;
-let hasNoContent = false;
 let pageCtx: InvitationPageContext | undefined;
 
 if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
 }
 
-const invitation = await findInvitationById(id);
-if (!invitation) {
+const invitationRecord = await findInvitationById(id);
+const resolvedSnapshot: DemoPreset | undefined = invitationRecord?.snapshot
+	?? DEMO_PRESET_CATALOG.find((p) => p.id === invitationRecord?.baseDemoId);
+
+if (!invitationRecord || !resolvedSnapshot) {
 	errorMessage = 'Invitación no encontrada.';
 }
+
+const invitation = invitationRecord && resolvedSnapshot
+	? { ...invitationRecord, snapshot: resolvedSnapshot }
+	: null;
+
+// Track whether we rendered from empty content (first-time editor experience)
+let renderedFromEmpty = false;
 
 const entries = !errorMessage ? await getCollection('event-demos') : [];
 const demoEntryForSlug = (slug: string) =>
@@ -47,12 +58,12 @@ async function tryBuildContext(
 	label: string,
 ): Promise<InvitationPageContext | null> {
 	if (!invitation) return null;
-	const snapshot = invitation.snapshot;
-	if (!snapshot?.previewSlug) return null;
 
-	const demoEntry = demoEntryForSlug(snapshot.previewSlug);
-	const demoContent = (demoEntry?.data as Record<string, unknown>) ?? {};
-	if (Object.keys(demoContent).length === 0) return null;
+	// Resolve demo content defensively — only look up when previewSlug exists
+	const demoContent: Record<string, unknown> =
+		invitation.snapshot.previewSlug
+			? (demoEntryForSlug(invitation.snapshot.previewSlug)?.data as Record<string, unknown>) ?? {}
+			: {};
 
 	const result = buildDraftPreviewPageContext(invitation, content, demoContent);
 	if (!result.ok) return null;
@@ -61,7 +72,7 @@ async function tryBuildContext(
 	return result.pageContext;
 }
 
-// Fallback chain: 1) valid draft, 2) published, 3) published with draft error, 4) empty
+// Fallback chain: 1) draft, 2) published, 3) empty content fallback
 const [draft, published] = await Promise.all([
 	!errorMessage ? findDraftByInvitationId(id) : null,
 	!errorMessage ? findPublishedByInvitationId(id) : null,
@@ -85,11 +96,14 @@ if (draft?.content) {
 	}
 }
 
-if (!pageCtx && !errorMessage) {
-	if (draft || published) {
-		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
+// If no content source produced a page context, attempt with empty content
+if (!pageCtx && !errorMessage && invitation) {
+	const ctx = await tryBuildContext({}, 'Vacío');
+	if (ctx) {
+		pageCtx = ctx;
+		renderedFromEmpty = true;
 	} else {
-		hasNoContent = true;
+		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
 	}
 }
 
@@ -97,21 +111,7 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 ---
 
 {
-	hasNoContent ? (
-		<DashboardLayout title="Vista previa">
-			<main class="preview-empty">
-				<p class="preview-empty__text">
-					Aún no hay contenido para esta invitación.
-				</p>
-				<p class="preview-empty__hint">
-					Crea un borrador para comenzar a editar.
-				</p>
-				<a href={editUrl} class="preview-empty__action">
-					Ir al editor
-				</a>
-			</main>
-		</DashboardLayout>
-	) : errorMessage ? (
+	errorMessage ? (
 		<DashboardLayout title="Vista previa no disponible">
 			<main class="preview-error">
 				<h2>Vista previa no disponible</h2>
@@ -136,6 +136,11 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 					Vista previa interna — {previewSource}
 				</span>
 				{previewWarning && <span class="preview-banner__warning">{previewWarning}</span>}
+				{renderedFromEmpty && (
+					<span class="preview-banner__hint">
+						Aún no hay contenido guardado. Edita la invitación para agregarlo.
+					</span>
+				)}
 				<a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>
 			</div>
 
@@ -240,34 +245,10 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 		font-weight: 400;
 	}
 
-	.preview-empty {
-		padding: 60px 24px;
-		text-align: center;
-		font-family: system-ui, sans-serif;
-	}
-
-	.preview-empty__text {
-		font-size: 1.125rem;
-		color: var(--color-text-primary);
-		margin: 0 0 0.5rem;
-	}
-
-	.preview-empty__hint {
-		font-size: 0.875rem;
+	.preview-banner__hint {
 		color: var(--color-text-muted);
-		margin: 0 0 1.5rem;
-	}
-
-	.preview-empty__action {
-		display: inline-block;
-		padding: 0.625rem 1.25rem;
-		border: 1px solid var(--color-action-accent);
-		border-radius: 8px;
-		background: var(--color-action-accent);
-		color: var(--color-text-inverse);
-		font-weight: 600;
-		font-size: 0.875rem;
-		text-decoration: none;
+		font-size: 12px;
+		font-weight: 400;
 	}
 
 	.preview-error {
