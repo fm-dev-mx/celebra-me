@@ -1,5 +1,6 @@
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { moveArrayItem } from '@/lib/intake/utils';
 
 interface Props {
 	context: InvitationEditorContextDTO;
@@ -9,6 +10,8 @@ interface Props {
 	) => void;
 	onReconcile: () => void;
 	reconciling: boolean;
+	onRestorePublished: () => void;
+	restoring: boolean;
 }
 
 const SECTION_LABELS: Record<(typeof INVITATION_RENDER_SECTION_KEYS)[number], string> = {
@@ -24,19 +27,27 @@ const SECTION_LABELS: Record<(typeof INVITATION_RENDER_SECTION_KEYS)[number], st
 	personalizedAccess: 'Acceso personalizado',
 };
 
+function formatPublicationDate(value: string): string {
+	return new Intl.DateTimeFormat('es-MX', {
+		day: 'numeric',
+		month: 'long',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+	}).format(new Date(value));
+}
+
 export default function PublicationSection({
 	context,
 	sectionOrder,
 	onChange,
 	onReconcile,
 	reconciling,
+	onRestorePublished,
+	restoring,
 }: Props) {
 	const move = (index: number, offset: -1 | 1) => {
-		const destination = index + offset;
-		if (destination < 0 || destination >= sectionOrder.length) return;
-		const nextOrder = [...sectionOrder];
-		[nextOrder[index], nextOrder[destination]] = [nextOrder[destination], nextOrder[index]];
-		onChange(nextOrder);
+		onChange(moveArrayItem(sectionOrder, index, offset));
 	};
 
 	return (
@@ -49,10 +60,20 @@ export default function PublicationSection({
 				<p>
 					<strong>Última publicación:</strong>{' '}
 					{context.publication.publishedAt
-						? new Date(context.publication.publishedAt).toLocaleString('es-MX')
+						? formatPublicationDate(context.publication.publishedAt)
 						: 'Aún no publicada'}
 				</p>
 			</div>
+			{context.publication.hasPublishedContent && (
+				<button
+					type="button"
+					className="invitation-editor__secondary-button"
+					onClick={onRestorePublished}
+					disabled={restoring}
+				>
+					{restoring ? 'Restaurando...' : 'Restaurar desde versión pública'}
+				</button>
+			)}
 			{context.rsvpLink.status !== 'linked' && (
 				<div className="invitation-editor__warning">
 					<p>
@@ -72,7 +93,9 @@ export default function PublicationSection({
 				<div className="invitation-editor__stack">
 					{sectionOrder.map((section, index) => (
 						<div className="invitation-editor__order-row" key={section}>
-							<span>{SECTION_LABELS[section]}</span>
+							<span>
+								{index + 1}. {SECTION_LABELS[section]}
+							</span>
 							<div className="invitation-editor__reorder">
 								<button
 									type="button"
