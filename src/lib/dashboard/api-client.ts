@@ -55,29 +55,37 @@ export class DashboardApiClient {
 		});
 	}
 
-	async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<ApiResult<T>> {
+	async post<T>(
+		path: string,
+		body?: unknown,
+		init?: Omit<RequestInit, 'body'>,
+	): Promise<ApiResult<T>> {
 		return fetchJSON<T>(`${this.baseUrl}${path}`, {
 			method: 'POST',
-			headers: this.prepareMutationHeaders(init),
-			body: body ? JSON.stringify(body) : undefined,
 			...init,
+			headers: this.prepareMutationHeaders(init),
+			body: body !== undefined ? JSON.stringify(body) : undefined,
 		});
 	}
 
-	async patch<T>(path: string, body?: unknown, init?: RequestInit): Promise<ApiResult<T>> {
+	async patch<T>(
+		path: string,
+		body?: unknown,
+		init?: Omit<RequestInit, 'body'>,
+	): Promise<ApiResult<T>> {
 		return fetchJSON<T>(`${this.baseUrl}${path}`, {
 			method: 'PATCH',
-			headers: this.prepareMutationHeaders(init),
-			body: body ? JSON.stringify(body) : undefined,
 			...init,
+			headers: this.prepareMutationHeaders(init),
+			body: body !== undefined ? JSON.stringify(body) : undefined,
 		});
 	}
 
 	async delete<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
 		return fetchJSON<T>(`${this.baseUrl}${path}`, {
 			method: 'DELETE',
-			headers: this.prepareMutationHeaders(init),
 			...init,
+			headers: this.prepareMutationHeaders(init),
 		});
 	}
 }
