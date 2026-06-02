@@ -29,10 +29,10 @@ interface AdaptationContext {
 }
 
 function pickVenueValue(
-	location: EventContentEntry['data']['location'],
+	location: EventContentEntry['data']['location'] | undefined,
 	key: 'venueName' | 'city',
 ): string | undefined {
-	return location.reception?.[key] ?? location.ceremony?.[key];
+	return location?.reception?.[key] ?? location?.ceremony?.[key];
 }
 
 function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
@@ -279,6 +279,7 @@ function resolveVenueData(
 
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
+	if (!data.location) return undefined;
 	const indications = data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => ({
 			iconName: indication.iconName ?? indication.icon ?? 'Gift',
