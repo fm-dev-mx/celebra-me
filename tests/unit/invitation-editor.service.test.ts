@@ -36,6 +36,7 @@ import {
 } from '@/lib/rsvp/repositories/event.repository';
 import {
 	getInvitationEditorContext,
+	restoreInvitationEditorFromPublished,
 	saveInvitationEditorSection,
 } from '@/lib/intake/services/invitation-editor.service';
 
@@ -380,5 +381,42 @@ describe('saveInvitationEditorSection', () => {
 			status: 409,
 			code: 'conflict',
 		});
+	});
+});
+
+describe('restoreInvitationEditorFromPublished', () => {
+	it('replaces the editable draft from published content with optimistic concurrency', async () => {
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		await restoreInvitationEditorFromPublished('proj-1', {
+			expectedUpdatedAt: draft.updatedAt,
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
+			'draft-1',
+			draft.updatedAt,
+			expect.objectContaining({
+				status: 'draft',
+				content: expect.objectContaining({
+					title: published.content.title,
+					description: published.content.description,
+					gallery: published.content.gallery,
+				}),
+			}),
+		);
+	});
+
+	it('rejects restore when no published content exists', async () => {
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+
+		await expect(
+			restoreInvitationEditorFromPublished('proj-1', {
+				expectedUpdatedAt: draft.updatedAt,
+			}),
+		).rejects.toMatchObject({ status: 404 });
 	});
 });
