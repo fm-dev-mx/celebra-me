@@ -4,6 +4,10 @@
 import '@testing-library/jest-dom';
 import React from 'react';
 
+if (typeof structuredClone === 'undefined') {
+	globalThis.structuredClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
+}
+
 /**
  * Fetch API Polyfills for JSDOM
  * JSDOM does not provide Response, Request, or Headers globals by default.

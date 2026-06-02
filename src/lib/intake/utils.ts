@@ -33,8 +33,7 @@ export function hasRsvpContent(content: Record<string, unknown> | undefined): bo
 }
 
 export function deepClone<T>(value: T): T {
-	if (typeof structuredClone === 'function') return structuredClone(value);
-	return JSON.parse(JSON.stringify(value));
+	return structuredClone(value);
 }
 
 export function deepMerge(
