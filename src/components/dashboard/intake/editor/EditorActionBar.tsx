@@ -3,7 +3,9 @@ interface Props {
 	savingAll: boolean;
 	publishing: boolean;
 	publishWarning: string | null;
+	publishDisabled: boolean;
 	onSaveAll: () => void;
+	onDiscard: () => void;
 	onPublish: () => void;
 	previewUrl: string;
 	editUrl: string;
@@ -14,7 +16,9 @@ export default function EditorActionBar({
 	savingAll,
 	publishing,
 	publishWarning,
+	publishDisabled,
 	onSaveAll,
+	onDiscard,
 	onPublish,
 	previewUrl,
 	editUrl,
@@ -33,14 +37,24 @@ export default function EditorActionBar({
 			</div>
 			<div className="invitation-editor__action-bar-right">
 				{dirtyCount > 0 && (
-					<button
-						type="button"
-						className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--primary"
-						onClick={onSaveAll}
-						disabled={savingAll}
-					>
-						{savingAll ? 'Guardando...' : 'Guardar cambios'}
-					</button>
+					<>
+						<button
+							type="button"
+							className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
+							onClick={onDiscard}
+							disabled={savingAll}
+						>
+							Descartar cambios
+						</button>
+						<button
+							type="button"
+							className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--primary"
+							onClick={onSaveAll}
+							disabled={savingAll}
+						>
+							{savingAll ? 'Guardando...' : 'Guardar cambios'}
+						</button>
+					</>
 				)}
 				<a href={previewUrl} className="invitation-editor__action-bar-preview">
 					Vista previa
@@ -49,7 +63,7 @@ export default function EditorActionBar({
 					type="button"
 					className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--primary"
 					onClick={onPublish}
-					disabled={publishing || dirtyCount > 0}
+					disabled={publishDisabled}
 					title={publishWarning ?? undefined}
 				>
 					{publishing ? 'Publicando...' : 'Publicar cambios'}

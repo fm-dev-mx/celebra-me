@@ -9,6 +9,7 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
+import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
@@ -19,26 +20,24 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
-import { INVITATION_STATUS_LABELS, getFieldLabel } from '@/lib/intake/labels';
+import {
+	EDITOR_SECTION_PRESENTATION,
+	GIFT_TYPE_LABELS,
+	INVITATION_STATUS_LABELS,
+	NAV_ITEMS,
+	getFieldLabel,
+} from '@/lib/intake/labels';
+import {
+	applySectionToBaseline,
+	getDirtySectionKey,
+	getSectionValue,
+} from '@/lib/intake/services/section-content-mapper';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
 }
 
-const NAV_ITEMS: Array<{ id: string; label: string }> = [
-	{ id: 'metadata', label: 'Datos de la invitación' },
-	{ id: 'main', label: 'Datos principales' },
-	{ id: 'family', label: 'Personas principales' },
-	{ id: 'location', label: 'Fecha y ubicaciones' },
-	{ id: 'itinerary', label: 'Programa' },
-	{ id: 'rsvp', label: 'Confirmación de asistencia' },
-	{ id: 'music', label: 'Música' },
-	{ id: 'gifts', label: 'Mesa de regalos' },
-	{ id: 'messages', label: 'Mensajes especiales' },
-	{ id: 'gallery', label: 'Galería' },
-	{ id: 'photoNotes', label: 'Notas de fotografías' },
-	{ id: 'publication', label: 'Publicación' },
-];
+// NAV_ITEMS imported from labels.ts
 
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
@@ -69,12 +68,33 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	publication: ['sectionOrder'],
 };
 
-const CRITICAL_SECTION_LABELS: Record<string, string> = {
-	hero: 'Datos principales',
-	family: 'Personas principales',
-	location: 'Fecha y ubicaciones',
-	rsvp: 'Confirmación de asistencia',
-};
+// CRITICAL_SECTION_LABELS — derived inline from EDITOR_SECTION_PRESENTATION where needed
+
+// EDITOR_SECTION_PRESENTATION imported from labels.ts
+
+function uniqueSectionPresentation(sections: string[]) {
+	return Array.from(
+		new Map(
+			sections
+				.map((section) => EDITOR_SECTION_PRESENTATION[section])
+				.filter((section) => section !== undefined)
+				.map((section) => [section.id, section]),
+		).values(),
+	);
+}
+
+const SECTION_PATH_REGEX = new RegExp(
+	`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
+	'g',
+);
+
+export function formatPublishErrorMessage(error: unknown): string {
+	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
+	return message.replace(SECTION_PATH_REGEX, (sectionPath) => {
+		const key = sectionPath.split(/[.[]/, 1)[0];
+		return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
+	});
+}
 
 export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
 	const critical = new Set<string>(['hero', 'location']);
@@ -94,6 +114,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const editor = useInvitationEditor(initialContext);
 	const [content, setContent] = useState(editor.context.content);
 	const [metadata, setMetadata] = useState(() => metadataFromContext(initialContext));
+	const [contentBaseline, setContentBaseline] = useState(editor.context.content);
+	const [metadataBaseline, setMetadataBaseline] = useState(() =>
+		metadataFromContext(initialContext),
+	);
 	const [dirty, setDirty] = useState<Set<string>>(new Set());
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [success, setSuccess] = useState<Record<string, string>>({});
@@ -135,32 +159,17 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const updateContent = <Key extends keyof DraftContent>(key: Key, value: DraftContent[Key]) => {
 		setContent((current) => ({ ...current, [key]: value }));
-		const section =
-			key === 'title' || key === 'description' || key === 'hero'
-				? 'main'
-				: key === 'quote' || key === 'thankYou'
-					? 'messages'
-					: key === 'sectionOrder'
-						? 'publication'
-						: key;
-		markDirty(String(section));
+		markDirty(getDirtySectionKey(key));
 	};
 
 	const sectionValue = useCallback(
-		(section: InvitationEditorSectionKey): unknown => {
-			if (section === 'main') {
-				return {
-					title: content.title,
-					description: content.description,
-					hero: content.hero ?? {},
-				};
-			}
-			if (section === 'messages') return { quote: content.quote, thankYou: content.thankYou };
-			if (section === 'publication') return { sectionOrder: content.sectionOrder ?? [] };
-			return content[section as keyof DraftContent] ?? {};
-		},
+		(section: InvitationEditorSectionKey): unknown => getSectionValue(content, section),
 		[content],
 	);
+
+	const updateContentBaseline = (section: InvitationEditorSectionKey, value: DraftContent) => {
+		setContentBaseline((current) => applySectionToBaseline(current, section, value));
+	};
 
 	const saveSection = async (section: InvitationEditorSectionKey, expectedUpdatedAt?: string) => {
 		setErrors((current) => ({ ...current, [section]: '' }));
@@ -170,6 +179,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				sectionValue(section),
 				expectedUpdatedAt,
 			);
+			updateContentBaseline(section, content);
 			setDirty((current) => {
 				const next = new Set(current);
 				next.delete(section);
@@ -189,7 +199,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setErrors((current) => ({ ...current, metadata: '' }));
 		try {
 			const invitation = await editor.saveMetadata(metadata, expectedUpdatedAt);
-			setMetadata(metadataFromContext({ ...editor.context, invitation }));
+			const nextMetadata = metadataFromContext({ ...editor.context, invitation });
+			setMetadata(nextMetadata);
+			setMetadataBaseline(nextMetadata);
 			setDirty((current) => {
 				const next = new Set(current);
 				next.delete('metadata');
@@ -206,8 +218,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 	};
 
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
 
 	const publish = async () => {
+		setConfirmation(null);
 		setErrors((current) => ({ ...current, publish: '' }));
 		try {
 			const ctx = await editor.publish();
@@ -220,7 +234,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
-				publish: toErrorMessage(error, 'No se pudieron publicar los cambios.'),
+				publish: formatPublishErrorMessage(error),
 			}));
 		}
 	};
@@ -230,10 +244,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const location = content.location ?? {};
 	const rsvp = content.rsvp ?? {};
 	const music = content.music ?? {};
-	const gifts = content.gifts ?? { items: [] };
-	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
+	const gifts = useMemo(() => content.gifts ?? { items: [] }, [content.gifts]);
+	const messages = useMemo(
+		() => ({ quote: content.quote ?? {}, thankYou: content.thankYou ?? {} }),
+		[content.quote, content.thankYou],
+	);
 	const photoNotes = content.photoNotes ?? {};
-	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
+	const sectionOrder = useMemo(
+		() => content.sectionOrder ?? [...CONTENT_SECTION_KEYS],
+		[content.sectionOrder],
+	);
 
 	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
 		updateContent('gifts', {
@@ -305,7 +325,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
 		if (emptySectionsDetail.critical.length > 0) {
 			const labels = emptySectionsDetail.critical
-				.map((s) => CRITICAL_SECTION_LABELS[s] ?? s)
+				.map((s) => EDITOR_SECTION_PRESENTATION[s]?.label ?? s)
 				.join(', ');
 			return `Secciones críticas vacías: ${labels}. Revisa el contenido antes de publicar.`;
 		}
@@ -317,8 +337,35 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 		return null;
 	}, [editor.context.contentSource, emptySectionsDetail, hasDraft]);
+	const publishWarningSections = useMemo(
+		() =>
+			uniqueSectionPresentation([
+				...emptySectionsDetail.critical,
+				...emptySectionsDetail.optional,
+			]),
+		[emptySectionsDetail],
+	);
+	const publishSummary = useMemo(
+		() =>
+			uniqueSectionPresentation(
+				Object.entries(editor.context.sectionStates)
+					.filter(([, source]) => source === 'draft')
+					.map(([section]) => section),
+			).map((section) => section.label),
+		[editor.context.sectionStates],
+	);
 
 	const [savingAll, setSavingAll] = useState(false);
+
+	const discardChanges = () => {
+		if (dirty.size === 0) return;
+		if (!window.confirm('¿Descartar todos los cambios sin guardar?')) return;
+		setContent(contentBaseline);
+		setMetadata(metadataBaseline);
+		setDirty(new Set());
+		setErrors({});
+		setSuccess({});
+	};
 
 	const saveAllDirty = useCallback(async () => {
 		const dirtyArray = Array.from(dirty);
@@ -357,6 +404,42 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const previewUrl = `/dashboard/invitaciones/${editor.context.invitation.id}/preview`;
 	const backUrl = '/dashboard/invitaciones';
+	const publishDisabled = useMemo(
+		() =>
+			editor.publishing ||
+			savingAll ||
+			savingSection !== null ||
+			dirty.size > 0 ||
+			editor.context.draftStatus !== 'draft' ||
+			editor.context.contentSource === 'empty' ||
+			emptySectionsDetail.critical.length > 0,
+		[
+			editor.publishing,
+			savingAll,
+			savingSection,
+			dirty,
+			editor.context.draftStatus,
+			editor.context.contentSource,
+			emptySectionsDetail.critical.length,
+		],
+	);
+
+	const restorePublished = async () => {
+		setConfirmation(null);
+		try {
+			const nextContext = await editor.restorePublished();
+			setContent(nextContext.content);
+			setContentBaseline(nextContext.content);
+			setDirty(new Set());
+			setErrors({});
+			setSuccess({ restore: 'Se restauró la versión pública como borrador editable.' });
+		} catch (error) {
+			setErrors((current) => ({
+				...current,
+				restore: toErrorMessage(error, 'No se pudo restaurar la versión pública.'),
+			}));
+		}
+	};
 
 	return (
 		<div className="invitation-editor">
@@ -365,8 +448,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 				savingAll={savingAll}
 				publishing={editor.publishing}
 				publishWarning={publishWarning}
+				publishDisabled={publishDisabled}
 				onSaveAll={saveAllDirty}
-				onPublish={publish}
+				onDiscard={discardChanges}
+				onPublish={() => setConfirmation('publish')}
 				previewUrl={previewUrl}
 				editUrl={backUrl}
 			/>
@@ -410,9 +495,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 					</p>
 				)}
 				{publishWarning && (
-					<p className="invitation-editor__warning invitation-editor__warning--guard">
-						{publishWarning}
-					</p>
+					<div className="invitation-editor__warning invitation-editor__warning--guard">
+						<p>{publishWarning}</p>
+						{publishWarningSections.length > 0 && (
+							<div>
+								{publishWarningSections.map((section) => (
+									<a href={`#${section.id}`} key={section.id}>
+										{section.label}
+									</a>
+								))}
+							</div>
+						)}
+					</div>
 				)}
 				{errors.publish && <p className="invitation-editor__error">{errors.publish}</p>}
 				{success.publish && !publishedSlug && (
@@ -889,80 +983,90 @@ export default function InvitationEditor({ initialContext }: Props) {
 									className="invitation-editor__list-item"
 									key={`${item.type}-${index}`}
 								>
-									<div className="invitation-editor__field-grid">
-										<Field
-											label="Tipo"
-											value={item.type}
-											onChange={() => undefined}
-										/>
-										<Field
-											label="Título"
-											value={item.title ?? ''}
-											onChange={(value) =>
-												updateGiftItem(index, { title: value })
+									<div className="invitation-editor__compact-row">
+										<strong>
+											{index + 1}. {GIFT_TYPE_LABELS[item.type] ?? item.type}
+										</strong>
+										<button
+											type="button"
+											className="invitation-editor__link-button"
+											onClick={() =>
+												updateContent('gifts', {
+													...gifts,
+													items: (gifts.items ?? []).filter(
+														(_, i) => i !== index,
+													),
+												})
 											}
-										/>
-										{'url' in item && (
-											<Field
-												label="URL"
-												type="url"
-												value={item.url}
-												onChange={(value) =>
-													updateGiftItem(index, { url: value })
-												}
-											/>
-										)}
-										{'bankName' in item && (
-											<>
-												<Field
-													label="Banco"
-													value={item.bankName}
-													onChange={(value) =>
-														updateGiftItem(index, { bankName: value })
-													}
-												/>
-												<Field
-													label="Titular"
-													value={item.accountHolder}
-													onChange={(value) =>
-														updateGiftItem(index, {
-															accountHolder: value,
-														})
-													}
-												/>
-												<Field
-													label="CLABE"
-													value={item.clabe}
-													onChange={(value) =>
-														updateGiftItem(index, { clabe: value })
-													}
-												/>
-											</>
-										)}
-										{'text' in item && (
-											<Field
-												label="Texto"
-												value={item.text ?? ''}
-												onChange={(value) =>
-													updateGiftItem(index, { text: value })
-												}
-											/>
-										)}
+										>
+											Eliminar opción
+										</button>
 									</div>
-									<button
-										type="button"
-										className="invitation-editor__link-button"
-										onClick={() =>
-											updateContent('gifts', {
-												...gifts,
-												items: (gifts.items ?? []).filter(
-													(_, i) => i !== index,
-												),
-											})
-										}
-									>
-										Eliminar opción
-									</button>
+									<details className="invitation-editor__row-details">
+										<summary>Editar opción</summary>
+										<div className="invitation-editor__field-grid">
+											<Field
+												label="Tipo"
+												value={GIFT_TYPE_LABELS[item.type] ?? item.type}
+												onChange={() => undefined}
+											/>
+											<Field
+												label="Título"
+												value={item.title ?? ''}
+												onChange={(value) =>
+													updateGiftItem(index, { title: value })
+												}
+											/>
+											{'url' in item && (
+												<Field
+													label="URL"
+													type="url"
+													value={item.url}
+													onChange={(value) =>
+														updateGiftItem(index, { url: value })
+													}
+												/>
+											)}
+											{'bankName' in item && (
+												<>
+													<Field
+														label="Banco"
+														value={item.bankName}
+														onChange={(value) =>
+															updateGiftItem(index, {
+																bankName: value,
+															})
+														}
+													/>
+													<Field
+														label="Titular"
+														value={item.accountHolder}
+														onChange={(value) =>
+															updateGiftItem(index, {
+																accountHolder: value,
+															})
+														}
+													/>
+													<Field
+														label="CLABE"
+														value={item.clabe}
+														onChange={(value) =>
+															updateGiftItem(index, { clabe: value })
+														}
+													/>
+												</>
+											)}
+											{'text' in item && (
+												<Field
+													label="Texto"
+													value={item.text ?? ''}
+													onChange={(value) =>
+														updateGiftItem(index, { text: value })
+													}
+												/>
+											)}
+										</div>
+									</details>
 								</div>
 							))}
 						</div>
@@ -1061,56 +1165,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
 							previewSlug={editor.context.invitation.snapshot.previewSlug}
+							variant={editor.context.invitation.themeId}
 							onChange={(value) => updateContent('gallery', value)}
+							photoNotes={photoNotes}
+							onPhotoNotesChange={(value) => updateContent('photoNotes', value)}
+							onSavePhotoNotes={() => void saveSection('photoNotes')}
+							photoNotesDirty={dirty.has('photoNotes')}
+							savingPhotoNotes={savingSection === 'photoNotes'}
 						/>
-					</SectionCard>
-
-					<SectionCard
-						id="photoNotes"
-						title="Notas de fotografías"
-						description="Notas internas de producción; no se publican."
-						dirty={dirty.has('photoNotes')}
-						saving={savingSection === 'photoNotes'}
-						error={errors.photoNotes}
-						success={success.photoNotes}
-						onSave={() => saveSection('photoNotes')}
-						sourceBadge={sectionSource('photoNotes')}
-					>
-						<label className="invitation-editor__check">
-							<input
-								type="checkbox"
-								checked={photoNotes.whatsappSent ?? false}
-								onChange={(event) =>
-									updateContent('photoNotes', {
-										...photoNotes,
-										whatsappSent: event.target.checked,
-									})
-								}
-							/>
-							<span>Material enviado por WhatsApp</span>
-						</label>
-						{(
-							[
-								['heroPhoto', 'Portada'],
-								['portraitPhoto', 'Retrato'],
-								['galleryPhotos', 'Galería'],
-								['familyPhoto', 'Familia'],
-								['specialPhoto', 'Especial'],
-								['generalNotes', 'Notas generales'],
-								['photoOrder', 'Orden'],
-								['cropNotes', 'Recortes'],
-								['priorityNotes', 'Prioridades'],
-							] as const
-						).map(([key, label]) => (
-							<TextArea
-								key={key}
-								label={label}
-								value={photoNotes[key] ?? ''}
-								onChange={(value) =>
-									updateContent('photoNotes', { ...photoNotes, [key]: value })
-								}
-							/>
-						))}
 					</SectionCard>
 
 					<SectionCard
@@ -1130,10 +1192,41 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onChange={(value) => updateContent('sectionOrder', value)}
 							reconciling={editor.reconciling}
 							onReconcile={() => void editor.reconcileRsvp()}
+							restoring={editor.restoring}
+							onRestorePublished={() => setConfirmation('restore')}
 						/>
+						{errors.restore && (
+							<p className="invitation-editor__error">{errors.restore}</p>
+						)}
+						{success.restore && (
+							<p className="invitation-editor__success">{success.restore}</p>
+						)}
 					</SectionCard>
 				</main>
 			</div>
+			{confirmation === 'restore' && (
+				<ConfirmModal
+					title="Restaurar desde versión pública"
+					message="Esta acción reemplazará el borrador editable con el contenido de la versión pública actual. Los cambios sin guardar se perderán."
+					confirmLabel="Restaurar versión pública"
+					destructive
+					loading={editor.restoring}
+					onCancel={() => setConfirmation(null)}
+					onConfirm={() => void restorePublished()}
+				/>
+			)}
+			{confirmation === 'publish' && (
+				<ConfirmModal
+					title="Publicar cambios"
+					message="El borrador guardado reemplazará la versión pública actual. Revisa la vista previa antes de continuar."
+					confirmLabel="Publicar cambios"
+					previewUrl={previewUrl}
+					summary={publishSummary}
+					loading={editor.publishing}
+					onCancel={() => setConfirmation(null)}
+					onConfirm={() => void publish()}
+				/>
+			)}
 		</div>
 	);
 }
