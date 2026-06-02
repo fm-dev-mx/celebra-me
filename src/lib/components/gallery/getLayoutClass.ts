@@ -3,6 +3,11 @@ export type LayoutClass =
 	| 'gallery-grid__item--wide'
 	| 'gallery-grid__item--standard';
 
+// Strategies for gallery themes with explicit feature/wide/standard layout roles.
+// Themes missing from this map (angelic-presence, sacred-keepsake, editorial,
+// and base/unlisted) use uniform grids without role-based spans; the fallback
+// to 'standard' is correct for them and should not be changed without a theme
+// redesign.
 const strategies = {
 	'luxury-hacienda': (index: number): LayoutClass => {
 		if (index === 0) return 'gallery-grid__item--feature';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const FOCAL_PRESETS = [
 	['top left', 'top center', 'top right'],
@@ -32,11 +32,18 @@ interface Props {
 }
 
 export default function FocalPointControl({ value, onChange, imageSrc, alt }: Props) {
+	const dragging = useRef(false);
 	const [customMode, setCustomMode] = useState(() => {
 		return (
 			value && !FOCAL_PRESETS.flat().includes(value as (typeof FOCAL_PRESETS)[number][number])
 		);
 	});
+
+	const isCustomValue =
+		value && !FOCAL_PRESETS.flat().includes(value as (typeof FOCAL_PRESETS)[number][number]);
+	useEffect(() => {
+		setCustomMode(isCustomValue);
+	}, [isCustomValue]);
 
 	const isValid = !value || isValidFocalPoint(value);
 	const focalPos = isValid ? value || 'center' : 'center';
@@ -46,10 +53,43 @@ export default function FocalPointControl({ value, onChange, imageSrc, alt }: Pr
 		setCustomMode(false);
 	};
 
+	const updateFromPosition = (element: HTMLDivElement, clientX: number, clientY: number) => {
+		if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) return;
+		const rect = element.getBoundingClientRect();
+		if (rect.width === 0 || rect.height === 0) return;
+		const x = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+		const y = Math.min(100, Math.max(0, ((clientY - rect.top) / rect.height) * 100));
+		onChange(`${Math.round(x)}% ${Math.round(y)}%`);
+		setCustomMode(true);
+	};
+
 	return (
 		<div className="focal-point-control">
 			{imageSrc && (
-				<div className="focal-point-control__preview">
+				<div
+					className="focal-point-control__preview"
+					role="application"
+					tabIndex={0}
+					aria-label="Seleccionar punto focal"
+					onPointerDown={(event) => {
+						dragging.current = true;
+						event.currentTarget.setPointerCapture?.(event.pointerId);
+						updateFromPosition(event.currentTarget, event.clientX, event.clientY);
+					}}
+					onPointerMove={(event) => {
+						if (dragging.current) {
+							updateFromPosition(event.currentTarget, event.clientX, event.clientY);
+						}
+					}}
+					onPointerUp={() => {
+						dragging.current = false;
+					}}
+					onClick={(event) => {
+						if (!dragging.current) {
+							updateFromPosition(event.currentTarget, event.clientX, event.clientY);
+						}
+					}}
+				>
 					<img
 						src={imageSrc}
 						alt={alt ?? 'Vista previa del punto focal'}
