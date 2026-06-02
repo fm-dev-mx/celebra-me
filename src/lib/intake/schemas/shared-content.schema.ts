@@ -36,6 +36,9 @@ export const gallerySchema = z.object({
 			image: editableAssetSchema,
 			caption: optionalText(500),
 			focalPoint: focalPointSchema.optional(),
+			focalPointMobile: focalPointSchema.optional(),
+			focalPointTablet: focalPointSchema.optional(),
+			focalPointDesktop: focalPointSchema.optional(),
 		}),
 	),
 });

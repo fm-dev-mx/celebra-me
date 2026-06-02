@@ -9,6 +9,9 @@ interface GalleryItem {
 	caption?: string;
 	key?: string;
 	focalPoint?: string;
+	focalPointMobile?: string;
+	focalPointTablet?: string;
+	focalPointDesktop?: string;
 }
 
 interface Props {
@@ -37,7 +40,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				data-image-key={item.key}
 				data-gallery-src={src}
 				data-gallery-caption={item.caption ?? ''}
-				style={item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : undefined}
+				style={`${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
 				tabindex="0"
 				role="button"
 				aria-label={item.caption || `Ver imagen ${index + 1}`}

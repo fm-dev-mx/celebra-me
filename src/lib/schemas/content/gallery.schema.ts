@@ -10,6 +10,9 @@ export const gallerySchema = z
 				image: AssetSchema,
 				caption: z.string().optional(),
 				focalPoint: focalPointSchema.optional(),
+				focalPointMobile: focalPointSchema.optional(),
+				focalPointTablet: focalPointSchema.optional(),
+				focalPointDesktop: focalPointSchema.optional(),
 			}),
 		),
 	})
