@@ -4,6 +4,7 @@ import type {
 	IntakeRequestStatus,
 	IntakeBlockType,
 } from '@/lib/intake/types';
+import type { ItineraryIconKey } from '@/lib/theme/theme-contract';
 
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
@@ -149,6 +150,63 @@ export const RSVP_STATUS_LABELS: Record<string, string> = {
 	archived: 'RSVP desactivado',
 	draft: 'RSVP borrador',
 };
+
+export const ITINERARY_ICON_LABELS: Record<ItineraryIconKey, string> = {
+	waltz: 'Vals',
+	dinner: 'Cena',
+	toast: 'Brindis',
+	cake: 'Pastel',
+	party: 'Fiesta',
+	church: 'Iglesia',
+	map: 'Ubicación',
+	reception: 'Recepción',
+	photo: 'Fotografía',
+	sparkles: 'Destacado',
+	boot: 'Bota',
+	heel: 'Tacón',
+	'western-hat': 'Sombrero',
+	taco: 'Tacos',
+	tuba: 'Tuba',
+	accordion: 'Acordeón',
+};
+
+export const GIFT_TYPE_LABELS: Record<string, string> = {
+	store: 'Tienda',
+	bank: 'Transferencia bancaria',
+	paypal: 'PayPal',
+	cash: 'Efectivo',
+};
+
+export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: string }> = {
+	title: { id: 'main', label: 'Datos principales' },
+	description: { id: 'main', label: 'Datos principales' },
+	hero: { id: 'main', label: 'Datos principales' },
+	family: { id: 'family', label: 'Personas principales' },
+	location: { id: 'location', label: 'Fecha y ubicaciones' },
+	itinerary: { id: 'itinerary', label: 'Programa' },
+	rsvp: { id: 'rsvp', label: 'Confirmación de asistencia' },
+	music: { id: 'music', label: 'Música' },
+	gifts: { id: 'gifts', label: 'Mesa de regalos' },
+	quote: { id: 'messages', label: 'Mensajes especiales' },
+	thankYou: { id: 'messages', label: 'Mensajes especiales' },
+	gallery: { id: 'gallery', label: 'Galería' },
+	photoNotes: { id: 'gallery', label: 'Galería' },
+	sectionOrder: { id: 'publication', label: 'Publicación' },
+};
+
+export const NAV_ITEMS: Array<{ id: string; label: string }> = [
+	{ id: 'metadata', label: 'Datos de la invitación' },
+	{ id: 'main', label: 'Datos principales' },
+	{ id: 'family', label: 'Personas principales' },
+	{ id: 'location', label: 'Fecha y ubicaciones' },
+	{ id: 'itinerary', label: 'Programa' },
+	{ id: 'rsvp', label: 'Confirmación de asistencia' },
+	{ id: 'music', label: 'Música' },
+	{ id: 'gifts', label: 'Mesa de regalos' },
+	{ id: 'messages', label: 'Mensajes especiales' },
+	{ id: 'gallery', label: 'Galería' },
+	{ id: 'publication', label: 'Publicación' },
+];
 
 type FieldGroup = 'hero' | 'family';
 type EventType = 'xv' | 'boda' | 'bautizo' | 'cumple';
