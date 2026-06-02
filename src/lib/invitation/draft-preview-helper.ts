@@ -16,7 +16,8 @@ export function buildDraftPreviewPageContext(
 ): DraftPreviewResult {
 	try {
 		const snapshot = invitation.snapshot;
-		const assetSlug = invitation.slug ?? snapshot.previewSlug;
+		const contentSlug = invitation.slug ?? snapshot.previewSlug;
+		const assetLookupSlug = snapshot.previewSlug;
 
 		const publishedData = mapDraftToPublished({
 			invitation: {
@@ -24,22 +25,22 @@ export function buildDraftPreviewPageContext(
 				eventType: invitation.eventType,
 				snapshot,
 			},
-			assetSlug,
+			assetSlug: contentSlug,
 			draftContent,
 			demoContent,
 		});
 
 		const viewModel = adaptDbEvent({
-			slug: assetSlug,
+			slug: contentSlug,
 			eventType: invitation.eventType,
 			isDemo: false,
 			content: publishedData,
-			assetSlug,
+			assetSlug: assetLookupSlug,
 		});
 
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
-			slug: assetSlug,
+			slug: contentSlug,
 			eventType: invitation.eventType,
 			isPreview: true,
 		});
