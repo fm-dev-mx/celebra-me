@@ -11,6 +11,7 @@ import {
 	GALLERY_ROLE_LABELS,
 	getGalleryPreviewAspectRatio,
 	getGalleryPreviewRole,
+	type GalleryPreviewViewport,
 } from '@/lib/components/gallery/gallery-presentation';
 import { moveArrayItem } from '@/lib/intake/utils';
 import { useState } from 'react';
@@ -29,6 +30,8 @@ interface Props {
 	photoNotesDirty?: boolean;
 	savingPhotoNotes?: boolean;
 }
+
+type CropMode = GalleryPreviewViewport;
 
 function resolveSrc(source: { src: string | { src: string } }): string {
 	return typeof source.src === 'string' ? source.src : source.src.src;
@@ -64,12 +67,18 @@ export default function GalleryEditor({
 	photoNotesDirty = false,
 	savingPhotoNotes = false,
 }: Props) {
-	const [cropMode, setCropMode] = useState<'mobile' | 'desktop'>('mobile');
+	const [cropMode, setCropMode] = useState<CropMode>('mobile');
+	const [perDevice, setPerDevice] = useState(false);
+
 	const updateItem = (index: number, patch: Partial<GalleryItem>) => {
 		const items = value.items.map((item, itemIndex) =>
 			itemIndex === index ? { ...item, ...patch } : item,
 		);
 		onChange({ ...value, items });
+	};
+
+	const handleModeChange = (newMode: boolean) => {
+		setPerDevice(newMode);
 	};
 
 	const move = (index: number, offset: -1 | 1) => {
@@ -95,12 +104,13 @@ export default function GalleryEditor({
 				</label>
 			</div>
 			<label className="invitation-editor__field invitation-editor__crop-mode">
-				<span>Modo de recorte</span>
+				<span>Vista previa</span>
 				<select
 					value={cropMode}
-					onChange={(event) => setCropMode(event.target.value as 'mobile' | 'desktop')}
+					onChange={(event) => setCropMode(event.target.value as CropMode)}
 				>
 					<option value="mobile">Móvil</option>
+					<option value="tablet">Tableta</option>
 					<option value="desktop">Escritorio</option>
 				</select>
 			</label>
@@ -109,8 +119,7 @@ export default function GalleryEditor({
 				{value.items.map((item, index) => {
 					const src = getImageSource(item, previewSlug);
 					const role = getGalleryPreviewRole(index, variant);
-					const focalPoint = item.focalPoint || 'center';
-					return (
+				return (
 						<article
 							className="invitation-editor__gallery-item"
 							key={`${index}-${imageItemKey(item.image)}`}
@@ -120,8 +129,12 @@ export default function GalleryEditor({
 								<strong>Fotografía {index + 1}</strong>
 								<span>{GALLERY_ROLE_LABELS[role]}</span>
 							</div>
+							<div className="invitation-editor__gallery-item-config">
+								<span className="invitation-editor__gallery-item-key">{imageItemKey(item.image)}</span>
+							</div>
 							<div className="invitation-editor__gallery-crops">
-								{(['mobile', 'desktop'] as const).map((viewport) => (
+								{(['mobile', 'tablet', 'desktop'] as const).map((viewport) => {
+									return (
 									<div
 										key={viewport}
 										className={
@@ -130,9 +143,7 @@ export default function GalleryEditor({
 												: undefined
 										}
 									>
-										<span>
-											{viewport === 'mobile' ? 'Móvil' : 'Escritorio'}
-										</span>
+										<span>{viewport === 'mobile' ? 'Móvil' : viewport === 'tablet' ? 'Tableta' : 'Escritorio'}</span>
 										<div
 											className={`invitation-editor__gallery-image invitation-editor__gallery-image--${viewport}-${role}`}
 											data-aspect-ratio={getGalleryPreviewAspectRatio(
@@ -144,15 +155,14 @@ export default function GalleryEditor({
 												<img
 													src={src}
 													alt={item.caption || `Fotografía ${index + 1}`}
-													// eslint-disable-next-line no-restricted-syntax -- live crop preview from focal point input
-													style={{ objectPosition: focalPoint }}
 												/>
 											) : (
 												<span>Vista previa no disponible</span>
 											)}
 										</div>
 									</div>
-								))}
+									);
+								})}
 							</div>
 							<label className="invitation-editor__field">
 								<span>Pie de foto</span>
@@ -166,6 +176,14 @@ export default function GalleryEditor({
 							<FocalPointControl
 								value={item.focalPoint ?? ''}
 								onChange={(value) => updateItem(index, { focalPoint: value })}
+								mobileValue={item.focalPointMobile ?? ''}
+								onMobileChange={(value) => updateItem(index, { focalPointMobile: value })}
+								tabletValue={item.focalPointTablet ?? ''}
+								onTabletChange={(value) => updateItem(index, { focalPointTablet: value })}
+								desktopValue={item.focalPointDesktop ?? ''}
+								onDesktopChange={(value) => updateItem(index, { focalPointDesktop: value })}
+								mode={perDevice ? 'per-device' : 'shared'}
+								onModeChange={(mode) => handleModeChange(mode === 'per-device')}
 								imageSrc={src}
 								alt={item.caption || `Fotografía ${index + 1}`}
 							/>

@@ -137,16 +137,32 @@
 		height: 100%;
 		display: block;
 		object-fit: cover;
-		object-position: var(--gallery-item-image-position, center);
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
 		border-radius: 0;
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+		}
 	}
 
 	.gallery-grid__item[data-image-key='gallery07'] {
 		aspect-ratio: var(--gallery-item-aspect-ratio-portrait-tall);
 
 		img {
-			object-position: var(--gallery-item-position-portrait-tall);
+			object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-position-portrait-tall)));
+
+			@include mixins.respond-to(md) {
+				object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-position-portrait-tall)));
+			}
+
+			@include mixins.respond-to(lg) {
+				object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-position-portrait-tall)));
+			}
 		}
 	}
 

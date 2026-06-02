@@ -54,7 +54,7 @@ describe('GalleryEditor', () => {
 			),
 		).not.toThrow();
 
-		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(4);
+		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(6);
 	});
 
 	it('renders external image references with correct src', () => {
@@ -77,8 +77,8 @@ describe('GalleryEditor', () => {
 		);
 
 		const srcs = screen.getAllByRole('img').map((img) => (img as HTMLImageElement).src);
-		expect(srcs.filter((s) => s.includes('/uploads/photo.jpg'))).toHaveLength(3);
-		expect(srcs.filter((s) => s === 'https://example.com/img.jpg')).toHaveLength(3);
+		expect(srcs.filter((s) => s.includes('/uploads/photo.jpg'))).toHaveLength(4);
+		expect(srcs.filter((s) => s === 'https://example.com/img.jpg')).toHaveLength(4);
 	});
 
 	it('shows placeholder text when image source cannot be resolved', () => {
@@ -91,10 +91,10 @@ describe('GalleryEditor', () => {
 			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
 		);
 
-		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(2);
+		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(3);
 	});
 
-	it('renders public layout roles with mobile and desktop crop frames', () => {
+	it('renders public layout roles with mobile, tablet, and desktop crop frames', () => {
 		render(
 			<GalleryEditor
 				value={{
@@ -111,13 +111,53 @@ describe('GalleryEditor', () => {
 		expect(item).toHaveAttribute('data-layout-role', 'feature');
 		expect(screen.getByText('Destacada')).toBeInTheDocument();
 		expect(screen.getAllByText('Móvil').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('Tableta').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Escritorio').length).toBeGreaterThan(0);
-		expect(screen.getByLabelText('Modo de recorte')).toHaveValue('mobile');
+		expect(screen.getByLabelText('Vista previa')).toHaveValue('mobile');
+	});
+
+	it('preserves per-device focal points when switching back to shared mode', () => {
+		const onChange = jest.fn();
+		const value = {
+			title: 'Test',
+			items: [
+				{
+					image: { type: 'external' as const, src: '/uploads/photo.jpg' },
+					focalPoint: '50% 40%',
+					focalPointMobile: '40% 30%',
+					focalPointTablet: '60% 50%',
+					focalPointDesktop: '70% 60%',
+				},
+			],
+		};
+
+		render(
+			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={onChange} />,
+		);
+
+		const toggle = screen.getByLabelText('Punto focal por dispositivo');
+		expect(toggle).not.toBeChecked();
+
+		fireEvent.click(toggle);
+		expect(toggle).toBeChecked();
+
+		fireEvent.click(toggle);
+		expect(toggle).not.toBeChecked();
+
+		expect(onChange).not.toHaveBeenCalled();
 	});
 
 	it('updates percentage focal point from direct pointer selection', () => {
 		const onChange = jest.fn();
-		render(<FocalPointControl value="" imageSrc="/uploads/photo.jpg" onChange={onChange} />);
+		render(
+			<FocalPointControl
+				value=""
+				onChange={onChange}
+				mode="shared"
+				onModeChange={jest.fn()}
+				imageSrc="/uploads/photo.jpg"
+			/>,
+		);
 		const preview = screen.getByLabelText('Seleccionar punto focal');
 		const rectSpy = jest.spyOn(preview, 'getBoundingClientRect').mockReturnValue({
 			left: 0,

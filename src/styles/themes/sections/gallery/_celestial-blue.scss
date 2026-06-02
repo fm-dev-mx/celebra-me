@@ -244,7 +244,15 @@
 	}
 
 	.gallery-grid__item img {
-		object-position: center 34%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 34%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 34%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 34%));
+		}
 	}
 
 	.gallery-grid__overlay {
@@ -291,32 +299,80 @@
 	}
 
 	.gallery-grid__item[data-gallery-index='2'] img {
-		object-position: center 26%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 26%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 26%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 26%));
+		}
 	}
 
 	.gallery-grid__item[data-gallery-index='3'] img,
 	.gallery-grid__item[data-gallery-index='4'] img,
 	.gallery-grid__item[data-gallery-index='5'] img {
-		object-position: center 42%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 42%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 42%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 42%));
+		}
 	}
 
 	.gallery-grid__item[data-gallery-index='7'] img,
 	.gallery-grid__item[data-gallery-index='8'] img,
 	.gallery-grid__item[data-gallery-index='9'] img {
-		object-position: center 30%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 30%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 30%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 30%));
+		}
 	}
 
 	.gallery-grid__item[data-gallery-index='6'] img {
-		object-position: center 38%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 38%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 38%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 38%));
+		}
 	}
 
 	.gallery-grid__item[data-gallery-index='7'] img,
 	.gallery-grid__item[data-gallery-index='8'] img {
-		object-position: center 45%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 45%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 45%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 45%));
+		}
 	}
 
 	.gallery-grid__item[data-gallery-index='9'] img {
-		object-position: center 24%;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 24%));
+
+		@include mixins.respond-to(md) {
+			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 24%));
+		}
+
+		@include mixins.respond-to(lg) {
+			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 24%));
+		}
 	}
 
 	.gallery-lightbox {

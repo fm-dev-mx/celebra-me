@@ -177,12 +177,28 @@
 
 		.gallery-grid__item[data-gallery-index='0'] img,
 		.gallery-grid__item[data-gallery-index='1'] img {
-			object-position: center 36%;
+			object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 36%));
+
+			@include mixins.respond-to(md) {
+				object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 36%));
+			}
+
+			@include mixins.respond-to(lg) {
+				object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 36%));
+			}
 		}
 
 		.gallery-grid__item[data-gallery-index='3'] img,
 		.gallery-grid__item[data-gallery-index='5'] img {
-			object-position: center 42%;
+			object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 42%));
+
+			@include mixins.respond-to(md) {
+				object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 42%));
+			}
+
+			@include mixins.respond-to(lg) {
+				object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 42%));
+			}
 		}
 	}
 

@@ -2072,6 +2072,24 @@
 	}
 }
 
+.invitation-editor__gallery-item-config {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.4rem;
+	font-size: 0.6875rem;
+	gap: 0.5rem;
+}
+
+.invitation-editor__gallery-item-key {
+	font-weight: 700;
+	font-family: monospace;
+	background: var(--color-bg-subtle);
+	padding: 0.1rem 0.35rem;
+	border-radius: 4px;
+	color: var(--color-text-muted);
+}
+
 .invitation-editor__gallery-crops {
 	align-items: end;
 	margin-bottom: 0.6rem;
@@ -2106,6 +2124,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
 	}
 
 	strong {
@@ -2123,20 +2142,35 @@
 	}
 }
 
+@media (width >= 768px) {
+	.invitation-editor__gallery-image img {
+		object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+}
+
+@media (width >= 1024px) {
+	.invitation-editor__gallery-image img {
+		object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+}
+
 .invitation-editor__gallery-image--mobile-feature,
 .invitation-editor__gallery-image--mobile-wide,
 .invitation-editor__gallery-image--mobile-standard {
 	aspect-ratio: 4 / 5;
 }
 
+.invitation-editor__gallery-image--tablet-feature,
 .invitation-editor__gallery-image--desktop-feature {
 	aspect-ratio: 16 / 10;
 }
 
+.invitation-editor__gallery-image--tablet-wide,
 .invitation-editor__gallery-image--desktop-wide {
 	aspect-ratio: 4 / 3;
 }
 
+.invitation-editor__gallery-image--tablet-standard,
 .invitation-editor__gallery-image--desktop-standard {
 	aspect-ratio: 3 / 4;
 }
@@ -2321,20 +2355,135 @@
 	margin-bottom: 0.75rem;
 }
 
+.focal-point-control__mode-toggle {
+	font-size: 0.75rem;
+
+	label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		cursor: pointer;
+	}
+
+	input {
+		accent-color: var(--color-action-accent);
+	}
+}
+
+.focal-point-control__device-tabs {
+	display: flex;
+	gap: 2px;
+
+	&-active {
+		border-color: var(--color-action-accent);
+	}
+}
+
+.focal-point-control__device-tab {
+	flex: 1;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 6px;
+	background: var(--color-surface-primary);
+	color: var(--color-text-secondary);
+	font: inherit;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	cursor: pointer;
+	text-align: center;
+
+	&:hover {
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
+	}
+
+	&--active {
+		border-color: var(--color-action-accent);
+		background: var(--dashboard-accent-soft-bg);
+		color: var(--color-action-accent);
+	}
+}
+
+.focal-point-control__coords {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	color: var(--color-action-accent);
+	letter-spacing: 0.05em;
+	font-variant-numeric: tabular-nums;
+}
+
 .focal-point-control__preview {
+	position: relative;
 	width: 100%;
 	max-height: 200px;
 	overflow: hidden;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 8px;
 	background: var(--color-surface-secondary);
+	cursor: crosshair;
 }
 
 .focal-point-control__preview-img {
 	width: 100%;
 	height: 160px;
 	object-fit: cover;
+	object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
 	display: block;
+	pointer-events: none;
+}
+
+@media (width >= 768px) {
+	.focal-point-control__preview-img {
+		object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+}
+
+@media (width >= 1024px) {
+	.focal-point-control__preview-img {
+		object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+}
+
+.focal-point-control__crosshair {
+	position: absolute;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+	z-index: 2;
+	transform: translate(-50%, -50%);
+}
+
+.focal-point-control__crosshair-line {
+	position: absolute;
+	background: rgb(255 255 255 / 80%);
+	box-shadow: 0 0 2px rgb(0 0 0 / 40%);
+}
+
+.focal-point-control__crosshair-line--x {
+	top: 0;
+	left: -100vw;
+	width: 200vw;
+	height: 1px;
+}
+
+.focal-point-control__crosshair-line--y {
+	top: -100vh;
+	left: 0;
+	width: 1px;
+	height: 200vh;
+}
+
+.focal-point-control__crosshair-dot {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	border: 2px solid rgb(255 255 255 / 90%);
+	background: rgb(0 0 0 / 30%);
+	transform: translate(-50%, -50%);
+	box-shadow: 0 0 4px rgb(0 0 0 / 50%);
 }
 
 .focal-point-control__grid {

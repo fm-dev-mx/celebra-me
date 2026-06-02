@@ -19,8 +19,9 @@ describe('gallery presentation', () => {
 		expect(getGalleryPreviewRole(0, 'premiere-floral')).toBe('standard');
 	});
 
-	it('uses distinct mobile and desktop crop frames', () => {
+	it('uses distinct mobile, tablet, and desktop crop frames', () => {
 		expect(getGalleryPreviewAspectRatio('feature', 'mobile')).toBe('4 / 5');
+		expect(getGalleryPreviewAspectRatio('feature', 'tablet')).toBe('16 / 10');
 		expect(getGalleryPreviewAspectRatio('feature', 'desktop')).toBe('16 / 10');
 		expect(getGalleryPreviewAspectRatio('wide', 'desktop')).toBe('4 / 3');
 	});

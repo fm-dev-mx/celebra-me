@@ -82,3 +82,17 @@
 	--gallery-lightbox-footer-color: var(--gallery-caption-color);
 	--gallery-lightbox-footer-size: 1rem;
 }
+
+/* Base focal point resolution — ensures admin-set focal points work for all themes.
+   Overridden by theme-specific rules where needed. */
+.gallery-section .gallery-grid__item img {
+	object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+
+	@include mixins.respond-to(md) {
+		object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+
+	@include mixins.respond-to(lg) {
+		object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	}
+}
