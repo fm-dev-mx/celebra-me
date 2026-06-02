@@ -112,25 +112,58 @@ export interface PublishInput {
 	isDemo?: boolean;
 }
 
+function buildSafeHeroFallback(invitationTitle: string, themeId: string): Record<string, unknown> {
+	return {
+		name: invitationTitle,
+		label: 'Invitación Especial',
+		date: '',
+		backgroundImage: { type: 'internal', key: 'hero' },
+		variant: themeId,
+	};
+}
+
+function buildHeroFromDraft(
+	draftHero: NonNullable<DraftContent['hero']>,
+	demoHero: Record<string, unknown> | undefined,
+	invitationTitle: string,
+	themeId: string,
+): Record<string, unknown> {
+	const {
+		name: demoName,
+		secondaryName: demosecondaryName,
+		label: demoLabel,
+		nickname: demoNickname,
+		date: demoDate,
+		backgroundImage: demoBackgroundImage,
+		backgroundImageDesktop: demoBackgroundImageDesktop,
+		portrait: demoPortrait,
+		variant: demoVariant,
+	} = demoHero ?? {};
+
+	return {
+		name: str(draftHero.name) || (demoName as string) || invitationTitle,
+		secondaryName: str(draftHero.secondaryName) || (demosecondaryName as string) || '',
+		label: str(draftHero.label) || (demoLabel as string) || 'Invitacion Especial',
+		nickname: str(draftHero.nickname) || (demoNickname as string) || '',
+		date: normalizeHeroDate(str(draftHero.date) || (demoDate as string) || ''),
+		backgroundImage: demoBackgroundImage || { type: 'internal', key: 'hero' },
+		backgroundImageDesktop: demoBackgroundImageDesktop,
+		portrait: demoPortrait,
+		variant: (demoVariant as string) || themeId,
+	};
+}
+
 function mapHeroSection(
 	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
 	themeId: string,
-): Record<string, unknown> | undefined {
-	if (isBlankSection(draftHero)) return demoHero;
-	const fromDemo = (key: string) => (demoHero?.[key] as string) || '';
-	return {
-		name: str(draftHero.name) || (demoHero?.name as string) || invitationTitle,
-		secondaryName: str(draftHero.secondaryName) || fromDemo('secondaryName'),
-		label: str(draftHero.label) || (demoHero?.label as string) || 'Invitacion Especial',
-		nickname: str(draftHero.nickname) || fromDemo('nickname'),
-		date: normalizeHeroDate(str(draftHero.date) || (demoHero?.date as string) || ''),
-		backgroundImage: demoHero?.backgroundImage || { type: 'internal', key: 'hero' },
-		backgroundImageDesktop: demoHero?.backgroundImageDesktop,
-		portrait: demoHero?.portrait,
-		variant: demoHero?.variant || themeId,
-	};
+): Record<string, unknown> {
+	if (isBlankSection(draftHero)) {
+		if (demoHero && Object.keys(demoHero).length > 0) return demoHero;
+		return buildSafeHeroFallback(invitationTitle, themeId);
+	}
+	return buildHeroFromDraft(draftHero, demoHero, invitationTitle, themeId);
 }
 
 function mapRsvpSection(
