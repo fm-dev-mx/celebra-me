@@ -228,7 +228,7 @@ export interface InvitationViewModel {
 		gallery?: {
 			title: string;
 			subtitle?: string;
-			items: Array<{ image: ImageAsset; caption?: string }>;
+			items: Array<{ image: ImageAsset; caption?: string; focalPoint?: string }>;
 			variant?: SharedSectionVariant;
 		};
 		itinerary?: {

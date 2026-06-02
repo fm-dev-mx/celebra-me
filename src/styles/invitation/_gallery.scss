@@ -142,7 +142,7 @@
 			height: 100%;
 			display: block;
 			object-fit: var(--gallery-item-image-fit);
-			object-position: var(--gallery-item-image-position);
+			object-position: var(--gallery-item-focal-point, var(--gallery-item-image-position));
 			border-radius: var(--gallery-item-image-radius);
 			filter: var(--gallery-item-image-filter-rest);
 			transform: scale(var(--gallery-item-image-scale-rest));
