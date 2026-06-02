@@ -58,6 +58,18 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect((context as any).locals.session).toBeUndefined();
 	});
 
+	it.each([
+		'/dashboard/invitaciones/proj-1/preview',
+		'/dashboard/invitaciones/proj-1/preview?embed=1',
+	])('Scenario: Redirect internal preview route without Session (%s)', async (path) => {
+		const context = createContext(path);
+		mockCookies.get.mockReturnValue(null);
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+		expect(mockNext).not.toHaveBeenCalled();
+	});
+
 	it('Scenario: Normal User (aal1) Access to Dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
@@ -207,6 +219,30 @@ describe('Middleware: Authentication & Authorization', () => {
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
 	});
+
+	it.each([
+		'/dashboard/invitaciones/proj-1/preview',
+		'/dashboard/invitaciones/proj-1/preview?embed=1',
+	])(
+		'Scenario: host_client cannot access internal invitation preview route (%s)',
+		async (path) => {
+			const context = createContext(path);
+			mockCookies.get.mockReturnValue({ value: 'host-token' });
+
+			(global.fetch as jest.Mock).mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					id: 'host-1',
+					app_metadata: { role: 'host_client' },
+					amr: [{ method: 'password' }],
+				}),
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
+			expect(mockNext).not.toHaveBeenCalled();
+		},
+	);
 
 	it('Scenario: super_admin with MFA can access admin-only path', async () => {
 		const context = createContext('/dashboard/usuarios');
