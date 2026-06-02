@@ -20,6 +20,12 @@ function resolveSrc(source: { src: string | { src: string } }): string {
 	return typeof source.src === 'string' ? source.src : source.src.src;
 }
 
+function imageItemKey(image: GalleryItem['image']): string {
+	if (typeof image === 'string') return image;
+	if (image.type === 'internal') return image.key;
+	return image.src;
+}
+
 function getImageSource(item: GalleryItem, previewSlug: string): string | undefined {
 	const image = item.image;
 	if (typeof image === 'string') {
@@ -74,7 +80,7 @@ export default function GalleryEditor({ value, previewSlug, onChange }: Props) {
 					return (
 						<article
 							className="invitation-editor__gallery-item"
-							key={`${index}-${JSON.stringify(item.image)}`}
+							key={`${index}-${imageItemKey(item.image)}`}
 						>
 							<div className="invitation-editor__gallery-image">
 								{src ? (
