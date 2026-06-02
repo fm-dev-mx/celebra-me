@@ -340,6 +340,17 @@ export class AdminApi {
 		return this.handleResponse(result);
 	}
 
+	async restoreInvitationEditorFromPublished(
+		invitationId: string,
+		expectedUpdatedAt: string,
+	): Promise<{ context: InvitationEditorContextDTO }> {
+		const result = await dashboardApi.post<{ context: InvitationEditorContextDTO }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/restore-published`,
+			{ expectedUpdatedAt },
+		);
+		return this.handleResponse(result);
+	}
+
 	async reconcileInvitationEditorRsvp(
 		invitationId: string,
 	): Promise<InvitationEditorContextDTO['rsvpLink']> {

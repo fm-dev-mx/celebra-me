@@ -13,6 +13,7 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 	>(null);
 	const [publishing, setPublishing] = useState(false);
 	const [reconciling, setReconciling] = useState(false);
+	const [restoring, setRestoring] = useState(false);
 
 	const reload = useCallback(async () => {
 		const nextContext = await adminApi.getInvitationEditor(initialContext.invitation.id);
@@ -94,15 +95,32 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		}
 	}, [context.invitation.id]);
 
+	const restorePublished = useCallback(async () => {
+		setRestoring(true);
+		try {
+			const expectedUpdatedAt = context.draftUpdatedAt ?? context.invitation.updatedAt;
+			const result = await adminApi.restoreInvitationEditorFromPublished(
+				context.invitation.id,
+				expectedUpdatedAt,
+			);
+			setContext(result.context);
+			return result.context;
+		} finally {
+			setRestoring(false);
+		}
+	}, [context.draftUpdatedAt, context.invitation.id, context.invitation.updatedAt]);
+
 	return {
 		context,
 		publishing,
 		reconciling,
+		restoring,
 		reload,
 		saveMetadata,
 		saveSection,
 		savingSection,
 		publish,
 		reconcileRsvp,
+		restorePublished,
 	};
 }
