@@ -103,6 +103,16 @@ beforeAll(() => {
 
 let mockContext: InvitationEditorContextDTO;
 
+function mockMatchMedia(matches: boolean) {
+	window.matchMedia = jest.fn().mockImplementation((query: string) => ({
+		matches,
+		media: query,
+		addEventListener: jest.fn(),
+		removeEventListener: jest.fn(),
+		dispatchEvent: jest.fn(),
+	}));
+}
+
 jest.mock('@/hooks/use-invitation-editor', () => ({
 	useInvitationEditor: () => ({
 		context: mockContext,
@@ -123,6 +133,7 @@ beforeEach(() => {
 	saveSection = jest.fn().mockResolvedValue({});
 	saveMetadata = jest.fn().mockResolvedValue(createContext().invitation);
 	mockContext = createContext();
+	mockMatchMedia(true);
 });
 
 describe('getCriticalSections', () => {
@@ -257,6 +268,112 @@ describe('InvitationEditor', () => {
 		expect(screen.getByText('Secciones guardadas que se publicarán:')).toBeInTheDocument();
 		expect(screen.getAllByText('Datos principales').length).toBeGreaterThan(1);
 		expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Vista previa' })).toHaveAttribute(
+			'href',
+			'/dashboard/invitaciones/proj-1/preview?v=0',
+		);
+	});
+
+	it('renders a persistent saved-preview pane with embedded iframe', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		expect(screen.getByRole('complementary', { name: 'Vista previa' })).toBeInTheDocument();
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0',
+		);
+		expect(screen.getByText('Última versión guardada')).toBeInTheDocument();
+	});
+
+	it('marks the preview as stale while local editor changes are unsaved', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.change(screen.getByLabelText('Título público'), {
+			target: { value: 'Título temporal' },
+		});
+
+		expect(screen.getByText('Hay cambios sin guardar')).toBeInTheDocument();
+		expect(
+			screen.getByText('La vista previa se actualizará después de guardar.'),
+		).toBeInTheDocument();
+	});
+
+	it('reloads the preview after saving a section without auto-saving from preview reload', async () => {
+		const { container } = render(<InvitationEditor initialContext={mockContext} />);
+		const mainCard = container.querySelector('#main');
+		expect(mainCard).not.toBeNull();
+
+		fireEvent.change(within(mainCard as HTMLElement).getByLabelText('Título público'), {
+			target: { value: 'XV Ana Samantha' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+		expect(saveSection).not.toHaveBeenCalled();
+
+		fireEvent.click(within(mainCard as HTMLElement).getByText('Guardar sección'));
+
+		await waitFor(() => {
+			expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+				'src',
+				'/dashboard/invitaciones/proj-1/preview?embed=1&v=1',
+			);
+		});
+	});
+
+	it('keeps the stale preview version when a section save fails', async () => {
+		saveSection = jest.fn().mockRejectedValue(new Error('No se pudo guardar.'));
+		const { container } = render(<InvitationEditor initialContext={mockContext} />);
+		const mainCard = container.querySelector('#main');
+		expect(mainCard).not.toBeNull();
+
+		fireEvent.change(within(mainCard as HTMLElement).getByLabelText('Título público'), {
+			target: { value: 'XV Ana Samantha' },
+		});
+		fireEvent.click(within(mainCard as HTMLElement).getByText('Guardar sección'));
+
+		await waitFor(() => {
+			expect(screen.getByText('No se pudo guardar.')).toBeInTheDocument();
+		});
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0',
+		);
+		expect(screen.getByText('Hay cambios sin guardar')).toBeInTheDocument();
+	});
+
+	it('focuses the persistent preview pane from the action bar on desktop', () => {
+		const scrollIntoView = jest.fn();
+		const originalScrollIntoView = Element.prototype.scrollIntoView;
+		Element.prototype.scrollIntoView = scrollIntoView;
+		const focus = jest
+			.spyOn(HTMLElement.prototype, 'focus')
+			.mockImplementation(() => undefined);
+		const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+		render(<InvitationEditor initialContext={mockContext} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Vista previa' }));
+
+		expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+		expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+		expect(open).not.toHaveBeenCalled();
+
+		Element.prototype.scrollIntoView = originalScrollIntoView;
+		focus.mockRestore();
+		open.mockRestore();
+	});
+
+	it('opens the full preview route in a new tab below the split-layout breakpoint', () => {
+		mockMatchMedia(false);
+		const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+		render(<InvitationEditor initialContext={mockContext} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Vista previa' }));
+
+		expect(open).toHaveBeenCalledWith(
+			'/dashboard/invitaciones/proj-1/preview?v=0',
+			'_blank',
+			'noopener,noreferrer',
+		);
+		open.mockRestore();
 	});
 
 	it('saves only the edited main section', async () => {

@@ -8,8 +8,7 @@ interface Props {
 	onDiscard: () => void;
 	onPublish: () => void;
 	editUrl: string;
-	onPreviewToggle: () => void;
-	previewActive: boolean;
+	onPreviewRequest: () => void;
 }
 
 export default function EditorActionBar({
@@ -22,8 +21,7 @@ export default function EditorActionBar({
 	onDiscard,
 	onPublish,
 	editUrl,
-	onPreviewToggle,
-	previewActive,
+	onPreviewRequest,
 }: Props) {
 	return (
 		<div className="invitation-editor__action-bar">
@@ -60,10 +58,10 @@ export default function EditorActionBar({
 				)}
 				<button
 					type="button"
-					className={`invitation-editor__action-bar-btn${previewActive ? ' invitation-editor__action-bar-btn--active' : ''} invitation-editor__action-bar-btn--secondary`}
-					onClick={onPreviewToggle}
+					className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
+					onClick={onPreviewRequest}
 				>
-					{previewActive ? 'Cerrar vista previa' : 'Vista previa'}
+					Vista previa
 				</button>
 				<button
 					type="button"

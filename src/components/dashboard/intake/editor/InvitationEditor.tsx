@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- Editor shell with 12+ sections; extracted SectionCard/Field/TextArea to separate files */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { EDITOR_SPLIT_BREAKPOINT } from '@/lib/editor/constants';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEditor';
 import MetadataSection from '@/components/dashboard/intake/editor/MetadataSection';
@@ -9,6 +10,7 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
+import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import type {
 	InvitationEditorContextDTO,
@@ -73,24 +75,28 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 // EDITOR_SECTION_PRESENTATION imported from labels.ts
 
 function uniqueSectionPresentation(sections: string[]) {
-	return Array.from(
-		new Map(
-			sections
-				.map((section) => EDITOR_SECTION_PRESENTATION[section])
-				.filter((section) => section !== undefined)
-				.map((section) => [section.id, section]),
-		).values(),
-	);
+	const presented = new Map<string, { id: string; label: string }>();
+	for (const section of sections) {
+		const p = EDITOR_SECTION_PRESENTATION[section];
+		if (p) presented.set(p.id, p);
+	}
+	return Array.from(presented.values());
 }
 
-const SECTION_PATH_REGEX = new RegExp(
-	`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
-	'g',
-);
+let sectionPathRegex: RegExp | null = null;
+function getSectionPathRegex(): RegExp {
+	if (!sectionPathRegex) {
+		sectionPathRegex = new RegExp(
+			`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
+			'g',
+		);
+	}
+	return sectionPathRegex;
+}
 
 export function formatPublishErrorMessage(error: unknown): string {
 	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
-	return message.replace(SECTION_PATH_REGEX, (sectionPath) => {
+	return message.replace(getSectionPathRegex(), (sectionPath) => {
 		const key = sectionPath.split(/[.[]/, 1)[0];
 		return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
 	});
@@ -121,6 +127,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [dirty, setDirty] = useState<Set<string>>(new Set());
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [success, setSuccess] = useState<Record<string, string>>({});
+	const [previewVersion, setPreviewVersion] = useState(0);
+	const previewPaneRef = useRef<HTMLElement | null>(null);
+	const refreshSavedPreview = () => {
+		setPreviewVersion((version) => version + 1);
+	};
 
 	useEffect(() => {
 		const warn = (event: BeforeUnloadEvent) => {
@@ -171,7 +182,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setContentBaseline((current) => applySectionToBaseline(current, section, value));
 	};
 
-	const saveSection = async (section: InvitationEditorSectionKey, expectedUpdatedAt?: string) => {
+	const saveSection = async (
+		section: InvitationEditorSectionKey,
+		expectedUpdatedAt?: string,
+		shouldRefreshPreview = true,
+	) => {
 		setErrors((current) => ({ ...current, [section]: '' }));
 		try {
 			const result = await editor.saveSection(
@@ -186,6 +201,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				return next;
 			});
 			setSuccess((current) => ({ ...current, [section]: 'Sección guardada.' }));
+			if (shouldRefreshPreview) refreshSavedPreview();
 			return result;
 		} catch (error) {
 			setErrors((current) => ({
@@ -195,7 +211,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 	};
 
-	const saveMetadata = async (expectedUpdatedAt?: string) => {
+	const saveMetadata = async (expectedUpdatedAt?: string, shouldRefreshPreview = true) => {
 		setErrors((current) => ({ ...current, metadata: '' }));
 		try {
 			const invitation = await editor.saveMetadata(metadata, expectedUpdatedAt);
@@ -208,6 +224,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				return next;
 			});
 			setSuccess((current) => ({ ...current, metadata: 'Datos guardados.' }));
+			if (shouldRefreshPreview) refreshSavedPreview();
 			return invitation;
 		} catch (error) {
 			setErrors((current) => ({
@@ -231,6 +248,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			}));
 			const slug = getPublicSlug(ctx.invitation);
 			setPublishedSlug(slug);
+			refreshSavedPreview();
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -244,23 +262,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const location = content.location ?? {};
 	const rsvp = content.rsvp ?? {};
 	const music = content.music ?? {};
-	const gifts = useMemo(() => content.gifts ?? { items: [] }, [content.gifts]);
-	const messages = useMemo(
-		() => ({ quote: content.quote ?? {}, thankYou: content.thankYou ?? {} }),
-		[content.quote, content.thankYou],
-	);
+	const gifts = content.gifts ?? { items: [] };
+	const giftItems = gifts.items ?? [];
+	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
 	const photoNotes = content.photoNotes ?? {};
-	const sectionOrder = useMemo(
-		() => content.sectionOrder ?? [...CONTENT_SECTION_KEYS],
-		[content.sectionOrder],
-	);
+	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
 
 	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
 		updateContent('gifts', {
 			...gifts,
-			items: (gifts.items ?? []).map((item, i) =>
-				i === index ? { ...item, ...patch } : item,
-			),
+			items: giftItems.map((item, i) => (i === index ? { ...item, ...patch } : item)),
 		});
 	};
 
@@ -383,7 +394,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const expectedUpdateAt = nextExpectedUpdatedAt ?? initialExpectedUpdatedAt;
 
 			if (section === 'metadata') {
-				const result = await saveMetadata(expectedUpdateAt);
+				const result = await saveMetadata(expectedUpdateAt, false);
 				if (!result) {
 					allSucceeded = false;
 					break;
@@ -391,7 +402,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				nextExpectedUpdatedAt = result.updatedAt;
 			} else {
 				const sectionKey = section as InvitationEditorSectionKey;
-				const result = await saveSection(sectionKey, expectedUpdateAt);
+				const result = await saveSection(sectionKey, expectedUpdateAt, false);
 				if (!result) {
 					allSucceeded = false;
 					break;
@@ -401,6 +412,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 
 		setSavingAll(false);
+		if (allSucceeded) refreshSavedPreview();
 		return allSucceeded;
 	}, [
 		dirty,
@@ -408,9 +420,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 		saveSection,
 		editor.context.draftUpdatedAt,
 		editor.context.invitation.updatedAt,
+		refreshSavedPreview,
 	]);
 
-	const previewUrl = `/dashboard/invitaciones/${editor.context.invitation.id}/preview`;
+	const previewUrl = `/dashboard/invitaciones/${encodeURIComponent(
+		editor.context.invitation.id,
+	)}/preview?v=${previewVersion}`;
 	const backUrl = '/dashboard/invitaciones';
 	const publishDisabled = useMemo(
 		() =>
@@ -441,6 +456,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			setDirty(new Set());
 			setErrors({});
 			setSuccess({ restore: 'Se restauró la versión pública como borrador editable.' });
+			refreshSavedPreview();
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -449,27 +465,17 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 	};
 
-	const [showPreview, setShowPreview] = useState(false);
-	const [refreshingPreview, setRefreshingPreview] = useState(false);
-	const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
-
-	const refreshPreview = useCallback(async () => {
-		setRefreshingPreview(true);
-		try {
-			if (dirty.size > 0) {
-				const result = await saveAllDirty();
-				if (!result) return;
-			}
-			setPreviewRefreshKey((k) => k + 1);
-		} catch {
-			setErrors((current) => ({
-				...current,
-				preview: 'No se pudo actualizar la vista previa.',
-			}));
-		} finally {
-			setRefreshingPreview(false);
+	const requestPreview = useCallback(() => {
+		const isDesktop = window.matchMedia(
+			`(min-width: ${EDITOR_SPLIT_BREAKPOINT + 1}px)`,
+		).matches;
+		if (isDesktop && previewPaneRef.current) {
+			previewPaneRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			previewPaneRef.current.focus({ preventScroll: true });
+			return;
 		}
-	}, [dirty, saveAllDirty]);
+		window.open(previewUrl, '_blank', 'noopener,noreferrer');
+	}, [previewUrl]);
 
 	return (
 		<div className="invitation-editor">
@@ -483,8 +489,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				onDiscard={discardChanges}
 				onPublish={() => setConfirmation('publish')}
 				editUrl={backUrl}
-				onPreviewToggle={() => setShowPreview(!showPreview)}
-				previewActive={showPreview}
+				onPreviewRequest={requestPreview}
 			/>
 			<header className="invitation-editor__header">
 				<div className="invitation-editor__header-info">
@@ -1009,7 +1014,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							/>
 						</div>
 						<div className="invitation-editor__stack">
-							{(gifts.items ?? []).map((item, index) => (
+							{giftItems.map((item, index) => (
 								<div
 									className="invitation-editor__list-item"
 									key={`${item.type}-${index}`}
@@ -1024,9 +1029,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 											onClick={() =>
 												updateContent('gifts', {
 													...gifts,
-													items: (gifts.items ?? []).filter(
-														(_, i) => i !== index,
-													),
+													items: giftItems.filter((_, i) => i !== index),
 												})
 											}
 										>
@@ -1108,7 +1111,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 								updateContent('gifts', {
 									...gifts,
 									items: [
-										...(gifts.items ?? []),
+										...giftItems,
 										{ type: 'cash', title: 'Lluvia de Sobres', text: '' },
 									],
 								})
@@ -1234,30 +1237,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 						)}
 					</SectionCard>
 				</main>
+				<EditorPreviewPane
+					paneRef={previewPaneRef}
+					invitationId={editor.context.invitation.id}
+					hasUnsavedChanges={dirty.size > 0}
+					previewVersion={previewVersion}
+					onReload={refreshSavedPreview}
+				/>
 			</div>
-			{showPreview && (
-				<div className="invitation-editor__preview-panel">
-					<div className="invitation-editor__preview-panel-header">
-						<span>Vista previa de la invitación</span>
-						<button
-							type="button"
-							className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
-							onClick={refreshPreview}
-							disabled={refreshingPreview}
-						>
-							{refreshingPreview ? 'Actualizando...' : 'Actualizar vista previa'}
-						</button>
-					</div>
-					<div className="invitation-editor__preview-panel-body">
-						<iframe
-							key={previewRefreshKey}
-							src={previewUrl}
-							className="invitation-editor__preview-iframe"
-							title="Vista previa de la invitación"
-						/>
-					</div>
-				</div>
-			)}
 			{confirmation === 'restore' && (
 				<ConfirmModal
 					title="Restaurar desde versión pública"
