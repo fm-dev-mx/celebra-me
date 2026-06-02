@@ -26,6 +26,14 @@ export function numFallback(value: unknown): number {
 	return typeof value === 'number' ? value : 0;
 }
 
+export function moveArrayItem<T>(items: T[], fromIndex: number, offset: -1 | 1): T[] {
+	const destination = fromIndex + offset;
+	if (destination < 0 || destination >= items.length) return items;
+	const next = [...items];
+	[next[fromIndex], next[destination]] = [next[destination], next[fromIndex]];
+	return next;
+}
+
 export function hasRsvpContent(content: Record<string, unknown> | undefined): boolean {
 	if (!content) return false;
 	const rsvp = content.rsvp as Record<string, unknown> | undefined;

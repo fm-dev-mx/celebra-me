@@ -29,6 +29,7 @@ import {
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
 
 const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
 	'title',
@@ -172,29 +173,6 @@ export async function getInvitationEditorContext(
 	};
 }
 
-function applySectionValue(
-	content: DraftContent,
-	section: InvitationEditorSectionKey,
-	value: unknown,
-): DraftContent {
-	const next = deepClone(content);
-
-	if (section === 'main') {
-		const main = value as Pick<DraftContent, 'title' | 'description' | 'hero'>;
-		return { ...next, title: main.title, description: main.description, hero: main.hero };
-	}
-	if (section === 'messages') {
-		const messages = value as Pick<DraftContent, 'quote' | 'thankYou'>;
-		return { ...next, quote: messages.quote, thankYou: messages.thankYou };
-	}
-	if (section === 'publication') {
-		const publication = value as Pick<DraftContent, 'sectionOrder'>;
-		return { ...next, sectionOrder: publication.sectionOrder };
-	}
-
-	return { ...next, [section]: value };
-}
-
 export async function saveInvitationEditorSection(
 	invitationId: string,
 	section: InvitationEditorSectionKey,
@@ -327,4 +305,34 @@ export async function reconcileInvitationRsvp(invitationId: string) {
 		slug: invitation.slug,
 	});
 	return { rsvpLink: { status: 'linked' as const, eventId: updatedEvent.id } };
+}
+
+export async function restoreInvitationEditorFromPublished(
+	invitationId: string,
+	input: { expectedUpdatedAt: string },
+) {
+	const [draft, published] = await Promise.all([
+		findDraftByInvitationId(invitationId),
+		findPublishedByInvitationId(invitationId),
+	]);
+	if (!published) {
+		throw new ApiError(404, 'not_found', 'No existe una versión pública para restaurar.');
+	}
+
+	const content = mapNestedToDraftContent(published.content);
+	const savedDraft = draft
+		? await updateDraftContentConditionally(draft.id, input.expectedUpdatedAt, {
+				content,
+				status: 'draft',
+			})
+		: await upsertDraft({ invitationId, submissionId: null, content });
+
+	if (!savedDraft) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+		);
+	}
+	return savedDraft;
 }
