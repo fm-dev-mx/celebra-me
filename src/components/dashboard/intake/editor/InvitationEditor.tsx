@@ -511,7 +511,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						saving={savingSection === 'metadata'}
 						error={errors.metadata}
 						success={success.metadata}
-						onSave={saveMetadata}
+						onSave={() => void saveMetadata()}
 						sourceBadge={undefined}
 					>
 						<MetadataSection
