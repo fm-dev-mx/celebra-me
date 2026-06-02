@@ -256,7 +256,7 @@ describe('InvitationEditor', () => {
 		expect(screen.getByText(/reemplazará la versión pública actual/)).toBeInTheDocument();
 		expect(screen.getByText('Secciones guardadas que se publicarán:')).toBeInTheDocument();
 		expect(screen.getAllByText('Datos principales').length).toBeGreaterThan(1);
-		expect(screen.getAllByRole('link', { name: 'Vista previa' }).length).toBeGreaterThan(1);
+		expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
 	});
 
 	it('saves only the edited main section', async () => {

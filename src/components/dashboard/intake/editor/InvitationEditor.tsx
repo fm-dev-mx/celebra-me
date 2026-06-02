@@ -367,13 +367,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setSuccess({});
 	};
 
-	const saveAllDirty = useCallback(async () => {
+	const saveAllDirty = useCallback(async (): Promise<boolean> => {
 		const dirtyArray = Array.from(dirty);
-		if (dirtyArray.length === 0) return;
+		if (dirtyArray.length === 0) return true;
 		setSavingAll(true);
 		setErrors({});
 		setSuccess({});
 
+		let allSucceeded = true;
 		let nextExpectedUpdatedAt: string | undefined;
 		const initialExpectedUpdatedAt =
 			editor.context.draftUpdatedAt ?? editor.context.invitation.updatedAt;
@@ -383,17 +384,24 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 			if (section === 'metadata') {
 				const result = await saveMetadata(expectedUpdateAt);
-				if (!result) break;
+				if (!result) {
+					allSucceeded = false;
+					break;
+				}
 				nextExpectedUpdatedAt = result.updatedAt;
 			} else {
 				const sectionKey = section as InvitationEditorSectionKey;
 				const result = await saveSection(sectionKey, expectedUpdateAt);
-				if (!result) break;
+				if (!result) {
+					allSucceeded = false;
+					break;
+				}
 				nextExpectedUpdatedAt = result.draftUpdatedAt;
 			}
 		}
 
 		setSavingAll(false);
+		return allSucceeded;
 	}, [
 		dirty,
 		saveMetadata,
@@ -441,6 +449,28 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 	};
 
+	const [showPreview, setShowPreview] = useState(false);
+	const [refreshingPreview, setRefreshingPreview] = useState(false);
+	const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+
+	const refreshPreview = useCallback(async () => {
+		setRefreshingPreview(true);
+		try {
+			if (dirty.size > 0) {
+				const result = await saveAllDirty();
+				if (!result) return;
+			}
+			setPreviewRefreshKey((k) => k + 1);
+		} catch {
+			setErrors((current) => ({
+				...current,
+				preview: 'No se pudo actualizar la vista previa.',
+			}));
+		} finally {
+			setRefreshingPreview(false);
+		}
+	}, [dirty, saveAllDirty]);
+
 	return (
 		<div className="invitation-editor">
 			<EditorActionBar
@@ -452,8 +482,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 				onSaveAll={saveAllDirty}
 				onDiscard={discardChanges}
 				onPublish={() => setConfirmation('publish')}
-				previewUrl={previewUrl}
 				editUrl={backUrl}
+				onPreviewToggle={() => setShowPreview(!showPreview)}
+				previewActive={showPreview}
 			/>
 			<header className="invitation-editor__header">
 				<div className="invitation-editor__header-info">
@@ -1204,6 +1235,29 @@ export default function InvitationEditor({ initialContext }: Props) {
 					</SectionCard>
 				</main>
 			</div>
+			{showPreview && (
+				<div className="invitation-editor__preview-panel">
+					<div className="invitation-editor__preview-panel-header">
+						<span>Vista previa de la invitación</span>
+						<button
+							type="button"
+							className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
+							onClick={refreshPreview}
+							disabled={refreshingPreview}
+						>
+							{refreshingPreview ? 'Actualizando...' : 'Actualizar vista previa'}
+						</button>
+					</div>
+					<div className="invitation-editor__preview-panel-body">
+						<iframe
+							key={previewRefreshKey}
+							src={previewUrl}
+							className="invitation-editor__preview-iframe"
+							title="Vista previa de la invitación"
+						/>
+					</div>
+				</div>
+			)}
 			{confirmation === 'restore' && (
 				<ConfirmModal
 					title="Restaurar desde versión pública"
