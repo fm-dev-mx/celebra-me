@@ -108,6 +108,7 @@ if (!pageCtx && !errorMessage && invitation) {
 }
 
 const editUrl = `/dashboard/invitaciones/${id}/editar`;
+const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
 ---
 
 {
@@ -131,7 +132,7 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 			isDemo={false}
 			themeMode="dark"
 		>
-			<div class="preview-banner" role="banner">
+			<div class:list={['preview-banner', embeddedPreview && 'preview-banner--embedded']} role="banner">
 				<span class="preview-banner__text">
 					Vista previa interna — {previewSource}
 				</span>
@@ -141,7 +142,7 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 						Aún no hay contenido guardado. Edita la invitación para agregarlo.
 					</span>
 				)}
-				<a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>
+				{!embeddedPreview && <a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>}
 			</div>
 
 			<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
@@ -249,6 +250,12 @@ const editUrl = `/dashboard/invitaciones/${id}/editar`;
 		color: var(--color-text-muted);
 		font-size: 12px;
 		font-weight: 400;
+	}
+
+	.preview-banner--embedded {
+		gap: 0.5rem;
+		padding: 6px 10px;
+		font-size: 12px;
 	}
 
 	.preview-error {
