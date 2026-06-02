@@ -40,15 +40,6 @@ export default function FocalPointControl({ value, onChange, imageSrc, alt }: Pr
 
 	const isValid = !value || isValidFocalPoint(value);
 	const focalPos = isValid ? value || 'center' : 'center';
-	// eslint-disable-next-line no-restricted-syntax -- dynamic object-position from user input
-	const focalImg = (
-		<img
-			src={imageSrc}
-			alt={alt ?? 'Vista previa del punto focal'}
-			className="focal-point-control__preview-img"
-			style={{ objectPosition: focalPos } as React.CSSProperties}
-		/>
-	);
 
 	const handlePreset = (preset: string) => {
 		onChange(preset);
@@ -57,7 +48,17 @@ export default function FocalPointControl({ value, onChange, imageSrc, alt }: Pr
 
 	return (
 		<div className="focal-point-control">
-			{imageSrc && <div className="focal-point-control__preview">{focalImg}</div>}
+			{imageSrc && (
+				<div className="focal-point-control__preview">
+					<img
+						src={imageSrc}
+						alt={alt ?? 'Vista previa del punto focal'}
+						className="focal-point-control__preview-img"
+						// eslint-disable-next-line no-restricted-syntax -- dynamic object-position from user input
+						style={{ objectPosition: focalPos } as React.CSSProperties}
+					/>
+				</div>
+			)}
 			<div className="focal-point-control__grid">
 				{FOCAL_PRESETS.map((row, rowIndex) => (
 					<div className="focal-point-control__row" key={rowIndex}>
