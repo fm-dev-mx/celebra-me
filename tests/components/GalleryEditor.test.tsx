@@ -54,7 +54,7 @@ describe('GalleryEditor', () => {
 			),
 		).not.toThrow();
 
-		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(6);
+		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(2);
 	});
 
 	it('renders external image references with correct src', () => {
@@ -77,8 +77,8 @@ describe('GalleryEditor', () => {
 		);
 
 		const srcs = screen.getAllByRole('img').map((img) => (img as HTMLImageElement).src);
-		expect(srcs.filter((s) => s.includes('/uploads/photo.jpg'))).toHaveLength(4);
-		expect(srcs.filter((s) => s === 'https://example.com/img.jpg')).toHaveLength(4);
+		expect(srcs.filter((s) => s.includes('/uploads/photo.jpg'))).toHaveLength(2);
+		expect(srcs.filter((s) => s === 'https://example.com/img.jpg')).toHaveLength(2);
 	});
 
 	it('shows placeholder text when image source cannot be resolved', () => {
@@ -91,10 +91,10 @@ describe('GalleryEditor', () => {
 			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
 		);
 
-		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(3);
+		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(1);
 	});
 
-	it('renders public layout roles with mobile, tablet, and desktop crop frames', () => {
+	it('renders one selected public layout crop frame and switches preview modes', () => {
 		render(
 			<GalleryEditor
 				value={{
@@ -110,10 +110,23 @@ describe('GalleryEditor', () => {
 		const item = screen.getByText('Fotografía 1').closest('article');
 		expect(item).toHaveAttribute('data-layout-role', 'feature');
 		expect(screen.getByText('Destacada')).toBeInTheDocument();
-		expect(screen.getAllByText('Móvil').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Tableta').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Escritorio').length).toBeGreaterThan(0);
+		expect(item?.querySelectorAll('.invitation-editor__gallery-image')).toHaveLength(1);
+		expect(item?.querySelector('.invitation-editor__gallery-image')).toHaveClass(
+			'invitation-editor__gallery-image--mobile-feature',
+		);
 		expect(screen.getByLabelText('Vista previa')).toHaveValue('mobile');
+
+		fireEvent.change(screen.getByLabelText('Vista previa'), {
+			target: { value: 'desktop' },
+		});
+		expect(item?.querySelectorAll('.invitation-editor__gallery-image')).toHaveLength(1);
+		expect(item?.querySelector('.invitation-editor__gallery-image')).toHaveClass(
+			'invitation-editor__gallery-image--desktop-feature',
+		);
+		expect(item?.querySelector('.invitation-editor__gallery-image')).toHaveAttribute(
+			'data-aspect-ratio',
+			'16 / 10',
+		);
 	});
 
 	it('preserves per-device focal points when switching back to shared mode', () => {

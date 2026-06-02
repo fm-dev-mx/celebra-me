@@ -11,8 +11,8 @@ import {
 	GALLERY_ROLE_LABELS,
 	getGalleryPreviewAspectRatio,
 	getGalleryPreviewRole,
-	type GalleryPreviewViewport,
 } from '@/lib/components/gallery/gallery-presentation';
+import { DEVICE_LABELS, type PreviewDevice } from '@/lib/editor/constants';
 import { moveArrayItem } from '@/lib/intake/utils';
 import { useState } from 'react';
 
@@ -30,8 +30,6 @@ interface Props {
 	photoNotesDirty?: boolean;
 	savingPhotoNotes?: boolean;
 }
-
-type CropMode = GalleryPreviewViewport;
 
 function resolveSrc(source: { src: string | { src: string } }): string {
 	return typeof source.src === 'string' ? source.src : source.src.src;
@@ -67,7 +65,7 @@ export default function GalleryEditor({
 	photoNotesDirty = false,
 	savingPhotoNotes = false,
 }: Props) {
-	const [cropMode, setCropMode] = useState<CropMode>('mobile');
+	const [cropMode, setCropMode] = useState<PreviewDevice>('mobile');
 	const [perDevice, setPerDevice] = useState(false);
 
 	const updateItem = (index: number, patch: Partial<GalleryItem>) => {
@@ -75,10 +73,6 @@ export default function GalleryEditor({
 			itemIndex === index ? { ...item, ...patch } : item,
 		);
 		onChange({ ...value, items });
-	};
-
-	const handleModeChange = (newMode: boolean) => {
-		setPerDevice(newMode);
 	};
 
 	const move = (index: number, offset: -1 | 1) => {
@@ -107,7 +101,7 @@ export default function GalleryEditor({
 				<span>Vista previa</span>
 				<select
 					value={cropMode}
-					onChange={(event) => setCropMode(event.target.value as CropMode)}
+					onChange={(event) => setCropMode(event.target.value as PreviewDevice)}
 				>
 					<option value="mobile">Móvil</option>
 					<option value="tablet">Tableta</option>
@@ -119,7 +113,7 @@ export default function GalleryEditor({
 				{value.items.map((item, index) => {
 					const src = getImageSource(item, previewSlug);
 					const role = getGalleryPreviewRole(index, variant);
-				return (
+					return (
 						<article
 							className="invitation-editor__gallery-item"
 							key={`${index}-${imageItemKey(item.image)}`}
@@ -130,39 +124,30 @@ export default function GalleryEditor({
 								<span>{GALLERY_ROLE_LABELS[role]}</span>
 							</div>
 							<div className="invitation-editor__gallery-item-config">
-								<span className="invitation-editor__gallery-item-key">{imageItemKey(item.image)}</span>
+								<span className="invitation-editor__gallery-item-key">
+									{imageItemKey(item.image)}
+								</span>
 							</div>
 							<div className="invitation-editor__gallery-crops">
-								{(['mobile', 'tablet', 'desktop'] as const).map((viewport) => {
-									return (
+								<div>
+									<span>{DEVICE_LABELS[cropMode]}</span>
 									<div
-										key={viewport}
-										className={
-											cropMode === viewport
-												? 'invitation-editor__gallery-crop--active'
-												: undefined
-										}
+										className={`invitation-editor__gallery-image invitation-editor__gallery-image--${cropMode}-${role}`}
+										data-aspect-ratio={getGalleryPreviewAspectRatio(
+											role,
+											cropMode,
+										)}
 									>
-										<span>{viewport === 'mobile' ? 'Móvil' : viewport === 'tablet' ? 'Tableta' : 'Escritorio'}</span>
-										<div
-											className={`invitation-editor__gallery-image invitation-editor__gallery-image--${viewport}-${role}`}
-											data-aspect-ratio={getGalleryPreviewAspectRatio(
-												role,
-												viewport,
-											)}
-										>
-											{src ? (
-												<img
-													src={src}
-													alt={item.caption || `Fotografía ${index + 1}`}
-												/>
-											) : (
-												<span>Vista previa no disponible</span>
-											)}
-										</div>
+										{src ? (
+											<img
+												src={src}
+												alt={item.caption || `Fotografía ${index + 1}`}
+											/>
+										) : (
+											<span>Vista previa no disponible</span>
+										)}
 									</div>
-									);
-								})}
+								</div>
 							</div>
 							<label className="invitation-editor__field">
 								<span>Pie de foto</span>
@@ -177,13 +162,19 @@ export default function GalleryEditor({
 								value={item.focalPoint ?? ''}
 								onChange={(value) => updateItem(index, { focalPoint: value })}
 								mobileValue={item.focalPointMobile ?? ''}
-								onMobileChange={(value) => updateItem(index, { focalPointMobile: value })}
+								onMobileChange={(value) =>
+									updateItem(index, { focalPointMobile: value })
+								}
 								tabletValue={item.focalPointTablet ?? ''}
-								onTabletChange={(value) => updateItem(index, { focalPointTablet: value })}
+								onTabletChange={(value) =>
+									updateItem(index, { focalPointTablet: value })
+								}
 								desktopValue={item.focalPointDesktop ?? ''}
-								onDesktopChange={(value) => updateItem(index, { focalPointDesktop: value })}
+								onDesktopChange={(value) =>
+									updateItem(index, { focalPointDesktop: value })
+								}
 								mode={perDevice ? 'per-device' : 'shared'}
-								onModeChange={(mode) => handleModeChange(mode === 'per-device')}
+								onModeChange={(mode) => setPerDevice(mode === 'per-device')}
 								imageSrc={src}
 								alt={item.caption || `Fotografía ${index + 1}`}
 							/>
