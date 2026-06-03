@@ -295,7 +295,12 @@ export const onRequest = defineMiddleware(
 		// API routes must validate against the cookie set during the page render;
 		// overwriting the cookie on every API call would desynchronise the token
 		// that the client received from the page meta tag.
-		if (!url.pathname.startsWith('/api/')) {
+		// Skip read-only dashboard preview routes as well: the embedded preview
+		// iframe loads a page route that would regenerate the CSRF cookie,
+		// invalidating the token that the parent editor page placed in the meta tag.
+		// The preview route is read-only (no forms), so skipping CSRF is safe.
+		const isPreviewRoute = /^\/dashboard\/invitaciones\/.+\/preview$/.test(url.pathname);
+		if (!url.pathname.startsWith('/api/') && !isPreviewRoute) {
 			locals.csrfToken = setCsrfToken(cookies);
 		}
 
