@@ -89,6 +89,48 @@ export async function findAssetById(id: string): Promise<InvitationAsset | null>
 	return rows[0] ? toInvitationAsset(rows[0]) : null;
 }
 
+export async function updateAsset(
+	id: string,
+	input: { displayName?: string; defaultAltText?: string },
+): Promise<InvitationAsset> {
+	const body: Record<string, unknown> = {};
+	if (input.displayName !== undefined) body.display_name = input.displayName;
+	if (input.defaultAltText !== undefined) body.default_alt_text = input.defaultAltText;
+
+	const rows = await supabaseRestRequest<AssetRow[]>({
+		pathWithQuery: `invitation_assets?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+
+	if (!rows[0]) throw new Error('Failed to update invitation asset.');
+	return toInvitationAsset(rows[0]);
+}
+
+export async function findArchivedAssetsByInvitationId(
+	invitationId: string,
+): Promise<InvitationAsset[]> {
+	const rows = await supabaseRestRequest<AssetRow[]>({
+		pathWithQuery: `invitation_assets?select=${SELECT_COLUMNS}&invitation_id=eq.${encodeURIComponent(invitationId)}&deleted_at=not.is.null&order=deleted_at.desc`,
+		useServiceRole: true,
+	});
+	return rows.map(toInvitationAsset);
+}
+
+export async function restoreAsset(id: string): Promise<InvitationAsset> {
+	const rows = await supabaseRestRequest<AssetRow[]>({
+		pathWithQuery: `invitation_assets?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: { deleted_at: null },
+	});
+	if (!rows[0]) throw new Error('Failed to restore invitation asset.');
+	return toInvitationAsset(rows[0]);
+}
+
 export async function softDeleteAsset(id: string): Promise<void> {
 	await supabaseRestRequest<unknown>({
 		pathWithQuery: `invitation_assets?id=eq.${encodeURIComponent(id)}`,

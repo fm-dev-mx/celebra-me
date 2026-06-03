@@ -168,16 +168,9 @@ export function mapBlockDataToDraftContent(
 	return result;
 }
 
-function mapVenueToDraft(venue: Record<string, unknown> | undefined):
-	| {
-			venueName?: string;
-			address?: string;
-			city?: string;
-			date?: string;
-			time?: string;
-			mapUrl?: string;
-	  }
-	| undefined {
+function mapVenueToDraft(
+	venue: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
 	if (!venue || Object.keys(venue).length === 0) return undefined;
 	return {
 		venueName: str(venue.venueName),
@@ -186,6 +179,7 @@ function mapVenueToDraft(venue: Record<string, unknown> | undefined):
 		date: normalizeDate(venue.date),
 		time: str(venue.time),
 		mapUrl: str(venue.mapUrl),
+		...(venue.image !== undefined ? { image: venue.image } : {}),
 	};
 }
 
@@ -205,6 +199,9 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			nickname: str(hero.nickname),
 			date: normalizeDate(hero.date),
 		};
+		if (hero.backgroundImage !== undefined)
+			Object.assign(result.hero, { backgroundImage: hero.backgroundImage });
+		if (hero.portrait !== undefined) Object.assign(result.hero, { portrait: hero.portrait });
 	}
 
 	const family = nestedContent.family as Record<string, unknown> | undefined;
@@ -226,6 +223,8 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			children: childrenArr?.map((c) => c.name).join('\n'),
 			sectionMessage: str(family.sectionMessage),
 		};
+		if (family.featuredImage !== undefined)
+			Object.assign(result.family, { featuredImage: family.featuredImage });
 	}
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
@@ -288,6 +287,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			message: str(thankYou.message),
 			closingName: str(thankYou.closingName),
 		};
+		if (thankYou.image !== undefined) Object.assign(result.thankYou, { image: thankYou.image });
 	}
 
 	result.sectionOrder = nestedContent.sectionOrder as DraftContent['sectionOrder'];

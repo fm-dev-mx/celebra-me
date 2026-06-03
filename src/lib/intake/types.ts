@@ -137,6 +137,14 @@ export type ContentSource = 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
 
 export type SectionSource = 'draft' | 'published' | 'demo' | 'empty';
 
+export interface DemoAssetEntry {
+	key: EventAssetKey;
+	displayName: string;
+	src: string;
+	width?: number;
+	height?: number;
+}
+
 export interface InvitationAsset {
 	id: string;
 	invitationId: string;
