@@ -30,7 +30,6 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
-
 const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
 	'title',
 	'description',
@@ -185,11 +184,13 @@ export async function saveInvitationEditorSection(
 		});
 	}
 
+	const normalizedValue = valueResult.data;
+
 	const [context, currentDraft] = await Promise.all([
 		getInvitationEditorContext(invitationId),
 		findDraftByInvitationId(invitationId),
 	]);
-	const nextContent = applySectionValue(context.content, section, input.value);
+	const nextContent = applySectionValue(context.content, section, normalizedValue);
 
 	const savedDraft = currentDraft
 		? await updateDraftContentConditionally(currentDraft.id, input.expectedUpdatedAt, {

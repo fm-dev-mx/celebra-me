@@ -20,6 +20,8 @@ import {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { getPublicSlug } from '@/lib/intake/slug';
+import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
+import { getPublicUrl } from '@/lib/intake/storage';
 import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -104,6 +106,49 @@ function resolvePublishAssetSlug(previewSlug: string | undefined): string {
 	return previewSlug;
 }
 
+/**
+ * Walk content recursively and freeze all { type: 'uploaded', assetId }
+ * references to { type: 'uploaded', assetId, src } using the asset library.
+ * Throws if an uploaded asset cannot be resolved.
+ */
+async function freezeUploadedContentRefs(
+	content: Record<string, unknown>,
+	invitationId: string,
+): Promise<Record<string, unknown>> {
+	const assets = await findAssetsByInvitationId(invitationId);
+	const assetMap = new Map(assets.map((a) => [a.id, a]));
+
+	function walk(value: unknown): unknown {
+		if (!value || typeof value !== 'object') return value;
+		const obj = value as Record<string, unknown>;
+
+		if (obj.type === 'uploaded' && typeof obj.assetId === 'string' && !obj.src) {
+			const assetId = obj.assetId as string;
+			const asset = assetMap.get(assetId);
+			if (!asset) {
+				throw new ApiError(
+					422,
+					'bad_request',
+					`No se pudo resolver la imagen "${assetId.slice(0, 8)}". El recurso fue eliminado de la biblioteca.`,
+				);
+			}
+			return { ...obj, src: getPublicUrl(asset.bucket, asset.storagePath) };
+		}
+
+		if (Array.isArray(value)) {
+			return value.map(walk);
+		}
+
+		const result: Record<string, unknown> = {};
+		for (const [key, child] of Object.entries(obj)) {
+			result[key] = walk(child);
+		}
+		return result;
+	}
+
+	return walk(content) as Record<string, unknown>;
+}
+
 function assertHeroBackgroundResolvable(
 	publishedContent: Record<string, unknown>,
 	assetSlug: string,
@@ -181,7 +226,11 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		demoContent,
 		isDemo: invitation.kind === 'demo',
 	});
-	const publishedContentResult = eventContentSchema.safeParse(mappedContent);
+
+	// Freeze uploaded asset refs before validation
+	const frozenContent = await freezeUploadedContentRefs(mappedContent, invitationId);
+
+	const publishedContentResult = eventContentSchema.safeParse(frozenContent);
 	if (!publishedContentResult.success) {
 		const invalidPaths = publishedContentResult.error.issues
 			.map((issue) => issue.path.join('.'))

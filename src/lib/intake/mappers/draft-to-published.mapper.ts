@@ -69,6 +69,7 @@ function mapFamilyFromDraft(
 	}
 
 	if (str(draftFamily.sectionMessage)) result.sectionMessage = str(draftFamily.sectionMessage);
+	if (draftFamily.featuredImage) result.featuredImage = draftFamily.featuredImage;
 	result.celebrantName = celebrantName;
 
 	return Object.keys(result).length > 0 ? result : undefined;
@@ -166,9 +167,10 @@ function buildHeroFromDraft(
 		label: str(draftHero.label) || (demoLabel as string) || 'Invitacion Especial',
 		nickname: str(draftHero.nickname) || (demoNickname as string) || '',
 		date: normalizeHeroDate(str(draftHero.date) || (demoDate as string) || ''),
-		backgroundImage: demoBackgroundImage || { type: 'internal', key: 'hero' },
+		backgroundImage: draftHero.backgroundImage ??
+			demoBackgroundImage ?? { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoBackgroundImageDesktop,
-		portrait: demoPortrait,
+		portrait: draftHero.portrait ?? demoPortrait,
 		variant: (demoVariant as string) || themeId,
 	};
 }
@@ -260,7 +262,11 @@ function mapThankYouSection(
 		return {
 			message,
 			closingName: str(draftThankYou?.closingName) || str(demoThankYou?.closingName),
+			image: draftThankYou?.image ?? demoThankYou?.image,
 		};
+	}
+	if (draftThankYou?.image) {
+		return { message: '', closingName: '', image: draftThankYou.image };
 	}
 	return demoThankYou ? { ...demoThankYou } : undefined;
 }

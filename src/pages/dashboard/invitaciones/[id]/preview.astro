@@ -65,7 +65,7 @@ async function tryBuildContext(
 			? (demoEntryForSlug(invitation.snapshot.previewSlug)?.data as Record<string, unknown>) ?? {}
 			: {};
 
-	const result = buildDraftPreviewPageContext(invitation, content, demoContent);
+	const result = await buildDraftPreviewPageContext(invitation, content, demoContent);
 	if (!result.ok) return null;
 
 	previewSource = label;

@@ -65,6 +65,19 @@ function resolveAsset(
 		};
 	}
 
+	if (normalizedSource.type === 'uploaded') {
+		// Published content freezes the src. If no src is present (draft ref),
+		// the caller must resolve before rendering.
+		const src =
+			'src' in normalizedSource
+				? (normalizedSource as { type: 'uploaded'; assetId: string; src?: string }).src
+				: undefined;
+		if (src) {
+			return { src, alt: `Imagen de ${eventTitle}` };
+		}
+		return undefined;
+	}
+
 	if (isCommonAssetKey(normalizedSource.key)) {
 		return getCommonAsset(normalizedSource.key);
 	}
