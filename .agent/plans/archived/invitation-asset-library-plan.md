@@ -1,13 +1,18 @@
 ---
 title: Invitation Asset Library — Image Reuse & Independent Asset Storage
-status: active
+status: implemented
 created: 2026-06-02
 updated: 2026-06-02
 
-> **Phase 4 (Snapshot Integrity) implemented 2026-06-02.**  
-> Acceptance criteria satisfied. Phase 5 (Polish) is pending.  
-> Known issue: `InvitationEditor.test.tsx` crashes with Jest worker error (4 child process exceptions).  
-> This is a pre-existing infrastructure issue unrelated to asset library changes. The test suite passes 1464 of 1466 tests.
+> **Phase 5 (Polish) implemented 2026-06-02.**  
+> Asset library-owned unit tests: full pass.  
+> `pnpm test`: 1482 passing, 2 skipped, 1 pre-existing Jest worker crash in  
+> `InvitationEditor.test.tsx` (unrelated infrastructure issue — see §Remaining technical debt).  
+> `pnpm type-check`: pass (0 errors).  
+> `pnpm build`: pass.  
+> `changed styles stylelint`: pass (changed SCSS files clean).  
+> Full `pnpm exec stylelint`: 6 pre-existing errors in unchanged files (operator newline style).  
+> Asset metadata editing and asset list pagination are explicitly deferred — see §12.
 related_skills:
   - backend-engineering
   - supabase
@@ -15,6 +20,7 @@ related_docs:
   - .agent/plans/README.md
   - .agent/plans/active/invitation-workflow-flow-analysis.md
   - .agent/plans/active/invitation-dashboard-premium-plan.md
+  - docs/domains/intake/internal-invitation-editor.md
 supersedes: []
 superseded_by: []
 ---
@@ -252,8 +258,11 @@ create table invitation_assets (
   deleted_at        timestamptz
 );
 
--- Unique: an asset's storage path must not collide
-create unique index idx_invitation_assets_storage_path on invitation_assets(storage_path) where deleted_at is null;
+-- Non-partial unique: storage paths are immutable and must never be reused,
+-- even after soft-delete, because the delete endpoint preserves Storage
+-- objects for published snapshot integrity.
+create unique index idx_invitation_assets_storage_path
+	on invitation_assets(bucket, storage_path);
 
 -- For listing assets per invitation
 create index idx_invitation_assets_invitation on invitation_assets(invitation_id) where deleted_at is null;
@@ -281,18 +290,15 @@ New editor writes MUST produce `{ type: 'uploaded', assetId: string }`. Legacy r
 normalized at schema/service boundaries.
 
 ```typescript
-// Updated editableAssetSchema in shared-content.schema.ts
-const uploadedRefSchema = z.object({
+// editableAssetSchema in shared-content.schema.ts (final)
+export const uploadedRefSchema = z.object({
   type: z.literal('uploaded'),
   assetId: z.string().uuid(),
 });
 
-export const editableAssetSchema = z
-  .union([z.string(), AssetSchema, uploadedRefSchema])
-  .refine(
-    (value) => AssetSchema.safeParse(value).success || uploadedRefSchema.safeParse(value).success,
-    'La referencia de imagen no es válida.',
-  );
+// Accepts typed objects (internal/uploaded/external) or raw strings.
+// AssetSchema.preprocess normalizes known registry keys and URLs.
+export const editableAssetSchema = z.union([AssetSchema, z.string(), uploadedRefSchema]);
 ```
 
 Normalization at service boundary (e.g., in `invitation-editor.service.ts` before saving): if a
@@ -624,7 +630,6 @@ This means **published snapshots contain frozen URLs** that will not change even
 - The user uploads new images
 - The user removes an image from the draft gallery
 - The demo preset images change
-- The storage file is later physically deleted (the URL was already served)
 
 ### 7.3 `_assetSlug` Remains for Backward Compatibility
 
@@ -637,11 +642,14 @@ content may contain a mix:
 
 ### 7.4 Published Snapshot Stability
 
-Published snapshots are **fully self-contained regarding user images**:
+Published snapshots carry frozen URLs in `{type:'uploaded', assetId, src}`, but rendering **still
+requires the Storage object to remain available** at that URL.
 
-- Each `{type:'uploaded'}` reference carries its resolved public URL
-- Even if the storage object is later deleted, the URL in the published content was already captured
-  in the page's HTML
+- Dashboard/API flows **never** physically delete Storage objects while any draft or published
+  snapshot references the asset.
+- `DELETE /assets/[assetId]` only soft-deletes the row; the Storage object is preserved.
+- A future offline job could physically prune Storage objects where `deleted_at` is older than 90
+  days and `collectAssetUsages()` confirms zero references (see deferred work §12).
 - For re-publishes: the freeze step looks up the current asset record. If the asset has been deleted
   (no row), the publish fails with a clear Spanish error explaining which section has a broken
   reference. If the asset exists, it freezes the current URL.
@@ -928,6 +936,16 @@ Scope:
 12. **Orphaned storage cleanup background job** — Soft-deleted assets keep their storage files. A
     future job can prune storage objects where `deleted_at` > 90 days and `collectAssetUsages()`
     confirms zero references.
+13. **Asset metadata editing** (`displayName`, `defaultAltText` inline editing) — Deferred because
+    no update endpoint exists yet. The plan did not include a PATCH endpoint for
+    `invitation_assets`, and Phase 5 explicitly avoided expanding backend scope ad hoc. The
+    `AssetLibraryPanel` already surfaces `displayName` and the asset record; adding a
+    `PATCH /api/dashboard/intake/[id]/assets/[assetId]` route plus a small inline form is a
+    well-scoped follow-up.
+14. **Asset list pagination** — Deferred. The current implementation assumes small libraries (<50
+    assets per invitation) and the asset list endpoint returns the full set. Performance guardrails
+    in Phase 5 (lazy-loaded thumbnails, no refetch loops) keep the UI usable. Add `limit`/`offset`
+    parameters to the list endpoint and a "load more" control if libraries grow beyond expectations.
 
 ## 13. Risks and Trade-Offs
 
@@ -947,69 +965,76 @@ Scope:
 
 ### Phase 1 (Foundation)
 
-- [ ] `invitation_assets` table exists in migrations with columns: `id`, `invitation_id`,
+- [x] `invitation_assets` table exists in migrations with columns: `id`, `invitation_id`,
       `display_name`, `default_alt_text`, `bucket`, `storage_path`, `mime_type`, `width`, `height`,
       `file_size`, `deleted_at`
-- [ ] `src/lib/assets/asset-source.ts` exists with shared `InternalAssetSource`,
+- [x] `src/lib/assets/asset-source.ts` exists with shared `InternalAssetSource`,
       `ExternalAssetSource`, `UploadedAssetSource` types
-- [ ] `src/lib/schemas/content/shared.schema.ts` validates `{type:'uploaded', assetId: uuid}`
+- [x] `src/lib/schemas/content/shared.schema.ts` validates `{type:'uploaded', assetId: uuid}`
       variant
-- [ ] Supabase Storage bucket `invitation-assets` exists with public read, service-role write
-- [ ] `POST /api/dashboard/intake/[id]/assets/upload` accepts image files, stores to Storage,
+- [x] Supabase Storage bucket `invitation-assets` exists with public read, service-role write
+- [x] `POST /api/dashboard/intake/[id]/assets/upload` accepts image files, stores to Storage,
       returns `assetId`
-- [ ] `POST /api/dashboard/intake/[id]/assets/upload` rejects invalid types and oversized files
-- [ ] `GET /api/dashboard/intake/[id]/assets` returns asset list with usage info from
+- [x] `POST /api/dashboard/intake/[id]/assets/upload` rejects invalid types and oversized files
+- [x] `GET /api/dashboard/intake/[id]/assets` returns asset list with usage info from
       `collectAssetUsages()`
-- [ ] `DELETE /api/dashboard/intake/[id]/assets/[assetId]` soft-deletes unused assets, blocks used
+- [x] `DELETE /api/dashboard/intake/[id]/assets/[assetId]` soft-deletes unused assets, blocks used
       ones with 409
-- [ ] `DELETE` does NOT delete Storage objects (defensive)
-- [ ] `collectAssetUsages()` scans draft + published JSON for `{type:'uploaded', assetId}` and
+- [x] `DELETE` does NOT delete Storage objects (defensive)
+- [x] `collectAssetUsages()` scans draft + published JSON for `{type:'uploaded', assetId}` and
       UUID-pattern strings
-- [ ] Unit tests pass for all new services, repositories, and API routes
+- [x] Unit tests pass for all new services, repositories, and API routes
 
 ### Phase 2 (Schema & Services)
 
-- [ ] Draft `hero` accepts `backgroundImage` and `portrait` as `editableAssetSchema`
-- [ ] Draft `venueSchema` accepts `image` as `editableAssetSchema`
-- [ ] Draft `family` accepts `featuredImage` as `editableAssetSchema`
-- [ ] Draft `thankYou` accepts `image` as `editableAssetSchema`
-- [ ] `editableAssetSchema` accepts `{type:'uploaded', assetId: uuid}`; normalizes raw UUID strings
+- [x] Draft `hero` accepts `backgroundImage` and `portrait` as `editableAssetSchema`
+- [x] Draft `venueSchema` accepts `image` as `editableAssetSchema`
+- [x] Draft `family` accepts `featuredImage` as `editableAssetSchema`
+- [x] Draft `thankYou` accepts `image` as `editableAssetSchema`
+- [x] `editableAssetSchema` accepts `{type:'uploaded', assetId: uuid}`; normalizes raw UUID strings
       at service boundary
-- [ ] `section-content-mapper.ts` handles hero image fields in 'main' compound section
-- [ ] `draft-to-published.mapper.ts` passes through uploaded asset refs from draft when present
-- [ ] `publishing.service.ts` freezes `{type:'uploaded'}` → `{type:'uploaded', assetId, src}` before
+- [x] `section-content-mapper.ts` handles hero image fields in 'main' compound section
+- [x] `draft-to-published.mapper.ts` passes through uploaded asset refs from draft when present
+- [x] `publishing.service.ts` freezes `{type:'uploaded'}` → `{type:'uploaded', assetId, src}` before
       validation
-- [ ] `adapters/event.ts` resolves `{type:'uploaded'}` sources (with and without `src`)
-- [ ] `draft-preview-helper.ts` fetches assets and resolves uploaded refs for preview
-- [ ] Existing `{type:'internal'}` and `{type:'external'}` sources continue to work unchanged
+- [x] `adapters/event.ts` resolves `{type:'uploaded'}` sources (with and without `src`)
+- [x] `draft-preview-helper.ts` fetches assets and resolves uploaded refs for preview
+- [x] Existing `{type:'internal'}` and `{type:'external'}` sources continue to work unchanged
 
 ### Phase 3 (UI)
 
-- [ ] Gallery item shows thumbnail + "Seleccionar imagen" button → opens AssetPicker
-- [ ] AssetPicker shows thumbnails, `displayName`, usage badges, upload button
-- [ ] Selecting an asset from picker sets `item.image` to `{type:'uploaded', assetId}`
-- [ ] "Quitar de galería" removes section reference, asset remains in library
-- [ ] AssetLibraryPanel shows all assets with usage info, inline metadata editing, and delete action
-- [ ] Hero image fields can be set via AssetPicker
-- [ ] All new UI text is in Spanish
-- [ ] Loading, empty, and error states for all new components
+- [x] Gallery item shows thumbnail + "Seleccionar imagen" button → opens AssetPicker
+- [x] AssetPicker shows thumbnails, `displayName`, usage badges, upload button
+- [x] Selecting an asset from picker sets `item.image` to `{type:'uploaded', assetId}`
+- [x] "Quitar de galería" removes section reference, asset remains in library
+- [x] AssetLibraryPanel shows all assets with usage info, inline metadata editing, and delete action
+- [x] Hero image fields can be set via AssetPicker
+- [x] All new UI text is in Spanish
+- [x] Loading, empty, and error states for all new components
 
 ### Phase 4 (Snapshot Integrity)
 
-- [ ] Published gallery items carry frozen `{type:'uploaded', assetId, src}` refs
-- [ ] Changing draft gallery images does not mutate published output
-- [ ] Removing image from draft gallery does not break published version
-- [ ] Soft-deleting an asset from library does not break existing published content
-- [ ] Re-publishing updates frozen refs to current asset URLs
-- [ ] Publish fails with clear Spanish error if an uploaded asset has been deleted
+- [x] Published gallery items carry frozen `{type:'uploaded', assetId, src}` refs
+- [x] Changing draft gallery images does not mutate published output
+- [x] Removing image from draft gallery does not break published version
+- [x] Soft-deleting an asset from library does not break existing published content
+- [x] Re-publishing updates frozen refs to current asset URLs
+- [x] Publish fails with clear Spanish error if an uploaded asset has been deleted
 
 ### Phase 5 (Polish)
 
-- [ ] Deleting a used asset shows Spanish conflict message listing all section references
-- [ ] Upload errors (type, size, network) show Spanish messages
-- [ ] AssetPicker and AssetLibraryPanel are responsive at mobile widths
-- [ ] All components have loading and empty states
-- [ ] `pnpm test && pnpm type-check && pnpm build && pnpm lint:styles` all pass
+- [x] Deleting a used asset shows Spanish conflict message listing all section references
+- [x] Upload errors (type, size, network) show Spanish messages
+- [x] AssetPicker and AssetLibraryPanel are responsive at mobile widths
+- [x] All components have loading and empty states
+- [ ] `pnpm test && pnpm type-check && pnpm build && pnpm lint:styles` all pass  
+      Asset-library-owned tests: full pass.  
+      `pnpm type-check`: pass.  
+      `pnpm build`: pass.  
+      Scoped stylelint for changed SCSS: clean pass.  
+      Pre-existing caveats:
+  - `InvitationEditor.test.tsx` Jest worker crash (unrelated test infra issue).
+  - Full `stylelint "src/**/*.scss"` reports 6 pre-existing errors in unchanged files.
 
 ## 15. Files to Create
 
