@@ -12,6 +12,8 @@ import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPic
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
 import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
+import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
+import AssetLibraryPanel from '@/components/dashboard/intake/editor/AssetLibraryPanel';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
@@ -236,6 +238,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
+	const [pickerField, setPickerField] = useState<string | null>(null);
 
 	const publish = async () => {
 		setConfirmation(null);
@@ -698,6 +701,34 @@ export default function InvitationEditor({ initialContext }: Props) {
 								value={(main.date ?? '').replace('Z', '').slice(0, 16)}
 								onChange={(value) => updateHero({ date: value })}
 							/>
+							{editor.context.invitation.id && (
+								<>
+									<label className="invitation-editor__field">
+										<span>Imagen de portada</span>
+										<button
+											type="button"
+											className="invitation-editor__asset-btn"
+											onClick={() => setPickerField('hero.backgroundImage')}
+										>
+											{main.backgroundImage
+												? 'Cambiar imagen'
+												: 'Seleccionar imagen'}
+										</button>
+									</label>
+									<label className="invitation-editor__field">
+										<span>Retrato</span>
+										<button
+											type="button"
+											className="invitation-editor__asset-btn"
+											onClick={() => setPickerField('hero.portrait')}
+										>
+											{main.portrait
+												? 'Cambiar retrato'
+												: 'Seleccionar retrato'}
+										</button>
+									</label>
+								</>
+							)}
 						</div>
 						<TextArea
 							label="Descripción"
@@ -1200,6 +1231,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							value={content.gallery ?? { items: [] }}
 							previewSlug={editor.context.invitation.snapshot.previewSlug}
 							variant={editor.context.invitation.themeId}
+							invitationId={editor.context.invitation.id}
 							onChange={(value) => updateContent('gallery', value)}
 							photoNotes={photoNotes}
 							onPhotoNotesChange={(value) => updateContent('photoNotes', value)}
@@ -1236,6 +1268,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 							<p className="invitation-editor__success">{success.restore}</p>
 						)}
 					</SectionCard>
+
+					<SectionCard
+						id="assetLibrary"
+						title="Biblioteca de imágenes"
+						description="Administra las imágenes subidas para esta invitación."
+						dirty={false}
+					>
+						<AssetLibraryPanel invitationId={editor.context.invitation.id} />
+					</SectionCard>
 				</main>
 				<EditorPreviewPane
 					paneRef={previewPaneRef}
@@ -1266,6 +1307,20 @@ export default function InvitationEditor({ initialContext }: Props) {
 					loading={editor.publishing}
 					onCancel={() => setConfirmation(null)}
 					onConfirm={() => void publish()}
+				/>
+			)}
+			{pickerField && (
+				<AssetPicker
+					invitationId={editor.context.invitation.id}
+					onSelect={(assetId) => {
+						if (pickerField === 'hero.backgroundImage') {
+							updateHero({ backgroundImage: { type: 'uploaded' as const, assetId } });
+						} else if (pickerField === 'hero.portrait') {
+							updateHero({ portrait: { type: 'uploaded' as const, assetId } });
+						}
+						setPickerField(null);
+					}}
+					onClose={() => setPickerField(null)}
 				/>
 			)}
 		</div>

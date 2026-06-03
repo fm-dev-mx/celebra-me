@@ -15,6 +15,7 @@ import {
 import { DEVICE_LABELS, type PreviewDevice } from '@/lib/editor/constants';
 import { moveArrayItem } from '@/lib/intake/utils';
 import { useState } from 'react';
+import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
 
 type Gallery = NonNullable<DraftContent['gallery']>;
 type GalleryItem = Gallery['items'][number];
@@ -24,6 +25,7 @@ interface Props {
 	previewSlug: string;
 	onChange: (value: Gallery) => void;
 	variant?: string;
+	invitationId?: string;
 	photoNotes?: NonNullable<DraftContent['photoNotes']>;
 	onPhotoNotesChange?: (value: NonNullable<DraftContent['photoNotes']>) => void;
 	onSavePhotoNotes?: () => void;
@@ -38,6 +40,7 @@ function resolveSrc(source: { src: string | { src: string } }): string {
 function imageItemKey(image: GalleryItem['image']): string {
 	if (typeof image === 'string') return image;
 	if (image.type === 'internal') return image.key;
+	if (image.type === 'uploaded') return `asset:${image.assetId.slice(0, 8)}`;
 	return image.src;
 }
 
@@ -50,6 +53,7 @@ function getImageSource(item: GalleryItem, previewSlug: string): string | undefi
 		return undefined;
 	}
 	if (image.type === 'external') return image.src;
+	if (image.type === 'uploaded') return undefined; // resolved via asset library in Phase 3
 	if (isEventAssetKey(image.key)) return getEventAsset(previewSlug, image.key)?.src;
 	return resolveSrc(getCommonAsset(image.key));
 }
@@ -59,6 +63,7 @@ export default function GalleryEditor({
 	previewSlug,
 	onChange,
 	variant,
+	invitationId,
 	photoNotes = {},
 	onPhotoNotesChange = () => undefined,
 	onSavePhotoNotes = () => undefined,
@@ -67,6 +72,7 @@ export default function GalleryEditor({
 }: Props) {
 	const [cropMode, setCropMode] = useState<PreviewDevice>('mobile');
 	const [perDevice, setPerDevice] = useState(false);
+	const [pickerIndex, setPickerIndex] = useState<number | null>(null);
 
 	const updateItem = (index: number, patch: Partial<GalleryItem>) => {
 		const items = value.items.map((item, itemIndex) =>
@@ -78,6 +84,18 @@ export default function GalleryEditor({
 	const move = (index: number, offset: -1 | 1) => {
 		onChange({ ...value, items: moveArrayItem(value.items, index, offset) });
 	};
+
+	const removeItem = (index: number) => {
+		const items = value.items.filter((_, i) => i !== index);
+		onChange({ ...value, items });
+	};
+
+	function handleAssetSelect(assetId: string) {
+		if (pickerIndex !== null) {
+			updateItem(pickerIndex, { image: { type: 'uploaded' as const, assetId } });
+			setPickerIndex(null);
+		}
+	}
 
 	return (
 		<div className="invitation-editor__gallery">
@@ -127,6 +145,24 @@ export default function GalleryEditor({
 								<span className="invitation-editor__gallery-item-key">
 									{imageItemKey(item.image)}
 								</span>
+								{invitationId && (
+									<div className="invitation-editor__gallery-item-actions">
+										<button
+											type="button"
+											className="invitation-editor__gallery-select-btn"
+											onClick={() => setPickerIndex(index)}
+										>
+											Seleccionar imagen
+										</button>
+										<button
+											type="button"
+											className="invitation-editor__gallery-remove-btn"
+											onClick={() => removeItem(index)}
+										>
+											Quitar de galería
+										</button>
+									</div>
+								)}
 							</div>
 							<div className="invitation-editor__gallery-crops">
 								<div>
@@ -244,6 +280,14 @@ export default function GalleryEditor({
 					</button>
 				)}
 			</details>
+
+			{pickerIndex !== null && invitationId && (
+				<AssetPicker
+					invitationId={invitationId}
+					onSelect={handleAssetSelect}
+					onClose={() => setPickerIndex(null)}
+				/>
+			)}
 		</div>
 	);
 }
