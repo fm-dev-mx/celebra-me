@@ -33,7 +33,7 @@ export default function SectionCard({
 			aria-labelledby={headingId}
 		>
 			<div className="invitation-editor__card-header">
-				<div>
+				<div className="invitation-editor__card-title">
 					<h2 id={headingId}>{title}</h2>
 					<p>{description}</p>
 				</div>
@@ -48,7 +48,7 @@ export default function SectionCard({
 					{dirty && <span className="invitation-editor__dirty">Cambios sin guardar</span>}
 				</div>
 			</div>
-			{children}
+			<div className="invitation-editor__card-body">{children}</div>
 			<div className="invitation-editor__card-footer" aria-live="polite">
 				<div>
 					{error && <p className="invitation-editor__error">{error}</p>}
@@ -59,7 +59,7 @@ export default function SectionCard({
 						type="button"
 						className="invitation-editor__section-save"
 						onClick={onSave}
-						disabled={!dirty || saving}
+						disabled={saving}
 					>
 						{saving ? 'Guardando...' : 'Guardar sección'}
 					</button>

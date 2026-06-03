@@ -336,6 +336,16 @@ describe('EditorSidebar', () => {
 			).toBeInTheDocument();
 		});
 
+		it('uses compact visual labels for reorder buttons while preserving aria-labels', () => {
+			render(<EditorSidebar {...createProps()} />);
+			expect(
+				screen.getByRole('button', { name: /Mover Frase hacia arriba/ }),
+			).toHaveTextContent('↑');
+			expect(
+				screen.getByRole('button', { name: /Mover Frase hacia abajo/ }),
+			).toHaveTextContent('↓');
+		});
+
 		it('visibility toggle buttons have Spanish aria-labels', () => {
 			render(<EditorSidebar {...createProps()} />);
 			expect(screen.getByRole('button', { name: /Ocultar Frase/ })).toBeInTheDocument();

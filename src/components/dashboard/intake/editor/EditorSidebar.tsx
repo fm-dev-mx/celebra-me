@@ -126,7 +126,7 @@ export default function EditorSidebar({
 
 		const rowClasses = classNames(
 			'invitation-editor__nav-item',
-			activeSection === editorCardId && 'invitation-editor__nav-item--active',
+			editorCardId && activeSection === editorCardId && 'invitation-editor__nav-item--active',
 			'invitation-editor__nav-item--public',
 		);
 
@@ -156,36 +156,38 @@ export default function EditorSidebar({
 				>
 					{status}
 				</span>
-				{isToggleable && (
-					<button
-						type="button"
-						className="invitation-editor__nav-visibility-toggle"
-						onClick={() => handleToggleVisibility(sectionId, !isVisible)}
-						aria-label={isVisible ? `Ocultar ${def.label}` : `Mostrar ${def.label}`}
-					>
-						{isVisible ? 'Ocultar' : 'Mostrar'}
-					</button>
-				)}
-				{isOrderable && (
-					<span className="invitation-editor__reorder">
+				<span className="invitation-editor__nav-public-actions">
+					{isOrderable && (
+						<span className="invitation-editor__reorder invitation-editor__reorder--compact">
+							<button
+								type="button"
+								onClick={() => handleMoveSection(sectionId, -1)}
+								disabled={!canMoveUp}
+								aria-label={`Mover ${def.label} hacia arriba`}
+							>
+								↑
+							</button>
+							<button
+								type="button"
+								onClick={() => handleMoveSection(sectionId, 1)}
+								disabled={!canMoveDown}
+								aria-label={`Mover ${def.label} hacia abajo`}
+							>
+								↓
+							</button>
+						</span>
+					)}
+					{isToggleable && (
 						<button
 							type="button"
-							onClick={() => handleMoveSection(sectionId, -1)}
-							disabled={!canMoveUp}
-							aria-label={`Mover ${def.label} hacia arriba`}
+							className="invitation-editor__nav-visibility-toggle"
+							onClick={() => handleToggleVisibility(sectionId, !isVisible)}
+							aria-label={isVisible ? `Ocultar ${def.label}` : `Mostrar ${def.label}`}
 						>
-							Subir
+							{isVisible ? 'Ocultar' : 'Mostrar'}
 						</button>
-						<button
-							type="button"
-							onClick={() => handleMoveSection(sectionId, 1)}
-							disabled={!canMoveDown}
-							aria-label={`Mover ${def.label} hacia abajo`}
-						>
-							Bajar
-						</button>
-					</span>
-				)}
+					)}
+				</span>
 			</div>
 		);
 	}
