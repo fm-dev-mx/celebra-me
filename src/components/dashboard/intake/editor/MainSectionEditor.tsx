@@ -2,11 +2,11 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
+import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import type { EditableAssetSource } from '@/lib/assets/asset-source';
+import type { AssetField } from '@/lib/assets/asset-source';
+import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
-
-type AssetField = string | EditableAssetSource;
 
 interface HeroData {
 	name?: string;
@@ -32,6 +32,8 @@ interface Props {
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
 	onOpenAssetPicker: (field: string) => void;
+	previewSlug?: string;
+	assets?: AssetItem[];
 }
 
 export default function MainSectionEditor({
@@ -48,6 +50,8 @@ export default function MainSectionEditor({
 	onUpdateContent,
 	onUpdateHero,
 	onOpenAssetPicker,
+	previewSlug,
+	assets,
 }: Props) {
 	const isBoda = eventType === 'boda';
 	return (
@@ -98,26 +102,22 @@ export default function MainSectionEditor({
 				/>
 				{invitationId && (
 					<>
-						<label className="invitation-editor__field">
-							<span>Imagen de portada</span>
-							<button
-								type="button"
-								className="invitation-editor__asset-btn"
-								onClick={() => onOpenAssetPicker('hero.backgroundImage')}
-							>
-								{main.backgroundImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
-							</button>
-						</label>
-						<label className="invitation-editor__field">
-							<span>Retrato</span>
-							<button
-								type="button"
-								className="invitation-editor__asset-btn"
-								onClick={() => onOpenAssetPicker('hero.portrait')}
-							>
-								{main.portrait ? 'Cambiar retrato' : 'Seleccionar retrato'}
-							</button>
-						</label>
+						<ImageAssetField
+							label="Imagen de portada"
+							value={main.backgroundImage}
+							previewSlug={previewSlug}
+							assets={assets}
+							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImage')}
+						/>
+						<ImageAssetField
+							label="Retrato"
+							value={main.portrait}
+							emptyActionLabel="Seleccionar retrato"
+							changeActionLabel="Cambiar retrato"
+							previewSlug={previewSlug}
+							assets={assets}
+							onOpenLibrary={() => onOpenAssetPicker('hero.portrait')}
+						/>
 					</>
 				)}
 			</div>

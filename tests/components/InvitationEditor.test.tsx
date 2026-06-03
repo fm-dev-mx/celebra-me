@@ -136,6 +136,15 @@ jest.mock('@/hooks/use-invitation-editor', () => ({
 	}),
 }));
 
+jest.mock('@/lib/intake/use-asset-library', () => ({
+	useAssetLibrary: () => ({
+		assets: [],
+		loading: false,
+		error: '',
+		refresh: jest.fn(),
+	}),
+}));
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	saveSection = jest.fn().mockResolvedValue({});
@@ -188,9 +197,11 @@ describe('InvitationEditor', () => {
 	it('renders the section-based admin experience', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
-		expect(screen.getByRole('heading', { name: 'Datos principales' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Galería' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Publicación' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { level: 2, name: 'Datos principales' }),
+		).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 2, name: 'Galería' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 2, name: 'Publicación' })).toBeInTheDocument();
 	});
 
 	it('discards local unsaved changes and restores the loaded baseline', () => {
@@ -226,21 +237,22 @@ describe('InvitationEditor', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
 		expect(screen.getByText('1. Ceremonia · Iglesia · 18:00')).toBeInTheDocument();
-		expect(screen.getByText('1. Frase')).toBeInTheDocument();
-		expect(screen.getByText('2. Galería')).toBeInTheDocument();
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		expect(within(nav).getByText('Frase')).toBeInTheDocument();
+		expect(within(nav).getByText('Galería')).toBeInTheDocument();
 	});
 
 	it('links publish-readiness warnings to the affected editor sections', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
-		expect(screen.getByRole('link', { name: 'Personas principales' })).toHaveAttribute(
-			'href',
-			'#family',
-		);
-		expect(screen.getByRole('link', { name: 'Fecha y ubicaciones' })).toHaveAttribute(
-			'href',
-			'#location',
-		);
+		const warning = screen.getByText(/Secciones críticas vacías/).closest('div');
+		expect(warning).not.toBeNull();
+		expect(
+			within(warning as HTMLElement).getByRole('link', { name: 'Personas principales' }),
+		).toHaveAttribute('href', '#family');
+		expect(
+			within(warning as HTMLElement).getByRole('link', { name: 'Fecha y ubicaciones' }),
+		).toHaveAttribute('href', '#location');
 	});
 
 	it('renders a Spanish-friendly publication timestamp', () => {

@@ -18,11 +18,13 @@ import EditorSidebar from '@/components/dashboard/intake/editor/EditorSidebar';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
 import AssetLibraryPanel from '@/components/dashboard/intake/editor/AssetLibraryPanel';
+import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
 } from '@/lib/dashboard/dto/intake';
 import { useInvitationEditor } from '@/hooks/use-invitation-editor';
+import { useAssetLibrary } from '@/lib/intake/use-asset-library';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
@@ -118,6 +120,9 @@ function metadataFromContext(context: InvitationEditorContextDTO): InvitationEdi
 // eslint-disable-next-line complexity -- Editor shell with 12+ sections tracking dirty/error/saving state independently
 export default function InvitationEditor({ initialContext }: Props) {
 	const editor = useInvitationEditor(initialContext);
+	const invitationId = editor.context.invitation.id;
+	const previewSlug = editor.context.invitation.snapshot.previewSlug;
+	const { assets: editorAssets } = useAssetLibrary(invitationId);
 	const [content, setContent] = useState(editor.context.content);
 	const [metadata, setMetadata] = useState(() => metadataFromContext(initialContext));
 	const [contentBaseline, setContentBaseline] = useState(editor.context.content);
@@ -450,7 +455,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	]);
 
 	const previewUrl = `/dashboard/invitaciones/${encodeURIComponent(
-		editor.context.invitation.id,
+		invitationId,
 	)}/preview?v=${previewVersion}`;
 	const backUrl = '/dashboard/invitaciones';
 	const publishDisabled = useMemo(
@@ -614,10 +619,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					sectionSource={sectionSource}
 					sectionOrder={sectionOrder}
 					onSectionOrderChange={(value) => {
-						updateContent(
-							'sectionOrder',
-							value as unknown as DraftContent['sectionOrder'],
-						);
+						updateContent('sectionOrder', value as DraftContent['sectionOrder']);
 					}}
 					getSectionHasContent={getSectionHasContent}
 					onSelectPublicSection={handleSelectPublicSection}
@@ -648,7 +650,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						content={content}
 						main={main}
 						eventType={eventType}
-						invitationId={editor.context.invitation.id}
+						invitationId={invitationId}
 						dirty={dirty.has('main')}
 						saving={editor.savingSection === 'main'}
 						error={errors.main}
@@ -658,12 +660,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 						onUpdateContent={updateContent}
 						onUpdateHero={updateHero}
 						onOpenAssetPicker={setPickerField}
+						previewSlug={previewSlug}
+						assets={editorAssets}
 					/>
 
 					<FamilySectionEditor
 						family={family}
 						eventType={eventType}
-						invitationId={editor.context.invitation.id}
+						invitationId={invitationId}
 						dirty={dirty.has('family')}
 						saving={editor.savingSection === 'family'}
 						error={errors.family}
@@ -672,6 +676,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('family')}
 						onUpdateFamily={updateFamily}
 						onOpenAssetPicker={setPickerField}
+						previewSlug={previewSlug}
+						assets={editorAssets}
 					/>
 
 					<LocationSectionEditor
@@ -684,6 +690,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('location')}
 						onUpdateLocation={updateLocation}
 						onOpenAssetPicker={setPickerField}
+						previewSlug={previewSlug}
+						assets={editorAssets}
 					/>
 
 					<SectionCard
@@ -1006,19 +1014,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 								})
 							}
 						/>
-						{editor.context.invitation.id && (
-							<label className="invitation-editor__field">
-								<span>Imagen de agradecimiento</span>
-								<button
-									type="button"
-									className="invitation-editor__asset-btn"
-									onClick={() => setPickerField('thankYou.image')}
-								>
-									{messages.thankYou.image
-										? 'Cambiar imagen'
-										: 'Seleccionar imagen'}
-								</button>
-							</label>
+						{invitationId && (
+							<ImageAssetField
+								label="Imagen de agradecimiento"
+								value={messages.thankYou.image}
+								previewSlug={previewSlug}
+								assets={editorAssets}
+								onOpenLibrary={() => setPickerField('thankYou.image')}
+							/>
 						)}
 					</SectionCard>
 
@@ -1035,15 +1038,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
-							previewSlug={editor.context.invitation.snapshot.previewSlug}
+							previewSlug={previewSlug}
 							variant={editor.context.invitation.themeId}
-							invitationId={editor.context.invitation.id}
+							invitationId={invitationId}
 							onChange={(value) => updateContent('gallery', value)}
 							photoNotes={photoNotes}
 							onPhotoNotesChange={(value) => updateContent('photoNotes', value)}
 							onSavePhotoNotes={() => void saveSection('photoNotes')}
 							photoNotesDirty={dirty.has('photoNotes')}
 							savingPhotoNotes={editor.savingSection === 'photoNotes'}
+							assets={editorAssets}
 						/>
 					</SectionCard>
 
@@ -1079,12 +1083,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 						description="Administra las imágenes subidas para esta invitación."
 						dirty={false}
 					>
-						<AssetLibraryPanel invitationId={editor.context.invitation.id} />
+						<AssetLibraryPanel invitationId={invitationId} />
 					</SectionCard>
 				</main>
 				<EditorPreviewPane
 					paneRef={previewPaneRef}
-					invitationId={editor.context.invitation.id}
+					invitationId={invitationId}
 					hasUnsavedChanges={dirty.size > 0}
 					previewVersion={previewVersion}
 					previewHash={previewHash}
@@ -1116,7 +1120,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			)}
 			{pickerField && (
 				<AssetPicker
-					invitationId={editor.context.invitation.id}
+					invitationId={invitationId}
 					onSelect={(assetId) => {
 						const ref = { type: 'uploaded' as const, assetId };
 						if (pickerField === 'hero.backgroundImage') {

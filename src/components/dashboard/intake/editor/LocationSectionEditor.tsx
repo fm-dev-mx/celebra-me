@@ -2,9 +2,9 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
-import type { EditableAssetSource } from '@/lib/assets/asset-source';
-
-type AssetField = string | EditableAssetSource;
+import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
+import type { AssetField } from '@/lib/assets/asset-source';
+import type { AssetItem } from '@/lib/intake/use-asset-library';
 
 interface VenueData {
 	venueName?: string;
@@ -33,6 +33,8 @@ interface Props {
 	sourceBadge?: { source: string; label: string };
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
 	onOpenAssetPicker: (field: string) => void;
+	previewSlug?: string;
+	assets?: AssetItem[];
 }
 
 export default function LocationSectionEditor({
@@ -45,6 +47,8 @@ export default function LocationSectionEditor({
 	sourceBadge,
 	onUpdateLocation,
 	onOpenAssetPicker,
+	previewSlug,
+	assets,
 }: Props) {
 	return (
 		<SectionCard
@@ -65,70 +69,78 @@ export default function LocationSectionEditor({
 				return (
 					<div className="invitation-editor__subsection" key={venueKey}>
 						<h3>{venueKey === 'ceremony' ? 'Ceremonia' : 'Recepción'}</h3>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label="Lugar"
-								value={venue.venueName ?? ''}
-								onChange={(value) => updateVenue({ venueName: value })}
-							/>
-							<Field
-								label="Dirección"
-								value={venue.address ?? ''}
-								onChange={(value) => updateVenue({ address: value })}
-							/>
-							<Field
-								label="Ciudad"
-								value={venue.city ?? ''}
-								onChange={(value) => updateVenue({ city: value })}
-							/>
-							<Field
-								label="Fecha"
-								type="date"
-								value={venue.date ?? ''}
-								onChange={(value) => updateVenue({ date: value })}
-							/>
-							<Field
-								label="Hora"
-								type="time"
-								value={venue.time ?? ''}
-								onChange={(value) => updateVenue({ time: value })}
-							/>
-							<Field
-								label="Mapa"
-								type="url"
-								value={venue.mapUrl ?? ''}
-								onChange={(value) => updateVenue({ mapUrl: value })}
+						<div className="invitation-editor__section-group">
+							<h4>Datos principales</h4>
+							<div className="invitation-editor__field-grid">
+								<Field
+									label="Lugar"
+									value={venue.venueName ?? ''}
+									onChange={(value) => updateVenue({ venueName: value })}
+								/>
+								<Field
+									label="Dirección"
+									value={venue.address ?? ''}
+									onChange={(value) => updateVenue({ address: value })}
+								/>
+								<Field
+									label="Ciudad"
+									value={venue.city ?? ''}
+									onChange={(value) => updateVenue({ city: value })}
+								/>
+								<Field
+									label="Fecha"
+									type="date"
+									value={venue.date ?? ''}
+									onChange={(value) => updateVenue({ date: value })}
+								/>
+								<Field
+									label="Hora"
+									type="time"
+									value={venue.time ?? ''}
+									onChange={(value) => updateVenue({ time: value })}
+								/>
+								<Field
+									label="Mapa"
+									type="url"
+									value={venue.mapUrl ?? ''}
+									onChange={(value) => updateVenue({ mapUrl: value })}
+								/>
+							</div>
+						</div>
+						<div className="invitation-editor__section-group">
+							<h4>Imagen del lugar</h4>
+							<ImageAssetField
+								label="Imagen del lugar"
+								value={venue.image}
+								previewSlug={previewSlug}
+								assets={assets}
+								onOpenLibrary={() =>
+									onOpenAssetPicker(`location.${venueKey}.image`)
+								}
 							/>
 						</div>
-						<label className="invitation-editor__field">
-							<span>Imagen del lugar</span>
-							<button
-								type="button"
-								className="invitation-editor__asset-btn"
-								onClick={() => onOpenAssetPicker(`location.${venueKey}.image`)}
-							>
-								{venue.image ? 'Cambiar imagen' : 'Seleccionar imagen'}
-							</button>
-						</label>
 					</div>
 				);
 			})}
-			<Field
-				label="Código de vestimenta"
-				value={location.dressCode ?? ''}
-				onChange={(value) => onUpdateLocation({ dressCode: value })}
-				labelExtra={
-					<TextPresetPicker
-						section="dressCode"
-						onSelect={(value) => onUpdateLocation({ dressCode: value })}
-					/>
-				}
-			/>
-			<TextArea
-				label="Indicaciones adicionales"
-				value={location.additionalIndications ?? ''}
-				onChange={(value) => onUpdateLocation({ additionalIndications: value })}
-			/>
+			<div className="invitation-editor__section-group">
+				<h3>Detalles adicionales</h3>
+				<Field
+					label="Código de vestimenta"
+					value={location.dressCode ?? ''}
+					onChange={(value) => onUpdateLocation({ dressCode: value })}
+					labelExtra={
+						<TextPresetPicker
+							section="dressCode"
+							onSelect={(value) => onUpdateLocation({ dressCode: value })}
+						/>
+					}
+				/>
+				<TextArea
+					label="Indicaciones adicionales"
+					value={location.additionalIndications ?? ''}
+					onChange={(value) => onUpdateLocation({ additionalIndications: value })}
+				/>
+			</div>
 		</SectionCard>
 	);
 }

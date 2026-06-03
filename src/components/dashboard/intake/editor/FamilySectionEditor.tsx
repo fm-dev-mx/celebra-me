@@ -2,10 +2,10 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
-import type { EditableAssetSource } from '@/lib/assets/asset-source';
+import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
+import type { AssetField } from '@/lib/assets/asset-source';
+import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
-
-type AssetField = string | EditableAssetSource;
 
 interface FamilyData {
 	fatherName?: string;
@@ -31,6 +31,8 @@ interface Props {
 	sourceBadge?: { source: string; label: string };
 	onUpdateFamily: (patch: Partial<FamilyData>) => void;
 	onOpenAssetPicker: (field: string) => void;
+	previewSlug?: string;
+	assets?: AssetItem[];
 }
 
 export default function FamilySectionEditor({
@@ -45,6 +47,8 @@ export default function FamilySectionEditor({
 	sourceBadge,
 	onUpdateFamily,
 	onOpenAssetPicker,
+	previewSlug,
+	assets,
 }: Props) {
 	const isBoda = eventType === 'boda';
 	return (
@@ -119,16 +123,13 @@ export default function FamilySectionEditor({
 				}
 			/>
 			{invitationId && (
-				<label className="invitation-editor__field">
-					<span>Imagen familiar</span>
-					<button
-						type="button"
-						className="invitation-editor__asset-btn"
-						onClick={() => onOpenAssetPicker('family.featuredImage')}
-					>
-						{family.featuredImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
-					</button>
-				</label>
+				<ImageAssetField
+					label="Imagen familiar"
+					value={family.featuredImage}
+					previewSlug={previewSlug}
+					assets={assets}
+					onOpenLibrary={() => onOpenAssetPicker('family.featuredImage')}
+				/>
 			)}
 		</SectionCard>
 	);
