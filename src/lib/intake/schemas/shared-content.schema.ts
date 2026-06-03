@@ -12,12 +12,12 @@ export const optionalUrl = z
 	})
 	.optional();
 
-export const editableAssetSchema = z
-	.union([z.string(), AssetSchema])
-	.refine(
-		(value) => AssetSchema.safeParse(value).success,
-		'La referencia de imagen no es válida.',
-	);
+export const uploadedRefSchema = z.object({
+	type: z.literal('uploaded'),
+	assetId: z.string().uuid(),
+});
+
+export const editableAssetSchema = z.union([AssetSchema, z.string(), uploadedRefSchema]);
 
 export const venueSchema = z.object({
 	venueName: optionalText(200),

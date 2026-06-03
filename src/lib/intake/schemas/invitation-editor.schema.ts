@@ -4,6 +4,7 @@ import { INVITATION_STATUSES } from '@/lib/intake/types';
 import {
 	optionalText,
 	optionalUrl,
+	editableAssetSchema,
 	venueSchema,
 	gallerySchema,
 	itinerarySchema,
@@ -37,6 +38,8 @@ export const InvitationEditorSectionSchemas = {
 			label: optionalText(200),
 			nickname: optionalText(200),
 			date: optionalText(40),
+			backgroundImage: editableAssetSchema.optional(),
+			portrait: editableAssetSchema.optional(),
 		}),
 	}),
 	family: z.object({

@@ -6,6 +6,7 @@ import {
 	THEME_PRESETS,
 } from '@/lib/theme/theme-contract';
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
+import { UUID_PATTERN } from '@/lib/intake/constants';
 
 const secureUrlSchema = z
 	.url()
@@ -59,6 +60,12 @@ const externalAssetSchema = z.object({
 	src: z.union([secureUrlSchema, publicPathSchema]),
 });
 
+const uploadedAssetSchema = z.object({
+	type: z.literal('uploaded'),
+	assetId: z.string().uuid(),
+	src: z.string().optional(),
+});
+
 export const AssetSchema = z.preprocess(
 	(value) => {
 		if (typeof value !== 'string') return value;
@@ -68,9 +75,12 @@ export const AssetSchema = z.preprocess(
 		if (value.startsWith('https://') || value.startsWith('/')) {
 			return { type: 'external', src: value };
 		}
+		if (UUID_PATTERN.test(value)) {
+			return { type: 'uploaded', assetId: value };
+		}
 		return value;
 	},
-	z.discriminatedUnion('type', [internalAssetSchema, externalAssetSchema]),
+	z.discriminatedUnion('type', [internalAssetSchema, externalAssetSchema, uploadedAssetSchema]),
 );
 
 export type ContentAssetSource = ReturnType<(typeof AssetSchema)['parse']>;

@@ -3,6 +3,7 @@ import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
 	optionalText,
 	optionalUrl,
+	editableAssetSchema,
 	venueSchema,
 	gallerySchema,
 	itinerarySchema,
@@ -28,6 +29,8 @@ export const InvitationContentDraftContentSchema = z
 				label: optionalText(200),
 				nickname: optionalText(200),
 				date: optionalText(40),
+				backgroundImage: editableAssetSchema.optional(),
+				portrait: editableAssetSchema.optional(),
 			})
 			.optional(),
 		quote: z
@@ -40,6 +43,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				image: editableAssetSchema.optional(),
 			})
 			.optional(),
 		music: z
@@ -68,6 +72,7 @@ export const InvitationContentDraftContentSchema = z
 				godparents: optionalText(),
 				children: optionalText(),
 				sectionMessage: optionalText(),
+				featuredImage: editableAssetSchema.optional(),
 			})
 			.optional(),
 		gifts: giftsSchema.optional(),
