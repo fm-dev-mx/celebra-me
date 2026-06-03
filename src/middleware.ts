@@ -300,7 +300,7 @@ async function handleProtectedAuthRequest(
 	}
 
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
-	const { hasDevMfaBypass, effectiveAdminStrongAuth } = computeMfaBypass(authContext);
+	const { effectiveAdminStrongAuth } = computeMfaBypass(authContext);
 
 	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);
