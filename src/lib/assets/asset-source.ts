@@ -58,3 +58,5 @@ export type AssetSource =
 	| ExternalAssetSource
 	| DraftUploadedAssetSource
 	| PublishedUploadedAssetSource;
+
+export type AssetField = string | EditableAssetSource | undefined;
