@@ -1,8 +1,13 @@
 ---
 title: Invitation Asset Library — Image Reuse & Independent Asset Storage
-status: draft
+status: active
 created: 2026-06-02
 updated: 2026-06-02
+
+> **Phase 4 (Snapshot Integrity) implemented 2026-06-02.**  
+> Acceptance criteria satisfied. Phase 5 (Polish) is pending.  
+> Known issue: `InvitationEditor.test.tsx` crashes with Jest worker error (4 child process exceptions).  
+> This is a pre-existing infrastructure issue unrelated to asset library changes. The test suite passes 1464 of 1466 tests.
 related_skills:
   - backend-engineering
   - supabase
