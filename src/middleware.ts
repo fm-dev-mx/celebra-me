@@ -4,6 +4,7 @@ import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
+import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 
@@ -11,6 +12,13 @@ interface CookieStore {
 	get(name: string): { value: string } | undefined;
 	set(name: string, value: string, options: Record<string, unknown>): void;
 	delete(name: string, options: Record<string, unknown>): void;
+}
+
+interface AuthContext {
+	role: AppUserRole | null;
+	hasMfa: boolean;
+	trustedDevice: boolean;
+	hasAdminStrongAuth: boolean;
 }
 
 const IDLE_TIMEOUT_SECONDS = 60 * 30;
@@ -28,12 +36,16 @@ function isAdminOnlyPath(pathname: string): boolean {
 	return ADMIN_ONLY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-function shouldInspectAuthPath(pathname: string): boolean {
+function shouldHandleAuth(pathname: string): boolean {
 	return (
 		pathname === '/login' ||
 		pathname.startsWith('/dashboard') ||
 		pathname.startsWith('/api/dashboard')
 	);
+}
+
+function isPreviewRoute(pathname: string): boolean {
+	return pathname.startsWith('/dashboard/invitaciones/') && pathname.endsWith('/preview');
 }
 
 function buildCookieOptions(maxAge: number) {
@@ -120,7 +132,11 @@ function clearMfaSetupCookies(cookies: CookieStore) {
 	cookies.delete('sb-mfa-refresh', { path: '/dashboard/mfa-setup' });
 }
 
-function resolveAuthenticatedRedirect(pathname: string, role: string, hasAdminStrongAuth: boolean) {
+function resolveAuthenticatedRedirect(
+	pathname: string,
+	role: string | null,
+	hasAdminStrongAuth: boolean,
+) {
 	if (pathname === '/login') {
 		if (role === 'super_admin') {
 			return hasAdminStrongAuth ? '/dashboard/admin' : '/dashboard/mfa-setup';
@@ -168,7 +184,7 @@ function resolveAuthContext(
 	request: Request,
 	user: NonNullable<Awaited<ReturnType<typeof getSupabaseUserByAccessToken>>>,
 	accessToken: string,
-) {
+): AuthContext {
 	const role = normalizeAppRole(user.app_metadata?.role);
 	const hasMfa = hasMfaEvidence({ token: accessToken, amr: user.amr });
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
@@ -189,7 +205,6 @@ function resolveAuthContext(
 	return {
 		role,
 		hasMfa,
-		trustCookie,
 		trustedDevice,
 		hasAdminStrongAuth: hasMfa || trustedDevice,
 	};
@@ -197,7 +212,8 @@ function resolveAuthContext(
 
 function syncPostAuthCookies(
 	cookies: CookieStore,
-	authContext: ReturnType<typeof resolveAuthContext>,
+	authContext: AuthContext,
+	trustCookie: string,
 	now: number,
 ) {
 	if (authContext.hasMfa && cookies.get('sb-mfa-session')) {
@@ -207,12 +223,28 @@ function syncPostAuthCookies(
 	if (authContext.role === 'super_admin' && authContext.trustedDevice) {
 		cookies.set(
 			'sb-trust-device',
-			authContext.trustCookie,
+			trustCookie,
 			buildCookieOptions(TRUST_DEVICE_MAX_AGE_SECONDS),
 		);
 	}
 
 	cookies.set('sb-idle-seen', String(now), buildCookieOptions(IDLE_TIMEOUT_SECONDS));
+}
+
+function buildSessionFromUser(
+	user: NonNullable<Awaited<ReturnType<typeof getSupabaseUserByAccessToken>>>,
+	accessToken: string,
+	role: ReturnType<typeof normalizeAppRole>,
+): SessionContext {
+	const resolvedEmail = typeof user.email === 'string' ? user.email.trim().slice(0, 320) : '';
+	return {
+		userId: user.id,
+		email: resolvedEmail,
+		accessToken,
+		role,
+		isSuperAdmin: role === 'super_admin',
+		amr: user.amr,
+	};
 }
 
 async function handleProtectedAuthRequest(
@@ -234,7 +266,6 @@ async function handleProtectedAuthRequest(
 		return next();
 	}
 
-	// API routes handle auth failures internally (401/403 JSON) — never redirect.
 	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
 		return redirect('/login');
@@ -257,7 +288,6 @@ async function handleProtectedAuthRequest(
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);
 	}
 
-	// Skip role/strong-auth redirects for API routes — the endpoint handles them.
 	if (!isApiRoute) {
 		const redirectTarget = resolveAuthenticatedRedirect(
 			url.pathname,
@@ -267,19 +297,10 @@ async function handleProtectedAuthRequest(
 		if (redirectTarget) return redirect(redirectTarget);
 	}
 
-	syncPostAuthCookies(cookies, authContext, now);
+	const trustCookie = cookies.get('sb-trust-device')?.value || '';
+	syncPostAuthCookies(cookies, authContext, trustCookie, now);
 
-	// Store resolved session in locals so downstream pages/layouts
-	// can read it without re-deriving from stale request cookies.
-	const resolvedEmail = typeof user.email === 'string' ? user.email.trim().slice(0, 320) : '';
-	locals.session = {
-		userId: user.id,
-		email: resolvedEmail,
-		accessToken,
-		role: authContext.role,
-		isSuperAdmin: authContext.role === 'super_admin',
-		amr: user.amr,
-	};
+	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
 	locals.hasAdminStrongAuth = authContext.hasAdminStrongAuth;
 
 	return next();
@@ -287,20 +308,11 @@ async function handleProtectedAuthRequest(
 
 export const onRequest = defineMiddleware(
 	async ({ url, cookies, redirect, request, locals }, next) => {
-		if (!shouldInspectAuthPath(url.pathname)) {
+		if (!shouldHandleAuth(url.pathname)) {
 			return next();
 		}
 
-		// Generate CSRF token only for page routes, not API routes.
-		// API routes must validate against the cookie set during the page render;
-		// overwriting the cookie on every API call would desynchronise the token
-		// that the client received from the page meta tag.
-		// Skip read-only dashboard preview routes as well: the embedded preview
-		// iframe loads a page route that would regenerate the CSRF cookie,
-		// invalidating the token that the parent editor page placed in the meta tag.
-		// The preview route is read-only (no forms), so skipping CSRF is safe.
-		const isPreviewRoute = /^\/dashboard\/invitaciones\/.+\/preview$/.test(url.pathname);
-		if (!url.pathname.startsWith('/api/') && !isPreviewRoute) {
+		if (!url.pathname.startsWith('/api/') && !isPreviewRoute(url.pathname)) {
 			locals.csrfToken = setCsrfToken(cookies);
 		}
 
