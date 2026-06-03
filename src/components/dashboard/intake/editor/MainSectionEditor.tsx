@@ -24,16 +24,15 @@ interface Props {
 	eventType: string;
 	invitationId: string;
 	dirty: boolean;
-	saving: boolean;
 	error?: string;
 	success?: string;
-	onSave: () => void;
 	sourceBadge?: { source: string; label: string };
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
 	onOpenAssetPicker: (field: string) => void;
 	previewSlug?: string;
 	assets?: AssetItem[];
+	visible?: boolean;
 }
 
 export default function MainSectionEditor({
@@ -42,16 +41,15 @@ export default function MainSectionEditor({
 	eventType,
 	invitationId,
 	dirty,
-	saving,
 	error,
 	success,
-	onSave,
 	sourceBadge,
 	onUpdateContent,
 	onUpdateHero,
 	onOpenAssetPicker,
 	previewSlug,
 	assets,
+	visible = true,
 }: Props) {
 	const isBoda = eventType === 'boda';
 	return (
@@ -60,11 +58,10 @@ export default function MainSectionEditor({
 			title="Datos principales"
 			description="Texto principal que abre la invitación."
 			dirty={dirty}
-			saving={saving}
 			error={error}
 			success={success}
-			onSave={onSave}
 			sourceBadge={sourceBadge}
+			visible={visible}
 		>
 			<div className="invitation-editor__field-grid">
 				<Field

@@ -9,8 +9,7 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
-	onSave?: () => void;
-	saving?: boolean;
+	visible?: boolean;
 }
 
 export default function SectionCard({
@@ -22,9 +21,10 @@ export default function SectionCard({
 	error,
 	success,
 	sourceBadge,
-	onSave,
-	saving,
+	visible = true,
 }: Props) {
+	if (!visible) return null;
+
 	const headingId = `section-${id}-heading`;
 	return (
 		<section
@@ -54,16 +54,6 @@ export default function SectionCard({
 					{error && <p className="invitation-editor__error">{error}</p>}
 					{success && <p className="invitation-editor__success">{success}</p>}
 				</div>
-				{onSave && dirty && (
-					<button
-						type="button"
-						className="invitation-editor__section-save"
-						onClick={onSave}
-						disabled={saving}
-					>
-						{saving ? 'Guardando...' : 'Guardar sección'}
-					</button>
-				)}
 			</div>
 		</section>
 	);

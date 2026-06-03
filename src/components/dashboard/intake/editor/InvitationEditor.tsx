@@ -31,14 +31,13 @@ import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
-	PUBLIC_SECTION_DEFINITIONS,
-	type PublicSectionId,
+	getEditorSectionById,
+	type EditorSectionId,
 } from '@/lib/intake/invitation-section-registry';
 import {
 	EDITOR_SECTION_PRESENTATION,
 	GIFT_TYPE_LABELS,
 	INVITATION_STATUS_LABELS,
-	NAV_ITEMS,
 } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
@@ -66,13 +65,17 @@ const CONTENT_SOURCE_LABELS: Record<string, string> = {
 };
 
 const EDITOR_SECTION_KEYS: Record<string, string[]> = {
+	hero: ['title', 'description', 'hero'],
 	main: ['title', 'description', 'hero'],
+	quote: ['quote'],
 	family: ['family'],
 	location: ['location'],
+	countdown: ['hero'],
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
 	music: ['music'],
 	gifts: ['gifts'],
+	thankYou: ['thankYou'],
 	messages: ['quote', 'thankYou'],
 	gallery: ['gallery'],
 	photoNotes: ['photoNotes'],
@@ -134,22 +137,17 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [success, setSuccess] = useState<Record<string, string>>({});
 	const [previewVersion, setPreviewVersion] = useState(0);
 	const [previewHash, setPreviewHash] = useState('');
+	const [selectedSection, setSelectedSection] = useState<EditorSectionId>('hero');
 	const previewPaneRef = useRef<HTMLElement | null>(null);
 	const refreshSavedPreview = () => {
 		setPreviewVersion((version) => version + 1);
 	};
 
-	const handleSelectPublicSection = useCallback((sectionId: string) => {
-		const id = sectionId as PublicSectionId;
-		const def = PUBLIC_SECTION_DEFINITIONS[id];
-		setPreviewHash(def?.previewAnchor ?? '');
-		const editorCardId = def?.editorCardId;
-		if (editorCardId) {
-			const el = document.getElementById(editorCardId);
-			if (el) {
-				el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}
-		}
+	const handleSelectSection = useCallback((sectionId: string) => {
+		const section = getEditorSectionById(sectionId);
+		if (!section) return;
+		setSelectedSection(section.id);
+		setPreviewHash(section.previewAnchor);
 	}, []);
 
 	useEffect(() => {
@@ -160,27 +158,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 		window.addEventListener('beforeunload', warn);
 		return () => window.removeEventListener('beforeunload', warn);
 	}, [dirty]);
-
-	const [activeSection, setActiveSection] = useState('');
-
-	useEffect(() => {
-		const ids = NAV_ITEMS.map((n) => n.id);
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (entry.isIntersecting) {
-						setActiveSection(entry.target.id);
-					}
-				}
-			},
-			{ rootMargin: '-40% 0px -55% 0px' },
-		);
-		const elements = ids
-			.map((id) => document.getElementById(id))
-			.filter((el): el is HTMLElement => el !== null);
-		for (const el of elements) observer.observe(el);
-		return () => observer.disconnect();
-	}, []);
 
 	const markDirty = (section: string) => {
 		setDirty((current) => new Set(current).add(section));
@@ -306,7 +283,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const sectionSource = useCallback(
 		(section: string): { source: string; label: string } | undefined => {
-			const keys = EDITOR_SECTION_KEYS[section];
+			const definition = getEditorSectionById(section);
+			const key = definition?.saveSectionKey ?? section;
+			const keys = EDITOR_SECTION_KEYS[section] ?? EDITOR_SECTION_KEYS[key];
 			if (!keys) return undefined;
 			for (const source of ['draft', 'published', 'demo'] as const) {
 				if (keys.some((key) => editor.context.sectionStates[key] === source)) {
@@ -320,7 +299,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const getSectionHasContent = useCallback(
 		(sectionId: string): boolean => {
-			const def = PUBLIC_SECTION_DEFINITIONS[sectionId as PublicSectionId];
+			const def = getEditorSectionById(sectionId);
 			if (!def) return false;
 			if (def.draftContentKeys.length === 0) return true;
 			return def.draftContentKeys.some(
@@ -508,6 +487,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 		window.open(previewUrl, '_blank', 'noopener,noreferrer');
 	}, [previewUrl]);
 
+	const selectedDefinition = getEditorSectionById(selectedSection);
+	const activeEditorCardId = selectedDefinition?.editorCardId ?? 'main';
+
 	return (
 		<div className="invitation-editor">
 			<EditorActionBar
@@ -612,7 +594,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 			<div className="invitation-editor__layout">
 				<EditorSidebar
-					activeSection={activeSection}
+					activeSection={selectedSection}
 					savingSection={editor.savingSection}
 					dirty={dirty}
 					errors={errors}
@@ -622,7 +604,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						updateContent('sectionOrder', value as DraftContent['sectionOrder']);
 					}}
 					getSectionHasContent={getSectionHasContent}
-					onSelectPublicSection={handleSelectPublicSection}
+					onSelectSection={handleSelectSection}
 				/>
 
 				<main className="invitation-editor__content">
@@ -631,11 +613,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Datos de la invitación"
 						description="Información administrativa, URL pública y seguimiento de producción."
 						dirty={dirty.has('metadata')}
-						saving={editor.savingSection === 'metadata'}
 						error={errors.metadata}
 						success={success.metadata}
-						onSave={() => void saveMetadata()}
 						sourceBadge={undefined}
+						visible={activeEditorCardId === 'metadata'}
 					>
 						<MetadataSection
 							value={metadata}
@@ -652,16 +633,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 						eventType={eventType}
 						invitationId={invitationId}
 						dirty={dirty.has('main')}
-						saving={editor.savingSection === 'main'}
 						error={errors.main}
 						success={success.main}
-						onSave={() => saveSection('main')}
 						sourceBadge={sectionSource('main')}
 						onUpdateContent={updateContent}
 						onUpdateHero={updateHero}
 						onOpenAssetPicker={setPickerField}
 						previewSlug={previewSlug}
 						assets={editorAssets}
+						visible={activeEditorCardId === 'main'}
 					/>
 
 					<FamilySectionEditor
@@ -669,41 +649,54 @@ export default function InvitationEditor({ initialContext }: Props) {
 						eventType={eventType}
 						invitationId={invitationId}
 						dirty={dirty.has('family')}
-						saving={editor.savingSection === 'family'}
 						error={errors.family}
 						success={success.family}
-						onSave={() => saveSection('family')}
 						sourceBadge={sectionSource('family')}
 						onUpdateFamily={updateFamily}
 						onOpenAssetPicker={setPickerField}
 						previewSlug={previewSlug}
 						assets={editorAssets}
+						visible={activeEditorCardId === 'family'}
 					/>
 
 					<LocationSectionEditor
 						location={location}
 						dirty={dirty.has('location')}
-						saving={editor.savingSection === 'location'}
 						error={errors.location}
 						success={success.location}
-						onSave={() => saveSection('location')}
 						sourceBadge={sectionSource('location')}
 						onUpdateLocation={updateLocation}
 						onOpenAssetPicker={setPickerField}
 						previewSlug={previewSlug}
 						assets={editorAssets}
+						visible={activeEditorCardId === 'location'}
 					/>
+
+					<SectionCard
+						id="countdown"
+						title="Cuenta regresiva"
+						description="Esta sección pública usa la fecha principal de la invitación."
+						dirty={dirty.has('main')}
+						error={errors.main}
+						success={success.main}
+						sourceBadge={sectionSource('countdown')}
+						visible={activeEditorCardId === 'countdown'}
+					>
+						<p className="invitation-editor__helper-text">
+							La cuenta regresiva se calcula con la fecha capturada en Portada. Para
+							evitar duplicar datos, edita ese valor desde la sección Portada.
+						</p>
+					</SectionCard>
 
 					<SectionCard
 						id="itinerary"
 						title="Programa"
 						description="Orden y horario de actividades."
 						dirty={dirty.has('itinerary')}
-						saving={editor.savingSection === 'itinerary'}
 						error={errors.itinerary}
 						success={success.itinerary}
-						onSave={() => saveSection('itinerary')}
 						sourceBadge={sectionSource('itinerary')}
+						visible={activeEditorCardId === 'itinerary'}
 					>
 						<ItineraryEditor
 							value={content.itinerary ?? { items: [] }}
@@ -716,11 +709,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Confirmación de asistencia"
 						description="Configuración visible para invitados; las respuestas permanecen separadas."
 						dirty={dirty.has('rsvp')}
-						saving={editor.savingSection === 'rsvp'}
 						error={errors.rsvp}
 						success={success.rsvp}
-						onSave={() => saveSection('rsvp')}
 						sourceBadge={sectionSource('rsvp')}
+						visible={activeEditorCardId === 'rsvp'}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -784,11 +776,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Música"
 						description="Pista musical de la experiencia pública."
 						dirty={dirty.has('music')}
-						saving={editor.savingSection === 'music'}
 						error={errors.music}
 						success={success.music}
-						onSave={() => saveSection('music')}
 						sourceBadge={sectionSource('music')}
+						visible={activeEditorCardId === 'music'}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -814,11 +805,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Mesa de regalos"
 						description="Opciones de regalo visibles para invitados."
 						dirty={dirty.has('gifts')}
-						saving={editor.savingSection === 'gifts'}
 						error={errors.gifts}
 						success={success.gifts}
-						onSave={() => saveSection('gifts')}
 						sourceBadge={sectionSource('gifts')}
+						visible={activeEditorCardId === 'gifts'}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -953,15 +943,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 					</SectionCard>
 
 					<SectionCard
-						id="messages"
-						title="Mensajes especiales"
-						description="Frase y cierre de agradecimiento."
+						id="quote"
+						title="Frase"
+						description="Texto destacado que acompaña la apertura de la invitación."
 						dirty={dirty.has('messages')}
-						saving={editor.savingSection === 'messages'}
 						error={errors.messages}
 						success={success.messages}
-						onSave={() => saveSection('messages')}
-						sourceBadge={sectionSource('messages')}
+						sourceBadge={sectionSource('quote')}
+						visible={activeEditorCardId === 'quote'}
 					>
 						<TextArea
 							label="Frase"
@@ -986,6 +975,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 								updateContent('quote', { ...messages.quote, author: value })
 							}
 						/>
+					</SectionCard>
+
+					<SectionCard
+						id="thankYou"
+						title="Agradecimiento"
+						description="Mensaje final visible al cierre de la invitación."
+						dirty={dirty.has('messages')}
+						error={errors.messages}
+						success={success.messages}
+						sourceBadge={sectionSource('thankYou')}
+						visible={activeEditorCardId === 'thankYou'}
+					>
 						<TextArea
 							label="Mensaje de agradecimiento"
 							value={messages.thankYou.message ?? ''}
@@ -1030,11 +1031,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Galería"
 						description="Fotografías, orden, pies de foto y punto focal. Se guardan juntas."
 						dirty={dirty.has('gallery')}
-						saving={editor.savingSection === 'gallery'}
 						error={errors.gallery}
 						success={success.gallery}
-						onSave={() => saveSection('gallery')}
 						sourceBadge={sectionSource('gallery')}
+						visible={activeEditorCardId === 'gallery'}
 					>
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
@@ -1056,11 +1056,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Publicación"
 						description="Versión vigente, restauración y salud del evento RSVP."
 						dirty={dirty.has('publication')}
-						saving={editor.savingSection === 'publication'}
 						error={errors.publication}
 						success={success.publication}
-						onSave={() => saveSection('publication')}
 						sourceBadge={sectionSource('publication')}
+						visible={activeEditorCardId === 'publication'}
 					>
 						<PublicationSection
 							context={editor.context}
@@ -1082,8 +1081,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Biblioteca de imágenes"
 						description="Administra las imágenes subidas para esta invitación."
 						dirty={false}
+						visible={activeEditorCardId === 'assetLibrary'}
 					>
 						<AssetLibraryPanel invitationId={invitationId} />
+					</SectionCard>
+
+					<SectionCard
+						id="personalizedAccess"
+						title="Acceso personalizado"
+						description="Estado informativo del acceso personalizado de invitados."
+						dirty={false}
+						visible={activeEditorCardId === 'personalizedAccess'}
+					>
+						<p className="invitation-editor__helper-text">
+							El acceso personalizado se controla desde los enlaces e invitados. No
+							tiene contenido editable como una sección pública normal.
+						</p>
 					</SectionCard>
 				</main>
 				<EditorPreviewPane

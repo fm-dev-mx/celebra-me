@@ -129,14 +129,14 @@ export default function GalleryEditor({
 									<div className="invitation-editor__gallery-item-actions">
 										<button
 											type="button"
-											className="invitation-editor__gallery-select-btn"
+											className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
 											onClick={() => setPickerIndex(index)}
 										>
 											Seleccionar imagen
 										</button>
 										<button
 											type="button"
-											className="invitation-editor__gallery-remove-btn"
+											className="invitation-editor__link-button invitation-editor__link-button--danger"
 											onClick={() => removeItem(index)}
 										>
 											Quitar de galería
@@ -205,6 +205,7 @@ export default function GalleryEditor({
 							<div className="invitation-editor__reorder">
 								<button
 									type="button"
+									className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
 									onClick={() => move(index, -1)}
 									disabled={index === 0}
 								>
@@ -212,6 +213,7 @@ export default function GalleryEditor({
 								</button>
 								<button
 									type="button"
+									className="invitation-editor__action-bar-btn invitation-editor__action-bar-btn--secondary"
 									onClick={() => move(index, 1)}
 									disabled={index === value.items.length - 1}
 								>

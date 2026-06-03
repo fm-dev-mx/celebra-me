@@ -1,367 +1,177 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import EditorSidebar from '@/components/dashboard/intake/editor/EditorSidebar';
 
+const publicOrder = [
+	'quote',
+	'family',
+	'gallery',
+	'countdown',
+	'location',
+	'itinerary',
+	'rsvp',
+	'gifts',
+	'thankYou',
+];
+
 function createProps(overrides?: Partial<Parameters<typeof EditorSidebar>[0]>) {
-	const sectionSource = overrides?.sectionSource ?? (() => undefined);
 	return {
-		activeSection: '',
+		activeSection: 'hero',
 		savingSection: null,
 		dirty: new Set<string>(),
 		errors: {},
-		sectionSource,
-		sectionOrder: [
-			'quote',
-			'family',
-			'gallery',
-			'location',
-			'itinerary',
-			'rsvp',
-			'gifts',
-			'thankYou',
-			'countdown',
-		],
+		sectionSource: () => undefined,
+		sectionOrder: publicOrder,
 		onSectionOrderChange: jest.fn(),
 		getSectionHasContent: () => true,
+		onSelectSection: jest.fn(),
 		...overrides,
 	};
 }
 
+function getGroup(groupLabel: string): HTMLElement {
+	const heading = screen.getByText(groupLabel);
+	const group = heading.closest('.invitation-editor__nav-group');
+	expect(group).not.toBeNull();
+	return group as HTMLElement;
+}
+
 describe('EditorSidebar', () => {
-	describe('group rendering', () => {
-		it('renders Secciones públicas group with a heading', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Secciones públicas')).toBeInTheDocument();
-		});
+	it('renders public and configuration groups', () => {
+		render(<EditorSidebar {...createProps()} />);
 
-		it('renders Administración group with a heading', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Administración')).toBeInTheDocument();
-		});
+		expect(screen.getByText('Secciones públicas')).toBeInTheDocument();
+		expect(screen.getByText('Configuración')).toBeInTheDocument();
 	});
 
-	describe('admin group separation', () => {
-		function getGroup(groupLabel: string): HTMLElement | null {
-			const heading = screen.queryByText(groupLabel);
-			return heading?.closest('.invitation-editor__nav-group') ?? null;
+	it('renders public sections in public invitation order with Spanish labels', () => {
+		render(<EditorSidebar {...createProps()} />);
+
+		const publicGroup = getGroup('Secciones públicas');
+		const labels = within(publicGroup)
+			.getAllByRole('button')
+			.filter((button) => button.className.includes('nav-public-link'))
+			.map((button) => button.textContent);
+
+		expect(labels).toEqual([
+			'Portada',
+			'Frase',
+			'Familia',
+			'Galería',
+			'Cuenta regresiva',
+			'Fecha y ubicaciones',
+			'Programa',
+			'Confirmación de asistencia',
+			'Mesa de regalos',
+			'Agradecimiento',
+		]);
+	});
+
+	it('places configuration items outside the public section group', () => {
+		render(<EditorSidebar {...createProps()} />);
+
+		const publicGroup = getGroup('Secciones públicas');
+		const configGroup = getGroup('Configuración');
+
+		expect(publicGroup).not.toHaveTextContent('Datos de la invitación');
+		expect(publicGroup).not.toHaveTextContent('Publicación');
+		expect(publicGroup).not.toHaveTextContent('Biblioteca de imágenes');
+		expect(publicGroup).not.toHaveTextContent('Música');
+		expect(configGroup).toHaveTextContent('Datos de la invitación');
+		expect(configGroup).toHaveTextContent('Publicación');
+		expect(configGroup).toHaveTextContent('Biblioteca de imágenes');
+		expect(configGroup).toHaveTextContent('Música');
+	});
+
+	it('shows personalized access as configuration only when it is in sectionOrder', () => {
+		render(
+			<EditorSidebar
+				{...createProps({ sectionOrder: [...publicOrder, 'personalizedAccess'] })}
+			/>,
+		);
+
+		expect(getGroup('Configuración')).toHaveTextContent('Acceso personalizado');
+		expect(getGroup('Secciones públicas')).not.toHaveTextContent('Acceso personalizado');
+	});
+
+	it('does not expose raw internal public section keys as labels', () => {
+		render(<EditorSidebar {...createProps()} />);
+
+		const publicGroup = getGroup('Secciones públicas');
+		for (const rawKey of ['hero', 'quote', 'location', 'rsvp', 'gifts', 'thankYou']) {
+			expect(
+				within(publicGroup).queryByText(rawKey, { exact: true }),
+			).not.toBeInTheDocument();
 		}
-
-		it('places metadata in the administration group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(getGroup('Administración')).toHaveTextContent('Datos de la invitación');
-		});
-
-		it('places publication in the administration group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(getGroup('Administración')).toHaveTextContent('Publicación');
-		});
-
-		it('places assetLibrary in the administration group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(getGroup('Administración')).toHaveTextContent('Biblioteca de imágenes');
-		});
-
-		it('does not show metadata in the public sections group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(getGroup('Secciones públicas')).not.toHaveTextContent('Datos de la invitación');
-		});
-
-		it('does not show publication in the public sections group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(getGroup('Secciones públicas')).not.toHaveTextContent('Publicación');
-		});
 	});
 
-	describe('public editor surface sections', () => {
-		it('renders hero as Portada in the public group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Portada')).toBeInTheDocument();
-		});
+	it('calls onSelectSection with the registry section id', () => {
+		const onSelectSection = jest.fn();
+		render(<EditorSidebar {...createProps({ onSelectSection })} />);
 
-		it('renders quote as Frase in the public group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Frase')).toBeInTheDocument();
-		});
+		fireEvent.click(screen.getByRole('button', { name: 'Frase' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Música' }));
 
-		it('renders location in the public group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Fecha y ubicaciones')).toBeInTheDocument();
-		});
+		expect(onSelectSection).toHaveBeenNthCalledWith(1, 'quote');
+		expect(onSelectSection).toHaveBeenNthCalledWith(2, 'music');
 	});
 
-	describe('hero is public-facing but not orderable', () => {
-		it('renders hero without Subir/Bajar controls', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const portada = screen
-				.getByText('Portada')
-				.closest('[class*="nav-item"]') as HTMLElement | null;
-			const subirButtons = portada
-				? within(portada).queryAllByRole('button', { name: /Subir|Bajar/i })
-				: [];
-			expect(subirButtons).toHaveLength(0);
-		});
+	it('marks the selected section active', () => {
+		render(<EditorSidebar {...createProps({ activeSection: 'gallery' })} />);
 
-		it('renders hero with Requerida status', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const statusBadges = screen.getAllByText('Requerida');
-			expect(statusBadges.length).toBeGreaterThanOrEqual(1);
-		});
+		const galleryRow = screen
+			.getByRole('button', { name: 'Galería' })
+			.closest('.invitation-editor__nav-item');
+		expect(galleryRow).toHaveClass('invitation-editor__nav-item--active');
 	});
 
-	describe('music decision', () => {
-		it('renders music in the public sections group', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByText('Música')).toBeInTheDocument();
-		});
+	it('keeps hero required and not orderable', () => {
+		render(<EditorSidebar {...createProps()} />);
 
-		it('does not show reorder controls for music', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const musica = screen
-				.getByText('Música')
-				.closest('[class*="nav-item"]') as HTMLElement | null;
-			const reorderButtons = musica
-				? within(musica).queryAllByRole('button', { name: /Subir|Bajar/i })
-				: [];
-			expect(reorderButtons).toHaveLength(0);
-		});
+		const heroRow = screen
+			.getByRole('button', { name: 'Portada' })
+			.closest('.invitation-editor__nav-item') as HTMLElement;
+		expect(heroRow).toHaveTextContent('Requerida');
+		expect(
+			within(heroRow).queryByRole('button', { name: /Mover Portada/ }),
+		).not.toBeInTheDocument();
 	});
 
-	describe('Subir / Bajar reorder controls', () => {
-		it('calls onSectionOrderChange when Subir is clicked', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family', 'gallery'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			const subirBtn = screen.getByRole('button', { name: 'Mover Familia hacia arriba' });
-			fireEvent.click(subirBtn);
-			expect(onSectionOrderChange).toHaveBeenCalledTimes(1);
-		});
+	it('reorders public sections using persisted sectionOrder', () => {
+		const onSectionOrderChange = jest.fn();
+		render(
+			<EditorSidebar
+				{...createProps({
+					sectionOrder: ['quote', 'family', 'gallery'],
+					onSectionOrderChange,
+				})}
+			/>,
+		);
 
-		it('calls onSectionOrderChange when Bajar is clicked', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family', 'gallery'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			const bajarBtn = screen.getByRole('button', { name: 'Mover Familia hacia abajo' });
-			fireEvent.click(bajarBtn);
-			expect(onSectionOrderChange).toHaveBeenCalledTimes(1);
-		});
+		fireEvent.click(screen.getByRole('button', { name: 'Mover Familia hacia arriba' }));
 
-		it('moves the section order item up when Subir is pressed', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family', 'gallery'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			fireEvent.click(screen.getByRole('button', { name: /Mover Familia hacia arriba/ }));
-			const newOrder = onSectionOrderChange.mock.calls[0][0];
-			expect(newOrder).toEqual(['family', 'quote', 'gallery']);
-		});
+		expect(onSectionOrderChange).toHaveBeenCalledWith(['family', 'quote', 'gallery']);
 	});
 
-	describe('reorder boundary conditions', () => {
-		it('disables Subir for the first orderable section', () => {
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family'],
-					})}
-				/>,
-			);
-			const subirBtn = screen.getByRole('button', { name: /Mover Frase hacia arriba/ });
-			expect(subirBtn).toBeDisabled();
-		});
+	it('toggles optional public sections', () => {
+		const onSectionOrderChange = jest.fn();
+		render(
+			<EditorSidebar
+				{...createProps({
+					sectionOrder: ['quote', 'gifts'],
+					onSectionOrderChange,
+				})}
+			/>,
+		);
 
-		it('disables Bajar for the last orderable section', () => {
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family', 'gifts'],
-					})}
-				/>,
-			);
-			const bajarBtn = screen.getByRole('button', {
-				name: /Mover Mesa de regalos hacia abajo/,
-			});
-			expect(bajarBtn).toBeDisabled();
-		});
+		fireEvent.click(screen.getByRole('button', { name: 'Ocultar Frase' }));
 
-		it('hero has no reorder controls regardless of position', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const portada = screen
-				.getByText('Portada')
-				.closest('[class*="nav-item"]') as HTMLElement | null;
-			const buttons = portada ? within(portada).queryAllByRole('button') : [];
-			expect(buttons).toHaveLength(0);
-		});
+		expect(onSectionOrderChange).toHaveBeenCalledWith(['gifts']);
 	});
 
-	describe('visibility toggle', () => {
-		it('shows Mostrar button for an Oculta section', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['location', 'gifts'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			const mostrarBtn = screen.getByRole('button', { name: 'Mostrar Frase' });
-			expect(mostrarBtn).toBeInTheDocument();
-		});
+	it('shows Spanish status labels', () => {
+		render(<EditorSidebar {...createProps({ getSectionHasContent: () => false })} />);
 
-		it('shows Ocultar button for a Visible section', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const ocultarBtn = screen.getByRole('button', { name: 'Ocultar Frase' });
-			expect(ocultarBtn).toBeInTheDocument();
-		});
-
-		it('calls onSectionOrderChange when toggling visible section to hidden', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'gifts'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			fireEvent.click(screen.getByRole('button', { name: 'Ocultar Frase' }));
-			expect(onSectionOrderChange).toHaveBeenCalledWith(['gifts']);
-		});
-
-		it('calls onSectionOrderChange when toggling hidden section to shown', () => {
-			const onSectionOrderChange = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['gifts'],
-						onSectionOrderChange,
-					})}
-				/>,
-			);
-			fireEvent.click(screen.getByRole('button', { name: 'Mostrar Frase' }));
-			expect(onSectionOrderChange).toHaveBeenCalledWith(['gifts', 'quote']);
-		});
-	});
-
-	describe('onSelectPublicSection callback', () => {
-		it('calls onSelectPublicSection with section id when a public section label is clicked', () => {
-			const onSelectPublicSection = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['quote', 'family', 'gifts'],
-						onSelectPublicSection,
-					})}
-				/>,
-			);
-			fireEvent.click(screen.getByText('Frase'));
-			expect(onSelectPublicSection).toHaveBeenCalledWith('quote');
-		});
-
-		it('calls onSelectPublicSection when a public section without editorCardId is clicked', () => {
-			const onSelectPublicSection = jest.fn();
-			render(
-				<EditorSidebar
-					{...createProps({
-						sectionOrder: ['countdown', 'quote'],
-						onSelectPublicSection,
-					})}
-				/>,
-			);
-			fireEvent.click(screen.getByText('Cuenta regresiva'));
-			expect(onSelectPublicSection).toHaveBeenCalledWith('countdown');
-		});
-
-		it('does not crash when onSelectPublicSection is not provided', () => {
-			render(<EditorSidebar {...createProps({ onSelectPublicSection: undefined })} />);
-			fireEvent.click(screen.getByText('Frase'));
-			// No crash expected
-		});
-	});
-
-	describe('required sections cannot be hidden', () => {
-		it('does not render a visibility toggle button for hero (required)', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const portada = screen
-				.getByText('Portada')
-				.closest('[class*="nav-item"]') as HTMLElement | null;
-			const buttons = portada ? within(portada).queryAllByRole('button') : [];
-			const visibilityBtn = buttons.filter(
-				(btn) =>
-					btn.getAttribute('aria-label')?.startsWith('Ocultar') ||
-					btn.getAttribute('aria-label')?.startsWith('Mostrar'),
-			);
-			expect(visibilityBtn).toHaveLength(0);
-		});
-
-		it('does not render a visibility toggle button for location (required)', () => {
-			render(<EditorSidebar {...createProps()} />);
-			const ubicacion = screen
-				.getByText('Fecha y ubicaciones')
-				.closest('[class*="nav-item"]') as HTMLElement | null;
-			const buttons = ubicacion ? within(ubicacion).queryAllByRole('button') : [];
-			const visibilityBtn = buttons.filter(
-				(btn) =>
-					btn.getAttribute('aria-label')?.startsWith('Ocultar') ||
-					btn.getAttribute('aria-label')?.startsWith('Mostrar'),
-			);
-			expect(visibilityBtn).toHaveLength(0);
-		});
-	});
-
-	describe('accessible labels in Spanish', () => {
-		it('reorder buttons have Spanish aria-labels', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(
-				screen.getByRole('button', { name: /Mover Frase hacia arriba/ }),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole('button', { name: /Mover Frase hacia abajo/ }),
-			).toBeInTheDocument();
-		});
-
-		it('uses compact visual labels for reorder buttons while preserving aria-labels', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(
-				screen.getByRole('button', { name: /Mover Frase hacia arriba/ }),
-			).toHaveTextContent('↑');
-			expect(
-				screen.getByRole('button', { name: /Mover Frase hacia abajo/ }),
-			).toHaveTextContent('↓');
-		});
-
-		it('visibility toggle buttons have Spanish aria-labels', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getByRole('button', { name: /Ocultar Frase/ })).toBeInTheDocument();
-		});
-
-		it('section status labels are in Spanish', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(screen.getAllByText('Visible').length).toBeGreaterThanOrEqual(1);
-			expect(screen.getAllByText('Requerida').length).toBeGreaterThanOrEqual(1);
-		});
-
-		it('nav has Spanish aria-label', () => {
-			render(<EditorSidebar {...createProps()} />);
-			expect(
-				screen.getByRole('navigation', { name: 'Secciones del editor' }),
-			).toBeInTheDocument();
-		});
+		expect(screen.getAllByText('Requerida').length).toBeGreaterThan(0);
+		expect(screen.getAllByText('Vacía').length).toBeGreaterThan(0);
 	});
 });

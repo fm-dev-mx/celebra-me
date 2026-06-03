@@ -52,7 +52,7 @@ export default function EditorActionBar({
 							onClick={onSaveAll}
 							disabled={savingAll}
 						>
-							{savingAll ? 'Guardando...' : 'Guardar cambios'}
+							{savingAll ? 'Guardando...' : 'Guardar borrador'}
 						</button>
 					</>
 				)}

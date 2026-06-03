@@ -26,29 +26,27 @@ interface LocationData {
 interface Props {
 	location: LocationData;
 	dirty: boolean;
-	saving: boolean;
 	error?: string;
 	success?: string;
-	onSave: () => void;
 	sourceBadge?: { source: string; label: string };
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
 	onOpenAssetPicker: (field: string) => void;
 	previewSlug?: string;
 	assets?: AssetItem[];
+	visible?: boolean;
 }
 
 export default function LocationSectionEditor({
 	location,
 	dirty,
-	saving,
 	error,
 	success,
-	onSave,
 	sourceBadge,
 	onUpdateLocation,
 	onOpenAssetPicker,
 	previewSlug,
 	assets,
+	visible = true,
 }: Props) {
 	return (
 		<SectionCard
@@ -56,11 +54,10 @@ export default function LocationSectionEditor({
 			title="Fecha y ubicaciones"
 			description="Ceremonia, recepción e indicaciones."
 			dirty={dirty}
-			saving={saving}
 			error={error}
 			success={success}
-			onSave={onSave}
 			sourceBadge={sourceBadge}
+			visible={visible}
 		>
 			{(['ceremony', 'reception'] as const).map((venueKey) => {
 				const venue = location[venueKey] ?? {};

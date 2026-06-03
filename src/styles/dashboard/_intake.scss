@@ -1679,6 +1679,15 @@
 	}
 }
 
+.invitation-editor__nav-item,
+.invitation-editor__nav-public-link {
+	border: 0;
+	background: transparent;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
 .invitation-editor__nav-group {
 	display: grid;
 	gap: 0.125rem;
@@ -1810,6 +1819,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.45rem;
+	padding: 0;
 }
 
 .invitation-editor__nav-public-status {
@@ -2271,6 +2281,10 @@
 	}
 }
 
+.invitation-editor__link-button--danger {
+	color: var(--color-state-error-text);
+}
+
 .invitation-editor__reorder--compact {
 	gap: 0.25rem;
 
@@ -2303,6 +2317,18 @@
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 9px;
 	background: var(--color-bg-subtle);
+}
+
+.invitation-editor__gallery-item-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 0.45rem;
+
+	.invitation-editor__action-bar-btn {
+		padding: 0.4rem 0.65rem;
+		font-size: 0.75rem;
+	}
 }
 
 .invitation-editor__gallery-item-header,

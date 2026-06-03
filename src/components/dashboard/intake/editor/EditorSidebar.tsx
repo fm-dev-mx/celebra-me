@@ -1,11 +1,10 @@
-import { NAV_ITEMS } from '@/lib/intake/labels';
 import { moveArrayItem } from '@/lib/intake/utils';
 import {
-	ADMIN_EDITOR_CARD_IDS,
+	getConfigEditorSections,
 	getPublicSectionDefinitions,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
-	type PublicSectionDefinition,
+	type EditorSectionDefinition,
 } from '@/lib/intake/invitation-section-registry';
 
 interface Props {
@@ -17,7 +16,7 @@ interface Props {
 	sectionOrder: string[];
 	onSectionOrderChange: (order: string[]) => void;
 	getSectionHasContent: (sectionId: string) => boolean;
-	onSelectPublicSection?: (sectionId: string) => void;
+	onSelectSection?: (sectionId: string) => void;
 }
 
 function classNames(...classes: (string | false | null | undefined)[]): string {
@@ -33,18 +32,17 @@ export default function EditorSidebar({
 	sectionOrder,
 	onSectionOrderChange,
 	getSectionHasContent,
-	onSelectPublicSection,
+	onSelectSection,
 }: Props) {
-	const adminItems = NAV_ITEMS.filter((item) =>
-		(ADMIN_EDITOR_CARD_IDS as readonly string[]).includes(item.id),
-	);
+	const includePersonalizedAccess = sectionOrder.includes('personalizedAccess');
+	const configItems = getConfigEditorSections({ includePersonalizedAccess });
 
 	const orderedPublicSections = deriveOrderedPublicSections(sectionOrder);
 
 	// Sections not in the current order (hidden / newly available) appended at the end
 	const orderedIds = new Set(orderedPublicSections.map((d) => d.id));
 	const hiddenPublicSections = getPublicSectionDefinitions().filter(
-		(def) => def.id !== 'hero' && !orderedIds.has(def.id),
+		(def) => def.sidebarGroup === 'public' && def.id !== 'hero' && !orderedIds.has(def.id),
 	);
 
 	// All public sections to render in the sidebar
@@ -64,10 +62,11 @@ export default function EditorSidebar({
 		}
 	}
 
-	function renderNavItem(item: { id: string; label: string }) {
+	function renderConfigItem(item: EditorSectionDefinition) {
+		const saveSectionKey = item.saveSectionKey ?? item.id;
 		const badge = sectionSource(item.id);
-		const isSaving = savingSection === item.id;
-		const hasError = Boolean(errors[item.id]);
+		const isSaving = savingSection === saveSectionKey;
+		const hasError = Boolean(errors[saveSectionKey]);
 		const itemClasses = classNames(
 			'invitation-editor__nav-item',
 			activeSection === item.id && 'invitation-editor__nav-item--active',
@@ -75,7 +74,12 @@ export default function EditorSidebar({
 		);
 
 		return (
-			<a href={`#${item.id}`} key={item.id} className={itemClasses}>
+			<button
+				type="button"
+				key={item.id}
+				className={itemClasses}
+				onClick={() => onSelectSection?.(item.id)}
+			>
 				{badge && (
 					<span
 						className={`invitation-editor__nav-dot invitation-editor__nav-dot--${badge.source}`}
@@ -89,7 +93,7 @@ export default function EditorSidebar({
 						↻
 					</span>
 				)}
-				{dirty.has(item.id) && !isSaving && (
+				{dirty.has(saveSectionKey) && !isSaving && (
 					<span
 						className="invitation-editor__nav-dirty"
 						aria-label="con cambios sin guardar"
@@ -101,20 +105,20 @@ export default function EditorSidebar({
 					<span
 						className="invitation-editor__nav-error-icon"
 						aria-label="error al guardar"
-						title={errors[item.id]}
+						title={errors[saveSectionKey]}
 					>
 						!
 					</span>
 				)}
-			</a>
+			</button>
 		);
 	}
 
-	function renderPublicSectionRow(def: PublicSectionDefinition) {
+	function renderPublicSectionRow(def: EditorSectionDefinition) {
 		const sectionId = def.id;
-		const editorCardId = def.editorCardId ?? '';
 		const isOrderable = def.isOrderable;
 		const isToggleable = def.isToggleable;
+		const saveSectionKey = def.saveSectionKey ?? def.id;
 
 		const hasContent = getSectionHasContent(sectionId);
 		const status = getSectionVisibilityStatus(sectionId, sectionOrder, hasContent);
@@ -126,28 +130,28 @@ export default function EditorSidebar({
 
 		const rowClasses = classNames(
 			'invitation-editor__nav-item',
-			editorCardId && activeSection === editorCardId && 'invitation-editor__nav-item--active',
+			activeSection === sectionId && 'invitation-editor__nav-item--active',
 			'invitation-editor__nav-item--public',
+			Boolean(errors[saveSectionKey]) && 'invitation-editor__nav-item--error',
 		);
 
 		return (
 			<div key={sectionId} className={rowClasses}>
-				{editorCardId ? (
-					<a
-						href={`#${editorCardId}`}
-						className="invitation-editor__nav-public-link"
-						onClick={() => onSelectPublicSection?.(sectionId)}
-					>
-						<span className="invitation-editor__nav-label">{def.label}</span>
-					</a>
-				) : (
-					<span
-						className="invitation-editor__nav-public-link"
-						onClick={() => onSelectPublicSection?.(sectionId)}
-					>
-						<span className="invitation-editor__nav-label">{def.label}</span>
-					</span>
-				)}
+				<button
+					type="button"
+					className="invitation-editor__nav-public-link"
+					onClick={() => onSelectSection?.(sectionId)}
+				>
+					<span className="invitation-editor__nav-label">{def.label}</span>
+					{dirty.has(saveSectionKey) && savingSection !== saveSectionKey && (
+						<span
+							className="invitation-editor__nav-dirty"
+							aria-label="con cambios sin guardar"
+						>
+							*
+						</span>
+					)}
+				</button>
 				<span
 					className={`invitation-editor__nav-public-status invitation-editor__nav-public-status--${status
 						.normalize('NFD')
@@ -156,6 +160,11 @@ export default function EditorSidebar({
 				>
 					{status}
 				</span>
+				{savingSection === saveSectionKey && (
+					<span className="invitation-editor__nav-saving" aria-label="guardando">
+						↻
+					</span>
+				)}
 				<span className="invitation-editor__nav-public-actions">
 					{isOrderable && (
 						<span className="invitation-editor__reorder invitation-editor__reorder--compact">
@@ -197,12 +206,11 @@ export default function EditorSidebar({
 			<div className="invitation-editor__nav-group">
 				<span className="invitation-editor__nav-group-label">Secciones públicas</span>
 				{allPublicSections.map((def) => renderPublicSectionRow(def))}
-				{renderNavItem({ id: 'music', label: 'Música' })}
 			</div>
-			{adminItems.length > 0 && (
+			{configItems.length > 0 && (
 				<div className="invitation-editor__nav-group">
-					<span className="invitation-editor__nav-group-label">Administración</span>
-					{adminItems.map(renderNavItem)}
+					<span className="invitation-editor__nav-group-label">Configuración</span>
+					{configItems.map(renderConfigItem)}
 				</div>
 			)}
 		</nav>

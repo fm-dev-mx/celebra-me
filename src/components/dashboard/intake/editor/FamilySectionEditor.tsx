@@ -24,15 +24,14 @@ interface Props {
 	eventType: string;
 	invitationId: string;
 	dirty: boolean;
-	saving: boolean;
 	error?: string;
 	success?: string;
-	onSave: () => void;
 	sourceBadge?: { source: string; label: string };
 	onUpdateFamily: (patch: Partial<FamilyData>) => void;
 	onOpenAssetPicker: (field: string) => void;
 	previewSlug?: string;
 	assets?: AssetItem[];
+	visible?: boolean;
 }
 
 export default function FamilySectionEditor({
@@ -40,15 +39,14 @@ export default function FamilySectionEditor({
 	eventType,
 	invitationId,
 	dirty,
-	saving,
 	error,
 	success,
-	onSave,
 	sourceBadge,
 	onUpdateFamily,
 	onOpenAssetPicker,
 	previewSlug,
 	assets,
+	visible = true,
 }: Props) {
 	const isBoda = eventType === 'boda';
 	return (
@@ -57,11 +55,10 @@ export default function FamilySectionEditor({
 			title="Personas principales"
 			description="Familia y personas destacadas."
 			dirty={dirty}
-			saving={saving}
 			error={error}
 			success={success}
-			onSave={onSave}
 			sourceBadge={sourceBadge}
+			visible={visible}
 		>
 			<div className="invitation-editor__field-grid">
 				<Field

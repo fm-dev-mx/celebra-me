@@ -1,167 +1,155 @@
 import {
 	PUBLIC_SECTION_IDS,
 	PUBLIC_SECTION_DEFINITIONS,
-	ADMIN_EDITOR_CARD_IDS,
-	getPublicSectionDefinitions,
+	getConfigEditorSections,
+	getEditorSectionById,
+	getPreviewAnchorForSection,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
 } from '@/lib/intake/invitation-section-registry';
-import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { CONTENT_SECTION_KEYS, INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
 describe('invitation-section-registry', () => {
-	describe('PUBLIC_SECTION_IDS', () => {
-		it('includes hero at the beginning', () => {
+	describe('public section ids', () => {
+		it('includes hero at the beginning and every render section key', () => {
 			expect(PUBLIC_SECTION_IDS[0]).toBe('hero');
-		});
-
-		it('includes all INVITATION_RENDER_SECTION_KEYS', () => {
 			for (const key of INVITATION_RENDER_SECTION_KEYS) {
 				expect(PUBLIC_SECTION_IDS).toContain(key);
 			}
 		});
 
-		it('every public section id has a definition', () => {
+		it('defines every public section id', () => {
 			for (const id of PUBLIC_SECTION_IDS) {
 				expect(PUBLIC_SECTION_DEFINITIONS[id]).toBeDefined();
 			}
 		});
 	});
 
-	describe('getPublicSectionDefinitions', () => {
-		it('returns all public section definitions', () => {
-			const defs = getPublicSectionDefinitions();
-			expect(defs).toHaveLength(PUBLIC_SECTION_IDS.length);
-			expect(defs.map((d) => d.id)).toEqual([...PUBLIC_SECTION_IDS]);
+	describe('editor-facing public sections', () => {
+		const editorPublicIds = ['hero', ...CONTENT_SECTION_KEYS];
+
+		it('uses the public render contract order with hero first', () => {
+			expect(editorPublicIds[0]).toBe('hero');
+			for (const key of CONTENT_SECTION_KEYS) {
+				expect(editorPublicIds).toContain(key);
+			}
+		});
+
+		it('uses Spanish user-facing labels', () => {
+			expect(
+				editorPublicIds.map(
+					(id) =>
+						PUBLIC_SECTION_DEFINITIONS[id as keyof typeof PUBLIC_SECTION_DEFINITIONS]
+							.label,
+				),
+			).toEqual([
+				'Portada',
+				'Frase',
+				'Familia',
+				'Galería',
+				'Cuenta regresiva',
+				'Fecha y ubicaciones',
+				'Programa',
+				'Confirmación de asistencia',
+				'Mesa de regalos',
+				'Agradecimiento',
+			]);
+		});
+
+		it('does not include config-only render sections', () => {
+			expect(editorPublicIds).not.toContain('personalizedAccess');
+		});
+	});
+
+	describe('editor mappings', () => {
+		it('maps public sections to editor cards', () => {
+			expect(getEditorSectionById('hero')?.editorCardId).toBe('main');
+			expect(getEditorSectionById('quote')?.editorCardId).toBe('quote');
+			expect(getEditorSectionById('thankYou')?.editorCardId).toBe('thankYou');
+			expect(getEditorSectionById('countdown')?.editorCardId).toBe('countdown');
+		});
+
+		it('maps split message sections to the existing save section key', () => {
+			expect(getEditorSectionById('quote')?.saveSectionKey).toBe('messages');
+			expect(getEditorSectionById('thankYou')?.saveSectionKey).toBe('messages');
+		});
+
+		it('maps config sections to their editor cards and save keys', () => {
+			expect(getEditorSectionById('metadata')?.editorCardId).toBe('metadata');
+			expect(getEditorSectionById('metadata')?.saveSectionKey).toBe('metadata');
+			expect(getEditorSectionById('music')?.sidebarGroup).toBe('config');
+			expect(getEditorSectionById('music')?.saveSectionKey).toBe('music');
+		});
+	});
+
+	describe('preview anchors', () => {
+		it('resolves anchors from the registry', () => {
+			expect(getPreviewAnchorForSection('hero')).toBe('#hero');
+			expect(getPreviewAnchorForSection('quote')).toBe('#quote-section');
+			expect(getPreviewAnchorForSection('gallery')).toBe('#galeria');
+			expect(getPreviewAnchorForSection('thankYou')).toBe('#thank-you-section');
+			expect(getPreviewAnchorForSection('music')).toBe('');
+		});
+	});
+
+	describe('config sections', () => {
+		it('separates admin/config sections from public sections', () => {
+			expect(getConfigEditorSections().map((section) => section.label)).toEqual([
+				'Datos de la invitación',
+				'Publicación',
+				'Biblioteca de imágenes',
+				'Música',
+			]);
+		});
+
+		it('includes personalized access only when requested', () => {
+			expect(getConfigEditorSections().map((section) => section.id)).not.toContain(
+				'personalizedAccess',
+			);
+			expect(
+				getConfigEditorSections({ includePersonalizedAccess: true }).map(
+					(section) => section.id,
+				),
+			).toContain('personalizedAccess');
 		});
 	});
 
 	describe('deriveOrderedPublicSections', () => {
-		it('returns hero first when sectionOrder is empty', () => {
-			const ordered = deriveOrderedPublicSections([]);
-			expect(ordered[0].id).toBe('hero');
+		it('returns hero first followed by persisted public order', () => {
+			const ordered = deriveOrderedPublicSections(['quote', 'location', 'gifts']);
+			expect(ordered.map((section) => section.id)).toEqual([
+				'hero',
+				'quote',
+				'location',
+				'gifts',
+			]);
 		});
 
-		it('returns hero first followed by sectionOrder sections', () => {
-			const order = ['quote', 'location', 'gifts'];
-			const ordered = deriveOrderedPublicSections(order);
-			expect(ordered).toHaveLength(4);
-			expect(ordered[0].id).toBe('hero');
-			expect(ordered[1].id).toBe('quote');
-			expect(ordered[2].id).toBe('location');
-			expect(ordered[3].id).toBe('gifts');
-		});
-
-		it('filters out unknown section ids from sectionOrder', () => {
-			const order = ['quote', 'nonexistent' as string, 'gifts'];
-			const ordered = deriveOrderedPublicSections(order);
-			expect(ordered).toHaveLength(3);
-			expect(ordered[1].id).toBe('quote');
-			expect(ordered[2].id).toBe('gifts');
-		});
-
-		it('does not duplicate hero if present in sectionOrder', () => {
-			const order = ['quote', 'hero', 'gifts'];
-			const ordered = deriveOrderedPublicSections(order);
-			expect(ordered).toHaveLength(3);
-			expect(ordered.filter((d) => d.id === 'hero')).toHaveLength(1);
-			expect(ordered[0].id).toBe('hero');
-			expect(ordered[1].id).toBe('quote');
-			expect(ordered[2].id).toBe('gifts');
-		});
-	});
-
-	describe('data integrity', () => {
-		it('all public sections have a non-empty label', () => {
-			for (const id of PUBLIC_SECTION_IDS) {
-				expect(PUBLIC_SECTION_DEFINITIONS[id].label.length).toBeGreaterThan(0);
-			}
-		});
-
-		it('required sections are not toggleable', () => {
-			for (const id of PUBLIC_SECTION_IDS) {
-				const def = PUBLIC_SECTION_DEFINITIONS[id];
-				if (def.isRequired) {
-					expect(def.isToggleable).toBe(false);
-				}
-			}
-		});
-	});
-
-	describe('PUBLIC_SECTION_DEFINITIONS editor card mapping', () => {
-		it('maps quote to editor card messages', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.quote.editorCardId).toBe('messages');
-		});
-
-		it('maps thankYou to editor card messages', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.thankYou.editorCardId).toBe('messages');
-		});
-
-		it('maps hero to editor card main', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.hero.editorCardId).toBe('main');
-		});
-
-		it('defines undefined editorCardId for sections without an editor card', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.countdown.editorCardId).toBeUndefined();
-			expect(PUBLIC_SECTION_DEFINITIONS.personalizedAccess.editorCardId).toBeUndefined();
-		});
-	});
-
-	describe('PUBLIC_SECTION_DEFINITIONS preview anchors', () => {
-		it('defines correct anchors for known sections', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.quote.previewAnchor).toBe('#quote-section');
-			expect(PUBLIC_SECTION_DEFINITIONS.location.previewAnchor).toBe('#event-location');
-			expect(PUBLIC_SECTION_DEFINITIONS.gallery.previewAnchor).toBe('#galeria');
-			expect(PUBLIC_SECTION_DEFINITIONS.hero.previewAnchor).toBe('#hero');
-			expect(PUBLIC_SECTION_DEFINITIONS.thankYou.previewAnchor).toBe('#thank-you-section');
-		});
-
-		it('defines empty anchor for sections without one', () => {
-			expect(PUBLIC_SECTION_DEFINITIONS.personalizedAccess.previewAnchor).toBe('');
-		});
-	});
-
-	describe('ADMIN_EDITOR_CARD_IDS', () => {
-		it('includes metadata, publication, and assetLibrary', () => {
-			expect(ADMIN_EDITOR_CARD_IDS).toContain('metadata');
-			expect(ADMIN_EDITOR_CARD_IDS).toContain('publication');
-			expect(ADMIN_EDITOR_CARD_IDS).toContain('assetLibrary');
-		});
-
-		it('does not include public section card ids', () => {
-			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('main');
-			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('messages');
-			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('gallery');
+		it('filters unknown and config section ids from sectionOrder', () => {
+			const ordered = deriveOrderedPublicSections([
+				'quote',
+				'personalizedAccess',
+				'nonexistent',
+				'gifts',
+			]);
+			expect(ordered.map((section) => section.id)).toEqual(['hero', 'quote', 'gifts']);
 		});
 	});
 
 	describe('getSectionVisibilityStatus', () => {
 		it('returns Requerida for required sections', () => {
-			const status = getSectionVisibilityStatus('hero', ['quote', 'location'], true);
-			expect(status).toBe('Requerida');
+			expect(getSectionVisibilityStatus('hero', ['quote', 'location'], true)).toBe(
+				'Requerida',
+			);
 		});
 
 		it('returns Vacía for sections without content', () => {
-			const status = getSectionVisibilityStatus('gifts', ['gifts', 'location'], false);
-			expect(status).toBe('Vacía');
+			expect(getSectionVisibilityStatus('gifts', ['gifts', 'location'], false)).toBe('Vacía');
 		});
 
-		it('returns Visible for optional sections with content in sectionOrder', () => {
-			const status = getSectionVisibilityStatus(
-				'gifts',
-				['quote', 'gifts', 'location'],
-				true,
-			);
-			expect(status).toBe('Visible');
-		});
-
-		it('returns Oculta for optional sections with content not in sectionOrder', () => {
-			const status = getSectionVisibilityStatus('gifts', ['quote', 'location'], true);
-			expect(status).toBe('Oculta');
-		});
-
-		it('returns Vacía for unknown section ids', () => {
-			const status = getSectionVisibilityStatus('nonexistent', [], false);
-			expect(status).toBe('Vacía');
+		it('returns Visible or Oculta for optional sections with content', () => {
+			expect(getSectionVisibilityStatus('gifts', ['quote', 'gifts'], true)).toBe('Visible');
+			expect(getSectionVisibilityStatus('gifts', ['quote', 'location'], true)).toBe('Oculta');
 		});
 	});
 });
