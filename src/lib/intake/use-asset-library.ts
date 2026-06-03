@@ -4,11 +4,18 @@ export interface AssetItem {
 	id: string;
 	displayName: string;
 	src: string;
+	isDemo?: boolean;
+	demoKey?: string;
+	width?: number;
+	height?: number;
+	fileSize?: number;
+	mimeType?: string;
+	defaultAltText?: string;
 	usage: {
 		usedInDraft: boolean;
 		usedInPublished: boolean;
-		draftSectionRefs?: string[];
-		publishedSectionRefs?: string[];
+		draftSectionRefs: string[];
+		publishedSectionRefs: string[];
 	};
 }
 
@@ -19,7 +26,10 @@ interface UseAssetLibraryResult {
 	refresh: () => Promise<void>;
 }
 
-export function useAssetLibrary(invitationId: string): UseAssetLibraryResult {
+export function useAssetLibrary(
+	invitationId: string,
+	filter?: 'active' | 'archived',
+): UseAssetLibraryResult {
 	const [assets, setAssets] = useState<AssetItem[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
@@ -28,8 +38,9 @@ export function useAssetLibrary(invitationId: string): UseAssetLibraryResult {
 		setLoading(true);
 		setError('');
 		try {
+			const params = filter ? `?filter=${encodeURIComponent(filter)}` : '';
 			const response = await fetch(
-				`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets`,
+				`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets${params}`,
 			);
 			const result = await response.json();
 			if (!response.ok) {
@@ -41,7 +52,7 @@ export function useAssetLibrary(invitationId: string): UseAssetLibraryResult {
 		} finally {
 			setLoading(false);
 		}
-	}, [invitationId]);
+	}, [invitationId, filter]);
 
 	useEffect(() => {
 		fetchAssets();

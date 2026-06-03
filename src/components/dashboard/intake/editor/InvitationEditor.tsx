@@ -818,6 +818,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 								/>
 							}
 						/>
+						{editor.context.invitation.id && (
+							<label className="invitation-editor__field">
+								<span>Imagen familiar</span>
+								<button
+									type="button"
+									className="invitation-editor__asset-btn"
+									onClick={() => setPickerField('family.featuredImage')}
+								>
+									{family.featuredImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
+								</button>
+							</label>
+						)}
 					</SectionCard>
 
 					<SectionCard
@@ -873,6 +885,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 											onChange={(value) => updateVenue({ mapUrl: value })}
 										/>
 									</div>
+									<label className="invitation-editor__field">
+										<span>Imagen del lugar</span>
+										<button
+											type="button"
+											className="invitation-editor__asset-btn"
+											onClick={() =>
+												setPickerField(`location.${venueKey}.image`)
+											}
+										>
+											{venue.image ? 'Cambiar imagen' : 'Seleccionar imagen'}
+										</button>
+									</label>
 								</div>
 							);
 						})}
@@ -1214,6 +1238,20 @@ export default function InvitationEditor({ initialContext }: Props) {
 								})
 							}
 						/>
+						{editor.context.invitation.id && (
+							<label className="invitation-editor__field">
+								<span>Imagen de agradecimiento</span>
+								<button
+									type="button"
+									className="invitation-editor__asset-btn"
+									onClick={() => setPickerField('thankYou.image')}
+								>
+									{messages.thankYou.image
+										? 'Cambiar imagen'
+										: 'Seleccionar imagen'}
+								</button>
+							</label>
+						)}
 					</SectionCard>
 
 					<SectionCard
@@ -1313,10 +1351,23 @@ export default function InvitationEditor({ initialContext }: Props) {
 				<AssetPicker
 					invitationId={editor.context.invitation.id}
 					onSelect={(assetId) => {
+						const ref = { type: 'uploaded' as const, assetId };
 						if (pickerField === 'hero.backgroundImage') {
-							updateHero({ backgroundImage: { type: 'uploaded' as const, assetId } });
+							updateHero({ backgroundImage: ref });
 						} else if (pickerField === 'hero.portrait') {
-							updateHero({ portrait: { type: 'uploaded' as const, assetId } });
+							updateHero({ portrait: ref });
+						} else if (pickerField === 'family.featuredImage') {
+							updateFamily({ featuredImage: ref });
+						} else if (pickerField === 'thankYou.image') {
+							updateContent('thankYou', {
+								...messages.thankYou,
+								image: ref,
+							});
+						} else if (pickerField.startsWith('location.')) {
+							const parts = pickerField.split('.');
+							const venueKey = parts[1] as 'ceremony' | 'reception';
+							const venue = location[venueKey] ?? {};
+							updateLocation({ [venueKey]: { ...venue, image: ref } });
 						}
 						setPickerField(null);
 					}}

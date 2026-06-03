@@ -250,3 +250,20 @@ export const EMPTY_ASSET_LIBRARY_COPY = {
 	heading: 'Aún no hay imágenes en esta biblioteca.',
 	subtext: 'Sube una imagen para usarla en la invitación.',
 } as const;
+
+export const DEMO_ASSET_LABEL = 'Imagen de demo';
+export const ASSET_USAGE_LABEL = 'Usada en:';
+export const ASSET_EDIT_LABEL = 'Editar nombre';
+export const ASSET_SAVE_LABEL = 'Guardar';
+export const ASSET_CANCEL_LABEL = 'Cancelar';
+export const ASSET_ALT_TEXT_LABEL = 'Texto alternativo';
+export const ASSET_ALT_SAVE_LABEL = 'Guardar texto alternativo';
+export const ASSET_NO_USAGE_LABEL = 'No utilizada';
+export const ASSET_SECTION_REFS_HEADER = 'Usos de esta imagen';
+
+export const ARCHIVED_TAB_LABEL = 'Archivadas';
+export const ACTIVE_TAB_LABEL = 'Activas';
+export const RESTORE_LABEL = 'Restaurar';
+export const ARCHIVED_DATE_LABEL = 'Imagen archivada';
+export const ARCHIVED_HELP_LABEL = 'Las imágenes archivadas pueden restaurarse.';
+export const ARCHIVE_BLOCKED_LABEL = 'No puedes archivar una imagen que está en uso.';
