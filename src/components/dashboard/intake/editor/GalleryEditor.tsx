@@ -1,9 +1,3 @@
-import {
-	getCommonAsset,
-	getEventAsset,
-	isCommonAssetKey,
-	isEventAssetKey,
-} from '@/lib/assets/asset-registry';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import FocalPointControl from '@/components/dashboard/intake/editor/FocalPointControl';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
@@ -16,6 +10,8 @@ import { DEVICE_LABELS, type PreviewDevice } from '@/lib/editor/constants';
 import { moveArrayItem } from '@/lib/intake/utils';
 import { useState } from 'react';
 import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
+import type { AssetItem } from '@/lib/intake/use-asset-library';
+import { resolveAssetSrc } from '@/lib/assets/asset-utils';
 
 type Gallery = NonNullable<DraftContent['gallery']>;
 type GalleryItem = Gallery['items'][number];
@@ -31,10 +27,7 @@ interface Props {
 	onSavePhotoNotes?: () => void;
 	photoNotesDirty?: boolean;
 	savingPhotoNotes?: boolean;
-}
-
-function resolveSrc(source: { src: string | { src: string } }): string {
-	return typeof source.src === 'string' ? source.src : source.src.src;
+	assets?: AssetItem[];
 }
 
 function imageItemKey(image: GalleryItem['image']): string {
@@ -42,20 +35,6 @@ function imageItemKey(image: GalleryItem['image']): string {
 	if (image.type === 'internal') return image.key;
 	if (image.type === 'uploaded') return `asset:${image.assetId.slice(0, 8)}`;
 	return image.src;
-}
-
-function getImageSource(item: GalleryItem, previewSlug: string): string | undefined {
-	const image = item.image;
-	if (typeof image === 'string') {
-		if (image.startsWith('/') || image.startsWith('https://')) return image;
-		if (isEventAssetKey(image)) return getEventAsset(previewSlug, image)?.src;
-		if (isCommonAssetKey(image)) return resolveSrc(getCommonAsset(image));
-		return undefined;
-	}
-	if (image.type === 'external') return image.src;
-	if (image.type === 'uploaded') return undefined; // resolved via asset library in Phase 3
-	if (isEventAssetKey(image.key)) return getEventAsset(previewSlug, image.key)?.src;
-	return resolveSrc(getCommonAsset(image.key));
 }
 
 export default function GalleryEditor({
@@ -69,9 +48,10 @@ export default function GalleryEditor({
 	onSavePhotoNotes = () => undefined,
 	photoNotesDirty = false,
 	savingPhotoNotes = false,
+	assets = [],
 }: Props) {
 	const [cropMode, setCropMode] = useState<PreviewDevice>('mobile');
-	const [perDevice, setPerDevice] = useState(false);
+	const [perDeviceMap, setPerDeviceMap] = useState<Record<number, boolean>>({});
 	const [pickerIndex, setPickerIndex] = useState<number | null>(null);
 
 	const updateItem = (index: number, patch: Partial<GalleryItem>) => {
@@ -129,7 +109,7 @@ export default function GalleryEditor({
 
 			<div className="invitation-editor__gallery-grid">
 				{value.items.map((item, index) => {
-					const src = getImageSource(item, previewSlug);
+					const src = resolveAssetSrc(item.image, previewSlug, assets);
 					const role = getGalleryPreviewRole(index, variant);
 					return (
 						<article
@@ -194,26 +174,34 @@ export default function GalleryEditor({
 									}
 								/>
 							</label>
-							<FocalPointControl
-								value={item.focalPoint ?? ''}
-								onChange={(value) => updateItem(index, { focalPoint: value })}
-								mobileValue={item.focalPointMobile ?? ''}
-								onMobileChange={(value) =>
-									updateItem(index, { focalPointMobile: value })
-								}
-								tabletValue={item.focalPointTablet ?? ''}
-								onTabletChange={(value) =>
-									updateItem(index, { focalPointTablet: value })
-								}
-								desktopValue={item.focalPointDesktop ?? ''}
-								onDesktopChange={(value) =>
-									updateItem(index, { focalPointDesktop: value })
-								}
-								mode={perDevice ? 'per-device' : 'shared'}
-								onModeChange={(mode) => setPerDevice(mode === 'per-device')}
-								imageSrc={src}
-								alt={item.caption || `Fotografía ${index + 1}`}
-							/>
+							<details className="invitation-editor__gallery-advanced">
+								<summary>Ajustes de encuadre</summary>
+								<FocalPointControl
+									value={item.focalPoint ?? ''}
+									onChange={(value) => updateItem(index, { focalPoint: value })}
+									mobileValue={item.focalPointMobile ?? ''}
+									onMobileChange={(value) =>
+										updateItem(index, { focalPointMobile: value })
+									}
+									tabletValue={item.focalPointTablet ?? ''}
+									onTabletChange={(value) =>
+										updateItem(index, { focalPointTablet: value })
+									}
+									desktopValue={item.focalPointDesktop ?? ''}
+									onDesktopChange={(value) =>
+										updateItem(index, { focalPointDesktop: value })
+									}
+									mode={perDeviceMap[index] ? 'per-device' : 'shared'}
+									onModeChange={(mode) =>
+										setPerDeviceMap((prev) => ({
+											...prev,
+											[index]: mode === 'per-device',
+										}))
+									}
+									imageSrc={src}
+									alt={item.caption || `Fotografía ${index + 1}`}
+								/>
+							</details>
 							<div className="invitation-editor__reorder">
 								<button
 									type="button"

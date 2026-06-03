@@ -157,6 +157,11 @@ describe('GalleryEditor', () => {
 			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={onChange} />,
 		);
 
+		const advanced = screen.getByText('Ajustes de encuadre').closest('details');
+		expect(advanced).not.toBeNull();
+		expect(advanced).not.toHaveAttribute('open');
+		fireEvent.click(screen.getByText('Ajustes de encuadre'));
+
 		const toggle = screen.getByLabelText('Punto focal por dispositivo');
 		expect(toggle).not.toBeChecked();
 
