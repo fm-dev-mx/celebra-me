@@ -7,6 +7,7 @@ describe('EditorPreviewPane', () => {
 		invitationId: 'proj-1',
 		hasUnsavedChanges: false,
 		previewVersion: 0,
+		previewHash: '',
 		onReload: jest.fn(),
 		paneRef: createRef<HTMLElement>(),
 	};
@@ -37,6 +38,22 @@ describe('EditorPreviewPane', () => {
 		expect(
 			screen.getByText('La vista previa se actualizará después de guardar.'),
 		).toBeInTheDocument();
+	});
+
+	it('includes preview hash in iframe src when provided', () => {
+		render(<EditorPreviewPane {...defaultProps} previewHash="#quote-section" />);
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0#quote-section',
+		);
+	});
+
+	it('does not include hash in iframe src when previewHash is empty', () => {
+		render(<EditorPreviewPane {...defaultProps} previewHash="" />);
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0',
+		);
 	});
 
 	it('switches device presets and reloads only the saved preview', () => {

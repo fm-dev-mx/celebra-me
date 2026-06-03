@@ -167,11 +167,4 @@ export function getSectionVisibilityStatus(
 
 // ===== Sidebar Grouping =====
 
-export function getSidebarAdminEditorCardIds(): string[] {
-	const ADMIN_SIDEBAR_IDS: Record<string, string> = {
-		metadata: 'metadata',
-		publication: 'publication',
-		assetLibrary: 'assetLibrary',
-	};
-	return Object.values(ADMIN_SIDEBAR_IDS);
-}
+export const ADMIN_EDITOR_CARD_IDS = ['metadata', 'publication', 'assetLibrary'] as const;

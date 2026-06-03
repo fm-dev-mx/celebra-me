@@ -128,10 +128,24 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [success, setSuccess] = useState<Record<string, string>>({});
 	const [previewVersion, setPreviewVersion] = useState(0);
+	const [previewHash, setPreviewHash] = useState('');
 	const previewPaneRef = useRef<HTMLElement | null>(null);
 	const refreshSavedPreview = () => {
 		setPreviewVersion((version) => version + 1);
 	};
+
+	const handleSelectPublicSection = useCallback((sectionId: string) => {
+		const id = sectionId as PublicSectionId;
+		const def = PUBLIC_SECTION_DEFINITIONS[id];
+		setPreviewHash(def?.previewAnchor ?? '');
+		const editorCardId = def?.editorCardId;
+		if (editorCardId) {
+			const el = document.getElementById(editorCardId);
+			if (el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+	}, []);
 
 	useEffect(() => {
 		const warn = (event: BeforeUnloadEvent) => {
@@ -606,6 +620,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						);
 					}}
 					getSectionHasContent={getSectionHasContent}
+					onSelectPublicSection={handleSelectPublicSection}
 				/>
 
 				<main className="invitation-editor__content">
@@ -693,7 +708,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Confirmación de asistencia"
 						description="Configuración visible para invitados; las respuestas permanecen separadas."
 						dirty={dirty.has('rsvp')}
-						saving={savingSection === 'rsvp'}
+						saving={editor.savingSection === 'rsvp'}
 						error={errors.rsvp}
 						success={success.rsvp}
 						onSave={() => saveSection('rsvp')}
@@ -761,7 +776,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Música"
 						description="Pista musical de la experiencia pública."
 						dirty={dirty.has('music')}
-						saving={savingSection === 'music'}
+						saving={editor.savingSection === 'music'}
 						error={errors.music}
 						success={success.music}
 						onSave={() => saveSection('music')}
@@ -791,7 +806,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Mesa de regalos"
 						description="Opciones de regalo visibles para invitados."
 						dirty={dirty.has('gifts')}
-						saving={savingSection === 'gifts'}
+						saving={editor.savingSection === 'gifts'}
 						error={errors.gifts}
 						success={success.gifts}
 						onSave={() => saveSection('gifts')}
@@ -934,7 +949,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Mensajes especiales"
 						description="Frase y cierre de agradecimiento."
 						dirty={dirty.has('messages')}
-						saving={savingSection === 'messages'}
+						saving={editor.savingSection === 'messages'}
 						error={errors.messages}
 						success={success.messages}
 						onSave={() => saveSection('messages')}
@@ -1012,7 +1027,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Galería"
 						description="Fotografías, orden, pies de foto y punto focal. Se guardan juntas."
 						dirty={dirty.has('gallery')}
-						saving={savingSection === 'gallery'}
+						saving={editor.savingSection === 'gallery'}
 						error={errors.gallery}
 						success={success.gallery}
 						onSave={() => saveSection('gallery')}
@@ -1028,7 +1043,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onPhotoNotesChange={(value) => updateContent('photoNotes', value)}
 							onSavePhotoNotes={() => void saveSection('photoNotes')}
 							photoNotesDirty={dirty.has('photoNotes')}
-							savingPhotoNotes={savingSection === 'photoNotes'}
+							savingPhotoNotes={editor.savingSection === 'photoNotes'}
 						/>
 					</SectionCard>
 
@@ -1037,7 +1052,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Publicación"
 						description="Versión vigente, restauración y salud del evento RSVP."
 						dirty={dirty.has('publication')}
-						saving={savingSection === 'publication'}
+						saving={editor.savingSection === 'publication'}
 						error={errors.publication}
 						success={success.publication}
 						onSave={() => saveSection('publication')}
@@ -1072,6 +1087,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					invitationId={editor.context.invitation.id}
 					hasUnsavedChanges={dirty.size > 0}
 					previewVersion={previewVersion}
+					previewHash={previewHash}
 					onReload={refreshSavedPreview}
 				/>
 			</div>

@@ -7,6 +7,7 @@ interface Props {
 	previewVersion: number;
 	onReload: () => void;
 	paneRef?: RefObject<HTMLElement | null>;
+	previewHash: string;
 }
 
 function buildPreviewUrl(invitationId: string, previewVersion: number, embedded: boolean): string {
@@ -21,9 +22,12 @@ export default function EditorPreviewPane({
 	previewVersion,
 	onReload,
 	paneRef,
+	previewHash = '',
 }: Props) {
 	const [device, setDevice] = useState<PreviewDevice>('desktop');
-	const iframeUrl = buildPreviewUrl(invitationId, previewVersion, true);
+	const iframeBaseUrl = buildPreviewUrl(invitationId, previewVersion, true);
+	const iframeSrc = previewHash ? `${iframeBaseUrl}${previewHash}` : iframeBaseUrl;
+	const iframeKey = `preview-v${previewVersion}`;
 	const fullPreviewUrl = buildPreviewUrl(invitationId, previewVersion, false);
 
 	return (
@@ -83,8 +87,8 @@ export default function EditorPreviewPane({
 				data-testid="editor-preview-frame"
 			>
 				<iframe
-					key={iframeUrl}
-					src={iframeUrl}
+					key={iframeKey}
+					src={iframeSrc}
 					className="invitation-editor__preview-iframe"
 					title="Vista previa de la invitación"
 				/>

@@ -1,7 +1,7 @@
 import { NAV_ITEMS } from '@/lib/intake/labels';
 import { moveArrayItem } from '@/lib/intake/utils';
 import {
-	getSidebarAdminEditorCardIds,
+	ADMIN_EDITOR_CARD_IDS,
 	getPublicSectionDefinitions,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
@@ -17,6 +17,7 @@ interface Props {
 	sectionOrder: string[];
 	onSectionOrderChange: (order: string[]) => void;
 	getSectionHasContent: (sectionId: string) => boolean;
+	onSelectPublicSection?: (sectionId: string) => void;
 }
 
 function classNames(...classes: (string | false | null | undefined)[]): string {
@@ -32,9 +33,11 @@ export default function EditorSidebar({
 	sectionOrder,
 	onSectionOrderChange,
 	getSectionHasContent,
+	onSelectPublicSection,
 }: Props) {
-	const adminCardIds = getSidebarAdminEditorCardIds();
-	const adminItems = NAV_ITEMS.filter((item) => adminCardIds.includes(item.id));
+	const adminItems = NAV_ITEMS.filter((item) =>
+		(ADMIN_EDITOR_CARD_IDS as readonly string[]).includes(item.id),
+	);
 
 	const orderedPublicSections = deriveOrderedPublicSections(sectionOrder);
 
@@ -130,11 +133,18 @@ export default function EditorSidebar({
 		return (
 			<div key={sectionId} className={rowClasses}>
 				{editorCardId ? (
-					<a href={`#${editorCardId}`} className="invitation-editor__nav-public-link">
+					<a
+						href={`#${editorCardId}`}
+						className="invitation-editor__nav-public-link"
+						onClick={() => onSelectPublicSection?.(sectionId)}
+					>
 						<span className="invitation-editor__nav-label">{def.label}</span>
 					</a>
 				) : (
-					<span className="invitation-editor__nav-public-link">
+					<span
+						className="invitation-editor__nav-public-link"
+						onClick={() => onSelectPublicSection?.(sectionId)}
+					>
 						<span className="invitation-editor__nav-label">{def.label}</span>
 					</span>
 				)}

@@ -1,6 +1,7 @@
 import {
 	PUBLIC_SECTION_IDS,
 	PUBLIC_SECTION_DEFINITIONS,
+	ADMIN_EDITOR_CARD_IDS,
 	getPublicSectionDefinitions,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
@@ -83,6 +84,53 @@ describe('invitation-section-registry', () => {
 					expect(def.isToggleable).toBe(false);
 				}
 			}
+		});
+	});
+
+	describe('PUBLIC_SECTION_DEFINITIONS editor card mapping', () => {
+		it('maps quote to editor card messages', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.quote.editorCardId).toBe('messages');
+		});
+
+		it('maps thankYou to editor card messages', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.thankYou.editorCardId).toBe('messages');
+		});
+
+		it('maps hero to editor card main', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.hero.editorCardId).toBe('main');
+		});
+
+		it('defines undefined editorCardId for sections without an editor card', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.countdown.editorCardId).toBeUndefined();
+			expect(PUBLIC_SECTION_DEFINITIONS.personalizedAccess.editorCardId).toBeUndefined();
+		});
+	});
+
+	describe('PUBLIC_SECTION_DEFINITIONS preview anchors', () => {
+		it('defines correct anchors for known sections', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.quote.previewAnchor).toBe('#quote-section');
+			expect(PUBLIC_SECTION_DEFINITIONS.location.previewAnchor).toBe('#event-location');
+			expect(PUBLIC_SECTION_DEFINITIONS.gallery.previewAnchor).toBe('#galeria');
+			expect(PUBLIC_SECTION_DEFINITIONS.hero.previewAnchor).toBe('#hero');
+			expect(PUBLIC_SECTION_DEFINITIONS.thankYou.previewAnchor).toBe('#thank-you-section');
+		});
+
+		it('defines empty anchor for sections without one', () => {
+			expect(PUBLIC_SECTION_DEFINITIONS.personalizedAccess.previewAnchor).toBe('');
+		});
+	});
+
+	describe('ADMIN_EDITOR_CARD_IDS', () => {
+		it('includes metadata, publication, and assetLibrary', () => {
+			expect(ADMIN_EDITOR_CARD_IDS).toContain('metadata');
+			expect(ADMIN_EDITOR_CARD_IDS).toContain('publication');
+			expect(ADMIN_EDITOR_CARD_IDS).toContain('assetLibrary');
+		});
+
+		it('does not include public section card ids', () => {
+			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('main');
+			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('messages');
+			expect(ADMIN_EDITOR_CARD_IDS).not.toContain('gallery');
 		});
 	});
 

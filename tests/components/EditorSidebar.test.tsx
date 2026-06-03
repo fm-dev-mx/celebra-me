@@ -259,6 +259,42 @@ describe('EditorSidebar', () => {
 		});
 	});
 
+	describe('onSelectPublicSection callback', () => {
+		it('calls onSelectPublicSection with section id when a public section label is clicked', () => {
+			const onSelectPublicSection = jest.fn();
+			render(
+				<EditorSidebar
+					{...createProps({
+						sectionOrder: ['quote', 'family', 'gifts'],
+						onSelectPublicSection,
+					})}
+				/>,
+			);
+			fireEvent.click(screen.getByText('Frase'));
+			expect(onSelectPublicSection).toHaveBeenCalledWith('quote');
+		});
+
+		it('calls onSelectPublicSection when a public section without editorCardId is clicked', () => {
+			const onSelectPublicSection = jest.fn();
+			render(
+				<EditorSidebar
+					{...createProps({
+						sectionOrder: ['countdown', 'quote'],
+						onSelectPublicSection,
+					})}
+				/>,
+			);
+			fireEvent.click(screen.getByText('Cuenta regresiva'));
+			expect(onSelectPublicSection).toHaveBeenCalledWith('countdown');
+		});
+
+		it('does not crash when onSelectPublicSection is not provided', () => {
+			render(<EditorSidebar {...createProps({ onSelectPublicSection: undefined })} />);
+			fireEvent.click(screen.getByText('Frase'));
+			// No crash expected
+		});
+	});
+
 	describe('required sections cannot be hidden', () => {
 		it('does not render a visibility toggle button for hero (required)', () => {
 			render(<EditorSidebar {...createProps()} />);
