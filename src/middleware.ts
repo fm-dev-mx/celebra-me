@@ -7,6 +7,7 @@ import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
+import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 
 interface CookieStore {
 	get(name: string): { value: string } | undefined;
@@ -247,6 +248,20 @@ function buildSessionFromUser(
 	};
 }
 
+function computeMfaBypass(authContext: AuthContext): {
+	hasDevMfaBypass: boolean;
+	effectiveAdminStrongAuth: boolean;
+} {
+	const hasDevMfaBypass =
+		!authContext.hasAdminStrongAuth &&
+		authContext.role === 'super_admin' &&
+		isDevMfaBypassEnabled();
+	return {
+		hasDevMfaBypass,
+		effectiveAdminStrongAuth: authContext.hasAdminStrongAuth || hasDevMfaBypass,
+	};
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
@@ -284,7 +299,10 @@ async function handleProtectedAuthRequest(
 		return redirect('/login');
 	}
 
-	if (authContext.role === 'super_admin' && !authContext.hasAdminStrongAuth) {
+	const trustCookie = cookies.get('sb-trust-device')?.value || '';
+	const { hasDevMfaBypass, effectiveAdminStrongAuth } = computeMfaBypass(authContext);
+
+	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);
 	}
 
@@ -292,16 +310,15 @@ async function handleProtectedAuthRequest(
 		const redirectTarget = resolveAuthenticatedRedirect(
 			url.pathname,
 			authContext.role,
-			authContext.hasAdminStrongAuth,
+			effectiveAdminStrongAuth,
 		);
 		if (redirectTarget) return redirect(redirectTarget);
 	}
 
-	const trustCookie = cookies.get('sb-trust-device')?.value || '';
 	syncPostAuthCookies(cookies, authContext, trustCookie, now);
 
 	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
-	locals.hasAdminStrongAuth = authContext.hasAdminStrongAuth;
+	locals.hasAdminStrongAuth = effectiveAdminStrongAuth;
 
 	return next();
 }

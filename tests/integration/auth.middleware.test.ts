@@ -253,4 +253,105 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockNext).toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
+
+	describe('MFA bypass (DEV_MFA_BYPASS)', () => {
+		let originalDevMfaBypass: string | undefined;
+		let originalNodeEnv: string | undefined;
+
+		beforeEach(() => {
+			originalDevMfaBypass = process.env.DEV_MFA_BYPASS;
+			originalNodeEnv = process.env.NODE_ENV;
+			delete process.env.VERCEL;
+			delete process.env.VERCEL_ENV;
+		});
+
+		afterEach(() => {
+			process.env.DEV_MFA_BYPASS = originalDevMfaBypass;
+			process.env.NODE_ENV = originalNodeEnv;
+		});
+
+		it('skips MFA redirect for superadmin aal1 with bypass active', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			process.env.NODE_ENV = 'development';
+
+			const context = createContext('/dashboard/invitados');
+			mockCookies.get.mockReturnValue({ value: 'admin-token' });
+			mockSupabaseResponse({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockNext).toHaveBeenCalled();
+			expect(mockRedirect).not.toHaveBeenCalled();
+			expect(context.locals.hasAdminStrongAuth).toBe(true);
+		});
+
+		it('redirects superadmin from /dashboard/mfa-setup to /dashboard/admin with bypass', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			process.env.NODE_ENV = 'development';
+
+			const context = createContext('/dashboard/mfa-setup');
+			mockCookies.get.mockImplementation((name: string) => {
+				if (name === 'sb-access-token') return { value: 'admin-token' };
+				if (name === 'sb-refresh-token') return { value: 'refresh-token' };
+				return null;
+			});
+			mockSupabaseResponse({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/admin');
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
+		it('still redirects to MFA setup when bypass active but Supabase is remote', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			process.env.NODE_ENV = 'development';
+			process.env.SUPABASE_URL = 'https://project.supabase.co';
+
+			const context = createContext('/dashboard/invitados');
+			mockCookies.get.mockReturnValue({ value: 'admin-token' });
+			mockSupabaseResponse({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
+		it('still redirects host_client on admin-only paths even with bypass active', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			process.env.NODE_ENV = 'development';
+
+			const context = createContext('/dashboard/usuarios');
+			mockCookies.get.mockReturnValue({ value: 'host-token' });
+			mockSupabaseResponse({
+				id: 'host-1',
+				app_metadata: { role: 'host_client' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
+		});
+
+		it('still redirects unauthenticated user to /login even with bypass active', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			process.env.NODE_ENV = 'development';
+
+			const context = createContext('/dashboard/invitados');
+			mockCookies.get.mockReturnValue(null);
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/login');
+		});
+	});
 });

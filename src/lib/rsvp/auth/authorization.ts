@@ -8,6 +8,11 @@ import {
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { getEnv } from '@/lib/server/env';
+import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
+
+function hasEffectiveAdminStrongAuth(session: SessionContext): boolean {
+	return session.isSuperAdmin && isDevMfaBypassEnabled();
+}
 
 function getTrustedDeviceCookie(request: Request): string {
 	const cookieHeader = request.headers.get('cookie');
@@ -42,6 +47,10 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 	});
 
 	if (hasMfa) {
+		return session;
+	}
+
+	if (hasEffectiveAdminStrongAuth(session)) {
 		return session;
 	}
 
@@ -120,12 +129,12 @@ export function requireAdminStrongDashboardSessionFromLocals(
 	locals: LocalsWithAdminAuth,
 ): SessionContext {
 	const session = requireAdminDashboardSessionFromLocals(locals);
-	if (!locals.hasAdminStrongAuth) {
-		throw new ApiError(
-			403,
-			'forbidden',
-			'Strong authentication (MFA or trusted device) is required to access this resource.',
-		);
+	if (locals.hasAdminStrongAuth || hasEffectiveAdminStrongAuth(session)) {
+		return session;
 	}
-	return session;
+	throw new ApiError(
+		403,
+		'forbidden',
+		'Strong authentication (MFA or trusted device) is required to access this resource.',
+	);
 }
