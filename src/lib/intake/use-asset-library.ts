@@ -26,7 +26,25 @@ interface UseAssetLibraryResult {
 	refresh: () => Promise<void>;
 }
 
-export function useAssetLibrary(invitationId: string): UseAssetLibraryResult {
+function assetUrl(invitationId: string, filter: string): string {
+	return `/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets?filter=${encodeURIComponent(filter)}`;
+}
+
+async function fetchAssets(
+	invitationId: string,
+	filter: string,
+	signal?: { cancelled: boolean },
+): Promise<{ assets: AssetItem[] } | null> {
+	const response = await fetch(assetUrl(invitationId, filter));
+	const result = await response.json();
+	if (!response.ok) {
+		throw new Error(result?.error?.message || 'Error al cargar la biblioteca.');
+	}
+	if (signal?.cancelled) return null;
+	return { assets: result.data?.assets ?? result.assets ?? [] };
+}
+
+export function useAssetLibrary(invitationId: string, filter = 'active'): UseAssetLibraryResult {
 	const [assets, setAssets] = useState<AssetItem[]>([]);
 	const [loading, setLoading] = useState(() => Boolean(invitationId));
 	const [error, setError] = useState('');
@@ -38,50 +56,38 @@ export function useAssetLibrary(invitationId: string): UseAssetLibraryResult {
 			setError('');
 			return;
 		}
-		let cancelled = false;
+		const signal = { cancelled: false };
 		setLoading(true);
 		setError('');
 
-		fetch(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets`)
-			.then(async (response) => {
-				const result = await response.json();
-				if (!response.ok) {
-					throw new Error(result?.error?.message || 'Error al cargar la biblioteca.');
-				}
-				if (!cancelled) {
-					setAssets(result.data?.assets ?? result.assets ?? []);
-				}
-			})
-			.catch((err) => {
-				if (!cancelled) {
-					setError(err instanceof Error ? err.message : 'Error de red.');
-				}
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [invitationId]);
-
-	const refresh = () => {
-		if (!invitationId) return Promise.resolve();
-		setLoading(true);
-		setError('');
-		return fetch(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets`)
-			.then(async (response) => {
-				const result = await response.json();
-				if (!response.ok) {
-					throw new Error(result?.error?.message || 'Error al cargar la biblioteca.');
-				}
-				setAssets(result.data?.assets ?? result.assets ?? []);
+		fetchAssets(invitationId, filter, signal)
+			.then((data) => {
+				if (data) setAssets(data.assets);
 			})
 			.catch((err) => {
 				setError(err instanceof Error ? err.message : 'Error de red.');
 			})
-			.finally(() => setLoading(false));
+			.finally(() => {
+				if (!signal.cancelled) setLoading(false);
+			});
+
+		return () => {
+			signal.cancelled = true;
+		};
+	}, [filter, invitationId]);
+
+	const refresh = async () => {
+		if (!invitationId) return;
+		setLoading(true);
+		setError('');
+		try {
+			const data = await fetchAssets(invitationId, filter);
+			if (data) setAssets(data.assets);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Error de red.');
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return { assets, loading, error, refresh };
