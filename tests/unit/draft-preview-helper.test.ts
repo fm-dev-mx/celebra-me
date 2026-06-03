@@ -1,7 +1,16 @@
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
+import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import type { Invitation, DemoPreset } from '@/lib/intake/types';
+
+jest.mock('@/lib/intake/repositories/asset.repository', () => ({
+	findAssetsByInvitationId: jest.fn(),
+}));
+
+jest.mock('@/lib/intake/storage', () => ({
+	getPublicUrl: (bucket: string, path: string) => `https://cdn.test/${bucket}/${path}`,
+}));
 
 jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	adaptDbEvent: jest.fn(),
@@ -11,6 +20,9 @@ jest.mock('@/lib/invitation/page-data', () => ({
 	buildPageContextFromViewModel: jest.fn(),
 }));
 
+const mockFindAssets = findAssetsByInvitationId as jest.MockedFunction<
+	typeof findAssetsByInvitationId
+>;
 const mockAdaptDbEvent = adaptDbEvent as jest.MockedFunction<typeof adaptDbEvent>;
 const mockBuildPageContext = buildPageContextFromViewModel as jest.MockedFunction<
 	typeof buildPageContextFromViewModel
@@ -64,109 +76,84 @@ const demoPreset: DemoPreset = {
 	previewSlug: 'demo-xv-enchanted-rose',
 };
 
-function makeProject(overrides?: Partial<Invitation>): Invitation {
-	return {
-		id: '01548214-bc22-4141-ba61-f36c27cd8627',
-		kind: 'client',
-		sourceInvitationId: null,
-		title: 'XV Años — Ayrin Samantha',
-		eventType: 'xv',
-		baseDemoId: 'demo-xv-enchanted-rose',
-		themeId: 'enchanted-rose',
-		status: 'draft',
-		slug: null,
-		snapshot: demoPreset,
-		clientName: 'Ayrin Samantha',
-		clientEmail: 'ayrin@example.com',
-		clientWhatsapp: '+521234567890',
-		photosReceived: false,
-		createdBy: 'user-1',
-		archivedAt: null,
-		createdAt: '2026-05-28T14:00:00Z',
-		updatedAt: '2026-05-28T14:00:00Z',
-		...overrides,
-	};
-}
-
-const validDemoContent = {
+const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
+	id: 'test-invitation-id',
+	kind: 'client',
+	sourceInvitationId: null,
+	slug: 'demo-xv-enchanted-rose',
+	title: 'XV Años — Ayrin Samantha',
 	eventType: 'xv',
-	title: 'XV Años — Enchanted Rose Demo',
-	theme: { fontFamily: 'serif', preset: 'enchanted-rose' },
-	hero: {
-		name: 'Isabella Rose',
-		label: 'Mis XV Años',
-		date: '2027-11-20T20:00:00.000Z',
-		backgroundImage: 'hero',
-		portrait: 'portrait',
-	},
-};
+	status: 'in_production',
+	baseDemoId: 'demo-xv-enchanted-rose',
+	themeId: 'enchanted-rose',
+	snapshot: demoPreset,
+	clientName: '',
+	clientEmail: '',
+	clientWhatsapp: '',
+	photosReceived: false,
+	createdBy: null,
+	archivedAt: null,
+	createdAt: '2026-01-01T00:00:00.000Z',
+	updatedAt: '2026-01-01T00:00:00.000Z',
+	...overrides,
+});
 
 const validDraftContent = {
 	title: 'XV Años — Ayrin Samantha',
-	description: 'Una noche mágica',
+	description: 'Una celebración especial',
 	hero: {
 		name: 'Ayrin Samantha',
 		secondaryName: '',
 		label: 'Mis XV Años',
-		nickname: 'Ayrin',
-		date: '2027-12-15T18:00:00Z',
+		nickname: '',
+		date: '2026-06-15T20:00:00.000Z',
 	},
-};
+} satisfies Parameters<typeof buildDraftPreviewPageContext>[1];
+
+const validDemoContent = {
+	hero: {
+		name: 'Demo Celebrant',
+		backgroundImage: 'hero',
+		portrait: 'portrait',
+	},
+} satisfies Parameters<typeof buildDraftPreviewPageContext>[2];
 
 const mockViewModel = {
-	id: 'demo-xv-enchanted-rose',
-	isDemo: false,
-	title: 'Preview',
-	description: 'Preview description',
-	theme: { preset: 'enchanted-rose' as const, themeClass: 'theme-preset--enchanted-rose' },
+	id: 'test-slug',
+	title: 'XV Años — Ayrin Samantha',
+	theme: { preset: 'enchanted-rose', themeClass: 'theme-preset--enchanted-rose' },
 	hero: {
 		name: 'Ayrin Samantha',
-		label: 'Mis XV Años',
-		date: '2027-12-15T18:00:00Z',
-		variant: 'enchanted-rose' as const,
-		backgroundImage: { src: '/test-hero.jpg', alt: 'Test' },
+		date: '2026-06-15T20:00:00.000Z',
+		backgroundImage: { src: '/hero.webp', alt: 'Portada' },
 	},
 	envelope: { enabled: false },
 	brandingVisibility: {
 		showFooterBranding: true,
-		showContactCta: true,
+		showContactCta: false,
 		showThankYouBranding: true,
 	},
 	sections: {},
-	navigation: [],
-	interludes: [],
-};
+} as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];
 
-const mockPageContext: ReturnType<typeof buildPageContextFromViewModel> = {
-	viewModel: mockViewModel as never,
-	guestContext: null,
-	isDemoPreview: false,
-	layout: { title: 'Preview', description: '', image: '' },
-	wrapper: {
-		className: 'event-theme-wrapper',
-		showEnvelope: false,
-		dataAttributes: {},
-		scopedStyles: '',
-	},
-	guestName: undefined,
-	heroTime: undefined,
-	heroVenueName: undefined,
-	envelope: undefined,
-	footerVariant: 'enchanted-rose' as never,
-	renderPlan: [],
-};
+const mockPageContext = {
+	viewModel: mockViewModel,
+	layout: { className: '', description: '', image: '' },
+	wrapper: { className: '', dataAttributes: {}, scopedStyles: '', showEnvelope: false },
+} as unknown as ReturnType<typeof buildPageContextFromViewModel>;
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockFindAssets.mockResolvedValue([]);
 	mockAdaptDbEvent.mockReturnValue(mockViewModel);
 	mockBuildPageContext.mockReturnValue(mockPageContext);
 });
 
 describe('buildDraftPreviewPageContext', () => {
-	it('builds a preview context from draft + demo content', () => {
+	it('builds a preview context from draft + demo content', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(
+		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
 			validDemoContent,
@@ -180,10 +167,10 @@ describe('buildDraftPreviewPageContext', () => {
 		}
 	});
 
-	it('passes correct args to adaptDbEvent', () => {
+	it('passes correct args to adaptDbEvent', async () => {
 		const invitation = makeProject();
 
-		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
@@ -193,10 +180,10 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.content).toBeDefined();
 	});
 
-	it('calls buildPageContextFromViewModel with isPreview=true', () => {
+	it('calls buildPageContextFromViewModel with isPreview=true', async () => {
 		const invitation = makeProject();
 
-		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockBuildPageContext).toHaveBeenCalledTimes(1);
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
@@ -205,13 +192,13 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.eventType).toBe('xv');
 	});
 
-	it('returns RENDER_FAILED when adaptDbEvent throws', () => {
+	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {
 		const invitation = makeProject();
 		mockAdaptDbEvent.mockImplementation(() => {
 			throw new Error('Asset resolution failed');
 		});
 
-		const result = buildDraftPreviewPageContext(
+		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
 			validDemoContent,
@@ -223,10 +210,10 @@ describe('buildDraftPreviewPageContext', () => {
 		}
 	});
 
-	it('uses invitation slug for content identity and demo slug for asset resolution', () => {
+	it('uses invitation slug for content identity and demo slug for asset resolution', async () => {
 		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
 
-		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
@@ -234,38 +221,38 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
 	});
 
-	it('falls back to demo previewSlug for client invitations without a slug', () => {
+	it('falls back to demo previewSlug for client invitations without a slug', async () => {
 		const invitation = makeProject({ slug: null });
 
-		buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
 		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
 	});
 
-	it('succeeds with empty demo content (missing event-demos entry)', () => {
+	it('succeeds with empty demo content (missing event-demos entry)', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(invitation, validDraftContent, {});
+		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 	});
 
-	it('succeeds with empty draft content (no draft saved yet)', () => {
+	it('succeeds with empty draft content (no draft saved yet)', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(invitation, {}, validDemoContent);
+		const result = await buildDraftPreviewPageContext(invitation, {}, validDemoContent);
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 	});
 
-	it('succeeds when both draft and demo content are empty', () => {
+	it('succeeds when both draft and demo content are empty', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(invitation, {}, {});
+		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
@@ -273,10 +260,10 @@ describe('buildDraftPreviewPageContext', () => {
 });
 
 describe('content mapping behavior', () => {
-	it('uses draft content when available', () => {
+	it('uses draft content when available', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(
+		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
 			validDemoContent,
@@ -288,13 +275,13 @@ describe('content mapping behavior', () => {
 		expect((callContent.hero as Record<string, unknown>).name).toBe('Ayrin Samantha');
 	});
 
-	it('returns error when adaptDbEvent throws during build', () => {
+	it('returns error when adaptDbEvent throws during build', async () => {
 		const invitation = makeProject();
 		mockAdaptDbEvent.mockImplementation(() => {
 			throw new Error('Draft render failed');
 		});
 
-		const result = buildDraftPreviewPageContext(
+		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
 			validDemoContent,
@@ -305,10 +292,10 @@ describe('content mapping behavior', () => {
 		}
 	});
 
-	it('succeeds with content containing only a hero field', () => {
+	it('succeeds with content containing only a hero field', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(
+		const result = await buildDraftPreviewPageContext(
 			invitation,
 			{ hero: { name: 'Published Hero' } },
 			validDemoContent,
@@ -316,10 +303,10 @@ describe('content mapping behavior', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('is resilient to missing event-demos entry (empty demo content)', () => {
+	it('is resilient to missing event-demos entry (empty demo content)', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(invitation, validDraftContent, {});
+		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
 
 		expect(result.ok).toBe(true);
 		const callContent = mockAdaptDbEvent.mock.calls[0][0].content as Record<string, unknown>;
@@ -328,26 +315,63 @@ describe('content mapping behavior', () => {
 		expect((callContent.hero as Record<string, unknown>).name).toBe('Ayrin Samantha');
 	});
 
-	it('handles empty previewSlug without crashing', () => {
+	it('handles empty previewSlug without crashing', async () => {
 		const invitation = makeProject({
 			slug: null,
 			snapshot: { ...demoPreset, previewSlug: '' },
 		});
 
-		const result = buildDraftPreviewPageContext(invitation, {}, {});
+		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 	});
 
-	it('renders default preview when neither draft nor published content exists', () => {
+	it('renders default preview when neither draft nor published content exists', async () => {
 		const invitation = makeProject();
 
-		const result = buildDraftPreviewPageContext(invitation, {}, {});
+		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
 		expect(result.ok).toBe(true);
 		const callContent = mockAdaptDbEvent.mock.calls[0][0].content;
 		expect(callContent.title).toBe('XV Años — Ayrin Samantha');
 		expect(callContent.hero).toBeDefined();
+	});
+
+	it('resolves uploaded asset refs before mapping', async () => {
+		const invitation = makeProject();
+		const draftWithUploaded = {
+			...validDraftContent,
+			gallery: {
+				items: [
+					{
+						image: {
+							type: 'uploaded' as const,
+							assetId: '00000000-0000-0000-0000-000000000001',
+						},
+						caption: 'Test',
+					},
+				],
+			},
+		};
+		mockFindAssets.mockResolvedValue([
+			{
+				id: '00000000-0000-0000-0000-000000000001',
+				invitationId: invitation.id,
+				displayName: 'test',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/test/original/test.webp',
+				mimeType: 'image/webp',
+				width: 800,
+				height: 600,
+				fileSize: 12345,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		]);
+
+		await buildDraftPreviewPageContext(invitation, draftWithUploaded, validDemoContent);
+
+		expect(mockFindAssets).toHaveBeenCalledWith(invitation.id);
 	});
 });

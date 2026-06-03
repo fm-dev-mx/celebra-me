@@ -212,6 +212,9 @@ export default [
 			// Tests may use console in debugging; keep warn but allow log if you want.
 			// If you prefer strict, leave as-is.
 			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+
+			// Test files may be long (comprehensive data-driven scenarios)
+			'max-lines': 'off',
 		},
 	},
 	// ------------------------------------------------------------

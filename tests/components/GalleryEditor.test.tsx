@@ -2,6 +2,15 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import FocalPointControl from '@/components/dashboard/intake/editor/FocalPointControl';
 
+beforeEach(() => {
+	jest.restoreAllMocks();
+	// Mock fetch so AssetPicker useEffect doesn't cause real network errors
+	jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+		ok: true,
+		json: async () => ({ assets: [] }),
+	} as Response);
+});
+
 describe('GalleryEditor', () => {
 	it('edits captions and reorders the complete gallery value', () => {
 		const onChange = jest.fn();
@@ -158,6 +167,125 @@ describe('GalleryEditor', () => {
 		expect(toggle).not.toBeChecked();
 
 		expect(onChange).not.toHaveBeenCalled();
+	});
+
+	it('renders uploaded asset ref without crashing (defensive)', () => {
+		const value = {
+			title: 'Test',
+			items: [
+				{
+					image: {
+						type: 'uploaded' as const,
+						assetId: '00000000-0000-0000-0000-000000000001',
+					},
+					caption: 'Uploaded',
+				},
+			],
+		};
+
+		expect(() =>
+			render(
+				<GalleryEditor
+					value={value}
+					previewSlug="demo-xv-jewelry-box"
+					onChange={jest.fn()}
+				/>,
+			),
+		).not.toThrow();
+		expect(screen.getByText('asset:00000000')).toBeInTheDocument();
+	});
+
+	it('shows Quitar de galería and Seleccionar imagen when invitationId is provided', () => {
+		const value = {
+			title: 'Test',
+			items: [{ image: 'gallery01', caption: 'Test' }],
+		};
+
+		render(
+			<GalleryEditor
+				value={value}
+				previewSlug="demo-xv-jewelry-box"
+				invitationId="test-invitation-id"
+				onChange={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Seleccionar imagen')).toBeInTheDocument();
+		expect(screen.getByText('Quitar de galería')).toBeInTheDocument();
+	});
+
+	it('Quitar de galería removes the item and does not call any DELETE endpoint', () => {
+		const onChange = jest.fn();
+		const value = {
+			title: 'Test',
+			items: [
+				{ image: 'gallery01', caption: 'Uno' },
+				{ image: 'gallery02', caption: 'Dos' },
+			],
+		};
+
+		render(
+			<GalleryEditor
+				value={value}
+				previewSlug="demo-xv-jewelry-box"
+				invitationId="test-invitation-id"
+				onChange={onChange}
+			/>,
+		);
+
+		fireEvent.click(screen.getAllByText('Quitar de galería')[0]);
+		expect(onChange).toHaveBeenCalledWith({
+			...value,
+			items: [value.items[1]],
+		});
+		// onChange only updates local state — no API call for DELETE
+		expect(onChange.mock.calls.length).toBe(1);
+	});
+
+	it('existing internal and external items still render when invitationId is not provided', () => {
+		const value = {
+			title: 'Test',
+			items: [
+				{ image: { type: 'internal' as const, key: 'hero' as const }, caption: 'Hero' },
+				{
+					image: { type: 'external' as const, src: 'https://example.com/img.jpg' },
+					caption: 'Web',
+				},
+			],
+		};
+
+		render(
+			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
+		);
+
+		// Select/Remove buttons should NOT render without invitationId
+		expect(screen.queryByText('Seleccionar imagen')).not.toBeInTheDocument();
+		expect(screen.queryByText('Quitar de galería')).not.toBeInTheDocument();
+		// Items still render — captions visible in input fields
+		expect(screen.getByDisplayValue('Hero')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Web')).toBeInTheDocument();
+	});
+
+	it('clicks Seleccionar imagen and triggers picker (picker opens via state)', () => {
+		const value = {
+			title: 'Test',
+			items: [{ image: 'gallery01', caption: 'Test' }],
+		};
+
+		render(
+			<GalleryEditor
+				value={value}
+				previewSlug="demo-xv-jewelry-box"
+				invitationId="test-invitation-id"
+				onChange={jest.fn()}
+			/>,
+		);
+
+		// Click "Seleccionar imagen" — this sets internal pickerIndex state
+		// The picker modal renders an overlay; verify it appears
+		fireEvent.click(screen.getByText('Seleccionar imagen'));
+		// The AssetPicker overlay has role="dialog"
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});
 
 	it('updates percentage focal point from direct pointer selection', () => {

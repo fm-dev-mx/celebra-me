@@ -5,6 +5,14 @@ import InvitationEditor, {
 } from '@/components/dashboard/intake/editor/InvitationEditor';
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
 
+beforeEach(() => {
+	// Suppress asset library fetch calls from AssetLibraryPanel/AssetPicker
+	jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+		ok: true,
+		json: async () => ({ assets: [] }),
+	} as Response);
+});
+
 let saveSection: jest.Mock;
 let saveMetadata: jest.Mock;
 const publish = jest.fn();
