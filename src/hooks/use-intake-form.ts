@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { IntakeBlockType } from '@/lib/intake/types';
 import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
+import { getCsrfToken } from '@/lib/csrf';
 
 interface UseIntakeFormProps {
 	mode?: 'client' | 'admin';
@@ -45,10 +46,8 @@ export function useIntakeForm({
 	}
 	const mutationHeaders = (): Record<string, string> => {
 		const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-		if (mode === 'admin' && typeof document !== 'undefined') {
-			const csrfToken = document
-				.querySelector('meta[name="csrf-token"]')
-				?.getAttribute('content');
+		if (mode === 'admin') {
+			const csrfToken = getCsrfToken();
 			if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
 		}
 		return headers;

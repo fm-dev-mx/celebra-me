@@ -360,6 +360,38 @@ export class AdminApi {
 		return this.handleResponse(result).rsvpLink;
 	}
 
+	// Asset library
+	async listAssets(invitationId: string): Promise<{ assets: Array<Record<string, unknown>> }> {
+		const result = await dashboardApi.get<{ assets: Array<Record<string, unknown>> }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets`,
+		);
+		return this.handleResponse(result);
+	}
+
+	async uploadAsset(
+		invitationId: string,
+		file: File,
+		displayName?: string,
+		defaultAltText?: string,
+	): Promise<Record<string, unknown>> {
+		const formData = new FormData();
+		formData.append('file', file);
+		if (displayName) formData.append('displayName', displayName);
+		if (defaultAltText) formData.append('defaultAltText', defaultAltText);
+		const result = await dashboardApi.upload<Record<string, unknown>>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets/upload`,
+			formData,
+		);
+		return this.handleResponse(result);
+	}
+
+	async deleteAsset(invitationId: string, assetId: string): Promise<{ success: boolean }> {
+		const result = await dashboardApi.delete<{ success: boolean }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets/${encodeURIComponent(assetId)}`,
+		);
+		return this.handleResponse(result);
+	}
+
 	// Delete / Restore
 	async archiveInvitation(invitationId: string): Promise<{ success: boolean }> {
 		const result = await dashboardApi.post<{ success: boolean }>(

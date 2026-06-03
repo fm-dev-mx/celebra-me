@@ -4,19 +4,9 @@ import {
 	type ApiResponse,
 	type ApiErrorResponse,
 } from '@/lib/api-client-shared';
+import { getCsrfToken } from '@/lib/csrf';
 
 export { type ApiResult, type ApiResponse, type ApiErrorResponse };
-
-/**
- * Reads the CSRF token from the page metadata.
- * The server must include: <meta name="csrf-token" content="TOKEN">
- */
-function getCsrfToken(): string | undefined {
-	if (typeof document === 'undefined') return undefined;
-
-	const meta = document.querySelector('meta[name="csrf-token"]');
-	return meta?.getAttribute('content') || undefined;
-}
 
 export class DashboardApiClient {
 	private baseUrl: string;
@@ -86,6 +76,20 @@ export class DashboardApiClient {
 			method: 'DELETE',
 			...init,
 			headers: this.prepareMutationHeaders(init),
+		});
+	}
+
+	async upload<T>(path: string, formData: FormData): Promise<ApiResult<T>> {
+		const csrfToken = getCsrfToken();
+		const headers: Record<string, string> = {};
+		if (csrfToken) {
+			headers['X-CSRF-Token'] = csrfToken;
+		}
+		// Do NOT set Content-Type — browser sets it with boundary for FormData
+		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+			method: 'POST',
+			headers,
+			body: formData,
 		});
 	}
 }
