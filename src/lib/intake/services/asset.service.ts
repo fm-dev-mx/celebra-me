@@ -112,15 +112,19 @@ export async function deleteAsset(invitationId: string, assetId: string): Promis
 	const usage = await collectAssetUsage(invitationId, assetId);
 
 	if (usage.usedInDraft || usage.usedInPublished) {
-		const sections = [
-			...usage.draftRefs.map((r) => r.section),
-			...usage.publishedRefs.map((r) => r.section),
+		const refs = [
+			...usage.draftRefs.map((r) => r.path),
+			...usage.publishedRefs.map((r) => r.path),
 		];
-		const uniqueSections = [...new Set(sections)];
 		throw new ApiError(
 			409,
 			'conflict',
-			`No se puede eliminar: la imagen está siendo utilizada en las siguientes secciones: ${uniqueSections.join(', ')}.`,
+			`No se puede eliminar: la imagen está siendo utilizada en las siguientes secciones: ${[...new Set(refs)].join(', ')}.`,
+			{
+				sectionRefs: refs,
+				usedInDraft: usage.usedInDraft,
+				usedInPublished: usage.usedInPublished,
+			},
 		);
 	}
 
