@@ -5,7 +5,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
+import { CONTENT_SECTION_KEYS, THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 
@@ -64,18 +64,6 @@ export interface InvitationPageContext {
 		| undefined;
 	footerVariant: ThemePreset;
 }
-
-const DEFAULT_SECTION_ORDER: Array<keyof InvitationViewModel['sections']> = [
-	'quote',
-	'family',
-	'gallery',
-	'countdown',
-	'location',
-	'itinerary',
-	'rsvp',
-	'gifts',
-	'thankYou',
-];
 
 const DEFAULT_THEME_PRESET: ThemePreset = THEME_PRESETS[0];
 
@@ -191,7 +179,7 @@ export function buildInvitationRenderPlan(
 			appendSectionWithInterludes(items, viewModel, section);
 		}
 	} else {
-		for (const section of DEFAULT_SECTION_ORDER) {
+		for (const section of CONTENT_SECTION_KEYS) {
 			if (!hasRenderableSection(viewModel, section)) continue;
 
 			if (section === 'rsvp' && showPersonalizedAccess) {

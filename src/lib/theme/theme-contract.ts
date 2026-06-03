@@ -3,11 +3,11 @@ export type EventType = (typeof EVENT_TYPES)[number];
 
 export const CONTENT_SECTION_KEYS = [
 	'quote',
+	'family',
+	'gallery',
 	'countdown',
 	'location',
-	'family',
 	'itinerary',
-	'gallery',
 	'rsvp',
 	'gifts',
 	'thankYou',
