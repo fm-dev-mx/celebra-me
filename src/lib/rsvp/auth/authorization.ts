@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { sanitize, parseCookieHeader } from '@/lib/rsvp/core/utils';
 import {
 	requireSessionContext,
 	type SessionContext,
@@ -7,30 +8,6 @@ import {
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { getEnv } from '@/lib/server/env';
-
-function sanitize(value: unknown, maxLen = 4096): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
-function parseCookieHeader(cookieHeader: string | null): Record<string, string> {
-	if (!cookieHeader) return {};
-	return cookieHeader
-		.split(';')
-		.map((part) => part.trim())
-		.filter(Boolean)
-		.reduce(
-			(acc, part) => {
-				const separator = part.indexOf('=');
-				if (separator <= 0) return acc;
-				const key = decodeURIComponent(part.slice(0, separator).trim());
-				const value = decodeURIComponent(part.slice(separator + 1).trim());
-				acc[key] = value;
-				return acc;
-			},
-			{} as Record<string, string>,
-		);
-}
 
 function getTrustedDeviceCookie(request: Request): string {
 	const cookieHeader = request.headers.get('cookie');
@@ -41,10 +18,6 @@ function getTrustedDeviceCookie(request: Request): string {
 function isFreshMfaRequired(): boolean {
 	const value = sanitize(getEnv('REQUIRE_FRESH_MFA_FOR_ADMIN'), 10).toLowerCase();
 	return value === 'true' || value === '1';
-}
-
-export async function requireAuthenticatedSession(request: Request): Promise<SessionContext> {
-	return requireSessionContext(request);
 }
 
 export async function requireAdminSession(request: Request): Promise<SessionContext> {
@@ -107,10 +80,6 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 	}
 
 	return session;
-}
-
-export async function requireHostOrAdminSession(request: Request): Promise<SessionContext> {
-	return requireSessionContext(request);
 }
 
 // ---------------------------------------------------------------------------

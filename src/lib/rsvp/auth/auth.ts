@@ -1,4 +1,5 @@
 import { getEnv } from '@/lib/server/env';
+import { sanitize, parseCookieHeader } from '@/lib/rsvp/core/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { normalizeAppRole, isSuperAdminRole } from '@/lib/rsvp/auth/roles';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
@@ -29,14 +30,9 @@ export interface SessionDebugSnapshot {
 	context: SessionContext | null;
 }
 
-function sanitize(value: unknown, maxLen = 4096): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
 function getTokenFromAuthorizationHeader(authorizationHeader: string | null): string {
 	if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) return '';
-	return sanitize(authorizationHeader.slice('Bearer '.length));
+	return sanitize(authorizationHeader.slice('Bearer '.length), 4096);
 }
 
 function hasBearerAuthorizationHeader(authorizationHeader: string | null): boolean {
@@ -52,27 +48,8 @@ function shouldLogSessionDebug(request: Request): boolean {
 	}
 }
 
-function parseCookieHeader(cookieHeader: string | null): Record<string, string> {
-	if (!cookieHeader) return {};
-	return cookieHeader
-		.split(';')
-		.map((part) => part.trim())
-		.filter(Boolean)
-		.reduce(
-			(acc, part) => {
-				const separator = part.indexOf('=');
-				if (separator <= 0) return acc;
-				const key = decodeURIComponent(part.slice(0, separator).trim());
-				const value = decodeURIComponent(part.slice(separator + 1).trim());
-				acc[key] = value;
-				return acc;
-			},
-			{} as Record<string, string>,
-		);
-}
-
 function getTokenFromCookieMap(cookieMap: Record<string, string>): string {
-	if (cookieMap['sb-access-token']) return sanitize(cookieMap['sb-access-token']);
+	if (cookieMap['sb-access-token']) return sanitize(cookieMap['sb-access-token'], 4096);
 
 	for (const [cookieKey, cookieValue] of Object.entries(cookieMap)) {
 		// supabase-js stores auth data in sb-<project-ref>-auth-token cookie
@@ -83,11 +60,11 @@ function getTokenFromCookieMap(cookieMap: Record<string, string>): string {
 				| [string | null, string | null]
 				| null;
 			if (Array.isArray(parsed)) {
-				const accessToken = sanitize(parsed[0]);
+				const accessToken = sanitize(parsed[0], 4096);
 				if (accessToken) return accessToken;
 			}
 			if (parsed && typeof parsed === 'object' && 'access_token' in parsed) {
-				const accessToken = sanitize(parsed.access_token);
+				const accessToken = sanitize(parsed.access_token, 4096);
 				if (accessToken) return accessToken;
 			}
 		} catch {
@@ -117,7 +94,7 @@ export function resolveAccessTokenSourceFromRequest(
 export async function getSupabaseUserByAccessToken(
 	accessToken: string,
 ): Promise<SupabaseAuthUser | null> {
-	const normalizedToken = sanitize(accessToken);
+	const normalizedToken = sanitize(accessToken, 4096);
 	if (!normalizedToken) return null;
 
 	const supabaseUrl = getEnv('SUPABASE_URL');

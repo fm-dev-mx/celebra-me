@@ -10,6 +10,28 @@ export function sanitize(value: unknown, maxLen = MAX_TEXT_LEN): string {
 }
 
 /**
+ * Parses a raw Cookie header into a key-value map.
+ */
+export function parseCookieHeader(cookieHeader: string | null): Record<string, string> {
+	if (!cookieHeader) return {};
+	return cookieHeader
+		.split(';')
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.reduce(
+			(acc, part) => {
+				const separator = part.indexOf('=');
+				if (separator <= 0) return acc;
+				const key = decodeURIComponent(part.slice(0, separator).trim());
+				const value = decodeURIComponent(part.slice(separator + 1).trim());
+				acc[key] = value;
+				return acc;
+			},
+			{} as Record<string, string>,
+		);
+}
+
+/**
  * Normalizes a guest name for comparison and storage.
  * Removes accents, converts to lowercase, and collapses whitespace.
  */
