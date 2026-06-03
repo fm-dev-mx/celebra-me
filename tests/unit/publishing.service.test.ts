@@ -43,6 +43,7 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
+import * as assetRegistry from '@/lib/assets/asset-registry';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockUpdateProject = updateInvitation as jest.MockedFunction<typeof updateInvitation>;
@@ -485,7 +486,7 @@ describe('publishDraft', () => {
 		await expect(publishDraft('proj-1')).resolves.toBeDefined();
 	});
 
-	it('sets _assetSlug to own slug (not demo previewSlug) for client invitations', async () => {
+	it('sets _assetSlug to snapshot.previewSlug (not public slug) for client invitations', async () => {
 		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
@@ -498,12 +499,10 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.objectContaining({
-					_assetSlug: 'ana-sofia-cota-guillen',
+					_assetSlug: 'demo-xv-jewelry-box',
 				}),
 			}),
 		);
-		const content = (mockUpsertPublished.mock.calls[0][0] as any).content;
-		expect(content._assetSlug).not.toBe('demo-xv-jewelry-box');
 	});
 
 	it('uses previewSlug as _assetSlug for demo invitations', async () => {
@@ -528,5 +527,93 @@ describe('publishDraft', () => {
 				}),
 			}),
 		);
+	});
+
+	it('rejects publish when asset slug does not resolve to a valid event directory', async () => {
+		const projectUnknownSlug = {
+			...baseProject,
+			slug: 'invitacion-desconocida',
+			snapshot: {
+				...baseProject.snapshot,
+				previewSlug: 'inexistent-asset-slug',
+			},
+		};
+		mockGetProject.mockResolvedValue(projectUnknownSlug as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+		});
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('rejects publish when hero backgroundImage key does not resolve in the asset registry', async () => {
+		const spy = jest.spyOn(assetRegistry, 'getEventAsset').mockReturnValue(undefined);
+		try {
+			mockGetProject.mockResolvedValue(baseProject as any);
+			mockFindDraft.mockResolvedValue(validDraft as any);
+			mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+			mockUpdateProject.mockResolvedValue(baseProject as any);
+
+			await expect(publishDraft('proj-1')).rejects.toMatchObject({
+				status: 422,
+				code: 'bad_request',
+			});
+			expect(mockUpsertPublished).not.toHaveBeenCalled();
+		} finally {
+			spy.mockRestore();
+		}
+	});
+
+	it('allows publish when hero backgroundImage is an external URL', async () => {
+		const astroContent = jest.requireMock('astro:content');
+		astroContent.getCollection.mockResolvedValue([
+			{
+				id: 'xv/demo-xv-jewelry-box.json',
+				data: {
+					eventType: 'xv',
+					title: 'Demo Jewelry Box',
+					theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+					hero: {
+						name: 'Lucía García',
+						label: 'Mis XV Años',
+						date: '2026-06-15',
+						backgroundImage: {
+							type: 'external',
+							src: 'https://images.example.com/hero.jpg',
+						},
+						variant: 'jewelry-box',
+					},
+					envelope: { disabled: true, sealStyle: 'wax', microcopy: 'Toca' },
+					gallery: { title: 'Galería', items: [] },
+					location: {},
+					quote: { text: 'Una noche inolvidable' },
+					sectionOrder: [
+						'quote',
+						'family',
+						'gallery',
+						'countdown',
+						'location',
+						'itinerary',
+						'rsvp',
+						'gifts',
+						'thankYou',
+					],
+					interludes: [],
+					sectionStyles: {},
+					navigation: [],
+				},
+			},
+		]);
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		const result = await publishDraft('proj-1');
+		expect(result.draft.status).toBe('approved');
+		expect(mockUpsertPublished).toHaveBeenCalled();
 	});
 });

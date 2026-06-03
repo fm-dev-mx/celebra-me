@@ -24,6 +24,7 @@ import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
+import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -85,6 +86,43 @@ async function synchronizeClientRsvp(
 	});
 }
 
+function resolvePublishAssetSlug(previewSlug: string | undefined): string {
+	if (!previewSlug) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración de la invitación no tiene slug de vista previa.',
+		);
+	}
+	if (!isValidEvent(previewSlug)) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración visual de esta invitación no es válida. No se encontraron los recursos gráficos asociados.',
+		);
+	}
+	return previewSlug;
+}
+
+function assertHeroBackgroundResolvable(
+	publishedContent: Record<string, unknown>,
+	assetSlug: string,
+): void {
+	const hero = publishedContent.hero as
+		| { backgroundImage?: { type?: string; key?: string } }
+		| undefined;
+	if (hero?.backgroundImage?.type === 'internal') {
+		const bgKey = hero.backgroundImage.key;
+		if (bgKey && isEventAssetKey(bgKey) && !getEventAsset(assetSlug, bgKey)) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				'No se pudo resolver la imagen de portada necesaria para publicar. Verifica que los recursos visuales estén completos.',
+			);
+		}
+	}
+}
+
 export async function publishDraft(invitationId: string): Promise<PublishResult> {
 	const invitation = await findInvitationById(invitationId);
 	if (!invitation) {
@@ -118,13 +156,6 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 			'No se encontró la configuración de la invitación para publicar.',
 		);
 	}
-	if (!snapshot.previewSlug) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La configuración de la invitación no tiene slug de vista previa.',
-		);
-	}
 
 	if (invitation.kind === 'client' && !invitation.createdBy) {
 		throw new ApiError(
@@ -137,7 +168,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
 	const publishSlug = getPublicSlug(invitation);
-	const assetSlug = invitation.kind === 'demo' ? snapshot.previewSlug : publishSlug;
+	const assetSlug = resolvePublishAssetSlug(snapshot.previewSlug);
 
 	const mappedContent = mapDraftToPublished({
 		invitation: {
@@ -164,6 +195,8 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		);
 	}
 	const publishedContent = publishedContentResult.data;
+
+	assertHeroBackgroundResolvable(publishedContent, assetSlug);
 
 	const existingPublished = await findPublishedBySlugAndEventType(
 		publishSlug,
