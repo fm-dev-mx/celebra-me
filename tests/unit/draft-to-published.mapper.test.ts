@@ -259,6 +259,32 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('merges venue image from demo content when draft has location data', () => {
+		const demoWithLocation = {
+			...baseDemoContent,
+			location: {
+				ceremony: { image: 'mapCeremony', venueEvent: 'Misa' },
+				reception: { image: 'mapReception', venueEvent: 'Fiesta' },
+			},
+		};
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: demoWithLocation,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
+					reception: { venueName: 'Salon', address: 'Calle 2' },
+				},
+			},
+		});
+
+		expect(result.location).toMatchObject({
+			ceremony: { venueName: 'Iglesia', address: 'Calle 1', image: 'mapCeremony' },
+			reception: { venueName: 'Salon', address: 'Calle 2', image: 'mapReception' },
+		});
+	});
+
 	it('omits sections with empty content', () => {
 		const result = mapDraftToPublished(baseInput);
 

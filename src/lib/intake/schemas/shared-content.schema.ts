@@ -26,6 +26,7 @@ export const venueSchema = z.object({
 	date: optionalText(40),
 	time: optionalText(20),
 	mapUrl: optionalUrl,
+	image: editableAssetSchema.optional(),
 });
 
 export const gallerySchema = z.object({

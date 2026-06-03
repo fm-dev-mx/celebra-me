@@ -21,6 +21,7 @@ type VenueDraft = {
 	date?: string;
 	time?: string;
 	mapUrl?: string;
+	image?: unknown;
 };
 
 function mapFamilyFromDraft(
@@ -73,7 +74,10 @@ function mapFamilyFromDraft(
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function mapVenue(draftVenue: VenueDraft | undefined): Record<string, unknown> | undefined {
+function mapVenue(
+	draftVenue: VenueDraft | undefined,
+	demoVenue?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
 	if (isBlankSection(draftVenue)) return undefined;
 	const result: Record<string, unknown> = {};
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
@@ -82,18 +86,34 @@ function mapVenue(draftVenue: VenueDraft | undefined): Record<string, unknown> |
 	if (str(draftVenue.date)) result.date = str(draftVenue.date);
 	if (str(draftVenue.time)) result.time = str(draftVenue.time);
 	if (str(draftVenue.mapUrl)) result.mapUrl = str(draftVenue.mapUrl);
+	if (draftVenue.image) {
+		result.image = draftVenue.image;
+	} else if (demoVenue?.image) {
+		result.image = demoVenue.image;
+	}
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
+	demoContent?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
-	const ceremony = mapVenue(draftLocation.ceremony);
+
+	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
+
+	const ceremony = mapVenue(
+		draftLocation.ceremony,
+		demoLocation?.ceremony as Record<string, unknown> | undefined,
+	);
 	if (ceremony) result.ceremony = ceremony;
-	const reception = mapVenue(draftLocation.reception);
+	const reception = mapVenue(
+		draftLocation.reception,
+		demoLocation?.reception as Record<string, unknown> | undefined,
+	);
 	if (reception) result.reception = reception;
+
 	if (str(draftLocation.dressCode)) result.dressCode = str(draftLocation.dressCode);
 	if (str(draftLocation.additionalIndications))
 		result.additionalIndications = str(draftLocation.additionalIndications);
@@ -251,7 +271,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 
 	const celebName = str(draftContent.hero?.name) || invitation.title;
 
-	const locationSection = mapLocationFromDraft(draftContent.location);
+	const locationSection = mapLocationFromDraft(draftContent.location, demoContent);
 	const rsvpSection = mapRsvpSection(
 		draftContent.rsvp,
 		demoContent.rsvp as Record<string, unknown> | undefined,
