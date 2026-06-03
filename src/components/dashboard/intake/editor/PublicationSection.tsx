@@ -1,31 +1,12 @@
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
-import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
-import { moveArrayItem } from '@/lib/intake/utils';
 
 interface Props {
 	context: InvitationEditorContextDTO;
-	sectionOrder: NonNullable<InvitationEditorContextDTO['content']['sectionOrder']>;
-	onChange: (
-		sectionOrder: NonNullable<InvitationEditorContextDTO['content']['sectionOrder']>,
-	) => void;
 	onReconcile: () => void;
 	reconciling: boolean;
 	onRestorePublished: () => void;
 	restoring: boolean;
 }
-
-const SECTION_LABELS: Record<(typeof INVITATION_RENDER_SECTION_KEYS)[number], string> = {
-	quote: 'Frase',
-	countdown: 'Cuenta regresiva',
-	location: 'Ubicaciones',
-	family: 'Familia',
-	itinerary: 'Programa',
-	gallery: 'Galería',
-	rsvp: 'Confirmación de asistencia',
-	gifts: 'Mesa de regalos',
-	thankYou: 'Agradecimiento',
-	personalizedAccess: 'Acceso personalizado',
-};
 
 function formatPublicationDate(value: string): string {
 	return new Intl.DateTimeFormat('es-MX', {
@@ -39,17 +20,11 @@ function formatPublicationDate(value: string): string {
 
 export default function PublicationSection({
 	context,
-	sectionOrder,
-	onChange,
 	onReconcile,
 	reconciling,
 	onRestorePublished,
 	restoring,
 }: Props) {
-	const move = (index: number, offset: -1 | 1) => {
-		onChange(moveArrayItem(sectionOrder, index, offset));
-	};
-
 	return (
 		<div className="invitation-editor__stack">
 			<div className="invitation-editor__publication-meta">
@@ -88,34 +63,6 @@ export default function PublicationSection({
 					)}
 				</div>
 			)}
-			<div>
-				<h4>Orden de secciones públicas</h4>
-				<div className="invitation-editor__stack">
-					{sectionOrder.map((section, index) => (
-						<div className="invitation-editor__order-row" key={section}>
-							<span>
-								{index + 1}. {SECTION_LABELS[section]}
-							</span>
-							<div className="invitation-editor__reorder">
-								<button
-									type="button"
-									onClick={() => move(index, -1)}
-									disabled={index === 0}
-								>
-									Subir
-								</button>
-								<button
-									type="button"
-									onClick={() => move(index, 1)}
-									disabled={index === sectionOrder.length - 1}
-								>
-									Bajar
-								</button>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
 		</div>
 	);
 }

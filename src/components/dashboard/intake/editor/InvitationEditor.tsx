@@ -11,6 +11,7 @@ import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
 import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
+import EditorSidebar from '@/components/dashboard/intake/editor/EditorSidebar';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
 import AssetLibraryPanel from '@/components/dashboard/intake/editor/AssetLibraryPanel';
@@ -24,6 +25,10 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import {
+	PUBLIC_SECTION_DEFINITIONS,
+	type PublicSectionId,
+} from '@/lib/intake/invitation-section-registry';
 import {
 	EDITOR_SECTION_PRESENTATION,
 	GIFT_TYPE_LABELS,
@@ -85,20 +90,17 @@ function uniqueSectionPresentation(sections: string[]) {
 	return Array.from(presented.values());
 }
 
-let sectionPathRegex: RegExp | null = null;
 function getSectionPathRegex(): RegExp {
-	if (!sectionPathRegex) {
-		sectionPathRegex = new RegExp(
-			`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
-			'g',
-		);
-	}
-	return sectionPathRegex;
+	return new RegExp(
+		`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
+		'g',
+	);
 }
 
 export function formatPublishErrorMessage(error: unknown): string {
 	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
-	return message.replace(getSectionPathRegex(), (sectionPath) => {
+	const sectionPathRegex = getSectionPathRegex();
+	return message.replace(sectionPathRegex, (sectionPath) => {
 		const key = sectionPath.split(/[.[]/, 1)[0];
 		return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
 	});
@@ -299,6 +301,20 @@ export default function InvitationEditor({ initialContext }: Props) {
 				}
 			}
 			return { source: 'empty', label: SOURCE_LABELS.empty };
+		},
+		[editor.context.sectionStates],
+	);
+
+	const getSectionHasContent = useCallback(
+		(sectionId: string): boolean => {
+			const def = PUBLIC_SECTION_DEFINITIONS[sectionId as PublicSectionId];
+			if (!def) return false;
+			if (def.draftContentKeys.length === 0) return true;
+			return def.draftContentKeys.some(
+				(key) =>
+					editor.context.sectionStates[key] &&
+					editor.context.sectionStates[key] !== 'empty',
+			);
 		},
 		[editor.context.sectionStates],
 	);
@@ -583,57 +599,21 @@ export default function InvitationEditor({ initialContext }: Props) {
 			</header>
 
 			<div className="invitation-editor__layout">
-				<nav className="invitation-editor__nav" aria-label="Secciones del editor">
-					{NAV_ITEMS.map((item) => {
-						const badge = sectionSource(item.id);
-						const isSaving = savingSection === item.id;
-						const hasError = Boolean(errors[item.id]);
-						const itemClasses = [
-							'invitation-editor__nav-item',
-							activeSection === item.id ? 'invitation-editor__nav-item--active' : '',
-							hasError ? 'invitation-editor__nav-item--error' : '',
-						]
-							.filter(Boolean)
-							.join(' ');
-						return (
-							<a href={`#${item.id}`} key={item.id} className={itemClasses}>
-								{badge && (
-									<span
-										className={`invitation-editor__nav-dot invitation-editor__nav-dot--${badge.source}`}
-										title={badge.label}
-										aria-label={`Fuente: ${badge.label}`}
-									/>
-								)}
-								<span className="invitation-editor__nav-label">{item.label}</span>
-								{isSaving && (
-									<span
-										className="invitation-editor__nav-saving"
-										aria-label="guardando"
-									>
-										↻
-									</span>
-								)}
-								{dirty.has(item.id) && !isSaving && (
-									<span
-										className="invitation-editor__nav-dirty"
-										aria-label="con cambios sin guardar"
-									>
-										*
-									</span>
-								)}
-								{hasError && (
-									<span
-										className="invitation-editor__nav-error-icon"
-										aria-label="error al guardar"
-										title={errors[item.id]}
-									>
-										!
-									</span>
-								)}
-							</a>
+				<EditorSidebar
+					activeSection={activeSection}
+					savingSection={savingSection}
+					dirty={dirty}
+					errors={errors}
+					sectionSource={sectionSource}
+					sectionOrder={sectionOrder}
+					onSectionOrderChange={(value) => {
+						updateContent(
+							'sectionOrder',
+							value as unknown as DraftContent['sectionOrder'],
 						);
-					})}
-				</nav>
+					}}
+					getSectionHasContent={getSectionHasContent}
+				/>
 
 				<main className="invitation-editor__content">
 					<SectionCard
@@ -1282,7 +1262,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					<SectionCard
 						id="publication"
 						title="Publicación"
-						description="Orden público, versión vigente y salud del evento RSVP."
+						description="Versión vigente, restauración y salud del evento RSVP."
 						dirty={dirty.has('publication')}
 						saving={savingSection === 'publication'}
 						error={errors.publication}
@@ -1292,8 +1272,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<PublicationSection
 							context={editor.context}
-							sectionOrder={sectionOrder}
-							onChange={(value) => updateContent('sectionOrder', value)}
 							reconciling={editor.reconciling}
 							onReconcile={() => void editor.reconcileRsvp()}
 							restoring={editor.restoring}

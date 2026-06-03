@@ -1679,6 +1679,28 @@
 	}
 }
 
+.invitation-editor__nav-group {
+	display: grid;
+	gap: 0.125rem;
+}
+
+.invitation-editor__nav-group + .invitation-editor__nav-group {
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border-subtle);
+}
+
+.invitation-editor__nav-group-label {
+	display: block;
+	padding: 0.25rem 0.65rem;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--color-text-muted);
+	opacity: 70%;
+}
+
 .invitation-editor__nav-item {
 	display: flex;
 	align-items: center;
@@ -1761,6 +1783,70 @@
 
 .invitation-editor__nav-item--error {
 	background: var(--color-state-error-bg);
+}
+
+.invitation-editor__nav-item--public {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.35rem 0.65rem;
+}
+
+.invitation-editor__nav-public-link {
+	flex: 1;
+	min-width: 0;
+	text-decoration: none;
+	color: inherit;
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+}
+
+.invitation-editor__nav-public-status {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	padding: 0.1rem 0.35rem;
+	border-radius: 4px;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.invitation-editor__nav-public-status--requerida {
+	color: var(--color-state-info-text);
+	background: var(--color-state-info-bg);
+}
+
+.invitation-editor__nav-public-status--visible {
+	color: var(--color-state-success-text);
+	background: var(--color-state-success-bg);
+}
+
+.invitation-editor__nav-public-status--oculta {
+	color: var(--color-state-warning-text);
+	background: var(--color-state-warning-bg);
+}
+
+.invitation-editor__nav-public-status--vacia {
+	color: var(--color-text-muted);
+	background: var(--color-surface-raised);
+}
+
+.invitation-editor__nav-visibility-toggle {
+	padding: 0.2rem 0.45rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 4px;
+	background: var(--color-surface-primary);
+	color: var(--color-text-muted);
+	font: inherit;
+	font-size: 0.6875rem;
+	cursor: pointer;
+	flex-shrink: 0;
+
+	&:hover {
+		background: var(--dashboard-accent-soft-bg);
+		color: var(--color-action-accent);
+	}
 }
 
 .invitation-editor__content,
