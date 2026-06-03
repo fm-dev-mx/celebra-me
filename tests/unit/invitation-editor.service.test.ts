@@ -336,7 +336,10 @@ describe('hydration edge cases', () => {
 		});
 
 		const upsertCallArg = (upsertDraft as jest.Mock).mock.calls[0][0];
-		expect(upsertCallArg.content.gallery).toEqual(value);
+		expect(upsertCallArg.content.gallery).toEqual({
+			title: 'Galería',
+			items: [{ image: { type: 'internal', key: 'gallery01' }, caption: 'Nueva' }],
+		});
 		expect(upsertCallArg.content.title).toBe(published.content.title);
 		expect(upsertCallArg.content.description).toBe(published.content.description);
 		expect(upsertCallArg.content.sectionOrder).toEqual(published.content.sectionOrder);
@@ -362,7 +365,12 @@ describe('saveInvitationEditorSection', () => {
 		});
 
 		expect(updateDraftContentConditionally).toHaveBeenCalledWith('draft-1', draft.updatedAt, {
-			content: expect.objectContaining({ gallery: value }),
+			content: expect.objectContaining({
+				gallery: {
+					title: 'Galería',
+					items: [{ image: { type: 'internal', key: 'gallery02' }, caption: 'Nuevo' }],
+				},
+			}),
 			status: 'draft',
 		});
 		expect(result.value).toEqual(value);

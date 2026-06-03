@@ -29,6 +29,29 @@ beforeEach(() => {
 });
 
 describe('AssetPicker', () => {
+	it('renders loading state', () => {
+		jest.spyOn(globalThis, 'fetch').mockImplementation(
+			() => new Promise(() => undefined) as never,
+		);
+
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
+
+		expect(screen.getByText(/Cargando biblioteca/i)).toBeInTheDocument();
+	});
+
+	it('handles fetch error', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: false,
+			json: async () => ({ error: { message: 'Fallo al cargar la biblioteca.' } }),
+		} as Response);
+
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
+
+		await waitFor(() => {
+			expect(screen.getByText('Fallo al cargar la biblioteca.')).toBeInTheDocument();
+		});
+	});
+
 	it('fetches and displays assets', async () => {
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
 			ok: true,
@@ -53,13 +76,13 @@ describe('AssetPicker', () => {
 		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
 
 		await waitFor(() => {
-			expect(screen.getByText('Usado en borrador')).toBeInTheDocument();
-			expect(screen.getByText('Usado en publicación')).toBeInTheDocument();
+			expect(screen.getByText('Borrador')).toBeInTheDocument();
+			expect(screen.getByText('Publicación')).toBeInTheDocument();
 			expect(screen.getByText('No utilizado')).toBeInTheDocument();
 		});
 	});
 
-	it('returns { type: uploaded, assetId } on selection', async () => {
+	it('returns the selected assetId on selection', async () => {
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
 			ok: true,
 			json: async () => MOCK_ASSETS,
@@ -76,7 +99,7 @@ describe('AssetPicker', () => {
 		expect(onSelect).toHaveBeenCalledWith('asset-1');
 	});
 
-	it('renders empty state correctly', async () => {
+	it('renders empty state with Spanish copy', async () => {
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
 			ok: true,
 			json: async () => ({ assets: [] }),
@@ -85,7 +108,10 @@ describe('AssetPicker', () => {
 		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
 
 		await waitFor(() => {
-			expect(screen.getByText('Aún no hay imágenes subidas.')).toBeInTheDocument();
+			expect(screen.getByText('Aún no hay imágenes en esta biblioteca.')).toBeInTheDocument();
+			expect(
+				screen.getByText('Sube una imagen para usarla en la invitación.'),
+			).toBeInTheDocument();
 		});
 	});
 
@@ -117,8 +143,81 @@ describe('AssetPicker', () => {
 			expect(screen.getByRole('dialog')).toBeInTheDocument();
 		});
 
-		// Click the overlay (parent of the modal)
 		fireEvent.click(screen.getByRole('dialog'));
 		expect(onClose).toHaveBeenCalledTimes(1);
+	});
+
+	it('closes on Escape key', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: true,
+			json: async () => ({ assets: [] }),
+		} as Response);
+
+		const onClose = jest.fn();
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />);
+
+		await waitFor(() => {
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		fireEvent.keyDown(window, { key: 'Escape' });
+		expect(onClose).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not close when clicking inside the dialog content', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: true,
+			json: async () => ({ assets: [] }),
+		} as Response);
+
+		const onClose = jest.fn();
+		const { container } = render(
+			<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />,
+		);
+
+		await waitFor(() => {
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		const inner = container.querySelector('.asset-picker') as HTMLElement | null;
+		expect(inner).not.toBeNull();
+		fireEvent.click(inner!);
+		expect(onClose).not.toHaveBeenCalled();
+	});
+
+	it('thumbnails have lazy loading and decoding attributes', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: true,
+			json: async () => MOCK_ASSETS,
+		} as Response);
+
+		const { container } = render(
+			<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />,
+		);
+
+		await waitFor(() => {
+			const images = Array.from(
+				container.querySelectorAll('.asset-picker__thumbnail'),
+			) as HTMLImageElement[];
+			expect(images.length).toBeGreaterThan(0);
+			images.forEach((img) => {
+				expect(img.getAttribute('loading')).toBe('lazy');
+				expect(img.getAttribute('decoding')).toBe('async');
+			});
+		});
+	});
+
+	it('item buttons have descriptive aria-labels', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: true,
+			json: async () => MOCK_ASSETS,
+		} as Response);
+
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
+
+		await waitFor(() => {
+			expect(screen.getByLabelText('Seleccionar Foto 1')).toBeInTheDocument();
+			expect(screen.getByLabelText('Cerrar selector de imágenes')).toBeInTheDocument();
+		});
 	});
 });
