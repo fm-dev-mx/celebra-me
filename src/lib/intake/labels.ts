@@ -206,6 +206,7 @@ export const NAV_ITEMS: Array<{ id: string; label: string }> = [
 	{ id: 'messages', label: 'Mensajes especiales' },
 	{ id: 'gallery', label: 'Galería' },
 	{ id: 'publication', label: 'Publicación' },
+	{ id: 'assetLibrary', label: 'Biblioteca de imágenes' },
 ];
 
 type FieldGroup = 'hero' | 'family';

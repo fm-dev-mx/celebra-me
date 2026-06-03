@@ -2,9 +2,26 @@
  * Universal Asset Registry
  * Provides a deterministic way to access and optimize project assets.
  * Now using dynamic discovery to avoid manual import boilerplate.
+ *
+ * This module focuses on build-time internal assets.
+ * Shared key constants and types live in asset-keys.ts and asset-source.ts.
  */
 
 import type { ImageMetadata } from 'astro';
+import type {
+	InternalAssetSource,
+	ExternalAssetSource,
+	AssetSource,
+} from '@/lib/assets/asset-source';
+import {
+	EVENT_KEYS,
+	isEventAssetKey,
+	isCommonAssetKey,
+	isAssetRegistryKey,
+	type EventAssetKey,
+	type CommonAssetKey,
+	type AssetRegistryKey,
+} from '@/lib/assets/asset-keys';
 
 // Common Assets
 import avatar1 from '@images/hero/avatar1.png';
@@ -26,70 +43,11 @@ export interface ImageAsset {
 	alt: string;
 }
 
-export const EVENT_KEYS = [
-	'hero',
-	'portrait',
-
-	'family',
-	'ceremony',
-	'reception',
-	'mapCeremony',
-	'mapReception',
-	'jardin',
-	'signature',
-	'gallery01',
-	'gallery02',
-	'gallery03',
-	'gallery04',
-	'gallery05',
-	'gallery06',
-	'gallery07',
-	'gallery08',
-	'gallery09',
-	'gallery10',
-	'gallery11',
-	'gallery12',
-	'gallery13',
-	'gallery14',
-	'gallery15',
-	'interlude01',
-	'interlude02',
-	'interlude03',
-	'interlude04',
-	'thankYouPortrait',
-] as const;
-
-export const COMMON_KEYS = [
-	'logo',
-	'heroBgDesktop',
-	'heroBgMobile',
-	'avatar1',
-	'avatar2',
-	'avatar3',
-	'serviceXv',
-	'serviceWedding',
-	'serviceBaptism',
-	'serviceCumple',
-	'headerLogo',
-	'aboutToast',
-] as const;
-
-export type EventAssetKey = (typeof EVENT_KEYS)[number];
-export type CommonAssetKey = (typeof COMMON_KEYS)[number];
-export const ALL_ASSET_KEYS = [...EVENT_KEYS, ...COMMON_KEYS] as const;
-export type AssetRegistryKey = (typeof ALL_ASSET_KEYS)[number];
-
-export interface InternalAssetSource {
-	type: 'internal';
-	key: AssetRegistryKey;
-}
-
-export interface ExternalAssetSource {
-	type: 'external';
-	src: string;
-}
-
-export type AssetSource = InternalAssetSource | ExternalAssetSource;
+// Re-export shared types for backward compatibility
+export type { InternalAssetSource, ExternalAssetSource, AssetSource };
+export { isEventAssetKey, isCommonAssetKey, isAssetRegistryKey };
+export type { EventAssetKey, CommonAssetKey, AssetRegistryKey };
+export { EVENT_KEYS, COMMON_KEYS, ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
 
 /**
  * Standard schema for event-specific assets.
@@ -184,18 +142,6 @@ export type EventSlug = keyof typeof ImageRegistry.events;
  */
 export function isValidEvent(slug: string): slug is EventSlug {
 	return slug in ImageRegistry.events;
-}
-
-export function isEventAssetKey(key: string): key is EventAssetKey {
-	return (EVENT_KEYS as readonly string[]).includes(key);
-}
-
-export function isCommonAssetKey(key: string): key is CommonAssetKey {
-	return (COMMON_KEYS as readonly string[]).includes(key);
-}
-
-export function isAssetRegistryKey(key: string): key is AssetRegistryKey {
-	return isEventAssetKey(key) || isCommonAssetKey(key);
 }
 
 /**

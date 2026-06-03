@@ -137,6 +137,22 @@ export type ContentSource = 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
 
 export type SectionSource = 'draft' | 'published' | 'demo' | 'empty';
 
+export interface InvitationAsset {
+	id: string;
+	invitationId: string;
+	displayName: string;
+	defaultAltText?: string;
+	bucket: string;
+	storagePath: string;
+	mimeType: string;
+	width?: number;
+	height?: number;
+	fileSize?: number;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
+
 export interface InvitationContentDraft {
 	id: string;
 	invitationId: string;
