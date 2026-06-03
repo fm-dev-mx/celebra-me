@@ -238,3 +238,15 @@ export function getFieldLabel(group: FieldGroup, field: string, eventType?: stri
 	const defaults = group === 'hero' ? HERO_FIELD_LABELS : FAMILY_FIELD_LABELS;
 	return defaults[field] ?? field;
 }
+
+export function getAssetUsageLabel(usedInDraft: boolean, usedInPublished: boolean): string {
+	if (usedInDraft && usedInPublished) return 'Borrador y publicación';
+	if (usedInDraft) return 'Borrador';
+	if (usedInPublished) return 'Publicación';
+	return 'No utilizado';
+}
+
+export const EMPTY_ASSET_LIBRARY_COPY = {
+	heading: 'Aún no hay imágenes en esta biblioteca.',
+	subtext: 'Sube una imagen para usarla en la invitación.',
+} as const;
