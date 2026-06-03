@@ -1,8 +1,11 @@
-/* eslint-disable max-lines -- Editor shell with 12+ sections; extracted SectionCard/Field/TextArea to separate files */
+/* eslint-disable max-lines -- Editor shell with 12+ sections; extracted panels to separate files */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EDITOR_SPLIT_BREAKPOINT } from '@/lib/editor/constants';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEditor';
+import LocationSectionEditor from '@/components/dashboard/intake/editor/LocationSectionEditor';
+import FamilySectionEditor from '@/components/dashboard/intake/editor/FamilySectionEditor';
+import MainSectionEditor from '@/components/dashboard/intake/editor/MainSectionEditor';
 import MetadataSection from '@/components/dashboard/intake/editor/MetadataSection';
 import PublicationSection from '@/components/dashboard/intake/editor/PublicationSection';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
@@ -34,7 +37,6 @@ import {
 	GIFT_TYPE_LABELS,
 	INVITATION_STATUS_LABELS,
 	NAV_ITEMS,
-	getFieldLabel,
 } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
@@ -45,8 +47,6 @@ import {
 interface Props {
 	initialContext: InvitationEditorContextDTO;
 }
-
-// NAV_ITEMS imported from labels.ts
 
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
@@ -76,10 +76,6 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	photoNotes: ['photoNotes'],
 	publication: ['sectionOrder'],
 };
-
-// CRITICAL_SECTION_LABELS — derived inline from EDITOR_SECTION_PRESENTATION where needed
-
-// EDITOR_SECTION_PRESENTATION imported from labels.ts
 
 function uniqueSectionPresentation(sections: string[]) {
 	const presented = new Map<string, { id: string; label: string }>();
@@ -289,8 +285,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const updateRsvp = (patch: Partial<typeof rsvp>) =>
 		updateContent('rsvp', { ...rsvp, ...patch });
 
-	const savingSection = editor.savingSection;
-
 	const sectionSource = useCallback(
 		(section: string): { source: string; label: string } | undefined => {
 			const keys = EDITOR_SECTION_KEYS[section];
@@ -333,7 +327,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 	);
 
 	const eventType = editor.context.invitation.eventType;
-	const isBoda = eventType === 'boda';
 
 	const criticalSections = useMemo(
 		() => getCriticalSections(eventType, rsvpEnabled),
@@ -450,7 +443,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		() =>
 			editor.publishing ||
 			savingAll ||
-			savingSection !== null ||
+			editor.savingSection !== null ||
 			dirty.size > 0 ||
 			editor.context.draftStatus !== 'draft' ||
 			editor.context.contentSource === 'empty' ||
@@ -458,7 +451,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		[
 			editor.publishing,
 			savingAll,
-			savingSection,
+			editor.savingSection,
 			dirty,
 			editor.context.draftStatus,
 			editor.context.contentSource,
@@ -601,7 +594,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			<div className="invitation-editor__layout">
 				<EditorSidebar
 					activeSection={activeSection}
-					savingSection={savingSection}
+					savingSection={editor.savingSection}
 					dirty={dirty}
 					errors={errors}
 					sectionSource={sectionSource}
@@ -621,7 +614,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						title="Datos de la invitación"
 						description="Información administrativa, URL pública y seguimiento de producción."
 						dirty={dirty.has('metadata')}
-						saving={savingSection === 'metadata'}
+						saving={editor.savingSection === 'metadata'}
 						error={errors.metadata}
 						success={success.metadata}
 						onSave={() => void saveMetadata()}
@@ -636,274 +629,54 @@ export default function InvitationEditor({ initialContext }: Props) {
 						/>
 					</SectionCard>
 
-					<SectionCard
-						id="main"
-						title="Datos principales"
-						description="Texto principal que abre la invitación."
+					<MainSectionEditor
+						content={content}
+						main={main}
+						eventType={eventType}
+						invitationId={editor.context.invitation.id}
 						dirty={dirty.has('main')}
-						saving={savingSection === 'main'}
+						saving={editor.savingSection === 'main'}
 						error={errors.main}
 						success={success.main}
 						onSave={() => saveSection('main')}
 						sourceBadge={sectionSource('main')}
-					>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label="Título público"
-								value={content.title ?? ''}
-								onChange={(value) => updateContent('title', value)}
-							/>
-							<Field
-								label={getFieldLabel('hero', 'name', eventType)}
-								value={main.name ?? ''}
-								onChange={(value) => updateHero({ name: value })}
-							/>
-							{isBoda && (
-								<Field
-									label={getFieldLabel('hero', 'secondaryName', eventType)}
-									value={main.secondaryName ?? ''}
-									onChange={(value) => updateHero({ secondaryName: value })}
-								/>
-							)}
-							<Field
-								label={getFieldLabel('hero', 'label', eventType)}
-								value={main.label ?? ''}
-								onChange={(value) => updateHero({ label: value })}
-							/>
-							<Field
-								label={getFieldLabel('hero', 'nickname', eventType)}
-								value={main.nickname ?? ''}
-								onChange={(value) => updateHero({ nickname: value })}
-							/>
-							<Field
-								label={getFieldLabel('hero', 'date', eventType)}
-								type="datetime-local"
-								value={(main.date ?? '').replace('Z', '').slice(0, 16)}
-								onChange={(value) => updateHero({ date: value })}
-							/>
-							{editor.context.invitation.id && (
-								<>
-									<label className="invitation-editor__field">
-										<span>Imagen de portada</span>
-										<button
-											type="button"
-											className="invitation-editor__asset-btn"
-											onClick={() => setPickerField('hero.backgroundImage')}
-										>
-											{main.backgroundImage
-												? 'Cambiar imagen'
-												: 'Seleccionar imagen'}
-										</button>
-									</label>
-									<label className="invitation-editor__field">
-										<span>Retrato</span>
-										<button
-											type="button"
-											className="invitation-editor__asset-btn"
-											onClick={() => setPickerField('hero.portrait')}
-										>
-											{main.portrait
-												? 'Cambiar retrato'
-												: 'Seleccionar retrato'}
-										</button>
-									</label>
-								</>
-							)}
-						</div>
-						<TextArea
-							label="Descripción"
-							value={content.description ?? ''}
-							onChange={(value) => updateContent('description', value)}
-							labelExtra={
-								<TextPresetPicker
-									section="description"
-									eventType={eventType}
-									onSelect={(value) => updateContent('description', value)}
-								/>
-							}
-						/>
-					</SectionCard>
+						onUpdateContent={updateContent}
+						onUpdateHero={updateHero}
+						onOpenAssetPicker={setPickerField}
+					/>
 
-					<SectionCard
-						id="family"
-						title="Personas principales"
-						description="Familia y personas destacadas."
+					<FamilySectionEditor
+						family={family}
+						eventType={eventType}
+						invitationId={editor.context.invitation.id}
 						dirty={dirty.has('family')}
-						saving={savingSection === 'family'}
+						saving={editor.savingSection === 'family'}
 						error={errors.family}
 						success={success.family}
 						onSave={() => saveSection('family')}
 						sourceBadge={sectionSource('family')}
-					>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label={getFieldLabel('family', 'fatherName', eventType)}
-								value={family.fatherName ?? ''}
-								onChange={(value) => updateFamily({ fatherName: value })}
-							/>
-							<Field
-								label={getFieldLabel('family', 'motherName', eventType)}
-								value={family.motherName ?? ''}
-								onChange={(value) => updateFamily({ motherName: value })}
-							/>
-							{isBoda && (
-								<Field
-									label={getFieldLabel('family', 'spouseName', eventType)}
-									value={family.spouseName ?? ''}
-									onChange={(value) => updateFamily({ spouseName: value })}
-								/>
-							)}
-						</div>
-						<label className="invitation-editor__check">
-							<input
-								type="checkbox"
-								checked={family.fatherDeceased ?? false}
-								onChange={(event) =>
-									updateFamily({ fatherDeceased: event.target.checked })
-								}
-							/>
-							<span>Mostrar cruz junto al nombre del papá</span>
-						</label>
-						<label className="invitation-editor__check">
-							<input
-								type="checkbox"
-								checked={family.motherDeceased ?? false}
-								onChange={(event) =>
-									updateFamily({ motherDeceased: event.target.checked })
-								}
-							/>
-							<span>Mostrar cruz junto al nombre de la mamá</span>
-						</label>
-						<TextArea
-							label={getFieldLabel('family', 'godparents', eventType)}
-							value={family.godparents ?? ''}
-							onChange={(value) => updateFamily({ godparents: value })}
-						/>
-						{isBoda && (
-							<TextArea
-								label={getFieldLabel('family', 'children', eventType)}
-								value={family.children ?? ''}
-								onChange={(value) => updateFamily({ children: value })}
-							/>
-						)}
-						<TextArea
-							label={getFieldLabel('family', 'sectionMessage', eventType)}
-							value={family.sectionMessage ?? ''}
-							onChange={(value) => updateFamily({ sectionMessage: value })}
-							labelExtra={
-								<TextPresetPicker
-									section="familyMessage"
-									eventType={eventType}
-									onSelect={(value) => updateFamily({ sectionMessage: value })}
-								/>
-							}
-						/>
-						{editor.context.invitation.id && (
-							<label className="invitation-editor__field">
-								<span>Imagen familiar</span>
-								<button
-									type="button"
-									className="invitation-editor__asset-btn"
-									onClick={() => setPickerField('family.featuredImage')}
-								>
-									{family.featuredImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
-								</button>
-							</label>
-						)}
-					</SectionCard>
+						onUpdateFamily={updateFamily}
+						onOpenAssetPicker={setPickerField}
+					/>
 
-					<SectionCard
-						id="location"
-						title="Fecha y ubicaciones"
-						description="Ceremonia, recepción e indicaciones."
+					<LocationSectionEditor
+						location={location}
 						dirty={dirty.has('location')}
-						saving={savingSection === 'location'}
+						saving={editor.savingSection === 'location'}
 						error={errors.location}
 						success={success.location}
 						onSave={() => saveSection('location')}
 						sourceBadge={sectionSource('location')}
-					>
-						{(['ceremony', 'reception'] as const).map((venueKey) => {
-							const venue = location[venueKey] ?? {};
-							const updateVenue = (patch: Partial<typeof venue>) =>
-								updateLocation({ [venueKey]: { ...venue, ...patch } });
-							return (
-								<div className="invitation-editor__subsection" key={venueKey}>
-									<h3>{venueKey === 'ceremony' ? 'Ceremonia' : 'Recepción'}</h3>
-									<div className="invitation-editor__field-grid">
-										<Field
-											label="Lugar"
-											value={venue.venueName ?? ''}
-											onChange={(value) => updateVenue({ venueName: value })}
-										/>
-										<Field
-											label="Dirección"
-											value={venue.address ?? ''}
-											onChange={(value) => updateVenue({ address: value })}
-										/>
-										<Field
-											label="Ciudad"
-											value={venue.city ?? ''}
-											onChange={(value) => updateVenue({ city: value })}
-										/>
-										<Field
-											label="Fecha"
-											type="date"
-											value={venue.date ?? ''}
-											onChange={(value) => updateVenue({ date: value })}
-										/>
-										<Field
-											label="Hora"
-											type="time"
-											value={venue.time ?? ''}
-											onChange={(value) => updateVenue({ time: value })}
-										/>
-										<Field
-											label="Mapa"
-											type="url"
-											value={venue.mapUrl ?? ''}
-											onChange={(value) => updateVenue({ mapUrl: value })}
-										/>
-									</div>
-									<label className="invitation-editor__field">
-										<span>Imagen del lugar</span>
-										<button
-											type="button"
-											className="invitation-editor__asset-btn"
-											onClick={() =>
-												setPickerField(`location.${venueKey}.image`)
-											}
-										>
-											{venue.image ? 'Cambiar imagen' : 'Seleccionar imagen'}
-										</button>
-									</label>
-								</div>
-							);
-						})}
-						<Field
-							label="Código de vestimenta"
-							value={location.dressCode ?? ''}
-							onChange={(value) => updateLocation({ dressCode: value })}
-							labelExtra={
-								<TextPresetPicker
-									section="dressCode"
-									onSelect={(value) => updateLocation({ dressCode: value })}
-								/>
-							}
-						/>
-						<TextArea
-							label="Indicaciones adicionales"
-							value={location.additionalIndications ?? ''}
-							onChange={(value) => updateLocation({ additionalIndications: value })}
-						/>
-					</SectionCard>
+						onUpdateLocation={updateLocation}
+						onOpenAssetPicker={setPickerField}
+					/>
 
 					<SectionCard
 						id="itinerary"
 						title="Programa"
 						description="Orden y horario de actividades."
 						dirty={dirty.has('itinerary')}
-						saving={savingSection === 'itinerary'}
+						saving={editor.savingSection === 'itinerary'}
 						error={errors.itinerary}
 						success={success.itinerary}
 						onSave={() => saveSection('itinerary')}
