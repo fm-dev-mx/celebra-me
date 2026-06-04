@@ -6,7 +6,10 @@ import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-co
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
-import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
+import {
+	buildDraftPreviewPageContext,
+	selectPreviewContent,
+} from '@/lib/invitation/draft-preview-helper';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { DemoPreset } from '@/lib/intake/types';
@@ -56,6 +59,7 @@ const demoEntryForSlug = (slug: string) =>
 async function tryBuildContext(
 	content: Record<string, unknown>,
 	label: string,
+	assetLookupSlug?: string,
 ): Promise<InvitationPageContext | null> {
 	if (!invitation) return null;
 
@@ -65,42 +69,50 @@ async function tryBuildContext(
 			? (demoEntryForSlug(invitation.snapshot.previewSlug)?.data as Record<string, unknown>) ?? {}
 			: {};
 
-	const result = await buildDraftPreviewPageContext(invitation, content, demoContent);
+	const result = await buildDraftPreviewPageContext(invitation, content, demoContent, {
+		assetLookupSlug,
+	});
 	if (!result.ok) return null;
 
 	previewSource = label;
 	return result.pageContext;
 }
 
-// Fallback chain: 1) draft, 2) published, 3) empty content fallback
+// Fallback chain: 1) meaningful draft, 2) published, 3) empty content fallback
 const [draft, published] = await Promise.all([
 	!errorMessage ? findDraftByInvitationId(id) : null,
 	!errorMessage ? findPublishedByInvitationId(id) : null,
 ]);
 
-if (draft?.content) {
-	const ctx = await tryBuildContext(draft.content, 'Borrador');
-	if (ctx) {
-		pageCtx = ctx;
-	} else if (published?.content) {
-		const pubCtx = await tryBuildContext(published.content, 'Versión pública');
-		if (pubCtx) {
-			pageCtx = pubCtx;
+const previewSelection = selectPreviewContent({
+	draftContent: draft?.content,
+	publishedContent: published?.content,
+});
+
+if (previewSelection) {
+	pageCtx = await tryBuildContext(
+		previewSelection.content,
+		previewSelection.label,
+		previewSelection.assetLookupSlug,
+	);
+
+	// Draft build failed — fall back to published content
+	if (!pageCtx && previewSelection.label === 'Borrador' && published?.content) {
+		pageCtx = await tryBuildContext(
+			published.content,
+			'Versión pública',
+			previewSelection.assetLookupSlug,
+		);
+		if (pageCtx) {
 			previewWarning = 'El borrador actual tiene errores. Mostrando la versión pública.';
 		}
-	}
-} else if (published?.content) {
-	const ctx = await tryBuildContext(published.content, 'Versión pública');
-	if (ctx) {
-		pageCtx = ctx;
 	}
 }
 
 // If no content source produced a page context, attempt with empty content
 if (!pageCtx && !errorMessage && invitation) {
-	const ctx = await tryBuildContext({}, 'Vacío');
-	if (ctx) {
-		pageCtx = ctx;
+	pageCtx = await tryBuildContext({}, 'Vacío');
+	if (pageCtx) {
 		renderedFromEmpty = true;
 	} else {
 		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
@@ -109,6 +121,13 @@ if (!pageCtx && !errorMessage && invitation) {
 
 const editUrl = `/dashboard/invitaciones/${id}/editar`;
 const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
+
+const wrapperDataAttributes = pageCtx
+	? {
+			...pageCtx.wrapper.dataAttributes,
+			...(embeddedPreview ? { 'data-reveal-state': 'revealed' } : {}),
+		}
+	: undefined;
 ---
 
 {
@@ -148,8 +167,7 @@ const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
 <style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
 			<main
 				class={pageCtx.wrapper.className}
-				{...pageCtx.wrapper.dataAttributes}
-				{...(embeddedPreview ? { 'data-reveal-state': 'revealed' } : {})}
+				{...wrapperDataAttributes}
 			>
 				{
 					!embeddedPreview && pageCtx.envelope && (

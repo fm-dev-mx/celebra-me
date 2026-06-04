@@ -6,10 +6,41 @@ import { getPublicUrl } from '@/lib/intake/storage';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { Invitation } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import { ALL_EDITOR_KEYS, getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 
 export type DraftPreviewResult =
 	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }
 	| { ok: false; error: { message: string } };
+
+export function hasMeaningfulDraftContent(content: unknown): boolean {
+	if (!content || typeof content !== 'object' || Array.isArray(content)) return false;
+	const record = content as Record<string, unknown>;
+	return ALL_EDITOR_KEYS.some((key) => record[key] !== undefined);
+}
+
+export function selectPreviewContent(input: {
+	draftContent?: Record<string, unknown> | null;
+	publishedContent?: Record<string, unknown> | null;
+}): { content: Record<string, unknown>; label: string; assetLookupSlug?: string } | null {
+	const publishedAssetSlug = getAssetSlugFromContent(input.publishedContent);
+	if (hasMeaningfulDraftContent(input.draftContent)) {
+		return {
+			content: input.draftContent as Record<string, unknown>,
+			label: 'Borrador',
+			assetLookupSlug:
+				getAssetSlugFromContent(input.draftContent as Record<string, unknown>) ??
+				publishedAssetSlug,
+		};
+	}
+	if (input.publishedContent) {
+		return {
+			content: input.publishedContent,
+			label: 'Versión pública',
+			assetLookupSlug: publishedAssetSlug,
+		};
+	}
+	return null;
+}
 
 /**
  * Resolve { type: 'uploaded', assetId } refs in draft content to public URLs
@@ -50,11 +81,16 @@ export async function buildDraftPreviewPageContext(
 	invitation: Invitation,
 	draftContent: DraftContent,
 	demoContent: Record<string, unknown>,
+	options: { assetLookupSlug?: string } = {},
 ): Promise<DraftPreviewResult> {
 	try {
 		const snapshot = invitation.snapshot;
 		const contentSlug = invitation.slug ?? snapshot.previewSlug;
-		const assetLookupSlug = snapshot.previewSlug;
+		const assetLookupSlug =
+			getAssetSlugFromContent(draftContent as unknown as Record<string, unknown>) ??
+			options.assetLookupSlug ??
+			invitation.slug ??
+			snapshot.previewSlug;
 
 		// Resolve uploaded asset refs to public Storage URLs for preview
 		const assets = await findAssetsByInvitationId(invitation.id);
@@ -69,7 +105,7 @@ export async function buildDraftPreviewPageContext(
 				eventType: invitation.eventType,
 				snapshot,
 			},
-			assetSlug: contentSlug,
+			assetSlug: assetLookupSlug,
 			draftContent: resolvedContent as DraftContent,
 			demoContent,
 		});

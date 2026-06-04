@@ -352,4 +352,37 @@ describe('buildPageContextFromViewModel', () => {
 
 		expect(context.footerVariant).toBe('enchanted-rose');
 	});
+
+	it('sets data-reveal-state to sealed when envelope is enabled (non-embedded)', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'reveal-sealed',
+			envelope: { enabled: true },
+			sections: {},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'reveal-sealed',
+			eventType: 'xv',
+		});
+
+		expect(context.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
+		expect(context.wrapper.showEnvelope).toBe(true);
+	});
+
+	it('embedded preview override merges to exactly one data-reveal-state', () => {
+		const sealedAttrs: Record<string, string> = {
+			'data-reveal-state': 'sealed',
+			'data-theme-preset': 'test',
+			'data-event-slug': 'test-event',
+			'data-is-demo': 'false',
+		};
+
+		const merged: Record<string, string> = { ...sealedAttrs, 'data-reveal-state': 'revealed' };
+
+		expect(merged['data-reveal-state']).toBe('revealed');
+		expect(Object.keys(merged).filter((k) => k === 'data-reveal-state')).toHaveLength(1);
+		expect(merged['data-theme-preset']).toBe('test');
+	});
 });

@@ -1,4 +1,8 @@
-import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
+import {
+	buildDraftPreviewPageContext,
+	hasMeaningfulDraftContent,
+	selectPreviewContent,
+} from '@/lib/invitation/draft-preview-helper';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
@@ -210,7 +214,7 @@ describe('buildDraftPreviewPageContext', () => {
 		}
 	});
 
-	it('uses invitation slug for content identity and demo slug for asset resolution', async () => {
+	it('uses invitation slug for content identity and default asset resolution', async () => {
 		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
@@ -218,7 +222,47 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('ana-sofia-cota-guillen');
-		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
+		expect(callArgs.assetSlug).toBe('ana-sofia-cota-guillen');
+	});
+
+	it('uses current content _assetSlug for asset resolution when it differs from previewSlug', async () => {
+		const invitation = makeProject({
+			slug: 'ana-sofia-cota-guillen',
+			snapshot: { ...demoPreset, previewSlug: 'demo-xv-jewelry-box' },
+		});
+
+		await buildDraftPreviewPageContext(
+			invitation,
+			{
+				...validDraftContent,
+				_assetSlug: 'ana-sofia-cota-guillen',
+				hero: { name: 'Ana Sofía', backgroundImage: 'hero', portrait: 'portrait' },
+			},
+			validDemoContent,
+		);
+
+		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.slug).toBe('ana-sofia-cota-guillen');
+		expect(callArgs.assetSlug).toBe('ana-sofia-cota-guillen');
+	});
+
+	it('uses an explicit asset lookup slug for non-empty draft content', async () => {
+		const invitation = makeProject({
+			slug: 'ximena-meza-trasvina',
+			snapshot: { ...demoPreset, previewSlug: 'demo-xv-jewelry-box' },
+		});
+
+		await buildDraftPreviewPageContext(
+			invitation,
+			{ ...validDraftContent, hero: { name: 'Ximena', backgroundImage: 'hero' } },
+			validDemoContent,
+			{ assetLookupSlug: 'ximena-meza-trasvina' },
+		);
+
+		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.assetSlug).toBe('ximena-meza-trasvina');
+		expect((callArgs.content.hero as Record<string, unknown>).name).toBe('Ximena');
 	});
 
 	it('falls back to demo previewSlug for client invitations without a slug', async () => {
@@ -256,6 +300,74 @@ describe('buildDraftPreviewPageContext', () => {
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('preview content selection', () => {
+	it('treats an empty draft object as non-meaningful', () => {
+		expect(hasMeaningfulDraftContent(null)).toBe(false);
+		expect(hasMeaningfulDraftContent(undefined)).toBe(false);
+		expect(hasMeaningfulDraftContent({})).toBe(false);
+		expect(hasMeaningfulDraftContent({ hero: { name: 'Ximena' } })).toBe(true);
+	});
+
+	it('rejects non-object types as meaningful content', () => {
+		expect(hasMeaningfulDraftContent('string')).toBe(false);
+		expect(hasMeaningfulDraftContent(42)).toBe(false);
+		expect(hasMeaningfulDraftContent(true)).toBe(false);
+	});
+
+	it('rejects arrays even if they contain valid keys', () => {
+		expect(hasMeaningfulDraftContent(['hero', 'title'])).toBe(false);
+		expect(hasMeaningfulDraftContent([{ hero: { name: 'Test' } }])).toBe(false);
+	});
+
+	it('treats objects with only underscore/internal keys as non-meaningful', () => {
+		expect(hasMeaningfulDraftContent({ _assetSlug: 'test-slug' })).toBe(false);
+		expect(hasMeaningfulDraftContent({ _meta: { version: 1 } })).toBe(false);
+	});
+
+	it('treats objects with all values undefined as non-meaningful', () => {
+		expect(hasMeaningfulDraftContent({ title: undefined, hero: undefined })).toBe(false);
+	});
+
+	it('uses published content when a draft row exists but content is empty', () => {
+		const publishedContent = {
+			_assetSlug: 'ximena-meza-trasvina',
+			hero: { name: 'Ximena', backgroundImage: 'hero' },
+		};
+
+		const result = selectPreviewContent({
+			draftContent: {},
+			publishedContent,
+		});
+
+		expect(result).toEqual({
+			content: publishedContent,
+			label: 'Versión pública',
+			assetLookupSlug: 'ximena-meza-trasvina',
+		});
+	});
+
+	it('uses non-empty draft content before published content while keeping published asset slug', () => {
+		const draftContent = {
+			hero: { name: 'Ximena editada', backgroundImage: 'hero' },
+		};
+		const publishedContent = {
+			_assetSlug: 'ximena-meza-trasvina',
+			hero: { name: 'Ximena', backgroundImage: 'hero' },
+		};
+
+		const result = selectPreviewContent({
+			draftContent,
+			publishedContent,
+		});
+
+		expect(result).toEqual({
+			content: draftContent,
+			label: 'Borrador',
+			assetLookupSlug: 'ximena-meza-trasvina',
+		});
 	});
 });
 
