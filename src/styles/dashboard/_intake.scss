@@ -2190,6 +2190,10 @@
 	);
 }
 
+.invitation-editor__image-card--default {
+	background: color-mix(in srgb, var(--color-surface-primary) 88%, var(--color-state-warning-bg));
+}
+
 .invitation-editor__image-preview {
 	display: grid;
 	place-items: center;

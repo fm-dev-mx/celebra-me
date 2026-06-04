@@ -24,12 +24,60 @@ describe('ImageAssetField', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Imagen personalizada')).toBeInTheDocument();
+		expect(screen.getByText('Imagen seleccionada')).toBeInTheDocument();
 		expect(screen.getByRole('img', { name: 'Imagen familiar' })).toHaveAttribute(
 			'src',
 			'https://cdn.test/family.webp',
 		);
 		expect(screen.getByRole('button', { name: 'Cambiar imagen' })).toBeInTheDocument();
+	});
+
+	it('renders default state when defaultPreview is provided with empty value', () => {
+		render(
+			<ImageAssetField
+				label="Imagen de portada"
+				value={undefined}
+				defaultPreview={{ src: 'https://cdn.test/default.webp', label: 'Default' }}
+				onOpenLibrary={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Imagen predeterminada')).toBeInTheDocument();
+		expect(screen.getByRole('img', { name: 'Imagen de portada' })).toHaveAttribute(
+			'src',
+			'https://cdn.test/default.webp',
+		);
+	});
+
+	it('applies --default class when isDefaultImage is true with a value', () => {
+		const { container } = render(
+			<ImageAssetField
+				label="Imagen de agradecimiento"
+				value={{ type: 'external', src: 'https://cdn.test/thankyou.webp' }}
+				isDefaultImage
+				defaultPreview={{ src: 'https://cdn.test/thankyou.webp' }}
+				onOpenLibrary={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Imagen predeterminada')).toBeInTheDocument();
+		expect(
+			container.querySelector('.invitation-editor__image-card--default'),
+		).toBeInTheDocument();
+	});
+
+	it('renders missing state when preview cannot resolve a source', () => {
+		const value = {
+			type: 'uploaded' as const,
+			assetId: '00000000-0000-0000-0000-000000000001',
+		};
+
+		render(
+			<ImageAssetField label="Imagen del lugar" value={value} onOpenLibrary={jest.fn()} />,
+		);
+
+		expect(screen.getByText('Imagen faltante')).toBeInTheDocument();
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
 	});
 
 	it('opens the existing asset library flow when the action is clicked', () => {
@@ -45,19 +93,5 @@ describe('ImageAssetField', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: 'Seleccionar retrato' }));
 		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
-	});
-
-	it('renders uploaded draft reference with library meta and no src-based image', () => {
-		const value = {
-			type: 'uploaded' as const,
-			assetId: '00000000-0000-0000-0000-000000000001',
-		};
-
-		render(
-			<ImageAssetField label="Imagen del lugar" value={value} onOpenLibrary={jest.fn()} />,
-		);
-
-		expect(screen.getByText('Biblioteca')).toBeInTheDocument();
-		expect(screen.queryByRole('img')).not.toBeInTheDocument();
 	});
 });

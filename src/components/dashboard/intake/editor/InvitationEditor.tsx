@@ -1022,6 +1022,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 								previewSlug={previewSlug}
 								assets={editorAssets}
 								onOpenLibrary={() => setPickerField('thankYou.image')}
+								isDefaultImage={editor.context.sectionStates.thankYou === 'demo'}
 							/>
 						)}
 					</SectionCard>

@@ -1,4 +1,4 @@
-import type { EditableAssetSource, AssetField } from '@/lib/assets/asset-source';
+import type { AssetField } from '@/lib/assets/asset-source';
 import { resolveSrc } from '@/lib/assets/asset-utils';
 import {
 	getCommonAsset,
@@ -6,6 +6,13 @@ import {
 	isCommonAssetKey,
 	isEventAssetKey,
 } from '@/lib/assets/asset-registry';
+
+type ImageDisplayState = 'empty' | 'selected' | 'default' | 'missing';
+
+interface DefaultPreviewInfo {
+	src: string;
+	label?: string;
+}
 
 interface Props {
 	label: string;
@@ -15,56 +22,63 @@ interface Props {
 	changeActionLabel?: string;
 	previewSlug?: string;
 	assets?: { id: string; src: string; displayName?: string }[];
+	defaultPreview?: DefaultPreviewInfo;
+	isDefaultImage?: boolean;
 }
 
-interface PreviewInfo {
-	src?: string;
-	meta: string;
-}
-
-function resolveStringPreview(value: string, previewSlug?: string): PreviewInfo {
-	if (value.startsWith('/') || value.startsWith('https://')) {
-		return { src: value, meta: 'Imagen personalizada' };
-	}
-	if (previewSlug && isEventAssetKey(value)) {
-		return { src: getEventAsset(previewSlug, value)?.src, meta: 'Imagen de demo' };
-	}
-	if (isCommonAssetKey(value)) {
-		return { src: resolveSrc(getCommonAsset(value)), meta: 'Imagen de demo' };
-	}
-	return { meta: value };
-}
-
-function resolveObjectPreview(
-	value: EditableAssetSource,
-	previewSlug: string | undefined,
-	assets: { id: string; src: string; displayName?: string }[],
-): PreviewInfo {
-	if (value.type === 'external') return { src: value.src, meta: 'Imagen personalizada' };
-	if (value.type === 'uploaded') {
-		const asset = assets.find((item) => item.id === value.assetId);
-		return {
-			src: asset?.src,
-			meta: asset?.displayName || 'Biblioteca',
-		};
-	}
-	if (isEventAssetKey(value.key)) {
-		return {
-			src: previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined,
-			meta: 'Imagen de demo',
-		};
-	}
-	return { src: resolveSrc(getCommonAsset(value.key)), meta: 'Imagen de demo' };
-}
-
-function resolvePreview(
+function resolvePreviewSrc(
 	value: AssetField,
 	previewSlug: string | undefined,
 	assets: { id: string; src: string; displayName?: string }[],
-): PreviewInfo {
-	if (!value) return { meta: 'Sin imagen' };
-	if (typeof value === 'string') return resolveStringPreview(value, previewSlug);
-	return resolveObjectPreview(value, previewSlug, assets);
+): string | undefined {
+	if (!value) return undefined;
+	if (typeof value === 'string') {
+		if (value.startsWith('/') || value.startsWith('https://')) return value;
+		if (previewSlug && isEventAssetKey(value)) {
+			return getEventAsset(previewSlug, value)?.src;
+		}
+		if (isCommonAssetKey(value)) {
+			return resolveSrc(getCommonAsset(value));
+		}
+		return undefined;
+	}
+	if (value.type === 'external') return value.src;
+	if (value.type === 'uploaded') {
+		const asset = assets.find((item) => item.id === value.assetId);
+		return asset?.src;
+	}
+	if (isEventAssetKey(value.key)) {
+		return previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined;
+	}
+	return resolveSrc(getCommonAsset(value.key));
+}
+
+function deriveDisplayState(
+	value: AssetField,
+	src: string | undefined,
+	defaultPreview: DefaultPreviewInfo | undefined,
+	isDefaultImage?: boolean,
+): ImageDisplayState {
+	if (value && isDefaultImage) return 'default';
+	if (!value) {
+		if (defaultPreview) return 'default';
+		return 'empty';
+	}
+	if (src) return 'selected';
+	return 'missing';
+}
+
+function labelForDisplayState(state: ImageDisplayState): string {
+	switch (state) {
+		case 'empty':
+			return 'Sin imagen';
+		case 'selected':
+			return 'Imagen seleccionada';
+		case 'default':
+			return 'Imagen predeterminada';
+		case 'missing':
+			return 'Imagen faltante';
+	}
 }
 
 export default function ImageAssetField({
@@ -75,9 +89,18 @@ export default function ImageAssetField({
 	changeActionLabel = 'Cambiar imagen',
 	previewSlug,
 	assets = [],
+	defaultPreview,
+	isDefaultImage = false,
 }: Props) {
 	const hasValue = value != null;
-	const preview = resolvePreview(value, previewSlug, assets);
+
+	const src = hasValue
+		? resolvePreviewSrc(value, previewSlug, assets)
+		: defaultPreview
+			? defaultPreview.src
+			: undefined;
+
+	const displayState = deriveDisplayState(value, src, defaultPreview, isDefaultImage);
 	const actionLabel = hasValue ? changeActionLabel : emptyActionLabel;
 
 	return (
@@ -86,11 +109,11 @@ export default function ImageAssetField({
 			<div
 				className={`invitation-editor__image-card${
 					hasValue ? ' invitation-editor__image-card--selected' : ''
-				}`}
+				}${displayState === 'default' ? ' invitation-editor__image-card--default' : ''}`}
 			>
 				<div className="invitation-editor__image-preview">
-					{preview.src ? (
-						<img src={preview.src} alt={label} loading="lazy" decoding="async" />
+					{src ? (
+						<img src={src} alt={label} loading="lazy" decoding="async" />
 					) : (
 						<span className="invitation-editor__image-placeholder" aria-hidden="true">
 							IMG
@@ -98,7 +121,9 @@ export default function ImageAssetField({
 					)}
 				</div>
 				<div className="invitation-editor__image-copy">
-					<span className="invitation-editor__image-meta">{preview.meta}</span>
+					<span className="invitation-editor__image-meta">
+						{labelForDisplayState(displayState)}
+					</span>
 				</div>
 				<button
 					type="button"

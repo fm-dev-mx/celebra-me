@@ -30,6 +30,10 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
+import {
+	applyFieldFallbacks,
+	applyVenueImageFallbacks,
+} from '@/lib/intake/services/image-fallback';
 const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
 	'title',
 	'description',
@@ -96,6 +100,14 @@ function hydrateEditableContent(
 			sectionStates[key] = 'empty';
 		}
 	}
+
+	applyFieldFallbacks(result, publishedFlat, demoFlat, [
+		{ section: 'thankYou', field: 'image' },
+		{ section: 'hero', field: 'backgroundImage' },
+		{ section: 'hero', field: 'portrait' },
+	]);
+
+	applyVenueImageFallbacks(result, publishedFlat, demoFlat, ['ceremony', 'reception']);
 
 	return { content: result, sectionStates };
 }
