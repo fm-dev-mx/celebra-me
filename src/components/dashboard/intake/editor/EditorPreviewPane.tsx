@@ -1,5 +1,10 @@
 import { useState, type RefObject } from 'react';
-import { DEVICE_LABELS, DEVICE_ORDER, type PreviewDevice } from '@/lib/editor/constants';
+import {
+	DEVICE_LABELS,
+	DEVICE_ORDER,
+	DEVICE_VIEWPORT_WIDTHS,
+	type PreviewDevice,
+} from '@/lib/editor/constants';
 
 interface Props {
 	invitationId: string;
@@ -29,6 +34,7 @@ export default function EditorPreviewPane({
 	const iframeSrc = previewHash ? `${iframeBaseUrl}${previewHash}` : iframeBaseUrl;
 	const iframeKey = `preview-v${previewVersion}`;
 	const fullPreviewUrl = buildPreviewUrl(invitationId, previewVersion, false);
+	const viewportWidth = DEVICE_VIEWPORT_WIDTHS[device];
 
 	return (
 		<aside
@@ -63,7 +69,10 @@ export default function EditorPreviewPane({
 			{hasUnsavedChanges && (
 				<div className="invitation-editor__preview-stale" role="status">
 					<strong>Hay cambios sin guardar</strong>
-					<span>La vista previa se actualizará después de guardar.</span>
+					<span>
+						La vista previa muestra la última versión guardada. Los datos que editas
+						aquí no se reflejarán hasta que guardes.
+					</span>
 				</div>
 			)}
 			<div
@@ -81,9 +90,20 @@ export default function EditorPreviewPane({
 					</button>
 				))}
 			</div>
+			<div className="invitation-editor__preview-dimension">
+				{viewportWidth}px
+				{device === 'desktop' && (
+					<>
+						{' '}
+						&middot; Escala limitada por el panel. Usa "Abrir vista completa" para
+						escritorio real.
+					</>
+				)}
+			</div>
 			<div
 				className="invitation-editor__preview-frame"
 				data-device={device}
+				data-viewport-width={viewportWidth}
 				data-testid="editor-preview-frame"
 			>
 				<iframe

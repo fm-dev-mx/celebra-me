@@ -2711,7 +2711,16 @@
 	display: grid;
 	justify-items: center;
 	min-height: 0;
-	overflow: hidden;
+
+	.invitation-editor__preview-dimension {
+		padding: 0.15rem 0.5rem;
+		text-align: center;
+		color: var(--color-text-muted);
+		font-size: 0.6875rem;
+		font-weight: 600;
+	}
+
+	overflow: auto;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 10px;
 	background: color-mix(in srgb, var(--color-bg-subtle) 85%, var(--color-surface-primary));
@@ -2726,6 +2735,10 @@
 }
 
 .invitation-editor__preview-iframe {
+	&[data-device='desktop'] .invitation-editor__preview-iframe {
+		min-width: 1024px;
+	}
+
 	width: 100%;
 	height: min(46rem, calc(100svh - var(--invitation-editor-sticky-offset) - 8rem));
 	min-height: 32rem;

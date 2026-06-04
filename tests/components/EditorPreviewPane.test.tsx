@@ -36,7 +36,9 @@ describe('EditorPreviewPane', () => {
 
 		expect(screen.getByText('Hay cambios sin guardar')).toBeInTheDocument();
 		expect(
-			screen.getByText('La vista previa se actualizará después de guardar.'),
+			screen.getByText(
+				'La vista previa muestra la última versión guardada. Los datos que editas aquí no se reflejarán hasta que guardes.',
+			),
 		).toBeInTheDocument();
 	});
 
