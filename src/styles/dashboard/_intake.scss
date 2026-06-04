@@ -1472,7 +1472,7 @@
 }
 
 .invitation-editor {
-	--invitation-editor-sticky-offset: 4.5rem;
+	--invitation-editor-sticky-offset: 5rem;
 
 	display: grid;
 	gap: 1.25rem;
@@ -1659,7 +1659,7 @@
 
 .invitation-editor__layout {
 	display: grid;
-	grid-template-columns: minmax(11rem, 14rem) minmax(26rem, 1fr) minmax(20rem, 34rem);
+	grid-template-columns: minmax(13rem, 16rem) minmax(26rem, 1fr) minmax(20rem, 34rem);
 	gap: 1rem;
 	align-items: start;
 }
@@ -1734,10 +1734,10 @@
 
 .invitation-editor__nav-label {
 	flex: 1;
-	min-width: 0;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	min-width: 5rem;
 }
 
 .invitation-editor__nav-dot {
@@ -1888,6 +1888,7 @@
 
 .invitation-editor__content {
 	scroll-behavior: smooth;
+	scroll-padding-top: var(--invitation-editor-sticky-offset);
 }
 
 .invitation-editor__publish-success {
