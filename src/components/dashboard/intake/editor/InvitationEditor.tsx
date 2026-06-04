@@ -867,7 +867,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 								>
 									<div className="invitation-editor__compact-row">
 										<strong>
-											{index + 1}. {GIFT_TYPE_LABELS[item.type] ?? item.type}
+											{index + 1}.{' '}
+											{item.title || GIFT_TYPE_LABELS[item.type] || item.type}
+											<span className="invitation-editor__gift-type-label">
+												{GIFT_TYPE_LABELS[item.type] ?? item.type}
+											</span>
 										</strong>
 										<button
 											type="button"
