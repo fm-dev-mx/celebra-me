@@ -44,6 +44,33 @@ export const THEME_PRESETS = [
 export type ThemePreset = (typeof THEME_PRESETS)[number];
 
 // ==========================================
+// THEME CAPABILITIES
+// ==========================================
+
+/**
+ * Themes whose hero section renders `hero.portrait` visibly.
+ * Themes not in this set hide the portrait (e.g. via `display: none`).
+ *
+ * When adding a new theme, update this list (and matching CSS if portrait is hidden).
+ */
+export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set([
+	'editorial',
+	'premiere-floral',
+]);
+
+/**
+ * Themes that intentionally hide the portrait in the hero section.
+ * Derived as the complement of PORTRAIT_SUPPORTED_THEMES within THEME_PRESETS.
+ */
+export const PORTRAIT_HIDDEN_THEMES: ReadonlySet<ThemePreset> = new Set(
+	THEME_PRESETS.filter((theme) => !PORTRAIT_SUPPORTED_THEMES.has(theme)),
+);
+
+export function themeSupportsPortrait(themeId: string): boolean {
+	return PORTRAIT_SUPPORTED_THEMES.has(themeId as ThemePreset);
+}
+
+// ==========================================
 // INDICATION TOKENS
 // ==========================================
 
