@@ -16,6 +16,7 @@ interface Props {
 	venueName?: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	backgroundImageDesktop?: { src: string };
+	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
 	guestName?: string;
@@ -36,6 +37,7 @@ const {
 	venueName,
 	backgroundImage,
 	backgroundImageDesktop,
+	backgroundImageMobile,
 	portrait,
 	variant,
 	scrollLabel,
@@ -50,6 +52,11 @@ const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 
 const bgSrc = resolveImage(backgroundImage);
 const desktopBgSrc = backgroundImageDesktop?.src ?? null;
+const mobileBgSrc = backgroundImageMobile
+	? typeof backgroundImageMobile.src === 'string'
+		? backgroundImageMobile.src
+		: backgroundImageMobile.src.src
+	: null;
 const portraitSrc = portrait ? resolveImage(portrait) : null;
 
 // Invitation dates are floating event-local values serialized with a UTC
@@ -81,6 +88,9 @@ const fpDesktop = focalPointDesktop || fpDefault;
 >
 	<div class="invitation-hero__background">
 		<picture>
+			{mobileBgSrc && (
+				<source media="(max-width: 991px)" srcset={mobileBgSrc} />
+			)}
 			{desktopBgSrc && (
 				<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 			)}
