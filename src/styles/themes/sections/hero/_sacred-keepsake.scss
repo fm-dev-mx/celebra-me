@@ -266,7 +266,10 @@
 	}
 
 	// Desktop refinement (≥992px) — wider, more spacious 2-col grid.
+	// Background becomes transparent so the full-bleed photo shows through on larger screens.
 	@include mixins.respond-to(lg) {
+		background: transparent;
+
 		.invitation-hero__content {
 			max-width: min(58rem, 88vw);
 			margin-left: clamp(1.5rem, 5vw, 4.5rem);
