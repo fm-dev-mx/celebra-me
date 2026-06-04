@@ -152,6 +152,73 @@ beforeEach(() => {
 });
 
 describe('getInvitationEditorContext', () => {
+	it('uses published _assetSlug as the editor asset lookup slug for Ana-like client content', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findInvitationById as jest.Mock).mockResolvedValue({
+			...invitation,
+			slug: 'ana-sofia-cota-guillen',
+			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-jewelry-box' },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				_assetSlug: 'ana-sofia-cota-guillen',
+				hero: { backgroundImage: 'hero', portrait: 'portrait' },
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		expect(result.assetLookupSlug).toBe('ana-sofia-cota-guillen');
+		expect(result.invitation.snapshot.previewSlug).toBe('demo-xv-jewelry-box');
+	});
+
+	it('uses published _assetSlug as the editor asset lookup slug when an empty draft exists', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({ ...draft, content: {} });
+		(findInvitationById as jest.Mock).mockResolvedValue({
+			...invitation,
+			slug: 'ximena-meza-trasvina',
+			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-jewelry-box' },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				_assetSlug: 'ximena-meza-trasvina',
+				hero: { backgroundImage: 'hero', portrait: 'portrait' },
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		expect(result.assetLookupSlug).toBe('ximena-meza-trasvina');
+	});
+
+	it('keeps the same asset lookup slug for Ayrin-like demo-backed content', async () => {
+		(findInvitationById as jest.Mock).mockResolvedValue({
+			...invitation,
+			slug: 'ayrin-samantha-lerma-castro',
+			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-enchanted-rose' },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				_assetSlug: 'demo-xv-enchanted-rose',
+				hero: {
+					backgroundImage: { type: 'internal', key: 'hero' },
+					portrait: { type: 'internal', key: 'portrait' },
+				},
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		expect(result.assetLookupSlug).toBe('demo-xv-enchanted-rose');
+		expect(result.invitation.snapshot.previewSlug).toBe('demo-xv-enchanted-rose');
+	});
+
 	it('hydrates all keys with draft priority over published over demo', async () => {
 		const result = await getInvitationEditorContext('proj-1');
 

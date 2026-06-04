@@ -1,5 +1,5 @@
 import type { AssetField } from '@/lib/assets/asset-source';
-import { resolveSrc } from '@/lib/assets/asset-utils';
+import { resolveFrozenSrc, resolveSrc } from '@/lib/assets/asset-utils';
 import {
 	getCommonAsset,
 	getEventAsset,
@@ -21,7 +21,7 @@ interface Props {
 	description?: string;
 	emptyActionLabel?: string;
 	changeActionLabel?: string;
-	previewSlug?: string;
+	assetLookupSlug?: string;
 	assets?: { id: string; src: string; displayName?: string }[];
 	defaultPreview?: DefaultPreviewInfo;
 	isDefaultImage?: boolean;
@@ -29,14 +29,14 @@ interface Props {
 
 function resolvePreviewSrc(
 	value: AssetField,
-	previewSlug: string | undefined,
+	assetLookupSlug: string | undefined,
 	assets: { id: string; src: string; displayName?: string }[],
 ): string | undefined {
 	if (!value) return undefined;
 	if (typeof value === 'string') {
 		if (value.startsWith('/') || value.startsWith('https://')) return value;
-		if (previewSlug && isEventAssetKey(value)) {
-			return getEventAsset(previewSlug, value)?.src;
+		if (assetLookupSlug && isEventAssetKey(value)) {
+			return getEventAsset(assetLookupSlug, value)?.src;
 		}
 		if (isCommonAssetKey(value)) {
 			return resolveSrc(getCommonAsset(value));
@@ -46,10 +46,10 @@ function resolvePreviewSrc(
 	if (value.type === 'external') return value.src;
 	if (value.type === 'uploaded') {
 		const asset = assets.find((item) => item.id === value.assetId);
-		return asset?.src ?? ('src' in value ? value.src : undefined);
+		return asset?.src ?? resolveFrozenSrc(value as Record<string, unknown>);
 	}
 	if (isEventAssetKey(value.key)) {
-		return previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined;
+		return assetLookupSlug ? getEventAsset(assetLookupSlug, value.key)?.src : undefined;
 	}
 	return resolveSrc(getCommonAsset(value.key));
 }
@@ -89,14 +89,14 @@ export default function ImageAssetField({
 	description,
 	emptyActionLabel = 'Seleccionar imagen',
 	changeActionLabel = 'Cambiar imagen',
-	previewSlug,
+	assetLookupSlug,
 	assets = [],
 	defaultPreview,
 	isDefaultImage = false,
 }: Props) {
 	const hasValue = value != null;
 
-	const src = hasValue ? resolvePreviewSrc(value, previewSlug, assets) : defaultPreview?.src;
+	const src = hasValue ? resolvePreviewSrc(value, assetLookupSlug, assets) : defaultPreview?.src;
 
 	const displayState = deriveDisplayState(value, src, defaultPreview, isDefaultImage);
 	const actionLabel = hasValue ? changeActionLabel : emptyActionLabel;

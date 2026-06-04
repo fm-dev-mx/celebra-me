@@ -35,6 +35,7 @@ function createContext(
 			rsvpSectionHasContent: false,
 			snapshot: { previewSlug: 'demo-xv-jewelry-box' },
 		},
+		assetLookupSlug: 'demo-xv-jewelry-box',
 		content: {
 			title: 'XV Ana',
 			description: 'Celebremos juntos',

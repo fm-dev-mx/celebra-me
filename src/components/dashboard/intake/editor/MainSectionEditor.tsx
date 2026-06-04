@@ -33,7 +33,7 @@ interface Props {
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
 	onOpenAssetPicker: (field: string) => void;
-	previewSlug?: string;
+	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
 }
@@ -51,7 +51,7 @@ export default function MainSectionEditor({
 	onUpdateContent,
 	onUpdateHero,
 	onOpenAssetPicker,
-	previewSlug,
+	assetLookupSlug,
 	assets,
 	visible = true,
 }: Props) {
@@ -110,7 +110,7 @@ export default function MainSectionEditor({
 							label="Fondo de portada"
 							description="Se usa como imagen de fondo en la primera pantalla de la invitación."
 							value={main.backgroundImage}
-							previewSlug={previewSlug}
+							assetLookupSlug={assetLookupSlug}
 							assets={assets}
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImage')}
 						/>
@@ -118,7 +118,7 @@ export default function MainSectionEditor({
 							label="Fondo para móvil (opcional)"
 							description="Opcional. Úsalo si la imagen de portada necesita otro encuadre en celulares."
 							value={main.backgroundImageMobile}
-							previewSlug={previewSlug}
+							assetLookupSlug={assetLookupSlug}
 							assets={assets}
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImageMobile')}
 						/>
@@ -129,7 +129,7 @@ export default function MainSectionEditor({
 								value={main.portrait}
 								emptyActionLabel="Seleccionar foto principal"
 								changeActionLabel="Cambiar foto principal"
-								previewSlug={previewSlug}
+								assetLookupSlug={assetLookupSlug}
 								assets={assets}
 								onOpenLibrary={() => onOpenAssetPicker('hero.portrait')}
 							/>

@@ -29,7 +29,7 @@ interface Props {
 	sourceBadge?: { source: string; label: string };
 	onUpdateFamily: (patch: Partial<FamilyData>) => void;
 	onOpenAssetPicker: (field: string) => void;
-	previewSlug?: string;
+	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
 }
@@ -44,7 +44,7 @@ export default function FamilySectionEditor({
 	sourceBadge,
 	onUpdateFamily,
 	onOpenAssetPicker,
-	previewSlug,
+	assetLookupSlug,
 	assets,
 	visible = true,
 }: Props) {
@@ -123,7 +123,7 @@ export default function FamilySectionEditor({
 				<ImageAssetField
 					label="Imagen familiar"
 					value={family.featuredImage}
-					previewSlug={previewSlug}
+					assetLookupSlug={assetLookupSlug}
 					assets={assets}
 					onOpenLibrary={() => onOpenAssetPicker('family.featuredImage')}
 				/>

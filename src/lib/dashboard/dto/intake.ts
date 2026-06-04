@@ -156,6 +156,7 @@ export interface InvitationEditorContextDTO {
 		| 'captureUrl'
 		| 'captureLinkStatus'
 	> & { snapshot: { previewSlug: string } };
+	assetLookupSlug: string;
 	content: DraftContent;
 	draftUpdatedAt: string | null;
 	draftStatus: 'draft' | 'reviewed' | 'approved' | null;

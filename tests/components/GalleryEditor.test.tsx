@@ -23,7 +23,11 @@ describe('GalleryEditor', () => {
 		};
 
 		render(
-			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={onChange} />,
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={onChange}
+			/>,
 		);
 
 		fireEvent.change(screen.getAllByLabelText('Pie de foto')[0], {
@@ -57,7 +61,7 @@ describe('GalleryEditor', () => {
 			render(
 				<GalleryEditor
 					value={value}
-					previewSlug="demo-xv-jewelry-box"
+					assetLookupSlug="demo-xv-jewelry-box"
 					onChange={jest.fn()}
 				/>,
 			),
@@ -82,7 +86,11 @@ describe('GalleryEditor', () => {
 		};
 
 		render(
-			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={jest.fn()}
+			/>,
 		);
 
 		const srcs = screen.getAllByRole('img').map((img) => (img as HTMLImageElement).src);
@@ -97,7 +105,11 @@ describe('GalleryEditor', () => {
 		};
 
 		render(
-			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={jest.fn()}
+			/>,
 		);
 
 		expect(screen.getAllByText('Vista previa no disponible')).toHaveLength(1);
@@ -110,7 +122,7 @@ describe('GalleryEditor', () => {
 					title: 'Test',
 					items: [{ image: { type: 'external', src: '/uploads/photo.jpg' } }],
 				}}
-				previewSlug="demo-xv-luxury-hacienda"
+				assetLookupSlug="demo-xv-luxury-hacienda"
 				variant="luxury-hacienda"
 				onChange={jest.fn()}
 			/>,
@@ -154,7 +166,11 @@ describe('GalleryEditor', () => {
 		};
 
 		render(
-			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={onChange} />,
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={onChange}
+			/>,
 		);
 
 		const advanced = screen.getByText('Ajustes de encuadre').closest('details');
@@ -192,7 +208,7 @@ describe('GalleryEditor', () => {
 			render(
 				<GalleryEditor
 					value={value}
-					previewSlug="demo-xv-jewelry-box"
+					assetLookupSlug="demo-xv-jewelry-box"
 					onChange={jest.fn()}
 				/>,
 			),
@@ -209,7 +225,7 @@ describe('GalleryEditor', () => {
 		render(
 			<GalleryEditor
 				value={value}
-				previewSlug="demo-xv-jewelry-box"
+				assetLookupSlug="demo-xv-jewelry-box"
 				invitationId="test-invitation-id"
 				onChange={jest.fn()}
 			/>,
@@ -232,7 +248,7 @@ describe('GalleryEditor', () => {
 		render(
 			<GalleryEditor
 				value={value}
-				previewSlug="demo-xv-jewelry-box"
+				assetLookupSlug="demo-xv-jewelry-box"
 				invitationId="test-invitation-id"
 				onChange={onChange}
 			/>,
@@ -260,7 +276,11 @@ describe('GalleryEditor', () => {
 		};
 
 		render(
-			<GalleryEditor value={value} previewSlug="demo-xv-jewelry-box" onChange={jest.fn()} />,
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={jest.fn()}
+			/>,
 		);
 
 		// Select/Remove buttons should NOT render without invitationId
@@ -280,7 +300,7 @@ describe('GalleryEditor', () => {
 		render(
 			<GalleryEditor
 				value={value}
-				previewSlug="demo-xv-jewelry-box"
+				assetLookupSlug="demo-xv-jewelry-box"
 				invitationId="test-invitation-id"
 				onChange={jest.fn()}
 			/>,

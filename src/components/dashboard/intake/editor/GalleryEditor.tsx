@@ -18,7 +18,7 @@ type GalleryItem = Gallery['items'][number];
 
 interface Props {
 	value: Gallery;
-	previewSlug: string;
+	assetLookupSlug: string;
 	onChange: (value: Gallery) => void;
 	variant?: string;
 	invitationId?: string;
@@ -39,7 +39,7 @@ function imageItemKey(image: GalleryItem['image']): string {
 
 export default function GalleryEditor({
 	value,
-	previewSlug,
+	assetLookupSlug,
 	onChange,
 	variant,
 	invitationId,
@@ -109,7 +109,7 @@ export default function GalleryEditor({
 
 			<div className="invitation-editor__gallery-grid">
 				{value.items.map((item, index) => {
-					const src = resolveAssetSrc(item.image, previewSlug, assets);
+					const src = resolveAssetSrc(item.image, assetLookupSlug, assets);
 					const role = getGalleryPreviewRole(index, variant);
 					return (
 						<article

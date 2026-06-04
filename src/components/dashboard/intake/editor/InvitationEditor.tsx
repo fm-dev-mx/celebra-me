@@ -125,7 +125,7 @@ function metadataFromContext(context: InvitationEditorContextDTO): InvitationEdi
 export default function InvitationEditor({ initialContext }: Props) {
 	const editor = useInvitationEditor(initialContext);
 	const invitationId = editor.context.invitation.id;
-	const previewSlug = editor.context.invitation.snapshot.previewSlug;
+	const assetLookupSlug = editor.context.assetLookupSlug;
 	const { assets: editorAssets } = useAssetLibrary(invitationId);
 	const [content, setContent] = useState(editor.context.content);
 	const [metadata, setMetadata] = useState(() => metadataFromContext(initialContext));
@@ -655,7 +655,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						onUpdateContent={updateContent}
 						onUpdateHero={updateHero}
 						onOpenAssetPicker={setPickerField}
-						previewSlug={previewSlug}
+						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'main'}
 					/>
@@ -670,7 +670,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('family')}
 						onUpdateFamily={updateFamily}
 						onOpenAssetPicker={setPickerField}
-						previewSlug={previewSlug}
+						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'family'}
 					/>
@@ -683,7 +683,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('location')}
 						onUpdateLocation={updateLocation}
 						onOpenAssetPicker={setPickerField}
-						previewSlug={previewSlug}
+						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'location'}
 					/>
@@ -1050,7 +1050,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							<ImageAssetField
 								label="Imagen de agradecimiento"
 								value={messages.thankYou.image}
-								previewSlug={previewSlug}
+								assetLookupSlug={assetLookupSlug}
 								assets={editorAssets}
 								onOpenLibrary={() => setPickerField('thankYou.image')}
 								isDefaultImage={editor.context.sectionStates.thankYou === 'demo'}
@@ -1070,7 +1070,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
-							previewSlug={previewSlug}
+							assetLookupSlug={assetLookupSlug}
 							variant={editor.context.invitation.themeId}
 							invitationId={invitationId}
 							onChange={(value) => updateContent('gallery', value)}

@@ -10,6 +10,10 @@ export function resolveSrc(source: { src: string | { src: string } }): string {
 	return typeof source.src === 'string' ? source.src : source.src.src;
 }
 
+export function resolveFrozenSrc(value: Record<string, unknown>): string | undefined {
+	return 'src' in value && typeof value.src === 'string' ? value.src : undefined;
+}
+
 export function resolveAssetSrc(
 	value: string | EditableAssetSource | undefined | null,
 	previewSlug?: string,
@@ -23,11 +27,12 @@ export function resolveAssetSrc(
 		return undefined;
 	}
 	if (value.type === 'external') return value.src;
-	if (value.type === 'uploaded')
+	if (value.type === 'uploaded') {
 		return (
 			assets?.find((a) => a.id === value.assetId)?.src ??
-			('src' in value ? value.src : undefined)
+			resolveFrozenSrc(value as Record<string, unknown>)
 		);
+	}
 	if (isEventAssetKey(value.key))
 		return previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined;
 	return resolveSrc(getCommonAsset(value.key));

@@ -30,23 +30,7 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
-
-const ALL_EDITOR_KEYS: ReadonlyArray<keyof DraftContent> = [
-	'title',
-	'description',
-	'hero',
-	'family',
-	'location',
-	'itinerary',
-	'rsvp',
-	'music',
-	'gifts',
-	'quote',
-	'thankYou',
-	'gallery',
-	'photoNotes',
-	'sectionOrder',
-];
+import { ALL_EDITOR_KEYS, resolveAssetSlug } from '@/lib/assets/asset-slug';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -62,6 +46,7 @@ type RsvpLinkState = {
 
 export interface InvitationEditorContext {
 	invitation: Invitation & { rsvpSectionHasContent: boolean };
+	assetLookupSlug: string;
 	content: DraftContent;
 	draftUpdatedAt: string | null;
 	draftStatus: InvitationContentDraft['status'] | null;
@@ -148,6 +133,7 @@ export async function getInvitationEditorContext(
 	);
 
 	const contentSource = resolveContentSource(sectionStates);
+	const assetLookupSlug = resolveAssetSlug(invitation, published?.content);
 
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =
@@ -159,6 +145,7 @@ export async function getInvitationEditorContext(
 
 	return {
 		invitation: { ...invitation, rsvpSectionHasContent },
+		assetLookupSlug,
 		content,
 		draftUpdatedAt: draft?.updatedAt ?? null,
 		draftStatus: draft?.status ?? null,

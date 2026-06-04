@@ -31,7 +31,7 @@ interface Props {
 	sourceBadge?: { source: string; label: string };
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
 	onOpenAssetPicker: (field: string) => void;
-	previewSlug?: string;
+	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
 }
@@ -44,7 +44,7 @@ export default function LocationSectionEditor({
 	sourceBadge,
 	onUpdateLocation,
 	onOpenAssetPicker,
-	previewSlug,
+	assetLookupSlug,
 	assets,
 	visible = true,
 }: Props) {
@@ -109,7 +109,7 @@ export default function LocationSectionEditor({
 							<ImageAssetField
 								label="Imagen del lugar"
 								value={venue.image}
-								previewSlug={previewSlug}
+								assetLookupSlug={assetLookupSlug}
 								assets={assets}
 								onOpenLibrary={() =>
 									onOpenAssetPicker(`location.${venueKey}.image`)
