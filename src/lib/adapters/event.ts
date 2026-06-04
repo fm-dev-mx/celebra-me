@@ -119,6 +119,12 @@ function requireAsset(
 ): ImageAsset {
 	const asset = resolveAsset(eventSlug, source, eventTitle);
 	if (!asset) {
+		console.warn(
+			`[AssetRegistry] Asset not resolvable for event "${eventSlug}" in requireAsset.` +
+				(source
+					? ` Source: ${typeof source === 'string' ? source : JSON.stringify(source)}`
+					: ''),
+		);
 		throw new Error(`[AssetRegistry] Required asset is missing for event "${eventSlug}".`);
 	}
 	return asset;
@@ -330,13 +336,23 @@ function buildFamilySectionData(context: AdaptationContext) {
 function buildGallerySectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.gallery) return undefined;
-	const items = data.gallery.items.map(
-		(item: { image: string | AssetSource; caption?: string; focalPoint?: string }) => ({
-			...item,
-			key: typeof item.image === 'string' ? item.image : undefined,
-			image: requireAsset(eventSlug, item.image, data.title),
-		}),
-	);
+	const items = data.gallery.items
+		.map((item: { image: string | AssetSource; caption?: string; focalPoint?: string }) => {
+			const resolved = resolveAsset(eventSlug, item.image, data.title);
+			if (!resolved) {
+				console.warn(
+					`[AssetRegistry] Gallery image not resolvable for event "${eventSlug}", skipping item.`,
+				);
+				return null;
+			}
+			return {
+				...item,
+				key: typeof item.image === 'string' ? item.image : undefined,
+				image: resolved,
+			};
+		})
+		.filter(<T>(i: T | null): i is T => i !== null);
+	if (items.length === 0) return undefined;
 	return {
 		...data.gallery,
 		items,

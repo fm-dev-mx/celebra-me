@@ -14,59 +14,52 @@ import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
+import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
 
-const resolution = await resolveInvitationContent(slug, eventType);
-
-if (!resolution) {
-	return Astro.redirect('/404');
-}
-
-const { viewModel } = resolution;
-
-let page: ReturnType<typeof prepareInvitationPageContext>;
+let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
-const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
+let renderError: string | null = null;
+let viewModel: InvitationViewModel | null = null;
 
-if (resolution.source === 'static') {
-	const eventEntry = await getRoutableEventEntry(slug, eventType);
-	if (!eventEntry) {
+try {
+	const resolution = await resolveInvitationContent(slug, eventType);
+
+	if (!resolution) {
 		return Astro.redirect('/404');
 	}
 
-	if (eventType !== eventEntry.data.eventType) {
-		const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
-		if (inviteId) {
-			canonicalUrl.searchParams.set('invite', inviteId);
-		}
-		return Astro.redirect(canonicalUrl.href, 301);
-	}
+	viewModel = resolution.viewModel;
+	const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
 
-	if (inviteId) {
-		const personalization = await resolveRoutePersonalization({
-			inviteId,
-			currentPathWithQuery,
-			routeEventType: eventEntry.data.eventType,
-			routeSlug: slug,
-			routeIsDemo: Boolean(eventEntry.data.isDemo),
-		});
-		if (personalization.redirectPath) {
-			return Astro.redirect(personalization.redirectPath, 302);
-		}
-		guestContext = personalization.guestContext;
-	}
+	let eventEntry: Awaited<ReturnType<typeof getRoutableEventEntry>> = null;
+	let routeEventType: string = eventType;
+	let routeIsDemo: boolean = false;
 
-	page = prepareInvitationPageContext({
-		eventEntry,
-		slug,
-		guestContext,
-	});
-} else {
-	const routeEventType = (resolution.rawContent?.eventType as string | undefined) ?? eventType;
+	if (resolution.source === 'static') {
+		eventEntry = await getRoutableEventEntry(slug, eventType);
+		if (!eventEntry) {
+			return Astro.redirect('/404');
+		}
+
+		if (eventType !== eventEntry.data.eventType) {
+			const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
+			if (inviteId) {
+				canonicalUrl.searchParams.set('invite', inviteId);
+			}
+			return Astro.redirect(canonicalUrl.href, 301);
+		}
+
+		routeEventType = eventEntry.data.eventType;
+		routeIsDemo = Boolean(eventEntry.data.isDemo);
+	} else {
+		routeEventType =
+			(resolution.rawContent?.eventType as string | undefined) ?? eventType;
+	}
 
 	if (inviteId) {
 		const personalization = await resolveRoutePersonalization({
@@ -74,7 +67,7 @@ if (resolution.source === 'static') {
 			currentPathWithQuery,
 			routeEventType,
 			routeSlug: slug,
-			routeIsDemo: false,
+			routeIsDemo,
 		});
 		if (personalization.redirectPath) {
 			return Astro.redirect(personalization.redirectPath, 302);
@@ -82,101 +75,178 @@ if (resolution.source === 'static') {
 		guestContext = personalization.guestContext;
 	}
 
-	page = buildPageContextFromViewModel({
-		viewModel,
-		slug,
-		guestContext,
-		eventType: routeEventType,
-		sectionStyles: resolution.rawContent?.sectionStyles as
-			| { footer?: { variant?: ThemePreset } }
-			| undefined,
-	});
+	if (resolution.source === 'static') {
+		page = prepareInvitationPageContext({
+			eventEntry: eventEntry!,
+			slug,
+			guestContext,
+		});
+	} else {
+		page = buildPageContextFromViewModel({
+			viewModel,
+			slug,
+			guestContext,
+			eventType: routeEventType,
+			sectionStyles: resolution.rawContent?.sectionStyles as
+				| { footer?: { variant?: ThemePreset } }
+				| undefined,
+		});
+	}
+} catch (error) {
+	console.error(
+		`[PublicRoute] Error rendering invitation slug="${slug}" eventType="${eventType}":`,
+		error instanceof Error ? error.stack : String(error),
+	);
+	renderError =
+		error instanceof Error ? error.message : 'Error desconocido al cargar la invitación.';
 }
 ---
 
-<Layout
-	title={page.layout.title}
-	description={page.layout.description}
-	image={page.layout.image}
-	hideHeader={true}
-	className={page.layout.className}
-	isDemo={viewModel.isDemo}
-	themeMode="dark"
->
-	<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
-	<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
-
-		{
-			page.envelope && (
-				<EnvelopeReveal
-					name={page.envelope.name}
-					sealStyle={page.envelope.sealStyle}
-					sealIcon={page.envelope.sealIcon}
-					sealInitials={page.envelope.sealInitials}
-					microcopy={page.envelope.microcopy}
-					documentLabel={page.envelope.documentLabel}
-					stampText={page.envelope.stampText}
-					stampYear={page.envelope.stampYear}
-					tooltipText={page.envelope.tooltipText}
-					eventSlug={page.envelope.eventSlug}
-					variant={page.envelope.variant}
-					card={page.envelope.card}
-				/>
-			)
-		}
-
-		<EventHeader
-			links={viewModel.navigation ?? []}
-			variant={viewModel.theme.preset}
-			initials={viewModel.envelope?.data?.sealInitials}
-			eventName={viewModel.hero?.name}
-			eventSubtitle={viewModel.hero?.label}
+{
+	renderError ? (
+		<Layout title="Invitación no disponible" hideHeader={true} themeMode="dark">
+			<main class="invitation-error">
+				<h1>Invitación no disponible</h1>
+				<p>Lo sentimos, esta invitación no está disponible en este momento. Intenta de nuevo más tarde.</p>
+			</main>
+			<style>
+				.invitation-error {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					min-height: 100vh;
+					padding: 2rem;
+					text-align: center;
+					font-family: system-ui, -apple-system, sans-serif;
+				}
+				.invitation-error h1 {
+					font-size: 1.5rem;
+					margin-bottom: 1rem;
+				}
+				.invitation-error p {
+					font-size: 1rem;
+					line-height: 1.6;
+					color: var(--color-text-muted, #a0a0a0);
+					max-width: 480px;
+				}
+			</style>
+		</Layout>
+	) : page && viewModel ? (
+		<Layout
+			title={page.layout.title}
+			description={page.layout.description}
+			image={page.layout.image}
+			hideHeader={true}
+			className={page.layout.className}
 			isDemo={viewModel.isDemo}
-		/>
+			themeMode="dark"
+		>
+			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
+			<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
 
-		<Hero {...viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} />
+				{
+					page.envelope && (
+						<EnvelopeReveal
+							name={page.envelope.name}
+							sealStyle={page.envelope.sealStyle}
+							sealIcon={page.envelope.sealIcon}
+							sealInitials={page.envelope.sealInitials}
+							microcopy={page.envelope.microcopy}
+							documentLabel={page.envelope.documentLabel}
+							stampText={page.envelope.stampText}
+							stampYear={page.envelope.stampYear}
+							tooltipText={page.envelope.tooltipText}
+							eventSlug={page.envelope.eventSlug}
+							variant={page.envelope.variant}
+							card={page.envelope.card}
+						/>
+					)
+				}
 
-		<InvitationSections pageContext={page} />
+				<EventHeader
+					links={viewModel.navigation ?? []}
+					variant={viewModel.theme.preset}
+					initials={viewModel.envelope?.data?.sealInitials}
+					eventName={viewModel.hero?.name}
+					eventSubtitle={viewModel.hero?.label}
+					isDemo={viewModel.isDemo}
+				/>
 
-		{
-			guestContext && (
-				<script>
-					import { initEngagementTracking } from '@/lib/invitation/engagement';
+				<Hero {...viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} />
 
-					const container = document.getElementById('invitation-sections-container');
-					if (container) {
-						const inviteId = new URLSearchParams(window.location.search).get('invite');
-						const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
+				<InvitationSections pageContext={page} />
 
-						if (inviteId && totalSections > 0) {
-							initEngagementTracking({
-								inviteId,
-								totalSections,
-								throttleMs: 10000
-							});
-						}
-					}
-				</script>
-			)
-		}
+				{
+					guestContext && (
+						<script>
+							import { initEngagementTracking } from '@/lib/invitation/engagement';
 
-		<Footer
-			eventSlug={viewModel.id}
-			showEnvelope={page.wrapper.showEnvelope}
-			variant={page.footerVariant}
-			closingPhrase='Con cariño'
-			showFooterBranding={viewModel.brandingVisibility.showFooterBranding}
-			showContactCta={viewModel.brandingVisibility.showContactCta}
-		/>
+							const container = document.getElementById('invitation-sections-container');
+							if (container) {
+								const inviteId = new URLSearchParams(window.location.search).get('invite');
+								const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
 
-		{viewModel.music && (
-			<MusicPlayer
-				url={viewModel.music.url}
-				autoPlay={viewModel.music.autoPlay}
-				title={viewModel.music.title}
-				revealMode={viewModel.music.revealMode}
-				variant={viewModel.theme.preset}
-			/>
-		)}
-	</main>
-</Layout>
+								if (inviteId && totalSections > 0) {
+									initEngagementTracking({
+										inviteId,
+										totalSections,
+										throttleMs: 10000
+									});
+								}
+							}
+						</script>
+					)
+				}
+
+				<Footer
+					eventSlug={viewModel.id}
+					showEnvelope={page.wrapper.showEnvelope}
+					variant={page.footerVariant}
+					closingPhrase='Con cariño'
+					showFooterBranding={viewModel.brandingVisibility.showFooterBranding}
+					showContactCta={viewModel.brandingVisibility.showContactCta}
+				/>
+
+				{viewModel.music && (
+					<MusicPlayer
+						url={viewModel.music.url}
+						autoPlay={viewModel.music.autoPlay}
+						title={viewModel.music.title}
+						revealMode={viewModel.music.revealMode}
+						variant={viewModel.theme.preset}
+					/>
+				)}
+			</main>
+		</Layout>
+	) : (
+		<Layout title="Invitación no disponible" hideHeader={true} themeMode="dark">
+			<main class="invitation-error">
+				<h1>Invitación no disponible</h1>
+				<p>Lo sentimos, esta invitación no está disponible en este momento. Intenta de nuevo más tarde.</p>
+			</main>
+			<style>
+				.invitation-error {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					min-height: 100vh;
+					padding: 2rem;
+					text-align: center;
+					font-family: system-ui, -apple-system, sans-serif;
+				}
+				.invitation-error h1 {
+					font-size: 1.5rem;
+					margin-bottom: 1rem;
+				}
+				.invitation-error p {
+					font-size: 1rem;
+					line-height: 1.6;
+					color: var(--color-text-muted, #a0a0a0);
+					max-width: 480px;
+				}
+			</style>
+		</Layout>
+	)
+}
