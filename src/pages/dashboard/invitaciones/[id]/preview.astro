@@ -145,10 +145,14 @@ const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
 			{!embeddedPreview && <a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>}
 			</div>
 
-			<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
-			<main class={pageCtx.wrapper.className} {...pageCtx.wrapper.dataAttributes}>
+<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
+			<main
+				class={pageCtx.wrapper.className}
+				{...pageCtx.wrapper.dataAttributes}
+				{...(embeddedPreview ? { 'data-reveal-state': 'revealed' } : {})}
+			>
 				{
-					pageCtx.envelope && (
+					!embeddedPreview && pageCtx.envelope && (
 						<EnvelopeReveal
 							name={pageCtx.envelope.name}
 							sealStyle={pageCtx.envelope.sealStyle}
