@@ -93,6 +93,13 @@ process.env.GMAIL_USER ??= 'test@gmail.com';
 process.env.GMAIL_PASS ??= 'test-pass';
 process.env.CONTACT_FORM_RECIPIENT_EMAIL ??= 'recipient@test.com';
 
+// Mock ResizeObserver for component tests that track container dimensions
+globalThis.ResizeObserver = class ResizeObserver {
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+};
+
 // Mock window.matchMedia for responsive component tests
 Object.defineProperty(window, 'matchMedia', {
 	writable: true,

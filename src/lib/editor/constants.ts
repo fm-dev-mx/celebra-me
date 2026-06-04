@@ -13,5 +13,5 @@ export const DEVICE_ORDER: PreviewDevice[] = ['mobile', 'tablet', 'desktop'];
 export const DEVICE_VIEWPORT_WIDTHS: Record<PreviewDevice, number> = {
 	mobile: 390,
 	tablet: 768,
-	desktop: 1280,
+	desktop: 1440,
 };

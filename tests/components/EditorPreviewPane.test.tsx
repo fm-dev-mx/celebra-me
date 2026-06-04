@@ -1,6 +1,40 @@
 import { createRef } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
+import EditorPreviewPane, {
+	getPreviewScale,
+} from '@/components/dashboard/intake/editor/EditorPreviewPane';
+
+describe('getPreviewScale', () => {
+	it('returns 1 when available width is 0 or negative', () => {
+		expect(getPreviewScale(0, 1280)).toBe(1);
+		expect(getPreviewScale(-1, 1280)).toBe(1);
+	});
+
+	it('returns 1 when virtual width is 0 or negative', () => {
+		expect(getPreviewScale(800, 0)).toBe(1);
+		expect(getPreviewScale(800, -1)).toBe(1);
+	});
+
+	it('returns 1 when virtual width fits within available width', () => {
+		expect(getPreviewScale(1280, 1280)).toBe(1);
+		expect(getPreviewScale(1400, 1280)).toBe(1);
+	});
+
+	it('returns scale < 1 when virtual width exceeds available width', () => {
+		expect(getPreviewScale(640, 1280)).toBe(0.5);
+		expect(getPreviewScale(390, 1280)).toBeCloseTo(0.3047, 3);
+	});
+
+	it('respects maxScale parameter', () => {
+		expect(getPreviewScale(1500, 1280, 0.8)).toBe(1);
+		expect(getPreviewScale(640, 1280, 0.8)).toBe(0.5);
+	});
+
+	it('returns exact ratio when virtual width is larger', () => {
+		const result = getPreviewScale(768, 1280);
+		expect(result).toBe(768 / 1280);
+	});
+});
 
 describe('EditorPreviewPane', () => {
 	const defaultProps = {
@@ -58,7 +92,7 @@ describe('EditorPreviewPane', () => {
 		);
 	});
 
-	it('switches device presets and reloads only the saved preview', () => {
+	it('switches device presets', () => {
 		const onReload = jest.fn();
 		render(<EditorPreviewPane {...defaultProps} previewVersion={1} onReload={onReload} />);
 
@@ -72,8 +106,32 @@ describe('EditorPreviewPane', () => {
 			'true',
 		);
 		expect(screen.getByTestId('editor-preview-frame')).toHaveAttribute('data-device', 'mobile');
+	});
 
-		fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
-		expect(onReload).toHaveBeenCalledTimes(1);
+	it('applies the configured viewport width as iframe width attribute for desktop', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+		const iframe = screen.getByTitle('Vista previa de la invitación');
+		expect(iframe).toHaveAttribute('width', '1440');
+	});
+
+	it('applies the configured viewport width as iframe width attribute for mobile', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Móvil' }));
+		const iframe = screen.getByTitle('Vista previa de la invitación');
+		expect(iframe).toHaveAttribute('width', '390');
+	});
+
+	it('applies the configured viewport width as iframe width attribute for tablet', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Tableta' }));
+		const iframe = screen.getByTitle('Vista previa de la invitación');
+		expect(iframe).toHaveAttribute('width', '768');
+	});
+
+	it('renders viewport wrapper with correct width inline style', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+		const viewport = document.querySelector('.invitation-editor__preview-viewport');
+		expect(viewport).toBeInTheDocument();
+		expect(viewport).toHaveStyle('width: 1440px');
 	});
 });

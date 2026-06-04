@@ -1,10 +1,20 @@
-import { useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
 	DEVICE_LABELS,
 	DEVICE_ORDER,
 	DEVICE_VIEWPORT_WIDTHS,
 	type PreviewDevice,
 } from '@/lib/editor/constants';
+
+export function getPreviewScale(
+	availableWidth: number,
+	virtualWidth: number,
+	maxScale = 1,
+): number {
+	if (availableWidth <= 0 || virtualWidth <= 0) return 1;
+	if (virtualWidth <= availableWidth) return 1;
+	return Math.min(availableWidth / virtualWidth, maxScale);
+}
 
 interface Props {
 	invitationId: string;
@@ -35,6 +45,41 @@ export default function EditorPreviewPane({
 	const iframeKey = `preview-v${previewVersion}`;
 	const fullPreviewUrl = buildPreviewUrl(invitationId, previewVersion, false);
 	const viewportWidth = DEVICE_VIEWPORT_WIDTHS[device];
+
+	const frameRef = useRef<HTMLDivElement>(null);
+	const viewportRef = useRef<HTMLDivElement>(null);
+	const [frameRect, setFrameRect] = useState({ width: 0, height: 0 });
+
+	useEffect(() => {
+		const el = frameRef.current;
+		if (!el) return;
+		const observer = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				setFrameRect({
+					width: entry.contentRect.width,
+					height: entry.contentRect.height,
+				});
+			}
+		});
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
+
+	const scale = getPreviewScale(frameRect.width, viewportWidth);
+	const needsScaling = scale < 1;
+	const viewportHeight =
+		needsScaling && frameRect.height > 0 ? Math.ceil(frameRect.height / scale) : undefined;
+
+	useEffect(() => {
+		const el = viewportRef.current;
+		if (!el) return;
+		el.style.setProperty('--vp-width', `${viewportWidth}px`);
+		el.style.setProperty(
+			'--vp-height',
+			viewportHeight != null ? `${viewportHeight}px` : 'auto',
+		);
+		el.style.setProperty('--vp-scale', needsScaling ? String(scale) : '1');
+	}, [viewportWidth, viewportHeight, scale, needsScaling]);
 
 	return (
 		<aside
@@ -95,23 +140,27 @@ export default function EditorPreviewPane({
 				{device === 'desktop' && (
 					<>
 						{' '}
-						&middot; Escala limitada por el panel. Usa "Abrir vista completa" para
-						escritorio real.
+						&middot; Escala limitada por el panel. Usa &ldquo;Abrir vista
+						completa&rdquo; para escritorio real.
 					</>
 				)}
 			</div>
 			<div
+				ref={frameRef}
 				className="invitation-editor__preview-frame"
 				data-device={device}
 				data-viewport-width={viewportWidth}
 				data-testid="editor-preview-frame"
 			>
-				<iframe
-					key={iframeKey}
-					src={iframeSrc}
-					className="invitation-editor__preview-iframe"
-					title="Vista previa de la invitación"
-				/>
+				<div ref={viewportRef} className="invitation-editor__preview-viewport">
+					<iframe
+						key={iframeKey}
+						src={iframeSrc}
+						width={viewportWidth}
+						className="invitation-editor__preview-iframe"
+						title="Vista previa de la invitación"
+					/>
+				</div>
 			</div>
 		</aside>
 	);
