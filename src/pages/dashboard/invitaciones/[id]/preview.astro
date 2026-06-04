@@ -29,7 +29,7 @@ const { id } = Astro.params;
 let errorMessage: string | null = null;
 let previewSource: string | null = null;
 let previewWarning: string | null = null;
-let pageCtx: InvitationPageContext | undefined;
+let pageCtx: InvitationPageContext | null = null;
 
 if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
@@ -46,9 +46,6 @@ if (!invitationRecord || !resolvedSnapshot) {
 const invitation = invitationRecord && resolvedSnapshot
 	? { ...invitationRecord, snapshot: resolvedSnapshot }
 	: null;
-
-// Track whether we rendered from empty content (first-time editor experience)
-let renderedFromEmpty = false;
 
 const entries = !errorMessage ? await getCollection('event-demos') : [];
 const demoEntryForSlug = (slug: string) =>
@@ -112,9 +109,7 @@ if (previewSelection) {
 // If no content source produced a page context, attempt with empty content
 if (!pageCtx && !errorMessage && invitation) {
 	pageCtx = await tryBuildContext({}, 'Vacío');
-	if (pageCtx) {
-		renderedFromEmpty = true;
-	} else {
+	if (!pageCtx) {
 		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
 	}
 }
@@ -156,7 +151,7 @@ const wrapperDataAttributes = pageCtx
 					Vista previa interna — {previewSource}
 				</span>
 				{previewWarning && <span class="preview-banner__warning">{previewWarning}</span>}
-				{renderedFromEmpty && (
+				{previewSource === 'Vacío' && (
 					<span class="preview-banner__hint">
 						Aún no hay contenido guardado. Edita la invitación para agregarlo.
 					</span>
@@ -233,9 +228,7 @@ const wrapperDataAttributes = pageCtx
 	:root {
 		--preview-banner-height: {embeddedPreview ? '2.5rem' : '3rem'};
 	}
-</style>
 
-<style>
 	.preview-banner {
 		position: fixed;
 		top: 0;
