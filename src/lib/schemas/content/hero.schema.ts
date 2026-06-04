@@ -11,6 +11,7 @@ export const heroSchema = z
 		date: z.iso.datetime(),
 		backgroundImage: AssetSchema,
 		backgroundImageDesktop: AssetSchema.optional(),
+		backgroundImageMobile: AssetSchema.optional(),
 		portrait: AssetSchema.optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
 		focalPoint: focalPointSchema.optional(),
