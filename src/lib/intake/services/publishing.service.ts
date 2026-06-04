@@ -149,22 +149,101 @@ async function freezeUploadedContentRefs(
 	return walk(content) as Record<string, unknown>;
 }
 
-function assertHeroBackgroundResolvable(
+interface AssetRefEntry {
+	path: string;
+	key: string;
+}
+
+function tryAddAssetRef(refs: AssetRefEntry[], path: string, candidate: unknown): void {
+	const obj = candidate as { type?: string; key?: string } | undefined;
+	if (obj?.type === 'internal' && obj.key) {
+		refs.push({ path, key: obj.key });
+	}
+}
+
+/**
+ * Collect all { type: 'internal', key } asset references from the published
+ * content structure. Covers hero, portrait, gallery, venue, interludes,
+ * family, thankYou, and sharing/OG images.
+ */
+function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEntry[] {
+	const refs: AssetRefEntry[] = [];
+
+	const hero = content.hero as Record<string, unknown> | undefined;
+	tryAddAssetRef(refs, 'hero.backgroundImage', hero?.backgroundImage);
+	tryAddAssetRef(refs, 'hero.portrait', hero?.portrait);
+
+	const family = content.family as
+		| { featuredImage?: { type?: string; key?: string } }
+		| undefined;
+	tryAddAssetRef(refs, 'family.featuredImage', family?.featuredImage);
+
+	const location = content.location as
+		| {
+				ceremony?: { image?: { type?: string; key?: string } };
+				reception?: { image?: { type?: string; key?: string } };
+		  }
+		| undefined;
+	if (location) {
+		tryAddAssetRef(refs, 'location.ceremony.image', location.ceremony?.image);
+		tryAddAssetRef(refs, 'location.reception.image', location.reception?.image);
+	}
+
+	const gallery = content.gallery as
+		| { items?: Array<{ image?: { type?: string; key?: string } }> }
+		| undefined;
+	if (gallery?.items) {
+		gallery.items.forEach((item, index) => {
+			tryAddAssetRef(refs, `gallery.items[${index}].image`, item?.image);
+		});
+	}
+
+	const interludes = content.interludes as
+		| Array<{ image?: { type?: string; key?: string } }>
+		| undefined;
+	if (interludes) {
+		interludes.forEach((item, index) => {
+			tryAddAssetRef(refs, `interludes[${index}].image`, item?.image);
+		});
+	}
+
+	const thankYou = content.thankYou as { image?: { type?: string; key?: string } } | undefined;
+	tryAddAssetRef(refs, 'thankYou.image', thankYou?.image);
+
+	const sharing = content.sharing as { ogImage?: { type?: string; key?: string } } | undefined;
+	tryAddAssetRef(refs, 'sharing.ogImage', sharing?.ogImage);
+
+	return refs;
+}
+
+/**
+ * Validate that every internal asset reference in the published content
+ * resolves against the given assetSlug. Required missing assets block
+ * publishing; optional missing assets also block when explicitly referenced
+ * but unresolvable (they would produce a broken public page).
+ * Reports ALL failures at once instead of failing at the first one.
+ */
+function assertAllAssetsResolvable(
 	publishedContent: Record<string, unknown>,
 	assetSlug: string,
 ): void {
-	const hero = publishedContent.hero as
-		| { backgroundImage?: { type?: string; key?: string } }
-		| undefined;
-	if (hero?.backgroundImage?.type === 'internal') {
-		const bgKey = hero.backgroundImage.key;
-		if (bgKey && isEventAssetKey(bgKey) && !getEventAsset(assetSlug, bgKey)) {
-			throw new ApiError(
-				422,
-				'bad_request',
-				'No se pudo resolver la imagen de portada necesaria para publicar. Verifica que los recursos visuales estén completos.',
-			);
+	const refs = collectPublishedAssetRefs(publishedContent);
+	const unresolved: AssetRefEntry[] = [];
+
+	for (const ref of refs) {
+		if (isEventAssetKey(ref.key) && !getEventAsset(assetSlug, ref.key)) {
+			unresolved.push(ref);
 		}
+	}
+
+	if (unresolved.length > 0) {
+		const details = unresolved.map((r) => `"${r.key}" (${r.path})`).join(', ');
+		throw new ApiError(
+			422,
+			'bad_request',
+			`No se pudieron resolver los siguientes recursos visuales necesarios para publicar: ${details}. Verifica que los recursos estén completos en la biblioteca de imágenes del tema.`,
+			{ unresolved: unresolved.map((r) => ({ path: r.path, key: r.key })) },
+		);
 	}
 }
 
@@ -245,7 +324,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	}
 	const publishedContent = publishedContentResult.data;
 
-	assertHeroBackgroundResolvable(publishedContent, assetSlug);
+	assertAllAssetsResolvable(publishedContent as Record<string, unknown>, assetSlug);
 
 	const existingPublished = await findPublishedBySlugAndEventType(
 		publishSlug,
