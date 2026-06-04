@@ -11,7 +11,7 @@ describe('ImageAssetField', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Sin imagen seleccionada')).toBeInTheDocument();
+		expect(screen.getByText('Sin imagen')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Seleccionar imagen' })).toBeInTheDocument();
 	});
 
@@ -24,7 +24,7 @@ describe('ImageAssetField', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Imagen seleccionada')).toBeInTheDocument();
+		expect(screen.getByText('Imagen personalizada')).toBeInTheDocument();
 		expect(screen.getByRole('img', { name: 'Imagen familiar' })).toHaveAttribute(
 			'src',
 			'https://cdn.test/family.webp',
@@ -57,7 +57,6 @@ describe('ImageAssetField', () => {
 			<ImageAssetField label="Imagen del lugar" value={value} onOpenLibrary={jest.fn()} />,
 		);
 
-		expect(screen.getByText('Imagen seleccionada')).toBeInTheDocument();
 		expect(screen.getByText('Biblioteca')).toBeInTheDocument();
 		expect(screen.queryByRole('img')).not.toBeInTheDocument();
 	});

@@ -92,12 +92,13 @@ export default function ImageAssetField({
 					{preview.src ? (
 						<img src={preview.src} alt={label} loading="lazy" decoding="async" />
 					) : (
-						<span aria-hidden="true">IMG</span>
+						<span className="invitation-editor__image-placeholder" aria-hidden="true">
+							IMG
+						</span>
 					)}
 				</div>
 				<div className="invitation-editor__image-copy">
-					<strong>{hasValue ? 'Imagen seleccionada' : 'Sin imagen seleccionada'}</strong>
-					<span>{preview.meta}</span>
+					<span className="invitation-editor__image-meta">{preview.meta}</span>
 				</div>
 				<button
 					type="button"
