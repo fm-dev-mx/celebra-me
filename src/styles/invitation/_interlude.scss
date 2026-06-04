@@ -40,7 +40,9 @@
 	--interlude-frame-inset-sm: var(--interlude-frame-inset);
 	--interlude-frame-border: none;
 
-	scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem));
+	scroll-margin-top: calc(
+		var(--invitation-header-offset, calc(70px + 1.5rem)) + var(--preview-banner-height, 0px)
+	);
 	position: relative;
 	min-height: var(--interlude-min-height);
 	overflow: hidden;

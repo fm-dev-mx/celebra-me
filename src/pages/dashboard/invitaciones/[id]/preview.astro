@@ -142,7 +142,7 @@ const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
 						Aún no hay contenido guardado. Edita la invitación para agregarlo.
 					</span>
 				)}
-				{!embeddedPreview && <a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>}
+			{!embeddedPreview && <a href={editUrl} class="preview-banner__back">&larr; Volver al editor</a>}
 			</div>
 
 			<style is:inline lang="scss" set:html={pageCtx.wrapper.scopedStyles} />
@@ -206,6 +206,12 @@ const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
 		</Layout>
 	) : null
 }
+
+<style is:inline>
+	:root {
+		--preview-banner-height: {embeddedPreview ? '2.5rem' : '3rem'};
+	}
+</style>
 
 <style>
 	.preview-banner {

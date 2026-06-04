@@ -160,9 +160,9 @@ describe('Interlude section contract', () => {
 	});
 
 	it('defaults scroll-margin-top to the centralized header-offset value', () => {
-		expect(interludeContent).toContain(
-			'scroll-margin-top: var(--invitation-header-offset, calc(70px + 1.5rem))',
-		);
+		expect(interludeContent).toContain('scroll-margin-top: calc(');
+		expect(interludeContent).toContain('var(--invitation-header-offset, calc(70px + 1.5rem))');
+		expect(interludeContent).toContain('var(--preview-banner-height, 0px)');
 		expect(interludeContent).not.toContain('--interlude-scroll-margin-top');
 	});
 });
