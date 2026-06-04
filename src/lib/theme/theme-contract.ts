@@ -56,6 +56,8 @@ export type ThemePreset = (typeof THEME_PRESETS)[number];
 export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set([
 	'editorial',
 	'premiere-floral',
+	'sacred-keepsake',
+	'angelic-presence',
 ]);
 
 /**

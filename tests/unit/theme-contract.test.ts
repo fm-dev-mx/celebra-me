@@ -20,6 +20,18 @@ describe('themeSupportsPortrait', () => {
 		}
 	});
 
+	it('returns true for themes that render portrait in CSS (editorial, premiere-floral, sacred-keepsake, angelic-presence)', () => {
+		expect(themeSupportsPortrait('editorial')).toBe(true);
+		expect(themeSupportsPortrait('premiere-floral')).toBe(true);
+		expect(themeSupportsPortrait('sacred-keepsake')).toBe(true);
+		expect(themeSupportsPortrait('angelic-presence')).toBe(true);
+	});
+
+	it('returns false for themes that hide portrait via display:none (celestial-blue, enchanted-rose)', () => {
+		expect(themeSupportsPortrait('celestial-blue')).toBe(false);
+		expect(themeSupportsPortrait('enchanted-rose')).toBe(false);
+	});
+
 	it('every theme in PORTRAIT_SUPPORTED_THEMES is a valid ThemePreset', () => {
 		const valid = new Set(THEME_PRESETS);
 		for (const theme of PORTRAIT_SUPPORTED_THEMES) {
