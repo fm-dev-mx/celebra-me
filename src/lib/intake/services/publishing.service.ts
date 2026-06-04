@@ -27,6 +27,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
+import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -292,7 +293,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
 	const publishSlug = getPublicSlug(invitation);
-	const assetSlug = resolvePublishAssetSlug(snapshot.previewSlug);
+	const assetSlug = resolvePublishAssetSlug(resolveAssetSlug(invitation));
 
 	const mappedContent = mapDraftToPublished({
 		invitation: {

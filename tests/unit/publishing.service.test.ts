@@ -491,8 +491,27 @@ describe('publishDraft', () => {
 		await expect(publishDraft('proj-1')).resolves.toBeDefined();
 	});
 
-	it('sets _assetSlug to snapshot.previewSlug (not public slug) for client invitations', async () => {
+	it('sets _assetSlug to public slug for client invitations with a matching asset directory', async () => {
 		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
+		mockGetProject.mockResolvedValue(projectWithSlug as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({
+					_assetSlug: 'ana-sofia-cota-guillen',
+				}),
+			}),
+		);
+	});
+
+	it('falls back to previewSlug as _assetSlug for client invitations without a matching asset directory', async () => {
+		const projectWithSlug = { ...baseProject, slug: 'ayrin-samantha-lerma-castro' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
