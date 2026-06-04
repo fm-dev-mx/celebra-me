@@ -30,7 +30,7 @@ export function resolveAssetSrc(
 	if (value.type === 'uploaded') {
 		return (
 			assets?.find((a) => a.id === value.assetId)?.src ??
-			resolveFrozenSrc(value as Record<string, unknown>)
+			resolveFrozenSrc(value as unknown as Record<string, unknown>)
 		);
 	}
 	if (isEventAssetKey(value.key))

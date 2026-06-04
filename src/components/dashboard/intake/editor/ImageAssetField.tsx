@@ -46,7 +46,7 @@ function resolvePreviewSrc(
 	if (value.type === 'external') return value.src;
 	if (value.type === 'uploaded') {
 		const asset = assets.find((item) => item.id === value.assetId);
-		return asset?.src ?? resolveFrozenSrc(value as Record<string, unknown>);
+		return asset?.src ?? resolveFrozenSrc(value as unknown as Record<string, unknown>);
 	}
 	if (isEventAssetKey(value.key)) {
 		return assetLookupSlug ? getEventAsset(assetLookupSlug, value.key)?.src : undefined;
