@@ -5,7 +5,7 @@ describe('ImageAssetField', () => {
 	it('renders an empty image selector surface', () => {
 		render(
 			<ImageAssetField
-				label="Imagen de portada"
+				label="Fondo de portada"
 				value={undefined}
 				onOpenLibrary={jest.fn()}
 			/>,
@@ -35,7 +35,7 @@ describe('ImageAssetField', () => {
 	it('renders default state when defaultPreview is provided with empty value', () => {
 		render(
 			<ImageAssetField
-				label="Imagen de portada"
+				label="Fondo de portada"
 				value={undefined}
 				defaultPreview={{ src: 'https://cdn.test/default.webp', label: 'Default' }}
 				onOpenLibrary={jest.fn()}
@@ -43,7 +43,7 @@ describe('ImageAssetField', () => {
 		);
 
 		expect(screen.getByText('Imagen predeterminada')).toBeInTheDocument();
-		expect(screen.getByRole('img', { name: 'Imagen de portada' })).toHaveAttribute(
+		expect(screen.getByRole('img', { name: 'Fondo de portada' })).toHaveAttribute(
 			'src',
 			'https://cdn.test/default.webp',
 		);
@@ -84,14 +84,14 @@ describe('ImageAssetField', () => {
 		const onOpenLibrary = jest.fn();
 		render(
 			<ImageAssetField
-				label="Retrato"
+				label="Foto principal"
 				value={undefined}
-				emptyActionLabel="Seleccionar retrato"
+				emptyActionLabel="Seleccionar foto principal"
 				onOpenLibrary={onOpenLibrary}
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Seleccionar retrato' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Seleccionar foto principal' }));
 		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
 	});
 

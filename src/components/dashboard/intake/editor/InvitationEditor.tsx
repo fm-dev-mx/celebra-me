@@ -326,6 +326,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	);
 
 	const eventType = editor.context.invitation.eventType;
+	const themeId = editor.context.invitation.themeId;
 
 	const criticalSections = useMemo(
 		() => getCriticalSections(eventType, rsvpEnabled),
@@ -645,6 +646,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						content={content}
 						main={main}
 						eventType={eventType}
+						themeId={themeId}
 						invitationId={invitationId}
 						dirty={dirty.has('main')}
 						error={errors.main}
@@ -770,7 +772,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 									<option value="both">Formulario y WhatsApp</option>
 								</select>
 							</label>
-							{['whatsapp', 'both'].includes(rsvp.confirmationMode) && (
+							{['whatsapp', 'both'].includes(rsvp.confirmationMode ?? '') && (
 								<Field
 									label="WhatsApp"
 									value={rsvp.whatsappPhone ?? ''}

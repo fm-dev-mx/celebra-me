@@ -7,6 +7,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import type { AssetField } from '@/lib/assets/asset-source';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
+import { themeSupportsPortrait } from '@/lib/theme/theme-contract';
 
 interface HeroData {
 	name?: string;
@@ -15,6 +16,7 @@ interface HeroData {
 	nickname?: string;
 	date?: string;
 	backgroundImage?: AssetField;
+	backgroundImageMobile?: AssetField;
 	portrait?: AssetField;
 }
 
@@ -22,6 +24,7 @@ interface Props {
 	content: DraftContent;
 	main: HeroData;
 	eventType: string;
+	themeId: string;
 	invitationId: string;
 	dirty: boolean;
 	error?: string;
@@ -39,6 +42,7 @@ export default function MainSectionEditor({
 	content,
 	main,
 	eventType,
+	themeId,
 	invitationId,
 	dirty,
 	error,
@@ -51,7 +55,7 @@ export default function MainSectionEditor({
 	assets,
 	visible = true,
 }: Props) {
-	const isBoda = eventType === 'boda';
+	const supportsPortrait = themeSupportsPortrait(themeId);
 	return (
 		<SectionCard
 			id="main"
@@ -74,7 +78,7 @@ export default function MainSectionEditor({
 					value={main.name ?? ''}
 					onChange={(value) => onUpdateHero({ name: value })}
 				/>
-				{isBoda && (
+				{eventType === 'boda' && (
 					<Field
 						label={getFieldLabel('hero', 'secondaryName', eventType)}
 						value={main.secondaryName ?? ''}
@@ -97,27 +101,42 @@ export default function MainSectionEditor({
 					value={(main.date ?? '').replace('Z', '').slice(0, 16)}
 					onChange={(value) => onUpdateHero({ date: value })}
 				/>
-				{invitationId && (
-					<>
+			</div>
+			{invitationId && (
+				<div className="invitation-editor__image-group">
+					<h4 className="invitation-editor__image-group-title">Imágenes principales</h4>
+					<div className="invitation-editor__image-grid">
 						<ImageAssetField
-							label="Imagen de portada"
+							label="Fondo de portada"
+							description="Se usa como imagen de fondo en la primera pantalla de la invitación."
 							value={main.backgroundImage}
 							previewSlug={previewSlug}
 							assets={assets}
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImage')}
 						/>
 						<ImageAssetField
-							label="Retrato"
-							value={main.portrait}
-							emptyActionLabel="Seleccionar retrato"
-							changeActionLabel="Cambiar retrato"
+							label="Fondo para móvil (opcional)"
+							description="Opcional. Úsalo si la imagen de portada necesita otro encuadre en celulares."
+							value={main.backgroundImageMobile}
 							previewSlug={previewSlug}
 							assets={assets}
-							onOpenLibrary={() => onOpenAssetPicker('hero.portrait')}
+							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImageMobile')}
 						/>
-					</>
-				)}
-			</div>
+						{supportsPortrait && (
+							<ImageAssetField
+								label="Foto principal"
+								description="Se usa para destacar a la quinceañera en diseños o secciones que separan fondo y persona. Algunos diseños pueden no mostrar esta foto por separado."
+								value={main.portrait}
+								emptyActionLabel="Seleccionar foto principal"
+								changeActionLabel="Cambiar foto principal"
+								previewSlug={previewSlug}
+								assets={assets}
+								onOpenLibrary={() => onOpenAssetPicker('hero.portrait')}
+							/>
+						)}
+					</div>
+				</div>
+			)}
 			<TextArea
 				label="Descripción"
 				value={content.description ?? ''}
