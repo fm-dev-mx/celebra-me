@@ -180,6 +180,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		backgroundImageDesktop: data.hero.backgroundImageDesktop
 			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
 			: undefined,
+		backgroundImageMobile: resolveAsset(eventSlug, data.hero.backgroundImageMobile, data.title),
 		portrait: resolveAsset(eventSlug, data.hero.portrait, data.title),
 		variant: preset,
 		focalPoint: data.hero.focalPoint,

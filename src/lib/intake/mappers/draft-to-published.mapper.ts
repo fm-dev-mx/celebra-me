@@ -158,6 +158,7 @@ function buildHeroFromDraft(
 		date: demoDate,
 		backgroundImage: demoBackgroundImage,
 		backgroundImageDesktop: demoBackgroundImageDesktop,
+		backgroundImageMobile: demoBackgroundImageMobile,
 		portrait: demoPortrait,
 		variant: demoVariant,
 	} = demoHero ?? {};
@@ -171,6 +172,7 @@ function buildHeroFromDraft(
 		backgroundImage: draftHero.backgroundImage ??
 			demoBackgroundImage ?? { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoBackgroundImageDesktop,
+		backgroundImageMobile: draftHero.backgroundImageMobile ?? demoBackgroundImageMobile,
 		portrait: draftHero.portrait ?? demoPortrait,
 		variant: (demoVariant as string) || themeId,
 	};

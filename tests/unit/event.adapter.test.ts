@@ -102,6 +102,28 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
+	it('resolves backgroundImageMobile when present in hero data', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				hero: {
+					...fixture.hero,
+					backgroundImageMobile: {
+						type: 'external',
+						src: '/images/mobile-bg.webp',
+					},
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.hero.backgroundImageMobile).toBeDefined();
+		expect(viewModel.hero.backgroundImageMobile?.src).toBe('/images/mobile-bg.webp');
+	});
+
 	it('preserves thank-you overlay composition metadata', () => {
 		const fixture = loadFixture(
 			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',

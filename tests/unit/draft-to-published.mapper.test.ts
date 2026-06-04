@@ -98,6 +98,32 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('includes backgroundImageMobile when draft provides it', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				hero: {
+					...baseInput.draftContent.hero,
+					backgroundImageMobile: {
+						type: 'external',
+						src: 'https://cdn.test/mobile-bg.webp',
+					},
+				},
+			},
+		});
+
+		expect(result.hero).toMatchObject({
+			backgroundImageMobile: { type: 'external', src: 'https://cdn.test/mobile-bg.webp' },
+		});
+	});
+
+	it('sets backgroundImageMobile to undefined when draft does not provide it', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.hero).toHaveProperty('backgroundImageMobile', undefined);
+	});
+
 	it('sets theme from invitation snapshot', () => {
 		const result = mapDraftToPublished(baseInput);
 

@@ -29,6 +29,7 @@ export interface HeroViewModel {
 	venueName?: string;
 	backgroundImage: ImageAsset;
 	backgroundImageDesktop?: { src: string };
+	backgroundImageMobile?: ImageAsset;
 	portrait?: ImageAsset;
 	variant: ThemePreset;
 	focalPoint?: string;
