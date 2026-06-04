@@ -143,14 +143,6 @@ export default function EditorSidebar({
 					onClick={() => onSelectSection?.(sectionId)}
 				>
 					<span className="invitation-editor__nav-label">{def.label}</span>
-					{dirty.has(saveSectionKey) && savingSection !== saveSectionKey && (
-						<span
-							className="invitation-editor__nav-dirty"
-							aria-label="con cambios sin guardar"
-						>
-							*
-						</span>
-					)}
 				</button>
 				<span
 					className={`invitation-editor__nav-public-status invitation-editor__nav-public-status--${status
