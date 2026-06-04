@@ -150,6 +150,18 @@ describe('adaptEvent', () => {
 		});
 	});
 
+	it('countdown eventDate matches hero date', () => {
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeDefined();
+		expect(viewModel.sections.countdown?.eventDate).toBe(viewModel.hero.date);
+	});
+
 	it('throws for invalid theme presets instead of silently falling back', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

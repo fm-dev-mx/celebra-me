@@ -29,6 +29,7 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
+import { formatDateLong } from '@/lib/intake/constants';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
 	getEditorSectionById,
@@ -683,9 +684,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 						visible={activeEditorCardId === 'countdown'}
 					>
 						<p className="invitation-editor__helper-text">
-							La cuenta regresiva se calcula con la fecha capturada en Portada. Para
-							evitar duplicar datos, edita ese valor desde la sección Portada.
+							La fecha del evento en la cuenta regresiva se calcula automáticamente
+							desde la Portada. El texto decorativo proviene del tema de la invitación
+							y puede incluir referencias a fechas o lugares específicos del demo.
 						</p>
+						<div className="invitation-editor__countdown-preview">
+							<span className="invitation-editor__countdown-preview-label">
+								Fecha visible en cuenta regresiva:
+							</span>
+							<span className="invitation-editor__countdown-preview-date">
+								{main.date ? formatDateLong(main.date) : 'Sin fecha'}
+							</span>
+						</div>
 					</SectionCard>
 
 					<SectionCard

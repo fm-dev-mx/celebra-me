@@ -1,6 +1,7 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
 import { str } from '@/lib/intake/utils';
+import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
 function isBlankSection<T extends Record<string, unknown> | null | undefined>(
 	value: T,
@@ -327,7 +328,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		location: locationSection ?? demoContent.location,
 		gallery: draftContent.gallery ?? demoContent.gallery,
 		itinerary: draftContent.itinerary ?? demoContent.itinerary,
-		countdown: demoContent.countdown,
+		countdown: isDemo ? demoContent.countdown : { ...COUNTDOWN_DEFAULTS },
 		rsvp: rsvpSection,
 		music: musicSection,
 		gifts: giftsSection,

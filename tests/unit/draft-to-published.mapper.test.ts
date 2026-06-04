@@ -297,13 +297,49 @@ describe('mapDraftToPublished', () => {
 		expect(result.location).toBeUndefined();
 	});
 
-	it('includes envelope, gallery, itinerary, countdown from demo content', () => {
+	it('includes envelope, gallery, itinerary from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
 		expect(result.gallery).toMatchObject({ title: 'Galería' });
 		expect(result.itinerary).toMatchObject({ title: 'Itinerario' });
+	});
+
+	it('uses neutral countdown text for non-demo invitations', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.countdown).toMatchObject({
+			title: '¡Falta muy poco!',
+			subtitlePrefix: 'El',
+			footerText: 'Prepárate para una noche inolvidable',
+		});
+	});
+
+	it('uses themed countdown text for demo invitations', () => {
+		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
+
 		expect(result.countdown).toMatchObject({ title: 'Falta poco' });
+	});
+
+	it('does not inherit stale demo date/location text in countdown footerText for real invitations', () => {
+		const demoWithStaleFooter = {
+			...baseDemoContent,
+			countdown: {
+				title: 'La gala comienza en',
+				footerText: '20 de noviembre de 2027, Querétaro',
+			},
+		};
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: demoWithStaleFooter,
+		});
+
+		expect(result.countdown).toMatchObject({
+			footerText: 'Prepárate para una noche inolvidable',
+		});
+		expect((result.countdown as Record<string, unknown>).footerText).not.toBe(
+			'20 de noviembre de 2027, Querétaro',
+		);
 	});
 
 	it('uses gallery from draft content when the admin edits captions or order', () => {
@@ -396,7 +432,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.description).toBe('Test Description');
 	});
 
-	it('isDemo is always false', () => {
+	it('defaults isDemo to false', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.isDemo).toBe(false);

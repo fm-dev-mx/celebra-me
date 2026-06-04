@@ -245,9 +245,7 @@ describe('InvitationEditor', () => {
 		expect(
 			screen.getByRole('heading', { level: 2, name: 'Cuenta regresiva' }),
 		).toBeInTheDocument();
-		expect(
-			screen.getByText(/se calcula con la fecha capturada en Portada/),
-		).toBeInTheDocument();
+		expect(screen.getByText(/se calcula automáticamente desde la Portada/)).toBeInTheDocument();
 		expect(screen.queryByLabelText('Fecha del evento')).not.toBeInTheDocument();
 	});
 
