@@ -558,6 +558,19 @@ export default function InvitationEditor({ initialContext }: Props) {
 						)}
 					</div>
 				)}
+				{!editor.context.publication.hasPublishedContent && (
+					<div className="invitation-editor__warning invitation-editor__warning--guard">
+						<p>
+							<strong>Sin publicación.</strong> La URL pública{' '}
+							<code>
+								/{editor.context.invitation.eventType}/
+								{editor.context.invitation.slug ?? '...'}
+							</code>{' '}
+							no está disponible hasta que publiques. Usa{' '}
+							<strong>Vista previa</strong> para ver el borrador.
+						</p>
+					</div>
+				)}
 				{errors.publish && <p className="invitation-editor__error">{errors.publish}</p>}
 				{success.publish && !publishedSlug && (
 					<p className="invitation-editor__success">{success.publish}</p>
