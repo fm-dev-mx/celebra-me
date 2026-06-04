@@ -10,6 +10,7 @@ import gallery07 from './gallery-07.webp';
 import gallery08 from './gallery-08.webp';
 import gallery09 from './gallery-09.webp';
 import gallery10 from './gallery-10.webp';
+import heroDesktop from './hero-desktop.webp';
 import hero from './hero.webp';
 import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
@@ -34,6 +35,7 @@ export const assets = {
 	gallery08,
 	gallery09,
 	gallery10,
+	heroDesktop,
 	hero,
 	interlude01,
 	interlude02,
