@@ -18,6 +18,7 @@ interface Props {
 	label: string;
 	value: AssetField;
 	onOpenLibrary: () => void;
+	description?: string;
 	emptyActionLabel?: string;
 	changeActionLabel?: string;
 	previewSlug?: string;
@@ -85,6 +86,7 @@ export default function ImageAssetField({
 	label,
 	value,
 	onOpenLibrary,
+	description,
 	emptyActionLabel = 'Seleccionar imagen',
 	changeActionLabel = 'Cambiar imagen',
 	previewSlug,
@@ -94,11 +96,7 @@ export default function ImageAssetField({
 }: Props) {
 	const hasValue = value != null;
 
-	const src = hasValue
-		? resolvePreviewSrc(value, previewSlug, assets)
-		: defaultPreview
-			? defaultPreview.src
-			: undefined;
+	const src = hasValue ? resolvePreviewSrc(value, previewSlug, assets) : defaultPreview?.src;
 
 	const displayState = deriveDisplayState(value, src, defaultPreview, isDefaultImage);
 	const actionLabel = hasValue ? changeActionLabel : emptyActionLabel;
@@ -106,6 +104,7 @@ export default function ImageAssetField({
 	return (
 		<div className="invitation-editor__image-field">
 			<div className="invitation-editor__image-field-label">{label}</div>
+			{description && <p className="invitation-editor__image-field-desc">{description}</p>}
 			<div
 				className={`invitation-editor__image-card${
 					hasValue ? ' invitation-editor__image-card--selected' : ''

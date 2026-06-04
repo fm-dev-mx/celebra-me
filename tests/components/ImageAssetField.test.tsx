@@ -94,4 +94,31 @@ describe('ImageAssetField', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Seleccionar retrato' }));
 		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
 	});
+
+	it('renders description text when description prop is provided', () => {
+		render(
+			<ImageAssetField
+				label="Fondo de portada"
+				description="Texto de ayuda para el usuario."
+				value={undefined}
+				onOpenLibrary={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Texto de ayuda para el usuario.')).toBeInTheDocument();
+	});
+
+	it('does not render description paragraph when description is omitted', () => {
+		const { container } = render(
+			<ImageAssetField
+				label="Fondo de portada"
+				value={undefined}
+				onOpenLibrary={jest.fn()}
+			/>,
+		);
+
+		expect(
+			container.querySelector('.invitation-editor__image-field-desc'),
+		).not.toBeInTheDocument();
+	});
 });
