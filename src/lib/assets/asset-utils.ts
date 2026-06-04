@@ -23,7 +23,11 @@ export function resolveAssetSrc(
 		return undefined;
 	}
 	if (value.type === 'external') return value.src;
-	if (value.type === 'uploaded') return assets?.find((a) => a.id === value.assetId)?.src;
+	if (value.type === 'uploaded')
+		return (
+			assets?.find((a) => a.id === value.assetId)?.src ??
+			('src' in value ? value.src : undefined)
+		);
 	if (isEventAssetKey(value.key))
 		return previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined;
 	return resolveSrc(getCommonAsset(value.key));

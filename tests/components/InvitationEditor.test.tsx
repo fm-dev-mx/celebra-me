@@ -125,6 +125,30 @@ jest.mock('@/lib/intake/use-asset-library', () => ({
 	}),
 }));
 
+jest.mock('@/components/dashboard/intake/editor/AssetPicker', () => {
+	return function MockAssetPicker({
+		onSelect,
+		onClose,
+	}: {
+		onSelect: (assetId: string) => void;
+		onClose: () => void;
+	}) {
+		return (
+			<div data-testid="mock-asset-picker">
+				<button
+					onClick={() => {
+						onSelect('test-asset-id');
+						onClose();
+					}}
+				>
+					Select Test Asset
+				</button>
+				<button onClick={onClose}>Close</button>
+			</div>
+		);
+	};
+});
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	jest.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -283,5 +307,26 @@ describe('InvitationEditor', () => {
 			'noopener,noreferrer',
 		);
 		open.mockRestore();
+	});
+
+	it('handles asset selection for hero.backgroundImageMobile', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const mobileBgLabel = screen.getByText('Fondo para móvil (opcional)');
+		const field = mobileBgLabel.closest('.invitation-editor__image-field') as HTMLElement;
+
+		// Initially shows empty state
+		expect(within(field as HTMLElement).getByText('Sin imagen')).toBeInTheDocument();
+
+		// Click to open asset picker
+		fireEvent.click(within(field).getByRole('button', { name: 'Seleccionar imagen' }));
+		expect(screen.getByTestId('mock-asset-picker')).toBeInTheDocument();
+
+		// Select an asset
+		fireEvent.click(screen.getByRole('button', { name: 'Select Test Asset' }));
+
+		// Picker closes and content is updated (asset not in library → 'missing' state)
+		expect(screen.queryByTestId('mock-asset-picker')).not.toBeInTheDocument();
+		expect(within(field).getByText('Imagen faltante')).toBeInTheDocument();
 	});
 });

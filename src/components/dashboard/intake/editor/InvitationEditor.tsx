@@ -1168,18 +1168,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 					invitationId={invitationId}
 					onSelect={(assetId) => {
 						const ref = { type: 'uploaded' as const, assetId };
-						if (pickerField === 'hero.backgroundImage') {
-							updateHero({ backgroundImage: ref });
-						} else if (pickerField === 'hero.portrait') {
-							updateHero({ portrait: ref });
-						} else if (pickerField === 'family.featuredImage') {
-							updateFamily({ featuredImage: ref });
-						} else if (pickerField === 'thankYou.image') {
-							updateContent('thankYou', {
-								...messages.thankYou,
-								image: ref,
-							});
-						} else if (pickerField.startsWith('location.')) {
+						const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
+							'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
+							'hero.portrait': () => updateHero({ portrait: ref }),
+							'hero.backgroundImageMobile': () =>
+								updateHero({ backgroundImageMobile: ref }),
+							'family.featuredImage': () => updateFamily({ featuredImage: ref }),
+							'thankYou.image': () =>
+								updateContent('thankYou', { ...messages.thankYou, image: ref }),
+						};
+						for (const key of Object.keys(PICKER_FIELD_UPDATERS)) {
+							if (pickerField === key || pickerField.startsWith(key + '.')) {
+								PICKER_FIELD_UPDATERS[key]();
+								break;
+							}
+						}
+						if (pickerField.startsWith('location.')) {
 							const parts = pickerField.split('.');
 							const venueKey = parts[1] as 'ceremony' | 'reception';
 							const venue = location[venueKey] ?? {};
