@@ -8,6 +8,7 @@ import {
 	gallerySchema,
 	itinerarySchema,
 	giftsSchema,
+	countdownEditorSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
@@ -61,6 +62,7 @@ export const InvitationContentDraftContentSchema = z
 				additionalIndications: optionalText(),
 			})
 			.optional(),
+		countdown: countdownEditorSchema.optional(),
 		itinerary: itinerarySchema.optional(),
 		gallery: gallerySchema.optional(),
 		family: z

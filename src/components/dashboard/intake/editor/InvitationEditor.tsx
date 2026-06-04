@@ -71,7 +71,7 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	quote: ['quote'],
 	family: ['family'],
 	location: ['location'],
-	countdown: ['hero'],
+	countdown: ['countdown'],
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
 	music: ['music'],
@@ -258,6 +258,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const main = content.hero ?? {};
 	const family = content.family ?? {};
 	const location = content.location ?? {};
+	const countdown = content.countdown ?? {};
 	const rsvp = content.rsvp ?? {};
 	const music = content.music ?? {};
 	const gifts = content.gifts ?? { items: [] };
@@ -279,6 +280,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 		updateContent('family', { ...family, ...patch });
 	const updateLocation = (patch: Partial<typeof location>) =>
 		updateContent('location', { ...location, ...patch });
+	const updateCountdown = (patch: Partial<typeof countdown>) =>
+		updateContent('countdown', { ...countdown, ...patch });
 	const updateRsvp = (patch: Partial<typeof rsvp>) =>
 		updateContent('rsvp', { ...rsvp, ...patch });
 
@@ -692,17 +695,33 @@ export default function InvitationEditor({ initialContext }: Props) {
 						id="countdown"
 						title="Cuenta regresiva"
 						description="Esta sección pública usa la fecha principal de la invitación."
-						dirty={dirty.has('main')}
-						error={errors.main}
-						success={success.main}
+						dirty={dirty.has('countdown')}
+						error={errors.countdown}
+						success={success.countdown}
 						sourceBadge={sectionSource('countdown')}
 						visible={activeEditorCardId === 'countdown'}
 					>
 						<p className="invitation-editor__helper-text">
 							La fecha del evento en la cuenta regresiva se calcula automáticamente
-							desde la Portada. El texto decorativo proviene del tema de la invitación
-							y puede incluir referencias a fechas o lugares específicos del demo.
+							desde la Portada.
 						</p>
+						<div className="invitation-editor__field-grid">
+							<Field
+								label="Título"
+								value={countdown.title ?? ''}
+								onChange={(value) => updateCountdown({ title: value })}
+							/>
+							<Field
+								label="Texto antes de la fecha"
+								value={countdown.subtitlePrefix ?? ''}
+								onChange={(value) => updateCountdown({ subtitlePrefix: value })}
+							/>
+						</div>
+						<TextArea
+							label="Texto final"
+							value={countdown.footerText ?? ''}
+							onChange={(value) => updateCountdown({ footerText: value })}
+						/>
 						<div className="invitation-editor__countdown-preview">
 							<span className="invitation-editor__countdown-preview-label">
 								Fecha visible en cuenta regresiva:

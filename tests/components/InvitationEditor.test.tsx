@@ -40,6 +40,11 @@ function createContext(
 			title: 'XV Ana',
 			description: 'Celebremos juntos',
 			hero: { name: 'Ana', date: '2027-01-01' },
+			countdown: {
+				title: 'Ya casi celebramos',
+				subtitlePrefix: 'Será el',
+				footerText: 'Trae tus mejores pasos',
+			},
 			quote: { text: 'Un sueño comienza', author: 'Ana' },
 			thankYou: { message: 'Gracias por acompañarme', closingName: 'Ana' },
 			gallery: { title: 'Galería', items: [] },
@@ -74,6 +79,7 @@ function createContext(
 			title: 'draft',
 			description: 'draft',
 			hero: 'draft',
+			countdown: 'draft',
 			family: 'empty',
 			location: 'empty',
 			itinerary: 'draft',
@@ -261,7 +267,7 @@ describe('InvitationEditor', () => {
 		expect(screen.queryByRole('button', { name: 'Guardar sección' })).not.toBeInTheDocument();
 	});
 
-	it('keeps countdown as a public section without moving the date field into it', () => {
+	it('edits countdown copy without moving the event date field into it', async () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
 
@@ -272,6 +278,22 @@ describe('InvitationEditor', () => {
 		).toBeInTheDocument();
 		expect(screen.getByText(/se calcula automáticamente desde la Portada/)).toBeInTheDocument();
 		expect(screen.queryByLabelText('Fecha del evento')).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Título')).toHaveValue('Ya casi celebramos');
+		expect(screen.getByLabelText('Texto antes de la fecha')).toHaveValue('Será el');
+		expect(screen.getByLabelText('Texto final')).toHaveValue('Trae tus mejores pasos');
+
+		fireEvent.change(screen.getByLabelText('Título'), {
+			target: { value: 'Falta poquito' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveSection).toHaveBeenCalledWith(
+				'countdown',
+				expect.objectContaining({ title: 'Falta poquito' }),
+				'2026-05-30T02:00:00Z',
+			);
+		});
 	});
 
 	it('focuses the persistent preview pane from the action bar on desktop', () => {

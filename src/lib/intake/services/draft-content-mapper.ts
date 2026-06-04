@@ -102,6 +102,16 @@ function mapRsvpConfig(data: Record<string, unknown>): Partial<DraftContent> {
 	};
 }
 
+function mapCountdown(data: Record<string, unknown>): Partial<DraftContent> {
+	return {
+		countdown: {
+			title: str(data.title),
+			subtitlePrefix: str(data.subtitlePrefix),
+			footerText: str(data.footerText),
+		},
+	};
+}
+
 function mapMusic(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
 		music: {
@@ -141,6 +151,7 @@ const BLOCK_MAPPERS: Record<string, BlockMapper> = {
 	'event-details': mapEventDetails,
 	'main-people': mapMainPeople,
 	'date-locations': mapDateLocations,
+	countdown: mapCountdown,
 	photos: mapPhotos,
 	'rsvp-config': mapRsvpConfig,
 	music: mapMusic,
@@ -234,6 +245,15 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			reception: mapVenueToDraft(location.reception as Record<string, unknown> | undefined),
 			dressCode: str(location.dressCode),
 			additionalIndications: str(location.additionalIndications),
+		};
+	}
+
+	const countdown = nestedContent.countdown as Record<string, unknown> | undefined;
+	if (countdown && Object.keys(countdown).length > 0) {
+		result.countdown = {
+			title: str(countdown.title),
+			subtitlePrefix: str(countdown.subtitlePrefix),
+			footerText: str(countdown.footerText),
 		};
 	}
 

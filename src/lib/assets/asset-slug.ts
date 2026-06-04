@@ -7,6 +7,7 @@ export const ALL_EDITOR_KEYS: readonly string[] = [
 	'hero',
 	'family',
 	'location',
+	'countdown',
 	'itinerary',
 	'rsvp',
 	'music',

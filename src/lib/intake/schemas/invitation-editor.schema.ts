@@ -9,12 +9,14 @@ import {
 	gallerySchema,
 	itinerarySchema,
 	giftsSchema,
+	countdownEditorSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 
 export const INVITATION_EDITOR_SECTION_KEYS = [
 	'main',
 	'family',
 	'location',
+	'countdown',
 	'itinerary',
 	'rsvp',
 	'music',
@@ -58,6 +60,7 @@ export const InvitationEditorSectionSchemas = {
 		dressCode: optionalText(500),
 		additionalIndications: optionalText(),
 	}),
+	countdown: countdownEditorSchema,
 	itinerary: itinerarySchema,
 	rsvp: z
 		.object({

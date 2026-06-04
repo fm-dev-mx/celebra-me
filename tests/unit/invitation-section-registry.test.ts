@@ -74,6 +74,13 @@ describe('invitation-section-registry', () => {
 			expect(getEditorSectionById('thankYou')?.saveSectionKey).toBe('messages');
 		});
 
+		it('maps countdown to its own editable content section', () => {
+			expect(getEditorSectionById('countdown')).toMatchObject({
+				saveSectionKey: 'countdown',
+				draftContentKeys: ['countdown'],
+			});
+		});
+
 		it('maps config sections to their editor cards and save keys', () => {
 			expect(getEditorSectionById('metadata')?.editorCardId).toBe('metadata');
 			expect(getEditorSectionById('metadata')?.saveSectionKey).toBe('metadata');

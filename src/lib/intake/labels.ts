@@ -181,6 +181,7 @@ export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: st
 	title: { id: 'main', label: 'Datos principales' },
 	description: { id: 'main', label: 'Datos principales' },
 	hero: { id: 'main', label: 'Datos principales' },
+	countdown: { id: 'countdown', label: 'Cuenta regresiva' },
 	family: { id: 'family', label: 'Personas principales' },
 	location: { id: 'location', label: 'Fecha y ubicaciones' },
 	itinerary: { id: 'itinerary', label: 'Programa' },

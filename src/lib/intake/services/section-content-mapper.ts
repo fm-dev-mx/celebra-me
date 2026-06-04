@@ -8,6 +8,7 @@ const SECTION_KEY_MAP: Record<InvitationEditorSectionKey, (keyof DraftContent)[]
 	main: ['title', 'description', 'hero'],
 	family: ['family'],
 	location: ['location'],
+	countdown: ['countdown'],
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
 	music: ['music'],

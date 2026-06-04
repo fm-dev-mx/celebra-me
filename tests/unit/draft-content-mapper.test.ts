@@ -50,6 +50,24 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.location?.reception?.image).toEqual({ type: 'internal', key: 'reception' });
 	});
 
+	it('preserves countdown copy when present', () => {
+		const input = {
+			countdown: {
+				title: 'Ya casi',
+				subtitlePrefix: 'Será el',
+				footerText: 'Nos vemos pronto',
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.countdown).toEqual({
+			title: 'Ya casi',
+			subtitlePrefix: 'Será el',
+			footerText: 'Nos vemos pronto',
+		});
+	});
+
 	it('preserves thankYou image when present', () => {
 		const input = {
 			thankYou: {

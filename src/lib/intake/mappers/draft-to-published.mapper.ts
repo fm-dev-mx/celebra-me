@@ -25,6 +25,20 @@ type VenueDraft = {
 	image?: unknown;
 };
 
+function mapCountdownFromDraft(
+	draftCountdown: DraftContent['countdown'],
+	demoCountdown: Record<string, unknown> | undefined,
+	isDemo: boolean,
+): Record<string, unknown> {
+	if (isDemo && demoCountdown) return { ...demoCountdown };
+
+	return {
+		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
+		subtitlePrefix: str(draftCountdown?.subtitlePrefix) || COUNTDOWN_DEFAULTS.subtitlePrefix,
+		footerText: str(draftCountdown?.footerText) || COUNTDOWN_DEFAULTS.footerText,
+	};
+}
+
 function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	celebrantName: string,
@@ -330,7 +344,11 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		location: locationSection ?? demoContent.location,
 		gallery: draftContent.gallery ?? demoContent.gallery,
 		itinerary: draftContent.itinerary ?? demoContent.itinerary,
-		countdown: isDemo ? demoContent.countdown : { ...COUNTDOWN_DEFAULTS },
+		countdown: mapCountdownFromDraft(
+			draftContent.countdown,
+			demoContent.countdown as Record<string, unknown> | undefined,
+			isDemo,
+		),
 		rsvp: rsvpSection,
 		music: musicSection,
 		gifts: giftsSection,

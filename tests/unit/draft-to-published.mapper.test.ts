@@ -341,6 +341,26 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('uses editable countdown copy for real invitations when draft provides it', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				countdown: {
+					title: 'Ya casi celebramos',
+					subtitlePrefix: 'Será el',
+					footerText: 'Trae tus mejores pasos de baile',
+				},
+			},
+		});
+
+		expect(result.countdown).toMatchObject({
+			title: 'Ya casi celebramos',
+			subtitlePrefix: 'Será el',
+			footerText: 'Trae tus mejores pasos de baile',
+		});
+	});
+
 	it('uses themed countdown text for demo invitations', () => {
 		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 
