@@ -41,6 +41,28 @@ const {
 	variant = 'structured',
 	showFlourishes = true,
 } = Astro.props;
+
+// Format venue date as human-readable Spanish string.
+// Invitation dates are floating event-local values serialized with a UTC
+// suffix (e.g. "2026-08-01T18:00:00.000Z"). We use timeZone: 'UTC' to
+// avoid visual date shifting on non-UTC servers.
+function formatVenueDate(raw: string): string | null {
+	if (!raw) return null;
+	try {
+		const d = new Date(raw);
+		if (isNaN(d.getTime())) return null;
+		return d.toLocaleDateString('es-MX', {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+			timeZone: 'UTC',
+		});
+	} catch {
+		return null;
+	}
+}
+
+const formattedDate = formatVenueDate(venue.date);
 ---
 
 <div class="event-location__card-wrapper">
@@ -78,9 +100,11 @@ const {
 				<li class="event-location__card-content-place">
 					{venue.venueName}
 				</li>
-				<li class="event-location__card-content-date">
-					{venue.date}
-				</li>
+				{formattedDate && (
+					<li class="event-location__card-content-date">
+						{formattedDate}
+					</li>
+				)}
 				<li class="event-location__card-content-hour">{venue.time}</li>
 				<li class="event-location__card-content-address">
 					<span class="event-location__card-content-address-text">{venue.address}</span>

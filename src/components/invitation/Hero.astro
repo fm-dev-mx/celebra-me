@@ -52,16 +52,25 @@ const bgSrc = resolveImage(backgroundImage);
 const desktopBgSrc = backgroundImageDesktop?.src ?? null;
 const portraitSrc = portrait ? resolveImage(portrait) : null;
 
+// Invitation dates are floating event-local values serialized with a UTC
+// suffix (e.g. "2026-08-01T18:00:00.000Z"). timeZone: 'UTC' prevents
+// visual date shifting on non-UTC servers.
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
+	timeZone: 'UTC',
 });
 
 // Robust name handling for editorial layout
 const names = name.trim().split(/\s+/);
 const firstName = names.slice(0, 2).join(' ');
 const surnames = names.slice(2);
+
+const fpDefault = focalPoint || '50% 40%';
+const fpMobile = focalPointMobile || fpDefault;
+const fpTablet = focalPointTablet || fpDefault;
+const fpDesktop = focalPointDesktop || fpDefault;
 
 ---
 
@@ -151,10 +160,10 @@ const surnames = names.slice(2);
 </section>
 
 <style define:vars={{
-	fpDefault: focalPoint || '50% 40%',
-	fpMobile: focalPointMobile || focalPoint || '50% 40%',
-	fpTablet: focalPointTablet || focalPoint || '50% 40%',
-	fpDesktop: focalPointDesktop || focalPoint || '50% 40%',
+	fpDefault,
+	fpMobile,
+	fpTablet,
+	fpDesktop,
 }}>
 	.invitation-hero {
 		--hero-focal-point-default: var(--fpDefault);

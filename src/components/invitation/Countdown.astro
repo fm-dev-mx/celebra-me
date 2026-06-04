@@ -21,7 +21,9 @@ const {
 	variant = 'editorial',
 } = Astro.props;
 
-// Function to format the date in Spanish for the subtitle
+// Invitation dates are floating event-local values serialized with a UTC
+// suffix (e.g. "2026-08-01T18:00:00.000Z"). timeZone: 'UTC' prevents
+// visual date shifting on non-UTC servers.
 function getFormattedDate(dateString: string): string {
 	try {
 		const date = new Date(dateString);
@@ -30,6 +32,7 @@ function getFormattedDate(dateString: string): string {
 			day: '2-digit',
 			month: 'long',
 			year: 'numeric',
+			timeZone: 'UTC',
 		}).format(date);
 	} catch (error) {
 		console.error('Error formatting date:', error);
