@@ -212,6 +212,9 @@ export interface InvitationViewModel {
 			indications?: Indication[];
 			variant?: LocationVariant;
 			showFlourishes?: boolean;
+			introEyebrow?: string;
+			introHeading?: string;
+			introLede?: string;
 			indicationsHeading?: string;
 		};
 		family?: {

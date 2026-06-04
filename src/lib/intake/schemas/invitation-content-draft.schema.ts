@@ -56,6 +56,10 @@ export const InvitationContentDraftContentSchema = z
 			.optional(),
 		location: z
 			.object({
+				introEyebrow: optionalText(200),
+				introHeading: optionalText(200),
+				introLede: optionalText(1000),
+				indicationsHeading: optionalText(200),
 				ceremony: venueSchema.optional(),
 				reception: venueSchema.optional(),
 				dressCode: optionalText(500),

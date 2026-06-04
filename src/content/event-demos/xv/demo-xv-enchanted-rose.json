@@ -37,6 +37,9 @@
         "focalPointDesktop": "50% 21%"
     },
     "location": {
+        "introEyebrow": "EL CAMINO AL PALACIO",
+        "introHeading": "Ubicación",
+        "introLede": "Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.",
         "ceremony": {
             "venueEvent": "Misa de Acción de Gracias",
             "venueName": "Parroquia del Sagrado Corazón",

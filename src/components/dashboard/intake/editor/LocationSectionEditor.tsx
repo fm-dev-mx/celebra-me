@@ -17,6 +17,10 @@ interface VenueData {
 }
 
 interface LocationData {
+	introEyebrow?: string;
+	introHeading?: string;
+	introLede?: string;
+	indicationsHeading?: string;
 	ceremony?: VenueData;
 	reception?: VenueData;
 	dressCode?: string;
@@ -59,6 +63,26 @@ export default function LocationSectionEditor({
 			sourceBadge={sourceBadge}
 			visible={visible}
 		>
+			<div className="invitation-editor__section-group">
+				<h3>Texto de la sección</h3>
+				<div className="invitation-editor__field-grid">
+					<Field
+						label="Texto superior"
+						value={location.introEyebrow ?? ''}
+						onChange={(value) => onUpdateLocation({ introEyebrow: value })}
+					/>
+					<Field
+						label="Título de sección"
+						value={location.introHeading ?? ''}
+						onChange={(value) => onUpdateLocation({ introHeading: value })}
+					/>
+				</div>
+				<TextArea
+					label="Descripción de sección"
+					value={location.introLede ?? ''}
+					onChange={(value) => onUpdateLocation({ introLede: value })}
+				/>
+			</div>
 			{(['ceremony', 'reception'] as const).map((venueKey) => {
 				const venue = location[venueKey] ?? {};
 				const updateVenue = (patch: Partial<VenueData>) =>
@@ -136,6 +160,11 @@ export default function LocationSectionEditor({
 					label="Indicaciones adicionales"
 					value={location.additionalIndications ?? ''}
 					onChange={(value) => onUpdateLocation({ additionalIndications: value })}
+				/>
+				<Field
+					label="Título de indicaciones"
+					value={location.indicationsHeading ?? ''}
+					onChange={(value) => onUpdateLocation({ indicationsHeading: value })}
 				/>
 			</div>
 		</SectionCard>

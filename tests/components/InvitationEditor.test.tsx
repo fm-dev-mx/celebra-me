@@ -296,6 +296,50 @@ describe('InvitationEditor', () => {
 		});
 	});
 
+	it('edits location section intro copy', async () => {
+		mockContext = createContext({
+			content: {
+				...createContext().content,
+				location: {
+					introEyebrow: 'EL CAMINO AL PALACIO',
+					introHeading: 'Ubicación',
+					introLede: 'Guarda la ruta y llega con calma.',
+					indicationsHeading: 'Indicaciones importantes',
+				},
+			},
+			sectionStates: {
+				...createContext().sectionStates,
+				location: 'draft',
+			},
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+
+		fireEvent.click(within(nav).getByRole('button', { name: 'Fecha y ubicaciones' }));
+
+		expect(screen.getByLabelText('Texto superior')).toHaveValue('EL CAMINO AL PALACIO');
+		expect(screen.getByLabelText('Título de sección')).toHaveValue('Ubicación');
+		expect(screen.getByLabelText('Descripción de sección')).toHaveValue(
+			'Guarda la ruta y llega con calma.',
+		);
+		expect(screen.getByLabelText('Título de indicaciones')).toHaveValue(
+			'Indicaciones importantes',
+		);
+
+		fireEvent.change(screen.getByLabelText('Descripción de sección'), {
+			target: { value: 'Nueva descripción de ruta.' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveSection).toHaveBeenCalledWith(
+				'location',
+				expect.objectContaining({ introLede: 'Nueva descripción de ruta.' }),
+				'2026-05-30T02:00:00Z',
+			);
+		});
+	});
+
 	it('focuses the persistent preview pane from the action bar on desktop', () => {
 		const scrollIntoView = jest.fn();
 		const originalScrollIntoView = Element.prototype.scrollIntoView;

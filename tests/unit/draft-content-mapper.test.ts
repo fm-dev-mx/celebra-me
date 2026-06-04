@@ -50,6 +50,27 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.location?.reception?.image).toEqual({ type: 'internal', key: 'reception' });
 	});
 
+	it('preserves location intro copy and indications heading when present', () => {
+		const input = {
+			location: {
+				introEyebrow: 'EL CAMINO AL PALACIO',
+				introHeading: 'Ubicación',
+				introLede: 'Guarda la ruta y llega con calma.',
+				indicationsHeading: 'Indicaciones importantes',
+				ceremony: { venueName: 'Iglesia' },
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location).toMatchObject({
+			introEyebrow: 'EL CAMINO AL PALACIO',
+			introHeading: 'Ubicación',
+			introLede: 'Guarda la ruta y llega con calma.',
+			indicationsHeading: 'Indicaciones importantes',
+		});
+	});
+
 	it('preserves countdown copy when present', () => {
 		const input = {
 			countdown: {

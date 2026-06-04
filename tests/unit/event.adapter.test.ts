@@ -76,6 +76,30 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 	});
 
+	it('passes location intro copy through to the invitation view model', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				location: {
+					...fixture.location,
+					introEyebrow: 'EL CAMINO AL PALACIO',
+					introHeading: 'Ubicación',
+					introLede: 'Guarda la ruta y llega con calma.',
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.location).toMatchObject({
+			introEyebrow: 'EL CAMINO AL PALACIO',
+			introHeading: 'Ubicación',
+			introLede: 'Guarda la ruta y llega con calma.',
+		});
+	});
+
 	it('supports normalized object asset references from the schema layer', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

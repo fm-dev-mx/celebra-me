@@ -213,13 +213,16 @@ describe('Style boundary governance', () => {
 		expect(locationVariant).toContain(':focus-visible');
 	});
 
-	it('location section exposes a real heading and legacy hash alias', () => {
+	it('location section exposes editable heading copy and legacy hash alias', () => {
 		const eventLocation = read('src/components/invitation/EventLocation.astro');
+		const enchantedRoseDemo = read('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
 
 		expect(eventLocation).toContain('id="location"');
 		expect(eventLocation).toContain('event-location__intro');
 		expect(eventLocation).toContain('event-location__heading');
-		expect(eventLocation).toContain('Ubicación');
+		expect(eventLocation).toContain('{introHeading}');
+		expect(eventLocation).not.toContain("isEnchantedRose ? 'Ubicación'");
+		expect(enchantedRoseDemo).toContain('"introHeading": "Ubicación"');
 	});
 
 	it('rsvp theme ownership stays out of the base invitation stylesheet', () => {

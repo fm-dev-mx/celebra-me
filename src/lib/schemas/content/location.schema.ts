@@ -26,6 +26,9 @@ const venueSchema = z.object({
 });
 
 export const locationSchema = z.object({
+	introEyebrow: z.string().optional(),
+	introHeading: z.string().optional(),
+	introLede: z.string().optional(),
 	indicationsHeading: z.string().default(''),
 	ceremony: venueSchema
 		.extend({

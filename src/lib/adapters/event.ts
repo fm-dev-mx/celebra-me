@@ -22,6 +22,23 @@ import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 
 const SCROLL_LABEL_PRESETS: ReadonlySet<string> = new Set(['enchanted-rose']);
 
+const LOCATION_THEME_DEFAULTS: Readonly<{
+	[key in ThemePreset]?: {
+		introEyebrow: string;
+		introHeading: string;
+		introLede: string;
+		indicationsHeading: string;
+	};
+}> = {
+	'enchanted-rose': {
+		introEyebrow: 'El camino al palacio',
+		introHeading: 'Ubicación',
+		introLede:
+			'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
+		indicationsHeading: 'Detalles adicionales',
+	},
+} as const;
+
 interface AdaptationContext {
 	data: EventContentEntry['data'];
 	eventSlug: string;
@@ -300,6 +317,9 @@ function resolveVenueData(
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
+
+	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
+
 	const indications = data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => ({
 			iconName: indication.iconName ?? indication.icon ?? 'Gift',
@@ -307,6 +327,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 			text: indication.text,
 		}),
 	);
+
 	return {
 		ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
 		reception: resolveVenueData(eventSlug, data.location.reception, data.title),
@@ -317,7 +338,11 @@ function buildLocationSectionData(context: AdaptationContext) {
 			normalizedPreset,
 		),
 		showFlourishes: data.sectionStyles?.location?.showFlourishes,
-		indicationsHeading: data.location.indicationsHeading ?? '',
+		introEyebrow: data.location.introEyebrow ?? themeDefaults?.introEyebrow,
+		introHeading: data.location.introHeading ?? themeDefaults?.introHeading,
+		introLede: data.location.introLede ?? themeDefaults?.introLede,
+		indicationsHeading:
+			data.location.indicationsHeading ?? themeDefaults?.indicationsHeading ?? '',
 	};
 }
 

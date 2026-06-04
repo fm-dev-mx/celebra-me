@@ -281,7 +281,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.location).toMatchObject({
 			ceremony: { venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
 			reception: { venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
-			dressCode: 'Formal',
+			indications: [{ iconName: 'DressCode', styleVariant: 'reserved', text: 'Formal' }],
 		});
 	});
 
@@ -386,6 +386,41 @@ describe('mapDraftToPublished', () => {
 		expect((result.countdown as Record<string, unknown>).footerText).not.toBe(
 			'20 de noviembre de 2027, Querétaro',
 		);
+	});
+
+	it('maps editable location section copy and indications to public content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introEyebrow: 'EL CAMINO AL PALACIO',
+					introHeading: 'Ubicación',
+					introLede:
+						'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
+					indicationsHeading: 'Indicaciones importantes',
+					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
+					dressCode: 'Formal de gala',
+					additionalIndications: 'Confirma antes del 6 de noviembre.',
+				},
+			},
+		});
+
+		expect(result.location).toMatchObject({
+			introEyebrow: 'EL CAMINO AL PALACIO',
+			introHeading: 'Ubicación',
+			introLede:
+				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
+			indicationsHeading: 'Indicaciones importantes',
+			indications: [
+				{ iconName: 'DressCode', styleVariant: 'reserved', text: 'Formal de gala' },
+				{
+					iconName: 'Calendar',
+					styleVariant: 'default',
+					text: 'Confirma antes del 6 de noviembre.',
+				},
+			],
+		});
 	});
 
 	it('uses gallery from draft content when the admin edits captions or order', () => {

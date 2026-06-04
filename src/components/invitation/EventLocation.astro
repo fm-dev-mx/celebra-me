@@ -65,13 +65,12 @@ const {
 	showFlourishes = true,
 	indicationsHeading,
 	nextSectionLink,
+	introEyebrow,
+	introHeading,
+	introLede,
 } = Astro.props;
 
 const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
-const isEnchantedRose = variant === 'enchanted-rose';
-const introEyebrow = Astro.props.introEyebrow ?? (isEnchantedRose ? 'El camino al palacio' : undefined);
-const introHeading = Astro.props.introHeading ?? (isEnchantedRose ? 'Ubicación' : undefined);
-const introLede = Astro.props.introLede ?? (isEnchantedRose ? 'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.' : undefined);
 ---
 
 <section class="event-location" id="event-location" data-variant={variant}>

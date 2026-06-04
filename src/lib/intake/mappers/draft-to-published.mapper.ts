@@ -130,9 +130,28 @@ function mapLocationFromDraft(
 	);
 	if (reception) result.reception = reception;
 
-	if (str(draftLocation.dressCode)) result.dressCode = str(draftLocation.dressCode);
-	if (str(draftLocation.additionalIndications))
-		result.additionalIndications = str(draftLocation.additionalIndications);
+	if (str(draftLocation.introEyebrow)) result.introEyebrow = str(draftLocation.introEyebrow);
+	if (str(draftLocation.introHeading)) result.introHeading = str(draftLocation.introHeading);
+	if (str(draftLocation.introLede)) result.introLede = str(draftLocation.introLede);
+	if (str(draftLocation.indicationsHeading))
+		result.indicationsHeading = str(draftLocation.indicationsHeading);
+
+	const indications: Array<Record<string, unknown>> = [];
+	if (str(draftLocation.dressCode)) {
+		indications.push({
+			iconName: 'DressCode',
+			styleVariant: 'reserved',
+			text: str(draftLocation.dressCode),
+		});
+	}
+	if (str(draftLocation.additionalIndications)) {
+		indications.push({
+			iconName: 'Calendar',
+			styleVariant: 'default',
+			text: str(draftLocation.additionalIndications),
+		});
+	}
+	if (indications.length > 0) result.indications = indications;
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 

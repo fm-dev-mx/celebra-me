@@ -46,6 +46,10 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 
 	return {
 		location: {
+			introEyebrow: str(data.introEyebrow),
+			introHeading: str(data.introHeading),
+			introLede: str(data.introLede),
+			indicationsHeading: str(data.indicationsHeading),
 			ceremony: ceremony
 				? {
 						venueName: str(ceremony.venueName),
@@ -240,11 +244,25 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
 	if (location && Object.keys(location).length > 0) {
+		const indications = Array.isArray(location.indications)
+			? (location.indications as Array<Record<string, unknown>>)
+			: [];
+		const dressCode = indications.find(
+			(indication) => str(indication.iconName) === 'DressCode',
+		);
+		const additionalIndications = indications.find(
+			(indication) => str(indication.iconName) === 'Calendar',
+		);
 		result.location = {
+			introEyebrow: str(location.introEyebrow),
+			introHeading: str(location.introHeading),
+			introLede: str(location.introLede),
+			indicationsHeading: str(location.indicationsHeading),
 			ceremony: mapVenueToDraft(location.ceremony as Record<string, unknown> | undefined),
 			reception: mapVenueToDraft(location.reception as Record<string, unknown> | undefined),
-			dressCode: str(location.dressCode),
-			additionalIndications: str(location.additionalIndications),
+			dressCode: str(location.dressCode) || str(dressCode?.text),
+			additionalIndications:
+				str(location.additionalIndications) || str(additionalIndications?.text),
 		};
 	}
 
