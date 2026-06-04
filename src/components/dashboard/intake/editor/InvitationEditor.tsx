@@ -770,11 +770,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 									<option value="both">Formulario y WhatsApp</option>
 								</select>
 							</label>
-							<Field
-								label="WhatsApp"
-								value={rsvp.whatsappPhone ?? ''}
-								onChange={(value) => updateRsvp({ whatsappPhone: value })}
-							/>
+							{['whatsapp', 'both'].includes(rsvp.confirmationMode) && (
+								<Field
+									label="WhatsApp"
+									value={rsvp.whatsappPhone ?? ''}
+									onChange={(value) => updateRsvp({ whatsappPhone: value })}
+								/>
+							)}
 						</div>
 						<TextArea
 							label="Mensaje de confirmación"
