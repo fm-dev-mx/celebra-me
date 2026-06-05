@@ -3,9 +3,7 @@ import type { DemoPreset } from '@/lib/intake/types';
 import { str } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
-function isBlankSection<T extends Record<string, unknown> | null | undefined>(
-	value: T,
-): value is Extract<T, null | undefined> {
+function isBlankSection<T extends Record<string, unknown> | null | undefined>(value: T): boolean {
 	return !value || Object.keys(value).length === 0;
 }
 
@@ -48,17 +46,17 @@ function mapFamilyFromDraft(
 	const result: Record<string, unknown> = {};
 	const parents: Record<string, unknown> = {};
 
-	if (str(draftFamily.fatherName)) parents.father = str(draftFamily.fatherName);
-	if (typeof draftFamily.fatherDeceased === 'boolean')
-		parents.fatherDeceased = draftFamily.fatherDeceased;
-	if (str(draftFamily.motherName)) parents.mother = str(draftFamily.motherName);
-	if (typeof draftFamily.motherDeceased === 'boolean')
-		parents.motherDeceased = draftFamily.motherDeceased;
+	if (str(draftFamily!.fatherName)) parents.father = str(draftFamily!.fatherName);
+	if (typeof draftFamily!.fatherDeceased === 'boolean')
+		parents.fatherDeceased = draftFamily!.fatherDeceased;
+	if (str(draftFamily!.motherName)) parents.mother = str(draftFamily!.motherName);
+	if (typeof draftFamily!.motherDeceased === 'boolean')
+		parents.motherDeceased = draftFamily!.motherDeceased;
 
 	if (Object.keys(parents).length > 0) result.parents = parents;
-	if (str(draftFamily.spouseName)) result.spouse = str(draftFamily.spouseName);
+	if (str(draftFamily!.spouseName)) result.spouse = str(draftFamily!.spouseName);
 
-	const godparentsText = str(draftFamily.godparents);
+	const godparentsText = str(draftFamily!.godparents);
 	if (godparentsText) {
 		const lines = godparentsText
 			.split('\n')
@@ -72,7 +70,7 @@ function mapFamilyFromDraft(
 		}
 	}
 
-	const childrenText = str(draftFamily.children);
+	const childrenText = str(draftFamily!.children);
 	if (childrenText) {
 		const lines = childrenText
 			.split('\n')
@@ -83,8 +81,8 @@ function mapFamilyFromDraft(
 		}
 	}
 
-	if (str(draftFamily.sectionMessage)) result.sectionMessage = str(draftFamily.sectionMessage);
-	if (draftFamily.featuredImage) result.featuredImage = draftFamily.featuredImage;
+	if (str(draftFamily!.sectionMessage)) result.sectionMessage = str(draftFamily!.sectionMessage);
+	if (draftFamily!.featuredImage) result.featuredImage = draftFamily!.featuredImage;
 	result.celebrantName = celebrantName;
 
 	return Object.keys(result).length > 0 ? result : undefined;
@@ -94,43 +92,54 @@ function mapVenue(
 	draftVenue: VenueDraft | undefined,
 	demoVenue?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftVenue)) return undefined;
+	if (isBlankSection(draftVenue)) {
+		return demoVenue && Object.keys(demoVenue).length > 0 ? { ...demoVenue } : undefined;
+	}
 	const result: Record<string, unknown> = {};
-	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
-	if (str(draftVenue.address)) result.address = str(draftVenue.address);
-	if (str(draftVenue.city)) result.city = str(draftVenue.city);
-	if (str(draftVenue.date)) result.date = str(draftVenue.date);
-	if (str(draftVenue.time)) result.time = str(draftVenue.time);
-	if (str(draftVenue.mapUrl)) result.mapUrl = str(draftVenue.mapUrl);
-	if (draftVenue.image) {
-		result.image = draftVenue.image;
+	if (str(draftVenue!.venueName)) result.venueName = str(draftVenue!.venueName);
+	if (str(draftVenue!.address)) result.address = str(draftVenue!.address);
+	if (str(draftVenue!.city)) result.city = str(draftVenue!.city);
+	if (str(draftVenue!.date)) result.date = str(draftVenue!.date);
+	if (str(draftVenue!.time)) result.time = str(draftVenue!.time);
+	if (str(draftVenue!.mapUrl)) result.mapUrl = str(draftVenue!.mapUrl);
+	if (draftVenue!.image) {
+		result.image = draftVenue!.image;
 	} else if (demoVenue?.image) {
-		result.image = demoVenue.image;
+		result.image = demoVenue!.image;
 	}
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function resolveIntroField(draftValue: string | undefined, demoValue: unknown): string | undefined {
-	if (draftValue !== undefined) return draftValue;
-	if (demoValue) return String(demoValue);
-	return undefined;
+function resolveIntroFields(
+	draftLocation: DraftContent['location'],
+	demoLocation: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+	const fields: Record<string, unknown> = {};
+	const introEyebrow = str(draftLocation!.introEyebrow) || str(demoLocation?.introEyebrow);
+	if (introEyebrow) fields.introEyebrow = introEyebrow;
+	const introHeading = str(draftLocation!.introHeading) || str(demoLocation?.introHeading);
+	if (introHeading) fields.introHeading = introHeading;
+	const introLede = str(draftLocation!.introLede) || str(demoLocation?.introLede);
+	if (introLede) fields.introLede = introLede;
+	const indicationsHeading =
+		str(draftLocation!.indicationsHeading) || str(demoLocation?.indicationsHeading);
+	if (indicationsHeading) fields.indicationsHeading = indicationsHeading;
+	return fields;
 }
 
-function buildDressCodeIndications(
+function buildIndications(
 	dressCode: string | undefined,
 	additionalIndications: string | undefined,
 ): Array<Record<string, unknown>> | undefined {
 	const indications: Array<Record<string, unknown>> = [];
-	const dressCodeValue = str(dressCode);
-	const additionalIndicationsValue = str(additionalIndications);
-	if (dressCodeValue) {
-		indications.push({ iconName: 'DressCode', styleVariant: 'reserved', text: dressCodeValue });
+	if (str(dressCode)) {
+		indications.push({ iconName: 'DressCode', styleVariant: 'reserved', text: str(dressCode) });
 	}
-	if (additionalIndicationsValue) {
+	if (str(additionalIndications)) {
 		indications.push({
 			iconName: 'Calendar',
 			styleVariant: 'default',
-			text: additionalIndicationsValue,
+			text: str(additionalIndications),
 		});
 	}
 	return indications.length > 0 ? indications : undefined;
@@ -142,38 +151,25 @@ function mapLocationFromDraft(
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
-
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 
 	const ceremony = mapVenue(
-		draftLocation.ceremony,
+		draftLocation!.ceremony,
 		demoLocation?.ceremony as Record<string, unknown> | undefined,
 	);
 	if (ceremony) result.ceremony = ceremony;
 	const reception = mapVenue(
-		draftLocation.reception,
+		draftLocation!.reception,
 		demoLocation?.reception as Record<string, unknown> | undefined,
 	);
 	if (reception) result.reception = reception;
 
-	const introEyebrow = resolveIntroField(draftLocation.introEyebrow, demoLocation?.introEyebrow);
-	if (introEyebrow !== undefined) result.introEyebrow = introEyebrow;
+	const introFields = resolveIntroFields(draftLocation!, demoLocation);
+	Object.assign(result, introFields);
 
-	const introHeading = resolveIntroField(draftLocation.introHeading, demoLocation?.introHeading);
-	if (introHeading !== undefined) result.introHeading = introHeading;
-
-	const introLede = resolveIntroField(draftLocation.introLede, demoLocation?.introLede);
-	if (introLede !== undefined) result.introLede = introLede;
-
-	const indicationsHeading = resolveIntroField(
-		draftLocation.indicationsHeading,
-		demoLocation?.indicationsHeading,
-	);
-	if (indicationsHeading !== undefined) result.indicationsHeading = indicationsHeading;
-
-	const indications = buildDressCodeIndications(
-		draftLocation.dressCode,
-		draftLocation.additionalIndications,
+	const indications = buildIndications(
+		draftLocation!.dressCode,
+		draftLocation!.additionalIndications,
 	);
 	if (indications) result.indications = indications;
 
@@ -246,7 +242,12 @@ function mapHeroSection(
 		if (demoHero && Object.keys(demoHero).length > 0) return demoHero;
 		return buildSafeHeroFallback(invitationTitle, themeId);
 	}
-	return buildHeroFromDraft(draftHero, demoHero, invitationTitle, themeId);
+	return buildHeroFromDraft(
+		draftHero as NonNullable<DraftContent['hero']>,
+		demoHero,
+		invitationTitle,
+		themeId,
+	);
 }
 
 function mapRsvpSection(
@@ -254,20 +255,20 @@ function mapRsvpSection(
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftRsvp)) return undefined;
-	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone);
+	const whatsappPhone = str(draftRsvp!.whatsappPhone) || str(demoRsvp?.whatsappPhone);
 	return {
-		title: str(draftRsvp.title) || str(demoRsvp?.title),
+		title: str(draftRsvp!.title) || str(demoRsvp?.title),
 		guestCap:
-			typeof draftRsvp.guestCap === 'number'
-				? draftRsvp.guestCap
+			typeof draftRsvp!.guestCap === 'number'
+				? draftRsvp!.guestCap
 				: (demoRsvp?.guestCap as number | undefined),
 		confirmationMessage:
-			str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage),
+			str(draftRsvp!.confirmationMessage) || str(demoRsvp?.confirmationMessage),
 		confirmationMode:
-			str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
+			str(draftRsvp!.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
 		accessMode: str(demoRsvp?.accessMode) || 'personalized-only',
 		whatsappConfig: whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig,
-		subcopy: str(draftRsvp.subcopy) || str(demoRsvp?.subcopy),
+		subcopy: str(draftRsvp!.subcopy) || str(demoRsvp?.subcopy),
 	};
 }
 
@@ -291,10 +292,10 @@ function mapGiftsSection(
 		return demoGifts ? { ...demoGifts } : undefined;
 	}
 	return {
-		title: str(draftGifts.title) || str(demoGifts?.title),
-		subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
+		title: str(draftGifts!.title) || str(demoGifts?.title),
+		subtitle: str(draftGifts!.subtitle) || str(demoGifts?.subtitle),
 		items:
-			(draftGifts.items as unknown as Array<Record<string, unknown>>) ||
+			(draftGifts!.items as unknown as Array<Record<string, unknown>>) ||
 			(demoGifts?.items as Array<Record<string, unknown>>) ||
 			[],
 	};

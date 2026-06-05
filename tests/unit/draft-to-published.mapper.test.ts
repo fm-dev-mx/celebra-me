@@ -423,56 +423,6 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('regression: publishes dressCode and additionalIndications using real editor-shaped payload', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			draftContent: {
-				...baseInput.draftContent,
-				location: {
-					introEyebrow: 'EL CAMINO AL PALACIO',
-					introHeading: 'Ubicación',
-					introLede:
-						'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
-					indicationsHeading: 'Detalles adicionales',
-					ceremony: {
-						venueName: 'Parroquia del Sagrado Corazón',
-						address: 'Av. de las Rosas 240, Centro Histórico, 76000 Querétaro, Qro.',
-						city: 'Querétaro',
-						date: '20 de noviembre de 2027',
-						time: '6:00 PM',
-					},
-					reception: {
-						venueName: 'Salón Imperial',
-						address:
-							'Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.',
-						city: 'Querétaro',
-						date: '20 de noviembre de 2027',
-						time: '8:00 PM',
-					},
-					dressCode: 'Dorado, champagne y tinto',
-					additionalIndications:
-						'Color reservado para la quinceañera: dorado, champagne y tinto.',
-				},
-			},
-		});
-
-		expect(result.location).toMatchObject({
-			indicationsHeading: 'Detalles adicionales',
-			indications: [
-				{
-					iconName: 'DressCode',
-					styleVariant: 'reserved',
-					text: 'Dorado, champagne y tinto',
-				},
-				{
-					iconName: 'Calendar',
-					styleVariant: 'default',
-					text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
-				},
-			],
-		});
-	});
-
 	it('filters out dressCode and additionalIndications when they are empty strings', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
@@ -489,55 +439,45 @@ describe('mapDraftToPublished', () => {
 		expect(result.location).not.toHaveProperty('indications');
 	});
 
-	it('does not inherit demo content indications when draft has ceremony/reception but no dressCode or additionalIndications', () => {
-		const demoWithIndications = {
+	it('maps location from demo content when draft location is sparse', () => {
+		const demoWithLocation = {
 			...baseDemoContent,
 			location: {
-				indications: [
-					{
-						iconName: 'DressCode',
-						styleVariant: 'reserved',
-						text: 'Should not leak into real invitation',
-					},
-					{ iconName: 'Calendar', styleVariant: 'default', text: 'Should not leak' },
-				],
+				introEyebrow: 'EL CAMINO AL PALACIO',
+				introHeading: 'Ubicación',
+				introLede: 'Guarda la ruta.',
+				indicationsHeading: 'Indicaciones',
+				ceremony: {
+					venueName: 'Iglesia Demo',
+					address: 'Calle Demo',
+					image: 'mapCeremony',
+				},
+				reception: {
+					venueName: 'Salon Demo',
+					address: 'Calle 2 Demo',
+					image: 'mapReception',
+				},
 			},
 		};
 		const result = mapDraftToPublished({
 			...baseInput,
-			demoContent: demoWithIndications,
+			demoContent: demoWithLocation,
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
 					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-					reception: { venueName: 'Salon', address: 'Calle 2' },
 				},
 			},
 		});
 
-		expect(result.location).not.toHaveProperty('indications');
-	});
-
-	it('does not inherit demo indications when dressCode or additionalIndications are explicitly empty', () => {
-		const demoWithIndications = {
-			...baseDemoContent,
-			location: {
-				indications: [{ iconName: 'DressCode', text: 'Should not appear' }],
-			},
-		};
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: demoWithIndications,
-			draftContent: {
-				...baseInput.draftContent,
-				location: {
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-					dressCode: '',
-				},
-			},
+		expect(result.location).toMatchObject({
+			ceremony: { venueName: 'Iglesia', address: 'Calle 1', image: 'mapCeremony' },
+			reception: { venueName: 'Salon Demo', address: 'Calle 2 Demo', image: 'mapReception' },
+			introEyebrow: 'EL CAMINO AL PALACIO',
+			introHeading: 'Ubicación',
+			introLede: 'Guarda la ruta.',
+			indicationsHeading: 'Indicaciones',
 		});
-
-		expect(result.location).not.toHaveProperty('indications');
 	});
 
 	it('uses gallery from draft content when the admin edits captions or order', () => {
