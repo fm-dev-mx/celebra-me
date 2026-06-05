@@ -352,6 +352,165 @@ export function createProdBackup(prodDbUrl: string, outputPath: string, schemaOn
 	runCommand('supabase', args, { redact: [prodDbUrl] });
 }
 
+export const REFRESH_PARITY_TABLES = [
+	'invitations',
+	'events',
+	'published_invitation_content',
+	'guest_invitations',
+	'invitation_content_drafts',
+	'intake_requests',
+	'intake_submissions',
+	'app_user_roles',
+	'event_memberships',
+	'event_claim_codes',
+] as const;
+
+export type ParityTable = (typeof REFRESH_PARITY_TABLES)[number];
+
+export function getMissingTables(
+	expected: readonly string[],
+	existing: readonly string[],
+): string[] {
+	return expected.filter((t) => !existing.includes(t));
+}
+
+export function ensureTablesExist(
+	tables: readonly string[],
+	schema: string,
+	dbUrl = LOCAL_DB_URL,
+	label = 'target',
+): void {
+	const tableList = tables.map((t) => sqlLiteral(t)).join(', ');
+	const sql = `select table_name
+from information_schema.tables
+where table_schema = ${sqlLiteral(schema)}
+  and table_type = 'BASE TABLE'
+  and table_name = any(array[${tableList}])
+order by table_name;`;
+	const result = runPsql(sql, dbUrl);
+	const existing = result.stdout.trim().split(/\r?\n/).filter(Boolean);
+	const missing = getMissingTables(tables, existing);
+	if (missing.length > 0) {
+		const detail = missing.map((t) => `  - ${t}`).join('\n');
+		throw new Error(
+			`Refresh parity table(s) not found in schema "${schema}" (${label}):\n${detail}`,
+		);
+	}
+}
+
+export interface ParityFailure {
+	table: string;
+	sourceCount: number;
+	targetCount: number;
+	reason: 'count_mismatch';
+}
+
+export interface ParityResult {
+	ok: boolean;
+	failures: ParityFailure[];
+}
+
+export interface ValidateRefreshParityParams {
+	sourceCounts: Record<string, number>;
+	targetCounts: Record<string, number>;
+	/**
+	 * Per-table maximum allowed extra rows in the target (local) database.
+	 * Example: `{ app_user_roles: 1 }` allows local to have up to 1 more row
+	 * than production (e.g. a local super-admin that does not exist in prod).
+	 * A negative delta (target < source) always fails regardless of maxDelta.
+	 * Use `Infinity` to fully ignore a table's count.
+	 */
+	maxDeltas?: Record<string, number>;
+}
+
+export function validateRefreshParity(params: ValidateRefreshParityParams): ParityResult {
+	const failures: ParityFailure[] = [];
+	const allTables = [
+		...new Set([...Object.keys(params.sourceCounts), ...Object.keys(params.targetCounts)]),
+	];
+
+	for (const table of allTables) {
+		const sourceCount = params.sourceCounts[table] ?? 0;
+		const targetCount = params.targetCounts[table] ?? 0;
+
+		if (sourceCount !== targetCount) {
+			const maxDelta = params.maxDeltas?.[table] ?? 0;
+			const delta = targetCount - sourceCount;
+			if (delta < 0 || delta > maxDelta) {
+				failures.push({
+					table,
+					sourceCount,
+					targetCount,
+					reason: 'count_mismatch',
+				});
+			}
+		}
+	}
+
+	return { ok: failures.length === 0, failures };
+}
+
+const COPY_HEADER_RE = /^COPY\s+(?:"?public"?\.)?"?[a-z_]\w*"?\s*\(/i;
+const COPY_TERMINATOR_RE = /^\s*\\.\s*$/;
+
+function transformSchemaRef(line: string, schema: string): string {
+	return line
+		.replace(/"public"\./g, `"${schema}".`)
+		.replace(/\bpublic\./g, `${schema}.`)
+		.replace(/SET\s+search_path\s*=\s*"?public"?\s*,/gi, `SET search_path = ${schema},`);
+}
+
+export function transformDumpForStaging(input: string, schema: string): string {
+	const lines = input.split(/\r?\n/);
+	const result: string[] = [];
+	let insideCopyData = false;
+
+	for (const line of lines) {
+		if (!insideCopyData && COPY_HEADER_RE.test(line)) {
+			result.push(transformSchemaRef(line, schema));
+			insideCopyData = true;
+		} else if (insideCopyData && COPY_TERMINATOR_RE.test(line)) {
+			result.push(line);
+			insideCopyData = false;
+		} else if (!insideCopyData) {
+			result.push(transformSchemaRef(line, schema));
+		} else {
+			result.push(line);
+		}
+	}
+
+	return result.join('\n');
+}
+
+export function countTableRows(
+	tables: readonly string[],
+	schema: string,
+	dbUrl = LOCAL_DB_URL,
+): Record<string, number> {
+	const unions = tables
+		.map(
+			(t, i) =>
+				`select ${i} as idx, ${sqlLiteral(t)} as tbl, count(*) as cnt from ${schema}."${t}"`,
+		)
+		.join(' union all ');
+
+	const sql = `select tbl, cnt from (${unions}) sub order by idx;`;
+	const result = runPsql(sql, dbUrl);
+
+	const counts: Record<string, number> = {};
+	for (const line of result.stdout.trim().split(/\r?\n/)) {
+		if (!line.trim()) continue;
+		const [table, countStr] = line.split('\t');
+		const n = parseInt(countStr ?? '0', 10);
+		if (isNaN(n))
+			throw new Error(
+				`countTableRows: non-numeric count for table "${table ?? '<unknown>'}": ${countStr}`,
+			);
+		counts[table ?? ''] = n;
+	}
+	return counts;
+}
+
 export async function requireProductionConfirmation(targetHost: string): Promise<void> {
 	if (process.env.CONFIRM_PROD_MIGRATION === `MIGRATE ${targetHost}`) return;
 
