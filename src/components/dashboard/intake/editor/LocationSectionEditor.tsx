@@ -63,25 +63,34 @@ export default function LocationSectionEditor({
 			sourceBadge={sourceBadge}
 			visible={visible}
 		>
-			<div className="invitation-editor__section-group">
-				<h3>Texto de la sección</h3>
-				<div className="invitation-editor__field-grid">
-					<Field
-						label="Texto superior"
-						value={location.introEyebrow ?? ''}
-						onChange={(value) => onUpdateLocation({ introEyebrow: value })}
-					/>
-					<Field
-						label="Título de sección"
-						value={location.introHeading ?? ''}
-						onChange={(value) => onUpdateLocation({ introHeading: value })}
+			<div className="invitation-editor__section-copy">
+				<div className="invitation-editor__section-group">
+					<h3>Texto de la sección</h3>
+					<p className="invitation-editor__helper-text">
+						Estos textos aparecen en la parte superior de la sección. Puedes
+						personalizarlos para dar contexto a tus invitados.
+					</p>
+					<div className="invitation-editor__field-grid">
+						<Field
+							label="Texto superior"
+							placeholder="Ej: El camino al palacio"
+							value={location.introEyebrow ?? ''}
+							onChange={(value) => onUpdateLocation({ introEyebrow: value })}
+						/>
+						<Field
+							label="Título de sección"
+							placeholder="Ej: Ubicación"
+							value={location.introHeading ?? ''}
+							onChange={(value) => onUpdateLocation({ introHeading: value })}
+						/>
+					</div>
+					<TextArea
+						label="Descripción de sección"
+						placeholder="Ej: Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas."
+						value={location.introLede ?? ''}
+						onChange={(value) => onUpdateLocation({ introLede: value })}
 					/>
 				</div>
-				<TextArea
-					label="Descripción de sección"
-					value={location.introLede ?? ''}
-					onChange={(value) => onUpdateLocation({ introLede: value })}
-				/>
 			</div>
 			{(['ceremony', 'reception'] as const).map((venueKey) => {
 				const venue = location[venueKey] ?? {};
