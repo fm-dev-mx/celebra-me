@@ -8,14 +8,17 @@ const __dirname = path.dirname(__filename);
 
 // Centralized mapping of available ops commands
 const SCRIPTS = {
-	'optimize-assets': 'optimize-assets.mjs',
-	'check-links': 'check-links.mjs',
-	'validate-schema': 'validate-schema.mjs',
-	'validate-event-parity': 'validate-event-parity.mjs',
-	'validate-commits': 'validate-commits.mjs',
-	'new-invitation': 'new-invitation.mjs',
-	'data-audit-events-invitations': 'data-audit-events-invitations.mjs',
-	'adopt-legacy-events': 'adopt-legacy-events.mjs',
+	'optimize-assets': { script: 'optimize-assets.mjs', runtime: 'node' },
+	'check-links': { script: 'check-links.mjs', runtime: 'node' },
+	'validate-schema': { script: 'validate-schema.mjs', runtime: 'node' },
+	'validate-event-parity': { script: 'validate-event-parity.ts', runtime: 'tsx' },
+	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
+	'new-invitation': { script: 'new-invitation.mjs', runtime: 'node' },
+	'data-audit-events-invitations': {
+		script: 'data-audit-events-invitations.mjs',
+		runtime: 'node',
+	},
+	'adopt-legacy-events': { script: 'adopt-legacy-events.mjs', runtime: 'node' },
 };
 
 const args = process.argv.slice(2);
@@ -47,10 +50,22 @@ if (!SCRIPTS[command]) {
 	process.exit(1);
 }
 
-const scriptPath = path.join(__dirname, SCRIPTS[command]);
+const entry = SCRIPTS[command];
+const scriptPath = path.join(__dirname, entry.script);
 const childProcessArgs = args.slice(1);
 
-const child = spawn(process.execPath, [scriptPath, ...childProcessArgs], {
+let runtime;
+let runtimeArgs;
+if (entry.runtime === 'tsx') {
+	const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+	runtime = process.execPath;
+	runtimeArgs = [tsxCli, scriptPath];
+} else {
+	runtime = process.execPath;
+	runtimeArgs = [scriptPath];
+}
+
+const child = spawn(runtime, [...runtimeArgs, ...childProcessArgs], {
 	stdio: 'inherit',
 });
 

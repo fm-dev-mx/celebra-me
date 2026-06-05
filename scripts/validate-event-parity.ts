@@ -1,12 +1,9 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { parseEnvContent, PROJECT_ROOT } from './db/db-workflow-lib.ts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
 const ROUTABLE_CONTENT_DIRS = [
 	path.join(PROJECT_ROOT, 'src', 'content', 'events'),
@@ -14,7 +11,26 @@ const ROUTABLE_CONTENT_DIRS = [
 ];
 const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple']);
 
-function isPlaceholderEnvValue(value) {
+interface ContentEvent {
+	eventType: string;
+	slug: string;
+	file: string;
+	isDemo: boolean;
+}
+
+interface DbEvent {
+	eventType: string;
+	slug: string;
+	status: string;
+}
+
+interface SlugConflict {
+	slug: string;
+	first: string;
+	second: string;
+}
+
+function isPlaceholderEnvValue(value: string | undefined): boolean {
 	const normalized = String(value || '')
 		.trim()
 		.toLowerCase();
@@ -26,7 +42,10 @@ function isPlaceholderEnvValue(value) {
 	);
 }
 
-async function fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey) {
+async function fetchPublishedContentSlugs(
+	supabaseUrl: string,
+	serviceRoleKey: string,
+): Promise<string[]> {
 	const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/published_invitation_content?select=slug,event_type`;
 	const response = await fetch(endpoint, {
 		headers: {
@@ -38,38 +57,26 @@ async function fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey) {
 	if (!response.ok) {
 		throw new Error(`[DB] Failed to fetch published_invitation_content (${response.status})`);
 	}
-	const rows = await response.json();
+	const rows = (await response.json()) as Array<{ event_type?: string; slug?: string }>;
 	if (!Array.isArray(rows)) return [];
 	return rows
 		.map((r) => entryKey(String(r.event_type || '').trim(), String(r.slug || '').trim()))
 		.filter(Boolean);
 }
 
-function loadEnvFile(relativePath) {
+function loadEnvFile(relativePath: string): void {
 	const envPath = path.join(PROJECT_ROOT, relativePath);
-	if (!fs.existsSync(envPath)) return;
+	if (!existsSync(envPath)) return;
 
-	const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
-	for (const rawLine of lines) {
-		const line = rawLine.trim();
-		if (!line || line.startsWith('#')) continue;
-		const index = line.indexOf('=');
-		if (index === -1) continue;
-		const key = line.slice(0, index).trim();
-		let value = line.slice(index + 1).trim();
-		if (
-			(value.startsWith('"') && value.endsWith('"')) ||
-			(value.startsWith("'") && value.endsWith("'"))
-		) {
-			value = value.slice(1, -1);
-		}
+	const parsed = parseEnvContent(readFileSync(envPath, 'utf8'));
+	for (const [key, value] of Object.entries(parsed)) {
 		if (process.env[key] === undefined) {
 			process.env[key] = value;
 		}
 	}
 }
 
-function normalizeEvent(row) {
+function normalizeEvent(row: Record<string, unknown>): DbEvent {
 	return {
 		eventType: String(row.event_type || '').trim(),
 		slug: String(row.slug || '').trim(),
@@ -77,24 +84,24 @@ function normalizeEvent(row) {
 	};
 }
 
-function entryKey(eventType, slug) {
+function entryKey(eventType: string, slug: string): string {
 	return `${eventType}:${slug}`;
 }
 
-function collectRoutableSlugConflicts() {
-	const slugOwners = new Map();
-	const conflicts = [];
+function collectRoutableSlugConflicts(): SlugConflict[] {
+	const slugOwners = new Map<string, string>();
+	const conflicts: SlugConflict[] = [];
 
 	for (const dir of ROUTABLE_CONTENT_DIRS) {
-		if (!fs.existsSync(dir)) continue;
+		if (!existsSync(dir)) continue;
 
-		const files = fs.readdirSync(dir, { recursive: true }).filter((file) => {
-			return typeof file === 'string' && file.endsWith('.json');
-		});
+		const files = readdirSync(dir, { recursive: true }).filter(
+			(file): file is string => typeof file === 'string' && file.endsWith('.json'),
+		);
 
 		for (const file of files) {
 			const fullPath = path.join(dir, file);
-			const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+			const parsed = JSON.parse(readFileSync(fullPath, 'utf8')) as Record<string, unknown>;
 			const slug = path.basename(file, '.json');
 			const eventType = String(parsed.eventType || '').trim();
 			const owner = `${eventType}:${path.relative(PROJECT_ROOT, fullPath).replace(/\\/g, '/')}`;
@@ -112,7 +119,7 @@ function collectRoutableSlugConflicts() {
 	return conflicts;
 }
 
-async function fetchDbEvents(supabaseUrl, serviceRoleKey) {
+async function fetchDbEvents(supabaseUrl: string, serviceRoleKey: string): Promise<DbEvent[]> {
 	const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/events?select=slug,event_type,status`;
 	const response = await fetch(endpoint, {
 		headers: {
@@ -127,7 +134,7 @@ async function fetchDbEvents(supabaseUrl, serviceRoleKey) {
 		throw new Error(`[DB] Supabase request failed (${response.status}): ${body}`);
 	}
 
-	const rows = await response.json();
+	const rows = (await response.json()) as Array<Record<string, unknown>>;
 	if (!Array.isArray(rows)) {
 		throw new Error('[DB] Unexpected response format while reading events.');
 	}
@@ -135,14 +142,26 @@ async function fetchDbEvents(supabaseUrl, serviceRoleKey) {
 	return rows.map(normalizeEvent).filter((row) => row.slug && row.eventType);
 }
 
-function loadContentEvents({ includeDemos, includeTemplates, slugFilter, eventTypeFilter }) {
-	if (!fs.existsSync(CONTENT_DIR)) {
+interface LoadContentEventsOptions {
+	includeDemos: boolean;
+	includeTemplates: boolean;
+	slugFilter?: string;
+	eventTypeFilter?: string;
+}
+
+function loadContentEvents({
+	includeDemos,
+	includeTemplates,
+	slugFilter,
+	eventTypeFilter,
+}: LoadContentEventsOptions): { events: ContentEvent[]; warnings: string[] } {
+	if (!existsSync(CONTENT_DIR)) {
 		throw new Error(`[Content] Missing events directory: ${CONTENT_DIR}`);
 	}
 
-	const files = fs.readdirSync(CONTENT_DIR).filter((file) => file.endsWith('.json'));
-	const events = [];
-	const warnings = [];
+	const files = readdirSync(CONTENT_DIR).filter((file) => file.endsWith('.json'));
+	const events: ContentEvent[] = [];
+	const warnings: string[] = [];
 
 	for (const file of files) {
 		const slug = file.replace(/\.json$/, '');
@@ -150,9 +169,9 @@ function loadContentEvents({ includeDemos, includeTemplates, slugFilter, eventTy
 		if (slugFilter && slug !== slugFilter) continue;
 
 		const fullPath = path.join(CONTENT_DIR, file);
-		let parsed;
+		let parsed: Record<string, unknown>;
 		try {
-			parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+			parsed = JSON.parse(readFileSync(fullPath, 'utf8'));
 		} catch (error) {
 			throw new Error(
 				`[Content] Invalid JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
@@ -180,7 +199,14 @@ function loadContentEvents({ includeDemos, includeTemplates, slugFilter, eventTy
 	return { events, warnings };
 }
 
-function printMismatch(title, rows) {
+interface MismatchRow {
+	eventType: string;
+	slug: string;
+	file?: string;
+	status?: string;
+}
+
+function printMismatch(title: string, rows: MismatchRow[]): void {
 	if (rows.length === 0) {
 		console.log(`- ${title}: 0`);
 		return;
@@ -194,7 +220,7 @@ function printMismatch(title, rows) {
 	}
 }
 
-async function main() {
+async function main(): Promise<void> {
 	const { values } = parseArgs({
 		options: {
 			help: { type: 'boolean', short: 'h' },
@@ -247,8 +273,8 @@ Options:
 	const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 	const { events: contentEvents, warnings } = loadContentEvents({
-		includeDemos: values.includeDemos,
-		includeTemplates: values.includeTemplates,
+		includeDemos: values.includeDemos ?? false,
+		includeTemplates: values.includeTemplates ?? false,
 		slugFilter: values.slug,
 		eventTypeFilter: values.eventType,
 	});
@@ -265,8 +291,21 @@ Options:
 		throw new Error(message);
 	}
 
-	const dbEvents = await fetchDbEvents(supabaseUrl, serviceRoleKey);
-	const publishedSlugList = await fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey);
+	let dbEvents: DbEvent[];
+	let publishedSlugList: string[];
+	try {
+		dbEvents = await fetchDbEvents(supabaseUrl, serviceRoleKey);
+		publishedSlugList = await fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (values.allowMissingDb && message === 'fetch failed') {
+			console.warn(
+				'[DB] Supabase is configured but unreachable. Skipping DB comparison due to --allowMissingDb.',
+			);
+			return;
+		}
+		throw error;
+	}
 	const publishedSlugs = new Set(publishedSlugList);
 	const filteredDbEvents = dbEvents.filter((event) => {
 		if (values.slug && event.slug !== values.slug) return false;
@@ -295,8 +334,8 @@ Options:
 	console.log(`Content events considered: ${contentEvents.length}`);
 	console.log(`DB events considered: ${filteredDbEvents.length}`);
 
-	printMismatch('Missing content for DB event', missingInContent);
-	printMismatch('Missing DB event for content', missingInDb);
+	printMismatch('Missing content for DB event', missingInContent as MismatchRow[]);
+	printMismatch('Missing DB event for content', missingInDb as MismatchRow[]);
 
 	if (missingInContent.length > 0 || missingInDb.length > 0) {
 		process.exitCode = 1;
@@ -306,7 +345,7 @@ Options:
 	console.log('Parity validation passed.');
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
 	console.error(error instanceof Error ? error.message : String(error));
 	process.exit(1);
 });
