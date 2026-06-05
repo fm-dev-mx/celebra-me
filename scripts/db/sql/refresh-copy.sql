@@ -124,6 +124,7 @@ declare
   table_list text;
   column_list text;
 begin
+  -- Truncate all public tables (CASCADE handles FK order for deletion).
   select string_agg(format('public.%I', tablename), ', ')
   into table_list
   from pg_tables
@@ -133,11 +134,41 @@ begin
     execute 'truncate table ' || table_list || ' cascade';
   end if;
 
+  -- Explicit FK-safe copy order: parents before children.
+  -- Tables are only copied when they exist in BOTH public and the staging schema.
+  -- Tables that exist only locally (e.g. from a migration not yet in production)
+  -- are truncated but NOT re-populated; they remain empty after refresh.
+  -- See tests for the official ordering requirements.
+  create temp table copy_order (pos int primary key, tablename text);
+  insert into copy_order values
+    (1,  'app_user_roles'),
+    (2,  'audit_logs'),
+    (3,  'host_profiles'),
+    (4,  'invitations'),
+    (5,  'rsvp_records'),
+    (6,  'events'),
+    (7,  'intake_requests'),
+    (8,  'published_invitation_content'),
+    (9,  'guest_invitations'),
+    (10, 'event_memberships'),
+    (11, 'event_claim_codes'),
+    (12, 'invitation_assets'),
+    (13, 'intake_submissions'),
+    (14, 'guest_invitation_audit'),
+    (15, 'rsvp_audit_log'),
+    (16, 'rsvp_channel_log'),
+    (17, 'invitation_content_drafts');
+
   for table_record in
-    select tablename
-    from pg_tables
-    where schemaname = 'public'
-    order by tablename
+    select p.tablename
+    from copy_order o
+    inner join pg_tables p
+      on p.tablename = o.tablename
+     and p.schemaname = 'public'
+    inner join pg_tables s
+      on s.tablename = o.tablename
+     and s.schemaname = '__STAGING_SCHEMA__'
+    order by o.pos
   loop
     select string_agg(format('%I', p.column_name), ', ' order by p.ordinal_position)
     into column_list
@@ -150,6 +181,8 @@ begin
       and p.table_name = table_record.tablename
       and p.is_generated = 'NEVER';
 
+    raise notice 'Copying table: %', table_record.tablename;
+
     if column_list is not null then
       execute format(
         'insert into public.%I (%s) select %s from __STAGING_SCHEMA__.%I',
@@ -160,6 +193,8 @@ begin
       );
     end if;
   end loop;
+
+  drop table copy_order;
 end $$;
 
 insert into public.app_user_roles (user_id, role)
