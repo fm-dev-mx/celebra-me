@@ -1,6 +1,7 @@
 {
     "extends": "astro/tsconfigs/strict",
     "compilerOptions": {
+        "types": ["node"],
         "baseUrl": ".",
         "ignoreDeprecations": "6.0",
         "paths": {
@@ -31,6 +32,6 @@
         "resolveJsonModule": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "tests/**/*", "src/env.d.ts"],
+    "include": ["src/**/*", "tests/**/*", "scripts/**/*", "src/env.d.ts"],
     "exclude": ["dist"]
 }
