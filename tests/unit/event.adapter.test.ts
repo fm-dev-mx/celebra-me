@@ -225,4 +225,219 @@ describe('adaptEvent', () => {
 			'[ThemePreset] Invalid preset "broken-preset". Expected one of:',
 		);
 	});
+
+	describe('location theme defaults', () => {
+		it('applies enchanted-rose defaults when location intro fields are missing', () => {
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			expect(viewModel.sections.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
+			expect(viewModel.sections.location?.introHeading).toBe('Ubicación');
+			expect(viewModel.sections.location?.introLede).toBe(
+				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
+			);
+			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
+		});
+
+		it('does not override explicit intro fields with theme defaults', () => {
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					location: {
+						introEyebrow: 'Custom Eyebrow',
+						introHeading: 'Custom Heading',
+						introLede: 'Custom Lede',
+						indicationsHeading: 'Custom Indications',
+						ceremony: {
+							venueName: 'Test',
+							address: 'Test',
+							date: '2027-01-01',
+							time: '6:00 PM',
+						},
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			expect(viewModel.sections.location?.introEyebrow).toBe('Custom Eyebrow');
+			expect(viewModel.sections.location?.introHeading).toBe('Custom Heading');
+			expect(viewModel.sections.location?.introLede).toBe('Custom Lede');
+			expect(viewModel.sections.location?.indicationsHeading).toBe('Custom Indications');
+		});
+
+		it('uses theme default indicationsHeading only when undefined, not when empty string', () => {
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					location: {
+						introEyebrow: 'Eyebrow',
+						introHeading: 'Heading',
+						introLede: 'Lede',
+						indicationsHeading: '',
+						ceremony: {
+							venueName: 'Test',
+							address: 'Test',
+							date: '2027-01-01',
+							time: '6:00 PM',
+						},
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			expect(viewModel.sections.location?.indicationsHeading).toBe('');
+		});
+
+		it('passes through location.indications from published content', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...fixture,
+					location: {
+						...fixture.location,
+						indications: [
+							{
+								iconName: 'DressCode',
+								styleVariant: 'reserved',
+								text: 'Formal de gala',
+							},
+							{
+								iconName: 'Calendar',
+								styleVariant: 'default',
+								text: 'Confirma antes del 6 de noviembre.',
+							},
+						],
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			const indications = viewModel.sections.location?.indications ?? [];
+			expect(indications).toContainEqual(
+				expect.objectContaining({
+					iconName: 'DressCode',
+					styleVariant: 'reserved',
+					text: 'Formal de gala',
+				}),
+			);
+			expect(indications).toContainEqual(
+				expect.objectContaining({
+					iconName: 'Calendar',
+					styleVariant: 'default',
+					text: 'Confirma antes del 6 de noviembre.',
+				}),
+			);
+		});
+
+		it('derives location.indications from dressCode and additionalIndications when indications is absent', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const locationWithoutIndications = { ...fixture.location };
+			delete locationWithoutIndications.indications;
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...fixture,
+					location: {
+						...locationWithoutIndications,
+						dressCode: 'Dorado, champagne y tinto',
+						additionalIndications:
+							'Color reservado para la quinceañera: dorado, champagne y tinto.',
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			const indicationsResult = viewModel.sections.location?.indications ?? [];
+			expect(indicationsResult).toContainEqual(
+				expect.objectContaining({
+					iconName: 'DressCode',
+					styleVariant: 'reserved',
+					text: 'Dorado, champagne y tinto',
+				}),
+			);
+			expect(indicationsResult).toContainEqual(
+				expect.objectContaining({
+					iconName: 'Calendar',
+					styleVariant: 'default',
+					text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
+				}),
+			);
+		});
+
+		it('backward-compatibility: older published content without intro fields uses theme defaults', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...fixture,
+					location: {
+						ceremony: fixture.location.ceremony,
+						reception: fixture.location.reception,
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			expect(viewModel.sections.location?.introEyebrow).toBe('El camino al palacio');
+			expect(viewModel.sections.location?.introHeading).toBe('Ubicación');
+			expect(viewModel.sections.location?.introLede).toBe(
+				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
+			);
+			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
+		});
+
+		it('regression: published content with indications array renders all items through adapter', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const event = {
+				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				data: {
+					...fixture,
+					location: {
+						...fixture.location,
+						indicationsHeading: 'Detalles adicionales',
+						indications: [
+							{
+								iconName: 'DressCode',
+								styleVariant: 'reserved',
+								text: 'Dorado, champagne y tinto',
+							},
+							{
+								iconName: 'Calendar',
+								styleVariant: 'default',
+								text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
+							},
+						],
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0];
+
+			const viewModel = adaptEvent(event);
+
+			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
+			const indications = viewModel.sections.location?.indications ?? [];
+			expect(indications).toHaveLength(2);
+			expect(indications[0]).toMatchObject({
+				iconName: 'DressCode',
+				styleVariant: 'reserved',
+				text: 'Dorado, champagne y tinto',
+			});
+			expect(indications[1]).toMatchObject({
+				iconName: 'Calendar',
+				styleVariant: 'default',
+				text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
+			});
+		});
+	});
 });

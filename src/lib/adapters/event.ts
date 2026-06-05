@@ -314,6 +314,32 @@ function resolveVenueData(
 	};
 }
 
+function resolveLocationIndications(
+	indications: ReturnType<typeof buildLocationSectionData>['indications'],
+	data: AdaptationContext['data'],
+) {
+	if (indications && indications.length > 0) return indications;
+	const derived: NonNullable<typeof indications> = [];
+	if (typeof data.location.dressCode === 'string' && data.location.dressCode.length > 0) {
+		derived.push({
+			iconName: 'DressCode' as const,
+			styleVariant: 'reserved' as const,
+			text: data.location.dressCode,
+		});
+	}
+	if (
+		typeof data.location.additionalIndications === 'string' &&
+		data.location.additionalIndications.length > 0
+	) {
+		derived.push({
+			iconName: 'Calendar' as const,
+			styleVariant: 'default' as const,
+			text: data.location.additionalIndications,
+		});
+	}
+	return derived.length > 0 ? derived : undefined;
+}
+
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
@@ -331,7 +357,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 	return {
 		ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
 		reception: resolveVenueData(eventSlug, data.location.reception, data.title),
-		indications,
+		indications: resolveLocationIndications(indications, data),
 		variant: sectionVariant(
 			'location',
 			data.sectionStyles?.location?.variant,
