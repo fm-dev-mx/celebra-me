@@ -34,7 +34,7 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
-	onOpenAssetPicker: (field: string) => void;
+	onOpenAssetPicker: (field: `location.${'ceremony' | 'reception'}.image`) => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;

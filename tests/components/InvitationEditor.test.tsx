@@ -379,7 +379,7 @@ describe('InvitationEditor', () => {
 	it('handles asset selection for hero.backgroundImageMobile', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
-		const mobileBgLabel = screen.getByText('Fondo para móvil (opcional)');
+		const mobileBgLabel = screen.getByText('Fondo para móvil');
 		const field = mobileBgLabel.closest('.invitation-editor__image-field') as HTMLElement;
 
 		// Initially shows empty state
@@ -395,5 +395,68 @@ describe('InvitationEditor', () => {
 		// Picker closes and content is updated (asset not in library → 'missing' state)
 		expect(screen.queryByTestId('mock-asset-picker')).not.toBeInTheDocument();
 		expect(within(field).getByText('Imagen faltante')).toBeInTheDocument();
+	});
+
+	it('renders clear desktop and mobile hero image labels', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		expect(screen.getByText('Fondo para escritorio')).toBeInTheDocument();
+		expect(
+			screen.getByText('Se usa como imagen principal en pantallas grandes.'),
+		).toBeInTheDocument();
+		expect(screen.getByText('Fondo para móvil')).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Opcional. Si no eliges una imagen móvil, se usará la imagen de escritorio.',
+			),
+		).toBeInTheDocument();
+	});
+
+	it('saves selected desktop and mobile hero images without collapsing refs', async () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const desktopField = screen
+			.getByText('Fondo para escritorio')
+			.closest('.invitation-editor__image-field') as HTMLElement;
+		const mobileField = screen
+			.getByText('Fondo para móvil')
+			.closest('.invitation-editor__image-field') as HTMLElement;
+
+		fireEvent.click(within(desktopField).getByRole('button', { name: 'Seleccionar imagen' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Select Test Asset' }));
+		fireEvent.click(within(mobileField).getByRole('button', { name: 'Seleccionar imagen' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Select Test Asset' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveSection).toHaveBeenCalledWith(
+				'main',
+				expect.objectContaining({
+					hero: expect.objectContaining({
+						backgroundImage: { type: 'uploaded', assetId: 'test-asset-id' },
+						backgroundImageMobile: { type: 'uploaded', assetId: 'test-asset-id' },
+					}),
+				}),
+				'2026-05-30T02:00:00Z',
+			);
+		});
+	});
+
+	it('applies selection to the latest opened hero picker target', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const desktopField = screen
+			.getByText('Fondo para escritorio')
+			.closest('.invitation-editor__image-field') as HTMLElement;
+		const mobileField = screen
+			.getByText('Fondo para móvil')
+			.closest('.invitation-editor__image-field') as HTMLElement;
+
+		fireEvent.click(within(desktopField).getByRole('button', { name: 'Seleccionar imagen' }));
+		fireEvent.click(within(mobileField).getByRole('button', { name: 'Seleccionar imagen' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Select Test Asset' }));
+
+		expect(within(desktopField).getByText('Sin imagen')).toBeInTheDocument();
+		expect(within(mobileField).getByText('Imagen faltante')).toBeInTheDocument();
 	});
 });

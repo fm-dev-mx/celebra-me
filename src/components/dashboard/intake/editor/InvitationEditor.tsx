@@ -50,6 +50,14 @@ interface Props {
 	initialContext: InvitationEditorContextDTO;
 }
 
+type PickerField =
+	| 'hero.backgroundImage'
+	| 'hero.backgroundImageMobile'
+	| 'hero.portrait'
+	| 'family.featuredImage'
+	| 'thankYou.image'
+	| `location.${'ceremony' | 'reception'}.image`;
+
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
 	published: 'Versión pública',
@@ -233,7 +241,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
-	const [pickerField, setPickerField] = useState<string | null>(null);
+	const [pickerField, setPickerField] = useState<PickerField | null>(null);
 
 	const publish = async () => {
 		setConfirmation(null);
@@ -1187,27 +1195,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 					invitationId={invitationId}
 					onSelect={(assetId) => {
 						const ref = { type: 'uploaded' as const, assetId };
-						const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
+						const updateLocationVenue = (venueKey: 'ceremony' | 'reception') => {
+							const venue = location[venueKey] ?? {};
+							updateLocation({ [venueKey]: { ...venue, image: ref } });
+						};
+						const PICKER_FIELD_UPDATERS: Record<PickerField, () => void> = {
 							'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
-							'hero.portrait': () => updateHero({ portrait: ref }),
 							'hero.backgroundImageMobile': () =>
 								updateHero({ backgroundImageMobile: ref }),
+							'hero.portrait': () => updateHero({ portrait: ref }),
 							'family.featuredImage': () => updateFamily({ featuredImage: ref }),
 							'thankYou.image': () =>
 								updateContent('thankYou', { ...messages.thankYou, image: ref }),
+							'location.ceremony.image': () => updateLocationVenue('ceremony'),
+							'location.reception.image': () => updateLocationVenue('reception'),
 						};
-						for (const key of Object.keys(PICKER_FIELD_UPDATERS)) {
-							if (pickerField === key || pickerField.startsWith(key + '.')) {
-								PICKER_FIELD_UPDATERS[key]();
-								break;
-							}
-						}
-						if (pickerField.startsWith('location.')) {
-							const parts = pickerField.split('.');
-							const venueKey = parts[1] as 'ceremony' | 'reception';
-							const venue = location[venueKey] ?? {};
-							updateLocation({ [venueKey]: { ...venue, image: ref } });
-						}
+						PICKER_FIELD_UPDATERS[pickerField]();
 						setPickerField(null);
 					}}
 					onClose={() => setPickerField(null)}

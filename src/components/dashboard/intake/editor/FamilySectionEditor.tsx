@@ -28,7 +28,7 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	onUpdateFamily: (patch: Partial<FamilyData>) => void;
-	onOpenAssetPicker: (field: string) => void;
+	onOpenAssetPicker: (field: 'family.featuredImage') => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;

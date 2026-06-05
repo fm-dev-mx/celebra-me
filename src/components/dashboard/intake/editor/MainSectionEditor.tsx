@@ -32,7 +32,9 @@ interface Props {
 	sourceBadge?: { source: string; label: string };
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
-	onOpenAssetPicker: (field: string) => void;
+	onOpenAssetPicker: (
+		field: 'hero.backgroundImage' | 'hero.backgroundImageMobile' | 'hero.portrait',
+	) => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
@@ -107,16 +109,16 @@ export default function MainSectionEditor({
 					<h4 className="invitation-editor__image-group-title">Imágenes principales</h4>
 					<div className="invitation-editor__image-grid">
 						<ImageAssetField
-							label="Fondo de portada"
-							description="Se usa como imagen de fondo en la primera pantalla de la invitación."
+							label="Fondo para escritorio"
+							description="Se usa como imagen principal en pantallas grandes."
 							value={main.backgroundImage}
 							assetLookupSlug={assetLookupSlug}
 							assets={assets}
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImage')}
 						/>
 						<ImageAssetField
-							label="Fondo para móvil (opcional)"
-							description="Opcional. Úsalo si la imagen de portada necesita otro encuadre en celulares."
+							label="Fondo para móvil"
+							description="Opcional. Si no eliges una imagen móvil, se usará la imagen de escritorio."
 							value={main.backgroundImageMobile}
 							assetLookupSlug={assetLookupSlug}
 							assets={assets}
