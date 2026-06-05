@@ -2,14 +2,18 @@ import { existsSync, readFileSync, renameSync, rmSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+	LOCAL_DB_URL,
+	REFRESH_PARITY_TABLES,
 	STORAGE_BUCKET_SIZE_LIMIT,
 	assertAppEnvIsLocal,
 	assertLocalApiReachable,
 	assertLocalDbReachable,
 	assertNoProdCredentialsInLocalEnv,
 	assertProductionDbUrl,
+	countTableRows,
 	createProdBackup,
 	ensureDir,
+	ensureTablesExist,
 	fail,
 	getProdDbUrl,
 	loadAppEnv,
@@ -20,18 +24,18 @@ import {
 	runPsqlFile,
 	sqlLiteral,
 	timestamp,
+	transformDumpForStaging,
 	validateAuthOrphans,
+	validateRefreshParity,
 	writeTextFile,
 } from './db-workflow-lib.ts';
 
 const STAGING_SCHEMA = 'refresh_staging';
 
-function transformDumpForStaging(inputPath: string, outputPath: string): void {
-	const rawDump = readFileSync(inputPath, 'utf8');
-	const transformed = rawDump
-		.replace(/\bpublic\./g, `${STAGING_SCHEMA}.`)
-		.replace(/SET search_path = public,/g, `SET search_path = ${STAGING_SCHEMA},`);
-	writeTextFile(outputPath, transformed);
+function transformDumpForStagingFile(inputPath: string, outputPath: string): void {
+	const input = readFileSync(inputPath, 'utf8');
+	const output = transformDumpForStaging(input, STAGING_SCHEMA);
+	writeTextFile(outputPath, output);
 }
 
 function prepareStagingSchema(): void {
@@ -76,6 +80,12 @@ function loadCopySql(): string {
 	return replaced;
 }
 
+function printCountTable(label: string, counts: Record<string, number>): void {
+	const entries = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b));
+	const rows = entries.map(([table, count]) => `  ${table}: ${count}`).join('\n');
+	log(`\n${label}:\n${rows}`);
+}
+
 async function main(): Promise<void> {
 	const appEnv = loadAppEnv();
 	assertNoProdCredentialsInLocalEnv();
@@ -103,6 +113,11 @@ async function main(): Promise<void> {
 
 	let refreshSucceeded = false;
 	try {
+		log('- Capturing production row counts before dump');
+		ensureTablesExist(REFRESH_PARITY_TABLES, 'public', prodDbUrl, 'production');
+		const sourceCounts = countTableRows(REFRESH_PARITY_TABLES, 'public', prodDbUrl);
+		printCountTable('Production (source) row counts', sourceCounts);
+
 		createProdBackup(prodDbUrl, dumpPath, false);
 		log(`- Dump created: ${dumpPath}`);
 
@@ -110,7 +125,7 @@ async function main(): Promise<void> {
 		runCommand('supabase', ['db', 'reset', '--local', '--yes']);
 
 		prepareStagingSchema();
-		transformDumpForStaging(dumpPath, stagingDumpPath);
+		transformDumpForStagingFile(dumpPath, stagingDumpPath);
 		runPsqlFile(stagingDumpPath);
 
 		const localSuperAdminPassword =
@@ -128,6 +143,30 @@ ${loadCopySql()}
 
 		validateAuthOrphans();
 
+		ensureTablesExist(REFRESH_PARITY_TABLES, 'public', LOCAL_DB_URL, 'local');
+		const publicCounts = countTableRows(REFRESH_PARITY_TABLES, 'public');
+		printCountTable('Local public (after copy) row counts', publicCounts);
+
+		const parity = validateRefreshParity({
+			sourceCounts,
+			targetCounts: publicCounts,
+			// app_user_roles gets an extra row locally for the super-admin user
+			// that refresh-copy.sql inserts after copying production data.
+			maxDeltas: { app_user_roles: 1 },
+		});
+
+		if (!parity.ok) {
+			for (const f of parity.failures) {
+				log(
+					`  FAIL parity ${f.table}: source=${f.sourceCount} local=${f.targetCount} (${f.reason})`,
+				);
+			}
+			fail(
+				`Post-refresh parity guard failed: ${parity.failures.length} table(s) with count mismatch. ` +
+					'Diagnostic dumps preserved.',
+			);
+		}
+
 		writeTextFile(
 			uuidMapPath,
 			JSON.stringify(
@@ -144,26 +183,16 @@ ${loadCopySql()}
 					dumpPath,
 					stagingDumpPath,
 					productionHost: target.hostname,
+					sourceCounts,
+					publicCounts,
 				},
 				null,
 				2,
 			),
 		);
 
-		const summary = runPsql(`
-select table_name, row_count::text
-from (
-  select 'invitations' table_name, count(*) row_count from public.invitations
-  union all select 'events', count(*) from public.events
-  union all select 'guest_invitations', count(*) from public.guest_invitations
-  union all select 'invitation_assets', count(*) from public.invitation_assets
-) rows
-order by table_name;
-`).stdout.trim();
-
 		log('Refresh complete');
 		log(`- UUID report: ${uuidMapPath}`);
-		log(`- Row summary:\n${summary}`);
 		refreshSucceeded = true;
 	} finally {
 		if (refreshSucceeded) {
@@ -180,7 +209,9 @@ order by table_name;
 					renameSync(tempFile, destPath);
 				}
 			}
-			log(`WARNING: Refresh failed. Diagnostic dumps preserved at: ${failedDir}`);
+			log(
+				`WARNING: Refresh failed or parity validation failed. Diagnostic dumps preserved at: ${failedDir}`,
+			);
 			log('WARNING: These files may contain production data. Do NOT commit them.');
 		}
 	}
