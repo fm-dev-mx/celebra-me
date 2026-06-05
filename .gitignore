@@ -112,6 +112,9 @@ desktop.ini
 
 # --- BACKUPS & TEMPORARY ------------------------------------------------------
 # Local backups and recovery files
+.tmp/
+.backups/
+.secrets/
 *.bak
 *.backup
 *.tmp

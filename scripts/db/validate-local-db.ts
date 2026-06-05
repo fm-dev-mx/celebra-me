@@ -1,0 +1,225 @@
+import {
+	LOCAL_SUPABASE_URL,
+	assertAppEnvIsLocal,
+	assertLocalApiReachable,
+	assertLocalDbReachable,
+	assertNoProdCredentialsInLocalEnv,
+	fail,
+	loadAppEnv,
+	log,
+	runPsql,
+	sqlLiteral,
+	tryRunCommand,
+} from './db-workflow-lib.ts';
+
+interface CheckResult {
+	name: string;
+	ok: boolean;
+	detail?: string;
+}
+
+function parseTsv(output: string): string[][] {
+	return output
+		.trim()
+		.split(/\r?\n/)
+		.filter(Boolean)
+		.map((line) => line.split('\t'));
+}
+
+function scalar(sql: string): string {
+	const result = runPsql(`${sql}\n`);
+	return result.stdout.trim();
+}
+
+function checkSql(name: string, sql: string, expected = '0'): CheckResult {
+	const actual = scalar(sql);
+	return {
+		name,
+		ok: actual === expected,
+		detail: actual === expected ? undefined : `expected ${expected}, got ${actual}`,
+	};
+}
+
+async function validateAssetApi(): Promise<CheckResult> {
+	const invitationId = scalar('select id::text from public.invitations limit 1;');
+	if (!invitationId) {
+		return {
+			name: 'Asset Library API empty state',
+			ok: true,
+			detail: 'skipped because there are no invitations',
+		};
+	}
+
+	const result = tryRunCommand('node', ['scripts/db/_check-asset-api.mjs', invitationId], {
+		env: loadAppEnv(),
+	});
+
+	if (result.status !== 0) {
+		return {
+			name: 'Asset Library API empty state',
+			ok: false,
+			detail: result.stderr.trim() || `exit code ${result.status}`,
+		};
+	}
+
+	return {
+		name: 'Asset Library API empty state',
+		ok: /^\d+$/.test(result.stdout.trim()),
+		detail: `rows=${result.stdout.trim()}`,
+	};
+}
+
+async function main(): Promise<void> {
+	const appEnv = loadAppEnv();
+	assertNoProdCredentialsInLocalEnv();
+	assertAppEnvIsLocal(appEnv);
+	assertLocalApiReachable();
+	assertLocalDbReachable();
+
+	const requiredTables = [
+		'app_user_roles',
+		'audit_logs',
+		'event_claim_codes',
+		'event_memberships',
+		'events',
+		'guest_invitation_audit',
+		'guest_invitations',
+		'host_profiles',
+		'intake_requests',
+		'intake_submissions',
+		'invitation_assets',
+		'invitation_content_drafts',
+		'invitations',
+		'published_invitation_content',
+	];
+
+	const tableRows = parseTsv(
+		runPsql(`
+select table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_type in ('BASE TABLE', 'VIEW')
+  and table_name = any(array[${requiredTables.map((table) => `'${table}'`).join(',')}])
+order by table_name;
+`).stdout,
+	).map((row) => row[0]);
+	const missingTables = requiredTables.filter((table) => !tableRows.includes(table));
+
+	const checks: CheckResult[] = [
+		{
+			name: 'Local Supabase URL',
+			ok:
+				appEnv.SUPABASE_URL === LOCAL_SUPABASE_URL &&
+				appEnv.PUBLIC_SUPABASE_URL === LOCAL_SUPABASE_URL,
+		},
+		{
+			name: 'Required public tables',
+			ok: missingTables.length === 0,
+			detail: missingTables.length ? `missing: ${missingTables.join(', ')}` : undefined,
+		},
+		checkSql(
+			'events.owner_user_id auth orphans',
+			`select count(*)::text
+from public.events e
+left join auth.users u on u.id = e.owner_user_id
+where u.id is null;`,
+		),
+		checkSql(
+			'invitations.created_by auth orphans',
+			`select count(*)::text
+from public.invitations i
+left join auth.users u on u.id = i.created_by
+where i.created_by is not null and u.id is null;`,
+		),
+		checkSql(
+			'app_user_roles auth orphans',
+			`select count(*)::text
+from public.app_user_roles r
+left join auth.users u on u.id = r.user_id
+where u.id is null;`,
+		),
+		checkSql(
+			'event_memberships auth orphans',
+			`select count(*)::text
+from public.event_memberships m
+left join auth.users u on u.id = m.user_id
+where u.id is null;`,
+		),
+		checkSql(
+			'No marker invitation_assets rows',
+			`select count(*)::text
+from public.invitation_assets
+where storage_path ilike '%marker%'
+   or storage_path ilike '%fake%'
+   or display_name ilike '%marker%'
+   or display_name ilike '%fake%';`,
+		),
+	];
+
+	const superAdminEmail = (appEnv.SUPER_ADMIN_EMAILS ?? '').split(',')[0]?.trim().toLowerCase();
+	if (superAdminEmail) {
+		checks.push(
+			checkSql(
+				'Required local super admin exists',
+				`select count(*)::text
+from auth.users u
+join public.app_user_roles r on r.user_id = u.id
+where lower(u.email) = lower(${sqlLiteral(superAdminEmail)})
+  and r.role = 'super_admin';`,
+				'1',
+			),
+		);
+
+		const password = appEnv.LOCAL_SUPER_ADMIN_PASSWORD || appEnv.RSVP_ADMIN_PASSWORD;
+		if (password) {
+			const login = tryRunCommand('node', ['scripts/db/_check-admin-login.mjs'], {
+				env: {
+					...appEnv,
+					LOCAL_ADMIN_EMAIL: superAdminEmail,
+					LOCAL_ADMIN_PASSWORD: password,
+				},
+				redact: [password],
+			});
+			checks.push({
+				name: 'Super admin local login',
+				ok: login.status === 0 && login.stdout.trim() === 'ok',
+				detail:
+					login.status !== 0
+						? login.stderr.trim() || `exit code ${login.status}`
+						: undefined,
+			});
+		}
+	}
+
+	checks.push(await validateAssetApi());
+
+	const rowCounts = parseTsv(
+		runPsql(`
+select table_name, row_count::text
+from (
+  select 'invitations' table_name, count(*) row_count from public.invitations
+  union all select 'events', count(*) from public.events
+  union all select 'guest_invitations', count(*) from public.guest_invitations
+  union all select 'invitation_assets', count(*) from public.invitation_assets
+) summary
+order by table_name;
+`).stdout,
+	);
+
+	const failed = checks.filter((check) => !check.ok);
+	log('Local DB validation');
+	for (const check of checks) {
+		log(
+			`${check.ok ? 'PASS' : 'FAIL'} ${check.name}${check.detail ? ` (${check.detail})` : ''}`,
+		);
+	}
+	log(`Rows: ${rowCounts.map(([table, count]) => `${table}=${count}`).join(', ')}`);
+
+	if (failed.length) {
+		fail(`${failed.length} local DB validation check(s) failed.`);
+	}
+}
+
+main().catch((error: unknown) => {
+	fail(error instanceof Error ? error.message : String(error));
+});

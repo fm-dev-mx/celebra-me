@@ -30,8 +30,12 @@
         "db:reset:local": "supabase db reset",
         "db:start": "supabase start",
         "db:stop": "supabase stop",
+        "db:local:refresh": "tsx scripts/db/refresh-local-from-prod.ts",
+        "db:local:validate": "tsx scripts/db/validate-local-db.ts",
+        "db:prod:backup": "tsx scripts/db/backup-prod.ts",
+        "db:prod:migrate": "tsx scripts/db/push-prod-migrations.ts",
         "ops": "node scripts/cli.mjs",
-        "validate:event-parity": "node scripts/validate-event-parity.mjs --allowMissingDb"
+        "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb"
     },
     "dependencies": {
         "@astrojs/vercel": "10.0.7",
@@ -90,6 +94,7 @@
         "stylelint": "17.11.1",
         "stylelint-config-standard-scss": "^17.0.0",
         "ts-jest": "^29.4.11",
+        "tsx": "^4.22.4",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.59.4"
     },
