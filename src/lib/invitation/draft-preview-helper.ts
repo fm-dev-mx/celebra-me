@@ -6,7 +6,11 @@ import { getPublicUrl } from '@/lib/intake/storage';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { Invitation } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { ALL_EDITOR_KEYS, getAssetSlugFromContent } from '@/lib/assets/asset-slug';
+import {
+	ALL_EDITOR_KEYS,
+	getAssetSlugFromContent,
+	resolveAssetSlug,
+} from '@/lib/assets/asset-slug';
 
 export type DraftPreviewResult =
 	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }
@@ -89,15 +93,17 @@ export async function buildDraftPreviewPageContext(
 		const assetLookupSlug =
 			getAssetSlugFromContent(draftContent as unknown as Record<string, unknown>) ??
 			options.assetLookupSlug ??
-			invitation.slug ??
-			snapshot.previewSlug;
+			resolveAssetSlug(invitation);
 
 		// Resolve uploaded asset refs to public Storage URLs for preview
-		const assets = await findAssetsByInvitationId(invitation.id);
-		const resolvedContent = resolveUploadedRefs(
-			draftContent as unknown as Record<string, unknown>,
-			assets,
-		);
+		let resolvedContent = draftContent as unknown as Record<string, unknown>;
+		try {
+			const assets = await findAssetsByInvitationId(invitation.id);
+			resolvedContent = resolveUploadedRefs(resolvedContent, assets);
+		} catch {
+			// If the invitation_assets table doesn't exist or assets can't be fetched,
+			// continue with unresolved refs — demo/internal assets will still work.
+		}
 
 		const publishedData = mapDraftToPublished({
 			invitation: {
