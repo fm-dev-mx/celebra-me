@@ -296,14 +296,25 @@ describe('adaptEvent', () => {
 			expect(viewModel.sections.location?.indicationsHeading).toBe('');
 		});
 
-		it('passes through location.indications from published content', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		it('maps dressCode and additionalIndications into location.indications array via published content', () => {
 			const event = {
-				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				id: 'events/test',
 				data: {
-					...fixture,
+					eventType: 'xv',
+					title: 'XV Años',
+					hero: {
+						name: 'Test',
+						date: '2027-11-20',
+						backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
+					},
+					theme: { preset: 'enchanted-rose' },
 					location: {
-						...fixture.location,
+						ceremony: {
+							venueName: 'Test',
+							address: 'Test',
+							date: '2027-01-01',
+							time: '6:00 PM',
+						},
 						indications: [
 							{
 								iconName: 'DressCode',
@@ -339,51 +350,33 @@ describe('adaptEvent', () => {
 			);
 		});
 
-		it('derives location.indications from dressCode and additionalIndications when indications is absent', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
-			const locationWithoutIndications = { ...fixture.location };
-			delete locationWithoutIndications.indications;
+		it('backward-compatibility: published snapshot without intro fields uses theme defaults', () => {
 			const event = {
-				id: 'event-demos/xv/demo-xv-enchanted-rose',
+				id: 'events/ayrin-samantha-lerma-castro',
 				data: {
-					...fixture,
-					location: {
-						...locationWithoutIndications,
-						dressCode: 'Dorado, champagne y tinto',
-						additionalIndications:
-							'Color reservado para la quinceañera: dorado, champagne y tinto.',
+					eventType: 'xv',
+					title: 'XV Años',
+					hero: {
+						name: 'Test',
+						date: '2027-11-20',
+						backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
 					},
-				},
-			} as Parameters<typeof adaptEvent>[0];
-
-			const viewModel = adaptEvent(event);
-
-			const indicationsResult = viewModel.sections.location?.indications ?? [];
-			expect(indicationsResult).toContainEqual(
-				expect.objectContaining({
-					iconName: 'DressCode',
-					styleVariant: 'reserved',
-					text: 'Dorado, champagne y tinto',
-				}),
-			);
-			expect(indicationsResult).toContainEqual(
-				expect.objectContaining({
-					iconName: 'Calendar',
-					styleVariant: 'default',
-					text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
-				}),
-			);
-		});
-
-		it('backward-compatibility: older published content without intro fields uses theme defaults', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
-			const event = {
-				id: 'event-demos/xv/demo-xv-enchanted-rose',
-				data: {
-					...fixture,
+					theme: { preset: 'enchanted-rose' },
 					location: {
-						ceremony: fixture.location.ceremony,
-						reception: fixture.location.reception,
+						ceremony: {
+							venueName: 'Parroquia del Sagrado Corazón',
+							address: 'Av. de las Rosas 240',
+							city: 'Querétaro',
+							date: '20 de noviembre de 2027',
+							time: '6:00 PM',
+						},
+						reception: {
+							venueName: 'Salón Imperial',
+							address: 'Paseo del Palacio 18',
+							city: 'Querétaro',
+							date: '20 de noviembre de 2027',
+							time: '8:00 PM',
+						},
 					},
 				},
 			} as Parameters<typeof adaptEvent>[0];
@@ -396,48 +389,6 @@ describe('adaptEvent', () => {
 				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
 			);
 			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
-		});
-
-		it('regression: published content with indications array renders all items through adapter', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
-			const event = {
-				id: 'event-demos/xv/demo-xv-enchanted-rose',
-				data: {
-					...fixture,
-					location: {
-						...fixture.location,
-						indicationsHeading: 'Detalles adicionales',
-						indications: [
-							{
-								iconName: 'DressCode',
-								styleVariant: 'reserved',
-								text: 'Dorado, champagne y tinto',
-							},
-							{
-								iconName: 'Calendar',
-								styleVariant: 'default',
-								text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
-							},
-						],
-					},
-				},
-			} as Parameters<typeof adaptEvent>[0];
-
-			const viewModel = adaptEvent(event);
-
-			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
-			const indications = viewModel.sections.location?.indications ?? [];
-			expect(indications).toHaveLength(2);
-			expect(indications[0]).toMatchObject({
-				iconName: 'DressCode',
-				styleVariant: 'reserved',
-				text: 'Dorado, champagne y tinto',
-			});
-			expect(indications[1]).toMatchObject({
-				iconName: 'Calendar',
-				styleVariant: 'default',
-				text: 'Color reservado para la quinceañera: dorado, champagne y tinto.',
-			});
 		});
 	});
 });

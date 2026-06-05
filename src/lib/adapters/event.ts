@@ -14,13 +14,14 @@ import type {
 	HeroViewModel,
 	EnvelopeViewModel,
 	Interlude,
+	Indication,
 } from '@/lib/adapters/types';
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 
-const SCROLL_LABEL_PRESETS: ReadonlySet<string> = new Set(['enchanted-rose']);
+const SCROLL_LABEL_PRESET = 'enchanted-rose';
 
 const LOCATION_THEME_DEFAULTS: Readonly<{
 	[key in ThemePreset]?: {
@@ -204,7 +205,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
-		scrollLabel: SCROLL_LABEL_PRESETS.has(preset) ? 'Continúa' : undefined,
+		scrollLabel: preset === SCROLL_LABEL_PRESET ? 'Continúa' : undefined,
 	};
 }
 
@@ -315,7 +316,7 @@ function resolveVenueData(
 }
 
 function resolveLocationIndications(
-	indications: ReturnType<typeof buildLocationSectionData>['indications'],
+	indications: Indication[] | undefined,
 	data: AdaptationContext['data'],
 ) {
 	if (indications && indications.length > 0) return indications;
@@ -348,8 +349,8 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	const indications = data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => ({
-			iconName: indication.iconName ?? indication.icon ?? 'Gift',
-			styleVariant: indication.styleVariant ?? 'default',
+			iconName: (indication.iconName ?? indication.icon ?? 'Gift') as Indication['iconName'],
+			styleVariant: indication.styleVariant,
 			text: indication.text,
 		}),
 	);
