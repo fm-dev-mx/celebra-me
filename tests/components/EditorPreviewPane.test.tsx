@@ -92,15 +92,9 @@ describe('EditorPreviewPane', () => {
 		);
 	});
 
-	it('switches device presets', () => {
-		const onReload = jest.fn();
-		render(<EditorPreviewPane {...defaultProps} previewVersion={1} onReload={onReload} />);
+	it('defaults to mobile viewport on first render', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
 
-		expect(screen.getByRole('button', { name: 'Escritorio' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
-		);
-		fireEvent.click(screen.getByRole('button', { name: 'Móvil' }));
 		expect(screen.getByRole('button', { name: 'Móvil' })).toHaveAttribute(
 			'aria-pressed',
 			'true',
@@ -108,30 +102,55 @@ describe('EditorPreviewPane', () => {
 		expect(screen.getByTestId('editor-preview-frame')).toHaveAttribute('data-device', 'mobile');
 	});
 
-	it('applies the configured viewport width as iframe width attribute for desktop', () => {
+	it('switches from mobile to desktop and back', () => {
 		render(<EditorPreviewPane {...defaultProps} />);
-		const iframe = screen.getByTitle('Vista previa de la invitación');
-		expect(iframe).toHaveAttribute('width', '1440');
+
+		expect(screen.getByRole('button', { name: 'Móvil' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Escritorio' }));
+		expect(screen.getByRole('button', { name: 'Escritorio' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		);
+		expect(screen.getByTestId('editor-preview-frame')).toHaveAttribute(
+			'data-device',
+			'desktop',
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Tableta' }));
+		expect(screen.getByRole('button', { name: 'Tableta' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		);
+		expect(screen.getByTestId('editor-preview-frame')).toHaveAttribute('data-device', 'tablet');
 	});
 
-	it('applies the configured viewport width as iframe width attribute for mobile', () => {
+	it('defaults to mobile viewport width on initial render', () => {
 		render(<EditorPreviewPane {...defaultProps} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Móvil' }));
 		const iframe = screen.getByTitle('Vista previa de la invitación');
 		expect(iframe).toHaveAttribute('width', '390');
 	});
 
-	it('applies the configured viewport width as iframe width attribute for tablet', () => {
+	it('switches to desktop viewport width when desktop tab is clicked', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Escritorio' }));
+		const iframe = screen.getByTitle('Vista previa de la invitación');
+		expect(iframe).toHaveAttribute('width', '1440');
+	});
+
+	it('switches to tablet viewport width when tablet tab is clicked', () => {
 		render(<EditorPreviewPane {...defaultProps} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Tableta' }));
 		const iframe = screen.getByTitle('Vista previa de la invitación');
 		expect(iframe).toHaveAttribute('width', '768');
 	});
 
-	it('renders viewport wrapper with correct width inline style', () => {
+	it('renders viewport wrapper with mobile --vp-width custom property by default', () => {
 		render(<EditorPreviewPane {...defaultProps} />);
 		const viewport = document.querySelector('.invitation-editor__preview-viewport');
 		expect(viewport).toBeInTheDocument();
-		expect(viewport).toHaveStyle('width: 1440px');
+		expect(viewport).toHaveStyle('--vp-width: 390px');
 	});
 });

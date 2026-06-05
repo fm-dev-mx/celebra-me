@@ -39,7 +39,7 @@ export default function EditorPreviewPane({
 	paneRef,
 	previewHash = '',
 }: Props) {
-	const [device, setDevice] = useState<PreviewDevice>('desktop');
+	const [device, setDevice] = useState<PreviewDevice>('mobile');
 	const iframeBaseUrl = buildPreviewUrl(invitationId, previewVersion, true);
 	const iframeSrc = previewHash ? `${iframeBaseUrl}${previewHash}` : iframeBaseUrl;
 	const iframeKey = `preview-v${previewVersion}`;
