@@ -411,6 +411,153 @@ describe('hydration edge cases', () => {
 		expect(upsertCallArg.content.description).toBe(published.content.description);
 		expect(upsertCallArg.content.sectionOrder).toEqual(published.content.sectionOrder);
 	});
+
+	it('merges partial draft section data with published to preserve draft event fields and fill missing section copy', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: {
+				title: 'XV Ana',
+				hero: { name: 'Ana', label: 'Mis XV', date: '2027-01-01' },
+				location: {
+					ceremony: { venueName: 'Mi Iglesia', address: 'Calle 123' },
+				},
+			},
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				location: {
+					introEyebrow: 'EL CAMINO AL PALACIO',
+					introHeading: 'Ubicación',
+					introLede: 'Guarda la ruta.',
+					ceremony: { venueName: 'Iglesia P', address: 'Av. Siempre Viva' },
+				},
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		// Draft ceremony fields are preserved
+		expect(result.content.location?.ceremony?.venueName).toBe('Mi Iglesia');
+		expect(result.content.location?.ceremony?.address).toBe('Calle 123');
+		// Published section copy fills in where draft is missing
+		expect(result.content.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
+		expect(result.content.location?.introHeading).toBe('Ubicación');
+		expect(result.content.location?.introLede).toBe('Guarda la ruta.');
+		expect(result.sectionStates.location).toBe('draft');
+	});
+
+	it('fills missing section copy from published before demo', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				title: published.content.title,
+				location: {
+					introEyebrow: 'PUBLISHED EYEBROW',
+					ceremony: { venueName: 'Iglesia P' },
+				},
+			},
+		});
+		(getCollection as jest.Mock).mockResolvedValue([
+			{
+				id: 'xv/demo-xv-jewelry-box.json',
+				data: {
+					...demoContent,
+					location: {
+						introEyebrow: 'DEMO EYEBROW',
+						introHeading: 'Demo Heading',
+						ceremony: { venueName: 'Demo Venue' },
+					},
+				},
+			},
+		]);
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		// Published version wins over demo since both have it
+		expect(result.content.location?.introEyebrow).toBe('PUBLISHED EYEBROW');
+		// Demo fills in where published is missing
+		expect(result.content.location?.introHeading).toBe('Demo Heading');
+		expect(result.sectionStates.location).toBe('published');
+	});
+
+	it('falls back to demo section copy when both draft and published lack it', async () => {
+		(findInvitationById as jest.Mock).mockResolvedValue({
+			...invitation,
+			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-enchanted-rose' },
+		});
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				title: published.content.title,
+				location: {
+					ceremony: { venueName: 'Iglesia P' },
+				},
+			},
+		});
+		(getCollection as jest.Mock).mockResolvedValue([
+			{
+				id: 'xv/demo-xv-enchanted-rose.json',
+				data: {
+					...demoContent,
+					location: {
+						ceremony: { venueName: 'Demo Venue' },
+						introEyebrow: 'EL CAMINO AL PALACIO',
+						introHeading: 'Ubicación',
+						introLede: 'Guarda la ruta.',
+					},
+				},
+			},
+		]);
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		// Demo fills missing section copy
+		expect(result.content.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
+		expect(result.content.location?.introHeading).toBe('Ubicación');
+		expect(result.content.location?.introLede).toBe('Guarda la ruta.');
+		// Published ceremony still wins over demo
+		expect(result.content.location?.ceremony?.venueName).toBe('Iglesia P');
+		expect(result.sectionStates.location).toBe('published');
+	});
+
+	it('preserves explicitly empty section copy fields from draft over published fill', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: {
+				title: 'XV Ana',
+				hero: { name: 'Ana', label: 'Mis XV', date: '2027-01-01' },
+				location: {
+					introEyebrow: '',
+					ceremony: { venueName: 'Mi Iglesia' },
+				},
+			},
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				location: {
+					introEyebrow: 'EL CAMINO',
+					introHeading: 'Ubicación Publicada',
+					ceremony: { venueName: 'Iglesia P' },
+				},
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		// Draft's empty string is not overwritten by published value
+		expect(result.content.location?.introEyebrow).toBe('');
+		// Published fills in field absent from draft
+		expect(result.content.location?.introHeading).toBe('Ubicación Publicada');
+		// Draft ceremony fields preserved
+		expect(result.content.location?.ceremony?.venueName).toBe('Mi Iglesia');
+		expect(result.sectionStates.location).toBe('draft');
+	});
 });
 
 describe('saveInvitationEditorSection', () => {

@@ -19,6 +19,23 @@ export const ALL_EDITOR_KEYS: readonly string[] = [
 	'sectionOrder',
 ];
 
+/** Subset of ALL_EDITOR_KEYS whose values are objects (not scalars/arrays),
+ *  requiring field-by-field merging instead of simple priority replace. */
+export const OBJECT_SECTION_KEYS: ReadonlySet<string> = new Set([
+	'hero',
+	'family',
+	'location',
+	'countdown',
+	'itinerary',
+	'rsvp',
+	'music',
+	'gifts',
+	'quote',
+	'thankYou',
+	'gallery',
+	'photoNotes',
+]);
+
 export function getAssetSlugFromContent(
 	content: Record<string, unknown> | null | undefined,
 ): string | undefined {

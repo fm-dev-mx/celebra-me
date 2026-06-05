@@ -30,7 +30,7 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
-import { ALL_EDITOR_KEYS, resolveAssetSlug } from '@/lib/assets/asset-slug';
+import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS, resolveAssetSlug } from '@/lib/assets/asset-slug';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -48,12 +48,50 @@ export interface InvitationEditorContext {
 	invitation: Invitation & { rsvpSectionHasContent: boolean };
 	assetLookupSlug: string;
 	content: DraftContent;
+	currentDraftId: string | null;
 	draftUpdatedAt: string | null;
 	draftStatus: InvitationContentDraft['status'] | null;
 	publication: PublicationState;
 	rsvpLink: RsvpLinkState;
 	contentSource: ContentSource;
 	sectionStates: Record<string, SectionSource>;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Shallow-merges two objects field-by-field, only overwriting with defined (non-undefined) values.
+ * Undefined values in overlay are skipped so a partial object from a higher-priority
+ * source does not overwrite complete data from a lower-priority source.
+ * Unlike deepMerge (which is recursive and overwrites all values), this is shallow
+ * and preserves existing fields not present in overlay.
+ * Returns undefined when both inputs are empty, null, or undefined.
+ */
+function shallowMergeDefined(base: unknown, overlay: unknown): Record<string, unknown> | undefined {
+	const baseObj = isRecord(base) ? base : undefined;
+	const overlayObj = isRecord(overlay) ? overlay : undefined;
+
+	if (!baseObj && !overlayObj) return undefined;
+	if (!baseObj) return { ...(overlayObj ?? {}) };
+	if (!overlayObj) return { ...baseObj };
+
+	const result: Record<string, unknown> = {};
+
+	for (const key of Object.keys(baseObj)) {
+		if (baseObj[key] !== undefined) {
+			result[key] = baseObj[key];
+		}
+	}
+
+	for (const key of Object.keys(overlayObj)) {
+		if (overlayObj[key] !== undefined) {
+			result[key] = overlayObj[key];
+		}
+	}
+
+	return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function hydrateEditableContent(
@@ -69,14 +107,42 @@ function hydrateEditableContent(
 	const sectionStates: Record<string, SectionSource> = {};
 
 	for (const key of ALL_EDITOR_KEYS) {
-		if (draftBase[key] !== undefined) {
-			result[key] = deepClone(draftBase[key]);
+		const draftVal = draftBase[key];
+		const publishedVal = publishedFlat[key];
+		const demoVal = demoFlat[key];
+
+		if (
+			OBJECT_SECTION_KEYS.has(key) &&
+			(isRecord(draftVal) || isRecord(publishedVal) || isRecord(demoVal))
+		) {
+			// Merge field-by-field: demo → published → draft
+			// Each higher-priority source only overrides defined (non-undefined) fields.
+			const merged = shallowMergeDefined(
+				shallowMergeDefined(
+					isRecord(demoVal) ? demoVal : undefined,
+					isRecord(publishedVal) ? publishedVal : undefined,
+				),
+				isRecord(draftVal) ? draftVal : undefined,
+			);
+			if (merged !== undefined) {
+				result[key] = deepClone(merged) as DraftContent[typeof key];
+			}
+		} else {
+			// Simple priority replace for scalar / array fields
+			if (draftVal !== undefined) {
+				result[key] = deepClone(draftVal);
+			} else if (publishedVal !== undefined) {
+				result[key] = deepClone(publishedVal);
+			} else if (demoVal !== undefined) {
+				result[key] = deepClone(demoVal);
+			}
+		}
+
+		if (draftVal !== undefined && result[key] !== undefined) {
 			sectionStates[key] = 'draft';
-		} else if (publishedFlat[key] !== undefined) {
-			result[key] = deepClone(publishedFlat[key]);
+		} else if (publishedVal !== undefined && result[key] !== undefined) {
 			sectionStates[key] = 'published';
-		} else if (demoFlat[key] !== undefined) {
-			result[key] = deepClone(demoFlat[key]);
+		} else if (demoVal !== undefined && result[key] !== undefined) {
 			sectionStates[key] = 'demo';
 		} else {
 			sectionStates[key] = 'empty';
@@ -147,6 +213,7 @@ export async function getInvitationEditorContext(
 		invitation: { ...invitation, rsvpSectionHasContent },
 		assetLookupSlug,
 		content,
+		currentDraftId: draft?.id ?? null,
 		draftUpdatedAt: draft?.updatedAt ?? null,
 		draftStatus: draft?.status ?? null,
 		publication: createPublicationState(draft, published),
@@ -174,14 +241,11 @@ export async function saveInvitationEditorSection(
 
 	const normalizedValue = valueResult.data;
 
-	const [context, currentDraft] = await Promise.all([
-		getInvitationEditorContext(invitationId),
-		findDraftByInvitationId(invitationId),
-	]);
+	const context = await getInvitationEditorContext(invitationId);
 	const nextContent = applySectionValue(context.content, section, normalizedValue);
 
-	const savedDraft = currentDraft
-		? await updateDraftContentConditionally(currentDraft.id, input.expectedUpdatedAt, {
+	const savedDraft = context.currentDraftId
+		? await updateDraftContentConditionally(context.currentDraftId, input.expectedUpdatedAt, {
 				content: nextContent,
 				status: 'draft',
 			})
