@@ -110,6 +110,32 @@ function mapVenue(
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
+function resolveIntroField(draftValue: string | undefined, demoValue: unknown): string | undefined {
+	if (draftValue !== undefined) return draftValue;
+	if (demoValue) return String(demoValue);
+	return undefined;
+}
+
+function buildDressCodeIndications(
+	dressCode: string | undefined,
+	additionalIndications: string | undefined,
+): Array<Record<string, unknown>> | undefined {
+	const indications: Array<Record<string, unknown>> = [];
+	const dressCodeValue = str(dressCode);
+	const additionalIndicationsValue = str(additionalIndications);
+	if (dressCodeValue) {
+		indications.push({ iconName: 'DressCode', styleVariant: 'reserved', text: dressCodeValue });
+	}
+	if (additionalIndicationsValue) {
+		indications.push({
+			iconName: 'Calendar',
+			styleVariant: 'default',
+			text: additionalIndicationsValue,
+		});
+	}
+	return indications.length > 0 ? indications : undefined;
+}
+
 function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
 	demoContent?: Record<string, unknown>,
@@ -130,28 +156,27 @@ function mapLocationFromDraft(
 	);
 	if (reception) result.reception = reception;
 
-	if (str(draftLocation.introEyebrow)) result.introEyebrow = str(draftLocation.introEyebrow);
-	if (str(draftLocation.introHeading)) result.introHeading = str(draftLocation.introHeading);
-	if (str(draftLocation.introLede)) result.introLede = str(draftLocation.introLede);
-	if (str(draftLocation.indicationsHeading))
-		result.indicationsHeading = str(draftLocation.indicationsHeading);
+	const introEyebrow = resolveIntroField(draftLocation.introEyebrow, demoLocation?.introEyebrow);
+	if (introEyebrow !== undefined) result.introEyebrow = introEyebrow;
 
-	const indications: Array<Record<string, unknown>> = [];
-	if (str(draftLocation.dressCode)) {
-		indications.push({
-			iconName: 'DressCode',
-			styleVariant: 'reserved',
-			text: str(draftLocation.dressCode),
-		});
-	}
-	if (str(draftLocation.additionalIndications)) {
-		indications.push({
-			iconName: 'Calendar',
-			styleVariant: 'default',
-			text: str(draftLocation.additionalIndications),
-		});
-	}
-	if (indications.length > 0) result.indications = indications;
+	const introHeading = resolveIntroField(draftLocation.introHeading, demoLocation?.introHeading);
+	if (introHeading !== undefined) result.introHeading = introHeading;
+
+	const introLede = resolveIntroField(draftLocation.introLede, demoLocation?.introLede);
+	if (introLede !== undefined) result.introLede = introLede;
+
+	const indicationsHeading = resolveIntroField(
+		draftLocation.indicationsHeading,
+		demoLocation?.indicationsHeading,
+	);
+	if (indicationsHeading !== undefined) result.indicationsHeading = indicationsHeading;
+
+	const indications = buildDressCodeIndications(
+		draftLocation.dressCode,
+		draftLocation.additionalIndications,
+	);
+	if (indications) result.indications = indications;
+
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
