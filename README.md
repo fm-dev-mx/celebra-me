@@ -21,8 +21,8 @@ support event operations.
 
 - Node.js `>=22.12.0 <25`
 - pnpm `11.x`
-- Supabase CLI for local database workflows (`db:start`, `db:push`, `db:reset:local`,
-  `db:migrate:new`)
+- Supabase CLI for local database workflows (`db:start`, `db:reset:local`, `db:local:validate`,
+  `db:local:refresh`, `db:migrate:new`)
 
 ## Getting Started
 
@@ -31,7 +31,8 @@ pnpm install
 pnpm dev
 ```
 
-Create `.env.local` from `.env.example` before using auth, email, or Supabase-backed flows.
+Use `.env` for local Supabase by default. Create `.env.local` only for local overrides, and never
+point `.env.local` at production.
 
 ## Core Scripts
 
@@ -132,15 +133,18 @@ Useful commands:
 
 ```bash
 pnpm db:start
-pnpm db:push
 pnpm db:reset:local
+pnpm db:local:validate
+pnpm db:local:refresh
+pnpm db:prod:backup
+pnpm db:prod:migrate
 pnpm db:migrate:new <migration_name>
 ```
 
-These commands require the Supabase CLI to be installed locally and authenticated as needed for your
-environment.
+Production can be read for backups and local refreshes. Production can only be mutated by
+`pnpm db:prod:migrate`, which applies reviewed migrations and never pushes local data dumps.
 
-See `docs/domains/rsvp/database.md` for operational details.
+See `docs/database-workflow.md` for the safe operational workflow.
 
 ## Documentation
 

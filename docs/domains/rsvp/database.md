@@ -1,6 +1,6 @@
 # RSVP Database Operations
 
-**Last Updated:** 2026-05-31
+**Last Updated:** 2026-06-05
 
 This document describes the active Supabase schema and operational workflow for the RSVP and
 invitation domains.
@@ -12,7 +12,7 @@ The backend persists data in Supabase and is implemented through repositories an
 
 Current tables documented by the live code and migrations include:
 
-### Active production tables
+### Active application tables
 
 - `invitations` — primary domain entity (was `invitation_projects`)
 - `events` — RSVP events (linked to invitations via `invitation_project_id`)
@@ -27,6 +27,7 @@ Current tables documented by the live code and migrations include:
 - `intake_submissions` — client-submitted data
 - `invitation_content_drafts` — draft content for publishing
 - `published_invitation_content` — published public content
+- `invitation_assets` — uploaded asset metadata for the invitation Asset Library
 
 ### Legacy compatibility tables (not actively written)
 
@@ -36,7 +37,7 @@ Current tables documented by the live code and migrations include:
 
 ## Migration Baseline
 
-All 38 migrations under `supabase/migrations/`:
+All 39 migrations under `supabase/migrations/`:
 
 | #   | File                                                    | Purpose                                                                           |
 | --- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -78,25 +79,15 @@ All 38 migrations under `supabase/migrations/`:
 | 36  | `20260601000001_invitations_domain.sql`                 | Rename invitation_projects→invitations; archive RPCs                              |
 | 37  | `20260601000002_corrective_security.sql`                | SECURITY DEFINER search_path hardening                                            |
 | 38  | `20260601000003_corrective_security_followup.sql`       | Hardening follow-up: ALTER FUNCTION, upsert_guests_v1 REVOKE, explicit signatures |
+| 39  | `20260602000000_invitation_assets.sql`                  | Invitation Asset Library metadata table and Storage bucket policies               |
 
 Do not patch production with ad-hoc SQL outside a migration unless the change is part of a
 controlled incident response.
 
 ## Local Workflow
 
-Prerequisites:
-
-- Docker
-- Supabase CLI available on `PATH`
-
-Commands:
-
-```bash
-pnpm db:start
-pnpm db:push
-pnpm db:reset:local
-pnpm db:migrate:new <migration_name>
-```
+See `docs/database-workflow.md` for the complete operational workflow including local development,
+production backups, and migration procedures.
 
 ## Active URL Patterns Backed By The Schema
 
@@ -156,9 +147,19 @@ The invitation/intake module (see `docs/domains/intake/production-flow.md`) adds
 - `intake_submissions` — client-submitted form data
 - `invitation_content_drafts` — editable draft content
 - `published_invitation_content` — public snapshot resolved by `(event_type, slug)`
+- `invitation_assets` — metadata for uploaded Asset Library files. Actual image files live in the
+  Supabase Storage `invitation-assets` bucket. The table may be empty locally when all content uses
+  internal bundled assets instead of uploaded Storage objects.
 
 Child FK columns still use the name `invitation_project_id` for backward compatibility during the
 ongoing deployment rollout. They will be renamed to `invitation_id` after verification.
+
+### Asset Library
+
+The Asset Library is scoped to `invitations`. Upload APIs write metadata to `invitation_assets` and
+store binary files in Supabase Storage. The database row records the Storage bucket/path, display
+name, optional alt text, MIME type, dimensions, file size, and soft-delete state. Local refreshes
+can copy this metadata from production, but DB dumps do not copy Storage objects.
 
 ### Deprecated RPCs
 
@@ -248,8 +249,7 @@ pnpm test -- tests/api/dashboard.guests.happy.test.ts tests/api/dashboard.guests
 Run the schema verification queries before and after deploying migrations:
 
 ```bash
-# Open the Supabase SQL editor or use the CLI:
-supabase db diff --linked
+pnpm db:prod:migrate
 ```
 
 The canonical schema verification script is `supabase/verification/full_schema_audit.sql`, which

@@ -1,6 +1,6 @@
 # Database Overview
 
-**Last Updated:** 2026-05-31
+**Last Updated:** 2026-06-05
 
 This document describes the current Celebra-me Supabase/Postgres schema, entity relationships, and
 major data flows.
@@ -12,6 +12,7 @@ erDiagram
     invitations ||--o{ intake_requests : "invitation_project_id"
     invitations ||--o{ invitation_content_drafts : "invitation_project_id"
     invitations ||--o{ published_invitation_content : "invitation_project_id"
+    invitations ||--o{ invitation_assets : "invitation_id"
     invitations ||--o| events : "invitation_project_id"
     invitations {
         uuid id PK
@@ -117,14 +118,14 @@ erDiagram
     }
 
     app_user_roles {
-        uuid user_id PK FK
+        uuid user_id PK, FK
         text role "super_admin | host_client"
         timestamptz created_at
         timestamptz updated_at
     }
 
     host_profiles {
-        uuid user_id PK FK
+        uuid user_id PK, FK
         text display_name
         timestamptz created_at
         timestamptz updated_at
@@ -184,6 +185,22 @@ erDiagram
         timestamptz updated_at
     }
 
+    invitation_assets {
+        uuid id PK
+        uuid invitation_id FK
+        text display_name
+        text default_alt_text
+        text bucket
+        text storage_path
+        text mime_type
+        int width
+        int height
+        int file_size
+        timestamptz deleted_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     audit_logs {
         uuid id PK
         uuid actor_id FK "nullable"
@@ -234,6 +251,14 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 2. Falls back to static Astro content collection for demo entries
 3. Non-demo static entries are explicitly blocked (must come from DB)
 
+### Asset Library
+
+Admin uploads through `/api/dashboard/intake/[id]/assets/**` create `invitation_assets` metadata
+rows for a specific invitation. The actual image files live in the Supabase Storage
+`invitation-assets` bucket; Postgres stores display names, alt text, object paths, MIME type, size,
+dimensions, and soft-delete state. Local databases may legitimately have zero `invitation_assets`
+rows when invitations only use bundled internal assets.
+
 ### RSVP Linkage
 
 When a client invitation is published, `synchronizeClientRsvp()` checks for an existing `events` row
@@ -274,6 +299,8 @@ Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
 | `published_invitation_content` | `published_invitation_content_event_type_slug_key`    | UNIQUE constraint for route key            |
 | `intake_requests`              | `idx_intake_requests_token_hash`                      | Token lookup                               |
 | `intake_requests`              | `idx_intake_requests_project_origin_created`          | Dashboard listing                          |
+| `invitation_assets`            | `idx_invitation_assets_storage_path`                  | Immutable Storage object path uniqueness   |
+| `invitation_assets`            | `idx_invitation_assets_invitation`                    | Active assets per invitation               |
 
 ## Key Constraints
 
@@ -282,6 +309,7 @@ Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
   `(event_id, country_code, phone) WHERE deleted_at IS NULL`
 - `events`: Partial UNIQUE INDEX `(invitation_project_id) WHERE invitation_project_id IS NOT NULL`
 - `invitations.slug`: UNIQUE (nullable — only set for published invitations)
+- `invitation_assets`: UNIQUE `(bucket, storage_path)` — Storage paths are never reused
 - `intake_submissions`: Partial UNIQUE INDEX `(intake_request_id)` — exactly one submission per
   request
 
@@ -294,16 +322,23 @@ Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
 - **Public read access**: Only `published_invitation_content` has a public RLS select policy.
 - **Admin-only access**: `invitations`, `intake_*`, drafts are locked to `is_admin_user()`.
 - **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs.
+- **Asset metadata**: `invitation_assets` is managed by service-role API routes; uploaded files live
+  in Supabase Storage.
 
 ## Migration Strategy
 
-Current state: 38 incremental migrations. Production uses `supabase db push` to apply new ones.
+Current state: 39 incremental migrations. Production uses `pnpm db:prod:migrate` to apply reviewed
+migrations only.
 
-**For local/staging**: use `pnpm db:reset:local` (applies all migrations from scratch).
+**For local/staging**: use `pnpm db:reset:local` (applies all migrations from scratch), then
+`pnpm db:local:validate`.
 
 **For production**: never rewrite, delete, or squash already-applied migrations. Always add
-corrective migrations. Migration history is append-only.
+corrective migrations. Migration history is append-only. Do not push local data dumps to production;
+use `pnpm db:prod:migrate`.
 
 **Fresh bootstrap**: A `supabase/baseline.sql` schema dump can be generated via
 `supabase db dump --schema public > supabase/baseline.sql` for environments that should not replay
-all 38 migrations.
+all 39 migrations.
+
+For refreshes, backups, and production migration operations, see `docs/database-workflow.md`.
