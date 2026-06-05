@@ -6,6 +6,27 @@ import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
+import { loadEnv } from 'vite';
+
+const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
+const supabasePublicUrl = process.env.PUBLIC_SUPABASE_URL ?? env.PUBLIC_SUPABASE_URL;
+const supabaseStoragePathname = '/storage/v1/object/public/invitation-assets/**';
+const supabaseStorageRemotePattern = supabasePublicUrl
+	? (() => {
+			const url = new URL(supabasePublicUrl);
+			return {
+				protocol: url.protocol.replace(':', ''),
+				hostname: url.hostname,
+				port: url.port,
+				pathname: supabaseStoragePathname,
+			};
+		})()
+	: null;
+const externalImageDomains = [
+	'images.unsplash.com',
+	'res.cloudinary.com',
+	...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern.hostname] : []),
+];
 
 export default defineConfig({
 	// The base URL for the site.
@@ -25,6 +46,7 @@ export default defineConfig({
 				protocol: 'https',
 				hostname: 'images.unsplash.com',
 			},
+			...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern] : []),
 		],
 	},
 	vite: {
@@ -57,7 +79,7 @@ export default defineConfig({
 		imageService: true, // Enable Vercel's image optimization for local images
 		imagesConfig: {
 			sizes: [320, 640, 960, 1200, 1600, 1800],
-			domains: ['images.unsplash.com', 'res.cloudinary.com'], // Allow external images
+			domains: externalImageDomains, // Allow external images
 		},
 	}),
 });
