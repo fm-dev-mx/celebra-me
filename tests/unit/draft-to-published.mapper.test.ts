@@ -124,6 +124,48 @@ describe('mapDraftToPublished', () => {
 		expect(result.hero).toHaveProperty('backgroundImageMobile', undefined);
 	});
 
+	it('does not publish demo mobile fallback for a real invitation when draft omits mobile image', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: {
+				...baseDemoContent,
+				hero: {
+					...baseDemoContent.hero,
+					backgroundImageMobile: {
+						type: 'external',
+						src: 'https://cdn.test/demo-mobile-bg.webp',
+					},
+				},
+			},
+		});
+
+		expect(result.hero).toHaveProperty('backgroundImageMobile', undefined);
+	});
+
+	it('preserves authored demo mobile images for demo publishing', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			isDemo: true,
+			demoContent: {
+				...baseDemoContent,
+				hero: {
+					...baseDemoContent.hero,
+					backgroundImageMobile: {
+						type: 'external',
+						src: 'https://cdn.test/demo-mobile-bg.webp',
+					},
+				},
+			},
+		});
+
+		expect(result.hero).toMatchObject({
+			backgroundImageMobile: {
+				type: 'external',
+				src: 'https://cdn.test/demo-mobile-bg.webp',
+			},
+		});
+	});
+
 	it('sets theme from invitation snapshot', () => {
 		const result = mapDraftToPublished(baseInput);
 

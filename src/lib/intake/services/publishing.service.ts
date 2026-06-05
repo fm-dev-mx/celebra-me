@@ -172,6 +172,7 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 
 	const hero = content.hero as Record<string, unknown> | undefined;
 	tryAddAssetRef(refs, 'hero.backgroundImage', hero?.backgroundImage);
+	tryAddAssetRef(refs, 'hero.backgroundImageMobile', hero?.backgroundImageMobile);
 	tryAddAssetRef(refs, 'hero.portrait', hero?.portrait);
 
 	const family = content.family as

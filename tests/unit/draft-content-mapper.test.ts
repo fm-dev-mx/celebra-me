@@ -8,12 +8,20 @@ describe('mapNestedToDraftContent', () => {
 			hero: {
 				name: 'María',
 				backgroundImage: { type: 'uploaded', assetId: VALID_UUID },
+				backgroundImageMobile: {
+					type: 'external',
+					src: 'https://cdn.test/mobile-bg.webp',
+				},
 				portrait: { type: 'internal', key: 'portrait' },
 			},
 		};
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 		expect(result.hero?.name).toBe('María');
 		expect(result.hero?.backgroundImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
+		expect(result.hero?.backgroundImageMobile).toEqual({
+			type: 'external',
+			src: 'https://cdn.test/mobile-bg.webp',
+		});
 		expect(result.hero?.portrait).toEqual({ type: 'internal', key: 'portrait' });
 	});
 
@@ -145,8 +153,23 @@ describe('mapNestedToDraftContent', () => {
 		};
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 		expect(result.hero?.backgroundImage).toBeUndefined();
+		expect(result.hero?.backgroundImageMobile).toBeUndefined();
 		expect(result.hero?.portrait).toBeUndefined();
 		expect(result.family?.featuredImage).toBeUndefined();
 		expect(result.thankYou?.image).toBeUndefined();
+	});
+
+	it('does not copy desktop hero background into the mobile field', () => {
+		const input = {
+			hero: {
+				name: 'María',
+				backgroundImage: { type: 'uploaded', assetId: VALID_UUID },
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.hero?.backgroundImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
+		expect(result.hero?.backgroundImageMobile).toBeUndefined();
 	});
 });

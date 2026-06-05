@@ -561,6 +561,73 @@ describe('hydration edge cases', () => {
 });
 
 describe('saveInvitationEditorSection', () => {
+	it('saves main hero desktop and mobile image refs independently', async () => {
+		const desktopRef = {
+			type: 'uploaded' as const,
+			assetId: '550e8400-e29b-41d4-a716-446655440001',
+		};
+		const mobileRef = {
+			type: 'uploaded' as const,
+			assetId: '550e8400-e29b-41d4-a716-446655440002',
+		};
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		await saveInvitationEditorSection('proj-1', 'main', {
+			expectedUpdatedAt: draft.updatedAt,
+			value: {
+				title: 'XV Ana',
+				description: 'Celebremos juntos',
+				hero: {
+					name: 'Ana',
+					label: 'Mis XV',
+					date: '2027-01-01',
+					backgroundImage: desktopRef,
+					backgroundImageMobile: mobileRef,
+				},
+			},
+		});
+
+		const savedContent = (updateDraftContentConditionally as jest.Mock).mock.calls[0][2]
+			.content;
+		expect(savedContent.hero.backgroundImage).toEqual(desktopRef);
+		expect(savedContent.hero.backgroundImageMobile).toEqual(mobileRef);
+	});
+
+	it('does not create a main hero mobile image ref when saving desktop only', async () => {
+		const desktopRef = {
+			type: 'uploaded' as const,
+			assetId: '550e8400-e29b-41d4-a716-446655440001',
+		};
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		await saveInvitationEditorSection('proj-1', 'main', {
+			expectedUpdatedAt: draft.updatedAt,
+			value: {
+				title: 'XV Ana',
+				description: 'Celebremos juntos',
+				hero: {
+					name: 'Ana',
+					label: 'Mis XV',
+					date: '2027-01-01',
+					backgroundImage: desktopRef,
+				},
+			},
+		});
+
+		const savedContent = (updateDraftContentConditionally as jest.Mock).mock.calls[0][2]
+			.content;
+		expect(savedContent.hero.backgroundImage).toEqual(desktopRef);
+		expect(savedContent.hero).not.toHaveProperty('backgroundImageMobile');
+	});
+
 	it('reopens an approved draft and saves the complete gallery atomically', async () => {
 		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
 			...draft,

@@ -216,6 +216,8 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		};
 		if (hero.backgroundImage !== undefined)
 			Object.assign(result.hero, { backgroundImage: hero.backgroundImage });
+		if (hero.backgroundImageMobile !== undefined)
+			Object.assign(result.hero, { backgroundImageMobile: hero.backgroundImageMobile });
 		if (hero.portrait !== undefined) Object.assign(result.hero, { portrait: hero.portrait });
 	}
 

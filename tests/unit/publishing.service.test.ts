@@ -1023,6 +1023,150 @@ describe('publishDraft', () => {
 		});
 	});
 
+	it('published hero desktop and mobile uploaded refs are frozen with distinct src values', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					name: 'Test',
+					date: '2026-06-15T20:00:00.000Z',
+					backgroundImage: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
+					backgroundImageMobile: { type: 'uploaded' as const, assetId: VALID_UUID_2 },
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Hero desktop',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/original/hero-desktop.webp',
+				mimeType: 'image/webp',
+				width: 1920,
+				height: 1080,
+				fileSize: 50000,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+			{
+				id: VALID_UUID_2,
+				invitationId: 'proj-1',
+				displayName: 'Hero mobile',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/original/hero-mobile.webp',
+				mimeType: 'image/webp',
+				width: 1080,
+				height: 1920,
+				fileSize: 52000,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		]);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const hero = content.hero as Record<string, unknown>;
+		expect(hero.backgroundImage).toEqual({
+			type: 'uploaded',
+			assetId: VALID_UUID_1,
+			src: expect.stringContaining('hero-desktop.webp'),
+		});
+		expect(hero.backgroundImageMobile).toEqual({
+			type: 'uploaded',
+			assetId: VALID_UUID_2,
+			src: expect.stringContaining('hero-mobile.webp'),
+		});
+	});
+
+	it('does not publish demo mobile fallback when draft has only desktop image', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					name: 'Test',
+					date: '2026-06-15T20:00:00.000Z',
+					backgroundImage: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockGetCollection.mockResolvedValue([
+			{
+				...MINIMAL_DEMO_ENTRY,
+				data: {
+					...MINIMAL_DEMO_ENTRY.data,
+					hero: {
+						...MINIMAL_DEMO_ENTRY.data.hero,
+						backgroundImageMobile: {
+							type: 'external',
+							src: 'https://cdn.test/demo-mobile.webp',
+						},
+					},
+				},
+			},
+		] as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Hero desktop',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/original/hero-desktop.webp',
+				mimeType: 'image/webp',
+				width: 1920,
+				height: 1080,
+				fileSize: 50000,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		]);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const hero = content.hero as Record<string, unknown>;
+		expect(hero.backgroundImage).toEqual({
+			type: 'uploaded',
+			assetId: VALID_UUID_1,
+			src: expect.stringContaining('hero-desktop.webp'),
+		});
+		expect(hero).toHaveProperty('backgroundImageMobile', undefined);
+	});
+
+	it('rejects publish when hero backgroundImageMobile key does not resolve in the asset registry', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					name: 'Test',
+					date: '2026-06-15T20:00:00.000Z',
+					backgroundImage: { type: 'internal' as const, key: 'hero' },
+					backgroundImageMobile: { type: 'internal' as const, key: 'missing-mobile' },
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+		});
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
 	it('published venue image is frozen with src when uploaded', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue({

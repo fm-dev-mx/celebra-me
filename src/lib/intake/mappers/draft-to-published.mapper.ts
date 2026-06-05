@@ -203,6 +203,7 @@ function buildHeroFromDraft(
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
 	themeId: string,
+	isDemo: boolean,
 ): Record<string, unknown> {
 	const {
 		name: demoName,
@@ -226,7 +227,8 @@ function buildHeroFromDraft(
 		backgroundImage: draftHero.backgroundImage ??
 			demoBackgroundImage ?? { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoBackgroundImageDesktop,
-		backgroundImageMobile: draftHero.backgroundImageMobile ?? demoBackgroundImageMobile,
+		backgroundImageMobile:
+			draftHero.backgroundImageMobile ?? (isDemo ? demoBackgroundImageMobile : undefined),
 		portrait: draftHero.portrait ?? demoPortrait,
 		variant: (demoVariant as string) || themeId,
 	};
@@ -237,6 +239,7 @@ function mapHeroSection(
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
 	themeId: string,
+	isDemo: boolean,
 ): Record<string, unknown> {
 	if (isBlankSection(draftHero)) {
 		if (demoHero && Object.keys(demoHero).length > 0) return demoHero;
@@ -247,6 +250,7 @@ function mapHeroSection(
 		demoHero,
 		invitationTitle,
 		themeId,
+		isDemo,
 	);
 }
 
@@ -365,6 +369,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		demoContent.hero as Record<string, unknown> | undefined,
 		invitation.title,
 		snapshot.themeId,
+		isDemo,
 	);
 	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
 
