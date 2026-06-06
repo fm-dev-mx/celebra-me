@@ -1,5 +1,5 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { ICON_CATALOG, DEFAULT_ICON, type IconName, isIconName } from '@/lib/icons/icon-catalog';
+import { ICON_CATALOG, DEFAULT_ICON, isIconName } from '@/lib/icons/icon-catalog';
 import { moveArrayItem } from '@/lib/intake/utils';
 import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
 
@@ -12,25 +12,6 @@ interface Props {
 }
 
 const EMPTY_ITEM: ItineraryItem = { iconName: DEFAULT_ICON, label: '', description: '', time: '' };
-
-const ITINERARY_ALLOWED_ICONS: IconName[] = [
-	'Waltz',
-	'Dinner',
-	'Toast',
-	'Cake',
-	'Party',
-	'Church',
-	'MapLocation',
-	'Reception',
-	'Photo',
-	'Sparkles',
-	'BootSeal',
-	'Heel',
-	'WesternHat',
-	'Taco',
-	'Tuba',
-	'Accordion',
-];
 
 function getIconLabel(name: string): string {
 	return ICON_CATALOG.find((entry) => entry.name === name)?.label ?? name;
@@ -140,7 +121,6 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 												DEFAULT_ICON) as ItineraryItem['iconName'],
 										})
 									}
-									allowedIcons={ITINERARY_ALLOWED_ICONS}
 								/>
 								<label className="invitation-editor__field">
 									<span>Descripción</span>

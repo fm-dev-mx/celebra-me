@@ -2,20 +2,10 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ICON_CATALOG, type IconName, type IconCategory } from '@/lib/icons/icon-catalog';
 import { resolveIconComponent } from '@/components/common/icons/registry';
 
-const iconComponentCache = new Map<string, ReturnType<typeof resolveIconComponent>>();
-function getCachedIcon(name: string) {
-	if (!iconComponentCache.has(name)) {
-		iconComponentCache.set(name, resolveIconComponent(name));
-	}
-	return iconComponentCache.get(name);
-}
-
 interface IconPickerFieldProps {
 	label: string;
 	value: IconName | null;
 	onChange: (value: IconName | null) => void;
-	allowedIcons?: readonly IconName[];
-	allowedCategories?: readonly IconCategory[];
 	helperText?: string;
 }
 
@@ -34,7 +24,7 @@ const CATEGORY_LABELS: Record<IconCategory, string> = {
 };
 
 function IconPreview({ name, size = 24 }: { name: string; size?: number }) {
-	const Component = getCachedIcon(name);
+	const Component = resolveIconComponent(name);
 	if (!Component) return <span className="icon-picker-field__fallback">?</span>;
 	return <Component size={size} />;
 }
@@ -43,8 +33,6 @@ export default function IconPickerField({
 	label,
 	value,
 	onChange,
-	allowedIcons,
-	allowedCategories,
 	helperText,
 }: IconPickerFieldProps) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -66,16 +54,6 @@ export default function IconPickerField({
 	const filteredIcons = useMemo(() => {
 		let icons: CatalogEntry[] = [...ICON_CATALOG];
 
-		if (allowedIcons) {
-			const allowed = new Set(allowedIcons);
-			icons = icons.filter((icon) => allowed.has(icon.name as IconName));
-		}
-
-		if (allowedCategories) {
-			const allowed = new Set<IconCategory>(allowedCategories as IconCategory[]);
-			icons = icons.filter((icon) => allowed.has(icon.category as IconCategory));
-		}
-
 		if (activeCategory !== 'all') {
 			icons = icons.filter((icon) => icon.category === activeCategory);
 		}
@@ -91,7 +69,7 @@ export default function IconPickerField({
 		}
 
 		return icons;
-	}, [allowedIcons, allowedCategories, activeCategory, search]);
+	}, [activeCategory, search]);
 
 	const categories = useMemo(() => {
 		const cats = new Set<IconCategory>();
