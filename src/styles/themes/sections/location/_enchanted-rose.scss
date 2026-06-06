@@ -17,13 +17,13 @@
 	--location-er-inner-border: rgb(var(--color-candle-gold-rgb) / 34%);
 	--location-er-candle-glow: radial-gradient(
 		ellipse at 50% 12%,
-		rgb(var(--color-candle-gold-rgb) / 20%),
+		rgb(var(--color-candle-gold-rgb) / 12%),
 		transparent 48%
 	);
 	--location-er-map-surface: linear-gradient(
 		180deg,
-		rgb(var(--color-rose-shadow-rgb) / 18%),
-		rgb(var(--color-midnight-navy-rgb) / 28%)
+		rgb(var(--color-rose-shadow-rgb) / 12%),
+		rgb(var(--color-midnight-navy-rgb) / 18%)
 	);
 	--location-er-focus-ring: 2px solid rgb(var(--color-candle-gold-rgb) / 90%);
 	--location-er-route-line: var(--rose-gold-divider);
@@ -31,25 +31,25 @@
 		linear-gradient(180deg, rgb(var(--color-warm-ivory-rgb) / 4%) 0%, transparent 12%),
 		var(--location-er-candle-glow), var(--enchanted-section-dark-bg);
 	--location-text-color: var(--color-text-on-dark);
-	--location-padding-block: clamp(5.5rem, 11vw, 9rem) clamp(5rem, 10vw, 8rem);
+	--location-padding-block: clamp(3.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5rem);
 	--location-container-max-width: min(1120px, calc(100vw - 2rem));
 	--location-container-max-width-sm: min(34rem, calc(100vw - 2rem));
 	--location-gap: clamp(2.4rem, 5vw, 4.8rem);
 	--location-container-gap-sm: clamp(2rem, 8vw, 3rem);
-	--location-card-max-width: 31rem;
+	--location-card-max-width: 28rem;
 	--location-card-bg: var(--location-er-frame-bg);
 	--location-card-border: 1px solid var(--location-er-frame-border);
 	--location-card-radius: 8px;
 	--location-card-shadow:
-		0 30px 84px rgb(var(--color-rose-shadow-rgb) / 46%),
-		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 10%);
-	--location-card-backdrop-filter: blur(10px) saturate(138%);
+		0 20px 56px rgb(var(--color-rose-shadow-rgb) / 34%),
+		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 8%);
+	--location-card-backdrop-filter: blur(6px) saturate(130%);
 	--location-card-overflow: hidden;
-	--location-card-hover-transform: translateY(-6px);
+	--location-card-hover-transform: translateY(-3px);
 	--location-card-hover-shadow:
-		0 38px 98px rgb(var(--color-rose-shadow-rgb) / 54%),
-		0 0 38px rgb(var(--color-candle-gold-rgb) / 10%),
-		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 14%);
+		0 24px 64px rgb(var(--color-rose-shadow-rgb) / 40%),
+		0 0 28px rgb(var(--color-candle-gold-rgb) / 8%),
+		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 10%);
 	--location-card-hover-border-color: rgb(var(--color-candle-gold-rgb) / 60%);
 	--location-card-before-bg: linear-gradient(
 		135deg,
@@ -75,25 +75,25 @@
 			1px 36% no-repeat,
 		linear-gradient(var(--location-er-inner-border), var(--location-er-inner-border)) 100%
 			100% / 1px 36% no-repeat;
-	--location-outer-frame-padding: clamp(0.55rem, 1.4vw, 0.8rem);
+	--location-outer-frame-padding: clamp(0.4rem, 1vw, 0.6rem);
 	--location-outer-frame-bg: var(--location-er-map-surface);
 	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
 	--location-image-aspect-ratio: 4 / 3;
 	--location-image-aspect-ratio-xs: 16 / 10;
-	--location-image-filter: saturate(0.88) contrast(1.06) brightness(0.88) sepia(0.18);
+	--location-image-filter: saturate(0.92) contrast(1.04) brightness(0.96) sepia(0.08);
 	--location-image-hover-scale: 1.02;
 	--location-container-overlay-before: radial-gradient(
 		circle at 50% 16%,
-		rgb(var(--color-candle-gold-rgb) / 10%),
+		rgb(var(--color-candle-gold-rgb) / 6%),
 		transparent 50%
 	);
 	--location-container-overlay-after: transparent;
-	--location-content-padding: clamp(1.45rem, 3vw, 2.15rem);
+	--location-content-padding: clamp(1.25rem, 2.5vw, 1.75rem);
 	--location-title-color: rgb(var(--color-candle-gold-rgb) / 88%);
 	--location-title-font-size: clamp(0.66rem, 1vw, 0.74rem);
 	--location-title-letter-spacing: 0.34em;
 	--location-place-color: var(--color-warm-ivory);
-	--location-place-font-size: clamp(2rem, 3.6vw, 2.9rem);
+	--location-place-font-size: clamp(1.7rem, 3vw, 2.4rem);
 	--location-place-line-height: 0.98;
 	--location-date-color: rgb(var(--color-candle-gold-rgb) / 88%);
 	--location-hour-color: rgb(var(--color-warm-ivory-rgb) / 74%);
@@ -104,7 +104,7 @@
 	--location-address-gap: 0.75rem;
 	--location-copy-button-bg: rgb(var(--color-warm-ivory-rgb) / 8%);
 	--location-copy-button-color: rgb(var(--color-candle-gold-rgb) / 92%);
-	--location-copy-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 42%);
+	--location-copy-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 30%);
 	--location-copy-button-hover-bg: rgb(var(--color-candle-gold-rgb) / 18%);
 	--location-copy-button-hover-color: var(--color-warm-ivory);
 	--location-copy-button-width: 2.5rem;
@@ -123,37 +123,39 @@
 	--location-nav-radius: 999px;
 	--location-nav-font-size: 0.68rem;
 	--location-nav-letter-spacing: 0.18em;
-	--location-nav-padding: 0.9rem 1.4rem;
+	--location-nav-padding: 0.7rem 1.2rem;
 	--location-nav-hover-bg: var(--color-warm-ivory);
 	--location-nav-hover-color: var(--color-rose-shadow);
 	--location-nav-hover-border-color: rgb(var(--color-candle-gold-rgb) / 74%);
-	--location-nav-hover-shadow: 0 16px 34px rgb(var(--color-candle-gold-rgb) / 18%);
-	--location-nav-maps-bg: var(--location-nav-primary-bg);
-	--location-nav-maps-color: var(--location-nav-primary-color);
-	--location-nav-maps-border: rgb(var(--color-warm-ivory-rgb) / 22%);
-	--location-nav-maps-hover-bg: var(--color-warm-ivory);
-	--location-nav-maps-hover-border-color: rgb(var(--color-candle-gold-rgb) / 74%);
+	--location-nav-hover-shadow: 0 10px 22px rgb(var(--color-candle-gold-rgb) / 12%);
+	--location-nav-maps-bg: rgb(var(--color-candle-gold-rgb) / 14%);
+	--location-nav-maps-color: rgb(var(--color-warm-ivory-rgb) / 92%);
+	--location-nav-maps-border: rgb(var(--color-candle-gold-rgb) / 34%);
+	--location-nav-maps-hover-bg: rgb(var(--color-candle-gold-rgb) / 24%);
+	--location-nav-maps-hover-border-color: rgb(var(--color-candle-gold-rgb) / 60%);
 	--location-nav-min-height-xs: 2.75rem;
 	--location-indications-spacing: clamp(2.5rem, 6vw, 4.5rem);
 	--location-indications-container-max-width: min(62rem, calc(100vw - 2rem));
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
 	--location-indications-gap: clamp(0.9rem, 2vw, 1.25rem);
 	--location-indications-heading-color: rgb(var(--color-candle-gold-rgb) / 80%);
-	--location-indication-item-bg: rgb(var(--color-rose-shadow-rgb) / 28%);
-	--location-indication-item-border: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
-	--location-indication-item-radius: 8px;
-	--location-indication-item-padding: clamp(1rem, 2.4vw, 1.35rem);
-	--location-indication-item-box-shadow: 0 22px 54px rgb(var(--color-rose-shadow-rgb) / 28%);
-	--location-indication-icon-bg: rgb(var(--color-warm-ivory-rgb) / 8%);
-	--location-indication-icon-color: rgb(var(--color-candle-gold-rgb) / 88%);
-	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%);
+	--location-indication-item-gap: 0.7rem;
+	--location-indication-item-bg: rgb(var(--color-rose-shadow-rgb) / 14%);
+	--location-indication-item-border: 1px solid rgb(var(--color-antique-gold-rgb) / 12%);
+	--location-indication-item-radius: 6px;
+	--location-indication-item-padding: clamp(0.65rem, 1.6vw, 0.9rem);
+	--location-indication-item-box-shadow: none;
+	--location-indication-icon-bg: rgb(var(--color-warm-ivory-rgb) / 5%);
+	--location-indication-icon-color: rgb(var(--color-candle-gold-rgb) / 70%);
+	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 10%);
+	--location-indication-icon-size: 1.75rem;
 	--location-indication-text-color: rgb(var(--color-warm-ivory-rgb) / 80%);
 	--location-indication-strong-color: var(--color-warm-ivory);
 
 	padding-inline: clamp(1rem, 4vw, 2rem);
 	box-shadow:
-		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 16%),
-		inset 0 -1px 0 rgb(var(--color-antique-gold-rgb) / 16%);
+		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 10%),
+		inset 0 -1px 0 rgb(var(--color-antique-gold-rgb) / 10%);
 
 	&::before,
 	&::after {
@@ -167,24 +169,24 @@
 		background:
 			linear-gradient(
 				90deg,
-				rgb(var(--color-rose-shadow-rgb) / 34%) 0%,
+				rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
 				transparent 24%,
 				transparent 76%,
-				rgb(var(--color-rose-shadow-rgb) / 34%) 100%
+				rgb(var(--color-rose-shadow-rgb) / 24%) 100%
 			),
 			radial-gradient(
 				circle at 50% 40%,
-				rgb(var(--color-candle-gold-rgb) / 8%),
+				rgb(var(--color-candle-gold-rgb) / 5%),
 				transparent 44%
 			);
 	}
 
 	&::after {
-		inset-inline: clamp(1rem, 5vw, 4rem);
-		top: clamp(1rem, 3vw, 2rem);
+		inset-inline: clamp(2rem, 8vw, 6rem);
+		top: clamp(0.5rem, 1.5vw, 1rem);
 		height: 1px;
 		background: var(--location-er-route-line);
-		opacity: 82%;
+		opacity: 50%;
 	}
 
 	.event-location__anchor {
@@ -203,7 +205,7 @@
 
 	.event-location__intro {
 		max-width: 44rem;
-		margin: 0 auto clamp(3rem, 6vw, 5rem);
+		margin: 0 auto clamp(2rem, 4vw, 3.5rem);
 		text-align: center;
 	}
 
@@ -245,12 +247,12 @@
 			&::before {
 				content: '';
 				position: absolute;
-				top: clamp(7rem, 14vw, 10.5rem);
+				top: clamp(5rem, 10vw, 7.5rem);
 				left: 50%;
-				width: min(8vw, 5.5rem);
+				width: min(4.5vw, 3rem);
 				height: 1px;
 				background: var(--location-er-route-line);
-				opacity: 76%;
+				opacity: 50%;
 				pointer-events: none;
 				transform: translateX(-50%);
 			}
@@ -258,12 +260,12 @@
 			&::after {
 				content: '';
 				position: absolute;
-				top: calc(clamp(7rem, 14vw, 10.5rem) - 0.38rem);
+				top: calc(clamp(5rem, 10vw, 7.5rem) - 0.22rem);
 				left: 50%;
-				width: 0.75rem;
-				height: 0.75rem;
-				border: 1px solid rgb(var(--color-candle-gold-rgb) / 64%);
-				background: rgb(var(--color-rose-shadow-rgb) / 72%);
+				width: 0.45rem;
+				height: 0.45rem;
+				border: 1px solid rgb(var(--color-candle-gold-rgb) / 38%);
+				background: rgb(var(--color-rose-shadow-rgb) / 44%);
 				pointer-events: none;
 				transform: translateX(-50%) rotate(45deg);
 			}
@@ -350,34 +352,38 @@
 		&::before {
 			content: '';
 			display: block;
-			width: min(22rem, 64vw);
+			width: min(14rem, 48vw);
 			height: 1px;
-			margin: 0 auto clamp(1.8rem, 4vw, 2.8rem);
+			margin: 0 auto clamp(1.5rem, 3vw, 2.2rem);
 			background: var(--location-er-route-line);
-			opacity: 78%;
+			opacity: 50%;
 		}
 	}
 
 	.event-location__indication-item {
-		backdrop-filter: blur(10px);
+		backdrop-filter: blur(6px);
 	}
 
 	@include mixins.respond-below(md) {
-		--location-padding-block: clamp(4.75rem, 13vw, 6rem) clamp(4.5rem, 12vw, 5.8rem);
+		--location-padding-block: clamp(3.5rem, 10vw, 4.5rem) clamp(3rem, 8vw, 4rem);
 		--location-indications-grid-template: 1fr;
 
 		.event-location__intro {
-			margin-bottom: clamp(2.5rem, 8vw, 3.5rem);
+			margin-bottom: clamp(2rem, 6vw, 2.8rem);
 		}
 	}
 
 	@include mixins.respond-below(xs) {
-		--location-content-padding-xs: 1.25rem;
-		--location-place-font-size-sm: clamp(1.85rem, 11vw, 2.35rem);
+		--location-content-padding-xs: 1rem;
+		--location-place-font-size-sm: clamp(1.5rem, 8vw, 1.85rem);
 		--location-address-align-items-xs: flex-start;
 		--location-address-gap-xs: 0.7rem;
 		--location-address-text-max-width-xs: 100%;
 		--location-nav-padding-inline-xs: 1rem;
+		--location-nav-min-height-xs: 2.25rem;
+		--location-flourish-margin-bottom-xs: 0.85rem;
+		--location-content-list-margin-bottom-xs: 0.5rem;
+		--location-nav-buttons-gap: 0.4rem;
 
 		.event-location__card-content-address {
 			display: grid;

@@ -18,16 +18,16 @@
 	--location-bg: var(--color-surface-primary);
 	--location-padding-block: clamp(1.5rem, 3vh, 3rem) clamp(4rem, 6vh, 6rem);
 	--location-padding-inline: 0;
-	--location-container-max-width: 1000px;
+	--location-container-max-width: 1100px;
 	--location-container-max-width-sm: var(--location-container-max-width);
 	--location-gap: clamp(1.5rem, 3vh, 3rem);
-	--location-container-gap-sm: var(--location-gap);
+	--location-container-gap-sm: clamp(1.5rem, 5vw, 2rem);
 
 	// ---------------------------------------------------------------------
 	// Card wrapper
 	// ---------------------------------------------------------------------
 	--location-card-wrapper-width: 100%;
-	--location-card-max-width: 420px;
+	--location-card-max-width: 380px;
 	--location-second-card-offset: 0;
 	--location-content-alignment: center;
 	--location-card-max-width-sm: 100%;
@@ -39,12 +39,12 @@
 	--location-card-border: 1px solid var(--color-border-subtle);
 	--location-card-radius: 4px;
 	--location-card-radius-xs: var(--location-card-radius);
-	--location-card-shadow: var(--shadow-premium);
+	--location-card-shadow: 0 8px 24px rgb(0 0 0 / 6%);
 	--location-card-backdrop-filter: none;
 	--location-card-isolation: initial;
 	--location-card-overflow: hidden;
-	--location-card-hover-transform: translateY(-4px);
-	--location-card-hover-shadow: var(--shadow-premium);
+	--location-card-hover-transform: translateY(-2px);
+	--location-card-hover-shadow: 0 12px 32px rgb(0 0 0 / 8%);
 	--location-card-hover-border-color: currentcolor;
 
 	// Card ::before overlay (editorial/premiere light sweep)
@@ -100,7 +100,7 @@
 	// ---------------------------------------------------------------------
 	// Card content
 	// ---------------------------------------------------------------------
-	--location-content-padding: clamp(1.5rem, 3vw, 2rem);
+	--location-content-padding: clamp(1.25rem, 2.5vw, 1.75rem);
 	--location-content-padding-xs: var(--location-content-padding);
 
 	// Title (eyebrow)
@@ -108,13 +108,13 @@
 	--location-title-font-family: var(--font-body);
 	--location-title-font-size: 0.85rem;
 	--location-title-letter-spacing: 0.25em;
-	--location-title-margin-bottom: 0.5rem;
+	--location-title-margin-bottom: 0.35rem;
 	--location-title-margin-bottom-xs: var(--location-title-margin-bottom);
 
 	// Place (venue name)
 	--location-place-color: var(--color-text-primary);
 	--location-place-font-family: var(--font-display);
-	--location-place-font-size: 1.9rem;
+	--location-place-font-size: 1.65rem;
 	--location-place-font-weight: 400;
 	--location-place-margin: 0 0 0.7rem;
 	--location-place-letter-spacing: 0;
@@ -125,7 +125,7 @@
 	// Date
 	--location-date-color: var(--color-action-accent);
 	--location-date-font-family: var(--font-body);
-	--location-date-font-size: 0.72rem;
+	--location-date-font-size: 0.78rem;
 	--location-date-font-weight: 600;
 	--location-date-font-style: normal;
 	--location-date-letter-spacing: 0.18em;
@@ -138,7 +138,7 @@
 	--location-hour-font-family: var(--font-body);
 	--location-hour-font-size: 0.85rem;
 	--location-hour-letter-spacing: 0.12em;
-	--location-hour-margin-bottom: 1.25rem;
+	--location-hour-margin-bottom: 0.85rem;
 	--location-hour-margin-bottom-xs: var(--location-hour-margin-bottom);
 
 	// Address
@@ -147,7 +147,7 @@
 	--location-address-font-size: 0.85rem;
 	--location-address-letter-spacing: 0.02em;
 	--location-address-line-height: 1.5;
-	--location-address-padding-top: 1rem;
+	--location-address-padding-top: 0.75rem;
 	--location-address-border-top: 1px solid transparent;
 	--location-address-align-items: center;
 	--location-address-gap: 0.8rem;
@@ -162,7 +162,7 @@
 
 	// Flourish
 	--location-flourish-color: var(--color-action-accent);
-	--location-flourish-margin-bottom: 2rem;
+	--location-flourish-margin-bottom: 1.25rem;
 	--location-flourish-margin-bottom-xs: var(--location-flourish-margin-bottom);
 	--location-flourish-opacity: 80%;
 	--location-flourish-diamond-size: 6px;
@@ -173,7 +173,7 @@
 	// Copy button
 	--location-copy-button-bg: transparent;
 	--location-copy-button-color: var(--color-action-accent);
-	--location-copy-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 28%);
+	--location-copy-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	--location-copy-button-hover-bg: transparent;
 	--location-copy-button-hover-color: var(--color-action-accent);
 	--location-copy-button-hover-transform: translateY(-1px);
@@ -186,18 +186,18 @@
 	--location-copy-button-display: block;
 
 	// Navigation / CTA buttons
-	--location-nav-bg: var(--color-action-accent);
-	--location-nav-color: var(--color-surface-primary);
-	--location-nav-border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+	--location-nav-bg: rgb(var(--color-action-accent-rgb) / 8%);
+	--location-nav-color: var(--color-text-primary);
+	--location-nav-border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
 	--location-nav-radius: 999px;
-	--location-nav-font-size: 0.68rem;
-	--location-nav-letter-spacing: 0.16em;
-	--location-nav-padding: 0.78rem 1.35rem;
+	--location-nav-font-size: 0.65rem;
+	--location-nav-letter-spacing: 0.12em;
+	--location-nav-padding: 0.6rem 1.1rem;
 	--location-nav-hover-bg: var(--color-action-accent);
 	--location-nav-hover-color: var(--color-surface-primary);
 	--location-nav-hover-border-color: currentcolor;
 	--location-nav-hover-shadow: none;
-	--location-nav-hover-transform: translateY(-2px);
+	--location-nav-hover-transform: translateY(-1px);
 	--location-nav-hover-filter: none;
 	--location-nav-after-display: block;
 
@@ -225,7 +225,7 @@
 	--location-nav-svg-opacity: 85%;
 
 	// Nav buttons container
-	--location-nav-buttons-gap: 0.8rem;
+	--location-nav-buttons-gap: 0.6rem;
 	--location-nav-buttons-margin-top: auto;
 
 	// Nav button responsive
@@ -233,7 +233,7 @@
 	--location-nav-padding-inline-xs: initial;
 
 	// Indications panel
-	--location-indications-spacing: 2.5rem;
+	--location-indications-spacing: 2rem;
 	--location-indications-spacing-xs: var(--location-indications-spacing);
 	--location-indications-grid-template: initial;
 	--location-indications-gap: 1rem;
@@ -251,8 +251,8 @@
 
 	// Indications heading
 	--location-indications-heading-color: var(--color-text-secondary);
-	--location-indications-heading-letter-spacing: 0.3em;
-	--location-indications-heading-margin-bottom: 1.5rem;
+	--location-indications-heading-letter-spacing: 0.2em;
+	--location-indications-heading-margin-bottom: 1rem;
 	--location-indications-heading-font-weight: 400;
 
 	// Indication item
@@ -622,6 +622,7 @@
 		&.copy-success {
 			color: var(--location-copy-button-color);
 			opacity: 100%;
+			background: rgb(var(--color-action-accent-rgb) / 10%);
 		}
 	}
 
@@ -753,7 +754,7 @@
 		&--waze:hover {
 			background: var(--location-nav-maps-hover-bg);
 			border-color: var(--location-nav-maps-hover-border-color);
-			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb) / 25%);
+			box-shadow: 0 6px 18px rgb(var(--color-action-accent-rgb) / 16%);
 		}
 
 		&--primary {
@@ -764,7 +765,7 @@
 
 		&--primary:hover {
 			filter: brightness(0.9);
-			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb) / 30%);
+			box-shadow: 0 6px 18px rgb(var(--color-action-accent-rgb) / 20%);
 		}
 
 		&--apple {
