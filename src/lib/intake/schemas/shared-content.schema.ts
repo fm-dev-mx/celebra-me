@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { ITINERARY_ICON_KEYS } from '@/lib/theme/theme-contract';
+import { iconNamesTuple } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+
+const ICON_NAMES_TUPLE = iconNamesTuple();
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -49,7 +51,7 @@ export const itinerarySchema = z.object({
 	subtitle: optionalText(500),
 	items: z.array(
 		z.object({
-			icon: z.enum(ITINERARY_ICON_KEYS),
+			iconName: z.enum(ICON_NAMES_TUPLE),
 			label: z.string().trim().min(1, 'El nombre de la actividad es obligatorio.').max(200),
 			description: optionalText(500),
 			time: z.string().trim().min(1, 'La hora es obligatoria.').max(20),

@@ -40,7 +40,6 @@
         },
         "indications": [
             {
-                "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
                 "text": "El color de la festejada está reservado."
@@ -85,12 +84,12 @@
         "title": "Itinerario",
         "items": [
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Ceremonia",
                 "time": "7:00 PM"
             },
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Recepción",
                 "time": "9:00 PM"
             }

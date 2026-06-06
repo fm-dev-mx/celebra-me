@@ -1,8 +1,10 @@
 import { z } from 'zod';
-import { ITINERARY_ICON_KEYS } from '@/lib/theme/theme-contract';
+import { iconNamesTuple } from '@/lib/icons/icon-catalog';
+
+const ICON_NAMES_TUPLE = iconNamesTuple();
 
 export const itineraryItemSchema = z.object({
-	icon: z.enum(ITINERARY_ICON_KEYS),
+	iconName: z.enum(ICON_NAMES_TUPLE),
 	label: z.string(),
 	description: z.string().optional(),
 	time: z.string(),

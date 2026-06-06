@@ -354,7 +354,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	const indications = data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => ({
-			iconName: (indication.iconName ?? indication.icon ?? 'Gift') as Indication['iconName'],
+			iconName: indication.iconName,
 			styleVariant: indication.styleVariant,
 			text: indication.text,
 		}),

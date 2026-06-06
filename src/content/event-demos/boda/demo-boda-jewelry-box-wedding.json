@@ -42,13 +42,11 @@
         },
         "indications": [
             {
-                "icon": "dressCode",
                 "iconName": "DressCode",
                 "styleVariant": "default",
                 "text": "Código de vestimenta: Gala (Riguroso)"
             },
             {
-                "icon": "forbidden",
                 "iconName": "Forbidden",
                 "styleVariant": "reserved",
                 "text": "Evento solo para adultos"
@@ -164,31 +162,31 @@
         "title": "Programa del Día",
         "items": [
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Ceremonia Religiosa",
                 "time": "6:00 PM",
                 "description": "Capilla de la Inmaculada."
             },
             {
-                "icon": "toast",
+                "iconName": "Toast",
                 "label": "Cóctel de Bienvenida",
                 "time": "7:30 PM",
                 "description": "Jardín Central."
             },
             {
-                "icon": "dinner",
+                "iconName": "Dinner",
                 "label": "Cena de Gala",
                 "time": "9:00 PM",
                 "description": "Salón Mendocinas."
             },
             {
-                "icon": "waltz",
+                "iconName": "Waltz",
                 "label": "Nuestro Primer Baile",
                 "time": "10:30 PM",
                 "description": "Bajo las estrellas."
             },
             {
-                "icon": "party",
+                "iconName": "Party",
                 "label": "Gran Festejo",
                 "time": "11:00 PM",
                 "description": "Música y alegría."

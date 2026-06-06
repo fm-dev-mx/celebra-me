@@ -10,8 +10,8 @@ import SectionNavButton from '@/components/invitation/components/SectionNavButto
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { IconName } from '@/lib/icons/icon-catalog';
 import type {
-	IndicationIconName,
 	IndicationStyleVariant,
 	LocationVariant,
 } from '@/lib/theme/theme-contract';
@@ -36,7 +36,7 @@ interface VenueData {
 }
 
 interface Indication {
-	iconName: IndicationIconName;
+	iconName: IconName;
 	styleVariant: IndicationStyleVariant;
 	text: string;
 }
@@ -70,7 +70,7 @@ const {
 	introLede,
 } = Astro.props;
 
-const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
+const isSingleVenue = Boolean(ceremony) !== Boolean(reception);
 ---
 
 <section class="event-location" id="event-location" data-variant={variant}>

@@ -2,16 +2,15 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	ContentSectionKey,
 	CountdownVariant,
-	IndicationIconName,
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
-	ItineraryIconKey,
 	ItineraryVariant,
 	LocationVariant,
 	QuoteVariant,
 	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
+import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 
 export interface ThemeConfig {
@@ -60,7 +59,7 @@ export interface Ceremony {
 }
 
 export interface ItineraryItem {
-	icon: ItineraryIconKey;
+	iconName: IconName;
 	label: string;
 	description?: string;
 	time: string;
@@ -83,7 +82,7 @@ export interface Reception {
 }
 
 export interface Indication {
-	iconName: IndicationIconName;
+	iconName: IconName;
 	styleVariant: IndicationStyleVariant;
 	text: string;
 }

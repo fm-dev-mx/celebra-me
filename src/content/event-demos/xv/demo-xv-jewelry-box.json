@@ -56,13 +56,11 @@
         },
         "indications": [
             {
-                "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
                 "text": "El color púrpura está reservado para la festejada."
             },
             {
-                "icon": "forbidden",
                 "iconName": "Forbidden",
                 "styleVariant": "default",
                 "text": "Celebración sin niños."
@@ -192,21 +190,21 @@
         "title": "Nuestra Celebración",
         "items": [
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Ceremonia Religiosa",
                 "time": "6:00 PM",
                 "description": "Parroquia de la Sagrada Familia"
             },
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Recepción",
                 "time": "8:00 PM",
                 "description": "Quinta Las Flores"
             },
-            { "icon": "waltz", "label": "Vals de Honor", "time": "9:00 PM" },
-            { "icon": "dinner", "label": "Cena de Gala", "time": "10:00 PM" },
-            { "icon": "toast", "label": "Brindis", "time": "11:30 PM" },
-            { "icon": "party", "label": "Tornafiesta", "time": "12:30 AM" }
+            { "iconName": "Waltz", "label": "Vals de Honor", "time": "9:00 PM" },
+            { "iconName": "Dinner", "label": "Cena de Gala", "time": "10:00 PM" },
+            { "iconName": "Toast", "label": "Brindis", "time": "11:30 PM" },
+            { "iconName": "Party", "label": "Tornafiesta", "time": "12:30 AM" }
         ]
     },
     "countdown": {

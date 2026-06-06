@@ -35,13 +35,11 @@
         },
         "indications": [
             {
-                "icon": "dressCode",
-                "iconName": "Gift",
+                "iconName": "DressCode",
                 "styleVariant": "default",
                 "text": "Código de vestimenta: Gala Hacienda"
             },
             {
-                "icon": "forbidden",
                 "iconName": "Forbidden",
                 "styleVariant": "reserved",
                 "text": "Evento solo para adultos"
@@ -129,25 +127,25 @@
         "title": "Programa de la Noche",
         "items": [
             {
-                "icon": "toast",
+                "iconName": "Toast",
                 "label": "Recepción y Brindis",
                 "time": "8:00 PM",
                 "description": "Bienvenida en el jardín principal."
             },
             {
-                "icon": "dinner",
+                "iconName": "Dinner",
                 "label": "Cena de Gala",
                 "time": "9:30 PM",
                 "description": "Cocina de raíz, servida con la elegancia de siempre."
             },
             {
-                "icon": "accordion",
+                "iconName": "Accordion",
                 "label": "Mariachi y Sorpresas",
                 "time": "11:00 PM",
                 "description": "Música en vivo para celebrar."
             },
             {
-                "icon": "party",
+                "iconName": "Party",
                 "label": "Baile y Alegría",
                 "time": "12:30 AM",
                 "description": "Bajo las estrellas de la Hacienda, hasta el último brindis."

@@ -1,10 +1,10 @@
+import type { EventType } from '@/lib/theme/theme-contract';
 import type {
 	InvitationStatus,
 	IntakeSubmissionStatus,
 	IntakeRequestStatus,
 	IntakeBlockType,
 } from '@/lib/intake/types';
-import type { ItineraryIconKey } from '@/lib/theme/theme-contract';
 
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
@@ -159,25 +159,6 @@ export const RSVP_STATUS_LABELS: Record<string, string> = {
 	draft: 'RSVP borrador',
 };
 
-export const ITINERARY_ICON_LABELS: Record<ItineraryIconKey, string> = {
-	waltz: 'Vals',
-	dinner: 'Cena',
-	toast: 'Brindis',
-	cake: 'Pastel',
-	party: 'Fiesta',
-	church: 'Iglesia',
-	map: 'Ubicación',
-	reception: 'Recepción',
-	photo: 'Fotografía',
-	sparkles: 'Destacado',
-	boot: 'Bota',
-	heel: 'Tacón',
-	'western-hat': 'Sombrero',
-	taco: 'Tacos',
-	tuba: 'Tuba',
-	accordion: 'Acordeón',
-};
-
 export const GIFT_TYPE_LABELS: Record<string, string> = {
 	store: 'Tienda',
 	bank: 'Transferencia bancaria',
@@ -219,7 +200,6 @@ export const NAV_ITEMS: Array<{ id: string; label: string }> = [
 ];
 
 type FieldGroup = 'hero' | 'family';
-type EventType = 'xv' | 'boda' | 'bautizo' | 'cumple';
 
 const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
 	name: {

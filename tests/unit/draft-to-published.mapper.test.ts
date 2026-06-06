@@ -550,14 +550,14 @@ describe('mapDraftToPublished', () => {
 				...baseInput.draftContent,
 				itinerary: {
 					title: 'Programa',
-					items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
+					items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
 				},
 			},
 		});
 
 		expect(result.itinerary).toEqual({
 			title: 'Programa',
-			items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
+			items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
 		});
 	});
 

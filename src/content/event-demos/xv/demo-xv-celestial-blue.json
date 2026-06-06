@@ -43,13 +43,11 @@
         },
         "indications": [
             {
-                "icon": "dressCode",
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
                 "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
             },
             {
-                "icon": "calendar",
                 "iconName": "Calendar",
                 "styleVariant": "default",
                 "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
@@ -139,31 +137,31 @@
         "title": "Programa",
         "items": [
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Misa",
                 "time": "5:00 PM",
                 "description": "Ceremonia de Acción de Gracias en la Catedral."
             },
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Recepción",
                 "time": "7:00 PM",
                 "description": "Bienvenida en Hacienda Los Claustros."
             },
             {
-                "icon": "waltz",
+                "iconName": "Waltz",
                 "label": "Vals",
                 "time": "8:30 PM",
                 "description": "Un momento de ensueño."
             },
             {
-                "icon": "dinner",
+                "iconName": "Dinner",
                 "label": "Cena",
                 "time": "9:30 PM",
                 "description": "Cena de gala en familia."
             },
             {
-                "icon": "party",
+                "iconName": "Party",
                 "label": "Cierre",
                 "time": "12:00 AM",
                 "description": "Gracias por celebrar con nosotros."

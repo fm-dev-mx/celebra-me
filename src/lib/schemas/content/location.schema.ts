@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import {
-	INDICATION_ICON_KEYS,
-	INDICATION_ICON_NAMES,
-	INDICATION_STYLE_VARIANTS,
-} from '@/lib/theme/theme-contract';
+import { iconNamesTuple } from '@/lib/icons/icon-catalog';
+import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
+
+const ICON_NAMES_TUPLE = iconNamesTuple();
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
 const richTextSchema = z.string();
@@ -43,8 +42,7 @@ export const locationSchema = z.object({
 	indications: z
 		.array(
 			z.object({
-				icon: z.enum(INDICATION_ICON_KEYS).optional(),
-				iconName: z.enum(INDICATION_ICON_NAMES).optional(),
+				iconName: z.enum(ICON_NAMES_TUPLE),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
 				text: richTextSchema,
 			}),

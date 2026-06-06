@@ -42,12 +42,10 @@
         "indicationsHeading": "Indicaciones",
         "indications": [
             {
-                "icon": "calendar",
                 "iconName": "Calendar",
                 "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
             },
             {
-                "icon": "dressCode",
                 "iconName": "DressCode",
                 "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
             }
@@ -114,25 +112,25 @@
         "subtitle": "Bautismo de María",
         "items": [
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Llegada",
                 "time": "10:00 AM",
                 "description": "Recepción en la parroquia"
             },
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Sacramento",
                 "time": "10:30 AM",
                 "description": "Bautismo de María Santos"
             },
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Celebración",
                 "time": "12:00 PM",
                 "description": "Comida familiar"
             },
             {
-                "icon": "cake",
+                "iconName": "Cake",
                 "label": "Pastel",
                 "time": "1:00 PM",
                 "description": "Corte del pastel"

@@ -36,13 +36,11 @@
         },
         "indications": [
             {
-                "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
                 "text": "Etiqueta: Gala Noir (Negro, champagne y acentos metálicos)"
             },
             {
-                "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
                 "text": "Favor de confirmar antes del 12 de septiembre."
@@ -124,37 +122,37 @@
         "title": "Programa de la Noche",
         "items": [
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Recepción editorial",
                 "time": "7:00 PM",
                 "description": "Apertura de puertas y bienvenida."
             },
             {
-                "icon": "waltz",
+                "iconName": "Waltz",
                 "label": "Vals de estreno",
                 "time": "8:00 PM",
                 "description": "La entrada principal de la festejada."
             },
             {
-                "icon": "dinner",
+                "iconName": "Dinner",
                 "label": "Cena",
                 "time": "9:00 PM",
                 "description": "Servicio de gala y conversación."
             },
             {
-                "icon": "toast",
+                "iconName": "Toast",
                 "label": "Brindis",
                 "time": "10:00 PM",
                 "description": "Un momento para celebrar esta nueva etapa."
             },
             {
-                "icon": "cake",
+                "iconName": "Cake",
                 "label": "Pastel",
                 "time": "10:45 PM",
                 "description": "El instante más dulce de la noche."
             },
             {
-                "icon": "party",
+                "iconName": "Party",
                 "label": "Fiesta",
                 "time": "11:30 PM",
                 "description": "Música, pista y una noche en grande."

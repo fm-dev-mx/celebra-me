@@ -1,11 +1,10 @@
 ---
 // src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
-import type { ItineraryIconKey } from '@/lib/theme/theme-contract';
-import { ITINERARY_ICON_DISPLAY_NAMES } from '@/lib/theme/theme-contract';
+import type { IconName } from '@/lib/icons/icon-catalog';
 
 type TimelineItemData = {
-	icon: ItineraryIconKey;
+	iconName: IconName;
 	label: string;
 	description?: string;
 	time: string;
@@ -13,7 +12,7 @@ type TimelineItemData = {
 
 interface Props {
 	items: TimelineItemData[];
-	variant?: string;
+	variant?: import('@/lib/theme/theme-contract').ItineraryVariant;
 }
 
 const { items, variant } = Astro.props;
@@ -48,7 +47,7 @@ const { items, variant } = Astro.props;
 
 					<div class="itinerary__item-icon-wrapper">
 						<div class="itinerary__item-icon-inner">
-							<Icon name={ITINERARY_ICON_DISPLAY_NAMES[item.icon] ?? 'Reception'} size={24} />
+							<Icon name={item.iconName} size={24} />
 						</div>
 					</div>
 

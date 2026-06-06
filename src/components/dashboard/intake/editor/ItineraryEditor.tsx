@@ -1,7 +1,7 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { ITINERARY_ICON_KEYS } from '@/lib/theme/theme-contract';
-import { ITINERARY_ICON_LABELS } from '@/lib/intake/labels';
+import { ICON_CATALOG, DEFAULT_ICON, type IconName, isIconName } from '@/lib/icons/icon-catalog';
 import { moveArrayItem } from '@/lib/intake/utils';
+import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
 
 type Itinerary = NonNullable<DraftContent['itinerary']>;
 type ItineraryItem = Itinerary['items'][number];
@@ -11,7 +11,30 @@ interface Props {
 	onChange: (value: Itinerary) => void;
 }
 
-const EMPTY_ITEM: ItineraryItem = { icon: 'sparkles', label: '', description: '', time: '' };
+const EMPTY_ITEM: ItineraryItem = { iconName: DEFAULT_ICON, label: '', description: '', time: '' };
+
+const ITINERARY_ALLOWED_ICONS: IconName[] = [
+	'Waltz',
+	'Dinner',
+	'Toast',
+	'Cake',
+	'Party',
+	'Church',
+	'MapLocation',
+	'Reception',
+	'Photo',
+	'Sparkles',
+	'BootSeal',
+	'Heel',
+	'WesternHat',
+	'Taco',
+	'Tuba',
+	'Accordion',
+];
+
+function getIconLabel(name: string): string {
+	return ICON_CATALOG.find((entry) => entry.name === name)?.label ?? name;
+}
 
 export default function ItineraryEditor({ value, onChange }: Props) {
 	const updateItem = (index: number, patch: Partial<ItineraryItem>) => {
@@ -49,12 +72,12 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 				{value.items.map((item, index) => (
 					<article
 						className="invitation-editor__list-item"
-						key={`${index}-${item.icon}-${item.time}`}
+						key={`${index}-${item.iconName}-${item.time}`}
 					>
 						<div className="invitation-editor__compact-row">
 							<strong>
 								{index + 1}. {item.label || 'Actividad'} ·{' '}
-								{ITINERARY_ICON_LABELS[item.icon]} · {item.time || 'Sin hora'}
+								{getIconLabel(item.iconName)} · {item.time || 'Sin hora'}
 							</strong>
 							<div className="invitation-editor__reorder">
 								<button
@@ -108,23 +131,17 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 										}
 									/>
 								</label>
-								<label className="invitation-editor__field">
-									<span>Icono</span>
-									<select
-										value={item.icon}
-										onChange={(event) =>
-											updateItem(index, {
-												icon: event.target.value as ItineraryItem['icon'],
-											})
-										}
-									>
-										{ITINERARY_ICON_KEYS.map((icon) => (
-											<option key={icon} value={icon}>
-												{ITINERARY_ICON_LABELS[icon]}
-											</option>
-										))}
-									</select>
-								</label>
+								<IconPickerField
+									label="Icono"
+									value={isIconName(item.iconName) ? item.iconName : null}
+									onChange={(iconName) =>
+										updateItem(index, {
+											iconName: (iconName ??
+												DEFAULT_ICON) as ItineraryItem['iconName'],
+										})
+									}
+									allowedIcons={ITINERARY_ALLOWED_ICONS}
+								/>
 								<label className="invitation-editor__field">
 									<span>Descripción</span>
 									<input

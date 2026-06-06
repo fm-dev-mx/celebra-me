@@ -62,13 +62,11 @@
         },
         "indications": [
             {
-                "icon": "dressCode",
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
                 "text": "Código de vestimenta <strong>formal de gala</strong>. Los tonos <strong>rosa satín y blush</strong> están reservados para la quinceañera."
             },
             {
-                "icon": "calendar",
                 "iconName": "Calendar",
                 "styleVariant": "default",
                 "text": "Confirma tu asistencia <strong>antes del 6 de noviembre</strong>."
@@ -156,31 +154,31 @@
         "title": "Programa",
         "items": [
             {
-                "icon": "church",
+                "iconName": "Church",
                 "label": "Misa",
                 "time": "6:00 PM",
                 "description": "Ceremonia de Acción de Gracias en la parroquia."
             },
             {
-                "icon": "reception",
+                "iconName": "Reception",
                 "label": "Recepción",
                 "time": "8:00 PM",
                 "description": "Bienvenida en el Salón Imperial"
             },
             {
-                "icon": "waltz",
+                "iconName": "Waltz",
                 "label": "Vals",
                 "time": "9:00 PM",
                 "description": "Un momento de gala bajo luz de velas."
             },
             {
-                "icon": "dinner",
+                "iconName": "Dinner",
                 "label": "Cena",
                 "time": "10:00 PM",
                 "description": "Cena elegante en familia."
             },
             {
-                "icon": "party",
+                "iconName": "Party",
                 "label": "Cierre",
                 "time": "1:00 AM",
                 "description": "Gracias por celebrar conmigo."

@@ -49,7 +49,7 @@ function createContext(
 			gallery: { title: 'Galería', items: [] },
 			itinerary: {
 				title: 'Programa',
-				items: [{ icon: 'church', label: 'Ceremonia', time: '18:00' }],
+				items: [{ iconName: 'Church', label: 'Ceremonia', time: '18:00' }],
 			},
 			gifts: { items: [{ type: 'cash', title: 'Sobres', text: '' }] },
 			sectionOrder: [
@@ -275,11 +275,10 @@ describe('InvitationEditor', () => {
 		expect(
 			screen.getByRole('heading', { level: 2, name: 'Cuenta regresiva' }),
 		).toBeInTheDocument();
-		expect(screen.getByText(/se calcula automáticamente desde la Portada/)).toBeInTheDocument();
+		expect(screen.getByText(/se toma[\s\S]*automáticamente de la Portada/)).toBeInTheDocument();
 		expect(screen.queryByLabelText('Fecha del evento')).not.toBeInTheDocument();
 		expect(screen.getByLabelText('Título')).toHaveValue('Ya casi celebramos');
-		expect(screen.getByLabelText('Texto antes de la fecha')).toHaveValue('Será el');
-		expect(screen.getByLabelText('Texto final')).toHaveValue('Trae tus mejores pasos');
+		expect(screen.getByLabelText('Texto inferior')).toHaveValue('Trae tus mejores pasos');
 
 		fireEvent.change(screen.getByLabelText('Título'), {
 			target: { value: 'Falta poquito' },

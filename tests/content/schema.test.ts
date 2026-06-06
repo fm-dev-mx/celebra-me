@@ -2,11 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { collections } from '@/content.config';
-import {
-	ITINERARY_ICON_DISPLAY_NAMES,
-	ITINERARY_ICON_KEYS,
-	THEME_PRESETS,
-} from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -281,7 +278,6 @@ describe('Event content schema (real contract)', () => {
 					city: 'Test City',
 					indications: [
 						{
-							icon: 'crown',
 							iconName: 'Crown',
 							styleVariant: 'reserved',
 							text: 'Reserved color',
@@ -334,7 +330,7 @@ describe('Event content schema (real contract)', () => {
 					city: 'Test City',
 					indications: [
 						{
-							icon: 'crown',
+							iconName: 'Crown',
 							text: '<strong>Solo adultos</strong>',
 						},
 					],
@@ -345,7 +341,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('supports itinerary subtitles and refined venue/farewell icons', () => {
+	it('supports itinerary subtitles and iconName-based items', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				itinerary: {
@@ -353,13 +349,13 @@ describe('Event content schema (real contract)', () => {
 					subtitle: 'Bautizo y 1er Año de César Ramses',
 					items: [
 						{
-							icon: 'map',
+							iconName: 'MapLocation',
 							label: 'Recepción',
 							time: '4:00 p.m.',
 							description: 'Nos reuniremos para celebrar con cariño.',
 						},
 						{
-							icon: 'sparkles',
+							iconName: 'Sparkles',
 							label: 'Cierre de celebración',
 							time: '10:00 p.m.',
 							description: 'Gracias por ser parte de este recuerdo.',
@@ -372,10 +368,9 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 		expect(result.data.itinerary?.subtitle).toBe('Bautizo y 1er Año de César Ramses');
-		expect((ITINERARY_ICON_KEYS as readonly string[]).includes('map')).toBe(true);
-		expect((ITINERARY_ICON_KEYS as readonly string[]).includes('sparkles')).toBe(true);
-		expect(ITINERARY_ICON_DISPLAY_NAMES.map).toBe('MapLocation');
-		expect(ITINERARY_ICON_DISPLAY_NAMES.sparkles).toBe('Sparkles');
+		const catalogNames = ICON_CATALOG.map((entry) => entry.name);
+		expect(catalogNames).toContain('MapLocation');
+		expect(catalogNames).toContain('Sparkles');
 	});
 
 	it('accepts thank-you overlay anchor and normalized safe area metadata', () => {

@@ -106,7 +106,7 @@ const published = {
 		},
 		itinerary: {
 			title: 'Programa',
-			items: [{ icon: 'party', label: 'Fiesta', time: '21:00' }],
+			items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
 		},
 		rsvp: {
 			title: 'Confirma P',
@@ -359,14 +359,14 @@ describe('hydration edge cases', () => {
 				...draft.content,
 				itinerary: {
 					title: 'Programa Editado',
-					items: [{ icon: 'party', label: 'Fiesta', time: '22:00' }],
+					items: [{ iconName: 'Party', label: 'Fiesta', time: '22:00' }],
 				},
 			},
 		});
 
 		const value = {
 			title: 'Programa Editado',
-			items: [{ icon: 'party', label: 'Fiesta', time: '22:00' }],
+			items: [{ iconName: 'Party', label: 'Fiesta', time: '22:00' }],
 		};
 		await saveInvitationEditorSection('proj-1', 'itinerary', {
 			expectedUpdatedAt: draft.updatedAt,

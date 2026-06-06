@@ -76,34 +76,12 @@ export function themeSupportsPortrait(themeId: string): boolean {
 // INDICATION TOKENS
 // ==========================================
 
-export const INDICATION_ICON_KEYS = [
-	'crown',
-	'envelope',
-	'forbidden',
-	'gift',
-	'western-hat',
-	'dressCode',
-	'calendar',
-] as const;
-
-export const INDICATION_ICON_NAMES = [
-	'Crown',
-	'Envelope',
-	'Forbidden',
-	'Gift',
-	'WesternHat',
-	'Calendar',
-	'DressCode',
-] as const;
-
 export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;
 
 // ==========================================
 // DERIVED TYPES
 // ==========================================
 
-export type IndicationIconKey = (typeof INDICATION_ICON_KEYS)[number];
-export type IndicationIconName = (typeof INDICATION_ICON_NAMES)[number];
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
 // Semantic aliases for section-specific variations (all now match the main preset)
@@ -112,47 +90,3 @@ export type CountdownVariant = ThemePreset;
 export type LocationVariant = ThemePreset;
 export type SharedSectionVariant = ThemePreset;
 export type ItineraryVariant = ThemePreset;
-
-// ==========================================
-// ITINERARY TOKENS
-// ==========================================
-
-export const ITINERARY_ICON_KEYS = [
-	'waltz',
-	'dinner',
-	'toast',
-	'cake',
-	'party',
-	'church',
-	'map',
-	'reception',
-	'photo',
-	'sparkles',
-	'boot',
-	'heel',
-	'western-hat',
-	'taco',
-	'tuba',
-	'accordion',
-] as const;
-
-export type ItineraryIconKey = (typeof ITINERARY_ICON_KEYS)[number];
-
-export const ITINERARY_ICON_DISPLAY_NAMES: Record<ItineraryIconKey, string> = {
-	waltz: 'Waltz',
-	dinner: 'Dinner',
-	toast: 'Toast',
-	cake: 'Cake',
-	party: 'Party',
-	church: 'Church',
-	map: 'MapLocation',
-	reception: 'Reception',
-	photo: 'Photo',
-	sparkles: 'Sparkles',
-	boot: 'Boot',
-	heel: 'Heel',
-	'western-hat': 'WesternHat',
-	taco: 'Taco',
-	tuba: 'Tuba',
-	accordion: 'Accordion',
-};
