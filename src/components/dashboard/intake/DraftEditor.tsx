@@ -2,7 +2,13 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { strFallback, boolFallback, numFallback, deepClone } from '@/lib/intake/utils';
+import {
+	strFallback,
+	boolFallback,
+	numFallback,
+	deepClone,
+	moveArrayItem,
+} from '@/lib/intake/utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 
@@ -149,10 +155,9 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 
 	const moveSection = (section: ContentSectionKey, offset: -1 | 1) => {
 		const index = sectionOrder.indexOf(section);
-		const nextIndex = index + offset;
-		if (index === -1 || nextIndex < 0 || nextIndex >= sectionOrder.length) return;
-		const nextOrder = [...sectionOrder];
-		[nextOrder[index], nextOrder[nextIndex]] = [nextOrder[nextIndex], nextOrder[index]];
+		if (index === -1) return;
+		const nextOrder = moveArrayItem(sectionOrder, index, offset);
+		if (nextOrder === sectionOrder) return;
 		setSectionOrder(nextOrder);
 	};
 
@@ -289,6 +294,45 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 			<section className="intake-review__section">
 				<h3 className="intake-review__section-title">{SECTION_LABELS.family}</h3>
 				<p className="intake-editor__section-desc">Padres, padrinos, cónyuge e hijos.</p>
+				<div className="intake-editor__field">
+					<label className="intake-field__label">
+						<input
+							type="checkbox"
+							className="intake-editor__checkbox"
+							checked={family.visible !== false}
+							onChange={(e) => setField('family', 'visible', e.target.checked)}
+						/>
+						Mostrar sección de familia
+					</label>
+				</div>
+				{renderField(
+					'family',
+					'sectionSubtitle',
+					'Encabezado de sección',
+					strFallback(family.sectionSubtitle),
+					(v) => setField('family', 'sectionSubtitle', v),
+				)}
+				{renderField(
+					'family',
+					'sectionTitle',
+					'Título de sección',
+					strFallback(family.sectionTitle),
+					(v) => setField('family', 'sectionTitle', v),
+				)}
+				{renderField(
+					'family',
+					'parentsTitle',
+					'Título de padres',
+					strFallback(family.parentsTitle),
+					(v) => setField('family', 'parentsTitle', v),
+				)}
+				{renderField(
+					'family',
+					'godparentsTitle',
+					'Título de padrinos',
+					strFallback(family.godparentsTitle),
+					(v) => setField('family', 'godparentsTitle', v),
+				)}
 				{renderField(
 					'family',
 					'fatherName',
