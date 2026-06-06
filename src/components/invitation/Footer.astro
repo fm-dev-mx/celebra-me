@@ -4,6 +4,7 @@ import '@/styles/invitation/_footer.scss';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
+import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	eventSlug?: string;
@@ -25,10 +26,9 @@ const {
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const logoVariant = variant === 'editorial' ? 'footer' : 'default';
 
-import { getWhatsAppLink } from '@/utils/whatsapp';
-
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
 const whatsappLink = getWhatsAppLink(whatsappMessage);
+const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getContactPhone());
 ---
 
 <footer
@@ -42,7 +42,7 @@ const whatsappLink = getWhatsAppLink(whatsappMessage);
 	<div class="footer__divider" aria-hidden="true"></div>
 
 	<div class="footer__content">
-		{showFooterBranding || showContactCta ? (
+		{showFooterBranding || shouldShowContactCta ? (
 		<div class="footer__primary-row">
 			{showFooterBranding && (
 			<div class="footer__info">
@@ -55,7 +55,7 @@ const whatsappLink = getWhatsAppLink(whatsappMessage);
 			</div>
 			)}
 
-			{showContactCta && (
+			{shouldShowContactCta && (
 			<div class="footer__actions">
 				<a
 					class="whatsapp-button"
