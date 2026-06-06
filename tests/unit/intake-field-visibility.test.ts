@@ -1,6 +1,6 @@
 import { eventDetailsBlockSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { getVisibleFields } from '@/lib/intake/blocks';
-import { normalizeDate } from '@/lib/intake/services/draft-content-mapper';
+import { normalizeDate } from '@/lib/intake/utils';
 import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
 import type { IntakeRequest, IntakeSubmission, Invitation } from '@/lib/intake/types';
 import type { IntakeBlockType } from '@/lib/intake/types';

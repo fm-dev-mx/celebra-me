@@ -1,16 +1,11 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
-import { str } from '@/lib/intake/utils';
+import { str, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
 function isBlankSection<T extends Record<string, unknown> | null | undefined>(value: T): boolean {
 	return !value || Object.keys(value).length === 0;
-}
-
-function normalizeHeroDate(value: string): string {
-	if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00:00.000Z`;
-	if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:00.000Z`;
-	return value;
 }
 
 type VenueDraft = {
@@ -36,26 +31,66 @@ function mapCountdownFromDraft(
 	};
 }
 
+function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
+	const labels: Record<string, unknown> = {};
+	if (str(draftFamily.sectionSubtitle)) labels.sectionSubtitle = str(draftFamily.sectionSubtitle);
+	if (str(draftFamily.sectionTitle)) labels.sectionTitle = str(draftFamily.sectionTitle);
+	if (str(draftFamily.parentsTitle)) labels.parentsTitle = str(draftFamily.parentsTitle);
+	if (str(draftFamily.godparentsTitle)) labels.godparentsTitle = str(draftFamily.godparentsTitle);
+	if (str(draftFamily.spouseTitle)) labels.spouseTitle = str(draftFamily.spouseTitle);
+	if (str(draftFamily.spouseRole)) labels.spouseRole = str(draftFamily.spouseRole);
+	if (str(draftFamily.childrenTitle)) labels.childrenTitle = str(draftFamily.childrenTitle);
+	if (str(draftFamily.sectionMessage)) labels.sectionMessage = str(draftFamily.sectionMessage);
+	return Object.keys(labels).length > 0 ? labels : undefined;
+}
+
+function buildFamilyGroups(
+	draftFamily: FamilyDraft,
+): Array<{ title: string; items: Array<{ name: string }> }> | undefined {
+	const draftGroups = draftFamily.groups;
+	if (!draftGroups || draftGroups.length === 0) return undefined;
+	const mappedGroups = draftGroups
+		.filter((g) => str(g.title) || str(g.names))
+		.map((g) => {
+			const namesText = str(g.names);
+			const items = namesText
+				? namesText
+						.split('\n')
+						.map((l) => l.trim())
+						.filter(Boolean)
+						.map((name) => ({ name }))
+				: [];
+			if (items.length === 0) return null;
+			return {
+				title: str(g.title) || 'Grupo',
+				items,
+			};
+		})
+		.filter(Boolean);
+	return mappedGroups.length > 0
+		? (mappedGroups as Array<{ title: string; items: Array<{ name: string }> }>)
+		: undefined;
+}
+
 function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	celebrantName: string,
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftFamily)) return undefined;
+	const family = draftFamily as FamilyDraft;
 
 	const result: Record<string, unknown> = {};
 	const parents: Record<string, unknown> = {};
 
-	if (str(draftFamily!.fatherName)) parents.father = str(draftFamily!.fatherName);
-	if (typeof draftFamily!.fatherDeceased === 'boolean')
-		parents.fatherDeceased = draftFamily!.fatherDeceased;
-	if (str(draftFamily!.motherName)) parents.mother = str(draftFamily!.motherName);
-	if (typeof draftFamily!.motherDeceased === 'boolean')
-		parents.motherDeceased = draftFamily!.motherDeceased;
+	if (str(family.fatherName)) parents.father = str(family.fatherName);
+	if (typeof family.fatherDeceased === 'boolean') parents.fatherDeceased = family.fatherDeceased;
+	if (str(family.motherName)) parents.mother = str(family.motherName);
+	if (typeof family.motherDeceased === 'boolean') parents.motherDeceased = family.motherDeceased;
 
 	if (Object.keys(parents).length > 0) result.parents = parents;
-	if (str(draftFamily!.spouseName)) result.spouse = str(draftFamily!.spouseName);
+	if (str(family.spouseName)) result.spouse = str(family.spouseName);
 
-	const godparentsText = str(draftFamily!.godparents);
+	const godparentsText = str(family.godparents);
 	if (godparentsText) {
 		const lines = godparentsText
 			.split('\n')
@@ -69,7 +104,7 @@ function mapFamilyFromDraft(
 		}
 	}
 
-	const childrenText = str(draftFamily!.children);
+	const childrenText = str(family.children);
 	if (childrenText) {
 		const lines = childrenText
 			.split('\n')
@@ -80,8 +115,16 @@ function mapFamilyFromDraft(
 		}
 	}
 
-	if (str(draftFamily!.sectionMessage)) result.sectionMessage = str(draftFamily!.sectionMessage);
-	if (draftFamily!.featuredImage) result.featuredImage = draftFamily!.featuredImage;
+	const labels = buildFamilyLabels(family);
+	if (labels) result.labels = labels;
+
+	if (str(family.sectionMessage)) result.sectionMessage = str(family.sectionMessage);
+
+	const mappedGroups = buildFamilyGroups(family);
+	if (mappedGroups) result.groups = mappedGroups;
+
+	if (typeof family.visible === 'boolean') result.visible = family.visible;
+	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	result.celebrantName = celebrantName;
 
 	return Object.keys(result).length > 0 ? result : undefined;
@@ -206,7 +249,7 @@ function buildHeroFromDraft(
 ): Record<string, unknown> {
 	const {
 		name: demoName,
-		secondaryName: demosecondaryName,
+		secondaryName: demoSecondaryName,
 		label: demoLabel,
 		nickname: demoNickname,
 		date: demoDate,
@@ -219,10 +262,10 @@ function buildHeroFromDraft(
 
 	return {
 		name: str(draftHero.name) || (demoName as string) || invitationTitle,
-		secondaryName: str(draftHero.secondaryName) || (demosecondaryName as string) || '',
+		secondaryName: str(draftHero.secondaryName) || (demoSecondaryName as string) || '',
 		label: str(draftHero.label) || (demoLabel as string) || 'Invitacion Especial',
 		nickname: str(draftHero.nickname) || (demoNickname as string) || '',
-		date: normalizeHeroDate(str(draftHero.date) || (demoDate as string) || ''),
+		date: normalizeDate(str(draftHero.date) || (demoDate as string) || ''),
 		backgroundImage: draftHero.backgroundImage ??
 			demoBackgroundImage ?? { type: 'internal', key: 'hero' },
 		backgroundImageDesktop: demoBackgroundImageDesktop,

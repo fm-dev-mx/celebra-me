@@ -1,15 +1,7 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import { str, strFallback, bool, num } from '@/lib/intake/utils';
-
-export function normalizeDate(date: unknown): string {
-	const raw = strFallback(date);
-	if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-		return `${raw}T00:00:00.000Z`;
-	}
-	return raw;
-}
+import { str, bool, num, normalizeDate } from '@/lib/intake/utils';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -227,6 +219,10 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			| Array<{ name: string; role?: string }>
 			| undefined;
 		const childrenArr = family.children as Array<{ name: string }> | undefined;
+		const labels = family.labels as Record<string, unknown> | undefined;
+		const publishedGroups = family.groups as
+			| Array<{ title: string; items: Array<{ name: string; role?: string }> }>
+			| undefined;
 		result.family = {
 			fatherName: str(parents?.father),
 			motherName: str(parents?.mother),
@@ -237,7 +233,21 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))
 				.join('\n'),
 			children: childrenArr?.map((c) => c.name).join('\n'),
-			sectionMessage: str(family.sectionMessage),
+			sectionMessage: str(labels?.sectionMessage) || str(family.sectionMessage),
+			sectionSubtitle: str(labels?.sectionSubtitle),
+			sectionTitle: str(labels?.sectionTitle),
+			parentsTitle: str(labels?.parentsTitle),
+			godparentsTitle: str(labels?.godparentsTitle),
+			spouseTitle: str(labels?.spouseTitle),
+			spouseRole: str(labels?.spouseRole),
+			childrenTitle: str(labels?.childrenTitle),
+			visible: typeof family.visible === 'boolean' ? family.visible : undefined,
+			groups: publishedGroups
+				?.filter((g) => g.items && g.items.length > 0)
+				.map((g) => ({
+					title: str(g.title),
+					names: g.items.map((item) => item.name).join('\n'),
+				})),
 		};
 		if (family.featuredImage !== undefined)
 			Object.assign(result.family, { featuredImage: family.featuredImage });

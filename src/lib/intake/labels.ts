@@ -62,6 +62,14 @@ export const FAMILY_FIELD_LABELS: Record<string, string> = {
 	godparents: 'Padrinos',
 	children: 'Hijos',
 	sectionMessage: 'Mensaje familiar',
+	sectionSubtitle: 'Encabezado de sección',
+	sectionTitle: 'Título de sección',
+	parentsTitle: 'Título de padres',
+	godparentsTitle: 'Título de padrinos',
+	spouseTitle: 'Título de cónyuge',
+	spouseRole: 'Rol de cónyuge',
+	childrenTitle: 'Título de hijos',
+	visible: 'Visibilidad',
 };
 
 export const RSVP_FIELD_LABELS: Record<string, string> = {

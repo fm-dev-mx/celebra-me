@@ -40,6 +40,13 @@ export function hasRsvpContent(content: Record<string, unknown> | undefined): bo
 	return Boolean(rsvp?.title || rsvp?.guestCap);
 }
 
+export function normalizeDate(value: unknown): string {
+	const raw = strFallback(value);
+	if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return `${raw}T00:00:00.000Z`;
+	if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) return `${raw}:00.000Z`;
+	return raw;
+}
+
 export function deepClone<T>(value: T): T {
 	return structuredClone(value);
 }
