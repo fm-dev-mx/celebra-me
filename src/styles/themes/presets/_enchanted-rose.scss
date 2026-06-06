@@ -12,14 +12,16 @@
 	--color-deep-rose-red-rgb: 142 31 47;
 	--color-velvet-burgundy: rgb(75 21 34);
 	--color-velvet-burgundy-rgb: 75 21 34;
-	--color-midnight-navy: rgb(22 35 60);
-	--color-midnight-navy-rgb: 22 35 60;
+	--color-midnight-navy: rgb(46 15 25);
+	--color-midnight-navy-rgb: 46 15 25;
 	--color-warm-ivory: rgb(247 239 228);
 	--color-warm-ivory-rgb: 247 239 228;
 	--color-walnut-brown: rgb(90 53 33);
 	--color-walnut-brown-rgb: 90 53 33;
 	--color-rose-shadow: rgb(37 9 18);
 	--color-rose-shadow-rgb: 37 9 18;
+	--color-candle-shadow: rgb(28 11 9);
+	--color-candle-shadow-rgb: 28 11 9;
 
 	// ---------------------------------------------------------------------
 	// Semantic color bridge
@@ -91,9 +93,9 @@
 	);
 	--rose-velvet-wash: linear-gradient(
 		180deg,
-		rgb(var(--color-midnight-navy-rgb) / 96%) 0%,
-		rgb(var(--color-velvet-burgundy-rgb) / 92%) 58%,
-		rgb(var(--color-rose-shadow-rgb) / 96%) 100%
+		rgb(var(--color-candle-shadow-rgb) / 98%) 0%,
+		rgb(var(--color-velvet-burgundy-rgb) / 94%) 56%,
+		rgb(var(--color-rose-shadow-rgb) / 98%) 100%
 	);
 	--rose-gold-divider: linear-gradient(
 		90deg,
@@ -123,8 +125,8 @@
 		),
 		linear-gradient(
 			180deg,
-			var(--color-midnight-navy) 0%,
-			var(--color-velvet-burgundy) 58%,
+			var(--color-candle-shadow) 0%,
+			var(--color-velvet-burgundy) 54%,
 			var(--color-rose-shadow) 100%
 		);
 	--enchanted-section-ivory-bg:
@@ -159,7 +161,7 @@
 	// Tokenized hero overlays — consumed by sections/hero/_enchanted-rose.scss
 	--hero-overlay-cinematic: linear-gradient(
 		135deg,
-		rgb(var(--color-midnight-navy-rgb) / 56%) 0%,
+		rgb(var(--color-candle-shadow-rgb) / 58%) 0%,
 		rgb(var(--color-velvet-burgundy-rgb) / 10%) 34%,
 		rgb(var(--color-rose-shadow-rgb) / 30%) 100%
 	);
@@ -187,7 +189,7 @@
 	// Quote section
 	// ---------------------------------------------------------------------
 	--quote-bg:
-		linear-gradient(180deg, rgb(var(--color-midnight-navy-rgb) / 95%) 0%, transparent 38%),
+		linear-gradient(180deg, rgb(var(--color-candle-shadow-rgb) / 95%) 0%, transparent 38%),
 		radial-gradient(
 			ellipse 78% 52% at 50% 20%,
 			rgb(var(--color-deep-rose-red-rgb) / 28%) 0%,
@@ -309,13 +311,13 @@
 	// ---------------------------------------------------------------------
 	// Interlude section
 	// ---------------------------------------------------------------------
-	--interlude-bg: var(--color-midnight-navy);
+	--interlude-bg: var(--color-candle-shadow);
 	--interlude-image-filter: saturate(1.04) contrast(1.06) brightness(0.86) sepia(0.05);
 	--interlude-overlay-opacity: 0.26;
 	--interlude-overlay:
 		linear-gradient(
 			180deg,
-			rgb(var(--color-midnight-navy-rgb) / 18%) 0%,
+			rgb(var(--color-candle-shadow-rgb) / 18%) 0%,
 			rgb(var(--color-velvet-burgundy-rgb) / 6%) 42%,
 			rgb(var(--color-rose-shadow-rgb) / 36%) 100%
 		),
@@ -329,6 +331,8 @@
 			transparent 38%,
 			rgb(var(--color-rose-shadow-rgb) / var(--interlude-overlay-opacity)) 100%
 		);
+	--interlude-min-height-2: 56svh;
+	--interlude-min-height-2-sm: 34svh;
 
 	// ---------------------------------------------------------------------
 	// Itinerary section

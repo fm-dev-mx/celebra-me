@@ -327,7 +327,7 @@
 			background:
 				linear-gradient(
 					180deg,
-					rgb(var(--color-midnight-navy-rgb) / 20%) 0%,
+					rgb(var(--color-candle-shadow-rgb) / 20%) 0%,
 					transparent 22%,
 					rgb(var(--color-velvet-burgundy-rgb) / 44%) 78%,
 					rgb(var(--color-rose-shadow-rgb) / 60%) 100%
@@ -356,7 +356,7 @@
 
 		.invitation-hero__content {
 			grid-template-rows: auto auto auto auto;
-			padding: clamp(3.5rem, 10svh, 5rem) clamp(1.25rem, 4vw, 2rem) clamp(4rem, 10svh, 5.5rem);
+			padding: clamp(3.5rem, 10svh, 5rem) clamp(1.25rem, 4vw, 2rem) clamp(10rem, 24svh, 13rem);
 		}
 
 		.invitation-hero__content::before {
