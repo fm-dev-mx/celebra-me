@@ -10,6 +10,7 @@ import {
 	giftsSchema,
 	countdownEditorSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
+import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
 	z.object({ action: z.literal('generate') }),
@@ -69,19 +70,7 @@ export const InvitationContentDraftContentSchema = z
 		countdown: countdownEditorSchema.optional(),
 		itinerary: itinerarySchema.optional(),
 		gallery: gallerySchema.optional(),
-		family: z
-			.object({
-				fatherName: optionalText(200),
-				fatherDeceased: z.boolean().optional(),
-				motherName: optionalText(200),
-				motherDeceased: z.boolean().optional(),
-				spouseName: optionalText(200),
-				godparents: optionalText(),
-				children: optionalText(),
-				sectionMessage: optionalText(),
-				featuredImage: editableAssetSchema.optional(),
-			})
-			.optional(),
+		family: familyDraftSchema.optional(),
 		gifts: giftsSchema.optional(),
 		rsvp: z
 			.object({

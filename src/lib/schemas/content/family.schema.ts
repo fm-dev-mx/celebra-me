@@ -53,5 +53,7 @@ export const familySchema = z
 			.optional(),
 		featuredImage: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
+		visible: z.boolean().optional(),
+		sectionMessage: z.string().optional(),
 	})
 	.optional();

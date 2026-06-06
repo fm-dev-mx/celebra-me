@@ -11,6 +11,7 @@ import {
 	giftsSchema,
 	countdownEditorSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
+import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
 export const INVITATION_EDITOR_SECTION_KEYS = [
 	'main',
@@ -45,16 +46,7 @@ export const InvitationEditorSectionSchemas = {
 			portrait: editableAssetSchema.optional(),
 		}),
 	}),
-	family: z.object({
-		fatherName: optionalText(200),
-		fatherDeceased: z.boolean().optional(),
-		motherName: optionalText(200),
-		motherDeceased: z.boolean().optional(),
-		spouseName: optionalText(200),
-		godparents: optionalText(),
-		children: optionalText(),
-		sectionMessage: optionalText(),
-	}),
+	family: familyDraftSchema,
 	location: z.object({
 		introEyebrow: optionalText(200),
 		introHeading: optionalText(200),
