@@ -83,7 +83,6 @@ describe('mapNestedToDraftContent', () => {
 		const input = {
 			countdown: {
 				title: 'Ya casi',
-				subtitlePrefix: 'Será el',
 				footerText: 'Nos vemos pronto',
 			},
 		};
@@ -92,7 +91,6 @@ describe('mapNestedToDraftContent', () => {
 
 		expect(result.countdown).toEqual({
 			title: 'Ya casi',
-			subtitlePrefix: 'Será el',
 			footerText: 'Nos vemos pronto',
 		});
 	});

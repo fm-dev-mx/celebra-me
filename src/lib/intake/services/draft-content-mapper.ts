@@ -110,7 +110,6 @@ function mapCountdown(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
 		countdown: {
 			title: str(data.title),
-			subtitlePrefix: str(data.subtitlePrefix),
 			footerText: str(data.footerText),
 		},
 	};
@@ -272,7 +271,6 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	if (countdown && Object.keys(countdown).length > 0) {
 		result.countdown = {
 			title: str(countdown.title),
-			subtitlePrefix: str(countdown.subtitlePrefix),
 			footerText: str(countdown.footerText),
 		};
 	}

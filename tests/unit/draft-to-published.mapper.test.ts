@@ -64,7 +64,7 @@ const baseDemoContent = {
 	},
 	gallery: { title: 'Galería', items: [] },
 	itinerary: { title: 'Itinerario', items: [] },
-	countdown: { title: 'Falta poco', subtitlePrefix: 'El', footerText: 'Prepárate' },
+	countdown: { title: 'Falta poco', footerText: 'Prepárate' },
 	interludes: [],
 	sectionStyles: {},
 	navigation: [{ label: 'Inicio', href: '#inicio' }],
@@ -378,7 +378,6 @@ describe('mapDraftToPublished', () => {
 
 		expect(result.countdown).toMatchObject({
 			title: '¡Falta muy poco!',
-			subtitlePrefix: 'El',
 			footerText: 'Prepárate para una noche inolvidable',
 		});
 	});
@@ -390,7 +389,6 @@ describe('mapDraftToPublished', () => {
 				...baseInput.draftContent,
 				countdown: {
 					title: 'Ya casi celebramos',
-					subtitlePrefix: 'Será el',
 					footerText: 'Trae tus mejores pasos de baile',
 				},
 			},
@@ -398,7 +396,6 @@ describe('mapDraftToPublished', () => {
 
 		expect(result.countdown).toMatchObject({
 			title: 'Ya casi celebramos',
-			subtitlePrefix: 'Será el',
 			footerText: 'Trae tus mejores pasos de baile',
 		});
 	});

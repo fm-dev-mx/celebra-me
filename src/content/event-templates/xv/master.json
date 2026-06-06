@@ -108,7 +108,6 @@
     },
     "countdown": {
         "title": "¡Cada día falta menos!",
-        "subtitlePrefix": "El",
         "footerText": "Te esperamos para celebrar juntos."
     },
     "envelope": {

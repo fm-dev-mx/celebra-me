@@ -65,6 +65,5 @@ export const giftsSchema = z.object({
 
 export const countdownEditorSchema = z.object({
 	title: optionalText(200),
-	subtitlePrefix: optionalText(80),
 	footerText: optionalText(500),
 });

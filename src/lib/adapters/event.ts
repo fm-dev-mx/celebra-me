@@ -277,15 +277,33 @@ function buildQuoteSectionData(context: AdaptationContext) {
 function buildCountdownSectionData(context: AdaptationContext) {
 	const { data, normalizedPreset } = context;
 	if (!data.countdown) return undefined;
+
+	// Derive eventDate from canonical hero.date
+	const eventDate = data.hero.date;
+
+	// Use manual footerText if provided, otherwise fallback to venue location only (no date)
+	const footerText = data.countdown.footerText ?? formatVenueLocation(data.location);
+
 	return {
 		...data.countdown,
-		eventDate: data.hero.date,
+		eventDate,
+		footerText,
 		variant: sectionVariant(
 			'countdown',
 			data.sectionStyles?.countdown?.variant,
 			normalizedPreset,
 		),
 	};
+}
+
+function formatVenueLocation(
+	location: EventContentEntry['data']['location'] | undefined,
+): string | undefined {
+	const venueName = pickVenueValue(location, 'venueName');
+	const city = pickVenueValue(location, 'city');
+	if (venueName && city) return `${venueName} · ${city}`;
+	if (city) return city;
+	return undefined;
 }
 
 function resolveVenueData(

@@ -32,7 +32,6 @@ function mapCountdownFromDraft(
 
 	return {
 		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
-		subtitlePrefix: str(draftCountdown?.subtitlePrefix) || COUNTDOWN_DEFAULTS.subtitlePrefix,
 		footerText: str(draftCountdown?.footerText) || COUNTDOWN_DEFAULTS.footerText,
 	};
 }

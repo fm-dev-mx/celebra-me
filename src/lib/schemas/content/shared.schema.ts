@@ -125,7 +125,6 @@ export const musicSchema = z
 export const countdownSchema = z
 	.object({
 		title: z.string().default('¡Falta muy poco!'),
-		subtitlePrefix: z.string().default('El'),
 		footerText: z.string().default('Prepárate para una noche inolvidable'),
 	})
 	.optional();

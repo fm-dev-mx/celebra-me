@@ -170,7 +170,7 @@ describe('published route POC', () => {
 				sectionStyles: { location: { showFlourishes: true } },
 				gallery: { title: 'Galeria', items: [] },
 				itinerary: { title: 'Itinerario', items: [] },
-				countdown: { title: 'Falta poco', subtitlePrefix: 'El', footerText: 'Texto' },
+				countdown: { title: 'Falta poco', footerText: 'Texto' },
 				interludes: [],
 				navigation: [{ label: 'Inicio', href: '#inicio' }],
 				sharing: { whatsappTemplate: 'Hola' },

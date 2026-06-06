@@ -6,7 +6,6 @@ export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 
 export const COUNTDOWN_DEFAULTS = {
 	title: '¡Falta muy poco!',
-	subtitlePrefix: 'El',
 	footerText: 'Prepárate para una noche inolvidable',
 };
 

@@ -80,11 +80,6 @@ export interface Reception {
 	image?: ImageAsset;
 	coordinates?: Coordinate;
 	itinerary?: ItineraryItem[];
-	countdown?: {
-		title: string;
-		subtitlePrefix: string;
-		footerText: string;
-	};
 }
 
 export interface Indication {
@@ -202,8 +197,7 @@ export interface InvitationViewModel {
 		countdown?: {
 			eventDate: string;
 			title: string;
-			subtitlePrefix: string;
-			footerText: string;
+			footerText?: string;
 			variant?: CountdownVariant;
 		};
 		location?: {

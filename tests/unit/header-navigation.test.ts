@@ -33,7 +33,6 @@ describe('Invitation header navigation contract', () => {
 			quote: { text: 'Test', variant: 'editorial' as const },
 			countdown: {
 				title: 'Test',
-				subtitlePrefix: '',
 				footerText: '',
 				eventDate: '',
 				variant: 'editorial' as const,

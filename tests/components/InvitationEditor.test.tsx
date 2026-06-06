@@ -42,7 +42,6 @@ function createContext(
 			hero: { name: 'Ana', date: '2027-01-01' },
 			countdown: {
 				title: 'Ya casi celebramos',
-				subtitlePrefix: 'Será el',
 				footerText: 'Trae tus mejores pasos',
 			},
 			quote: { text: 'Un sueño comienza', author: 'Ana' },

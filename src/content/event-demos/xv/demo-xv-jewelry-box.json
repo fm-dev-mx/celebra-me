@@ -211,7 +211,6 @@
     },
     "countdown": {
         "title": "¡Falta muy poco!",
-        "subtitlePrefix": "El",
         "footerText": "Prepárate para una noche inolvidable"
     },
     "envelope": {
