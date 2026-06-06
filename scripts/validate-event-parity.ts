@@ -15,7 +15,6 @@ interface ContentEvent {
 	eventType: string;
 	slug: string;
 	file: string;
-	isDemo: boolean;
 }
 
 interface DbEvent {
@@ -192,7 +191,6 @@ function loadContentEvents({
 			eventType,
 			slug,
 			file,
-			isDemo: parsed.isDemo === true,
 		});
 	}
 
@@ -251,9 +249,12 @@ Options:
 		return;
 	}
 
-	if (values.eventType && !EVENT_TYPES.has(values.eventType)) {
+	const slugFilter = typeof values.slug === 'string' ? values.slug : undefined;
+	const eventTypeFilter = typeof values.eventType === 'string' ? values.eventType : undefined;
+
+	if (eventTypeFilter && !EVENT_TYPES.has(eventTypeFilter)) {
 		throw new Error(
-			`Invalid --eventType "${values.eventType}". Allowed: xv, boda, bautizo, cumple.`,
+			`Invalid --eventType "${eventTypeFilter}". Allowed: xv, boda, bautizo, cumple.`,
 		);
 	}
 
@@ -273,10 +274,10 @@ Options:
 	const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 	const { events: contentEvents, warnings } = loadContentEvents({
-		includeDemos: values.includeDemos ?? false,
-		includeTemplates: values.includeTemplates ?? false,
-		slugFilter: values.slug,
-		eventTypeFilter: values.eventType,
+		includeDemos: values.includeDemos === true,
+		includeTemplates: values.includeTemplates === true,
+		slugFilter,
+		eventTypeFilter,
 	});
 
 	warnings.forEach((warning) => console.warn(warning));
