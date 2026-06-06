@@ -56,45 +56,6 @@
 		hyphens: auto;
 	}
 
-	.countdown-header {
-		margin-bottom: clamp(2.5rem, 5vw, 4rem);
-	}
-
-	.countdown-subtitle {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: clamp(0.75rem, 2vw, 1.25rem);
-		margin-top: clamp(1rem, 2vw, 1.5rem);
-
-		.subtitle-line {
-			display: none;
-			height: 1px;
-			width: clamp(28px, 5vw, 52px);
-			background: linear-gradient(
-				90deg,
-				transparent,
-				var(--color-liquid-silver),
-				transparent
-			);
-			flex-shrink: 0;
-
-			@media (width >= 640px) {
-				display: block;
-			}
-		}
-
-		.event-date {
-			font-family: var(--font-body);
-			font-size: clamp(0.68rem, 2vw, 0.8rem);
-			font-weight: 600;
-			letter-spacing: 0.2em;
-			text-transform: uppercase;
-			color: rgb(var(--color-soft-graphite-rgb) / 55%);
-			white-space: nowrap;
-		}
-	}
-
 	.countdown__timer {
 		gap: clamp(0.5rem, 1.5vw, 0.85rem);
 		margin-inline: auto;

@@ -3,22 +3,37 @@
 .countdown-section[data-variant='enchanted-rose'] {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
-	--countdown-segment-padding-mobile: clamp(1.1rem, 4.2vw, 1.55rem) 0.75rem;
-	--countdown-segment-padding-desktop: clamp(1.35rem, 2.8vw, 2rem) clamp(1rem, 2vw, 1.35rem);
+	--countdown-segment-padding-mobile: clamp(1.25rem, 4.5vw, 1.65rem) 0.75rem;
+	--countdown-segment-padding-desktop: clamp(1.6rem, 3vw, 2.2rem) clamp(1rem, 2vw, 1.5rem);
 	--countdown-value-wrapper-width-mobile: 100%;
 	--countdown-value-wrapper-width-desktop: 100%;
 	--countdown-value-wrapper-height-mobile: auto;
 	--countdown-value-wrapper-height-desktop: auto;
 
-	min-height: min(56rem, 84svh);
-	padding: clamp(5.1rem, 10vw, 8rem) clamp(1rem, 4vw, 2rem);
+	min-height: min(54rem, 82svh);
+	padding: clamp(5.5rem, 11vw, 8.5rem) clamp(1rem, 4vw, 2rem);
 	background:
-		linear-gradient(180deg, rgb(var(--color-warm-ivory-rgb) / 8%) 0%, transparent 14%),
-		var(--enchanted-section-dark-bg, var(--rose-velvet-wash));
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+			transparent 48%
+		),
+		radial-gradient(
+			ellipse at 50% 100%,
+			rgb(var(--color-rose-shadow-rgb) / 40%) 0%,
+			transparent 52%
+		),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-candle-shadow-rgb) / 98%) 0%,
+			rgb(var(--color-velvet-burgundy-rgb) / 96%) 40%,
+			rgb(var(--color-rose-shadow-rgb) / 98%) 100%
+		);
 	color: var(--color-text-on-dark);
+	position: relative;
 	box-shadow:
-		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 18%),
-		inset 0 -1px 0 rgb(var(--color-antique-gold-rgb) / 14%);
+		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 16%),
+		inset 0 -1px 0 rgb(var(--color-rose-shadow-rgb) / 60%);
 
 	&::before,
 	&::after {
@@ -31,122 +46,149 @@
 		inset: 0;
 		background:
 			radial-gradient(
-				circle at 50% 32%,
-				rgb(var(--color-candle-gold-rgb) / 12%) 0%,
-				transparent 34%
+				circle at 50% 36%,
+				rgb(var(--color-candle-gold-rgb) / 10%) 0%,
+				transparent 38%
 			),
-			linear-gradient(180deg, transparent 66%, rgb(var(--color-warm-ivory-rgb) / 10%) 100%);
+			radial-gradient(
+				circle at 50% 50%,
+				transparent 40%,
+				rgb(var(--color-rose-shadow-rgb) / 30%) 100%
+			);
 	}
 
 	&::after {
-		inset-inline: clamp(1rem, 5vw, 4rem);
-		top: clamp(1rem, 3vw, 2rem);
-		bottom: clamp(1rem, 3vw, 2rem);
-		border-block: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
+		inset-inline: clamp(1rem, 4vw, 2.5rem);
+		top: clamp(1rem, 2.5vw, 1.8rem);
+		bottom: clamp(1rem, 2.5vw, 1.8rem);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 12%);
+		border-radius: 2px;
 	}
 
 	.countdown-texture {
 		background:
-			linear-gradient(
-				115deg,
-				transparent 0%,
-				rgb(var(--color-warm-ivory-rgb) / 5%) 50%,
-				transparent 58%
+			radial-gradient(
+				circle at 30% 20%,
+				rgb(var(--color-candle-gold-rgb) / 8%),
+				transparent 26%
 			),
 			radial-gradient(
-				circle at 28% 18%,
-				rgb(var(--color-candle-gold-rgb) / 12%),
-				transparent 24%
+				circle at 72% 78%,
+				rgb(var(--color-deep-rose-red-rgb) / 6%),
+				transparent 30%
 			);
-		opacity: 80%;
+		opacity: 70%;
 	}
 
 	.countdown-container {
-		max-width: 840px;
-	}
-
-	.countdown-header {
-		margin-bottom: clamp(2rem, 5vw, 3rem);
+		padding: 0 clamp(1rem, 4vw, 2rem);
 	}
 
 	.countdown-title {
-		max-width: 15ch;
+		max-width: 16ch;
 		margin-inline: auto;
-		margin-bottom: clamp(1.25rem, 3vw, 1.8rem);
+		margin-bottom: clamp(2rem, 5vw, 3rem);
 		font-family: var(--font-display);
-		font-size: clamp(2.05rem, 8.2vw, 4.5rem);
+		font-size: clamp(1.9rem, 7.5vw, 4rem);
 		font-weight: 400;
-		line-height: 0.95;
-		letter-spacing: 0.02em;
+		line-height: 1;
+		letter-spacing: 0.03em;
 		text-transform: none;
 		color: rgb(var(--color-warm-ivory-rgb) / 94%);
-		text-shadow: 0 18px 38px rgb(var(--color-rose-shadow-rgb) / 48%);
+		text-shadow:
+			0 2px 12px rgb(var(--color-rose-shadow-rgb) / 50%),
+			0 0 40px rgb(var(--color-candle-gold-rgb) / 8%);
+		text-align: center;
 	}
 
-	.countdown-subtitle {
-		gap: clamp(0.75rem, 2.4vw, 1.25rem);
+	.countdown-timer-wrapper {
+		margin: 0 auto clamp(2rem, 4.5vw, 3rem);
+	}
+
+	.countdown-date {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.75rem, 2.2vw, 1.15rem);
 
 		.subtitle-line {
 			display: block;
-			width: clamp(2.4rem, 12vw, 5rem);
+			width: clamp(2rem, 10vw, 4.5rem);
 			background: var(--rose-gold-divider);
-			opacity: 72%;
+			opacity: 60%;
 		}
 
 		.event-date {
 			max-width: min(72vw, 30rem);
 			font-family: var(--font-body);
-			font-size: clamp(0.68rem, 1.5vw, 0.78rem);
-			font-weight: 650;
-			letter-spacing: 0.2em;
-			color: rgb(var(--color-candle-gold-rgb) / 86%);
+			font-size: clamp(0.66rem, 1.4vw, 0.76rem);
+			font-weight: 600;
+			letter-spacing: 0.22em;
+			color: rgb(var(--color-candle-gold-rgb) / 82%);
+			text-align: center;
+		}
+
+		.event-date-mobile {
+			flex-direction: column;
+			gap: 0.3rem;
+			line-height: 1.3;
+		}
+
+		.event-date-mobile-weekday {
+			font-size: 0.9em;
+			letter-spacing: 0.18em;
+			opacity: 85%;
+		}
+
+		.event-date-mobile-full {
+			font-size: 1em;
+			letter-spacing: 0.16em;
 		}
 	}
 
-	.countdown-timer-wrapper {
-		margin: clamp(2rem, 5vw, 3.4rem) auto 0;
-	}
-
 	.countdown__timer {
-		gap: clamp(0.65rem, 2vw, 1rem);
-		max-width: 46rem;
+		gap: clamp(0.55rem, 1.8vw, 0.9rem);
+		max-width: 44rem;
 		margin-inline: auto;
 	}
 
 	.countdown__segment {
 		overflow: hidden;
 		padding: var(--countdown-segment-padding-mobile);
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
-		border-radius: 8px;
-		background:
-			linear-gradient(
-				180deg,
-				rgb(var(--color-warm-ivory-rgb) / 9%),
-				rgb(var(--color-velvet-burgundy-rgb) / 28%)
-			),
-			rgb(var(--color-rose-shadow-rgb) / 32%);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
+		border-radius: 6px;
+		background: linear-gradient(
+			176deg,
+			rgb(var(--color-warm-ivory-rgb) / 7%) 0%,
+			rgb(var(--color-velvet-burgundy-rgb) / 22%) 50%,
+			rgb(var(--color-rose-shadow-rgb) / 36%) 100%
+		);
 		box-shadow:
-			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 14%),
-			0 18px 40px rgb(var(--color-rose-shadow-rgb) / 34%),
-			0 0 26px rgb(var(--color-candle-gold-rgb) / 7%);
-		backdrop-filter: blur(10px) saturate(128%);
+			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 10%),
+			0 12px 32px rgb(var(--color-rose-shadow-rgb) / 30%),
+			0 2px 8px rgb(0 0 0 / 16%);
+		backdrop-filter: blur(10px) saturate(120%);
+		transition:
+			transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+			border-color 0.35s ease,
+			box-shadow 0.35s ease;
 
 		&::before {
 			content: '';
 			position: absolute;
 			inset: 5px;
-			border: 1px solid rgb(var(--color-antique-gold-rgb) / 14%);
-			border-radius: 5px;
+			border: 1px solid rgb(var(--color-antique-gold-rgb) / 10%);
+			border-radius: 3px;
 			pointer-events: none;
 		}
 
 		&:hover {
-			transform: translateY(-4px);
-			border-color: rgb(var(--color-candle-gold-rgb) / 48%);
+			transform: translateY(-2px);
+			border-color: rgb(var(--color-candle-gold-rgb) / 40%);
 			box-shadow:
-				inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 16%),
-				0 18px 40px rgb(var(--color-rose-shadow-rgb) / 34%),
-				0 0 26px rgb(var(--color-candle-gold-rgb) / 7%);
+				inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 12%),
+				0 16px 40px rgb(var(--color-rose-shadow-rgb) / 36%),
+				0 4px 12px rgb(0 0 0 / 20%);
 		}
 
 		@include mixins.respond-to(sm) {
@@ -160,12 +202,12 @@
 		font-family: var(--font-display);
 		font-size: var(--countdown-value-size-mobile);
 		font-weight: 400;
-		line-height: 0.9;
-		letter-spacing: 0;
+		line-height: 1;
+		letter-spacing: -0.01em;
 		color: rgb(var(--color-warm-ivory-rgb) / 96%);
 		text-shadow:
-			0 1px 0 rgb(var(--color-antique-gold-rgb) / 28%),
-			0 10px 24px rgb(var(--color-candle-gold-rgb) / 18%);
+			0 1px 0 rgb(var(--color-antique-gold-rgb) / 20%),
+			0 8px 20px rgb(var(--color-candle-gold-rgb) / 14%);
 		font-variant-numeric: tabular-nums lining-nums;
 
 		@include mixins.respond-to(sm) {
@@ -176,39 +218,96 @@
 	.countdown__label {
 		position: relative;
 		z-index: 1;
-		margin-top: 0.45rem;
+		margin-top: 0.4rem;
 		font-family: var(--font-body);
-		font-size: clamp(0.58rem, 1.5vw, 0.68rem);
-		font-weight: 700;
+		font-size: clamp(0.58rem, 1.4vw, 0.68rem);
+		font-weight: 600;
 		letter-spacing: var(--countdown-label-letter-spacing);
 		text-transform: uppercase;
-		color: rgb(var(--color-candle-gold-rgb) / 78%);
+		color: rgb(var(--color-candle-gold-rgb) / 72%);
 		white-space: nowrap;
 	}
 
 	.countdown-footer {
-		margin-top: clamp(2rem, 5vw, 3.25rem);
+		margin-top: clamp(1.8rem, 4vw, 2.8rem);
+		padding-top: clamp(1.2rem, 2.5vw, 1.8rem);
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: clamp(2rem, 8vw, 3.5rem);
+			height: 1px;
+			background: var(--rose-gold-divider);
+			opacity: 50%;
+		}
 	}
 
 	.countdown-invitation-text {
-		max-width: 31rem;
+		max-width: 30rem;
 		margin-inline: auto;
 		font-family: var(--font-body);
-		font-size: clamp(0.88rem, 2vw, 1rem);
+		font-size: clamp(0.78rem, 1.6vw, 0.88rem);
 		font-style: normal;
 		font-weight: 500;
-		line-height: 1.65;
-		letter-spacing: 0.12em;
+		line-height: 1.6;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: rgb(var(--color-warm-ivory-rgb) / 72%);
+		color: rgb(var(--color-warm-ivory-rgb) / 60%);
+		text-align: center;
 	}
 
 	@media (width <= 420px) {
 		min-height: auto;
-		padding-block: clamp(4.25rem, 14vw, 5.25rem);
+		padding-block: clamp(4rem, 13vw, 5rem);
+
+		&::after {
+			inset-inline: clamp(0.75rem, 3vw, 1.5rem);
+			top: clamp(0.75rem, 2vw, 1.2rem);
+			bottom: clamp(0.75rem, 2vw, 1.2rem);
+			border-color: rgb(var(--color-antique-gold-rgb) / 8%);
+		}
 
 		.countdown__timer {
-			gap: 0.55rem;
+			gap: 0.5rem;
+		}
+
+		.countdown__segment {
+			border-radius: 5px;
+			background: linear-gradient(
+				176deg,
+				rgb(var(--color-warm-ivory-rgb) / 5%) 0%,
+				rgb(var(--color-velvet-burgundy-rgb) / 18%) 50%,
+				rgb(var(--color-rose-shadow-rgb) / 28%) 100%
+			);
+			border-color: rgb(var(--color-antique-gold-rgb) / 22%);
+			box-shadow:
+				inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 8%),
+				0 8px 24px rgb(var(--color-rose-shadow-rgb) / 24%),
+				0 2px 6px rgb(0 0 0 / 12%);
+
+			&::before {
+				border-color: rgb(var(--color-antique-gold-rgb) / 8%);
+			}
+		}
+
+		.countdown-date {
+			.event-date-desktop {
+				display: none;
+			}
+
+			.event-date-mobile {
+				display: inline-flex;
+			}
+		}
+	}
+
+	@media (width >= 768px) {
+		.countdown__timer {
+			max-width: 42rem;
 		}
 	}
 

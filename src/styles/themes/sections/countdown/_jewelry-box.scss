@@ -46,20 +46,6 @@
 		}
 	}
 
-	.countdown-subtitle {
-		.event-date {
-			font-family: var(--font-display);
-			font-size: 1rem;
-			font-style: italic;
-			color: var(--color-text-primary);
-			opacity: 90%;
-		}
-
-		.subtitle-line {
-			display: none;
-		}
-	}
-
 	.countdown__segment {
 		background: var(--color-glass-bg);
 		backdrop-filter: blur(15px);

@@ -48,11 +48,6 @@
 		}
 	}
 
-	.countdown-header {
-		margin-bottom: 2rem;
-		text-align: center;
-	}
-
 	.countdown-timer-wrapper {
 		width: 100%;
 		margin-bottom: 2.5rem;
@@ -90,35 +85,6 @@
 			letter-spacing: 0.35em;
 			text-indent: 0.35em;
 			opacity: 50%;
-		}
-	}
-
-	.countdown-subtitle {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		margin-top: 1.5rem;
-
-		.subtitle-line {
-			display: block;
-			width: 50px;
-			height: 1px;
-			margin-inline: auto;
-			background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
-			opacity: 40%;
-		}
-
-		.event-date {
-			max-width: 22ch;
-			color: rgb(var(--color-eternal-ink-rgb) / 58%);
-			font-family: var(--font-body);
-			font-size: clamp(0.7rem, 2vw, 0.8rem);
-			font-weight: 600;
-			line-height: 1.8;
-			letter-spacing: 0.24em;
-			text-indent: 0.24em;
-			text-transform: uppercase;
-			white-space: normal;
 		}
 	}
 

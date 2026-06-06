@@ -30,10 +30,6 @@
 		max-width: 780px;
 	}
 
-	.countdown-header {
-		margin-bottom: clamp(2.5rem, 5vw, 4rem);
-	}
-
 	.countdown-title {
 		font-family: var(--font-display);
 		font-size: clamp(1.6rem, 5.5vw, 3rem);
@@ -42,36 +38,6 @@
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 		margin-bottom: clamp(1rem, 2vw, 1.5rem);
-	}
-
-	.countdown-subtitle {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: clamp(0.75rem, 2vw, 1.25rem);
-		margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
-
-		.subtitle-line {
-			display: none;
-			height: 1px;
-			width: clamp(28px, 5vw, 52px);
-			background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
-			flex-shrink: 0;
-
-			@media (width >= 640px) {
-				display: block;
-			}
-		}
-
-		.event-date {
-			font-family: var(--font-body);
-			font-size: clamp(0.68rem, 2vw, 0.82rem);
-			font-weight: 600;
-			letter-spacing: 0.2em;
-			text-transform: uppercase;
-			color: rgb(var(--color-eternal-ink-rgb) / 72%);
-			white-space: nowrap;
-		}
 	}
 
 	.countdown__timer {

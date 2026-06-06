@@ -8,7 +8,6 @@ import type { CountdownVariant } from '@/lib/theme/theme-contract';
 interface Props {
 	eventDate: string; // ISO Date string
 	title?: string;
-	subtitlePrefix?: string;
 	footerText?: string;
 	variant?: CountdownVariant;
 }
@@ -16,52 +15,58 @@ interface Props {
 const {
 	eventDate,
 	title = "¡Falta muy poco!",
-	subtitlePrefix = "El",
-	footerText = "Prepárate para una noche inolvidable",
+	footerText,
 	variant = 'editorial',
 } = Astro.props;
 
 // Invitation dates are floating event-local values serialized with a UTC
 // suffix (e.g. "2026-08-01T18:00:00.000Z"). timeZone: 'UTC' prevents
 // visual date shifting on non-UTC servers.
-function getFormattedDate(dateString: string): string {
-	try {
-		const date = new Date(dateString);
-		return new Intl.DateTimeFormat('es-MX', {
-			weekday: 'long',
-			day: '2-digit',
-			month: 'long',
-			year: 'numeric',
-			timeZone: 'UTC',
-		}).format(date);
-	} catch (error) {
-		console.error('Error formatting date:', error);
-		return 'Fecha no válida';
+function formatCountdownDate(dateString: string): { desktop: string; mobileWeekday: string; mobileFull: string } {
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) {
+		return { desktop: 'Fecha no válida', mobileWeekday: 'Fecha', mobileFull: 'no válida' };
 	}
+	const locale = 'es-MX';
+	const tz = { timeZone: 'UTC' } as const;
+	const fmt = (opts: Intl.DateTimeFormatOptions) =>
+		new Intl.DateTimeFormat(locale, { ...opts, ...tz }).format(date).toUpperCase();
+	return {
+		desktop: fmt({ weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }),
+		mobileWeekday: fmt({ weekday: 'long' }),
+		mobileFull: fmt({ day: '2-digit', month: 'long', year: 'numeric' }),
+	};
 }
 
-const formattedEventDate = getFormattedDate(eventDate);
+const formattedDate = formatCountdownDate(eventDate);
 ---
 
 <section class="countdown-section" id="countdown" data-variant={variant}>
 	<div class="countdown-texture" aria-hidden="true"></div>
 	<div class="countdown-container">
-		<header class="countdown-header">
-			<h2 class="countdown-title">{title}</h2>
-			<div class="countdown-subtitle">
-				<div class="subtitle-line"></div>
-				<p class="event-date">{subtitlePrefix} {formattedEventDate}</p>
-				<div class="subtitle-line"></div>
-			</div>
-		</header>
+		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
 			<CountdownTimer eventDate={eventDate} />
 		</div>
 
-		<footer class="countdown-footer">
-			<p class="countdown-invitation-text">{footerText}</p>
-		</footer>
+		<div class="countdown-date">
+			<div class="subtitle-line"></div>
+			<p class="event-date">
+				<span class="event-date-desktop">{formattedDate.desktop}</span>
+				<span class="event-date-mobile">
+					<span class="event-date-mobile-weekday">{formattedDate.mobileWeekday}</span>
+					<span class="event-date-mobile-full">{formattedDate.mobileFull}</span>
+				</span>
+			</p>
+			<div class="subtitle-line"></div>
+		</div>
+
+		{footerText && (
+			<footer class="countdown-footer">
+				<p class="countdown-invitation-text">{footerText}</p>
+			</footer>
+		)}
 	</div>
 </section>
 <script>

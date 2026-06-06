@@ -39,19 +39,6 @@
 		margin-bottom: 3rem;
 	}
 
-	.countdown-subtitle {
-		.event-date {
-			color: rgb(var(--color-text-primary-rgb) / 72%);
-			font-family: var(--font-label);
-			letter-spacing: 0.25em;
-		}
-
-		.subtitle-line {
-			background: var(--color-action-accent);
-			opacity: 40%;
-		}
-	}
-
 	.countdown__timer {
 		gap: 1.5rem;
 		margin-top: 4rem;

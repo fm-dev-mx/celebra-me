@@ -709,35 +709,33 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('countdown')}
 						visible={activeEditorCardId === 'countdown'}
 					>
-						<p className="invitation-editor__helper-text">
-							La fecha del evento en la cuenta regresiva se calcula automáticamente
-							desde la Portada.
-						</p>
 						<div className="invitation-editor__field-grid">
 							<Field
 								label="Título"
+								placeholder="La gala comienza en"
 								value={countdown.title ?? ''}
 								onChange={(value) => updateCountdown({ title: value })}
 							/>
-							<Field
-								label="Texto antes de la fecha"
-								value={countdown.subtitlePrefix ?? ''}
-								onChange={(value) => updateCountdown({ subtitlePrefix: value })}
-							/>
+							<div className="invitation-editor__field">
+								<span>Fecha visible en cuenta regresiva</span>
+								<div className="invitation-editor__countdown-preview">
+									<span className="invitation-editor__countdown-preview-date">
+										{main.date ? formatDateLong(main.date) : 'Sin fecha'}
+									</span>
+								</div>
+							</div>
 						</div>
 						<TextArea
-							label="Texto final"
+							label="Texto inferior"
+							placeholder="Viñedos · Los Mochis, Sinaloa"
 							value={countdown.footerText ?? ''}
 							onChange={(value) => updateCountdown({ footerText: value })}
 						/>
-						<div className="invitation-editor__countdown-preview">
-							<span className="invitation-editor__countdown-preview-label">
-								Fecha visible en cuenta regresiva:
-							</span>
-							<span className="invitation-editor__countdown-preview-date">
-								{main.date ? formatDateLong(main.date) : 'Sin fecha'}
-							</span>
-						</div>
+						<p className="invitation-editor__helper-text">
+							El texto inferior aparece debajo de la fecha. Usa este campo para
+							mostrar lugar, ciudad o una frase corta. La fecha se toma
+							automáticamente de la Portada.
+						</p>
 					</SectionCard>
 
 					<SectionCard
