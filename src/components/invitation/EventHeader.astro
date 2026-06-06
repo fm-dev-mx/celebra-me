@@ -1,12 +1,4 @@
 ---
-/**
- * src/components/invitation/EventHeader.astro
- *
- * Invitation Page implementation of the Header.
- * Context-aware: Uses event theme and guest-specific links.
- * Uses premium NavBarMobile for consistent mobile UX.
- */
-
 import HeaderBase from '@components/common/HeaderBase.astro';
 import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
 import '@styles/invitation/_event-header.scss';
@@ -34,6 +26,7 @@ const {
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
 const mobileNavLinks = links.filter((link) => link.href !== RSVP_HREF);
+const showNavigation = mobileNavLinks.length > 0 || isDemo;
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
@@ -43,33 +36,41 @@ const mobileNavLinks = links.filter((link) => link.href !== RSVP_HREF);
 		</a>
 	</div>
 
-	<div slot="desktop-nav" class="event-header__actions">
-		{
-			links.map((link) => (
-				<a
-					href={link.href}
-					class:list={[
-						'event-header__action-btn',
-						{ 'event-header__action-btn--cta': link.href === RSVP_HREF }
-					]}
-				>
-					{link.label}
-				</a>
-			))
-		}
-	</div>
+	{
+		mobileNavLinks.length > 0 && (
+			<div slot="desktop-nav" class="event-header__actions">
+				{
+					links.map((link) => (
+						<a
+							href={link.href}
+							class:list={[
+								'event-header__action-btn',
+								{ 'event-header__action-btn--cta': link.href === RSVP_HREF }
+							]}
+						>
+							{link.label}
+						</a>
+					))
+				}
+			</div>
+		)
+	}
 
-	<div slot="mobile-nav-premium">
-		<NavBarMobile
-			links={mobileNavLinks}
-			headerId="event-header"
-			desktopBreakpoint="lg"
-			ctaLink={rsvpLink?.href}
-			ctaLabel={rsvpLink?.label ?? 'Confirmar'}
-			eventName={eventName}
-			eventSubtitle={eventSubtitle}
-			initials={initials}
-			isDemo={isDemo}
-		/>
-	</div>
+	{
+		showNavigation && (
+			<div slot="mobile-nav-premium">
+				<NavBarMobile
+					links={mobileNavLinks}
+					headerId="event-header"
+					desktopBreakpoint="lg"
+					ctaLink={rsvpLink?.href}
+					ctaLabel={rsvpLink?.label ?? 'Confirmar'}
+					eventName={eventName}
+					eventSubtitle={eventSubtitle}
+					initials={initials}
+					isDemo={isDemo}
+				/>
+			</div>
+		)
+	}
 </HeaderBase>
