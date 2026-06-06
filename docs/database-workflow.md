@@ -15,6 +15,8 @@ Local -> Production: allowed only for reviewed migrations.
 ## Environments
 
 - `.env` is for local Supabase and should point to `http://127.0.0.1:54321`.
+- Local DB workflow scripts require PostgreSQL client tools. `psql` must be installed and available
+  on PATH; verify with `psql --version`.
 - `.env.local` must not point to production during normal development.
 - Production credentials must come from shell environment variables or gitignored secret files such
   as `.env.production.local`, `.env.prod.local`, `.secrets/prod-db-url`, or
@@ -25,27 +27,50 @@ Local -> Production: allowed only for reviewed migrations.
 ## Common Commands
 
 ```bash
-pnpm db:local:refresh
+pnpm db:local:refresh-from-prod
+pnpm db:local:backup-wip
+pnpm db:local:bootstrap-admin
 pnpm db:local:validate
 pnpm db:prod:backup
 pnpm db:prod:migrate
 ```
 
-`pnpm db:local:refresh`
+`pnpm db:local:refresh-from-prod`
 
 - Reads production `public` data through `PROD_DB_URL`.
 - Does not mutate production.
 - Destructively resets only the local Supabase DB.
 - Imports through a local staging schema, recreates local auth users, runs local backfills, and
   validates FK integrity.
+- Allows exactly one extra local `app_user_roles` row for the local super-admin user.
 - Refreshes `invitation_assets` metadata only; actual Supabase Storage files are not copied by the
-  database dump.
+  database dump, so metadata does not guarantee local object availability.
+- Already bootstraps the local super-admin user and role.
 - Use when local development needs a current production-shaped dataset.
+
+`pnpm db:local:backup-wip`
+
+- Dumps selected risky local `public` tables under `.tmp/db/local-wip/`.
+- Does not touch production.
+- Does not include Supabase Storage binaries.
+- Does not include a full auth snapshot.
+- Use before refresh only when local draft/editor work needs manual recovery insurance.
+
+`pnpm db:local:bootstrap-admin`
+
+- Connects only to local Supabase.
+- Creates or updates the first `SUPER_ADMIN_EMAILS` user as the local super admin.
+- Reads the password from `LOCAL_SUPER_ADMIN_PASSWORD || RSVP_ADMIN_PASSWORD`.
+- Ensures `auth.users.raw_app_meta_data.role = 'super_admin'`, upserts
+  `public.app_user_roles.role = 'super_admin'`, and verifies password login.
+- Use after a local-only reset when you do not want to import production data.
 
 `pnpm db:local:validate`
 
 - Checks local Supabase URL, required tables, auth relationships, local super-admin login, and the
   asset library empty state.
+- Validates the `invitation-assets` bucket registration, but does not enforce strict
+  `invitation_assets` row parity because Storage binaries are not copied.
 - Does not touch production.
 - Does not mutate production.
 - Use after `supabase start`, after local resets, and before debugging data-dependent flows.
@@ -79,18 +104,67 @@ pnpm db:local:validate
 ### Refresh local from production
 
 ```bash
-PROD_DB_URL=... pnpm db:local:refresh
+pnpm db:start
+PROD_DB_URL=... pnpm db:local:refresh-from-prod
+pnpm db:local:validate
 ```
 
-Production is read-only. The local DB is reset. Data is imported through a staging schema, then
-copied into the current local `public` schema. Local auth users and backfills are recreated.
-Production public data is preserved where possible, but local auth UUIDs may be deterministically
-remapped when Supabase Auth cannot create users with production UUIDs. Any mapping must be written
-under `.tmp/db/`. `invitation_assets` metadata can refresh from production, but local rows may be
-empty when current content uses only internal bundled assets.
+Production is read-only through `PROD_DB_URL`. `db:local:refresh-from-prod` owns the destructive
+reset/import/bootstrap sequence: it resets local Supabase, imports production data through a staging
+schema, copies into the current local `public` schema, recreates local auth users, and bootstraps
+the local super admin. Do not run `db:local:reset` before it during the normal refresh workflow.
+
+Production public data is preserved where possible, and local auth UUIDs are preserved by creating
+local placeholder users for production references. Any mapping or diagnostic report must be written
+under `.tmp/db/`. `app_user_roles` may have exactly one extra local row for the local super admin.
+`invitation_assets` metadata can refresh from production, but actual Storage objects are not copied,
+so local metadata may point at missing local files.
 
 If schema drift is detected during staging import or copy, the script stops and reports the failure.
 Do not patch around drift manually; add or apply the missing migration locally.
+
+### Preserve local WIP before refresh
+
+```bash
+pnpm db:start
+pnpm db:local:backup-wip
+PROD_DB_URL=... pnpm db:local:refresh-from-prod
+pnpm db:local:validate
+```
+
+This backup is manual, partial, and intended for recovery reference only. It includes selected local
+public tables such as drafts, intake rows, invitations, and `invitation_assets` metadata. It does
+not include Supabase Storage binaries or a full auth snapshot.
+
+### Reset local only
+
+```bash
+pnpm db:local:reset
+```
+
+Use this only when manually resetting local Supabase without importing production data. It is a
+lower-level command, not a step in the normal production refresh workflow. It does not create the
+local admin user.
+
+### Reset and recreate local admin
+
+```bash
+pnpm db:local:reset-ready
+```
+
+Use this when you want a local reset without importing production data, but still need the local
+super admin to log in afterward. It runs `pnpm db:local:reset` and then
+`pnpm db:local:bootstrap-admin`.
+
+To bootstrap or repair the local admin without resetting:
+
+```bash
+pnpm db:local:bootstrap-admin
+```
+
+The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`. The password must be set in
+`LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode real passwords in source
+code.
 
 ### Backup production
 
@@ -123,15 +197,21 @@ first, applies migrations only, and never pushes local data dumps.
 - Do not put production credentials in `.env.local`.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
+- Do not run `pnpm db:local:reset` before `pnpm db:local:refresh-from-prod`; refresh already resets
+  local Supabase.
 - Do not run ad-hoc `supabase db push --linked` outside the approved migration workflow.
 - Do not run `supabase link` casually.
 
 ## Troubleshooting
 
+- `psql` missing or not found: install PostgreSQL client tools, make sure `psql` is on PATH, and
+  verify with `psql --version`. Local DB scripts cannot validate, back up WIP, or import refresh
+  data without it.
 - Login fails locally: run `pnpm db:local:validate`; then verify `SUPER_ADMIN_EMAILS` and
   `RSVP_ADMIN_PASSWORD` or `LOCAL_SUPER_ADMIN_PASSWORD` are local values.
-- `PGRST205` table-not-found errors: reset local with `supabase db reset`, then validate. If it
-  persists, confirm the table exists in `supabase/migrations`.
+- `PGRST205` table-not-found errors: run `pnpm db:local:refresh-from-prod` for a production-shaped
+  local dataset, or `pnpm db:local:reset` for schema-only local reset. If it persists, confirm the
+  table exists in `supabase/migrations`.
 - Local schema drift: refresh stops during staging import/copy. Apply missing local migrations or
   add a reviewed migration; do not hand-edit production dumps.
 - Missing `PROD_DB_URL`: export it in the shell or place it in a gitignored secret file. Never store

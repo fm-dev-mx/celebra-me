@@ -21,8 +21,11 @@ support event operations.
 
 - Node.js `>=22.12.0 <25`
 - pnpm `11.x`
-- Supabase CLI for local database workflows (`db:start`, `db:reset:local`, `db:local:validate`,
-  `db:local:refresh`, `db:migrate:new`)
+- Supabase CLI for local database workflows (`db:start`, `db:local:refresh-from-prod`,
+  `db:local:backup-wip`, `db:local:bootstrap-admin`, `db:local:validate`, `db:local:reset`,
+  `db:migrate:new`)
+- PostgreSQL client tools with `psql` installed and available on PATH for local DB workflow scripts.
+  Verify with `psql --version`.
 
 ## Getting Started
 
@@ -129,22 +132,22 @@ celebra-me/
 
 Supabase schema changes are versioned under `supabase/migrations`.
 
-Useful commands:
+| Command                                           | Purpose                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------- |
+| `pnpm db:start`                                   | Start local Supabase                                          |
+| `PROD_DB_URL=... pnpm db:local:refresh-from-prod` | Destructive local reset + production import + admin bootstrap |
+| `pnpm db:local:backup-wip`                        | Dump selected local tables before refresh                     |
+| `pnpm db:local:reset`                             | Schema-only local reset (no admin)                            |
+| `pnpm db:local:reset-ready`                       | Reset + bootstrap local super admin                           |
+| `pnpm db:local:bootstrap-admin`                   | Create/repair local super admin without resetting             |
+| `pnpm db:local:validate`                          | Check local DB health                                         |
+| `pnpm db:prod:backup`                             | Read-only production data dump                                |
+| `pnpm db:prod:migrate`                            | Apply reviewed migrations to production                       |
+| `pnpm db:migrate:new <name>`                      | Scaffold a new migration                                      |
 
-```bash
-pnpm db:start
-pnpm db:reset:local
-pnpm db:local:validate
-pnpm db:local:refresh
-pnpm db:prod:backup
-pnpm db:prod:migrate
-pnpm db:migrate:new <migration_name>
-```
-
-Production can be read for backups and local refreshes. Production can only be mutated by
-`pnpm db:prod:migrate`, which applies reviewed migrations and never pushes local data dumps.
-
-See `docs/database-workflow.md` for the safe operational workflow.
+Production is read-only for backups and local refreshes; it can only be mutated via
+`pnpm db:prod:migrate`. See `docs/database-workflow.md` for the full operational workflow,
+troubleshooting, and safety rules.
 
 ## Documentation
 
