@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { str, bool, num, normalizeDate } from '@/lib/intake/utils';
+import type { IconName } from '@/lib/icons/icon-catalog';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -36,6 +37,16 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 	const ceremony = data.ceremony as Record<string, unknown> | undefined;
 	const reception = data.reception as Record<string, unknown> | undefined;
 
+	const indications: Array<{ iconName: IconName; text: string }> = [];
+	const dressCodeText = str(data.dressCode);
+	if (dressCodeText) {
+		indications.push({ iconName: 'DressCode', text: dressCodeText });
+	}
+	const additionalText = str(data.additionalIndications);
+	if (additionalText) {
+		indications.push({ iconName: 'Calendar', text: additionalText });
+	}
+
 	return {
 		location: {
 			introEyebrow: str(data.introEyebrow),
@@ -62,8 +73,7 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 						mapUrl: str(reception.mapUrl),
 					}
 				: undefined,
-			dressCode: str(data.dressCode),
-			additionalIndications: str(data.additionalIndications),
+			indications: indications.length > 0 ? indications : undefined,
 		},
 	};
 }
@@ -255,15 +265,16 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
 	if (location && Object.keys(location).length > 0) {
-		const indications = Array.isArray(location.indications)
+		const publishedIndications = Array.isArray(location.indications)
 			? (location.indications as Array<Record<string, unknown>>)
 			: [];
-		const dressCode = indications.find(
-			(indication) => str(indication.iconName) === 'DressCode',
-		);
-		const additionalIndications = indications.find(
-			(indication) => str(indication.iconName) === 'Calendar',
-		);
+		const draftIndications = publishedIndications
+			.filter((ind) => str(ind.text))
+			.map((ind) => ({
+				iconName: ind.iconName as IconName,
+				text: str(ind.text) as string,
+			}));
+
 		result.location = {
 			introEyebrow: str(location.introEyebrow),
 			introHeading: str(location.introHeading),
@@ -271,9 +282,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			indicationsHeading: str(location.indicationsHeading),
 			ceremony: mapVenueToDraft(location.ceremony as Record<string, unknown> | undefined),
 			reception: mapVenueToDraft(location.reception as Record<string, unknown> | undefined),
-			dressCode: str(location.dressCode) || str(dressCode?.text),
-			additionalIndications:
-				str(location.additionalIndications) || str(additionalIndications?.text),
+			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
 	}
 

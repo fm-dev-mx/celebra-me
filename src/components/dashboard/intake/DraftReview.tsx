@@ -5,6 +5,7 @@ import DraftEditor from '@/components/dashboard/intake/DraftEditor';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { FieldRow } from '@/components/intake/shared/FieldRow';
 import { VenueSection } from '@/components/intake/shared/VenueSection';
+import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
 import {
 	SECTION_LABELS,
 	PHOTO_LABELS,
@@ -207,13 +208,11 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 						title="Recepción"
 						venue={location.reception as Record<string, unknown> | undefined}
 					/>
-					<dl className="intake-review__fields">
-						<FieldRow label="Código de vestimenta" value={location.dressCode} />
-						<FieldRow
-							label="Indicaciones adicionales"
-							value={location.additionalIndications}
-						/>
-					</dl>
+					{renderIndications(
+						location.indications as
+							| Array<{ iconName: string; text: string }>
+							| undefined,
+					)}
 				</section>
 			)}
 
@@ -284,6 +283,28 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 		</div>
 	);
 };
+
+function renderIndications(
+	indications: Array<{ iconName: string; text: string }> | undefined,
+): React.ReactNode {
+	if (!Array.isArray(indications) || indications.length === 0) return null;
+	return (
+		<dl className="intake-review__fields">
+			{indications.map((indication, idx) => {
+				const iconLabel =
+					ICON_CATALOG.find((e) => e.name === indication.iconName)?.label ??
+					indication.iconName;
+				return (
+					<FieldRow
+						key={idx}
+						label={`Indicación ${idx + 1} (${iconLabel})`}
+						value={indication.text}
+					/>
+				);
+			})}
+		</dl>
+	);
+}
 
 function renderGiftItems(items: Array<Record<string, unknown>> | undefined): React.ReactNode {
 	if (!items || items.length === 0) return null;

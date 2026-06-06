@@ -169,22 +169,18 @@ function resolveIntroFields(
 	return fields;
 }
 
-function buildIndications(
-	dressCode: string | undefined,
-	additionalIndications: string | undefined,
+function mapIndicationsFromDraft(
+	draftIndications: ReadonlyArray<{ iconName: string; text: string }> | undefined,
 ): Array<Record<string, unknown>> | undefined {
-	const indications: Array<Record<string, unknown>> = [];
-	if (str(dressCode)) {
-		indications.push({ iconName: 'DressCode', styleVariant: 'reserved', text: str(dressCode) });
-	}
-	if (str(additionalIndications)) {
-		indications.push({
-			iconName: 'Calendar',
+	if (!draftIndications || draftIndications.length === 0) return undefined;
+	const mapped = draftIndications
+		.filter((ind) => str(ind.text))
+		.map((ind) => ({
+			iconName: ind.iconName,
 			styleVariant: 'default',
-			text: str(additionalIndications),
-		});
-	}
-	return indications.length > 0 ? indications : undefined;
+			text: str(ind.text),
+		}));
+	return mapped.length > 0 ? mapped : undefined;
 }
 
 function mapLocationFromDraft(
@@ -209,10 +205,7 @@ function mapLocationFromDraft(
 	const introFields = resolveIntroFields(draftLocation!, demoLocation);
 	Object.assign(result, introFields);
 
-	const indications = buildIndications(
-		draftLocation!.dressCode,
-		draftLocation!.additionalIndications,
-	);
+	const indications = mapIndicationsFromDraft(draftLocation!.indications);
 	if (indications) result.indications = indications;
 
 	return Object.keys(result).length > 0 ? result : undefined;

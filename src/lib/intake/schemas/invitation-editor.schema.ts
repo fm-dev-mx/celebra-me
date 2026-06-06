@@ -8,6 +8,7 @@ import {
 	venueSchema,
 	gallerySchema,
 	itinerarySchema,
+	draftIndicationSchema,
 	giftsSchema,
 	countdownEditorSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
@@ -54,8 +55,7 @@ export const InvitationEditorSectionSchemas = {
 		indicationsHeading: optionalText(200),
 		ceremony: venueSchema.optional(),
 		reception: venueSchema.optional(),
-		dressCode: optionalText(500),
-		additionalIndications: optionalText(),
+		indications: z.array(draftIndicationSchema).optional(),
 	}),
 	countdown: countdownEditorSchema,
 	itinerary: itinerarySchema,

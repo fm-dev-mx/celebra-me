@@ -15,7 +15,6 @@ import type {
 	HeroViewModel,
 	EnvelopeViewModel,
 	Interlude,
-	Indication,
 } from '@/lib/adapters/types';
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
@@ -320,50 +319,16 @@ function resolveVenueData(
 	};
 }
 
-function resolveLocationIndications(
-	indications: Indication[] | undefined,
-	data: AdaptationContext['data'],
-) {
-	if (indications && indications.length > 0) return indications;
-	const derived: NonNullable<typeof indications> = [];
-	if (typeof data.location.dressCode === 'string' && data.location.dressCode.length > 0) {
-		derived.push({
-			iconName: 'DressCode' as const,
-			styleVariant: 'reserved' as const,
-			text: data.location.dressCode,
-		});
-	}
-	if (
-		typeof data.location.additionalIndications === 'string' &&
-		data.location.additionalIndications.length > 0
-	) {
-		derived.push({
-			iconName: 'Calendar' as const,
-			styleVariant: 'default' as const,
-			text: data.location.additionalIndications,
-		});
-	}
-	return derived.length > 0 ? derived : undefined;
-}
-
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
 
 	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
 
-	const indications = data.location.indications?.map(
-		(indication: NonNullable<typeof data.location.indications>[number]) => ({
-			iconName: indication.iconName,
-			styleVariant: indication.styleVariant,
-			text: indication.text,
-		}),
-	);
-
 	return {
 		ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
 		reception: resolveVenueData(eventSlug, data.location.reception, data.title),
-		indications: resolveLocationIndications(indications, data),
+		indications: data.location.indications,
 		variant: sectionVariant(
 			'location',
 			data.sectionStyles?.location?.variant,
@@ -425,6 +390,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 function buildItinerarySectionData(context: AdaptationContext) {
 	const { data, normalizedPreset } = context;
 	if (!data.itinerary) return undefined;
+
 	return {
 		...data.itinerary,
 		variant: sectionVariant(

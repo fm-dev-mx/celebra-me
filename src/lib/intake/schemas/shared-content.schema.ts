@@ -46,6 +46,11 @@ export const gallerySchema = z.object({
 	),
 });
 
+export const draftIndicationSchema = z.object({
+	iconName: z.enum(ICON_NAMES_TUPLE),
+	text: z.string().trim().max(500),
+});
+
 export const itinerarySchema = z.object({
 	title: optionalText(200),
 	subtitle: optionalText(500),

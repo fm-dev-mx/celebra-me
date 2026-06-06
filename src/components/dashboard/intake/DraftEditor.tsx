@@ -11,6 +11,7 @@ import {
 } from '@/lib/intake/utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
+import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';
 
 interface Props {
 	invitationId: string;
@@ -511,22 +512,54 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						</div>
 					);
 				})}
-				{renderField(
-					'location',
-					'dressCode',
-					'Código de vestimenta',
-					strFallback(location.dressCode),
-					(v) => setField('location', 'dressCode', v),
-				)}
-				{renderField(
-					'location',
-					'additionalIndications',
-					'Indicaciones adicionales',
-					strFallback(location.additionalIndications),
-					(v) => setField('location', 'additionalIndications', v),
-					'textarea',
-					2,
-				)}
+				<h4 className="intake-editor__subsection-title">Indicaciones</h4>
+				{Array.isArray(location.indications) && location.indications.length > 0
+					? location.indications.map((indication, idx) => (
+							<div key={idx} className="intake-editor__indication-row">
+								<label className="intake-editor__field">
+									<span>Texto</span>
+									<input
+										className="intake-field__input"
+										value={indication.text}
+										onChange={(e) => {
+											const updated = (location.indications ?? []).map(
+												(item, i) =>
+													i === idx
+														? { ...item, text: e.target.value }
+														: item,
+											);
+											setField('location', 'indications', updated);
+										}}
+									/>
+								</label>
+								<button
+									type="button"
+									className="intake-editor__remove-button"
+									onClick={() => {
+										const updated = (location.indications ?? []).filter(
+											(_, i) => i !== idx,
+										);
+										setField('location', 'indications', updated);
+									}}
+								>
+									Eliminar
+								</button>
+							</div>
+						))
+					: null}
+				<button
+					type="button"
+					className="intake-editor__add-button"
+					onClick={() => {
+						const current = location.indications ?? [];
+						setField('location', 'indications', [
+							...current,
+							{ iconName: DEFAULT_ICON as IconName, text: '' },
+						]);
+					}}
+				>
+					+ Agregar indicación
+				</button>
 			</section>
 
 			<section className="intake-review__section">

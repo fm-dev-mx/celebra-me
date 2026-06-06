@@ -315,7 +315,7 @@ describe('mapDraftToPublished', () => {
 				location: {
 					ceremony: { venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
 					reception: { venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
-					dressCode: 'Formal',
+					indications: [{ iconName: 'DressCode', text: 'Formal' }],
 				},
 			},
 		});
@@ -323,7 +323,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.location).toMatchObject({
 			ceremony: { venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
 			reception: { venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
-			indications: [{ iconName: 'DressCode', styleVariant: 'reserved', text: 'Formal' }],
+			indications: [{ iconName: 'DressCode', styleVariant: 'default', text: 'Formal' }],
 		});
 	});
 
@@ -439,8 +439,10 @@ describe('mapDraftToPublished', () => {
 						'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
 					indicationsHeading: 'Indicaciones importantes',
 					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-					dressCode: 'Formal de gala',
-					additionalIndications: 'Confirma antes del 6 de noviembre.',
+					indications: [
+						{ iconName: 'DressCode', text: 'Formal de gala' },
+						{ iconName: 'Calendar', text: 'Confirma antes del 6 de noviembre.' },
+					],
 				},
 			},
 		});
@@ -452,7 +454,7 @@ describe('mapDraftToPublished', () => {
 				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
 			indicationsHeading: 'Indicaciones importantes',
 			indications: [
-				{ iconName: 'DressCode', styleVariant: 'reserved', text: 'Formal de gala' },
+				{ iconName: 'DressCode', styleVariant: 'default', text: 'Formal de gala' },
 				{
 					iconName: 'Calendar',
 					styleVariant: 'default',
@@ -462,15 +464,14 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('filters out dressCode and additionalIndications when they are empty strings', () => {
+	it('filters out indications with empty text', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
 					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-					dressCode: '',
-					additionalIndications: '',
+					indications: [{ iconName: 'DressCode', text: '' }],
 				},
 			},
 		});

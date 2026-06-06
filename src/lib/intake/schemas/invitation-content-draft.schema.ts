@@ -9,6 +9,7 @@ import {
 	itinerarySchema,
 	giftsSchema,
 	countdownEditorSchema,
+	draftIndicationSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
@@ -63,8 +64,7 @@ export const InvitationContentDraftContentSchema = z
 				indicationsHeading: optionalText(200),
 				ceremony: venueSchema.optional(),
 				reception: venueSchema.optional(),
-				dressCode: optionalText(500),
-				additionalIndications: optionalText(),
+				indications: z.array(draftIndicationSchema).optional(),
 			})
 			.optional(),
 		countdown: countdownEditorSchema.optional(),
