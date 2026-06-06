@@ -161,9 +161,9 @@
 	// Tokenized hero overlays — consumed by sections/hero/_enchanted-rose.scss
 	--hero-overlay-cinematic: linear-gradient(
 		135deg,
-		rgb(var(--color-candle-shadow-rgb) / 58%) 0%,
+		rgb(var(--color-candle-shadow-rgb) / 38%) 0%,
 		rgb(var(--color-velvet-burgundy-rgb) / 10%) 34%,
-		rgb(var(--color-rose-shadow-rgb) / 30%) 100%
+		rgb(var(--color-rose-shadow-rgb) / 24%) 100%
 	);
 	--hero-glow-accent: radial-gradient(
 		circle at 82% 20%,
@@ -181,8 +181,8 @@
 		180deg,
 		transparent 44%,
 		rgb(var(--color-velvet-burgundy-rgb) / 6%) 54%,
-		rgb(var(--color-velvet-burgundy-rgb) / 26%) 72%,
-		rgb(var(--color-rose-shadow-rgb) / 50%) 100%
+		rgb(var(--color-velvet-burgundy-rgb) / 22%) 72%,
+		rgb(var(--color-rose-shadow-rgb) / 34%) 100%
 	);
 
 	// ---------------------------------------------------------------------
