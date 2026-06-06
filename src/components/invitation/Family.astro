@@ -44,6 +44,7 @@ interface Props {
 	};
 	focalPoint?: string;
 	variant?: ThemePreset;
+	visible?: boolean;
 }
 
 interface FamilyEntry {
@@ -70,7 +71,10 @@ const {
 	labels,
 	focalPoint,
 	variant,
+	visible = true,
 } = Astro.props;
+
+if (!visible) return;
 
 const resolvedLabels = {
 	sectionTitle: labels?.sectionTitle ?? 'Los que hacen mi vida completa',
@@ -176,6 +180,9 @@ const familyBlocks: FamilyBlock[] = (
 				]
 			: [],
 	);
+
+const hasContent = familyBlocks.length > 0 || shouldRenderMedia;
+if (!hasContent) return;
 ---
 
 <section
