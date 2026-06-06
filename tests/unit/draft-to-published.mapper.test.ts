@@ -646,4 +646,122 @@ describe('mapDraftToPublished', () => {
 		expect(result._assetSlug).toBe('ana-sofia-cota-guillen');
 		expect(result._assetSlug).not.toBe('demo-xv-jewelry-box');
 	});
+
+	it('maps family section label fields into published labels object', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					sectionSubtitle: 'Mi Familia',
+					sectionTitle: 'Los que hacen mi vida completa',
+					parentsTitle: 'Con la bendición de',
+					godparentsTitle: 'Padrinos',
+					sectionMessage: 'Un mensaje especial',
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			labels: {
+				sectionSubtitle: 'Mi Familia',
+				sectionTitle: 'Los que hacen mi vida completa',
+				parentsTitle: 'Con la bendición de',
+				godparentsTitle: 'Padrinos',
+				sectionMessage: 'Un mensaje especial',
+			},
+		});
+	});
+
+	it('places sectionMessage in both labels and root for backward compatibility', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					sectionMessage: 'Mensaje familiar',
+				},
+			},
+		});
+
+		const family = result.family as Record<string, unknown>;
+		expect(family.sectionMessage).toBe('Mensaje familiar');
+		expect((family.labels as Record<string, unknown>).sectionMessage).toBe('Mensaje familiar');
+	});
+
+	it('maps family groups from draft format to published structured format', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					groups: [
+						{ title: 'Padres de la Novia', names: 'Roberto García\nAna García' },
+						{ title: 'Padrinos', names: 'Carlos — Padrino\nMaría — Madrina' },
+					],
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			groups: [
+				{
+					title: 'Padres de la Novia',
+					items: [{ name: 'Roberto García' }, { name: 'Ana García' }],
+				},
+				{
+					title: 'Padrinos',
+					items: [{ name: 'Carlos — Padrino' }, { name: 'María — Madrina' }],
+				},
+			],
+		});
+	});
+
+	it('maps family visible flag to published content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					visible: false,
+				},
+			},
+		});
+
+		expect((result.family as Record<string, unknown>).visible).toBe(false);
+	});
+
+	it('omits labels when no label fields are provided', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					motherName: 'Maria',
+				},
+			},
+		});
+
+		expect(result.family).not.toHaveProperty('labels');
+	});
+
+	it('omits groups when draft groups array is empty', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					groups: [],
+				},
+			},
+		});
+
+		expect(result.family).not.toHaveProperty('groups');
+	});
 });

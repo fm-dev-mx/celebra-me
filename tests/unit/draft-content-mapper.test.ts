@@ -170,4 +170,75 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.hero?.backgroundImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
 		expect(result.hero?.backgroundImageMobile).toBeUndefined();
 	});
+
+	it('reads family labels from published labels object into flat draft fields', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				labels: {
+					sectionSubtitle: 'Mi Familia',
+					sectionTitle: 'Los que hacen mi vida completa',
+					parentsTitle: 'Con la bendición de',
+					godparentsTitle: 'Padrinos',
+					sectionMessage: 'Mensaje desde labels',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family).toMatchObject({
+			sectionSubtitle: 'Mi Familia',
+			sectionTitle: 'Los que hacen mi vida completa',
+			parentsTitle: 'Con la bendición de',
+			godparentsTitle: 'Padrinos',
+			sectionMessage: 'Mensaje desde labels',
+		});
+	});
+
+	it('falls back to root-level sectionMessage when labels.sectionMessage is absent', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				sectionMessage: 'Mensaje en raíz',
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.sectionMessage).toBe('Mensaje en raíz');
+	});
+
+	it('reads family groups from published format into flat draft format', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				groups: [
+					{
+						title: 'Padres de la Novia',
+						items: [{ name: 'Roberto' }, { name: 'Ana' }],
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.groups).toEqual([
+			{ title: 'Padres de la Novia', names: 'Roberto\nAna' },
+		]);
+	});
+
+	it('reads family visible flag from published content', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				visible: false,
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.visible).toBe(false);
+	});
 });
