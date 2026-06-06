@@ -1,10 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+	PSQL_REQUIRED_MESSAGE,
 	REFRESH_PARITY_TABLES,
+	assertAppEnvIsLocal,
+	assertLocalDbReachable,
 	createProdBackup,
 	ensureTablesExist,
+	getFirstSuperAdminEmail,
+	getLocalSuperAdminPassword,
 	getMissingTables,
+	requireLocalSuperAdminConfig,
 	sqlLiteral,
 	transformDumpForStaging,
 	validateRefreshParity,
@@ -105,6 +111,107 @@ describe('createProdBackup', () => {
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--db-url');
 		expect(args).toContain(fakeUrl);
+	});
+});
+
+describe('assertLocalDbReachable', () => {
+	beforeEach(() => {
+		spawnSync.mockClear();
+	});
+
+	it('fails with an actionable message when psql is missing from PATH', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+		spawnSync.mockReturnValueOnce({
+			status: null,
+			stdout: '',
+			stderr: 'psql not found',
+			error: new Error('spawn psql ENOENT'),
+		});
+
+		expect(() => assertLocalDbReachable()).toThrow('process.exit:1');
+		expect(errorSpy).toHaveBeenCalledWith(`ERROR: ${PSQL_REQUIRED_MESSAGE}`);
+		expect(spawnSync).toHaveBeenCalledTimes(1);
+		expect(spawnSync.mock.calls[0][0]).toBe('psql');
+		expect(spawnSync.mock.calls[0][1]).toEqual(['--version']);
+	});
+
+	it('checks local DB connectivity after psql is available', () => {
+		spawnSync
+			.mockReturnValueOnce({ status: 0, stdout: 'psql 17.0', stderr: '', error: undefined })
+			.mockReturnValueOnce({ status: 0, stdout: '1', stderr: '', error: undefined });
+
+		expect(() => assertLocalDbReachable()).not.toThrow();
+		expect(spawnSync).toHaveBeenCalledTimes(2);
+		expect(spawnSync.mock.calls[0][1]).toEqual(['--version']);
+		expect(spawnSync.mock.calls[1][1]).toContain('--command');
+	});
+});
+
+describe('local admin bootstrap helpers', () => {
+	it('reads the first SUPER_ADMIN_EMAILS entry lowercased and trimmed', () => {
+		expect(
+			getFirstSuperAdminEmail({
+				SUPER_ADMIN_EMAILS: '  Celebra.Me.Com@gmail.com , second@example.com ',
+			}),
+		).toBe('celebra.me.com@gmail.com');
+	});
+
+	it('prefers LOCAL_SUPER_ADMIN_PASSWORD over RSVP_ADMIN_PASSWORD', () => {
+		expect(
+			getLocalSuperAdminPassword({
+				LOCAL_SUPER_ADMIN_PASSWORD: 'local-password',
+				RSVP_ADMIN_PASSWORD: 'fallback-password',
+			}),
+		).toBe('local-password');
+	});
+
+	it('falls back to RSVP_ADMIN_PASSWORD when LOCAL_SUPER_ADMIN_PASSWORD is not set', () => {
+		expect(getLocalSuperAdminPassword({ RSVP_ADMIN_PASSWORD: 'fallback-password' })).toBe(
+			'fallback-password',
+		);
+	});
+
+	it('fails clearly when the local admin password is missing', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+
+		expect(() =>
+			requireLocalSuperAdminConfig({ SUPER_ADMIN_EMAILS: 'celebra.me.com@gmail.com' }),
+		).toThrow('process.exit:1');
+		expect(errorSpy).toHaveBeenCalledWith(
+			'ERROR: Local admin bootstrap requires LOCAL_SUPER_ADMIN_PASSWORD or RSVP_ADMIN_PASSWORD to be configured.',
+		);
+	});
+
+	it('rejects a non-local Supabase URL', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+
+		expect(() =>
+			assertAppEnvIsLocal({
+				SUPABASE_URL: 'https://project.supabase.co',
+				PUBLIC_SUPABASE_URL: 'https://project.supabase.co',
+			}),
+		).toThrow('process.exit:1');
+		expect(errorSpy).toHaveBeenCalledWith(
+			'ERROR: Local DB workflow requires SUPABASE_URL and PUBLIC_SUPABASE_URL to be http://127.0.0.1:54321.',
+		);
+	});
+
+	it('uses idempotent role upsert SQL in the bootstrap SQL template', () => {
+		const sqlPath = resolve(process.cwd(), 'scripts', 'db', 'sql', 'bootstrap-admin.sql');
+		const sql = readFileSync(sqlPath, 'utf8');
+
+		expect(sql).toContain('where not exists');
+		expect(sql).toContain('on conflict (user_id) do update set role =');
+		expect(sql).toContain('update auth.users u');
 	});
 });
 
@@ -416,7 +523,7 @@ describe('validateRefreshParity', () => {
 });
 
 describe('REFRESH_PARITY_TABLES', () => {
-	it('does not include invitation_assets (not yet present in production)', () => {
+	it('does not include invitation_assets because Storage binaries are not copied by DB refresh', () => {
 		expect(REFRESH_PARITY_TABLES).not.toContain('invitation_assets');
 	});
 

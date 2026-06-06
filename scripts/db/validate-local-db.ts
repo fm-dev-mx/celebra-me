@@ -1,12 +1,17 @@
 import {
 	LOCAL_SUPABASE_URL,
+	REFRESH_PARITY_TABLES,
 	assertAppEnvIsLocal,
 	assertLocalApiReachable,
 	assertLocalDbReachable,
 	assertNoProdCredentialsInLocalEnv,
 	fail,
+	getFirstSuperAdminEmail,
+	getLocalSuperAdminPassword,
 	loadAppEnv,
 	log,
+	parseTsv,
+	REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
 	runPsql,
 	sqlLiteral,
 	tryRunCommand,
@@ -16,14 +21,6 @@ interface CheckResult {
 	name: string;
 	ok: boolean;
 	detail?: string;
-}
-
-function parseTsv(output: string): string[][] {
-	return output
-		.trim()
-		.split(/\r?\n/)
-		.filter(Boolean)
-		.map((line) => line.split('\t'));
 }
 
 function scalar(sql: string): string {
@@ -154,9 +151,26 @@ where storage_path ilike '%marker%'
    or display_name ilike '%marker%'
    or display_name ilike '%fake%';`,
 		),
+		checkSql(
+			'invitation-assets bucket registration',
+			`select count(*)::text
+from storage.buckets
+where id = 'invitation-assets'
+  and name = 'invitation-assets';`,
+			'1',
+		),
 	];
 
-	const superAdminEmail = (appEnv.SUPER_ADMIN_EMAILS ?? '').split(',')[0]?.trim().toLowerCase();
+	const superAdminEmail = getFirstSuperAdminEmail(appEnv);
+	checks.push({
+		name: 'Configured local super admin email',
+		ok: superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
+		detail:
+			superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL
+				? undefined
+				: `expected ${REQUIRED_LOCAL_SUPER_ADMIN_EMAIL}, got ${superAdminEmail || '<unset>'}`,
+	});
+
 	if (superAdminEmail) {
 		checks.push(
 			checkSql(
@@ -168,9 +182,25 @@ where lower(u.email) = lower(${sqlLiteral(superAdminEmail)})
   and r.role = 'super_admin';`,
 				'1',
 			),
+			checkSql(
+				'Super admin auth metadata role',
+				`select count(*)::text
+from auth.users u
+where lower(u.email) = lower(${sqlLiteral(superAdminEmail)})
+  and u.raw_app_meta_data ->> 'role' = 'super_admin';`,
+				'1',
+			),
 		);
 
-		const password = appEnv.LOCAL_SUPER_ADMIN_PASSWORD || appEnv.RSVP_ADMIN_PASSWORD;
+		const password = getLocalSuperAdminPassword(appEnv);
+		checks.push({
+			name: 'Local super admin password configured',
+			ok: Boolean(password),
+			detail: password
+				? undefined
+				: 'expected LOCAL_SUPER_ADMIN_PASSWORD or RSVP_ADMIN_PASSWORD',
+		});
+
 		if (password) {
 			const login = tryRunCommand('node', ['scripts/db/_check-admin-login.mjs'], {
 				env: {
@@ -193,14 +223,15 @@ where lower(u.email) = lower(${sqlLiteral(superAdminEmail)})
 
 	checks.push(await validateAssetApi());
 
+	const rowCountUnions = REFRESH_PARITY_TABLES.map(
+		(t, i) =>
+			`select ${i} as idx, '${t}' as table_name, count(*) as row_count from public."${t}"`,
+	).join('\n  union all ');
 	const rowCounts = parseTsv(
 		runPsql(`
 select table_name, row_count::text
 from (
-  select 'invitations' table_name, count(*) row_count from public.invitations
-  union all select 'events', count(*) from public.events
-  union all select 'guest_invitations', count(*) from public.guest_invitations
-  union all select 'invitation_assets', count(*) from public.invitation_assets
+  ${rowCountUnions}
 ) summary
 order by table_name;
 `).stdout,

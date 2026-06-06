@@ -8,6 +8,9 @@ export const PROJECT_ROOT = process.cwd();
 export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
 export const LOCAL_DB_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 export const STORAGE_BUCKET_SIZE_LIMIT = 10_485_760;
+export const REQUIRED_LOCAL_SUPER_ADMIN_EMAIL = 'celebra.me.com@gmail.com';
+export const PSQL_REQUIRED_MESSAGE =
+	'psql is required for local DB workflow scripts. Install PostgreSQL client tools and make sure `psql` is available on PATH. Verify with `psql --version`.';
 export const PROD_SECRET_FILES = [
 	'.env.production.local',
 	'.env.prod.local',
@@ -29,8 +32,20 @@ interface RunOptions {
 	throwOnError?: boolean;
 }
 
-export function log(message: string): void {
-	console.log(message);
+export function log(...args: unknown[]): void {
+	console.log(...args);
+}
+
+export function quoteIdentifier(identifier: string): string {
+	return `"${identifier.replaceAll('"', '""')}"`;
+}
+
+export function parseTsv(output: string): string[][] {
+	return output
+		.trim()
+		.split(/\r?\n/)
+		.filter(Boolean)
+		.map((line) => line.split('\t'));
 }
 
 export function fail(message: string): never {
@@ -160,6 +175,35 @@ export function assertAppEnvIsLocal(appEnv = loadAppEnv()): void {
 	}
 }
 
+export function getFirstSuperAdminEmail(appEnv = loadAppEnv()): string {
+	return (appEnv.SUPER_ADMIN_EMAILS ?? '').split(',')[0]?.trim().toLowerCase() ?? '';
+}
+
+export function getLocalSuperAdminPassword(appEnv = loadAppEnv()): string {
+	return appEnv.LOCAL_SUPER_ADMIN_PASSWORD || appEnv.RSVP_ADMIN_PASSWORD || '';
+}
+
+export function requireLocalSuperAdminConfig(appEnv = loadAppEnv()): {
+	email: string;
+	password: string;
+} {
+	const email = getFirstSuperAdminEmail(appEnv);
+	if (email !== REQUIRED_LOCAL_SUPER_ADMIN_EMAIL) {
+		fail(
+			`Local admin bootstrap requires the first SUPER_ADMIN_EMAILS entry to be ${REQUIRED_LOCAL_SUPER_ADMIN_EMAIL}; got ${email || '<unset>'}.`,
+		);
+	}
+
+	const password = getLocalSuperAdminPassword(appEnv);
+	if (!password) {
+		fail(
+			'Local admin bootstrap requires LOCAL_SUPER_ADMIN_PASSWORD or RSVP_ADMIN_PASSWORD to be configured.',
+		);
+	}
+
+	return { email, password };
+}
+
 export function assertNoProdCredentialsInLocalEnv(): void {
 	const localEnvPath = resolve(PROJECT_ROOT, '.env.local');
 	if (!existsSync(localEnvPath)) return;
@@ -261,6 +305,11 @@ export function runPsqlFile(filePath: string, dbUrl = LOCAL_DB_URL): CommandResu
 }
 
 export function assertLocalDbReachable(): void {
+	const psqlResult = tryRunCommand('psql', ['--version']);
+	if (psqlResult.status !== 0) {
+		fail(PSQL_REQUIRED_MESSAGE);
+	}
+
 	const result = tryRunCommand('psql', [
 		'--set',
 		'ON_ERROR_STOP=1',
@@ -270,7 +319,9 @@ export function assertLocalDbReachable(): void {
 		'select 1;',
 	]);
 	if (result.status !== 0) {
-		fail('Local Supabase database is not reachable. Run `supabase start` first.');
+		fail(
+			`Local Supabase database is not reachable. Run \`supabase start\` first. If Supabase is already running, verify local access with \`psql --version\` and a direct psql connection.`,
+		);
 	}
 }
 
