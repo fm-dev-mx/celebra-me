@@ -34,6 +34,9 @@ const {
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
 const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
+const desktopLinkHrefs = ['#inicio', '#event-location', '#galeria', '#itinerary', '#rsvp'];
+const filteredDesktopLinks = links.filter((link) => desktopLinkHrefs.includes(link.href));
+const desktopLinks = filteredDesktopLinks.length > 0 ? filteredDesktopLinks : links;
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
@@ -45,7 +48,7 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 
 	<div slot="desktop-nav" class="event-header__actions">
 		{
-			links.map((link) => (
+			desktopLinks.map((link) => (
 				<a
 					href={link.href}
 					class:list={[
