@@ -564,12 +564,11 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('includes interludes, sectionStyles, navigation, sharing from demo content', () => {
+	it('includes interludes, sectionStyles, sharing from demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(Array.isArray(result.interludes)).toBe(true);
 		expect(result.sectionStyles).toBeDefined();
-		expect(result.navigation).toMatchObject([{ label: 'Inicio' }]);
 		expect(result.sharing).toMatchObject({ whatsappTemplate: '¡Hola!' });
 	});
 

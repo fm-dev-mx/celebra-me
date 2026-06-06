@@ -50,20 +50,6 @@ describe('XV demo invitation content', () => {
 		expect(event.sharing).toBeDefined();
 	});
 
-	it('has navigation with RSVP as last entry', () => {
-		const event = readDemoEvent();
-		const nav = event.navigation;
-
-		expect(Array.isArray(nav)).toBe(true);
-		if (nav) {
-			expect(nav.length).toBeGreaterThanOrEqual(3);
-			expect(nav[nav.length - 1]).toEqual({
-				label: 'Confirmar',
-				href: '#rsvp',
-			});
-		}
-	});
-
 	it('exports slug-scoped local images for every media surface', () => {
 		const event = readDemoEvent();
 

@@ -33,10 +33,7 @@ const {
 } = Astro.props;
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
-const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
-const desktopLinkHrefs = ['#inicio', '#event-location', '#galeria', '#itinerary', '#rsvp'];
-const filteredDesktopLinks = links.filter((link) => desktopLinkHrefs.includes(link.href));
-const desktopLinks = filteredDesktopLinks.length > 0 ? filteredDesktopLinks : links;
+const mobileNavLinks = links.filter((link) => link.href !== RSVP_HREF);
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
@@ -48,7 +45,7 @@ const desktopLinks = filteredDesktopLinks.length > 0 ? filteredDesktopLinks : li
 
 	<div slot="desktop-nav" class="event-header__actions">
 		{
-			desktopLinks.map((link) => (
+			links.map((link) => (
 				<a
 					href={link.href}
 					class:list={[
@@ -64,7 +61,7 @@ const desktopLinks = filteredDesktopLinks.length > 0 ? filteredDesktopLinks : li
 
 	<div slot="mobile-nav-premium">
 		<NavBarMobile
-			links={mobileLinks}
+			links={mobileNavLinks}
 			headerId="event-header"
 			desktopBreakpoint="lg"
 			ctaLink={rsvpLink?.href}

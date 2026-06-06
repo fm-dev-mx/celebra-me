@@ -191,15 +191,6 @@
         "title": "La gala comienza en",
         "footerText": "20 de noviembre de 2027, Querétaro"
     },
-    "navigation": [
-        { "label": "Inicio", "href": "#inicio" },
-        { "label": "Detalles", "href": "#event-location" },
-        { "label": "Fecha", "href": "#countdown" },
-        { "label": "Familia", "href": "#family-section" },
-        { "label": "Programa", "href": "#itinerary" },
-        { "label": "Galería", "href": "#galeria" },
-        { "label": "Confirmar", "href": "#rsvp" }
-    ],
     "interludes": [
         {
             "image": "interlude02",

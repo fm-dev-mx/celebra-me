@@ -407,7 +407,6 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 
 		interludes: demoContent.interludes,
 		sectionStyles: demoContent.sectionStyles,
-		navigation: demoContent.navigation,
 		sharing: demoContent.sharing,
 
 		_assetSlug: input.assetSlug ?? snapshot.previewSlug,

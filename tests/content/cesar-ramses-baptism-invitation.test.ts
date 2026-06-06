@@ -64,15 +64,6 @@ describe('Baptism demo invitation content', () => {
 		}
 	});
 
-	it('has navigation with RSVP as last entry', () => {
-		const event = readDemoEvent();
-
-		expect(Array.isArray(event.navigation)).toBe(true);
-		if (event.navigation && event.navigation.length > 0) {
-			expect(event.navigation[event.navigation.length - 1].href).toBe('#rsvp');
-		}
-	});
-
 	it('configures valid itinerary structure when present', () => {
 		const event = readDemoEvent();
 

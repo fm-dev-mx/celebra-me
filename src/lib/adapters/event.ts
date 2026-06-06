@@ -7,6 +7,7 @@ import {
 	type AssetSource,
 	type ImageAsset,
 } from '@/lib/assets/asset-registry';
+import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
@@ -494,6 +495,18 @@ export function adaptEvent(
 	const envelope = buildEnvelope(context);
 	const isDemo = adapterData.isDemo ?? false;
 
+	const sections = {
+		quote: buildQuoteSectionData(context),
+		countdown: buildCountdownSectionData(context),
+		location: buildLocationSectionData(context),
+		family: buildFamilySectionData(context),
+		gallery: buildGallerySectionData(context),
+		itinerary: buildItinerarySectionData(context),
+		rsvp: buildRsvpSectionData(context, entrySlug),
+		gifts: buildGiftsSectionData(context),
+		thankYou: buildThankYouSectionData(context),
+	};
+
 	return {
 		id: entrySlug,
 		isDemo,
@@ -507,17 +520,7 @@ export function adaptEvent(
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
 		sectionOrder: adapterData.sectionOrder,
-		sections: {
-			quote: buildQuoteSectionData(context),
-			countdown: buildCountdownSectionData(context),
-			location: buildLocationSectionData(context),
-			family: buildFamilySectionData(context),
-			gallery: buildGallerySectionData(context),
-			itinerary: buildItinerarySectionData(context),
-			rsvp: buildRsvpSectionData(context, entrySlug),
-			gifts: buildGiftsSectionData(context),
-			thankYou: buildThankYouSectionData(context),
-		},
+		sections,
 		music: adapterData.music
 			? {
 					...adapterData.music,
@@ -525,7 +528,7 @@ export function adaptEvent(
 				}
 			: undefined,
 		interludes: buildInterludes(context),
-		navigation: adapterData.navigation,
+		navigation: buildCanonicalNavigation(sections),
 		sharing: adapterData.sharing
 			? {
 					whatsappTemplate: adapterData.sharing.whatsappTemplate,

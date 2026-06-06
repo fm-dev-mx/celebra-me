@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 
 const projectRoot = process.cwd();
 
@@ -11,88 +12,79 @@ function expectToken(source: string, token: string): void {
 	expect(source).toContain(`${token}:`);
 }
 
-function findJsonFiles(dir: string): { file: string; data: Record<string, unknown> }[] {
-	const results: { file: string; data: Record<string, unknown> }[] = [];
-	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-		const full = path.join(dir, entry.name);
-		if (entry.isDirectory()) {
-			results.push(...findJsonFiles(full));
-		} else if (entry.name.endsWith('.json')) {
-			try {
-				const data = JSON.parse(fs.readFileSync(full, 'utf8')) as Record<string, unknown>;
-				results.push({ file: path.relative(projectRoot, full), data });
-			} catch {
-				// skip invalid JSON
-			}
-		}
-	}
-	return results;
-}
-
-const VALID_NAV_LABELS = new Set([
-	'Inicio',
-	'Gala',
-	'Ubicación',
-	'Detalles',
-	'Fecha',
-	'Familia',
-	'Programa',
-	'Galería',
-	'Regalos',
-	'Confirmar',
-]);
-const VALID_NAV_HREFS = new Set([
-	'#inicio',
-	'#event-location',
-	'#countdown',
-	'#family-section',
-	'#itinerary',
-	'#galeria',
-	'#regalos',
-	'#rsvp',
-]);
-
 describe('Invitation header navigation contract', () => {
-	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
+	it('renders desktop and mobile menus from the same canonical link list', () => {
 		const source = read('src/components/invitation/EventHeader.astro');
-		const event = JSON.parse(read('src/content/event-demos/xv/demo-xv-jewelry-box.json')) as {
-			navigation: Array<{ label: string; href: string }>;
-		};
-		const rsvpLinks = event.navigation.filter((link) => link.href === '#rsvp');
-
-		expect(rsvpLinks.length).toBeGreaterThanOrEqual(1);
-		expect(event.navigation.at(-1)).toEqual({ label: 'Confirmar', href: '#rsvp' });
 		expect(source).toContain('<HeaderBase');
 		expect(source).toContain('<NavBarMobile');
-		expect(source).toMatch(/links=\{mobileLinks\}/);
+		expect(source).toMatch(/links=\{mobileNavLinks\}/);
 		expect(source).toMatch(/ctaLink=\{rsvpLink\?\.href\}/);
 		expect(source).toMatch(
 			/ctaLabel=\{rsvpLink\?\.(?:label|label\s*\?\?\s*['"]Confirmar['"])\}/,
 		);
 		expect(source).toMatch(/links\.map/);
-		expect(source).not.toContain('stripDesktopOrdinal');
+		expect(source).not.toContain('desktopLinkHrefs');
+		expect(source).not.toContain('mobileLinks');
+		expect(source).not.toContain('desktopLinks');
 	});
 
-	it('validates mobile nav labels and hrefs against allowed values across all content', () => {
-		const navFiles = [
-			...findJsonFiles(path.join(projectRoot, 'src/content/events')),
-			...findJsonFiles(path.join(projectRoot, 'src/content/event-demos')),
-		].filter(({ data }) => Array.isArray(data.navigation));
+	it('builds canonical navigation filtering out missing sections', () => {
+		const allSections = {
+			quote: { text: 'Test', variant: 'editorial' as const },
+			countdown: {
+				title: 'Test',
+				subtitlePrefix: '',
+				footerText: '',
+				eventDate: '',
+				variant: 'editorial' as const,
+			},
+			location: { ceremony: {} as any, variant: 'editorial' as const },
+			family: { celebrantName: 'Test', variant: 'editorial' as const },
+			gallery: { title: 'Test', items: [], variant: 'editorial' as const },
+			itinerary: { title: 'Test', items: [], variant: 'editorial' as const },
+			rsvp: {
+				eventSlug: 'test',
+				eventType: 'xv' as const,
+				title: 'Test',
+				guestCap: 1,
+				accessMode: 'hybrid' as const,
+				confirmationMessage: '',
+				confirmationMode: 'api' as const,
+				variant: 'editorial' as const,
+			},
+			gifts: { items: [], variant: 'editorial' as const },
+			thankYou: { message: 'Test', closingName: 'Test', variant: 'editorial' as const },
+		};
+		const nav = buildCanonicalNavigation(allSections);
+		expect(nav).toEqual([
+			{ label: 'Inicio', href: '#inicio' },
+			{ label: 'Evento', href: '#event-location' },
+			{ label: 'Programa', href: '#itinerary' },
+			{ label: 'Galería', href: '#galeria' },
+			{ label: 'Confirmar', href: '#rsvp' },
+		]);
+	});
 
-		expect(navFiles.length).toBeGreaterThan(0);
-
-		navFiles.forEach(({ data }) => {
-			const nav = data.navigation as Array<{ label: string; href: string }>;
-			const labels = nav.map((n) => n.label);
-			const hrefs = nav.map((n) => n.href);
-
-			expect(nav.length).toBeGreaterThanOrEqual(3);
-			expect(nav.length).toBeLessThanOrEqual(7);
-			expect(nav[nav.length - 1]).toEqual({ label: 'Confirmar', href: '#rsvp' });
-
-			labels.forEach((label) => expect(VALID_NAV_LABELS.has(label)).toBe(true));
-			hrefs.forEach((href) => expect(VALID_NAV_HREFS.has(href)).toBe(true));
-		});
+	it('omits nav items whose section is not present', () => {
+		const partialSections = {
+			location: { ceremony: {} as any, variant: 'editorial' as const },
+			rsvp: {
+				eventSlug: 'test',
+				eventType: 'xv' as const,
+				title: 'Test',
+				guestCap: 1,
+				accessMode: 'hybrid' as const,
+				confirmationMessage: '',
+				confirmationMode: 'api' as const,
+				variant: 'editorial' as const,
+			},
+		};
+		const nav = buildCanonicalNavigation(partialSections as any);
+		expect(nav).toEqual([
+			{ label: 'Inicio', href: '#inicio' },
+			{ label: 'Evento', href: '#event-location' },
+			{ label: 'Confirmar', href: '#rsvp' },
+		]);
 	});
 
 	it('guards mobile drawer scroll-safety with overflow and overscroll CSS', () => {

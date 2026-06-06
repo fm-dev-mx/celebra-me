@@ -111,24 +111,6 @@
         "subtitlePrefix": "El",
         "footerText": "Te esperamos para celebrar juntos."
     },
-    "navigation": [
-        {
-            "label": "Inicio",
-            "href": "#inicio"
-        },
-        {
-            "label": "Ubicación",
-            "href": "#event-location"
-        },
-        {
-            "label": "Galería",
-            "href": "#galeria"
-        },
-        {
-            "label": "Confirmar",
-            "href": "#rsvp"
-        }
-    ],
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
