@@ -330,7 +330,7 @@ Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
 Current state: 39 incremental migrations. Production uses `pnpm db:prod:migrate` to apply reviewed
 migrations only.
 
-**For local/staging**: use `pnpm db:reset:local` (applies all migrations from scratch), then
+**For local/staging**: use `pnpm db:local:reset` (applies all migrations from scratch), then
 `pnpm db:local:validate`.
 
 **For production**: never rewrite, delete, or squash already-applied migrations. Always add
