@@ -24,6 +24,12 @@ export const ICON_CATALOG = [
 		keywords: ['fecha', 'calendario', 'dia', 'evento'],
 	},
 	{
+		name: 'CheckSeal',
+		label: 'Confirmado',
+		category: 'info',
+		keywords: ['confirmado', 'aprobado', 'check', 'verificado'],
+	},
+	{
 		name: 'Church',
 		label: 'Iglesia',
 		category: 'ceremony',
@@ -60,7 +66,7 @@ export const ICON_CATALOG = [
 		keywords: ['vestimenta', 'formal', 'ropa', 'etiqueta', 'traje'],
 	},
 	{
-		name: 'Envelope',
+		name: 'Enveloped',
 		label: 'Sobre',
 		category: 'info',
 		keywords: ['sobre', 'carta', 'correo', 'invitacion'],
@@ -82,6 +88,12 @@ export const ICON_CATALOG = [
 		label: 'Regalo',
 		category: 'gifts',
 		keywords: ['regalo', 'presente', 'mesa', 'sobre'],
+	},
+	{
+		name: 'Heartbreak',
+		label: 'Corazón roto',
+		category: 'info',
+		keywords: ['corazon', 'roto', 'tristeza', 'no', 'rechazado'],
 	},
 	{
 		name: 'HeartSeal',
