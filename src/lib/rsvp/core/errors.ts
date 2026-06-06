@@ -11,7 +11,11 @@ export type ApiErrorCode =
 	| 'invalid_submission_status'
 	| 'invalid_draft_status'
 	| 'config_error'
-	| 'no_approved_submission';
+	| 'no_approved_submission'
+	| 'schema_mismatch'
+	| 'unsafe_target'
+	| 'missing_in_prod'
+	| 'stale_production_content';
 
 export class ApiError extends Error {
 	readonly status: number;

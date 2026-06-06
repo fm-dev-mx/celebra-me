@@ -30,6 +30,7 @@ const { csrfToken } = Astro.locals;
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
+	{ label: 'Publicación de demos', href: '/dashboard/admin/content-sync', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },
 	{ label: 'Producción de invitaciones', href: '/dashboard/invitaciones', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },

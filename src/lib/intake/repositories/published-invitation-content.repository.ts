@@ -1,7 +1,7 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 
-interface PublishedInvitationContentRow {
+export interface PublishedInvitationContentRow {
 	id: string;
 	invitation_project_id: string;
 	slug: string;
@@ -14,7 +14,7 @@ interface PublishedInvitationContentRow {
 	updated_at: string;
 }
 
-interface PublishedInvitationContent {
+export interface PublishedInvitationContent {
 	id: string;
 	invitationId: string;
 	slug: string;
@@ -66,6 +66,18 @@ export async function findPublishedBySlugAndEventType(
 	return rows[0] ? toRow(rows[0]) : null;
 }
 
+export async function listPublishedByEventTypes(
+	eventTypes: readonly string[],
+): Promise<PublishedInvitationContent[]> {
+	if (eventTypes.length === 0) return [];
+	const encoded = eventTypes.map((eventType) => encodeURIComponent(eventType)).join(',');
+	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&event_type=in.(${encoded})&${ACTIVE_FILTER}`,
+		useServiceRole: true,
+	});
+	return rows.map(toRow);
+}
+
 export interface UpsertPublishedInput {
 	invitationId: string;
 	slug: string;
@@ -94,7 +106,8 @@ export async function upsertPublishedContent(
 				published_at: new Date().toISOString(),
 			},
 		});
-		if (!rows[0]) throw new Error('Failed to update published invitation content.');
+		if (!rows[0])
+			throw new Error(`Failed to update published invitation content (id: ${existing.id}).`);
 		return toRow(rows[0]);
 	}
 
@@ -113,6 +126,33 @@ export async function upsertPublishedContent(
 			published_at: new Date().toISOString(),
 		},
 	});
-	if (!rows[0]) throw new Error('Failed to create published invitation content.');
+	if (!rows[0])
+		throw new Error(
+			`Failed to create published invitation content (invitation: ${input.invitationId}).`,
+		);
+	return toRow(rows[0]);
+}
+
+export async function updatePublishedContentSnapshot(input: {
+	id: string;
+	content: Record<string, unknown>;
+	version: number;
+	publishedAt: string;
+}): Promise<PublishedInvitationContent> {
+	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
+		pathWithQuery: `published_invitation_content?id=eq.${encodeURIComponent(input.id)}&select=${SELECT_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			content: input.content,
+			version: input.version,
+			published_at: input.publishedAt,
+		},
+	});
+	if (!rows[0])
+		throw new Error(
+			`Failed to update published invitation content snapshot (id: ${input.id}).`,
+		);
 	return toRow(rows[0]);
 }
