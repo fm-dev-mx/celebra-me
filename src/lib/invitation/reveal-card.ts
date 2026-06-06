@@ -1,7 +1,9 @@
+import type { IconName } from '@/lib/icons/icon-catalog';
+
 export type EnvelopeSealIcon = 'boot' | 'heart' | 'monogram' | 'flower' | 'special-edition';
 
-export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, string> = {
-	boot: 'Boot',
+export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
+	boot: 'BootSeal',
 	heart: 'HeartSeal',
 	monogram: 'MonogramSeal',
 	flower: 'FlowerSeal',
