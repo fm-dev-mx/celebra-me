@@ -22,8 +22,6 @@ import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 
-const SCROLL_LABEL_PRESET = 'enchanted-rose';
-
 const LOCATION_THEME_DEFAULTS: Readonly<{
 	[key in ThemePreset]?: {
 		introEyebrow: string;
@@ -85,14 +83,8 @@ function resolveAsset(
 	}
 
 	if (normalizedSource.type === 'uploaded') {
-		// Published content freezes the src. If no src is present (draft ref),
-		// the caller must resolve before rendering.
-		const src =
-			'src' in normalizedSource
-				? (normalizedSource as { type: 'uploaded'; assetId: string; src?: string }).src
-				: undefined;
-		if (src) {
-			return { src, alt: `Imagen de ${eventTitle}` };
+		if ('src' in normalizedSource) {
+			return { src: normalizedSource.src, alt: `Imagen de ${eventTitle}` };
 		}
 		return undefined;
 	}
@@ -138,25 +130,19 @@ function requireAsset(
 ): ImageAsset {
 	const asset = resolveAsset(eventSlug, source, eventTitle);
 	if (!asset) {
-		console.warn(
-			`[AssetRegistry] Asset not resolvable for event "${eventSlug}" in requireAsset.` +
-				(source
-					? ` Source: ${typeof source === 'string' ? source : JSON.stringify(source)}`
-					: ''),
-		);
 		throw new Error(`[AssetRegistry] Required asset is missing for event "${eventSlug}".`);
 	}
 	return asset;
 }
 
-function pickVariant<T extends readonly string[]>(
+function pickVariant<T extends string>(
 	scope: string,
 	candidate: string | undefined,
-	allowed: T,
-	fallback: T[number],
-): T[number] {
+	allowed: readonly string[],
+	fallback: T,
+): T {
 	if (!candidate) return fallback;
-	if ((allowed as readonly string[]).includes(candidate)) return candidate as T[number];
+	if (allowed.includes(candidate)) return candidate as T;
 
 	console.warn(
 		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Using fallback: "${fallback}".`,
@@ -206,7 +192,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
-		scrollLabel: preset === SCROLL_LABEL_PRESET ? 'Continúa' : undefined,
+		scrollLabel: preset === 'enchanted-rose' ? 'Continúa' : undefined,
 	};
 }
 
