@@ -11,20 +11,6 @@ type IconComponent = React.FC<{
 
 const MODULES = [UIIcons, InvitationIcons, SocialIcons] as const;
 
-const ALIASES: Record<string, string> = {
-	Map: 'MapLocationIcon',
-	Envelope: 'EnvelopedIcon',
-	Boot: 'BootSealIcon',
-	boot: 'BootSealIcon',
-	'western-hat': 'WesternHatIcon',
-	taco: 'TacoIcon',
-	tuba: 'TubaIcon',
-	accordion: 'AccordionIcon',
-	heel: 'HeelIcon',
-	dressCode: 'DressCodeIcon',
-	calendar: 'CalendarIcon',
-};
-
 export const iconRegistry: Record<string, IconComponent> = {};
 
 for (const module of MODULES) {
@@ -37,18 +23,7 @@ for (const module of MODULES) {
 	}
 }
 
-for (const [alias, target] of Object.entries(ALIASES)) {
-	const component = iconRegistry[target];
-	if (component) {
-		iconRegistry[alias] = component;
-	}
-}
-
 export function resolveIconComponent(name: string | undefined): IconComponent | null {
 	if (!name) return null;
 	return iconRegistry[name] || null;
-}
-
-export function hasIconName(name: string): boolean {
-	return Boolean(resolveIconComponent(name));
 }
