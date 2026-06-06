@@ -184,12 +184,10 @@
 	0%,
 	100% {
 		box-shadow: 0 8px 18px rgb(var(--color-action-accent-rgb) / 10%);
-		transform: scale(1);
 	}
 
 	50% {
 		box-shadow: 0 12px 28px rgb(var(--color-action-accent-rgb) / 10%);
-		transform: scale(1.04);
 	}
 }
 
