@@ -46,7 +46,6 @@
 	--location-card-hover-transform: translateY(-4px);
 	--location-card-hover-shadow: var(--shadow-premium);
 	--location-card-hover-border-color: currentcolor;
-	--location-card-hover-rotate: 0deg;
 
 	// Card ::before overlay (editorial/premiere light sweep)
 	--location-card-padding: 0;
@@ -54,7 +53,6 @@
 	--location-card-before-bg-size: auto;
 	--location-card-before-bg-pos: 0 0;
 	--location-card-before-z-index: 0;
-	--location-card-before-transition: none;
 	--location-card-hover-before-bg-pos: 0 0;
 
 	// Card ::after overlay (celestial-blue glass sheen)
@@ -201,7 +199,6 @@
 	--location-nav-hover-shadow: none;
 	--location-nav-hover-transform: translateY(-2px);
 	--location-nav-hover-filter: none;
-	--location-nav-before-display: block;
 	--location-nav-after-display: block;
 
 	// Primary variant
@@ -412,7 +409,7 @@
 			background-size: var(--location-card-before-bg-size);
 			background-position: var(--location-card-before-bg-pos);
 			z-index: var(--location-card-before-z-index);
-			transition: var(--location-card-before-transition);
+			transition: none;
 			pointer-events: none;
 		}
 
@@ -441,8 +438,7 @@
 		}
 
 		&:hover {
-			transform: var(--location-card-hover-transform)
-				rotateX(var(--location-card-hover-rotate));
+			transform: var(--location-card-hover-transform) rotateX(0deg);
 			box-shadow: var(--location-card-hover-shadow);
 			border-color: var(--location-card-hover-border-color);
 
@@ -716,19 +712,6 @@
 		border: var(--location-nav-border);
 		color: var(--location-nav-color);
 
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: -100%;
-			width: 100%;
-			height: 100%;
-			background: linear-gradient(90deg, transparent, rgb(255 255 255 / 15%), transparent);
-			transition: 0s;
-			pointer-events: none;
-			display: var(--location-nav-before-display);
-		}
-
 		&::after {
 			content: '';
 			position: absolute;
@@ -750,11 +733,6 @@
 			border-color: var(--location-nav-hover-border-color);
 			box-shadow: var(--location-nav-hover-shadow);
 			transform: var(--location-nav-hover-transform);
-		}
-
-		&:hover::before {
-			left: 100%;
-			transition: 0.5s;
 		}
 
 		&:hover::after {
@@ -1031,11 +1009,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.event-location {
-		&__card {
-			/* stylelint-disable-next-line declaration-no-important */
-			animation: none !important;
-			transition: none;
-		}
+	.event-location.has-motion.is-visible .event-location__card {
+		animation: none;
+		transition: none;
 	}
 }

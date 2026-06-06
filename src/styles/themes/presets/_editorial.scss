@@ -171,7 +171,6 @@
 		0 50px 100px -20px rgb(0 0 0 / 80%), inset 0 0 40px rgb(var(--color-action-accent-rgb) / 5%);
 	--location-card-backdrop-filter: blur(30px);
 	--location-card-hover-transform: translateY(-12px);
-	--location-card-hover-rotate: 2deg;
 	--location-card-hover-shadow:
 		0 70px 140px -30px rgb(0 0 0 / 95%), 0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 50%);
@@ -179,8 +178,6 @@
 	--location-card-before-bg-size: 300% 300%;
 	--location-card-before-bg-pos: -100% -100%;
 	--location-card-before-z-index: 2;
-	--location-card-before-transition: background-position var(--duration-slower)
-		var(--ease-premium);
 	--location-card-hover-before-bg-pos: 100% 100%;
 	--location-image-aspect-ratio: 16 / 9;
 	--location-image-filter: grayscale(0.2) contrast(1.1) brightness(0.9);
@@ -369,4 +366,12 @@
 	--pa-label-color: rgb(var(--color-action-accent-rgb) / 80%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
+}
+
+.theme-preset--editorial .event-location__card:hover {
+	transform: var(--location-card-hover-transform) rotateX(2deg);
+}
+
+.theme-preset--editorial .event-location__card::before {
+	transition: background-position var(--duration-slower) var(--ease-premium);
 }
