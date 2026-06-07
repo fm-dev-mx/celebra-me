@@ -14,7 +14,6 @@ import ContentSyncPanel from '@/components/dashboard/content-sync/ContentSyncPan
 	}
 
 	.content-sync__header,
-	.content-sync__environment,
 	.content-sync__summary,
 	.content-sync__actions,
 	.content-sync__modal-actions {
@@ -41,12 +40,25 @@ import ContentSyncPanel from '@/components/dashboard/content-sync/ContentSyncPan
 	}
 
 	.content-sync__environment {
-		flex-wrap: wrap;
+		display: grid;
+		gap: 0.85rem;
 		padding: 1rem;
 		border: 1px solid var(--dashboard-card-border);
 		border-radius: 0.75rem;
 		background: rgb(248 241 228 / 4%);
 		color: var(--color-text-secondary);
+	}
+
+	.content-sync__env-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+	}
+
+	.content-sync__env-label {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.75rem;
 	}
 
 	.content-sync__environment strong {
@@ -128,6 +140,21 @@ import ContentSyncPanel from '@/components/dashboard/content-sync/ContentSyncPan
 	.content-sync__actions {
 		flex-wrap: wrap;
 		min-width: 280px;
+	}
+
+	.content-sync__actions .btn-primary:disabled,
+	.content-sync__actions .btn-primary:disabled:hover,
+	.content-sync__actions .btn-secondary:disabled,
+	.content-sync__actions .btn-secondary:disabled:hover,
+	.content-sync__modal-actions .btn-primary:disabled,
+	.content-sync__modal-actions .btn-primary:disabled:hover {
+		cursor: not-allowed;
+		border-color: var(--dashboard-button-secondary-border);
+		background: var(--dashboard-button-secondary-bg);
+		box-shadow: none;
+		color: var(--color-text-muted);
+		opacity: 0.58;
+		transform: none;
 	}
 
 	.content-sync__detail {

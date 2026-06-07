@@ -55,8 +55,158 @@ const formatValue = (value: unknown): string => {
 	return JSON.stringify(value);
 };
 
-const canPublishStatus = (status: DemoDriftStatus) =>
+/** V1 safety: only 'different' rows may be published. */
+const canPublishStatus = (status: DemoDriftStatus): boolean => status === 'different';
+
+/** Dry-run is useful only for statuses where a publish could follow. */
+const canDryRunStatus = (status: DemoDriftStatus): boolean => status === 'different';
+
+/** Viewing diffs makes sense when there is local + prod content to compare. */
+const canViewDiffStatus = (status: DemoDriftStatus): boolean =>
 	status === 'different' || status === 'missing_in_prod';
+
+const hasPublishReadyDryRun = (
+	item: DemoDriftItem,
+	dryRun: DemoPublishDryRunResult | undefined,
+): boolean =>
+	canPublishStatus(item.status) &&
+	dryRun?.can_publish === true &&
+	Boolean(dryRun.expected_prod_hash) &&
+	dryRun.route_key === item.route_key &&
+	dryRun.event_type === item.event_type &&
+	dryRun.slug === item.slug &&
+	dryRun.prod_hash === item.prod_hash;
+
+const EnvironmentBanner: React.FC<{ sourceEnvironment: SourceEnvironment }> = ({
+	sourceEnvironment,
+}) => (
+	<div
+		className="content-sync__environment"
+		aria-label="Entornos de comparación"
+		aria-live="polite"
+	>
+		<div className="content-sync__env-meta">
+			<span className="content-sync__env-label">
+				Fuente: {SOURCE_LABELS[sourceEnvironment]}
+			</span>
+			<span className="content-sync__env-label">Base de datos destino: producción</span>
+		</div>
+		{sourceEnvironment === 'local' && (
+			<strong className="content-sync__env-warning">
+				Estás comparando contenido local contra producción. Publicar desde este entorno
+				modificará datos de producción.
+			</strong>
+		)}
+	</div>
+);
+
+const ContentSyncRow: React.FC<{
+	item: DemoDriftItem;
+	dryRun: DemoPublishDryRunResult | undefined;
+	busyRoute: string | null;
+	onSelect: (item: DemoDriftItem) => void;
+	onDryRun: (item: DemoDriftItem) => void;
+	onConfirm: (item: DemoDriftItem) => void;
+}> = ({ item, dryRun, busyRoute, onSelect, onDryRun, onConfirm }) => {
+	const publishEnabled = hasPublishReadyDryRun(item, dryRun);
+	const isBusy = busyRoute === item.route_key;
+
+	return (
+		<tr>
+			<td>{item.route_key}</td>
+			<td>{item.event_type}</td>
+			<td>{item.slug}</td>
+			<td>
+				<span className={`content-sync__status content-sync__status--${item.status}`}>
+					{STATUS_LABELS[item.status]}
+				</span>
+			</td>
+			<td>{item.changed_paths.length}</td>
+			<td>
+				<code>{shortHash(item.local_hash)}</code>
+			</td>
+			<td>
+				<code>{shortHash(item.prod_hash)}</code>
+			</td>
+			<td>
+				<div className="content-sync__actions">
+					<button
+						type="button"
+						className="btn-secondary"
+						disabled={!canViewDiffStatus(item.status)}
+						onClick={() => onSelect(item)}
+					>
+						Ver diferencias
+					</button>
+					<button
+						type="button"
+						className="btn-secondary"
+						disabled={isBusy || !canDryRunStatus(item.status)}
+						onClick={() => onDryRun(item)}
+					>
+						Ejecutar revisión
+					</button>
+					<button
+						type="button"
+						className="btn-primary"
+						disabled={isBusy || !publishEnabled}
+						onClick={() => onConfirm(item)}
+					>
+						Publicar cambios
+					</button>
+				</div>
+			</td>
+		</tr>
+	);
+};
+
+const ContentSyncDetail: React.FC<{ selected: DemoDriftItem | null }> = ({ selected }) => (
+	<aside className="dashboard-card content-sync__detail">
+		{selected ? (
+			<>
+				<p className="content-sync__eyebrow">Ruta: {selected.route_key}</p>
+				<h2>{STATUS_LABELS[selected.status]}</h2>
+				<dl className="content-sync__hashes">
+					<div>
+						<dt>Hash local</dt>
+						<dd>{selected.local_hash ?? '—'}</dd>
+					</div>
+					<div>
+						<dt>Hash producción</dt>
+						<dd>{selected.prod_hash ?? '—'}</dd>
+					</div>
+				</dl>
+				<h3>Cambios detectados</h3>
+				{selected.changed_paths.length > 0 ? (
+					<ul className="content-sync__paths">
+						{selected.changed_paths.map((path) => (
+							<li key={path}>
+								<code>{path}</code>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p>Sin rutas modificadas.</p>
+				)}
+				{selected.diff_examples.length > 0 && (
+					<div className="content-sync__examples">
+						{selected.diff_examples.map((example) => (
+							<div key={example.path} className="content-sync__example">
+								<strong>{example.path}</strong>
+								<p>
+									<span>- {formatValue(example.before)}</span>
+									<span>+ {formatValue(example.after)}</span>
+								</p>
+							</div>
+						))}
+					</div>
+				)}
+			</>
+		) : (
+			<p>Selecciona un demo para ver diferencias compactas.</p>
+		)}
+	</aside>
+);
 
 const ContentSyncPanel: React.FC = () => {
 	const [report, setReport] = useState<DemoDriftReport | null>(null);
@@ -74,6 +224,13 @@ const ContentSyncPanel: React.FC = () => {
 			[...(report?.items ?? [])].sort((a, b) => a.route_key.localeCompare(b.route_key, 'es')),
 		[report?.items],
 	);
+	const currentConfirmItem = useMemo(
+		() =>
+			confirmTarget
+				? (report?.items.find((item) => item.route_key === confirmTarget.route_key) ?? null)
+				: null,
+		[confirmTarget, report?.items],
+	);
 
 	const loadReport = async () => {
 		setLoading(true);
@@ -83,6 +240,7 @@ const ContentSyncPanel: React.FC = () => {
 		);
 		if (result.ok) {
 			setReport(result.data);
+			setDryRunByRoute({});
 			setSelected((current) =>
 				current
 					? (result.data.items.find((item) => item.route_key === current.route_key) ??
@@ -90,7 +248,7 @@ const ContentSyncPanel: React.FC = () => {
 					: null,
 			);
 		} else {
-			setError(result.message);
+			setError(`Error al cargar el estado de publicación.\n${result.message}`);
 		}
 		setLoading(false);
 	};
@@ -107,6 +265,11 @@ const ContentSyncPanel: React.FC = () => {
 		setBusyRoute(item.route_key);
 		setError(null);
 		setMessage(null);
+		setDryRunByRoute((current) => {
+			const next = { ...current };
+			delete next[item.route_key];
+			return next;
+		});
 		const result = await dashboardApi.post<DemoPublishDryRunResult>(
 			'/api/dashboard/admin/demo-publish/dry-run',
 			{ event_type: item.event_type, slug: item.slug },
@@ -138,20 +301,20 @@ const ContentSyncPanel: React.FC = () => {
 	const confirmPublish = async () => {
 		if (!confirmTarget) return;
 		const dryRun = dryRunByRoute[confirmTarget.route_key];
-		if (!dryRun?.expected_prod_hash) {
-			setError('Ejecuta una revisión antes de publicar.');
+		if (!currentConfirmItem || !hasPublishReadyDryRun(currentConfirmItem, dryRun)) {
+			setError('Ejecuta una revisión válida antes de publicar.');
 			setConfirmTarget(null);
 			return;
 		}
 
-		setBusyRoute(confirmTarget.route_key);
+		setBusyRoute(currentConfirmItem.route_key);
 		setError(null);
 		setMessage(null);
 		const result = await dashboardApi.post<DemoPublishConfirmResult>(
 			'/api/dashboard/admin/demo-publish/confirm',
 			{
-				event_type: confirmTarget.event_type,
-				slug: confirmTarget.slug,
+				event_type: currentConfirmItem.event_type,
+				slug: currentConfirmItem.slug,
 				expected_prod_hash: dryRun.expected_prod_hash,
 			},
 		);
@@ -161,7 +324,7 @@ const ContentSyncPanel: React.FC = () => {
 			);
 			setDryRunByRoute((current) => {
 				const next = { ...current };
-				delete next[confirmTarget.route_key];
+				delete next[currentConfirmItem.route_key];
 				return next;
 			});
 			setConfirmTarget(null);
@@ -185,15 +348,9 @@ const ContentSyncPanel: React.FC = () => {
 				</button>
 			</div>
 
-			<div className="content-sync__environment" aria-live="polite">
-				<span>Fuente: {SOURCE_LABELS[report?.source_environment ?? 'unknown']}</span>
-				<span>Base de datos destino: producción</span>
-				{report?.source_environment === 'local' && (
-					<strong>Estás comparando contenido local contra producción.</strong>
-				)}
-			</div>
+			<EnvironmentBanner sourceEnvironment={report?.source_environment ?? 'unknown'} />
 
-			{error && <p className="dashboard-error">{error}</p>}
+			{error && <p className="dashboard-error dashboard-error--pre-line">{error}</p>}
 			{message && <p className="dashboard-status">{message}</p>}
 			{loading && <p className="dashboard-status">Cargando demos...</p>}
 
@@ -222,65 +379,18 @@ const ContentSyncPanel: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{sortedItems.map((item) => {
-								const dryRun = dryRunByRoute[item.route_key];
-								const publishEnabled =
-									canPublishStatus(item.status) &&
-									dryRun?.can_publish === true &&
-									Boolean(dryRun.expected_prod_hash);
-								const isBusy = busyRoute === item.route_key;
-								return (
-									<tr key={item.route_key}>
-										<td>{item.route_key}</td>
-										<td>{item.event_type}</td>
-										<td>{item.slug}</td>
-										<td>
-											<span
-												className={`content-sync__status content-sync__status--${item.status}`}
-											>
-												{STATUS_LABELS[item.status]}
-											</span>
-										</td>
-										<td>{item.changed_paths.length}</td>
-										<td>
-											<code>{shortHash(item.local_hash)}</code>
-										</td>
-										<td>
-											<code>{shortHash(item.prod_hash)}</code>
-										</td>
-										<td>
-											<div className="content-sync__actions">
-												<button
-													type="button"
-													className="btn-secondary"
-													onClick={() => selectItem(item)}
-												>
-													Ver diferencias
-												</button>
-												<button
-													type="button"
-													className="btn-secondary"
-													disabled={
-														isBusy || !canPublishStatus(item.status)
-													}
-													onClick={() => void runDryRun(item)}
-												>
-													Ejecutar revisión
-												</button>
-												<button
-													type="button"
-													className="btn-primary"
-													disabled={isBusy || !publishEnabled}
-													onClick={() => setConfirmTarget(item)}
-												>
-													Publicar cambios
-												</button>
-											</div>
-										</td>
-									</tr>
-								);
-							})}
-							{sortedItems.length === 0 && !loading && (
+							{sortedItems.map((item) => (
+								<ContentSyncRow
+									key={item.route_key}
+									item={item}
+									dryRun={dryRunByRoute[item.route_key]}
+									busyRoute={busyRoute}
+									onSelect={selectItem}
+									onDryRun={(target) => void runDryRun(target)}
+									onConfirm={setConfirmTarget}
+								/>
+							))}
+							{sortedItems.length === 0 && !loading && !error && (
 								<tr>
 									<td colSpan={8}>No hay demos para comparar.</td>
 								</tr>
@@ -289,51 +399,7 @@ const ContentSyncPanel: React.FC = () => {
 					</table>
 				</div>
 
-				<aside className="dashboard-card content-sync__detail">
-					{selected ? (
-						<>
-							<p className="content-sync__eyebrow">Ruta: {selected.route_key}</p>
-							<h2>{STATUS_LABELS[selected.status]}</h2>
-							<dl className="content-sync__hashes">
-								<div>
-									<dt>Hash local</dt>
-									<dd>{selected.local_hash ?? '—'}</dd>
-								</div>
-								<div>
-									<dt>Hash producción</dt>
-									<dd>{selected.prod_hash ?? '—'}</dd>
-								</div>
-							</dl>
-							<h3>Cambios detectados</h3>
-							{selected.changed_paths.length > 0 ? (
-								<ul className="content-sync__paths">
-									{selected.changed_paths.map((path) => (
-										<li key={path}>
-											<code>{path}</code>
-										</li>
-									))}
-								</ul>
-							) : (
-								<p>Sin rutas modificadas.</p>
-							)}
-							{selected.diff_examples.length > 0 && (
-								<div className="content-sync__examples">
-									{selected.diff_examples.map((example) => (
-										<div key={example.path} className="content-sync__example">
-											<strong>{example.path}</strong>
-											<p>
-												<span>- {formatValue(example.before)}</span>
-												<span>+ {formatValue(example.after)}</span>
-											</p>
-										</div>
-									))}
-								</div>
-							)}
-						</>
-					) : (
-						<p>Selecciona un demo para ver diferencias compactas.</p>
-					)}
-				</aside>
+				<ContentSyncDetail selected={selected} />
 			</div>
 
 			{confirmTarget && (
@@ -362,6 +428,14 @@ const ContentSyncPanel: React.FC = () => {
 							<button
 								type="button"
 								className="btn-primary"
+								disabled={
+									busyRoute === confirmTarget.route_key ||
+									!currentConfirmItem ||
+									!hasPublishReadyDryRun(
+										currentConfirmItem,
+										dryRunByRoute[confirmTarget.route_key],
+									)
+								}
 								onClick={() => void confirmPublish()}
 							>
 								Publicar cambios

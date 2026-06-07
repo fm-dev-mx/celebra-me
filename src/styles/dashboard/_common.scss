@@ -59,6 +59,10 @@
 	border: 1px solid var(--color-state-danger-border);
 	border-radius: 8px;
 	margin: 0.5rem 0;
+
+	&--pre-line {
+		white-space: pre-line;
+	}
 }
 
 .dashboard-loading {
