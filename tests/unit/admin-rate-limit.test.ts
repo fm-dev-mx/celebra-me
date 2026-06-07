@@ -30,4 +30,21 @@ describe('requireAdminRateLimit', () => {
 			expect.objectContaining({ entityId: 'intake:regenerate:hashed-ip' }),
 		);
 	});
+
+	it('registers all Content Sync operation names and allows them', async () => {
+		const request = new Request('https://example.com/api/dashboard/admin/content-drift', {
+			headers: { 'x-forwarded-for': '10.0.0.1' },
+		});
+
+		await expect(requireAdminRateLimit(request, 'admin:content-drift')).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'admin:content-drift-demo'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'admin:demo-publish-dry-run'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'admin:demo-publish-confirm'),
+		).resolves.not.toThrow();
+	});
 });

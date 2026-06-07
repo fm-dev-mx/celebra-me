@@ -44,6 +44,12 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'intake:publish': { maxHits: 5, windowSec: 60 },
 	'intake:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	'intake:captura': { maxHits: 30, windowSec: 60 },
+
+	// Content Sync operations
+	'admin:content-drift': { maxHits: 60, windowSec: 60 },
+	'admin:content-drift-demo': { maxHits: 60, windowSec: 60 },
+	'admin:demo-publish-dry-run': { maxHits: 30, windowSec: 60 },
+	'admin:demo-publish-confirm': { maxHits: 5, windowSec: 60 },
 };
 
 /**
