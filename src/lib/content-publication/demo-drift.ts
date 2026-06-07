@@ -58,10 +58,27 @@ function summarize(items: DemoDriftItem[]): Record<DemoDriftStatus, number> {
 }
 
 export function resolveSourceEnvironment(): SourceEnvironment {
-	const vercelEnv = process.env.VERCEL_ENV;
+	const vercelEnv = typeof process !== 'undefined' ? process.env?.VERCEL_ENV : undefined;
 	if (vercelEnv === 'production') return 'production';
 	if (vercelEnv === 'preview') return 'preview';
-	if (process.env.NODE_ENV === 'development') return 'local';
+
+	let isDev = false;
+	try {
+		const getMetaEnv = new Function('return import.meta.env');
+		const metaEnv = getMetaEnv();
+		if (metaEnv?.DEV) {
+			isDev = true;
+		}
+	} catch {
+		const globalImport = (globalThis as any).import;
+		if (globalImport?.meta?.env?.DEV) {
+			isDev = true;
+		}
+	}
+
+	if (isDev || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
+		return 'local';
+	}
 	return 'unknown';
 }
 
