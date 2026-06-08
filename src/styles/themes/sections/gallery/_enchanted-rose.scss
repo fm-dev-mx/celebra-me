@@ -394,6 +394,7 @@
 		bottom: auto;
 		top: calc(100% + 1rem);
 		padding-inline: 0.5rem;
+		color: var(--gallery-lightbox-footer-color);
 
 		&::before {
 			content: '';
