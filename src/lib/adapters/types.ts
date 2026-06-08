@@ -223,6 +223,7 @@ export interface InvitationViewModel {
 			variant?: SharedSectionVariant;
 		};
 		gallery?: {
+			eyebrow?: string;
 			title: string;
 			subtitle?: string;
 			items: Array<{

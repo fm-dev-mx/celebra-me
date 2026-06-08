@@ -45,6 +45,56 @@ describe('GalleryEditor', () => {
 		});
 	});
 
+	it('edits eyebrow field separately from title', () => {
+		const onChange = jest.fn();
+		const value = {
+			eyebrow: 'Galería',
+			title: 'Instantes de Ayrin',
+			items: [{ image: 'gallery01', caption: 'Primera' }],
+		};
+
+		render(
+			<GalleryEditor
+				value={value}
+				assetLookupSlug="demo-xv-jewelry-box"
+				onChange={onChange}
+			/>,
+		);
+
+		fireEvent.change(screen.getByLabelText('Etiqueta superior'), {
+			target: { value: 'Recuerdos' },
+		});
+		expect(onChange).toHaveBeenLastCalledWith({
+			...value,
+			eyebrow: 'Recuerdos',
+		});
+
+		fireEvent.change(screen.getByLabelText('Título de la galería'), {
+			target: { value: 'Momentos especiales' },
+		});
+		expect(onChange).toHaveBeenLastCalledWith({
+			...value,
+			title: 'Momentos especiales',
+		});
+	});
+
+	it('renders without crashing when eyebrow is not provided', () => {
+		const value = {
+			title: 'Test',
+			items: [{ image: 'gallery01', caption: 'Test' }],
+		};
+
+		expect(() =>
+			render(
+				<GalleryEditor
+					value={value}
+					assetLookupSlug="demo-xv-jewelry-box"
+					onChange={jest.fn()}
+				/>,
+			),
+		).not.toThrow();
+	});
+
 	it('renders items with internal asset references without crashing', () => {
 		const value = {
 			title: 'Test',

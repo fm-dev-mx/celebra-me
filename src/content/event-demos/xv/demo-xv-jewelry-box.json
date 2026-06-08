@@ -79,8 +79,9 @@
         "featuredImage": "family"
     },
     "gallery": {
-        "title": "Galería",
-        "subtitle": "Recuerdos antes del gran día",
+        "eyebrow": "Galería",
+        "title": "Recuerdos antes del gran día",
+        "subtitle": "Momentos de ilusión y elegancia que brillan con luz propia.",
         "items": [
             {
                 "image": "gallery01",

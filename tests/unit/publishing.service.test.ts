@@ -87,7 +87,7 @@ const MINIMAL_DEMO_ENTRY = {
 			},
 		},
 		quote: { text: 'Demo quote', author: 'Author' },
-		gallery: { title: 'Galería', items: [] },
+		gallery: { eyebrow: 'Galería', title: 'Galería', items: [] },
 	},
 };
 const mockFindAssets = findAssetsByInvitationId as jest.MockedFunction<

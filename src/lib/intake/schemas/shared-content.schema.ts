@@ -32,6 +32,7 @@ export const venueSchema = z.object({
 });
 
 export const gallerySchema = z.object({
+	eyebrow: optionalText(200),
 	title: optionalText(200),
 	subtitle: optionalText(500),
 	items: z.array(

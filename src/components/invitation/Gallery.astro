@@ -16,14 +16,16 @@ interface GalleryItem {
 }
 
 interface Props {
-	title?: string;
+	eyebrow?: string;
 	heading?: string;
+	title?: string;
 	subtitle?: string;
 	items: GalleryItem[];
 	variant?: string;
 }
 
-const { title = 'Galería', heading, subtitle, items, variant = 'standard' } = Astro.props;
+const { eyebrow = 'Galería', title: titleProp, heading, subtitle, items, variant = 'standard' } = Astro.props;
+const title = titleProp ?? heading;
 
 if (!items || items.length === 0) return null;
 ---
@@ -31,8 +33,8 @@ if (!items || items.length === 0) return null;
 <section id="galeria" class="gallery-section" data-variant={variant}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
-			<span class="gallery-section__eyebrow">{title}</span>
-			<h2 class="gallery-section__title">{heading || title}</h2>
+			<span class="gallery-section__eyebrow">{eyebrow}</span>
+			<h2 class="gallery-section__title">{title}</h2>
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
 		</header>
 

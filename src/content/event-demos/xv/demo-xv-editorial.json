@@ -66,6 +66,7 @@
         "featuredImage": "family"
     },
     "gallery": {
+        "eyebrow": "Galería",
         "title": "Galería Editorial",
         "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",
         "items": [

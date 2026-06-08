@@ -71,6 +71,7 @@
         }
     },
     "gallery": {
+        "eyebrow": "Galería",
         "title": "Instantes de luz",
         "subtitle": "Una memoria serena de este día sagrado",
         "items": [

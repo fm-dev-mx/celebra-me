@@ -527,6 +527,7 @@ describe('mapDraftToPublished', () => {
 			draftContent: {
 				...baseInput.draftContent,
 				gallery: {
+					eyebrow: 'Galería',
 					title: 'Nuestros recuerdos',
 					items: [
 						{ image: 'gallery02', caption: 'Segundo recuerdo' },
@@ -537,12 +538,50 @@ describe('mapDraftToPublished', () => {
 		});
 
 		expect(result.gallery).toEqual({
+			eyebrow: 'Galería',
 			title: 'Nuestros recuerdos',
 			items: [
 				{ image: 'gallery02', caption: 'Segundo recuerdo' },
 				{ image: 'gallery01', caption: 'Primer recuerdo' },
 			],
 		});
+	});
+
+	it('preserves gallery eyebrow from draft content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				gallery: {
+					eyebrow: 'Recuerdos',
+					title: 'Momentos especiales',
+					items: [{ image: 'gallery01', caption: 'Primer recuerdo' }],
+				},
+			},
+		});
+
+		expect(result.gallery).toEqual({
+			eyebrow: 'Recuerdos',
+			title: 'Momentos especiales',
+			items: [{ image: 'gallery01', caption: 'Primer recuerdo' }],
+		});
+	});
+
+	it('does not reuse gallery title as eyebrow fallback', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				gallery: {
+					title: 'Instantes de Ayrin',
+					items: [{ image: 'gallery01', caption: 'Primer recuerdo' }],
+				},
+			},
+		});
+
+		const gallery = result.gallery as Record<string, unknown> | undefined;
+		expect((gallery as Record<string, unknown> | undefined)?.eyebrow).toBeUndefined();
+		expect((gallery as Record<string, unknown> | undefined)?.title).toBe('Instantes de Ayrin');
 	});
 
 	it('uses itinerary from draft content when the admin edits the program', () => {

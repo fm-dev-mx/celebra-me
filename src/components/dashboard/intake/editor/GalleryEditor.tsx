@@ -70,6 +70,9 @@ export default function GalleryEditor({
 		onChange({ ...value, items });
 	};
 
+	const setField = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+		onChange({ ...value, [field]: e.target.value });
+
 	function handleAssetSelect(assetId: string) {
 		if (pickerIndex !== null) {
 			updateItem(pickerIndex, { image: { type: 'uploaded' as const, assetId } });
@@ -81,18 +84,20 @@ export default function GalleryEditor({
 		<div className="invitation-editor__gallery">
 			<div className="invitation-editor__field-grid">
 				<label className="invitation-editor__field">
-					<span>Título de la galería</span>
+					<span>Etiqueta superior</span>
 					<input
-						value={value.title ?? ''}
-						onChange={(event) => onChange({ ...value, title: event.target.value })}
+						value={value.eyebrow ?? ''}
+						onChange={setField('eyebrow')}
+						placeholder="Galería"
 					/>
 				</label>
 				<label className="invitation-editor__field">
+					<span>Título de la galería</span>
+					<input value={value.title ?? ''} onChange={setField('title')} />
+				</label>
+				<label className="invitation-editor__field">
 					<span>Subtítulo</span>
-					<input
-						value={value.subtitle ?? ''}
-						onChange={(event) => onChange({ ...value, subtitle: event.target.value })}
-					/>
+					<input value={value.subtitle ?? ''} onChange={setField('subtitle')} />
 				</label>
 			</div>
 			<label className="invitation-editor__field invitation-editor__crop-mode">

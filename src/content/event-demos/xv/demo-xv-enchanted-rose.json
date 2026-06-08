@@ -100,8 +100,8 @@
         ]
     },
     "gallery": {
-        "title": "Galería",
-        "heading": "Instantes de Ayrin",
+        "eyebrow": "Galería",
+        "title": "Instantes de Ayrin",
         "subtitle": "Una selección de momentos entre rosas, luz de velas y detalles dorados.",
         "items": [
             { "image": "gallery01", "caption": "Bajo la luz de las velas" },

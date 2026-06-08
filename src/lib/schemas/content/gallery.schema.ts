@@ -3,8 +3,8 @@ import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.sche
 
 export const gallerySchema = z
 	.object({
+		eyebrow: z.string().max(200).default('Galería'),
 		title: z.string().default('Galería'),
-		heading: z.string().optional(),
 		subtitle: z.string().optional(),
 		items: z.array(
 			z.object({

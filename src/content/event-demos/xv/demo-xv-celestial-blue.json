@@ -82,8 +82,9 @@
         ]
     },
     "gallery": {
-        "title": "Galería",
-        "subtitle": "Luz, color y momentos que brillan con luz propia.",
+        "eyebrow": "Galería",
+        "title": "Luz, color y momentos que brillan con luz propia.",
+        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
         "items": [
             { "image": "gallery01", "caption": "Una noche de ensueño en tonos de cielo." },
             { "image": "gallery02", "caption": "Cada instante, una obra de luz." },
