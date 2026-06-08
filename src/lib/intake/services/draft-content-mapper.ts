@@ -313,7 +313,18 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const music = nestedContent.music as Record<string, unknown> | undefined;
 	if (music && Object.keys(music).length > 0) {
-		result.music = { url: str(music.url), title: str(music.title) };
+		result.music = {
+			url: str(music.url),
+			title: str(music.title),
+			...(typeof music.autoPlay === 'boolean' ? { autoPlay: music.autoPlay } : {}),
+		};
+	}
+
+	const envelope = nestedContent.envelope as Record<string, unknown> | undefined;
+	if (envelope && Object.keys(envelope).length > 0) {
+		result.envelope = {
+			...(typeof envelope.disabled === 'boolean' ? { disabled: envelope.disabled } : {}),
+		};
 	}
 
 	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;

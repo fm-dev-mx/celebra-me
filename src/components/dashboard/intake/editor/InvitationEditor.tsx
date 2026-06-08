@@ -83,6 +83,7 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
 	music: ['music'],
+	envelope: ['envelope'],
 	gifts: ['gifts'],
 	thankYou: ['thankYou'],
 	messages: ['quote', 'thankYou'],
@@ -288,6 +289,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const countdown = content.countdown ?? {};
 	const rsvp = content.rsvp ?? {};
 	const music = content.music ?? {};
+	const envelope = content.envelope ?? {};
 	const gifts = content.gifts ?? { items: [] };
 	const giftItems = gifts.items ?? [];
 	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
@@ -917,6 +919,24 @@ export default function InvitationEditor({ initialContext }: Props) {
 									updateContent('music', { ...music, url: value })
 								}
 							/>
+							<label className="invitation-editor__check">
+								<input
+									type="checkbox"
+									checked={music.autoPlay ?? false}
+									onChange={(event) =>
+										updateContent('music', {
+											...music,
+											autoPlay: event.target.checked,
+										})
+									}
+								/>
+								<span>Reproducir música automáticamente</span>
+							</label>
+							<p className="invitation-editor__hint">
+								Los navegadores pueden bloquear la reproducción automática. Si se
+								bloquea, el invitado verá un control para iniciar la música
+								manualmente.
+							</p>
 							<Field
 								label="Título"
 								value={music.title ?? ''}
@@ -925,6 +945,30 @@ export default function InvitationEditor({ initialContext }: Props) {
 								}
 							/>
 						</div>
+					</SectionCard>
+
+					<SectionCard
+						id="envelope"
+						title="Sobre / apertura"
+						description="Controla la experiencia de apertura de la invitación."
+						dirty={dirty.has('envelope')}
+						error={errors.envelope}
+						success={success.envelope}
+						sourceBadge={sectionSource('envelope')}
+						visible={activeEditorCardId === 'envelope'}
+					>
+						<label className="invitation-editor__check">
+							<input
+								type="checkbox"
+								checked={envelope.disabled !== true}
+								onChange={(event) =>
+									updateContent('envelope', {
+										disabled: !event.target.checked,
+									})
+								}
+							/>
+							<span>Mostrar sobre de apertura</span>
+						</label>
 					</SectionCard>
 
 					<SectionCard

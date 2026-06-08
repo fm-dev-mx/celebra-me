@@ -330,7 +330,8 @@ function mapMusicSection(
 	const url = str(draftMusic?.url);
 	const title = str(draftMusic?.title);
 	if (url) {
-		return { url, title: title || str(demoMusic?.title), autoPlay: false };
+		const autoPlay = typeof draftMusic?.autoPlay === 'boolean' ? draftMusic.autoPlay : false;
+		return { url, title: title || str(demoMusic?.title), autoPlay };
 	}
 	return demoMusic ? { ...demoMusic } : undefined;
 }

@@ -23,6 +23,7 @@ export const INVITATION_EDITOR_SECTION_KEYS = [
 	'itinerary',
 	'rsvp',
 	'music',
+	'envelope',
 	'gifts',
 	'messages',
 	'gallery',
@@ -85,6 +86,10 @@ export const InvitationEditorSectionSchemas = {
 	music: z.object({
 		url: optionalUrl,
 		title: optionalText(200),
+		autoPlay: z.boolean().optional(),
+	}),
+	envelope: z.object({
+		disabled: z.boolean().optional(),
 	}),
 	gifts: giftsSchema,
 	messages: z.object({

@@ -55,6 +55,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				url: optionalUrl,
 				title: optionalText(200),
+				autoPlay: z.boolean().optional(),
 			})
 			.optional(),
 		location: z
