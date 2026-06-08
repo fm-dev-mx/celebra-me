@@ -11,6 +11,7 @@ import {
 	draftIndicationSchema,
 	giftsSchema,
 	countdownEditorSchema,
+	rsvpResponseMessagesSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
@@ -67,6 +68,7 @@ export const InvitationEditorSectionSchemas = {
 			confirmationMode: z.enum(['api', 'whatsapp', 'both']).optional(),
 			whatsappPhone: optionalText(30),
 			subcopy: optionalText(1000),
+			responseMessages: rsvpResponseMessagesSchema,
 		})
 		.superRefine((value, context) => {
 			if (

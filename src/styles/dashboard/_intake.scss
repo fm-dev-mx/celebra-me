@@ -1886,6 +1886,12 @@
 	gap: 1rem;
 }
 
+.invitation-editor__hint {
+	margin: 0;
+	font-size: 0.8125rem;
+	color: var(--color-text-muted);
+}
+
 .invitation-editor__content {
 	scroll-behavior: smooth;
 	scroll-padding-top: var(--invitation-editor-sticky-offset);

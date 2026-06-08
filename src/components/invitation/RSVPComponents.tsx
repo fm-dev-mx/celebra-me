@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
 import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
-import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
+import {
+	interpolateRsvpMessage,
+	RSVP_DEFAULT_RESPONSE_MESSAGES,
+	type AttendanceStatus,
+	type RsvpResponseMessages,
+} from '@/components/invitation/rsvp-logic';
 import {
 	AttendanceField,
 	ConfirmedFields,
@@ -106,6 +111,24 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 	);
 }
 
+function resolveGreetingMessages(
+	attendanceStatus: AttendanceStatus,
+	responseMessages: RsvpResponseMessages | undefined,
+	name: string,
+	celebrantName?: string,
+): { title: string; subtitle: string } {
+	const isConfirmed = attendanceStatus === 'confirmed';
+	const vars = { guestName: name, celebrantName };
+	const statusKey = isConfirmed ? 'confirmed' : 'declined';
+	const defaults = RSVP_DEFAULT_RESPONSE_MESSAGES[statusKey];
+	const custom = responseMessages?.[statusKey];
+
+	return {
+		title: interpolateRsvpMessage(custom?.title ?? defaults.title, vars),
+		subtitle: interpolateRsvpMessage(custom?.subtitle ?? defaults.subtitle, vars),
+	};
+}
+
 export const SubmittedState = forwardRef<
 	HTMLDivElement,
 	{
@@ -120,8 +143,7 @@ export const SubmittedState = forwardRef<
 		showWhatsAppCta: boolean;
 		whatsAppUrl: string;
 		onWhatsAppClick: () => void;
-		confirmedMessage?: string;
-		declinedMessage?: string;
+		responseMessages?: RsvpResponseMessages;
 	}
 >((props, ref) => {
 	const {
@@ -135,13 +157,20 @@ export const SubmittedState = forwardRef<
 		whatsAppUrl,
 		onWhatsAppClick,
 		onFocusCapture,
-		confirmedMessage = '¡Gracias por acompañarnos,',
-		declinedMessage = 'Sentimos mucho que no puedas acompañarnos.',
+		responseMessages,
 	} = props;
+
+	const isConfirmed = attendanceStatus === 'confirmed';
+	const { title: greetingTitle, subtitle: greetingSubtitle } = resolveGreetingMessages(
+		attendanceStatus,
+		responseMessages,
+		name,
+		celebrantName,
+	);
 
 	return (
 		<RsvpShell
-			state={attendanceStatus === 'confirmed' ? 'confirmed' : 'declined'}
+			state={isConfirmed ? 'confirmed' : 'declined'}
 			variant={variant}
 			onFocusCapture={onFocusCapture}
 			header={<RsvpStatusHeader title={title} />}
@@ -155,30 +184,19 @@ export const SubmittedState = forwardRef<
 				aria-atomic="true"
 			>
 				<div className="rsvp__greeting-icon">
-					{attendanceStatus === 'confirmed' ? (
-						<CheckSealIcon size={64} />
-					) : (
-						<HeartbreakIcon size={64} />
-					)}
+					{isConfirmed ? <CheckSealIcon size={64} /> : <HeartbreakIcon size={64} />}
 				</div>
 				<h2 className="rsvp__greeting-message">
-					{attendanceStatus === 'confirmed' ? (
+					{greetingTitle}
+					{isConfirmed && (
 						<>
-							{confirmedMessage}{' '}
-							<strong className="rsvp__greeting-name">{name}</strong>!
 							<br />
 							{confirmationMessage}
-						</>
-					) : (
-						<>
-							{declinedMessage} <br />
-							Gracias por avisarnos,{' '}
-							<strong className="rsvp__greeting-name">{name}</strong>.
 						</>
 					)}
 				</h2>
 
-				<p className="rsvp__greeting-submessage">Tu confirmación ha sido registrada.</p>
+				<p className="rsvp__greeting-submessage">{greetingSubtitle}</p>
 
 				{showWhatsAppCta && (
 					<div className="rsvp__contact-host">

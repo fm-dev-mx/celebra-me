@@ -50,6 +50,31 @@ export function getDefaultRsvpSubcopy(eventType: string): string {
 	);
 }
 
+export interface RsvpResponseMessages {
+	confirmed?: { title?: string; subtitle?: string };
+	declined?: { title?: string; subtitle?: string };
+}
+
+export function interpolateRsvpMessage(
+	template: string,
+	variables: { guestName?: string; celebrantName?: string },
+): string {
+	return template
+		.replaceAll('{guestName}', variables.guestName ?? '')
+		.replaceAll('{celebrantName}', variables.celebrantName ?? '');
+}
+
+export const RSVP_DEFAULT_RESPONSE_MESSAGES = {
+	confirmed: {
+		title: '¡Gracias por acompañarnos, {guestName}!',
+		subtitle: 'Tu confirmación ha sido registrada.',
+	},
+	declined: {
+		title: 'Sentimos mucho que no puedas acompañarnos, {guestName}.',
+		subtitle: 'Gracias por avisarnos.',
+	},
+} as const;
+
 export function resolveLabels(
 	labels?: {
 		name?: string;

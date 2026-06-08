@@ -10,6 +10,7 @@ import {
 	giftsSchema,
 	countdownEditorSchema,
 	draftIndicationSchema,
+	rsvpResponseMessagesSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
@@ -80,6 +81,12 @@ export const InvitationContentDraftContentSchema = z
 				confirmationMode: optionalText(20),
 				whatsappPhone: optionalText(30),
 				subcopy: optionalText(1000),
+				responseMessages: rsvpResponseMessagesSchema,
+			})
+			.optional(),
+		envelope: z
+			.object({
+				disabled: z.boolean().optional(),
 			})
 			.optional(),
 		photoNotes: z

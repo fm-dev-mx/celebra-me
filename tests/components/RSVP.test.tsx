@@ -955,4 +955,98 @@ describe('RSVP Component', () => {
 			});
 		});
 	});
+
+	describe('Custom RSVP Response Messages', () => {
+		it('shows custom confirmed title and subtitle after submission', async () => {
+			const user = userEvent.setup();
+			const { container } = render(
+				<RSVP
+					{...defaultProps}
+					responseMessages={{
+						confirmed: {
+							title: '¡Qué bueno que vienes, {guestName}!',
+							subtitle: 'Te registramos correctamente.',
+						},
+					}}
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Ana');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const greeting = container.querySelector('.rsvp__greeting-message');
+				expect(greeting?.textContent).toContain('¡Qué bueno que vienes, Ana!');
+				expect(screen.getByText('Te registramos correctamente.')).toBeInTheDocument();
+			});
+		});
+
+		it('shows custom declined title and subtitle after submission', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					{...defaultProps}
+					responseMessages={{
+						declined: {
+							title: 'Te extrañaremos, {guestName}.',
+							subtitle: 'Gracias por avisar.',
+						},
+					}}
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Carlos');
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText('Te extrañaremos, Carlos.')).toBeInTheDocument();
+				expect(screen.getByText('Gracias por avisar.')).toBeInTheDocument();
+			});
+		});
+
+		it('falls back to defaults when responseMessages is not provided', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(
+					screen.getByText((content) =>
+						content.includes('¡Gracias por acompañarnos, María!'),
+					),
+				).toBeInTheDocument();
+				expect(screen.getByText('Tu confirmación ha sido registrada.')).toBeInTheDocument();
+			});
+		});
+
+		it('interpolates {celebrantName} in custom messages', async () => {
+			const user = userEvent.setup();
+			const { container } = render(
+				<RSVP
+					{...defaultProps}
+					celebrantName="Sofía"
+					responseMessages={{
+						confirmed: {
+							title: '{guestName} confirma para la fiesta de {celebrantName}',
+							subtitle: 'Listo.',
+						},
+					}}
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Pedro');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const greeting = container.querySelector('.rsvp__greeting-message');
+				expect(greeting?.textContent).toContain('Pedro confirma para la fiesta de Sofía');
+			});
+		});
+	});
 });

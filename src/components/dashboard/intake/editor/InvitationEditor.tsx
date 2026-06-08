@@ -312,6 +312,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const updateRsvp = (patch: Partial<typeof rsvp>) =>
 		updateContent('rsvp', { ...rsvp, ...patch });
 
+	const updateRsvpResponseMessage = (
+		status: 'confirmed' | 'declined',
+		field: 'title' | 'subtitle',
+		value: string,
+	) => {
+		updateRsvp({
+			responseMessages: {
+				...rsvp.responseMessages,
+				[status]: {
+					...rsvp.responseMessages?.[status],
+					[field]: value || undefined,
+				},
+			},
+		});
+	};
+
 	const sectionSource = useCallback(
 		(section: string): { source: string; label: string } | undefined => {
 			const definition = getEditorSectionById(section);
@@ -840,6 +856,46 @@ export default function InvitationEditor({ initialContext }: Props) {
 							value={rsvp.subcopy ?? ''}
 							onChange={(value) => updateRsvp({ subcopy: value })}
 						/>
+						<details className="invitation-editor__row-details">
+							<summary>Mensajes de respuesta</summary>
+							<div className="invitation-editor__stack">
+								<p className="invitation-editor__hint">
+									Variables disponibles: {`{guestName}`}, {`{celebrantName}`}
+								</p>
+								<Field
+									label="Mensaje al confirmar"
+									value={rsvp.responseMessages?.confirmed?.title ?? ''}
+									onChange={(value) =>
+										updateRsvpResponseMessage('confirmed', 'title', value)
+									}
+									placeholder="¡Gracias por acompañarnos, {guestName}!"
+								/>
+								<TextArea
+									label="Subtítulo al confirmar"
+									value={rsvp.responseMessages?.confirmed?.subtitle ?? ''}
+									onChange={(value) =>
+										updateRsvpResponseMessage('confirmed', 'subtitle', value)
+									}
+									placeholder="Tu confirmación ha sido registrada."
+								/>
+								<Field
+									label="Mensaje al declinar"
+									value={rsvp.responseMessages?.declined?.title ?? ''}
+									onChange={(value) =>
+										updateRsvpResponseMessage('declined', 'title', value)
+									}
+									placeholder="Sentimos mucho que no puedas acompañarnos, {guestName}."
+								/>
+								<TextArea
+									label="Subtítulo al declinar"
+									value={rsvp.responseMessages?.declined?.subtitle ?? ''}
+									onChange={(value) =>
+										updateRsvpResponseMessage('declined', 'subtitle', value)
+									}
+									placeholder="Gracias por avisarnos."
+								/>
+							</div>
+						</details>
 					</SectionCard>
 
 					<SectionCard

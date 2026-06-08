@@ -289,12 +289,23 @@ function mapHeroSection(
 	);
 }
 
+function resolveRsvpResponseMessages(
+	draftRsvp: DraftContent['rsvp'],
+	demoRsvp: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	return (
+		draftRsvp!.responseMessages ??
+		(demoRsvp?.responseMessages as Record<string, unknown> | undefined)
+	);
+}
+
 function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftRsvp)) return undefined;
 	const whatsappPhone = str(draftRsvp!.whatsappPhone) || str(demoRsvp?.whatsappPhone);
+	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp);
 	return {
 		title: str(draftRsvp!.title) || str(demoRsvp?.title),
 		guestCap:
@@ -308,6 +319,7 @@ function mapRsvpSection(
 		accessMode: str(demoRsvp?.accessMode) || 'personalized-only',
 		whatsappConfig: whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig,
 		subcopy: str(draftRsvp!.subcopy) || str(demoRsvp?.subcopy),
+		...(responseMessages ? { responseMessages } : {}),
 	};
 }
 

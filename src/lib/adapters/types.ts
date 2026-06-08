@@ -12,6 +12,7 @@ import type {
 } from '@/lib/theme/theme-contract';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
+import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
 
 export interface ThemeConfig {
 	preset: ThemePreset;
@@ -252,6 +253,7 @@ export interface InvitationViewModel {
 			confirmationMessage: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';
 			whatsappConfig?: WhatsAppConfig;
+			responseMessages?: RsvpResponseMessages;
 			variant?: SharedSectionVariant;
 			labels?: {
 				name?: string;

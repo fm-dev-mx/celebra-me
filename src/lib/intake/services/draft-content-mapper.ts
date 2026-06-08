@@ -297,6 +297,9 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	const rsvp = nestedContent.rsvp as Record<string, unknown> | undefined;
 	if (rsvp && Object.keys(rsvp).length > 0) {
 		const whatsappConfig = rsvp.whatsappConfig as Record<string, unknown> | undefined;
+		const responseMessages = rsvp.responseMessages as
+			| NonNullable<DraftContent['rsvp']>['responseMessages']
+			| undefined;
 		result.rsvp = {
 			title: str(rsvp.title),
 			guestCap: typeof rsvp.guestCap === 'number' ? rsvp.guestCap : undefined,
@@ -304,6 +307,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			confirmationMode: str(rsvp.confirmationMode) as 'api' | 'whatsapp' | 'both' | undefined,
 			whatsappPhone: str(whatsappConfig?.phone),
 			subcopy: str(rsvp.subcopy),
+			...(responseMessages ? { responseMessages } : {}),
 		};
 	}
 

@@ -75,3 +75,19 @@ export const countdownEditorSchema = z.object({
 	title: optionalText(200),
 	footerText: optionalText(500),
 });
+
+export const rsvpResponseMessageSchema = z
+	.object({
+		title: optionalText(500),
+		subtitle: optionalText(500),
+	})
+	.strict()
+	.optional();
+
+export const rsvpResponseMessagesSchema = z
+	.object({
+		confirmed: rsvpResponseMessageSchema,
+		declined: rsvpResponseMessageSchema,
+	})
+	.strict()
+	.optional();

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 
 export const rsvpSectionStyleSchema = z
 	.object({
@@ -30,6 +31,7 @@ export const rsvpSchema = z
 			.string()
 			.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
 		confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
+		responseMessages: rsvpResponseMessagesSchema,
 		whatsappConfig: z
 			.object({
 				phone: z.string(),

@@ -5,6 +5,7 @@ import { getCardAwareScrollTop } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
@@ -24,6 +25,7 @@ interface RSVPProps {
 	guestCap: number;
 	accessMode: 'personalized-only' | 'hybrid';
 	confirmationMessage: string;
+	responseMessages?: RsvpResponseMessages;
 	labels?: {
 		name?: string;
 		guestCount?: string;
@@ -103,6 +105,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	guestCap,
 	accessMode,
 	confirmationMessage,
+	responseMessages,
 	labels,
 	variant,
 	confirmationMode = 'api',
@@ -274,6 +277,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						attendanceStatus={attendanceStatus}
 						confirmationMessage={confirmationMessage}
 						celebrantName={celebrantName}
+						responseMessages={responseMessages}
 						showWhatsAppCta={showWhatsAppCta}
 						whatsAppUrl={buildWhatsAppUrl({
 							whatsappConfig,
