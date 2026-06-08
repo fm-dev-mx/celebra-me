@@ -22,8 +22,7 @@
     "sectionStyles": {
         "location": {
             "showFlourishes": true
-        },
-        "rsvp": {}
+        }
     },
     "hero": {
         "name": "Isabella Rose Valenzuela",
@@ -102,25 +101,26 @@
     },
     "gallery": {
         "title": "Galería",
-        "subtitle": "Rosas, velas y memorias para una noche de palacio.",
+        "heading": "Instantes de Ayrin",
+        "subtitle": "Una selección de momentos entre rosas, luz de velas y detalles dorados.",
         "items": [
-            { "image": "gallery01", "caption": "Una entrada iluminada por candelabros." },
-            { "image": "gallery02", "caption": "Rosas rojas como detalle principal." },
-            { "image": "gallery06", "caption": "Detalles dorados para recordar." },
-            { "image": "gallery03", "caption": "El brillo antiguo de una noche de gala." },
-            { "image": "gallery08", "caption": "Momentos que florecen con cariño." },
-            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida." },
-            { "image": "gallery10", "caption": "La rosa encantada bajo luz de velas." },
-            { "image": "interlude01", "caption": "Un nuevo capítulo entre rosas." }
+            { "image": "gallery01", "caption": "Bajo la luz de las velas" },
+            { "image": "gallery02", "caption": "Detalles dorados" },
+            { "image": "gallery06", "caption": "Entre rosas" },
+            { "image": "gallery03", "caption": "Una noche para recordar" },
+            { "image": "gallery08", "caption": "El brillo de Isabella Rose" },
+            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida" },
+            { "image": "gallery10", "caption": "La rosa encantada bajo la luz de las velas" },
+            { "image": "interlude01", "caption": "Un nuevo capítulo entre rosas" }
         ]
     },
     "gifts": {
-        "title": "Lluvia de Sobres",
-        "subtitle": "Tu presencia es el regalo más valioso. Si deseas tener un detalle adicional, aquí algunas opciones:",
+        "title": "Un detalle especial",
+        "subtitle": "Tu presencia es el regalo más valioso. Si deseas compartir un detalle adicional, podrás hacerlo durante la recepción.",
         "items": [
             {
                 "type": "bank",
-                "title": "Transferencia",
+                "title": "Transferencia bancaria",
                 "bankName": "BBVA México",
                 "accountHolder": "Fernando Valenzuela Robles",
                 "clabe": "0121 8001 2345 6789 01",
@@ -128,8 +128,8 @@
             },
             {
                 "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Contaremos con un buzón durante la recepción."
+                "title": "Lluvia de sobres",
+                "text": "Podrás entregar tu detalle en sobre el día del evento."
             }
         ]
     },
