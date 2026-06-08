@@ -79,6 +79,7 @@ export function useRsvpSubmission({
 	const phoneRef = useRef<HTMLInputElement>(null);
 	const attendanceRef = useRef<HTMLDivElement>(null);
 	const guestCountRef = useRef<HTMLInputElement>(null);
+	const isInFlightRef = useRef(false);
 
 	const supportsPlusOnes = effectiveGuestCap > 1;
 	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
@@ -130,55 +131,57 @@ export function useRsvpSubmission({
 		async (event: SyntheticEvent) => {
 			event.preventDefault();
 
+			if (isInFlightRef.current) return;
+			isInFlightRef.current = true;
 			setSubmitStatus('loading');
 
-			if (isDemoPreview) {
-				await new Promise((resolve) => setTimeout(resolve, 800));
-				setSubmitStatus('success');
-				return;
-			}
-
-			const validationErrors = validate();
-			const errorKeys = Object.keys(validationErrors);
-
-			if (errorKeys.length > 0) {
-				setSubmitStatus('error');
-				setTouched({
-					name: true,
-					phone: true,
-					attendance: true,
-					guestCount: true,
-				});
-
-				const firstError = errorKeys[0];
-				const refMap: Record<string, RefObject<HTMLElement | null>> = {
-					name: nameRef as RefObject<HTMLElement | null>,
-					phone: phoneRef as RefObject<HTMLElement | null>,
-					attendance: attendanceRef as RefObject<HTMLElement | null>,
-					guestCount: guestCountRef as RefObject<HTMLElement | null>,
-				};
-
-				const targetRef = refMap[firstError];
-				if (targetRef?.current) {
-					targetRef.current.scrollIntoView({
-						behavior: prefersReducedMotion ? 'auto' : 'smooth',
-						block: getSmartScrollBlock(targetRef.current),
-					});
-
-					if (firstError === 'attendance') {
-						const firstRadio = targetRef.current.querySelector(
-							'input[type="radio"]',
-						) as HTMLInputElement | null;
-						firstRadio?.focus();
-					} else {
-						targetRef.current.focus();
-					}
+			try {
+				if (isDemoPreview) {
+					await new Promise((resolve) => setTimeout(resolve, 800));
+					setSubmitStatus('success');
+					return;
 				}
 
-				return;
-			}
+				const validationErrors = validate();
+				const errorKeys = Object.keys(validationErrors);
 
-			try {
+				if (errorKeys.length > 0) {
+					setSubmitStatus('error');
+					setTouched({
+						name: true,
+						phone: true,
+						attendance: true,
+						guestCount: true,
+					});
+
+					const firstError = errorKeys[0];
+					const refMap: Record<string, RefObject<HTMLElement | null>> = {
+						name: nameRef as RefObject<HTMLElement | null>,
+						phone: phoneRef as RefObject<HTMLElement | null>,
+						attendance: attendanceRef as RefObject<HTMLElement | null>,
+						guestCount: guestCountRef as RefObject<HTMLElement | null>,
+					};
+
+					const targetRef = refMap[firstError];
+					if (targetRef?.current) {
+						targetRef.current.scrollIntoView({
+							behavior: prefersReducedMotion ? 'auto' : 'smooth',
+							block: getSmartScrollBlock(targetRef.current),
+						});
+
+						if (firstError === 'attendance') {
+							const firstRadio = targetRef.current.querySelector(
+								'input[type="radio"]',
+							) as HTMLInputElement | null;
+							firstRadio?.focus();
+						} else {
+							targetRef.current.focus();
+						}
+					}
+
+					return;
+				}
+
 				const normalizedCount = normalizeGuestCount(
 					attendanceStatus,
 					attendeeCount,
@@ -231,6 +234,9 @@ export function useRsvpSubmission({
 					err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';
 				setSubmitStatus('error');
 				setErrors((prev) => ({ ...prev, global: message }));
+			} finally {
+				isInFlightRef.current = false;
+				setSubmitStatus((prev) => (prev === 'loading' ? 'error' : prev));
 			}
 		},
 		[

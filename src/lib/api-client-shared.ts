@@ -59,12 +59,60 @@ export function buildApiErrorResponse(error: unknown): ApiErrorResponse {
 	};
 }
 
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
+function parseHttpErrorResponse(
+	data: unknown,
+	status: number,
+	statusText: string,
+): ApiErrorResponse {
+	if (isApiErrorResponse(data)) {
+		return data;
+	}
+
+	if (
+		typeof data === 'object' &&
+		data !== null &&
+		'error' in data &&
+		typeof data.error === 'object' &&
+		data.error !== null &&
+		'message' in data.error
+	) {
+		const errorData = data.error as Record<string, unknown>;
+		return {
+			ok: false,
+			status,
+			code: (errorData.code as string) || 'http_error',
+			message: String(errorData.message),
+			details: errorData.details,
+		};
+	}
+
+	const errorMessage =
+		typeof data === 'object' && data !== null && 'message' in data
+			? String(data.message)
+			: `Error ${status}: ${statusText}`;
+
+	return {
+		ok: false,
+		status,
+		code: status === 401 ? 'unauthorized' : 'http_error',
+		message: errorMessage,
+	};
+}
+
 export async function fetchJSON<T>(
 	input: RequestInfo | URL,
 	init?: RequestInit,
 ): Promise<ApiResult<T>> {
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+
 	try {
-		const response = await fetch(input, init);
+		const response = await fetch(input, {
+			...init,
+			signal: controller.signal,
+		});
 
 		let data: unknown;
 		try {
@@ -74,40 +122,7 @@ export async function fetchJSON<T>(
 		}
 
 		if (!response.ok) {
-			if (isApiErrorResponse(data)) {
-				return data;
-			}
-
-			// Handle Astro/Supabase style error response: { success: false, error: { message } }
-			if (
-				typeof data === 'object' &&
-				data !== null &&
-				'error' in data &&
-				typeof data.error === 'object' &&
-				data.error !== null &&
-				'message' in data.error
-			) {
-				const errorData = data.error as Record<string, unknown>;
-				return {
-					ok: false,
-					status: response.status,
-					code: (errorData.code as string) || 'http_error',
-					message: String(errorData.message),
-					details: errorData.details,
-				};
-			}
-
-			const errorMessage =
-				typeof data === 'object' && data !== null && 'message' in data
-					? String(data.message)
-					: `Error ${response.status}: ${response.statusText}`;
-
-			return {
-				ok: false,
-				status: response.status,
-				code: response.status === 401 ? 'unauthorized' : 'http_error',
-				message: errorMessage,
-			};
+			return parseHttpErrorResponse(data, response.status, response.statusText);
 		}
 
 		return {
@@ -116,6 +131,16 @@ export async function fetchJSON<T>(
 			data: data as T,
 		};
 	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			return {
+				ok: false,
+				status: 408,
+				code: 'timeout',
+				message: 'La conexión tardó demasiado. Intenta de nuevo.',
+			};
+		}
 		return buildApiErrorResponse(error);
+	} finally {
+		clearTimeout(timeoutId);
 	}
 }
