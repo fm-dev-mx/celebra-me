@@ -315,6 +315,32 @@ describe('publishDraft', () => {
 		);
 	});
 
+	it('rejects old drafts that still store itinerary icons in the legacy icon field', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				itinerary: {
+					title: 'Programa',
+					items: [
+						{ icon: 'church', label: 'Misa', time: '18:00' },
+						{ icon: 'reception', label: 'Recepción', time: '20:00' },
+					],
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+		});
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
 	it('uses invitation slug when available', async () => {
 		const projectWithSlug = { ...baseProject, slug: 'my-invitation' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
