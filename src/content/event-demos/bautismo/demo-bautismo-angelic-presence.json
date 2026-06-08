@@ -114,25 +114,25 @@
             {
                 "iconName": "Reception",
                 "label": "Llegada",
-                "time": "10:00 AM",
+                "time": "10:00",
                 "description": "Recepción en la parroquia"
             },
             {
                 "iconName": "Church",
                 "label": "Sacramento",
-                "time": "10:30 AM",
+                "time": "10:30",
                 "description": "Bautismo de María Santos"
             },
             {
                 "iconName": "Reception",
                 "label": "Celebración",
-                "time": "12:00 PM",
+                "time": "12:00",
                 "description": "Comida familiar"
             },
             {
                 "iconName": "Cake",
                 "label": "Pastel",
-                "time": "1:00 PM",
+                "time": "13:00",
                 "description": "Corte del pastel"
             }
         ]

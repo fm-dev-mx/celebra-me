@@ -129,25 +129,25 @@
             {
                 "iconName": "Toast",
                 "label": "Recepción y Brindis",
-                "time": "8:00 PM",
+                "time": "20:00",
                 "description": "Bienvenida en el jardín principal."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena de Gala",
-                "time": "9:30 PM",
+                "time": "21:30",
                 "description": "Cocina de raíz, servida con la elegancia de siempre."
             },
             {
                 "iconName": "Accordion",
                 "label": "Mariachi y Sorpresas",
-                "time": "11:00 PM",
+                "time": "23:00",
                 "description": "Música en vivo para celebrar."
             },
             {
                 "iconName": "Party",
                 "label": "Baile y Alegría",
-                "time": "12:30 AM",
+                "time": "00:30",
                 "description": "Bajo las estrellas de la Hacienda, hasta el último brindis."
             }
         ]

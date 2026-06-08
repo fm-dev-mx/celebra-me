@@ -124,37 +124,37 @@
             {
                 "iconName": "Reception",
                 "label": "Recepción editorial",
-                "time": "7:00 PM",
+                "time": "19:00",
                 "description": "Apertura de puertas y bienvenida."
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals de estreno",
-                "time": "8:00 PM",
+                "time": "20:00",
                 "description": "La entrada principal de la festejada."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena",
-                "time": "9:00 PM",
+                "time": "21:00",
                 "description": "Servicio de gala y conversación."
             },
             {
                 "iconName": "Toast",
                 "label": "Brindis",
-                "time": "10:00 PM",
+                "time": "22:00",
                 "description": "Un momento para celebrar esta nueva etapa."
             },
             {
                 "iconName": "Cake",
                 "label": "Pastel",
-                "time": "10:45 PM",
+                "time": "22:45",
                 "description": "El instante más dulce de la noche."
             },
             {
                 "iconName": "Party",
                 "label": "Fiesta",
-                "time": "11:30 PM",
+                "time": "23:30",
                 "description": "Música, pista y una noche en grande."
             }
         ]

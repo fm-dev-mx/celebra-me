@@ -192,19 +192,19 @@
             {
                 "iconName": "Church",
                 "label": "Ceremonia Religiosa",
-                "time": "6:00 PM",
+                "time": "18:00",
                 "description": "Parroquia de la Sagrada Familia"
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
-                "time": "8:00 PM",
+                "time": "20:00",
                 "description": "Quinta Las Flores"
             },
-            { "iconName": "Waltz", "label": "Vals de Honor", "time": "9:00 PM" },
-            { "iconName": "Dinner", "label": "Cena de Gala", "time": "10:00 PM" },
-            { "iconName": "Toast", "label": "Brindis", "time": "11:30 PM" },
-            { "iconName": "Party", "label": "Tornafiesta", "time": "12:30 AM" }
+            { "iconName": "Waltz", "label": "Vals de Honor", "time": "21:00" },
+            { "iconName": "Dinner", "label": "Cena de Gala", "time": "22:00" },
+            { "iconName": "Toast", "label": "Brindis", "time": "23:30" },
+            { "iconName": "Party", "label": "Tornafiesta", "time": "00:30" }
         ]
     },
     "countdown": {

@@ -139,31 +139,31 @@
             {
                 "iconName": "Church",
                 "label": "Misa",
-                "time": "5:00 PM",
+                "time": "17:00",
                 "description": "Ceremonia de Acción de Gracias en la Catedral."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
-                "time": "7:00 PM",
+                "time": "19:00",
                 "description": "Bienvenida en Hacienda Los Claustros."
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals",
-                "time": "8:30 PM",
+                "time": "20:30",
                 "description": "Un momento de ensueño."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena",
-                "time": "9:30 PM",
+                "time": "21:30",
                 "description": "Cena de gala en familia."
             },
             {
                 "iconName": "Party",
                 "label": "Cierre",
-                "time": "12:00 AM",
+                "time": "00:00",
                 "description": "Gracias por celebrar con nosotros."
             }
         ]

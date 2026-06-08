@@ -156,31 +156,31 @@
             {
                 "iconName": "Church",
                 "label": "Misa",
-                "time": "6:00 PM",
+                "time": "18:00",
                 "description": "Ceremonia de Acción de Gracias en la parroquia."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
-                "time": "8:00 PM",
+                "time": "20:00",
                 "description": "Bienvenida en el Salón Imperial"
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals",
-                "time": "9:00 PM",
+                "time": "21:00",
                 "description": "Un momento de gala bajo luz de velas."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena",
-                "time": "10:00 PM",
+                "time": "22:00",
                 "description": "Cena elegante en familia."
             },
             {
                 "iconName": "Party",
                 "label": "Cierre",
-                "time": "1:00 AM",
+                "time": "01:00",
                 "description": "Gracias por celebrar conmigo."
             }
         ]
