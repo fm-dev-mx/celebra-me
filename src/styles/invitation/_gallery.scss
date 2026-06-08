@@ -210,6 +210,10 @@
 	justify-content: center;
 	padding: 2rem;
 
+	@media (width <= 480px) {
+		padding: 1rem;
+	}
+
 	// ADU-31: Ensure the [hidden] attribute is respected despite display: flex
 	&[hidden] {
 		/* stylelint-disable-next-line declaration-no-important */
@@ -234,6 +238,16 @@
 		svg {
 			width: 32px;
 			height: 32px;
+		}
+
+		@media (width <= 480px) {
+			top: calc(1rem + env(safe-area-inset-top, 0px));
+			right: 1rem;
+
+			svg {
+				width: 28px;
+				height: 28px;
+			}
 		}
 	}
 
