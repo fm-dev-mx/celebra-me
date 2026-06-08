@@ -2,6 +2,7 @@
 // src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
 import type { IconName } from '@/lib/icons/icon-catalog';
+import { formatTime12h } from '@/lib/intake/utils';
 
 type TimelineItemData = {
 	iconName: IconName;
@@ -38,7 +39,7 @@ const { items, variant } = Astro.props;
 			return (
 				<div class:list={['itinerary__item', `itinerary__item--${align}`]} data-itinerary-item>
 					<div class="itinerary__item-content">
-						<div class="itinerary__item-time">{item.time}</div>
+						<div class="itinerary__item-time">{formatTime12h(item.time)}</div>
 						<h4 class="itinerary__item-label">{item.label}</h4>
 						{item.description && (
 							<p class="itinerary__item-description">{item.description}</p>

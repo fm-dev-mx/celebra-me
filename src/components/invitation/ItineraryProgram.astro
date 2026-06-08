@@ -1,6 +1,7 @@
 ---
 // src/components/invitation/ItineraryProgram.astro
 import type { ItineraryItem } from '@/lib/adapters/types';
+import { formatTime12h } from '@/lib/intake/utils';
 
 interface Props {
 	items: ItineraryItem[];
@@ -25,7 +26,7 @@ const { items, variant, monogram } = Astro.props;
 				return (
 					<li class="itinerary__program-row" data-itinerary-item>
 						<span class="itinerary__program-row-num" aria-hidden="true">{num}</span>
-						<time class="itinerary__program-row-time">{item.time}</time>
+						<time class="itinerary__program-row-time">{formatTime12h(item.time)}</time>
 						<div class="itinerary__program-row-content">
 							<h4 class="itinerary__program-row-title">{item.label}</h4>
 							{item.description && (
