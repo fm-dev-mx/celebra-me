@@ -1,5 +1,6 @@
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import type { DemoPreset } from '@/lib/intake/types';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 const snapshot: DemoPreset = {
 	id: 'demo-xv-jewelry-box',
@@ -560,6 +561,52 @@ describe('mapDraftToPublished', () => {
 			title: 'Programa',
 			items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
 		});
+	});
+
+	it('does not normalize legacy itinerary icon fields from old draft content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				itinerary: {
+					title: 'Programa',
+					items: [{ icon: 'church', label: 'Misa', time: '18:00' }],
+				} as never,
+			},
+		});
+
+		expect(result.itinerary).toEqual({
+			title: 'Programa',
+			items: [{ icon: 'church', label: 'Misa', time: '18:00' }],
+		});
+
+		expect(eventContentSchema.safeParse(result).success).toBe(false);
+	});
+
+	it('keeps unknown legacy itinerary icons invalid at publication validation', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				itinerary: {
+					title: 'Programa',
+					items: [{ icon: 'unknown-icon', label: 'Misterio', time: '18:00' }],
+				} as never,
+			},
+		});
+
+		expect(result.itinerary).toEqual({
+			title: 'Programa',
+			items: [{ icon: 'unknown-icon', label: 'Misterio', time: '18:00' }],
+		});
+
+		const validation = eventContentSchema.safeParse(result);
+		expect(validation.success).toBe(false);
+		if (!validation.success) {
+			expect(validation.error.issues.map((issue) => issue.path.join('.'))).toContain(
+				'itinerary.items.0.iconName',
+			);
+		}
 	});
 
 	it('includes interludes, sectionStyles, sharing from demo content', () => {
