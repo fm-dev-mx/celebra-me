@@ -51,6 +51,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 					width={width}
 					height={height}
 					loading="lazy"
+					decoding="async"
+					fetchpriority={index >= 2 ? 'low' : undefined}
 				/>
 				{item.caption && (
 					<div class="gallery-grid__overlay">
