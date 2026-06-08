@@ -50,6 +50,9 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		optimizeDeps: {
+			include: ['framer-motion'],
+		},
 		resolve: {
 			alias: {
 				// Base Src Alias
