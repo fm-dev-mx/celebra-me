@@ -55,6 +55,8 @@
 	--gallery-lightbox-footer-size: clamp(0.82rem, 1.4vw, 1rem);
 	--gallery-item-transition-duration: 500ms;
 	--gallery-item-transition-ease: var(--ease-premium);
+	--gallery-item-reveal-transform-duration: 640ms;
+	--gallery-item-image-transition-duration: 700ms;
 
 	&::after {
 		content: '';
@@ -163,6 +165,8 @@
 			0 3px 8px -5px rgb(var(--color-rose-shadow-rgb) / 24%),
 			0 16px 42px -24px rgb(var(--color-rose-shadow-rgb) / 32%);
 		transition:
+			transform var(--gallery-item-reveal-transform-duration)
+				var(--gallery-item-transition-ease),
 			box-shadow var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 			border-color var(--gallery-item-transition-duration) ease,
 			background var(--gallery-item-transition-duration) ease;
@@ -179,6 +183,11 @@
 		);
 		border-radius: 0;
 		border: 1px solid rgb(var(--color-antique-gold-rgb) / 8%);
+		transition:
+			filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+			transform var(--gallery-item-image-transition-duration)
+				var(--gallery-item-transition-ease),
+			mix-blend-mode var(--gallery-item-transition-duration) ease;
 
 		@include mixins.respond-to(md) {
 			object-position: var(
@@ -253,6 +262,17 @@
 
 	.gallery-grid__item[data-in-view='true']::before {
 		opacity: 100%;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.gallery-grid__item {
+			transform: translate3d(0, 5px, 0) scale(0.998);
+		}
+
+		.gallery-grid__item[data-in-view='true'],
+		.gallery-grid__item:focus-visible {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
 	}
 
 	.gallery-grid__overlay {
@@ -341,12 +361,17 @@
 
 	@media (hover: hover) and (pointer: fine) {
 		.gallery-grid__item:hover {
+			transform: translate3d(0, 0, 0) scale(1);
 			border-color: rgb(var(--color-candle-gold-rgb) / 40%);
 			box-shadow:
 				inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 9%),
 				0 2px 4px -2px rgb(var(--color-rose-shadow-rgb) / 22%),
-				0 18px 44px -22px rgb(var(--color-rose-shadow-rgb) / 38%),
-				0 0 20px rgb(var(--color-candle-gold-rgb) / 6%);
+				0 20px 48px -22px rgb(var(--color-rose-shadow-rgb) / 42%),
+				0 0 22px rgb(var(--color-candle-gold-rgb) / 7%);
+		}
+
+		.gallery-grid__item:hover img {
+			transform: scale(var(--gallery-item-image-scale-hover));
 		}
 
 		.gallery-grid__item--feature:hover {
@@ -387,31 +412,6 @@
 	.gallery-lightbox__content {
 		@include mixins.respond-to(lg) {
 			max-width: 75%;
-		}
-	}
-
-	.gallery-lightbox__footer {
-		bottom: auto;
-		top: calc(100% + 1rem);
-		padding-inline: 0.5rem;
-		color: var(--gallery-lightbox-footer-color);
-
-		&::before {
-			content: '';
-			display: block;
-			width: 3rem;
-			height: 1px;
-			margin: 0 auto 0.75rem;
-			background: rgb(var(--color-antique-gold-rgb) / 42%);
-		}
-
-		p {
-			font-family: var(--font-display);
-			font-style: italic;
-			font-size: var(--gallery-lightbox-footer-size);
-			color: var(--gallery-lightbox-footer-color);
-			line-height: 1.5;
-			letter-spacing: 0.02em;
 		}
 	}
 
@@ -480,8 +480,52 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.gallery-grid__item,
+		.gallery-grid__item img,
 		.gallery-grid__item::before {
 			transition-duration: 1ms;
+		}
+
+		.gallery-grid__item {
+			transform: none;
+		}
+
+		.gallery-grid__item img {
+			transform: none;
+		}
+	}
+}
+
+.gallery-lightbox[data-variant='enchanted-rose'] {
+	.gallery-lightbox__footer {
+		bottom: auto;
+		top: calc(100% + 0.875rem);
+		max-width: min(32rem, calc(100vw - 3rem));
+		margin-inline: auto;
+		padding: 0.55rem 0.9rem;
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
+		border-radius: 999px;
+		background: rgb(var(--color-deep-wine-rgb) / 42%);
+		box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 18%);
+		color: rgb(var(--color-warm-ivory-rgb) / 88%);
+		backdrop-filter: blur(10px);
+
+		&::before {
+			content: none;
+		}
+
+		p {
+			margin: 0;
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: var(--gallery-lightbox-footer-size);
+			line-height: 1.45;
+			letter-spacing: 0.02em;
+			text-shadow: 0 1px 0 rgb(0 0 0 / 18%);
+		}
+
+		@include mixins.respond-to(sm) {
+			max-width: calc(100vw - 2.25rem);
+			padding-inline: 0.75rem;
 		}
 	}
 }
