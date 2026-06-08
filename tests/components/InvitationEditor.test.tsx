@@ -186,6 +186,19 @@ describe('formatPublishErrorMessage', () => {
 		expect(result).toContain('Datos principales');
 		expect(result).toContain('Fecha y ubicaciones');
 	});
+
+	it('renders itinerary item validation paths with item-level labels', () => {
+		const result = formatPublishErrorMessage(
+			new Error(
+				'Campos: itinerary.items.0.iconName, itinerary.items.1.iconName, itinerary.items.2.time.',
+			),
+		);
+
+		expect(result).toContain('Programa: actividad 1 icono');
+		expect(result).toContain('Programa: actividad 2 icono');
+		expect(result).toContain('Programa: actividad 3 hora');
+		expect(result).not.toContain('Programa, Programa, Programa');
+	});
 });
 
 describe('InvitationEditor', () => {

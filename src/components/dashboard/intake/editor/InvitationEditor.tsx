@@ -107,13 +107,32 @@ function getSectionPathRegex(): RegExp {
 	);
 }
 
+const ITINERARY_ITEM_FIELD_LABELS: Record<string, string> = {
+	iconName: 'icono',
+	label: 'actividad',
+	time: 'hora',
+	description: 'descripción',
+};
+
+function formatValidationPath(sectionPath: string): string {
+	const itineraryItemMatch = sectionPath.match(
+		/^itinerary\.items(?:\.(\d+)\.|\[(\d+)\]\.)([\w-]+)$/,
+	);
+	if (itineraryItemMatch) {
+		const itemNumber = Number(itineraryItemMatch[1] ?? itineraryItemMatch[2]) + 1;
+		const field = itineraryItemMatch[3];
+		const fieldLabel = ITINERARY_ITEM_FIELD_LABELS[field] ?? field;
+		return `Programa: actividad ${itemNumber} ${fieldLabel}`;
+	}
+
+	const key = sectionPath.split(/[.[]/, 1)[0];
+	return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
+}
+
 export function formatPublishErrorMessage(error: unknown): string {
 	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
 	const sectionPathRegex = getSectionPathRegex();
-	return message.replace(sectionPathRegex, (sectionPath) => {
-		const key = sectionPath.split(/[.[]/, 1)[0];
-		return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
-	});
+	return message.replace(sectionPathRegex, formatValidationPath);
 }
 
 export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
