@@ -106,6 +106,7 @@ describe('invitation-section-registry', () => {
 				'Publicación',
 				'Biblioteca de imágenes',
 				'Música',
+				'Sobre / apertura',
 			]);
 		});
 

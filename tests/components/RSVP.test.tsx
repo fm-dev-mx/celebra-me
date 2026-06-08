@@ -962,6 +962,7 @@ describe('RSVP Component', () => {
 			const { container } = render(
 				<RSVP
 					{...defaultProps}
+					confirmationMessage="Legacy confirmation message that should NOT appear"
 					responseMessages={{
 						confirmed: {
 							title: '¡Qué bueno que vienes, {guestName}!',
@@ -979,6 +980,7 @@ describe('RSVP Component', () => {
 				const greeting = container.querySelector('.rsvp__greeting-message');
 				expect(greeting?.textContent).toContain('¡Qué bueno que vienes, Ana!');
 				expect(screen.getByText('Te registramos correctamente.')).toBeInTheDocument();
+				expect(greeting?.textContent).not.toContain('Legacy confirmation message');
 			});
 		});
 
@@ -1021,6 +1023,28 @@ describe('RSVP Component', () => {
 					),
 				).toBeInTheDocument();
 				expect(screen.getByText('Tu confirmación ha sido registrada.')).toBeInTheDocument();
+			});
+		});
+
+		it('shows confirmationMessage as fallback when responseMessages is omitted', async () => {
+			const user = userEvent.setup();
+			const { container } = render(
+				<RSVP
+					{...defaultProps}
+					confirmationMessage="Legacy message for backward compatibility"
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'Laura');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const greeting = container.querySelector('.rsvp__greeting-message');
+				expect(greeting?.textContent).toContain('¡Gracias por acompañarnos, Laura!');
+				expect(greeting?.textContent).toContain(
+					'Legacy message for backward compatibility',
+				);
 			});
 		});
 

@@ -851,4 +851,101 @@ describe('mapDraftToPublished', () => {
 
 		expect(result.family).not.toHaveProperty('groups');
 	});
+
+	it('preserves RSVP responseMessages from draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				rsvp: {
+					title: 'RSVP',
+					confirmationMessage: 'Gracias',
+					responseMessages: {
+						confirmed: {
+							title: '¡Gracias {guestName}!',
+							subtitle: 'Registrado.',
+						},
+						declined: {
+							title: 'Qué pena {guestName}.',
+							subtitle: 'Avisarnos.',
+						},
+					},
+				},
+			},
+		});
+
+		expect(result.rsvp).toMatchObject({
+			responseMessages: {
+				confirmed: { title: '¡Gracias {guestName}!', subtitle: 'Registrado.' },
+				declined: { title: 'Qué pena {guestName}.', subtitle: 'Avisarnos.' },
+			},
+		});
+	});
+
+	it('omits RSVP responseMessages when not provided in draft or demo', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				rsvp: { title: 'RSVP', confirmationMessage: 'Gracias' },
+			},
+		});
+
+		expect(result.rsvp).not.toHaveProperty('responseMessages');
+	});
+
+	it('preserves music autoPlay from draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				music: { url: 'https://example.com/song.mp3', title: 'Canción', autoPlay: true },
+			},
+		});
+
+		expect(result.music).toMatchObject({
+			url: 'https://example.com/song.mp3',
+			autoPlay: true,
+		});
+	});
+
+	it('defaults music autoPlay to false when not specified in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				music: { url: 'https://example.com/song.mp3', title: 'Canción' },
+			},
+		});
+
+		expect(result.music).toMatchObject({ autoPlay: false });
+	});
+
+	it('allows draft envelope disabled to override demo envelope', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: { disabled: true },
+			},
+		});
+
+		expect(result.envelope).toMatchObject({ disabled: true });
+		expect(result.envelope).toMatchObject({ sealStyle: 'wax' });
+	});
+
+	it('preserves demo envelope when no draft override exists', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
+	});
+
+	it('defaults envelope to disabled when no demo envelope and no draft override', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: { ...baseDemoContent, envelope: undefined },
+		});
+
+		expect(result.envelope).toMatchObject({ disabled: true });
+	});
 });

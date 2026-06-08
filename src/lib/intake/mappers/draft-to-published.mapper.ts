@@ -18,6 +18,17 @@ type VenueDraft = {
 	image?: unknown;
 };
 
+function buildEnvelopeFromDraft(
+	draftEnvelope: Record<string, unknown> | undefined,
+	demoEnvelope: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+	const base = demoEnvelope ?? { disabled: true };
+	if (typeof draftEnvelope?.disabled === 'boolean') {
+		return { ...base, disabled: draftEnvelope.disabled };
+	}
+	return base;
+}
+
 function mapCountdownFromDraft(
 	draftCountdown: DraftContent['countdown'],
 	demoCountdown: Record<string, unknown> | undefined,
@@ -437,7 +448,10 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		sectionOrder: draftContent.sectionOrder ?? demoContent.sectionOrder,
 
 		hero: heroSection,
-		envelope: demoContent.envelope ?? { disabled: true },
+		envelope: buildEnvelopeFromDraft(
+			draftContent.envelope as Record<string, unknown> | undefined,
+			demoContent.envelope as Record<string, unknown> | undefined,
+		),
 		family: familySection ?? demoContent.family,
 		location: locationSection ?? demoContent.location,
 		gallery: draftContent.gallery ?? demoContent.gallery,

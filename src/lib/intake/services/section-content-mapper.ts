@@ -11,6 +11,7 @@ const SECTION_KEY_MAP: Record<InvitationEditorSectionKey, (keyof DraftContent)[]
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
 	music: ['music'],
+	envelope: ['envelope'],
 	gifts: ['gifts'],
 	messages: ['quote', 'thankYou'],
 	gallery: ['gallery'],

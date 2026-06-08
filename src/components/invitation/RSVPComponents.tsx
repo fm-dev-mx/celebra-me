@@ -134,7 +134,6 @@ export const SubmittedState = forwardRef<
 	{
 		title: string;
 		variant?: string;
-		modifier?: string;
 		onFocusCapture?: React.FocusEventHandler<HTMLElement>;
 		name: string;
 		attendanceStatus: AttendanceStatus;
@@ -188,7 +187,7 @@ export const SubmittedState = forwardRef<
 				</div>
 				<h2 className="rsvp__greeting-message">
 					{greetingTitle}
-					{isConfirmed && (
+					{isConfirmed && !responseMessages?.confirmed?.title && (
 						<>
 							<br />
 							{confirmationMessage}
@@ -236,7 +235,6 @@ interface RsvpFormViewProps {
 	title: string;
 	subcopy: string;
 	variant?: string;
-	modifier?: string;
 	onFocusCapture?: FocusEventHandler<HTMLElement>;
 	eyebrow?: string;
 	prefersReducedMotion: boolean;

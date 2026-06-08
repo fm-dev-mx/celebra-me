@@ -349,4 +349,44 @@ describe('mapNestedToDraftContent', () => {
 			{ iconName: 'Reception', label: 'Recepción', time: 'invalid' },
 		]);
 	});
+
+	it('preserves RSVP responseMessages from published content', () => {
+		const input = {
+			rsvp: {
+				title: 'RSVP',
+				confirmationMessage: 'Gracias',
+				responseMessages: {
+					confirmed: { title: '¡Gracias {guestName}!', subtitle: 'Registrado.' },
+					declined: { title: 'Qué pena.', subtitle: 'Avisarnos.' },
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.rsvp?.responseMessages).toEqual({
+			confirmed: { title: '¡Gracias {guestName}!', subtitle: 'Registrado.' },
+			declined: { title: 'Qué pena.', subtitle: 'Avisarnos.' },
+		});
+	});
+
+	it('preserves music autoPlay from published content', () => {
+		const input = {
+			music: { url: 'https://example.com/song.mp3', title: 'Canción', autoPlay: true },
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.music?.autoPlay).toBe(true);
+	});
+
+	it('preserves envelope disabled from published content', () => {
+		const input = {
+			envelope: { disabled: true, sealStyle: 'wax' },
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.envelope?.disabled).toBe(true);
+	});
 });

@@ -14,6 +14,7 @@ export type EditorSectionId =
 	| PublicSectionId
 	| 'metadata'
 	| 'music'
+	| 'envelope'
 	| 'publication'
 	| 'assetLibrary';
 
@@ -197,6 +198,18 @@ export const CONFIG_SECTION_DEFINITIONS: Record<
 		isToggleable: false,
 		previewAnchor: '',
 	},
+	envelope: {
+		id: 'envelope',
+		label: 'Sobre / apertura',
+		sidebarGroup: 'config',
+		editorCardId: 'envelope',
+		saveSectionKey: 'envelope',
+		draftContentKeys: ['envelope'],
+		isRequired: false,
+		isOrderable: false,
+		isToggleable: false,
+		previewAnchor: '',
+	},
 	publication: {
 		id: 'publication',
 		label: 'Publicación',
@@ -223,7 +236,13 @@ export const CONFIG_SECTION_DEFINITIONS: Record<
 	},
 };
 
-const CONFIG_SECTION_ORDER = ['metadata', 'publication', 'assetLibrary', 'music'] as const;
+const CONFIG_SECTION_ORDER = [
+	'metadata',
+	'publication',
+	'assetLibrary',
+	'music',
+	'envelope',
+] as const;
 
 // ===== Helpers =====
 
