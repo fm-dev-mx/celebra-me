@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ICON_CATALOG, isIconName } from '@/lib/icons/icon-catalog';
 import { resolveIconComponent } from '@/components/common/icons/registry';
+import { findInvalidItineraryIconIssues } from '../../scripts/verify-icon-migration';
 
 function collectDemoIconNames(): string[] {
 	const demosDir = path.resolve(__dirname, '../../src/content/event-demos');
@@ -103,5 +104,144 @@ describe('icon name contract', () => {
 				expect(isIconName(name)).toBe(true);
 			}
 		});
+	});
+});
+
+describe('persisted itinerary icon verification', () => {
+	it('detects legacy icon fields without iconName', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'published_invitation_content',
+			id: 'pub-1',
+			slug: 'demo-xv',
+			content: {
+				itinerary: {
+					items: [{ icon: 'church', label: 'Misa', time: '18:00' }],
+				},
+			},
+		});
+
+		expect(issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					field: 'itinerary.items[0].icon',
+					iconValue: 'church',
+					reason: 'legacy_icon_present',
+				}),
+				expect.objectContaining({
+					field: 'itinerary.items[0].iconName',
+					iconValue: 'church',
+					reason: 'missing_iconName',
+				}),
+			]),
+		);
+	});
+
+	it('detects legacy icon fields even when iconName exists', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'published_invitation_content',
+			id: 'pub-1',
+			slug: 'demo-xv',
+			content: {
+				itinerary: {
+					items: [{ icon: 'church', iconName: 'Church', label: 'Misa', time: '18:00' }],
+				},
+			},
+		});
+
+		expect(issues).toEqual([
+			expect.objectContaining({
+				field: 'itinerary.items[0].icon',
+				iconValue: 'church',
+				reason: 'legacy_icon_present',
+			}),
+		]);
+	});
+
+	it('detects unknown legacy icon fields', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'invitation_content_drafts',
+			id: 'draft-1',
+			slug: 'proj-1',
+			content: {
+				itinerary: {
+					items: [{ icon: 'mystery', label: 'Sorpresa', time: '18:00' }],
+				},
+			},
+		});
+
+		expect(issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					field: 'itinerary.items[0].icon',
+					iconValue: 'mystery',
+					reason: 'legacy_icon_present',
+				}),
+				expect.objectContaining({
+					field: 'itinerary.items[0].iconName',
+					iconValue: 'mystery',
+					reason: 'unknown_legacy_icon',
+				}),
+			]),
+		);
+	});
+
+	it('detects non-canonical iconName values', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'published_invitation_content',
+			id: 'pub-1',
+			slug: 'demo-xv',
+			content: {
+				itinerary: {
+					items: [{ iconName: 'church', label: 'Misa', time: '18:00' }],
+				},
+			},
+		});
+
+		expect(issues).toEqual([
+			expect.objectContaining({
+				field: 'itinerary.items[0].iconName',
+				iconValue: 'church',
+				reason: 'non_canonical_iconName',
+			}),
+		]);
+	});
+
+	it('detects missing iconName without legacy icon', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'published_invitation_content',
+			id: 'pub-1',
+			slug: 'demo-xv',
+			content: {
+				itinerary: {
+					items: [{ label: 'Misa', time: '18:00' }],
+				},
+			},
+		});
+
+		expect(issues).toEqual([
+			expect.objectContaining({
+				field: 'itinerary.items[0].iconName',
+				iconValue: '',
+				reason: 'missing_iconName',
+			}),
+		]);
+	});
+
+	it('passes clean canonical itinerary iconName values', () => {
+		const issues = findInvalidItineraryIconIssues({
+			table: 'published_invitation_content',
+			id: 'pub-1',
+			slug: 'demo-xv',
+			content: {
+				itinerary: {
+					items: [
+						{ iconName: 'Church', label: 'Misa', time: '18:00' },
+						{ iconName: 'Reception', label: 'Recepción', time: '20:00' },
+					],
+				},
+			},
+		});
+
+		expect(issues).toEqual([]);
 	});
 });
