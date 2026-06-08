@@ -1,8 +1,10 @@
 -- Normalize all event time fields to canonical 24-hour HH:mm format.
 -- Time fields normalized: itinerary.items[].time, location.ceremony.time, location.reception.time
 --
--- Preflight guard: if any time field contains a non-empty value that cannot be parsed
--- as either HH:mm or h:mm AM/PM, the migration aborts with a detailed error.
+-- Preflight guard: if any non-empty time field is malformed or outside real
+-- clock ranges, the migration aborts before any UPDATE can convert data.
+-- Valid inputs are HH:mm with hours 00-23 and minutes 00-59, or h:mm AM/PM
+-- with hours 1-12 and minutes 00-59.
 
 DO $$
 DECLARE
@@ -47,29 +49,61 @@ BEGIN
         AND content #>> '{location,reception,time}' IS NOT NULL
         AND content #>> '{location,reception,time}' <> ''
     UNION ALL
-       SELECT 'invitation_content_drafts' AS source_table,
-              invitation_project_id::text AS slug,
-              'location.ceremony.time' AS field_path,
-              content #>> '{location,ceremony,time}' AS time_value
-       FROM public.invitation_content_drafts
-       WHERE content #> '{location,ceremony}' IS NOT NULL
-         AND content #>> '{location,ceremony,time}' IS NOT NULL
-         AND content #>> '{location,ceremony,time}' <> ''
-     UNION ALL
-       SELECT 'invitation_content_drafts' AS source_table,
-              invitation_project_id::text AS slug,
-              'location.reception.time' AS field_path,
-              content #>> '{location,reception,time}' AS time_value
-       FROM public.invitation_content_drafts
-       WHERE content #> '{location,reception}' IS NOT NULL
-         AND content #>> '{location,reception,time}' IS NOT NULL
-         AND content #>> '{location,reception,time}' <> ''
+      SELECT 'invitation_content_drafts' AS source_table,
+             invitation_project_id::text AS slug,
+             'location.ceremony.time' AS field_path,
+             content #>> '{location,ceremony,time}' AS time_value
+      FROM public.invitation_content_drafts
+      WHERE content #> '{location,ceremony}' IS NOT NULL
+        AND content #>> '{location,ceremony,time}' IS NOT NULL
+        AND content #>> '{location,ceremony,time}' <> ''
+    UNION ALL
+      SELECT 'invitation_content_drafts' AS source_table,
+             invitation_project_id::text AS slug,
+             'location.reception.time' AS field_path,
+             content #>> '{location,reception,time}' AS time_value
+      FROM public.invitation_content_drafts
+      WHERE content #> '{location,reception}' IS NOT NULL
+        AND content #>> '{location,reception,time}' IS NOT NULL
+        AND content #>> '{location,reception,time}' <> ''
+    ),
+    hhmm_times AS (
+      SELECT
+        source_table,
+        slug,
+        field_path,
+        time_value,
+        (regexp_match(time_value, E'^(\\d{2}):(\\d{2})$'))[1]::integer AS hours,
+        (regexp_match(time_value, E'^(\\d{2}):(\\d{2})$'))[2]::integer AS minutes
+      FROM itinerary_times
+      WHERE time_value ~ E'^\\d{2}:\\d{2}$'
+    ),
+    ampm_times AS (
+      SELECT
+        source_table,
+        slug,
+        field_path,
+        time_value,
+        (regexp_match(time_value, E'^(\\d{1,2}):(\\d{2})\\s*([AP]\\.?M\\.?)$', 'i'))[1]::integer AS hours,
+        (regexp_match(time_value, E'^(\\d{1,2}):(\\d{2})\\s*([AP]\\.?M\\.?)$', 'i'))[2]::integer AS minutes
+      FROM itinerary_times
+      WHERE time_value ~* E'^\\d{1,2}:\\d{2}\\s*[AP]\\.?M\\.?$'
     ),
     invalid_times AS (
       SELECT source_table, slug, field_path, time_value
-      FROM itinerary_times t
-      WHERE t.time_value !~ E'^(\\d{2}:\\d{2})$'
-        AND t.time_value !~* E'^(\\d{1,2}:\\d{2})\\s*[AP]\\.?M\\.?$'
+      FROM hhmm_times
+      WHERE hours < 0 OR hours > 23
+         OR minutes < 0 OR minutes > 59
+    UNION ALL
+      SELECT source_table, slug, field_path, time_value
+      FROM ampm_times
+      WHERE hours < 1 OR hours > 12
+         OR minutes < 0 OR minutes > 59
+    UNION ALL
+      SELECT source_table, slug, field_path, time_value
+      FROM itinerary_times
+      WHERE time_value !~ E'^(\\d{2}:\\d{2})$'
+        AND time_value !~* E'^(\\d{1,2}:\\d{2})\\s*[AP]\\.?M\\.?$'
     )
     SELECT source_table, slug, field_path, time_value
     FROM invalid_times
@@ -83,11 +117,11 @@ BEGIN
   END LOOP;
 
   IF bad_values <> '' THEN
-    RAISE EXCEPTION 'PREFLIGHT_ABORT: Unparseable time values found that cannot be safely normalized: %. Migration aborted. Please fix these values manually before migrating.', bad_values;
+    RAISE EXCEPTION 'PREFLIGHT_ABORT: Invalid time values found that cannot be safely normalized: %. Migration aborted before any data update. Please fix these values manually before migrating.', bad_values;
   END IF;
 END $$;
 
--- Parse 12-hour time string to hours and minutes
+-- Parse 12-hour time string to hours and minutes.
 CREATE OR REPLACE FUNCTION public._parse_12h_time(time_str text)
 RETURNS INTEGER[] AS $$
 DECLARE
@@ -116,33 +150,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
--- Convert a time string (HH:mm or h:mm AM/PM) to canonical HH:mm format
+-- Convert a time string (HH:mm or h:mm AM/PM) to canonical HH:mm format.
+-- This function raises if invalid data somehow reaches it, preventing silent
+-- conversion to JSON null.
 CREATE OR REPLACE FUNCTION public._normalize_time_str(time_str text)
 RETURNS text AS $$
 DECLARE
-  h24_m TEXT[];
   h12_i INTEGER[];
 BEGIN
   IF time_str IS NULL OR time_str = '' THEN RETURN NULL; END IF;
 
-  -- Try 24-hour format first (HH:mm)
+  -- Try 24-hour format first (HH:mm).
   IF time_str ~ E'^\\d{2}:\\d{2}$' THEN
-    IF SUBSTRING(time_str FROM 1 FOR 2)::INTEGER > 23 THEN RETURN NULL; END IF;
-    IF SUBSTRING(time_str FROM 4 FOR 2)::INTEGER > 59 THEN RETURN NULL; END IF;
+    IF SUBSTRING(time_str FROM 1 FOR 2)::INTEGER > 23 THEN
+      RAISE EXCEPTION 'PREFLIGHT_ABORT: Invalid 24-hour time value reached normalization: %', time_str;
+    END IF;
+    IF SUBSTRING(time_str FROM 4 FOR 2)::INTEGER > 59 THEN
+      RAISE EXCEPTION 'PREFLIGHT_ABORT: Invalid 24-hour time value reached normalization: %', time_str;
+    END IF;
     RETURN time_str;
   END IF;
 
-  -- Try 12-hour format (h:mm AM/PM)
+  -- Try 12-hour format (h:mm AM/PM).
   h12_i := public._parse_12h_time(time_str);
   IF h12_i IS NOT NULL THEN
     RETURN LPAD(h12_i[1]::TEXT, 2, '0') || ':' || LPAD(h12_i[2]::TEXT, 2, '0');
   END IF;
 
-  RETURN NULL;
+  RAISE EXCEPTION 'PREFLIGHT_ABORT: Invalid time value reached normalization: %', time_str;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
--- Normalize itinerary item times in a JSONB object
+-- Normalize itinerary item times in a JSONB object.
 CREATE OR REPLACE FUNCTION public._normalize_itinerary_times(content jsonb)
 RETURNS jsonb AS $$
 DECLARE
@@ -169,7 +208,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Normalize venue times (ceremony and reception)
+-- Normalize venue times (ceremony and reception).
 CREATE OR REPLACE FUNCTION public._normalize_venue_times(content jsonb)
 RETURNS jsonb AS $$
 BEGIN
@@ -197,7 +236,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply normalization to published_invitation_content
+-- Apply normalization to published_invitation_content.
 UPDATE public.published_invitation_content
 SET content = public._normalize_venue_times(public._normalize_itinerary_times(content)),
     updated_at = now()
@@ -205,7 +244,7 @@ WHERE content #> '{itinerary,items}' IS NOT NULL
    OR content #> '{location,ceremony,time}' IS NOT NULL
    OR content #> '{location,reception,time}' IS NOT NULL;
 
--- Apply normalization to invitation_content_drafts
+-- Apply normalization to invitation_content_drafts.
 UPDATE public.invitation_content_drafts
 SET content = public._normalize_venue_times(public._normalize_itinerary_times(content)),
     updated_at = now()
@@ -213,7 +252,7 @@ WHERE content #> '{itinerary,items}' IS NOT NULL
    OR content #> '{location,ceremony,time}' IS NOT NULL
    OR content #> '{location,reception,time}' IS NOT NULL;
 
--- Cleanup helper functions
+-- Cleanup helper functions.
 DROP FUNCTION IF EXISTS public._normalize_itinerary_times(jsonb);
 DROP FUNCTION IF EXISTS public._normalize_venue_times(jsonb);
 DROP FUNCTION IF EXISTS public._normalize_time_str(text);
