@@ -116,16 +116,16 @@ const ICON_MAP = {
 								{gift.type === 'bank' && (
 									<div class="bank-details">
 										<p class="bank-details__item">
-											<strong>{labels.bank}:</strong> 
+											<strong>{labels.bank}:</strong>
 											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
 										</p>
 										<p class="bank-details__item">
-											<strong>{labels.titular}:</strong> 
+											<strong>{labels.titular}:</strong>
 											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
 										</p>
 										<div class="bank-details__clabe-wrapper">
 											<p class="bank-details__item">
-												<strong>{labels.clabe}:</strong> 
+												<strong>{labels.clabe}:</strong>
 												<span class="clabe-number">{gift.clabe}</span>
 											</p>
 											<button class="copy-button" data-clabe={gift.clabe} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label="Copiar número CLABE">

@@ -4,14 +4,14 @@ status: implemented
 created: 2026-06-02
 updated: 2026-06-02
 
-> **Phase 5 (Polish) implemented 2026-06-02.**  
-> Asset library-owned unit tests: full pass.  
-> `pnpm test`: 1482 passing, 2 skipped, 1 pre-existing Jest worker crash in  
-> `InvitationEditor.test.tsx` (unrelated infrastructure issue — see §Remaining technical debt).  
-> `pnpm type-check`: pass (0 errors).  
-> `pnpm build`: pass.  
-> `changed styles stylelint`: pass (changed SCSS files clean).  
-> Full `pnpm exec stylelint`: 6 pre-existing errors in unchanged files (operator newline style).  
+> **Phase 5 (Polish) implemented 2026-06-02.**
+> Asset library-owned unit tests: full pass.
+> `pnpm test`: 1482 passing, 2 skipped, 1 pre-existing Jest worker crash in
+> `InvitationEditor.test.tsx` (unrelated infrastructure issue — see §Remaining technical debt).
+> `pnpm type-check`: pass (0 errors).
+> `pnpm build`: pass.
+> `changed styles stylelint`: pass (changed SCSS files clean).
+> Full `pnpm exec stylelint`: 6 pre-existing errors in unchanged files (operator newline style).
 > Asset metadata editing and asset list pagination are explicitly deferred — see §12.
 related_skills:
   - backend-engineering
@@ -1027,12 +1027,9 @@ Scope:
 - [x] Upload errors (type, size, network) show Spanish messages
 - [x] AssetPicker and AssetLibraryPanel are responsive at mobile widths
 - [x] All components have loading and empty states
-- [ ] `pnpm test && pnpm type-check && pnpm build && pnpm lint:styles` all pass  
-      Asset-library-owned tests: full pass.  
-      `pnpm type-check`: pass.  
-      `pnpm build`: pass.  
-      Scoped stylelint for changed SCSS: clean pass.  
-      Pre-existing caveats:
+- [ ] `pnpm test && pnpm type-check && pnpm build && pnpm lint:styles` all pass Asset-library-owned
+      tests: full pass. `pnpm type-check`: pass. `pnpm build`: pass. Scoped stylelint for changed
+      SCSS: clean pass. Pre-existing caveats:
   - `InvitationEditor.test.tsx` Jest worker crash (unrelated test infra issue).
   - Full `stylelint "src/**/*.scss"` reports 6 pre-existing errors in unchanged files.
 
