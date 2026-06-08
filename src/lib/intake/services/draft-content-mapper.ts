@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import { str, bool, num, normalizeDate } from '@/lib/intake/utils';
+import { str, bool, num, normalizeDate, normalizeTime } from '@/lib/intake/utils';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
@@ -59,7 +59,7 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 						address: str(ceremony.address),
 						city: str(ceremony.city),
 						date: normalizeDate(ceremony.date),
-						time: str(ceremony.time),
+						time: normalizeTime(ceremony.time) ?? str(ceremony.time),
 						mapUrl: str(ceremony.mapUrl),
 					}
 				: undefined,
@@ -69,7 +69,7 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 						address: str(reception.address),
 						city: str(reception.city),
 						date: normalizeDate(reception.date),
-						time: str(reception.time),
+						time: normalizeTime(reception.time) ?? str(reception.time),
 						mapUrl: str(reception.mapUrl),
 					}
 				: undefined,
@@ -193,7 +193,7 @@ function mapVenueToDraft(
 		address: str(venue.address),
 		city: str(venue.city),
 		date: normalizeDate(venue.date),
-		time: str(venue.time),
+		time: normalizeTime(venue.time) ?? str(venue.time),
 		mapUrl: str(venue.mapUrl),
 		...(venue.image !== undefined ? { image: venue.image } : {}),
 	};
@@ -330,7 +330,16 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const itinerary = nestedContent.itinerary as Record<string, unknown> | undefined;
 	if (itinerary && Object.keys(itinerary).length > 0) {
-		result.itinerary = itinerary as DraftContent['itinerary'];
+		const normalizedItems = (
+			itinerary.items as Array<Record<string, unknown>> | undefined
+		)?.map((item) => ({
+			...item,
+			time: normalizeTime(item.time) ?? item.time,
+		}));
+		result.itinerary = {
+			...itinerary,
+			...(normalizedItems ? { items: normalizedItems } : {}),
+		} as DraftContent['itinerary'];
 	}
 
 	const quote = nestedContent.quote as Record<string, unknown> | undefined;

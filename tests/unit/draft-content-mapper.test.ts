@@ -241,4 +241,112 @@ describe('mapNestedToDraftContent', () => {
 
 		expect(result.family?.visible).toBe(false);
 	});
+
+	it('does not normalize legacy itinerary icon fields from published content', () => {
+		const input = {
+			itinerary: {
+				title: 'Programa',
+				items: [
+					{ icon: 'church', label: 'Misa', time: '18:00' },
+					{ icon: 'map-location', label: 'Recepción', time: '20:00' },
+					{ iconName: 'Dinner', icon: 'dinner', label: 'Cena', time: '22:00' },
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.itinerary?.items).toEqual([
+			{ icon: 'church', label: 'Misa', time: '18:00' },
+			{ icon: 'map-location', label: 'Recepción', time: '20:00' },
+			{ iconName: 'Dinner', icon: 'dinner', label: 'Cena', time: '22:00' },
+		]);
+	});
+
+	it('normalizes 12-hour itinerary times to 24-hour format', () => {
+		const input = {
+			itinerary: {
+				title: 'Programa',
+				items: [
+					{ iconName: 'Church', label: 'Misa', time: '6:00 PM' },
+					{ iconName: 'Reception', label: 'Recepción', time: '8:00 PM' },
+					{ iconName: 'Dinner', label: 'Cena', time: '10:00 PM' },
+					{ iconName: 'Party', label: 'Cierre', time: '1:00 AM' },
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.itinerary?.items).toEqual([
+			{ iconName: 'Church', label: 'Misa', time: '18:00' },
+			{ iconName: 'Reception', label: 'Recepción', time: '20:00' },
+			{ iconName: 'Dinner', label: 'Cena', time: '22:00' },
+			{ iconName: 'Party', label: 'Cierre', time: '01:00' },
+		]);
+	});
+
+	it('normalizes 12-hour venue times to 24-hour format', () => {
+		const input = {
+			location: {
+				ceremony: {
+					venueName: 'Iglesia',
+					address: 'Calle Principal',
+					city: 'Ciudad',
+					date: '2026-06-15',
+					time: '10:00 AM',
+				},
+				reception: {
+					venueName: 'Salón',
+					address: 'Av. Principal',
+					city: 'Ciudad',
+					date: '2026-06-15',
+					time: '12:00 PM',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.ceremony?.time).toBe('10:00');
+		expect(result.location?.reception?.time).toBe('12:00');
+	});
+
+	it('preserves already-normalized 24-hour times unchanged', () => {
+		const input = {
+			itinerary: {
+				title: 'Programa',
+				items: [
+					{ iconName: 'Church', label: 'Misa', time: '18:00' },
+					{ iconName: 'Reception', label: 'Recepción', time: '20:00' },
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.itinerary?.items).toEqual([
+			{ iconName: 'Church', label: 'Misa', time: '18:00' },
+			{ iconName: 'Reception', label: 'Recepción', time: '20:00' },
+		]);
+	});
+
+	it('preserves invalid/unparseable times as-is when normalization fails', () => {
+		const input = {
+			itinerary: {
+				title: 'Programa',
+				items: [
+					{ iconName: 'Church', label: 'Misa', time: '99:00' },
+					{ iconName: 'Reception', label: 'Recepción', time: 'invalid' },
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.itinerary?.items).toEqual([
+			{ iconName: 'Church', label: 'Misa', time: '99:00' },
+			{ iconName: 'Reception', label: 'Recepción', time: 'invalid' },
+		]);
+	});
 });
