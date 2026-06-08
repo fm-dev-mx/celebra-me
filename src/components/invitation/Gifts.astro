@@ -1,6 +1,9 @@
 ---
 // src/components/invitation/Gifts.astro
 import '@/styles/invitation/_gifts.scss';
+import { GiftIcon } from '@/components/common/icons/invitation';
+import { BankCardIcon, CashIcon } from '@/components/common/icons/ui';
+import { PayPalIcon } from '@/components/common/icons/social';
 
 interface GiftStore {
 	type: 'store';
@@ -35,6 +38,7 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 interface Props {
 	gifts: Gift[];
 	variant?: string;
+	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
 	labels?: {
@@ -51,6 +55,7 @@ interface Props {
 const {
 	gifts,
 	variant = 'standard',
+	eyebrow,
 	title = 'Mesa de Regalos',
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
 	labels = {
@@ -64,10 +69,6 @@ const {
 	},
 } = Astro.props;
 
-import { GiftIcon } from '@/components/common/icons/invitation';
-import { BankCardIcon, CashIcon } from '@/components/common/icons/ui';
-import { PayPalIcon } from '@/components/common/icons/social';
-
 const ICON_MAP = {
 	store: GiftIcon,
 	bank: BankCardIcon,
@@ -79,20 +80,29 @@ const ICON_MAP = {
 <section id="regalos" class="gifts-section" data-variant={variant}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
+			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
 			<h2 class="gifts-section__title">{title}</h2>
+			<div class="gifts-section__flourish" aria-hidden="true">
+				<span class="flourish-line"></span>
+				<span class="flourish-diamond"></span>
+				<span class="flourish-line"></span>
+			</div>
 			{subtitle && <p class="gifts-section__subtitle">{subtitle}</p>}
 		</header>
 
-		<div class="gifts-grid">
+		<div class="gifts-section__separator" aria-hidden="true"></div>
+
+		<div class="gifts-grid" data-count={gifts.length}>
 			{
 				gifts.map((gift) => {
 					const Icon = ICON_MAP[gift.type];
 					return (
 						<div class={`gift-card gift-card--${gift.type}`}>
-							<div class="gift-card__shimmer" />
 							<div class="gift-card__inner">
-								<div class="gift-card__icon">
-									<Icon size={24} />
+								<div class="gift-card__icon-medallion">
+									<div class="gift-card__icon-inner">
+										<Icon size={24} />
+									</div>
 								</div>
 
 								<h3 class="gift-card__title">{gift.title}</h3>

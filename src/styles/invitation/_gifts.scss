@@ -47,6 +47,18 @@
 		animation: invitation-fade-in-up-30 var(--duration-premium) var(--ease-premium) forwards;
 	}
 
+	&__eyebrow {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--color-action-accent);
+		opacity: 88%;
+	}
+
 	&__title {
 		font-family: var(--font-display);
 		font-size: clamp(2rem, 5vw, 3rem);
@@ -54,6 +66,29 @@
 		text-transform: uppercase;
 		letter-spacing: var(--gifts-title-letter-spacing);
 		color: var(--gifts-title-color);
+	}
+
+	&__flourish {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.8rem;
+		margin: 1rem auto;
+		opacity: 72%;
+
+		.flourish-line {
+			width: 30px;
+			height: 1px;
+			background: currentcolor;
+			opacity: 40%;
+		}
+
+		.flourish-diamond {
+			width: 5px;
+			height: 5px;
+			background: currentcolor;
+			transform: rotate(45deg);
+		}
 	}
 
 	&__subtitle {
@@ -65,12 +100,24 @@
 		opacity: 90%;
 		color: var(--gifts-subtitle-color);
 	}
+
+	&__separator {
+		width: min(10rem, 50%);
+		height: 1px;
+		margin: 0 auto 2rem;
+		background: rgb(var(--color-action-accent-rgb, 0 0 0) / 30%);
+	}
 }
 
 .gifts-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: var(--spacing-lg);
+
+	&[data-count='1'] {
+		grid-template-columns: minmax(0, 420px);
+		justify-content: center;
+	}
 }
 
 .gift-card {
@@ -94,18 +141,6 @@
 		border-color: var(--color-action-accent);
 	}
 
-	&__shimmer {
-		position: absolute;
-		top: 0;
-		left: -100%;
-		width: 50%;
-		height: 100%;
-		background: linear-gradient(90deg, transparent, rgb(255 255 255 / 5%), transparent);
-		transform: skewX(-20deg);
-		pointer-events: none;
-		display: none;
-	}
-
 	&__inner {
 		display: flex;
 		flex-direction: column;
@@ -113,12 +148,28 @@
 		gap: 1.5rem;
 	}
 
-	&__icon {
+	&__icon-medallion {
 		width: 48px;
 		height: 48px;
-		margin: 0 auto var(--spacing-lg);
+		margin: 0 auto 0.75rem;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		background: var(--color-glass-bg);
+		border: 1.5px solid var(--color-glass-border);
+		box-shadow: var(--shadow-subtle);
+		backdrop-filter: blur(8px);
+	}
+
+	&__icon-inner {
+		width: 24px;
+		height: 24px;
 		color: var(--gifts-icon-color);
-		filter: drop-shadow(0 0 12px rgb(var(--color-action-accent-rgb) / 40%));
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
 		svg {
 			width: 100%;
@@ -231,21 +282,5 @@
 		border-color: var(--color-state-success, hsl(134deg 61% 41%));
 		color: var(--color-state-success, green);
 		fill: var(--color-state-success, green);
-	}
-}
-
-// ---------------------------------------------------------------------
-// Animations
-// ---------------------------------------------------------------------
-
-@keyframes invitation-fade-in-up-30 {
-	from {
-		opacity: 0%;
-		transform: translateY(30px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
 	}
 }
