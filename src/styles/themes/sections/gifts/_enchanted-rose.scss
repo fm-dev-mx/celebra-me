@@ -40,6 +40,9 @@
 	--gifts-account-color: var(--color-velvet-burgundy);
 	--gifts-copy-color: var(--color-velvet-burgundy);
 	--gifts-copy-border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
+	--gifts-success-bg: var(--color-velvet-burgundy);
+	--gifts-success-border: var(--color-velvet-burgundy);
+	--gifts-success-color: var(--color-warm-ivory);
 
 	background: var(--gifts-bg);
 	color: var(--gifts-text-color);
@@ -83,16 +86,59 @@
 	}
 
 	.gifts-section__header {
-		margin-bottom: clamp(2.4rem, 5vw, 3.4rem);
+		margin-bottom: clamp(1.6rem, 3.5vw, 2.4rem);
+	}
+
+	.gifts-section__eyebrow {
+		display: block;
+		margin-bottom: 0.85rem;
+		font-family: var(--font-body);
+		font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+		font-weight: 600;
+		letter-spacing: 0.34em;
+		text-transform: uppercase;
+		color: rgb(var(--color-candle-gold-rgb) / 82%);
 	}
 
 	.gifts-section__title {
-		margin-bottom: clamp(0.9rem, 2vw, 1.2rem);
+		margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
 		font-size: clamp(2.35rem, 8vw, 4.7rem);
 		font-weight: 400;
 		line-height: 0.98;
 		text-transform: none;
 		color: var(--gifts-title-color);
+	}
+
+	.gifts-section__flourish {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.8rem;
+		margin: clamp(1rem, 2.4vw, 1.6rem) auto clamp(1.2rem, 2.8vw, 1.8rem);
+
+		.flourish-line {
+			width: clamp(1.8rem, 5vw, 2.8rem);
+			height: 1px;
+			background: var(--rose-gold-divider);
+			opacity: 78%;
+
+			&:last-child {
+				background: linear-gradient(
+					-90deg,
+					transparent,
+					rgb(var(--color-antique-gold-rgb) / 38%)
+				);
+				opacity: 78%;
+			}
+		}
+
+		.flourish-diamond {
+			width: 5px;
+			height: 5px;
+			background: var(--color-candle-gold);
+			transform: rotate(45deg);
+			box-shadow: 0 0 14px rgb(var(--color-candle-gold-rgb) / 34%);
+		}
 	}
 
 	.gifts-section__subtitle {
@@ -102,10 +148,36 @@
 		color: var(--gifts-subtitle-color);
 	}
 
+	.gifts-section__separator {
+		position: relative;
+		inline-size: min(13rem, 58%);
+		block-size: 1px;
+		margin: 0 auto clamp(2rem, 4vw, 2.8rem);
+		background: var(--rose-gold-divider);
+		opacity: 90%;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: calc(50% - 0.21rem);
+			inline-size: 0.42rem;
+			block-size: 0.42rem;
+			border: 1px solid rgb(var(--color-candle-gold-rgb) / 72%);
+			background: rgb(var(--color-velvet-burgundy-rgb) / 92%);
+			transform: translateY(-50%) rotate(45deg);
+		}
+	}
+
 	.gifts-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: clamp(1rem, 2.4vw, 1.4rem);
 		align-items: stretch;
+
+		&[data-count='1'] {
+			grid-template-columns: minmax(0, 420px);
+			justify-content: center;
+		}
 	}
 
 	.gift-card {
@@ -176,13 +248,50 @@
 		min-height: 100%;
 	}
 
-	.gift-card__icon {
-		width: 38px;
-		height: 38px;
-		margin-bottom: 0.35rem;
-		color: var(--gifts-icon-color);
-		filter: drop-shadow(0 10px 18px rgb(var(--color-antique-gold-rgb) / 18%));
-		opacity: 88%;
+	.gift-card__icon-medallion {
+		width: 52px;
+		height: 52px;
+		margin: 0 auto 0.6rem;
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-warm-ivory-rgb) / 0%),
+				rgb(var(--color-velvet-burgundy-rgb) / 60%)
+			),
+			rgb(var(--color-rose-shadow-rgb) / 62%);
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 42%);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		box-shadow:
+			0 18px 38px rgb(var(--color-rose-shadow-rgb) / 36%),
+			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 12%);
+		backdrop-filter: blur(10px) saturate(125%);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -4px;
+			border: 1px solid rgb(var(--color-antique-gold-rgb) / 20%);
+			border-radius: 50%;
+			pointer-events: none;
+		}
+	}
+
+	.gift-card__icon-inner {
+		width: 24px;
+		height: 24px;
+		color: rgb(var(--color-candle-gold-rgb) / 88%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
 	}
 
 	.gift-card__title {
@@ -285,10 +394,10 @@
 		}
 
 		&--success {
-			background: var(--color-velvet-burgundy);
-			border-color: var(--color-velvet-burgundy);
-			color: var(--color-warm-ivory);
-			fill: var(--color-warm-ivory);
+			background: var(--gifts-success-bg);
+			border-color: var(--gifts-success-border);
+			color: var(--gifts-success-color);
+			fill: var(--gifts-success-color);
 		}
 	}
 
