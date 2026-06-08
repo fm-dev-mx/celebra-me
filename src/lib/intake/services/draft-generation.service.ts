@@ -11,7 +11,7 @@ import {
 import { createIntakeRequest } from '@/lib/intake/repositories/intake-request.repository';
 import { createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import { deepMerge } from '@/lib/intake/utils';
+import { mergeOverlay } from '@/lib/intake/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 export async function generateDraft(invitationId: string): Promise<InvitationContentDraft> {
@@ -126,7 +126,7 @@ export async function updateDraftContentByInvitation(
 	}
 
 	const existing = (draft.content ?? {}) as Record<string, unknown>;
-	const merged = deepMerge(existing, content);
+	const merged = mergeOverlay(existing, content);
 
 	return updateDraftContent(draft.id, merged);
 }

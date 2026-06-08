@@ -2,13 +2,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import {
-	strFallback,
-	boolFallback,
-	numFallback,
-	deepClone,
-	moveArrayItem,
-} from '@/lib/intake/utils';
+import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/intake/utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';
@@ -76,7 +70,7 @@ function validateContent(content: DraftContent): ValidationError[] {
 
 const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 	const { updateDraft, saving } = useInvitationAdmin();
-	const [content, setContent] = useState<DraftContent>(() => deepClone(initialContent));
+	const [content, setContent] = useState<DraftContent>(() => structuredClone(initialContent));
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 	const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
@@ -119,7 +113,7 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 
 	const handleCancel = () => {
 		if (!success) {
-			setContent(deepClone(initialContent));
+			setContent(structuredClone(initialContent));
 			setError('');
 			setSuccess('');
 			setValidationErrors([]);

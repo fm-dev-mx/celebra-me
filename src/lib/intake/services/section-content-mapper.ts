@@ -1,6 +1,5 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
-import { deepClone } from '@/lib/intake/utils';
 
 const COMPOUND_SECTIONS = new Set<InvitationEditorSectionKey>(['main', 'messages', 'publication']);
 
@@ -47,7 +46,7 @@ export function applySectionValue(
 	section: InvitationEditorSectionKey,
 	value: unknown,
 ): DraftContent {
-	const next = deepClone(content);
+	const next = structuredClone(content);
 
 	if (section === 'main') {
 		const main = value as Pick<DraftContent, 'title' | 'description' | 'hero'>;

@@ -47,10 +47,6 @@ export function normalizeDate(value: unknown): string {
 	return raw;
 }
 
-export function deepClone<T>(value: T): T {
-	return structuredClone(value);
-}
-
 const TIME_24H_REGEX = /^(\d{2}):(\d{2})$/;
 const TIME_12H_REGEX = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
 
@@ -100,7 +96,19 @@ export function isValidTime(value: unknown): boolean {
 	return parseTime(value) !== null;
 }
 
-export function deepMerge(
+export function formatTime12h(value: string): string {
+	const parsed = parseTime(value);
+	if (!parsed) return value;
+
+	const { hours, minutes } = parsed;
+	const period = hours >= 12 ? 'PM' : 'AM';
+	const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+	const displayMinutes = minutes.toString().padStart(2, '0');
+
+	return `${displayHours}:${displayMinutes} ${period}`;
+}
+
+export function mergeOverlay(
 	base: Record<string, unknown>,
 	overlay: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -116,7 +124,7 @@ export function deepMerge(
 			!Array.isArray(baseVal) &&
 			!Array.isArray(overlayVal)
 		) {
-			result[key] = deepMerge(
+			result[key] = mergeOverlay(
 				baseVal as Record<string, unknown>,
 				overlayVal as Record<string, unknown>,
 			);

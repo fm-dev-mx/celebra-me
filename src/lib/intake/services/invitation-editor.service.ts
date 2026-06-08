@@ -27,7 +27,7 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { loadDemoContent } from '@/lib/intake/editor-api';
-import { deepClone, hasRsvpContent } from '@/lib/intake/utils';
+import { hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
 import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS, resolveAssetSlug } from '@/lib/assets/asset-slug';
@@ -65,7 +65,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * Shallow-merges two objects field-by-field, only overwriting with defined (non-undefined) values.
  * Undefined values in overlay are skipped so a partial object from a higher-priority
  * source does not overwrite complete data from a lower-priority source.
- * Unlike deepMerge (which is recursive and overwrites all values), this is shallow
+ * Unlike mergeOverlay (which is recursive and overwrites all values), this is shallow
  * and preserves existing fields not present in overlay.
  * Returns undefined when both inputs are empty, null, or undefined.
  */
@@ -99,7 +99,7 @@ function hydrateEditableContent(
 	publishedContent: Record<string, unknown>,
 	demoContent: Record<string, unknown>,
 ): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
-	const draftBase = deepClone(draftContent) as DraftContent;
+	const draftBase = structuredClone(draftContent) as DraftContent;
 	const publishedFlat = mapNestedToDraftContent(publishedContent);
 	const demoFlat = mapNestedToDraftContent(demoContent);
 
@@ -125,16 +125,16 @@ function hydrateEditableContent(
 				isRecord(draftVal) ? draftVal : undefined,
 			);
 			if (merged !== undefined) {
-				result[key] = deepClone(merged) as DraftContent[typeof key];
+				result[key] = structuredClone(merged) as DraftContent[typeof key];
 			}
 		} else {
 			// Simple priority replace for scalar / array fields
 			if (draftVal !== undefined) {
-				result[key] = deepClone(draftVal);
+				result[key] = structuredClone(draftVal);
 			} else if (publishedVal !== undefined) {
-				result[key] = deepClone(publishedVal);
+				result[key] = structuredClone(publishedVal);
 			} else if (demoVal !== undefined) {
-				result[key] = deepClone(demoVal);
+				result[key] = structuredClone(demoVal);
 			}
 		}
 

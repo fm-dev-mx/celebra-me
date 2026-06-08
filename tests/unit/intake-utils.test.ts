@@ -6,8 +6,7 @@ import {
 	num,
 	numFallback,
 	hasRsvpContent,
-	deepClone,
-	deepMerge,
+	mergeOverlay,
 } from '@/lib/intake/utils';
 
 describe('str', () => {
@@ -114,63 +113,36 @@ describe('hasRsvpContent', () => {
 	});
 });
 
-describe('deepClone', () => {
-	it('clones plain objects', () => {
-		const original = { a: 1, b: { c: 2 } };
-		const cloned = deepClone(original);
-		expect(cloned).toEqual(original);
-		expect(cloned).not.toBe(original);
-		expect(cloned.b).not.toBe(original.b);
-	});
-
-	it('clones arrays', () => {
-		const original = [1, [2, 3]];
-		const cloned = deepClone(original);
-		expect(cloned).toEqual(original);
-		expect(cloned).not.toBe(original);
-	});
-
-	it('clones primitives', () => {
-		expect(deepClone(42)).toBe(42);
-		expect(deepClone('hello')).toBe('hello');
-		expect(deepClone(null)).toBe(null);
-	});
-
-	it('throws on non-structured-clonable values', () => {
-		expect(() => deepClone(() => undefined)).toThrow();
-	});
-});
-
-describe('deepMerge', () => {
+describe('mergeOverlay', () => {
 	it('merges two flat objects', () => {
-		const result = deepMerge({ a: 1, b: 2 }, { b: 3, c: 4 });
+		const result = mergeOverlay({ a: 1, b: 2 }, { b: 3, c: 4 });
 		expect(result).toEqual({ a: 1, b: 3, c: 4 });
 	});
 
 	it('merges nested objects recursively', () => {
-		const result = deepMerge({ a: { x: 1, y: 2 } }, { a: { y: 99, z: 3 } });
+		const result = mergeOverlay({ a: { x: 1, y: 2 } }, { a: { y: 99, z: 3 } });
 		expect(result).toEqual({ a: { x: 1, y: 99, z: 3 } });
 	});
 
 	it('overwrites arrays entirely', () => {
-		const result = deepMerge({ items: [1, 2] }, { items: [3] });
+		const result = mergeOverlay({ items: [1, 2] }, { items: [3] });
 		expect(result).toEqual({ items: [3] });
 	});
 
 	it('does not mutate the base object', () => {
 		const base = { a: { b: 1 } };
-		const result = deepMerge(base, { a: { c: 2 } });
+		const result = mergeOverlay(base, { a: { c: 2 } });
 		expect(base).toEqual({ a: { b: 1 } });
 		expect(result).toEqual({ a: { b: 1, c: 2 } });
 	});
 
 	it('overwrites with null values', () => {
-		const result = deepMerge({ a: 1, b: 2 }, { a: null });
+		const result = mergeOverlay({ a: 1, b: 2 }, { a: null });
 		expect(result).toEqual({ a: null, b: 2 });
 	});
 
 	it('handles empty overlays', () => {
-		const result = deepMerge({ a: 1 }, {});
+		const result = mergeOverlay({ a: 1 }, {});
 		expect(result).toEqual({ a: 1 });
 	});
 });
