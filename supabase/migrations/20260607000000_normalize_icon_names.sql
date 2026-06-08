@@ -1,5 +1,7 @@
--- Migration: Normalize icon names in all content tables
--- Converts legacy lowercase/hyphenated icon names to canonical PascalCase
+-- Migration: Normalize icon names in all content tables.
+-- Converts known legacy lowercase/hyphenated iconName values to canonical
+-- PascalCase without creating iconName fields on elements that do not already
+-- have one.
 
 -- ============================================================================
 -- HELPER: Normalize a single icon name
@@ -62,7 +64,12 @@ BEGIN
   arr := content #> path;
   IF arr IS NULL OR jsonb_typeof(arr) <> 'array' THEN RETURN content; END IF;
   SELECT jsonb_agg(
-    jsonb_set(elem, '{iconName}', to_jsonb(public.normalize_icon_name(elem->>'iconName')))
+    CASE
+      WHEN elem ? 'iconName'
+        AND public.normalize_icon_name(elem->>'iconName') IS DISTINCT FROM elem->>'iconName'
+        THEN jsonb_set(elem, '{iconName}', to_jsonb(public.normalize_icon_name(elem->>'iconName')))
+      ELSE elem
+    END
   ) INTO arr
   FROM jsonb_array_elements(arr) AS elem;
   RETURN jsonb_set(content, path, arr);
@@ -77,15 +84,32 @@ CREATE OR REPLACE FUNCTION public._normalize_table_icons(tbl regclass)
 RETURNS void
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  updated_count integer;
 BEGIN
   EXECUTE format(
-    'UPDATE %s SET content = public._normalize_icon_array(content, ''{itinerary,items}''), updated_at = now() WHERE content #> ''{itinerary,items}'' IS NOT NULL AND jsonb_typeof(content #> ''{itinerary,items}'') = ''array''',
+    'UPDATE %s SET content = public._normalize_icon_array(content, ''{itinerary,items}''), updated_at = now() '
+    'WHERE content #> ''{itinerary,items}'' IS NOT NULL '
+    'AND jsonb_typeof(content #> ''{itinerary,items}'') = ''array'' '
+    'AND EXISTS (SELECT 1 FROM jsonb_array_elements(content #> ''{itinerary,items}'') AS elem '
+    'WHERE elem ? ''iconName'' '
+    'AND public.normalize_icon_name(elem->>''iconName'') IS DISTINCT FROM elem->>''iconName'')',
     tbl
   );
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  RAISE NOTICE 'Normalized itinerary iconName values in % row(s) for %', updated_count, tbl;
+
   EXECUTE format(
-    'UPDATE %s SET content = public._normalize_icon_array(content, ''{location,indications}''), updated_at = now() WHERE content #> ''{location,indications}'' IS NOT NULL AND jsonb_typeof(content #> ''{location,indications}'') = ''array''',
+    'UPDATE %s SET content = public._normalize_icon_array(content, ''{location,indications}''), updated_at = now() '
+    'WHERE content #> ''{location,indications}'' IS NOT NULL '
+    'AND jsonb_typeof(content #> ''{location,indications}'') = ''array'' '
+    'AND EXISTS (SELECT 1 FROM jsonb_array_elements(content #> ''{location,indications}'') AS elem '
+    'WHERE elem ? ''iconName'' '
+    'AND public.normalize_icon_name(elem->>''iconName'') IS DISTINCT FROM elem->>''iconName'')',
     tbl
   );
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  RAISE NOTICE 'Normalized location indication iconName values in % row(s) for %', updated_count, tbl;
 END;
 $$;
 
