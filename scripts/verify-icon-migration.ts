@@ -14,6 +14,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import * as path from 'path';
 import * as fs from 'fs';
+import type { IconName } from '../src/lib/icons/icon-catalog';
+import { isIconName } from '../src/lib/icons/icon-catalog';
 
 interface TableConfig {
 	table: string;
@@ -21,12 +23,21 @@ interface TableConfig {
 	slugField: string;
 }
 
-interface LegacyIconIssue {
+export type IconMigrationIssueReason =
+	| 'missing_iconName'
+	| 'unknown_legacy_icon'
+	| 'legacy_icon_present'
+	| 'non_canonical_iconName'
+	| 'unregistered_iconName'
+	| 'invalid_icon_shape';
+
+export interface LegacyIconIssue {
 	table: string;
 	id: string;
 	slug?: string;
 	field: string;
 	iconValue: string;
+	reason: IconMigrationIssueReason;
 }
 
 function loadEnvFile(relativePath: string): void {
@@ -51,55 +62,187 @@ loadEnvFile('.env.prod.local');
 loadEnvFile('.env.local');
 loadEnvFile('.env');
 
-// Legacy icon names that should NOT exist after migration
-const LEGACY_ICON_NAMES = [
-	'waltz',
-	'dinner',
-	'church',
-	'reception',
-	'cake',
-	'party',
-	'toast',
-	'dresscode',
-	'dress-code',
-	'dress code',
-	'calendar',
-	'gift',
-	'photo',
-	'rings',
-	'dove',
-	'crown',
-	'diamond',
-	'map',
-	'map-location',
-	'map location',
-	'envelope',
-	'boot',
-	'boot-seal',
-	'boot seal',
-	'western-hat',
-	'westernhat',
-	'western hat',
-	'taco',
-	'tuba',
-	'accordion',
-	'heel',
-	'forbidden',
-	'flower-seal',
-	'flowerseal',
-	'flower seal',
-	'heart-seal',
-	'heartseal',
-	'heart seal',
-	'monogram-seal',
-	'monogramseal',
-	'monogram seal',
-	'check-seal',
-	'checkseal',
-	'check seal',
-	'heartbreak',
-	'sparkles',
-];
+type ContentRow = Record<string, unknown>;
+
+const LEGACY_ICON_NAME_MAP: Record<string, IconName> = {
+	accordion: 'Accordion',
+	boot: 'BootSeal',
+	'boot-seal': 'BootSeal',
+	bootseal: 'BootSeal',
+	cake: 'Cake',
+	calendar: 'Calendar',
+	'check-seal': 'CheckSeal',
+	checkseal: 'CheckSeal',
+	church: 'Church',
+	crown: 'Crown',
+	diamond: 'Diamond',
+	dinner: 'Dinner',
+	dove: 'Dove',
+	dresscode: 'DressCode',
+	'dress-code': 'DressCode',
+	envelope: 'Enveloped',
+	enveloped: 'Enveloped',
+	'flower-seal': 'FlowerSeal',
+	flowerseal: 'FlowerSeal',
+	forbidden: 'Forbidden',
+	gift: 'Gift',
+	heartbreak: 'Heartbreak',
+	'heart-seal': 'HeartSeal',
+	heartseal: 'HeartSeal',
+	heel: 'Heel',
+	map: 'MapLocation',
+	'map-location': 'MapLocation',
+	maplocation: 'MapLocation',
+	'monogram-seal': 'MonogramSeal',
+	monogramseal: 'MonogramSeal',
+	party: 'Party',
+	photo: 'Photo',
+	reception: 'Reception',
+	rings: 'Rings',
+	sparkles: 'Sparkles',
+	taco: 'Taco',
+	toast: 'Toast',
+	tuba: 'Tuba',
+	waltz: 'Waltz',
+	'western-hat': 'WesternHat',
+	westernhat: 'WesternHat',
+};
+
+function normalizeLegacyIconName(value: unknown): IconName | undefined {
+	if (typeof value !== 'string') return undefined;
+	const key = value.trim().toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-');
+	return LEGACY_ICON_NAME_MAP[key];
+}
+
+function legacyIconIssue(
+	row: ContentRow,
+	table: string,
+	slug: string,
+	field: string,
+	iconValue: unknown,
+	reason: IconMigrationIssueReason,
+): LegacyIconIssue {
+	return {
+		table,
+		id: String(row.id ?? ''),
+		slug,
+		field,
+		iconValue: String(iconValue ?? ''),
+		reason,
+	};
+}
+
+function findIconNameIssueReason(value: unknown): IconMigrationIssueReason | undefined {
+	if (typeof value !== 'string') return 'invalid_icon_shape';
+	if (isIconName(value)) return undefined;
+	return normalizeLegacyIconName(value) ? 'non_canonical_iconName' : 'unregistered_iconName';
+}
+
+export function findInvalidItineraryIconIssues(
+	row: ContentRow,
+	table = 'unknown',
+	slugField = 'slug',
+): LegacyIconIssue[] {
+	const issues: LegacyIconIssue[] = [];
+	const content = row.content as Record<string, unknown> | undefined;
+	const slug = String(row[slugField] ?? row.slug ?? row.invitation_project_id ?? '');
+	const items = (content?.itinerary as Record<string, unknown> | undefined)?.items;
+
+	if (!Array.isArray(items)) return issues;
+
+	for (let i = 0; i < items.length; i++) {
+		const item = items[i] as Record<string, unknown> | undefined;
+		if (!item || typeof item !== 'object' || Array.isArray(item)) {
+			issues.push(
+				legacyIconIssue(
+					row,
+					table,
+					slug,
+					`itinerary.items[${i}]`,
+					'',
+					'invalid_icon_shape',
+				),
+			);
+			continue;
+		}
+
+		if (item.icon !== undefined) {
+			issues.push(
+				legacyIconIssue(
+					row,
+					table,
+					slug,
+					`itinerary.items[${i}].icon`,
+					item.icon,
+					'legacy_icon_present',
+				),
+			);
+		}
+
+		if (item.iconName !== undefined) {
+			const reason = findIconNameIssueReason(item.iconName);
+			if (reason) {
+				issues.push(
+					legacyIconIssue(
+						row,
+						table,
+						slug,
+						`itinerary.items[${i}].iconName`,
+						item.iconName,
+						reason,
+					),
+				);
+			}
+			continue;
+		}
+
+		issues.push(
+			legacyIconIssue(
+				row,
+				table,
+				slug,
+				`itinerary.items[${i}].iconName`,
+				item.icon ?? '',
+				item.icon === undefined || normalizeLegacyIconName(item.icon)
+					? 'missing_iconName'
+					: 'unknown_legacy_icon',
+			),
+		);
+	}
+
+	return issues;
+}
+
+function findInvalidIndicationIconIssues(
+	row: ContentRow,
+	table: string,
+	slugField: string,
+): LegacyIconIssue[] {
+	const issues: LegacyIconIssue[] = [];
+	const content = row.content as Record<string, unknown> | undefined;
+	const slug = String(row[slugField] ?? row.slug ?? row.invitation_project_id ?? '');
+	const indications = (content?.location as Record<string, unknown> | undefined)?.indications;
+
+	if (!Array.isArray(indications)) return issues;
+
+	for (let i = 0; i < indications.length; i++) {
+		const item = indications[i] as Record<string, unknown> | undefined;
+		const reason = findIconNameIssueReason(item?.iconName);
+		if (!reason) continue;
+		issues.push(
+			legacyIconIssue(
+				row,
+				table,
+				slug,
+				`location.indications[${i}].iconName`,
+				item?.iconName,
+				reason,
+			),
+		);
+	}
+
+	return issues;
+}
 
 async function checkTable(
 	supabase: SupabaseClient,
@@ -115,43 +258,15 @@ async function checkTable(
 	}
 
 	for (const row of (data as unknown as Record<string, unknown>[]) || []) {
-		const content = row.content as Record<string, unknown> | undefined;
-		const slug = String(row[config.slugField] ?? '');
-
-		for (const path_def of [
-			{
-				arr: (content?.itinerary as Record<string, unknown> | undefined)?.items,
-				prefix: 'itinerary.items',
-			},
-			{
-				arr: (content?.location as Record<string, unknown> | undefined)?.indications,
-				prefix: 'location.indications',
-			},
-		]) {
-			if (!Array.isArray(path_def.arr)) continue;
-			for (let i = 0; i < path_def.arr.length; i++) {
-				const item = path_def.arr[i] as Record<string, unknown> | undefined;
-				if (
-					item?.iconName &&
-					LEGACY_ICON_NAMES.includes(String(item.iconName).toLowerCase())
-				) {
-					issues.push({
-						table: config.table,
-						id: String(row.id ?? ''),
-						slug,
-						field: `${path_def.prefix}[${i}].iconName`,
-						iconValue: String(item.iconName),
-					});
-				}
-			}
-		}
+		issues.push(...findInvalidItineraryIconIssues(row, config.table, config.slugField));
+		issues.push(...findInvalidIndicationIconIssues(row, config.table, config.slugField));
 	}
 
 	return issues;
 }
 
 async function main(supabase: SupabaseClient) {
-	console.log('🔍 Verifying icon name migration...\n');
+	console.info('🔍 Verifying icon name migration...\n');
 
 	const tables: TableConfig[] = [
 		{ table: 'published_invitation_content', select: 'id, slug, content', slugField: 'slug' },
@@ -166,13 +281,14 @@ async function main(supabase: SupabaseClient) {
 	const allIssues = results.flat();
 
 	if (allIssues.length === 0) {
-		console.log('✅ SUCCESS: All icon names are in canonical format!');
-		console.log('   - Published content: ✓');
-		console.log('   - Draft content: ✓');
-		console.log('\n🎉 Migration verification complete. Safe to remove runtime normalization.');
+		console.info('✅ SUCCESS: Itinerary icon data uses only canonical iconName values!');
+		console.info('   - No legacy itinerary icon keys remain');
+		console.info('   - Published content: ✓');
+		console.info('   - Draft content: ✓');
+		console.info('\n🎉 Migration verification complete.');
 		process.exitCode = 0;
 	} else {
-		console.log('❌ FAILURE: Found legacy icon names in database\n');
+		console.info('❌ FAILURE: Found legacy icon names in database\n');
 
 		const byTable = allIssues.reduce(
 			(acc, issue) => {
@@ -183,35 +299,43 @@ async function main(supabase: SupabaseClient) {
 		);
 
 		for (const [table, issues] of Object.entries(byTable)) {
-			console.log(`📋 ${table}: ${issues.length} issue(s)`);
+			console.info(`📋 ${table}: ${issues.length} issue(s)`);
 			for (const issue of issues) {
-				console.log(`   - ${issue.slug || issue.id}`);
-				console.log(`     Field: ${issue.field}`);
-				console.log(`     Value: "${issue.iconValue}" (should be canonical PascalCase)`);
+				console.info(`   - ${issue.slug || issue.id}`);
+				console.info(`     Field: ${issue.field}`);
+				console.info(`     Value: "${issue.iconValue}"`);
+				console.info(`     Reason: ${issue.reason}`);
 			}
-			console.log();
+			console.info();
 		}
 
-		console.log('⚠️  Please run the migration again or fix these records manually.');
-		console.log(
-			'   Migration file: supabase/migrations/20260607000000_normalize_icon_names.sql',
+		console.info('⚠️  Please run the migration again or fix these records manually.');
+		console.info(
+			'   Migration file: supabase/migrations/20260607211553_backfill_legacy_itinerary_icons_and_ayrin_location.sql',
 		);
 		process.exitCode = 1;
 	}
 }
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.PROD_DB_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function isExecutedDirectly(): boolean {
+	return path.basename(process.argv[1] ?? '') === 'verify-icon-migration.ts';
+}
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-	console.error('❌ Missing required environment variables:');
-	console.error('   - SUPABASE_URL or PROD_DB_URL');
-	console.error('   - SUPABASE_SERVICE_ROLE_KEY');
-	process.exitCode = 2;
-} else {
-	const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-	main(supabase).catch((error) => {
-		console.error('❌ Unexpected error:', error);
+if (isExecutedDirectly()) {
+	const SUPABASE_URL =
+		process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || process.env.PROD_DB_URL;
+	const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+	if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+		console.error('❌ Missing required environment variables:');
+		console.error('   - SUPABASE_URL, PUBLIC_SUPABASE_URL, or PROD_DB_URL');
+		console.error('   - SUPABASE_SERVICE_ROLE_KEY');
 		process.exitCode = 2;
-	});
+	} else {
+		const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+		main(supabase).catch((error) => {
+			console.error('❌ Unexpected error:', error);
+			process.exitCode = 2;
+		});
+	}
 }
