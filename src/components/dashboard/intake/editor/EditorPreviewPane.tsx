@@ -5,6 +5,7 @@ import {
 	DEVICE_VIEWPORT_WIDTHS,
 	type PreviewDevice,
 } from '@/lib/editor/constants';
+import { buildPreviewUrl } from '@/lib/editor/preview-url';
 
 export function getPreviewScale(
 	availableWidth: number,
@@ -23,12 +24,6 @@ interface Props {
 	onReload: () => void;
 	paneRef?: RefObject<HTMLElement | null>;
 	previewHash: string;
-}
-
-function buildPreviewUrl(invitationId: string, previewVersion: number, embedded: boolean): string {
-	const id = encodeURIComponent(invitationId);
-	const query = embedded ? `embed=1&v=${previewVersion}` : `v=${previewVersion}`;
-	return `/dashboard/invitaciones/${id}/preview?${query}`;
 }
 
 export default function EditorPreviewPane({

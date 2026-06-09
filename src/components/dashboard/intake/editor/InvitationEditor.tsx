@@ -1,6 +1,7 @@
 /* eslint-disable max-lines -- Editor shell with 12+ sections; extracted panels to separate files */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EDITOR_SPLIT_BREAKPOINT } from '@/lib/editor/constants';
+import { buildPreviewUrl } from '@/lib/editor/preview-url';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEditor';
 import LocationSectionEditor from '@/components/dashboard/intake/editor/LocationSectionEditor';
@@ -483,9 +484,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		refreshSavedPreview,
 	]);
 
-	const previewUrl = `/dashboard/invitaciones/${encodeURIComponent(
-		invitationId,
-	)}/preview?v=${previewVersion}`;
+	const previewUrl = buildPreviewUrl(invitationId, previewVersion, false);
 	const backUrl = '/dashboard/invitaciones';
 	const publishDisabled = useMemo(
 		() =>
