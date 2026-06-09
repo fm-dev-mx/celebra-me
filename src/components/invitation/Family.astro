@@ -5,6 +5,7 @@ import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
+import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/intake/types';
 
 interface Props {
 	parents?: {
@@ -13,6 +14,7 @@ interface Props {
 		fatherDeceased?: boolean;
 		motherDeceased?: boolean;
 	};
+	parentsOrder?: ParentsOrder;
 	spouse?: string;
 	children?: Array<{
 		name: string;
@@ -62,6 +64,7 @@ interface FamilyBlock {
 
 const {
 	parents,
+	parentsOrder: parentsOrderProp,
 	spouse,
 	children,
 	godparents,
@@ -95,7 +98,7 @@ const imagePath = featuredImage
 	: undefined;
 const resolvedFocalPoint = focalPoint || 'center';
 
-const initials = (celebrantName ?? '')
+const initials = celebrantName
 	.trim()
 	.split(/\s+/)
 	.map((part) => part.at(0))
@@ -103,6 +106,8 @@ const initials = (celebrantName ?? '')
 	.slice(0, 2)
 	.join('')
 	.toLocaleUpperCase('es-MX');
+
+const parentsOrder = parentsOrderProp ?? DEFAULT_PARENTS_ORDER;
 
 const familyBlocks: FamilyBlock[] = (
 		groups && groups.length > 0
@@ -142,26 +147,23 @@ const familyBlocks: FamilyBlock[] = (
 								{
 									id: 'parents',
 									title: resolvedLabels.parentsTitle,
-									entries: [
-										...(parents.mother
-											? [
-													{
-														name: parents.mother,
-														role: 'Madre',
-														deceased: Boolean(parents.motherDeceased),
-													},
-												]
-											: []),
-										...(parents.father
-											? [
-													{
-														name: parents.father,
-														role: 'Padre',
-														deceased: Boolean(parents.fatherDeceased),
-													},
-												]
-											: []),
-									],
+									entries: parentsOrder === 'father-first'
+										? [
+												...(parents.father
+													? [{ name: parents.father, role: 'Padre', deceased: Boolean(parents.fatherDeceased) }]
+													: []),
+												...(parents.mother
+													? [{ name: parents.mother, role: 'Madre', deceased: Boolean(parents.motherDeceased) }]
+													: []),
+											]
+										: [
+												...(parents.mother
+													? [{ name: parents.mother, role: 'Madre', deceased: Boolean(parents.motherDeceased) }]
+													: []),
+												...(parents.father
+													? [{ name: parents.father, role: 'Padre', deceased: Boolean(parents.fatherDeceased) }]
+													: []),
+											],
 								},
 							]
 						: []),
