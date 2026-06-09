@@ -1,8 +1,8 @@
 export const DEFAULT_SHARE_MESSAGE_WITH_PHONE =
-	'Hola {guestName}, te compartimos tu invitaci\u00f3n a {eventTitle}:\n\n{inviteUrl}\n\n\u00c1brela para ver los detalles y confirmar tu asistencia.';
+	'Hola {guestName}, nos dará mucho gusto contar contigo en {eventTitle}.\n\nAquí puedes ver tu invitación:\n{inviteUrl}\n\nÁbrela para consultar los detalles y confirmar tu asistencia.';
 
 export const DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE =
-	'Te compartimos esta invitaci\u00f3n a {eventTitle}:\n\n{inviteUrl}\n\n\u00c1brela para ver los detalles y confirmar tu asistencia.';
+	'Nos dará mucho gusto contar contigo en {eventTitle}.\n\nAquí puedes ver la invitación:\n{inviteUrl}\n\nÁbrela para consultar los detalles y confirmar tu asistencia.';
 
 export interface ShareMessagesConfig {
 	whatsappWithPhone: string;
