@@ -739,12 +739,12 @@ describe('mapDraftToPublished', () => {
 		}
 	});
 
-	it('includes interludes, sectionStyles, sharing from demo content', () => {
+	it('includes interludes and sectionStyles from demo content without carrying demo-only sharing', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(Array.isArray(result.interludes)).toBe(true);
 		expect(result.sectionStyles).toBeDefined();
-		expect(result.sharing).toMatchObject({ whatsappTemplate: '¡Hola!' });
+		expect(result.sharing).toBeUndefined();
 	});
 
 	it('includes theme and sectionOrder from demo content', () => {
@@ -1106,23 +1106,19 @@ describe('sharing section mapping', () => {
 		expect(shareMessages.whatsappWithoutPhone).toBe('Demo without phone');
 	});
 
-	it('preserves legacy whatsappTemplate from demo', () => {
+	it('does not preserve legacy demo whatsappTemplate for client publications', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			demoContent: {
 				...baseDemoContent,
 				sharing: {
-					whatsappTemplate: 'Legacy demo template',
-					shareMessages: {
-						whatsappWithPhone: 'Demo with phone',
-						whatsappWithoutPhone: 'Demo without phone',
-					},
+					whatsappTemplate:
+						'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
 				},
 			},
 		});
 
-		const sharing = result.sharing as Record<string, unknown>;
-		expect(sharing.whatsappTemplate).toBe('Legacy demo template');
+		expect(result.sharing).toBeUndefined();
 	});
 
 	it('returns undefined sharing when no draft or demo sharing exists', () => {
@@ -1134,9 +1130,10 @@ describe('sharing section mapping', () => {
 		expect(result.sharing).toBeUndefined();
 	});
 
-	it('existing invitations without shareMessages still work through demo whatsappTemplate', () => {
+	it('keeps legacy whatsappTemplate for actual demo publications', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			demoContent: {
 				...baseDemoContent,
 				sharing: { whatsappTemplate: 'Only legacy template' },

@@ -414,6 +414,7 @@ function mapThankYouSection(
 function mapSharingFromDraft(
 	draftSharing: Record<string, unknown> | undefined,
 	demoSharing: Record<string, unknown> | undefined,
+	isDemo: boolean,
 ): Record<string, unknown> | undefined {
 	const draftMessages = draftSharing as Record<string, unknown> | undefined;
 	const demoMessages = demoSharing?.shareMessages as Record<string, unknown> | undefined;
@@ -425,7 +426,7 @@ function mapSharingFromDraft(
 
 	const hasShareMessages = !!(whatsappWithPhone && whatsappWithoutPhone);
 	const whatsappTemplate =
-		typeof demoSharing?.whatsappTemplate === 'string'
+		isDemo && typeof demoSharing?.whatsappTemplate === 'string'
 			? demoSharing.whatsappTemplate
 			: undefined;
 	const ogImage = demoSharing?.ogImage;
@@ -522,6 +523,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,
 			demoContent.sharing as Record<string, unknown> | undefined,
+			isDemo,
 		),
 
 		_assetSlug: input.assetSlug ?? snapshot.previewSlug,
