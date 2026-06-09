@@ -153,37 +153,37 @@ function mapVenue(
 	draftVenue: VenueDraft | undefined,
 	demoVenue?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftVenue)) {
+	if (!draftVenue || Object.keys(draftVenue).length === 0) {
 		return demoVenue && Object.keys(demoVenue).length > 0 ? { ...demoVenue } : undefined;
 	}
 	const result: Record<string, unknown> = {};
-	if (str(draftVenue!.venueName)) result.venueName = str(draftVenue!.venueName);
-	if (str(draftVenue!.address)) result.address = str(draftVenue!.address);
-	if (str(draftVenue!.city)) result.city = str(draftVenue!.city);
-	if (str(draftVenue!.date)) result.date = str(draftVenue!.date);
-	if (str(draftVenue!.time)) result.time = str(draftVenue!.time);
-	if (str(draftVenue!.mapUrl)) result.mapUrl = str(draftVenue!.mapUrl);
-	if (draftVenue!.image) {
-		result.image = draftVenue!.image;
+	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
+	if (str(draftVenue.address)) result.address = str(draftVenue.address);
+	if (str(draftVenue.city)) result.city = str(draftVenue.city);
+	if (str(draftVenue.date)) result.date = str(draftVenue.date);
+	if (str(draftVenue.time)) result.time = str(draftVenue.time);
+	if (str(draftVenue.mapUrl)) result.mapUrl = str(draftVenue.mapUrl);
+	if (draftVenue.image) {
+		result.image = draftVenue.image;
 	} else if (demoVenue?.image) {
-		result.image = demoVenue!.image;
+		result.image = demoVenue.image;
 	}
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function resolveIntroFields(
-	draftLocation: DraftContent['location'],
+	draftLocation: NonNullable<DraftContent['location']>,
 	demoLocation: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
 	const fields: Record<string, unknown> = {};
-	const introEyebrow = str(draftLocation!.introEyebrow) || str(demoLocation?.introEyebrow);
+	const introEyebrow = str(draftLocation.introEyebrow) || str(demoLocation?.introEyebrow);
 	if (introEyebrow) fields.introEyebrow = introEyebrow;
-	const introHeading = str(draftLocation!.introHeading) || str(demoLocation?.introHeading);
+	const introHeading = str(draftLocation.introHeading) || str(demoLocation?.introHeading);
 	if (introHeading) fields.introHeading = introHeading;
-	const introLede = str(draftLocation!.introLede) || str(demoLocation?.introLede);
+	const introLede = str(draftLocation.introLede) || str(demoLocation?.introLede);
 	if (introLede) fields.introLede = introLede;
 	const indicationsHeading =
-		str(draftLocation!.indicationsHeading) || str(demoLocation?.indicationsHeading);
+		str(draftLocation.indicationsHeading) || str(demoLocation?.indicationsHeading);
 	if (indicationsHeading) fields.indicationsHeading = indicationsHeading;
 	return fields;
 }
@@ -206,25 +206,25 @@ function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
 	demoContent?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftLocation)) return undefined;
+	if (!draftLocation || Object.keys(draftLocation).length === 0) return undefined;
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 
 	const ceremony = mapVenue(
-		draftLocation!.ceremony,
+		draftLocation.ceremony,
 		demoLocation?.ceremony as Record<string, unknown> | undefined,
 	);
 	if (ceremony) result.ceremony = ceremony;
 	const reception = mapVenue(
-		draftLocation!.reception,
+		draftLocation.reception,
 		demoLocation?.reception as Record<string, unknown> | undefined,
 	);
 	if (reception) result.reception = reception;
 
-	const introFields = resolveIntroFields(draftLocation!, demoLocation);
+	const introFields = resolveIntroFields(draftLocation, demoLocation);
 	Object.assign(result, introFields);
 
-	const indications = mapIndicationsFromDraft(draftLocation!.indications);
+	const indications = mapIndicationsFromDraft(draftLocation.indications);
 	if (indications) result.indications = indications;
 
 	return Object.keys(result).length > 0 ? result : undefined;
@@ -309,11 +309,11 @@ function mapHeroSection(
 }
 
 function resolveRsvpResponseMessages(
-	draftRsvp: DraftContent['rsvp'],
+	draftRsvp: NonNullable<DraftContent['rsvp']>,
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	return (
-		draftRsvp!.responseMessages ??
+		draftRsvp.responseMessages ??
 		(demoRsvp?.responseMessages as Record<string, unknown> | undefined)
 	);
 }
@@ -323,21 +323,28 @@ function mapRsvpSection(
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (isBlankSection(draftRsvp)) return undefined;
-	const whatsappPhone = str(draftRsvp!.whatsappPhone) || str(demoRsvp?.whatsappPhone);
+	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone);
 	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp);
+	const guestCap =
+		typeof draftRsvp.guestCap === 'number'
+			? draftRsvp.guestCap
+			: (demoRsvp?.guestCap as number | undefined);
+	const confirmationMode =
+		str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api';
+	const title = str(draftRsvp.title) || str(demoRsvp?.title);
+	const confirmationMessage =
+		str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage);
+	const accessMode = str(demoRsvp?.accessMode) || 'personalized-only';
+	const whatsappConfig = whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig;
+	const subcopy = str(draftRsvp.subcopy) || str(demoRsvp?.subcopy);
 	return {
-		title: str(draftRsvp!.title) || str(demoRsvp?.title),
-		guestCap:
-			typeof draftRsvp!.guestCap === 'number'
-				? draftRsvp!.guestCap
-				: (demoRsvp?.guestCap as number | undefined),
-		confirmationMessage:
-			str(draftRsvp!.confirmationMessage) || str(demoRsvp?.confirmationMessage),
-		confirmationMode:
-			str(draftRsvp!.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api',
-		accessMode: str(demoRsvp?.accessMode) || 'personalized-only',
-		whatsappConfig: whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig,
-		subcopy: str(draftRsvp!.subcopy) || str(demoRsvp?.subcopy),
+		title,
+		guestCap,
+		confirmationMessage,
+		confirmationMode,
+		accessMode,
+		whatsappConfig,
+		subcopy,
 		...(responseMessages ? { responseMessages } : {}),
 	};
 }
@@ -359,14 +366,14 @@ function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftGifts)) {
+	if (!draftGifts || Object.keys(draftGifts).length === 0) {
 		return demoGifts ? { ...demoGifts } : undefined;
 	}
 	return {
-		title: str(draftGifts!.title) || str(demoGifts?.title),
-		subtitle: str(draftGifts!.subtitle) || str(demoGifts?.subtitle),
+		title: str(draftGifts.title) || str(demoGifts?.title),
+		subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
 		items:
-			(draftGifts!.items as unknown as Array<Record<string, unknown>>) ||
+			(draftGifts.items as unknown as Array<Record<string, unknown>>) ||
 			(demoGifts?.items as Array<Record<string, unknown>>) ||
 			[],
 	};
