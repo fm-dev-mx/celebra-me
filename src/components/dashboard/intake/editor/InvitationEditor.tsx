@@ -31,6 +31,10 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { formatDateLong } from '@/lib/intake/constants';
+import {
+	DEFAULT_SHARE_MESSAGE_WITH_PHONE,
+	DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
 	getEditorSectionById,
@@ -91,6 +95,7 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	gallery: ['gallery'],
 	photoNotes: ['photoNotes'],
 	publication: ['sectionOrder'],
+	sharing: ['sharing'],
 };
 
 function uniqueSectionPresentation(sections: string[]) {
@@ -295,6 +300,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const giftItems = gifts.items ?? [];
 	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
 	const photoNotes = content.photoNotes ?? {};
+	const sharing = content.sharing ?? {};
 	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
 
 	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
@@ -1249,6 +1255,53 @@ export default function InvitationEditor({ initialContext }: Props) {
 						{success.restore && (
 							<p className="invitation-editor__success">{success.restore}</p>
 						)}
+					</SectionCard>
+
+					<SectionCard
+						id="sharing"
+						title="Mensajes para compartir"
+						description="Plantillas de mensaje para compartir la invitación por WhatsApp."
+						dirty={dirty.has('sharing')}
+						error={errors.sharing}
+						success={success.sharing}
+						sourceBadge={sectionSource('sharing')}
+						visible={activeEditorCardId === 'sharing'}
+					>
+						<TextArea
+							label="Mensaje con teléfono"
+							value={sharing.whatsappWithPhone ?? ''}
+							onChange={(value) =>
+								updateContent('sharing', { ...sharing, whatsappWithPhone: value })
+							}
+							placeholder="Hola {guestName}, te compartimos tu invitación a {eventTitle}..."
+						/>
+						<TextArea
+							label="Mensaje sin teléfono"
+							value={sharing.whatsappWithoutPhone ?? ''}
+							onChange={(value) =>
+								updateContent('sharing', {
+									...sharing,
+									whatsappWithoutPhone: value,
+								})
+							}
+							placeholder="Te compartimos esta invitación a {eventTitle}..."
+						/>
+						<p className="invitation-editor__helper-text">
+							Variables disponibles: {`{guestName}`}, {`{eventTitle}`},{' '}
+							{`{inviteUrl}`}
+						</p>
+						<button
+							type="button"
+							className="invitation-editor__secondary-button"
+							onClick={() =>
+								updateContent('sharing', {
+									whatsappWithPhone: DEFAULT_SHARE_MESSAGE_WITH_PHONE,
+									whatsappWithoutPhone: DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+								})
+							}
+						>
+							Restablecer valores predeterminados
+						</button>
 					</SectionCard>
 
 					<SectionCard
