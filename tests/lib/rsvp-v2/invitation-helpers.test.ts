@@ -66,6 +66,20 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('celebra-me.com');
 	});
 
+	it('uses the real event title when a client publication has no explicit template', () => {
+		const result = buildShareMessage({
+			...baseInput,
+			eventTitle: 'XV Años de Ayrin Samantha',
+			template: undefined,
+			shareMessages: null,
+			includeLink: true,
+		});
+
+		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).not.toContain('Isabella Rose');
+		expect(result).not.toContain('Camila Fernanda');
+	});
+
 	it('strips {inviteUrl} when includeLink is false', () => {
 		const result = buildShareMessage({
 			...baseInput,
