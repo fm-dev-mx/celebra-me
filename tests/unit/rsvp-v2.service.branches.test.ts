@@ -23,6 +23,10 @@ jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/rsvp/repositories/role-membership.repository');
 jest.mock('@/lib/rsvp/repositories/claim-code.repository');
+jest.mock('@/lib/rsvp/services/shared/invitation-helpers', () => ({
+	...jest.requireActual('@/lib/rsvp/services/shared/invitation-helpers'),
+	getSharingConfigForSlug: jest.fn().mockResolvedValue({}),
+}));
 
 describe('rsvp service branches', () => {
 	const findEventByIdMock = eventRepo.findEventById as jest.MockedFunction<

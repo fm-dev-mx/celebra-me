@@ -1,8 +1,8 @@
-import { findEventById } from '@/lib/rsvp/repositories/event.repository';
-import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findGuestById } from '@/lib/rsvp/repositories/guest.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
+import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
+import type { SharingConfig } from '@/lib/rsvp/services/shared/invitation-helpers';
 
 export async function getEventAccessOrThrow(eventId: string, hostAccessToken: string) {
 	const event = await findEventById(eventId, hostAccessToken);
@@ -30,10 +30,12 @@ export async function getEventPresentationData(eventId: string, hostAccessToken:
 	const event = await findEventById(eventId, hostAccessToken);
 	if (!event) return {};
 
+	const sharingConfig: SharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
 	return {
 		eventTitle: event.title,
 		eventType: event.eventType,
 		eventSlug: event.slug,
-		template: await getSharingTemplateForSlug(event.slug, event.eventType),
+		template: sharingConfig.whatsappTemplate,
+		shareMessages: sharingConfig.shareMessages ?? null,
 	};
 }

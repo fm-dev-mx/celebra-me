@@ -7,14 +7,20 @@ import {
 	buildShareMessage,
 	buildWhatsAppShareUrl,
 } from '@/lib/rsvp/services/shared/invitation-helpers';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+
+export interface ToGuestDtoOptions {
+	origin: string;
+	eventTitle?: string;
+	eventType?: EventRecord['eventType'];
+	eventSlug?: string;
+	template?: string;
+	shareMessages?: ShareMessagesConfig | null;
+}
 
 export function toGuestDto(
 	guest: GuestInvitationRecord,
-	origin: string,
-	eventTitle?: string,
-	eventType?: EventRecord['eventType'],
-	eventSlug?: string,
-	template?: string,
+	options: ToGuestDtoOptions,
 ): GuestInvitationDTO {
 	return {
 		guestId: guest.id,
@@ -33,34 +39,38 @@ export function toGuestDto(
 		firstViewedAt: guest.firstViewedAt,
 		respondedAt: guest.respondedAt,
 		waShareUrl: buildWhatsAppShareUrl({
-			origin,
+			origin: options.origin,
 			inviteId: guest.inviteId,
 			phone: guest.phone,
 			countryCode: guest.countryCode,
 			fullName: guest.fullName,
-			eventTitle,
+			eventTitle: options.eventTitle,
 			shortId: guest.shortId,
-			eventType,
-			eventSlug,
-			template,
+			eventType: options.eventType,
+			eventSlug: options.eventSlug,
+			template: options.template,
+			shareMessages: options.shareMessages,
+			variant: 'with-phone',
 		}),
 		shareText: buildShareMessage({
-			origin,
+			origin: options.origin,
 			inviteId: guest.inviteId,
 			phone: guest.phone,
 			fullName: guest.fullName,
-			eventTitle,
+			eventTitle: options.eventTitle,
 			shortId: guest.shortId,
-			eventType,
-			eventSlug,
-			template,
+			eventType: options.eventType,
+			eventSlug: options.eventSlug,
+			template: options.template,
+			shareMessages: options.shareMessages,
+			variant: 'without-phone',
 			includeLink: false,
 		}),
 		updatedAt: guest.updatedAt,
 		entrySource: guest.entrySource ?? 'dashboard',
 		tags: guest.tags || [],
-		eventType,
-		eventSlug,
+		eventType: options.eventType,
+		eventSlug: options.eventSlug,
 		shortId: guest.shortId,
 	};
 }

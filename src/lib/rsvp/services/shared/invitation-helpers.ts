@@ -1,9 +1,17 @@
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
-import { sanitize } from '@/lib/rsvp/core/utils';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolveSiteOrigin } from '@/lib/shared/origin';
 import { generateInvitationLink } from '@utils/invitation-link';
+import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
+import {
+	DEFAULT_SHARE_MESSAGE_WITH_PHONE,
+	DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+	type ShareMessagesConfig,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
+import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+
+export type ShareMessageVariant = 'with-phone' | 'without-phone';
 
 export interface BuildShareMessageInput {
 	origin: string;
@@ -16,6 +24,8 @@ export interface BuildShareMessageInput {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	template?: string;
+	shareMessages?: ShareMessagesConfig | null;
+	variant?: ShareMessageVariant;
 	includeLink?: boolean;
 }
 
@@ -59,6 +69,22 @@ export function buildInviteUrl(
 	});
 }
 
+function resolveTemplate(input: BuildShareMessageInput): string {
+	const variant = input.variant ?? 'with-phone';
+
+	if (input.shareMessages) {
+		return variant === 'without-phone'
+			? input.shareMessages.whatsappWithoutPhone
+			: input.shareMessages.whatsappWithPhone;
+	}
+
+	if (input.template) return input.template;
+
+	return variant === 'without-phone'
+		? DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE
+		: DEFAULT_SHARE_MESSAGE_WITH_PHONE;
+}
+
 export function buildShareMessage(input: BuildShareMessageInput): string {
 	const resolvedOrigin = resolveOrigin(input.origin);
 	const inviteUrl = buildInviteUrl(
@@ -68,24 +94,22 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 		input.eventType,
 		input.eventSlug,
 	);
-	const eventLabel = sanitize(input.eventTitle, 120) || 'nuestro evento';
 
-	let template =
-		input.template || 'Hola {name}, te compartimos tu invitacion: {inviteUrl} ({eventTitle}).';
+	let template = resolveTemplate(input);
 
 	if (input.includeLink) {
 		if (!template.includes('{inviteUrl}') && !template.includes(resolvedOrigin)) {
 			template = template.trim() + '\n\n{inviteUrl}';
 		}
 	} else {
-		template = template.replace('{inviteUrl}', '').replace(/\s+$/, '');
+		template = template.replaceAll('{inviteUrl}', '').replace(/\s+$/, '');
 	}
 
-	return template
-		.replace('{name}', sanitize(input.fullName, 120))
-		.replace('{fullName}', sanitize(input.fullName, 120))
-		.replace('{eventTitle}', eventLabel)
-		.replace('{inviteUrl}', inviteUrl);
+	return renderShareMessage(template, {
+		guestName: input.fullName,
+		eventTitle: input.eventTitle,
+		inviteUrl,
+	});
 }
 
 export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
@@ -96,10 +120,46 @@ export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
 	return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
 }
 
-export async function getSharingTemplateForSlug(
+export interface SharingConfig {
+	whatsappTemplate?: string;
+	shareMessages?: ShareMessagesConfig;
+}
+
+function extractSharingFromContent(content: Record<string, unknown>): SharingConfig | null {
+	const sharing = content.sharing as Record<string, unknown> | undefined;
+	if (!sharing) return null;
+
+	const shareMessages = sharing.shareMessages as ShareMessagesConfig | undefined;
+	const whatsappTemplate =
+		typeof sharing.whatsappTemplate === 'string' ? sharing.whatsappTemplate : undefined;
+
+	if (shareMessages?.whatsappWithPhone && shareMessages?.whatsappWithoutPhone) {
+		return { whatsappTemplate, shareMessages };
+	}
+	if (whatsappTemplate) {
+		return { whatsappTemplate };
+	}
+	return null;
+}
+
+export async function getSharingConfigForSlug(
 	eventSlug: string,
 	eventType?: EventRecord['eventType'],
-): Promise<string | undefined> {
-	const entry = await getRoutableEventEntry(eventSlug, eventType);
-	return entry?.data?.sharing?.whatsappTemplate;
+): Promise<SharingConfig> {
+	if (eventSlug && eventType) {
+		const published = await findPublishedBySlugAndEventType(eventSlug, eventType);
+		if (published?.content) {
+			const result = extractSharingFromContent(published.content);
+			if (result) return result;
+		}
+	}
+
+	const entry = eventType ? await getRoutableEventEntry(eventSlug, eventType) : null;
+	const demoSharing = entry?.data?.sharing as Record<string, unknown> | undefined;
+	if (demoSharing) {
+		const result = extractSharingFromContent({ sharing: demoSharing });
+		if (result) return result;
+	}
+
+	return {};
 }

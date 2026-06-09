@@ -27,7 +27,7 @@ import {
 	isEventEligibleForBrandingRemoval,
 	getBrandingRemovalGuestLimit,
 } from '@/lib/constants/branding-removal-rules';
-import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
+import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
@@ -138,9 +138,16 @@ export async function listDashboardGuests(input: {
 			},
 			input.hostAccessToken,
 		);
-		const template = await getSharingTemplateForSlug(event.slug, event.eventType);
+		const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
 		const items = guests.map((guest) =>
-			toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
+			toGuestDto(guest, {
+				origin: input.origin,
+				eventTitle: event.title,
+				eventType: event.eventType,
+				eventSlug: event.slug,
+				template: sharingConfig.whatsappTemplate,
+				shareMessages: sharingConfig.shareMessages ?? null,
+			}),
 		);
 		return {
 			eventId: event.id,
@@ -161,7 +168,7 @@ export async function listDashboardGuests(input: {
 			},
 			input.hostAccessToken,
 		);
-		const items = guests.map((guest) => toGuestDto(guest, input.origin));
+		const items = guests.map((guest) => toGuestDto(guest, { origin: input.origin }));
 		return {
 			eventId: membership.eventId,
 			items,
@@ -238,15 +245,15 @@ export async function createDashboardGuest(input: {
 		throw mapSupabaseErrorToApiError(error);
 	}
 
-	const template = await getSharingTemplateForSlug(event.slug, event.eventType);
-	const item = toGuestDto(
-		created,
-		input.origin,
-		event.title,
-		event.eventType,
-		event.slug,
-		template,
-	);
+	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
+	const item = toGuestDto(created, {
+		origin: input.origin,
+		eventTitle: event.title,
+		eventType: event.eventType,
+		eventSlug: event.slug,
+		template: sharingConfig.whatsappTemplate,
+		shareMessages: sharingConfig.shareMessages ?? null,
+	});
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -347,14 +354,14 @@ export async function updateDashboardGuest(input: {
 	}
 
 	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
-	const item = toGuestDto(
-		updated,
-		input.origin,
-		presentation.eventTitle,
-		presentation.eventType,
-		presentation.eventSlug,
-		presentation.template,
-	);
+	const item = toGuestDto(updated, {
+		origin: input.origin,
+		eventTitle: presentation.eventTitle,
+		eventType: presentation.eventType,
+		eventSlug: presentation.eventSlug,
+		template: presentation.template,
+		shareMessages: presentation.shareMessages ?? null,
+	});
 
 	return {
 		item,
@@ -402,14 +409,14 @@ export async function markGuestShared(input: {
 	);
 
 	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
-	const item = toGuestDto(
-		updated,
-		input.origin,
-		presentation.eventTitle,
-		presentation.eventType,
-		presentation.eventSlug,
-		presentation.template,
-	);
+	const item = toGuestDto(updated, {
+		origin: input.origin,
+		eventTitle: presentation.eventTitle,
+		eventType: presentation.eventType,
+		eventSlug: presentation.eventSlug,
+		template: presentation.template,
+		shareMessages: presentation.shareMessages ?? null,
+	});
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -477,14 +484,14 @@ export async function toggleGuestBrandingRemoval(input: {
 	);
 
 	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
-	const item = toGuestDto(
-		updated,
-		input.origin,
-		presentation.eventTitle,
-		presentation.eventType,
-		presentation.eventSlug,
-		presentation.template,
-	);
+	const item = toGuestDto(updated, {
+		origin: input.origin,
+		eventTitle: presentation.eventTitle,
+		eventType: presentation.eventType,
+		eventSlug: presentation.eventSlug,
+		template: presentation.template,
+		shareMessages: presentation.shareMessages ?? null,
+	});
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({

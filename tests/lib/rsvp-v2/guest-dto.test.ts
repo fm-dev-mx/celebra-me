@@ -30,13 +30,78 @@ function makeGuestRecord(overrides: Partial<GuestInvitationRecord> = {}): GuestI
 describe('toGuestDto', () => {
 	it.each(['+1', '+52', '+34'])('preserves countryCode when %s', (code) => {
 		const guest = makeGuestRecord({ countryCode: code });
-		const dto = toGuestDto(guest, 'http://localhost');
+		const dto = toGuestDto(guest, { origin: 'http://localhost' });
 		expect(dto.countryCode).toBe(code);
 	});
 
 	it('omits countryCode when source record has none', () => {
 		const guest = makeGuestRecord({ countryCode: undefined });
-		const dto = toGuestDto(guest, 'http://localhost');
+		const dto = toGuestDto(guest, { origin: 'http://localhost' });
 		expect(dto.countryCode).toBeUndefined();
+	});
+
+	it('uses shareMessages when provided', () => {
+		const guest = makeGuestRecord();
+		const shareMessages = {
+			whatsappWithPhone: 'Custom: {guestName} → {inviteUrl}',
+			whatsappWithoutPhone: 'No phone: {inviteUrl}',
+		};
+		const dto = toGuestDto(guest, {
+			origin: 'http://localhost',
+			eventTitle: 'Test Event',
+			eventType: 'xv',
+			eventSlug: 'test-slug',
+			shareMessages,
+		});
+		const decodedWa = decodeURIComponent(dto.waShareUrl.split('?text=')[1]);
+		expect(decodedWa).toContain('Custom: Test Guest');
+		expect(dto.shareText).toContain('No phone:');
+	});
+
+	it('falls back to legacy template when shareMessages is not provided', () => {
+		const guest = makeGuestRecord();
+		const dto = toGuestDto(guest, {
+			origin: 'http://localhost',
+			eventTitle: 'Test Event',
+			eventType: 'xv',
+			eventSlug: 'test-slug',
+			template: 'Legacy: {name} → {inviteUrl}',
+		});
+		const decodedWa = decodeURIComponent(dto.waShareUrl.split('?text=')[1]);
+		expect(decodedWa).toContain('Legacy: Test Guest');
+	});
+
+	it('no-phone guest gets empty waShareUrl', () => {
+		const guest = makeGuestRecord({ phone: '' });
+		const dto = toGuestDto(guest, { origin: 'http://localhost', eventTitle: 'Test Event' });
+		expect(dto.waShareUrl).toBe('');
+	});
+
+	it('no-phone guest shareText contains event title for native share', () => {
+		const guest = makeGuestRecord({ phone: '' });
+		const dto = toGuestDto(guest, {
+			origin: 'http://localhost',
+			eventTitle: 'Test Event',
+			eventType: 'xv',
+			eventSlug: 'test-slug',
+		});
+		expect(dto.shareText).toContain('Test Event');
+	});
+
+	it('without-phone variant uses correct template for shareText', () => {
+		const guest = makeGuestRecord({ phone: '' });
+		const shareMessages = {
+			whatsappWithPhone: 'With phone: {guestName}',
+			whatsappWithoutPhone: 'Sin teléfono: {eventTitle} → {inviteUrl}',
+		};
+		const dto = toGuestDto(guest, {
+			origin: 'http://localhost',
+			eventTitle: 'Mi Evento',
+			eventType: 'xv',
+			eventSlug: 'test-slug',
+			shareMessages,
+		});
+		expect(dto.shareText).toContain('Sin teléfono: Mi Evento');
+		expect(dto.shareText).not.toContain('Test Guest');
 	});
 });
