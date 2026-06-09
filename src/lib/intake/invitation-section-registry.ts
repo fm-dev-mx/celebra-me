@@ -16,7 +16,8 @@ export type EditorSectionId =
 	| 'music'
 	| 'envelope'
 	| 'publication'
-	| 'assetLibrary';
+	| 'assetLibrary'
+	| 'sharing';
 
 // ===== Types =====
 
@@ -234,11 +235,24 @@ export const CONFIG_SECTION_DEFINITIONS: Record<
 		isToggleable: false,
 		previewAnchor: '',
 	},
+	sharing: {
+		id: 'sharing',
+		label: 'Mensajes para compartir',
+		sidebarGroup: 'config',
+		editorCardId: 'sharing',
+		saveSectionKey: 'sharing',
+		draftContentKeys: ['sharing'],
+		isRequired: false,
+		isOrderable: false,
+		isToggleable: false,
+		previewAnchor: '',
+	},
 };
 
 const CONFIG_SECTION_ORDER = [
 	'metadata',
 	'publication',
+	'sharing',
 	'assetLibrary',
 	'music',
 	'envelope',

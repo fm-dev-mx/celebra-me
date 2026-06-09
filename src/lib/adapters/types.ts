@@ -294,6 +294,10 @@ export interface InvitationViewModel {
 	navigation?: Array<{ label: string; href: string }>;
 	sharing?: {
 		whatsappTemplate?: string;
+		shareMessages?: {
+			whatsappWithPhone: string;
+			whatsappWithoutPhone: string;
+		};
 		ogImage?: ImageAsset;
 	};
 }

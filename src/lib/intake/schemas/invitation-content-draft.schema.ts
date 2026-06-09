@@ -104,6 +104,12 @@ export const InvitationContentDraftContentSchema = z
 				priorityNotes: optionalText(),
 			})
 			.optional(),
+		sharing: z
+			.object({
+				whatsappWithPhone: optionalText(500),
+				whatsappWithoutPhone: optionalText(500),
+			})
+			.optional(),
 	})
 	.catchall(z.unknown());
 

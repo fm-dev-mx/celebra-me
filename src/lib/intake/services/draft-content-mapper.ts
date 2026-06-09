@@ -371,6 +371,17 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		if (thankYou.image !== undefined) Object.assign(result.thankYou, { image: thankYou.image });
 	}
 
+	const sharing = nestedContent.sharing as Record<string, unknown> | undefined;
+	if (sharing && Object.keys(sharing).length > 0) {
+		const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
+		if (shareMessages && Object.keys(shareMessages).length > 0) {
+			result.sharing = {
+				whatsappWithPhone: str(shareMessages.whatsappWithPhone),
+				whatsappWithoutPhone: str(shareMessages.whatsappWithoutPhone),
+			};
+		}
+	}
+
 	result.sectionOrder = nestedContent.sectionOrder as DraftContent['sectionOrder'];
 
 	return result;

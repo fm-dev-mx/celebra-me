@@ -29,6 +29,7 @@ export const INVITATION_EDITOR_SECTION_KEYS = [
 	'gallery',
 	'photoNotes',
 	'publication',
+	'sharing',
 ] as const;
 
 export const InvitationEditorSectionKeySchema = z.enum(INVITATION_EDITOR_SECTION_KEYS);
@@ -113,6 +114,10 @@ export const InvitationEditorSectionSchemas = {
 	}),
 	publication: z.object({
 		sectionOrder: z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)),
+	}),
+	sharing: z.object({
+		whatsappWithPhone: optionalText(500),
+		whatsappWithoutPhone: optionalText(500),
 	}),
 } satisfies Record<InvitationEditorSectionKey, z.ZodType>;
 

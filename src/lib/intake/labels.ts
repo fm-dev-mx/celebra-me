@@ -182,6 +182,7 @@ export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: st
 	gallery: { id: 'gallery', label: 'Galería' },
 	photoNotes: { id: 'gallery', label: 'Galería' },
 	sectionOrder: { id: 'publication', label: 'Publicación' },
+	sharing: { id: 'sharing', label: 'Mensajes para compartir' },
 };
 
 export const NAV_ITEMS: Array<{ id: string; label: string }> = [
@@ -196,6 +197,7 @@ export const NAV_ITEMS: Array<{ id: string; label: string }> = [
 	{ id: 'messages', label: 'Mensajes especiales' },
 	{ id: 'gallery', label: 'Galería' },
 	{ id: 'publication', label: 'Publicación' },
+	{ id: 'sharing', label: 'Mensajes para compartir' },
 	{ id: 'assetLibrary', label: 'Biblioteca de imágenes' },
 ];
 

@@ -17,6 +17,7 @@ export const ALL_EDITOR_KEYS: readonly string[] = [
 	'gallery',
 	'photoNotes',
 	'sectionOrder',
+	'sharing',
 ];
 
 /** Subset of ALL_EDITOR_KEYS whose values are objects (not scalars/arrays),
@@ -34,6 +35,7 @@ export const OBJECT_SECTION_KEYS: ReadonlySet<string> = new Set([
 	'thankYou',
 	'gallery',
 	'photoNotes',
+	'sharing',
 ]);
 
 export function getAssetSlugFromContent(

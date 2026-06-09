@@ -138,9 +138,15 @@ export const navigationSchema = z
 	)
 	.optional();
 
+export const shareMessagesSchema = z.object({
+	whatsappWithPhone: z.string().min(1).max(500),
+	whatsappWithoutPhone: z.string().min(1).max(500),
+});
+
 export const sharingSchema = z
 	.object({
 		whatsappTemplate: z.string().optional(),
+		shareMessages: shareMessagesSchema.optional(),
 		ogImage: AssetSchema.optional(),
 	})
 	.optional();

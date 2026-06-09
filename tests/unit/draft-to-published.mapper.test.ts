@@ -949,3 +949,85 @@ describe('mapDraftToPublished', () => {
 		expect(result.envelope).toMatchObject({ disabled: true });
 	});
 });
+
+describe('sharing section mapping', () => {
+	it('maps shareMessages from draft when present', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					whatsappWithPhone: 'Draft with phone: {guestName}',
+					whatsappWithoutPhone: 'Draft without phone: {eventTitle}',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.whatsappWithPhone).toBe('Draft with phone: {guestName}');
+		expect(shareMessages.whatsappWithoutPhone).toBe('Draft without phone: {eventTitle}');
+	});
+
+	it('falls back to demo shareMessages when draft has none', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: {
+				...baseDemoContent,
+				sharing: {
+					whatsappTemplate: 'Demo template',
+					shareMessages: {
+						whatsappWithPhone: 'Demo with phone',
+						whatsappWithoutPhone: 'Demo without phone',
+					},
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.whatsappWithPhone).toBe('Demo with phone');
+		expect(shareMessages.whatsappWithoutPhone).toBe('Demo without phone');
+	});
+
+	it('preserves legacy whatsappTemplate from demo', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: {
+				...baseDemoContent,
+				sharing: {
+					whatsappTemplate: 'Legacy demo template',
+					shareMessages: {
+						whatsappWithPhone: 'Demo with phone',
+						whatsappWithoutPhone: 'Demo without phone',
+					},
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		expect(sharing.whatsappTemplate).toBe('Legacy demo template');
+	});
+
+	it('returns undefined sharing when no draft or demo sharing exists', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: { ...baseDemoContent, sharing: undefined },
+		});
+
+		expect(result.sharing).toBeUndefined();
+	});
+
+	it('existing invitations without shareMessages still work through demo whatsappTemplate', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: {
+				...baseDemoContent,
+				sharing: { whatsappTemplate: 'Only legacy template' },
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		expect(sharing.whatsappTemplate).toBe('Only legacy template');
+		expect(sharing.shareMessages).toBeUndefined();
+	});
+});

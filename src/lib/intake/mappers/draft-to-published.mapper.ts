@@ -396,6 +396,41 @@ function mapThankYouSection(
 	return demoThankYou ? { ...demoThankYou } : undefined;
 }
 
+function mapSharingFromDraft(
+	draftSharing: Record<string, unknown> | undefined,
+	demoSharing: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	const draftMessages = draftSharing as Record<string, unknown> | undefined;
+	const demoMessages = demoSharing?.shareMessages as Record<string, unknown> | undefined;
+
+	const whatsappWithPhone =
+		str(draftMessages?.whatsappWithPhone) || str(demoMessages?.whatsappWithPhone);
+	const whatsappWithoutPhone =
+		str(draftMessages?.whatsappWithoutPhone) || str(demoMessages?.whatsappWithoutPhone);
+
+	const hasShareMessages = !!(whatsappWithPhone && whatsappWithoutPhone);
+	const whatsappTemplate =
+		typeof demoSharing?.whatsappTemplate === 'string'
+			? demoSharing.whatsappTemplate
+			: undefined;
+	const ogImage = demoSharing?.ogImage;
+
+	if (!hasShareMessages && !whatsappTemplate && !ogImage) return undefined;
+
+	return {
+		...(whatsappTemplate ? { whatsappTemplate } : {}),
+		...(hasShareMessages
+			? {
+					shareMessages: {
+						whatsappWithPhone,
+						whatsappWithoutPhone,
+					},
+				}
+			: {}),
+		...(ogImage ? { ogImage } : {}),
+	};
+}
+
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
 	const { draftContent, invitation, demoContent, isDemo = false } = input;
 	const snapshot = invitation.snapshot;
@@ -469,7 +504,10 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 
 		interludes: demoContent.interludes,
 		sectionStyles: demoContent.sectionStyles,
-		sharing: demoContent.sharing,
+		sharing: mapSharingFromDraft(
+			draftContent.sharing as Record<string, unknown> | undefined,
+			demoContent.sharing as Record<string, unknown> | undefined,
+		),
 
 		_assetSlug: input.assetSlug ?? snapshot.previewSlug,
 	};

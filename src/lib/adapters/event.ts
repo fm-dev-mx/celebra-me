@@ -502,6 +502,7 @@ export function adaptEvent(
 		sharing: adapterData.sharing
 			? {
 					whatsappTemplate: adapterData.sharing.whatsappTemplate,
+					shareMessages: adapterData.sharing.shareMessages,
 					ogImage: adapterData.sharing.ogImage
 						? resolveAsset(eventSlug, adapterData.sharing.ogImage, adapterData.title)
 						: undefined,

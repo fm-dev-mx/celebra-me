@@ -17,6 +17,7 @@ const SECTION_KEY_MAP: Record<InvitationEditorSectionKey, (keyof DraftContent)[]
 	gallery: ['gallery'],
 	photoNotes: ['photoNotes'],
 	publication: ['sectionOrder'],
+	sharing: ['sharing'],
 };
 
 export function getDirtySectionKey(key: keyof DraftContent): InvitationEditorSectionKey {
