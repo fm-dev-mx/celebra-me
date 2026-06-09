@@ -128,7 +128,7 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 		typeof sharing.whatsappTemplate === 'string' ? sharing.whatsappTemplate : undefined;
 
 	if (shareMessages?.whatsappWithPhone && shareMessages?.whatsappWithoutPhone) {
-		return { whatsappTemplate, shareMessages };
+		return { shareMessages };
 	}
 	if (whatsappTemplate) {
 		return { whatsappTemplate };
@@ -146,8 +146,7 @@ export async function getSharingConfigForSlug(
 			const result = extractSharingFromContent(published.content);
 			if (result) {
 				if (published.isDemo) return result;
-				if (result.shareMessages) return { shareMessages: result.shareMessages };
-				return {};
+				return result;
 			}
 		}
 	}

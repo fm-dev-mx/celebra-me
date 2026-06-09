@@ -19,7 +19,6 @@ import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-err
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import {
 	getEventAccessOrThrow,
-	getEventPresentationData,
 	getGuestAccessOrThrow,
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
@@ -146,7 +145,7 @@ export async function listDashboardGuests(input: {
 				eventType: event.eventType,
 				eventSlug: event.slug,
 				template: sharingConfig.whatsappTemplate,
-				shareMessages: sharingConfig.shareMessages ?? null,
+				shareMessages: sharingConfig.shareMessages,
 			}),
 		);
 		return {
@@ -252,7 +251,7 @@ export async function createDashboardGuest(input: {
 		eventType: event.eventType,
 		eventSlug: event.slug,
 		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages ?? null,
+		shareMessages: sharingConfig.shareMessages,
 	});
 
 	if (input.isSuperAdmin && input.actorUserId) {
@@ -353,14 +352,15 @@ export async function updateDashboardGuest(input: {
 		});
 	}
 
-	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
+	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	const sharingConfig = event ? await getSharingConfigForSlug(event.slug, event.eventType) : {};
 	const item = toGuestDto(updated, {
 		origin: input.origin,
-		eventTitle: presentation.eventTitle,
-		eventType: presentation.eventType,
-		eventSlug: presentation.eventSlug,
-		template: presentation.template,
-		shareMessages: presentation.shareMessages ?? null,
+		eventTitle: event?.title,
+		eventType: event?.eventType,
+		eventSlug: event?.slug,
+		template: sharingConfig.whatsappTemplate,
+		shareMessages: sharingConfig.shareMessages,
 	});
 
 	return {
@@ -408,14 +408,15 @@ export async function markGuestShared(input: {
 		input.hostAccessToken,
 	);
 
-	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
+	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	const sharingConfig = event ? await getSharingConfigForSlug(event.slug, event.eventType) : {};
 	const item = toGuestDto(updated, {
 		origin: input.origin,
-		eventTitle: presentation.eventTitle,
-		eventType: presentation.eventType,
-		eventSlug: presentation.eventSlug,
-		template: presentation.template,
-		shareMessages: presentation.shareMessages ?? null,
+		eventTitle: event?.title,
+		eventType: event?.eventType,
+		eventSlug: event?.slug,
+		template: sharingConfig.whatsappTemplate,
+		shareMessages: sharingConfig.shareMessages,
 	});
 
 	if (input.isSuperAdmin && input.actorUserId) {
@@ -483,14 +484,14 @@ export async function toggleGuestBrandingRemoval(input: {
 		input.hostAccessToken,
 	);
 
-	const presentation = await getEventPresentationData(updated.eventId, input.hostAccessToken);
+	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
 	const item = toGuestDto(updated, {
 		origin: input.origin,
-		eventTitle: presentation.eventTitle,
-		eventType: presentation.eventType,
-		eventSlug: presentation.eventSlug,
-		template: presentation.template,
-		shareMessages: presentation.shareMessages ?? null,
+		eventTitle: event.title,
+		eventType: event.eventType,
+		eventSlug: event.slug,
+		template: sharingConfig.whatsappTemplate,
+		shareMessages: sharingConfig.shareMessages,
 	});
 
 	if (input.isSuperAdmin && input.actorUserId) {

@@ -43,108 +43,147 @@ describe('getSharingConfigForSlug', () => {
 		jest.clearAllMocks();
 	});
 
-	it('returns shareMessages from non-demo published content (ignores legacy whatsappTemplate)', async () => {
-		findPublishedMock.mockResolvedValue(
-			buildPublished({
-				id: 'pub-1',
-				invitationId: 'inv-1',
-				slug: 'ayrin-samantha-lerma-castro',
-				isDemo: false,
-				content: {
-					sharing: {
-						whatsappTemplate:
-							'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
-						shareMessages: {
-							whatsappWithPhone:
-								'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
-							whatsappWithoutPhone: 'Te invitamos a {eventTitle}: {inviteUrl}',
+	describe('non-demo published content', () => {
+		it('returns shareMessages when both shareMessages and legacy whatsappTemplate exist', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-1',
+					invitationId: 'inv-1',
+					slug: 'ayrin-samantha-lerma-castro',
+					isDemo: false,
+					content: {
+						sharing: {
+							whatsappTemplate:
+								'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+							shareMessages: {
+								whatsappWithPhone:
+									'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
+								whatsappWithoutPhone: 'Te invitamos a {eventTitle}: {inviteUrl}',
+							},
 						},
 					},
-				},
-			}),
-		);
+				}),
+			);
 
-		const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
 
-		expect(result.shareMessages).toEqual({
-			whatsappWithPhone: 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
-			whatsappWithoutPhone: 'Te invitamos a {eventTitle}: {inviteUrl}',
+			expect(result.shareMessages).toEqual({
+				whatsappWithPhone: 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
+				whatsappWithoutPhone: 'Te invitamos a {eventTitle}: {inviteUrl}',
+			});
+			expect(result.whatsappTemplate).toBeUndefined();
 		});
-		expect(result.whatsappTemplate).toBeUndefined();
-	});
 
-	it('strips legacy whatsappTemplate from non-demo published content when no shareMessages exist', async () => {
-		findPublishedMock.mockResolvedValue(
-			buildPublished({
-				id: 'pub-1',
-				invitationId: 'inv-1',
-				slug: 'ayrin-samantha-lerma-castro',
-				isDemo: false,
-				content: {
-					sharing: {
-						whatsappTemplate:
-							'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+		it('preserves legacy whatsappTemplate when no shareMessages exist', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-1',
+					invitationId: 'inv-1',
+					slug: 'ayrin-samantha-lerma-castro',
+					isDemo: false,
+					content: {
+						sharing: {
+							whatsappTemplate:
+								'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+						},
 					},
-				},
-			}),
-		);
+				}),
+			);
 
-		const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
 
-		expectEmptyConfig(result);
+			expect(result.whatsappTemplate).toBe(
+				'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+			);
+			expect(result.shareMessages).toBeUndefined();
+		});
+
+		it('strips legacy whatsappTemplate when shareMessages present', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-1',
+					invitationId: 'inv-1',
+					slug: 'ayrin-samantha-lerma-castro',
+					isDemo: false,
+					content: {
+						sharing: {
+							whatsappTemplate: 'Hola {name}, legacy template: {inviteUrl}',
+							shareMessages: {
+								whatsappWithPhone:
+									'Hola {guestName}, shareMessages template: {inviteUrl}',
+								whatsappWithoutPhone:
+									'ShareMessages no phone: {eventTitle}: {inviteUrl}',
+							},
+						},
+					},
+				}),
+			);
+
+			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+
+			expect(result.shareMessages).toEqual({
+				whatsappWithPhone: 'Hola {guestName}, shareMessages template: {inviteUrl}',
+				whatsappWithoutPhone: 'ShareMessages no phone: {eventTitle}: {inviteUrl}',
+			});
+			expect(result.whatsappTemplate).toBeUndefined();
+		});
 	});
 
-	it('preserves legacy whatsappTemplate for demo published content', async () => {
-		findPublishedMock.mockResolvedValue(
-			buildPublished({
-				id: 'pub-demo-1',
-				invitationId: 'inv-demo-1',
-				slug: 'demo-xv-enchanted-rose',
-				isDemo: true,
-				content: {
+	describe('demo published content', () => {
+		it('preserves legacy whatsappTemplate', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-demo-1',
+					invitationId: 'inv-demo-1',
+					slug: 'demo-xv-enchanted-rose',
+					isDemo: true,
+					content: {
+						sharing: {
+							whatsappTemplate:
+								'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
+						},
+					},
+				}),
+			);
+
+			const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
+
+			expect(result.whatsappTemplate).toBe(
+				'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
+			);
+		});
+	});
+
+	describe('fallback behavior', () => {
+		it('falls back to demo JSON when no published content exists', async () => {
+			findPublishedMock.mockResolvedValue(null);
+			getRoutableMock.mockResolvedValue({
+				id: 'xv/demo-xv-enchanted-rose',
+				collection: 'event-demos',
+				data: {
+					eventType: 'xv',
+					isDemo: true,
 					sharing: {
 						whatsappTemplate:
 							'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 					},
 				},
-			}),
-		);
+			} as unknown as RoutableEventEntry);
 
-		const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
+			const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
 
-		expect(result.whatsappTemplate).toBe(
-			'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
-		);
-	});
+			expect(result.whatsappTemplate).toBe(
+				'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
+			);
+		});
 
-	it('falls back to demo JSON when no published content exists', async () => {
-		findPublishedMock.mockResolvedValue(null);
-		getRoutableMock.mockResolvedValue({
-			id: 'xv/demo-xv-enchanted-rose',
-			collection: 'event-demos',
-			data: {
-				eventType: 'xv',
-				isDemo: true,
-				sharing: {
-					whatsappTemplate:
-						'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
-				},
-			},
-		} as unknown as RoutableEventEntry);
+		it('returns empty config when no published content and no demo exists', async () => {
+			findPublishedMock.mockResolvedValue(null);
+			getRoutableMock.mockResolvedValue(null);
 
-		const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
+			const result = await getSharingConfigForSlug('nonexistent-slug', 'xv');
 
-		expect(result.whatsappTemplate).toBe(
-			'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
-		);
-	});
-
-	it('returns empty config when no published content and no demo exists', async () => {
-		findPublishedMock.mockResolvedValue(null);
-		getRoutableMock.mockResolvedValue(null);
-
-		const result = await getSharingConfigForSlug('nonexistent-slug', 'xv');
-
-		expectEmptyConfig(result);
+			expectEmptyConfig(result);
+		});
 	});
 });

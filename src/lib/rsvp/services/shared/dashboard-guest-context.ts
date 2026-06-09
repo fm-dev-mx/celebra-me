@@ -1,8 +1,6 @@
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findGuestById } from '@/lib/rsvp/repositories/guest.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
-import type { SharingConfig } from '@/lib/rsvp/services/shared/invitation-helpers';
 
 export async function getEventAccessOrThrow(eventId: string, hostAccessToken: string) {
 	const event = await findEventById(eventId, hostAccessToken);
@@ -24,18 +22,4 @@ export async function getGuestAccessOrThrow(guestId: string, hostAccessToken: st
 		throw new ApiError(403, 'forbidden', 'Access to the requested guest is denied.');
 	}
 	throw new ApiError(404, 'not_found', 'Guest not found.');
-}
-
-export async function getEventPresentationData(eventId: string, hostAccessToken: string) {
-	const event = await findEventById(eventId, hostAccessToken);
-	if (!event) return {};
-
-	const sharingConfig: SharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
-	return {
-		eventTitle: event.title,
-		eventType: event.eventType,
-		eventSlug: event.slug,
-		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages ?? null,
-	};
 }
