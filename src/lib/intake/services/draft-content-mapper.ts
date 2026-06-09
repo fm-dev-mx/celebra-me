@@ -217,10 +217,12 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			date: normalizeDate(hero.date),
 		};
 		if (hero.backgroundImage !== undefined)
-			Object.assign(result.hero, { backgroundImage: hero.backgroundImage });
+			(result.hero as Record<string, unknown>).backgroundImage = hero.backgroundImage;
 		if (hero.backgroundImageMobile !== undefined)
-			Object.assign(result.hero, { backgroundImageMobile: hero.backgroundImageMobile });
-		if (hero.portrait !== undefined) Object.assign(result.hero, { portrait: hero.portrait });
+			(result.hero as Record<string, unknown>).backgroundImageMobile =
+				hero.backgroundImageMobile;
+		if (hero.portrait !== undefined)
+			(result.hero as Record<string, unknown>).portrait = hero.portrait;
 	}
 
 	const family = nestedContent.family as Record<string, unknown> | undefined;
@@ -262,7 +264,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				})),
 		};
 		if (family.featuredImage !== undefined)
-			Object.assign(result.family, { featuredImage: family.featuredImage });
+			(result.family as Record<string, unknown>).featuredImage = family.featuredImage;
 	}
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
@@ -373,7 +375,8 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			message: str(thankYou.message),
 			closingName: str(thankYou.closingName),
 		};
-		if (thankYou.image !== undefined) Object.assign(result.thankYou, { image: thankYou.image });
+		if (thankYou.image !== undefined)
+			(result.thankYou as Record<string, unknown>).image = thankYou.image;
 	}
 
 	const sharing = nestedContent.sharing as Record<string, unknown> | undefined;
