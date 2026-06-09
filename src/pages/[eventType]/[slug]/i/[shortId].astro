@@ -3,36 +3,92 @@
 export const prerender = false;
 
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
-// @ts-ignore - Falsely reported as unused
 import { buildInvitationPath } from '@/utils/invitation-link';
+import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { buildLayoutData } from '@/lib/invitation/page-data';
+import { isSocialCrawler } from '@/lib/social/social-crawler';
+
+const SITE_ORIGIN = 'https://www.celebra-me.com';
 
 const { shortId } = Astro.params;
 
 if (!shortId) {
-	return Astro.redirect('/404');
+  return Astro.redirect('/404');
 }
+
+let context: Awaited<ReturnType<typeof getInvitationContextByShortId>>;
+try {
+  context = await getInvitationContextByShortId(shortId);
+} catch (error) {
+  console.error('[ShortID Resolution] Error:', error);
+  return Astro.redirect('/404');
+}
+
+const userAgent = Astro.request.headers.get('user-agent') || '';
+const isCrawler = isSocialCrawler(userAgent);
+
+if (!isCrawler) {
+  return Astro.redirect(
+    buildInvitationPath({
+      eventType: context.eventType,
+      eventSlug: context.eventSlug,
+      inviteId: context.inviteId,
+    }),
+  );
+}
+
+// Social crawler path: resolve invitation content for OG tags
+let ogTitle: string = context.eventTitle;
+let ogDescription: string = '';
+let ogImageUrl: string = `${SITE_ORIGIN}/images/og-image.webp`;
 
 try {
-	// @ts-ignore - Falsely reported as unused
-	const context = await getInvitationContextByShortId(shortId);
-	return Astro.redirect(
-		buildInvitationPath({
-			eventType: context.eventType,
-			eventSlug: context.eventSlug,
-			inviteId: context.inviteId,
-		}),
-	);
+  const resolution = await resolveInvitationContent(context.eventSlug, context.eventType);
+  if (resolution) {
+    const viewModel = resolution.viewModel;
+    const layoutData = buildLayoutData(viewModel, context.guest?.fullName);
+    ogTitle = layoutData.title;
+    ogDescription = layoutData.description;
+
+    if (layoutData.image) {
+      ogImageUrl = new URL(layoutData.image, SITE_ORIGIN).href;
+    }
+  }
 } catch (error) {
-	console.error('[ShortID Resolution] Error:', error);
-	return Astro.redirect('/404');
+  console.error('[SocialPreview] Error resolving invitation content:', error);
 }
+
+const canonicalUrl = new URL(
+  `/${context.eventType}/${context.eventSlug}/i/${shortId}`,
+  SITE_ORIGIN,
+).href;
 ---
 
-<html>
-	<head>
-		<title>Redirigiendo...</title>
-	</head>
-	<body>
-		<p>Cargando tu invitación...</p>
-	</body>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{ogTitle}</title>
+    <meta name="description" content={ogDescription} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:site_name" content="Celebra.me" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+  </head>
+  <body>
+    <p>Cargando tu invitación...</p>
+  </body>
 </html>
