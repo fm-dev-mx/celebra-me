@@ -429,13 +429,25 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.music?.autoPlay).toBe(true);
 	});
 
-	it('preserves envelope disabled from published content', () => {
+	it('preserves envelope sealInitials from published content into draft shape', () => {
+		const input = {
+			envelope: { disabled: false, sealInitials: 'A·L', sealStyle: 'wax' },
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.envelope?.sealInitials).toBe('A·L');
+		expect(result.envelope?.disabled).toBe(false);
+	});
+
+	it('omits envelope sealInitials when absent from published content', () => {
 		const input = {
 			envelope: { disabled: true, sealStyle: 'wax' },
 		};
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
+		expect(result.envelope?.sealInitials).toBeUndefined();
 		expect(result.envelope?.disabled).toBe(true);
 	});
 });

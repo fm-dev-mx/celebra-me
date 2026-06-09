@@ -91,3 +91,8 @@ export const rsvpResponseMessagesSchema = z
 	})
 	.strict()
 	.optional();
+
+export const envelopeSchema = z.object({
+	disabled: z.boolean().optional(),
+	sealInitials: z.string().trim().max(12).optional(),
+});

@@ -968,12 +968,25 @@ export default function InvitationEditor({ initialContext }: Props) {
 								checked={envelope.disabled !== true}
 								onChange={(event) =>
 									updateContent('envelope', {
+										...envelope,
 										disabled: !event.target.checked,
 									})
 								}
 							/>
 							<span>Mostrar sobre de apertura</span>
 						</label>
+						<Field
+							label="Monograma / iniciales"
+							value={envelope.sealInitials ?? ''}
+							placeholder="Ejemplo: A·L"
+							maxLength={12}
+							onChange={(value) =>
+								updateContent('envelope', {
+									...envelope,
+									sealInitials: value,
+								})
+							}
+						/>
 					</SectionCard>
 
 					<SectionCard

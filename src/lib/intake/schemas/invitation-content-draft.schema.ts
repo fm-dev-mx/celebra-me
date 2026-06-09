@@ -11,6 +11,7 @@ import {
 	countdownEditorSchema,
 	draftIndicationSchema,
 	rsvpResponseMessagesSchema,
+	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
@@ -85,11 +86,7 @@ export const InvitationContentDraftContentSchema = z
 				responseMessages: rsvpResponseMessagesSchema,
 			})
 			.optional(),
-		envelope: z
-			.object({
-				disabled: z.boolean().optional(),
-			})
-			.optional(),
+		envelope: envelopeSchema.optional(),
 		photoNotes: z
 			.object({
 				whatsappSent: z.boolean().optional(),

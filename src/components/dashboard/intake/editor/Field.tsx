@@ -7,6 +7,7 @@ interface Props {
 	type?: 'text' | 'email' | 'url' | 'date' | 'datetime-local' | 'time' | 'number';
 	placeholder?: string;
 	labelExtra?: ReactNode;
+	maxLength?: number;
 }
 
 export default function Field({
@@ -16,6 +17,7 @@ export default function Field({
 	type = 'text',
 	placeholder,
 	labelExtra,
+	maxLength,
 }: Props) {
 	return (
 		<label className="invitation-editor__field">
@@ -27,6 +29,7 @@ export default function Field({
 				type={type}
 				value={value}
 				placeholder={placeholder}
+				maxLength={maxLength}
 				onChange={(event) => onChange(event.target.value)}
 			/>
 		</label>

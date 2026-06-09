@@ -1039,6 +1039,32 @@ describe('mapDraftToPublished', () => {
 
 		expect(result.envelope).toMatchObject({ disabled: true });
 	});
+
+	it('allows draft sealInitials to override demo sealInitials', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: { sealInitials: 'A·L' },
+			},
+		});
+
+		expect(result.envelope).toMatchObject({ sealInitials: 'A·L' });
+		// Non-overridden demo fields must survive
+		expect(result.envelope).toMatchObject({ sealStyle: 'wax' });
+	});
+
+	it('treats empty draft sealInitials as no override, falling back to demo value', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: { sealInitials: '' },
+			},
+		});
+
+		expect(result.envelope).toMatchObject({ sealInitials: 'L·G' });
+	});
 });
 
 describe('sharing section mapping', () => {

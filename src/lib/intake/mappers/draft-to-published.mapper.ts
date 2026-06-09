@@ -23,10 +23,17 @@ function buildEnvelopeFromDraft(
 	demoEnvelope: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
 	const base = demoEnvelope ?? { disabled: true };
-	if (typeof draftEnvelope?.disabled === 'boolean') {
-		return { ...base, disabled: draftEnvelope.disabled };
-	}
-	return base;
+	const draftInitials = draftEnvelope?.sealInitials;
+
+	return {
+		...base,
+		...(typeof draftEnvelope?.disabled === 'boolean'
+			? { disabled: draftEnvelope.disabled }
+			: {}),
+		...(typeof draftInitials === 'string' && draftInitials.trim().length > 0
+			? { sealInitials: draftInitials.trim() }
+			: {}),
+	};
 }
 
 function mapCountdownFromDraft(

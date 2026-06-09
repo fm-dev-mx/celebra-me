@@ -12,6 +12,7 @@ import {
 	giftsSchema,
 	countdownEditorSchema,
 	rsvpResponseMessagesSchema,
+	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 
@@ -89,9 +90,7 @@ export const InvitationEditorSectionSchemas = {
 		title: optionalText(200),
 		autoPlay: z.boolean().optional(),
 	}),
-	envelope: z.object({
-		disabled: z.boolean().optional(),
-	}),
+	envelope: envelopeSchema,
 	gifts: giftsSchema,
 	messages: z.object({
 		quote: z.object({ text: optionalText(1000), author: optionalText(200) }).optional(),

@@ -326,6 +326,9 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	if (envelope && Object.keys(envelope).length > 0) {
 		result.envelope = {
 			...(typeof envelope.disabled === 'boolean' ? { disabled: envelope.disabled } : {}),
+			...(typeof envelope.sealInitials === 'string' && envelope.sealInitials.trim()
+				? { sealInitials: envelope.sealInitials.trim() }
+				: {}),
 		};
 	}
 
