@@ -4,8 +4,12 @@ import type { DemoPreset } from '@/lib/intake/types';
 import { str, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
-function isBlankSection<T extends Record<string, unknown> | null | undefined>(value: T): boolean {
-	return !value || Object.keys(value).length === 0;
+function isNullishSection(value: unknown): value is null | undefined {
+	return value == null;
+}
+
+function isBlankSection(value: Record<string, unknown> | null | undefined): boolean {
+	return isNullishSection(value) || Object.keys(value).length === 0;
 }
 
 type VenueDraft = {
@@ -22,18 +26,12 @@ function buildEnvelopeFromDraft(
 	draftEnvelope: Record<string, unknown> | undefined,
 	demoEnvelope: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-	const base = demoEnvelope ?? { disabled: true };
+	const result = { ...(demoEnvelope ?? { disabled: true }) };
 	const draftInitials = draftEnvelope?.sealInitials;
-
-	return {
-		...base,
-		...(typeof draftEnvelope?.disabled === 'boolean'
-			? { disabled: draftEnvelope.disabled }
-			: {}),
-		...(typeof draftInitials === 'string' && draftInitials.trim().length > 0
-			? { sealInitials: draftInitials.trim() }
-			: {}),
-	};
+	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
+	if (typeof draftInitials === 'string' && draftInitials.trim().length > 0)
+		result.sealInitials = draftInitials.trim();
+	return result;
 }
 
 function mapCountdownFromDraft(
@@ -51,14 +49,19 @@ function mapCountdownFromDraft(
 
 function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
 	const labels: Record<string, unknown> = {};
-	if (str(draftFamily.sectionSubtitle)) labels.sectionSubtitle = str(draftFamily.sectionSubtitle);
-	if (str(draftFamily.sectionTitle)) labels.sectionTitle = str(draftFamily.sectionTitle);
-	if (str(draftFamily.parentsTitle)) labels.parentsTitle = str(draftFamily.parentsTitle);
-	if (str(draftFamily.godparentsTitle)) labels.godparentsTitle = str(draftFamily.godparentsTitle);
-	if (str(draftFamily.spouseTitle)) labels.spouseTitle = str(draftFamily.spouseTitle);
-	if (str(draftFamily.spouseRole)) labels.spouseRole = str(draftFamily.spouseRole);
-	if (str(draftFamily.childrenTitle)) labels.childrenTitle = str(draftFamily.childrenTitle);
-	if (str(draftFamily.sectionMessage)) labels.sectionMessage = str(draftFamily.sectionMessage);
+	for (const key of [
+		'sectionSubtitle',
+		'sectionTitle',
+		'parentsTitle',
+		'godparentsTitle',
+		'spouseTitle',
+		'spouseRole',
+		'childrenTitle',
+		'sectionMessage',
+	] as const) {
+		const val = str(draftFamily[key]);
+		if (val) labels[key] = val;
+	}
 	return Object.keys(labels).length > 0 ? labels : undefined;
 }
 
@@ -84,10 +87,8 @@ function buildFamilyGroups(
 				items,
 			};
 		})
-		.filter(Boolean);
-	return mappedGroups.length > 0
-		? (mappedGroups as Array<{ title: string; items: Array<{ name: string }> }>)
-		: undefined;
+		.filter((g): g is { title: string; items: Array<{ name: string }> } => g !== null);
+	return mappedGroups.length > 0 ? mappedGroups : undefined;
 }
 
 function mapFamilyFromDraft(
@@ -242,16 +243,6 @@ export interface PublishInput {
 	isDemo?: boolean;
 }
 
-function buildSafeHeroFallback(invitationTitle: string, themeId: string): Record<string, unknown> {
-	return {
-		name: invitationTitle,
-		label: 'Invitación Especial',
-		date: '',
-		backgroundImage: { type: 'internal', key: 'hero' },
-		variant: themeId,
-	};
-}
-
 function buildHeroFromDraft(
 	draftHero: NonNullable<DraftContent['hero']>,
 	demoHero: Record<string, unknown> | undefined,
@@ -275,7 +266,7 @@ function buildHeroFromDraft(
 	return {
 		name: str(draftHero.name) || (demoName as string) || invitationTitle,
 		secondaryName: str(draftHero.secondaryName) || (demoSecondaryName as string) || '',
-		label: str(draftHero.label) || (demoLabel as string) || 'Invitacion Especial',
+		label: str(draftHero.label) || (demoLabel as string) || 'Invitación Especial',
 		nickname: str(draftHero.nickname) || (demoNickname as string) || '',
 		date: normalizeDate(str(draftHero.date) || (demoDate as string) || ''),
 		backgroundImage: draftHero.backgroundImage ??
@@ -297,7 +288,13 @@ function mapHeroSection(
 ): Record<string, unknown> {
 	if (isBlankSection(draftHero)) {
 		if (demoHero && Object.keys(demoHero).length > 0) return demoHero;
-		return buildSafeHeroFallback(invitationTitle, themeId);
+		return {
+			name: invitationTitle,
+			label: 'Invitación Especial',
+			date: '',
+			backgroundImage: { type: 'internal', key: 'hero' },
+			variant: themeId,
+		};
 	}
 	return buildHeroFromDraft(
 		draftHero as NonNullable<DraftContent['hero']>,
@@ -322,21 +319,20 @@ function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftRsvp)) return undefined;
-	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demoRsvp?.whatsappPhone);
+	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
+	const demo = demoRsvp || {};
 	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp);
+	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demo.whatsappPhone);
 	const guestCap =
 		typeof draftRsvp.guestCap === 'number'
 			? draftRsvp.guestCap
-			: (demoRsvp?.guestCap as number | undefined);
-	const confirmationMode =
-		str(draftRsvp.confirmationMode) || str(demoRsvp?.confirmationMode) || 'api';
-	const title = str(draftRsvp.title) || str(demoRsvp?.title);
-	const confirmationMessage =
-		str(draftRsvp.confirmationMessage) || str(demoRsvp?.confirmationMessage);
-	const accessMode = str(demoRsvp?.accessMode) || 'personalized-only';
-	const whatsappConfig = whatsappPhone ? { phone: whatsappPhone } : demoRsvp?.whatsappConfig;
-	const subcopy = str(draftRsvp.subcopy) || str(demoRsvp?.subcopy);
+			: (demo.guestCap as number | undefined);
+	const confirmationMode = str(draftRsvp.confirmationMode) || str(demo.confirmationMode) || 'api';
+	const title = str(draftRsvp.title) || str(demo.title);
+	const confirmationMessage = str(draftRsvp.confirmationMessage) || str(demo.confirmationMessage);
+	const accessMode = str(demo.accessMode) || 'personalized-only';
+	const whatsappConfig = whatsappPhone ? { phone: whatsappPhone } : demo.whatsappConfig;
+	const subcopy = str(draftRsvp.subcopy) || str(demo.subcopy);
 	return {
 		title,
 		guestCap,

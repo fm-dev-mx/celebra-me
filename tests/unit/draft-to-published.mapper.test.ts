@@ -1067,6 +1067,126 @@ describe('mapDraftToPublished', () => {
 	});
 });
 
+describe('edge cases — blank/empty/null sections', () => {
+	it('returns undefined rsvp when draft rsvp is undefined', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: { ...baseInput.draftContent, rsvp: undefined },
+		});
+		expect(result.rsvp).toBeUndefined();
+	});
+
+	it('returns undefined rsvp when draft rsvp is an empty object', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: { ...baseInput.draftContent, rsvp: {} },
+		});
+		expect(result.rsvp).toBeUndefined();
+	});
+
+	it('preserves demo envelope fields when draft envelope is empty', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: { ...baseInput.draftContent, envelope: {} },
+		});
+		expect(result.envelope).toMatchObject({
+			disabled: false,
+			sealStyle: 'wax',
+			sealInitials: 'L·G',
+		});
+	});
+
+	it('preserves demo envelope fields when draft envelope has only some overrides', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: { disabled: true },
+			},
+		});
+		expect(result.envelope).toMatchObject({
+			disabled: true,
+			sealStyle: 'wax',
+			sealInitials: 'L·G',
+		});
+	});
+
+	it('falls back to demo hero when draft hero is undefined', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				hero: undefined,
+			},
+		});
+		expect(result.hero).toMatchObject({
+			name: 'Lucía García',
+			label: 'Mis XV Años',
+			date: '2026-06-15',
+			backgroundImage: { type: 'internal', key: 'hero' },
+		});
+	});
+
+	it('falls back to demo hero when draft hero is an empty object', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				hero: {},
+			},
+		});
+		expect(result.hero).toMatchObject({
+			name: 'Lucía García',
+			label: 'Mis XV Años',
+			date: '2026-06-15',
+			backgroundImage: { type: 'internal', key: 'hero' },
+		});
+	});
+
+	it('uses safe hero fallback when both draft and demo hero are undefined', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				hero: undefined,
+			},
+			demoContent: {
+				...baseDemoContent,
+				hero: undefined,
+			},
+		});
+		expect(result.hero).toMatchObject({
+			name: 'Test Project',
+			label: 'Invitación Especial',
+			date: '',
+			backgroundImage: { type: 'internal', key: 'hero' },
+		});
+	});
+
+	it('omits family labels object when no label fields are provided (not empty object)', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: { fatherName: 'Juan' },
+			},
+		});
+		const family = result.family as Record<string, unknown>;
+		expect(family).not.toHaveProperty('labels');
+	});
+
+	it('returns undefined family when family is an empty object', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {},
+			},
+		});
+		expect(result.family).toBeUndefined();
+	});
+});
+
 describe('sharing section mapping', () => {
 	it('maps shareMessages from draft when present', () => {
 		const result = mapDraftToPublished({
