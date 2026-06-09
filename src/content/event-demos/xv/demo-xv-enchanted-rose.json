@@ -223,7 +223,7 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}",
+        "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
         "ogImage": "portrait"
     },
     "music": {

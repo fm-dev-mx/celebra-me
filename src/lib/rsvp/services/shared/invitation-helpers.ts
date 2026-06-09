@@ -150,7 +150,11 @@ export async function getSharingConfigForSlug(
 		const published = await findPublishedBySlugAndEventType(eventSlug, eventType);
 		if (published?.content) {
 			const result = extractSharingFromContent(published.content);
-			if (result) return result;
+			if (result) {
+				if (published.isDemo) return result;
+				if (result.shareMessages) return { shareMessages: result.shareMessages };
+				return {};
+			}
 		}
 	}
 

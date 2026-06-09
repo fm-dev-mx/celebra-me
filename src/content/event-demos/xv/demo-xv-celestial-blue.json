@@ -225,7 +225,7 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación para los XV años de Camila Fernanda: {inviteUrl}",
+        "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
         "ogImage": "portrait"
     },
     "music": {

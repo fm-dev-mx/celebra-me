@@ -228,6 +228,6 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto tu invitación para Noir Premiere XV: {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}"
     }
 }

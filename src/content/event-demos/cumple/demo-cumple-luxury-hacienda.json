@@ -198,7 +198,7 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, es un gusto invitarte a celebrar los 60 años de Don Alberto Valenzuela 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
     },
     "interludes": [
         {
