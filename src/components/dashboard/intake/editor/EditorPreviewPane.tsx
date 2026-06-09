@@ -43,38 +43,33 @@ export default function EditorPreviewPane({
 
 	const frameRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
-	const [frameRect, setFrameRect] = useState({ width: 0, height: 0 });
 
 	useEffect(() => {
-		const el = frameRef.current;
-		if (!el) return;
-		const observer = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				setFrameRect({
-					width: entry.contentRect.width,
-					height: entry.contentRect.height,
-				});
-			}
-		});
-		observer.observe(el);
+		const frameEl = frameRef.current;
+		const viewportEl = viewportRef.current;
+		if (!frameEl || !viewportEl) return;
+
+		const applyScale = () => {
+			const rect = frameEl.getBoundingClientRect();
+			const scale = getPreviewScale(rect.width, viewportWidth);
+			const needsScaling = scale < 1;
+			const viewportHeight =
+				needsScaling && rect.height > 0 ? Math.ceil(rect.height / scale) : undefined;
+
+			viewportEl.style.setProperty('--vp-width', `${viewportWidth}px`);
+			viewportEl.style.setProperty(
+				'--vp-height',
+				viewportHeight != null ? `${viewportHeight}px` : 'auto',
+			);
+			viewportEl.style.setProperty('--vp-scale', needsScaling ? String(scale) : '1');
+		};
+
+		const observer = new ResizeObserver(applyScale);
+		observer.observe(frameEl);
+		applyScale();
+
 		return () => observer.disconnect();
-	}, []);
-
-	const scale = getPreviewScale(frameRect.width, viewportWidth);
-	const needsScaling = scale < 1;
-	const viewportHeight =
-		needsScaling && frameRect.height > 0 ? Math.ceil(frameRect.height / scale) : undefined;
-
-	useEffect(() => {
-		const el = viewportRef.current;
-		if (!el) return;
-		el.style.setProperty('--vp-width', `${viewportWidth}px`);
-		el.style.setProperty(
-			'--vp-height',
-			viewportHeight != null ? `${viewportHeight}px` : 'auto',
-		);
-		el.style.setProperty('--vp-scale', needsScaling ? String(scale) : '1');
-	}, [viewportWidth, viewportHeight, scale, needsScaling]);
+	}, [viewportWidth]);
 
 	return (
 		<aside
