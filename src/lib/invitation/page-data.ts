@@ -67,12 +67,8 @@ export interface InvitationPageContext {
 
 const DEFAULT_THEME_PRESET: ThemePreset = THEME_PRESETS[0];
 
-function buildLayoutData(
-	viewModel: InvitationViewModel,
-	hero: InvitationViewModel['hero'],
-	guestName: string | undefined,
-) {
-	const image = viewModel.sharing?.ogImage ?? hero.backgroundImage;
+export function buildLayoutData(viewModel: InvitationViewModel, guestName: string | undefined) {
+	const image = viewModel.sharing?.ogImage ?? viewModel.hero.backgroundImage;
 	const imageSrc = typeof image.src === 'string' ? image.src : image.src.src;
 
 	return {
@@ -209,7 +205,7 @@ export function buildPageContextFromViewModel(input: {
 		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(eventType, slug),
 	});
 
-	const { theme, hero, envelope, sections } = viewModel;
+	const { theme, envelope, sections } = viewModel;
 	const eventScopeClass = `event--${slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const isDemo = viewModel.isDemo;
 
@@ -229,7 +225,7 @@ export function buildPageContextFromViewModel(input: {
 		viewModel,
 		guestContext,
 		isDemoPreview,
-		layout: buildLayoutData(viewModel, hero, guestName),
+		layout: buildLayoutData(viewModel, guestName),
 		wrapper: {
 			className: wrapperClassName,
 			showEnvelope: styles.showEnvelope,
