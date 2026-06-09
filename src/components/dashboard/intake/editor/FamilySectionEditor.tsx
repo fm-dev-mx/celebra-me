@@ -5,6 +5,7 @@ import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPic
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
+import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/intake/types';
 import type { FamilyDraft, FamilyGroupDraft } from '@/lib/intake/schemas/family-draft.schema';
 
 type FamilyData = FamilyDraft;
@@ -216,6 +217,18 @@ export default function FamilySectionEditor({
 					/>
 				)}
 			</div>
+			<label className="invitation-editor__field">
+				<span>Orden de padres</span>
+				<select
+					value={family.parentsOrder ?? DEFAULT_PARENTS_ORDER}
+					onChange={(event) => {
+						onUpdateFamily({ parentsOrder: event.target.value as ParentsOrder });
+					}}
+				>
+					<option value="father-first">Papá primero</option>
+					<option value="mother-first">Mamá primero</option>
+				</select>
+			</label>
 			<label className="invitation-editor__check">
 				<input
 					type="checkbox"
