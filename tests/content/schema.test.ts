@@ -12,11 +12,7 @@ if (!rawSchema) {
 const eventSchema =
 	typeof rawSchema === 'function' ? rawSchema({ image: () => z.string() } as never) : rawSchema;
 
-const contentRoots = [
-	'src/content/events',
-	'src/content/event-demos',
-	'src/content/event-templates',
-];
+const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
 
 function getJsonContentFiles(root: string): string[] {
 	return fs

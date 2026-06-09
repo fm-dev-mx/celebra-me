@@ -4,18 +4,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { parseEnvContent, PROJECT_ROOT } from './db/db-workflow-lib.ts';
 
-const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
-const ROUTABLE_CONTENT_DIRS = [
-	path.join(PROJECT_ROOT, 'src', 'content', 'events'),
-	path.join(PROJECT_ROOT, 'src', 'content', 'event-demos'),
-];
-const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple']);
-
-interface ContentEvent {
-	eventType: string;
-	slug: string;
-	file: string;
-}
+const ROUTABLE_CONTENT_DIRS = [path.join(PROJECT_ROOT, 'src', 'content', 'event-demos')];
 
 interface DbEvent {
 	eventType: string;
@@ -141,62 +130,6 @@ async function fetchDbEvents(supabaseUrl: string, serviceRoleKey: string): Promi
 	return rows.map(normalizeEvent).filter((row) => row.slug && row.eventType);
 }
 
-interface LoadContentEventsOptions {
-	includeDemos: boolean;
-	includeTemplates: boolean;
-	slugFilter?: string;
-	eventTypeFilter?: string;
-}
-
-function loadContentEvents({
-	includeDemos,
-	includeTemplates,
-	slugFilter,
-	eventTypeFilter,
-}: LoadContentEventsOptions): { events: ContentEvent[]; warnings: string[] } {
-	if (!existsSync(CONTENT_DIR)) {
-		throw new Error(`[Content] Missing events directory: ${CONTENT_DIR}`);
-	}
-
-	const files = readdirSync(CONTENT_DIR).filter((file) => file.endsWith('.json'));
-	const events: ContentEvent[] = [];
-	const warnings: string[] = [];
-
-	for (const file of files) {
-		const slug = file.replace(/\.json$/, '');
-		if (!includeTemplates && slug.startsWith('template-')) continue;
-		if (slugFilter && slug !== slugFilter) continue;
-
-		const fullPath = path.join(CONTENT_DIR, file);
-		let parsed: Record<string, unknown>;
-		try {
-			parsed = JSON.parse(readFileSync(fullPath, 'utf8'));
-		} catch (error) {
-			throw new Error(
-				`[Content] Invalid JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
-				{ cause: error },
-			);
-		}
-
-		const eventType = String(parsed.eventType || '').trim();
-		if (!EVENT_TYPES.has(eventType)) {
-			warnings.push(`[Content] ${file} has unsupported eventType "${eventType}".`);
-			continue;
-		}
-
-		if (!includeDemos && parsed.isDemo === true) continue;
-		if (eventTypeFilter && eventType !== eventTypeFilter) continue;
-
-		events.push({
-			eventType,
-			slug,
-			file,
-		});
-	}
-
-	return { events, warnings };
-}
-
 interface MismatchRow {
 	eventType: string;
 	slug: string;
@@ -222,8 +155,6 @@ async function main(): Promise<void> {
 	const { values } = parseArgs({
 		options: {
 			help: { type: 'boolean', short: 'h' },
-			includeDemos: { type: 'boolean', default: false },
-			includeTemplates: { type: 'boolean', default: false },
 			allowMissingDb: { type: 'boolean', default: false },
 			slug: { type: 'string' },
 			eventType: { type: 'string' },
@@ -233,29 +164,18 @@ async function main(): Promise<void> {
 
 	if (values.help) {
 		console.log(`
-Validate parity between content event files and DB events.
+Validate routable slug uniqueness and DB/published content parity.
 
 Usage:
   pnpm ops validate-event-parity [options]
 
 Options:
-  --slug <slug>             Validate only one slug
-  --eventType <type>        Filter by event type (xv, boda, bautizo, cumple)
-  --includeDemos            Include content files with isDemo=true
-  --includeTemplates        Include template-* content files
+  --slug <slug>             Filter to a single slug
+  --eventType <type>        Filter by event type
   --allowMissingDb          Exit 0 when Supabase env vars are missing
   --help, -h                Show this help
 `);
 		return;
-	}
-
-	const slugFilter = typeof values.slug === 'string' ? values.slug : undefined;
-	const eventTypeFilter = typeof values.eventType === 'string' ? values.eventType : undefined;
-
-	if (eventTypeFilter && !EVENT_TYPES.has(eventTypeFilter)) {
-		throw new Error(
-			`Invalid --eventType "${eventTypeFilter}". Allowed: xv, boda, bautizo, cumple.`,
-		);
 	}
 
 	loadEnvFile('.env.local');
@@ -272,15 +192,6 @@ Options:
 
 	const supabaseUrl = process.env.SUPABASE_URL || '';
 	const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-	const { events: contentEvents, warnings } = loadContentEvents({
-		includeDemos: values.includeDemos === true,
-		includeTemplates: values.includeTemplates === true,
-		slugFilter,
-		eventTypeFilter,
-	});
-
-	warnings.forEach((warning) => console.warn(warning));
 
 	if (isPlaceholderEnvValue(supabaseUrl) || isPlaceholderEnvValue(serviceRoleKey)) {
 		const message =
@@ -307,6 +218,7 @@ Options:
 		}
 		throw error;
 	}
+
 	const publishedSlugs = new Set(publishedSlugList);
 	const filteredDbEvents = dbEvents.filter((event) => {
 		if (values.slug && event.slug !== values.slug) return false;
@@ -314,31 +226,17 @@ Options:
 		return true;
 	});
 
-	const contentMap = new Map(
-		contentEvents.map((event) => [entryKey(event.eventType, event.slug), event]),
-	);
-	const dbMap = new Map(
-		filteredDbEvents.map((event) => [entryKey(event.eventType, event.slug), event]),
-	);
-
 	const missingInContent = filteredDbEvents.filter(
-		(event) =>
-			!contentMap.has(entryKey(event.eventType, event.slug)) &&
-			!publishedSlugs.has(entryKey(event.eventType, event.slug)),
-	);
-	const missingInDb = contentEvents.filter(
-		(event) => !dbMap.has(entryKey(event.eventType, event.slug)),
+		(event) => !publishedSlugs.has(entryKey(event.eventType, event.slug)),
 	);
 
 	console.log('Event parity report');
 	console.log('===================');
-	console.log(`Content events considered: ${contentEvents.length}`);
 	console.log(`DB events considered: ${filteredDbEvents.length}`);
 
-	printMismatch('Missing content for DB event', missingInContent as MismatchRow[]);
-	printMismatch('Missing DB event for content', missingInDb as MismatchRow[]);
+	printMismatch('DB events without published content', missingInContent as MismatchRow[]);
 
-	if (missingInContent.length > 0 || missingInDb.length > 0) {
+	if (missingInContent.length > 0) {
 		process.exitCode = 1;
 		return;
 	}
