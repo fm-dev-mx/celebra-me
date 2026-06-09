@@ -13,8 +13,13 @@ interface Props {
 
 const EMPTY_ITEM: ItineraryItem = { iconName: DEFAULT_ICON, label: '', description: '', time: '' };
 
+const ICON_LABEL_MAP = new Map(ICON_CATALOG.map((entry) => [entry.name, entry.label]));
+
 function getIconLabel(name: string): string {
-	return ICON_CATALOG.find((entry) => entry.name === name)?.label ?? name;
+	if (!isIconName(name)) {
+		return name;
+	}
+	return ICON_LABEL_MAP.get(name) ?? name;
 }
 
 export default function ItineraryEditor({ value, onChange }: Props) {
@@ -51,10 +56,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 			</div>
 			<div className="invitation-editor__stack">
 				{value.items.map((item, index) => (
-					<article
-						className="invitation-editor__list-item"
-						key={`${index}-${item.iconName}-${item.time}`}
-					>
+					<article className="invitation-editor__list-item" key={index}>
 						<div className="invitation-editor__compact-row">
 							<strong>
 								{index + 1}. {item.label || 'Actividad'} ·{' '}
@@ -117,8 +119,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 									value={isIconName(item.iconName) ? item.iconName : null}
 									onChange={(iconName) =>
 										updateItem(index, {
-											iconName: (iconName ??
-												DEFAULT_ICON) as ItineraryItem['iconName'],
+											iconName: iconName ?? DEFAULT_ICON,
 										})
 									}
 								/>
