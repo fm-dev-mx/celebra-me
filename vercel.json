@@ -22,7 +22,7 @@
             ]
         },
         {
-            "source": "/((?!dashboard/invitaciones/[^/]+/preview(/|$)).*)",
+            "source": "/((?!dashboard/invitaciones/[^/]+/preview$)(?!dashboard/invitaciones/[^/]+/preview/).*)",
             "headers": [
                 {
                     "key": "X-Content-Type-Options",
