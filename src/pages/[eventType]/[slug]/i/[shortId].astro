@@ -27,14 +27,14 @@ try {
 const userAgent = Astro.request.headers.get('user-agent') || '';
 const isCrawler = isSocialCrawler(userAgent);
 
+const invitationPath = buildInvitationPath({
+  eventType: context.eventType,
+  eventSlug: context.eventSlug,
+  inviteId: context.inviteId,
+});
+
 if (!isCrawler) {
-  return Astro.redirect(
-    buildInvitationPath({
-      eventType: context.eventType,
-      eventSlug: context.eventSlug,
-      inviteId: context.inviteId,
-    }),
-  );
+  return Astro.redirect(invitationPath);
 }
 
 // Social crawler path: resolve invitation content for OG tags
