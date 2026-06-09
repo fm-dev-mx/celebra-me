@@ -117,6 +117,7 @@ export const InvitationEditorSectionSchemas = {
 	sharing: z.object({
 		whatsappWithPhone: optionalText(500),
 		whatsappWithoutPhone: optionalText(500),
+		ogDescription: optionalText(200),
 	}),
 } satisfies Record<InvitationEditorSectionKey, z.ZodType>;
 

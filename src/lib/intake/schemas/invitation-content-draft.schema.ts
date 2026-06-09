@@ -105,6 +105,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				whatsappWithPhone: optionalText(500),
 				whatsappWithoutPhone: optionalText(500),
+				ogDescription: optionalText(200),
 			})
 			.optional(),
 	})

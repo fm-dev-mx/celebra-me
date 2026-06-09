@@ -1144,4 +1144,55 @@ describe('sharing section mapping', () => {
 		expect(sharing.whatsappTemplate).toBe('Only legacy template');
 		expect(sharing.shareMessages).toBeUndefined();
 	});
+
+	it('preserves ogDescription from draft sharing', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					ogDescription: 'Acompáñanos a celebrar los XV años de Ayrin Samantha.',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		expect(sharing.ogDescription).toBe('Acompáñanos a celebrar los XV años de Ayrin Samantha.');
+	});
+
+	it('preserves ogDescription alongside shareMessages', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					whatsappWithPhone: 'With phone: {guestName}',
+					whatsappWithoutPhone: 'No phone: {eventTitle}',
+					ogDescription: 'Custom social preview description.',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		expect(sharing.ogDescription).toBe('Custom social preview description.');
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.whatsappWithPhone).toBe('With phone: {guestName}');
+	});
+
+	it('does not copy ogDescription from demo for non-demo publications', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			demoContent: {
+				...baseDemoContent,
+				sharing: {
+					ogDescription: 'Demo social preview copy.',
+					shareMessages: {
+						whatsappWithPhone: 'Demo with phone',
+						whatsappWithoutPhone: 'Demo without phone',
+					},
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		expect(sharing.ogDescription).toBeUndefined();
+	});
 });

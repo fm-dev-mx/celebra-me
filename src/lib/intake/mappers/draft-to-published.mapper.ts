@@ -416,35 +416,37 @@ function mapSharingFromDraft(
 	demoSharing: Record<string, unknown> | undefined,
 	isDemo: boolean,
 ): Record<string, unknown> | undefined {
-	const draftMessages = draftSharing as Record<string, unknown> | undefined;
-	const demoMessages = demoSharing?.shareMessages as Record<string, unknown> | undefined;
+	const draftMessages = (draftSharing || {}) as Record<string, unknown>;
+	const demoMessages = ((demoSharing && demoSharing.shareMessages) || {}) as Record<
+		string,
+		unknown
+	>;
 
 	const whatsappWithPhone =
-		str(draftMessages?.whatsappWithPhone) || str(demoMessages?.whatsappWithPhone);
+		str(draftMessages.whatsappWithPhone) || str(demoMessages.whatsappWithPhone);
 	const whatsappWithoutPhone =
-		str(draftMessages?.whatsappWithoutPhone) || str(demoMessages?.whatsappWithoutPhone);
+		str(draftMessages.whatsappWithoutPhone) || str(demoMessages.whatsappWithoutPhone);
+	const shareMessages =
+		whatsappWithPhone && whatsappWithoutPhone
+			? { whatsappWithPhone, whatsappWithoutPhone }
+			: undefined;
 
-	const hasShareMessages = !!(whatsappWithPhone && whatsappWithoutPhone);
 	const whatsappTemplate =
 		isDemo && typeof demoSharing?.whatsappTemplate === 'string'
 			? demoSharing.whatsappTemplate
 			: undefined;
 	const ogImage = demoSharing?.ogImage;
+	const ogDescription = str(draftMessages.ogDescription);
 
-	if (!hasShareMessages && !whatsappTemplate && !ogImage) return undefined;
+	const hasAnyContent = shareMessages || whatsappTemplate || ogImage || ogDescription;
+	if (!hasAnyContent) return undefined;
 
-	return {
-		...(whatsappTemplate ? { whatsappTemplate } : {}),
-		...(hasShareMessages
-			? {
-					shareMessages: {
-						whatsappWithPhone,
-						whatsappWithoutPhone,
-					},
-				}
-			: {}),
-		...(ogImage ? { ogImage } : {}),
-	};
+	const result: Record<string, unknown> = {};
+	if (whatsappTemplate) result.whatsappTemplate = whatsappTemplate;
+	if (shareMessages) result.shareMessages = shareMessages;
+	if (ogImage) result.ogImage = ogImage;
+	if (ogDescription) result.ogDescription = ogDescription;
+	return result;
 }
 
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {

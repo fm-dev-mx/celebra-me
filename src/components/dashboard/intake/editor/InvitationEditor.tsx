@@ -1280,6 +1280,19 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('sharing')}
 						visible={activeEditorCardId === 'sharing'}
 					>
+						<Field
+							label="Descripción para vista previa al compartir"
+							value={sharing.ogDescription ?? ''}
+							onChange={(value) =>
+								updateContent('sharing', { ...sharing, ogDescription: value })
+							}
+							placeholder="Acompáñanos a celebrar los XV años de..."
+							maxLength={200}
+						/>
+						<p className="invitation-editor__helper-text">
+							Este texto aparece en la tarjeta de vista previa cuando compartes la
+							invitación por WhatsApp u otras redes.
+						</p>
 						<TextArea
 							label="Mensaje con teléfono"
 							value={sharing.whatsappWithPhone ?? ''}

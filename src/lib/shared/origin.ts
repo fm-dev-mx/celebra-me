@@ -11,8 +11,17 @@ function isValidOrigin(value: string): boolean {
 	}
 }
 
-function normalizeOrigin(value: string): string {
+export function normalizeOrigin(value: string): string {
 	return value.replace(/\/+$/, '');
+}
+
+export function isLocalOrigin(origin: string): boolean {
+	try {
+		const { hostname } = new URL(origin);
+		return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+	} catch {
+		return true;
+	}
 }
 
 export function resolveSiteOrigin(options?: { baseUrl?: string }): string {

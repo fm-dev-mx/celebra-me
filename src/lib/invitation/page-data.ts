@@ -73,7 +73,7 @@ export function buildLayoutData(viewModel: InvitationViewModel, guestName: strin
 
 	return {
 		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
-		description: viewModel.description || '',
+		description: viewModel.sharing?.ogDescription || viewModel.description || '',
 		image: imageSrc,
 		className: `layout--${viewModel.theme.preset}`,
 	};

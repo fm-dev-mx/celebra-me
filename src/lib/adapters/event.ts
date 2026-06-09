@@ -506,6 +506,10 @@ export function adaptEvent(
 					ogImage: adapterData.sharing.ogImage
 						? resolveAsset(eventSlug, adapterData.sharing.ogImage, adapterData.title)
 						: undefined,
+					ogDescription:
+						typeof adapterData.sharing.ogDescription === 'string'
+							? adapterData.sharing.ogDescription
+							: undefined,
 				}
 			: undefined,
 	};

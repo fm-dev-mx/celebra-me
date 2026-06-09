@@ -148,6 +148,7 @@ export const sharingSchema = z
 		whatsappTemplate: z.string().optional(),
 		shareMessages: shareMessagesSchema.optional(),
 		ogImage: AssetSchema.optional(),
+		ogDescription: z.string().min(1).max(200).optional(),
 	})
 	.optional();
 

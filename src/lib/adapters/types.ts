@@ -301,5 +301,6 @@ export interface InvitationViewModel {
 			whatsappWithoutPhone: string;
 		};
 		ogImage?: ImageAsset;
+		ogDescription?: string;
 	};
 }

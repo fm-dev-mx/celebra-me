@@ -382,11 +382,15 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	const sharing = nestedContent.sharing as Record<string, unknown> | undefined;
 	if (sharing && Object.keys(sharing).length > 0) {
 		const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
+		const ogDescription = str(sharing.ogDescription);
 		if (shareMessages && Object.keys(shareMessages).length > 0) {
 			result.sharing = {
 				whatsappWithPhone: str(shareMessages.whatsappWithPhone),
 				whatsappWithoutPhone: str(shareMessages.whatsappWithoutPhone),
+				...(ogDescription ? { ogDescription } : {}),
 			};
+		} else if (ogDescription) {
+			result.sharing = { ogDescription };
 		}
 	}
 
