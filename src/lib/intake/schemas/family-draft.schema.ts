@@ -11,6 +11,7 @@ export const familyDraftSchema = z.object({
 	fatherDeceased: z.boolean().optional(),
 	motherName: optionalText(200),
 	motherDeceased: z.boolean().optional(),
+	parentsOrder: z.enum(['father-first', 'mother-first']).optional(),
 	spouseName: optionalText(200),
 	godparents: optionalText(),
 	children: optionalText(),

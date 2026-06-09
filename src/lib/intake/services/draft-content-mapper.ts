@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+import type { ParentsOrder } from '@/lib/intake/types';
 import { str, bool, num, normalizeDate, normalizeTime } from '@/lib/intake/utils';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
@@ -238,6 +239,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			motherName: str(parents?.mother),
 			fatherDeceased: bool(parents?.fatherDeceased),
 			motherDeceased: bool(parents?.motherDeceased),
+			parentsOrder: parents?.parentsOrder as ParentsOrder | undefined,
 			spouseName: str(family.spouse),
 			godparents: godparentsArr
 				?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))

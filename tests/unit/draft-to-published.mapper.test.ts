@@ -208,6 +208,97 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('maps parentsOrder father-first from draft to published at family root level', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Fernando Valenzuela',
+					motherName: 'Maria Duarte',
+					parentsOrder: 'father-first',
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			parents: { father: 'Fernando Valenzuela', mother: 'Maria Duarte' },
+			parentsOrder: 'father-first',
+		});
+	});
+
+	it('maps parentsOrder mother-first from draft to published at family root level', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Fernando Valenzuela',
+					motherName: 'Maria Duarte',
+					parentsOrder: 'mother-first',
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			parents: { father: 'Fernando Valenzuela', mother: 'Maria Duarte' },
+			parentsOrder: 'mother-first',
+		});
+	});
+
+	it('omits parentsOrder when not provided in draft (backward compatibility)', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Fernando Valenzuela',
+					motherName: 'Maria Duarte',
+				},
+			},
+		});
+
+		const family = result.family as Record<string, unknown>;
+		expect(family).not.toHaveProperty('parentsOrder');
+	});
+
+	it('passes eventContentSchema validation when parentsOrder is provided', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Fernando Valenzuela',
+					motherName: 'Maria Duarte',
+					parentsOrder: 'father-first',
+				},
+				quote: { text: 'Test quote', author: 'Test author' },
+				location: {
+					ceremony: {
+						venueName: 'Church',
+						address: '123 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Reception Hall',
+						address: '456 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '20:00',
+					},
+				},
+			},
+		});
+
+		const validation = eventContentSchema.safeParse(result);
+		if (!validation.success) {
+			console.log('Validation errors:', JSON.stringify(validation.error.issues, null, 2));
+		}
+		expect(validation.success).toBe(true);
+	});
+
 	it('maps children string to structured array', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

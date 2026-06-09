@@ -99,6 +99,7 @@ function mapFamilyFromDraft(
 	if (typeof family.motherDeceased === 'boolean') parents.motherDeceased = family.motherDeceased;
 
 	if (Object.keys(parents).length > 0) result.parents = parents;
+	if (family.parentsOrder) result.parentsOrder = family.parentsOrder;
 	if (str(family.spouseName)) result.spouse = str(family.spouseName);
 
 	const godparentsText = str(family.godparents);

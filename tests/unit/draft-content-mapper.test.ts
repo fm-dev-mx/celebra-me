@@ -242,6 +242,55 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.family?.visible).toBe(false);
 	});
 
+	it('reads parentsOrder father-first from published parents object', () => {
+		const input = {
+			family: {
+				parents: {
+					father: 'Fernando Valenzuela',
+					mother: 'Maria Duarte',
+					parentsOrder: 'father-first',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.parentsOrder).toBe('father-first');
+		expect(result.family?.fatherName).toBe('Fernando Valenzuela');
+		expect(result.family?.motherName).toBe('Maria Duarte');
+	});
+
+	it('reads parentsOrder mother-first from published parents object', () => {
+		const input = {
+			family: {
+				parents: {
+					father: 'Fernando Valenzuela',
+					mother: 'Maria Duarte',
+					parentsOrder: 'mother-first',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.parentsOrder).toBe('mother-first');
+	});
+
+	it('omits parentsOrder when not present in published content (backward compatibility)', () => {
+		const input = {
+			family: {
+				parents: {
+					father: 'Fernando Valenzuela',
+					mother: 'Maria Duarte',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.parentsOrder).toBeUndefined();
+	});
+
 	it('does not normalize legacy itinerary icon fields from published content', () => {
 		const input = {
 			itinerary: {

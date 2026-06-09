@@ -10,6 +10,7 @@ import type {
 	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
+import type { ParentsOrder } from '@/lib/intake/types';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
@@ -213,6 +214,7 @@ export interface InvitationViewModel {
 		};
 		family?: {
 			parents?: Parents;
+			parentsOrder?: ParentsOrder;
 			spouse?: string;
 			children?: FamilyMember[];
 			godparents?: FamilyMember[];

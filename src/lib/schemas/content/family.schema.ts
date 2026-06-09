@@ -12,6 +12,7 @@ export const familySchema = z
 			})
 			.strict()
 			.optional(),
+		parentsOrder: z.enum(['father-first', 'mother-first']).optional(),
 		labels: z
 			.object({
 				sectionTitle: z.string().optional(),
