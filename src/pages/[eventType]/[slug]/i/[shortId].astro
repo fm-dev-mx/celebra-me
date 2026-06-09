@@ -8,7 +8,7 @@ import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { buildLayoutData } from '@/lib/invitation/page-data';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
 
-const SITE_ORIGIN = 'https://www.celebra-me.com';
+const SITE_ORIGIN = Astro.site?.origin ?? 'https://www.celebra-me.com';
 
 const { shortId } = Astro.params;
 
@@ -20,27 +20,30 @@ let context: Awaited<ReturnType<typeof getInvitationContextByShortId>>;
 try {
   context = await getInvitationContextByShortId(shortId);
 } catch (error) {
-  console.error('[ShortID Resolution] Error:', error);
+  console.error('[invitation][shortId] Error:', error);
   return Astro.redirect('/404');
 }
 
-const userAgent = Astro.request.headers.get('user-agent') || '';
-const isCrawler = isSocialCrawler(userAgent);
+if (!context.inviteId) {
+  return Astro.redirect('/404');
+}
 
-const invitationPath = buildInvitationPath({
-  eventType: context.eventType,
-  eventSlug: context.eventSlug,
-  inviteId: context.inviteId,
-});
+const redirectTarget = !isSocialCrawler(Astro.request.headers.get('user-agent') || '')
+  ? buildInvitationPath({
+      eventType: context.eventType,
+      eventSlug: context.eventSlug,
+      inviteId: context.inviteId,
+    })
+  : null;
 
-if (!isCrawler) {
-  return Astro.redirect(invitationPath);
+if (redirectTarget) {
+  return Astro.redirect(redirectTarget);
 }
 
 // Social crawler path: resolve invitation content for OG tags
-let ogTitle: string = context.eventTitle;
-let ogDescription: string = '';
-let ogImageUrl: string = `${SITE_ORIGIN}/images/og-image.webp`;
+let ogTitle = context.eventTitle;
+let ogDescription = '';
+let ogImageUrl = `${SITE_ORIGIN}/images/og-image.webp`;
 
 try {
   const resolution = await resolveInvitationContent(context.eventSlug, context.eventType);
@@ -55,7 +58,7 @@ try {
     }
   }
 } catch (error) {
-  console.error('[SocialPreview] Error resolving invitation content:', error);
+  console.error('[invitation][shortId] Error resolving invitation content:', error);
 }
 
 const canonicalUrl = new URL(
