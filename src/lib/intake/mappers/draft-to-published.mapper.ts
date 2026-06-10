@@ -333,6 +333,8 @@ function mapRsvpSection(
 	const accessMode = str(demo.accessMode) || 'personalized-only';
 	const whatsappConfig = whatsappPhone ? { phone: whatsappPhone } : demo.whatsappConfig;
 	const subcopy = str(draftRsvp.subcopy) || str(demo.subcopy);
+	const confirmationDeadline =
+		str(draftRsvp.confirmationDeadline) || str(demo.confirmationDeadline);
 	return {
 		title,
 		guestCap,
@@ -341,6 +343,7 @@ function mapRsvpSection(
 		accessMode,
 		whatsappConfig,
 		subcopy,
+		...(confirmationDeadline ? { confirmationDeadline } : {}),
 		...(responseMessages ? { responseMessages } : {}),
 	};
 }

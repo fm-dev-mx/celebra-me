@@ -863,6 +863,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 							value={rsvp.subcopy ?? ''}
 							onChange={(value) => updateRsvp({ subcopy: value })}
 						/>
+						<Field
+							label="Fecha límite de confirmación"
+							placeholder="15 de marzo de 2026"
+							value={rsvp.confirmationDeadline ?? ''}
+							onChange={(value) => updateRsvp({ confirmationDeadline: value })}
+						/>
+						<p className="invitation-editor__helper-text">
+							Disponible como {'{rsvpDeadline}'} y {'{rsvpDeadlineText}'} en los
+							mensajes para compartir.
+						</p>
 						<details className="invitation-editor__row-details">
 							<summary>Mensajes de respuesta</summary>
 							<div className="invitation-editor__stack">

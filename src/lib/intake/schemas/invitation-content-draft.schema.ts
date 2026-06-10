@@ -83,6 +83,7 @@ export const InvitationContentDraftContentSchema = z
 				confirmationMode: optionalText(20),
 				whatsappPhone: optionalText(30),
 				subcopy: optionalText(1000),
+				confirmationDeadline: optionalText(60),
 				responseMessages: rsvpResponseMessagesSchema,
 			})
 			.optional(),

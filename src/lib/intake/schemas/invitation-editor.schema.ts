@@ -71,6 +71,7 @@ export const InvitationEditorSectionSchemas = {
 			confirmationMode: z.enum(['api', 'whatsapp', 'both']).optional(),
 			whatsappPhone: optionalText(30),
 			subcopy: optionalText(1000),
+			confirmationDeadline: optionalText(60),
 			responseMessages: rsvpResponseMessagesSchema,
 		})
 		.superRefine((value, context) => {
