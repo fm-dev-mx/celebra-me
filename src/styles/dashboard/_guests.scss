@@ -14,9 +14,18 @@
 @use 'dashboard-guests-reduced-motion';
 @use 'dashboard-guests-import';
 
+// ==========================================================================
+// SHARE MESSAGES MODAL (template editor)
+// ==========================================================================
+
+.dashboard-modal--share-templates {
+	width: min(600px, calc(100% - 32px));
+	max-height: min(720px, calc(100dvh - 48px));
+}
+
 .share-messages-modal__tabs {
 	display: flex;
-	margin-bottom: 1rem;
+	margin-bottom: 0.75rem;
 	border-bottom: 1px solid var(--color-border-subtle);
 }
 
@@ -50,17 +59,10 @@
 	}
 }
 
-.share-messages-modal__immediate-note {
-	font-size: 0.75rem;
-	color: var(--color-text-muted);
-	font-style: italic;
-	margin: -0.75rem 0 1rem;
-	text-align: center;
-}
-
 .share-messages-modal__textarea {
 	width: 100%;
-	min-height: 120px;
+	min-height: 140px;
+	max-height: 180px;
 	padding: 0.75rem;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 0.5rem;
@@ -104,6 +106,7 @@
 	font-size: 0.75rem;
 	font-family: monospace;
 	color: var(--color-text-primary);
+	white-space: nowrap;
 }
 
 .share-messages-modal__variables-help {
@@ -111,11 +114,10 @@
 	margin: 0.25rem 0 0;
 	font-size: 0.75rem;
 	color: var(--color-text-muted);
-	font-style: italic;
 }
 
 .share-messages-modal__preview {
-	margin-top: 1rem;
+	margin-top: 0.75rem;
 	padding: 0.75rem;
 	background: var(--color-surface-soft);
 	border: 1px solid var(--color-border-subtle);
@@ -137,6 +139,34 @@
 	line-height: 1.5;
 	font-family: inherit;
 	color: var(--color-text-primary);
+}
+
+// Footer: on mobile, ensure danger button in reset-confirm does not jump to front
+.dashboard-modal--share-templates .dashboard-modal__footer {
+	@media (width <= 480px) {
+		.btn-primary--danger {
+			order: -1;
+		}
+	}
+}
+
+// Mobile responsive adjustments for share templates modal
+@media (width <= 600px) {
+	.dashboard-modal--share-templates {
+		.share-messages-modal__textarea {
+			min-height: 110px;
+			max-height: 160px;
+			resize: none;
+		}
+
+		.share-messages-modal__variables {
+			gap: 0.375rem;
+		}
+
+		.share-messages-modal__preview {
+			padding: 0.5rem;
+		}
+	}
 }
 
 .dashboard-modal--share-composer {
