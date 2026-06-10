@@ -117,7 +117,7 @@ describe('ShareMessagesModal', () => {
 				},
 				undefined,
 			);
-			expect(onSave).toHaveBeenCalledWith(updatedTemplates, undefined);
+			expect(onSave).toHaveBeenCalledWith(updatedTemplates);
 		});
 	});
 

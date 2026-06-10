@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
@@ -13,13 +13,11 @@ import SendInvitationModal from '@/components/dashboard/guests/SendInvitationMod
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
-import {
-	useGuestDashboardActions,
-	type GuestFormPayload,
-} from '@/components/dashboard/guests/use-guest-dashboard-actions';
+import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { useShortcuts } from '@/hooks/use-shortcuts';
 import '@/styles/dashboard/_guests.scss';
 
@@ -60,81 +58,16 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		delivery,
 	});
 	const currentEvent = hostEvents.find((e) => e.id === eventId);
+	const currentEventTitle = currentEvent?.title ?? '';
 	const isBrandingRemovalEligible = currentEvent
 		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
 		: false;
 
-	const modals = (() => {
-		if (deleteConfirmOpen) {
-			return (
-				<GuestDeleteConfirmModal
-					guestToDelete={guestToDelete}
-					onClose={closeDeleteConfirm}
-					onConfirm={handleDeleteConfirm}
-				/>
-			);
-		}
-		if (modalOpen && modalMode === 'send-pending') {
-			return (
-				<SendInvitationModal
-					key={editingGuest?.guestId ?? 'empty'}
-					guest={editingGuest}
-					pendingGuests={pendingGuests}
-					inviteBaseUrl={inviteBaseUrl}
-					onClose={closeModal}
-					onSave={handleSaveInvitation}
-					onMarkShared={handleMarkShared}
-					onAdvanceFromGuest={handleAdvanceFromGuest}
-					onPostponeGuest={handlePostpone}
-					templates={shareTemplates}
-					shareDateContext={shareDateContext}
-					eventTitle={currentEvent?.title ?? ''}
-				/>
-			);
-		}
-		if (modalOpen && modalMode !== 'send-pending') {
-			return (
-				<GuestFormModal
-					open={modalOpen}
-					mode={modalMode}
-					initialGuest={editingGuest}
-					isInvitationFactory={isNextActionActive}
-					onClose={closeModal}
-					onPostpone={handlePostpone}
-					onSubmit={(payload, stayOpen) =>
-						handleSubmit(payload as GuestFormPayload, stayOpen)
-					}
-				/>
-			);
-		}
-		if (shareMessagesModalOpen && currentEvent) {
-			return (
-				<ShareMessagesModal
-					eventId={eventId}
-					eventTitle={currentEvent.title}
-					initialTemplates={shareTemplates}
-					initialOgDescription={shareOgDescription}
-					shareDateContext={shareDateContext}
-					onClose={() => setShareMessagesModalOpen(false)}
-					onSave={(templates) => {
-						setShareMessagesModalOpen(false);
-						setShareTemplates(templates);
-						void loadGuests();
-						setNotification({
-							message: 'Mensajes guardados correctamente.',
-							type: 'success',
-						});
-					}}
-				/>
-			);
-		}
-		return null;
-	})();
-
 	const visibleItems = items.filter((item) => {
-		if (reviewFilter === 'delivery-pending') return item.deliveryStatus === 'generated';
-		if (reviewFilter === 'rsvp-pending') return item.attendanceStatus === 'pending';
-		if (reviewFilter === 'with-message') return item.guestComment.trim().length > 0;
+		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
+			return false;
+		if (reviewFilter === 'rsvp-pending' && item.attendanceStatus !== 'pending') return false;
+		if (reviewFilter === 'with-message' && item.guestComment.trim().length === 0) return false;
 		if (group !== 'all') {
 			const itemTags = getGuestVisibleTags(item);
 			if (!itemTags.includes(group)) return false;
@@ -180,6 +113,87 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		loadGuests,
 		setItems,
 	});
+
+	const handleSaveShareTemplates = useCallback(
+		(templates: ShareMessagesConfig) => {
+			setShareMessagesModalOpen(false);
+			setShareTemplates(templates);
+			void loadGuests();
+			setNotification({
+				message: 'Mensajes guardados correctamente.',
+				type: 'success',
+			});
+		},
+		[setShareTemplates, loadGuests, setNotification],
+	);
+
+	const modals = (() => {
+		if (importModalOpen) {
+			return (
+				<ImportMagic
+					eventId={eventId}
+					existingGuests={items}
+					onImport={handleImport}
+					onUpdate={handleImportUpdate}
+					onClose={() => setImportModalOpen(false)}
+				/>
+			);
+		}
+		if (deleteConfirmOpen) {
+			return (
+				<GuestDeleteConfirmModal
+					guestToDelete={guestToDelete}
+					onClose={closeDeleteConfirm}
+					onConfirm={handleDeleteConfirm}
+				/>
+			);
+		}
+		if (modalOpen && modalMode === 'send-pending') {
+			return (
+				<SendInvitationModal
+					key={editingGuest?.guestId ?? 'empty'}
+					guest={editingGuest}
+					pendingGuests={pendingGuests}
+					inviteBaseUrl={inviteBaseUrl}
+					onClose={closeModal}
+					onSave={handleSaveInvitation}
+					onMarkShared={handleMarkShared}
+					onAdvanceFromGuest={handleAdvanceFromGuest}
+					onPostponeGuest={handlePostpone}
+					templates={shareTemplates}
+					shareDateContext={shareDateContext}
+					eventTitle={currentEventTitle}
+				/>
+			);
+		}
+		if (modalOpen && (modalMode === 'create' || modalMode === 'edit')) {
+			return (
+				<GuestFormModal
+					open={modalOpen}
+					mode={modalMode}
+					initialGuest={editingGuest}
+					isInvitationFactory={isNextActionActive}
+					onClose={closeModal}
+					onPostpone={handlePostpone}
+					onSubmit={(payload, stayOpen) => handleSubmit(payload, stayOpen)}
+				/>
+			);
+		}
+		if (shareMessagesModalOpen && currentEvent) {
+			return (
+				<ShareMessagesModal
+					eventId={eventId}
+					eventTitle={currentEvent.title}
+					initialTemplates={shareTemplates}
+					initialOgDescription={shareOgDescription}
+					shareDateContext={shareDateContext}
+					onClose={() => setShareMessagesModalOpen(false)}
+					onSave={handleSaveShareTemplates}
+				/>
+			);
+		}
+		return null;
+	})();
 
 	useShortcuts(
 		{
@@ -242,7 +256,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestTable
 					items={visibleItems}
 					inviteBaseUrl={inviteBaseUrl}
-					eventTitle={currentEvent?.title ?? ''}
+					eventTitle={currentEventTitle}
 					shareTemplates={shareTemplates}
 					shareDateContext={shareDateContext}
 					celebratingGuestId={celebratingGuestId}
