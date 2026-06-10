@@ -89,10 +89,11 @@ describe('ShareAction', () => {
 		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
 	});
 
-	it('renders with "Enviar recordatorio" for confirmed guests with firstSharedAt', () => {
+	it('renders with "Compartir invitación" for confirmed guests with generated deliveryStatus even if firstSharedAt is set', () => {
 		render(
 			<ShareAction
 				guest={makeGuest({
+					deliveryStatus: 'generated',
 					attendanceStatus: 'confirmed',
 					firstSharedAt: '2026-01-15T10:00:00.000Z',
 				})}
@@ -110,7 +111,7 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
+		expect(screen.getByText('Compartir invitación')).toBeInTheDocument();
 	});
 
 	it('renders with "Compartir invitación" for declined guests without firstSharedAt', () => {

@@ -129,6 +129,7 @@ export function useSendInvitation({
 				: resolveDefaultMessageKind({
 						firstSharedAt: guest.firstSharedAt,
 						attendanceStatus: guest.attendanceStatus,
+						deliveryStatus: guest.deliveryStatus,
 					});
 		const template = templates[kind];
 		return renderShareMessage(template, {

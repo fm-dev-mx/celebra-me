@@ -143,9 +143,18 @@ export interface ShareCtaResult {
 	defaultMessageType: ShareMessageType;
 }
 
-/** Defensive: considers a guest shared if firstSharedAt is set OR deliveryStatus is 'shared'. */
+/**
+ * Determines whether a guest has been previously shared for CTA purposes.
+ *
+ * `deliveryStatus` is the source of truth:
+ * - 'generated' → not shared (even if `firstSharedAt` is set)
+ * - 'shared'    → shared
+ * - null/undefined → falls back to `firstSharedAt` for legacy data
+ */
 export function hasBeenShared(item: DashboardGuestItem): boolean {
-	return Boolean(item.firstSharedAt) || item.deliveryStatus === 'shared';
+	if (item.deliveryStatus === 'generated') return false;
+	if (item.deliveryStatus === 'shared') return true;
+	return Boolean(item.firstSharedAt);
 }
 
 export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
