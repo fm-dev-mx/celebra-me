@@ -44,6 +44,8 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	shareDateContext,
 	eventTitle,
 }) => {
+	const editAreaRef = useRef<HTMLTextAreaElement>(null);
+
 	const {
 		editName,
 		setEditName,
@@ -54,23 +56,20 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		editCountryCode,
 		setEditCountryCode,
 		phoneError,
-		setPhoneError,
 		shareStatus,
 		fallbackGuest,
 		markError,
 		advancing,
 		pendingCount,
 		canSendToPhone,
-		flowStep,
 		editingMessage,
 		activeMessage,
-		handleContinueToMessage,
+		localMessageOverride,
+		messageError,
 		handleEditMessage,
 		handleCancelEditMessage,
-		handleResetMessage,
 		handleUpdateLocalMessage,
-		localMessageOverride,
-		handleBackToForm,
+		handleCopyMessageAction,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,
@@ -89,21 +88,35 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		eventTitle,
 	});
 
-	const editAreaRef = useRef<HTMLTextAreaElement>(null);
-
-	const modalContent = (() => {
-		if (shareStatus === 'idle' && flowStep === 'form') {
-			return (
-				<>
-					<p className="dashboard-modal__description">
-						{pendingCount} invitaci&oacute;n(es) pendiente(s) por enviar
+	if (!guest) {
+		return (
+			<ModalShell title="Enviar invitación" onClose={onClose}>
+				<div className="dashboard-modal__content">
+					<p className="dashboard-modal__confirm-text">
+						No hay invitaciones pendientes por enviar.
 					</p>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							handleContinueToMessage();
-						}}
-					>
+				</div>
+				<div className="dashboard-modal__footer">
+					<button type="button" className="btn-primary" onClick={onClose}>
+						Cerrar
+					</button>
+				</div>
+			</ModalShell>
+		);
+	}
+
+	const subtitle = `${pendingCount} pendiente(s) · ${guest.fullName}`;
+
+	return (
+		<ModalShell
+			title="Enviar invitación"
+			subtitle={subtitle}
+			className="dashboard-modal--send-invitation"
+			onClose={onClose}
+		>
+			<div className="dashboard-modal__content">
+				{shareStatus === 'idle' && (
+					<div className="send-invitation__form-section">
 						<div className="dashboard-form-field">
 							<label htmlFor="send-name">Nombre del invitado</label>
 							<input
@@ -114,6 +127,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 								placeholder="Nombre completo"
 							/>
 						</div>
+
 						<div className="dashboard-form-section">
 							<h4 className="dashboard-form-section__title">
 								Acompa&ntilde;antes permitidos
@@ -141,224 +155,166 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 								</div>
 							</div>
 						</div>
+
 						<div className="dashboard-form-field">
 							<PhoneInputGroup
 								id="send"
 								countryCode={editCountryCode}
 								phone={editPhone}
-								onCountryCodeChange={(val) => {
-									setEditCountryCode(val);
-									if (phoneError) setPhoneError(null);
-								}}
+								onCountryCodeChange={setEditCountryCode}
 								onPhoneChange={(val) => {
 									setEditPhone(val);
-									if (phoneError) setPhoneError(null);
 								}}
 								error={phoneError}
 								label="Teléfono / WhatsApp"
 								showOptional
 							/>
 						</div>
-					</form>
-				</>
-			);
-		}
-		if (shareStatus === 'idle' && flowStep === 'message' && templates) {
-			return (
-				<div className="send-invitation-message-step">
-					<p className="dashboard-modal__description">
-						Revisa el mensaje antes de enviarlo.
-					</p>
-					<span className="send-invitation-message-step__label">Mensaje a enviar</span>
-					<div className="send-invitation-message-step__preview-card">
-						{editingMessage ? (
-							<textarea
-								ref={editAreaRef}
-								className="send-invitation-message-step__textarea"
-								rows={5}
-								maxLength={500}
-								value={localMessageOverride}
-								onChange={(e) => handleUpdateLocalMessage(e.target.value)}
-							/>
-						) : (
-							<pre className="send-invitation-message-step__preview-text">
-								{activeMessage}
-							</pre>
-						)}
 					</div>
-					<div className="send-invitation-message-step__actions">
-						{editingMessage ? (
-							<>
+				)}
+
+				{shareStatus === 'idle' && templates && (
+					<div className="send-invitation__message-section">
+						<span className="send-invitation__message-label">Mensaje a enviar</span>
+
+						<div className="send-invitation__preview-card">
+							{editingMessage ? (
+								<textarea
+									ref={editAreaRef}
+									className="send-invitation__textarea"
+									rows={4}
+									maxLength={500}
+									autoFocus
+									value={localMessageOverride}
+									onChange={(e) => handleUpdateLocalMessage(e.target.value)}
+								/>
+							) : (
+								<pre className="send-invitation__preview-text">{activeMessage}</pre>
+							)}
+						</div>
+
+						{messageError && (
+							<p className="send-invitation__field-error">{messageError}</p>
+						)}
+
+						<div className="send-invitation__edit-actions">
+							{editingMessage ? (
+								<>
+									<button
+										type="button"
+										className="btn-secondary btn-secondary--modal"
+										onClick={handleCancelEditMessage}
+									>
+										Cancelar edici&oacute;n
+									</button>
+									<button
+										type="button"
+										className="btn-secondary btn-secondary--modal"
+										onClick={handleCancelEditMessage}
+									>
+										Restablecer desde plantilla
+									</button>
+								</>
+							) : (
 								<button
 									type="button"
 									className="btn-secondary btn-secondary--modal"
-									onClick={handleCancelEditMessage}
+									onClick={handleEditMessage}
 								>
-									Cancelar edici&oacute;n
+									Editar mensaje
 								</button>
-								<button
-									type="button"
-									className="btn-secondary btn-secondary--modal"
-									onClick={handleResetMessage}
-								>
-									Restablecer desde plantilla
-								</button>
-							</>
-						) : (
+							)}
+						</div>
+					</div>
+				)}
+
+				{shareStatus === 'fallback' && fallbackGuest && (
+					<div className="dashboard-modal__fallback">
+						<p className="dashboard-modal__description">
+							No se pudo abrir el m&eacute;todo de env&iacute;o. Puedes copiar la
+							invitaci&oacute;n.
+						</p>
+						<div className="send-share-guest">
+							<span className="send-share-guest__name">{fallbackGuest.fullName}</span>
+							{fallbackGuest.phone && (
+								<span className="send-share-guest__phone">
+									{fallbackGuest.phone}
+								</span>
+							)}
+						</div>
+						<div className="dashboard-modal__fallback-actions">
+							<button type="button" className="btn-primary" onClick={handleCopyOnly}>
+								<CopyIcon className="share-icon" size={16} />
+								Copiar invitaci&oacute;n
+							</button>
+							<button
+								type="button"
+								className="btn-primary"
+								onClick={handleCopyAndMarkSent}
+								disabled={advancing}
+							>
+								Copiar y marcar como enviada
+							</button>
 							<button
 								type="button"
 								className="btn-secondary btn-secondary--modal"
-								onClick={handleEditMessage}
+								onClick={handleKeepPending}
 							>
-								Editar mensaje
+								Mantener pendiente
 							</button>
-						)}
-					</div>
-					{canSendToPhone && (
-						<div className="send-invitation-message-step__phone-info">
-							<WhatsAppIcon size={14} />
-							Se enviar&aacute; por WhatsApp al n&uacute;mero registrado.
 						</div>
-					)}
-				</div>
-			);
-		}
-		if (shareStatus === 'fallback' && fallbackGuest) {
-			return (
-				<div className="dashboard-modal__fallback">
-					<p className="dashboard-modal__description">
-						No se pudo abrir el m&eacute;todo de env&iacute;o. Puedes copiar la
-						invitaci&oacute;n.
-					</p>
-					<div className="send-share-guest">
-						<span className="send-share-guest__name">{fallbackGuest.fullName}</span>
-						{fallbackGuest.phone && (
-							<span className="send-share-guest__phone">{fallbackGuest.phone}</span>
-						)}
+						{markError && <span className="guest-field-error">{markError}</span>}
 					</div>
-					<div className="dashboard-modal__fallback-actions">
-						<button type="button" className="btn-primary" onClick={handleCopyOnly}>
-							<CopyIcon className="share-icon" size={16} />
-							Copiar invitaci&oacute;n
-						</button>
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={handleCopyAndMarkSent}
-							disabled={advancing}
-						>
-							Copiar y marcar como enviada
-						</button>
+				)}
+			</div>
+
+			<div className="dashboard-modal__footer">
+				{shareStatus === 'idle' && (
+					<>
 						<button
 							type="button"
 							className="btn-secondary btn-secondary--modal"
-							onClick={handleKeepPending}
+							onClick={onClose}
 						>
-							Mantener pendiente
+							Cancelar
 						</button>
-					</div>
-					{markError && <span className="guest-field-error">{markError}</span>}
-				</div>
-			);
-		}
-		return null;
-	})();
-
-	const modalFooter = (() => {
-		if (shareStatus === 'idle' && flowStep === 'form') {
-			return (
-				<>
-					<button
-						type="button"
-						className="btn-secondary btn-secondary--modal"
-						onClick={onClose}
-					>
-						Cancelar
-					</button>
-					{pendingCount > 1 && (
+						{pendingCount > 1 && (
+							<button
+								type="button"
+								className="btn-secondary btn-secondary--postpone"
+								onClick={handlePostpone}
+							>
+								Posponer
+							</button>
+						)}
 						<button
 							type="button"
-							className="btn-secondary btn-secondary--postpone"
-							onClick={handlePostpone}
-						>
-							Posponer
-						</button>
-					)}
-					<button type="button" className="btn-primary" onClick={handleContinueToMessage}>
-						Continuar
-					</button>
-				</>
-			);
-		}
-		if (shareStatus === 'idle' && flowStep === 'message') {
-			return (
-				<>
-					<button
-						type="button"
-						className="btn-secondary btn-secondary--modal"
-						onClick={handleBackToForm}
-					>
-						Volver
-					</button>
-					{canSendToPhone ? (
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={() => {
-								handleSaveAndShare();
-							}}
-							disabled={shareStatus !== 'idle'}
-						>
-							<WhatsAppIcon className="share-icon" size={16} />
-							Enviar por WhatsApp
-						</button>
-					) : (
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={() => {
-								handleSaveAndShare();
-							}}
+							className="btn-secondary btn-secondary--modal"
+							onClick={handleCopyMessageAction}
 							disabled={shareStatus !== 'idle'}
 						>
 							<CopyIcon className="share-icon" size={16} />
 							Copiar mensaje
 						</button>
-					)}
-				</>
-			);
-		}
-		if (shareStatus === 'fallback') {
-			return (
-				<button type="button" className="btn-primary" onClick={onClose}>
-					Cerrar
-				</button>
-			);
-		}
-		return null;
-	})();
-
-	if (!guest) {
-		return (
-			<ModalShell title="Enviar invitación" onClose={onClose}>
-				<div className="dashboard-modal__content">
-					<p className="dashboard-modal__confirm-text">
-						No hay invitaciones pendientes por enviar.
-					</p>
-				</div>
-				<div className="dashboard-modal__footer">
+						<button
+							type="button"
+							className="btn-primary"
+							onClick={handleSaveAndShare}
+							disabled={shareStatus !== 'idle'}
+						>
+							{canSendToPhone ? (
+								<WhatsAppIcon className="share-icon" size={16} />
+							) : null}
+							Compartir
+						</button>
+					</>
+				)}
+				{shareStatus === 'fallback' && (
 					<button type="button" className="btn-primary" onClick={onClose}>
 						Cerrar
 					</button>
-				</div>
-			</ModalShell>
-		);
-	}
-
-	return (
-		<ModalShell title="Enviar invitación" onClose={onClose}>
-			<div className="dashboard-modal__content">{modalContent}</div>
-			<div className="dashboard-modal__footer">{modalFooter}</div>
+				)}
+			</div>
 		</ModalShell>
 	);
 };

@@ -291,43 +291,55 @@
 	font-weight: 500;
 }
 
-.send-invitation-message-step__label {
+.dashboard-modal--send-invitation {
+	width: min(480px, 95vw);
+}
+
+.send-invitation__form-section {
+	margin-bottom: 0.75rem;
+}
+
+.send-invitation__message-section {
+	margin-bottom: 0.5rem;
+}
+
+.send-invitation__message-label {
 	display: block;
 	font-size: 0.7rem;
 	font-weight: 600;
 	color: var(--color-text-secondary);
 	letter-spacing: 0.02em;
-	margin-bottom: 0.4rem;
+	margin-bottom: 0.35rem;
 }
 
-.send-invitation-message-step__preview-card {
-	padding: 1rem;
+.send-invitation__preview-card {
+	padding: 0.75rem;
 	background: var(--color-surface-soft);
 	border: 1px solid var(--color-border-premium);
 	border-radius: 0.5rem;
-	margin-bottom: 0.75rem;
-	max-height: 240px;
+	margin-bottom: 0.4rem;
+	max-height: 140px;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }
 
-.send-invitation-message-step__preview-text {
+.send-invitation__preview-text {
 	margin: 0;
 	white-space: pre-wrap;
-	font-size: 0.875rem;
-	line-height: 1.6;
+	font-size: 0.8125rem;
+	line-height: 1.5;
 	font-family: inherit;
 	color: var(--color-text-primary);
 }
 
-.send-invitation-message-step__textarea {
+.send-invitation__textarea {
 	width: 100%;
-	min-height: 120px;
-	padding: 0.75rem;
+	min-height: 80px;
+	padding: 0.6rem;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 0.5rem;
 	font-family: inherit;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	line-height: 1.5;
 	resize: vertical;
 	background: var(--color-surface-elevated);
@@ -340,25 +352,37 @@
 	}
 }
 
-.send-invitation-message-step__actions {
+.send-invitation__edit-actions {
 	display: flex;
-	gap: 0.5rem;
-	margin-bottom: 0.75rem;
+	gap: 0.4rem;
+	margin-bottom: 0;
 	flex-wrap: wrap;
 }
 
-.send-invitation-message-step__phone-info {
-	display: flex;
-	align-items: center;
-	gap: 0.4rem;
+.send-invitation__field-error {
+	color: var(--color-state-danger-text);
 	font-size: 0.75rem;
-	color: var(--color-text-secondary);
-	padding: 0.5rem 0.75rem;
-	background: var(--color-surface-soft);
-	border-radius: 0.5rem;
+	margin: 0 0 0.35rem;
 }
 
 @media (width <= 600px) {
+	.dashboard-modal--send-invitation .dashboard-form-field {
+		margin-bottom: 0.5rem;
+	}
+
+	.dashboard-modal--send-invitation .dashboard-form-section {
+		margin-top: 0.5rem;
+		padding-top: 0.5rem;
+	}
+
+	.send-invitation__preview-card {
+		max-height: 110px;
+	}
+
+	.send-invitation__textarea {
+		min-height: 70px;
+	}
+
 	.share-composer-modal__preview-card {
 		max-height: none;
 		flex: 1;
