@@ -5,6 +5,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
+import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { CONTENT_SECTION_KEYS, THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
@@ -71,9 +72,14 @@ export function buildLayoutData(viewModel: InvitationViewModel, guestName: strin
 	const image = viewModel.sharing?.ogImage ?? viewModel.hero.backgroundImage;
 	const imageSrc = typeof image.src === 'string' ? image.src : image.src.src;
 
+	const resolvedDescription =
+		viewModel.sharing?.ogDescription?.trim() ||
+		viewModel.description?.trim() ||
+		resolveShareDescription(undefined, viewModel.title);
+
 	return {
 		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
-		description: viewModel.sharing?.ogDescription || viewModel.description || '',
+		description: resolvedDescription,
 		image: imageSrc,
 		className: `layout--${viewModel.theme.preset}`,
 	};

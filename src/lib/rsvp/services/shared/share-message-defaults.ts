@@ -50,3 +50,18 @@ export function resolveShareTemplates(config?: {
 		reminder: config?.shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
 	};
 }
+
+export const DEFAULT_SHARE_DESCRIPTION_TEMPLATE =
+	'Consulta los detalles de {eventTitle} y confirma tu asistencia.';
+
+export function resolveShareDescription(
+	ogDescription: string | undefined | null,
+	eventTitle: string,
+): string {
+	const customDescription = ogDescription?.trim();
+	const resolvedEventTitle = eventTitle.trim() || 'la invitación';
+
+	if (customDescription) return customDescription;
+
+	return DEFAULT_SHARE_DESCRIPTION_TEMPLATE.replace('{eventTitle}', resolvedEventTitle);
+}

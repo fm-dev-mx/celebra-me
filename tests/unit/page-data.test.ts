@@ -95,6 +95,53 @@ describe('buildLayoutData', () => {
 		expect(result.className).toBe('layout--enchanted-rose');
 	});
 
+	it('falls back to generated description when both sharing.ogDescription and description are missing', () => {
+		const viewModel: InvitationViewModel = {
+			...baseViewModel,
+			description: undefined,
+		};
+		const result = buildLayoutData(viewModel, undefined);
+
+		expect(result.description).toContain('Test Event Title');
+		expect(result.description).toContain('detalles');
+	});
+
+	it('treats whitespace-only sharing.ogDescription as empty and uses description', () => {
+		const viewModel: InvitationViewModel = {
+			...baseViewModel,
+			sharing: {
+				ogDescription: '   ',
+			},
+		};
+		const result = buildLayoutData(viewModel, undefined);
+
+		expect(result.description).toBe('A beautiful test invitation description.');
+	});
+
+	it('treats whitespace-only description as empty and uses generated fallback', () => {
+		const viewModel: InvitationViewModel = {
+			...baseViewModel,
+			description: '   ',
+			sharing: undefined,
+		};
+		const result = buildLayoutData(viewModel, undefined);
+
+		expect(result.description).toContain('Test Event Title');
+	});
+
+	it('treats whitespace-only both as empty and uses generated fallback', () => {
+		const viewModel: InvitationViewModel = {
+			...baseViewModel,
+			description: '   ',
+			sharing: {
+				ogDescription: '   ',
+			},
+		};
+		const result = buildLayoutData(viewModel, undefined);
+
+		expect(result.description).toContain('Test Event Title');
+	});
+
 	it('handles ImageMetadata src in backgroundImage (internal asset)', () => {
 		const viewModel: InvitationViewModel = {
 			...baseViewModel,
