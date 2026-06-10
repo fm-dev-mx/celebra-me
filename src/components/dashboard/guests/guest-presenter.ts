@@ -3,6 +3,13 @@ import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 
+export const DEFAULT_COUNTRY_CODE = '+52';
+
+export function formatGuestEntrySource(item: DashboardGuestItem) {
+	const isPublic = item.entrySource === 'generic_public' || item.tags.includes('system:public');
+	return isPublic ? 'RSVP público' : 'Invitación personalizada';
+}
+
 export type ShareFlowMode = 'pending-invitation' | 'single-invitation' | 'single-reminder';
 
 export type GuestSaveCallback = (
@@ -20,12 +27,6 @@ export function formatGuestDate(value: string | null): string {
 	const date = new Date(value);
 	if (isNaN(date.getTime())) return value;
 	return date.toLocaleString('es-MX');
-}
-
-export function formatGuestEntrySource(item: DashboardGuestItem) {
-	const isPublic =
-		item.entrySource === 'generic_public' || (item.tags ?? []).includes('system:public');
-	return isPublic ? 'RSVP público' : 'Invitación personalizada';
 }
 
 export type PrimaryStatus = {

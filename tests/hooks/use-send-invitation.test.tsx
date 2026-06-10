@@ -27,26 +27,34 @@ function createMockCallbacks() {
 function setupHook(
 	guest: DashboardGuestItem | null,
 	pendingGuests: DashboardGuestItem[],
-	overrides?: Partial<ReturnType<typeof createMockCallbacks>>,
+	overrides?: Partial<ReturnType<typeof createMockCallbacks>> & {
+		templates?: ShareMessagesConfig;
+		inviteUrl?: string;
+		eventTitle?: string;
+	},
 ) {
 	const callbacks = { ...createMockCallbacks(), ...overrides };
+	const { templates, ...restCallbacks } = callbacks;
 
 	const { result } = renderHook(() =>
 		useSendInvitation({
 			guest,
 			pendingGuests,
-			inviteUrl: 'http://localhost/invitacion/invite-1',
-			...callbacks,
+			inviteUrl: overrides?.inviteUrl ?? 'http://localhost/invitacion/invite-1',
+			eventTitle: overrides?.eventTitle ?? 'Test Event',
+			templates: overrides?.templates,
+			...restCallbacks,
 		}),
 	);
 
-	return { result, callbacks };
+	return { result, callbacks: restCallbacks as ReturnType<typeof createMockCallbacks> };
 }
 
 describe('useSendInvitation', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		setupNavigatorShare();
+		setupNavigatorClipboard();
 		stubWindowOpen(createMockWindow() as unknown as Window);
 	});
 
