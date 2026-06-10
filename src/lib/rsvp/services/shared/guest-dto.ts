@@ -50,7 +50,7 @@ export function toGuestDto(
 			eventSlug: options.eventSlug,
 			template: options.template,
 			shareMessages: options.shareMessages,
-			variant: 'with-phone',
+			messageType: 'invitation',
 		}),
 		shareText: buildShareMessage({
 			origin: options.origin,
@@ -63,7 +63,7 @@ export function toGuestDto(
 			eventSlug: options.eventSlug,
 			template: options.template,
 			shareMessages: options.shareMessages,
-			variant: 'without-phone',
+			messageType: 'invitation',
 			includeLink: false,
 		}),
 		updatedAt: guest.updatedAt,

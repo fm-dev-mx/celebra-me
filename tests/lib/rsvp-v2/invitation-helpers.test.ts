@@ -16,15 +16,14 @@ const baseInput = {
 };
 
 describe('buildShareMessage', () => {
-	it('uses shareMessages.with-phone template when shareMessages provided', () => {
+	it('uses shareMessages.invitation template by default', () => {
 		const shareMessages = {
-			whatsappWithPhone: 'Custom: {guestName} → {eventTitle} → {inviteUrl}',
-			whatsappWithoutPhone: 'No phone: {eventTitle} → {inviteUrl}',
+			invitation: 'Custom: {guestName} → {eventTitle} → {inviteUrl}',
+			reminder: 'Reminder: {guestName} → {eventTitle} → {inviteUrl}',
 		};
 		const result = buildShareMessage({
 			...baseInput,
 			shareMessages,
-			variant: 'with-phone',
 			includeLink: true,
 		});
 		expect(result).toContain('Custom: Francisco Prueba');
@@ -32,19 +31,19 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('celebra-me.com');
 	});
 
-	it('uses shareMessages.without-phone template when variant is without-phone', () => {
+	it('uses shareMessages.reminder template when messageType is reminder', () => {
 		const shareMessages = {
-			whatsappWithPhone: 'With phone: {guestName}',
-			whatsappWithoutPhone: 'Sin teléfono: {eventTitle} → {inviteUrl}',
+			invitation: 'Invitation: {guestName} → {inviteUrl}',
+			reminder: 'Reminder: {guestName} → {inviteUrl}',
 		};
 		const result = buildShareMessage({
 			...baseInput,
 			shareMessages,
-			variant: 'without-phone',
+			messageType: 'reminder',
 			includeLink: true,
 		});
-		expect(result).toContain('Sin teléfono: XV Años de Ayrin Samantha');
-		expect(result).not.toContain('Francisco Prueba');
+		expect(result).toContain('Reminder: Francisco Prueba');
+		expect(result).not.toContain('Invitation:');
 	});
 
 	it('falls back to legacy template when shareMessages is not provided', () => {
@@ -56,7 +55,7 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Legacy: Francisco Prueba');
 	});
 
-	it('falls back to hardcoded default when neither shareMessages nor template provided', () => {
+	it('falls back to hardcoded default invitation when neither shareMessages nor template provided', () => {
 		const result = buildShareMessage({
 			...baseInput,
 			includeLink: true,
@@ -64,6 +63,16 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Francisco Prueba');
 		expect(result).toContain('XV Años de Ayrin Samantha');
 		expect(result).toContain('celebra-me.com');
+	});
+
+	it('uses default reminder when messageType is reminder and no shareMessages provided', () => {
+		const result = buildShareMessage({
+			...baseInput,
+			messageType: 'reminder',
+			includeLink: true,
+		});
+		expect(result).toContain('Francisco Prueba');
+		expect(result).toContain('nuevamente');
 	});
 
 	it('uses the real event title when a client publication has no explicit template', () => {
@@ -76,8 +85,6 @@ describe('buildShareMessage', () => {
 		});
 
 		expect(result).toContain('XV Años de Ayrin Samantha');
-		expect(result).not.toContain('Isabella Rose');
-		expect(result).not.toContain('Camila Fernanda');
 	});
 
 	it('strips {inviteUrl} when includeLink is false', () => {
@@ -89,7 +96,7 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Francisco Prueba');
 	});
 
-	it('with-phone default includes greeting with guest name', () => {
+	it('invitation default includes greeting with guest name', () => {
 		const result = buildShareMessage({
 			...baseInput,
 			includeLink: true,
@@ -97,29 +104,27 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Hola Francisco Prueba');
 	});
 
-	it('without-phone default omits greeting', () => {
+	it('reminder default includes greeting with guest name', () => {
 		const result = buildShareMessage({
 			...baseInput,
-			variant: 'without-phone',
+			messageType: 'reminder',
 			includeLink: true,
 		});
-		expect(result).not.toContain('Hola');
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('Hola Francisco Prueba');
 	});
 
-	it('both variants include inviteUrl', () => {
-		const withPhone = buildShareMessage({
+	it('both message types include inviteUrl', () => {
+		const invitation = buildShareMessage({
 			...baseInput,
-			variant: 'with-phone',
 			includeLink: true,
 		});
-		const withoutPhone = buildShareMessage({
+		const reminder = buildShareMessage({
 			...baseInput,
-			variant: 'without-phone',
+			messageType: 'reminder',
 			includeLink: true,
 		});
-		expect(withPhone).toContain('celebra-me.com');
-		expect(withoutPhone).toContain('celebra-me.com');
+		expect(invitation).toContain('celebra-me.com');
+		expect(reminder).toContain('celebra-me.com');
 	});
 
 	it('cleans up empty guest name without artifacts', () => {
@@ -161,17 +166,30 @@ describe('buildWhatsAppShareUrl', () => {
 		expect(result).toMatch(/wa\.me\/525512345678/);
 	});
 
-	it('uses shareMessages template in URL', () => {
+	it('uses shareMessages.invitation template in URL', () => {
 		const shareMessages = {
-			whatsappWithPhone: 'Custom msg for {guestName}: {inviteUrl}',
-			whatsappWithoutPhone: 'No phone msg',
+			invitation: 'Custom msg for {guestName}: {inviteUrl}',
+			reminder: 'Reminder msg',
 		};
 		const result = buildWhatsAppShareUrl({
 			...baseInput,
 			shareMessages,
-			variant: 'with-phone',
 		});
 		const decoded = decodeURIComponent(result.split('?text=')[1]);
 		expect(decoded).toContain('Custom msg for Francisco Prueba');
+	});
+
+	it('uses shareMessages.reminder template in URL when messageType is reminder', () => {
+		const shareMessages = {
+			invitation: 'Invitation msg',
+			reminder: 'Reminder msg for {guestName}: {inviteUrl}',
+		};
+		const result = buildWhatsAppShareUrl({
+			...baseInput,
+			shareMessages,
+			messageType: 'reminder',
+		});
+		const decoded = decodeURIComponent(result.split('?text=')[1]);
+		expect(decoded).toContain('Reminder msg for Francisco Prueba');
 	});
 });

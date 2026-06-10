@@ -384,11 +384,19 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
 		const ogDescription = str(sharing.ogDescription);
 		if (shareMessages && Object.keys(shareMessages).length > 0) {
+			const invitation =
+				str(shareMessages.invitation) ||
+				str(shareMessages.whatsappWithPhone) ||
+				str(shareMessages.whatsappWithoutPhone);
+			const reminder = str(shareMessages.reminder);
 			result.sharing = {
-				whatsappWithPhone: str(shareMessages.whatsappWithPhone),
-				whatsappWithoutPhone: str(shareMessages.whatsappWithoutPhone),
+				...(invitation ? { invitation } : {}),
+				...(reminder ? { reminder } : {}),
 				...(ogDescription ? { ogDescription } : {}),
 			};
+			if (Object.keys(result.sharing).length === 0) {
+				delete result.sharing;
+			}
 		} else if (ogDescription) {
 			result.sharing = { ogDescription };
 		}

@@ -5,13 +5,13 @@ import { resolveSiteOrigin } from '@/lib/shared/origin';
 import { generateInvitationLink } from '@utils/invitation-link';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
-	DEFAULT_SHARE_MESSAGE_WITH_PHONE,
-	DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
 	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 
-export type ShareMessageVariant = 'with-phone' | 'without-phone';
+export type ShareMessageType = 'invitation' | 'reminder';
 
 export interface BuildShareMessageInput {
 	origin: string;
@@ -25,7 +25,7 @@ export interface BuildShareMessageInput {
 	eventSlug?: string;
 	template?: string;
 	shareMessages?: ShareMessagesConfig | null;
-	variant?: ShareMessageVariant;
+	messageType?: ShareMessageType;
 	includeLink?: boolean;
 }
 
@@ -64,19 +64,17 @@ export function buildInviteUrl(
 }
 
 function resolveTemplate(input: BuildShareMessageInput): string {
-	const variant = input.variant ?? 'with-phone';
+	const messageType = input.messageType ?? 'invitation';
 
 	if (input.shareMessages) {
-		return variant === 'without-phone'
-			? input.shareMessages.whatsappWithoutPhone
-			: input.shareMessages.whatsappWithPhone;
+		return messageType === 'reminder'
+			? input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE
+			: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE;
 	}
 
 	if (input.template) return input.template;
 
-	return variant === 'without-phone'
-		? DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE
-		: DEFAULT_SHARE_MESSAGE_WITH_PHONE;
+	return messageType === 'reminder' ? DEFAULT_REMINDER_MESSAGE : DEFAULT_INVITATION_MESSAGE;
 }
 
 export function buildShareMessage(input: BuildShareMessageInput): string {
@@ -123,16 +121,39 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 	const sharing = content.sharing as Record<string, unknown> | undefined;
 	if (!sharing) return null;
 
-	const shareMessages = sharing.shareMessages as ShareMessagesConfig | undefined;
+	const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
 	const whatsappTemplate =
 		typeof sharing.whatsappTemplate === 'string' ? sharing.whatsappTemplate : undefined;
 
-	if (shareMessages?.whatsappWithPhone && shareMessages?.whatsappWithoutPhone) {
-		return { shareMessages };
+	if (shareMessages && Object.keys(shareMessages).length > 0) {
+		const invitation =
+			typeof shareMessages.invitation === 'string'
+				? shareMessages.invitation
+				: typeof shareMessages.whatsappWithPhone === 'string'
+					? shareMessages.whatsappWithPhone
+					: typeof shareMessages.whatsappWithoutPhone === 'string'
+						? shareMessages.whatsappWithoutPhone
+						: '';
+		const reminder = typeof shareMessages.reminder === 'string' ? shareMessages.reminder : '';
+		if (invitation) {
+			return {
+				shareMessages: {
+					invitation,
+					reminder: reminder || DEFAULT_REMINDER_MESSAGE,
+				},
+			};
+		}
 	}
+
 	if (whatsappTemplate) {
-		return { whatsappTemplate };
+		return {
+			shareMessages: {
+				invitation: whatsappTemplate,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
+		};
 	}
+
 	return null;
 }
 

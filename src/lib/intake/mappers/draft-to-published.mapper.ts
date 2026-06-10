@@ -407,6 +407,29 @@ function mapThankYouSection(
 	return demoThankYou ? { ...demoThankYou } : undefined;
 }
 
+function resolveInvitationTemplate(
+	draftMessages: Record<string, unknown>,
+	demoMessages: Record<string, unknown>,
+): string {
+	const result =
+		str(draftMessages.invitation) ||
+		str(draftMessages.whatsappWithPhone) ||
+		str(demoMessages.invitation) ||
+		str(demoMessages.whatsappWithPhone);
+	return result ?? '';
+}
+
+function resolveReminderTemplate(
+	draftMessages: Record<string, unknown>,
+	demoMessages: Record<string, unknown>,
+): string {
+	const result =
+		str(draftMessages.reminder) ||
+		str(demoMessages.reminder) ||
+		str(demoMessages.whatsappWithoutPhone);
+	return result ?? '';
+}
+
 function mapSharingFromDraft(
 	draftSharing: Record<string, unknown> | undefined,
 	demoSharing: Record<string, unknown> | undefined,
@@ -418,14 +441,10 @@ function mapSharingFromDraft(
 		unknown
 	>;
 
-	const whatsappWithPhone =
-		str(draftMessages.whatsappWithPhone) || str(demoMessages.whatsappWithPhone);
-	const whatsappWithoutPhone =
-		str(draftMessages.whatsappWithoutPhone) || str(demoMessages.whatsappWithoutPhone);
-	const shareMessages =
-		whatsappWithPhone && whatsappWithoutPhone
-			? { whatsappWithPhone, whatsappWithoutPhone }
-			: undefined;
+	const invitation = resolveInvitationTemplate(draftMessages, demoMessages);
+	const reminder = resolveReminderTemplate(draftMessages, demoMessages);
+
+	const shareMessages = invitation ? { invitation, reminder } : undefined;
 
 	const whatsappTemplate =
 		isDemo && typeof demoSharing?.whatsappTemplate === 'string'

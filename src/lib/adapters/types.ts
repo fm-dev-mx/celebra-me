@@ -297,8 +297,8 @@ export interface InvitationViewModel {
 	sharing?: {
 		whatsappTemplate?: string;
 		shareMessages?: {
-			whatsappWithPhone: string;
-			whatsappWithoutPhone: string;
+			invitation: string;
+			reminder: string;
 		};
 		ogImage?: ImageAsset;
 		ogDescription?: string;

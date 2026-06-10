@@ -1,5 +1,6 @@
 import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import type { SharingConfig } from '@/lib/rsvp/services/shared/invitation-helpers';
+import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import * as publishedRepo from '@/lib/intake/repositories/published-invitation-content.repository';
 import type { PublishedInvitationContent } from '@/lib/intake/repositories/published-invitation-content.repository';
 import * as eventsContent from '@/lib/content/events';
@@ -43,8 +44,8 @@ describe('getSharingConfigForSlug', () => {
 		jest.clearAllMocks();
 	});
 
-	describe('non-demo published content', () => {
-		it('returns shareMessages when both shareMessages and legacy whatsappTemplate exist', async () => {
+	describe('non-demo published content with new shape', () => {
+		it('returns shareMessages with invitation and reminder', async () => {
 			findPublishedMock.mockResolvedValue(
 				buildPublished({
 					id: 'pub-1',
@@ -53,8 +54,60 @@ describe('getSharingConfigForSlug', () => {
 					isDemo: false,
 					content: {
 						sharing: {
-							whatsappTemplate:
-								'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+							shareMessages: {
+								invitation:
+									'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
+								reminder:
+									'Hola {guestName}, recuerda tu invitación a {eventTitle}: {inviteUrl}',
+							},
+						},
+					},
+				}),
+			);
+
+			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+
+			expect(result.shareMessages).toEqual({
+				invitation: 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
+				reminder: 'Hola {guestName}, recuerda tu invitación a {eventTitle}: {inviteUrl}',
+			});
+		});
+
+		it('uses default reminder when only invitation is provided', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-1',
+					invitationId: 'inv-1',
+					slug: 'test-slug',
+					isDemo: false,
+					content: {
+						sharing: {
+							shareMessages: {
+								invitation: 'Custom invitation: {inviteUrl}',
+								reminder: '',
+							},
+						},
+					},
+				}),
+			);
+
+			const result = await getSharingConfigForSlug('test-slug', 'xv');
+
+			expect(result.shareMessages?.invitation).toBe('Custom invitation: {inviteUrl}');
+			expect(result.shareMessages?.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
+		});
+	});
+
+	describe('legacy backward compatibility', () => {
+		it('maps legacy whatsappWithPhone to invitation', async () => {
+			findPublishedMock.mockResolvedValue(
+				buildPublished({
+					id: 'pub-1',
+					invitationId: 'inv-1',
+					slug: 'legacy-slug',
+					isDemo: false,
+					content: {
+						sharing: {
 							shareMessages: {
 								whatsappWithPhone:
 									'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
@@ -65,72 +118,66 @@ describe('getSharingConfigForSlug', () => {
 				}),
 			);
 
-			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('legacy-slug', 'xv');
 
-			expect(result.shareMessages).toEqual({
-				whatsappWithPhone: 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
-				whatsappWithoutPhone: 'Te invitamos a {eventTitle}: {inviteUrl}',
-			});
-			expect(result.whatsappTemplate).toBeUndefined();
+			expect(result.shareMessages?.invitation).toBe(
+				'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',
+			);
+			expect(result.shareMessages?.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
 		});
 
-		it('preserves legacy whatsappTemplate when no shareMessages exist', async () => {
+		it('maps legacy whatsappTemplate to invitation', async () => {
 			findPublishedMock.mockResolvedValue(
 				buildPublished({
 					id: 'pub-1',
 					invitationId: 'inv-1',
-					slug: 'ayrin-samantha-lerma-castro',
+					slug: 'legacy-template-slug',
 					isDemo: false,
 					content: {
 						sharing: {
 							whatsappTemplate:
-								'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+								'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 						},
 					},
 				}),
 			);
 
-			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('legacy-template-slug', 'xv');
 
-			expect(result.whatsappTemplate).toBe(
-				'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
+			expect(result.shareMessages?.invitation).toBe(
+				'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 			);
-			expect(result.shareMessages).toBeUndefined();
+			expect(result.shareMessages?.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
 		});
 
-		it('strips legacy whatsappTemplate when shareMessages present', async () => {
+		it('prefers new invitation field over legacy whatsappWithPhone', async () => {
 			findPublishedMock.mockResolvedValue(
 				buildPublished({
 					id: 'pub-1',
 					invitationId: 'inv-1',
-					slug: 'ayrin-samantha-lerma-castro',
+					slug: 'mixed-slug',
 					isDemo: false,
 					content: {
 						sharing: {
-							whatsappTemplate: 'Hola {name}, legacy template: {inviteUrl}',
 							shareMessages: {
-								whatsappWithPhone:
-									'Hola {guestName}, shareMessages template: {inviteUrl}',
-								whatsappWithoutPhone:
-									'ShareMessages no phone: {eventTitle}: {inviteUrl}',
+								invitation: 'New invitation template',
+								whatsappWithPhone: 'Legacy with-phone template',
+								reminder: 'New reminder template',
 							},
 						},
 					},
 				}),
 			);
 
-			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('mixed-slug', 'xv');
 
-			expect(result.shareMessages).toEqual({
-				whatsappWithPhone: 'Hola {guestName}, shareMessages template: {inviteUrl}',
-				whatsappWithoutPhone: 'ShareMessages no phone: {eventTitle}: {inviteUrl}',
-			});
-			expect(result.whatsappTemplate).toBeUndefined();
+			expect(result.shareMessages?.invitation).toBe('New invitation template');
+			expect(result.shareMessages?.reminder).toBe('New reminder template');
 		});
 	});
 
 	describe('demo published content', () => {
-		it('preserves legacy whatsappTemplate', async () => {
+		it('maps legacy whatsappTemplate from demo to invitation', async () => {
 			findPublishedMock.mockResolvedValue(
 				buildPublished({
 					id: 'pub-demo-1',
@@ -148,7 +195,7 @@ describe('getSharingConfigForSlug', () => {
 
 			const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
 
-			expect(result.whatsappTemplate).toBe(
+			expect(result.shareMessages?.invitation).toBe(
 				'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 			);
 		});
@@ -172,7 +219,7 @@ describe('getSharingConfigForSlug', () => {
 
 			const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
 
-			expect(result.whatsappTemplate).toBe(
+			expect(result.shareMessages?.invitation).toBe(
 				'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 			);
 		});

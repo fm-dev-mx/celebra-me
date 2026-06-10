@@ -149,8 +149,8 @@ export const navigationSchema = z
 
 export const shareMessagesSchema = z
 	.object({
-		whatsappWithPhone: z.string().min(1).max(500),
-		whatsappWithoutPhone: z.string().min(1).max(500),
+		invitation: z.string().min(1).max(500),
+		reminder: z.string().min(1).max(500),
 	})
 	.strict();
 

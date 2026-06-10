@@ -32,8 +32,8 @@ import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { formatDateLong } from '@/lib/intake/constants';
 import {
-	DEFAULT_SHARE_MESSAGE_WITH_PHONE,
-	DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
@@ -1294,23 +1294,23 @@ export default function InvitationEditor({ initialContext }: Props) {
 							invitación por WhatsApp u otras redes.
 						</p>
 						<TextArea
-							label="Mensaje con teléfono"
-							value={sharing.whatsappWithPhone ?? ''}
+							label="Mensaje de invitación"
+							value={sharing.invitation ?? ''}
 							onChange={(value) =>
-								updateContent('sharing', { ...sharing, whatsappWithPhone: value })
+								updateContent('sharing', { ...sharing, invitation: value })
 							}
-							placeholder="Hola {guestName}, te compartimos tu invitación a {eventTitle}..."
+							placeholder="Hola {guestName}, te comparto tu invitación a {eventTitle}..."
 						/>
 						<TextArea
-							label="Mensaje sin teléfono"
-							value={sharing.whatsappWithoutPhone ?? ''}
+							label="Mensaje de recordatorio"
+							value={sharing.reminder ?? ''}
 							onChange={(value) =>
 								updateContent('sharing', {
 									...sharing,
-									whatsappWithoutPhone: value,
+									reminder: value,
 								})
 							}
-							placeholder="Te compartimos esta invitación a {eventTitle}..."
+							placeholder="Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}..."
 						/>
 						<p className="invitation-editor__helper-text">
 							Variables disponibles: {`{guestName}`}, {`{eventTitle}`},{' '}
@@ -1321,8 +1321,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 							className="invitation-editor__secondary-button"
 							onClick={() =>
 								updateContent('sharing', {
-									whatsappWithPhone: DEFAULT_SHARE_MESSAGE_WITH_PHONE,
-									whatsappWithoutPhone: DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE,
+									invitation: DEFAULT_INVITATION_MESSAGE,
+									reminder: DEFAULT_REMINDER_MESSAGE,
 								})
 							}
 						>

@@ -1193,16 +1193,16 @@ describe('sharing section mapping', () => {
 			...baseInput,
 			draftContent: {
 				sharing: {
-					whatsappWithPhone: 'Draft with phone: {guestName}',
-					whatsappWithoutPhone: 'Draft without phone: {eventTitle}',
+					invitation: 'Draft invitation: {guestName}',
+					reminder: 'Draft reminder: {eventTitle}',
 				},
 			},
 		});
 
 		const sharing = result.sharing as Record<string, unknown>;
 		const shareMessages = sharing.shareMessages as Record<string, string>;
-		expect(shareMessages.whatsappWithPhone).toBe('Draft with phone: {guestName}');
-		expect(shareMessages.whatsappWithoutPhone).toBe('Draft without phone: {eventTitle}');
+		expect(shareMessages.invitation).toBe('Draft invitation: {guestName}');
+		expect(shareMessages.reminder).toBe('Draft reminder: {eventTitle}');
 	});
 
 	it('falls back to demo shareMessages when draft has none', () => {
@@ -1213,8 +1213,8 @@ describe('sharing section mapping', () => {
 				sharing: {
 					whatsappTemplate: 'Demo template',
 					shareMessages: {
-						whatsappWithPhone: 'Demo with phone',
-						whatsappWithoutPhone: 'Demo without phone',
+						invitation: 'Demo invitation',
+						reminder: 'Demo reminder',
 					},
 				},
 			},
@@ -1222,8 +1222,8 @@ describe('sharing section mapping', () => {
 
 		const sharing = result.sharing as Record<string, unknown>;
 		const shareMessages = sharing.shareMessages as Record<string, string>;
-		expect(shareMessages.whatsappWithPhone).toBe('Demo with phone');
-		expect(shareMessages.whatsappWithoutPhone).toBe('Demo without phone');
+		expect(shareMessages.invitation).toBe('Demo invitation');
+		expect(shareMessages.reminder).toBe('Demo reminder');
 	});
 
 	it('does not preserve legacy demo whatsappTemplate for client publications', () => {
@@ -1284,8 +1284,8 @@ describe('sharing section mapping', () => {
 			...baseInput,
 			draftContent: {
 				sharing: {
-					whatsappWithPhone: 'With phone: {guestName}',
-					whatsappWithoutPhone: 'No phone: {eventTitle}',
+					invitation: 'Invitation: {guestName}',
+					reminder: 'Reminder: {eventTitle}',
 					ogDescription: 'Custom social preview description.',
 				},
 			},
@@ -1294,7 +1294,7 @@ describe('sharing section mapping', () => {
 		const sharing = result.sharing as Record<string, unknown>;
 		expect(sharing.ogDescription).toBe('Custom social preview description.');
 		const shareMessages = sharing.shareMessages as Record<string, string>;
-		expect(shareMessages.whatsappWithPhone).toBe('With phone: {guestName}');
+		expect(shareMessages.invitation).toBe('Invitation: {guestName}');
 	});
 
 	it('does not copy ogDescription from demo for non-demo publications', () => {
@@ -1305,8 +1305,8 @@ describe('sharing section mapping', () => {
 				sharing: {
 					ogDescription: 'Demo social preview copy.',
 					shareMessages: {
-						whatsappWithPhone: 'Demo with phone',
-						whatsappWithoutPhone: 'Demo without phone',
+						invitation: 'Demo invitation',
+						reminder: 'Demo reminder',
 					},
 				},
 			},

@@ -40,11 +40,11 @@ describe('toGuestDto', () => {
 		expect(dto.countryCode).toBeUndefined();
 	});
 
-	it('uses shareMessages when provided', () => {
+	it('uses shareMessages.invitation for waShareUrl and shareText', () => {
 		const guest = makeGuestRecord();
 		const shareMessages = {
-			whatsappWithPhone: 'Custom: {guestName} → {inviteUrl}',
-			whatsappWithoutPhone: 'No phone: {inviteUrl}',
+			invitation: 'Custom: {guestName} → {inviteUrl}',
+			reminder: 'Reminder: {guestName} → {inviteUrl}',
 		};
 		const dto = toGuestDto(guest, {
 			origin: 'http://localhost',
@@ -55,7 +55,7 @@ describe('toGuestDto', () => {
 		});
 		const decodedWa = decodeURIComponent(dto.waShareUrl.split('?text=')[1]);
 		expect(decodedWa).toContain('Custom: Test Guest');
-		expect(dto.shareText).toContain('No phone:');
+		expect(dto.shareText).toContain('Custom:');
 	});
 
 	it('falls back to legacy template when shareMessages is not provided', () => {
@@ -88,11 +88,11 @@ describe('toGuestDto', () => {
 		expect(dto.shareText).toContain('Test Event');
 	});
 
-	it('without-phone variant uses correct template for shareText', () => {
+	it('uses invitation template by default for both waShareUrl and shareText', () => {
 		const guest = makeGuestRecord({ phone: '' });
 		const shareMessages = {
-			whatsappWithPhone: 'With phone: {guestName}',
-			whatsappWithoutPhone: 'Sin teléfono: {eventTitle} → {inviteUrl}',
+			invitation: 'Invitation: {guestName} → {inviteUrl}',
+			reminder: 'Reminder: {guestName} → {inviteUrl}',
 		};
 		const dto = toGuestDto(guest, {
 			origin: 'http://localhost',
@@ -101,7 +101,7 @@ describe('toGuestDto', () => {
 			eventSlug: 'test-slug',
 			shareMessages,
 		});
-		expect(dto.shareText).toContain('Sin teléfono: Mi Evento');
-		expect(dto.shareText).not.toContain('Test Guest');
+		expect(dto.shareText).toContain('Invitation:');
+		expect(dto.shareText).not.toContain('Reminder:');
 	});
 });
