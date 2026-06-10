@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
@@ -61,9 +61,22 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 		const anchor = anchorRef.current;
 		const popover = popoverRef.current;
 		if (!anchor || !popover) return;
-		const rect = anchor.getBoundingClientRect();
-		popover.style.top = `${rect.bottom + 4}px`;
-		popover.style.left = `${Math.max(8, rect.right - 280)}px`;
+
+		const position = () => {
+			const rect = anchor.getBoundingClientRect();
+			popover.style.top = `${rect.bottom + 4}px`;
+			popover.style.left = `${Math.max(8, rect.right - popover.offsetWidth)}px`;
+		};
+
+		position();
+
+		window.addEventListener('scroll', position, { passive: true, capture: true });
+		window.addEventListener('resize', position, { passive: true });
+
+		return () => {
+			window.removeEventListener('scroll', position, { capture: true });
+			window.removeEventListener('resize', position);
+		};
 	}, [anchorRef]);
 
 	useEffect(() => {
@@ -77,35 +90,37 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 				onClose();
 			}
 		};
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose();
+		};
 		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			document.removeEventListener('keydown', handleKeyDown);
+		};
 	}, [onClose, anchorRef]);
 
+	const withStatus = async (action: () => Promise<void>) => {
+		if (status !== 'idle') return;
+		setStatus('sending');
+		await action();
+		await onShared();
+		setStatus('done');
+		setTimeout(onClose, 1200);
+	};
+
 	const handleWhatsApp = async () => {
-		if (!waShareUrl || status !== 'idle') return;
-		setStatus('sending');
-		window.open(waShareUrl, '_blank', 'noopener,noreferrer');
-		await onShared();
-		setStatus('done');
-		setTimeout(onClose, 1200);
+		if (!waShareUrl) return;
+		await withStatus(async () => {
+			window.open(waShareUrl, '_blank', 'noopener,noreferrer');
+		});
 	};
 
-	const handleCopyMessage = async () => {
-		if (status !== 'idle') return;
-		setStatus('sending');
-		await copyToClipboard(renderedMessage);
-		await onShared();
-		setStatus('done');
-		setTimeout(onClose, 1200);
-	};
-
-	const handleCopyLink = async () => {
-		if (status !== 'idle') return;
-		setStatus('sending');
-		await copyToClipboard(inviteUrl);
-		await onShared();
-		setStatus('done');
-		setTimeout(onClose, 1200);
+	const handleCopy = async (text: string) => {
+		await withStatus(async () => {
+			await copyToClipboard(text);
+		});
 	};
 
 	const handleNativeShare = async () => {
@@ -123,12 +138,8 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 		}
 	};
 
-	const supportsNativeShare = useMemo(
-		() =>
-			canUseNativeShare(
-				buildInvitationSharePayload({ shareText: renderedMessage, inviteUrl }),
-			),
-		[renderedMessage, inviteUrl],
+	const supportsNativeShare = canUseNativeShare(
+		buildInvitationSharePayload({ shareText: renderedMessage, inviteUrl }),
 	);
 
 	const statusLabel = status === 'done' ? 'Listo' : status === 'sending' ? 'Enviando...' : '';
@@ -174,7 +185,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 				<button
 					type="button"
 					className="share-composer__action"
-					onClick={handleCopyMessage}
+					onClick={() => handleCopy(renderedMessage)}
 					disabled={status !== 'idle'}
 				>
 					{status === 'done' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
@@ -194,7 +205,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 				<button
 					type="button"
 					className="share-composer__action share-composer__action--link"
-					onClick={handleCopyLink}
+					onClick={() => handleCopy(inviteUrl)}
 					disabled={status !== 'idle'}
 				>
 					{status === 'done' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
