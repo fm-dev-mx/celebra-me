@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import ShareComposer from '@/components/dashboard/guests/ShareComposer';
+import ShareComposer, {
+	type ShareComposerProps,
+} from '@/components/dashboard/guests/ShareComposer';
 import { copyToClipboard } from '@/utils/clipboard';
 
 jest.mock('@/utils/clipboard', () => ({
@@ -46,7 +48,7 @@ const templates = {
 		'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 };
 
-function createComposer(overrides: Record<string, unknown> = {}) {
+function createComposer(overrides: Partial<ShareComposerProps> = {}) {
 	const onShared = jest.fn().mockResolvedValue(undefined);
 	const onClose = jest.fn();
 
@@ -88,7 +90,7 @@ describe('ShareComposer', () => {
 
 	it('renders in a portal with dialog role', () => {
 		createComposer();
-		expect(screen.getByRole('dialog', { name: /compartir invitación/i })).toBeInTheDocument();
+		expect(screen.getByRole('dialog', { name: /compartir/i })).toBeInTheDocument();
 	});
 
 	it('renders invitation and reminder toggle buttons', () => {
@@ -110,14 +112,14 @@ describe('ShareComposer', () => {
 		expect(reminderBtn).toHaveClass('share-composer-modal__tab--active');
 	});
 
-	it('shows WhatsApp button when phone is provided', () => {
+	it('shows Compartir button when phone is provided', () => {
 		createComposer({ phone: '6691234567' });
-		expect(screen.getByText('Enviar por WhatsApp')).toBeInTheDocument();
+		expect(screen.getByText('Compartir')).toBeInTheDocument();
 	});
 
-	it('hides WhatsApp button when phone is empty', () => {
+	it('shows Compartir button when phone is empty', () => {
 		createComposer({ phone: '' });
-		expect(screen.queryByText('WhatsApp')).not.toBeInTheDocument();
+		expect(screen.getByText('Compartir')).toBeInTheDocument();
 	});
 
 	it('renders the rendered message preview', () => {
@@ -126,10 +128,10 @@ describe('ShareComposer', () => {
 		expect(screen.getByText(/XV Años/)).toBeInTheDocument();
 	});
 
-	it('calls onShared when WhatsApp is clicked and opens window', async () => {
+	it('calls onShared when Compartir is clicked with phone and opens WhatsApp', async () => {
 		const { onShared } = createComposer();
 		await act(async () => {
-			fireEvent.click(screen.getByText('Enviar por WhatsApp'));
+			fireEvent.click(screen.getByText('Compartir'));
 		});
 		expect(window.open).toHaveBeenCalledWith(
 			expect.stringContaining('wa.me/6691234567'),
@@ -196,6 +198,16 @@ describe('ShareComposer', () => {
 		);
 	});
 
+	it('shows Copiar mensaje as secondary action with phone', () => {
+		createComposer({ phone: '6691234567' });
+		expect(screen.getByText('Copiar mensaje')).toBeInTheDocument();
+	});
+
+	it('shows Copiar enlace as tertiary action', () => {
+		createComposer();
+		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
+	});
+
 	it('shows guest context in subtitle without phone', () => {
 		createComposer({ phone: '' });
 		expect(screen.getByTestId('modal-subtitle')).toHaveTextContent(
@@ -203,24 +215,28 @@ describe('ShareComposer', () => {
 		);
 	});
 
-	it('shows native share button when supported', async () => {
-		const { canUseNativeShare } =
-			await import('@/components/dashboard/guests/invitation-share');
-		(canUseNativeShare as jest.Mock).mockReturnValue(true);
-
-		createComposer();
-		expect(screen.getByText('Compartir con otra app')).toBeInTheDocument();
-	});
-
-	it('calls onShared via native share when supported', async () => {
+	it('no-phone Compartir triggers native share when supported', async () => {
 		const inviteShare = await import('@/components/dashboard/guests/invitation-share');
 		(inviteShare.canUseNativeShare as jest.Mock).mockReturnValue(true);
 		(inviteShare.shareInvitationLink as jest.Mock).mockResolvedValue('shared');
 
-		const { onShared } = createComposer();
+		const { onShared } = createComposer({ phone: '' });
 		await act(async () => {
-			fireEvent.click(screen.getByText('Compartir con otra app'));
+			fireEvent.click(screen.getByText('Compartir'));
 		});
+		expect(inviteShare.shareInvitationLink).toHaveBeenCalled();
+		expect(onShared).toHaveBeenCalledTimes(1);
+	});
+
+	it('no-phone Compartir falls back to copy when native share unavailable', async () => {
+		const inviteShare = await import('@/components/dashboard/guests/invitation-share');
+		(inviteShare.canUseNativeShare as jest.Mock).mockReturnValue(false);
+
+		const { onShared } = createComposer({ phone: '' });
+		await act(async () => {
+			fireEvent.click(screen.getByText('Compartir'));
+		});
+		expect(copyToClipboard).toHaveBeenCalled();
 		expect(onShared).toHaveBeenCalledTimes(1);
 	});
 
@@ -229,8 +245,8 @@ describe('ShareComposer', () => {
 		(inviteShare.canUseNativeShare as jest.Mock).mockReturnValue(true);
 		(inviteShare.shareInvitationLink as jest.Mock).mockResolvedValue('canceled');
 
-		const { onShared } = createComposer();
-		const nativeBtn = screen.getByText('Compartir con otra app');
+		const { onShared } = createComposer({ phone: '' });
+		const nativeBtn = screen.getByText('Compartir');
 		fireEvent.click(nativeBtn);
 		await act(async () => {
 			await (inviteShare.shareInvitationLink as jest.Mock).mock.results[0]?.value;
@@ -242,7 +258,7 @@ describe('ShareComposer', () => {
 		it('includes country code when countryCode is provided', async () => {
 			const { onShared } = createComposer({ countryCode: '+52' });
 			await act(async () => {
-				fireEvent.click(screen.getByText('Enviar por WhatsApp'));
+				fireEvent.click(screen.getByText('Compartir'));
 			});
 			expect(window.open).toHaveBeenCalledWith(
 				expect.stringMatching(/wa\.me\/526691234567/),
@@ -255,7 +271,7 @@ describe('ShareComposer', () => {
 		it('does not duplicate country code when phone already includes it', async () => {
 			const { onShared } = createComposer({ phone: '526691234567', countryCode: '+52' });
 			await act(async () => {
-				fireEvent.click(screen.getByText('Enviar por WhatsApp'));
+				fireEvent.click(screen.getByText('Compartir'));
 			});
 			const calls = (window.open as jest.Mock).mock.calls[0];
 			const url = calls[0] as string;
@@ -267,7 +283,7 @@ describe('ShareComposer', () => {
 		it('uses local phone as-is when no countryCode is provided', async () => {
 			createComposer({ phone: '6691234567' });
 			await act(async () => {
-				fireEvent.click(screen.getByText('Enviar por WhatsApp'));
+				fireEvent.click(screen.getByText('Compartir'));
 			});
 			expect(window.open).toHaveBeenCalledWith(
 				expect.stringMatching(/wa\.me\/6691234567/),

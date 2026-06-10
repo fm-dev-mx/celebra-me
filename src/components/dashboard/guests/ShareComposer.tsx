@@ -14,7 +14,13 @@ import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-m
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 import ModalShell from '@/components/dashboard/ModalShell';
 
-interface ShareComposerProps {
+const STATUS_LABELS: Record<string, string> = {
+	idle: '',
+	sending: 'Enviando...',
+	done: 'Listo',
+};
+
+export interface ShareComposerProps {
 	guestName: string;
 	phone: string;
 	countryCode?: string;
@@ -122,11 +128,17 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 	const handleCopyMessage = () => handleCopy(renderedMessage);
 	const handleCopyLink = () => handleCopy(inviteUrl);
 
-	const STATUS_LABELS: Record<string, string> = {
-		idle: '',
-		sending: 'Enviando...',
-		done: 'Listo',
+	const handlePrimaryCTA = async () => {
+		if (status !== 'idle') return;
+		if (hasPhone) {
+			await handleWhatsApp();
+		} else if (supportsNativeShare) {
+			await handleNativeShare();
+		} else {
+			await handleCopyMessage();
+		}
 	};
+
 	const statusLabel = STATUS_LABELS[status];
 
 	const subtitle = hasPhone
@@ -138,7 +150,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 
 	return (
 		<ModalShell
-			title="Compartir invitación"
+			title="Compartir"
 			subtitle={subtitle}
 			className="dashboard-modal--share-composer"
 			onClose={onClose}
@@ -189,42 +201,24 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 
 			<div className="dashboard-modal__footer">
 				<div className="share-composer-modal__actions">
-					{hasPhone ? (
-						<>
-							<button
-								type="button"
-								className="share-composer-modal__action share-composer-modal__action--whatsapp"
-								onClick={handleWhatsApp}
-								disabled={status !== 'idle'}
-							>
-								<WhatsAppIcon size={16} />
-								<span>Enviar por WhatsApp</span>
-							</button>
-							<button
-								type="button"
-								className="share-composer-modal__action share-composer-modal__action--secondary"
-								onClick={handleCopyMessage}
-								disabled={status !== 'idle'}
-							>
-								{status === 'done' ? (
-									<CheckIcon size={16} />
-								) : (
-									<CopyIcon size={16} />
-								)}
-								<span>Copiar mensaje</span>
-							</button>
-						</>
-					) : (
-						<button
-							type="button"
-							className="share-composer-modal__action share-composer-modal__action--primary"
-							onClick={handleCopyMessage}
-							disabled={status !== 'idle'}
-						>
-							{status === 'done' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
-							<span>Copiar mensaje</span>
-						</button>
-					)}
+					<button
+						type="button"
+						className="share-composer-modal__action share-composer-modal__action--primary"
+						onClick={handlePrimaryCTA}
+						disabled={status !== 'idle'}
+					>
+						{hasPhone ? <WhatsAppIcon size={16} /> : null}
+						<span>Compartir</span>
+					</button>
+					<button
+						type="button"
+						className="share-composer-modal__action share-composer-modal__action--secondary"
+						onClick={handleCopyMessage}
+						disabled={status !== 'idle'}
+					>
+						{status === 'done' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+						<span>Copiar mensaje</span>
+					</button>
 					<button
 						type="button"
 						className="share-composer-modal__action share-composer-modal__action--tertiary"
@@ -234,17 +228,6 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 						{status === 'done' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
 						<span>Copiar enlace</span>
 					</button>
-					{supportsNativeShare && (
-						<button
-							type="button"
-							className="share-composer-modal__action share-composer-modal__action--tertiary"
-							onClick={handleNativeShare}
-							disabled={status !== 'idle'}
-						>
-							<CopyIcon size={16} />
-							<span>Compartir con otra app</span>
-						</button>
-					)}
 				</div>
 				{statusLabel && <span className="share-composer-modal__status">{statusLabel}</span>}
 			</div>

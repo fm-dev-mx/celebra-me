@@ -174,7 +174,7 @@ describe('ShareAction', () => {
 
 		fireEvent.click(screen.getByRole('button'));
 
-		expect(screen.getByRole('dialog', { name: /compartir invitación/i })).toBeInTheDocument();
+		expect(screen.getByRole('dialog', { name: /compartir/i })).toBeInTheDocument();
 	});
 
 	it('composer shows invitation and reminder toggle', () => {
