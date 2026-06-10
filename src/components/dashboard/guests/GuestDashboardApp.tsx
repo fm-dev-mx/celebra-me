@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
@@ -17,6 +17,10 @@ import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
+import {
+	getReminderEligibleGuests,
+	shouldShowReminderCta,
+} from '@/components/dashboard/guests/reminder-eligibility';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { useShortcuts } from '@/hooks/use-shortcuts';
@@ -45,8 +49,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		items,
 		loading,
 		loadGuests,
+		reminderSettings,
 		setEventId,
 		setItems,
+		setReminderSettings,
 		setShareTemplates,
 		shareTemplates,
 		shareDateContext,
@@ -63,6 +69,21 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
 		: false;
 
+	const reminderEligibleGuests = useMemo(
+		() => getReminderEligibleGuests(items, reminderSettings.audience),
+		[items, reminderSettings.audience],
+	);
+
+	const showReminderCta = useMemo(
+		() =>
+			shouldShowReminderCta(
+				shareDateContext,
+				reminderSettings,
+				reminderEligibleGuests.length,
+			),
+		[shareDateContext, reminderSettings, reminderEligibleGuests.length],
+	);
+
 	const visibleItems = items.filter((item) => {
 		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
 			return false;
@@ -76,6 +97,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	});
 
 	const {
+		batchFlowKind,
 		celebratingGuestId,
 		closeDeleteConfirm,
 		closeModal,
@@ -103,6 +125,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		openEditModal,
 		openImportModal,
 		openNextGeneratedGuest,
+		openNextReminderGuest,
 		pendingGuests,
 		requestDelete,
 		setImportModalOpen,
@@ -112,18 +135,23 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		items,
 		loadGuests,
 		setItems,
+		reminderSettings,
 	});
 
 	const handleSaveShareTemplates = useCallback(
-		(templates: ShareMessagesConfig) => {
+		(result: {
+			shareTemplates: ShareMessagesConfig;
+			reminderSettings: typeof reminderSettings;
+		}) => {
 			setShareMessagesModalOpen(false);
-			setShareTemplates(templates);
+			setShareTemplates(result.shareTemplates);
+			setReminderSettings(result.reminderSettings);
 			setNotification({
 				message: 'Mensajes guardados correctamente.',
 				type: 'success',
 			});
 		},
-		[setShareTemplates, setNotification],
+		[setShareTemplates, setReminderSettings, setNotification],
 	);
 
 	const modals = (() => {
@@ -151,11 +179,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			const editingInviteUrl = editingGuest
 				? getGuestInviteUrl(editingGuest, inviteBaseUrl)
 				: '';
+			const flowMode =
+				batchFlowKind === 'reminder' ? 'pending-reminder' : 'pending-invitation';
 			return (
 				<SendInvitationModal
 					key={editingGuest?.guestId ?? 'empty'}
 					guest={editingGuest}
-					pendingGuests={pendingGuests}
+					pendingGuests={
+						batchFlowKind === 'reminder' ? reminderEligibleGuests : pendingGuests
+					}
 					inviteUrl={editingInviteUrl}
 					onClose={closeModal}
 					onSave={handleSaveInvitation}
@@ -165,6 +197,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					templates={shareTemplates}
 					shareDateContext={shareDateContext}
 					eventTitle={currentEventTitle}
+					mode={flowMode}
 				/>
 			);
 		}
@@ -187,6 +220,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					eventId={eventId}
 					eventTitle={currentEvent.title}
 					initialTemplates={shareTemplates}
+					initialReminderSettings={reminderSettings}
 					shareDateContext={shareDateContext}
 					onClose={() => setShareMessagesModalOpen(false)}
 					onSave={handleSaveShareTemplates}
@@ -231,6 +265,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					>
 						Agregar invitado
 					</button>
+					{showReminderCta && (
+						<button
+							type="button"
+							onClick={() => openNextReminderGuest(reminderSettings.audience)}
+							className="btn-secondary btn--compact"
+						>
+							Enviar recordatorio ({reminderEligibleGuests.length})
+						</button>
+					)}
 					<ToolbarActionsMenu
 						onExport={handleExport}
 						onImport={openImportModal}
@@ -286,9 +329,12 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestMobileDock
 					loading={loading}
 					hasPendingGenerated={items.some((item) => item.deliveryStatus === 'generated')}
+					hasReminderCta={showReminderCta}
+					reminderCount={reminderEligibleGuests.length}
 					createDisabled={!eventId}
 					onCreate={openCreateModal}
 					onOpenNextAction={openNextGeneratedGuest}
+					onOpenReminder={() => openNextReminderGuest(reminderSettings.audience)}
 				/>
 			</section>
 		</ErrorBoundary>

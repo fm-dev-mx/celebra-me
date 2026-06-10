@@ -31,6 +31,7 @@ interface SendInvitationModalProps {
 const MODE_TITLES: Record<ShareFlowMode, string> = {
 	'pending-invitation': 'Enviar invitación',
 	'single-invitation': 'Compartir invitación',
+	'pending-reminder': 'Enviar recordatorio',
 	'single-reminder': 'Enviar recordatorio',
 };
 
@@ -71,6 +72,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		localMessageOverride,
 		messageError,
 		isQueueMode,
+		isReminderMode,
 		copySuccess,
 		handleEditMessage,
 		handleCancelEditMessage,
@@ -102,7 +104,9 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			<ModalShell title={MODE_TITLES[mode]} onClose={onClose}>
 				<div className="dashboard-modal__content">
 					<p className="dashboard-modal__confirm-text">
-						No hay invitaciones pendientes por enviar.
+						{mode === 'pending-reminder'
+							? 'No hay recordatorios pendientes por enviar.'
+							: 'No hay invitaciones pendientes por enviar.'}
 					</p>
 				</div>
 				<div className="dashboard-modal__footer">
@@ -115,7 +119,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	}
 
 	const subtitle = isQueueMode
-		? `${pendingCount} pendiente(s) · ${guest.fullName}`
+		? `${pendingCount} ${isReminderMode ? 'recordatorio(s)' : 'pendiente(s)'} · ${guest.fullName}`
 		: guest.fullName;
 
 	const hasPhoneValue = editPhone.trim().length > 0;
@@ -247,7 +251,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			<div className="dashboard-modal__fallback">
 				<p className="dashboard-modal__description">
 					No se pudo abrir el m&eacute;todo de env&iacute;o. Puedes copiar la
-					invitaci&oacute;n.
+					{isReminderMode ? ' mensaje de recordatorio' : ' invitación'}.
 				</p>
 				<div className="send-share-guest">
 					<span className="send-share-guest__name">{fallbackGuest.fullName}</span>
@@ -258,22 +262,24 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				<div className="dashboard-modal__fallback-actions">
 					<button type="button" className="btn-primary" onClick={handleCopyOnly}>
 						<CopyIcon className="share-icon" size={16} />
-						Copiar invitaci&oacute;n
+						{isReminderMode ? 'Copiar recordatorio' : 'Copiar invitación'}
 					</button>
-					<button
-						type="button"
-						className="btn-primary"
-						onClick={handleCopyAndMarkSent}
-						disabled={advancing}
-					>
-						Copiar y marcar como enviada
-					</button>
+					{!isReminderMode && (
+						<button
+							type="button"
+							className="btn-primary"
+							onClick={handleCopyAndMarkSent}
+							disabled={advancing}
+						>
+							Copiar y marcar como enviada
+						</button>
+					)}
 					<button
 						type="button"
 						className="btn-secondary btn-secondary--modal"
 						onClick={handleKeepPending}
 					>
-						Mantener pendiente
+						{isReminderMode ? 'Cerrar' : 'Mantener pendiente'}
 					</button>
 				</div>
 				{markError && <span className="guest-field-error">{markError}</span>}
