@@ -8,6 +8,7 @@ import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 	type ShareMessagesConfig,
+	type ReminderSettings,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -123,6 +124,7 @@ export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
 
 export interface SharingConfig {
 	shareMessages?: ShareMessagesConfig;
+	reminderSettings?: ReminderSettings | null;
 	eventDate?: string | null;
 	rsvpDeadline?: string | null;
 	ogDescription?: string;
@@ -145,6 +147,14 @@ function extractRsvpDeadline(content: Record<string, unknown>): string | null {
 	return rsvpConfig.confirmationDeadline;
 }
 
+function extractReminderSettingsFromSharing(
+	sharing: Record<string, unknown>,
+): ReminderSettings | null {
+	const raw = sharing.reminderSettings;
+	if (!raw || typeof raw !== 'object') return null;
+	return resolveReminderSettings(raw as ReminderSettings);
+}
+
 function extractSharingFromContent(content: Record<string, unknown>): SharingConfig | null {
 	const sharing = content.sharing as Record<string, unknown> | undefined;
 	if (!sharing) return null;
@@ -154,6 +164,9 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 	const ogDescription =
 		typeof sharing.ogDescription === 'string' ? sharing.ogDescription : undefined;
 	if (ogDescription) result.ogDescription = ogDescription;
+
+	const reminderSettings = extractReminderSettingsFromSharing(sharing);
+	if (reminderSettings) result.reminderSettings = reminderSettings;
 
 	const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
 	const whatsappTemplate =

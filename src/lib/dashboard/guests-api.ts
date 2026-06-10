@@ -8,7 +8,10 @@ import type {
 	CreateGuestDTO,
 	UpdateGuestDTO,
 } from '@/lib/dashboard/dto/guests';
-import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type {
+	ShareMessagesConfig,
+	ReminderSettings,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 class DashboardApiError extends Error {
 	status: number;
@@ -163,14 +166,19 @@ export class GuestsApi {
 		document.body.removeChild(anchor);
 	}
 
-	async updateShareMessages(
-		eventId: string,
-		shareMessages: ShareMessagesConfig,
-	): Promise<ShareMessagesConfig> {
-		const result = await dashboardApi.post<ShareMessagesConfig>(
-			'/api/dashboard/guests/share-messages',
-			{ eventId, ...shareMessages },
-		);
+	async updateShareMessages(payload: {
+		eventId: string;
+		shareMessages: ShareMessagesConfig;
+		reminderSettings?: ReminderSettings;
+	}): Promise<{ shareMessages: ShareMessagesConfig; reminderSettings: ReminderSettings }> {
+		const result = await dashboardApi.post<{
+			shareMessages: ShareMessagesConfig;
+			reminderSettings: ReminderSettings;
+		}>('/api/dashboard/guests/share-messages', {
+			eventId: payload.eventId,
+			...payload.shareMessages,
+			...(payload.reminderSettings ? { reminderSettings: payload.reminderSettings } : {}),
+		});
 		return this.handleResponse(result, 'guests.updateShareMessages');
 	}
 }

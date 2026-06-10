@@ -35,7 +35,10 @@ import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 import {
 	resolveShareTemplates,
+	resolveReminderSettings,
+	DEFAULT_REMINDER_SETTINGS,
 	type ShareMessagesConfig,
+	type ReminderSettings,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
 	findPublishedByInvitationId,
@@ -103,6 +106,7 @@ async function resolveEventSharingContext(
 	event: Pick<EventRecord, 'slug' | 'eventType' | 'title'> | null,
 ): Promise<{
 	shareMessages: ShareMessagesConfig | null | undefined;
+	reminderSettings: ReminderSettings;
 	eventDate: string | null;
 	rsvpDeadline: string | null;
 	shareDateContext: ShareMessageDateContext;
@@ -110,6 +114,7 @@ async function resolveEventSharingContext(
 	if (!event) {
 		return {
 			shareMessages: undefined,
+			reminderSettings: resolveReminderSettings(null),
 			eventDate: null,
 			rsvpDeadline: null,
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
@@ -119,6 +124,7 @@ async function resolveEventSharingContext(
 	const today = new Date();
 	return {
 		shareMessages: sharingConfig.shareMessages,
+		reminderSettings: resolveReminderSettings(sharingConfig.reminderSettings),
 		eventDate: sharingConfig.eventDate ?? null,
 		rsvpDeadline: sharingConfig.rsvpDeadline ?? null,
 		shareDateContext: buildShareMessageDateContext(
@@ -220,6 +226,7 @@ export async function listDashboardGuests(input: {
 			eventId: event.id,
 			items,
 			shareTemplates,
+			reminderSettings: sharingContext.reminderSettings,
 			shareDateContext: sharingContext.shareDateContext,
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
@@ -242,6 +249,7 @@ export async function listDashboardGuests(input: {
 			eventId: membership.eventId,
 			items,
 			shareTemplates: resolveShareTemplates({}),
+			reminderSettings: resolveReminderSettings(null),
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
@@ -587,11 +595,17 @@ export async function toggleGuestBrandingRemoval(input: {
 	};
 }
 
+export interface UpdateShareMessagesResult {
+	shareMessages: ShareMessagesConfig;
+	reminderSettings: ReminderSettings;
+}
+
 export async function updateShareMessages(input: {
 	eventId: string;
 	hostAccessToken: string;
 	shareMessages: ShareMessagesConfig;
-}): Promise<ShareMessagesConfig> {
+	reminderSettings?: ReminderSettings | null;
+}): Promise<UpdateShareMessagesResult> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (!event) {
 		throw new ApiError(404, 'not_found', 'Event not found.');
@@ -616,10 +630,16 @@ export async function updateShareMessages(input: {
 	const shareMessages = resolveShareTemplates({ shareMessages: input.shareMessages });
 	const content = { ...published.content };
 	const sharing = (content.sharing as Record<string, unknown>) || {};
-	content.sharing = {
-		...sharing,
-		shareMessages,
-	};
+
+	const resolvedReminderSettings = input.reminderSettings
+		? resolveReminderSettings(input.reminderSettings)
+		: undefined;
+
+	const nextSharing: Record<string, unknown> = { ...sharing, shareMessages };
+	if (resolvedReminderSettings) {
+		nextSharing.reminderSettings = resolvedReminderSettings;
+	}
+	content.sharing = nextSharing;
 
 	await updatePublishedContentSnapshot({
 		id: published.id,
@@ -628,5 +648,8 @@ export async function updateShareMessages(input: {
 		publishedAt: published.publishedAt,
 	});
 
-	return { ...shareMessages };
+	return {
+		shareMessages: { ...shareMessages },
+		reminderSettings: resolvedReminderSettings ?? DEFAULT_REMINDER_SETTINGS,
+	};
 }
