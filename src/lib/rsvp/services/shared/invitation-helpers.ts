@@ -10,6 +10,7 @@ import {
 	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
 export type ShareMessageType = 'invitation' | 'reminder';
 
@@ -26,6 +27,8 @@ export interface BuildShareMessageInput {
 	shareMessages?: ShareMessagesConfig | null;
 	messageType?: ShareMessageType;
 	includeLink?: boolean;
+	eventDate?: string | null;
+	rsvpDeadline?: string | null;
 }
 
 export function resolveOrigin(providedOrigin?: string): string {
@@ -94,10 +97,19 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 		template = template.replaceAll('{inviteUrl}', '').replace(/\s+$/, '');
 	}
 
+	const today = new Date();
+	const dateContext = buildShareMessageDateContext(
+		input.eventDate ?? null,
+		input.rsvpDeadline ?? null,
+		input.eventTitle || '',
+		today,
+	);
+
 	return renderShareMessage(template, {
 		guestName: input.fullName,
 		eventTitle: input.eventTitle,
 		inviteUrl,
+		...dateContext,
 	});
 }
 
@@ -111,6 +123,25 @@ export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
 
 export interface SharingConfig {
 	shareMessages?: ShareMessagesConfig;
+	eventDate?: string | null;
+	rsvpDeadline?: string | null;
+}
+
+function extractEventDate(content: Record<string, unknown>): string | null {
+	const hero = content.hero as Record<string, unknown> | undefined;
+	if (!hero || typeof hero.date !== 'string' || !hero.date) return null;
+	return hero.date;
+}
+
+function extractRsvpDeadline(content: Record<string, unknown>): string | null {
+	const rsvpConfig = content.rsvp as Record<string, unknown> | undefined;
+	if (
+		!rsvpConfig ||
+		typeof rsvpConfig.confirmationDeadline !== 'string' ||
+		!rsvpConfig.confirmationDeadline
+	)
+		return null;
+	return rsvpConfig.confirmationDeadline;
 }
 
 function extractSharingFromContent(content: Record<string, unknown>): SharingConfig | null {
@@ -153,24 +184,51 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 	return null;
 }
 
+function evaluateSharingEntryDate(data: Record<string, unknown> | undefined): string | null {
+	if (!data) return null;
+	const hero = data.hero as Record<string, unknown> | undefined;
+	if (!hero || typeof hero.date !== 'string' || !hero.date) return null;
+	return hero.date;
+}
+
+function evaluateSharingEntryRsvpDeadline(
+	data: Record<string, unknown> | undefined,
+): string | null {
+	if (!data) return null;
+	const rsvp = data.rsvp as Record<string, unknown> | undefined;
+	if (!rsvp || typeof rsvp.confirmationDeadline !== 'string' || !rsvp.confirmationDeadline)
+		return null;
+	return rsvp.confirmationDeadline;
+}
+
 export async function getSharingConfigForSlug(
 	eventSlug: string,
 	eventType?: EventRecord['eventType'],
 ): Promise<SharingConfig> {
+	const result: SharingConfig = {};
+
 	if (eventSlug && eventType) {
 		const published = await findPublishedBySlugAndEventType(eventSlug, eventType);
 		if (published?.content) {
-			const result = extractSharingFromContent(published.content);
-			if (result) return result;
+			const sharingResult = extractSharingFromContent(published.content);
+			if (sharingResult) Object.assign(result, sharingResult);
+
+			result.eventDate = extractEventDate(published.content);
+			result.rsvpDeadline = extractRsvpDeadline(published.content);
+			return result;
 		}
 	}
 
 	const entry = eventType ? await getRoutableEventEntry(eventSlug, eventType) : null;
 	const demoSharing = entry?.data?.sharing as Record<string, unknown> | undefined;
 	if (demoSharing) {
-		const result = extractSharingFromContent({ sharing: demoSharing });
-		if (result) return result;
+		const sharingResult = extractSharingFromContent({ sharing: demoSharing });
+		if (sharingResult) Object.assign(result, sharingResult);
+
+		result.eventDate = evaluateSharingEntryDate(entry?.data);
+		result.rsvpDeadline = evaluateSharingEntryRsvpDeadline(entry?.data);
+		return result;
 	}
 
-	return {};
+	return result;
 }

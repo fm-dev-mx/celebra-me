@@ -73,7 +73,7 @@ describe('buildShareMessage', () => {
 			includeLink: true,
 		});
 		expect(result).toContain('Francisco Prueba');
-		expect(result).toContain('nuevamente');
+		expect(result).toContain('Confirma tu asistencia lo antes posible');
 	});
 
 	it('uses the real event title when shareMessages is null', () => {

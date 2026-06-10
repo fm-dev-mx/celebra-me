@@ -4,9 +4,17 @@ export interface ShareMessageContext {
 	guestName?: string | null;
 	eventTitle?: string | null;
 	inviteUrl: string;
+	eventDate?: string | null;
+	daysUntilEvent?: string | null;
+	rsvpDeadline?: string | null;
+	eventTimingText?: string | null;
+	rsvpDeadlineText?: string | null;
 }
 
 const EVENT_TITLE_FALLBACK = 'nuestra celebraci\u00f3n';
+
+const ALL_PLACEHOLDERS =
+	/\{(guestName|name|fullName|eventTitle|inviteUrl|eventDate|daysUntilEvent|rsvpDeadline|eventTimingText|rsvpDeadlineText)\}/g;
 
 function resolveGuestName(raw: string | null | undefined): string {
 	if (!raw) return '';
@@ -39,15 +47,17 @@ export function renderShareMessage(template: string, context: ShareMessageContex
 		fullName: guestName,
 		eventTitle,
 		inviteUrl,
+		eventDate: context.eventDate ?? '',
+		daysUntilEvent: context.daysUntilEvent ?? '',
+		rsvpDeadline: context.rsvpDeadline ?? '',
+		eventTimingText: context.eventTimingText ?? '',
+		rsvpDeadlineText: context.rsvpDeadlineText ?? '',
 	};
-	let result = template.replaceAll(
-		/\{(guestName|name|fullName|eventTitle|inviteUrl)\}/g,
-		(_, key) => vars[key as keyof typeof vars],
-	);
+	let result = template.replaceAll(ALL_PLACEHOLDERS, (_, key) => vars[key as keyof typeof vars]);
 
 	if (!guestName) {
 		result = cleanEmptyGreeting(result);
 	}
 
-	return result;
+	return result.replace(/\n{3,}/g, '\n\n').trim();
 }
