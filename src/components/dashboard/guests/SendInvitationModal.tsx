@@ -17,7 +17,6 @@ interface SendInvitationModalProps {
 	guest: DashboardGuestItem | null;
 	pendingGuests: DashboardGuestItem[];
 	inviteUrl: string;
-	inviteBaseUrl: string;
 	onClose: () => void;
 	onSave: GuestSaveCallback;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -72,6 +71,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		localMessageOverride,
 		messageError,
 		isQueueMode,
+		copySuccess,
 		handleEditMessage,
 		handleCancelEditMessage,
 		handleResetMessage,
@@ -90,6 +90,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		onMarkShared,
 		onAdvanceFromGuest,
 		onPostponeGuest,
+		onDone: onClose,
 		templates,
 		shareDateContext,
 		eventTitle,
@@ -119,7 +120,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 
 	const hasPhoneValue = editPhone.trim().length > 0;
 	const phoneValid = hasPhoneValue && canSendToPhone;
-	const phoneEmpty = editPhone.trim().length === 0;
 
 	const renderFormSection = () => (
 		<div className="send-invitation__form-section">
@@ -173,7 +173,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					label="Teléfono / WhatsApp"
 					showOptional
 				/>
-				{phoneEmpty && !phoneError && (
+				{!editPhone.trim() && !phoneError && (
 					<span className="guest-field-hint">
 						Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el
 						contacto.
@@ -233,6 +233,12 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					</button>
 				)}
 			</div>
+
+			{copySuccess && (
+				<span className="send-invitation__copy-feedback" role="status">
+					Mensaje copiado
+				</span>
+			)}
 		</div>
 	);
 

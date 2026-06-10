@@ -395,6 +395,14 @@
 	margin: 0 0 0.35rem;
 }
 
+.send-invitation__copy-feedback {
+	color: var(--color-state-success-text);
+	font-size: 0.75rem;
+	font-weight: 500;
+	margin: 0.25rem 0 0;
+	display: inline-block;
+}
+
 @media (width <= 600px) {
 	.dashboard-modal--send-invitation .dashboard-form-field {
 		margin-bottom: 0.5rem;

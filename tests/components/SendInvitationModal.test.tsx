@@ -9,12 +9,15 @@ import {
 	stubWindowOpen,
 } from '@tests/helpers/nav-test-utils';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 
 const DEFAULT_TEMPLATES: ShareMessagesConfig = {
 	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
 	reminder:
 		'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 };
+
+type ModalProps = ReturnType<typeof createProps> & { mode?: ShareFlowMode };
 
 function createProps() {
 	return {
@@ -36,7 +39,7 @@ function getMessageTextarea(): HTMLTextAreaElement {
 function renderModal(
 	guest: ReturnType<typeof makeGuest> | null,
 	pendingGuests?: ReturnType<typeof makeGuest>[],
-	propsOverrides?: Partial<ReturnType<typeof createProps>>,
+	propsOverrides?: Partial<ModalProps>,
 ) {
 	const props = { ...createProps(), ...propsOverrides };
 	return {
@@ -329,7 +332,7 @@ describe('SendInvitationModal', () => {
 		);
 	});
 
-	it('copiar mensaje copies message and marks shared (without requiring save)', async () => {
+	it('copiar mensaje copies message, does NOT mark shared, does NOT advance, shows feedback', async () => {
 		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }));
 		props.onSave.mockResolvedValue(
 			makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }),
@@ -339,8 +342,11 @@ describe('SendInvitationModal', () => {
 		fireEvent.click(screen.getByRole('button', { name: /copiar mensaje/i }));
 
 		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
-		await waitFor(() => expect(props.onMarkShared).toHaveBeenCalled());
-		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
+		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+		await waitFor(() => {
+			expect(screen.getByText('Mensaje copiado')).toBeInTheDocument();
+		});
 	});
 
 	it('fallback "Copiar invitación" copies URL without marking sent', async () => {
@@ -645,5 +651,66 @@ describe('SendInvitationModal', () => {
 				'noopener,noreferrer',
 			);
 		});
+	});
+
+	it('single-invitation mode: closes modal after successful share, does not advance', async () => {
+		const { props } = renderModal(
+			makeGuest({ guestId: 'guest-1', fullName: 'Single Guest' }),
+			[makeGuest({ guestId: 'guest-1', fullName: 'Single Guest' })],
+			{ mode: 'single-invitation' as const },
+		);
+		props.onSave.mockResolvedValue(makeGuest({ guestId: 'guest-1' }));
+		props.onMarkShared.mockResolvedValue(undefined);
+
+		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
+
+		await waitFor(() =>
+			expect(window.open).toHaveBeenCalledWith(
+				expect.stringContaining('wa.me/526691234567'),
+				'_blank',
+				'noopener,noreferrer',
+			),
+		);
+
+		await waitFor(() =>
+			expect(props.onMarkShared).toHaveBeenCalledWith(
+				expect.objectContaining({ guestId: 'guest-1' }),
+			),
+		);
+
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+
+		await waitFor(() => {
+			expect(props.onClose).toHaveBeenCalled();
+		});
+	});
+
+	it('single-reminder mode: shows reminder title', () => {
+		renderModal(
+			makeGuest({
+				guestId: 'guest-1',
+				fullName: 'Reminder Guest',
+				firstSharedAt: '2026-01-15T10:00:00.000Z',
+			}),
+			[makeGuest()],
+			{ mode: 'single-reminder' as const },
+		);
+
+		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
+		expect(screen.getByText(/nuevamente/)).toBeInTheDocument();
+	});
+
+	it('copiar mensaje in queue mode does not advance or mark shared', async () => {
+		const GuestA = makeGuest({ guestId: 'g-a', fullName: 'Ana', phone: '' });
+		const GuestB = makeGuest({ guestId: 'g-b', fullName: 'María', phone: '' });
+		const { props } = renderModal(GuestA, [GuestA, GuestB]);
+		props.onSave.mockResolvedValue(makeGuest({ guestId: 'g-a', phone: '' }));
+		props.onMarkShared.mockResolvedValue(undefined);
+
+		fireEvent.click(screen.getByRole('button', { name: /copiar mensaje/i }));
+
+		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
+		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 });

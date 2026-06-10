@@ -157,7 +157,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					guest={editingGuest}
 					pendingGuests={pendingGuests}
 					inviteUrl={editingInviteUrl}
-					inviteBaseUrl={inviteBaseUrl}
 					onClose={closeModal}
 					onSave={handleSaveInvitation}
 					onMarkShared={handleMarkShared}
