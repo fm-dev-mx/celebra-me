@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
@@ -11,11 +11,13 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { buildWhatsAppNumber } from '@/lib/phone/validation';
 
 interface ShareComposerProps {
 	anchorRef: React.RefObject<HTMLElement | null>;
 	guestName: string;
 	phone: string;
+	countryCode?: string;
 	inviteUrl: string;
 	eventTitle: string;
 	templates: ShareMessagesConfig;
@@ -28,6 +30,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 	anchorRef,
 	guestName,
 	phone,
+	countryCode,
 	inviteUrl,
 	eventTitle,
 	templates,
@@ -46,8 +49,9 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 	);
 
 	const hasPhone = !!phone?.trim();
-	const waShareUrl = hasPhone
-		? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(renderedMessage)}`
+	const waPhoneNumber = hasPhone ? buildWhatsAppNumber(phone, countryCode) : '';
+	const waShareUrl = waPhoneNumber
+		? `https://wa.me/${waPhoneNumber}?text=${encodeURIComponent(renderedMessage)}`
 		: '';
 
 	useLayoutEffect(() => {
@@ -55,8 +59,8 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 		const popover = popoverRef.current;
 		if (!anchor || !popover) return;
 		const rect = anchor.getBoundingClientRect();
-		popover.style.top = `${rect.bottom + window.scrollY + 4}px`;
-		popover.style.left = `${Math.max(8, rect.right + window.scrollX - 280)}px`;
+		popover.style.top = `${rect.bottom + 4}px`;
+		popover.style.left = `${Math.max(8, rect.right - 280)}px`;
 	}, [anchorRef]);
 
 	useEffect(() => {
@@ -116,8 +120,12 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 		}
 	};
 
-	const supportsNativeShare = canUseNativeShare(
-		buildInvitationSharePayload({ shareText: renderedMessage, inviteUrl }),
+	const supportsNativeShare = useMemo(
+		() =>
+			canUseNativeShare(
+				buildInvitationSharePayload({ shareText: renderedMessage, inviteUrl }),
+			),
+		[renderedMessage, inviteUrl],
 	);
 
 	const statusLabel = status === 'done' ? 'Listo' : status === 'sending' ? 'Enviando...' : '';

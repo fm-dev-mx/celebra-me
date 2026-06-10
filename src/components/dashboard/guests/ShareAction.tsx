@@ -15,11 +15,6 @@ interface ShareActionProps {
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
 
-const STATUS_ICONS: Record<string, React.ReactNode> = {
-	sending: <span className="share-icon share-icon--state">...</span>,
-	delivered: <span className="share-icon share-icon--state">OK</span>,
-};
-
 const ShareAction: React.FC<ShareActionProps> = ({
 	guest,
 	inviteUrl,
@@ -34,12 +29,17 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	const cta = getShareCtaLabel(guest);
 
 	const handleClick = () => {
-		if (status !== 'idle') return;
 		setComposerOpen(true);
 	};
 
-	const statusIcon = STATUS_ICONS[status];
-	const icon = statusIcon ?? <MessageIcon className="share-icon" size={16} />;
+	const icon =
+		status === 'sending' ? (
+			<span className="share-icon share-icon--state">...</span>
+		) : status === 'delivered' ? (
+			<span className="share-icon share-icon--state">OK</span>
+		) : (
+			<MessageIcon className="share-icon" size={16} />
+		);
 
 	const label = status === 'sending' ? 'Enviando' : status === 'delivered' ? 'Listo' : cta.label;
 
@@ -62,6 +62,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 					anchorRef={buttonRef}
 					guestName={guest.fullName}
 					phone={guest.phone}
+					countryCode={guest.countryCode}
 					inviteUrl={inviteUrl}
 					eventTitle={eventTitle}
 					templates={shareTemplates}
