@@ -4,6 +4,18 @@ import { getVisibleTags } from '@/lib/guests/guest-tags';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { resolveDefaultMessageKind } from '@/lib/rsvp/services/shared/message-type-resolver';
 
+export type ShareFlowMode = 'pending-invitation' | 'single-invitation' | 'single-reminder';
+
+export type GuestSaveCallback = (
+	guestId: string,
+	payload: {
+		fullName: string;
+		maxAllowedAttendees: number;
+		phone?: string | null;
+		countryCode?: string;
+	},
+) => Promise<DashboardGuestItem>;
+
 export function formatGuestDate(value: string | null): string {
 	if (!value) return '-';
 	const date = new Date(value);
@@ -143,7 +155,8 @@ export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
 	});
 
 	if (item.attendanceStatus === 'confirmed' || item.attendanceStatus === 'declined') {
-		return { label: 'Compartir de nuevo', defaultMessageType: kind };
+		const label = kind === 'reminder' ? 'Enviar recordatorio' : 'Compartir de nuevo';
+		return { label, defaultMessageType: kind };
 	}
 
 	if (kind === 'invitation') {
@@ -155,4 +168,9 @@ export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
 	}
 
 	return { label: 'Reenviar invitación', defaultMessageType: 'reminder' };
+}
+
+/** Determines the share flow mode based on guest history, not UI labels. */
+export function resolveShareFlowMode(guest: DashboardGuestItem): ShareFlowMode {
+	return guest.firstSharedAt ? 'single-reminder' : 'single-invitation';
 }

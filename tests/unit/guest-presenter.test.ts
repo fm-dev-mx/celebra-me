@@ -360,11 +360,11 @@ describe('getShareCtaLabel', () => {
 		expect(result.defaultMessageType).toBe('reminder');
 	});
 
-	it('confirmed guest → "Compartir de nuevo" + reminder', () => {
+	it('confirmed guest → "Enviar recordatorio" + reminder', () => {
 		const result = getShareCtaLabel(
 			makeGuest({ attendanceStatus: 'confirmed', firstSharedAt: '2026-01-15T10:00:00.000Z' }),
 		);
-		expect(result.label).toBe('Compartir de nuevo');
+		expect(result.label).toBe('Enviar recordatorio');
 		expect(result.defaultMessageType).toBe('reminder');
 	});
 
