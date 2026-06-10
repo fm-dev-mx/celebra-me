@@ -1,7 +1,13 @@
 import React from 'react';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
 
-export type GuestReviewFilter = 'all' | 'delivery-pending' | 'rsvp-pending' | 'with-message';
+export type GuestReviewFilter =
+	| 'all'
+	| 'delivery-pending'
+	| 'rsvp-pending'
+	| 'confirmation-pending'
+	| 'with-message';
 
 interface GuestReviewBlockProps {
 	items: DashboardGuestItem[];
@@ -14,23 +20,33 @@ const GuestReviewBlock: React.FC<GuestReviewBlockProps> = ({
 	activeFilter,
 	onFilterChange,
 }) => {
-	const reviewItems = [
-		{
-			filter: 'delivery-pending' as GuestReviewFilter,
-			count: items.filter((item) => item.deliveryStatus === 'generated').length,
+	let deliveryPending = 0;
+	let confirmationPending = 0;
+	let rsvpPending = 0;
+	let withMessage = 0;
+	for (const item of items) {
+		if (item.deliveryStatus === 'generated') deliveryPending++;
+		if (isUnconfirmedSharedGuest(item)) confirmationPending++;
+		if (item.attendanceStatus === 'pending') rsvpPending++;
+		if ((item.guestComment ?? '').trim().length > 0) withMessage++;
+	}
+	const reviewItems: { filter: GuestReviewFilter; count: number; label: string }[] = [];
+	if (deliveryPending > 0)
+		reviewItems.push({
+			filter: 'delivery-pending',
+			count: deliveryPending,
 			label: 'Por enviar',
-		},
-		{
-			filter: 'rsvp-pending' as GuestReviewFilter,
-			count: items.filter((item) => item.attendanceStatus === 'pending').length,
-			label: 'Sin respuesta',
-		},
-		{
-			filter: 'with-message' as GuestReviewFilter,
-			count: items.filter((item) => item.guestComment.trim().length > 0).length,
-			label: 'Con mensaje',
-		},
-	].filter((item) => item.count > 0);
+		});
+	if (confirmationPending > 0)
+		reviewItems.push({
+			filter: 'confirmation-pending',
+			count: confirmationPending,
+			label: 'Por confirmar',
+		});
+	if (rsvpPending > 0)
+		reviewItems.push({ filter: 'rsvp-pending', count: rsvpPending, label: 'Sin respuesta' });
+	if (withMessage > 0)
+		reviewItems.push({ filter: 'with-message', count: withMessage, label: 'Con mensaje' });
 
 	if (reviewItems.length === 0) return null;
 

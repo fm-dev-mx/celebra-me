@@ -258,3 +258,14 @@
 		}
 	}
 }
+
+/* Reminder helper text — contextual info next to the CTA */
+.reminder-helper-text {
+	font-size: 0.72rem;
+	color: var(--color-text-muted);
+	white-space: nowrap;
+
+	@media (width <= 480px) {
+		display: none;
+	}
+}

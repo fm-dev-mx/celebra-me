@@ -26,20 +26,44 @@ type PrimaryStatusCase = readonly [
 ];
 
 const primaryStatusCases = [
+	// Terminal RSVP states take priority
 	[{ attendanceStatus: 'confirmed' }, 'Confirmada', 'confirmed'],
 	[{ attendanceStatus: 'declined' }, 'No asiste', 'declined'],
-	[{ deliveryStatus: 'generated' }, 'Por enviar', 'unshared'],
-	[{ deliveryStatus: 'shared', isViewed: false }, 'Enviada', 'sent'],
-	[
-		{ deliveryStatus: 'shared', isViewed: true, attendanceStatus: 'pending' },
-		'Recibida',
-		'pending',
-	],
 	[{ attendanceStatus: 'confirmed', deliveryStatus: 'generated' }, 'Confirmada', 'confirmed'],
+	[
+		{ attendanceStatus: 'confirmed', deliveryStatus: 'shared', isViewed: false },
+		'Confirmada',
+		'confirmed',
+	],
+	[
+		{ attendanceStatus: 'confirmed', deliveryStatus: 'shared', isViewed: true },
+		'Confirmada',
+		'confirmed',
+	],
 	[
 		{ attendanceStatus: 'declined', deliveryStatus: 'shared', isViewed: true },
 		'No asiste',
 		'declined',
+	],
+	[
+		{ attendanceStatus: 'declined', deliveryStatus: 'shared', isViewed: false },
+		'No asiste',
+		'declined',
+	],
+
+	// Not yet sent
+	[{ deliveryStatus: 'generated' }, 'Por enviar', 'unshared'],
+
+	// Shared but awaiting confirmation — replaces "Enviada"/"Recibida" for pending guests
+	[
+		{ deliveryStatus: 'shared', attendanceStatus: 'pending', isViewed: false },
+		'Por confirmar',
+		'pending-confirmation',
+	],
+	[
+		{ deliveryStatus: 'shared', attendanceStatus: 'pending', isViewed: true },
+		'Por confirmar',
+		'pending-confirmation',
 	],
 ] satisfies readonly PrimaryStatusCase[];
 

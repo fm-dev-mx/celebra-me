@@ -1,9 +1,8 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
+import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
-
-export const DEFAULT_COUNTRY_CODE = '+52';
 
 export function formatGuestEntrySource(item: DashboardGuestItem) {
 	const isPublic = item.entrySource === 'generic_public' || item.tags.includes('system:public');
@@ -39,20 +38,21 @@ export type PrimaryStatus = {
 };
 
 /**
- * 5-state primary status for the closed card.
+ * Primary status for the closed card.
  *
  * Priority order:
- *   1. confirmed / declined  (terminal RSVP)
- *   2. generated             (not yet sent)
- *   3. shared + not viewed   (sent, awaiting open — Enviada)
- *   4. shared + viewed       (opened, awaiting RSVP — Recibida)
+ *   1. confirmed / declined     (terminal RSVP)
+ *   2. generated                (not yet sent)
+ *   3. shared + unconfirmed     (reminder eligible — Por confirmar)
+ *   4. default                  (Enviada)
  */
 export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
 	if (item.attendanceStatus === 'confirmed') return { label: 'Confirmada', class: 'confirmed' };
 	if (item.attendanceStatus === 'declined') return { label: 'No asiste', class: 'declined' };
 	if (item.deliveryStatus === 'generated') return { label: 'Por enviar', class: 'unshared' };
-	if (!item.isViewed) return { label: 'Enviada', class: 'sent' };
-	return { label: 'Recibida', class: 'pending' };
+	if (isUnconfirmedSharedGuest(item))
+		return { label: 'Por confirmar', class: 'pending-confirmation' };
+	return { label: 'Enviada', class: 'sent' };
 }
 
 /** Displayable contact: phone > email > "Sin teléfono registrado" */

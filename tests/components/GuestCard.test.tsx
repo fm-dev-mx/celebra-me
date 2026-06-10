@@ -40,7 +40,7 @@ describe('GuestCard status labels', () => {
 		expect(screen.getAllByText('Por enviar').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('shows "Enviada" when shared but not viewed', () => {
+	it('shows "Por confirmar" when shared but not viewed and not yet confirmed', () => {
 		render(
 			<GuestCard
 				item={makeGuest({
@@ -51,10 +51,10 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getByText('Enviada')).toBeInTheDocument();
+		expect(screen.getByText('Por confirmar')).toBeInTheDocument();
 	});
 
-	it('shows "Recibida" when shared and viewed', () => {
+	it('shows "Por confirmar" when shared and viewed but not yet confirmed', () => {
 		render(
 			<GuestCard
 				item={makeGuest({
@@ -65,7 +65,7 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getByText('Recibida')).toBeInTheDocument();
+		expect(screen.getAllByText('Por confirmar').length).toBeGreaterThanOrEqual(1);
 	});
 
 	it('shows "Confirmada" when attendanceStatus is confirmed (overrides delivery status)', () => {

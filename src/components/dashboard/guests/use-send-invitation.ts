@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
-import { DEFAULT_COUNTRY_CODE } from '@/components/dashboard/guests/guest-presenter';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import {
 	buildInvitationSharePayload,
 	shareInvitationLink,

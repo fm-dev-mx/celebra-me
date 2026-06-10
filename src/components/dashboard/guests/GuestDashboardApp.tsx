@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
@@ -19,6 +19,7 @@ import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-gue
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
 	getReminderEligibleGuests,
+	isUnconfirmedSharedGuest,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
@@ -65,9 +66,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	});
 	const currentEvent = hostEvents.find((e) => e.id === eventId);
 	const currentEventTitle = currentEvent?.title ?? '';
-	const isBrandingRemovalEligible = currentEvent
-		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
-		: false;
+	const isBrandingRemovalEligible =
+		currentEvent &&
+		isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug);
 
 	const reminderEligibleGuests = useMemo(
 		() => getReminderEligibleGuests(items, reminderSettings.audience),
@@ -87,8 +88,11 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const visibleItems = items.filter((item) => {
 		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
 			return false;
+		if (reviewFilter === 'confirmation-pending' && !isUnconfirmedSharedGuest(item))
+			return false;
 		if (reviewFilter === 'rsvp-pending' && item.attendanceStatus !== 'pending') return false;
-		if (reviewFilter === 'with-message' && item.guestComment.trim().length === 0) return false;
+		if (reviewFilter === 'with-message' && (item.guestComment ?? '').trim().length === 0)
+			return false;
 		if (group !== 'all') {
 			const itemTags = getVisibleTags(item.tags);
 			if (!itemTags.includes(group)) return false;
@@ -138,23 +142,22 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		reminderSettings,
 	});
 
-	const handleSaveShareTemplates = useCallback(
-		(result: {
-			shareTemplates: ShareMessagesConfig;
-			reminderSettings: typeof reminderSettings;
-		}) => {
-			setShareMessagesModalOpen(false);
-			setShareTemplates(result.shareTemplates);
-			setReminderSettings(result.reminderSettings);
-			setNotification({
-				message: 'Mensajes guardados correctamente.',
-				type: 'success',
-			});
-		},
-		[setShareTemplates, setReminderSettings, setNotification],
-	);
+	const handleSaveShareTemplates = (result: {
+		shareTemplates: ShareMessagesConfig;
+		reminderSettings: typeof reminderSettings;
+	}) => {
+		setShareMessagesModalOpen(false);
+		setShareTemplates(result.shareTemplates);
+		setReminderSettings(result.reminderSettings);
+		setNotification({
+			message: 'Mensajes guardados correctamente.',
+			type: 'success',
+		});
+	};
 
-	const modals = (() => {
+	const s = (count: number) => (count !== 1 ? 's' : '');
+
+	function renderModals() {
 		if (importModalOpen) {
 			return (
 				<ImportMagic
@@ -228,7 +231,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			);
 		}
 		return null;
-	})();
+	}
+	const modals = renderModals();
 
 	useShortcuts(
 		{
@@ -273,6 +277,13 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						>
 							Enviar recordatorio ({reminderEligibleGuests.length})
 						</button>
+					)}
+					{showReminderCta && shareDateContext.rawDaysUntilEvent !== null && (
+						<span className="reminder-helper-text">
+							{reminderSettings.audience === 'unconfirmed'
+								? `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${reminderEligibleGuests.length} invitado${s(reminderEligibleGuests.length)} sin confirmar`
+								: `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${reminderEligibleGuests.length} invitado${s(reminderEligibleGuests.length)} activo${s(reminderEligibleGuests.length)} con invitación enviada`}
+						</span>
 					)}
 					<ToolbarActionsMenu
 						onExport={handleExport}

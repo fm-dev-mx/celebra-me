@@ -264,7 +264,7 @@ describe('useSendInvitation', () => {
 					onMarkShared: jest.fn(),
 					mode: mode ?? 'single-invitation',
 				}),
-			{ initialProps: { guest: shared, mode: 'single-reminder' as const } },
+			{ initialProps: { guest: shared, mode: 'single-reminder' } },
 		);
 
 		expect(result.current.activeMessage).toContain('REMINDER: Same Guest');
