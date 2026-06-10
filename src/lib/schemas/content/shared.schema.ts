@@ -41,30 +41,37 @@ export const overlaySafeAreaSchema = z
 		width: normalizedImageCoordinateSchema.min(0.01),
 		height: normalizedImageCoordinateSchema.min(0.01),
 	})
-	.refine((area) => area.x + area.width <= 1, {
+	.refine((area) => area.x + area.width <= 1 + Number.EPSILON, {
 		message: 'overlaySafeArea x + width must stay within the image bounds.',
 		path: ['width'],
 	})
-	.refine((area) => area.y + area.height <= 1, {
+	.refine((area) => area.y + area.height <= 1 + Number.EPSILON, {
 		message: 'overlaySafeArea y + height must stay within the image bounds.',
 		path: ['height'],
-	});
+	})
+	.strict();
 
-const internalAssetSchema = z.object({
-	type: z.literal('internal'),
-	key: z.enum(ALL_ASSET_KEYS),
-});
+const internalAssetSchema = z
+	.object({
+		type: z.literal('internal'),
+		key: z.enum(ALL_ASSET_KEYS),
+	})
+	.strict();
 
-const externalAssetSchema = z.object({
-	type: z.literal('external'),
-	src: z.union([secureUrlSchema, publicPathSchema]),
-});
+const externalAssetSchema = z
+	.object({
+		type: z.literal('external'),
+		src: z.union([secureUrlSchema, publicPathSchema]),
+	})
+	.strict();
 
-const uploadedAssetSchema = z.object({
-	type: z.literal('uploaded'),
-	assetId: z.string().uuid(),
-	src: z.string().optional(),
-});
+const uploadedAssetSchema = z
+	.object({
+		type: z.literal('uploaded'),
+		assetId: z.uuid(),
+		src: z.string().optional(),
+	})
+	.strict();
 
 export const AssetSchema = z.preprocess(
 	(value) => {
@@ -98,10 +105,12 @@ export const themeSchema = z
 	})
 	.strict();
 
-export const quoteSchema = z.object({
-	text: z.string(),
-	author: z.string().optional(),
-});
+export const quoteSchema = z
+	.object({
+		text: z.string(),
+		author: z.string().optional(),
+	})
+	.strict();
 
 export const thankYouSchema = z
 	.object({
@@ -138,10 +147,12 @@ export const navigationSchema = z
 	)
 	.optional();
 
-export const shareMessagesSchema = z.object({
-	whatsappWithPhone: z.string().min(1).max(500),
-	whatsappWithoutPhone: z.string().min(1).max(500),
-});
+export const shareMessagesSchema = z
+	.object({
+		whatsappWithPhone: z.string().min(1).max(500),
+		whatsappWithoutPhone: z.string().min(1).max(500),
+	})
+	.strict();
 
 export const sharingSchema = z
 	.object({

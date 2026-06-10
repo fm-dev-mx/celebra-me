@@ -12,67 +12,90 @@ export const optionalUrl = z
 	})
 	.optional();
 
-export const uploadedRefSchema = z.object({
-	type: z.literal('uploaded'),
-	assetId: z.string().uuid(),
-});
+export const uploadedRefSchema = z
+	.object({
+		type: z.literal('uploaded'),
+		assetId: z.uuid(),
+	})
+	.strict();
 
+/** Accept raw strings (UUIDs, URLs, keys) that `AssetSchema` normalizes into structured objects, matching the `AssetField` type. */
 export const editableAssetSchema = z.union([AssetSchema, z.string(), uploadedRefSchema]);
 
-export const venueSchema = z.object({
-	venueName: optionalText(200),
-	address: optionalText(500),
-	city: optionalText(200),
-	date: optionalText(40),
-	time: optionalText(20),
-	mapUrl: optionalUrl,
-	image: editableAssetSchema.optional(),
-});
+export const venueSchema = z
+	.object({
+		venueName: optionalText(200),
+		address: optionalText(500),
+		city: optionalText(200),
+		date: optionalText(40),
+		time: optionalText(20),
+		mapUrl: optionalUrl,
+		image: editableAssetSchema.optional(),
+	})
+	.strict();
 
-export const gallerySchema = z.object({
-	eyebrow: optionalText(200),
-	title: optionalText(200),
-	subtitle: optionalText(500),
-	items: z.array(
-		z.object({
-			image: editableAssetSchema,
-			caption: optionalText(500),
-			focalPoint: focalPointSchema.optional(),
-			focalPointMobile: focalPointSchema.optional(),
-			focalPointTablet: focalPointSchema.optional(),
-			focalPointDesktop: focalPointSchema.optional(),
-		}),
-	),
-});
+export const gallerySchema = z
+	.object({
+		eyebrow: optionalText(200),
+		title: optionalText(200),
+		subtitle: optionalText(500),
+		items: z.array(
+			z
+				.object({
+					image: editableAssetSchema,
+					caption: optionalText(500),
+					focalPoint: focalPointSchema.optional(),
+					focalPointMobile: focalPointSchema.optional(),
+					focalPointTablet: focalPointSchema.optional(),
+					focalPointDesktop: focalPointSchema.optional(),
+				})
+				.strict(),
+		),
+	})
+	.strict();
 
-export const draftIndicationSchema = z.object({
-	iconName: z.enum(ICON_NAMES_TUPLE),
-	text: z.string().trim().max(500),
-});
+export const draftIndicationSchema = z
+	.object({
+		iconName: z.enum(ICON_NAMES_TUPLE),
+		text: z.string().trim().max(500),
+	})
+	.strict();
 
-export const itinerarySchema = z.object({
-	title: optionalText(200),
-	subtitle: optionalText(500),
-	items: z.array(
-		z.object({
-			iconName: z.enum(ICON_NAMES_TUPLE),
-			label: z.string().trim().min(1, 'El nombre de la actividad es obligatorio.').max(200),
-			description: optionalText(500),
-			time: z.string().trim().min(1, 'La hora es obligatoria.').max(20),
-		}),
-	),
-});
+export const itinerarySchema = z
+	.object({
+		title: optionalText(200),
+		subtitle: optionalText(500),
+		items: z.array(
+			z
+				.object({
+					iconName: z.enum(ICON_NAMES_TUPLE),
+					label: z
+						.string()
+						.trim()
+						.min(1, 'El nombre de la actividad es obligatorio.')
+						.max(200),
+					description: optionalText(500),
+					time: z.string().trim().min(1, 'La hora es obligatoria.').max(20),
+				})
+				.strict(),
+		),
+	})
+	.strict();
 
-export const giftsSchema = z.object({
-	title: optionalText(200),
-	subtitle: optionalText(500),
-	items: z.array(giftItemSchema).optional(),
-});
+export const giftsSchema = z
+	.object({
+		title: optionalText(200),
+		subtitle: optionalText(500),
+		items: z.array(giftItemSchema).optional(),
+	})
+	.strict();
 
-export const countdownEditorSchema = z.object({
-	title: optionalText(200),
-	footerText: optionalText(500),
-});
+export const countdownEditorSchema = z
+	.object({
+		title: optionalText(200),
+		footerText: optionalText(500),
+	})
+	.strict();
 
 export const rsvpResponseMessageSchema = z
 	.object({
@@ -90,7 +113,9 @@ export const rsvpResponseMessagesSchema = z
 	.strict()
 	.optional();
 
-export const envelopeSchema = z.object({
-	disabled: z.boolean().optional(),
-	sealInitials: z.string().trim().max(12).optional(),
-});
+export const envelopeSchema = z
+	.object({
+		disabled: z.boolean().optional(),
+		sealInitials: z.string().trim().max(12).optional(),
+	})
+	.strict();
