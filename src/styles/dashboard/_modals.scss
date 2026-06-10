@@ -243,6 +243,20 @@
 	}
 }
 
+.dashboard-modal__header-content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.dashboard-modal__subtitle {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	font-weight: 400;
+	text-align: left;
+}
+
 .dashboard-modal__actions,
 .dashboard-modal__footer {
 	display: flex;
