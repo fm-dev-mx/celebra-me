@@ -481,6 +481,7 @@ export async function markGuestShared(input: {
 		{
 			guestId: input.guestId,
 			deliveryStatus: 'shared',
+			firstSharedAt: existing.firstSharedAt ?? new Date().toISOString(),
 		},
 		input.hostAccessToken,
 	);

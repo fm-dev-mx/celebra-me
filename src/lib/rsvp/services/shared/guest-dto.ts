@@ -8,6 +8,7 @@ import {
 	buildWhatsAppShareUrl,
 } from '@/lib/rsvp/services/shared/invitation-helpers';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { resolveDefaultMessageKind } from '@/lib/rsvp/services/shared/message-type-resolver';
 
 export interface ToGuestDtoOptions {
 	origin: string;
@@ -23,6 +24,11 @@ export function toGuestDto(
 	guest: GuestInvitationRecord,
 	options: ToGuestDtoOptions,
 ): GuestInvitationDTO {
+	const messageType = resolveDefaultMessageKind({
+		firstSharedAt: guest.firstSharedAt,
+		attendanceStatus: guest.attendanceStatus,
+	});
+
 	return {
 		guestId: guest.id,
 		inviteId: guest.inviteId,
@@ -35,6 +41,7 @@ export function toGuestDto(
 		attendeeCount: guest.attendeeCount,
 		guestComment: guest.guestComment,
 		deliveryStatus: guest.deliveryStatus,
+		firstSharedAt: guest.firstSharedAt,
 		viewPercentage: guest.viewPercentage,
 		isViewed: guest.isViewed,
 		firstViewedAt: guest.firstViewedAt,
@@ -50,7 +57,7 @@ export function toGuestDto(
 			eventType: options.eventType,
 			eventSlug: options.eventSlug,
 			shareMessages: options.shareMessages,
-			messageType: 'invitation',
+			messageType,
 			eventDate: options.eventDate,
 			rsvpDeadline: options.rsvpDeadline,
 		}),
@@ -64,7 +71,7 @@ export function toGuestDto(
 			eventType: options.eventType,
 			eventSlug: options.eventSlug,
 			shareMessages: options.shareMessages,
-			messageType: 'invitation',
+			messageType,
 			includeLink: false,
 			eventDate: options.eventDate,
 			rsvpDeadline: options.rsvpDeadline,

@@ -70,7 +70,11 @@ describe('ShareAction', () => {
 	it('renders with "Reenviar invitación" when shared but not viewed', () => {
 		render(
 			<ShareAction
-				guest={makeGuest({ deliveryStatus: 'shared', isViewed: false })}
+				guest={makeGuest({
+					deliveryStatus: 'shared',
+					firstSharedAt: '2026-01-15T10:00:00.000Z',
+					isViewed: false,
+				})}
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
@@ -93,6 +97,7 @@ describe('ShareAction', () => {
 			<ShareAction
 				guest={makeGuest({
 					deliveryStatus: 'shared',
+					firstSharedAt: '2026-01-15T10:00:00.000Z',
 					isViewed: true,
 					attendanceStatus: 'pending',
 				})}

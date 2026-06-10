@@ -10,6 +10,7 @@ import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-ren
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { resolveDefaultMessageKind } from '@/lib/rsvp/services/shared/message-type-resolver';
 
 type ShareStatus = 'idle' | 'saving' | 'sharing' | 'fallback';
 
@@ -93,7 +94,11 @@ export function useSendInvitation({
 
 	const renderedMessage = useMemo(() => {
 		if (!templates || !guest) return guest?.shareText || '';
-		const template = templates.invitation;
+		const kind = resolveDefaultMessageKind({
+			firstSharedAt: guest.firstSharedAt,
+			attendanceStatus: guest.attendanceStatus,
+		});
+		const template = templates[kind];
 		return renderShareMessage(template, {
 			guestName: editName || guest.fullName,
 			eventTitle: eventTitle || '',
