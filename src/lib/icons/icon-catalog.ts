@@ -186,6 +186,7 @@ export type IconCategory = (typeof ICON_CATALOG)[number]['category'];
 
 export const ICON_NAMES: readonly IconName[] = ICON_CATALOG.map((entry) => entry.name);
 export const DEFAULT_ICON: IconName = ICON_CATALOG[0].name;
+export const ICON_NAMES_TUPLE = iconNamesTuple();
 
 export function isIconName(value: unknown): value is IconName {
 	return typeof value === 'string' && (ICON_NAMES as readonly string[]).includes(value);

@@ -1,9 +1,7 @@
 import { z } from 'zod';
-import { iconNamesTuple } from '@/lib/icons/icon-catalog';
+import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-
-const ICON_NAMES_TUPLE = iconNamesTuple();
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
 const richTextSchema = z.string();

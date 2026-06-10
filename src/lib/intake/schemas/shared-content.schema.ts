@@ -1,9 +1,7 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { iconNamesTuple } from '@/lib/icons/icon-catalog';
+import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-
-const ICON_NAMES_TUPLE = iconNamesTuple();
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z

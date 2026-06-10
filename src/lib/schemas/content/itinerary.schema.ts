@@ -1,7 +1,5 @@
 import { z } from 'zod';
-import { iconNamesTuple } from '@/lib/icons/icon-catalog';
-
-const ICON_NAMES_TUPLE = iconNamesTuple();
+import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 
 export const itineraryItemSchema = z.object({
 	iconName: z.enum(ICON_NAMES_TUPLE),
