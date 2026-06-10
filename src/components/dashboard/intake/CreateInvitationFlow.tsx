@@ -1,10 +1,12 @@
-import type { FC } from 'react';
+import type { FC, SubmitEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import DemoSelector from '@/components/dashboard/intake/DemoSelector';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { EVENT_TYPE_LABELS } from '@/lib/intake/labels';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
+
+const INVITATIONS_INDEX_URL = '/dashboard/invitaciones';
 
 const CreateInvitationFlow: FC = () => {
 	const { createInvitation } = useInvitationAdmin();
@@ -30,7 +32,7 @@ const CreateInvitationFlow: FC = () => {
 		return () => window.removeEventListener('beforeunload', warn);
 	}, [hasInput]);
 
-	const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
+	const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		if (!isValid) {
 			setError('Completa el título, el tipo de evento y el demo base.');
@@ -58,7 +60,7 @@ const CreateInvitationFlow: FC = () => {
 	return (
 		<div className="create-flow">
 			<header className="create-flow__header">
-				<a href="/dashboard/invitaciones" className="create-flow__back">
+				<a href={INVITATIONS_INDEX_URL} className="create-flow__back">
 					&larr; Volver a invitaciones
 				</a>
 				<h1 className="create-flow__title">Nueva invitación</h1>
@@ -160,7 +162,7 @@ const CreateInvitationFlow: FC = () => {
 				{error && <p className="intake-list__error">{error}</p>}
 
 				<div className="create-flow__actions">
-					<a href="/dashboard/invitaciones" className="btn-secondary">
+					<a href={INVITATIONS_INDEX_URL} className="btn-secondary">
 						Cancelar
 					</a>
 					<button type="submit" className="btn-primary" disabled={!isValid || submitting}>
