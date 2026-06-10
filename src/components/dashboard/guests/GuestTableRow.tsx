@@ -17,12 +17,14 @@ import {
 	getViewStateLabel,
 	hasMessage,
 	normalizeViewPercentage,
+	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestTableRowProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
+	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
@@ -36,12 +38,14 @@ interface GuestTableRowProps {
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
+	onSaveGuest?: GuestSaveCallback;
 }
 
 const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	item,
 	index,
 	inviteUrl,
+	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
 	shareDateContext,
@@ -55,12 +59,13 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onRevertShared,
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
+	onSaveGuest,
 }) => {
-	const progressRef = useRef<HTMLDivElement>(null);
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
 	const isViewed = item.firstViewedAt != null;
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
+	const progressRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (isExpanded) setMsgOpen(false);
@@ -71,6 +76,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 			progressRef.current.style.setProperty('--progress-width', `${viewPercentage}%`);
 		}
 	}, [viewPercentage]);
+
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
 	const hasTags = visibleTags.length > 0;
@@ -162,10 +168,12 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					<ShareAction
 						guest={item}
 						inviteUrl={inviteUrl}
+						inviteBaseUrl={inviteBaseUrl}
 						eventTitle={eventTitle}
 						shareTemplates={shareTemplates}
 						shareDateContext={shareDateContext}
 						onShared={async () => onMarkShared(item)}
+						onSaveGuest={onSaveGuest}
 					/>
 				</td>
 				<td data-label="">

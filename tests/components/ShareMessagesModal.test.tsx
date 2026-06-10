@@ -137,12 +137,8 @@ describe('ShareMessagesModal', () => {
 	});
 
 	it('disables save button while saving', async () => {
-		let resolvePromise: (value: unknown) => void;
 		(guestsApi.updateShareMessages as jest.Mock).mockImplementation(
-			() =>
-				new Promise((resolve) => {
-					resolvePromise = resolve;
-				}),
+			() => new Promise(() => {}),
 		);
 
 		createModal();

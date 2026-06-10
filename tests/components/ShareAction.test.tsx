@@ -183,7 +183,7 @@ describe('ShareAction', () => {
 		expect(screen.getByRole('dialog', { name: /compartir/i })).toBeInTheDocument();
 	});
 
-	it('composer shows invitation and reminder toggle', () => {
+	it('composer shows send invitation modal with guest name and message preview', () => {
 		render(
 			<ShareAction
 				guest={makeGuest()}
@@ -203,7 +203,8 @@ describe('ShareAction', () => {
 
 		fireEvent.click(screen.getByRole('button'));
 
-		expect(screen.getByText('Invitación')).toBeInTheDocument();
-		expect(screen.getByText('Recordatorio')).toBeInTheDocument();
+		expect(screen.getByRole('dialog', { name: /compartir invitación/i })).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Test Guest')).toBeInTheDocument();
+		expect(screen.getByText('Mensaje a enviar')).toBeInTheDocument();
 	});
 });

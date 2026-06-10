@@ -13,6 +13,7 @@ import SendInvitationModal from '@/components/dashboard/guests/SendInvitationMod
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
+import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
@@ -147,11 +148,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			);
 		}
 		if (modalOpen && modalMode === 'send-pending') {
+			const editingInviteUrl = editingGuest
+				? getGuestInviteUrl(editingGuest, inviteBaseUrl)
+				: '';
 			return (
 				<SendInvitationModal
 					key={editingGuest?.guestId ?? 'empty'}
 					guest={editingGuest}
 					pendingGuests={pendingGuests}
+					inviteUrl={editingInviteUrl}
 					inviteBaseUrl={inviteBaseUrl}
 					onClose={closeModal}
 					onSave={handleSaveInvitation}
@@ -267,6 +272,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onRevertShared={handleRevertShared}
 					isBrandingRemovalEligible={isBrandingRemovalEligible}
 					onToggleBrandingRemoval={handleToggleBrandingRemoval}
+					onSaveGuest={handleSaveInvitation}
 				/>
 
 				{modals}

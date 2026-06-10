@@ -15,13 +15,16 @@ import {
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
+	hasContact,
 	normalizeViewPercentage,
+	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestCardProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
+	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
@@ -35,12 +38,14 @@ interface GuestCardProps {
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
+	onSaveGuest?: GuestSaveCallback;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
 	item,
 	index,
 	inviteUrl,
+	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
 	shareDateContext,
@@ -54,6 +59,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onRevertShared,
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
+	onSaveGuest,
 }) => {
 	const [messageVisible, setMessageVisible] = useState(false);
 	const messageId = useId();
@@ -74,7 +80,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 
 	const contactDisplay = getContactDisplay(item);
-	const hasAnyContact = !!(item.phone || item.email);
+	const hasAnyContact = hasContact(item);
 	const brandingBadge = item.hideCelebraMeBranding && (
 		<span className="guest-tag guest-tag--branding">Sin marca</span>
 	);
@@ -264,10 +270,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<ShareAction
 					guest={item}
 					inviteUrl={inviteUrl}
+					inviteBaseUrl={inviteBaseUrl}
 					eventTitle={eventTitle}
 					shareTemplates={shareTemplates}
 					shareDateContext={shareDateContext}
 					onShared={async () => onMarkShared(item)}
+					onSaveGuest={onSaveGuest}
 				/>
 				<button
 					type="button"

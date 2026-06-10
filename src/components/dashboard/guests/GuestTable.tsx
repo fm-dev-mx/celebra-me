@@ -1,7 +1,10 @@
 import React from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import {
+	getGuestInviteUrl,
+	type GuestSaveCallback,
+} from '@/components/dashboard/guests/guest-presenter';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -22,6 +25,7 @@ interface GuestTableProps {
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
+	onSaveGuest?: GuestSaveCallback;
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -42,8 +46,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onRevertShared,
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
+	onSaveGuest,
 }) => {
-	if (!items || items.length === 0) {
+	if (items.length === 0) {
 		return (
 			<div className="dashboard-guests__empty">
 				<p>No hay invitados que coincidan con los filtros seleccionados.</p>
@@ -60,6 +65,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						item={item}
 						index={index}
 						inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+						inviteBaseUrl={inviteBaseUrl}
 						eventTitle={eventTitle}
 						shareTemplates={shareTemplates}
 						shareDateContext={shareDateContext}
@@ -73,6 +79,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						onRevertShared={onRevertShared}
 						isBrandingRemovalEligible={isBrandingRemovalEligible}
 						onToggleBrandingRemoval={onToggleBrandingRemoval}
+						onSaveGuest={onSaveGuest}
 					/>
 				))}
 			</div>
@@ -99,6 +106,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								item={item}
 								index={index}
 								inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+								inviteBaseUrl={inviteBaseUrl}
 								eventTitle={eventTitle}
 								shareTemplates={shareTemplates}
 								shareDateContext={shareDateContext}
@@ -112,6 +120,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								onRevertShared={onRevertShared}
 								isBrandingRemovalEligible={isBrandingRemovalEligible}
 								onToggleBrandingRemoval={onToggleBrandingRemoval}
+								onSaveGuest={onSaveGuest}
 							/>
 						))}
 					</tbody>
