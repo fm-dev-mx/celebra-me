@@ -8,7 +8,9 @@ import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.inter
 import type { DeliveryFilter, EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveShareTemplates,
+	resolveReminderSettings,
 	type ShareMessagesConfig,
+	type ReminderSettings,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
 	buildShareMessageDateContext,
@@ -109,6 +111,9 @@ export const useGuestDashboardRealtime = ({
 	const [shareTemplates, setShareTemplates] = useState<ShareMessagesConfig>(
 		resolveShareTemplates({}),
 	);
+	const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(
+		resolveReminderSettings(null),
+	);
 	const [shareDateContext, setShareDateContext] = useState<ShareMessageDateContext>(
 		buildShareMessageDateContext(null, null, '', new Date()),
 	);
@@ -164,6 +169,9 @@ export const useGuestDashboardRealtime = ({
 			setTotals(data.totals);
 			if (data.shareTemplates) {
 				setShareTemplates(data.shareTemplates);
+			}
+			if (data.reminderSettings) {
+				setReminderSettings(resolveReminderSettings(data.reminderSettings));
 			}
 			setShareDateContext(data.shareDateContext);
 			setUpdatedAt(data.updatedAt);
@@ -242,8 +250,10 @@ export const useGuestDashboardRealtime = ({
 		loading,
 		loadGuests,
 		realtimeState,
+		reminderSettings,
 		setEventId,
 		setItems,
+		setReminderSettings,
 		setShareTemplates,
 		shareTemplates,
 		shareDateContext,

@@ -10,7 +10,11 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 	return isPublic ? 'RSVP público' : 'Invitación personalizada';
 }
 
-export type ShareFlowMode = 'pending-invitation' | 'single-invitation' | 'single-reminder';
+export type ShareFlowMode =
+	| 'pending-invitation'
+	| 'single-invitation'
+	| 'pending-reminder'
+	| 'single-reminder';
 
 export type GuestSaveCallback = (
 	guestId: string,

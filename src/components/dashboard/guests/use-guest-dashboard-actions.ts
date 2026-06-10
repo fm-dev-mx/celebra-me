@@ -4,8 +4,15 @@ import { isDebugMode } from '@/utils/debug';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
+import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
+import type {
+	ReminderAudience,
+	ReminderSettings,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 type ModalMode = 'create' | 'edit' | 'send-pending';
+
+export type BatchFlowKind = 'invitation' | 'reminder';
 
 export interface GuestFormPayload {
 	fullName: string;
@@ -27,6 +34,7 @@ interface UseGuestDashboardActionsOptions {
 	items: DashboardGuestItem[];
 	loadGuests: () => Promise<void>;
 	setItems: React.Dispatch<React.SetStateAction<DashboardGuestItem[]>>;
+	reminderSettings?: ReminderSettings;
 }
 
 export const useGuestDashboardActions = ({
@@ -34,10 +42,12 @@ export const useGuestDashboardActions = ({
 	items,
 	loadGuests,
 	setItems,
+	reminderSettings,
 }: UseGuestDashboardActionsOptions) => {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [importModalOpen, setImportModalOpen] = useState(false);
 	const [modalMode, setModalMode] = useState<ModalMode>('create');
+	const [batchFlowKind, setBatchFlowKind] = useState<BatchFlowKind>('invitation');
 	const [editingGuest, setEditingGuest] = useState<DashboardGuestItem | null>(null);
 	const [notification, setNotification] = useState<NotificationPayload | null>(null);
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
@@ -47,6 +57,8 @@ export const useGuestDashboardActions = ({
 
 	const itemsRef = useRef(items);
 	itemsRef.current = items;
+	const reminderSettingsRef = useRef(reminderSettings);
+	reminderSettingsRef.current = reminderSettings;
 
 	const openCreateModal = useCallback(() => {
 		setModalMode('create');
@@ -65,7 +77,18 @@ export const useGuestDashboardActions = ({
 		const next = currentItems.find((item) => item.deliveryStatus === 'generated');
 		if (!next) return;
 		setModalMode('send-pending');
+		setBatchFlowKind('invitation');
 		setEditingGuest(next);
+		setIsNextActionActive(true);
+		setModalOpen(true);
+	}, []);
+
+	const openNextReminderGuest = useCallback((audience: ReminderAudience) => {
+		const eligible = getReminderEligibleGuests(itemsRef.current, audience);
+		if (eligible.length === 0) return;
+		setModalMode('send-pending');
+		setBatchFlowKind('reminder');
+		setEditingGuest(eligible[0]);
 		setIsNextActionActive(true);
 		setModalOpen(true);
 	}, []);
@@ -170,9 +193,17 @@ export const useGuestDashboardActions = ({
 			if (!editingGuest || editingGuest.guestId !== currentGuestId) return;
 
 			const currentItems = itemsRef.current;
-			const next = currentItems.find(
-				(item) => item.deliveryStatus === 'generated' && item.guestId !== currentGuestId,
-			);
+			const isReminder = batchFlowKind === 'reminder';
+
+			const next = isReminder
+				? getReminderEligibleGuests(
+						currentItems,
+						reminderSettingsRef.current?.audience ?? 'unconfirmed',
+					).find((item) => item.guestId !== currentGuestId)
+				: currentItems.find(
+						(item) =>
+							item.deliveryStatus === 'generated' && item.guestId !== currentGuestId,
+					);
 
 			if (next) {
 				setEditingGuest(next);
@@ -184,12 +215,14 @@ export const useGuestDashboardActions = ({
 				setModalOpen(false);
 				setIsNextActionActive(false);
 				setNotification({
-					message: 'No hay más invitaciones pendientes.',
+					message: isReminder
+						? 'No hay más recordatorios pendientes.'
+						: 'No hay más invitaciones pendientes.',
 					type: 'success',
 				});
 			}
 		},
-		[editingGuest, setNotification],
+		[editingGuest, batchFlowKind, setNotification],
 	);
 
 	const handleRevertShared = useCallback(
@@ -452,6 +485,7 @@ export const useGuestDashboardActions = ({
 	const pendingGuests = items.filter((item) => item.deliveryStatus === 'generated');
 
 	return {
+		batchFlowKind,
 		celebratingGuestId,
 		closeDeleteConfirm,
 		closeModal,
@@ -479,6 +513,7 @@ export const useGuestDashboardActions = ({
 		openEditModal,
 		openImportModal,
 		openNextGeneratedGuest,
+		openNextReminderGuest,
 		pendingGuests,
 		requestDelete,
 		setImportModalOpen: setImportModalOpenCallback,

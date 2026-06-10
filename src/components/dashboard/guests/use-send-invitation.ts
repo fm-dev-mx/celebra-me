@@ -115,10 +115,17 @@ export function useSendInvitation({
 
 	const savingRef = useRef(false);
 
-	const isQueueMode = mode === 'pending-invitation';
+	const isQueueMode = mode === 'pending-invitation' || mode === 'pending-reminder';
+	const isReminderMode = mode === 'pending-reminder' || mode === 'single-reminder';
 
 	const pendingCount = isQueueMode
-		? pendingGuests.filter((item) => item.deliveryStatus === 'generated').length
+		? pendingGuests.filter((item) =>
+				isReminderMode
+					? item.deliveryStatus === 'shared' &&
+						item.attendanceStatus !== 'confirmed' &&
+						item.attendanceStatus !== 'declined'
+					: item.deliveryStatus === 'generated',
+			).length
 		: 0;
 
 	const trimmedPhone = editPhone.trim();
@@ -138,14 +145,13 @@ export function useSendInvitation({
 
 	const renderedMessage = useMemo(() => {
 		if (!templates || !guest) return guest?.shareText || '';
-		const kind =
-			mode === 'single-reminder'
-				? 'reminder'
-				: resolveDefaultMessageKind({
-						firstSharedAt: guest.firstSharedAt,
-						attendanceStatus: guest.attendanceStatus,
-						deliveryStatus: guest.deliveryStatus,
-					});
+		const kind = isReminderMode
+			? 'reminder'
+			: resolveDefaultMessageKind({
+					firstSharedAt: guest.firstSharedAt,
+					attendanceStatus: guest.attendanceStatus,
+					deliveryStatus: guest.deliveryStatus,
+				});
 		const template = templates[kind];
 		return renderShareMessage(template, {
 			guestName: editName || guest.fullName,
@@ -153,7 +159,7 @@ export function useSendInvitation({
 			inviteUrl,
 			...(shareDateContext || {}),
 		});
-	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext, mode]);
+	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext, isReminderMode]);
 
 	const {
 		editingMessage,
@@ -175,7 +181,9 @@ export function useSendInvitation({
 		async (updated: DashboardGuestItem) => {
 			setFallbackGuest(updated);
 			try {
-				await onMarkShared(updated);
+				if (!isReminderMode) {
+					await onMarkShared(updated);
+				}
 				if (isQueueMode) {
 					onAdvanceFromGuest?.(updated.guestId);
 				}
@@ -184,7 +192,7 @@ export function useSendInvitation({
 				setShareStatus('fallback');
 			}
 		},
-		[onMarkShared, onAdvanceFromGuest, isQueueMode],
+		[onMarkShared, onAdvanceFromGuest, isQueueMode, isReminderMode],
 	);
 
 	const markSharedAndComplete = useCallback(
@@ -306,7 +314,9 @@ export function useSendInvitation({
 			if (!copied) {
 				window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 			}
-			await onMarkShared(fallbackGuest);
+			if (!isReminderMode) {
+				await onMarkShared(fallbackGuest);
+			}
 			if (isQueueMode) {
 				onAdvanceFromGuest?.(fallbackGuest.guestId);
 			}
@@ -315,7 +325,15 @@ export function useSendInvitation({
 		} finally {
 			setAdvancing(false);
 		}
-	}, [fallbackGuest, advancing, inviteUrl, onMarkShared, onAdvanceFromGuest, isQueueMode]);
+	}, [
+		fallbackGuest,
+		advancing,
+		inviteUrl,
+		onMarkShared,
+		onAdvanceFromGuest,
+		isQueueMode,
+		isReminderMode,
+	]);
 
 	const handleKeepPending = useCallback(() => {
 		savingRef.current = false;
@@ -353,6 +371,7 @@ export function useSendInvitation({
 		localMessageOverride,
 		messageError,
 		isQueueMode,
+		isReminderMode,
 		copySuccess,
 		handleEditMessage,
 		handleCancelEditMessage,
