@@ -28,7 +28,7 @@ function setupHook(
 		useSendInvitation({
 			guest,
 			pendingGuests,
-			inviteBaseUrl: 'http://localhost',
+			inviteUrl: 'http://localhost/invitacion/invite-1',
 			...callbacks,
 		}),
 	);
@@ -98,7 +98,9 @@ describe('useSendInvitation', () => {
 			result.current.handleSaveAndShare();
 		});
 
-		expect(result.current.phoneError).toBe('El teléfono debe tener 10 dígitos.');
+		expect(result.current.phoneError).toBe(
+			'Revisa el número de WhatsApp o déjalo vacío para elegir el contacto manualmente.',
+		);
 		expect(callbacks.onSave).not.toHaveBeenCalled();
 	});
 

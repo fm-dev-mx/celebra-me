@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 import {
 	buildInvitationSharePayload,
 	shareInvitationLink,
@@ -17,7 +17,7 @@ type ShareStatus = 'idle' | 'saving' | 'sharing' | 'fallback';
 interface UseSendInvitationOptions {
 	guest: DashboardGuestItem | null;
 	pendingGuests: DashboardGuestItem[];
-	inviteBaseUrl: string;
+	inviteUrl: string;
 	onSave: (
 		guestId: string,
 		payload: {
@@ -28,11 +28,12 @@ interface UseSendInvitationOptions {
 		},
 	) => Promise<DashboardGuestItem>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-	onAdvanceFromGuest: (currentGuestId: string) => void;
-	onPostponeGuest: (currentGuestId: string) => void;
+	onAdvanceFromGuest?: (currentGuestId: string) => void;
+	onPostponeGuest?: (currentGuestId: string) => void;
 	templates?: ShareMessagesConfig;
 	shareDateContext?: ShareMessageDateContext;
 	eventTitle?: string;
+	mode?: ShareFlowMode;
 }
 
 function resolveSendPhone(editPhone: string, savedPhone: string): string | null | undefined {
@@ -57,10 +58,29 @@ function buildSavePayload(
 	};
 }
 
+function hasDataChanged(
+	guest: DashboardGuestItem,
+	editName: string,
+	editMaxAttendees: number,
+	editPhone: string,
+	editCountryCode: string,
+): boolean {
+	if (editName.trim() !== guest.fullName) return true;
+	if (editMaxAttendees !== guest.maxAllowedAttendees) return true;
+
+	const trimmedPhone = editPhone.trim();
+	const savedPhone = guest.phone ?? '';
+	if (trimmedPhone !== savedPhone) return true;
+
+	if (trimmedPhone && editCountryCode !== (guest.countryCode ?? '+52')) return true;
+
+	return false;
+}
+
 export function useSendInvitation({
 	guest,
 	pendingGuests,
-	inviteBaseUrl,
+	inviteUrl: precomputedInviteUrl,
 	onSave,
 	onMarkShared,
 	onAdvanceFromGuest,
@@ -68,6 +88,7 @@ export function useSendInvitation({
 	templates,
 	shareDateContext,
 	eventTitle,
+	mode = 'pending-invitation',
 }: UseSendInvitationOptions) {
 	const [editName, setEditName] = useState(guest?.fullName ?? '');
 	const [editMaxAttendees, setEditMaxAttendees] = useState(guest?.maxAllowedAttendees ?? 1);
@@ -82,22 +103,26 @@ export function useSendInvitation({
 	const [localMessageOverride, setLocalMessageOverride] = useState('');
 	const [messageError, setMessageError] = useState<string | null>(null);
 
-	const pendingCount = pendingGuests.filter((item) => item.deliveryStatus === 'generated').length;
+	const isQueueMode = mode === 'pending-invitation';
+
+	const pendingCount = isQueueMode
+		? pendingGuests.filter((item) => item.deliveryStatus === 'generated').length
+		: 0;
 
 	const trimmedPhone = editPhone.trim();
 	const validPhone = !!trimmedPhone && hasValidPhone(trimmedPhone);
 
-	const inviteUrl = useMemo(
-		() => (guest ? getGuestInviteUrl(guest, inviteBaseUrl) : ''),
-		[guest, inviteBaseUrl],
-	);
+	const inviteUrl = precomputedInviteUrl;
 
 	const renderedMessage = useMemo(() => {
 		if (!templates || !guest) return guest?.shareText || '';
-		const kind = resolveDefaultMessageKind({
-			firstSharedAt: guest.firstSharedAt,
-			attendanceStatus: guest.attendanceStatus,
-		});
+		const kind =
+			mode === 'single-reminder'
+				? 'reminder'
+				: resolveDefaultMessageKind({
+						firstSharedAt: guest.firstSharedAt,
+						attendanceStatus: guest.attendanceStatus,
+					});
 		const template = templates[kind];
 		return renderShareMessage(template, {
 			guestName: editName || guest.fullName,
@@ -105,25 +130,42 @@ export function useSendInvitation({
 			inviteUrl,
 			...(shareDateContext || {}),
 		});
-	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext]);
+	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext, mode]);
 
 	const activeMessage = useMemo(
 		() => localMessageOverride || renderedMessage,
 		[localMessageOverride, renderedMessage],
 	);
 
+	const trySave = useCallback(async (): Promise<DashboardGuestItem | null> => {
+		if (!guest) return null;
+		if (!hasDataChanged(guest, editName, editMaxAttendees, editPhone, editCountryCode)) {
+			return guest;
+		}
+		try {
+			return await onSave(
+				guest.guestId,
+				buildSavePayload(guest, editName, editMaxAttendees, editPhone, editCountryCode),
+			);
+		} catch {
+			return null;
+		}
+	}, [guest, editName, editMaxAttendees, editPhone, editCountryCode, onSave]);
+
 	const markSharedOrFallback = useCallback(
 		async (updated: DashboardGuestItem) => {
 			setFallbackGuest(updated);
 			try {
 				await onMarkShared(updated);
-				onAdvanceFromGuest(updated.guestId);
+				if (isQueueMode) {
+					onAdvanceFromGuest?.(updated.guestId);
+				}
 			} catch {
 				setMarkError('Error al registrar el envío.');
 				setShareStatus('fallback');
 			}
 		},
-		[onMarkShared, onAdvanceFromGuest],
+		[onMarkShared, onAdvanceFromGuest, isQueueMode],
 	);
 
 	const handleEditMessage = useCallback(() => {
@@ -138,6 +180,11 @@ export function useSendInvitation({
 		setMessageError(null);
 	}, []);
 
+	const handleResetMessage = useCallback(() => {
+		setLocalMessageOverride(renderedMessage);
+		setMessageError(null);
+	}, [renderedMessage]);
+
 	const handleUpdateLocalMessage = useCallback((text: string) => {
 		setLocalMessageOverride(text);
 		setMessageError(null);
@@ -151,39 +198,24 @@ export function useSendInvitation({
 			return;
 		}
 		const copied = await copyToClipboard(text);
-		if (copied) {
-			setShareStatus('saving');
-			try {
-				const updated = await onSave(
-					guest.guestId,
-					buildSavePayload(guest, editName, editMaxAttendees, editPhone, editCountryCode),
-				);
-				await markSharedOrFallback(updated);
-			} catch {
-				setPhoneError('Error al guardar los datos. Intenta de nuevo.');
-				setShareStatus('idle');
-			}
-		} else {
+		if (!copied) {
 			setMessageError('No se pudo copiar el mensaje.');
+			return;
 		}
-	}, [
-		guest,
-		localMessageOverride,
-		renderedMessage,
-		editPhone,
-		editName,
-		editMaxAttendees,
-		editCountryCode,
-		onSave,
-		markSharedOrFallback,
-	]);
+
+		const updated = await trySave();
+		const target = updated ?? guest;
+		await markSharedOrFallback(target);
+	}, [guest, localMessageOverride, renderedMessage, trySave, markSharedOrFallback]);
 
 	const handleSaveAndShare = useCallback(async () => {
 		if (!guest || shareStatus !== 'idle') return;
 
 		const trimmed = editPhone.trim();
 		if (trimmed && !hasValidPhone(trimmed)) {
-			setPhoneError('El teléfono debe tener 10 dígitos.');
+			setPhoneError(
+				'Revisa el número de WhatsApp o déjalo vacío para elegir el contacto manualmente.',
+			);
 			return;
 		}
 
@@ -197,63 +229,49 @@ export function useSendInvitation({
 		setShareStatus('saving');
 		setMarkError(null);
 
-		try {
-			const updated = await onSave(
-				guest.guestId,
-				buildSavePayload(guest, editName, editMaxAttendees, editPhone, editCountryCode),
-			);
+		const updated = await trySave();
+		const target = updated ?? guest;
 
-			if (validPhone) {
-				const waPhone = buildWhatsAppNumber(
-					editPhone || updated.phone,
-					editCountryCode || updated.countryCode,
-				);
-				if (!waPhone) {
-					setShareStatus('fallback');
-					setFallbackGuest(updated);
-					return;
-				}
-				const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(activeMessage)}`;
-				const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
-				setFallbackGuest(updated);
-				if (waWindow && !waWindow.closed) {
-					await markSharedOrFallback(updated);
-					return;
-				}
-				setShareStatus('fallback');
-				return;
-			}
+		const phoneNumber = validPhone
+			? buildWhatsAppNumber(editPhone || target.phone, editCountryCode || target.countryCode)
+			: '';
 
-			const url = getGuestInviteUrl(updated, inviteBaseUrl);
-			const payload = buildInvitationSharePayload({
-				shareText: activeMessage,
-				inviteUrl: url,
-			});
-			const result = await shareInvitationLink(payload);
+		const waUrl = phoneNumber
+			? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(activeMessage)}`
+			: `https://wa.me/?text=${encodeURIComponent(activeMessage)}`;
 
-			if (result === 'shared') {
-				await markSharedOrFallback(updated);
-				return;
-			}
+		const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
+		setFallbackGuest(target);
 
-			if (result === 'canceled') {
-				setFallbackGuest(null);
-				setShareStatus('idle');
-				return;
-			}
-
-			const copied = await copyToClipboard(activeMessage);
-			if (copied) {
-				await markSharedOrFallback(updated);
-				return;
-			}
-
-			setShareStatus('fallback');
-			setFallbackGuest(updated);
-		} catch {
-			setPhoneError('Error al guardar los datos. Intenta de nuevo.');
-			setShareStatus('idle');
+		if (waWindow && !waWindow.closed) {
+			await markSharedOrFallback(target);
+			return;
 		}
+
+		const payload = buildInvitationSharePayload({
+			shareText: activeMessage,
+			inviteUrl,
+		});
+		const result = await shareInvitationLink(payload);
+
+		if (result === 'shared') {
+			await markSharedOrFallback(target);
+			return;
+		}
+
+		if (result === 'canceled') {
+			setFallbackGuest(null);
+			setShareStatus('idle');
+			return;
+		}
+
+		const copied = await copyToClipboard(activeMessage);
+		if (copied) {
+			await markSharedOrFallback(target);
+			return;
+		}
+
+		setShareStatus('fallback');
 	}, [
 		guest,
 		shareStatus,
@@ -262,41 +280,40 @@ export function useSendInvitation({
 		editMaxAttendees,
 		editCountryCode,
 		validPhone,
-		onSave,
-		inviteBaseUrl,
-		activeMessage,
-		localMessageOverride,
 		editingMessage,
+		localMessageOverride,
+		activeMessage,
+		trySave,
 		markSharedOrFallback,
 	]);
 
 	const handleCopyOnly = useCallback(async () => {
 		if (!fallbackGuest) return;
-		const inviteUrl = getGuestInviteUrl(fallbackGuest, inviteBaseUrl);
 		const copied = await copyToClipboard(inviteUrl);
 		if (!copied) {
 			window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 		}
-	}, [fallbackGuest, inviteBaseUrl]);
+	}, [fallbackGuest, inviteUrl]);
 
 	const handleCopyAndMarkSent = useCallback(async () => {
 		if (!fallbackGuest || advancing) return;
 		setAdvancing(true);
 		setMarkError(null);
 		try {
-			const inviteUrl = getGuestInviteUrl(fallbackGuest, inviteBaseUrl);
 			const copied = await copyToClipboard(inviteUrl);
 			if (!copied) {
 				window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 			}
 			await onMarkShared(fallbackGuest);
-			onAdvanceFromGuest(fallbackGuest.guestId);
+			if (isQueueMode) {
+				onAdvanceFromGuest?.(fallbackGuest.guestId);
+			}
 		} catch {
 			setMarkError('Error al registrar el envío.');
 		} finally {
 			setAdvancing(false);
 		}
-	}, [fallbackGuest, advancing, inviteBaseUrl, onMarkShared, onAdvanceFromGuest]);
+	}, [fallbackGuest, advancing, inviteUrl, onMarkShared, onAdvanceFromGuest, isQueueMode]);
 
 	const handleKeepPending = useCallback(() => {
 		setShareStatus('idle');
@@ -310,7 +327,7 @@ export function useSendInvitation({
 
 	const handlePostpone = useCallback(() => {
 		if (!guest) return;
-		onPostponeGuest(guest.guestId);
+		onPostponeGuest?.(guest.guestId);
 	}, [guest, onPostponeGuest]);
 
 	return {
@@ -334,8 +351,10 @@ export function useSendInvitation({
 		activeMessage,
 		localMessageOverride,
 		messageError,
+		isQueueMode,
 		handleEditMessage,
 		handleCancelEditMessage,
+		handleResetMessage,
 		handleUpdateLocalMessage,
 		handleCopyMessageAction,
 		handleSaveAndShare,
