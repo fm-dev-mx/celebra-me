@@ -57,7 +57,7 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 									onShareMessages();
 								}}
 							>
-								<span>Mensajes</span>
+								<span>Plantillas de mensaje</span>
 							</button>
 						)}
 						<button

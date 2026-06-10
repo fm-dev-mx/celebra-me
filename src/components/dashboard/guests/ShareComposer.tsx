@@ -242,7 +242,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 							disabled={status !== 'idle'}
 						>
 							<CopyIcon size={16} />
-							<span>Compartir...</span>
+							<span>Compartir con otra app</span>
 						</button>
 					)}
 				</div>

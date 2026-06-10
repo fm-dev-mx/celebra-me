@@ -104,7 +104,7 @@ describe('invitation-section-registry', () => {
 			expect(getConfigEditorSections().map((section) => section.label)).toEqual([
 				'Datos de la invitación',
 				'Publicación',
-				'Mensajes para compartir',
+				'Plantillas de mensaje',
 				'Biblioteca de imágenes',
 				'Música',
 				'Sobre / apertura',

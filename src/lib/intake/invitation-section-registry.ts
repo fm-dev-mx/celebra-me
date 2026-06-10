@@ -237,7 +237,7 @@ export const CONFIG_SECTION_DEFINITIONS: Record<
 	},
 	sharing: {
 		id: 'sharing',
-		label: 'Mensajes para compartir',
+		label: 'Plantillas de mensaje',
 		sidebarGroup: 'config',
 		editorCardId: 'sharing',
 		saveSectionKey: 'sharing',

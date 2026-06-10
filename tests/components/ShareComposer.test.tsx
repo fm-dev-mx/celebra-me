@@ -209,7 +209,7 @@ describe('ShareComposer', () => {
 		(canUseNativeShare as jest.Mock).mockReturnValue(true);
 
 		createComposer();
-		expect(screen.getByText('Compartir...')).toBeInTheDocument();
+		expect(screen.getByText('Compartir con otra app')).toBeInTheDocument();
 	});
 
 	it('calls onShared via native share when supported', async () => {
@@ -219,7 +219,7 @@ describe('ShareComposer', () => {
 
 		const { onShared } = createComposer();
 		await act(async () => {
-			fireEvent.click(screen.getByText('Compartir...'));
+			fireEvent.click(screen.getByText('Compartir con otra app'));
 		});
 		expect(onShared).toHaveBeenCalledTimes(1);
 	});
@@ -230,7 +230,7 @@ describe('ShareComposer', () => {
 		(inviteShare.shareInvitationLink as jest.Mock).mockResolvedValue('canceled');
 
 		const { onShared } = createComposer();
-		const nativeBtn = screen.getByText('Compartir...');
+		const nativeBtn = screen.getByText('Compartir con otra app');
 		fireEvent.click(nativeBtn);
 		await act(async () => {
 			await (inviteShare.shareInvitationLink as jest.Mock).mock.results[0]?.value;
