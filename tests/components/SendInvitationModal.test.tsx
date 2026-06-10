@@ -8,6 +8,7 @@ import {
 	createMockWindow,
 	stubWindowOpen,
 } from '@tests/helpers/nav-test-utils';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 
@@ -49,13 +50,7 @@ function renderModal(
 				guest={guest}
 				pendingGuests={pendingGuests ?? (guest ? [guest] : [])}
 				templates={DEFAULT_TEMPLATES}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				eventTitle="Test Event"
 			/>,
 		),
@@ -505,13 +500,7 @@ describe('SendInvitationModal', () => {
 					}}
 					onPostponeGuest={props.onPostponeGuest}
 					templates={DEFAULT_TEMPLATES}
-					shareDateContext={{
-						eventDate: '',
-						daysUntilEvent: '',
-						rsvpDeadline: '',
-						eventTimingText: '',
-						rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-					}}
+					shareDateContext={defaultShareDateContext()}
 					eventTitle="Test Event"
 				/>
 			);
@@ -554,13 +543,7 @@ describe('SendInvitationModal', () => {
 					onAdvanceFromGuest={() => setGuest(null)}
 					onPostponeGuest={props.onPostponeGuest}
 					templates={DEFAULT_TEMPLATES}
-					shareDateContext={{
-						eventDate: '',
-						daysUntilEvent: '',
-						rsvpDeadline: '',
-						eventTimingText: '',
-						rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-					}}
+					shareDateContext={defaultShareDateContext()}
 					eventTitle="Test Event"
 				/>
 			);

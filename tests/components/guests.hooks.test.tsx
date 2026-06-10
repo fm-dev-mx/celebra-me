@@ -8,6 +8,10 @@ import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	defaultShareDateContext,
+	DEFAULT_REMINDER_SETTINGS_FIXTURE,
+} from '@tests/helpers/test-fixtures';
 
 jest.mock('@/lib/dashboard/guests-api', () => ({
 	guestsApi: {
@@ -93,13 +97,8 @@ describe('active guest dashboard hooks', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
@@ -219,13 +218,8 @@ describe('active guest dashboard hooks', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
@@ -586,13 +580,8 @@ describe('active guest dashboard hooks', () => {
 					invitation: DEFAULT_INVITATION_MESSAGE,
 					reminder: DEFAULT_REMINDER_MESSAGE,
 				},
-				shareDateContext: {
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				},
+				reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+				shareDateContext: defaultShareDateContext(),
 				updatedAt: '2026-03-22T00:00:00.000Z',
 			});
 

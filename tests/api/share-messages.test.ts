@@ -79,8 +79,12 @@ describe('POST /api/dashboard/guests/share-messages', () => {
 
 	it('passes trimmed values to service and returns result', async () => {
 		mockUpdateService.mockResolvedValue({
-			invitation: 'Custom invitation',
-			reminder: 'Custom reminder',
+			shareMessages: { invitation: 'Custom invitation', reminder: 'Custom reminder' },
+			reminderSettings: {
+				enabled: true,
+				showWhenDaysBeforeEvent: 7,
+				audience: 'unconfirmed',
+			},
 		});
 
 		const response = await POST({
@@ -97,10 +101,18 @@ describe('POST /api/dashboard/guests/share-messages', () => {
 			eventId: 'evt-1',
 			hostAccessToken: 'token',
 			shareMessages: { invitation: 'Custom invitation', reminder: 'Custom reminder' },
+			reminderSettings: null,
 		});
 
 		const body = await response.json();
-		expect(body).toEqual({ invitation: 'Custom invitation', reminder: 'Custom reminder' });
+		expect(body).toEqual({
+			shareMessages: { invitation: 'Custom invitation', reminder: 'Custom reminder' },
+			reminderSettings: {
+				enabled: true,
+				showWhenDaysBeforeEvent: 7,
+				audience: 'unconfirmed',
+			},
+		});
 	});
 
 	it('requires authentication', async () => {
@@ -118,8 +130,12 @@ describe('POST /api/dashboard/guests/share-messages', () => {
 
 	it('applies rate limiting', async () => {
 		mockUpdateService.mockResolvedValue({
-			invitation: 'Test',
-			reminder: 'Test',
+			shareMessages: { invitation: 'Test', reminder: 'Test' },
+			reminderSettings: {
+				enabled: true,
+				showWhenDaysBeforeEvent: 7,
+				audience: 'unconfirmed',
+			},
 		});
 
 		await POST({
@@ -131,5 +147,98 @@ describe('POST /api/dashboard/guests/share-messages', () => {
 			'share-messages:host-1',
 			expect.any(Object),
 		);
+	});
+
+	it('passes valid reminderSettings to service', async () => {
+		mockUpdateService.mockResolvedValue({
+			shareMessages: { invitation: 'Inv', reminder: 'Rem' },
+			reminderSettings: { enabled: true, showWhenDaysBeforeEvent: 3, audience: 'all-shared' },
+		});
+
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				invitation: 'Inv',
+				reminder: 'Rem',
+				reminderSettings: {
+					enabled: true,
+					showWhenDaysBeforeEvent: 3,
+					audience: 'all-shared',
+				},
+			}),
+			locals: { session: mockSession },
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(mockUpdateService).toHaveBeenCalledWith({
+			eventId: 'evt-1',
+			hostAccessToken: 'token',
+			shareMessages: { invitation: 'Inv', reminder: 'Rem' },
+			reminderSettings: { enabled: true, showWhenDaysBeforeEvent: 3, audience: 'all-shared' },
+		});
+	});
+
+	it('returns 400 when reminderSettings has invalid audience', async () => {
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				invitation: 'Inv',
+				reminder: 'Rem',
+				reminderSettings: {
+					enabled: true,
+					showWhenDaysBeforeEvent: 3,
+					audience: 'invalid-value',
+				},
+			}),
+			locals: { session: mockSession },
+		} as never);
+
+		expect(response.status).toBe(400);
+	});
+
+	it('returns 400 when reminderSettings has negative days', async () => {
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				invitation: 'Inv',
+				reminder: 'Rem',
+				reminderSettings: {
+					enabled: true,
+					showWhenDaysBeforeEvent: -1,
+					audience: 'unconfirmed',
+				},
+			}),
+			locals: { session: mockSession },
+		} as never);
+
+		expect(response.status).toBe(400);
+	});
+
+	it('works without reminderSettings (backward compatible)', async () => {
+		mockUpdateService.mockResolvedValue({
+			shareMessages: { invitation: 'Inv', reminder: 'Rem' },
+			reminderSettings: {
+				enabled: true,
+				showWhenDaysBeforeEvent: 7,
+				audience: 'unconfirmed',
+			},
+		});
+
+		const response = await POST({
+			request: createMockRequest({
+				eventId: 'evt-1',
+				invitation: 'Inv',
+				reminder: 'Rem',
+			}),
+			locals: { session: mockSession },
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(mockUpdateService).toHaveBeenCalledWith({
+			eventId: 'evt-1',
+			hostAccessToken: 'token',
+			shareMessages: { invitation: 'Inv', reminder: 'Rem' },
+			reminderSettings: null,
+		});
 	});
 });

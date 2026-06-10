@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 
 jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 	__esModule: true,
@@ -27,13 +28,7 @@ describe('GuestTableRow — % Vista column', () => {
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
-		shareDateContext: {
-			eventDate: '',
-			daysUntilEvent: '',
-			rsvpDeadline: '',
-			eventTimingText: '',
-			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-		},
+		shareDateContext: defaultShareDateContext(),
 	};
 
 	const renderRow = (overrides: Partial<DashboardGuestItem> = {}) =>
@@ -140,13 +135,7 @@ describe('GuestTableRow — message toggle', () => {
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
-		shareDateContext: {
-			eventDate: '',
-			daysUntilEvent: '',
-			rsvpDeadline: '',
-			eventTimingText: '',
-			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-		},
+		shareDateContext: defaultShareDateContext(),
 	};
 
 	const renderRow = (overrides: Partial<DashboardGuestItem> = {}) =>

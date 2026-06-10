@@ -14,6 +14,10 @@ import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	defaultShareDateContext,
+	DEFAULT_REMINDER_SETTINGS_FIXTURE,
+} from '@tests/helpers/test-fixtures';
 
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	listDashboardGuests: jest.fn(),
@@ -77,13 +81,8 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 		const response = await GET({
@@ -429,13 +428,8 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -471,13 +465,8 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -513,13 +502,8 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 

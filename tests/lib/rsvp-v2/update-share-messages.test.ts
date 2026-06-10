@@ -99,7 +99,10 @@ describe('updateShareMessages', () => {
 		expect(mockUpdateSnapshot).toHaveBeenCalledWith(
 			expect.objectContaining({ id: 'pub-1', version: 1 }),
 		);
-		expect(result).toEqual({ invitation: 'New invitation', reminder: 'New reminder' });
+		expect(result.shareMessages).toEqual({
+			invitation: 'New invitation',
+			reminder: 'New reminder',
+		});
 	});
 
 	it('applies defaults for empty invitation', async () => {
@@ -121,7 +124,47 @@ describe('updateShareMessages', () => {
 			shareMessages: { invitation: '', reminder: '' },
 		});
 
-		expect(result.invitation).toContain('Hola {guestName}');
-		expect(result.reminder).toContain('Hola {guestName}');
+		expect(result.shareMessages.invitation).toContain('Hola {guestName}');
+		expect(result.shareMessages.reminder).toContain('Hola {guestName}');
+	});
+
+	it('persists reminderSettings when provided', async () => {
+		mockFindEventById.mockResolvedValue({
+			id: 'evt-1',
+			invitationId: 'inv-1',
+		} as unknown as EventRecord);
+		mockFindPublished.mockResolvedValue({
+			id: 'pub-1',
+			content: { sharing: { shareMessages: { invitation: 'Old', reminder: 'Old' } } },
+			version: 1,
+			publishedAt: '2026-01-01T00:00:00.000Z',
+		} as never);
+		mockUpdateSnapshot.mockResolvedValue(undefined as never);
+
+		const result = await updateShareMessages({
+			eventId: 'evt-1',
+			hostAccessToken: 'token',
+			shareMessages: { invitation: 'Inv', reminder: 'Rem' },
+			reminderSettings: { enabled: true, showWhenDaysBeforeEvent: 3, audience: 'all-shared' },
+		});
+
+		expect(mockUpdateSnapshot).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({
+					sharing: expect.objectContaining({
+						reminderSettings: {
+							enabled: true,
+							showWhenDaysBeforeEvent: 3,
+							audience: 'all-shared',
+						},
+					}),
+				}),
+			}),
+		);
+		expect(result.reminderSettings).toEqual({
+			enabled: true,
+			showWhenDaysBeforeEvent: 3,
+			audience: 'all-shared',
+		});
 	});
 });

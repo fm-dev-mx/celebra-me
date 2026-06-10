@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 
 const defaultTemplates: ShareMessagesConfig = {
 	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
@@ -24,13 +25,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -49,13 +44,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -75,13 +64,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -100,13 +83,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -121,13 +98,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -142,13 +113,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);
@@ -165,13 +130,7 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
-				shareDateContext={{
-					eventDate: '',
-					daysUntilEvent: '',
-					rsvpDeadline: '',
-					eventTimingText: '',
-					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-				}}
+				shareDateContext={defaultShareDateContext()}
 				onShared={onShared}
 			/>,
 		);

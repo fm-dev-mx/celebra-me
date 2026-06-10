@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import { makeGuest } from '@tests/helpers/guest-factory';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 
 jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 	__esModule: true,
@@ -26,13 +27,7 @@ describe('GuestCard status labels', () => {
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
-		shareDateContext: {
-			eventDate: '',
-			daysUntilEvent: '',
-			rsvpDeadline: '',
-			eventTimingText: '',
-			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-		},
+		shareDateContext: defaultShareDateContext(),
 	};
 
 	it('shows "Por enviar" when deliveryStatus is generated (not yet sent)', () => {

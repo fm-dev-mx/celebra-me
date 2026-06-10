@@ -6,6 +6,10 @@ import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	defaultShareDateContext,
+	DEFAULT_REMINDER_SETTINGS_FIXTURE,
+} from '@tests/helpers/test-fixtures';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
@@ -83,13 +87,8 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -162,13 +161,8 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
-			shareDateContext: {
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			},
+			reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+			shareDateContext: defaultShareDateContext(),
 			updatedAt: new Date().toISOString(),
 		});
 

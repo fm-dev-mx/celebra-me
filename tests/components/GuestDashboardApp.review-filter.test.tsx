@@ -4,6 +4,10 @@ import { useGuestDashboardActions } from '@/components/dashboard/guests/use-gues
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
+	defaultShareDateContext,
+	DEFAULT_REMINDER_SETTINGS_FIXTURE,
+} from '@tests/helpers/test-fixtures';
+import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -81,22 +85,19 @@ function setupDashboard() {
 		setEventId: jest.fn(),
 		setItems: jest.fn(),
 		setShareTemplates: jest.fn(),
+		setReminderSettings: jest.fn(),
 		totals,
 		shareTemplates: {
 			invitation: DEFAULT_INVITATION_MESSAGE,
 			reminder: DEFAULT_REMINDER_MESSAGE,
 		},
-		shareDateContext: {
-			eventDate: '',
-			daysUntilEvent: '',
-			rsvpDeadline: '',
-			eventTimingText: '',
-			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-		},
+		reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
+		shareDateContext: defaultShareDateContext(),
 		updatedAt: '2026-05-24T00:00:00.000Z',
 	});
 
 	mockedUseGuestDashboardActions.mockReturnValue({
+		batchFlowKind: 'invitation',
 		celebratingGuestId: null,
 		closeDeleteConfirm: jest.fn(),
 		closeModal: jest.fn(),
@@ -124,6 +125,7 @@ function setupDashboard() {
 		openEditModal: jest.fn(),
 		openImportModal: jest.fn(),
 		openNextGeneratedGuest: jest.fn(),
+		openNextReminderGuest: jest.fn(),
 		pendingGuests: guests.filter((item) => item.deliveryStatus === 'generated'),
 		requestDelete: jest.fn(),
 		setImportModalOpen: jest.fn(),

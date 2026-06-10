@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 
 jest.mock('@/lib/dashboard/guests-api', () => ({
 	guestsApi: {
@@ -34,6 +35,12 @@ const initialTemplates = {
 		'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 };
 
+const initialReminderSettings = {
+	enabled: true,
+	showWhenDaysBeforeEvent: 7,
+	audience: 'unconfirmed' as const,
+};
+
 function createModal(overrides: Record<string, unknown> = {}) {
 	const onClose = jest.fn();
 	const onSave = jest.fn();
@@ -43,14 +50,9 @@ function createModal(overrides: Record<string, unknown> = {}) {
 			eventId="evt-1"
 			eventTitle="XV Años"
 			initialTemplates={initialTemplates}
+			initialReminderSettings={initialReminderSettings}
 			onClose={onClose}
-			shareDateContext={{
-				eventDate: '',
-				daysUntilEvent: '',
-				rsvpDeadline: '',
-				eventTimingText: '',
-				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
-			}}
+			shareDateContext={defaultShareDateContext()}
 			onSave={onSave}
 			{...overrides}
 		/>,
@@ -92,8 +94,8 @@ describe('ShareMessagesModal', () => {
 
 	it('switches to reminder tab on click', () => {
 		createModal();
-		fireEvent.click(screen.getByRole('tab', { name: /recordatorio/i }));
-		expect(screen.getByRole('tab', { name: /recordatorio/i })).toHaveAttribute(
+		fireEvent.click(screen.getByRole('tab', { name: /^recordatorio$/i }));
+		expect(screen.getByRole('tab', { name: /^recordatorio$/i })).toHaveAttribute(
 			'aria-selected',
 			'true',
 		);
@@ -110,11 +112,14 @@ describe('ShareMessagesModal', () => {
 	});
 
 	it('calls onSave with API result when save button is clicked', async () => {
-		const updatedTemplates = {
-			invitation: 'Custom invitation',
-			reminder: 'Custom reminder',
+		const updatedResult = {
+			shareMessages: {
+				invitation: 'Custom invitation',
+				reminder: 'Custom reminder',
+			},
+			reminderSettings: initialReminderSettings,
 		};
-		(guestsApi.updateShareMessages as jest.Mock).mockResolvedValue(updatedTemplates);
+		(guestsApi.updateShareMessages as jest.Mock).mockResolvedValue(updatedResult);
 
 		const { onSave } = createModal();
 		const textarea = screen.getByLabelText(/mensaje de invitación/i);
@@ -123,11 +128,18 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('Guardar'));
 
 		await waitFor(() => {
-			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith('evt-1', {
-				invitation: 'Custom invitation',
-				reminder: initialTemplates.reminder,
+			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith({
+				eventId: 'evt-1',
+				shareMessages: {
+					invitation: 'Custom invitation',
+					reminder: initialTemplates.reminder,
+				},
+				reminderSettings: initialReminderSettings,
 			});
-			expect(onSave).toHaveBeenCalledWith(updatedTemplates);
+			expect(onSave).toHaveBeenCalledWith({
+				shareTemplates: updatedResult.shareMessages,
+				reminderSettings: updatedResult.reminderSettings,
+			});
 		});
 	});
 
