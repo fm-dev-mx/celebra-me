@@ -124,7 +124,13 @@ export const useGuestDashboardActions = ({
 				previousItems = [...prev];
 				return prev.map((entry) =>
 					entry.guestId === item.guestId
-						? { ...entry, deliveryStatus: newStatus }
+						? {
+								...entry,
+								deliveryStatus: newStatus,
+								...(newStatus === 'shared' && !entry.firstSharedAt
+									? { firstSharedAt: new Date().toISOString() }
+									: {}),
+							}
 						: entry,
 				);
 			});
@@ -439,6 +445,10 @@ export const useGuestDashboardActions = ({
 		[],
 	);
 
+	const editFirstGuestShortcut = useCallback(() => {
+		if (items.length > 0) openEditModal(items[0]);
+	}, [items, openEditModal]);
+
 	const pendingGuests = items.filter((item) => item.deliveryStatus === 'generated');
 
 	return {
@@ -446,9 +456,7 @@ export const useGuestDashboardActions = ({
 		closeDeleteConfirm,
 		closeModal,
 		deleteConfirmOpen,
-		editFirstGuestShortcut: () => {
-			if (items.length > 0) openEditModal(items[0]);
-		},
+		editFirstGuestShortcut,
 		editingGuest,
 		guestToDelete,
 		handleDeleteConfirm,
