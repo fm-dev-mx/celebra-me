@@ -47,6 +47,7 @@ const sampleTotals = {
 	confirmedPeople: 0,
 	declinedInvitations: 0,
 	declinedPeople: 0,
+	unconfirmedShared: 0,
 	viewed: 0,
 };
 

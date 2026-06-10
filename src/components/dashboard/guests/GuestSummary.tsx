@@ -43,6 +43,11 @@ const GuestSummary: React.FC<GuestSummaryProps> = ({ totals }) => {
 
 				<div className="guest-summary__secondary">
 					<div className="guest-summary__metric guest-summary__metric--compact">
+						<span className="guest-summary__value">{totals.unconfirmedShared}</span>
+						<span className="guest-summary__label">Por confirmar</span>
+					</div>
+
+					<div className="guest-summary__metric guest-summary__metric--compact">
 						<span className="guest-summary__value">{totals.viewed}</span>
 						<span className="guest-summary__label">Vistas</span>
 					</div>

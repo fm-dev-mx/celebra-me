@@ -3,6 +3,7 @@ import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	getReminderEligibleGuests,
+	isUnconfirmedSharedGuest,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
 
@@ -28,6 +29,103 @@ function makeSettings(overrides: Partial<ReminderSettings> = {}): ReminderSettin
 		...overrides,
 	};
 }
+
+describe('isUnconfirmedSharedGuest', () => {
+	it('returns true for shared + pending guest', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'pending' }),
+			),
+		).toBe(true);
+	});
+
+	it('returns false for shared + confirmed guest', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'confirmed' }),
+			),
+		).toBe(false);
+	});
+
+	it('returns false for shared + declined guest', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'declined' }),
+			),
+		).toBe(false);
+	});
+
+	it('returns false for generated guest even if pending', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'pending' }),
+			),
+		).toBe(false);
+	});
+
+	it('returns false for generated guest even if firstSharedAt exists', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({
+					deliveryStatus: 'generated',
+					attendanceStatus: 'pending',
+					firstSharedAt: '2026-05-01T00:00:00.000Z',
+				}),
+			),
+		).toBe(false);
+	});
+
+	it('returns false for confirmed guest regardless of delivery status', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'confirmed' }),
+			),
+		).toBe(false);
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'confirmed' }),
+			),
+		).toBe(false);
+	});
+
+	it('returns false for declined guest regardless of delivery status', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'declined' }),
+			),
+		).toBe(false);
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'declined' }),
+			),
+		).toBe(false);
+	});
+
+	it('returns true for shared + viewed + pending (still eligible)', () => {
+		expect(
+			isUnconfirmedSharedGuest(
+				makeGuest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'pending',
+					isViewed: true,
+				}),
+			),
+		).toBe(true);
+	});
+
+	it('porConfirmar count matches getReminderEligibleGuests(items, unconfirmed).length', () => {
+		const items = [
+			makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'pending' }),
+			makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'pending' }),
+			makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'confirmed' }),
+			makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'declined' }),
+			makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'pending', isViewed: true }),
+		];
+		const porConfirmarCount = items.filter((g) => isUnconfirmedSharedGuest(g)).length;
+		expect(porConfirmarCount).toBe(2);
+		expect(porConfirmarCount).toBe(getReminderEligibleGuests(items, 'unconfirmed').length);
+	});
+});
 
 describe('getReminderEligibleGuests', () => {
 	describe('audience: unconfirmed', () => {

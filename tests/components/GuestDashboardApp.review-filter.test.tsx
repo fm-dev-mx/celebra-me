@@ -62,6 +62,7 @@ const totals = {
 	confirmedPeople: 2,
 	declinedInvitations: 0,
 	declinedPeople: 0,
+	unconfirmedShared: 0,
 	viewed: 0,
 };
 

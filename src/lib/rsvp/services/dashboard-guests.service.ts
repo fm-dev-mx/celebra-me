@@ -48,6 +48,7 @@ import {
 	buildShareMessageDateContext,
 	type ShareMessageDateContext,
 } from '@/lib/rsvp/services/shared/share-message-date';
+import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -60,6 +61,7 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let declinedPeople = 0;
 	let generatedInvitations = 0;
 	let sharedInvitations = 0;
+	let unconfirmedShared = 0;
 	let viewed = 0;
 
 	for (const item of items) {
@@ -84,6 +86,10 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 		if (item.deliveryStatus === 'generated') generatedInvitations++;
 		else if (item.deliveryStatus === 'shared') sharedInvitations++;
 
+		if (isUnconfirmedSharedGuest(item)) {
+			unconfirmedShared++;
+		}
+
 		if (item.firstViewedAt) viewed++;
 	}
 
@@ -98,6 +104,7 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 		confirmedPeople,
 		declinedInvitations,
 		declinedPeople,
+		unconfirmedShared,
 		viewed,
 	};
 }
@@ -197,15 +204,16 @@ export async function listDashboardGuests(input: {
 	hostAccessToken: string;
 	origin: string;
 }): Promise<DashboardGuestListResponse> {
+	const queryParams = {
+		status: input.status ?? 'all',
+		search: sanitize(input.search, 120),
+		delivery: input.delivery ?? 'all',
+	};
+
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (event) {
 		const guests = await findGuestsByEvent(
-			{
-				eventId: event.id,
-				status: input.status ?? 'all',
-				search: sanitize(input.search, 120),
-				delivery: input.delivery ?? 'all',
-			},
+			{ eventId: event.id, ...queryParams },
 			input.hostAccessToken,
 		);
 		const sharingContext = await resolveEventSharingContext(event);
@@ -236,12 +244,7 @@ export async function listDashboardGuests(input: {
 	const membership = await findMembershipByEventForHost(input.eventId, input.hostAccessToken);
 	if (membership) {
 		const guests = await findGuestsByEvent(
-			{
-				eventId: membership.eventId,
-				status: input.status ?? 'all',
-				search: sanitize(input.search, 120),
-				delivery: input.delivery ?? 'all',
-			},
+			{ eventId: membership.eventId, ...queryParams },
 			input.hostAccessToken,
 		);
 		const items = guests.map((guest) => toGuestDto(guest, { origin: input.origin }));

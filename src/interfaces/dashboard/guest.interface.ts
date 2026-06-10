@@ -56,6 +56,7 @@ export interface DashboardGuestListResponse {
 		confirmedPeople: number;
 		declinedInvitations: number;
 		declinedPeople: number;
+		unconfirmedShared: number;
 		viewed: number;
 	};
 	updatedAt: string;
