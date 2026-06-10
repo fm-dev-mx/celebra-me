@@ -28,10 +28,6 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 	return isPublic ? 'RSVP público' : 'Invitación personalizada';
 }
 
-export function getGuestVisibleTags(item: DashboardGuestItem) {
-	return getVisibleTags(item.tags ?? []);
-}
-
 export type PrimaryStatus = {
 	label: string;
 	class: string;
@@ -94,7 +90,7 @@ export function getCompactGroupChips(
 	item: DashboardGuestItem,
 	max = 2,
 ): { chips: string[]; overflow: number } {
-	const visible = getGuestVisibleTags(item);
+	const visible = getVisibleTags(item.tags);
 	const chips = visible.slice(0, max);
 	const overflow = Math.max(0, visible.length - max);
 	return { chips, overflow };
@@ -110,7 +106,7 @@ export function computeGroupMetrics(items: DashboardGuestItem[]): GroupMetric[] 
 	const tagCounts = new Map<string, { total: number; pending: number }>();
 
 	for (const item of items) {
-		const visible = getGuestVisibleTags(item);
+		const visible = getVisibleTags(item.tags);
 		const tags = visible.length > 0 ? visible : ['Sin grupo'];
 		for (const tag of tags) {
 			const entry = tagCounts.get(tag) ?? { total: 0, pending: 0 };

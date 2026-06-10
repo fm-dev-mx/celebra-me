@@ -5,10 +5,10 @@ import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
+import { getVisibleTags } from '@/lib/guests/guest-tags';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
-	getGuestVisibleTags,
 	getCompactGroupChips,
 	getPrimaryStatus,
 	getContactDisplay,
@@ -69,7 +69,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		setMessageVisible(false);
 	}, [isExpanded]);
 
-	const visibleTags = getGuestVisibleTags(item);
+	const visibleTags = getVisibleTags(item.tags);
 	const hasTags = visibleTags.length > 0;
 	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 2);
 	const hasCompactChips = compactChips.length > 0;

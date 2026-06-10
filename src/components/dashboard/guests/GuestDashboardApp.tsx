@@ -4,7 +4,7 @@ import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestRevie
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
-import { getGuestVisibleTags } from '@/components/dashboard/guests/guest-presenter';
+import { getVisibleTags } from '@/lib/guests/guest-tags';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
@@ -69,7 +69,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		if (reviewFilter === 'rsvp-pending' && item.attendanceStatus !== 'pending') return false;
 		if (reviewFilter === 'with-message' && item.guestComment.trim().length === 0) return false;
 		if (group !== 'all') {
-			const itemTags = getGuestVisibleTags(item);
+			const itemTags = getVisibleTags(item.tags);
 			if (!itemTags.includes(group)) return false;
 		}
 		return true;

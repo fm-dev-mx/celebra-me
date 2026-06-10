@@ -3,7 +3,6 @@ import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
-	getGuestVisibleTags,
 	getCompactGroupChips,
 	computeGroupMetrics,
 	getPrimaryStatus,
@@ -205,23 +204,6 @@ describe('formatGuestEntrySource', () => {
 		expect(formatGuestEntrySource(makeGuest({ entrySource: undefined }))).toBe(
 			'Invitación personalizada',
 		);
-	});
-});
-
-describe('getGuestVisibleTags', () => {
-	it('returns only non-system tags', () => {
-		const result = getGuestVisibleTags(
-			makeGuest({ tags: ['system:public', 'vip', 'system:imported', 'familia'] }),
-		);
-		expect(result).toEqual(['vip', 'familia']);
-	});
-
-	it('returns empty array when no tags', () => {
-		expect(getGuestVisibleTags(makeGuest({ tags: [] }))).toEqual([]);
-	});
-
-	it('handles null tags', () => {
-		expect(getGuestVisibleTags(makeGuest({ tags: null as unknown as string[] }))).toEqual([]);
 	});
 });
 
