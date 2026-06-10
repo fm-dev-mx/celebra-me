@@ -17,6 +17,13 @@ describe('GuestTableRow — % Vista column', () => {
 	const baseProps = {
 		index: 0,
 		inviteUrl: 'https://example.com/invite/1',
+		eventTitle: 'Test Event',
+		shareTemplates: {
+			invitation:
+				'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
+			reminder:
+				'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
+		},
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
@@ -116,6 +123,13 @@ describe('GuestTableRow — message toggle', () => {
 	const baseProps = {
 		index: 0,
 		inviteUrl: 'https://example.com/invite/1',
+		eventTitle: 'Test Event',
+		shareTemplates: {
+			invitation:
+				'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
+			reminder:
+				'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
+		},
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),

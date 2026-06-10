@@ -3,6 +3,7 @@ import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
@@ -20,6 +21,8 @@ interface GuestCardProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
+	eventTitle: string;
+	shareTemplates: ShareMessagesConfig;
 	isCelebrating?: boolean;
 	isHighlighted?: boolean;
 	isExpanded?: boolean;
@@ -36,6 +39,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	item,
 	index,
 	inviteUrl,
+	eventTitle,
+	shareTemplates,
 	isCelebrating,
 	isHighlighted,
 	isExpanded,
@@ -254,11 +259,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 			<footer className="guest-card__actions">
 				<ShareAction
-					phone={item.phone}
-					waShareUrl={item.waShareUrl}
+					guest={item}
 					inviteUrl={inviteUrl}
-					shareText={item.shareText}
-					isShared={isShared}
+					eventTitle={eventTitle}
+					shareTemplates={shareTemplates}
 					onShared={async () => onMarkShared(item)}
 				/>
 				<button

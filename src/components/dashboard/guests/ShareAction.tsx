@@ -1,29 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
-import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
-import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
-import {
-	buildInvitationSharePayload,
-	canUseNativeShare,
-	shareInvitationLink,
-} from '@/components/dashboard/guests/invitation-share';
-import { copyToClipboard } from '@/utils/clipboard';
+import { useRef, useState } from 'react';
+import { MessageIcon } from '@/components/common/icons/ui';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { getShareCtaLabel } from '@/components/dashboard/guests/guest-presenter';
+import ShareComposer from '@/components/dashboard/guests/ShareComposer';
 
 interface ShareActionProps {
-	phone: string;
-	waShareUrl: string;
+	guest: DashboardGuestItem;
 	inviteUrl: string;
-	shareText: string;
-	isShared?: boolean;
+	eventTitle: string;
+	shareTemplates: ShareMessagesConfig;
 	onShared: () => Promise<void> | void;
 }
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
-
-const ICONS: Record<string, React.ReactNode> = {
-	whatsapp: <WhatsAppIcon className="share-icon" size={16} />,
-	copy: <CopyIcon className="share-icon" size={16} />,
-	'web-share': <MessageIcon className="share-icon" size={16} />,
-};
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
 	sending: <span className="share-icon share-icon--state">...</span>,
@@ -31,96 +21,63 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 };
 
 const ShareAction: React.FC<ShareActionProps> = ({
-	phone,
-	waShareUrl,
+	guest,
 	inviteUrl,
-	shareText,
-	isShared,
+	eventTitle,
+	shareTemplates,
 	onShared,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
-	const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [composerOpen, setComposerOpen] = useState(false);
+	const buttonRef = useRef<HTMLButtonElement>(null);
 
-	useEffect(() => {
-		return () => {
-			if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
-		};
-	}, []);
+	const cta = getShareCtaLabel(guest);
 
-	const hasPhoneAndWa = !!(phone && waShareUrl);
-	const sharePayload = buildInvitationSharePayload({ shareText, inviteUrl });
-	const supportsWebShare = canUseNativeShare(sharePayload);
-
-	const primaryAction = hasPhoneAndWa ? 'whatsapp' : supportsWebShare ? 'web-share' : 'copy';
-
-	const handleShare = async () => {
+	const handleClick = () => {
 		if (status !== 'idle') return;
-
-		setStatus('sending');
-
-		try {
-			if (primaryAction === 'whatsapp') {
-				window.open(waShareUrl, '_blank', 'noopener,noreferrer');
-				await onShared();
-			} else if (primaryAction === 'web-share') {
-				const shareResult = await shareInvitationLink(sharePayload);
-				if (shareResult === 'canceled') {
-					setStatus('idle');
-					return;
-				}
-				if (shareResult !== 'shared') {
-					throw new Error(`Native share ${shareResult}`);
-				}
-				await onShared();
-			} else {
-				const copied = await copyToClipboard(inviteUrl);
-				if (!copied) {
-					window.open(inviteUrl, '_blank', 'noopener,noreferrer');
-				}
-				await onShared();
-			}
-
-			setStatus('delivered');
-			statusTimeoutRef.current = setTimeout(() => setStatus('idle'), 3000);
-		} catch (err) {
-			console.info('Share action aborted or failed:', err);
-			setStatus('idle');
-		}
+		setComposerOpen(true);
 	};
 
-	const statusIcon = STATUS_ICONS[status] ?? ICONS[primaryAction];
-	const label =
-		status === 'sending'
-			? 'Enviando'
-			: status === 'delivered'
-				? 'Registrado'
-				: primaryAction === 'whatsapp'
-					? isShared
-						? 'Reenviar'
-						: 'Enviar'
-					: primaryAction === 'copy'
-						? 'Copiar enlace'
-						: 'Compartir invitación';
+	const statusIcon = STATUS_ICONS[status];
+	const icon = statusIcon ?? <MessageIcon className="share-icon" size={16} />;
 
-	const title =
-		primaryAction === 'whatsapp'
-			? 'Enviar por WhatsApp'
-			: primaryAction === 'web-share'
-				? 'Compartir invitación'
-				: 'Copiar enlace';
+	const label = status === 'sending' ? 'Enviando' : status === 'delivered' ? 'Listo' : cta.label;
 
 	return (
-		<button
-			type="button"
-			className={`dashboard-guests__share-button dashboard-guests__share-button--${status} ${isShared && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
-			onClick={handleShare}
-			disabled={status !== 'idle'}
-			title={title}
-			aria-label={title}
-		>
-			{statusIcon}
-			<span className="share-label">{label}</span>
-		</button>
+		<>
+			<button
+				ref={buttonRef}
+				type="button"
+				className={`dashboard-guests__share-button dashboard-guests__share-button--${status} ${guest.deliveryStatus === 'shared' && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
+				onClick={handleClick}
+				disabled={status !== 'idle'}
+				title={cta.label}
+				aria-label={cta.label}
+			>
+				{icon}
+				<span className="share-label">{label}</span>
+			</button>
+			{composerOpen && (
+				<ShareComposer
+					anchorRef={buttonRef}
+					guestName={guest.fullName}
+					phone={guest.phone}
+					inviteUrl={inviteUrl}
+					eventTitle={eventTitle}
+					templates={shareTemplates}
+					defaultMessageType={cta.defaultMessageType}
+					onShared={async () => {
+						setStatus('sending');
+						await onShared();
+						setStatus('delivered');
+					}}
+					onClose={() => {
+						setComposerOpen(false);
+						setTimeout(() => setStatus('idle'), 1500);
+					}}
+				/>
+			)}
+		</>
 	);
 };
 

@@ -1,6 +1,7 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
+import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 
 export function formatGuestDate(value: string | null): string {
 	if (!value) return '-';
@@ -127,4 +128,29 @@ export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: strin
 		inviteId: item.inviteId,
 		shortId: item.shortId,
 	});
+}
+
+export interface ShareCtaResult {
+	label: string;
+	defaultMessageType: ShareMessageType;
+}
+
+export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
+	if (item.attendanceStatus === 'declined') {
+		return { label: 'Compartir de nuevo', defaultMessageType: 'invitation' };
+	}
+
+	if (item.attendanceStatus === 'confirmed') {
+		return { label: 'Compartir de nuevo', defaultMessageType: 'reminder' };
+	}
+
+	if (item.deliveryStatus === 'generated') {
+		return { label: 'Compartir invitación', defaultMessageType: 'invitation' };
+	}
+
+	if (item.isViewed) {
+		return { label: 'Enviar recordatorio', defaultMessageType: 'reminder' };
+	}
+
+	return { label: 'Reenviar invitación', defaultMessageType: 'invitation' };
 }
