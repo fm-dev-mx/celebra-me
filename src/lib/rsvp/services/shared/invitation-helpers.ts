@@ -125,6 +125,7 @@ export interface SharingConfig {
 	shareMessages?: ShareMessagesConfig;
 	eventDate?: string | null;
 	rsvpDeadline?: string | null;
+	ogDescription?: string;
 }
 
 function extractEventDate(content: Record<string, unknown>): string | null {
@@ -148,6 +149,12 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 	const sharing = content.sharing as Record<string, unknown> | undefined;
 	if (!sharing) return null;
 
+	const result: SharingConfig = {};
+
+	const ogDescription =
+		typeof sharing.ogDescription === 'string' ? sharing.ogDescription : undefined;
+	if (ogDescription) result.ogDescription = ogDescription;
+
 	const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
 	const whatsappTemplate =
 		typeof sharing.whatsappTemplate === 'string' ? sharing.whatsappTemplate : undefined;
@@ -163,25 +170,23 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 						: '';
 		const reminder = typeof shareMessages.reminder === 'string' ? shareMessages.reminder : '';
 		if (invitation) {
-			return {
-				shareMessages: {
-					invitation,
-					reminder: reminder || DEFAULT_REMINDER_MESSAGE,
-				},
+			result.shareMessages = {
+				invitation,
+				reminder: reminder || DEFAULT_REMINDER_MESSAGE,
 			};
+			return result;
 		}
 	}
 
 	if (whatsappTemplate) {
-		return {
-			shareMessages: {
-				invitation: whatsappTemplate,
-				reminder: DEFAULT_REMINDER_MESSAGE,
-			},
+		result.shareMessages = {
+			invitation: whatsappTemplate,
+			reminder: DEFAULT_REMINDER_MESSAGE,
 		};
+		return result;
 	}
 
-	return null;
+	return Object.keys(result).length > 0 ? result : null;
 }
 
 function evaluateSharingEntryDate(data: Record<string, unknown> | undefined): string | null {

@@ -15,6 +15,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		const invitation = typeof body.invitation === 'string' ? body.invitation.trim() : '';
 		const reminder = typeof body.reminder === 'string' ? body.reminder.trim() : '';
+		const ogDescription =
+			typeof body.ogDescription === 'string' ? body.ogDescription.trim() : undefined;
 
 		if (invitation && invitation.length > 500) {
 			return badRequest('El mensaje de invitación no puede superar los 500 caracteres.');
@@ -27,6 +29,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			eventId,
 			hostAccessToken: session.accessToken,
 			shareMessages: { invitation, reminder },
+			ogDescription,
 		});
 
 		return jsonResponse(result);

@@ -105,6 +105,7 @@ async function resolveEventSharingContext(
 	shareMessages: ShareMessagesConfig | null | undefined;
 	eventDate: string | null;
 	rsvpDeadline: string | null;
+	ogDescription: string | undefined;
 	shareDateContext: ShareMessageDateContext;
 }> {
 	if (!event) {
@@ -112,6 +113,7 @@ async function resolveEventSharingContext(
 			shareMessages: undefined,
 			eventDate: null,
 			rsvpDeadline: null,
+			ogDescription: undefined,
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 		};
 	}
@@ -121,6 +123,7 @@ async function resolveEventSharingContext(
 		shareMessages: sharingConfig.shareMessages,
 		eventDate: sharingConfig.eventDate ?? null,
 		rsvpDeadline: sharingConfig.rsvpDeadline ?? null,
+		ogDescription: sharingConfig.ogDescription,
 		shareDateContext: buildShareMessageDateContext(
 			sharingConfig.eventDate ?? null,
 			sharingConfig.rsvpDeadline ?? null,
@@ -220,6 +223,7 @@ export async function listDashboardGuests(input: {
 			eventId: event.id,
 			items,
 			shareTemplates,
+			shareOgDescription: sharingContext.ogDescription,
 			shareDateContext: sharingContext.shareDateContext,
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
@@ -242,6 +246,7 @@ export async function listDashboardGuests(input: {
 			eventId: membership.eventId,
 			items,
 			shareTemplates: resolveShareTemplates({}),
+			shareOgDescription: undefined,
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
@@ -590,7 +595,8 @@ export async function updateShareMessages(input: {
 	eventId: string;
 	hostAccessToken: string;
 	shareMessages: ShareMessagesConfig;
-}): Promise<ShareMessagesConfig> {
+	ogDescription?: string;
+}): Promise<ShareMessagesConfig & { ogDescription?: string }> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (!event) {
 		throw new ApiError(404, 'not_found', 'Event not found.');
@@ -618,6 +624,7 @@ export async function updateShareMessages(input: {
 	content.sharing = {
 		...sharing,
 		shareMessages,
+		...(input.ogDescription !== undefined ? { ogDescription: input.ogDescription } : {}),
 	};
 
 	await updatePublishedContentSnapshot({
@@ -627,5 +634,5 @@ export async function updateShareMessages(input: {
 		publishedAt: published.publishedAt,
 	});
 
-	return shareMessages;
+	return { ...shareMessages, ogDescription: input.ogDescription };
 }

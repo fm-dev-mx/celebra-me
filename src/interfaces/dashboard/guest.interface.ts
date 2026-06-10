@@ -39,6 +39,7 @@ export interface DashboardGuestListResponse {
 	eventId: string;
 	items: DashboardGuestItem[];
 	shareTemplates: ShareMessagesConfig;
+	shareOgDescription?: string;
 	shareDateContext: ShareMessageDateContext;
 	totals: {
 		totalInvitations: number;

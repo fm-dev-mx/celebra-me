@@ -109,11 +109,15 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('Guardar'));
 
 		await waitFor(() => {
-			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith('evt-1', {
-				invitation: 'Custom invitation',
-				reminder: initialTemplates.reminder,
-			});
-			expect(onSave).toHaveBeenCalledWith(updatedTemplates);
+			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith(
+				'evt-1',
+				{
+					invitation: 'Custom invitation',
+					reminder: initialTemplates.reminder,
+				},
+				undefined,
+			);
+			expect(onSave).toHaveBeenCalledWith(updatedTemplates, undefined);
 		});
 	});
 
@@ -150,16 +154,28 @@ describe('ShareMessagesModal', () => {
 		expect(screen.getByText('Network error')).toBeInTheDocument();
 	});
 
-	it('resets to default templates on reset click', () => {
+	it('resets to default templates on reset click with two-click confirmation', () => {
 		createModal();
 		const textarea = screen.getByLabelText(/mensaje de invitación/i);
 		fireEvent.change(textarea, { target: { value: 'Custom text' } });
 
 		fireEvent.click(screen.getByText('Restablecer predeterminados'));
+		fireEvent.click(screen.getByText('¿Restablecer?'));
 
 		expect(textarea).toHaveValue(
 			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
 		);
+	});
+
+	it('cancel reset does not reset templates', () => {
+		createModal();
+		const textarea = screen.getByLabelText(/mensaje de invitación/i);
+		fireEvent.change(textarea, { target: { value: 'Custom text' } });
+
+		fireEvent.click(screen.getByText('Restablecer predeterminados'));
+		fireEvent.click(screen.getByText('Cancelar'));
+
+		expect(textarea).toHaveValue('Custom text');
 	});
 
 	it('shows preview of the invitation message', () => {

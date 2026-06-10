@@ -50,6 +50,14 @@
 	}
 }
 
+.share-messages-modal__immediate-note {
+	font-size: 0.75rem;
+	color: var(--color-text-muted);
+	font-style: italic;
+	margin: -0.75rem 0 1rem;
+	text-align: center;
+}
+
 .share-messages-modal__textarea {
 	width: 100%;
 	min-height: 120px;
