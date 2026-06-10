@@ -12,6 +12,9 @@ import type {
 	DeliveryFilter,
 	DeliveryStatus,
 	DashboardGuestMutationResponse,
+	EventRecord,
+	GuestInvitationDTO,
+	GuestInvitationRecord,
 } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
@@ -31,23 +34,13 @@ import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 import {
-	DEFAULT_INVITATION_MESSAGE,
-	DEFAULT_REMINDER_MESSAGE,
+	resolveShareTemplates,
 	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
 	findPublishedByInvitationId,
 	updatePublishedContentSnapshot,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
-
-function resolveShareTemplates(config: {
-	shareMessages?: ShareMessagesConfig | null;
-}): ShareMessagesConfig {
-	return {
-		invitation: config.shareMessages?.invitation || DEFAULT_INVITATION_MESSAGE,
-		reminder: config.shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
-	};
-}
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -100,6 +93,29 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 		declinedPeople,
 		viewed,
 	};
+}
+
+async function resolveEventShareMessages(
+	event: Pick<EventRecord, 'slug' | 'eventType'> | null,
+): Promise<ShareMessagesConfig | null | undefined> {
+	if (!event) return undefined;
+	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
+	return sharingConfig.shareMessages;
+}
+
+function buildGuestDto(
+	guest: GuestInvitationRecord,
+	event: Pick<EventRecord, 'title' | 'eventType' | 'slug'> | null,
+	origin: string,
+	shareMessages?: ShareMessagesConfig | null,
+): GuestInvitationDTO {
+	return toGuestDto(guest, {
+		origin,
+		eventTitle: event?.title,
+		eventType: event?.eventType,
+		eventSlug: event?.slug,
+		shareMessages,
+	});
 }
 
 async function resolvePhoneUpdate(input: {
@@ -155,17 +171,10 @@ export async function listDashboardGuests(input: {
 			},
 			input.hostAccessToken,
 		);
-		const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
-		const shareTemplates = resolveShareTemplates(sharingConfig);
+		const shareMessages = await resolveEventShareMessages(event);
+		const shareTemplates = resolveShareTemplates({ shareMessages });
 		const items = guests.map((guest) =>
-			toGuestDto(guest, {
-				origin: input.origin,
-				eventTitle: event.title,
-				eventType: event.eventType,
-				eventSlug: event.slug,
-				template: sharingConfig.whatsappTemplate,
-				shareMessages: sharingConfig.shareMessages,
-			}),
+			buildGuestDto(guest, event, input.origin, shareMessages),
 		);
 		return {
 			eventId: event.id,
@@ -265,15 +274,12 @@ export async function createDashboardGuest(input: {
 		throw mapSupabaseErrorToApiError(error);
 	}
 
-	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
-	const item = toGuestDto(created, {
-		origin: input.origin,
-		eventTitle: event.title,
-		eventType: event.eventType,
-		eventSlug: event.slug,
-		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages,
-	});
+	const item = buildGuestDto(
+		created,
+		event,
+		input.origin,
+		await resolveEventShareMessages(event),
+	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -374,15 +380,12 @@ export async function updateDashboardGuest(input: {
 	}
 
 	const event = await findEventById(updated.eventId, input.hostAccessToken);
-	const sharingConfig = event ? await getSharingConfigForSlug(event.slug, event.eventType) : {};
-	const item = toGuestDto(updated, {
-		origin: input.origin,
-		eventTitle: event?.title,
-		eventType: event?.eventType,
-		eventSlug: event?.slug,
-		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages,
-	});
+	const item = buildGuestDto(
+		updated,
+		event,
+		input.origin,
+		await resolveEventShareMessages(event),
+	);
 
 	return {
 		item,
@@ -430,15 +433,12 @@ export async function markGuestShared(input: {
 	);
 
 	const event = await findEventById(updated.eventId, input.hostAccessToken);
-	const sharingConfig = event ? await getSharingConfigForSlug(event.slug, event.eventType) : {};
-	const item = toGuestDto(updated, {
-		origin: input.origin,
-		eventTitle: event?.title,
-		eventType: event?.eventType,
-		eventSlug: event?.slug,
-		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages,
-	});
+	const item = buildGuestDto(
+		updated,
+		event,
+		input.origin,
+		await resolveEventShareMessages(event),
+	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -505,15 +505,12 @@ export async function toggleGuestBrandingRemoval(input: {
 		input.hostAccessToken,
 	);
 
-	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
-	const item = toGuestDto(updated, {
-		origin: input.origin,
-		eventTitle: event.title,
-		eventType: event.eventType,
-		eventSlug: event.slug,
-		template: sharingConfig.whatsappTemplate,
-		shareMessages: sharingConfig.shareMessages,
-	});
+	const item = buildGuestDto(
+		updated,
+		event,
+		input.origin,
+		await resolveEventShareMessages(event),
+	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -561,14 +558,12 @@ export async function updateShareMessages(input: {
 		);
 	}
 
+	const shareMessages = resolveShareTemplates({ shareMessages: input.shareMessages });
 	const content = { ...published.content };
 	const sharing = (content.sharing as Record<string, unknown>) || {};
 	content.sharing = {
 		...sharing,
-		shareMessages: {
-			invitation: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE,
-			reminder: input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE,
-		},
+		shareMessages,
 	};
 
 	await updatePublishedContentSnapshot({
@@ -578,8 +573,5 @@ export async function updateShareMessages(input: {
 		publishedAt: published.publishedAt,
 	});
 
-	return {
-		invitation: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE,
-		reminder: input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE,
-	};
+	return shareMessages;
 }

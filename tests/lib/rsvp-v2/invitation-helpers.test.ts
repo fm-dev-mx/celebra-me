@@ -46,13 +46,14 @@ describe('buildShareMessage', () => {
 		expect(result).not.toContain('Invitation:');
 	});
 
-	it('falls back to legacy template when shareMessages is not provided', () => {
+	it('uses default invitation when shareMessages is not provided', () => {
 		const result = buildShareMessage({
 			...baseInput,
-			template: 'Legacy: {name} → {eventTitle} → {inviteUrl}',
+			shareMessages: null,
 			includeLink: true,
 		});
-		expect(result).toContain('Legacy: Francisco Prueba');
+		expect(result).toContain('Hola Francisco Prueba');
+		expect(result).toContain('XV Años de Ayrin Samantha');
 	});
 
 	it('falls back to hardcoded default invitation when neither shareMessages nor template provided', () => {
@@ -75,11 +76,10 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('nuevamente');
 	});
 
-	it('uses the real event title when a client publication has no explicit template', () => {
+	it('uses the real event title when shareMessages is null', () => {
 		const result = buildShareMessage({
 			...baseInput,
 			eventTitle: 'XV Años de Ayrin Samantha',
-			template: undefined,
 			shareMessages: null,
 			includeLink: true,
 		});

@@ -28,7 +28,6 @@ function buildPublished(
 }
 
 function expectEmptyConfig(result: SharingConfig) {
-	expect(result.whatsappTemplate).toBeUndefined();
 	expect(result.shareMessages).toBeUndefined();
 }
 

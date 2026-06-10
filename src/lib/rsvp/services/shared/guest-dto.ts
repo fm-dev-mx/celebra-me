@@ -14,7 +14,6 @@ export interface ToGuestDtoOptions {
 	eventTitle?: string;
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
-	template?: string;
 	shareMessages?: ShareMessagesConfig | null;
 }
 
@@ -48,7 +47,6 @@ export function toGuestDto(
 			shortId: guest.shortId,
 			eventType: options.eventType,
 			eventSlug: options.eventSlug,
-			template: options.template,
 			shareMessages: options.shareMessages,
 			messageType: 'invitation',
 		}),
@@ -61,7 +59,6 @@ export function toGuestDto(
 			shortId: guest.shortId,
 			eventType: options.eventType,
 			eventSlug: options.eventSlug,
-			template: options.template,
 			shareMessages: options.shareMessages,
 			messageType: 'invitation',
 			includeLink: false,

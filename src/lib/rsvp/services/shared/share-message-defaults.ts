@@ -4,11 +4,16 @@ export const DEFAULT_INVITATION_MESSAGE =
 export const DEFAULT_REMINDER_MESSAGE =
 	'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nAhí puedes revisar los detalles y confirmar tu asistencia.';
 
-export const DEFAULT_SHARE_MESSAGE_WITH_PHONE = DEFAULT_INVITATION_MESSAGE;
-export const DEFAULT_SHARE_MESSAGE_WITHOUT_PHONE =
-	'Nos dará mucho gusto contar contigo en {eventTitle}.\n\nAquí puedes ver la invitación:\n{inviteUrl}\n\nÁbrela para consultar los detalles y confirmar tu asistencia.';
-
 export interface ShareMessagesConfig {
 	invitation: string;
 	reminder: string;
+}
+
+export function resolveShareTemplates(config?: {
+	shareMessages?: ShareMessagesConfig | null;
+}): ShareMessagesConfig {
+	return {
+		invitation: config?.shareMessages?.invitation || DEFAULT_INVITATION_MESSAGE,
+		reminder: config?.shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
+	};
 }

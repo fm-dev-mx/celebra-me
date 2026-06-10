@@ -23,7 +23,6 @@ export interface BuildShareMessageInput {
 	eventTitle?: string;
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
-	template?: string;
 	shareMessages?: ShareMessagesConfig | null;
 	messageType?: ShareMessageType;
 	includeLink?: boolean;
@@ -72,8 +71,6 @@ function resolveTemplate(input: BuildShareMessageInput): string {
 			: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE;
 	}
 
-	if (input.template) return input.template;
-
 	return messageType === 'reminder' ? DEFAULT_REMINDER_MESSAGE : DEFAULT_INVITATION_MESSAGE;
 }
 
@@ -113,7 +110,6 @@ export function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
 }
 
 export interface SharingConfig {
-	whatsappTemplate?: string;
 	shareMessages?: ShareMessagesConfig;
 }
 
@@ -165,10 +161,7 @@ export async function getSharingConfigForSlug(
 		const published = await findPublishedBySlugAndEventType(eventSlug, eventType);
 		if (published?.content) {
 			const result = extractSharingFromContent(published.content);
-			if (result) {
-				if (published.isDemo) return result;
-				return result;
-			}
+			if (result) return result;
 		}
 	}
 

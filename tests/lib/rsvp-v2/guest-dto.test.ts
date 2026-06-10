@@ -58,17 +58,17 @@ describe('toGuestDto', () => {
 		expect(dto.shareText).toContain('Custom:');
 	});
 
-	it('falls back to legacy template when shareMessages is not provided', () => {
+	it('uses default invitation message when no shareMessages provided', () => {
 		const guest = makeGuestRecord();
 		const dto = toGuestDto(guest, {
 			origin: 'http://localhost',
 			eventTitle: 'Test Event',
 			eventType: 'xv',
 			eventSlug: 'test-slug',
-			template: 'Legacy: {name} → {inviteUrl}',
 		});
 		const decodedWa = decodeURIComponent(dto.waShareUrl.split('?text=')[1]);
-		expect(decodedWa).toContain('Legacy: Test Guest');
+		expect(decodedWa).toContain('Hola Test Guest');
+		expect(decodedWa).toContain('Test Event');
 	});
 
 	it('no-phone guest gets empty waShareUrl', () => {
