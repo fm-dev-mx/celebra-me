@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -27,13 +27,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
 	const [composerOpen, setComposerOpen] = useState(false);
-	const buttonRef = useRef<HTMLButtonElement>(null);
 
 	const cta = getShareCtaLabel(guest);
-
-	const handleClick = () => {
-		setComposerOpen(true);
-	};
 
 	const icon =
 		status === 'sending' ? (
@@ -49,10 +44,9 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	return (
 		<>
 			<button
-				ref={buttonRef}
 				type="button"
 				className={`dashboard-guests__share-button dashboard-guests__share-button--${status} ${guest.deliveryStatus === 'shared' && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
-				onClick={handleClick}
+				onClick={() => setComposerOpen(true)}
 				disabled={status !== 'idle'}
 				title={cta.label}
 				aria-label={cta.label}
@@ -62,7 +56,6 @@ const ShareAction: React.FC<ShareActionProps> = ({
 			</button>
 			{composerOpen && (
 				<ShareComposer
-					anchorRef={buttonRef}
 					guestName={guest.fullName}
 					phone={guest.phone}
 					countryCode={guest.countryCode}
