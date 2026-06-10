@@ -5,6 +5,7 @@ import type {
 	EventRecord,
 } from '@/interfaces/rsvp/domain.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
 export interface DashboardGuestItem {
 	guestId: string;
@@ -38,6 +39,7 @@ export interface DashboardGuestListResponse {
 	eventId: string;
 	items: DashboardGuestItem[];
 	shareTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	totals: {
 		totalInvitations: number;
 		totalPeople: number;

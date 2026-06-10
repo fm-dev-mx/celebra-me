@@ -15,6 +15,8 @@ export interface ToGuestDtoOptions {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shareMessages?: ShareMessagesConfig | null;
+	eventDate?: string | null;
+	rsvpDeadline?: string | null;
 }
 
 export function toGuestDto(
@@ -49,6 +51,8 @@ export function toGuestDto(
 			eventSlug: options.eventSlug,
 			shareMessages: options.shareMessages,
 			messageType: 'invitation',
+			eventDate: options.eventDate,
+			rsvpDeadline: options.rsvpDeadline,
 		}),
 		shareText: buildShareMessage({
 			origin: options.origin,
@@ -62,6 +66,8 @@ export function toGuestDto(
 			shareMessages: options.shareMessages,
 			messageType: 'invitation',
 			includeLink: false,
+			eventDate: options.eventDate,
+			rsvpDeadline: options.rsvpDeadline,
 		}),
 		updatedAt: guest.updatedAt,
 		entrySource: guest.entrySource ?? 'dashboard',

@@ -82,6 +82,13 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -152,6 +159,13 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 			shareTemplates: {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
 			},
 			updatedAt: new Date().toISOString(),
 		});

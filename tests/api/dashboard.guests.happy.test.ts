@@ -77,6 +77,13 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			},
 			updatedAt: new Date().toISOString(),
 		});
 		const response = await GET({
@@ -415,6 +422,13 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -450,6 +464,13 @@ describe('dashboard guests happy path', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -484,6 +505,13 @@ describe('dashboard guests happy path', () => {
 			shareTemplates: {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
 			},
 			updatedAt: new Date().toISOString(),
 		});

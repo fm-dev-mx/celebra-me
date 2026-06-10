@@ -41,6 +41,10 @@ import {
 	findPublishedByInvitationId,
 	updatePublishedContentSnapshot,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	buildShareMessageDateContext,
+	type ShareMessageDateContext,
+} from '@/lib/rsvp/services/shared/share-message-date';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -95,12 +99,35 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	};
 }
 
-async function resolveEventShareMessages(
-	event: Pick<EventRecord, 'slug' | 'eventType'> | null,
-): Promise<ShareMessagesConfig | null | undefined> {
-	if (!event) return undefined;
+async function resolveEventSharingContext(
+	event: Pick<EventRecord, 'slug' | 'eventType' | 'title'> | null,
+): Promise<{
+	shareMessages: ShareMessagesConfig | null | undefined;
+	eventDate: string | null;
+	rsvpDeadline: string | null;
+	shareDateContext: ShareMessageDateContext;
+}> {
+	if (!event) {
+		return {
+			shareMessages: undefined,
+			eventDate: null,
+			rsvpDeadline: null,
+			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
+		};
+	}
 	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
-	return sharingConfig.shareMessages;
+	const today = new Date();
+	return {
+		shareMessages: sharingConfig.shareMessages,
+		eventDate: sharingConfig.eventDate ?? null,
+		rsvpDeadline: sharingConfig.rsvpDeadline ?? null,
+		shareDateContext: buildShareMessageDateContext(
+			sharingConfig.eventDate ?? null,
+			sharingConfig.rsvpDeadline ?? null,
+			event.title,
+			today,
+		),
+	};
 }
 
 function buildGuestDto(
@@ -108,6 +135,8 @@ function buildGuestDto(
 	event: Pick<EventRecord, 'title' | 'eventType' | 'slug'> | null,
 	origin: string,
 	shareMessages?: ShareMessagesConfig | null,
+	eventDate?: string | null,
+	rsvpDeadline?: string | null,
 ): GuestInvitationDTO {
 	return toGuestDto(guest, {
 		origin,
@@ -115,6 +144,8 @@ function buildGuestDto(
 		eventType: event?.eventType,
 		eventSlug: event?.slug,
 		shareMessages,
+		eventDate,
+		rsvpDeadline,
 	});
 }
 
@@ -171,15 +202,25 @@ export async function listDashboardGuests(input: {
 			},
 			input.hostAccessToken,
 		);
-		const shareMessages = await resolveEventShareMessages(event);
-		const shareTemplates = resolveShareTemplates({ shareMessages });
+		const sharingContext = await resolveEventSharingContext(event);
+		const shareTemplates = resolveShareTemplates({
+			shareMessages: sharingContext.shareMessages,
+		});
 		const items = guests.map((guest) =>
-			buildGuestDto(guest, event, input.origin, shareMessages),
+			buildGuestDto(
+				guest,
+				event,
+				input.origin,
+				sharingContext.shareMessages,
+				sharingContext.eventDate,
+				sharingContext.rsvpDeadline,
+			),
 		);
 		return {
 			eventId: event.id,
 			items,
 			shareTemplates,
+			shareDateContext: sharingContext.shareDateContext,
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
 		};
@@ -201,6 +242,7 @@ export async function listDashboardGuests(input: {
 			eventId: membership.eventId,
 			items,
 			shareTemplates: resolveShareTemplates({}),
+			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
 		};
@@ -274,11 +316,14 @@ export async function createDashboardGuest(input: {
 		throw mapSupabaseErrorToApiError(error);
 	}
 
+	const sharingContext = await resolveEventSharingContext(event);
 	const item = buildGuestDto(
 		created,
 		event,
 		input.origin,
-		await resolveEventShareMessages(event),
+		sharingContext.shareMessages,
+		sharingContext.eventDate,
+		sharingContext.rsvpDeadline,
 	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
@@ -380,11 +425,14 @@ export async function updateDashboardGuest(input: {
 	}
 
 	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	const sharingContext = await resolveEventSharingContext(event);
 	const item = buildGuestDto(
 		updated,
 		event,
 		input.origin,
-		await resolveEventShareMessages(event),
+		sharingContext.shareMessages,
+		sharingContext.eventDate,
+		sharingContext.rsvpDeadline,
 	);
 
 	return {
@@ -433,11 +481,14 @@ export async function markGuestShared(input: {
 	);
 
 	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	const sharingContext = await resolveEventSharingContext(event);
 	const item = buildGuestDto(
 		updated,
 		event,
 		input.origin,
-		await resolveEventShareMessages(event),
+		sharingContext.shareMessages,
+		sharingContext.eventDate,
+		sharingContext.rsvpDeadline,
 	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
@@ -505,11 +556,14 @@ export async function toggleGuestBrandingRemoval(input: {
 		input.hostAccessToken,
 	);
 
+	const sharingContext = await resolveEventSharingContext(event);
 	const item = buildGuestDto(
 		updated,
 		event,
 		input.origin,
-		await resolveEventShareMessages(event),
+		sharingContext.shareMessages,
+		sharingContext.eventDate,
+		sharingContext.rsvpDeadline,
 	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
