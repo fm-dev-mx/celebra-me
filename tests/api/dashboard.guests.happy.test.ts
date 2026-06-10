@@ -10,6 +10,10 @@ import {
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import { createMockRequest } from '../helpers/api-mocks';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	listDashboardGuests: jest.fn(),
@@ -68,6 +72,10 @@ describe('dashboard guests happy path', () => {
 				declinedInvitations: 0,
 				declinedPeople: 0,
 				viewed: 0,
+			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
 			updatedAt: new Date().toISOString(),
 		});
@@ -403,6 +411,10 @@ describe('dashboard guests happy path', () => {
 				declinedPeople: 0,
 				viewed: 0,
 			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -434,6 +446,10 @@ describe('dashboard guests happy path', () => {
 				declinedPeople: 0,
 				viewed: 0,
 			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -464,6 +480,10 @@ describe('dashboard guests happy path', () => {
 				declinedInvitations: 0,
 				declinedPeople: 0,
 				viewed: 0,
+			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
 			updatedAt: new Date().toISOString(),
 		});

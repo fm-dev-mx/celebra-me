@@ -6,6 +6,11 @@ import type {
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { DeliveryFilter, EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 interface HostEventItem {
 	id: string;
@@ -28,6 +33,11 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	declinedInvitations: 0,
 	declinedPeople: 0,
 	viewed: 0,
+};
+
+const DEFAULT_SHARE_TEMPLATES: ShareMessagesConfig = {
+	invitation: DEFAULT_INVITATION_MESSAGE,
+	reminder: DEFAULT_REMINDER_MESSAGE,
 };
 
 interface UseGuestDashboardRealtimeOptions {
@@ -104,6 +114,8 @@ export const useGuestDashboardRealtime = ({
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
+	const [shareTemplates, setShareTemplates] =
+		useState<ShareMessagesConfig>(DEFAULT_SHARE_TEMPLATES);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
@@ -154,6 +166,9 @@ export const useGuestDashboardRealtime = ({
 			const data = await guestsApi.list({ eventId, search, status, delivery });
 			setItems(data.items);
 			setTotals(data.totals);
+			if (data.shareTemplates) {
+				setShareTemplates(data.shareTemplates);
+			}
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
 			if (shouldLogDashboardDebug()) {
@@ -230,6 +245,7 @@ export const useGuestDashboardRealtime = ({
 		realtimeState,
 		setEventId,
 		setItems,
+		shareTemplates,
 		totals,
 		updatedAt,
 	};

@@ -10,6 +10,7 @@ import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
+import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
 import {
@@ -35,6 +36,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [group, setGroup] = useState<GroupFilter>('all');
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 	const [reviewFilter, setReviewFilter] = useState<GuestReviewFilter>('all');
+	const [shareMessagesModalOpen, setShareMessagesModalOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const {
 		error,
@@ -46,6 +48,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		loadGuests,
 		setEventId,
 		setItems,
+		shareTemplates,
 		totals,
 	} = useGuestDashboardRealtime({
 		initialEventId,
@@ -146,6 +149,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						onExport={handleExport}
 						onImport={openImportModal}
 						onRefresh={loadGuests}
+						onShareMessages={() => setShareMessagesModalOpen(true)}
 					/>
 				</div>
 
@@ -167,6 +171,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestTable
 					items={visibleItems}
 					inviteBaseUrl={inviteBaseUrl}
+					eventTitle={currentEvent?.title ?? ''}
+					shareTemplates={shareTemplates}
 					celebratingGuestId={celebratingGuestId}
 					expandedGuestId={expandedGuestId}
 					onToggleExpanded={(id) =>
@@ -231,6 +237,23 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						onUpdate={handleImportUpdate}
 						eventId={eventId}
 						existingGuests={items}
+					/>
+				)}
+
+				{shareMessagesModalOpen && currentEvent && (
+					<ShareMessagesModal
+						eventId={eventId}
+						eventTitle={currentEvent.title}
+						initialTemplates={shareTemplates}
+						onClose={() => setShareMessagesModalOpen(false)}
+						onSave={() => {
+							setShareMessagesModalOpen(false);
+							void loadGuests();
+							setNotification({
+								message: 'Mensajes guardados correctamente.',
+								type: 'success',
+							});
+						}}
 					/>
 				)}
 

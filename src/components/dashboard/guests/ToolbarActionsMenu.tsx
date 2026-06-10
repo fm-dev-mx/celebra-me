@@ -7,12 +7,14 @@ interface ToolbarActionsMenuProps {
 	onExport: () => void;
 	onImport: () => void;
 	onRefresh: () => void;
+	onShareMessages?: () => void;
 }
 
 const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 	onExport,
 	onImport,
 	onRefresh,
+	onShareMessages,
 }) => {
 	const { open, menuId, triggerRef, menuRef, toggle, close } = useFloatingMenu({
 		menuWidth: 200,
@@ -45,6 +47,19 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 						aria-label="Más acciones"
 						onClick={(e) => e.stopPropagation()}
 					>
+						{onShareMessages && (
+							<button
+								type="button"
+								className="guest-actions-menu__item"
+								role="menuitem"
+								onClick={() => {
+									close();
+									onShareMessages();
+								}}
+							>
+								<span>Mensajes</span>
+							</button>
+						)}
 						<button
 							type="button"
 							className="guest-actions-menu__item"

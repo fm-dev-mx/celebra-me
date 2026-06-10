@@ -2,6 +2,10 @@ import { GET } from '@/pages/api/dashboard/guests/export.csv';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
 import { createMockRequest } from '../helpers/api-mocks';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
@@ -74,6 +78,10 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				declinedPeople: 0,
 				viewed: 0,
 			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
 			updatedAt: new Date().toISOString(),
 		});
 
@@ -140,6 +148,10 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				declinedInvitations: 0,
 				declinedPeople: 0,
 				viewed: 0,
+			},
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
 			updatedAt: new Date().toISOString(),
 		});

@@ -4,6 +4,10 @@ import { useGuestDashboardActions } from '@/components/dashboard/guests/use-gues
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { makeGuest } from '@tests/helpers/guest-factory';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 jest.mock('@/lib/dashboard/guests-api', () => ({
 	guestsApi: {
@@ -85,6 +89,10 @@ describe('active guest dashboard hooks', () => {
 			eventId: 'event-123',
 			items: [sampleGuest],
 			totals: sampleTotals,
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
@@ -200,6 +208,10 @@ describe('active guest dashboard hooks', () => {
 			eventId: 'event-999',
 			items: [sampleGuest],
 			totals: sampleTotals,
+			shareTemplates: {
+				invitation: DEFAULT_INVITATION_MESSAGE,
+				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
@@ -556,6 +568,10 @@ describe('active guest dashboard hooks', () => {
 				eventId: 'event-123',
 				items: [sampleGuest],
 				totals: sampleTotals,
+				shareTemplates: {
+					invitation: DEFAULT_INVITATION_MESSAGE,
+					reminder: DEFAULT_REMINDER_MESSAGE,
+				},
 				updatedAt: '2026-03-22T00:00:00.000Z',
 			});
 

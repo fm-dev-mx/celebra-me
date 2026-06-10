@@ -30,6 +30,24 @@ import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-h
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+	type ShareMessagesConfig,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	findPublishedByInvitationId,
+	updatePublishedContentSnapshot,
+} from '@/lib/intake/repositories/published-invitation-content.repository';
+
+function resolveShareTemplates(config: {
+	shareMessages?: ShareMessagesConfig | null;
+}): ShareMessagesConfig {
+	return {
+		invitation: config.shareMessages?.invitation || DEFAULT_INVITATION_MESSAGE,
+		reminder: config.shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
+	};
+}
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -138,6 +156,7 @@ export async function listDashboardGuests(input: {
 			input.hostAccessToken,
 		);
 		const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
+		const shareTemplates = resolveShareTemplates(sharingConfig);
 		const items = guests.map((guest) =>
 			toGuestDto(guest, {
 				origin: input.origin,
@@ -151,6 +170,7 @@ export async function listDashboardGuests(input: {
 		return {
 			eventId: event.id,
 			items,
+			shareTemplates,
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
 		};
@@ -171,6 +191,7 @@ export async function listDashboardGuests(input: {
 		return {
 			eventId: membership.eventId,
 			items,
+			shareTemplates: resolveShareTemplates({}),
 			totals: buildDashboardTotals(items),
 			updatedAt: new Date().toISOString(),
 		};
@@ -511,5 +532,54 @@ export async function toggleGuestBrandingRemoval(input: {
 		item,
 		updatedAt: item.updatedAt,
 		source: 'mutation',
+	};
+}
+
+export async function updateShareMessages(input: {
+	eventId: string;
+	hostAccessToken: string;
+	shareMessages: ShareMessagesConfig;
+}): Promise<ShareMessagesConfig> {
+	const event = await findEventById(input.eventId, input.hostAccessToken);
+	if (!event) {
+		throw new ApiError(404, 'not_found', 'Event not found.');
+	}
+	if (!event.invitationId) {
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Event does not have an associated invitation project.',
+		);
+	}
+
+	const published = await findPublishedByInvitationId(event.invitationId);
+	if (!published) {
+		throw new ApiError(
+			404,
+			'not_found',
+			'No published content found for this event. Publish the invitation first.',
+		);
+	}
+
+	const content = { ...published.content };
+	const sharing = (content.sharing as Record<string, unknown>) || {};
+	content.sharing = {
+		...sharing,
+		shareMessages: {
+			invitation: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE,
+			reminder: input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE,
+		},
+	};
+
+	await updatePublishedContentSnapshot({
+		id: published.id,
+		content,
+		version: published.version,
+		publishedAt: published.publishedAt,
+	});
+
+	return {
+		invitation: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE,
+		reminder: input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE,
 	};
 }

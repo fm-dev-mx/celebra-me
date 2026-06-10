@@ -8,6 +8,7 @@ import type {
 	CreateGuestDTO,
 	UpdateGuestDTO,
 } from '@/lib/dashboard/dto/guests';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 class DashboardApiError extends Error {
 	status: number;
@@ -160,6 +161,17 @@ export class GuestsApi {
 		anchor.click();
 		window.URL.revokeObjectURL(url);
 		document.body.removeChild(anchor);
+	}
+
+	async updateShareMessages(
+		eventId: string,
+		shareMessages: ShareMessagesConfig,
+	): Promise<ShareMessagesConfig> {
+		const result = await dashboardApi.post<ShareMessagesConfig>(
+			'/api/dashboard/guests/share-messages',
+			{ eventId, ...shareMessages },
+		);
+		return this.handleResponse(result, 'guests.updateShareMessages');
 	}
 }
 

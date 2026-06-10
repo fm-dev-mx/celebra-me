@@ -3,6 +3,10 @@ import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { makeGuest } from '@tests/helpers/guest-factory';
+import {
+	DEFAULT_INVITATION_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 jest.mock('@/components/dashboard/guests/use-guest-dashboard-realtime', () => ({
 	useGuestDashboardRealtime: jest.fn(),
@@ -77,6 +81,10 @@ function setupDashboard() {
 		setEventId: jest.fn(),
 		setItems: jest.fn(),
 		totals,
+		shareTemplates: {
+			invitation: DEFAULT_INVITATION_MESSAGE,
+			reminder: DEFAULT_REMINDER_MESSAGE,
+		},
 		updatedAt: '2026-05-24T00:00:00.000Z',
 	});
 
