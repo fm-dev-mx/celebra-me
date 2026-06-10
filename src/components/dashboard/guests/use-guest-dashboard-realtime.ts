@@ -6,10 +6,9 @@ import type {
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { DeliveryFilter, EventRecord } from '@/interfaces/rsvp/domain.interface';
-import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
-	DEFAULT_INVITATION_MESSAGE,
-	DEFAULT_REMINDER_MESSAGE,
+	resolveShareTemplates,
+	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 interface HostEventItem {
@@ -35,11 +34,6 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	viewed: 0,
 };
 
-const DEFAULT_SHARE_TEMPLATES: ShareMessagesConfig = {
-	invitation: DEFAULT_INVITATION_MESSAGE,
-	reminder: DEFAULT_REMINDER_MESSAGE,
-};
-
 interface UseGuestDashboardRealtimeOptions {
 	initialEventId: string;
 	search: 'all' | string;
@@ -48,12 +42,6 @@ interface UseGuestDashboardRealtimeOptions {
 }
 
 const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
-function getErrorMessage(error: unknown, fallback: string): string {
-	if (error instanceof Error) {
-		return error.message;
-	}
-	return fallback;
-}
 
 function getEventLoadFailureMessage(error: unknown, fallback: string): string {
 	if (error && typeof error === 'object' && 'details' in error) {
@@ -63,7 +51,7 @@ function getEventLoadFailureMessage(error: unknown, fallback: string): string {
 			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
 		}
 	}
-	return getErrorMessage(error, fallback);
+	return error instanceof Error ? error.message : fallback;
 }
 
 function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventItem[]) {
@@ -114,8 +102,9 @@ export const useGuestDashboardRealtime = ({
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
-	const [shareTemplates, setShareTemplates] =
-		useState<ShareMessagesConfig>(DEFAULT_SHARE_TEMPLATES);
+	const [shareTemplates, setShareTemplates] = useState<ShareMessagesConfig>(
+		resolveShareTemplates({}),
+	);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
@@ -181,7 +170,9 @@ export const useGuestDashboardRealtime = ({
 					eventsDebug,
 				});
 			}
-			setGuestsError(getErrorMessage(error, 'Error de red al cargar invitados.'));
+			setGuestsError(
+				error instanceof Error ? error.message : 'Error de red al cargar invitados.',
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -245,6 +236,7 @@ export const useGuestDashboardRealtime = ({
 		realtimeState,
 		setEventId,
 		setItems,
+		setShareTemplates,
 		shareTemplates,
 		totals,
 		updatedAt,

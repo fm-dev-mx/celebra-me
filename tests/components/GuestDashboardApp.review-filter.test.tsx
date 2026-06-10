@@ -80,6 +80,7 @@ function setupDashboard() {
 		realtimeState: 'connected',
 		setEventId: jest.fn(),
 		setItems: jest.fn(),
+		setShareTemplates: jest.fn(),
 		totals,
 		shareTemplates: {
 			invitation: DEFAULT_INVITATION_MESSAGE,

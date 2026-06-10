@@ -3,10 +3,6 @@ import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { updateShareMessages } from '@/lib/rsvp/services/dashboard-guests.service';
 import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
-import {
-	DEFAULT_INVITATION_MESSAGE,
-	DEFAULT_REMINDER_MESSAGE,
-} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 export const POST: APIRoute = async ({ request, locals }) => {
 	try {
@@ -21,19 +17,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		const reminder = typeof body.reminder === 'string' ? body.reminder.trim() : '';
 
 		if (invitation && invitation.length > 500) {
-			return badRequest('Invitation message must be 500 characters or fewer.');
+			return badRequest('El mensaje de invitación no puede superar los 500 caracteres.');
 		}
 		if (reminder && reminder.length > 500) {
-			return badRequest('Reminder message must be 500 characters or fewer.');
+			return badRequest('El mensaje de recordatorio no puede superar los 500 caracteres.');
 		}
 
 		const result = await updateShareMessages({
 			eventId,
 			hostAccessToken: session.accessToken,
-			shareMessages: {
-				invitation: invitation || DEFAULT_INVITATION_MESSAGE,
-				reminder: reminder || DEFAULT_REMINDER_MESSAGE,
-			},
+			shareMessages: { invitation, reminder },
 		});
 
 		return jsonResponse(result);

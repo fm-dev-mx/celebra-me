@@ -61,13 +61,12 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 	}, []);
 
 	const handleSave = useCallback(async () => {
-		if (saving) return;
 		setSaving(true);
 		setError(null);
 		try {
 			const result = await guestsApi.updateShareMessages(eventId, {
-				invitation: invitation.trim() || DEFAULT_INVITATION_MESSAGE,
-				reminder: reminder.trim() || DEFAULT_REMINDER_MESSAGE,
+				invitation: invitation.trim(),
+				reminder: reminder.trim(),
 			});
 			onSave(result);
 		} catch (err) {
@@ -75,7 +74,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		} finally {
 			setSaving(false);
 		}
-	}, [eventId, invitation, reminder, onSave, saving]);
+	}, [eventId, invitation, reminder, onSave]);
 
 	return (
 		<ModalShell title="Mensajes para compartir" onClose={onClose}>
@@ -85,11 +84,17 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 					WhatsApp, copiar mensaje o copiar enlace.
 				</p>
 
-				<div className="share-messages-modal__tabs" role="tablist">
+				<div
+					className="share-messages-modal__tabs"
+					role="tablist"
+					aria-label="Tipo de mensaje"
+				>
 					<button
 						type="button"
 						role="tab"
+						id="tab-invitation"
 						aria-selected={activeTab === 'invitation'}
+						aria-controls="tabpanel-share-msg"
 						className={`share-messages-modal__tab ${activeTab === 'invitation' ? 'share-messages-modal__tab--active' : ''}`}
 						onClick={() => setActiveTab('invitation')}
 					>
@@ -98,7 +103,9 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 					<button
 						type="button"
 						role="tab"
+						id="tab-reminder"
 						aria-selected={activeTab === 'reminder'}
+						aria-controls="tabpanel-share-msg"
 						className={`share-messages-modal__tab ${activeTab === 'reminder' ? 'share-messages-modal__tab--active' : ''}`}
 						onClick={() => setActiveTab('reminder')}
 					>
@@ -106,7 +113,12 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 					</button>
 				</div>
 
-				<div className="dashboard-form-field dashboard-form-field--full">
+				<div
+					className="dashboard-form-field dashboard-form-field--full"
+					role="tabpanel"
+					id="tabpanel-share-msg"
+					aria-labelledby={activeTab === 'invitation' ? 'tab-invitation' : 'tab-reminder'}
+				>
 					<label htmlFor={`share-msg-${activeTab}`}>
 						{activeTab === 'invitation'
 							? 'Mensaje de invitación'

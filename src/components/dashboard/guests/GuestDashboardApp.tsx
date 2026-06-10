@@ -48,6 +48,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		loadGuests,
 		setEventId,
 		setItems,
+		setShareTemplates,
 		shareTemplates,
 		totals,
 	} = useGuestDashboardRealtime({
@@ -246,8 +247,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						eventTitle={currentEvent.title}
 						initialTemplates={shareTemplates}
 						onClose={() => setShareMessagesModalOpen(false)}
-						onSave={() => {
+						onSave={(templates) => {
 							setShareMessagesModalOpen(false);
+							setShareTemplates(templates);
 							void loadGuests();
 							setNotification({
 								message: 'Mensajes guardados correctamente.',
