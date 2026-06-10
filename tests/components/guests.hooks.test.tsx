@@ -93,6 +93,13 @@ describe('active guest dashboard hooks', () => {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
 			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			},
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
@@ -211,6 +218,13 @@ describe('active guest dashboard hooks', () => {
 			shareTemplates: {
 				invitation: DEFAULT_INVITATION_MESSAGE,
 				reminder: DEFAULT_REMINDER_MESSAGE,
+			},
+			shareDateContext: {
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
 			},
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
@@ -571,6 +585,13 @@ describe('active guest dashboard hooks', () => {
 				shareTemplates: {
 					invitation: DEFAULT_INVITATION_MESSAGE,
 					reminder: DEFAULT_REMINDER_MESSAGE,
+				},
+				shareDateContext: {
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
 				},
 				updatedAt: '2026-03-22T00:00:00.000Z',
 			});

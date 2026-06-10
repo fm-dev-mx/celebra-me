@@ -52,6 +52,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -66,6 +73,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -84,6 +98,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -98,6 +119,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -112,6 +140,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -126,6 +161,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);
@@ -142,6 +184,13 @@ describe('ShareAction', () => {
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
 				onShared={onShared}
 			/>,
 		);

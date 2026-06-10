@@ -5,6 +5,7 @@ import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable'
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
@@ -24,6 +25,7 @@ interface GuestTableRowProps {
 	inviteUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
 	isExpanded?: boolean;
@@ -42,6 +44,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	inviteUrl,
 	eventTitle,
 	shareTemplates,
+	shareDateContext,
 	celebratingGuestId,
 	highlightedGuestId,
 	isExpanded,
@@ -161,6 +164,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 						inviteUrl={inviteUrl}
 						eventTitle={eventTitle}
 						shareTemplates={shareTemplates}
+						shareDateContext={shareDateContext}
 						onShared={async () => onMarkShared(item)}
 					/>
 				</td>

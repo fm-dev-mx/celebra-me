@@ -10,6 +10,10 @@ import {
 	resolveShareTemplates,
 	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	buildShareMessageDateContext,
+	type ShareMessageDateContext,
+} from '@/lib/rsvp/services/shared/share-message-date';
 
 interface HostEventItem {
 	id: string;
@@ -105,6 +109,9 @@ export const useGuestDashboardRealtime = ({
 	const [shareTemplates, setShareTemplates] = useState<ShareMessagesConfig>(
 		resolveShareTemplates({}),
 	);
+	const [shareDateContext, setShareDateContext] = useState<ShareMessageDateContext>(
+		buildShareMessageDateContext(null, null, '', new Date()),
+	);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
@@ -158,6 +165,7 @@ export const useGuestDashboardRealtime = ({
 			if (data.shareTemplates) {
 				setShareTemplates(data.shareTemplates);
 			}
+			setShareDateContext(data.shareDateContext);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
 			if (shouldLogDashboardDebug()) {
@@ -238,6 +246,7 @@ export const useGuestDashboardRealtime = ({
 		setItems,
 		setShareTemplates,
 		shareTemplates,
+		shareDateContext,
 		totals,
 		updatedAt,
 	};

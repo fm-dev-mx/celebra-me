@@ -44,6 +44,13 @@ function createModal(overrides: Record<string, unknown> = {}) {
 			eventTitle="XV Años"
 			initialTemplates={initialTemplates}
 			onClose={onClose}
+			shareDateContext={{
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			}}
 			onSave={onSave}
 			{...overrides}
 		/>,

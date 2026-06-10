@@ -86,6 +86,13 @@ function setupDashboard() {
 			invitation: DEFAULT_INVITATION_MESSAGE,
 			reminder: DEFAULT_REMINDER_MESSAGE,
 		},
+		shareDateContext: {
+			eventDate: '',
+			daysUntilEvent: '',
+			rsvpDeadline: '',
+			eventTimingText: '',
+			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+		},
 		updatedAt: '2026-05-24T00:00:00.000Z',
 	});
 

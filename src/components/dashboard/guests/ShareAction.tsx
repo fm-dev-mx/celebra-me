@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import { getShareCtaLabel } from '@/components/dashboard/guests/guest-presenter';
 import ShareComposer from '@/components/dashboard/guests/ShareComposer';
 
@@ -10,6 +11,7 @@ interface ShareActionProps {
 	inviteUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	onShared: () => Promise<void> | void;
 }
 
@@ -20,6 +22,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	inviteUrl,
 	eventTitle,
 	shareTemplates,
+	shareDateContext,
 	onShared,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
@@ -66,6 +69,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 					inviteUrl={inviteUrl}
 					eventTitle={eventTitle}
 					templates={shareTemplates}
+					shareDateContext={shareDateContext}
 					defaultMessageType={cta.defaultMessageType}
 					onShared={async () => {
 						setStatus('sending');

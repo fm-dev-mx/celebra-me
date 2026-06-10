@@ -4,6 +4,7 @@ import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedAct
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
@@ -23,6 +24,7 @@ interface GuestCardProps {
 	inviteUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	isCelebrating?: boolean;
 	isHighlighted?: boolean;
 	isExpanded?: boolean;
@@ -41,6 +43,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	inviteUrl,
 	eventTitle,
 	shareTemplates,
+	shareDateContext,
 	isCelebrating,
 	isHighlighted,
 	isExpanded,
@@ -263,6 +266,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					inviteUrl={inviteUrl}
 					eventTitle={eventTitle}
 					shareTemplates={shareTemplates}
+					shareDateContext={shareDateContext}
 					onShared={async () => onMarkShared(item)}
 				/>
 				<button

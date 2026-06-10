@@ -7,20 +7,30 @@ import {
 	type ShareMessagesConfig,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
 interface ShareMessagesModalProps {
 	eventId: string;
 	eventTitle: string;
 	initialTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	onClose: () => void;
 	onSave: (templates: ShareMessagesConfig) => void;
 }
 
-const AVAILABLE_VARIABLES = ['{guestName}', '{eventTitle}', '{inviteUrl}'];
+const AVAILABLE_VARIABLES = [
+	'{guestName}',
+	'{eventTitle}',
+	'{inviteUrl}',
+	'{eventDate}',
+	'{daysUntilEvent}',
+	'{rsvpDeadline}',
+	'{eventTimingText}',
+	'{rsvpDeadlineText}',
+];
 
 const PREVIEW_CONTEXT = {
 	guestName: 'María García',
-	eventTitle: '',
 	inviteUrl: 'https://celebra-me.com/xv/ejemplo/i/ABC123',
 };
 
@@ -28,6 +38,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 	eventId,
 	eventTitle,
 	initialTemplates,
+	shareDateContext,
 	onClose,
 	onSave,
 }) => {
@@ -44,7 +55,8 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 
 	const previewContext = {
 		...PREVIEW_CONTEXT,
-		eventTitle: eventTitle || PREVIEW_CONTEXT.eventTitle,
+		eventTitle: eventTitle || '',
+		...shareDateContext,
 	};
 
 	const previewText = renderShareMessage(
@@ -157,6 +169,9 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 							{v}
 						</code>
 					))}
+					<p className="share-messages-modal__variables-help">
+						{'{daysUntilEvent}'} — número de días restantes
+					</p>
 				</div>
 
 				<div className="share-messages-modal__preview">

@@ -39,6 +39,13 @@ function createComposer(overrides: Record<string, unknown> = {}) {
 			templates={templates}
 			defaultMessageType="invitation"
 			onShared={onShared}
+			shareDateContext={{
+				eventDate: '',
+				daysUntilEvent: '',
+				rsvpDeadline: '',
+				eventTimingText: '',
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+			}}
 			onClose={onClose}
 			{...overrides}
 		/>,

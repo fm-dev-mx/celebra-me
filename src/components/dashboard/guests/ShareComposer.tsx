@@ -11,6 +11,7 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 
 interface ShareComposerProps {
@@ -21,6 +22,7 @@ interface ShareComposerProps {
 	inviteUrl: string;
 	eventTitle: string;
 	templates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	defaultMessageType: ShareMessageType;
 	onShared: () => Promise<void> | void;
 	onClose: () => void;
@@ -34,6 +36,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 	inviteUrl,
 	eventTitle,
 	templates,
+	shareDateContext,
 	defaultMessageType,
 	onShared,
 	onClose,
@@ -42,7 +45,7 @@ const ShareComposer: React.FC<ShareComposerProps> = ({
 	const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle');
 	const popoverRef = useRef<HTMLDivElement>(null);
 
-	const context = { guestName, eventTitle, inviteUrl };
+	const context = { guestName, eventTitle, inviteUrl, ...shareDateContext };
 	const renderedMessage = renderShareMessage(
 		messageType === 'invitation' ? templates.invitation : templates.reminder,
 		context,

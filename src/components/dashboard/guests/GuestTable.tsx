@@ -4,12 +4,14 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];
 	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
+	shareDateContext: ShareMessageDateContext;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
 	expandedGuestId?: string | null;
@@ -29,6 +31,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
+	shareDateContext,
 	celebratingGuestId,
 	highlightedGuestId,
 	expandedGuestId,
@@ -59,6 +62,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
 						eventTitle={eventTitle}
 						shareTemplates={shareTemplates}
+						shareDateContext={shareDateContext}
 						isCelebrating={celebratingGuestId === item.guestId}
 						isHighlighted={highlightedGuestId === item.guestId}
 						isExpanded={expandedGuestId === item.guestId}
@@ -97,6 +101,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
 								eventTitle={eventTitle}
 								shareTemplates={shareTemplates}
+								shareDateContext={shareDateContext}
 								celebratingGuestId={celebratingGuestId}
 								highlightedGuestId={highlightedGuestId}
 								isExpanded={expandedGuestId === item.guestId}

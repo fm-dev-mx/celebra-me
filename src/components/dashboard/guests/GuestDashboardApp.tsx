@@ -50,6 +50,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		setItems,
 		setShareTemplates,
 		shareTemplates,
+		shareDateContext,
 		totals,
 	} = useGuestDashboardRealtime({
 		initialEventId,
@@ -174,6 +175,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					inviteBaseUrl={inviteBaseUrl}
 					eventTitle={currentEvent?.title ?? ''}
 					shareTemplates={shareTemplates}
+					shareDateContext={shareDateContext}
 					celebratingGuestId={celebratingGuestId}
 					expandedGuestId={expandedGuestId}
 					onToggleExpanded={(id) =>
@@ -246,6 +248,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						eventId={eventId}
 						eventTitle={currentEvent.title}
 						initialTemplates={shareTemplates}
+						shareDateContext={shareDateContext}
 						onClose={() => setShareMessagesModalOpen(false)}
 						onSave={(templates) => {
 							setShareMessagesModalOpen(false);

@@ -26,6 +26,13 @@ describe('GuestCard status labels', () => {
 		onEdit: jest.fn(),
 		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
+		shareDateContext: {
+			eventDate: '',
+			daysUntilEvent: '',
+			rsvpDeadline: '',
+			eventTimingText: '',
+			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+		},
 	};
 
 	it('shows "Por enviar" when deliveryStatus is generated (not yet sent)', () => {
