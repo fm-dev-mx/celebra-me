@@ -15,6 +15,7 @@ import {
 	getViewStateLabel,
 	getGuestInviteUrl,
 	getShareCtaLabel,
+	hasBeenShared,
 	normalizeViewPercentage,
 } from '@/components/dashboard/guests/guest-presenter';
 import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
@@ -319,8 +320,26 @@ describe('getGuestInviteUrl', () => {
 	});
 });
 
+describe('hasBeenShared', () => {
+	it('returns true when firstSharedAt is set', () => {
+		expect(hasBeenShared(makeGuest({ firstSharedAt: '2026-01-15T10:00:00.000Z' }))).toBe(true);
+	});
+
+	it('returns true when deliveryStatus is shared even without firstSharedAt', () => {
+		expect(hasBeenShared(makeGuest({ deliveryStatus: 'shared', firstSharedAt: null }))).toBe(
+			true,
+		);
+	});
+
+	it('returns false when deliveryStatus is generated and firstSharedAt is null', () => {
+		expect(hasBeenShared(makeGuest({ deliveryStatus: 'generated', firstSharedAt: null }))).toBe(
+			false,
+		);
+	});
+});
+
 describe('getShareCtaLabel', () => {
-	it('first send — generated + no firstSharedAt → "Compartir invitación" + invitation', () => {
+	it('never shared → "Compartir invitación" + invitation', () => {
 		const result = getShareCtaLabel(
 			makeGuest({ deliveryStatus: 'generated', firstSharedAt: null }),
 		);
@@ -328,14 +347,7 @@ describe('getShareCtaLabel', () => {
 		expect(result.defaultMessageType).toBe('invitation');
 	});
 
-	it('first send — even if deliveryStatus is shared but firstSharedAt is null → invitation', () => {
-		const result = getShareCtaLabel(
-			makeGuest({ deliveryStatus: 'shared', firstSharedAt: null }),
-		);
-		expect(result.defaultMessageType).toBe('invitation');
-	});
-
-	it('resend — shared + firstSharedAt exists + not viewed → "Reenviar invitación" + reminder', () => {
+	it('previously shared (firstSharedAt set) → "Enviar recordatorio" + reminder', () => {
 		const result = getShareCtaLabel(
 			makeGuest({
 				deliveryStatus: 'shared',
@@ -343,11 +355,11 @@ describe('getShareCtaLabel', () => {
 				isViewed: false,
 			}),
 		);
-		expect(result.label).toBe('Reenviar invitación');
+		expect(result.label).toBe('Enviar recordatorio');
 		expect(result.defaultMessageType).toBe('reminder');
 	});
 
-	it('reminder — shared + firstSharedAt exists + viewed + pending → "Enviar recordatorio" + reminder', () => {
+	it('already shared and viewed → "Enviar recordatorio" + reminder', () => {
 		const result = getShareCtaLabel(
 			makeGuest({
 				deliveryStatus: 'shared',
@@ -368,11 +380,27 @@ describe('getShareCtaLabel', () => {
 		expect(result.defaultMessageType).toBe('reminder');
 	});
 
-	it('declined guest → "Compartir de nuevo" + invitation', () => {
+	it('declined guest → "Enviar recordatorio" + reminder', () => {
 		const result = getShareCtaLabel(
 			makeGuest({ attendanceStatus: 'declined', firstSharedAt: '2026-01-15T10:00:00.000Z' }),
 		);
-		expect(result.label).toBe('Compartir de nuevo');
+		expect(result.label).toBe('Enviar recordatorio');
+		expect(result.defaultMessageType).toBe('reminder');
+	});
+
+	it('defensive: deliveryStatus "shared" without firstSharedAt → "Enviar recordatorio" + reminder', () => {
+		const result = getShareCtaLabel(
+			makeGuest({ deliveryStatus: 'shared', firstSharedAt: null }),
+		);
+		expect(result.label).toBe('Enviar recordatorio');
+		expect(result.defaultMessageType).toBe('reminder');
+	});
+
+	it('defensive: deliveryStatus "generated" without firstSharedAt → "Compartir invitación" + invitation', () => {
+		const result = getShareCtaLabel(
+			makeGuest({ deliveryStatus: 'generated', firstSharedAt: null }),
+		);
+		expect(result.label).toBe('Compartir invitación');
 		expect(result.defaultMessageType).toBe('invitation');
 	});
 });

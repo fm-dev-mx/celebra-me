@@ -1,36 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
-import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { makeGuest } from '@tests/helpers/guest-factory';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
-
-function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
-	return {
-		guestId: 'guest-1',
-		inviteId: 'invite-1',
-		fullName: 'Test Guest',
-		phone: '6691234567',
-		countryCode: '+52',
-		maxAllowedAttendees: 4,
-		attendanceStatus: 'pending',
-		attendeeCount: 0,
-		guestComment: '',
-		deliveryStatus: 'generated',
-		firstSharedAt: null,
-		viewPercentage: 0,
-		isViewed: false,
-		firstViewedAt: null,
-		respondedAt: null,
-		waShareUrl: 'https://wa.me/526691234567?text=test',
-		shareText: 'Share text',
-		updatedAt: new Date().toISOString(),
-		entrySource: 'dashboard',
-		tags: [],
-		eventType: 'xv',
-		eventSlug: 'test-slug',
-		shortId: 'ABC123',
-		...overrides,
-	};
-}
 
 const defaultTemplates: ShareMessagesConfig = {
 	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
@@ -67,7 +38,7 @@ describe('ShareAction', () => {
 		expect(screen.getByText('Compartir invitación')).toBeInTheDocument();
 	});
 
-	it('renders with "Reenviar invitación" when shared but not viewed', () => {
+	it('renders with "Enviar recordatorio" when shared but not viewed', () => {
 		render(
 			<ShareAction
 				guest={makeGuest({
@@ -89,7 +60,7 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Reenviar invitación')).toBeInTheDocument();
+		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
 	});
 
 	it('renders with "Enviar recordatorio" when viewed but not confirmed', () => {
@@ -118,10 +89,13 @@ describe('ShareAction', () => {
 		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
 	});
 
-	it('renders with "Compartir de nuevo" for confirmed guests', () => {
+	it('renders with "Enviar recordatorio" for confirmed guests with firstSharedAt', () => {
 		render(
 			<ShareAction
-				guest={makeGuest({ attendanceStatus: 'confirmed' })}
+				guest={makeGuest({
+					attendanceStatus: 'confirmed',
+					firstSharedAt: '2026-01-15T10:00:00.000Z',
+				})}
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
@@ -136,13 +110,13 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Compartir de nuevo')).toBeInTheDocument();
+		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
 	});
 
-	it('renders with "Compartir de nuevo" for declined guests', () => {
+	it('renders with "Compartir invitación" for declined guests without firstSharedAt', () => {
 		render(
 			<ShareAction
-				guest={makeGuest({ attendanceStatus: 'declined' })}
+				guest={makeGuest({ attendanceStatus: 'declined', firstSharedAt: null })}
 				inviteUrl="https://example.com/invite"
 				eventTitle="Test Event"
 				shareTemplates={defaultTemplates}
@@ -157,7 +131,7 @@ describe('ShareAction', () => {
 			/>,
 		);
 
-		expect(screen.getByText('Compartir de nuevo')).toBeInTheDocument();
+		expect(screen.getByText('Compartir invitación')).toBeInTheDocument();
 	});
 
 	it('opens composer on click', () => {
@@ -204,7 +178,7 @@ describe('ShareAction', () => {
 		fireEvent.click(screen.getByRole('button'));
 
 		expect(screen.getByRole('dialog', { name: /compartir invitación/i })).toBeInTheDocument();
-		expect(screen.getByDisplayValue('Test Guest')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
 		expect(screen.getByText('Mensaje a enviar')).toBeInTheDocument();
 	});
 });

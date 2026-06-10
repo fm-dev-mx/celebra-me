@@ -2,7 +2,6 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { resolveDefaultMessageKind } from '@/lib/rsvp/services/shared/message-type-resolver';
 
 export type ShareFlowMode = 'pending-invitation' | 'single-invitation' | 'single-reminder';
 
@@ -148,29 +147,20 @@ export interface ShareCtaResult {
 	defaultMessageType: ShareMessageType;
 }
 
+/** Defensive: considers a guest shared if firstSharedAt is set OR deliveryStatus is 'shared'. */
+export function hasBeenShared(item: DashboardGuestItem): boolean {
+	return Boolean(item.firstSharedAt) || item.deliveryStatus === 'shared';
+}
+
 export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
-	const kind = resolveDefaultMessageKind({
-		firstSharedAt: item.firstSharedAt,
-		attendanceStatus: item.attendanceStatus,
-	});
-
-	if (item.attendanceStatus === 'confirmed' || item.attendanceStatus === 'declined') {
-		const label = kind === 'reminder' ? 'Enviar recordatorio' : 'Compartir de nuevo';
-		return { label, defaultMessageType: kind };
-	}
-
-	if (kind === 'invitation') {
-		return { label: 'Compartir invitación', defaultMessageType: 'invitation' };
-	}
-
-	if (item.isViewed) {
-		return { label: 'Enviar recordatorio', defaultMessageType: 'reminder' };
-	}
-
-	return { label: 'Reenviar invitación', defaultMessageType: 'reminder' };
+	const shared = hasBeenShared(item);
+	return {
+		label: shared ? 'Enviar recordatorio' : 'Compartir invitación',
+		defaultMessageType: shared ? 'reminder' : 'invitation',
+	};
 }
 
 /** Determines the share flow mode based on guest history, not UI labels. */
 export function resolveShareFlowMode(guest: DashboardGuestItem): ShareFlowMode {
-	return guest.firstSharedAt ? 'single-reminder' : 'single-invitation';
+	return hasBeenShared(guest) ? 'single-reminder' : 'single-invitation';
 }
