@@ -125,7 +125,7 @@
 
 	/* Ensure modal header is not overly tall on mobile */
 	@media (width <= 600px) {
-		&.dashboard-modal > &__header {
+		> &__header {
 			flex-shrink: 0;
 		}
 	}
@@ -360,6 +360,13 @@
 	.guest-field-error {
 		color: var(--color-state-danger-text);
 		font-size: 0.65rem;
+	}
+
+	.guest-field-hint {
+		color: var(--color-text-secondary);
+		font-size: 0.65rem;
+		margin-top: 0.3rem;
+		display: block;
 	}
 }
 
