@@ -154,10 +154,19 @@ export const shareMessagesSchema = z
 	})
 	.strict();
 
+export const reminderSettingsSchema = z
+	.object({
+		enabled: z.boolean(),
+		showWhenDaysBeforeEvent: z.number().int().min(0).max(365),
+		audience: z.enum(['unconfirmed', 'all-shared']),
+	})
+	.strict();
+
 export const sharingSchema = z
 	.object({
 		whatsappTemplate: z.string().optional(),
 		shareMessages: shareMessagesSchema.optional(),
+		reminderSettings: reminderSettingsSchema.optional(),
 		ogImage: AssetSchema.optional(),
 		ogDescription: z.string().min(1).max(200).optional(),
 	})

@@ -42,6 +42,38 @@ export interface ShareMessagesConfig {
 	reminder: string;
 }
 
+export type ReminderAudience = 'unconfirmed' | 'all-shared';
+
+export interface ReminderSettings {
+	enabled: boolean;
+	showWhenDaysBeforeEvent: number;
+	audience: ReminderAudience;
+}
+
+export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
+	enabled: true,
+	showWhenDaysBeforeEvent: 70,
+	audience: 'unconfirmed',
+};
+
+export function resolveReminderSettings(
+	input?: ReminderSettings | null | undefined,
+): ReminderSettings {
+	if (!input) return { ...DEFAULT_REMINDER_SETTINGS };
+	return {
+		enabled:
+			typeof input.enabled === 'boolean' ? input.enabled : DEFAULT_REMINDER_SETTINGS.enabled,
+		showWhenDaysBeforeEvent:
+			typeof input.showWhenDaysBeforeEvent === 'number' && input.showWhenDaysBeforeEvent >= 0
+				? input.showWhenDaysBeforeEvent
+				: DEFAULT_REMINDER_SETTINGS.showWhenDaysBeforeEvent,
+		audience:
+			input.audience === 'unconfirmed' || input.audience === 'all-shared'
+				? input.audience
+				: DEFAULT_REMINDER_SETTINGS.audience,
+	};
+}
+
 export function resolveShareTemplates(config?: {
 	shareMessages?: ShareMessagesConfig | null;
 }): ShareMessagesConfig {

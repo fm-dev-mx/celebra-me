@@ -26,7 +26,7 @@ function formatSpanishDate(raw: string): string {
 	return `${day} de ${month} de ${year}`;
 }
 
-function resolveDaysUntilEvent(dateStr: string | null, today: Date): number | null {
+export function resolveDaysUntilEvent(dateStr: string | null, today: Date): number | null {
 	if (!dateStr || !isIsoDateish(dateStr)) return null;
 	const d = new Date(dateStr);
 	if (isNaN(d.getTime())) return null;
@@ -68,6 +68,7 @@ function resolveFormattedDate(raw: string | null): string {
 export interface ShareMessageDateContext {
 	eventDate: string;
 	daysUntilEvent: string;
+	rawDaysUntilEvent: number | null;
 	rsvpDeadline: string;
 	eventTimingText: string;
 	rsvpDeadlineText: string;
@@ -82,6 +83,7 @@ export function buildShareMessageDateContext(
 	return {
 		eventDate: resolveFormattedDate(eventDate),
 		daysUntilEvent: resolveDaysUntilEventString(eventDate, today),
+		rawDaysUntilEvent: resolveDaysUntilEvent(eventDate, today),
 		rsvpDeadline: resolveFormattedDate(rsvpDeadline),
 		eventTimingText: resolveEventTimingText(eventDate, eventTitle, today),
 		rsvpDeadlineText: resolveRsvpDeadlineText(rsvpDeadline),
