@@ -283,6 +283,73 @@
 	font-weight: 500;
 }
 
+.send-invitation-message-step__label {
+	display: block;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+	letter-spacing: 0.02em;
+	margin-bottom: 0.4rem;
+}
+
+.send-invitation-message-step__preview-card {
+	padding: 1rem;
+	background: var(--color-surface-soft);
+	border: 1px solid var(--color-border-premium);
+	border-radius: 0.5rem;
+	margin-bottom: 0.75rem;
+	max-height: 240px;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.send-invitation-message-step__preview-text {
+	margin: 0;
+	white-space: pre-wrap;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	font-family: inherit;
+	color: var(--color-text-primary);
+}
+
+.send-invitation-message-step__textarea {
+	width: 100%;
+	min-height: 120px;
+	padding: 0.75rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+	font-family: inherit;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	resize: vertical;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+
+	&:focus {
+		outline: none;
+		border-color: var(--color-action-accent);
+		box-shadow: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 14%);
+	}
+}
+
+.send-invitation-message-step__actions {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.send-invitation-message-step__phone-info {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.75rem;
+	color: var(--color-text-secondary);
+	padding: 0.5rem 0.75rem;
+	background: var(--color-surface-soft);
+	border-radius: 0.5rem;
+}
+
 @media (width <= 600px) {
 	.share-composer-modal__preview-card {
 		max-height: none;

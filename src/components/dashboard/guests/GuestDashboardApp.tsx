@@ -50,6 +50,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		setItems,
 		setShareTemplates,
 		shareTemplates,
+		shareOgDescription,
 		shareDateContext,
 		totals,
 	} = useGuestDashboardRealtime({
@@ -62,6 +63,74 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const isBrandingRemovalEligible = currentEvent
 		? isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug)
 		: false;
+
+	const modals = (() => {
+		if (deleteConfirmOpen) {
+			return (
+				<GuestDeleteConfirmModal
+					guestToDelete={guestToDelete}
+					onClose={closeDeleteConfirm}
+					onConfirm={handleDeleteConfirm}
+				/>
+			);
+		}
+		if (modalOpen && modalMode === 'send-pending') {
+			return (
+				<SendInvitationModal
+					key={editingGuest?.guestId ?? 'empty'}
+					guest={editingGuest}
+					pendingGuests={pendingGuests}
+					inviteBaseUrl={inviteBaseUrl}
+					onClose={closeModal}
+					onSave={handleSaveInvitation}
+					onMarkShared={handleMarkShared}
+					onAdvanceFromGuest={handleAdvanceFromGuest}
+					onPostponeGuest={handlePostpone}
+					templates={shareTemplates}
+					shareDateContext={shareDateContext}
+					eventTitle={currentEvent?.title ?? ''}
+				/>
+			);
+		}
+		if (modalOpen && modalMode !== 'send-pending') {
+			return (
+				<GuestFormModal
+					open={modalOpen}
+					mode={modalMode}
+					initialGuest={editingGuest}
+					isInvitationFactory={isNextActionActive}
+					onClose={closeModal}
+					onPostpone={handlePostpone}
+					onSubmit={(payload, stayOpen) =>
+						handleSubmit(payload as GuestFormPayload, stayOpen)
+					}
+				/>
+			);
+		}
+		if (shareMessagesModalOpen && currentEvent) {
+			return (
+				<ShareMessagesModal
+					eventId={eventId}
+					eventTitle={currentEvent.title}
+					initialTemplates={shareTemplates}
+					initialOgDescription={shareOgDescription}
+					shareDateContext={shareDateContext}
+					onClose={() => setShareMessagesModalOpen(false)}
+					onSave={(templates) => {
+						setShareMessagesModalOpen(false);
+						setShareTemplates(templates);
+						void loadGuests();
+						setNotification({
+							message: 'Mensajes guardados correctamente.',
+							type: 'success',
+						});
+					}}
+				/>
+			);
+		}
+		return null;
+	})();
+
 	const visibleItems = items.filter((item) => {
 		if (reviewFilter === 'delivery-pending') return item.deliveryStatus === 'generated';
 		if (reviewFilter === 'rsvp-pending') return item.attendanceStatus === 'pending';
@@ -189,76 +258,12 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onToggleBrandingRemoval={handleToggleBrandingRemoval}
 				/>
 
-				{deleteConfirmOpen && (
-					<GuestDeleteConfirmModal
-						guestToDelete={guestToDelete}
-						onClose={closeDeleteConfirm}
-						onConfirm={handleDeleteConfirm}
-					/>
-				)}
-
-				{modalOpen && modalMode === 'send-pending' && (
-					<SendInvitationModal
-						key={editingGuest?.guestId ?? 'empty'}
-						guest={editingGuest}
-						pendingGuests={pendingGuests}
-						inviteBaseUrl={inviteBaseUrl}
-						onClose={closeModal}
-						onSave={handleSaveInvitation}
-						onMarkShared={handleMarkShared}
-						onAdvanceFromGuest={handleAdvanceFromGuest}
-						onPostponeGuest={handlePostpone}
-					/>
-				)}
-
-				{modalOpen && modalMode !== 'send-pending' && (
-					<GuestFormModal
-						open={modalOpen}
-						mode={modalMode}
-						initialGuest={editingGuest}
-						isInvitationFactory={isNextActionActive}
-						onClose={closeModal}
-						onPostpone={handlePostpone}
-						onSubmit={(payload, stayOpen) =>
-							handleSubmit(payload as GuestFormPayload, stayOpen)
-						}
-					/>
-				)}
-
+				{modals}
 				{notification && (
 					<Toast
 						message={notification.message}
 						type={notification.type}
 						onClose={() => setNotification(null)}
-					/>
-				)}
-
-				{importModalOpen && (
-					<ImportMagic
-						onClose={() => setImportModalOpen(false)}
-						onImport={handleImport}
-						onUpdate={handleImportUpdate}
-						eventId={eventId}
-						existingGuests={items}
-					/>
-				)}
-
-				{shareMessagesModalOpen && currentEvent && (
-					<ShareMessagesModal
-						eventId={eventId}
-						eventTitle={currentEvent.title}
-						initialTemplates={shareTemplates}
-						shareDateContext={shareDateContext}
-						onClose={() => setShareMessagesModalOpen(false)}
-						onSave={(templates) => {
-							setShareMessagesModalOpen(false);
-							setShareTemplates(templates);
-							void loadGuests();
-							setNotification({
-								message: 'Mensajes guardados correctamente.',
-								type: 'success',
-							});
-						}}
 					/>
 				)}
 

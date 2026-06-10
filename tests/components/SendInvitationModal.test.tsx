@@ -4,11 +4,17 @@ import SendInvitationModal from '@/components/dashboard/guests/SendInvitationMod
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	setupNavigatorShare,
-	removeNavigatorShare,
 	setupNavigatorClipboard,
 	createMockWindow,
 	stubWindowOpen,
 } from '@tests/helpers/nav-test-utils';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+
+const DEFAULT_TEMPLATES: ShareMessagesConfig = {
+	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
+	reminder:
+		'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
+};
 
 function createProps() {
 	return {
@@ -33,10 +39,23 @@ function renderModal(
 				{...props}
 				guest={guest}
 				pendingGuests={pendingGuests ?? (guest ? [guest] : [])}
+				templates={DEFAULT_TEMPLATES}
+				shareDateContext={{
+					eventDate: '',
+					daysUntilEvent: '',
+					rsvpDeadline: '',
+					eventTimingText: '',
+					rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				}}
+				eventTitle="Test Event"
 			/>,
 		),
 		props,
 	};
+}
+
+function goToMessageStep() {
+	fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
 }
 
 let mockWindow: ReturnType<typeof createMockWindow>;
@@ -67,13 +86,9 @@ describe('SendInvitationModal', () => {
 		expect(screen.getByText('No hay invitaciones pendientes por enviar.')).toBeInTheDocument();
 	});
 
-	it.each([
-		{ phone: '6691234567', expected: /enviar por whatsapp/i },
-		{ phone: '', expected: /compartir invitación/i },
-	])('CTA shows "$expected" when phone is $phone', ({ phone, expected }) => {
-		renderModal(makeGuest({ phone }));
-
-		expect(screen.getByRole('button', { name: expected })).toBeInTheDocument();
+	it('shows Continuar button in form phase', () => {
+		renderModal(makeGuest());
+		expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
 	});
 
 	it('no-phone guest shows editable form with empty phone field', () => {
@@ -84,69 +99,14 @@ describe('SendInvitationModal', () => {
 		expect((nameInput as HTMLInputElement).tagName).toBe('INPUT');
 		expect(screen.getByText('4')).toBeInTheDocument();
 		expect(screen.getByRole('textbox', { name: /Teléfono/ })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /compartir invitación/i })).toBeInTheDocument();
-	});
-
-	it('empty phone saves then shares via native share without opening WhatsApp', async () => {
-		const { props } = renderModal(
-			makeGuest({
-				guestId: 'guest-1',
-				phone: '',
-				waShareUrl: '',
-				shareText: 'Saved share text',
-				inviteId: 'invite-1',
-			}),
-		);
-		props.onSave.mockResolvedValue(
-			makeGuest({
-				guestId: 'guest-1',
-				phone: '',
-				waShareUrl: '',
-				shareText: 'Saved share text',
-				inviteId: 'invite-1',
-			}),
-		);
-		props.onMarkShared.mockResolvedValue(undefined);
-
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
-
-		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
-		await waitFor(() =>
-			expect(navigator.share).toHaveBeenCalledWith({
-				title: 'Invitación Celebra-me',
-				text: 'Saved share text',
-				url: 'http://localhost/invitacion/invite-1',
-			}),
-		);
-		expect(window.open).not.toHaveBeenCalled();
-		await waitFor(() =>
-			expect(props.onMarkShared).toHaveBeenCalledWith(
-				expect.objectContaining({ guestId: 'guest-1' }),
-			),
-		);
-		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
-	});
-
-	it('empty phone native share unavailable saves then shows fallback without marking sent', async () => {
-		removeNavigatorShare();
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }));
-		props.onSave.mockResolvedValue(
-			makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }),
-		);
-
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
-
-		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
-		expect(props.onMarkShared).not.toHaveBeenCalled();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
+		expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
 	});
 
 	it('blocks submit with invalid non-empty phone and shows inline error', async () => {
 		const { props } = renderModal(makeGuest({ phone: '123' }));
 		props.onSave.mockResolvedValue(makeGuest());
 
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
+		fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
 
 		await waitFor(() => {
 			expect(screen.getByText('El teléfono debe tener 10 dígitos.')).toBeInTheDocument();
@@ -155,303 +115,115 @@ describe('SendInvitationModal', () => {
 		expect(props.onSave).not.toHaveBeenCalled();
 	});
 
-	it('allows submit with valid phone', async () => {
-		const { props } = renderModal(makeGuest({ phone: '6691234567' }));
-		props.onSave.mockResolvedValue(makeGuest());
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+	it('message step shows preview text for guest with context', async () => {
+		renderModal(makeGuest({ fullName: 'María García' }));
+		goToMessageStep();
 
 		await waitFor(() => {
-			expect(props.onSave).toHaveBeenCalled();
+			expect(screen.getByText(/Revisa el mensaje/i)).toBeInTheDocument();
 		});
+		expect(screen.getByText(/Hola María García/)).toBeInTheDocument();
+		expect(screen.getByText(/Test Event/)).toBeInTheDocument();
 	});
 
-	it('submit updates name, max attendees, and phone fields', async () => {
-		const { props } = renderModal(makeGuest());
-		props.onSave.mockResolvedValue(makeGuest());
-
-		const nameInput = screen.getByDisplayValue('Guest One');
-		fireEvent.change(nameInput, { target: { value: 'Edited Name' } });
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+	it('message step shows edit button when not editing', async () => {
+		renderModal(makeGuest());
+		goToMessageStep();
 
 		await waitFor(() => {
-			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
-				fullName: 'Edited Name',
-				maxAllowedAttendees: 4,
-				phone: '6691234567',
-				countryCode: '+52',
-			});
+			expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument();
 		});
 	});
 
-	it('repeated clicks do not duplicate save calls', async () => {
+	it('toggles to textarea when edit is clicked', async () => {
+		renderModal(makeGuest());
+		goToMessageStep();
+		await waitFor(() => expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText(/Editar mensaje/i));
+
+		expect(screen.getByRole('textbox')).toBeInTheDocument();
+	});
+
+	it('edit message can be modified and saved inline', async () => {
 		const { props } = renderModal(makeGuest());
 		props.onSave.mockResolvedValue(makeGuest());
-
-		const btn = screen.getByRole('button', { name: /enviar por whatsapp/i });
-		fireEvent.click(btn);
-		fireEvent.click(btn);
-
-		await act(async () => {
-			await new Promise((r) => setTimeout(r, 50));
-		});
-
-		expect(props.onSave).toHaveBeenCalledTimes(1);
-	});
-
-	it('valid phone saves, opens WhatsApp, marks shared, and calls onAdvanceFromGuest', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }), [
-			makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }),
-			makeGuest({
-				guestId: 'guest-2',
-				fullName: 'Guest Two',
-				phone: '6697654321',
-			}),
-		]);
-		props.onSave.mockResolvedValue(makeGuest({ fullName: 'Guest One Updated' }));
 		props.onMarkShared.mockResolvedValue(undefined);
 
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+		goToMessageStep();
+		await waitFor(() => expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument());
 
-		await waitFor(() =>
-			expect(props.onSave).toHaveBeenCalledWith('guest-1', expect.any(Object)),
-		);
-		await waitFor(() => expect(mockWindow.location.href).toBe('https://wa.me/526691234567'));
-		await waitFor(() =>
-			expect(props.onMarkShared).toHaveBeenCalledWith(
-				expect.objectContaining({ fullName: 'Guest One Updated' }),
-			),
-		);
-		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
-	});
-
-	it('WhatsApp popup blocked shows fallback without marking sent and without advancing', async () => {
-		window.open = jest.fn().mockReturnValue(null);
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
-		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+		fireEvent.click(screen.getByText(/Editar mensaje/i));
+		const textarea = screen.getByRole('textbox');
+		fireEvent.change(textarea, { target: { value: 'Custom message text' } });
 
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
 		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
-		expect(props.onMarkShared).not.toHaveBeenCalled();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
 	});
 
-	it('navigator.share cancellation after save keeps invitation pending without fallback', async () => {
-		const abortError = new DOMException('Share canceled', 'AbortError');
-		Object.defineProperty(navigator, 'share', {
-			value: jest.fn().mockRejectedValue(abortError),
-			configurable: true,
-			writable: true,
-		});
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }));
-		props.onSave.mockResolvedValue(
-			makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }),
-		);
+	it('reset from template reverts to template-generated message', async () => {
+		renderModal(makeGuest());
+		goToMessageStep();
+		await waitFor(() => expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument());
 
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
+		fireEvent.click(screen.getByText(/Editar mensaje/i));
+		const textarea = screen.getByRole('textbox');
+		fireEvent.change(textarea, { target: { value: 'Custom edit' } });
 
-		await waitFor(() => expect(navigator.share).toHaveBeenCalled());
-		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
-		expect(props.onMarkShared).not.toHaveBeenCalled();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		expect(screen.queryByText('Copiar invitación')).not.toBeInTheDocument();
-		await waitFor(() =>
-			expect(
-				screen.getByRole('button', { name: /compartir invitación/i }),
-			).toBeInTheDocument(),
-		);
+		fireEvent.click(screen.getByText(/Restablecer desde plantilla/i));
+
+		expect(screen.getByText(/Hola Guest One/)).toBeInTheDocument();
 	});
 
-	it('no-phone guest can edit name and attendees before native share', async () => {
-		const { props } = renderModal(
-			makeGuest({
-				guestId: 'guest-1',
-				phone: '',
-				waShareUrl: '',
-				fullName: 'Guest One',
-				maxAllowedAttendees: 1,
-			}),
-		);
-		props.onSave.mockResolvedValue(
-			makeGuest({
-				guestId: 'guest-1',
-				phone: '',
-				waShareUrl: '',
-				fullName: 'Edited Name',
-				maxAllowedAttendees: 2,
-			}),
-		);
-		props.onMarkShared.mockResolvedValue(undefined);
+	it('temporary edit does not mutate global templates or call update API', async () => {
+		const { props } = renderModal(makeGuest());
+		props.onSave.mockResolvedValue(makeGuest());
 
-		fireEvent.change(screen.getByDisplayValue('Guest One'), {
-			target: { value: 'Edited Name' },
+		goToMessageStep();
+		await waitFor(() => expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText(/Editar mensaje/i));
+		const textarea = screen.getByRole('textbox');
+		fireEvent.change(textarea, { target: { value: 'Custom message' } });
+
+		fireEvent.click(screen.getByRole('button', { name: /volver/i }));
+		expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(screen.getByText(/Hola Guest One/)).toBeInTheDocument();
 		});
+	});
 
-		fireEvent.click(screen.getByRole('button', { name: /compartir invitación/i }));
+	it('CTA shows WhatsApp when phone is available', async () => {
+		renderModal(makeGuest({ phone: '6691234567' }));
+		goToMessageStep();
 
 		await waitFor(() => {
-			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
-				fullName: 'Edited Name',
-				maxAllowedAttendees: 1,
-				phone: undefined,
-				countryCode: undefined,
-			});
-		});
-
-		await waitFor(() =>
-			expect(props.onMarkShared).toHaveBeenCalledWith(
-				expect.objectContaining({ fullName: 'Edited Name' }),
-			),
-		);
-	});
-
-	it('no-phone guest who enters valid phone switches to WhatsApp path', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }));
-		props.onSave.mockResolvedValue(
-			makeGuest({
-				guestId: 'guest-1',
-				phone: '6698765432',
-				waShareUrl: 'https://wa.me/526698765432',
-				fullName: 'Guest One Updated',
-			}),
-		);
-		props.onMarkShared.mockResolvedValue(undefined);
-
-		const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
-		fireEvent.change(phoneInput, { target: { value: '6698765432' } });
-
-		await waitFor(() =>
 			expect(
 				screen.getByRole('button', { name: /enviar por whatsapp/i }),
-			).toBeInTheDocument(),
-		);
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
-		await waitFor(() =>
-			expect(props.onMarkShared).toHaveBeenCalledWith(
-				expect.objectContaining({ guestId: 'guest-1' }),
-			),
-		);
-		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
-	});
-
-	it('fallback "Copiar invitación" copies URL but does not mark sent or advance', async () => {
-		window.open = jest.fn().mockReturnValue(null);
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
-		props.onSave.mockResolvedValue(makeGuest());
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
-
-		fireEvent.click(screen.getByText('Copiar invitación'));
-
-		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
-		expect(props.onMarkShared).not.toHaveBeenCalled();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-	});
-
-	it('fallback "Copiar y marcar como enviada" copies URL, marks sent, and calls onAdvanceFromGuest', async () => {
-		window.open = jest.fn().mockReturnValue(null);
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
-		props.onSave.mockResolvedValue(makeGuest());
-		props.onMarkShared.mockResolvedValue(undefined);
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
-
-		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
-
-		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
-		await waitFor(() =>
-			expect(props.onMarkShared).toHaveBeenCalledWith(
-				expect.objectContaining({ guestId: 'guest-1' }),
-			),
-		);
-		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
-	});
-
-	it('fallback "Mantener pendiente" returns to form phase without advancing', async () => {
-		window.open = jest.fn().mockReturnValue(null);
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
-		props.onSave.mockResolvedValue(makeGuest());
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => expect(screen.getByText('Mantener pendiente')).toBeInTheDocument());
-
-		fireEvent.click(screen.getByText('Mantener pendiente'));
-
-		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /enviar por whatsapp/i })).toBeInTheDocument();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-	});
-
-	it('save failure shows error, closes pre-opened window, and does not advance', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
-		props.onSave.mockRejectedValue(new Error('Save failed'));
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => {
-			expect(
-				screen.getByText('Error al guardar los datos. Intenta de nuevo.'),
 			).toBeInTheDocument();
 		});
+	});
 
+	it('CTA shows Copiar mensaje when phone is missing', async () => {
+		renderModal(makeGuest({ phone: '', waShareUrl: '' }));
+		goToMessageStep();
+
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
+		});
+	});
+
+	it('Cancelar closes modal without marking shared or advancing', () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+
+		fireEvent.click(screen.getByRole('button', { name: /cancelar/i }));
+
+		expect(props.onClose).toHaveBeenCalled();
 		expect(props.onMarkShared).not.toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-	});
-
-	it('onMarkShared failure during WhatsApp flow shows error in fallback and does not advance', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }), [
-			makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }),
-			makeGuest({
-				guestId: 'guest-2',
-				fullName: 'Guest Two',
-				phone: '6697654321',
-			}),
-		]);
-		props.onSave.mockResolvedValue(makeGuest({ guestId: 'guest-1' }));
-		props.onMarkShared.mockRejectedValue(new Error('Mark failed'));
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => {
-			expect(screen.getByText('Error al registrar el envío.')).toBeInTheDocument();
-		});
-
-		expect(screen.getByText('Guest One')).toBeInTheDocument();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-	});
-
-	it('server-returned item used for final WhatsApp URL via getGuestInviteUrl', async () => {
-		const returnedGuest = makeGuest({
-			guestId: 'guest-1',
-			fullName: 'Returned Name',
-			inviteId: 'returned-invite',
-			waShareUrl: 'https://wa.me/526691234567',
-		});
-		const { props } = renderModal(
-			makeGuest({
-				guestId: 'guest-1',
-				fullName: 'Original Name',
-				inviteId: 'original-invite',
-			}),
-		);
-		props.onSave.mockResolvedValue(returnedGuest);
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => {
-			expect(mockWindow.location.href).toBe(returnedGuest.waShareUrl);
-		});
 	});
 
 	it('Posponer calls onPostponeGuest with current guest ID', async () => {
@@ -474,14 +246,244 @@ describe('SendInvitationModal', () => {
 		expect(screen.queryByRole('button', { name: /posponer/i })).not.toBeInTheDocument();
 	});
 
-	it('Cancelar closes modal without marking shared or advancing', () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+	it('WhatsApp flow: saves, opens WhatsApp, marks shared, and advances', async () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }));
+		props.onSave.mockResolvedValue(makeGuest({ fullName: 'Guest One Updated' }));
+		props.onMarkShared.mockResolvedValue(undefined);
 
-		fireEvent.click(screen.getByRole('button', { name: /cancelar/i }));
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
 
-		expect(props.onClose).toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() =>
+			expect(props.onSave).toHaveBeenCalledWith('guest-1', expect.any(Object)),
+		);
+		await waitFor(() =>
+			expect(props.onMarkShared).toHaveBeenCalledWith(
+				expect.objectContaining({ fullName: 'Guest One Updated' }),
+			),
+		);
+		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
+	});
+
+	it('WhatsApp popup blocked shows fallback without marking sent', async () => {
+		window.open = jest.fn().mockReturnValue(null);
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
+		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
 		expect(props.onMarkShared).not.toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
+	});
+
+	it('no-phone flow: saves and copies message, marks shared, and advances', async () => {
+		const { props } = renderModal(
+			makeGuest({
+				guestId: 'guest-1',
+				phone: '',
+				waShareUrl: '',
+				shareText: 'Saved share text',
+			}),
+		);
+		props.onSave.mockResolvedValue(
+			makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }),
+		);
+		props.onMarkShared.mockResolvedValue(undefined);
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: /copiar mensaje/i }));
+
+		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
+		await waitFor(() => expect(props.onMarkShared).toHaveBeenCalled());
+		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
+	});
+
+	it('save failure shows error and does not advance', async () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+		props.onSave.mockRejectedValue(new Error('Save failed'));
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(
+				screen.getByText('Error al guardar los datos. Intenta de nuevo.'),
+			).toBeInTheDocument();
+		});
+
+		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it('repeated clicks do not duplicate save calls', async () => {
+		const { props } = renderModal(makeGuest());
+		props.onSave.mockResolvedValue(makeGuest());
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+
+		const btn = screen.getByRole('button', { name: /enviar por whatsapp/i });
+		fireEvent.click(btn);
+		fireEvent.click(btn);
+
+		await act(async () => {
+			await new Promise((r) => setTimeout(r, 50));
+		});
+
+		expect(props.onSave).toHaveBeenCalledTimes(1);
+	});
+
+	it('submit updates name, attendees, and phone', async () => {
+		const { props } = renderModal(makeGuest());
+		props.onSave.mockResolvedValue(makeGuest());
+
+		const nameInput = screen.getByDisplayValue('Guest One');
+		fireEvent.change(nameInput, { target: { value: 'Edited Name' } });
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
+				fullName: 'Edited Name',
+				maxAllowedAttendees: 4,
+				phone: '6691234567',
+				countryCode: '+52',
+			});
+		});
+	});
+
+	it('no-phone flow with native share saves, shares, marks sent, and advances', async () => {
+		const { props } = renderModal(
+			makeGuest({
+				guestId: 'guest-1',
+				phone: '',
+				waShareUrl: '',
+				shareText: 'Custom share',
+				inviteId: 'invite-1',
+			}),
+		);
+		props.onSave.mockResolvedValue(
+			makeGuest({ guestId: 'guest-1', phone: '', waShareUrl: '' }),
+		);
+		props.onMarkShared.mockResolvedValue(undefined);
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /copiar mensaje/i }));
+
+		await waitFor(() => expect(props.onSave).toHaveBeenCalled());
+		await waitFor(() => expect(props.onMarkShared).toHaveBeenCalled());
+		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
+	});
+
+	it('flow: Volver from message step returns to form step', async () => {
+		const { props } = renderModal(makeGuest());
+		goToMessageStep();
+
+		await waitFor(() => {
+			expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument();
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: /volver/i }));
+
+		expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
+		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it('cancel edit returns to preview with original template message', async () => {
+		renderModal(makeGuest({ fullName: 'Test Person' }));
+		goToMessageStep();
+		await waitFor(() => expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText(/Editar mensaje/i));
+		const textarea = screen.getByRole('textbox');
+		fireEvent.change(textarea, { target: { value: 'Edited text' } });
+
+		fireEvent.click(screen.getByText(/Cancelar edición/i));
+
+		expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+		expect(screen.getByText(/Editar mensaje/i)).toBeInTheDocument();
+	});
+
+	it('saves with phone payload when phone is valid', async () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
+		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
+				fullName: 'Guest One',
+				maxAllowedAttendees: 4,
+				phone: '6691234567',
+				countryCode: '+52',
+			});
+		});
+	});
+
+	it('saves with null phone when phone field is cleared', async () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
+		props.onSave.mockResolvedValue(makeGuest({ phone: '' }));
+
+		const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
+		fireEvent.change(phoneInput, { target: { value: '' } });
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /copiar mensaje/i }));
+
+		await waitFor(() => {
+			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
+				fullName: 'Guest One',
+				maxAllowedAttendees: 4,
+				phone: null,
+				countryCode: undefined,
+			});
+		});
 	});
 
 	it.each([
@@ -499,28 +501,21 @@ describe('SendInvitationModal', () => {
 			sendCountryCode: undefined,
 		},
 	])(
-		'saves with $desc payload: phone=$sendPhone, countryCode=$sendCountryCode',
+		'saves with $desc payload: phone=$sendPhone',
 		async ({ guestPhone, clearPhone, sendPhone, sendCountryCode }) => {
-			const { props } = renderModal(
-				makeGuest({
-					guestId: 'guest-1',
-					phone: guestPhone,
-					waShareUrl: guestPhone ? 'https://wa.me/526691234567' : '',
-				}),
-			);
-			props.onSave.mockResolvedValue(
-				makeGuest({
-					phone: guestPhone,
-					waShareUrl: guestPhone ? 'https://wa.me/526691234567' : '',
-				}),
-			);
+			const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: guestPhone }));
+			props.onSave.mockResolvedValue(makeGuest({ phone: guestPhone }));
 
 			if (clearPhone) {
 				const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
 				fireEvent.change(phoneInput, { target: { value: '' } });
 			}
 
-			const sendLabel = clearPhone ? /compartir invitación/i : /enviar por whatsapp/i;
+			goToMessageStep();
+			const sendLabel = clearPhone ? /copiar mensaje/i : /enviar por whatsapp/i;
+			await waitFor(() => {
+				expect(screen.getByRole('button', { name: sendLabel })).toBeInTheDocument();
+			});
 			fireEvent.click(screen.getByRole('button', { name: sendLabel }));
 
 			await waitFor(() => {
@@ -534,42 +529,19 @@ describe('SendInvitationModal', () => {
 		},
 	);
 
-	it('fallback "Copiar y marcar como enviada" failure does not advance', async () => {
-		window.open = jest.fn().mockReturnValue(null);
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
-		props.onSave.mockResolvedValue(makeGuest());
-		props.onMarkShared.mockRejectedValue(new Error('Mark failed'));
-
-		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
-
-		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
-
-		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
-
-		await waitFor(() => {
-			expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-		});
-	});
-
-	it('advances to the next pending guest and shows their data after current guest is sent', async () => {
+	it('advances to next pending guest after sending current one', async () => {
 		const props = createProps();
 		const GuestA = makeGuest({
 			guestId: 'g-a',
 			fullName: 'Ana López',
 			phone: '6691111111',
-			countryCode: '+52',
 		});
 		const GuestB = makeGuest({
 			guestId: 'g-b',
 			fullName: 'María García',
 			phone: '6692222222',
-			countryCode: '+52',
 		});
-		const updatedA = makeGuest({
-			...GuestA,
-			guestId: 'g-a',
-			waShareUrl: 'https://wa.me/526691111111',
-		});
+		const updatedA = makeGuest({ ...GuestA, waShareUrl: 'https://wa.me/526691111111' });
 
 		const Wrapper = () => {
 			const [guest, setGuest] = useState<ReturnType<typeof makeGuest> | null>(GuestA);
@@ -586,6 +558,15 @@ describe('SendInvitationModal', () => {
 						if (id === 'g-a') setGuest(GuestB);
 					}}
 					onPostponeGuest={props.onPostponeGuest}
+					templates={DEFAULT_TEMPLATES}
+					shareDateContext={{
+						eventDate: '',
+						daysUntilEvent: '',
+						rsvpDeadline: '',
+						eventTimingText: '',
+						rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+					}}
+					eventTitle="Test Event"
 				/>
 			);
 		};
@@ -596,30 +577,27 @@ describe('SendInvitationModal', () => {
 		render(<Wrapper />);
 
 		expect(screen.getByDisplayValue('Ana López')).toBeInTheDocument();
-
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
 		await waitFor(() => {
 			expect(screen.getByDisplayValue('María García')).toBeInTheDocument();
 		});
-
-		const phoneInput = screen.getByRole('textbox', { name: /Teléfono/i }) as HTMLInputElement;
-		expect(phoneInput.value).toBe('6692222222');
-		expect(screen.queryByDisplayValue('Ana López')).not.toBeInTheDocument();
 	});
 
-	it('shows empty state after the last pending guest is processed', async () => {
+	it('shows empty state after processing last pending guest', async () => {
 		const props = createProps();
 		const onlyGuest = makeGuest({
 			guestId: 'g-only',
 			fullName: 'Solo Invitado',
 			phone: '6691111111',
-			countryCode: '+52',
 		});
-		const updatedGuest = makeGuest({
-			...onlyGuest,
-			waShareUrl: 'https://wa.me/526691111111',
-		});
+		const updatedGuest = makeGuest({ ...onlyGuest, waShareUrl: 'https://wa.me/526691111111' });
 
 		const Wrapper = () => {
 			const [guest, setGuest] = useState<ReturnType<typeof makeGuest> | null>(onlyGuest);
@@ -634,6 +612,15 @@ describe('SendInvitationModal', () => {
 					onMarkShared={props.onMarkShared}
 					onAdvanceFromGuest={() => setGuest(null)}
 					onPostponeGuest={props.onPostponeGuest}
+					templates={DEFAULT_TEMPLATES}
+					shareDateContext={{
+						eventDate: '',
+						daysUntilEvent: '',
+						rsvpDeadline: '',
+						eventTimingText: '',
+						rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+					}}
+					eventTitle="Test Event"
 				/>
 			);
 		};
@@ -644,7 +631,12 @@ describe('SendInvitationModal', () => {
 		render(<Wrapper />);
 
 		expect(screen.getByDisplayValue('Solo Invitado')).toBeInTheDocument();
-
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
 		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
 
 		await waitFor(() => {
@@ -652,7 +644,95 @@ describe('SendInvitationModal', () => {
 				screen.getByText('No hay invitaciones pendientes por enviar.'),
 			).toBeInTheDocument();
 		});
+	});
 
-		expect(screen.queryByDisplayValue('Solo Invitado')).not.toBeInTheDocument();
+	it('fallback "Copiar invitación" copies URL without marking sent', async () => {
+		window.open = jest.fn().mockReturnValue(null);
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+		props.onSave.mockResolvedValue(makeGuest());
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText('Copiar invitación'));
+
+		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
+		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it('fallback "Copiar y marcar como enviada" copies URL, marks sent, and advances', async () => {
+		window.open = jest.fn().mockReturnValue(null);
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+		props.onSave.mockResolvedValue(makeGuest());
+		props.onMarkShared.mockResolvedValue(undefined);
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
+
+		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
+		await waitFor(() =>
+			expect(props.onMarkShared).toHaveBeenCalledWith(
+				expect.objectContaining({ guestId: 'guest-1' }),
+			),
+		);
+		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
+	});
+
+	it('fallback "Mantener pendiente" returns to form phase without advancing', async () => {
+		window.open = jest.fn().mockReturnValue(null);
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
+		props.onSave.mockResolvedValue(makeGuest());
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => expect(screen.getByText('Mantener pendiente')).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText('Mantener pendiente'));
+
+		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it('onMarkShared failure during WhatsApp flow shows fallback error', async () => {
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }));
+		props.onSave.mockResolvedValue(makeGuest({ guestId: 'guest-1' }));
+		props.onMarkShared.mockRejectedValue(new Error('Mark failed'));
+
+		goToMessageStep();
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: /enviar por whatsapp/i }),
+			).toBeInTheDocument();
+		});
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => {
+			expect(screen.getByText('Error al registrar el envío.')).toBeInTheDocument();
+		});
+		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 });

@@ -1,14 +1,18 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
 import {
 	buildInvitationSharePayload,
 	shareInvitationLink,
 } from '@/components/dashboard/guests/invitation-share';
-import { hasValidPhone } from '@/lib/phone/validation';
+import { hasValidPhone, buildWhatsAppNumber } from '@/lib/phone/validation';
 import { copyToClipboard } from '@/utils/clipboard';
+import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
+import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 type ShareStatus = 'idle' | 'saving' | 'sharing' | 'fallback';
+type FlowStep = 'form' | 'message';
 
 interface UseSendInvitationOptions {
 	guest: DashboardGuestItem | null;
@@ -26,20 +30,15 @@ interface UseSendInvitationOptions {
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onAdvanceFromGuest: (currentGuestId: string) => void;
 	onPostponeGuest: (currentGuestId: string) => void;
+	templates?: ShareMessagesConfig;
+	shareDateContext?: ShareMessageDateContext;
+	eventTitle?: string;
 }
 
 function resolveSendPhone(editPhone: string, savedPhone: string): string | null | undefined {
 	const trimmed = editPhone.trim();
 	if (trimmed) return trimmed;
 	return savedPhone ? null : undefined;
-}
-
-function tryOpenWhatsAppWindow(): Window | null {
-	try {
-		return window.open('', '_blank');
-	} catch {
-		return null;
-	}
 }
 
 export function useSendInvitation({
@@ -50,6 +49,9 @@ export function useSendInvitation({
 	onMarkShared,
 	onAdvanceFromGuest,
 	onPostponeGuest,
+	templates,
+	shareDateContext,
+	eventTitle,
 }: UseSendInvitationOptions) {
 	const [editName, setEditName] = useState(guest?.fullName ?? '');
 	const [editMaxAttendees, setEditMaxAttendees] = useState(guest?.maxAllowedAttendees ?? 1);
@@ -60,11 +62,35 @@ export function useSendInvitation({
 	const [fallbackGuest, setFallbackGuest] = useState<DashboardGuestItem | null>(null);
 	const [markError, setMarkError] = useState<string | null>(null);
 	const [advancing, setAdvancing] = useState(false);
+	const [flowStep, setFlowStep] = useState<FlowStep>('form');
+	const [editingMessage, setEditingMessage] = useState(false);
+	const [localMessageOverride, setLocalMessageOverride] = useState('');
 
 	const pendingCount = pendingGuests.filter((item) => item.deliveryStatus === 'generated').length;
 
 	const trimmedPhone = editPhone.trim();
 	const validPhone = !!trimmedPhone && hasValidPhone(trimmedPhone);
+
+	const inviteUrl = useMemo(
+		() => (guest ? getGuestInviteUrl(guest, inviteBaseUrl) : ''),
+		[guest, inviteBaseUrl],
+	);
+
+	const renderedMessage = useMemo(() => {
+		if (!templates || !guest) return guest?.shareText || '';
+		const template = templates.invitation;
+		return renderShareMessage(template, {
+			guestName: editName || guest.fullName,
+			eventTitle: eventTitle || '',
+			inviteUrl,
+			...(shareDateContext || {}),
+		});
+	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext]);
+
+	const activeMessage = useMemo(
+		() => localMessageOverride || renderedMessage,
+		[localMessageOverride, renderedMessage],
+	);
 
 	const markSharedOrFallback = useCallback(
 		async (updated: DashboardGuestItem) => {
@@ -79,27 +105,84 @@ export function useSendInvitation({
 		[onMarkShared, onAdvanceFromGuest],
 	);
 
-	const handleWhatsAppFlow = useCallback(
-		async (waWindow: Window | null, updated: DashboardGuestItem) => {
+	const handleContinueToMessage = useCallback(() => {
+		const trimmed = editPhone.trim();
+		if (trimmed && !hasValidPhone(trimmed)) {
+			setPhoneError('El teléfono debe tener 10 dígitos.');
+			return;
+		}
+		setPhoneError(null);
+		setFlowStep('message');
+	}, [editPhone]);
+
+	const handleEditMessage = useCallback(() => {
+		setEditingMessage(true);
+		setLocalMessageOverride(activeMessage);
+	}, [activeMessage]);
+
+	const handleCancelEditMessage = useCallback(() => {
+		setEditingMessage(false);
+		setLocalMessageOverride('');
+	}, []);
+
+	const handleResetMessage = useCallback(() => {
+		setEditingMessage(false);
+		setLocalMessageOverride('');
+	}, []);
+
+	const handleUpdateLocalMessage = useCallback((text: string) => {
+		setLocalMessageOverride(text);
+	}, []);
+
+	const handleBackToForm = useCallback(() => {
+		setFlowStep('form');
+		setEditingMessage(false);
+		setLocalMessageOverride('');
+	}, []);
+
+	const handleWhatsAppFlowWithOverride = useCallback(
+		async (updated: DashboardGuestItem) => {
+			const waPhone = buildWhatsAppNumber(
+				editPhone || updated.phone,
+				editCountryCode || updated.countryCode,
+			);
+			if (!waPhone) {
+				setShareStatus('fallback');
+				setFallbackGuest(updated);
+				return;
+			}
+			const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(activeMessage)}`;
+			const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
 			setFallbackGuest(updated);
-			if (updated.waShareUrl && waWindow && !waWindow.closed) {
-				waWindow.location.href = updated.waShareUrl;
+			if (waWindow && !waWindow.closed) {
 				await markSharedOrFallback(updated);
 				return;
 			}
 			setShareStatus('fallback');
 		},
-		[markSharedOrFallback],
+		[editPhone, editCountryCode, activeMessage, markSharedOrFallback],
+	);
+
+	const handleCopyMessage = useCallback(
+		async (updated: DashboardGuestItem) => {
+			const copied = await copyToClipboard(activeMessage);
+			if (copied) {
+				await markSharedOrFallback(updated);
+			} else {
+				setMarkError('No se pudo copiar el mensaje.');
+			}
+		},
+		[activeMessage, markSharedOrFallback],
 	);
 
 	const handleNativeShareFlow = useCallback(
 		async (updated: DashboardGuestItem) => {
 			setShareStatus('sharing');
 			setFallbackGuest(updated);
-			const inviteUrl = getGuestInviteUrl(updated, inviteBaseUrl);
+			const url = getGuestInviteUrl(updated, inviteBaseUrl);
 			const payload = buildInvitationSharePayload({
-				shareText: updated.shareText,
-				inviteUrl,
+				shareText: activeMessage,
+				inviteUrl: url,
 			});
 
 			const result = await shareInvitationLink(payload);
@@ -117,22 +200,16 @@ export function useSendInvitation({
 
 			setShareStatus('fallback');
 		},
-		[inviteBaseUrl, markSharedOrFallback],
+		[inviteBaseUrl, activeMessage, markSharedOrFallback],
 	);
 
 	const handleSaveAndShare = useCallback(async () => {
 		if (!guest || shareStatus !== 'idle') return;
 
-		const trimmed = editPhone.trim();
-		if (trimmed && !hasValidPhone(trimmed)) {
-			setPhoneError('El teléfono debe tener 10 dígitos.');
-			return;
-		}
 		setPhoneError(null);
 		setShareStatus('saving');
 		setMarkError(null);
 
-		const waWindow = validPhone ? tryOpenWhatsAppWindow() : null;
 		const sendPhone = resolveSendPhone(editPhone, guest.phone);
 
 		try {
@@ -144,27 +221,33 @@ export function useSendInvitation({
 			});
 
 			if (validPhone) {
-				await handleWhatsAppFlow(waWindow, updated);
+				await handleWhatsAppFlowWithOverride(updated);
+				return;
+			}
+
+			if (templates) {
+				await handleCopyMessage(updated);
 				return;
 			}
 
 			await handleNativeShareFlow(updated);
 		} catch {
 			setPhoneError('Error al guardar los datos. Intenta de nuevo.');
-			waWindow?.close();
 			setShareStatus('idle');
+			setFlowStep('form');
 		}
 	}, [
 		guest,
 		shareStatus,
-		inviteBaseUrl,
 		editPhone,
 		editName,
 		editMaxAttendees,
 		editCountryCode,
 		validPhone,
 		onSave,
-		handleWhatsAppFlow,
+		templates,
+		handleWhatsAppFlowWithOverride,
+		handleCopyMessage,
 		handleNativeShareFlow,
 	]);
 
@@ -198,6 +281,7 @@ export function useSendInvitation({
 
 	const handleKeepPending = useCallback(() => {
 		setShareStatus('idle');
+		setFlowStep('form');
 		setFallbackGuest(null);
 		setMarkError(null);
 		setAdvancing(false);
@@ -225,6 +309,16 @@ export function useSendInvitation({
 		advancing,
 		pendingCount,
 		canSendToPhone: validPhone,
+		flowStep,
+		editingMessage,
+		activeMessage,
+		localMessageOverride,
+		handleContinueToMessage,
+		handleEditMessage,
+		handleCancelEditMessage,
+		handleResetMessage,
+		handleUpdateLocalMessage,
+		handleBackToForm,
 		handleSaveAndShare,
 		handleCopyOnly,
 		handleCopyAndMarkSent,

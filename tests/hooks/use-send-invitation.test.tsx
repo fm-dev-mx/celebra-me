@@ -94,8 +94,8 @@ describe('useSendInvitation', () => {
 		const guest = makeGuest({ guestId: 'g-1', phone: '123' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 
-		await act(async () => {
-			await result.current.handleSaveAndShare();
+		act(() => {
+			result.current.handleContinueToMessage();
 		});
 
 		expect(result.current.phoneError).toBe('El teléfono debe tener 10 dígitos.');
