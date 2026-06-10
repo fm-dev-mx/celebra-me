@@ -21,6 +21,7 @@ export interface DashboardGuestItem {
 	attendeeCount: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
+	firstSharedAt: string | null;
 	viewPercentage: number;
 	isViewed: boolean;
 	firstViewedAt: string | null;

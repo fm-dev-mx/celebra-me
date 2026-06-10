@@ -42,6 +42,7 @@ export interface UpdateGuestInput {
 	attendeeCount?: number;
 	guestComment?: string;
 	deliveryStatus?: 'generated' | 'shared';
+	firstSharedAt?: string | null;
 	viewPercentage?: number;
 	isViewed?: boolean;
 	lastResponseSource?: ResponseSource;
@@ -75,6 +76,7 @@ export type GuestRow = {
 	attendee_count: number;
 	guest_comment: string;
 	delivery_status: 'generated' | 'shared';
+	first_shared_at: string | null;
 	first_viewed_at: string | null;
 	last_viewed_at: string | null;
 	view_percentage: number;
@@ -144,7 +146,7 @@ export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
 	(column) => column !== 'published_at',
 ).join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -174,6 +176,7 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		attendeeCount: row.attendee_count,
 		guestComment: row.guest_comment,
 		deliveryStatus: row.delivery_status,
+		firstSharedAt: row.first_shared_at,
 		firstViewedAt: row.first_viewed_at,
 		lastViewedAt: row.last_viewed_at,
 		viewPercentage: row.view_percentage ?? 0,

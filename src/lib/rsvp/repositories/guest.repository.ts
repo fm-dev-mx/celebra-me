@@ -62,6 +62,7 @@ const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
 	attendee_count: 'attendeeCount',
 	guest_comment: 'guestComment',
 	delivery_status: 'deliveryStatus',
+	first_shared_at: 'firstSharedAt',
 	view_percentage: 'viewPercentage',
 	is_viewed: 'isViewed',
 	last_response_source: 'lastResponseSource',

@@ -22,6 +22,7 @@ const BASE_GUEST_ITEM: DashboardGuestItem = {
 	attendeeCount: 0,
 	guestComment: '',
 	deliveryStatus: 'generated',
+	firstSharedAt: null,
 	viewPercentage: 0,
 	isViewed: false,
 	firstViewedAt: null,

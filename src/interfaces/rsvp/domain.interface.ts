@@ -29,6 +29,7 @@ export interface GuestInvitationRecord {
 	attendeeCount: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
+	firstSharedAt: string | null;
 	firstViewedAt: string | null;
 	lastViewedAt: string | null;
 	viewPercentage: number;
@@ -74,6 +75,7 @@ export interface GuestInvitationDTO {
 	attendeeCount: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
+	firstSharedAt: string | null;
 	firstViewedAt: string | null;
 	viewPercentage: number;
 	isViewed: boolean;

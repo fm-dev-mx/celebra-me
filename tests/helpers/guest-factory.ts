@@ -15,6 +15,7 @@ export function makeGuest(overrides: Partial<DashboardGuestItem> = {}): Dashboar
 		attendeeCount: 0,
 		guestComment: '',
 		deliveryStatus: 'generated',
+		firstSharedAt: null,
 		viewPercentage: 0,
 		isViewed: false,
 		firstViewedAt: null,

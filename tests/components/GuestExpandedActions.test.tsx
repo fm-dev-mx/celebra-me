@@ -15,6 +15,7 @@ const sampleGuest: DashboardGuestItem = {
 	attendeeCount: 0,
 	guestComment: '',
 	deliveryStatus: 'generated',
+	firstSharedAt: null,
 	viewPercentage: 0,
 	isViewed: false,
 	firstViewedAt: null,
