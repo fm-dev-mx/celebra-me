@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
@@ -17,7 +17,6 @@ interface ShareMessagesModalProps {
 	eventId: string;
 	eventTitle: string;
 	initialTemplates: ShareMessagesConfig;
-	initialOgDescription?: string;
 	shareDateContext: ShareMessageDateContext;
 	onClose: () => void;
 	onSave: (templates: ShareMessagesConfig) => void;
@@ -27,14 +26,12 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 	eventId,
 	eventTitle,
 	initialTemplates,
-	initialOgDescription,
 	shareDateContext,
 	onClose,
 	onSave,
 }) => {
 	const [invitation, setInvitation] = useState(initialTemplates.invitation);
 	const [reminder, setReminder] = useState(initialTemplates.reminder);
-	const [ogDescription, setOgDescription] = useState(initialOgDescription ?? '');
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<'invitation' | 'reminder'>('invitation');
@@ -42,11 +39,6 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		setInvitation(DEFAULT_INVITATION_MESSAGE);
 		setReminder(DEFAULT_REMINDER_MESSAGE);
 	});
-
-	useEffect(() => {
-		setInvitation(initialTemplates.invitation);
-		setReminder(initialTemplates.reminder);
-	}, [initialTemplates]);
 
 	const previewContext = {
 		...PREVIEW_CONTEXT,
@@ -66,55 +58,29 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		setSaving(true);
 		setError(null);
 		try {
-			const result = await guestsApi.updateShareMessages(
-				eventId,
-				{
-					invitation: invitation.trim(),
-					reminder: reminder.trim(),
-				},
-				ogDescription.trim() || undefined,
-			);
+			const result = await guestsApi.updateShareMessages(eventId, {
+				invitation: invitation.trim(),
+				reminder: reminder.trim(),
+			});
 			onSave(result);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar los mensajes.');
 		} finally {
 			setSaving(false);
 		}
-	}, [eventId, invitation, reminder, ogDescription, onSave]);
+	}, [eventId, invitation, reminder, onSave]);
 
 	return (
-		<ModalShell title="Plantillas de mensaje" onClose={onClose}>
+		<ModalShell
+			title="Mensajes para compartir"
+			className="dashboard-modal--share-templates"
+			onClose={onClose}
+		>
 			<div className="dashboard-modal__content">
 				<p className="dashboard-modal__description">
-					Edita las plantillas de mensaje que se usan al compartir invitaciones por
-					WhatsApp, copiar mensaje o copiar enlace.
+					Personaliza los mensajes que se usar&aacute;n al compartir invitaciones por
+					WhatsApp o al copiar el mensaje.
 				</p>
-				<p className="share-messages-modal__immediate-note">
-					Estos cambios se aplican inmediatamente a los mensajes de esta
-					invitaci&oacute;n.
-				</p>
-
-				<div className="dashboard-form-field">
-					<label htmlFor="share-og-description">
-						Descripci&oacute;n del enlace compartido
-					</label>
-					<textarea
-						id="share-og-description"
-						className="share-messages-modal__textarea"
-						rows={2}
-						maxLength={200}
-						value={ogDescription}
-						onChange={(e) => setOgDescription(e.target.value)}
-						placeholder="Acompáñanos a celebrar los XV años de..."
-					/>
-					<span className="share-messages-modal__char-count">
-						{ogDescription.length}/200
-					</span>
-					<p className="share-messages-modal__variables-help">
-						Aparece en la vista previa del enlace cuando la invitaci&oacute;n se
-						comparte por WhatsApp, Facebook u otras aplicaciones.
-					</p>
-				</div>
 
 				<div
 					className="share-messages-modal__tabs"
@@ -194,7 +160,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 						</code>
 					))}
 					<p className="share-messages-modal__variables-help">
-						Pasa el cursor sobre cada variable para ver su descripci&oacute;n.
+						Usa estas variables para insertar datos autom&aacute;ticamente.
 					</p>
 				</div>
 

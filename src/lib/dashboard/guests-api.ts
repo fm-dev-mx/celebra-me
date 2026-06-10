@@ -166,11 +166,10 @@ export class GuestsApi {
 	async updateShareMessages(
 		eventId: string,
 		shareMessages: ShareMessagesConfig,
-		ogDescription?: string,
-	): Promise<ShareMessagesConfig & { ogDescription?: string }> {
-		const result = await dashboardApi.post<ShareMessagesConfig & { ogDescription?: string }>(
+	): Promise<ShareMessagesConfig> {
+		const result = await dashboardApi.post<ShareMessagesConfig>(
 			'/api/dashboard/guests/share-messages',
-			{ eventId, ...shareMessages, ogDescription },
+			{ eventId, ...shareMessages },
 		);
 		return this.handleResponse(result, 'guests.updateShareMessages');
 	}

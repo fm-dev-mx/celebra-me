@@ -64,6 +64,20 @@ describe('ShareMessagesModal', () => {
 		jest.clearAllMocks();
 	});
 
+	it('renders with the correct title', () => {
+		createModal();
+		expect(
+			screen.getByRole('dialog', { name: /mensajes para compartir/i }),
+		).toBeInTheDocument();
+	});
+
+	it('does not render the shared link description field', () => {
+		createModal();
+		expect(
+			screen.queryByLabelText(/descripci.n del enlace compartido/i),
+		).not.toBeInTheDocument();
+	});
+
 	it('renders with invitation tab active by default', () => {
 		createModal();
 		const tab = screen.getByRole('tab', { name: /invitación/i });
@@ -109,14 +123,10 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('Guardar'));
 
 		await waitFor(() => {
-			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith(
-				'evt-1',
-				{
-					invitation: 'Custom invitation',
-					reminder: initialTemplates.reminder,
-				},
-				undefined,
-			);
+			expect(guestsApi.updateShareMessages).toHaveBeenCalledWith('evt-1', {
+				invitation: 'Custom invitation',
+				reminder: initialTemplates.reminder,
+			});
 			expect(onSave).toHaveBeenCalledWith(updatedTemplates);
 		});
 	});
@@ -127,8 +137,12 @@ describe('ShareMessagesModal', () => {
 	});
 
 	it('disables save button while saving', async () => {
+		let resolvePromise: (value: unknown) => void;
 		(guestsApi.updateShareMessages as jest.Mock).mockImplementation(
-			() => new Promise(() => {}),
+			() =>
+				new Promise((resolve) => {
+					resolvePromise = resolve;
+				}),
 		);
 
 		createModal();
@@ -163,7 +177,7 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('¿Restablecer?'));
 
 		expect(textarea).toHaveValue(
-			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
 		);
 	});
 

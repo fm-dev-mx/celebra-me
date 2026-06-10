@@ -112,7 +112,6 @@ export const useGuestDashboardRealtime = ({
 	const [shareDateContext, setShareDateContext] = useState<ShareMessageDateContext>(
 		buildShareMessageDateContext(null, null, '', new Date()),
 	);
-	const [shareOgDescription, setShareOgDescription] = useState<string | undefined>(undefined);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
@@ -166,7 +165,6 @@ export const useGuestDashboardRealtime = ({
 			if (data.shareTemplates) {
 				setShareTemplates(data.shareTemplates);
 			}
-			setShareOgDescription(data.shareOgDescription);
 			setShareDateContext(data.shareDateContext);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
@@ -248,7 +246,6 @@ export const useGuestDashboardRealtime = ({
 		setItems,
 		setShareTemplates,
 		shareTemplates,
-		shareOgDescription,
 		shareDateContext,
 		totals,
 		updatedAt,

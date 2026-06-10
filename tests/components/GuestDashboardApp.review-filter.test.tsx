@@ -86,7 +86,6 @@ function setupDashboard() {
 			invitation: DEFAULT_INVITATION_MESSAGE,
 			reminder: DEFAULT_REMINDER_MESSAGE,
 		},
-		shareOgDescription: undefined,
 		shareDateContext: {
 			eventDate: '',
 			daysUntilEvent: '',
