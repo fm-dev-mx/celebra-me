@@ -2169,6 +2169,44 @@
 	font-size: 0.75rem;
 	line-height: 1.5;
 	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.invitation-editor__variable {
+	padding: 0.125rem 0.375rem;
+	background: var(--color-surface-soft);
+	border-radius: 0.25rem;
+	font-size: 0.75rem;
+	font-family: monospace;
+	color: var(--color-text-primary);
+}
+
+.invitation-editor__preview-section {
+	margin-top: 1rem;
+	padding: 0.75rem;
+	background: var(--color-surface-soft);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+}
+
+.invitation-editor__preview-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+}
+
+.invitation-editor__preview-text {
+	margin: 0;
+	white-space: pre-wrap;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	font-family: inherit;
+	color: var(--color-text-primary);
 }
 
 .invitation-editor__section-copy {
@@ -2401,6 +2439,27 @@
 .invitation-editor__secondary-button {
 	background: transparent;
 	color: var(--color-action-accent);
+}
+
+.invitation-editor__secondary-button--danger {
+	color: var(--color-state-danger-text);
+}
+
+.invitation-editor__reset-confirm {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	background: var(--color-surface-soft);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+}
+
+.invitation-editor__reset-confirm-text {
+	font-size: 0.8rem;
+	color: var(--color-text-secondary);
+	margin-right: auto;
 }
 
 .invitation-editor__gallery-grid {

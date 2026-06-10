@@ -34,7 +34,12 @@ import { formatDateLong } from '@/lib/intake/constants';
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
+	PREVIEW_CONTEXT,
+	SHARE_MESSAGE_VARIABLES,
+	SHARE_MESSAGE_VARIABLE_LABELS,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
+import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
 	getEditorSectionById,
@@ -268,6 +273,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
 	const [pickerField, setPickerField] = useState<PickerField | null>(null);
+	const sharingResetConfirm = useConfirmAction(() => {
+		updateContent('sharing', {
+			invitation: DEFAULT_INVITATION_MESSAGE,
+			reminder: DEFAULT_REMINDER_MESSAGE,
+		});
+	});
 
 	const publish = async () => {
 		setConfirmation(null);
@@ -1282,7 +1293,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 					<SectionCard
 						id="sharing"
-						title="Mensajes para compartir"
+						title="Plantillas de mensaje"
 						description="Plantillas de mensaje para compartir la invitación por WhatsApp."
 						dirty={dirty.has('sharing')}
 						error={errors.sharing}
@@ -1322,22 +1333,72 @@ export default function InvitationEditor({ initialContext }: Props) {
 							}
 							placeholder="Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}..."
 						/>
+						<div className="invitation-editor__preview-section">
+							<span className="invitation-editor__preview-label">
+								Vista previa — invitaci&oacute;n:
+							</span>
+							<pre className="invitation-editor__preview-text">
+								{renderShareMessage(
+									sharing.invitation ?? DEFAULT_INVITATION_MESSAGE,
+									{
+										...PREVIEW_CONTEXT,
+										eventTitle: metadata.title || PREVIEW_CONTEXT.eventTitle,
+									},
+								)}
+							</pre>
+						</div>
+						<div className="invitation-editor__preview-section">
+							<span className="invitation-editor__preview-label">
+								Vista previa — recordatorio:
+							</span>
+							<pre className="invitation-editor__preview-text">
+								{renderShareMessage(sharing.reminder ?? DEFAULT_REMINDER_MESSAGE, {
+									...PREVIEW_CONTEXT,
+									eventTitle: metadata.title || PREVIEW_CONTEXT.eventTitle,
+								})}
+							</pre>
+						</div>
 						<p className="invitation-editor__helper-text">
-							Variables disponibles: {`{guestName}`}, {`{eventTitle}`},{' '}
-							{`{inviteUrl}`}
+							Variables disponibles:{' '}
+							{SHARE_MESSAGE_VARIABLES.map((v) => (
+								<code
+									key={v}
+									className="invitation-editor__variable"
+									title={SHARE_MESSAGE_VARIABLE_LABELS[v]}
+								>
+									{v}
+								</code>
+							))}
 						</p>
-						<button
-							type="button"
-							className="invitation-editor__secondary-button"
-							onClick={() =>
-								updateContent('sharing', {
-									invitation: DEFAULT_INVITATION_MESSAGE,
-									reminder: DEFAULT_REMINDER_MESSAGE,
-								})
-							}
-						>
-							Restablecer valores predeterminados
-						</button>
+						{sharingResetConfirm.pending ? (
+							<div className="invitation-editor__reset-confirm">
+								<span className="invitation-editor__reset-confirm-text">
+									¿Restablecer valores predeterminados?
+								</span>
+								<button
+									type="button"
+									className="invitation-editor__secondary-button invitation-editor__secondary-button--danger"
+									onClick={sharingResetConfirm.confirm}
+								>
+									Confirmar
+								</button>
+								<button
+									type="button"
+									className="invitation-editor__secondary-button"
+									onClick={sharingResetConfirm.cancel}
+								>
+									Cancelar
+								</button>
+							</div>
+						) : (
+							<button
+								type="button"
+								className="invitation-editor__secondary-button"
+								onClick={sharingResetConfirm.request}
+							>
+								Restablecer valores predeterminados
+							</button>
+						)}
 					</SectionCard>
 
 					<SectionCard
