@@ -247,7 +247,6 @@ function buildHeroFromDraft(
 	draftHero: NonNullable<DraftContent['hero']>,
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
-	themeId: string,
 	isDemo: boolean,
 ): Record<string, unknown> {
 	const {
@@ -263,7 +262,7 @@ function buildHeroFromDraft(
 		variant: demoVariant,
 	} = demoHero ?? {};
 
-	return {
+	const result: Record<string, unknown> = {
 		name: str(draftHero.name) || (demoName as string) || invitationTitle,
 		secondaryName: str(draftHero.secondaryName) || (demoSecondaryName as string) || '',
 		label: str(draftHero.label) || (demoLabel as string) || 'Invitación Especial',
@@ -275,15 +274,23 @@ function buildHeroFromDraft(
 		backgroundImageMobile:
 			draftHero.backgroundImageMobile ?? (isDemo ? demoBackgroundImageMobile : undefined),
 		portrait: draftHero.portrait ?? demoPortrait,
-		variant: (demoVariant as string) || themeId,
 	};
+
+	// Only set hero variant when the demo content explicitly defines it.
+	// Omitting the variant lets the adaptation layer (buildHero in event.ts)
+	// fall back to theme.preset, avoiding divergence when snapshot.themeId
+	// is stale or incorrect (e.g., legacy-adopt script).
+	if (demoVariant) {
+		result.variant = demoVariant as string;
+	}
+
+	return result;
 }
 
 function mapHeroSection(
 	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
-	themeId: string,
 	isDemo: boolean,
 ): Record<string, unknown> {
 	if (isBlankSection(draftHero)) {
@@ -293,14 +300,12 @@ function mapHeroSection(
 			label: 'Invitación Especial',
 			date: '',
 			backgroundImage: { type: 'internal', key: 'hero' },
-			variant: themeId,
 		};
 	}
 	return buildHeroFromDraft(
 		draftHero as NonNullable<DraftContent['hero']>,
 		demoHero,
 		invitationTitle,
-		themeId,
 		isDemo,
 	);
 }
@@ -498,7 +503,6 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		draftContent.hero,
 		demoContent.hero as Record<string, unknown> | undefined,
 		invitation.title,
-		snapshot.themeId,
 		isDemo,
 	);
 	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
