@@ -14,6 +14,7 @@ import type { ParentsOrder } from '@/lib/intake/types';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
+import type { CountdownTargetSource } from '@/lib/time/event-time';
 
 export interface ThemeConfig {
 	preset: ThemePreset;
@@ -196,7 +197,9 @@ export interface InvitationViewModel {
 			variant?: QuoteVariant;
 		};
 		countdown?: {
-			eventDate: string;
+			targetIso: string;
+			targetSource: CountdownTargetSource;
+			eventTimeZone?: string;
 			title: string;
 			footerText?: string;
 			variant?: CountdownVariant;

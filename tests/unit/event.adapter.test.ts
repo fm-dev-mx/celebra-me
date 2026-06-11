@@ -196,7 +196,27 @@ describe('adaptEvent', () => {
 		});
 	});
 
-	it('countdown eventDate matches hero date', () => {
+	it('countdown prefers eventTiming.startsAtUtc over hero date', () => {
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+				eventTiming: {
+					localDateTime: '2026-04-25T18:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2026-04-26T01:00:00.000Z',
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeDefined();
+		expect(viewModel.sections.countdown?.targetIso).toBe('2026-04-26T01:00:00.000Z');
+		expect(viewModel.sections.countdown?.targetSource).toBe('eventTiming');
+	});
+
+	it('countdown uses centralized legacy fallback when eventTiming is missing', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
@@ -205,7 +225,8 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.sections.countdown).toBeDefined();
-		expect(viewModel.sections.countdown?.eventDate).toBe(viewModel.hero.date);
+		expect(viewModel.sections.countdown?.targetIso).toBe(viewModel.hero.date);
+		expect(viewModel.sections.countdown?.targetSource).toBe('legacyHeroDate');
 	});
 
 	it('throws for invalid theme presets instead of silently falling back', () => {

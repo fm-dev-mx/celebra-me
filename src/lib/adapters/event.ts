@@ -20,6 +20,7 @@ import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
+import { resolveCountdownTarget } from '@/lib/time/event-time';
 
 const LOCATION_THEME_DEFAULTS: Readonly<{
 	[key in ThemePreset]?: {
@@ -277,15 +278,17 @@ function buildCountdownSectionData(context: AdaptationContext) {
 	const { data, normalizedPreset } = context;
 	if (!data.countdown) return undefined;
 
-	// Derive eventDate from canonical hero.date
-	const eventDate = data.hero.date;
+	const target = resolveCountdownTarget(data.eventTiming, data.hero.date);
+	if (!target) return undefined;
 
 	// Use manual footerText if provided, otherwise fallback to venue location only (no date)
 	const footerText = data.countdown.footerText ?? formatVenueLocation(data.location);
 
 	return {
 		...data.countdown,
-		eventDate,
+		targetIso: target.targetIso,
+		targetSource: target.source,
+		eventTimeZone: data.eventTiming?.timeZone,
 		footerText,
 		variant: sectionVariant(
 			'countdown',

@@ -34,7 +34,8 @@ describe('Invitation header navigation contract', () => {
 			countdown: {
 				title: 'Test',
 				footerText: '',
-				eventDate: '',
+				targetIso: '2026-01-01T00:00:00.000Z',
+				targetSource: 'eventTiming' as const,
 				variant: 'editorial' as const,
 			},
 			location: { ceremony: {} as any, variant: 'editorial' as const },

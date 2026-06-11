@@ -6,31 +6,32 @@ import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
 import type { CountdownVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
-	eventDate: string; // ISO Date string
+	targetIso: string;
+	eventTimeZone?: string;
 	title?: string;
 	footerText?: string;
 	variant?: CountdownVariant;
 }
 
 const {
-	eventDate,
+	targetIso,
+	eventTimeZone,
 	title = "¡Falta muy poco!",
 	footerText,
 	variant = 'editorial',
 } = Astro.props;
 
-// Invitation dates are floating event-local values serialized with a UTC
-// suffix (e.g. "2026-08-01T18:00:00.000Z"). timeZone: 'UTC' prevents
-// visual date shifting on non-UTC servers.
-function formatCountdownDate(dateString: string): { desktop: string; mobileWeekday: string; mobileFull: string } {
+function formatCountdownDate(
+	dateString: string,
+	timeZone = 'UTC',
+): { desktop: string; mobileWeekday: string; mobileFull: string } {
 	const date = new Date(dateString);
 	if (isNaN(date.getTime())) {
 		return { desktop: 'Fecha no válida', mobileWeekday: 'Fecha', mobileFull: 'no válida' };
 	}
 	const locale = 'es-MX';
-	const tz = { timeZone: 'UTC' } as const;
 	const fmt = (opts: Intl.DateTimeFormatOptions) =>
-		new Intl.DateTimeFormat(locale, { ...opts, ...tz }).format(date).toUpperCase();
+		new Intl.DateTimeFormat(locale, { ...opts, timeZone }).format(date).toUpperCase();
 	return {
 		desktop: fmt({ weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }),
 		mobileWeekday: fmt({ weekday: 'long' }),
@@ -38,7 +39,7 @@ function formatCountdownDate(dateString: string): { desktop: string; mobileWeekd
 	};
 }
 
-const formattedDate = formatCountdownDate(eventDate);
+const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 ---
 
 <section class="countdown-section" id="countdown" data-variant={variant}>
@@ -47,7 +48,7 @@ const formattedDate = formatCountdownDate(eventDate);
 		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
-			<CountdownTimer eventDate={eventDate} />
+			<CountdownTimer targetIso={targetIso} />
 		</div>
 
 		<div class="countdown-date">

@@ -1,11 +1,11 @@
 ---
 interface Props {
-	eventDate: string;
+	targetIso: string;
 }
 
-const { eventDate } = Astro.props;
+const { targetIso } = Astro.props;
 
-const targetDate = new Date(eventDate);
+const targetDate = new Date(targetIso);
 const difference = targetDate.getTime() - Date.now();
 const initialTimeLeft =
 	difference > 0
@@ -25,7 +25,7 @@ const segments = [
 ];
 ---
 
-<div class="countdown__timer" data-countdown data-event-date={eventDate}>
+<div class="countdown__timer" data-countdown data-target-iso={targetIso}>
 	{
 		segments.map((segment, index) => (
 			<div class="countdown__segment" data-index={index} data-unit={segment.key}>
@@ -52,13 +52,13 @@ const segments = [
 			return;
 		}
 
-		const eventDate = root.dataset.eventDate;
-		if (!eventDate) {
+		const targetIso = root.dataset.targetIso;
+		if (!targetIso) {
 			return;
 		}
 
 		const updateCountdown = () => {
-			const difference = new Date(eventDate).getTime() - Date.now();
+			const difference = new Date(targetIso).getTime() - Date.now();
 			const values =
 				difference > 0
 					? {
