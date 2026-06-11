@@ -1331,7 +1331,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 									reminder: value,
 								})
 							}
-							placeholder="Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}..."
+							placeholder={DEFAULT_REMINDER_MESSAGE}
 						/>
 						<div className="invitation-editor__preview-section">
 							<span className="invitation-editor__preview-label">

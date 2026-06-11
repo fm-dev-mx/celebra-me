@@ -1,11 +1,11 @@
 export const PREVIEW_CONTEXT = {
 	guestName: 'María García',
-	eventTitle: 'Nuestro evento',
-	inviteUrl: 'https://celebra-me.com/invitacion/ejemplo',
+	eventTitle: 'Mi Bautizo y 1er Año de César Ramsés',
+	inviteUrl: 'https://celebra-me.com/i/abc123',
 	eventDate: '15 de junio de 2026',
 	daysUntilEvent: '5',
 	rsvpDeadline: '10 de junio de 2026',
-	eventTimingText: 'Te recordamos que faltan 5 días para Nuestro evento.',
+	eventTimingText: 'Te recordamos que faltan 5 días para Mi Bautizo y 1er Año de César Ramsés.',
 	rsvpDeadlineText: 'Confirma tu asistencia antes del 10 de junio de 2026.',
 };
 
@@ -35,7 +35,7 @@ export const SHARE_MESSAGE_VARIABLE_LABELS: Record<
 };
 
 export const DEFAULT_INVITATION_MESSAGE =
-	'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.';
+	'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\nÁbrela para ver los detalles y confirmar tu asistencia.\n\n{inviteUrl}';
 
 export const DEFAULT_REMINDER_MESSAGE =
 	'Hola {guestName},\n\n{eventTimingText}\n\n{rsvpDeadlineText}\n\n{inviteUrl}';
@@ -91,10 +91,10 @@ export const DEFAULT_SHARE_DESCRIPTION_TEMPLATE =
 
 export function resolveShareDescription(
 	ogDescription: string | undefined | null,
-	eventTitle: string,
+	eventTitle: string | undefined | null,
 ): string {
 	const customDescription = ogDescription?.trim();
-	const resolvedEventTitle = eventTitle.trim() || 'la invitación';
+	const resolvedEventTitle = (eventTitle ?? '').trim() || 'la invitación';
 
 	if (customDescription) return customDescription;
 

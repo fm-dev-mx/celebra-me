@@ -185,7 +185,7 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('Sí'));
 
 		expect(textarea).toHaveValue(
-			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\nÁbrela para ver los detalles y confirmar tu asistencia.\n\n{inviteUrl}',
 		);
 	});
 
