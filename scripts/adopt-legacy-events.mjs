@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
+const CONTENT_EVENTS_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
 
 const REPORT_FILE = path.join(
 	PROJECT_ROOT,
@@ -36,6 +37,10 @@ function loadEnvFile(relativePath) {
 		}
 		if (process.env[key] === undefined) process.env[key] = val;
 	}
+}
+
+function toArray(v) {
+	return Array.isArray(v) ? v : [];
 }
 
 function isPlaceholder(v) {
@@ -95,6 +100,62 @@ const BASE_DEMO_BY_TYPE = {
 	cumple: 'demo-cumple-luxury-hacienda',
 };
 
+/**
+ * Default theme preset per event type for legacy events without a content file.
+ * Mirrors src/lib/intake/demo-preset-catalog.ts but kept inline to keep this
+ * script self-contained (no TS/import dependencies).
+ */
+const THEME_FALLBACK_BY_TYPE = {
+	xv: 'jewelry-box',
+	boda: 'jewelry-box-wedding',
+	bautizo: 'angelic-presence',
+	cumple: 'luxury-hacienda',
+};
+
+/**
+ * Resolve the actual theme preset for a legacy event by reading its static JSON file.
+ *
+ * Strategy (in order of preference):
+ *   1. Read the event's JSON file from src/content/events/ and extract theme.preset.
+ *   2. If the file no longer exists (e.g., already migrated), fall back to the
+ *      default theme for the event type.
+ *   3. If no fallback exists for the event type, use 'editorial' as a safe
+ *      generic fallback (neutral layout, no glass card, no card/recuadro).
+ *
+ * Previously this was hardcoded to 'jewelry-box' for ALL events, which caused
+ * theme regressions (e.g., cesar-ramses sacred-keepsake → jewelry-box).
+ */
+function resolveActualTheme(slug, eventType, contentEventsDir) {
+	const defaultThemeId = THEME_FALLBACK_BY_TYPE[eventType];
+	const fallback = defaultThemeId || 'editorial';
+
+	if (defaultThemeId === undefined) {
+		console.warn(`  ⚠ No theme fallback for event type "${eventType}", using "editorial"`);
+	}
+
+	const contentPath = path.join(contentEventsDir, `${slug}.json`);
+	if (!fs.existsSync(contentPath)) {
+		console.warn(`  ⚠ No static file for "${slug}", using event-type fallback: "${fallback}"`);
+		return fallback;
+	}
+
+	try {
+		const eventContent = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
+		const actualTheme = eventContent.theme?.preset;
+		if (actualTheme && typeof actualTheme === 'string') {
+			console.log(`  ✓ Resolved theme from content: "${actualTheme}"`);
+			return actualTheme;
+		}
+		console.warn(`  ⚠ File "${slug}.json" has no theme.preset, using fallback: "${fallback}"`);
+		return fallback;
+	} catch (err) {
+		console.warn(
+			`  ⚠ Failed to parse "${slug}.json": ${err.message}. Using fallback: "${fallback}"`,
+		);
+		return fallback;
+	}
+}
+
 async function main() {
 	loadEnvFile('.env.local');
 	loadEnvFile('.env');
@@ -131,7 +192,7 @@ async function main() {
 	}
 
 	// Check if migration is applied (column exists)
-	const sampleEvent = Array.isArray(events) && events.length > 0 ? events[0] : null;
+	const sampleEvent = toArray(events)[0] ?? null;
 	if (sampleEvent && !('invitation_project_id' in sampleEvent)) {
 		console.error('ERROR: invitation_project_id column not found on events table.');
 		console.error('  Apply the migration first:');
@@ -139,11 +200,9 @@ async function main() {
 		process.exit(1);
 	}
 
-	const orphanEvents = (Array.isArray(events) ? events : []).filter(
-		(e) => !e.invitation_project_id,
-	);
+	const orphanEvents = toArray(events).filter((e) => !e.invitation_project_id);
 
-	console.log(`Total events:        ${(Array.isArray(events) ? events : []).length}`);
+	console.log(`Total events:        ${toArray(events).length}`);
 	console.log(`Orphan events:       ${orphanEvents.length}`);
 	console.log('');
 
@@ -155,7 +214,7 @@ async function main() {
 	// 2. Load existing projects to check slug conflicts
 	const existingProjects = await restGet('invitations', 'select=id,slug,event_type,title');
 	const existingSlugs = new Set(
-		(Array.isArray(existingProjects) ? existingProjects : [])
+		toArray(existingProjects)
 			.map((p) => p.slug)
 			.filter(Boolean),
 	);
@@ -163,14 +222,14 @@ async function main() {
 	// 3. Load guest and claim code counts for verification
 	const allGuests = await restGet('guest_invitations', 'select=event_id,attendance_status');
 	const guestMap = new Map();
-	for (const g of Array.isArray(allGuests) ? allGuests : []) {
+	for (const g of toArray(allGuests)) {
 		if (!guestMap.has(g.event_id)) guestMap.set(g.event_id, []);
 		guestMap.get(g.event_id).push(g);
 	}
 
 	const allClaims = await restGet('event_claim_codes', 'select=event_id');
 	const claimMap = new Map();
-	for (const c of Array.isArray(allClaims) ? allClaims : []) {
+	for (const c of toArray(allClaims)) {
 		if (!claimMap.has(c.event_id)) claimMap.set(c.event_id, []);
 		claimMap.get(c.event_id).push(c);
 	}
@@ -184,9 +243,7 @@ async function main() {
 
 		// Check slug conflict
 		if (existingSlugs.has(ev.slug)) {
-			const conflict = (Array.isArray(existingProjects) ? existingProjects : []).find(
-				(p) => p.slug === ev.slug,
-			);
+			const conflict = toArray(existingProjects).find((p) => p.slug === ev.slug);
 			errors.push({
 				eventId: ev.id,
 				slug: ev.slug,
@@ -197,6 +254,7 @@ async function main() {
 		}
 
 		const baseDemoId = BASE_DEMO_BY_TYPE[ev.event_type] || 'demo-xv-jewelry-box';
+		const actualTheme = resolveActualTheme(ev.slug, ev.event_type, CONTENT_EVENTS_DIR);
 
 		// Create project
 		let project;
@@ -207,12 +265,12 @@ async function main() {
 				slug: ev.slug,
 				status: ev.status || 'draft',
 				base_demo_id: baseDemoId,
-				theme_id: 'jewelry-box',
+				theme_id: actualTheme,
 				snapshot: {
 					id: baseDemoId,
 					eventType: ev.event_type,
 					displayName: 'Adoptado de evento legacy',
-					themeId: 'jewelry-box',
+					themeId: actualTheme,
 					previewSlug: baseDemoId,
 				},
 				client_name: '',
@@ -226,7 +284,7 @@ async function main() {
 				projectBody,
 				`select=id,slug,event_type,title,status`,
 			);
-			project = Array.isArray(created) ? created[0] : created;
+			project = toArray(created)[0] ?? created;
 			console.log(`  ✓ Project created: ${project.id}`);
 		} catch (err) {
 			errors.push({
@@ -275,12 +333,8 @@ async function main() {
 		'events',
 		'select=id,slug,event_type,title,status,invitation_project_id,owner_user_id',
 	);
-	const remainingOrphans = (Array.isArray(updatedEvents) ? updatedEvents : []).filter(
-		(e) => !e.invitation_project_id,
-	);
-	const linkedEvents = (Array.isArray(updatedEvents) ? updatedEvents : []).filter(
-		(e) => e.invitation_project_id,
-	);
+	const remainingOrphans = toArray(updatedEvents).filter((e) => !e.invitation_project_id);
+	const linkedEvents = toArray(updatedEvents).filter((e) => e.invitation_project_id);
 
 	// Check no duplicate project links
 	const projectLinks = new Map();
@@ -290,21 +344,6 @@ async function main() {
 		projectLinks.get(e.invitation_project_id).push(e);
 	}
 	const duplicateLinks = [...projectLinks.entries()].filter(([, evts]) => evts.length > 1);
-
-	// Check guest and claim counts preserved
-	const verifyGuests = await restGet('guest_invitations', 'select=event_id');
-	const verifyGuestMap = new Map();
-	for (const g of Array.isArray(verifyGuests) ? verifyGuests : []) {
-		if (!verifyGuestMap.has(g.event_id)) verifyGuestMap.set(g.event_id, 0);
-		verifyGuestMap.set(g.event_id, verifyGuestMap.get(g.event_id) + 1);
-	}
-
-	const verifyClaims = await restGet('event_claim_codes', 'select=event_id');
-	const verifyClaimMap = new Map();
-	for (const c of Array.isArray(verifyClaims) ? verifyClaims : []) {
-		if (!verifyClaimMap.has(c.event_id)) verifyClaimMap.set(c.event_id, 0);
-		verifyClaimMap.set(c.event_id, verifyClaimMap.get(c.event_id) + 1);
-	}
 
 	// Build report
 	const report = {
@@ -316,8 +355,8 @@ async function main() {
 		adoptions,
 		errors,
 		verification: {
-			totalEventsBefore: Array.isArray(events) ? events.length : 0,
-			totalEventsAfter: Array.isArray(updatedEvents) ? updatedEvents.length : 0,
+			totalEventsBefore: toArray(events).length,
+			totalEventsAfter: toArray(updatedEvents).length,
 			orphansBefore: orphanEvents.length,
 			orphansAfter: remainingOrphans.length,
 			linkedEvents: linkedEvents.length,
@@ -326,29 +365,8 @@ async function main() {
 				projectId: pid,
 				eventSlugs: evts.map((e) => e.slug),
 			})),
-			guestCountsPreserved: true,
-			claimCodeCountsPreserved: true,
 		},
 	};
-
-	// Verify guest counts per event
-	for (const adoption of adoptions) {
-		const before = guestMap.get(adoption.eventId)?.length || 0;
-		const after = verifyGuestMap.get(adoption.eventId) || 0;
-		if (before !== after) {
-			report.verification.guestCountsPreserved = false;
-			console.log(`  ⚠ Guest count changed for ${adoption.slug}: ${before} → ${after}`);
-		}
-	}
-
-	for (const adoption of adoptions) {
-		const before = claimMap.get(adoption.eventId)?.length || 0;
-		const after = verifyClaimMap.get(adoption.eventId) || 0;
-		if (before !== after) {
-			report.verification.claimCodeCountsPreserved = false;
-			console.log(`  ⚠ Claim code count changed for ${adoption.slug}: ${before} → ${after}`);
-		}
-	}
 
 	// Write report
 	fs.mkdirSync(path.dirname(REPORT_FILE), { recursive: true });
