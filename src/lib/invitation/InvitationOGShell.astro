@@ -1,0 +1,42 @@
+---
+export interface Props {
+	ogTitle: string;
+	ogDescription: string;
+	ogImage: { url: string; width: number; height: number; type: string };
+	canonicalUrl: string;
+}
+
+const { ogTitle, ogDescription, ogImage, canonicalUrl } = Astro.props;
+---
+
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<title>{ogTitle}</title>
+		<meta name="description" content={ogDescription} />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:title" content={ogTitle} />
+		<meta property="og:description" content={ogDescription} />
+		<meta property="og:image" content={ogImage.url} />
+		<meta property="og:image:secure_url" content={ogImage.url} />
+		<meta property="og:image:width" content={String(ogImage.width)} />
+		<meta property="og:image:height" content={String(ogImage.height)} />
+		<meta property="og:image:type" content={ogImage.type} />
+		<meta property="og:locale" content="es_MX" />
+		<meta property="og:site_name" content="Celebra.me" />
+		<link rel="canonical" href={canonicalUrl} />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:url" content={canonicalUrl} />
+		<meta name="twitter:title" content={ogTitle} />
+		<meta name="twitter:description" content={ogDescription} />
+		<meta name="twitter:image" content={ogImage.url} />
+	</head>
+	<body>
+		<p>Cargando tu invitación...</p>
+	</body>
+</html>
