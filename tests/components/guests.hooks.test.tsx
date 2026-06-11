@@ -4,6 +4,7 @@ import { useGuestDashboardActions } from '@/components/dashboard/guests/use-gues
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { makeGuest } from '@tests/helpers/guest-factory';
+import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
@@ -56,12 +57,14 @@ function setupActions(overrides?: {
 	items?: DashboardGuestItem[];
 	loadGuests?: jest.Mock;
 	setItems?: jest.Mock;
+	reminderSettings?: ReminderSettings;
 }) {
 	const opts = {
 		eventId: 'event-123',
 		items: [sampleGuest],
 		loadGuests: jest.fn().mockResolvedValue(undefined),
 		setItems: jest.fn(),
+		reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
 		...overrides,
 	};
 	const { result } = renderHook(() => useGuestDashboardActions({ ...opts }));
@@ -552,6 +555,118 @@ describe('active guest dashboard hooks', () => {
 		});
 
 		expect(result.current.modalOpen).toBe(false);
+	});
+
+	describe('reminder flow', () => {
+		function makeReminderGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
+			return makeGuest({
+				deliveryStatus: 'shared',
+				attendanceStatus: 'pending',
+				...overrides,
+			});
+		}
+
+		it('openNextReminderGuest opens modal with first eligible guest', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const guest2 = makeReminderGuest({ guestId: 'r2', fullName: 'Reminder B' });
+			const { result } = setupActions({ items: [guest1, guest2] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+
+			expect(result.current.modalMode).toBe('send-pending');
+			expect(result.current.modalOpen).toBe(true);
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+		});
+
+		it('handleAdvanceFromGuest in reminder mode advances to next eligible guest', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const guest2 = makeReminderGuest({ guestId: 'r2', fullName: 'Reminder B' });
+			const { result } = setupActions({ items: [guest1, guest2] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+
+			act(() => {
+				result.current.handleAdvanceFromGuest('r1');
+			});
+
+			expect(result.current.editingGuest?.guestId).toBe('r2');
+			expect(result.current.modalOpen).toBe(true);
+		});
+
+		it('handleAdvanceFromGuest in reminder mode closes modal when no more eligible guests', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const { result } = setupActions({ items: [guest1] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+
+			act(() => {
+				result.current.handleAdvanceFromGuest('r1');
+			});
+
+			expect(result.current.modalOpen).toBe(false);
+			expect(result.current.isNextActionActive).toBe(false);
+		});
+
+		it('handlePostpone in reminder mode advances to next eligible guest', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const guest2 = makeReminderGuest({ guestId: 'r2', fullName: 'Reminder B' });
+			const { result } = setupActions({ items: [guest1, guest2] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+
+			act(() => {
+				result.current.handlePostpone('r1');
+			});
+
+			expect(result.current.editingGuest?.guestId).toBe('r2');
+			expect(result.current.modalOpen).toBe(true);
+		});
+
+		it('handlePostpone in reminder mode closes modal when no more eligible guests', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const { result } = setupActions({ items: [guest1] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+
+			act(() => {
+				result.current.handlePostpone('r1');
+			});
+
+			expect(result.current.modalOpen).toBe(false);
+		});
+
+		it('postponing a reminder does not reduce global reminder count', () => {
+			const guest1 = makeReminderGuest({ guestId: 'r1', fullName: 'Reminder A' });
+			const guest2 = makeReminderGuest({ guestId: 'r2', fullName: 'Reminder B' });
+			const { result } = setupActions({ items: [guest1, guest2] });
+
+			act(() => {
+				result.current.openNextReminderGuest('unconfirmed');
+			});
+
+			expect(result.current.editingGuest?.guestId).toBe('r1');
+
+			act(() => {
+				result.current.handlePostpone('r1');
+			});
+
+			expect(result.current.editingGuest?.guestId).toBe('r2');
+			expect(result.current.modalOpen).toBe(true);
+		});
 	});
 
 	it.each([
