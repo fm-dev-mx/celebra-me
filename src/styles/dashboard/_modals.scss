@@ -52,7 +52,7 @@
 		border-radius: 0;
 		border: none;
 		box-shadow: none;
-		padding: 1rem;
+		padding: 0;
 	}
 
 	&::before {
@@ -118,14 +118,21 @@
 		-webkit-overflow-scrolling: touch;
 
 		@media (width <= 600px) {
-			padding-bottom: env(safe-area-inset-bottom, 1rem);
+			padding: 0 1rem 0.5rem;
+			padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0.5rem));
 		}
 	}
 
-	/* Ensure modal header is not overly tall on mobile */
+	/* Ensure modal header stays visible on mobile scroll */
 	@media (width <= 600px) {
 		&__header {
+			position: sticky;
+			top: 0;
+			z-index: 2;
 			flex-shrink: 0;
+			background: var(--dashboard-card-bg);
+			padding: 0 1rem 0.5rem;
+			margin-bottom: 0.5rem;
 		}
 	}
 
@@ -261,6 +268,12 @@
 	text-align: left;
 }
 
+.dashboard-modal__queue-count {
+	font-size: 0.75rem;
+	color: var(--color-text-muted);
+	font-weight: 400;
+}
+
 .dashboard-modal__actions,
 .dashboard-modal__footer {
 	display: flex;
@@ -279,17 +292,21 @@
 	}
 }
 
+@media (width <= 600px) {
+	.dashboard-modal--share-templates .dashboard-modal__description {
+		display: none;
+	}
+}
+
 .dashboard-modal__footer {
 	/* Sticky footer on mobile */
 	@media (width <= 600px) {
 		position: sticky;
 		bottom: 0;
-		padding: 0.75rem 0;
+		padding: 0.75rem 1rem;
 		padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.5rem));
-		margin-top: 0.75rem;
+		margin-top: 0;
 		margin-bottom: 0;
-		padding-left: 0;
-		padding-right: 0;
 		z-index: 2;
 		background: var(--dashboard-card-bg);
 		border-top: 1px solid var(--color-border-subtle);

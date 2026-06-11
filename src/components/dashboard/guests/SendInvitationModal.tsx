@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
@@ -49,8 +48,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	eventTitle,
 	mode = 'pending-invitation',
 }) => {
-	const editAreaRef = useRef<HTMLTextAreaElement>(null);
-
 	const {
 		editName,
 		setEditName,
@@ -118,16 +115,29 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		);
 	}
 
-	const subtitle = isQueueMode
-		? `${pendingCount} ${isReminderMode ? 'recordatorio(s)' : 'pendiente(s)'} · ${guest.fullName}`
-		: guest.fullName;
+	const subtitle = isQueueMode ? (
+		<>
+			{guest.fullName}
+			<br />
+			<span className="dashboard-modal__queue-count">
+				{pendingCount}{' '}
+				{isReminderMode
+					? 'recordatorios pendientes'
+					: pendingCount === 1
+						? 'pendiente'
+						: 'pendientes'}
+			</span>
+		</>
+	) : (
+		guest.fullName
+	);
 
 	const hasPhoneValue = editPhone.trim().length > 0;
 	const phoneValid = hasPhoneValue && canSendToPhone;
 
 	const renderFormSection = () => (
-		<div className="send-invitation__form-section">
-			<div className="dashboard-form-field">
+		<div className="send-invitation__card send-invitation__form-card">
+			<div className="dashboard-form-field send-invitation__field">
 				<label htmlFor="send-name">Nombre del invitado</label>
 				<input
 					id="send-name"
@@ -135,89 +145,81 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					value={editName}
 					onChange={(e) => setEditName(e.target.value)}
 					placeholder="Nombre completo"
+					className="send-invitation__input"
 				/>
 			</div>
 
-			<div className="dashboard-form-section">
-				<h4 className="dashboard-form-section__title">Acompa&ntilde;antes permitidos</h4>
-				<div className="dashboard-form-field dashboard-form-field--full">
-					<div
-						className="guest-response-cards guest-response-cards--compact"
-						role="radiogroup"
-						aria-label="Acompañantes permitidos"
-					>
-						{ATTENDEE_OPTIONS.map((num) => (
-							<label key={num} className="guest-response-card">
-								<input
-									type="radio"
-									name="sendMaxAttendees"
-									value={num}
-									checked={editMaxAttendees === num}
-									onChange={() => setEditMaxAttendees(num)}
-								/>
-								<div className="guest-response-card__content">
-									{num === 10 ? '10+' : num}
-								</div>
-							</label>
-						))}
-					</div>
+			<div className="send-invitation__companion-section">
+				<h4 className="send-invitation__companion-title">Acompañantes permitidos</h4>
+				<div
+					className="guest-response-cards guest-response-cards--compact"
+					role="radiogroup"
+					aria-label="Acompañantes permitidos"
+				>
+					{ATTENDEE_OPTIONS.map((num) => (
+						<label key={num} className="guest-response-card">
+							<input
+								type="radio"
+								name="sendMaxAttendees"
+								value={num}
+								checked={editMaxAttendees === num}
+								onChange={() => setEditMaxAttendees(num)}
+							/>
+							<div className="guest-response-card__content">
+								{num === 10 ? '10+' : num}
+							</div>
+						</label>
+					))}
 				</div>
 			</div>
 
-			<div className="dashboard-form-field">
-				<PhoneInputGroup
-					id="send"
-					countryCode={editCountryCode}
-					phone={editPhone}
-					onCountryCodeChange={setEditCountryCode}
-					onPhoneChange={(val) => {
-						setEditPhone(val);
-					}}
-					error={phoneError}
-					label="Teléfono / WhatsApp"
-					showOptional
-				/>
-				{!editPhone.trim() && !phoneError && (
-					<span className="guest-field-hint">
-						Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el
-						contacto.
-					</span>
-				)}
-			</div>
+			<PhoneInputGroup
+				id="send"
+				countryCode={editCountryCode}
+				phone={editPhone}
+				onCountryCodeChange={setEditCountryCode}
+				onPhoneChange={(val) => {
+					setEditPhone(val);
+				}}
+				error={phoneError}
+				label="Teléfono / WhatsApp"
+				showOptional
+			/>
+			{!editPhone.trim() && !phoneError && (
+				<span className="guest-field-hint">
+					Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.
+				</span>
+			)}
 		</div>
 	);
 
 	const renderMessageSection = () => (
-		<div className="send-invitation__message-section">
+		<div className="send-invitation__card send-invitation__message-card">
 			<span className="send-invitation__message-label">Mensaje a enviar</span>
 
-			<div className="send-invitation__preview-card">
-				{editingMessage ? (
-					<textarea
-						ref={editAreaRef}
-						className="send-invitation__textarea"
-						rows={4}
-						maxLength={500}
-						autoFocus
-						value={localMessageOverride}
-						onChange={(e) => handleUpdateLocalMessage(e.target.value)}
-					/>
-				) : (
-					<pre className="send-invitation__preview-text">{activeMessage}</pre>
-				)}
-			</div>
-
-			{messageError && <p className="send-invitation__field-error">{messageError}</p>}
-
-			<div className="send-invitation__edit-actions">
-				{editingMessage ? (
-					<>
+			{editingMessage ? (
+				<>
+					<span className="send-invitation__mode-label send-invitation__mode-label--editing">
+						Editando
+					</span>
+					<div className="send-invitation__preview-card">
+						<textarea
+							className="send-invitation__textarea"
+							rows={4}
+							maxLength={500}
+							autoFocus
+							value={localMessageOverride}
+							onChange={(e) => handleUpdateLocalMessage(e.target.value)}
+						/>
+					</div>
+					{messageError && <p className="send-invitation__field-error">{messageError}</p>}
+					<div className="send-invitation__edit-actions">
 						<button
 							type="button"
 							className="btn-secondary btn-secondary--modal"
 							onClick={handleCancelEditMessage}
 						>
-							Cancelar edici&oacute;n
+							Cancelar edición
 						</button>
 						<button
 							type="button"
@@ -226,17 +228,25 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 						>
 							Restablecer desde plantilla
 						</button>
-					</>
-				) : (
-					<button
-						type="button"
-						className="btn-secondary btn-secondary--modal"
-						onClick={handleEditMessage}
-					>
-						Editar mensaje
-					</button>
-				)}
-			</div>
+					</div>
+				</>
+			) : (
+				<>
+					<span className="send-invitation__mode-label">Vista previa</span>
+					<div className="send-invitation__preview-card">
+						<pre className="send-invitation__preview-text">{activeMessage}</pre>
+					</div>
+					<div className="send-invitation__preview-actions">
+						<button
+							type="button"
+							className="send-invitation__preview-action"
+							onClick={handleEditMessage}
+						>
+							Editar
+						</button>
+					</div>
+				</>
+			)}
 
 			{copySuccess && (
 				<span className="send-invitation__copy-feedback" role="status">
@@ -250,7 +260,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		fallbackGuest && (
 			<div className="dashboard-modal__fallback">
 				<p className="dashboard-modal__description">
-					No se pudo abrir el m&eacute;todo de env&iacute;o. Puedes copiar la
+					No se pudo abrir el método de envío. Puedes copiar la
 					{isReminderMode ? ' mensaje de recordatorio' : ' invitación'}.
 				</p>
 				<div className="send-share-guest">
@@ -286,28 +296,20 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			</div>
 		);
 
+	const ctaLabel = isReminderMode
+		? 'Enviar recordatorio'
+		: phoneValid
+			? 'Compartir por WhatsApp'
+			: 'Compartir invitación';
+
 	const renderIdleFooter = () => (
 		<>
-			<button type="button" className="btn-secondary btn-secondary--modal" onClick={onClose}>
-				Cancelar
-			</button>
-			{isQueueMode && pendingCount > 1 && (
-				<button
-					type="button"
-					className="btn-secondary btn-secondary--postpone"
-					onClick={handlePostpone}
-				>
-					Posponer
-				</button>
-			)}
 			<button
 				type="button"
-				className="btn-secondary btn-secondary--modal"
-				onClick={handleCopyMessageAction}
-				disabled={shareStatus !== 'idle'}
+				className="btn-secondary btn-secondary--modal dashboard-modal__footer-cancel"
+				onClick={onClose}
 			>
-				<CopyIcon className="share-icon" size={16} />
-				Copiar mensaje
+				Cancelar
 			</button>
 			<button
 				type="button"
@@ -316,8 +318,29 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				disabled={shareStatus !== 'idle'}
 			>
 				{phoneValid ? <WhatsAppIcon className="share-icon" size={16} /> : null}
-				Compartir
+				{ctaLabel}
 			</button>
+			<span className="send-invitation__footer-secondary">
+				<button
+					type="button"
+					className="send-invitation__footer-text-link"
+					onClick={handleCopyMessageAction}
+					disabled={shareStatus !== 'idle'}
+				>
+					<CopyIcon size={14} />
+					Copiar mensaje
+				</button>
+				{isQueueMode && pendingCount > 1 && (
+					<button
+						type="button"
+						className="send-invitation__footer-text-link"
+						onClick={handlePostpone}
+						disabled={shareStatus !== 'idle'}
+					>
+						Enviar después
+					</button>
+				)}
+			</span>
 		</>
 	);
 

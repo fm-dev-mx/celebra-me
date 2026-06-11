@@ -24,7 +24,6 @@ interface GuestCardProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
-	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
@@ -45,7 +44,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	item,
 	index,
 	inviteUrl,
-	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
 	shareDateContext,
@@ -270,7 +268,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<ShareAction
 					guest={item}
 					inviteUrl={inviteUrl}
-					inviteBaseUrl={inviteBaseUrl}
 					eventTitle={eventTitle}
 					shareTemplates={shareTemplates}
 					shareDateContext={shareDateContext}

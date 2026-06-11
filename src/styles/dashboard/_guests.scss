@@ -21,12 +21,49 @@
 .dashboard-modal--share-templates {
 	width: min(600px, calc(100% - 32px));
 	max-height: min(720px, calc(100dvh - 48px));
+
+	@media (width <= 600px) {
+		width: 100vw;
+		max-width: none;
+		max-height: none;
+		height: 100dvh;
+		border-radius: 0;
+		border: none;
+		box-shadow: none;
+		padding: 1rem;
+	}
 }
 
 .share-messages-modal__tabs {
 	display: flex;
 	margin-bottom: 0.75rem;
 	border-bottom: 1px solid var(--color-border-subtle);
+
+	@media (width <= 600px) {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background: var(--dashboard-card-bg);
+		margin: 0 -1rem 0.75rem;
+		padding: 0 1rem;
+	}
+}
+
+.share-messages-modal__days-row {
+	label {
+		display: block;
+		margin-bottom: 0.375rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+	}
+}
+
+.share-messages-modal__days-inline {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
 }
 
 .share-messages-modal__tab {
@@ -61,8 +98,7 @@
 
 .share-messages-modal__textarea {
 	width: 100%;
-	min-height: 140px;
-	max-height: 180px;
+	min-height: 200px;
 	padding: 0.75rem;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 0.5rem;
@@ -86,6 +122,14 @@
 	text-align: right;
 }
 
+.share-messages-modal__editor-card {
+	padding: 1rem;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.625rem;
+	margin-bottom: 0.75rem;
+}
+
 .share-messages-modal__variables {
 	display: flex;
 	flex-wrap: wrap;
@@ -100,13 +144,23 @@
 }
 
 .share-messages-modal__variable {
-	padding: 0.125rem 0.375rem;
-	background: var(--color-surface-soft);
-	border-radius: 0.25rem;
+	padding: 0.25rem 0.625rem;
+	background: rgb(var(--color-action-accent-rgb) / 6%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
+	border-radius: 999px;
 	font-size: 0.75rem;
-	font-family: monospace;
+	font-family: var(--font-ui);
 	color: var(--color-text-primary);
 	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease;
+
+	&:hover {
+		background: rgb(var(--color-action-accent-rgb) / 12%);
+		border-color: var(--color-action-accent);
+	}
 }
 
 .share-messages-modal__variables-help {
@@ -118,9 +172,11 @@
 
 .share-messages-modal__preview {
 	margin-top: 0.75rem;
-	padding: 0.75rem;
+	padding: 0.875rem;
+	padding-left: 1rem;
 	background: var(--color-surface-soft);
-	border: 1px solid var(--color-border-subtle);
+	border: 1px solid var(--color-border-premium);
+	border-left: 3px solid var(--color-border-premium);
 	border-radius: 0.5rem;
 }
 
@@ -128,44 +184,205 @@
 	display: block;
 	margin-bottom: 0.5rem;
 	font-size: 0.75rem;
-	font-weight: 500;
+	font-weight: 600;
 	color: var(--color-text-secondary);
+	letter-spacing: 0.02em;
 }
 
 .share-messages-modal__preview-text {
 	margin: 0;
 	white-space: pre-wrap;
 	font-size: 0.8125rem;
-	line-height: 1.5;
+	line-height: 1.6;
 	font-family: inherit;
 	color: var(--color-text-primary);
 }
 
-// Footer: on mobile, ensure danger button in reset-confirm does not jump to front
-.dashboard-modal--share-templates .dashboard-modal__footer {
-	@media (width <= 480px) {
-		.btn-primary--danger {
-			order: -1;
-		}
+.share-messages-modal__settings {
+	padding: 1rem;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+}
+
+.share-messages-modal__settings-description {
+	margin: 0 0 1rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--color-text-primary);
+}
+
+.share-messages-modal__settings-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--color-text-primary);
+	cursor: pointer;
+
+	input[type='checkbox'] {
+		width: 1.125rem;
+		height: 1.125rem;
+		accent-color: var(--color-action-accent);
+		cursor: pointer;
 	}
 }
 
-// Mobile responsive adjustments for share templates modal
-@media (width <= 600px) {
-	.dashboard-modal--share-templates {
-		.share-messages-modal__textarea {
-			min-height: 110px;
-			max-height: 160px;
-			resize: none;
-		}
+.share-messages-modal__settings-help {
+	margin: 0.5rem 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	color: var(--color-text-secondary);
+}
 
-		.share-messages-modal__variables {
-			gap: 0.375rem;
-		}
+.share-messages-modal__radio-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+	margin-top: 0.375rem;
+}
 
-		.share-messages-modal__preview {
-			padding: 0.5rem;
-		}
+.share-messages-modal__days-input {
+	width: 5rem;
+	padding: 0.375rem 0.5rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.375rem;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+	font-size: 0.875rem;
+	font-family: inherit;
+	text-align: center;
+
+	&:focus {
+		outline: none;
+		border-color: var(--color-action-accent);
+		box-shadow: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 14%);
+	}
+}
+
+.share-messages-modal__settings-field-label {
+	display: block;
+	margin-bottom: 0.375rem;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+}
+
+.share-messages-modal__settings-inline-label {
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin-left: 0.375rem;
+}
+
+.share-messages-modal__radio-label {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+	background: var(--color-surface-soft);
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		background-color 0.15s;
+	font-size: 0.875rem;
+	line-height: 1.4;
+	color: var(--color-text-primary);
+
+	&:hover {
+		border-color: var(--color-border-premium);
+	}
+
+	&--active {
+		border-color: var(--color-action-accent);
+		background: var(--color-surface-elevated);
+	}
+
+	input[type='radio'] {
+		flex-shrink: 0;
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-action-accent);
+		cursor: pointer;
+	}
+}
+
+.share-messages-modal__reset-link {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	min-height: 36px;
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
+	border-radius: 0.375rem;
+	background: rgb(var(--color-text-secondary-rgb) / 3%);
+	color: var(--color-text-secondary);
+	font-size: 0.75rem;
+	font-family: var(--font-ui);
+	cursor: pointer;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s,
+		color 0.15s;
+
+	&:hover {
+		background: rgb(var(--color-text-secondary-rgb) / 8%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
+		color: var(--color-text-emphasis);
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+}
+
+.share-messages-modal__reset-confirm {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+	padding-top: 0.625rem;
+	border-top: 1px solid var(--color-border-subtle);
+}
+
+.share-messages-modal__reset-confirm-text {
+	font-size: 0.8125rem;
+	color: var(--color-text-secondary);
+	margin-right: auto;
+}
+
+.share-messages-modal__reset-confirm-yes,
+.share-messages-modal__reset-confirm-no {
+	padding: 0.375rem 0.75rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 6px;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+	font-size: 0.75rem;
+	font-family: var(--font-ui);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--color-surface-soft);
+		border-color: var(--color-border-premium);
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+}
+
+.share-messages-modal__reset-confirm-yes {
+	background: var(--color-action-accent);
+	color: var(--color-text-on-light);
+	border-color: var(--color-action-accent);
+
+	&:hover {
+		filter: brightness(1.1);
 	}
 }
 
@@ -323,23 +540,97 @@
 
 .dashboard-modal--send-invitation {
 	width: min(480px, 95vw);
+
+	@media (width <= 600px) {
+		width: 100vw;
+		height: 100dvh;
+		max-height: none;
+		border-radius: 0;
+		border: none;
+		box-shadow: none;
+		padding: 0;
+	}
 }
 
-.send-invitation__form-section {
+.send-invitation__card {
+	padding: 1rem;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.625rem;
 	margin-bottom: 0.75rem;
 }
 
-.send-invitation__message-section {
-	margin-bottom: 0.5rem;
+.send-invitation__form-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	background: var(--color-surface-elevated);
+
+	.guest-field-hint {
+		color: var(--color-text-secondary);
+		font-size: 0.75rem;
+		line-height: 1.45;
+		margin-top: 0.5rem;
+		padding: 0.5rem 0.625rem;
+		display: block;
+		border-radius: 0.375rem;
+		background: rgb(var(--color-action-accent-rgb) / 5%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+	}
+}
+
+.send-invitation__field label {
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
+}
+
+.send-invitation__input {
+	min-height: 38px;
+}
+
+.send-invitation__companion-section {
+	margin: 0;
+}
+
+.send-invitation__companion-title {
+	margin: 0 0 0.375rem;
+	font-family: var(--font-ui);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+}
+
+.send-invitation__card:last-child {
+	margin-bottom: 0;
 }
 
 .send-invitation__message-label {
 	display: block;
-	font-size: 0.7rem;
+	font-size: 0.8rem;
 	font-weight: 600;
 	color: var(--color-text-secondary);
-	letter-spacing: 0.02em;
-	margin-bottom: 0.35rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	margin-bottom: 0.5rem;
+}
+
+.send-invitation__message-card {
+	background: rgb(var(--color-surface-dark-rgb) / 18%);
+	border-color: var(--color-border-premium);
+}
+
+.send-invitation__mode-label {
+	display: block;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	margin-bottom: 0.375rem;
+	color: var(--color-text-secondary);
+}
+
+.send-invitation__mode-label--editing {
+	color: var(--color-action-accent);
 }
 
 .send-invitation__preview-card {
@@ -347,12 +638,9 @@
 	padding-left: 1rem;
 	background: var(--color-surface-soft);
 	border: 1px solid var(--color-border-premium);
-	border-left: 3px solid rgb(var(--color-action-accent-rgb) / 40%);
+	border-left: 3px solid var(--color-border-premium);
 	border-radius: 0.5rem;
 	margin-bottom: 0.4rem;
-	max-height: 140px;
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
 }
 
 .send-invitation__preview-text {
@@ -405,18 +693,91 @@
 	display: inline-block;
 }
 
-@media (width <= 600px) {
-	.dashboard-modal--send-invitation .dashboard-form-field {
-		margin-bottom: 0.5rem;
+// Footer secondary actions (compact text links below primary CTA)
+.send-invitation__footer-secondary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.75rem;
+}
+
+.send-invitation__footer-text-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.5rem 0.75rem;
+	min-height: 36px;
+	border: 1px solid transparent;
+	border-radius: 0.5rem;
+	background: rgb(var(--color-text-secondary-rgb) / 4%);
+	color: var(--color-text-secondary);
+	font-size: 0.75rem;
+	font-family: var(--font-ui);
+	cursor: pointer;
+	white-space: nowrap;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s,
+		color 0.15s;
+
+	&:hover {
+		background: rgb(var(--color-text-secondary-rgb) / 10%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
+		color: var(--color-text-emphasis);
 	}
 
-	.dashboard-modal--send-invitation .dashboard-form-section {
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+}
+
+// Preview actions row (visible when not editing)
+.send-invitation__preview-actions {
+	display: flex;
+	gap: 1rem;
+	margin-top: 0.375rem;
+
+	@media (width <= 600px) {
 		margin-top: 0.5rem;
-		padding-top: 0.5rem;
+	}
+}
+
+.send-invitation__preview-action {
+	padding: 0.5rem 0.75rem;
+	min-height: 36px;
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
+	border-radius: 0.375rem;
+	background: rgb(var(--color-text-secondary-rgb) / 3%);
+	color: var(--color-text-secondary);
+	font-size: 0.75rem;
+	font-family: var(--font-ui);
+	cursor: pointer;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s,
+		color 0.15s;
+
+	&:hover {
+		background: rgb(var(--color-text-secondary-rgb) / 8%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
+		color: var(--color-text-emphasis);
 	}
 
-	.send-invitation__preview-card {
-		max-height: 110px;
+	@media (width <= 600px) {
+		min-height: 44px;
+	}
+}
+
+@media (width <= 600px) {
+	.send-invitation__form-card {
+		gap: 0.625rem;
+	}
+
+	.send-invitation__card {
+		padding: 0.75rem;
+		margin-bottom: 0.625rem;
 	}
 
 	.send-invitation__textarea {
@@ -435,5 +796,97 @@
 	.share-composer-modal__action {
 		padding: 0.875rem 1rem;
 		font-size: 0.9375rem;
+	}
+
+	.dashboard-modal--share-templates {
+		.share-messages-modal__editor-card {
+			padding: 0.75rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.share-messages-modal__textarea {
+			min-height: 100px;
+			resize: none;
+		}
+
+		.share-messages-modal__variables {
+			gap: 0.3rem;
+			margin-top: 0.5rem;
+		}
+
+		.share-messages-modal__preview {
+			padding: 0.625rem;
+			margin-top: 0.5rem;
+		}
+
+		.share-messages-modal__settings {
+			padding: 0.75rem;
+		}
+
+		.share-messages-modal__reset-link {
+			margin-top: 0.5rem;
+			min-height: 44px;
+		}
+
+		.share-messages-modal__editor-card:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+// Mobile footer: promote primary CTA, reduce secondary, hide Cancel
+@media (width <= 600px) {
+	.dashboard-modal--send-invitation .dashboard-modal__footer,
+	.dashboard-modal--share-templates .dashboard-modal__footer {
+		.btn-secondary {
+			background: transparent;
+			border-color: transparent;
+			color: var(--color-text-secondary);
+			box-shadow: none;
+			font-size: 0.8125rem;
+			min-height: 40px;
+			padding: 0.375rem 0.75rem;
+
+			&:hover {
+				color: var(--color-text-primary);
+				background: rgb(var(--color-text-secondary-rgb) / 8%);
+			}
+		}
+
+		.btn-secondary--modal {
+			min-width: 0;
+		}
+
+		.btn-primary {
+			min-height: 48px;
+			font-size: 1rem;
+			font-weight: 600;
+			order: -1;
+		}
+
+		.dashboard-modal__footer-cancel {
+			display: none;
+		}
+	}
+
+	// SendInvitationModal footer: primary CTA + compact secondary actions
+	.dashboard-modal--send-invitation .dashboard-modal__footer {
+		flex-direction: column;
+		gap: 0.5rem;
+		align-items: stretch;
+
+		.btn-primary {
+			width: 100%;
+			margin-bottom: 0;
+		}
+
+		.send-invitation__footer-secondary {
+			align-self: center;
+		}
+
+		.send-invitation__footer-text-link {
+			min-height: 44px;
+			padding: 0.5rem 0.75rem;
+		}
 	}
 }

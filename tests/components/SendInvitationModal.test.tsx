@@ -14,8 +14,7 @@ import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presente
 
 const DEFAULT_TEMPLATES: ShareMessagesConfig = {
 	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}',
-	reminder:
-		'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
+	reminder: 'Hola {guestName},\n\n{eventTimingText}\n\n{rsvpDeadlineText}\n\n{inviteUrl}',
 };
 
 type ModalProps = ReturnType<typeof createProps> & { mode?: ShareFlowMode };
@@ -23,7 +22,6 @@ type ModalProps = ReturnType<typeof createProps> & { mode?: ShareFlowMode };
 function createProps() {
 	return {
 		inviteUrl: 'http://localhost/invitacion/invite-1',
-		inviteBaseUrl: 'http://localhost',
 		onClose: jest.fn(),
 		onSave: jest.fn(),
 		onMarkShared: jest.fn(),
@@ -132,13 +130,13 @@ describe('SendInvitationModal', () => {
 	it('shows Editar mensaje button', () => {
 		renderModal(makeGuest());
 
-		expect(screen.getByText('Editar mensaje')).toBeInTheDocument();
+		expect(screen.getByText('Editar')).toBeInTheDocument();
 	});
 
 	it('toggles to textarea when edit is clicked', () => {
 		renderModal(makeGuest());
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 
 		expect(getMessageTextarea()).toBeInTheDocument();
 	});
@@ -146,7 +144,7 @@ describe('SendInvitationModal', () => {
 	it('reset from template reverts textarea to template-generated message without exiting edit mode', () => {
 		renderModal(makeGuest({ fullName: 'Test Person' }));
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 
 		const textarea = getMessageTextarea();
 		fireEvent.change(textarea, { target: { value: 'Custom edit' } });
@@ -160,20 +158,20 @@ describe('SendInvitationModal', () => {
 	it('cancel edit returns to preview with original template message', () => {
 		renderModal(makeGuest({ fullName: 'Test Person' }));
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 		const textarea = getMessageTextarea();
 		fireEvent.change(textarea, { target: { value: 'Edited text' } });
 
 		fireEvent.click(screen.getByText('Cancelar edición'));
 
-		expect(screen.getByText('Editar mensaje')).toBeInTheDocument();
+		expect(screen.getByText('Editar')).toBeInTheDocument();
 	});
 
 	it('blocks empty message on edit and shows error', async () => {
 		const { props } = renderModal(makeGuest({ phone: '6691234567' }));
 		props.onSave.mockResolvedValue(makeGuest());
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 		const textarea = getMessageTextarea();
 		fireEvent.change(textarea, { target: { value: '' } });
 
@@ -189,7 +187,7 @@ describe('SendInvitationModal', () => {
 		const { props } = renderModal(makeGuest({ phone: '6691234567' }));
 		props.onSave.mockResolvedValue(makeGuest());
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 		const textarea = getMessageTextarea();
 		fireEvent.change(textarea, { target: { value: '' } });
 
@@ -393,26 +391,6 @@ describe('SendInvitationModal', () => {
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
-	it('Posponer calls onPostponeGuest with current guest ID', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }), [
-			makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }),
-			makeGuest({ guestId: 'guest-2', fullName: 'Guest Two' }),
-		]);
-
-		const postponeBtn = screen.getByRole('button', { name: /posponer/i });
-		fireEvent.click(postponeBtn);
-
-		expect(props.onPostponeGuest).toHaveBeenCalledWith('guest-1');
-		expect(props.onMarkShared).not.toHaveBeenCalled();
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
-	});
-
-	it('Posponer button not shown when only one pending guest', () => {
-		renderModal(makeGuest({ guestId: 'guest-1' }));
-
-		expect(screen.queryByRole('button', { name: /posponer/i })).not.toBeInTheDocument();
-	});
-
 	it('Cancelar closes modal without marking shared or advancing', () => {
 		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
 
@@ -427,7 +405,7 @@ describe('SendInvitationModal', () => {
 		const { props } = renderModal(makeGuest());
 		props.onSave.mockResolvedValue(makeGuest());
 
-		fireEvent.click(screen.getByText('Editar mensaje'));
+		fireEvent.click(screen.getByText('Editar'));
 		const textarea = getMessageTextarea();
 		fireEvent.change(textarea, { target: { value: 'Custom message' } });
 
@@ -491,7 +469,6 @@ describe('SendInvitationModal', () => {
 					guest={guest}
 					pendingGuests={[GuestA, GuestB]}
 					inviteUrl={createProps().inviteUrl}
-					inviteBaseUrl="http://localhost"
 					onClose={props.onClose}
 					onSave={props.onSave}
 					onMarkShared={props.onMarkShared}
@@ -536,7 +513,6 @@ describe('SendInvitationModal', () => {
 					guest={guest}
 					pendingGuests={guest ? [guest] : []}
 					inviteUrl={createProps().inviteUrl}
-					inviteBaseUrl="http://localhost"
 					onClose={props.onClose}
 					onSave={props.onSave}
 					onMarkShared={props.onMarkShared}
@@ -595,15 +571,6 @@ describe('SendInvitationModal', () => {
 				'Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.',
 			),
 		).not.toBeInTheDocument();
-	});
-
-	it('does not show Posponer in single mode', () => {
-		renderModal(makeGuest({ guestId: 'guest-1' }), [makeGuest({ guestId: 'guest-1' })], {
-			inviteUrl: 'http://localhost/invitacion/invite-1',
-		});
-
-		const postponeBtn = screen.queryByRole('button', { name: /posponer/i });
-		expect(postponeBtn).not.toBeInTheDocument();
 	});
 
 	it('WhatsApp URL uses wa.me/?text= when no phone', async () => {
@@ -668,7 +635,7 @@ describe('SendInvitationModal', () => {
 		});
 	});
 
-	it('single-reminder mode: shows reminder title', () => {
+	it('single-reminder mode: shows reminder title and primary CTA', () => {
 		renderModal(
 			makeGuest({
 				guestId: 'guest-1',
@@ -679,8 +646,8 @@ describe('SendInvitationModal', () => {
 			{ mode: 'single-reminder' as const },
 		);
 
-		expect(screen.getByText('Enviar recordatorio')).toBeInTheDocument();
-		expect(screen.getByText(/nuevamente/)).toBeInTheDocument();
+		const buttons = screen.getAllByText('Enviar recordatorio');
+		expect(buttons.length).toBeGreaterThanOrEqual(1);
 	});
 
 	it('copiar mensaje in queue mode does not advance or mark shared', async () => {

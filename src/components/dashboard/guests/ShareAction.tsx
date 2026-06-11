@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -13,7 +13,6 @@ import SendInvitationModal from '@/components/dashboard/guests/SendInvitationMod
 interface ShareActionProps {
 	guest: DashboardGuestItem;
 	inviteUrl: string;
-	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
@@ -34,7 +33,6 @@ type ShareStatus = 'idle' | 'sending' | 'delivered';
 const ShareAction: React.FC<ShareActionProps> = ({
 	guest,
 	inviteUrl,
-	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
 	shareDateContext,
@@ -43,6 +41,11 @@ const ShareAction: React.FC<ShareActionProps> = ({
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
 	const [composerOpen, setComposerOpen] = useState(false);
+	const idleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+	useEffect(() => {
+		return () => clearTimeout(idleTimerRef.current);
+	}, []);
 
 	const cta = getShareCtaLabel(guest);
 	const mode: ShareFlowMode = resolveShareFlowMode(guest);
@@ -82,10 +85,9 @@ const ShareAction: React.FC<ShareActionProps> = ({
 					guest={guest}
 					pendingGuests={[]}
 					inviteUrl={inviteUrl}
-					inviteBaseUrl={inviteBaseUrl}
 					onClose={() => {
 						setComposerOpen(false);
-						setTimeout(() => setStatus('idle'), 1500);
+						idleTimerRef.current = setTimeout(() => setStatus('idle'), 1500);
 					}}
 					onSave={onSaveGuest ?? (async () => guest)}
 					onMarkShared={handleMarkShared}

@@ -24,7 +24,6 @@ interface GuestTableRowProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
-	inviteBaseUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
@@ -45,7 +44,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	item,
 	index,
 	inviteUrl,
-	inviteBaseUrl,
 	eventTitle,
 	shareTemplates,
 	shareDateContext,
@@ -168,7 +166,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					<ShareAction
 						guest={item}
 						inviteUrl={inviteUrl}
-						inviteBaseUrl={inviteBaseUrl}
 						eventTitle={eventTitle}
 						shareTemplates={shareTemplates}
 						shareDateContext={shareDateContext}
