@@ -7,6 +7,7 @@ import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-ren
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
+	resolveReminderSettings,
 	type ShareMessagesConfig,
 	type ReminderSettings,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -130,21 +131,19 @@ export interface SharingConfig {
 	ogDescription?: string;
 }
 
-function extractEventDate(content: Record<string, unknown>): string | null {
-	const hero = content.hero as Record<string, unknown> | undefined;
+function extractEventDate(data: Record<string, unknown> | undefined): string | null {
+	if (!data) return null;
+	const hero = data.hero as Record<string, unknown> | undefined;
 	if (!hero || typeof hero.date !== 'string' || !hero.date) return null;
 	return hero.date;
 }
 
-function extractRsvpDeadline(content: Record<string, unknown>): string | null {
-	const rsvpConfig = content.rsvp as Record<string, unknown> | undefined;
-	if (
-		!rsvpConfig ||
-		typeof rsvpConfig.confirmationDeadline !== 'string' ||
-		!rsvpConfig.confirmationDeadline
-	)
+function extractRsvpDeadline(data: Record<string, unknown> | undefined): string | null {
+	if (!data) return null;
+	const rsvp = data.rsvp as Record<string, unknown> | undefined;
+	if (!rsvp || typeof rsvp.confirmationDeadline !== 'string' || !rsvp.confirmationDeadline)
 		return null;
-	return rsvpConfig.confirmationDeadline;
+	return rsvp.confirmationDeadline;
 }
 
 function extractReminderSettingsFromSharing(
@@ -202,23 +201,6 @@ function extractSharingFromContent(content: Record<string, unknown>): SharingCon
 	return Object.keys(result).length > 0 ? result : null;
 }
 
-function evaluateSharingEntryDate(data: Record<string, unknown> | undefined): string | null {
-	if (!data) return null;
-	const hero = data.hero as Record<string, unknown> | undefined;
-	if (!hero || typeof hero.date !== 'string' || !hero.date) return null;
-	return hero.date;
-}
-
-function evaluateSharingEntryRsvpDeadline(
-	data: Record<string, unknown> | undefined,
-): string | null {
-	if (!data) return null;
-	const rsvp = data.rsvp as Record<string, unknown> | undefined;
-	if (!rsvp || typeof rsvp.confirmationDeadline !== 'string' || !rsvp.confirmationDeadline)
-		return null;
-	return rsvp.confirmationDeadline;
-}
-
 export async function getSharingConfigForSlug(
 	eventSlug: string,
 	eventType?: EventRecord['eventType'],
@@ -243,8 +225,8 @@ export async function getSharingConfigForSlug(
 		const sharingResult = extractSharingFromContent({ sharing: demoSharing });
 		if (sharingResult) Object.assign(result, sharingResult);
 
-		result.eventDate = evaluateSharingEntryDate(entry?.data);
-		result.rsvpDeadline = evaluateSharingEntryRsvpDeadline(entry?.data);
+		result.eventDate = extractEventDate(entry?.data);
+		result.rsvpDeadline = extractRsvpDeadline(entry?.data);
 		return result;
 	}
 
