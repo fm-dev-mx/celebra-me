@@ -74,7 +74,7 @@
 			var(--dashboard-sidebar-bg-strong) 0%,
 			rgb(var(--color-surface-dark-rgb) / 98%) 100%
 		),
-		var(--dashboard-sidebar-bg);
+		var(--dashboard-surface-sidebar);
 	color: var(--color-text-on-dark);
 	box-shadow: 2px 0 20px rgb(0 0 0 / 15%);
 	border-right: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
@@ -957,6 +957,8 @@
 .dashboard-shell-body--nav-open .dashboard-shell__backdrop {
 	opacity: 100%;
 	pointer-events: auto;
+	background: rgb(0 0 0 / 65%);
+	backdrop-filter: blur(4px);
 }
 
 /* Scroll Lock Utility */

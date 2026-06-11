@@ -45,11 +45,15 @@
 	--color-action-accent: #c69a45;
 	--color-action-accent-rgb: #{tools.rgb-channels(#c69a45)};
 
+	// --- Dashboard-specific focus tokens ---
+	--dashboard-focus-ring: rgb(237 199 106 / 48%);
+	--dashboard-focus-glow: rgb(224 180 82 / 16%);
+
 	// --- Unified button hierarchy ---
 	// Primary (champagne/gold)
-	--dashboard-button-primary-bg: #c69a45;
-	--dashboard-button-primary-bg-hover: #d7ad5a;
-	--dashboard-button-primary-bg-active: #b0883a;
+	--dashboard-button-primary-bg: #d4a84b;
+	--dashboard-button-primary-bg-hover: #e0b868;
+	--dashboard-button-primary-bg-active: #c09640;
 	--dashboard-button-primary-text: #0e1513;
 	--dashboard-button-primary-border: transparent;
 
@@ -82,6 +86,9 @@
 	--color-border-premium: #{color.change(#c69a45, $alpha: 0.36)};
 	--color-border-emphasis: #c69a45;
 
+	// --- Dashboard surface roles ---
+	--dashboard-surface-sidebar: #050c0b;
+
 	// --- Dark-mode state colors ---
 	--color-state-success: #6fbf8f;
 	--color-state-success-rgb: #{tools.rgb-channels(#6fbf8f)};
@@ -103,6 +110,13 @@
 	--color-state-info-bg: rgb(137 183 214 / 14%);
 	--color-state-info-border: rgb(137 183 214 / 28%);
 	--color-state-info-text: #89b7d6;
+
+	// Neutral state — gray-olive for "no response" / "generated"
+	--color-state-neutral: #9aa6a0;
+	--color-state-neutral-rgb: #{tools.rgb-channels(#9aa6a0)};
+	--color-state-neutral-bg: rgb(154 166 160 / 12%);
+	--color-state-neutral-border: rgb(154 166 160 / 28%);
+	--color-state-neutral-text: #9aa6a0;
 
 	// --- Shadows ---
 	--shadow-subtle: 0 5px 16px rgb(0 0 0 / 40%);

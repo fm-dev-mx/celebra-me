@@ -50,18 +50,6 @@
 	--dashboard-badge-border: var(--color-state-warning-border);
 }
 
-.dashboard-badge--exhausted {
-	--dashboard-badge-bg: var(--color-state-info-bg);
-	--dashboard-badge-text: var(--color-state-info-text);
-	--dashboard-badge-border: var(--color-state-info-border);
-}
-
-.dashboard-badge--used-up {
-	--dashboard-badge-bg: var(--color-state-info-bg);
-	--dashboard-badge-text: var(--color-state-info-text);
-	--dashboard-badge-border: var(--color-state-info-border);
-}
-
 .dashboard-badge--draft {
 	--dashboard-badge-bg: var(--color-state-info-bg);
 	--dashboard-badge-text: var(--color-state-info-text);
@@ -81,9 +69,9 @@
 }
 
 .dashboard-badge--generated {
-	--dashboard-badge-bg: var(--color-state-info-bg);
-	--dashboard-badge-text: var(--color-state-info-text);
-	--dashboard-badge-border: var(--color-state-info-border);
+	--dashboard-badge-bg: var(--color-state-neutral-bg);
+	--dashboard-badge-text: var(--color-state-neutral-text);
+	--dashboard-badge-border: var(--color-state-neutral-border);
 }
 
 .dashboard-badge--inconsistent {

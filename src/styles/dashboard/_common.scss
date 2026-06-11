@@ -2,12 +2,15 @@
 	--dashboard-card-border: var(--color-border-subtle);
 	--dashboard-accent-soft-bg: rgb(var(--color-action-accent-rgb) / 14%);
 	--dashboard-card-bg: var(--color-surface-premium-card);
-	--dashboard-card-bg-soft: var(--color-surface-warm-ivory);
+	--dashboard-surface-card-roof: var(--color-surface-warm-ivory);
+	--dashboard-card-bg-strong: var(--color-surface-premium-card);
+	--dashboard-card-bg-soft: var(--dashboard-surface-card-roof);
 	--dashboard-panel-bg: var(--color-glass-bg);
 	--dashboard-sidebar-bg: var(--color-surface-dark);
 	--dashboard-sidebar-bg-strong: rgb(var(--color-surface-dark-rgb) / 96%);
 	--dashboard-sidebar-bg-soft: rgb(var(--color-surface-dark-rgb) / 18%);
 	--dashboard-overlay-bg: rgb(var(--color-surface-dark-rgb) / 42%);
+	--dashboard-surface-sidebar: var(--dashboard-surface-sidebar, var(--color-surface-dark));
 }
 
 .dashboard-card {

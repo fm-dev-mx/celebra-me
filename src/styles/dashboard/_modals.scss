@@ -1,4 +1,4 @@
-@use '../tokens' as tokens;
+@use '../global/mixins' as mixins;
 
 // ==========================================================================
 // DASHBOARD MODAL SYSTEM
@@ -19,8 +19,7 @@
 	backdrop-filter: blur(12px) saturate(180%);
 	z-index: var(--dashboard-z-modal-backdrop);
 
-	/* On mobile, remove padding so modal goes fullscreen */
-	@media (width <= 600px) {
+	@include mixins.respond-below(sm) {
 		padding: 0;
 		align-items: stretch;
 	}
@@ -37,15 +36,14 @@
 	max-height: min(calc(100dvh - 40px), 800px);
 	padding: clamp(1.25rem, 2.5vw, 2rem);
 	border: 1px solid var(--dashboard-card-border);
-	border-radius: 14px;
+	border-radius: 0.875rem;
 	background:
-		linear-gradient(180deg, var(--dashboard-card-bg), var(--dashboard-card-bg-soft)),
+		linear-gradient(180deg, var(--color-surface-primary), var(--dashboard-card-bg-soft)),
 		var(--color-surface-primary);
-	box-shadow: 0 20px 50px rgb(0 0 0 / 20%);
+	box-shadow: var(--shadow-emphasis);
 	animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
-	/* Fullscreen on mobile */
-	@media (width <= 600px) {
+	@include mixins.respond-below(sm) {
 		width: 100vw;
 		height: 100dvh;
 		max-height: none;
@@ -60,17 +58,17 @@
 		position: absolute;
 		inset: 0.4rem;
 		border: 1px solid var(--dashboard-card-border);
-		border-radius: 10px;
+		border-radius: 0.625rem;
 		pointer-events: none;
 
-		@media (width <= 600px) {
+		@include mixins.respond-below(sm) {
 			display: none;
 		}
 	}
 
 	h3 {
 		margin: 0;
-		color: var(--color-text-emphasis);
+		color: var(--color-text-primary);
 		text-align: center;
 		font-family: var(--font-display-elegant);
 		font-size: clamp(1.25rem, 2.5vw, 1.6rem);
@@ -115,16 +113,15 @@
 		padding: 0;
 		padding-bottom: 0.5rem;
 		margin: 0;
-		-webkit-overflow-scrolling: touch;
 
-		@media (width <= 600px) {
+		@include mixins.respond-below(sm) {
+			margin: 0.25rem 0.5rem;
 			padding: 0 1rem 0.5rem;
-			padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0.5rem));
+			padding-bottom: calc(5rem + env(safe-area-inset-bottom, 1rem));
 		}
 	}
 
-	/* Ensure modal header stays visible on mobile scroll */
-	@media (width <= 600px) {
+	@include mixins.respond-below(sm) {
 		&__header {
 			position: sticky;
 			top: 0;
@@ -242,8 +239,19 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.75rem;
-	margin-bottom: 0.75rem;
+	margin: 0.5rem 0;
 	padding: 1rem 1.25rem 0.75rem;
+
+	@include mixins.respond-below(sm) {
+		margin: 0.05rem;
+		border-radius: 1.2rem 1.2rem 0 0;
+		background: linear-gradient(
+			180deg,
+			var(--dashboard-surface-card-roof),
+			var(--dashboard-card-bg-strong),
+			transparent
+		);
+	}
 
 	h3 {
 		margin: 0;
@@ -284,7 +292,7 @@
 	padding-top: 0.875rem;
 	border-top: 1px solid var(--color-border-subtle);
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		flex-direction: column;
 
 		button {
@@ -293,22 +301,49 @@
 	}
 }
 
-@media (width <= 600px) {
+@include mixins.respond-below(sm) {
 	.dashboard-modal--share-templates .dashboard-modal__description {
 		display: none;
 	}
 }
 
+.dashboard-modal__fallback {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 0.5rem 0;
+
+	@include mixins.respond-below(sm) {
+		gap: 0.5rem;
+	}
+}
+
+.dashboard-modal__fallback-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+
+	@include mixins.respond-to(sm) {
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+}
+
 .dashboard-modal__footer {
-	/* Sticky footer on mobile */
-	@media (width <= 600px) {
+	@include mixins.respond-below(sm) {
 		position: sticky;
 		bottom: 0;
 		padding: 0.75rem 1rem;
-		padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.5rem));
+		padding-bottom: calc(0.875rem + env(safe-area-inset-bottom));
 		margin-top: 0;
 		margin-bottom: 0;
 		z-index: 2;
+		background: linear-gradient(
+			180deg,
+			transparent,
+			var(--color-surface-primary) 20%,
+			var(--dashboard-card-bg-soft)
+		);
 		border-top: 1px solid var(--color-border-subtle);
 	}
 
@@ -324,10 +359,38 @@
 	}
 }
 
+// Dark form fields inside dashboard modals
+// Narrowed to text-like inputs only — excludes native controls (checkbox, radio, hidden)
+.dashboard-modal
+	.dashboard-form-field
+	input:not([type='checkbox'], [type='radio'], [type='hidden']),
+.dashboard-modal .dashboard-form-field select,
+.dashboard-modal .dashboard-form-field textarea {
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+	font-weight: 400;
+
+	&::placeholder {
+		color: var(--color-text-muted);
+	}
+}
+
+// Phone input group inside dashboard modals — use focus ring token
+.dashboard-modal .phone-input-group:focus-within {
+	border-color: var(--color-action-accent);
+	box-shadow:
+		0 0 0 3px var(--dashboard-focus-ring),
+		0 0 12px var(--dashboard-focus-glow);
+
+	.phone-prefix {
+		border-right-color: var(--color-action-accent);
+	}
+}
+
 @keyframes slideUp {
 	from {
 		opacity: 0%;
-		transform: translateY(30px) scale(0.98);
+		transform: translateY(30px) scale(0.97);
 	}
 
 	to {
