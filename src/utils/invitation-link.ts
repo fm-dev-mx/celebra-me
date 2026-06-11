@@ -1,19 +1,10 @@
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
-type InvitationPathParams = {
+export function buildInvitationPath(params: {
 	eventType: EventRecord['eventType'];
 	eventSlug: string;
-};
-
-type DirectInvitationPathParams = InvitationPathParams & {
 	inviteId: string;
-};
-
-type ShortInvitationPathParams = InvitationPathParams & {
-	shortId: string;
-};
-
-export function buildInvitationPath(params: DirectInvitationPathParams): string {
+}): string {
 	const type = encodeURIComponent(params.eventType);
 	const slug = encodeURIComponent(params.eventSlug);
 	const invite = encodeURIComponent(params.inviteId);
@@ -21,35 +12,38 @@ export function buildInvitationPath(params: DirectInvitationPathParams): string 
 	return `/${type}/${slug}?invite=${invite}`;
 }
 
-export function buildShortInvitationPath(params: ShortInvitationPathParams): string {
-	const type = encodeURIComponent(params.eventType);
-	const slug = encodeURIComponent(params.eventSlug);
-	const shortId = encodeURIComponent(params.shortId);
-
-	return `/${type}/${slug}/i/${shortId}`;
+/**
+ * Generates a minimal /i/{shortId} invitation path.
+ * This is the preferred format for share links.
+ */
+export function buildMinimalInvitationPath(shortId: string): string {
+	return `/i/${encodeURIComponent(shortId)}`;
 }
 
 /**
  * Generates a secure, environment-aware URL for guest invitations.
  *
- * Pattern: {origin}/{eventType}/{eventSlug}?invite={inviteId}
- *
- * @param params invitation context
- * @returns absolute URL
+ * Preferred pattern: {origin}/i/{shortId}  (when shortId is available)
+ * Fallback:           {origin}/{eventType}/{eventSlug}?invite={inviteId}
+ * Fallback (no slug): {origin}/invitacion/{inviteId}
  */
 export function generateInvitationLink(params: {
 	origin: string;
-	eventType: EventRecord['eventType'];
-	eventSlug: string;
+	eventType?: EventRecord['eventType'];
+	eventSlug?: string;
 	inviteId: string;
 	shortId?: string;
 }): string {
-	const { origin, eventType, eventSlug, inviteId, shortId } = params;
+	const { origin, shortId, eventType, eventSlug, inviteId } = params;
 	const baseUrl = origin.replace(/\/+$/, '');
 
 	if (shortId) {
-		return `${baseUrl}${buildShortInvitationPath({ eventType, eventSlug, shortId })}`;
+		return `${baseUrl}${buildMinimalInvitationPath(shortId)}`;
 	}
 
-	return `${baseUrl}${buildInvitationPath({ eventType, eventSlug, inviteId })}`;
+	if (eventType && eventSlug) {
+		return `${baseUrl}${buildInvitationPath({ eventType, eventSlug, inviteId })}`;
+	}
+
+	return `${baseUrl}/invitacion/${encodeURIComponent(inviteId)}`;
 }

@@ -54,6 +54,7 @@ describe('buildShareMessage', () => {
 		});
 		expect(result).toContain('Hola Francisco Prueba');
 		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
 	});
 
 	it('falls back to hardcoded default invitation when neither shareMessages nor template provided', () => {
@@ -63,7 +64,7 @@ describe('buildShareMessage', () => {
 		});
 		expect(result).toContain('Francisco Prueba');
 		expect(result).toContain('XV Años de Ayrin Samantha');
-		expect(result).toContain('celebra-me.com');
+		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
 	});
 
 	it('uses default reminder when messageType is reminder and no shareMessages provided', () => {
@@ -113,7 +114,7 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Hola Francisco Prueba');
 	});
 
-	it('both message types include inviteUrl', () => {
+	it('both message types include inviteUrl as /i/{shortId}', () => {
 		const invitation = buildShareMessage({
 			...baseInput,
 			includeLink: true,
@@ -123,8 +124,17 @@ describe('buildShareMessage', () => {
 			messageType: 'reminder',
 			includeLink: true,
 		});
-		expect(invitation).toContain('celebra-me.com');
-		expect(reminder).toContain('celebra-me.com');
+		expect(invitation).toContain('https://www.celebra-me.com/i/GBOER6UK');
+		expect(reminder).toContain('https://www.celebra-me.com/i/GBOER6UK');
+	});
+
+	it('generates long invite URL when no shortId is provided', () => {
+		const result = buildShareMessage({
+			...baseInput,
+			shortId: undefined,
+			includeLink: true,
+		});
+		expect(result).toContain('?invite=invite-uuid-123');
 	});
 
 	it('cleans up empty guest name without artifacts', () => {
@@ -147,13 +157,13 @@ describe('buildWhatsAppShareUrl', () => {
 		expect(result).toBe('');
 	});
 
-	it('builds wa.me URL with encoded message', () => {
+	it('builds wa.me URL with encoded message containing /i/{shortId}', () => {
 		const result = buildWhatsAppShareUrl(baseInput);
 		expect(result).toMatch(/^https:\/\/wa\.me\//);
 		expect(result).toContain('?text=');
 		const decoded = decodeURIComponent(result.split('?text=')[1]);
 		expect(decoded).toContain('Francisco Prueba');
-		expect(decoded).toContain('celebra-me.com');
+		expect(decoded).toContain('https://www.celebra-me.com/i/GBOER6UK');
 	});
 
 	it('encodes accents and newlines in message', () => {

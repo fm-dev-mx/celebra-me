@@ -46,27 +46,6 @@ export function resolveOrigin(providedOrigin?: string): string {
 	return resolveSiteOrigin();
 }
 
-export function buildInviteUrl(
-	origin: string,
-	id: string,
-	isShortId?: boolean,
-	eventType?: EventRecord['eventType'],
-	eventSlug?: string,
-): string {
-	const resolvedOrigin = resolveOrigin(origin);
-	if (!eventType || !eventSlug) {
-		return `${resolvedOrigin}/invitacion/${encodeURIComponent(id)}`;
-	}
-
-	return generateInvitationLink({
-		origin: resolvedOrigin,
-		eventType,
-		eventSlug,
-		inviteId: isShortId ? '' : id,
-		shortId: isShortId ? id : undefined,
-	});
-}
-
 function resolveTemplate(input: BuildShareMessageInput): string {
 	const messageType = input.messageType ?? 'invitation';
 
@@ -81,13 +60,13 @@ function resolveTemplate(input: BuildShareMessageInput): string {
 
 export function buildShareMessage(input: BuildShareMessageInput): string {
 	const resolvedOrigin = resolveOrigin(input.origin);
-	const inviteUrl = buildInviteUrl(
-		resolvedOrigin,
-		input.shortId || input.inviteId,
-		!!input.shortId,
-		input.eventType,
-		input.eventSlug,
-	);
+	const inviteUrl = generateInvitationLink({
+		origin: resolvedOrigin,
+		eventType: input.eventType,
+		eventSlug: input.eventSlug,
+		inviteId: input.inviteId,
+		shortId: input.shortId,
+	});
 
 	let template = resolveTemplate(input);
 
