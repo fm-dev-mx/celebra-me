@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
+import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { ATTENDEE_OPTIONS } from '@/components/dashboard/guests/guest-form-constants';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
@@ -50,6 +50,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	const nameInputRef = React.useRef<HTMLInputElement>(null);
 	const phoneInputRef = React.useRef<HTMLInputElement>(null);
+	const focusTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 	const resetForm = () => {
 		setFullName('');
@@ -61,8 +62,15 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setTags([]);
 		setFieldErrors({});
 		setLocalError('');
-		setTimeout(() => nameInputRef.current?.focus(), 0);
+		if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+		focusTimerRef.current = setTimeout(() => nameInputRef.current?.focus(), 0);
 	};
+
+	React.useEffect(() => {
+		return () => {
+			if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!open) return;
@@ -136,8 +144,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			if ((err as { code?: string })?.code === 'conflict') {
 				setFieldErrors({ phone: 'Este teléfono ya está registrado.' });
 			} else {
-				const msg = err instanceof Error ? err.message : String(err);
-				setLocalError(msg === '[object Object]' ? 'Error al guardar invitado.' : msg);
+				const msg = err instanceof Error ? err.message : 'Error al guardar invitado.';
+				setLocalError(msg);
 			}
 		} finally {
 			setSaving(false);
@@ -145,234 +153,208 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	};
 
 	return (
-		<DashboardModalPortal>
-			<div
-				className="dashboard-modal-backdrop"
-				role="dialog"
-				aria-modal="true"
-				onClick={(e) => {
-					if (e.target === e.currentTarget) onClose();
-				}}
-			>
-				<div
-					className="dashboard-modal dashboard-modal--full"
-					onClick={(e) => e.stopPropagation()}
-				>
-					<div className="dashboard-modal__header">
-						<h3>{mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}</h3>
+		<ModalShell
+			title={mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}
+			size="lg"
+			onClose={onClose}
+			footer={
+				<>
+					<button
+						type="button"
+						className="btn-secondary btn-secondary--modal"
+						onClick={onClose}
+						disabled={saving}
+					>
+						Cancelar
+					</button>
+
+					{isInvitationFactory && onPostpone && (
 						<button
 							type="button"
-							className="btn-close"
-							onClick={onClose}
-							aria-label="Cerrar modal"
-						>
-							✕
-						</button>
-					</div>
-					<div className="dashboard-modal__content">
-						<form
-							id="guest-form"
-							className="dashboard-form-grid"
-							onSubmit={(event) => {
-								event.preventDefault();
-								void handleFormSubmit(false);
-							}}
-						>
-							<div className="dashboard-form-field">
-								<label htmlFor="fullName">Nombre completo</label>
-								<input
-									id="fullName"
-									ref={nameInputRef}
-									value={fullName}
-									onChange={(event) => setFullName(event.target.value)}
-									onKeyDown={(e) => {
-										if (e.key === 'Enter') {
-											e.preventDefault();
-											phoneInputRef.current?.focus();
-										}
-									}}
-									required
-									placeholder="Ej. Juan P&eacute;rez"
-									autoFocus
-								/>
-								{fieldErrors.fullName && (
-									<span className="guest-field-error">
-										{fieldErrors.fullName}
-									</span>
-								)}
-							</div>
-
-							<div className="dashboard-form-field dashboard-form-field--full">
-								<PhoneInputGroup
-									id="guest"
-									countryCode={countryCode}
-									phone={phone}
-									onCountryCodeChange={setCountryCode}
-									onPhoneChange={setPhone}
-									error={fieldErrors.phone}
-									label="Tel&eacute;fono / WhatsApp"
-									showOptional
-									inputRef={phoneInputRef}
-								/>
-							</div>
-
-							<div className="dashboard-form-section">
-								<h4 className="dashboard-form-section__title">
-									N&uacute;mero m&aacute;ximo de asistentes
-								</h4>
-								<div className="dashboard-form-field dashboard-form-field--full">
-									<div className="guest-response-cards guest-response-cards--compact">
-										{ATTENDEE_OPTIONS.map((num) => (
-											<label key={num} className="guest-response-card">
-												<input
-													type="radio"
-													name="maxAllowedAttendees"
-													value={num}
-													checked={maxAllowedAttendees === num}
-													onChange={() => setMaxAllowedAttendees(num)}
-												/>
-												<div className="guest-response-card__content">
-													{num === 10 ? '10+' : num}
-												</div>
-											</label>
-										))}
-									</div>
-								</div>
-							</div>
-
-							<div className="dashboard-form-section">
-								<h4 className="dashboard-form-section__title">Categor&iacute;as</h4>
-								<div className="dashboard-form-field dashboard-form-field--full">
-									<div className="guest-response-cards guest-response-cards--tags">
-										{PREDEFINED_GUEST_TAGS.map((tag) => (
-											<label key={tag} className="guest-response-card">
-												<input
-													type="checkbox"
-													className="hidden-input"
-													checked={tags.includes(tag)}
-													onChange={(e) => {
-														if (e.target.checked) {
-															setTags([...tags, tag]);
-														} else {
-															setTags(tags.filter((t) => t !== tag));
-														}
-													}}
-												/>
-												<div className="guest-response-card__content">
-													{tag}
-												</div>
-											</label>
-										))}
-									</div>
-								</div>
-							</div>
-
-							{mode === 'edit' && (
-								<div className="dashboard-form-section dashboard-form-field--full">
-									<h4 className="dashboard-form-section__title">
-										Respuesta del invitado
-									</h4>
-									<div className="dashboard-form-grid dashboard-form-grid--nested">
-										<div className="dashboard-form-field">
-											<label htmlFor="attendanceStatus">Estado de RSVP</label>
-											<select
-												id="attendanceStatus"
-												value={attendanceStatus}
-												onChange={(event) => {
-													const newStatus = event.target
-														.value as AttendanceStatus;
-													setAttendanceStatus(newStatus);
-													if (newStatus === 'confirmed') {
-														if (attendeeCount < 1) setAttendeeCount(1);
-													} else {
-														setAttendeeCount(0);
-													}
-												}}
-											>
-												<option value="pending">Pendiente</option>
-												<option value="confirmed">Confirmado</option>
-												<option value="declined">Declinado</option>
-											</select>
-										</div>
-										{attendanceStatus === 'confirmed' && (
-											<div className="dashboard-form-field">
-												<label htmlFor="attendeeCount">
-													Asistentes reales
-												</label>
-												<input
-													id="attendeeCount"
-													type="number"
-													min={1}
-													max={maxAllowedAttendees}
-													value={attendeeCount}
-													onChange={(event) =>
-														setAttendeeCount(Number(event.target.value))
-													}
-												/>
-											</div>
-										)}
-									</div>
-								</div>
-							)}
-
-							{localError && <div className="dashboard-error">{localError}</div>}
-						</form>
-					</div>
-
-					<div className="dashboard-modal__footer">
-						<button
-							type="button"
-							className="btn-secondary btn-secondary--modal"
-							onClick={onClose}
+							className="btn-secondary btn-secondary--postpone"
 							disabled={saving}
+							onClick={onPostpone}
 						>
-							Cancelar
+							Posponer
 						</button>
+					)}
 
-						{isInvitationFactory && onPostpone && (
+					<div className="footer-actions">
+						{mode === 'create' && (
 							<button
 								type="button"
-								className="btn-secondary btn-secondary--postpone"
+								className="btn-accent"
 								disabled={saving}
-								onClick={onPostpone}
+								onClick={(e) => {
+									e.preventDefault();
+									void handleFormSubmit(true);
+								}}
 							>
-								Posponer
+								{saving ? '...' : 'Guardar y Nuevo'}
 							</button>
 						)}
+						<button
+							type="submit"
+							form="guest-form"
+							className="btn-primary"
+							disabled={saving}
+						>
+							{saving
+								? 'Guardando...'
+								: isInvitationFactory
+									? 'Confirmar y enviar'
+									: mode === 'create'
+										? 'Guardar'
+										: 'Actualizar'}
+						</button>
+					</div>
+				</>
+			}
+		>
+			<div className="dashboard-modal__content">
+				<form
+					id="guest-form"
+					className="dashboard-form-grid"
+					onSubmit={(event) => {
+						event.preventDefault();
+						void handleFormSubmit(false);
+					}}
+				>
+					<div className="dashboard-form-field">
+						<label htmlFor="fullName">Nombre completo</label>
+						<input
+							id="fullName"
+							ref={nameInputRef}
+							value={fullName}
+							onChange={(event) => setFullName(event.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									phoneInputRef.current?.focus();
+								}
+							}}
+							required
+							placeholder="Ej. Juan P&eacute;rez"
+							autoFocus
+						/>
+						{fieldErrors.fullName && (
+							<span className="guest-field-error">{fieldErrors.fullName}</span>
+						)}
+					</div>
 
-						<div className="footer-actions">
-							{mode === 'create' && (
-								<button
-									type="button"
-									className="btn-accent"
-									disabled={saving}
-									onClick={(e) => {
-										e.preventDefault();
-										void handleFormSubmit(true);
-									}}
-								>
-									{saving ? '...' : 'Guardar y Nuevo'}
-								</button>
-							)}
-							<button
-								type="submit"
-								form="guest-form"
-								className="btn-primary"
-								disabled={saving}
-							>
-								{saving
-									? 'Guardando...'
-									: isInvitationFactory
-										? 'Confirmar y enviar'
-										: mode === 'create'
-											? 'Guardar'
-											: 'Actualizar'}
-							</button>
+					<div className="dashboard-form-field dashboard-form-field--full">
+						<PhoneInputGroup
+							id="guest"
+							countryCode={countryCode}
+							phone={phone}
+							onCountryCodeChange={setCountryCode}
+							onPhoneChange={setPhone}
+							error={fieldErrors.phone}
+							label="Tel&eacute;fono / WhatsApp"
+							showOptional
+							inputRef={phoneInputRef}
+						/>
+					</div>
+
+					<div className="dashboard-form-section">
+						<h4 className="dashboard-form-section__title">
+							N&uacute;mero m&aacute;ximo de asistentes
+						</h4>
+						<div className="dashboard-form-field dashboard-form-field--full">
+							<div className="guest-response-cards guest-response-cards--compact">
+								{ATTENDEE_OPTIONS.map((num) => (
+									<label key={num} className="guest-response-card">
+										<input
+											type="radio"
+											name="maxAllowedAttendees"
+											value={num}
+											checked={maxAllowedAttendees === num}
+											onChange={() => setMaxAllowedAttendees(num)}
+										/>
+										<div className="guest-response-card__content">
+											{num === 10 ? '10+' : num}
+										</div>
+									</label>
+								))}
+							</div>
 						</div>
 					</div>
-				</div>
+
+					<div className="dashboard-form-section">
+						<h4 className="dashboard-form-section__title">Categor&iacute;as</h4>
+						<div className="dashboard-form-field dashboard-form-field--full">
+							<div className="guest-response-cards guest-response-cards--tags">
+								{PREDEFINED_GUEST_TAGS.map((tag) => (
+									<label key={tag} className="guest-response-card">
+										<input
+											type="checkbox"
+											className="hidden-input"
+											checked={tags.includes(tag)}
+											onChange={(e) => {
+												if (e.target.checked) {
+													setTags([...tags, tag]);
+												} else {
+													setTags(tags.filter((t) => t !== tag));
+												}
+											}}
+										/>
+										<div className="guest-response-card__content">{tag}</div>
+									</label>
+								))}
+							</div>
+						</div>
+					</div>
+
+					{mode === 'edit' && (
+						<div className="dashboard-form-section dashboard-form-field--full">
+							<h4 className="dashboard-form-section__title">
+								Respuesta del invitado
+							</h4>
+							<div className="dashboard-form-grid dashboard-form-grid--nested">
+								<div className="dashboard-form-field">
+									<label htmlFor="attendanceStatus">Estado de RSVP</label>
+									<select
+										id="attendanceStatus"
+										value={attendanceStatus}
+										onChange={(event) => {
+											const newStatus = event.target
+												.value as AttendanceStatus;
+											setAttendanceStatus(newStatus);
+											if (newStatus === 'confirmed') {
+												if (attendeeCount < 1) setAttendeeCount(1);
+											} else {
+												setAttendeeCount(0);
+											}
+										}}
+									>
+										<option value="pending">Pendiente</option>
+										<option value="confirmed">Confirmado</option>
+										<option value="declined">Declinado</option>
+									</select>
+								</div>
+								{attendanceStatus === 'confirmed' && (
+									<div className="dashboard-form-field">
+										<label htmlFor="attendeeCount">Asistentes reales</label>
+										<input
+											id="attendeeCount"
+											type="number"
+											min={1}
+											max={maxAllowedAttendees}
+											value={attendeeCount}
+											onChange={(event) =>
+												setAttendeeCount(Number(event.target.value))
+											}
+										/>
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
+					{localError && <div className="dashboard-error">{localError}</div>}
+				</form>
 			</div>
-		</DashboardModalPortal>
+		</ModalShell>
 	);
 };
 

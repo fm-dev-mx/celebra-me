@@ -98,18 +98,21 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 
 	if (!guest) {
 		return (
-			<ModalShell title={MODE_TITLES[mode]} onClose={onClose}>
+			<ModalShell
+				title={MODE_TITLES[mode]}
+				onClose={onClose}
+				footer={
+					<button type="button" className="btn-primary" onClick={onClose}>
+						Cerrar
+					</button>
+				}
+			>
 				<div className="dashboard-modal__content">
 					<p className="dashboard-modal__confirm-text">
 						{mode === 'pending-reminder'
 							? 'No hay recordatorios pendientes por enviar.'
 							: 'No hay invitaciones pendientes por enviar.'}
 					</p>
-				</div>
-				<div className="dashboard-modal__footer">
-					<button type="button" className="btn-primary" onClick={onClose}>
-						Cerrar
-					</button>
 				</div>
 			</ModalShell>
 		);
@@ -357,6 +360,16 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			subtitle={subtitle}
 			className="dashboard-modal--send-invitation"
 			onClose={onClose}
+			footer={
+				<>
+					{shareStatus === 'idle' && renderIdleFooter()}
+					{shareStatus === 'fallback' && (
+						<button type="button" className="btn-primary" onClick={onClose}>
+							Cerrar
+						</button>
+					)}
+				</>
+			}
 		>
 			<div className="dashboard-modal__content">
 				{shareStatus === 'idle' && (
@@ -368,15 +381,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					</div>
 				)}
 				{shareStatus === 'fallback' && renderFallbackSection()}
-			</div>
-
-			<div className="dashboard-modal__footer">
-				{shareStatus === 'idle' && renderIdleFooter()}
-				{shareStatus === 'fallback' && (
-					<button type="button" className="btn-primary" onClick={onClose}>
-						Cerrar
-					</button>
-				)}
 			</div>
 		</ModalShell>
 	);
