@@ -118,15 +118,7 @@ export function useSendInvitation({
 	const isQueueMode = mode === 'pending-invitation' || mode === 'pending-reminder';
 	const isReminderMode = mode === 'pending-reminder' || mode === 'single-reminder';
 
-	const pendingCount = isQueueMode
-		? pendingGuests.filter((item) =>
-				isReminderMode
-					? item.deliveryStatus === 'shared' &&
-						item.attendanceStatus !== 'confirmed' &&
-						item.attendanceStatus !== 'declined'
-					: item.deliveryStatus === 'generated',
-			).length
-		: 0;
+	const pendingCount = isQueueMode ? pendingGuests.length : 0;
 
 	const trimmedPhone = editPhone.trim();
 	const validPhone = !!trimmedPhone && hasValidPhone(trimmedPhone);
@@ -293,7 +285,6 @@ export function useSendInvitation({
 		activeMessage,
 		trySave,
 		markSharedAndComplete,
-		setCopySuccess,
 		setMessageError,
 	]);
 
