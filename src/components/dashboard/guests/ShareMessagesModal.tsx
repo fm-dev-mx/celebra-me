@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
@@ -54,8 +54,7 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 		className="share-messages-modal__settings"
 	>
 		<p className="share-messages-modal__settings-description">
-			Define cuándo quieres mostrar la opción de enviar recordatorios y a qué invitados
-			aplicará.
+			Configura cuándo mostrar recordatorios y a qué invitados enviarlos.
 		</p>
 
 		<div className="dashboard-form-field">
@@ -71,33 +70,41 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 
 		{enabled && (
 			<>
-				<div className="dashboard-form-field">
-					<label htmlFor="reminder-days">Mostrar cuando falten:</label>
-					<input
-						id="reminder-days"
-						type="number"
-						min={0}
-						max={365}
-						value={days}
-						onChange={(e) => {
-							const val = parseInt(e.target.value, 10);
-							if (!isNaN(val) && val >= 0 && val <= 365) {
-								onDaysChange(val);
-							}
-						}}
-						className="share-messages-modal__days-input"
-					/>
-					<span>días o menos para el evento</span>
+				<div className="dashboard-form-field share-messages-modal__days-row">
+					<label htmlFor="reminder-days">Mostrar cuando falten</label>
+					<div className="share-messages-modal__days-inline">
+						<input
+							id="reminder-days"
+							type="number"
+							min={0}
+							max={365}
+							value={days}
+							onChange={(e) => {
+								const val = parseInt(e.target.value, 10);
+								if (!isNaN(val) && val >= 0 && val <= 365) {
+									onDaysChange(val);
+								}
+							}}
+							className="share-messages-modal__days-input"
+						/>
+						<span className="share-messages-modal__settings-inline-label">
+							días o menos para el evento
+						</span>
+					</div>
 				</div>
 
 				<div className="dashboard-form-field dashboard-form-field--full">
-					<span className="dashboard-form-field__label">Enviar recordatorio a:</span>
+					<span className="share-messages-modal__settings-field-label">
+						Enviar recordatorio a:
+					</span>
 					<div
 						className="share-messages-modal__radio-group"
 						role="radiogroup"
 						aria-label="Audiencia de recordatorios"
 					>
-						<label className="share-messages-modal__radio-label">
+						<label
+							className={`share-messages-modal__radio-label${audience === 'unconfirmed' ? ' share-messages-modal__radio-label--active' : ''}`}
+						>
 							<input
 								type="radio"
 								name="reminderAudience"
@@ -107,7 +114,9 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 							/>
 							Solo invitados sin confirmar
 						</label>
-						<label className="share-messages-modal__radio-label">
+						<label
+							className={`share-messages-modal__radio-label${audience === 'all-shared' ? ' share-messages-modal__radio-label--active' : ''}`}
+						>
 							<input
 								type="radio"
 								name="reminderAudience"
@@ -154,6 +163,29 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		setInvitation(DEFAULT_INVITATION_MESSAGE);
 		setReminder(DEFAULT_REMINDER_MESSAGE);
 	});
+
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+	const handleInsertVariable = useCallback(
+		(variable: string) => {
+			const textarea = textareaRef.current;
+			if (!textarea) return;
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
+			const newText =
+				textarea.value.substring(0, start) + variable + textarea.value.substring(end);
+			if (activeTab === 'invitation') {
+				setInvitation(newText);
+			} else {
+				setReminder(newText);
+			}
+			requestAnimationFrame(() => {
+				textarea.focus();
+				textarea.setSelectionRange(start + variable.length, start + variable.length);
+			});
+		},
+		[activeTab],
+	);
 
 	const previewContext = useMemo(
 		() => ({
@@ -233,8 +265,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		>
 			<div className="dashboard-modal__content">
 				<p className="dashboard-modal__description">
-					Personaliza los mensajes que se usarán al compartir invitaciones por WhatsApp o
-					al copiar el mensaje.
+					Personaliza los textos de invitación y recordatorio.
 				</p>
 
 				<div
@@ -273,73 +304,111 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 						className={`share-messages-modal__tab ${activeTab === 'settings' ? 'share-messages-modal__tab--active' : ''}`}
 						onClick={() => setActiveTab('settings')}
 					>
-						Recordatorios
+						Configuración
 					</button>
 				</div>
 
 				{activeTab !== 'settings' && (
-					<div
-						className="dashboard-form-field dashboard-form-field--full"
-						role="tabpanel"
-						id="tabpanel-share-msg"
-						aria-labelledby={
-							activeTab === 'invitation' ? 'tab-invitation' : 'tab-reminder'
-						}
-					>
-						<label htmlFor={`share-msg-${activeTab}`}>
-							{activeTab === 'invitation'
-								? 'Mensaje de invitación'
-								: 'Mensaje de recordatorio'}
-						</label>
-						<textarea
-							id={`share-msg-${activeTab}`}
-							className="share-messages-modal__textarea"
-							rows={5}
-							maxLength={500}
-							value={activeTab === 'invitation' ? invitation : reminder}
-							onChange={(e) => {
-								if (activeTab === 'invitation') {
-									setInvitation(e.target.value);
-								} else {
-									setReminder(e.target.value);
-								}
-							}}
-							placeholder={
-								activeTab === 'invitation'
-									? DEFAULT_INVITATION_MESSAGE
-									: DEFAULT_REMINDER_MESSAGE
+					<div className="share-messages-modal__editor-card">
+						<div
+							className="dashboard-form-field dashboard-form-field--full"
+							role="tabpanel"
+							id="tabpanel-share-msg"
+							aria-labelledby={
+								activeTab === 'invitation' ? 'tab-invitation' : 'tab-reminder'
 							}
-						/>
-						<span className="share-messages-modal__char-count">
-							{(activeTab === 'invitation' ? invitation : reminder).length}/500
-						</span>
-					</div>
-				)}
+						>
+							<label htmlFor={`share-msg-${activeTab}`}>
+								{activeTab === 'invitation'
+									? 'Mensaje de invitación'
+									: 'Mensaje de recordatorio'}
+							</label>
+							<textarea
+								ref={textareaRef}
+								id={`share-msg-${activeTab}`}
+								className="share-messages-modal__textarea"
+								rows={5}
+								maxLength={500}
+								value={activeTab === 'invitation' ? invitation : reminder}
+								onChange={(e) => {
+									if (activeTab === 'invitation') {
+										setInvitation(e.target.value);
+									} else {
+										setReminder(e.target.value);
+									}
+								}}
+								placeholder={
+									activeTab === 'invitation'
+										? DEFAULT_INVITATION_MESSAGE
+										: DEFAULT_REMINDER_MESSAGE
+								}
+							/>
+							<span className="share-messages-modal__char-count">
+								{(activeTab === 'invitation' ? invitation : reminder).length}/500
+							</span>
+						</div>
 
-				{activeTab !== 'settings' && (
-					<div className="share-messages-modal__variables">
-						<span className="share-messages-modal__variables-label">
-							Variables disponibles:
-						</span>
-						{SHARE_MESSAGE_VARIABLES.map((v) => (
-							<code
-								key={v}
-								className="share-messages-modal__variable"
-								title={SHARE_MESSAGE_VARIABLE_LABELS[v]}
+						<div className="share-messages-modal__variables">
+							<span className="share-messages-modal__variables-label">
+								Insertar variable:
+							</span>
+							{SHARE_MESSAGE_VARIABLES.map((v) => (
+								<code
+									key={v}
+									className="share-messages-modal__variable"
+									title={v}
+									onClick={() => handleInsertVariable(v)}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ')
+											handleInsertVariable(v);
+									}}
+									role="button"
+									tabIndex={0}
+								>
+									{SHARE_MESSAGE_VARIABLE_LABELS[v]}
+								</code>
+							))}
+						</div>
+
+						<div className="share-messages-modal__preview">
+							<span className="share-messages-modal__preview-label">
+								Vista previa:
+							</span>
+							<pre className="share-messages-modal__preview-text">{previewText}</pre>
+						</div>
+
+						{!resetConfirm.pending ? (
+							<button
+								type="button"
+								className="share-messages-modal__reset-link"
+								onClick={resetConfirm.request}
+								disabled={saving}
 							>
-								{v}
-							</code>
-						))}
-						<p className="share-messages-modal__variables-help">
-							Usa estas variables para insertar datos automáticamente.
-						</p>
-					</div>
-				)}
-
-				{activeTab !== 'settings' && (
-					<div className="share-messages-modal__preview">
-						<span className="share-messages-modal__preview-label">Vista previa:</span>
-						<pre className="share-messages-modal__preview-text">{previewText}</pre>
+								Restablecer predeterminados
+							</button>
+						) : (
+							<div className="share-messages-modal__reset-confirm">
+								<span className="share-messages-modal__reset-confirm-text">
+									¿Restablecer mensajes?
+								</span>
+								<button
+									type="button"
+									className="share-messages-modal__reset-confirm-yes"
+									onClick={resetConfirm.confirm}
+									disabled={saving}
+								>
+									Sí
+								</button>
+								<button
+									type="button"
+									className="share-messages-modal__reset-confirm-no"
+									onClick={resetConfirm.cancel}
+									disabled={saving}
+								>
+									No
+								</button>
+							</div>
+						)}
 					</div>
 				)}
 
@@ -358,53 +427,22 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 			</div>
 
 			<div className="dashboard-modal__footer">
-				{resetConfirm.pending ? (
-					<>
-						<button
-							type="button"
-							className="btn-secondary btn-secondary--modal"
-							onClick={resetConfirm.cancel}
-							disabled={saving}
-						>
-							Cancelar
-						</button>
-						<button
-							type="button"
-							className="btn-primary btn-primary--danger"
-							onClick={resetConfirm.confirm}
-							disabled={saving}
-						>
-							¿Restablecer?
-						</button>
-					</>
-				) : (
-					<>
-						<button
-							type="button"
-							className="btn-secondary btn-secondary--modal"
-							onClick={resetConfirm.request}
-							disabled={saving}
-						>
-							Restablecer predeterminados
-						</button>
-						<button
-							type="button"
-							className="btn-secondary btn-secondary--modal"
-							onClick={onClose}
-							disabled={saving}
-						>
-							Cancelar
-						</button>
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={handleSave}
-							disabled={saving || !isDirty}
-						>
-							{saving ? 'Guardando...' : 'Guardar'}
-						</button>
-					</>
-				)}
+				<button
+					type="button"
+					className="btn-secondary btn-secondary--modal dashboard-modal__footer-cancel"
+					onClick={onClose}
+					disabled={saving}
+				>
+					Cancelar
+				</button>
+				<button
+					type="button"
+					className="btn-primary"
+					onClick={handleSave}
+					disabled={saving || !isDirty}
+				>
+					{saving ? 'Guardando...' : 'Guardar'}
+				</button>
 			</div>
 		</ModalShell>
 	);

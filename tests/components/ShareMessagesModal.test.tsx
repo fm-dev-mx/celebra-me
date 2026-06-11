@@ -182,7 +182,7 @@ describe('ShareMessagesModal', () => {
 		fireEvent.change(textarea, { target: { value: 'Custom text' } });
 
 		fireEvent.click(screen.getByText('Restablecer predeterminados'));
-		fireEvent.click(screen.getByText('¿Restablecer?'));
+		fireEvent.click(screen.getByText('Sí'));
 
 		expect(textarea).toHaveValue(
 			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
@@ -195,7 +195,7 @@ describe('ShareMessagesModal', () => {
 		fireEvent.change(textarea, { target: { value: 'Custom text' } });
 
 		fireEvent.click(screen.getByText('Restablecer predeterminados'));
-		fireEvent.click(screen.getByText('Cancelar'));
+		fireEvent.click(screen.getByText('No'));
 
 		expect(textarea).toHaveValue('Custom text');
 	});
@@ -216,8 +216,13 @@ describe('ShareMessagesModal', () => {
 
 	it('shows available variables for the template', () => {
 		createModal();
-		expect(screen.getByText('{guestName}')).toBeInTheDocument();
-		expect(screen.getByText('{eventTitle}')).toBeInTheDocument();
-		expect(screen.getByText('{inviteUrl}')).toBeInTheDocument();
+		expect(screen.getByText('Invitado')).toBeInTheDocument();
+		expect(screen.getByText('Evento')).toBeInTheDocument();
+		expect(screen.getByText('Link')).toBeInTheDocument();
+		expect(screen.getByText('Fecha')).toBeInTheDocument();
+		expect(screen.getByText('Días faltantes')).toBeInTheDocument();
+		expect(screen.getByText('Fecha límite')).toBeInTheDocument();
+		expect(screen.getByText('Tiempo del evento')).toBeInTheDocument();
+		expect(screen.getByText('Límite de confirmación')).toBeInTheDocument();
 	});
 });
