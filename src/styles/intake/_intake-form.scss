@@ -53,7 +53,7 @@
 
 .intake-form__btn--primary {
 	background: var(--color-action-accent);
-	color: var(--color-text-inverse);
+	color: var(--color-text-on-light);
 
 	&:hover:not(:disabled) {
 		opacity: 90%;
@@ -78,9 +78,9 @@
 }
 
 .intake-form__error {
-	background: var(--color-state-error-bg);
-	border: 1px solid var(--color-state-error-border);
-	color: var(--color-state-error-text);
+	background: var(--color-state-danger-bg);
+	border: 1px solid var(--color-state-danger-border);
+	color: var(--color-state-danger-text);
 	padding: 0.75rem 1rem;
 	border-radius: 8px;
 	font-size: 0.875rem;
@@ -338,7 +338,7 @@
 .intake-block__item-remove {
 	background: none;
 	border: none;
-	color: var(--color-state-error-text);
+	color: var(--color-state-danger-text);
 	font-size: 0.8125rem;
 	cursor: pointer;
 	padding: 0.25rem 0.5rem;
@@ -470,7 +470,7 @@
 	border: none;
 	border-radius: 8px;
 	background: var(--color-action-accent);
-	color: var(--color-text-inverse);
+	color: var(--color-text-on-light);
 	font-size: 1rem;
 	font-weight: 700;
 	cursor: pointer;
