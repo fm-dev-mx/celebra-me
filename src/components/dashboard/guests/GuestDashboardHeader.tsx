@@ -4,6 +4,7 @@ import GuestReviewBlock, {
 } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
 import GuestSummary from '@/components/dashboard/guests/GuestSummary';
+import type { ReminderAudience } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
@@ -25,6 +26,7 @@ interface GuestDashboardHeaderProps {
 	onEventChange: (eventId: string) => void;
 	onReviewFilterChange: (filter: GuestReviewFilter) => void;
 	filteredItems?: DashboardGuestItem[];
+	reminderAudience?: ReminderAudience;
 }
 
 const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
@@ -36,6 +38,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	totals,
 	onEventChange,
 	onReviewFilterChange,
+	reminderAudience,
 }) => {
 	return (
 		<>
@@ -65,6 +68,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 				items={items}
 				activeFilter={activeReviewFilter}
 				onFilterChange={onReviewFilterChange}
+				reminderAudience={reminderAudience}
 			/>
 		</>
 	);

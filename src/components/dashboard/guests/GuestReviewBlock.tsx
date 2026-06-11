@@ -1,9 +1,14 @@
 import React from 'react';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
+import {
+	getReminderEligibleGuests,
+	isUnconfirmedSharedGuest,
+} from '@/components/dashboard/guests/reminder-eligibility';
+import type { ReminderAudience } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 export type GuestReviewFilter =
 	| 'all'
+	| 'reminder-pending'
 	| 'delivery-pending'
 	| 'rsvp-pending'
 	| 'confirmation-pending'
@@ -13,12 +18,14 @@ interface GuestReviewBlockProps {
 	items: DashboardGuestItem[];
 	activeFilter: GuestReviewFilter;
 	onFilterChange: (filter: GuestReviewFilter) => void;
+	reminderAudience?: ReminderAudience;
 }
 
 const GuestReviewBlock: React.FC<GuestReviewBlockProps> = ({
 	items,
 	activeFilter,
 	onFilterChange,
+	reminderAudience,
 }) => {
 	let deliveryPending = 0;
 	let confirmationPending = 0;
@@ -30,12 +37,21 @@ const GuestReviewBlock: React.FC<GuestReviewBlockProps> = ({
 		if (item.attendanceStatus === 'pending') rsvpPending++;
 		if ((item.guestComment ?? '').trim().length > 0) withMessage++;
 	}
+	const reminderPending = reminderAudience
+		? getReminderEligibleGuests(items, reminderAudience).length
+		: 0;
 	const reviewItems: { filter: GuestReviewFilter; count: number; label: string }[] = [];
 	if (deliveryPending > 0)
 		reviewItems.push({
 			filter: 'delivery-pending',
 			count: deliveryPending,
 			label: 'Por enviar',
+		});
+	if (reminderPending > 0)
+		reviewItems.push({
+			filter: 'reminder-pending',
+			count: reminderPending,
+			label: 'Por recordar',
 		});
 	if (confirmationPending > 0)
 		reviewItems.push({

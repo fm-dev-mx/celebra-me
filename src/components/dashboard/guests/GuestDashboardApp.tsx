@@ -31,6 +31,10 @@ interface GuestDashboardAppProps {
 	initialEventId: string;
 }
 
+function s(count: number) {
+	return count !== 1 ? 's' : '';
+}
+
 const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId }) => {
 	const [search, setSearch] = useState('');
 	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
@@ -86,6 +90,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	const visibleItems = items.filter((item) => {
+		if (reviewFilter === 'reminder-pending' && !reminderEligibleGuests.some((g) => g.guestId === item.guestId))
+			return false;
 		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
 			return false;
 		if (reviewFilter === 'confirmation-pending' && !isUnconfirmedSharedGuest(item))
@@ -154,8 +160,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			type: 'success',
 		});
 	};
-
-	const s = (count: number) => (count !== 1 ? 's' : '');
 
 	function renderModals() {
 		if (importModalOpen) {
@@ -259,6 +263,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					totals={totals}
 					onEventChange={setEventId}
 					onReviewFilterChange={setReviewFilter}
+					reminderAudience={reminderSettings.audience}
 				/>
 
 				<div className="dashboard-guests__toolbar">
@@ -272,10 +277,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					{showReminderCta && (
 						<button
 							type="button"
-							onClick={() => openNextReminderGuest(reminderSettings.audience)}
-							className="btn-secondary btn--compact"
+							onClick={() =>
+								setReviewFilter(
+									reviewFilter === 'reminder-pending' ? 'all' : 'reminder-pending',
+								)
+							}
+							className={`btn-secondary btn--compact${reviewFilter === 'reminder-pending' ? ' btn-secondary--active' : ''}`}
 						>
-							Enviar recordatorio ({reminderEligibleGuests.length})
+							Por recordar ({reminderEligibleGuests.length})
 						</button>
 					)}
 					{showReminderCta && shareDateContext.rawDaysUntilEvent !== null && (
