@@ -1,0 +1,354 @@
+@use '../global/mixins' as mixins;
+
+// ==========================================================================
+// SEND INVITATION MODAL
+// ==========================================================================
+
+.dashboard-modal--send-invitation {
+	width: min(480px, 95vw);
+
+	@include mixins.respond-below(sm) {
+		width: 100vw;
+		height: 100dvh;
+		max-height: none;
+		border-radius: 0;
+		border: none;
+		box-shadow: none;
+		padding: 0;
+	}
+}
+
+// Tighter footer for send-invitation modal (less dead space before CTA)
+.dashboard-modal--send-invitation .dashboard-modal__footer {
+	margin-top: 0.5rem;
+	padding-top: 0.625rem;
+
+	@include mixins.respond-below(sm) {
+		margin-top: 0;
+		padding-top: 0.625rem;
+		padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0.5rem));
+	}
+}
+
+.dashboard-modal--send-invitation .dashboard-modal__content > :last-child {
+	margin-bottom: 0.25rem;
+}
+
+.send-invitation__form-section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.875rem;
+
+	/* Flatten companion radio cards into compact pills */
+	.guest-response-cards--compact .guest-response-card__content {
+		padding: 0.35rem 0.15rem;
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 999px;
+		box-shadow: none;
+		font-weight: 500;
+		font-size: 0.8125rem;
+		transition:
+			background-color 0.15s,
+			border-color 0.15s,
+			color 0.15s;
+
+		&:hover {
+			background: rgb(var(--color-text-secondary-rgb) / 6%);
+			border-color: rgb(var(--color-text-secondary-rgb) / 30%);
+			transform: none;
+		}
+	}
+
+	.guest-response-cards--compact input:checked + .guest-response-card__content {
+		background: rgb(var(--color-action-accent-rgb) / 8%);
+		border-color: var(--color-border-emphasis);
+		color: var(--color-text-emphasis);
+		font-weight: 600;
+		box-shadow: none;
+	}
+
+	/* Make the empty-phone hint a plain text line */
+	.guest-field-hint {
+		color: rgb(var(--color-text-muted-rgb) / 60%);
+		font-size: 0.75rem;
+		line-height: 1.4;
+		margin-top: 0;
+		padding: 0;
+		display: block;
+		background: none;
+		border: none;
+		border-radius: 0;
+	}
+}
+
+.send-invitation__field label {
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+}
+
+.send-invitation__input {
+	min-height: 38px;
+}
+
+.send-invitation__companion-section {
+	margin: 0;
+}
+
+.send-invitation__companion-title {
+	margin: 0 0 0.375rem;
+	font-family: var(--font-ui);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+}
+
+.send-invitation__message-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
+}
+
+.send-invitation__message-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+}
+
+.send-invitation__mode-label {
+	font-size: 0.65rem;
+	font-weight: 500;
+	color: var(--color-text-muted);
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.send-invitation__mode-label--editing {
+	color: var(--color-action-accent);
+}
+
+.send-invitation__message-section {
+	margin-top: 0.5rem;
+}
+
+.send-invitation__preview-card {
+	padding: 0.875rem 1rem;
+	background: var(--color-surface-soft);
+	border: 1px solid var(--color-border-subtle);
+	border-left: 3px solid var(--color-border-premium);
+	border-radius: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.send-invitation--reminder .send-invitation__preview-card {
+	border-left-color: var(--color-state-warning);
+	background: rgb(var(--color-state-warning-rgb) / 6%);
+}
+
+.send-invitation__preview-text {
+	margin: 0;
+	white-space: pre-wrap;
+	font-size: 0.8125rem;
+	line-height: 1.6;
+	font-family: inherit;
+	color: var(--color-text-primary);
+}
+
+.send-invitation__textarea {
+	width: 100%;
+	min-height: 80px;
+	padding: 0.6rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 0.5rem;
+	font-family: inherit;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	resize: vertical;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+
+	&:focus {
+		outline: none;
+		border-color: var(--color-action-accent);
+		box-shadow:
+			0 0 0 3px var(--dashboard-focus-ring),
+			0 0 12px var(--dashboard-focus-glow);
+	}
+}
+
+.send-invitation__edit-actions {
+	display: flex;
+	gap: 0.4rem;
+	margin-bottom: 0;
+	flex-wrap: wrap;
+}
+
+.send-invitation__field-error {
+	color: var(--color-state-danger-text);
+	font-size: 0.75rem;
+	margin: 0 0 0.35rem;
+}
+
+.send-invitation__copy-feedback {
+	color: var(--color-state-success-text);
+	font-size: 0.75rem;
+	font-weight: 500;
+	margin: 0.25rem 0 0;
+	display: inline-block;
+}
+
+// Guest info block in the fallback section
+.send-share-guest {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	margin-bottom: 1rem;
+}
+
+.send-share-guest__name {
+	font-weight: 600;
+	color: var(--color-text-primary);
+}
+
+.send-share-guest__phone {
+	font-size: 0.8125rem;
+	color: var(--color-text-secondary);
+}
+
+// Footer secondary actions (compact horizontal row below primary CTA)
+.send-invitation__footer-secondary {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+%send-invitation-text-action {
+	padding: 0.35rem 0.5rem;
+	background: none;
+	border: none;
+	border-radius: 0;
+	font-size: 0.75rem;
+	font-family: var(--font-ui);
+	cursor: pointer;
+	transition: color 0.15s;
+
+	&:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: 2px;
+	}
+
+	@include mixins.respond-below(sm) {
+		padding: 0.5rem;
+	}
+}
+
+.send-invitation__footer-text-link {
+	@extend %send-invitation-text-action;
+
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	color: var(--color-text-secondary);
+	white-space: nowrap;
+	text-decoration: underline;
+	text-decoration-color: rgb(var(--color-action-accent-rgb) / 28%);
+	text-underline-offset: 0.16em;
+
+	&:hover {
+		color: var(--color-text-emphasis);
+		text-decoration-color: currentcolor;
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+}
+
+.send-invitation__preview-action {
+	@extend %send-invitation-text-action;
+
+	color: var(--color-action-accent);
+	font-weight: 500;
+
+	&:hover {
+		color: var(--color-text-emphasis);
+		text-decoration: underline;
+	}
+}
+
+// Preview actions row (visible when not editing)
+.send-invitation__preview-actions {
+	display: flex;
+	gap: 1rem;
+	margin-top: 0.375rem;
+
+	@include mixins.respond-below(sm) {
+		margin-top: 0.5rem;
+	}
+}
+
+// ─── Mobile overrides ──────────────────────────────────────────────────────────
+
+@include mixins.respond-below(sm) {
+	.send-invitation__form-section {
+		gap: 0.875rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.send-invitation__textarea {
+		min-height: 70px;
+	}
+
+	.dashboard-modal--send-invitation .dashboard-modal__footer {
+		flex-direction: column;
+		gap: 0.375rem;
+		align-items: stretch;
+
+		.btn-secondary {
+			background: transparent;
+			border-color: transparent;
+			color: var(--color-text-secondary);
+			box-shadow: none;
+			font-size: 0.8125rem;
+			min-height: 40px;
+			padding: 0.375rem 0.75rem;
+
+			&:hover {
+				color: var(--color-text-primary);
+				background: rgb(var(--color-text-secondary-rgb) / 8%);
+			}
+		}
+
+		.btn-secondary--modal {
+			min-width: 0;
+		}
+
+		.btn-primary {
+			min-height: 48px;
+			font-size: 1rem;
+			font-weight: 600;
+			order: -1;
+			width: 100%;
+		}
+
+		.dashboard-modal__footer-cancel {
+			display: none;
+		}
+
+		.send-invitation__footer-secondary {
+			align-self: center;
+			padding-top: 0.125rem;
+		}
+
+		.send-invitation__footer-text-link {
+			padding: 0.5rem;
+			font-size: 0.8125rem;
+		}
+	}
+}
