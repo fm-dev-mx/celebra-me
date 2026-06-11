@@ -9,13 +9,17 @@ interface UseMessageEditorOptions {
 	trySave: () => Promise<DashboardGuestItem | null>;
 }
 
+function containsUrlPlaceholder(message: string): boolean {
+	return message.includes('{{enlace}}') || message.includes('{inviteUrl}');
+}
+
 function ensureInviteUrl(message: string, inviteUrl: string): string {
 	const trimmedMessage = message.trim();
 	const trimmedInviteUrl = inviteUrl.trim();
 
 	if (!trimmedInviteUrl) return trimmedMessage;
 
-	if (trimmedMessage.includes(trimmedInviteUrl)) {
+	if (trimmedMessage.includes(trimmedInviteUrl) || containsUrlPlaceholder(trimmedMessage)) {
 		return trimmedMessage;
 	}
 
@@ -90,6 +94,21 @@ export function useMessageEditor({
 		setCopySuccess(true);
 	}, [guest, activeMessage, trySave]);
 
+	const handleValidateMessage = useCallback((): boolean => {
+		const messageToCheck = editingMessage ? localMessageOverride : activeMessage;
+		if (!messageToCheck?.trim()) {
+			setMessageError('El mensaje no puede estar vacío.');
+			return false;
+		}
+		setMessageError(null);
+		return true;
+	}, [editingMessage, localMessageOverride, activeMessage]);
+
+	const handleClearValidationState = useCallback(() => {
+		setMessageError(null);
+		setCopySuccess(false);
+	}, []);
+
 	const resetMessageState = useCallback(() => {
 		setEditingMessage(false);
 		setLocalMessageOverride('');
@@ -108,8 +127,8 @@ export function useMessageEditor({
 		handleResetMessage,
 		handleUpdateLocalMessage,
 		handleCopyMessageAction,
+		handleValidateMessage,
+		handleClearValidationState,
 		resetMessageState,
-		setMessageError,
-		setCopySuccess,
 	};
 }

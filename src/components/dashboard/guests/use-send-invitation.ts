@@ -164,9 +164,9 @@ export function useSendInvitation({
 		handleResetMessage,
 		handleUpdateLocalMessage,
 		handleCopyMessageAction,
+		handleValidateMessage,
+		handleClearValidationState,
 		resetMessageState,
-		setMessageError,
-		setCopySuccess,
 	} = useMessageEditor({ renderedMessage, inviteUrl, guest, trySave });
 
 	const markSharedOrFallback = useCallback(
@@ -207,14 +207,12 @@ export function useSendInvitation({
 			return;
 		}
 
-		if (editingMessage && !localMessageOverride.trim()) {
-			setMessageError('El mensaje no puede estar vacío.');
+		if (editingMessage && !handleValidateMessage()) {
 			return;
 		}
 
 		setPhoneError(null);
-		setMessageError(null);
-		setCopySuccess(false);
+		handleClearValidationState();
 		savingRef.current = true;
 		setShareStatus('saving');
 		setMarkError(null);
@@ -285,7 +283,7 @@ export function useSendInvitation({
 		activeMessage,
 		trySave,
 		markSharedAndComplete,
-		setMessageError,
+		handleValidateMessage,
 	]);
 
 	const handleCopyOnly = useCallback(async () => {
