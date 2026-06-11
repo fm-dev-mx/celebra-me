@@ -217,9 +217,7 @@ export async function listDashboardGuests(input: {
 			input.hostAccessToken,
 		);
 		const sharingContext = await resolveEventSharingContext(event);
-		const shareTemplates = resolveShareTemplates({
-			shareMessages: sharingContext.shareMessages,
-		});
+		const shareTemplates = resolveShareTemplates(sharingContext.shareMessages);
 		const items = guests.map((guest) =>
 			buildGuestDto(
 				guest,
@@ -251,7 +249,7 @@ export async function listDashboardGuests(input: {
 		return {
 			eventId: membership.eventId,
 			items,
-			shareTemplates: resolveShareTemplates({}),
+			shareTemplates: resolveShareTemplates(),
 			reminderSettings: resolveReminderSettings(null),
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
@@ -630,7 +628,7 @@ export async function updateShareMessages(input: {
 		);
 	}
 
-	const shareMessages = resolveShareTemplates({ shareMessages: input.shareMessages });
+	const shareMessages = resolveShareTemplates(input.shareMessages);
 	const content = { ...published.content };
 	const sharing = (content.sharing as Record<string, unknown>) || {};
 

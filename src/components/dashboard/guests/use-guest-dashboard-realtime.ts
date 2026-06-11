@@ -37,6 +37,7 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	confirmedPeople: 0,
 	declinedInvitations: 0,
 	declinedPeople: 0,
+	unconfirmedShared: 0,
 	viewed: 0,
 };
 
@@ -108,9 +109,8 @@ export const useGuestDashboardRealtime = ({
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
-	const [shareTemplates, setShareTemplates] = useState<ShareMessagesConfig>(
-		resolveShareTemplates({}),
-	);
+	const [shareTemplates, setShareTemplates] =
+		useState<ShareMessagesConfig>(resolveShareTemplates());
 	const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(
 		resolveReminderSettings(null),
 	);
@@ -220,17 +220,11 @@ export const useGuestDashboardRealtime = ({
 	useEffect(() => {
 		try {
 			setInviteBaseUrl(window.location.origin);
+			if (eventId) {
+				window.localStorage.setItem('rsvp-dashboard-event-id', eventId);
+			}
 		} catch (err) {
-			console.error('[GuestDashboard] useEffect setInviteBaseUrl error:', err);
-		}
-	}, []);
-
-	useEffect(() => {
-		try {
-			if (!eventId) return;
-			window.localStorage.setItem('rsvp-dashboard-event-id', eventId);
-		} catch (err) {
-			console.error('[GuestDashboard] useEffect localStorage error:', err);
+			console.error('[GuestDashboard] client init error:', err);
 		}
 	}, [eventId]);
 

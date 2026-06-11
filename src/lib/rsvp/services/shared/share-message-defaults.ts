@@ -20,15 +20,18 @@ export const SHARE_MESSAGE_VARIABLES = [
 	'{rsvpDeadlineText}',
 ] as const;
 
-export const SHARE_MESSAGE_VARIABLE_LABELS: Record<string, string> = {
-	'{guestName}': 'Nombre del invitado',
-	'{eventTitle}': 'Título del evento',
-	'{inviteUrl}': 'Enlace de invitación',
-	'{eventDate}': 'Fecha del evento',
-	'{daysUntilEvent}': 'Días restantes',
-	'{rsvpDeadline}': 'Fecha límite de confirmación',
-	'{eventTimingText}': 'Texto de tiempo restante',
-	'{rsvpDeadlineText}': 'Texto de fecha límite',
+export const SHARE_MESSAGE_VARIABLE_LABELS: Record<
+	(typeof SHARE_MESSAGE_VARIABLES)[number],
+	string
+> = {
+	'{guestName}': 'Invitado',
+	'{eventTitle}': 'Evento',
+	'{inviteUrl}': 'Link',
+	'{eventDate}': 'Fecha',
+	'{daysUntilEvent}': 'Días faltantes',
+	'{rsvpDeadline}': 'Fecha límite',
+	'{eventTimingText}': 'Tiempo del evento',
+	'{rsvpDeadlineText}': 'Límite de confirmación',
 };
 
 export const DEFAULT_INVITATION_MESSAGE =
@@ -74,12 +77,12 @@ export function resolveReminderSettings(
 	};
 }
 
-export function resolveShareTemplates(config?: {
-	shareMessages?: ShareMessagesConfig | null;
-}): ShareMessagesConfig {
+export function resolveShareTemplates(
+	shareMessages?: ShareMessagesConfig | null,
+): ShareMessagesConfig {
 	return {
-		invitation: config?.shareMessages?.invitation || DEFAULT_INVITATION_MESSAGE,
-		reminder: config?.shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
+		invitation: shareMessages?.invitation || DEFAULT_INVITATION_MESSAGE,
+		reminder: shareMessages?.reminder || DEFAULT_REMINDER_MESSAGE,
 	};
 }
 
