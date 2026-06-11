@@ -34,11 +34,12 @@ import { formatDateLong } from '@/lib/intake/constants';
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
-	PREVIEW_CONTEXT,
+	DEFAULT_PREVIEW_CONTEXT,
 	SHARE_MESSAGE_VARIABLES,
 	SHARE_MESSAGE_VARIABLE_LABELS,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
+import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import {
@@ -112,12 +113,10 @@ function uniqueSectionPresentation(sections: string[]) {
 	return Array.from(presented.values());
 }
 
-function getSectionPathRegex(): RegExp {
-	return new RegExp(
-		`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
-		'g',
-	);
-}
+const SECTION_PATH_REGEX = new RegExp(
+	`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
+	'g',
+);
 
 const ITINERARY_ITEM_FIELD_LABELS: Record<string, string> = {
 	iconName: 'icono',
@@ -143,8 +142,7 @@ function formatValidationPath(sectionPath: string): string {
 
 export function formatPublishErrorMessage(error: unknown): string {
 	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
-	const sectionPathRegex = getSectionPathRegex();
-	return message.replace(sectionPathRegex, formatValidationPath);
+	return message.replace(SECTION_PATH_REGEX, formatValidationPath);
 }
 
 export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
@@ -552,6 +550,23 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 		window.open(previewUrl, '_blank', 'noopener,noreferrer');
 	}, [previewUrl]);
+
+	const sharingPreviewContext = useMemo(() => {
+		const resolvedEventTitle = metadata.title || DEFAULT_PREVIEW_CONTEXT.eventTitle;
+		if (!content.hero?.date) {
+			return { ...DEFAULT_PREVIEW_CONTEXT, eventTitle: resolvedEventTitle };
+		}
+		return {
+			...DEFAULT_PREVIEW_CONTEXT,
+			eventTitle: resolvedEventTitle,
+			...buildShareMessageDateContext(
+				content.hero.date,
+				content.rsvp?.confirmationDeadline ?? null,
+				resolvedEventTitle,
+				new Date(),
+			),
+		};
+	}, [metadata.title, content.hero?.date, content.rsvp?.confirmationDeadline]);
 
 	const selectedDefinition = getEditorSectionById(selectedSection);
 	const activeEditorCardId = selectedDefinition?.editorCardId ?? 'main';
@@ -1340,10 +1355,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							<pre className="invitation-editor__preview-text">
 								{renderShareMessage(
 									sharing.invitation ?? DEFAULT_INVITATION_MESSAGE,
-									{
-										...PREVIEW_CONTEXT,
-										eventTitle: metadata.title || PREVIEW_CONTEXT.eventTitle,
-									},
+									sharingPreviewContext,
 								)}
 							</pre>
 						</div>
@@ -1352,10 +1364,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 								Vista previa — recordatorio:
 							</span>
 							<pre className="invitation-editor__preview-text">
-								{renderShareMessage(sharing.reminder ?? DEFAULT_REMINDER_MESSAGE, {
-									...PREVIEW_CONTEXT,
-									eventTitle: metadata.title || PREVIEW_CONTEXT.eventTitle,
-								})}
+								{renderShareMessage(
+									sharing.reminder ?? DEFAULT_REMINDER_MESSAGE,
+									sharingPreviewContext,
+								)}
 							</pre>
 						</div>
 						<p className="invitation-editor__helper-text">
