@@ -41,7 +41,7 @@ const initialReminderSettings = {
 	audience: 'unconfirmed' as const,
 };
 
-function createModal(overrides: Record<string, unknown> = {}) {
+function createModal() {
 	const onClose = jest.fn();
 	const onSave = jest.fn();
 
@@ -54,7 +54,6 @@ function createModal(overrides: Record<string, unknown> = {}) {
 			onClose={onClose}
 			shareDateContext={defaultShareDateContext()}
 			onSave={onSave}
-			{...overrides}
 		/>,
 	);
 
@@ -76,7 +75,7 @@ describe('ShareMessagesModal', () => {
 	it('does not render the shared link description field', () => {
 		createModal();
 		expect(
-			screen.queryByLabelText(/descripci.n del enlace compartido/i),
+			screen.queryByLabelText(/descripción del enlace compartido/i),
 		).not.toBeInTheDocument();
 	});
 
@@ -205,7 +204,7 @@ describe('ShareMessagesModal', () => {
 		const textarea = screen.getByLabelText(/mensaje de invitación/i);
 		fireEvent.change(textarea, { target: { value: 'Hola {guestName}!' } });
 
-		expect(screen.getByText('Hola María García!')).toBeInTheDocument();
+		expect(screen.getByText('Hola Invitado!')).toBeInTheDocument();
 	});
 
 	it('calls onClose when cancel is clicked', () => {

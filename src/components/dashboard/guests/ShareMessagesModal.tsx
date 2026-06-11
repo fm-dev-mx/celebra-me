@@ -4,7 +4,7 @@ import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-ren
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
-	PREVIEW_CONTEXT,
+	DEFAULT_PREVIEW_CONTEXT,
 	SHARE_MESSAGE_VARIABLES,
 	SHARE_MESSAGE_VARIABLE_LABELS,
 	type ShareMessagesConfig,
@@ -49,7 +49,7 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 }) => (
 	<div
 		role="tabpanel"
-		id="tabpanel-share-msg"
+		id="tabpanel-share-settings"
 		aria-labelledby="tab-settings"
 		className="share-messages-modal__settings"
 	>
@@ -189,8 +189,8 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 
 	const previewContext = useMemo(
 		() => ({
-			...PREVIEW_CONTEXT,
-			eventTitle: eventTitle || '',
+			...DEFAULT_PREVIEW_CONTEXT,
+			eventTitle: eventTitle || DEFAULT_PREVIEW_CONTEXT.eventTitle,
 			...shareDateContext,
 		}),
 		[eventTitle, shareDateContext],
@@ -300,7 +300,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 						role="tab"
 						id="tab-settings"
 						aria-selected={activeTab === 'settings'}
-						aria-controls="tabpanel-share-msg"
+						aria-controls="tabpanel-share-settings"
 						className={`share-messages-modal__tab ${activeTab === 'settings' ? 'share-messages-modal__tab--active' : ''}`}
 						onClick={() => setActiveTab('settings')}
 					>
