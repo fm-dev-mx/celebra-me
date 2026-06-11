@@ -350,7 +350,6 @@ export function useSendInvitation({
 		editCountryCode,
 		setEditCountryCode,
 		phoneError,
-		setPhoneError,
 		shareStatus,
 		fallbackGuest,
 		markError,
