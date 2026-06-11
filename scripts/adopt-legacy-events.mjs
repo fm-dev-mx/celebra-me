@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable complexity */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,6 +16,40 @@ const REPORT_FILE = path.join(
 	'reports',
 	'adoption-backfill-report.json',
 );
+
+const SNAPSHOT_DEFAULTS = {
+	defaultSections: [
+		'quote',
+		'family',
+		'gallery',
+		'countdown',
+		'location',
+		'itinerary',
+		'rsvp',
+		'gifts',
+		'thankYou',
+	],
+	supportedBlocks: [
+		'event-details',
+		'main-people',
+		'date-locations',
+		'photos',
+		'rsvp-config',
+		'music',
+		'gifts',
+		'special-messages',
+	],
+	recommendedBlocks: [
+		'event-details',
+		'main-people',
+		'date-locations',
+		'photos',
+		'rsvp-config',
+		'gifts',
+		'special-messages',
+	],
+	requiredAssets: ['hero', 'portrait', 'gallery01', 'gallery02', 'gallery03'],
+};
 
 function loadEnvFile(relativePath) {
 	const envPath = path.join(PROJECT_ROOT, relativePath);
@@ -100,11 +133,6 @@ const BASE_DEMO_BY_TYPE = {
 	cumple: 'demo-cumple-luxury-hacienda',
 };
 
-/**
- * Default theme preset per event type for legacy events without a content file.
- * Mirrors src/lib/intake/demo-preset-catalog.ts but kept inline to keep this
- * script self-contained (no TS/import dependencies).
- */
 const THEME_FALLBACK_BY_TYPE = {
 	xv: 'jewelry-box',
 	boda: 'jewelry-box-wedding',
@@ -112,19 +140,6 @@ const THEME_FALLBACK_BY_TYPE = {
 	cumple: 'luxury-hacienda',
 };
 
-/**
- * Resolve the actual theme preset for a legacy event by reading its static JSON file.
- *
- * Strategy (in order of preference):
- *   1. Read the event's JSON file from src/content/events/ and extract theme.preset.
- *   2. If the file no longer exists (e.g., already migrated), fall back to the
- *      default theme for the event type.
- *   3. If no fallback exists for the event type, use 'editorial' as a safe
- *      generic fallback (neutral layout, no glass card, no card/recuadro).
- *
- * Previously this was hardcoded to 'jewelry-box' for ALL events, which caused
- * theme regressions (e.g., cesar-ramses sacred-keepsake → jewelry-box).
- */
 function resolveActualTheme(slug, eventType, contentEventsDir) {
 	const defaultThemeId = THEME_FALLBACK_BY_TYPE[eventType];
 	const fallback = defaultThemeId || 'editorial';
@@ -135,7 +150,8 @@ function resolveActualTheme(slug, eventType, contentEventsDir) {
 
 	const contentPath = path.join(contentEventsDir, `${slug}.json`);
 	if (!fs.existsSync(contentPath)) {
-		console.warn(`  ⚠ No static file for "${slug}", using event-type fallback: "${fallback}"`);
+		console.warn(`  ⚠ No content file for "${slug}", using event-type fallback: "${fallback}"`);
+		console.warn(`      Create src/content/events/${slug}.json with the correct theme.preset`);
 		return fallback;
 	}
 
@@ -156,7 +172,41 @@ function resolveActualTheme(slug, eventType, contentEventsDir) {
 	}
 }
 
-async function main() {
+function buildProjectBody(event, baseDemoId, actualTheme) {
+	const body = {
+		title: event.title,
+		event_type: event.event_type,
+		slug: event.slug,
+		status: event.status || 'draft',
+		base_demo_id: baseDemoId,
+		theme_id: actualTheme,
+		snapshot: {
+			id: baseDemoId,
+			eventType: event.event_type,
+			displayName: 'Adoptado de evento legacy',
+			themeId: actualTheme,
+			...SNAPSHOT_DEFAULTS,
+			previewSlug: baseDemoId,
+		},
+		client_name: '',
+		client_email: '',
+		client_whatsapp: '',
+	};
+	if (event.owner_user_id) body.created_by = event.owner_user_id;
+	return body;
+}
+
+function buildMap(items, key) {
+	const map = new Map();
+	for (const item of toArray(items)) {
+		const k = item[key];
+		if (!map.has(k)) map.set(k, []);
+		map.get(k).push(item);
+	}
+	return map;
+}
+
+function loadConfiguration() {
 	loadEnvFile('.env.local');
 	loadEnvFile('.env');
 
@@ -168,14 +218,9 @@ async function main() {
 		);
 		process.exit(1);
 	}
+}
 
-	console.log('╔══════════════════════════════════════════════════════════════════╗');
-	console.log('║  Stage 1.5  Controlled adoption: legacy RSVP events            ║');
-	console.log('╚══════════════════════════════════════════════════════════════════╝');
-	console.log(`\nStarted: ${new Date().toISOString()}`);
-	console.log('');
-
-	// 1. Load orphan events (events with no invitation_project_id)
+async function fetchEvents() {
 	let events;
 	try {
 		events = await restGet(
@@ -191,7 +236,6 @@ async function main() {
 		process.exit(1);
 	}
 
-	// Check if migration is applied (column exists)
 	const sampleEvent = toArray(events)[0] ?? null;
 	if (sampleEvent && !('invitation_project_id' in sampleEvent)) {
 		console.error('ERROR: invitation_project_id column not found on events table.');
@@ -200,153 +244,87 @@ async function main() {
 		process.exit(1);
 	}
 
-	const orphanEvents = toArray(events).filter((e) => !e.invitation_project_id);
+	return events;
+}
 
-	console.log(`Total events:        ${toArray(events).length}`);
-	console.log(`Orphan events:       ${orphanEvents.length}`);
-	console.log('');
+async function processOrphanEvent(ev, existingSlugs, existingProjects, guestMap, claimMap) {
+	console.log(`\nProcessing: ${ev.slug} (${ev.event_type}) "${ev.title}"`);
 
-	if (orphanEvents.length === 0) {
-		console.log('No orphan events to adopt. Nothing to do.');
-		return;
-	}
-
-	// 2. Load existing projects to check slug conflicts
-	const existingProjects = await restGet('invitations', 'select=id,slug,event_type,title');
-	const existingSlugs = new Set(
-		toArray(existingProjects)
-			.map((p) => p.slug)
-			.filter(Boolean),
-	);
-
-	// 3. Load guest and claim code counts for verification
-	const allGuests = await restGet('guest_invitations', 'select=event_id,attendance_status');
-	const guestMap = new Map();
-	for (const g of toArray(allGuests)) {
-		if (!guestMap.has(g.event_id)) guestMap.set(g.event_id, []);
-		guestMap.get(g.event_id).push(g);
-	}
-
-	const allClaims = await restGet('event_claim_codes', 'select=event_id');
-	const claimMap = new Map();
-	for (const c of toArray(allClaims)) {
-		if (!claimMap.has(c.event_id)) claimMap.set(c.event_id, []);
-		claimMap.get(c.event_id).push(c);
-	}
-
-	// 4. Create projects and link events
-	const adoptions = [];
-	const errors = [];
-
-	for (const ev of orphanEvents) {
-		console.log(`\nProcessing: ${ev.slug} (${ev.event_type}) "${ev.title}"`);
-
-		// Check slug conflict
-		if (existingSlugs.has(ev.slug)) {
-			const conflict = toArray(existingProjects).find((p) => p.slug === ev.slug);
-			errors.push({
+	if (existingSlugs.has(ev.slug)) {
+		const conflict = toArray(existingProjects).find((p) => p.slug === ev.slug);
+		return {
+			error: {
 				eventId: ev.id,
 				slug: ev.slug,
 				reason: `Slug "${ev.slug}" already in use by project ${conflict?.id}`,
-			});
-			console.log(`  ⚠ SKIP: slug conflict with project ${conflict?.id}`);
-			continue;
-		}
+			},
+		};
+	}
 
-		const baseDemoId = BASE_DEMO_BY_TYPE[ev.event_type] || 'demo-xv-jewelry-box';
-		const actualTheme = resolveActualTheme(ev.slug, ev.event_type, CONTENT_EVENTS_DIR);
+	const baseDemoId = BASE_DEMO_BY_TYPE[ev.event_type] || 'demo-xv-jewelry-box';
+	const actualTheme = resolveActualTheme(ev.slug, ev.event_type, CONTENT_EVENTS_DIR);
 
-		// Create project
-		let project;
-		try {
-			const projectBody = {
-				title: ev.title,
-				event_type: ev.event_type,
-				slug: ev.slug,
-				status: ev.status || 'draft',
-				base_demo_id: baseDemoId,
-				theme_id: actualTheme,
-				snapshot: {
-					id: baseDemoId,
-					eventType: ev.event_type,
-					displayName: 'Adoptado de evento legacy',
-					themeId: actualTheme,
-					previewSlug: baseDemoId,
-				},
-				client_name: '',
-				client_email: '',
-				client_whatsapp: '',
-			};
-			if (ev.owner_user_id) projectBody.created_by = ev.owner_user_id;
-
-			const created = await restPost(
-				'invitations',
-				projectBody,
-				`select=id,slug,event_type,title,status`,
-			);
-			project = toArray(created)[0] ?? created;
-			console.log(`  ✓ Project created: ${project.id}`);
-		} catch (err) {
-			errors.push({
+	let project;
+	try {
+		const projectBody = buildProjectBody(ev, baseDemoId, actualTheme);
+		const created = await restPost(
+			'invitations',
+			projectBody,
+			'select=id,slug,event_type,title,status',
+		);
+		project = toArray(created)[0] ?? created;
+		console.log(`  ✓ Project created: ${project.id}`);
+	} catch (err) {
+		return {
+			error: {
 				eventId: ev.id,
 				slug: ev.slug,
 				reason: `Failed to create project: ${err.message}`,
-			});
-			console.log(`  ✗ Failed to create project: ${err.message}`);
-			continue;
-		}
+			},
+		};
+	}
 
-		// Link event to project
-		try {
-			const updated = await restPatch(
-				'events',
-				{ invitation_project_id: project.id },
-				`id=eq.${ev.id}&select=id,slug,invitation_project_id`,
-			);
-			console.log(`  ✓ Event linked to project: ${updated[0]?.invitation_project_id}`);
-		} catch (err) {
-			errors.push({
+	try {
+		const updated = await restPatch(
+			'events',
+			{ invitation_project_id: project.id },
+			`id=eq.${ev.id}&select=id,slug,invitation_project_id`,
+		);
+		console.log(`  ✓ Event linked to project: ${updated[0]?.invitation_project_id}`);
+	} catch (err) {
+		return {
+			error: {
 				eventId: ev.id,
 				slug: ev.slug,
 				reason: `Failed to link event: ${err.message}`,
-			});
-			console.log(`  ✗ Failed to link event: ${err.message}`);
-			continue;
-		}
+			},
+		};
+	}
 
-		existingSlugs.add(ev.slug);
+	const guests = guestMap.get(ev.id) || [];
+	const claims = claimMap.get(ev.id) || [];
 
-		const guests = guestMap.get(ev.id) || [];
-		const claims = claimMap.get(ev.id) || [];
-
-		adoptions.push({
+	return {
+		adoption: {
 			eventId: ev.id,
 			slug: ev.slug,
 			projectId: project.id,
 			guestCount: guests.length,
 			claimCodeCount: claims.length,
-		});
-	}
+		},
+	};
+}
 
-	// 5. Verification: re-check events
-	const updatedEvents = await restGet(
-		'events',
-		'select=id,slug,event_type,title,status,invitation_project_id,owner_user_id',
-	);
-	const remainingOrphans = toArray(updatedEvents).filter((e) => !e.invitation_project_id);
-	const linkedEvents = toArray(updatedEvents).filter((e) => e.invitation_project_id);
-
-	// Check no duplicate project links
-	const projectLinks = new Map();
-	for (const e of linkedEvents) {
-		if (!projectLinks.has(e.invitation_project_id))
-			projectLinks.set(e.invitation_project_id, []);
-		projectLinks.get(e.invitation_project_id).push(e);
-	}
-	const duplicateLinks = [...projectLinks.entries()].filter(([, evts]) => evts.length > 1);
-
-	// Build report
-	const report = {
+function buildReport(
+	eventsBefore,
+	eventsAfter,
+	adoptions,
+	errors,
+	orphanEventsBefore,
+	orphanEventsAfter,
+	duplicateLinks,
+) {
+	return {
 		meta: {
 			generatedAt: new Date().toISOString(),
 			tool: 'scripts/adopt-legacy-events.mjs',
@@ -355,11 +333,14 @@ async function main() {
 		adoptions,
 		errors,
 		verification: {
-			totalEventsBefore: toArray(events).length,
-			totalEventsAfter: toArray(updatedEvents).length,
-			orphansBefore: orphanEvents.length,
-			orphansAfter: remainingOrphans.length,
-			linkedEvents: linkedEvents.length,
+			totalEventsBefore: toArray(eventsBefore).length,
+			totalEventsAfter: toArray(eventsAfter).length,
+			orphansBefore: orphanEventsBefore.length,
+			orphansAfter: orphanEventsAfter.length,
+			linkedEvents:
+				orphanEventsAfter === 0
+					? toArray(eventsAfter).length
+					: toArray(eventsAfter).filter((e) => e.invitation_project_id).length,
 			eventsWithDuplicateProjectLinks: duplicateLinks.length,
 			duplicateLinkDetails: duplicateLinks.map(([pid, evts]) => ({
 				projectId: pid,
@@ -367,19 +348,15 @@ async function main() {
 			})),
 		},
 	};
+}
 
-	// Write report
-	fs.mkdirSync(path.dirname(REPORT_FILE), { recursive: true });
-	fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
-
-	// Summary
+function printSummary(adoptions, errors, remainingOrphans, orphanEvents, reportFile) {
 	console.log(`\n${'═'.repeat(60)}`);
 	console.log('ADOPTION SUMMARY');
 	console.log(`${'═'.repeat(60)}`);
 	console.log(`  Events adopted:      ${adoptions.length}`);
 	console.log(`  Errors:              ${errors.length}`);
 	console.log(`  Remaining orphans:   ${remainingOrphans.length}`);
-	console.log(`  Duplicate links:     ${duplicateLinks.length}`);
 
 	if (adoptions.length > 0) {
 		console.log('\nAdopted events:');
@@ -401,8 +378,86 @@ async function main() {
 		console.log('\n⚠ No orphans were adopted. Migration may not be applied yet.');
 	}
 
-	console.log(`\nReport: ${REPORT_FILE}`);
+	console.log(`\nReport: ${reportFile}`);
 	console.log(`${'═'.repeat(60)}\n`);
+}
+
+async function main() {
+	loadConfiguration();
+
+	console.log('╔══════════════════════════════════════════════════════════════════╗');
+	console.log('║  Stage 1.5  Controlled adoption: legacy RSVP events            ║');
+	console.log('╚══════════════════════════════════════════════════════════════════╝');
+	console.log(`\nStarted: ${new Date().toISOString()}\n`);
+
+	const events = await fetchEvents();
+	const orphanEvents = toArray(events).filter((e) => !e.invitation_project_id);
+
+	console.log(`Total events:        ${toArray(events).length}`);
+	console.log(`Orphan events:       ${orphanEvents.length}\n`);
+
+	if (orphanEvents.length === 0) {
+		console.log('No orphan events to adopt. Nothing to do.');
+		return;
+	}
+
+	const existingProjects = await restGet('invitations', 'select=id,slug,event_type,title');
+	const existingSlugs = new Set(
+		toArray(existingProjects)
+			.map((p) => p.slug)
+			.filter(Boolean),
+	);
+
+	const allGuests = await restGet('guest_invitations', 'select=event_id,attendance_status');
+	const guestMap = buildMap(allGuests, 'event_id');
+
+	const allClaims = await restGet('event_claim_codes', 'select=event_id');
+	const claimMap = buildMap(allClaims, 'event_id');
+
+	const adoptions = [];
+	const errors = [];
+
+	for (const ev of orphanEvents) {
+		const result = await processOrphanEvent(
+			ev,
+			existingSlugs,
+			existingProjects,
+			guestMap,
+			claimMap,
+		);
+		if (result.error) {
+			errors.push(result.error);
+		}
+		if (result.adoption) {
+			existingSlugs.add(ev.slug);
+			adoptions.push(result.adoption);
+		}
+	}
+
+	const updatedEvents = await restGet(
+		'events',
+		'select=id,slug,event_type,title,status,invitation_project_id,owner_user_id',
+	);
+	const remainingOrphans = toArray(updatedEvents).filter((e) => !e.invitation_project_id);
+	const linkedEvents = toArray(updatedEvents).filter((e) => e.invitation_project_id);
+
+	const projectLinks = buildMap(linkedEvents, 'invitation_project_id');
+	const duplicateLinks = [...projectLinks.entries()].filter(([, evts]) => evts.length > 1);
+
+	const report = buildReport(
+		events,
+		updatedEvents,
+		adoptions,
+		errors,
+		orphanEvents,
+		remainingOrphans,
+		duplicateLinks,
+	);
+
+	fs.mkdirSync(path.dirname(REPORT_FILE), { recursive: true });
+	fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
+
+	printSummary(adoptions, errors, remainingOrphans, orphanEvents, REPORT_FILE);
 }
 
 main().catch((err) => {
