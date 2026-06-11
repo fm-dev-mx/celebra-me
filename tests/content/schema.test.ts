@@ -177,6 +177,26 @@ describe('Event content schema (real contract)', () => {
 		expect(result.data.hero.variant).toBe('editorial');
 	});
 
+	it('accepts grouped eventTiming fields', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2026-08-02T03:00:00.000Z',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.eventTiming).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+			startsAtUtc: '2026-08-02T03:00:00.000Z',
+		});
+	});
+
 	it('accepts explicit invitation section order with personalized access', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

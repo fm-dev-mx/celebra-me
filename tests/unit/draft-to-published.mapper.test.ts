@@ -492,6 +492,25 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('derives startsAtUtc from localDateTime and timeZone in mapper', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+				},
+			},
+		});
+
+		expect(result.eventTiming).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+			startsAtUtc: '2026-08-02T03:00:00.000Z',
+		});
+	});
+
 	it('uses themed countdown text for demo invitations', () => {
 		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 

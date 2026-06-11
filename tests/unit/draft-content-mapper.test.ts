@@ -95,6 +95,24 @@ describe('mapNestedToDraftContent', () => {
 		});
 	});
 
+	it('preserves eventTiming from published content', () => {
+		const input = {
+			eventTiming: {
+				localDateTime: '2026-08-01T20:00',
+				timeZone: 'America/Mazatlan',
+				startsAtUtc: '2026-08-02T03:00:00.000Z',
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.eventTiming).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+			startsAtUtc: '2026-08-02T03:00:00.000Z',
+		});
+	});
+
 	it('preserves thankYou image when present', () => {
 		const input = {
 			thankYou: {

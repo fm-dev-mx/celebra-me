@@ -335,6 +335,78 @@ describe('hydration edge cases', () => {
 		expect(result.sectionStates.description).toBe('published');
 	});
 
+	it('merges eventTiming from draft, published, and demo using shallowMergeDefined', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: {
+				...draft.content,
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+				},
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.eventTiming).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+		});
+		expect(result.sectionStates.eventTiming).toBe('draft');
+	});
+
+	it('inherits eventTiming from published content when draft has none', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: { ...draft.content },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				eventTiming: {
+					localDateTime: '2026-09-15T18:00',
+					timeZone: 'America/Mexico_City',
+				},
+			},
+		});
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.eventTiming).toEqual({
+			localDateTime: '2026-09-15T18:00',
+			timeZone: 'America/Mexico_City',
+		});
+		expect(result.sectionStates.eventTiming).toBe('published');
+	});
+
+	it('inherits eventTiming from demo content when neither draft nor published have it', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: { ...draft.content },
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+		const demoWithTiming = {
+			...demoContent,
+			eventTiming: {
+				localDateTime: '2026-12-01T12:00',
+				timeZone: 'America/Cancun',
+			},
+		};
+		(getCollection as jest.Mock).mockResolvedValue([
+			{
+				id: 'xv/demo-xv-jewelry-box.json',
+				data: demoWithTiming,
+			},
+		]);
+
+		const result = await getInvitationEditorContext('proj-1');
+		expect(result.content.eventTiming).toEqual({
+			localDateTime: '2026-12-01T12:00',
+			timeZone: 'America/Cancun',
+		});
+		expect(result.sectionStates.eventTiming).toBe('demo');
+	});
+
 	it('prefers demo content when neither draft nor published have a key', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,

@@ -181,6 +181,10 @@ const validDraft = {
 		title: 'Test Event',
 		description: 'A test event',
 		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
+		eventTiming: {
+			localDateTime: '2027-11-20T18:00',
+			timeZone: 'America/Mazatlan',
+		},
 		rsvp: { title: 'Confirma', guestCap: 4, confirmationMode: 'api' },
 	},
 	status: 'draft' as const,
@@ -233,6 +237,74 @@ describe('publishDraft', () => {
 		);
 		expect(mockUpdateDraftStatus).toHaveBeenCalledWith('draft-1', 'approved');
 		expect(mockUpdateProject).toHaveBeenCalledWith('proj-1', { status: 'published' });
+	});
+
+	it('derives eventTiming.startsAtUtc during publish', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2000-01-01T00:00:00.000Z',
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+
+		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		expect(publishedContent.eventTiming).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+			startsAtUtc: '2026-08-02T03:00:00.000Z',
+		});
+	});
+
+	it('blocks publish with Spanish error when renderable countdown has incomplete eventTiming', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+				},
+			},
+		} as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+			message: expect.stringContaining('cuenta regresiva'),
+		});
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('allows publish with incomplete eventTiming when countdown is not renderable', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+				},
+				sectionOrder: ['quote', 'location', 'rsvp'],
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+
+		expect(mockUpsertPublished).toHaveBeenCalled();
 	});
 
 	it('rejects when no draft exists', async () => {

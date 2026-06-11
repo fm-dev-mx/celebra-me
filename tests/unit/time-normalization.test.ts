@@ -1,5 +1,12 @@
 import { describe, it, expect } from '@jest/globals';
 import { parseTime, normalizeTime, isValidTime } from '@/lib/intake/utils';
+import {
+	buildPublishedEventTiming,
+	deriveStartsAtUtc,
+	isValidIanaTimeZone,
+	parseEventLocalDateTime,
+	resolveCountdownTarget,
+} from '@/lib/time/event-time';
 
 describe('parseTime', () => {
 	describe('valid 24-hour format (HH:mm)', () => {
@@ -148,5 +155,85 @@ describe('isValidTime', () => {
 		expect(isValidTime('invalid')).toBe(false);
 		expect(isValidTime('')).toBe(false);
 		expect(isValidTime(null)).toBe(false);
+	});
+});
+
+describe('eventTiming utilities', () => {
+	it('converts Mexico Pacific local time to the correct UTC instant', () => {
+		expect(deriveStartsAtUtc('2026-08-01T20:00', 'America/Mazatlan')).toBe(
+			'2026-08-02T03:00:00.000Z',
+		);
+	});
+
+	it('documents DST-sensitive conversion for Tijuana summer time', () => {
+		expect(deriveStartsAtUtc('2026-07-01T20:00', 'America/Tijuana')).toBe(
+			'2026-07-02T03:00:00.000Z',
+		);
+	});
+
+	it('fails safely for invalid IANA zones', () => {
+		expect(isValidIanaTimeZone('America/Mazatlan')).toBe(true);
+		expect(isValidIanaTimeZone('GMT-7')).toBe(false);
+		expect(deriveStartsAtUtc('2026-08-01T20:00', 'GMT-7')).toBeNull();
+	});
+
+	it('treats localDateTime as a strict event-local value, not an instant', () => {
+		expect(parseEventLocalDateTime('2026-08-01T20:00')).toBe('2026-08-01T20:00');
+		expect(parseEventLocalDateTime('2026-08-01T20:00:00')).toBeNull();
+		expect(parseEventLocalDateTime('2026-08-01T20:00Z')).toBeNull();
+		expect(parseEventLocalDateTime('2026-08-01T20:00-07:00')).toBeNull();
+	});
+
+	it('rejects impossible calendar dates like June 31', () => {
+		expect(parseEventLocalDateTime('2026-06-31T20:00')).toBeNull();
+	});
+
+	it('rejects April 31', () => {
+		expect(parseEventLocalDateTime('2026-04-31T20:00')).toBeNull();
+	});
+
+	it('rejects February 30', () => {
+		expect(parseEventLocalDateTime('2026-02-30T20:00')).toBeNull();
+	});
+
+	it('rejects February 29 in a non-leap year', () => {
+		expect(parseEventLocalDateTime('2025-02-29T20:00')).toBeNull();
+	});
+
+	it('accepts February 29 in a leap year', () => {
+		expect(parseEventLocalDateTime('2028-02-29T20:00')).toBe('2028-02-29T20:00');
+	});
+
+	it('buildPublishedEventTiming drops fields that fail validation', () => {
+		expect(buildPublishedEventTiming({ localDateTime: 'not-valid', timeZone: 'America/Mazatlan' })).toEqual({
+			timeZone: 'America/Mazatlan',
+		});
+		expect(buildPublishedEventTiming({ localDateTime: '2026-08-01T20:00', timeZone: 'GMT-7' })).toEqual({
+			localDateTime: '2026-08-01T20:00',
+		});
+		expect(buildPublishedEventTiming({ localDateTime: '2026-08-01T20:00', timeZone: 'America/Mazatlan' })).toEqual({
+			localDateTime: '2026-08-01T20:00',
+			timeZone: 'America/Mazatlan',
+			startsAtUtc: '2026-08-02T03:00:00.000Z',
+		});
+	});
+
+	it('buildPublishedEventTiming returns undefined for empty input', () => {
+		expect(buildPublishedEventTiming(undefined)).toBeUndefined();
+		expect(buildPublishedEventTiming({})).toBeUndefined();
+	});
+
+	it('centralizes countdown target resolution and marks legacy fallback', () => {
+		expect(
+			resolveCountdownTarget(
+				{ localDateTime: '2026-08-01T20:00', timeZone: 'America/Mazatlan', startsAtUtc: '2026-08-02T03:00:00.000Z' },
+				'2026-08-01T20:00:00.000Z',
+			),
+		).toEqual({ targetIso: '2026-08-02T03:00:00.000Z', source: 'eventTiming' });
+
+		expect(resolveCountdownTarget(undefined, '2026-08-01T20:00:00.000Z')).toEqual({
+			targetIso: '2026-08-01T20:00:00.000Z',
+			source: 'legacyHeroDate',
+		});
 	});
 });
