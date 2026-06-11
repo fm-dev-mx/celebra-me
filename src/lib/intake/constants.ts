@@ -9,6 +9,14 @@ export const COUNTDOWN_DEFAULTS = {
 	footerText: 'Prepárate para una noche inolvidable',
 };
 
+export const MEXICO_TIME_ZONE_OPTIONS = [
+	{ label: 'Centro de México', value: 'America/Mexico_City' },
+	{ label: 'Pacífico / Sinaloa', value: 'America/Mazatlan' },
+	{ label: 'Tijuana / Baja California', value: 'America/Tijuana' },
+	{ label: 'Cancún / Quintana Roo', value: 'America/Cancun' },
+	{ label: 'Sonora', value: 'America/Hermosillo' },
+] as const;
+
 export function formatDateLong(date: string): string {
 	const d = new Date(date);
 	if (isNaN(d.getTime())) return date;

@@ -138,6 +138,21 @@ export const countdownSchema = z
 	})
 	.optional();
 
+export const eventTimingSchema = z
+	.object({
+		localDateTime: z
+			.string()
+			.regex(
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
+				'eventTiming.localDateTime must be an event-local datetime like 2026-08-01T20:00',
+			)
+			.optional(),
+		timeZone: z.string().min(1).optional(),
+		startsAtUtc: z.iso.datetime().optional(),
+	})
+	.strict()
+	.optional();
+
 export const navigationSchema = z
 	.array(
 		z.object({
@@ -180,6 +195,7 @@ export const baseEventFieldsSchema = z.object({
 	title: z.string(),
 	description: z.string().optional(),
 	theme: themeSchema,
+	eventTiming: eventTimingSchema,
 	sectionOrder: sectionOrderSchema,
 	_assetSlug: z
 		.string()

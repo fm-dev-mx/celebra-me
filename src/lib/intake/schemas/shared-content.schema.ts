@@ -97,6 +97,17 @@ export const countdownEditorSchema = z
 	})
 	.strict();
 
+export const eventTimingEditorSchema = z
+	.object({
+		localDateTime: optionalText(16).refine(
+			(value) => !value || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value),
+			'Usa fecha y hora local del evento, por ejemplo 2026-08-01T20:00.',
+		),
+		timeZone: optionalText(80),
+		startsAtUtc: optionalText(40),
+	})
+	.strict();
+
 export const rsvpResponseMessageSchema = z
 	.object({
 		title: optionalText(500),
