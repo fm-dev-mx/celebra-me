@@ -2,7 +2,7 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolveSiteOrigin } from '@/lib/shared/origin';
-import { generateInvitationLink } from '@utils/invitation-link';
+import { generateInvitationLink } from '@/utils/invitation-link';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
 	DEFAULT_INVITATION_MESSAGE,
