@@ -27,15 +27,15 @@ class DashboardApiError extends Error {
 	}
 }
 
-function shouldRequestDashboardDebug(): boolean {
+const DASHBOARD_DEBUG = (() => {
 	if (typeof window === 'undefined') return false;
 	return new URLSearchParams(window.location.search).get('debug') === '1';
-}
+})();
 
 export class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>, context: string): T {
 		if (!result.ok) {
-			if (shouldRequestDashboardDebug()) {
+			if (DASHBOARD_DEBUG) {
 				console.info('[dashboard][client][api:error]', {
 					context,
 					status: result.status,
@@ -46,7 +46,7 @@ export class GuestsApi {
 			}
 			throw new DashboardApiError(result);
 		}
-		if (shouldRequestDashboardDebug()) {
+		if (DASHBOARD_DEBUG) {
 			console.info('[dashboard][client][api:ok]', {
 				context,
 				status: result.status,
@@ -106,7 +106,7 @@ export class GuestsApi {
 	async revertShared(guestId: string): Promise<DashboardGuestItem> {
 		const result = await dashboardApi.patch<{ item: DashboardGuestItem }>(
 			`/api/dashboard/guests/${encodeURIComponent(guestId)}`,
-			{ deliveryStatus: 'generated' },
+			{ deliveryStatus: 'generated', firstSharedAt: null },
 		);
 		return this.handleResponse(result, 'guests.revertShared').item;
 	}
@@ -121,7 +121,7 @@ export class GuestsApi {
 
 	async listEvents(): Promise<DashboardEventListResponse> {
 		let path = '/api/dashboard/events';
-		if (shouldRequestDashboardDebug()) {
+		if (DASHBOARD_DEBUG) {
 			const params = new URLSearchParams({ debug: '1' });
 			const slug = new URLSearchParams(window.location.search).get('slug');
 			if (slug) params.set('slug', slug);
