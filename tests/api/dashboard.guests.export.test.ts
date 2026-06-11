@@ -81,6 +81,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				confirmedPeople: 1,
 				declinedInvitations: 0,
 				declinedPeople: 0,
+				unconfirmedShared: 0,
 				viewed: 0,
 			},
 			shareTemplates: {
@@ -155,6 +156,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 				confirmedPeople: 0,
 				declinedInvitations: 0,
 				declinedPeople: 0,
+				unconfirmedShared: 0,
 				viewed: 0,
 			},
 			shareTemplates: {
