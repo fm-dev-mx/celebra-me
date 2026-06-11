@@ -52,7 +52,9 @@
 
 	&:focus-within {
 		border-color: var(--color-action-primary);
-		box-shadow: 0 0 0 3px rgb(var(--color-action-primary-rgb) / 12%);
+		box-shadow:
+			0 0 0 3px var(--dashboard-focus-ring),
+			0 0 12px var(--dashboard-focus-glow);
 
 		.phone-prefix {
 			border-right-color: var(--color-action-primary);
