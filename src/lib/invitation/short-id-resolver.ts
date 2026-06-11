@@ -54,7 +54,7 @@ export async function resolveShortIdRequest(
 	}
 
 	let ogTitle = context.eventTitle;
-	let ogDescription = '';
+	let ogDescription = context.eventTitle ? `Invitación digital para ${context.eventTitle}` : '';
 	let ogImage = buildSocialImageMetadata('/images/og-image.webp', { origin: siteOrigin });
 
 	try {
