@@ -17,6 +17,10 @@
 		display: flex;
 	}
 
+	body.modal-open & {
+		display: none;
+	}
+
 	.dock-item {
 		display: flex;
 		flex-direction: column;

@@ -47,30 +47,11 @@
 	}
 
 	input:checked + &__content {
-		background: var(--color-accent-soft-bg, rgb(var(--color-action-accent-rgb) / 14%));
-		border-color: var(--color-border-emphasis);
-		color: var(--color-action-primary);
-		box-shadow:
-			0 0 0 1px rgb(var(--color-action-accent-rgb) / 20%),
-			0 4px 12px rgb(var(--color-action-accent-rgb) / 12%);
+		background: rgb(var(--color-action-accent-rgb) / 12%);
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
 		font-weight: 700;
-
-		&::after {
-			content: '✓';
-			position: absolute;
-			top: -6px;
-			right: -6px;
-			background: var(--color-action-primary);
-			color: var(--color-surface-primary);
-			width: 18px;
-			height: 18px;
-			border-radius: 50%;
-			font-size: 0.6rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-		}
+		box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 24%);
 	}
 }
 
