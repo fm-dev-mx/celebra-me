@@ -124,8 +124,8 @@ describe('updateShareMessages', () => {
 			shareMessages: { invitation: '', reminder: '' },
 		});
 
-		expect(result.shareMessages.invitation).toContain('Hola {guestName}');
-		expect(result.shareMessages.reminder).toContain('Hola {guestName}');
+		expect(result.shareMessages.invitation).toContain('Hola {{invitado}}');
+		expect(result.shareMessages.reminder).toContain('Hola {{invitado}}');
 	});
 
 	it('persists reminderSettings when provided', async () => {

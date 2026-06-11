@@ -359,8 +359,14 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			onClose={onClose}
 		>
 			<div className="dashboard-modal__content">
-				{shareStatus === 'idle' && renderFormSection()}
-				{shareStatus === 'idle' && templates && renderMessageSection()}
+				{shareStatus === 'idle' && (
+					<div
+						className={`send-invitation${isReminderMode ? ' send-invitation--reminder' : ''}`}
+					>
+						{renderFormSection()}
+						{templates && renderMessageSection()}
+					</div>
+				)}
 				{shareStatus === 'fallback' && renderFallbackSection()}
 			</div>
 

@@ -14,17 +14,27 @@ export interface ShareMessageContext {
 const EVENT_TITLE_FALLBACK = 'nuestra celebraci\u00f3n';
 
 const ALL_PLACEHOLDERS =
-	/\{(guestName|name|fullName|eventTitle|inviteUrl|eventDate|daysUntilEvent|rsvpDeadline|eventTimingText|rsvpDeadlineText)\}/g;
+	/\{\{(invitado|evento|enlace|fecha|dias_faltantes|fecha_limite|hora_evento|limite_confirmacion)\}\}|\{(guestName|name|fullName|eventTitle|inviteUrl|eventDate|daysUntilEvent|rsvpDeadline|eventTimingText|rsvpDeadlineText)\}/g;
+
+const ALIASES: Record<string, string> = {
+	name: 'guestName',
+	fullName: 'guestName',
+	invitado: 'guestName',
+	evento: 'eventTitle',
+	enlace: 'inviteUrl',
+	fecha: 'eventDate',
+	dias_faltantes: 'daysUntilEvent',
+	fecha_limite: 'rsvpDeadline',
+	hora_evento: 'eventTimingText',
+	limite_confirmacion: 'rsvpDeadlineText',
+};
 
 function resolveGuestName(raw: string | null | undefined): string {
-	if (!raw) return '';
-	const trimmed = sanitize(raw, 120);
-	return trimmed;
+	return raw ? sanitize(raw, 120) : '';
 }
 
 function resolveEventTitle(raw: string | null | undefined): string {
-	if (!raw) return EVENT_TITLE_FALLBACK;
-	const trimmed = sanitize(raw, 120);
+	const trimmed = raw ? sanitize(raw, 120) : '';
 	return trimmed || EVENT_TITLE_FALLBACK;
 }
 
@@ -39,21 +49,22 @@ function cleanEmptyGreeting(message: string): string {
 export function renderShareMessage(template: string, context: ShareMessageContext): string {
 	const guestName = resolveGuestName(context.guestName);
 	const eventTitle = resolveEventTitle(context.eventTitle);
-	const inviteUrl = context.inviteUrl;
 
-	const vars: Record<string, string> = {
+	const canonical: Record<string, string> = {
 		guestName,
-		name: guestName,
-		fullName: guestName,
 		eventTitle,
-		inviteUrl,
+		inviteUrl: context.inviteUrl,
 		eventDate: context.eventDate ?? '',
 		daysUntilEvent: context.daysUntilEvent ?? '',
 		rsvpDeadline: context.rsvpDeadline ?? '',
 		eventTimingText: context.eventTimingText ?? '',
 		rsvpDeadlineText: context.rsvpDeadlineText ?? '',
 	};
-	let result = template.replaceAll(ALL_PLACEHOLDERS, (_, key) => vars[key as keyof typeof vars]);
+
+	let result = template.replaceAll(ALL_PLACEHOLDERS, (_, spanishKey, legacyKey) => {
+		const rawKey = spanishKey ?? legacyKey;
+		return canonical[ALIASES[rawKey] ?? rawKey] ?? '';
+	});
 
 	if (!guestName) {
 		result = cleanEmptyGreeting(result);

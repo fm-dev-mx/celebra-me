@@ -11,35 +11,35 @@ export const DEFAULT_PREVIEW_CONTEXT = {
 };
 
 export const SHARE_MESSAGE_VARIABLES = [
-	'{guestName}',
-	'{eventTitle}',
-	'{inviteUrl}',
-	'{eventDate}',
-	'{daysUntilEvent}',
-	'{rsvpDeadline}',
-	'{eventTimingText}',
-	'{rsvpDeadlineText}',
+	'{{invitado}}',
+	'{{evento}}',
+	'{{enlace}}',
+	'{{fecha}}',
+	'{{dias_faltantes}}',
+	'{{fecha_limite}}',
+	'{{hora_evento}}',
+	'{{limite_confirmacion}}',
 ] as const;
 
 export const SHARE_MESSAGE_VARIABLE_LABELS: Record<
 	(typeof SHARE_MESSAGE_VARIABLES)[number],
 	string
 > = {
-	'{guestName}': 'Invitado',
-	'{eventTitle}': 'Evento',
-	'{inviteUrl}': 'Link',
-	'{eventDate}': 'Fecha',
-	'{daysUntilEvent}': 'Días faltantes',
-	'{rsvpDeadline}': 'Fecha límite',
-	'{eventTimingText}': 'Tiempo del evento',
-	'{rsvpDeadlineText}': 'Límite de confirmación',
+	'{{invitado}}': 'Invitado',
+	'{{evento}}': 'Evento',
+	'{{enlace}}': 'Enlace',
+	'{{fecha}}': 'Fecha',
+	'{{dias_faltantes}}': 'Días faltantes',
+	'{{hora_evento}}': 'Hora del evento',
+	'{{fecha_limite}}': 'Fecha límite',
+	'{{limite_confirmacion}}': 'Límite de confirmación',
 };
 
 export const DEFAULT_INVITATION_MESSAGE =
-	'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\nÁbrela para ver los detalles y confirmar tu asistencia.\n\n{inviteUrl}';
+	'Hola {{invitado}}, te comparto tu invitación a {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.';
 
 export const DEFAULT_REMINDER_MESSAGE =
-	'Hola {guestName},\n\n{eventTimingText}\n\n{rsvpDeadlineText}\n\n{inviteUrl}';
+	'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}';
 
 export interface ShareMessagesConfig {
 	invitation: string;

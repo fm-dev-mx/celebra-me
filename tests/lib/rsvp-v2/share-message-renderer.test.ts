@@ -105,7 +105,7 @@ describe('renderShareMessage', () => {
 		expect(result).toContain('te invitamos a Fiesta');
 	});
 
-	it('renders DEFAULT_INVITATION_MESSAGE with link at the end', () => {
+	it('renders DEFAULT_INVITATION_MESSAGE with link', () => {
 		const result = renderShareMessage(DEFAULT_INVITATION_MESSAGE, {
 			...baseContext,
 			inviteUrl: 'https://celebra-me.com/i/abc123',
@@ -114,8 +114,6 @@ describe('renderShareMessage', () => {
 		expect(result).toContain('XV Años de Ayrin Samantha');
 		expect(result).toContain('Ábrela para ver los detalles');
 		expect(result).toContain('https://celebra-me.com/i/abc123');
-		const lines = result.split('\n').filter(Boolean);
-		expect(lines[lines.length - 1].trim()).toBe('https://celebra-me.com/i/abc123');
 	});
 
 	it('renders DEFAULT_REMINDER_MESSAGE with timing and deadline text', () => {
@@ -148,6 +146,14 @@ describe('renderShareMessage', () => {
 		const template = 'Line 1\n\n\nLine 2\n\n\n\n{inviteUrl}';
 		const result = renderShareMessage(template, baseContext);
 		expect(result).not.toContain('\n\n\n');
+	});
+
+	it('replaces Spanish double-brace placeholders', () => {
+		const template = 'Hola {{invitado}}, te invitamos a {{evento}}: {{enlace}}';
+		const result = renderShareMessage(template, baseContext);
+		expect(result).toBe(
+			'Hola María García, te invitamos a XV Años de Ayrin Samantha: https://www.celebra-me.com/xv/ayrin-samantha/i/GBOER6UK',
+		);
 	});
 
 	it('produces no undefined or null text in output', () => {

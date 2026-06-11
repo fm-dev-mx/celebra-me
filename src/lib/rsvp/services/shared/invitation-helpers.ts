@@ -71,11 +71,16 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 	let template = resolveTemplate(input);
 
 	if (input.includeLink) {
-		if (!template.includes('{inviteUrl}') && !template.includes(resolvedOrigin)) {
+		const hasLegacyLink = template.includes('{inviteUrl}');
+		const hasSpanishLink = template.includes('{{enlace}}');
+		if (!hasLegacyLink && !hasSpanishLink && !template.includes(resolvedOrigin)) {
 			template = template.trim() + '\n\n{inviteUrl}';
 		}
 	} else {
-		template = template.replaceAll('{inviteUrl}', '').replace(/\s+$/, '');
+		template = template
+			.replaceAll('{{enlace}}', '')
+			.replaceAll('{inviteUrl}', '')
+			.replace(/\s+$/, '');
 	}
 
 	const today = new Date();

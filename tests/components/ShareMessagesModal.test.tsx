@@ -184,7 +184,7 @@ describe('ShareMessagesModal', () => {
 		fireEvent.click(screen.getByText('Sí'));
 
 		expect(textarea).toHaveValue(
-			'Hola {guestName}, te comparto tu invitación a {eventTitle}:\n\nÁbrela para ver los detalles y confirmar tu asistencia.\n\n{inviteUrl}',
+			'Hola {{invitado}}, te comparto tu invitación a {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
 		);
 	});
 
@@ -217,11 +217,11 @@ describe('ShareMessagesModal', () => {
 		createModal();
 		expect(screen.getByText('Invitado')).toBeInTheDocument();
 		expect(screen.getByText('Evento')).toBeInTheDocument();
-		expect(screen.getByText('Link')).toBeInTheDocument();
+		expect(screen.getByText('Enlace')).toBeInTheDocument();
 		expect(screen.getByText('Fecha')).toBeInTheDocument();
 		expect(screen.getByText('Días faltantes')).toBeInTheDocument();
 		expect(screen.getByText('Fecha límite')).toBeInTheDocument();
-		expect(screen.getByText('Tiempo del evento')).toBeInTheDocument();
+		expect(screen.getByText('Hora del evento')).toBeInTheDocument();
 		expect(screen.getByText('Límite de confirmación')).toBeInTheDocument();
 	});
 });

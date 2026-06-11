@@ -309,7 +309,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 				</div>
 
 				{activeTab !== 'settings' && (
-					<div className="share-messages-modal__editor-card">
+					<div className="share-messages-modal__editor-section">
 						<div
 							className="dashboard-form-field dashboard-form-field--full"
 							role="tabpanel"
@@ -370,7 +370,9 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 							))}
 						</div>
 
-						<div className="share-messages-modal__preview">
+						<div
+							className={`share-messages-modal__preview${activeTab === 'reminder' ? ' share-messages-modal__preview--reminder' : ''}`}
+						>
 							<span className="share-messages-modal__preview-label">
 								Vista previa:
 							</span>

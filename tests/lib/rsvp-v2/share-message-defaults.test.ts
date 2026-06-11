@@ -7,46 +7,40 @@ import {
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 describe('DEFAULT_INVITATION_MESSAGE', () => {
-	it('starts with greeting and guest name placeholder', () => {
-		expect(DEFAULT_INVITATION_MESSAGE).toMatch(/^Hola \{guestName\}/);
+	it('starts with greeting and Spanish guest name placeholder', () => {
+		expect(DEFAULT_INVITATION_MESSAGE).toMatch(/^Hola \{\{invitado\}\}/);
 	});
 
-	it('contains event title placeholder', () => {
-		expect(DEFAULT_INVITATION_MESSAGE).toContain('{eventTitle}');
+	it('contains Spanish event title placeholder', () => {
+		expect(DEFAULT_INVITATION_MESSAGE).toContain('{{evento}}');
 	});
 
-	it('contains invite URL placeholder', () => {
-		expect(DEFAULT_INVITATION_MESSAGE).toContain('{inviteUrl}');
+	it('contains Spanish invite URL placeholder', () => {
+		expect(DEFAULT_INVITATION_MESSAGE).toContain('{{enlace}}');
 	});
 
-	it('places inviteUrl at the end of the message', () => {
-		const lines = DEFAULT_INVITATION_MESSAGE.split('\n').filter(Boolean);
-		expect(lines[lines.length - 1].trim()).toBe('{inviteUrl}');
-	});
-
-	it('contains the Ábrela call to action before the link', () => {
-		const linkIndex = DEFAULT_INVITATION_MESSAGE.indexOf('{inviteUrl}');
-		const beforeLink = DEFAULT_INVITATION_MESSAGE.slice(0, linkIndex);
-		expect(beforeLink).toContain('Ábrela para ver los detalles y confirmar tu asistencia');
+	it('contains the Ábrela call to action after the link', () => {
+		const linkIndex = DEFAULT_INVITATION_MESSAGE.indexOf('{{enlace}}');
+		const afterLink = DEFAULT_INVITATION_MESSAGE.slice(linkIndex);
+		expect(afterLink).toContain('Ábrela para ver los detalles y confirmar tu asistencia');
 	});
 });
 
 describe('DEFAULT_REMINDER_MESSAGE', () => {
-	it('starts with greeting and guest name placeholder', () => {
-		expect(DEFAULT_REMINDER_MESSAGE).toMatch(/^Hola \{guestName\}/);
+	it('starts with greeting and Spanish guest name placeholder', () => {
+		expect(DEFAULT_REMINDER_MESSAGE).toMatch(/^Hola \{\{invitado\}\}/);
 	});
 
-	it('contains eventTimingText placeholder', () => {
-		expect(DEFAULT_REMINDER_MESSAGE).toContain('{eventTimingText}');
+	it('contains Spanish hora_evento placeholder', () => {
+		expect(DEFAULT_REMINDER_MESSAGE).toContain('{{hora_evento}}');
 	});
 
-	it('contains rsvpDeadlineText placeholder', () => {
-		expect(DEFAULT_REMINDER_MESSAGE).toContain('{rsvpDeadlineText}');
+	it('contains Spanish limite_confirmacion placeholder', () => {
+		expect(DEFAULT_REMINDER_MESSAGE).toContain('{{limite_confirmacion}}');
 	});
 
-	it('contains inviteUrl placeholder at the end', () => {
-		const lines = DEFAULT_REMINDER_MESSAGE.split('\n').filter(Boolean);
-		expect(lines[lines.length - 1].trim()).toBe('{inviteUrl}');
+	it('contains Spanish enlace placeholder', () => {
+		expect(DEFAULT_REMINDER_MESSAGE).toContain('{{enlace}}');
 	});
 });
 
