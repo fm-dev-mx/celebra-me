@@ -1,13 +1,12 @@
 @use '../tokens' as tokens;
-/* stylelint-disable declaration-no-important */
 
 // ==========================================================================
 // DASHBOARD MODAL SYSTEM
 // ==========================================================================
 
 .dashboard-modal-backdrop {
-	position: fixed !important;
-	inset: 0 !important;
+	position: fixed;
+	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -18,7 +17,7 @@
 	overscroll-behavior: contain;
 	background: var(--dashboard-overlay-bg);
 	backdrop-filter: blur(12px) saturate(180%);
-	z-index: var(--dashboard-z-modal-backdrop) !important;
+	z-index: var(--dashboard-z-modal-backdrop);
 
 	/* On mobile, remove padding so modal goes fullscreen */
 	@media (width <= 600px) {
@@ -29,7 +28,7 @@
 
 .dashboard-modal {
 	position: relative;
-	z-index: var(--dashboard-z-modal) !important;
+	z-index: var(--dashboard-z-modal);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -162,21 +161,21 @@
 			min-height: 44px;
 			font-size: 0.85rem;
 			border-radius: 8px;
-			box-shadow: none !important;
-			transform: none !important;
-			background-image: none !important;
+			box-shadow: none;
+			transform: none;
+			background-image: none;
 		}
 
 		.dashboard-modal__footer button::after {
-			display: none !important;
+			display: none;
 		}
 
 		.dashboard-modal__footer button:hover {
-			transform: translateY(-1px) !important;
+			transform: translateY(-1px);
 		}
 
 		.dashboard-modal__footer button:active {
-			transform: scale(0.98) !important;
+			transform: scale(0.98);
 		}
 
 		.dashboard-modal__footer .btn-secondary {
@@ -272,7 +271,7 @@
 	border-top: 1px solid var(--color-border-subtle);
 
 	@media (width <= 480px) {
-		flex-direction: column-reverse;
+		flex-direction: column;
 
 		button {
 			width: 100%;

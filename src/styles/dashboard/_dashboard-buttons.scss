@@ -140,8 +140,20 @@
 }
 
 .btn-secondary--postpone {
-	border: 1px dashed var(--color-border-emphasis);
+	border: 1px solid var(--color-border-subtle);
 	color: var(--color-text-secondary);
+	background: transparent;
+
+	&:hover {
+		background: rgb(var(--color-text-secondary-rgb) / 6%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
+	}
+}
+
+.btn-secondary--active {
+	background: rgb(var(--color-action-accent-rgb) / 10%);
+	border-color: var(--color-border-emphasis);
+	color: var(--color-text-primary);
 }
 
 .btn--compact {
@@ -150,8 +162,4 @@
 	font-size: 0.72rem;
 }
 
-.btn--small {
-	min-height: 30px;
-	padding: 0 0.6rem;
-	font-size: 0.68rem;
-}
+
