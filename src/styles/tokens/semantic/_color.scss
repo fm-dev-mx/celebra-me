@@ -135,6 +135,11 @@ $semantic-color: (
 			$weight: 22%
 		)};
 	--color-state-info-text: #{sys.$sys-color-slate-800};
+	--color-state-neutral: #{sys.$sys-color-neutral-500};
+	--color-state-neutral-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-500)};
+	--color-state-neutral-bg: rgb(var(--color-state-neutral-rgb) / 12%);
+	--color-state-neutral-border: rgb(var(--color-state-neutral-rgb) / 28%);
+	--color-state-neutral-text: #{sys.$sys-color-neutral-500};
 	--color-whatsapp: #{sys.$sys-color-whatsapp};
 	--color-whatsapp-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
 	--color-envelope-paper-ivory: #{color.mix(
