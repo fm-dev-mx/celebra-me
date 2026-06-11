@@ -67,8 +67,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 }
 
@@ -218,7 +217,7 @@
 	width: 6px;
 	height: 6px;
 	border-radius: 50%;
-	background: var(--color-state-success);
+	background: var(--color-state-success-bg);
 }
 
 /* Responsive adjustments */

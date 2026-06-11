@@ -126,11 +126,11 @@
 	}
 
 	&--danger {
-		color: var(--color-state-danger);
+		color: var(--color-state-danger-text);
 
 		&:hover {
 			background: rgb(var(--color-state-danger-rgb) / 6%);
-			border-color: var(--color-state-danger);
+			border-color: var(--color-state-danger-border);
 		}
 	}
 }

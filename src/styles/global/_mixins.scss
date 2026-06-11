@@ -69,3 +69,14 @@
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
+
+@mixin focus-ring {
+	outline: 2px solid var(--dashboard-focus-ring);
+	outline-offset: 2px;
+}
+
+@mixin focus-glow {
+	box-shadow:
+		0 0 0 3px var(--dashboard-focus-ring),
+		0 0 12px var(--dashboard-focus-glow);
+}

@@ -142,8 +142,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 
 	&:disabled {
@@ -213,12 +212,12 @@
 	font-weight: 600;
 
 	svg {
-		color: var(--color-state-warning);
+		color: var(--color-state-warning-text);
 	}
 
 	&:hover {
 		background: rgb(var(--color-state-warning-rgb) / 22%);
-		border-color: var(--color-state-warning);
+		border-color: var(--color-state-warning-border);
 	}
 }
 

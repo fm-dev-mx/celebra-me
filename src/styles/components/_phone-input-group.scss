@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 .phone-input-group {
 	display: flex;
 	border: 1px solid var(--color-border-subtle);
@@ -52,9 +54,8 @@
 
 	&:focus-within {
 		border-color: var(--color-action-primary);
-		box-shadow:
-			0 0 0 3px var(--dashboard-focus-ring),
-			0 0 12px var(--dashboard-focus-glow);
+
+		@include mixins.focus-glow;
 
 		.phone-prefix {
 			border-right-color: var(--color-action-primary);

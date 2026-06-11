@@ -24,7 +24,7 @@
 		color: var(--color-state-info-text);
 
 		.status-pill__dot {
-			background: var(--color-state-info);
+			background: var(--color-state-info-bg);
 		}
 	}
 
@@ -35,7 +35,7 @@
 		color: var(--color-state-success-text);
 
 		.status-pill__dot {
-			background: var(--color-state-success);
+			background: var(--color-state-success-bg);
 		}
 	}
 
@@ -46,7 +46,7 @@
 		color: var(--color-state-danger-text);
 
 		.status-pill__dot {
-			background: var(--color-state-danger);
+			background: var(--color-state-danger-bg);
 		}
 	}
 
@@ -57,7 +57,7 @@
 		color: var(--color-state-warning-text);
 
 		.status-pill__dot {
-			background: var(--color-state-warning);
+			background: var(--color-state-warning-bg);
 		}
 	}
 
@@ -68,7 +68,7 @@
 		color: rgb(var(--color-state-warning-rgb) / 90%);
 
 		.status-pill__dot {
-			background: var(--color-state-warning);
+			background: var(--color-state-warning-bg);
 		}
 	}
 
@@ -79,7 +79,7 @@
 		color: var(--color-state-neutral-text);
 
 		.status-pill__dot {
-			background: var(--color-state-neutral);
+			background: var(--color-state-neutral-bg);
 		}
 	}
 }

@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 .intake-list {
 	max-width: 1200px;
 	margin: 0 auto;
@@ -92,6 +94,8 @@
 	&:focus {
 		outline: none;
 		border-color: var(--color-action-accent);
+
+		@include mixins.focus-glow;
 	}
 }
 

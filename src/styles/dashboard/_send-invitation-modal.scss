@@ -144,7 +144,7 @@
 }
 
 .send-invitation--reminder .send-invitation__preview-card {
-	border-left-color: var(--color-state-warning);
+	border-left-color: var(--color-state-warning-border);
 	background: rgb(var(--color-state-warning-rgb) / 6%);
 }
 
@@ -173,9 +173,8 @@
 	&:focus {
 		outline: none;
 		border-color: var(--color-action-accent);
-		box-shadow:
-			0 0 0 3px var(--dashboard-focus-ring),
-			0 0 12px var(--dashboard-focus-glow);
+
+		@include mixins.focus-glow;
 	}
 }
 
@@ -238,8 +237,7 @@
 	transition: color 0.15s;
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 
 	@include mixins.respond-below(sm) {

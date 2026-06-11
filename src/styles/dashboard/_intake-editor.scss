@@ -156,7 +156,7 @@
 	}
 }
 
-%invitation-editor-action-base {
+@mixin invitation-editor-action-base {
 	padding: 0.65rem 0.9rem;
 	border: 1px solid var(--color-action-accent);
 	border-radius: 8px;
@@ -182,7 +182,7 @@
 .invitation-editor__card-footer button,
 .invitation-editor__secondary-button,
 .invitation-editor__warning button {
-	@extend %invitation-editor-action-base;
+	@include invitation-editor-action-base;
 }
 
 .invitation-editor__card-footer button.invitation-editor__secondary-button {
@@ -252,10 +252,13 @@
 	color: var(--color-text-muted);
 	font-size: 0.8125rem;
 
-	&:hover,
-	&:focus-visible {
+	&:hover {
 		background: var(--dashboard-accent-soft-bg);
 		color: var(--color-action-accent);
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
 	}
 
 	&--active {
@@ -618,7 +621,8 @@
 
 		&:focus-visible {
 			border-color: var(--color-action-accent);
-			outline: 3px solid var(--dashboard-accent-soft-bg);
+
+			@include mixins.focus-ring;
 		}
 	}
 }
@@ -910,11 +914,16 @@
 	cursor: pointer;
 	white-space: nowrap;
 
-	&:hover,
+	&:hover {
+		border-color: var(--color-action-accent);
+		background: var(--dashboard-accent-soft-bg);
+	}
+
 	&:focus-visible {
 		border-color: var(--color-action-accent);
 		background: var(--dashboard-accent-soft-bg);
-		outline: none;
+
+		@include mixins.focus-ring;
 	}
 }
 
@@ -1269,8 +1278,7 @@
 	box-shadow: 0 10px 30px rgb(15 23 42 / 8%);
 
 	&:focus-visible {
-		outline: 3px solid var(--dashboard-accent-soft-bg);
-		outline-offset: 3px;
+		@include mixins.focus-ring;
 	}
 }
 
@@ -1351,8 +1359,7 @@
 		}
 
 		&:focus-visible {
-			outline: 3px solid var(--dashboard-accent-soft-bg);
-			outline-offset: 2px;
+			@include mixins.focus-ring;
 		}
 	}
 }
@@ -1950,7 +1957,8 @@
 	&:focus {
 		outline: none;
 		border-color: var(--color-action-accent);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-accent) 20%, transparent);
+
+		@include mixins.focus-glow;
 	}
 }
 
@@ -2026,6 +2034,8 @@
 		&:focus {
 			outline: none;
 			border-color: var(--color-action-accent);
+
+			@include mixins.focus-glow;
 		}
 	}
 }

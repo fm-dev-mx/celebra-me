@@ -36,9 +36,8 @@
 	&:focus {
 		outline: none;
 		border-color: var(--color-action-accent);
-		box-shadow:
-			0 0 0 3px var(--dashboard-focus-ring),
-			0 0 12px var(--dashboard-focus-glow);
+
+		@include mixins.focus-glow;
 	}
 
 	&::placeholder {
@@ -106,7 +105,7 @@
 
 .import-magic__summary-chip--create {
 	background: rgb(var(--color-state-success-rgb) / 12%);
-	color: var(--color-state-success);
+	color: var(--color-state-success-text);
 }
 
 .import-magic__summary-chip--update {
@@ -161,7 +160,7 @@
 }
 
 .import-magic__all-valid {
-	color: var(--color-state-success);
+	color: var(--color-state-success-text);
 }
 
 // --- Editable table ---
@@ -251,11 +250,11 @@
 	}
 
 	&--error {
-		border-color: var(--color-state-danger-border, var(--color-state-danger));
+		border-color: var(--color-state-danger-border);
 		background: rgb(var(--color-state-danger-rgb) / 4%);
 
 		&:hover {
-			border-color: var(--color-state-danger);
+			border-color: var(--color-state-danger-border);
 		}
 	}
 }
@@ -272,7 +271,7 @@
 
 	&--new {
 		background: rgb(var(--color-state-success-rgb) / 12%);
-		color: var(--color-state-success);
+		color: var(--color-state-success-text);
 	}
 
 	&--error {
@@ -528,7 +527,7 @@
 
 	&--success {
 		background: rgb(var(--color-state-success-rgb) / 10%);
-		color: var(--color-state-success);
+		color: var(--color-state-success-text);
 	}
 
 	&--info {

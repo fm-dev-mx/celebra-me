@@ -103,9 +103,8 @@
 			&:focus {
 				border-color: var(--color-action-accent);
 				outline: none;
-				box-shadow:
-					0 0 0 3px var(--dashboard-focus-ring),
-					0 0 12px var(--dashboard-focus-glow);
+
+				@include mixins.focus-glow;
 			}
 
 			&::placeholder {
@@ -168,8 +167,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 }
 
@@ -177,7 +175,7 @@
 	width: 8px;
 	height: 8px;
 	border-radius: 50%;
-	background: var(--color-state-info);
+	background: var(--color-state-info-bg);
 	flex-shrink: 0;
 }
 
@@ -225,8 +223,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 
 	@include mixins.respond-to(md) {

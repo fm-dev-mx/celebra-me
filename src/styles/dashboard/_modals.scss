@@ -296,7 +296,7 @@
 	justify-content: flex-end;
 	gap: var(--spacing-md);
 	margin-top: 1.25rem;
-	padding: 5rem;
+	padding: 1rem 0 0;
 	border-top: 1px solid var(--color-border-subtle);
 
 	@include mixins.respond-below(xs) {
@@ -306,6 +306,10 @@
 			width: 100%;
 		}
 	}
+}
+
+.dashboard-modal--full {
+	max-width: 900px;
 }
 
 @include mixins.respond-below(sm) {
@@ -385,9 +389,8 @@
 // Phone input group inside dashboard modals — use focus ring token
 .dashboard-modal .phone-input-group:focus-within {
 	border-color: var(--color-action-accent);
-	box-shadow:
-		0 0 0 3px var(--dashboard-focus-ring),
-		0 0 12px var(--dashboard-focus-glow);
+
+	@include mixins.focus-glow;
 
 	.phone-prefix {
 		border-right-color: var(--color-action-accent);

@@ -77,9 +77,8 @@
 			&:focus {
 				border-color: var(--color-action-accent);
 				outline: none;
-				box-shadow:
-					0 0 0 3px var(--dashboard-focus-ring),
-					0 0 12px var(--dashboard-focus-glow);
+
+				@include mixins.focus-glow;
 			}
 		}
 	}
