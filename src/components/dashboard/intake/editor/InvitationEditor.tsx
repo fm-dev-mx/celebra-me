@@ -89,7 +89,7 @@ const EDITOR_SECTION_KEYS: Record<string, string[]> = {
 	main: ['title', 'description', 'hero'],
 	quote: ['quote'],
 	family: ['family'],
-	location: ['location'],
+	location: ['location', 'eventTiming'],
 	countdown: ['countdown'],
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
@@ -301,6 +301,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const main = content.hero ?? {};
 	const family = content.family ?? {};
 	const location = content.location ?? {};
+	const locationWithTiming = { ...location, eventTiming: content.eventTiming };
 	const countdown = content.countdown ?? {};
 	const rsvp = content.rsvp ?? {};
 	const music = content.music ?? {};
@@ -323,8 +324,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 		updateContent('hero', { ...main, ...patch });
 	const updateFamily = (patch: Partial<typeof family>) =>
 		updateContent('family', { ...family, ...patch });
-	const updateLocation = (patch: Partial<typeof location>) =>
-		updateContent('location', { ...location, ...patch });
+	const updateLocation = (patch: Partial<typeof locationWithTiming>) => {
+		const { eventTiming, ...locationPatch } = patch;
+		if (eventTiming !== undefined) updateContent('eventTiming', eventTiming);
+		if (Object.keys(locationPatch).length > 0) {
+			updateContent('location', { ...location, ...locationPatch });
+		}
+	};
 	const updateCountdown = (patch: Partial<typeof countdown>) =>
 		updateContent('countdown', { ...countdown, ...patch });
 	const updateRsvp = (patch: Partial<typeof rsvp>) =>
@@ -755,7 +761,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					/>
 
 					<LocationSectionEditor
-						location={location}
+						location={locationWithTiming}
 						dirty={dirty.has('location')}
 						error={errors.location}
 						success={success.location}
@@ -788,7 +794,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 								<span>Fecha visible en cuenta regresiva</span>
 								<div className="invitation-editor__countdown-preview">
 									<span className="invitation-editor__countdown-preview-date">
-										{main.date ? formatDateLong(main.date) : 'Sin fecha'}
+										{content.eventTiming?.localDateTime
+											? content.eventTiming.localDateTime.replace('T', ' ')
+											: main.date
+												? formatDateLong(main.date)
+												: 'Sin fecha'}
 									</span>
 								</div>
 							</div>

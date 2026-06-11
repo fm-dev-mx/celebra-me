@@ -6,6 +6,8 @@ import IconPickerField from '@/components/dashboard/intake/editor/IconPickerFiel
 import { DEFAULT_ICON, isIconName, type IconName } from '@/lib/icons/icon-catalog';
 import type { AssetField } from '@/lib/assets/asset-source';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
+import { MEXICO_TIME_ZONE_OPTIONS } from '@/lib/intake/constants';
+import type { EventTiming } from '@/lib/time/event-time';
 
 interface VenueData {
 	venueName?: string;
@@ -27,6 +29,7 @@ interface LocationData {
 	introHeading?: string;
 	introLede?: string;
 	indicationsHeading?: string;
+	eventTiming?: EventTiming;
 	ceremony?: VenueData;
 	reception?: VenueData;
 	indications?: DraftIndication[];
@@ -58,6 +61,15 @@ export default function LocationSectionEditor({
 	visible = true,
 }: Props) {
 	const indications = location.indications ?? [];
+	const eventTiming = location.eventTiming ?? {};
+	const isKnownTimeZone = MEXICO_TIME_ZONE_OPTIONS.some(
+		(option) => option.value === eventTiming.timeZone,
+	);
+	const OTHER_OPTION = '__other__';
+
+	const updateEventTiming = (patch: Partial<EventTiming>) => {
+		onUpdateLocation({ eventTiming: { ...eventTiming, ...patch, startsAtUtc: undefined } });
+	};
 
 	const updateIndication = (index: number, patch: Partial<DraftIndication>) => {
 		const updated = indications.map((item, i) => (i === index ? { ...item, ...patch } : item));
@@ -104,6 +116,47 @@ export default function LocationSectionEditor({
 					value={location.introLede ?? ''}
 					onChange={(value) => onUpdateLocation({ introLede: value })}
 				/>
+			</div>
+			<div className="invitation-editor__section-group">
+				<h3>Cuenta regresiva</h3>
+				<p className="invitation-editor__helper-text">
+					Usaremos esta hora local del evento para que la cuenta regresiva termine
+					correctamente sin importar desde dónde abran la invitación.
+				</p>
+				<div className="invitation-editor__field-grid">
+					<Field
+						label="Hora de inicio para cuenta regresiva"
+						type="datetime-local"
+						value={eventTiming.localDateTime ?? ''}
+						onChange={(value) => updateEventTiming({ localDateTime: value })}
+					/>
+					<label className="invitation-editor__field">
+						<span>Zona horaria del evento</span>
+						<select
+							value={isKnownTimeZone ? eventTiming.timeZone : OTHER_OPTION}
+							onChange={(event) => {
+								const val = event.target.value;
+								updateEventTiming({ timeZone: val === OTHER_OPTION ? '' : val });
+							}}
+						>
+							<option value="">Selecciona una zona</option>
+							{MEXICO_TIME_ZONE_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+							<option value={OTHER_OPTION}>Otra zona horaria</option>
+						</select>
+					</label>
+					{!isKnownTimeZone && (
+						<Field
+							label="Escribe la zona horaria"
+							value={eventTiming.timeZone ?? ''}
+							placeholder="America/Mazatlan"
+							onChange={(value) => updateEventTiming({ timeZone: value })}
+						/>
+					)}
+				</div>
 			</div>
 			{(['ceremony', 'reception'] as const).map((venueKey) => {
 				const venue = location[venueKey] ?? {};

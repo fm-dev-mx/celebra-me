@@ -11,6 +11,7 @@ import {
 	draftIndicationSchema,
 	giftsSchema,
 	countdownEditorSchema,
+	eventTimingEditorSchema,
 	rsvpResponseMessagesSchema,
 	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
@@ -57,6 +58,7 @@ export const InvitationEditorSectionSchemas = {
 		introHeading: optionalText(200),
 		introLede: optionalText(1000),
 		indicationsHeading: optionalText(200),
+		eventTiming: eventTimingEditorSchema.optional(),
 		ceremony: venueSchema.optional(),
 		reception: venueSchema.optional(),
 		indications: z.array(draftIndicationSchema).optional(),
