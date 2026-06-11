@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 .dashboard-guests__share-button {
 	display: inline-flex;
 	align-items: center;
@@ -72,7 +74,7 @@
 		white-space: nowrap;
 	}
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		min-height: 36px;
 		padding: 0.35rem 0.9rem;
 		font-size: 0.78rem;
@@ -86,7 +88,7 @@
 	align-items: center;
 	gap: 0.5rem;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		gap: 0.4rem;
 	}
 }
@@ -97,7 +99,7 @@
 	align-items: center;
 	gap: 0.35rem;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		gap: 0.3rem;
 	}
 }
@@ -149,7 +151,7 @@
 		cursor: not-allowed;
 	}
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		padding: 0.3rem 0.55rem;
 		font-size: 0.7rem;
 		min-height: 32px;
@@ -265,7 +267,7 @@
 	color: var(--color-text-muted);
 	white-space: nowrap;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		display: none;
 	}
 }

@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 .dashboard-toast {
 	--dashboard-toast-accent: var(--color-state-info);
 	--dashboard-toast-border: var(--color-state-info-border);
@@ -91,7 +93,7 @@
 	}
 }
 
-@media (width <= 992px) {
+@include mixins.respond-below(lg) {
 	.dashboard-toast {
 		bottom: 5.5rem; // Keep above mobile dock
 		right: 1rem;

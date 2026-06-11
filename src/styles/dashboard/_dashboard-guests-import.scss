@@ -1,4 +1,5 @@
 @use 'dashboard-guests-core' as core;
+@use '../global/mixins' as mixins;
 
 // ==========================================================================
 // IMPORT MAGIC — CSV/Paste Guest Import Preview
@@ -34,8 +35,10 @@
 
 	&:focus {
 		outline: none;
-		border-color: var(--color-action-primary);
-		box-shadow: 0 0 0 3px rgb(var(--color-action-primary-rgb) / 12%);
+		border-color: var(--color-action-accent);
+		box-shadow:
+			0 0 0 3px var(--dashboard-focus-ring),
+			0 0 12px var(--dashboard-focus-glow);
 	}
 
 	&::placeholder {
@@ -60,7 +63,7 @@
 	padding: 0;
 	border: none;
 	background: none;
-	color: var(--color-action-primary);
+	color: var(--color-action-accent);
 	font-size: 0.78rem;
 	font-weight: 500;
 	cursor: pointer;
@@ -68,7 +71,7 @@
 	text-underline-offset: 2px;
 
 	&:hover {
-		color: var(--color-action-accent);
+		color: var(--color-text-emphasis);
 	}
 }
 
@@ -107,13 +110,13 @@
 }
 
 .import-magic__summary-chip--update {
-	background: rgb(var(--color-action-primary-rgb) / 10%);
-	color: var(--color-action-primary);
+	background: rgb(var(--color-action-accent-rgb) / 10%);
+	color: var(--color-action-accent);
 }
 
 .import-magic__summary-chip--review {
-	background: rgb(245 158 11 / 12%);
-	color: var(--color-state-warning-text, var(--color-text-secondary));
+	background: rgb(var(--color-state-warning-rgb) / 12%);
+	color: var(--color-state-warning-text);
 }
 
 .import-magic__summary-chip--omitted {
@@ -242,9 +245,9 @@
 
 	&:focus {
 		outline: none;
-		border-color: var(--color-action-primary);
+		border-color: var(--color-action-accent);
 		background: var(--color-surface-elevated);
-		box-shadow: 0 0 0 2px rgb(var(--color-action-primary-rgb) / 10%);
+		box-shadow: 0 0 0 2px var(--dashboard-focus-ring);
 	}
 
 	&--error {
@@ -278,8 +281,8 @@
 	}
 
 	&--warning {
-		background: rgb(245 158 11 / 12%);
-		color: var(--color-state-warning-text, var(--color-text-secondary));
+		background: rgb(var(--color-state-warning-rgb) / 12%);
+		color: var(--color-state-warning-text);
 	}
 }
 
@@ -332,9 +335,9 @@
 	margin-top: 0.75rem;
 	padding: 0.75rem 1rem;
 	border-radius: 6px;
-	background: rgb(var(--color-state-warning-rgb, 245 158 11) / 10%);
-	border: 1px solid rgb(var(--color-state-warning-rgb, 245 158 11) / 30%);
-	color: var(--color-state-warning-text, var(--color-text-primary));
+	background: rgb(var(--color-state-warning-rgb) / 10%);
+	border: 1px solid rgb(var(--color-state-warning-rgb) / 30%);
+	color: var(--color-state-warning-text);
 	font-size: 0.82rem;
 	font-weight: 500;
 	text-align: center;
@@ -392,8 +395,8 @@
 
 	&:focus {
 		outline: none;
-		border-color: var(--color-action-primary);
-		box-shadow: 0 0 0 2px rgb(var(--color-action-primary-rgb) / 10%);
+		border-color: var(--color-action-accent);
+		box-shadow: 0 0 0 2px var(--dashboard-focus-ring);
 	}
 }
 
@@ -447,13 +450,13 @@
 
 // --- Responsive ---
 
-@media (width <= 768px) {
+@include mixins.respond-below(md) {
 	.import-magic__table-wrap {
 		max-height: min(300px, 50vh);
 	}
 }
 
-@media (width <= 640px) {
+@include mixins.respond-below(sm) {
 	.import-magic__table {
 		min-width: auto;
 		font-size: 0.78rem;
@@ -483,7 +486,7 @@
 	}
 }
 
-@media (width <= 480px) {
+@include mixins.respond-below(xs) {
 	.import-magic__summary-chips {
 		gap: 0.35rem;
 	}
@@ -529,13 +532,13 @@
 	}
 
 	&--info {
-		background: rgb(var(--color-action-primary-rgb) / 8%);
-		color: var(--color-action-primary);
+		background: rgb(var(--color-action-accent-rgb) / 8%);
+		color: var(--color-action-accent);
 	}
 
 	&--warning {
-		background: rgb(245 158 11 / 10%);
-		color: var(--color-state-warning-text, var(--color-text-secondary));
+		background: rgb(var(--color-state-warning-rgb) / 10%);
+		color: var(--color-state-warning-text);
 	}
 
 	&--error {
@@ -588,7 +591,7 @@
 	}
 }
 
-@media (width <= 640px) {
+@include mixins.respond-below(sm) {
 	.import-summary__item {
 		min-width: 70px;
 		padding: 0.45rem 0.6rem;
@@ -599,7 +602,7 @@
 	}
 }
 
-@media (width <= 480px) {
+@include mixins.respond-below(xs) {
 	.import-summary__results {
 		gap: 0.5rem;
 	}

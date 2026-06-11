@@ -1,3 +1,5 @@
+@use './common' as *;
+
 .guest-nota-btn {
 	display: inline-flex;
 	align-items: center;
@@ -46,11 +48,10 @@
 }
 
 .guest-tag {
-	display: inline-flex;
-	align-items: center;
+	@extend %pill-base;
+
 	width: fit-content;
 	padding: 0.2rem 0.6rem;
-	border-radius: 999px;
 	background: rgb(var(--color-text-secondary-rgb) / 7%);
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
 	color: var(--color-text-secondary);

@@ -1,11 +1,8 @@
 @use '../tokens' as tokens;
 @use 'sass:color';
+@use '../global/mixins' as mixins;
 
 .dashboard-shell-body {
-	--dashboard-shell-veil: var(--dashboard-overlay-bg);
-	--dashboard-shell-panel: var(--dashboard-panel-bg);
-	--dashboard-shell-elevated: var(--dashboard-card-bg-soft);
-	--dashboard-shell-border-premium: var(--dashboard-card-border);
 	--dashboard-shadow-premium: var(--shadow-warm);
 	--dashboard-shadow-emphasis: var(--shadow-warm-emphasis);
 
@@ -55,7 +52,7 @@
 	display: none;
 	position: fixed;
 	inset: 0;
-	background: var(--dashboard-shell-veil);
+	background: var(--dashboard-overlay-bg);
 	opacity: 0%;
 	pointer-events: none;
 	transition: opacity 0.28s ease;
@@ -386,7 +383,7 @@
 		padding: 0;
 		border: 1px solid var(--color-border-subtle);
 		border-radius: 10px;
-		background: var(--dashboard-shell-elevated);
+		background: var(--dashboard-card-bg-soft);
 		color: var(--color-text-secondary);
 		cursor: pointer;
 		box-shadow: var(--shadow-subtle);
@@ -438,7 +435,7 @@
 		justify-content: space-between;
 		gap: 1.5rem;
 
-		@media (width <= 768px) {
+		@include mixins.respond-below(md) {
 			flex-direction: column;
 			align-items: stretch;
 			gap: 0.75rem;
@@ -643,7 +640,7 @@
 }
 
 /* Mobile Adjustments */
-@media (width <= 992px) {
+@include mixins.respond-below(lg) {
 	.dashboard-shell {
 		grid-template-columns: 1fr;
 	}

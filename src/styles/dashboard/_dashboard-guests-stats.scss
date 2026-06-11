@@ -1,4 +1,6 @@
 @use 'dashboard-guests-core' as core;
+@use './common' as *;
+@use '../global/mixins' as mixins;
 
 .guest-summary {
 	margin-bottom: 0.75rem;
@@ -20,7 +22,7 @@
 	background: rgb(var(--color-text-secondary-rgb) / 4%);
 	color: var(--color-text-secondary);
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		align-items: flex-start;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -43,11 +45,10 @@
 }
 
 .guest-review__chip {
-	display: inline-flex;
-	align-items: center;
+	@extend %pill-base;
+
 	gap: 0.28rem;
 	padding: 0.3rem 0.6rem;
-	border-radius: 999px;
 	background: transparent;
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
 	color: var(--color-text-muted);
@@ -99,7 +100,7 @@
 	flex-direction: column;
 	gap: 0.75rem;
 
-	@media (width >= 768px) {
+	@include mixins.respond-to(md) {
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
@@ -119,7 +120,7 @@
 	gap: 1rem;
 	flex-wrap: wrap;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		gap: 0.65rem;
 		padding-top: 0.65rem;
 		border-top: 1px solid var(--color-border-subtle);
@@ -193,7 +194,7 @@
 	background: var(--color-border-subtle);
 	flex-shrink: 0;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		display: none;
 	}
 }
@@ -221,7 +222,7 @@
 }
 
 /* Responsive adjustments */
-@media (width <= 768px) {
+@include mixins.respond-below(md) {
 	.guest-summary {
 		padding: 1rem 1.25rem;
 	}
@@ -243,7 +244,7 @@
 	}
 }
 
-@media (width <= 480px) {
+@include mixins.respond-below(xs) {
 	.guest-summary {
 		padding: 0.9rem;
 	}
@@ -297,7 +298,7 @@
 	padding: 0.65rem 1.5rem;
 	background: transparent;
 
-	@media (width <= 480px) {
+	@include mixins.respond-below(xs) {
 		padding: 0.5rem 0.9rem;
 	}
 }
@@ -344,7 +345,7 @@
 	border-left: 1px solid var(--color-border-subtle);
 }
 
-@media (width <= 480px) {
+@include mixins.respond-below(xs) {
 	.guest-group-metrics__items {
 		gap: 0.4rem;
 	}

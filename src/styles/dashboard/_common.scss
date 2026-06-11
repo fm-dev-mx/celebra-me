@@ -10,7 +10,11 @@
 	--dashboard-sidebar-bg-strong: rgb(var(--color-surface-dark-rgb) / 96%);
 	--dashboard-sidebar-bg-soft: rgb(var(--color-surface-dark-rgb) / 18%);
 	--dashboard-overlay-bg: rgb(var(--color-surface-dark-rgb) / 42%);
-	--dashboard-surface-sidebar: var(--dashboard-surface-sidebar, var(--color-surface-dark));
+	--dashboard-surface-sidebar: var(--color-surface-dark);
+
+	/* Focus ring — light-mode default, overridden by theme preset */
+	--dashboard-focus-ring: rgb(var(--color-action-accent-rgb) / 28%);
+	--dashboard-focus-glow: rgb(var(--color-action-accent-rgb) / 8%);
 }
 
 .dashboard-card {
@@ -103,14 +107,21 @@
 .dashboard-error-boundary__retry {
 	margin-top: var(--spacing-md, 1rem);
 	padding: 0.5rem 1rem;
-	border: 1px solid var(--color-action-primary);
+	border: 1px solid var(--color-action-accent);
 	border-radius: 999px;
-	background: var(--color-action-primary);
-	color: var(--color-text-on-dark);
+	background: var(--color-action-accent);
+	color: var(--color-text-on-light);
 }
 
 .dashboard-confirm-message {
 	text-align: center;
 	margin-bottom: var(--spacing-xl, 2rem);
 	color: var(--color-text-secondary);
+}
+
+// Placeholder for pill-shaped inline elements (chips, tags)
+%pill-base {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 999px;
 }

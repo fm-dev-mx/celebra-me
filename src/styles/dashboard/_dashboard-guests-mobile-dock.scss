@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 .dashboard-guests__mobile-dock {
 	display: none;
 	position: fixed;
@@ -13,7 +15,7 @@
 	align-items: center;
 	gap: 0.75rem;
 
-	@media (width <= 992px) {
+	@include mixins.respond-below(lg) {
 		display: flex;
 	}
 
