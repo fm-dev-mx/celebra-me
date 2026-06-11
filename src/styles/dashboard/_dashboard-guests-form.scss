@@ -20,15 +20,15 @@
 		border-color var(--duration-snappy) var(--ease-standard);
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 5%);
-		border-color: rgb(var(--color-action-accent-rgb) / 20%);
+		background: rgb(var(--color-text-secondary-rgb) / 6%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 	}
 
 	input[type='checkbox'] {
 		width: 16px;
 		height: 16px;
 		cursor: pointer;
-		accent-color: var(--color-text-emphasis);
+		accent-color: var(--color-text-primary);
 	}
 }
 

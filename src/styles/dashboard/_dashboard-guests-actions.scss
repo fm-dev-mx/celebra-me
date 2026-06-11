@@ -140,7 +140,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--color-action-accent);
+		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;
 	}
 
@@ -203,20 +203,20 @@
 	}
 }
 
-/* Confirming state — gold highlight for both mark and revert */
+/* Confirming state — amber highlight for confirmation steps */
 .guest-expanded-actions__btn--confirm {
-	border-color: var(--color-border-emphasis);
-	background: rgb(var(--color-action-accent-rgb) / 14%);
-	color: var(--color-text-emphasis);
+	border-color: rgb(var(--color-state-warning-rgb) / 50%);
+	background: rgb(var(--color-state-warning-rgb) / 14%);
+	color: var(--color-state-warning-text);
 	font-weight: 600;
 
 	svg {
-		color: var(--color-action-accent);
+		color: var(--color-state-warning);
 	}
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 22%);
-		border-color: var(--color-action-accent);
+		background: rgb(var(--color-state-warning-rgb) / 22%);
+		border-color: var(--color-state-warning);
 	}
 }
 

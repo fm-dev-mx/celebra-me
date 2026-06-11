@@ -40,18 +40,18 @@
 		box-shadow: var(--shadow-subtle);
 
 		&:hover {
-			border-color: rgb(var(--color-action-accent-rgb) / 50%);
-			background: rgb(var(--color-action-accent-rgb) / 6%);
+			border-color: rgb(var(--color-text-secondary-rgb) / 40%);
+			background: rgb(var(--color-text-secondary-rgb) / 4%);
 			transform: translateY(-2px);
 		}
 	}
 
 	input:checked + &__content {
-		background: rgb(var(--color-action-accent-rgb) / 12%);
-		border-color: var(--color-action-accent);
-		color: var(--color-action-accent);
+		background: rgb(var(--color-action-accent-rgb) / 8%);
+		border-color: var(--color-border-emphasis);
+		color: var(--color-text-emphasis);
 		font-weight: 700;
-		box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 24%);
+		box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 18%);
 	}
 }
 

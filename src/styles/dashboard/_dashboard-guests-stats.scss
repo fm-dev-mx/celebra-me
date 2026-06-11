@@ -66,14 +66,14 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--color-action-accent);
+		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;
 	}
 }
 
 .guest-review__chip--active {
-	background: rgb(var(--color-action-accent-rgb) / 10%);
-	border-color: var(--color-border-emphasis);
+	background: rgb(var(--color-text-secondary-rgb) / 10%);
+	border-color: rgb(var(--color-text-secondary-rgb) / 28%);
 	color: var(--color-text-primary);
 }
 

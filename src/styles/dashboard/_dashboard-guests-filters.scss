@@ -164,7 +164,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--color-action-accent);
+		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;
 	}
 }
@@ -173,7 +173,7 @@
 	width: 8px;
 	height: 8px;
 	border-radius: 50%;
-	background: var(--color-action-accent);
+	background: var(--color-state-info);
 	flex-shrink: 0;
 }
 
@@ -221,7 +221,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--color-action-accent);
+		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;
 	}
 

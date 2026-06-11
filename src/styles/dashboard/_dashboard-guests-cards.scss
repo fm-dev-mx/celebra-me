@@ -167,7 +167,7 @@
 	background: rgb(var(--color-text-secondary-rgb) / 5%);
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
 	border-radius: 8px;
-	border-left: 3px solid var(--color-action-accent);
+	border-left: 3px solid var(--color-border-premium);
 }
 
 .guest-card__message-label {
@@ -323,7 +323,7 @@
 	background: rgb(var(--color-text-secondary-rgb) / 5%);
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
 	border-radius: 8px;
-	border-left: 3px solid var(--color-action-accent);
+	border-left: 3px solid var(--color-border-premium);
 
 	&-label {
 		display: block;

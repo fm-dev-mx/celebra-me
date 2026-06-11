@@ -17,7 +17,8 @@
 		display: flex;
 	}
 
-	body.modal-open & {
+	body.modal-open &,
+	body.dashboard-shell-body--nav-open & {
 		display: none;
 	}
 
