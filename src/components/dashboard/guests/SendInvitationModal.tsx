@@ -132,11 +132,10 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		guest.fullName
 	);
 
-	const hasPhoneValue = editPhone.trim().length > 0;
-	const phoneValid = hasPhoneValue && canSendToPhone;
+	const phoneValid = editPhone.trim().length > 0 && canSendToPhone;
 
 	const renderFormSection = () => (
-		<div className="send-invitation__card send-invitation__form-card">
+		<div className="send-invitation__form-section">
 			<div className="dashboard-form-field send-invitation__field">
 				<label htmlFor="send-name">Nombre del invitado</label>
 				<input
@@ -194,14 +193,23 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	);
 
 	const renderMessageSection = () => (
-		<div className="send-invitation__card send-invitation__message-card">
-			<span className="send-invitation__message-label">Mensaje a enviar</span>
+		<div className="send-invitation__message-section">
+			<div className="send-invitation__message-header">
+				<span className="send-invitation__message-label">Mensaje</span>
+				<span
+					className={[
+						'send-invitation__mode-label',
+						editingMessage && 'send-invitation__mode-label--editing',
+					]
+						.filter(Boolean)
+						.join(' ')}
+				>
+					{editingMessage ? 'Editando' : 'Vista previa'}
+				</span>
+			</div>
 
 			{editingMessage ? (
 				<>
-					<span className="send-invitation__mode-label send-invitation__mode-label--editing">
-						Editando
-					</span>
 					<div className="send-invitation__preview-card">
 						<textarea
 							className="send-invitation__textarea"
@@ -232,7 +240,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				</>
 			) : (
 				<>
-					<span className="send-invitation__mode-label">Vista previa</span>
 					<div className="send-invitation__preview-card">
 						<pre className="send-invitation__preview-text">{activeMessage}</pre>
 					</div>

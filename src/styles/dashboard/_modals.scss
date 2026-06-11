@@ -243,6 +243,7 @@
 	justify-content: space-between;
 	gap: 0.75rem;
 	margin-bottom: 0.75rem;
+	padding: 1rem 1.25rem 0.75rem;
 
 	h3 {
 		margin: 0;
@@ -263,14 +264,14 @@
 .dashboard-modal__subtitle {
 	margin: 0;
 	font-size: 0.875rem;
-	color: var(--color-text-secondary);
+	color: rgb(var(--color-text-muted-rgb) / 80%);
 	font-weight: 400;
 	text-align: left;
 }
 
 .dashboard-modal__queue-count {
 	font-size: 0.75rem;
-	color: var(--color-text-muted);
+	color: rgb(var(--color-text-muted-rgb) / 80%);
 	font-weight: 400;
 }
 
@@ -308,7 +309,6 @@
 		margin-top: 0;
 		margin-bottom: 0;
 		z-index: 2;
-		background: var(--dashboard-card-bg);
 		border-top: 1px solid var(--color-border-subtle);
 	}
 

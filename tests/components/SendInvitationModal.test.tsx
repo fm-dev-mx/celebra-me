@@ -121,10 +121,10 @@ describe('SendInvitationModal', () => {
 		expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
 	});
 
-	it('shows message preview with Mensaje a enviar label', () => {
+	it('shows message preview with Mensaje header', () => {
 		renderModal(makeGuest());
 
-		expect(screen.getByText('Mensaje a enviar')).toBeInTheDocument();
+		expect(screen.getByText('Mensaje')).toBeInTheDocument();
 	});
 
 	it('shows Editar mensaje button', () => {
