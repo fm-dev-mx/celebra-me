@@ -37,6 +37,7 @@ function mapMainPeople(data: Record<string, unknown>): Partial<DraftContent> {
 function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> {
 	const ceremony = data.ceremony as Record<string, unknown> | undefined;
 	const reception = data.reception as Record<string, unknown> | undefined;
+	const eventTiming = data.eventTiming as Record<string, unknown> | undefined;
 
 	const indications: Array<{ iconName: IconName; text: string }> = [];
 	const dressCodeText = str(data.dressCode);
@@ -76,6 +77,12 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 				: undefined,
 			indications: indications.length > 0 ? indications : undefined,
 		},
+		eventTiming: eventTiming
+			? {
+					localDateTime: str(eventTiming.localDateTime),
+					timeZone: str(eventTiming.timeZone),
+				}
+			: undefined,
 	};
 }
 
@@ -295,6 +302,15 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		result.countdown = {
 			title: str(countdown.title),
 			footerText: str(countdown.footerText),
+		};
+	}
+
+	const eventTiming = nestedContent.eventTiming as Record<string, unknown> | undefined;
+	if (eventTiming && Object.keys(eventTiming).length > 0) {
+		result.eventTiming = {
+			localDateTime: str(eventTiming.localDateTime),
+			timeZone: str(eventTiming.timeZone),
+			startsAtUtc: str(eventTiming.startsAtUtc),
 		};
 	}
 

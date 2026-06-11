@@ -3,6 +3,7 @@ import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
 import { str, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { buildPublishedEventTiming } from '@/lib/time/event-time';
 
 function isNullishSection(value: unknown): value is null | undefined {
 	return value == null;
@@ -45,6 +46,19 @@ function mapCountdownFromDraft(
 		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
 		footerText: str(draftCountdown?.footerText) || COUNTDOWN_DEFAULTS.footerText,
 	};
+}
+
+function mapEventTimingFromDraft(
+	draftEventTiming: DraftContent['eventTiming'],
+): Record<string, unknown> | undefined {
+	if (!draftEventTiming || Object.keys(draftEventTiming).length === 0) return undefined;
+	const rawTiming = {
+		localDateTime: str(draftEventTiming.localDateTime) ?? undefined,
+		timeZone: str(draftEventTiming.timeZone) ?? undefined,
+	};
+	const derived = buildPublishedEventTiming(rawTiming);
+	if (!derived || Object.keys(derived).length === 0) return undefined;
+	return derived as Record<string, unknown>;
 }
 
 function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
@@ -521,6 +535,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		},
 
 		sectionOrder: draftContent.sectionOrder ?? demoContent.sectionOrder,
+		eventTiming: mapEventTimingFromDraft(draftContent.eventTiming),
 
 		hero: heroSection,
 		envelope: buildEnvelopeFromDraft(

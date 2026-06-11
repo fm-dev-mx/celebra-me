@@ -6,7 +6,7 @@ const COMPOUND_SECTIONS = new Set<InvitationEditorSectionKey>(['main', 'messages
 const SECTION_KEY_MAP: Record<InvitationEditorSectionKey, (keyof DraftContent)[]> = {
 	main: ['title', 'description', 'hero'],
 	family: ['family'],
-	location: ['location'],
+	location: ['location', 'eventTiming'],
 	countdown: ['countdown'],
 	itinerary: ['itinerary'],
 	rsvp: ['rsvp'],
@@ -24,6 +24,7 @@ export function getDirtySectionKey(key: keyof DraftContent): InvitationEditorSec
 	if (key === 'title' || key === 'description' || key === 'hero') return 'main';
 	if (key === 'quote' || key === 'thankYou') return 'messages';
 	if (key === 'sectionOrder') return 'publication';
+	if (key === 'eventTiming') return 'location';
 	return key as InvitationEditorSectionKey;
 }
 
@@ -39,6 +40,9 @@ export function getSectionValue(
 		};
 	}
 	if (section === 'messages') return { quote: content.quote, thankYou: content.thankYou };
+	if (section === 'location') {
+		return { ...(content.location ?? {}), eventTiming: content.eventTiming };
+	}
 	if (section === 'publication') return { sectionOrder: content.sectionOrder ?? [] };
 	return content[section as keyof DraftContent] ?? {};
 }
@@ -57,6 +61,16 @@ export function applySectionValue(
 	if (section === 'messages') {
 		const messages = value as Pick<DraftContent, 'quote' | 'thankYou'>;
 		return { ...next, quote: messages.quote, thankYou: messages.thankYou };
+	}
+	if (section === 'location') {
+		const { eventTiming, ...location } = value as NonNullable<DraftContent['location']> & {
+			eventTiming?: DraftContent['eventTiming'];
+		};
+		return {
+			...next,
+			location,
+			eventTiming,
+		};
 	}
 	if (section === 'publication') {
 		const publication = value as Pick<DraftContent, 'sectionOrder'>;
@@ -81,6 +95,9 @@ export function applySectionToBaseline(
 	}
 	if (section === 'messages') {
 		return { ...baseline, quote: source.quote, thankYou: source.thankYou };
+	}
+	if (section === 'location') {
+		return { ...baseline, location: source.location, eventTiming: source.eventTiming };
 	}
 	if (section === 'publication') {
 		return { ...baseline, sectionOrder: source.sectionOrder };

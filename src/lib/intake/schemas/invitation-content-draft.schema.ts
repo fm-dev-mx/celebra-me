@@ -9,6 +9,7 @@ import {
 	itinerarySchema,
 	giftsSchema,
 	countdownEditorSchema,
+	eventTimingEditorSchema,
 	draftIndicationSchema,
 	rsvpResponseMessagesSchema,
 	envelopeSchema,
@@ -71,6 +72,7 @@ export const InvitationContentDraftContentSchema = z
 			})
 			.optional(),
 		countdown: countdownEditorSchema.optional(),
+		eventTiming: eventTimingEditorSchema.optional(),
 		itinerary: itinerarySchema.optional(),
 		gallery: gallerySchema.optional(),
 		family: familyDraftSchema.optional(),

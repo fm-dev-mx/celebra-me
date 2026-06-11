@@ -29,6 +29,7 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 
+
 export interface PublishResult {
 	draft: InvitationContentDraft;
 	publishedContent: {
@@ -105,6 +106,28 @@ function resolvePublishAssetSlug(previewSlug: string | undefined): string {
 		);
 	}
 	return previewSlug;
+}
+
+function assertCountdownHasTiming(content: Record<string, unknown>): void {
+	const countdown = content.countdown;
+	if (!countdown || typeof countdown !== 'object' || Object.keys(countdown).length === 0) {
+		return;
+	}
+
+	const sectionOrder = content.sectionOrder;
+	if (Array.isArray(sectionOrder) && !sectionOrder.includes('countdown')) {
+		return;
+	}
+
+	const eventTiming = content.eventTiming as Record<string, unknown> | undefined;
+	const startsAtUtc = eventTiming?.startsAtUtc;
+	if (!startsAtUtc || typeof startsAtUtc !== 'string') {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La cuenta regresiva necesita fecha, hora y zona horaria válidas. Revisa "Fecha y ubicaciones" en el editor antes de publicar.',
+		);
+	}
 }
 
 /**
@@ -310,6 +333,8 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 
 	// Freeze uploaded asset refs before validation
 	const frozenContent = await freezeUploadedContentRefs(mappedContent, invitationId);
+
+	assertCountdownHasTiming(frozenContent);
 
 	const publishedContentResult = eventContentSchema.safeParse(frozenContent);
 	if (!publishedContentResult.success) {
