@@ -9,6 +9,7 @@ import {
 } from '@tests/helpers/nav-test-utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 
 const TEST_TEMPLATES: ShareMessagesConfig = {
 	invitation: 'Hola {guestName}, te comparto tu invitación a {eventTitle}:',
@@ -119,13 +120,13 @@ describe('useSendInvitation', () => {
 		expect(callbacks.onSave).not.toHaveBeenCalled();
 	});
 
-	it('pendingCount reflects only generated guests', () => {
+	it('pendingCount reflects the length of the pendingGuests array passed from parent', () => {
 		const guestA = makeGuest({ guestId: 'a', deliveryStatus: 'generated' });
 		const guestB = makeGuest({ guestId: 'b', deliveryStatus: 'generated' });
 		const guestC = makeGuest({ guestId: 'c', deliveryStatus: 'shared' });
 
 		const { result } = setupHook(guestA, [guestA, guestB, guestC]);
-		expect(result.current.pendingCount).toBe(2);
+		expect(result.current.pendingCount).toBe(3);
 	});
 
 	it('activeMessage includes invite URL when template lacks {inviteUrl}', () => {
@@ -249,7 +250,7 @@ describe('useSendInvitation', () => {
 				mode,
 			}: {
 				guest: DashboardGuestItem;
-				mode?: import('@/components/dashboard/guests/guest-presenter').ShareFlowMode;
+				mode?: ShareFlowMode;
 			}) =>
 				useSendInvitation({
 					guest,
