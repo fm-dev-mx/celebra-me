@@ -9,6 +9,8 @@ import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
 const SITE_ORIGIN = resolvePublicSiteOrigin();
 const { shortId } = Astro.params;
 
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=3600, max-age=600');
+
 const resolution = await resolveShortIdRequest(
   shortId,
   Astro.request.headers.get('user-agent') || '',
