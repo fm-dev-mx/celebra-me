@@ -1,5 +1,5 @@
-import React, { useEffect, useId, useState } from 'react';
-import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
+import React from 'react';
+import { ChevronDownIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -11,11 +11,9 @@ import {
 	formatGuestEntrySource,
 	getCompactGroupChips,
 	getPrimaryStatus,
-	getContactDisplay,
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
-	hasContact,
 	normalizeViewPercentage,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -59,17 +57,11 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onToggleBrandingRemoval,
 	onSaveGuest,
 }) => {
-	const [messageVisible, setMessageVisible] = useState(false);
-	const messageId = useId();
 	const isShared = item.deliveryStatus === 'shared';
-
-	useEffect(() => {
-		setMessageVisible(false);
-	}, [isExpanded]);
 
 	const visibleTags = getVisibleTags(item.tags);
 	const hasTags = visibleTags.length > 0;
-	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 2);
+	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
 	const hasCompactChips = compactChips.length > 0;
 	const hasMsg = hasMessage(item);
 	const primaryStatus = getPrimaryStatus(item);
@@ -77,15 +69,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 
-	const contactDisplay = getContactDisplay(item);
-	const hasAnyContact = hasContact(item);
-	const brandingBadge = item.hideCelebraMeBranding && (
-		<span className="guest-tag guest-tag--branding">Sin marca</span>
-	);
 	const expandLabel = isExpanded
 		? `Ver menos detalles de ${item.fullName}`
 		: `Ver más detalles de ${item.fullName}`;
-	const compactViewLabel = `Vista: ${viewPercentage}%`;
 	const articleClass = [
 		'guest-card',
 		isShared ? 'guest-card--shared' : '',
@@ -102,6 +88,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			aria-label={`Detalles de ${item.fullName}`}
 		>
 			<div className="guest-card__expanded-inner">
+				{/* Zone A: Status / Activity */}
 				<div className="guest-card__expanded-details">
 					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Entrega</span>
@@ -113,7 +100,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						<span className="guest-card__detail-label">RSVP</span>
 						<span className="guest-card__detail-value">{getRsvpStateLabel(item)}</span>
 					</div>
-					<div className="guest-card__detail guest-card__detail--view-progress">
+					<div className="guest-card__detail">
 						<span className="guest-card__detail-label">Visualización</span>
 						<span className="guest-card__detail-value engagement-mini-wrap">
 							<progress
@@ -157,22 +144,41 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							</span>
 						</div>
 					)}
+					{hasTags && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Categoría</span>
+							<div className="guest-card__detail-tags">
+								{visibleTags.map((tag) => (
+									<span key={tag} className="guest-tag guest-tag--group">
+										{tag}
+									</span>
+								))}
+							</div>
+						</div>
+					)}
+					{item.phone && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Teléfono</span>
+							<span className="guest-card__detail-value">{item.phone}</span>
+						</div>
+					)}
+					{item.email && (
+						<div className="guest-card__detail">
+							<span className="guest-card__detail-label">Email</span>
+							<span className="guest-card__detail-value">{item.email}</span>
+						</div>
+					)}
 				</div>
-				{hasTags && (
-					<div className="guest-card__tags">
-						{visibleTags.map((tag) => (
-							<span key={tag} className="guest-tag guest-tag--group">
-								{tag}
-							</span>
-						))}
-					</div>
-				)}
+
+				{/* Zone B: Guest message */}
 				{hasMsg && (
 					<div className="guest-card__expanded-msg">
 						<span className="guest-card__expanded-msg-label">Mensaje del invitado</span>
 						<p className="guest-card__expanded-msg-text">{item.guestComment}</p>
 					</div>
 				)}
+
+				{/* Zone C: Actions */}
 				<div className="guest-card__expanded-actions">
 					<GuestExpandedActions
 						guestName={item.fullName}
@@ -212,7 +218,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 								+{compactOverflow}
 							</span>
 						)}
-						{brandingBadge}
+						{hasMsg && (
+							<span className="guest-tag guest-tag--message">Con mensaje</span>
+						)}
 					</div>
 				</div>
 				<span className={`status-pill status-pill--${primaryStatus.class}`}>
@@ -220,12 +228,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					{primaryStatus.label}
 				</span>
 			</header>
-
-			<div
-				className={`guest-card__contact${!hasAnyContact ? ' guest-card__contact--fallback' : ''}`}
-			>
-				{contactDisplay}
-			</div>
 
 			<div className="guest-card__metrics">
 				<div className="guest-card__stat">
@@ -236,33 +238,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						{item.maxAllowedAttendees}
 					</span>
 				</div>
-				<span className="view-status view-status--bare">{compactViewLabel}</span>
 			</div>
-
-			{!isExpanded && hasMsg && (
-				<>
-					<button
-						type="button"
-						className={`guest-card__msg-btn ${messageVisible ? 'guest-card__msg-btn--open' : ''}`}
-						onClick={() => setMessageVisible((v) => !v)}
-						aria-expanded={messageVisible}
-						aria-controls={messageId}
-					>
-						<MessageIcon size={16} aria-hidden="true" />
-						<span>{messageVisible ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
-					</button>
-					{messageVisible && (
-						<div className="guest-card__message-block" id={messageId}>
-							<div className="guest-card__message-inner">
-								<span className="guest-card__message-label">
-									Mensaje del invitado
-								</span>
-								<p className="guest-card__message-text">{item.guestComment}</p>
-							</div>
-						</div>
-					)}
-				</>
-			)}
 
 			<footer className="guest-card__actions">
 				<ShareAction
@@ -276,7 +252,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				/>
 				<button
 					type="button"
-					className={`guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
+					className={`btn-icon guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
 					title={expandLabel}
 					aria-label={expandLabel}
 					aria-expanded={isExpanded}

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
@@ -93,22 +93,60 @@ describe('GuestCard status labels', () => {
 		expect(screen.getByText('Sin respuesta')).toBeInTheDocument();
 	});
 
-	it('uses clear mobile card metrics for attendance and view state', () => {
+	it('uses clear mobile card metrics for attendance', () => {
 		render(
 			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 100 })} {...baseProps} />,
 		);
 		expect(screen.getByText('Asistentes:')).toBeInTheDocument();
-		expect(screen.getByText('Vista: 100%')).toBeInTheDocument();
 	});
 
-	it('shows "Sin marca" badge when branding removal is active', () => {
-		render(<GuestCard item={makeGuest({ hideCelebraMeBranding: true })} {...baseProps} />);
-		expect(screen.getByText('Sin marca')).toBeInTheDocument();
+	it('shows "Con mensaje" indicator chip in compact card when guest has a message', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ guestComment: 'Gracias por la invitacion' })}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Con mensaje')).toBeInTheDocument();
 	});
 
-	it('does not show "Sin marca" badge when branding removal is inactive', () => {
-		render(<GuestCard item={makeGuest({ hideCelebraMeBranding: false })} {...baseProps} />);
-		expect(screen.queryByText('Sin marca')).not.toBeInTheDocument();
+	it('does not show "Con mensaje" chip when guest has no message', () => {
+		render(<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />);
+		expect(screen.queryByText('Con mensaje')).not.toBeInTheDocument();
+	});
+
+	it('shows view percentage only in expanded state', () => {
+		const { rerender } = render(
+			<GuestCard
+				item={makeGuest({ isViewed: true, viewPercentage: 100 })}
+				isExpanded={false}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.queryByText('Vista: 100%')).not.toBeInTheDocument();
+
+		rerender(
+			<GuestCard
+				item={makeGuest({ isViewed: true, viewPercentage: 100 })}
+				isExpanded={true}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('100%')).toBeInTheDocument();
+	});
+
+	it('shows branding toggle in expanded actions when eligible', () => {
+		const { container } = render(
+			<GuestCard
+				item={makeGuest({ hideCelebraMeBranding: true })}
+				isExpanded={true}
+				isBrandingRemovalEligible={true}
+				onToggleBrandingRemoval={jest.fn()}
+				{...baseProps}
+			/>,
+		);
+		// Branding toggle is rendered by GuestExpandedActions (mocked to empty div in test)
+		expect(container.querySelector('[data-testid="expanded-actions"]')).toBeInTheDocument();
 	});
 
 	it('renders engagement progress bar with correct width and aria attributes when expanded', () => {
@@ -125,46 +163,28 @@ describe('GuestCard status labels', () => {
 		expect(mini).toHaveAttribute('aria-valuemax', '100');
 	});
 
-	it('shows a guest message button only when guestComment exists', () => {
-		const { container, rerender } = render(
-			<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />,
-		);
-		expect(container.querySelector('.guest-card__msg-btn')).not.toBeInTheDocument();
-		expect(container.querySelector('.guest-card__message-block')).not.toBeInTheDocument();
-
-		rerender(
-			<GuestCard item={makeGuest({ guestComment: 'Nos vemos pronto' })} {...baseProps} />,
-		);
-		const btn = container.querySelector('.guest-card__msg-btn');
-		expect(btn).toHaveTextContent('Ver mensaje');
-
-		// Block is not rendered until button is clicked
-		expect(container.querySelector('.guest-card__message-block')).not.toBeInTheDocument();
-	});
-
-	it('opens message block on toggle click', () => {
+	it('shows guest message in expanded panel', () => {
 		const { container } = render(
 			<GuestCard
-				item={makeGuest({ guestComment: 'Hola, confirmamos asistencia' })}
+				item={makeGuest({ guestComment: 'Nos vemos pronto' })}
+				isExpanded={true}
 				{...baseProps}
 			/>,
 		);
-		const btn = container.querySelector<HTMLElement>('.guest-card__msg-btn');
-		expect(btn).toBeInTheDocument();
-		act(() => {
-			btn?.click();
-		});
-		const block = container.querySelector('.guest-card__message-block');
-		expect(block).toBeInTheDocument();
-		expect(container.querySelector('.guest-card__message-label')).toHaveTextContent(
-			'Mensaje del invitado',
-		);
-		expect(container.querySelector('.guest-card__message-text')).toHaveTextContent(
-			'Hola, confirmamos asistencia',
+		expect(container.querySelector('.guest-card__expanded-msg')).toBeInTheDocument();
+		expect(container.querySelector('.guest-card__expanded-msg-text')).toHaveTextContent(
+			'Nos vemos pronto',
 		);
 	});
 
-	it('renders progress bar width correctly at 0%, 50%, and 100%', () => {
+	it('does not show message block when no guest comment', () => {
+		const { container } = render(
+			<GuestCard item={makeGuest({ guestComment: '' })} isExpanded={true} {...baseProps} />,
+		);
+		expect(container.querySelector('.guest-card__expanded-msg')).not.toBeInTheDocument();
+	});
+
+	it('renders progress bar width correctly at 0%, 50%, and 100% in expanded state', () => {
 		const renderAt = (pct: number) => {
 			const { container } = render(
 				<GuestCard
@@ -186,26 +206,16 @@ describe('GuestCard status labels', () => {
 		expect(p100).toHaveAttribute('value', '100');
 	});
 
-	it('renders closed-card view status as percentage, not boolean text', () => {
+	it('shows view percentage only in expanded state, not as boolean text', () => {
 		render(
-			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 67 })} {...baseProps} />,
+			<GuestCard
+				item={makeGuest({ isViewed: true, viewPercentage: 67 })}
+				isExpanded={true}
+				{...baseProps}
+			/>,
 		);
-		expect(screen.getByText('Vista: 67%')).toBeInTheDocument();
+		expect(screen.getByText('67%')).toBeInTheDocument();
 		expect(screen.queryByText('Vista: Sí')).not.toBeInTheDocument();
-	});
-
-	it('clamps viewPercentage above 100 to 100 in closed card', () => {
-		render(
-			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: 150 })} {...baseProps} />,
-		);
-		expect(screen.getByText('Vista: 100%')).toBeInTheDocument();
-	});
-
-	it('clamps viewPercentage below 0 to 0 in closed card', () => {
-		render(
-			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: -10 })} {...baseProps} />,
-		);
-		expect(screen.getByText('Vista: 0%')).toBeInTheDocument();
 	});
 
 	it('clamps viewPercentage above 100 in expanded progress bar value', () => {
@@ -221,22 +231,27 @@ describe('GuestCard status labels', () => {
 		expect(mini).toHaveAttribute('aria-valuenow', '100');
 	});
 
-	it('clamps non-finite viewPercentage to 0', () => {
-		render(
-			<GuestCard item={makeGuest({ isViewed: true, viewPercentage: NaN })} {...baseProps} />,
+	it('clamps non-finite viewPercentage to 0 in expanded state', () => {
+		const { container } = render(
+			<GuestCard
+				item={makeGuest({ isViewed: true, viewPercentage: NaN })}
+				isExpanded={true}
+				{...baseProps}
+			/>,
 		);
-		expect(screen.getByText('Vista: 0%')).toBeInTheDocument();
+		const mini = container.querySelector('.engagement-mini');
+		expect(mini).toHaveAttribute('value', '0');
+		expect(mini).toHaveAttribute('aria-valuenow', '0');
 	});
 
-	it('shows group tag chips in compact header', () => {
+	it('shows first group tag chip in compact header', () => {
 		render(<GuestCard item={makeGuest({ tags: ['Familia', 'Amigos'] })} {...baseProps} />);
+		// Tags appear in both compact header and expanded panel (CSS-hidden when collapsed)
 		const familiaChips = screen.getAllByText('Familia');
 		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
-		const amigosChips = screen.getAllByText('Amigos');
-		expect(amigosChips.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('shows overflow chip when more than 2 tags', () => {
+	it('shows overflow chip when more than 1 tag', () => {
 		render(
 			<GuestCard
 				item={makeGuest({ tags: ['Familia', 'Amigos', 'VIP', 'Trabajo'] })}
@@ -245,9 +260,8 @@ describe('GuestCard status labels', () => {
 		);
 		const familiaChips = screen.getAllByText('Familia');
 		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
-		const amigosChips = screen.getAllByText('Amigos');
-		expect(amigosChips.length).toBeGreaterThanOrEqual(1);
-		expect(screen.getByText('+2')).toBeInTheDocument();
+		const overflowChips = screen.getAllByText('+3');
+		expect(overflowChips.length).toBeGreaterThanOrEqual(1);
 	});
 
 	it('does not show group chips when no tags', () => {

@@ -65,20 +65,6 @@
 	white-space: nowrap;
 }
 
-/* ───── Contact row ───── */
-.guest-card__contact {
-	font-size: 0.78rem;
-	color: var(--color-text-secondary);
-	font-weight: 400;
-	line-height: 1.4;
-}
-
-.guest-card__contact--fallback {
-	font-size: 0.72rem;
-	color: var(--color-text-muted);
-	font-style: italic;
-}
-
 /* ───── Metrics row: attendance + view + indicators ───── */
 .guest-card__metrics {
 	display: flex;
@@ -113,75 +99,6 @@
 	font-size: 0.75em;
 	color: var(--color-text-muted);
 	margin: 0 1px;
-}
-
-/* ───── View-status with inline progress bar ───── */
-.guest-card__metrics .view-status--bare {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.3rem;
-}
-
-/* ───── Message button (collapsed card only) ───── */
-.guest-card__msg-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.35rem;
-	width: 100%;
-	padding: 0.4rem 0.75rem;
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
-	border-radius: 8px;
-	background: rgb(var(--color-action-accent-rgb) / 7%);
-	color: var(--color-action-accent);
-	font-size: 0.72rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition:
-		background-color 0.2s ease,
-		border-color 0.2s ease;
-
-	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 12%);
-		border-color: rgb(var(--color-action-accent-rgb) / 30%);
-	}
-
-	&--open {
-		background: rgb(var(--color-state-info-rgb) / 10%);
-		border-color: rgb(var(--color-state-info-rgb) / 26%);
-		color: var(--color-state-info-text);
-	}
-
-	svg {
-		flex-shrink: 0;
-	}
-}
-
-.guest-card__message-inner {
-	padding: 0.7rem 0.8rem;
-	background: rgb(var(--color-text-secondary-rgb) / 5%);
-	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
-	border-radius: 8px;
-	border-left: 3px solid var(--color-border-premium);
-}
-
-.guest-card__message-label {
-	display: block;
-	font-size: 0.6rem;
-	font-weight: 600;
-	color: var(--color-text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	margin-bottom: 0.25rem;
-}
-
-.guest-card__message-text {
-	margin: 0;
-	font-size: 0.78rem;
-	color: var(--color-text-primary);
-	line-height: 1.6;
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
 }
 
 /* ───── Footer actions ───── */
@@ -281,16 +198,11 @@
 	gap: 0.15rem;
 }
 
-.guest-card__detail--view-progress {
-	grid-column: 1 / -1;
-}
-
 .guest-card__detail-label {
-	font-size: 0.6rem;
+	font-size: 0.65rem;
 	font-weight: 600;
 	color: var(--color-text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	letter-spacing: 0.01em;
 }
 
 .guest-card__detail-value {
@@ -312,31 +224,35 @@
 	border-top: 1px solid var(--color-border-subtle);
 }
 
-/* Expanded card message section */
+/* Expanded card message section — meaningful guest content */
 .guest-card__expanded-msg {
-	padding: 0.65rem 0.75rem;
-	background: rgb(var(--color-text-secondary-rgb) / 5%);
-	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
-	border-radius: 8px;
+	padding: 0.85rem 1rem;
+	background: rgb(var(--color-text-secondary-rgb) / 4%);
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
+	border-radius: 10px;
 	border-left: 3px solid var(--color-border-premium);
+	max-width: min(100%, 600px);
+	position: relative;
 
 	&-label {
 		display: block;
-		font-size: 0.6rem;
+		font-size: 0.68rem;
 		font-weight: 600;
 		color: var(--color-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		margin-bottom: 0.25rem;
+		margin-bottom: 0.5rem;
 	}
 
 	&-text {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: 0.88rem;
 		color: var(--color-text-primary);
-		line-height: 1.6;
+		line-height: 1.7;
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
+		font-weight: 450;
+		padding-left: 0.5rem;
+		border-left: 2px solid
+			rgb(var(--color-border-premium-rgb, var(--color-text-secondary-rgb)) / 20%);
 	}
 }
 
@@ -368,7 +284,7 @@
 
 	/* Bottom spacing so mobile dock doesn't cover last card */
 	@include mixins.respond-below(lg) {
-		padding-bottom: calc(76px + 1rem);
+		padding-bottom: calc(var(--dashboard-dock-height, 76px) + var(--spacing-md, 1rem));
 	}
 }
 
