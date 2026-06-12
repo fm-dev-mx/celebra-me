@@ -7,6 +7,7 @@ import { DEFAULT_ICON, isIconName, type IconName } from '@/lib/icons/icon-catalo
 import type { AssetField } from '@/lib/assets/asset-source';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { MEXICO_TIME_ZONE_OPTIONS } from '@/lib/intake/constants';
+import { venueLabel } from '@/lib/intake/utils';
 import type { EventTiming } from '@/lib/time/event-time';
 
 interface VenueData {
@@ -17,6 +18,13 @@ interface VenueData {
 	time?: string;
 	mapUrl?: string;
 	image?: AssetField;
+}
+
+interface VenueEntryData extends VenueData {
+	id: string;
+	type: 'ceremony' | 'reception' | 'custom';
+	label?: string;
+	isVisible: boolean;
 }
 
 interface DraftIndication {
@@ -32,6 +40,7 @@ interface LocationData {
 	eventTiming?: EventTiming;
 	ceremony?: VenueData;
 	reception?: VenueData;
+	venues?: VenueEntryData[];
 	indications?: DraftIndication[];
 }
 
@@ -42,10 +51,34 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
-	onOpenAssetPicker: (field: `location.${'ceremony' | 'reception'}.image`) => void;
+	onOpenAssetPicker: (field: `location.${string}.image`) => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
+}
+
+function nextVenueId(): string {
+	return `venue_${Date.now()}`;
+}
+
+function createDefaultVenue(type: 'ceremony' | 'reception' | 'custom'): VenueEntryData {
+	const labels: Record<string, string> = {
+		ceremony: 'Ceremonia',
+		reception: 'Recepción',
+		custom: '',
+	};
+	return {
+		id: nextVenueId(),
+		type,
+		label: labels[type],
+		venueName: '',
+		address: '',
+		city: '',
+		date: '',
+		time: '',
+		mapUrl: '',
+		isVisible: true,
+	};
 }
 
 export default function LocationSectionEditor({
@@ -67,8 +100,53 @@ export default function LocationSectionEditor({
 	);
 	const OTHER_OPTION = '__other__';
 
+	// Use venues if present, otherwise build from legacy ceremony/reception
+	const venues: VenueEntryData[] =
+		location.venues ??
+		(() => {
+			const legacy: VenueEntryData[] = [];
+			if (location.ceremony) {
+				legacy.push({
+					id: nextVenueId(),
+					type: 'ceremony',
+					label: 'Ceremonia',
+					...location.ceremony,
+					isVisible: true,
+				});
+			}
+			if (location.reception) {
+				legacy.push({
+					id: nextVenueId(),
+					type: 'reception',
+					label: 'Recepción',
+					...location.reception,
+					isVisible: true,
+				});
+			}
+			return legacy;
+		})();
+
+	const updateVenue = (index: number, patch: Partial<VenueEntryData>) => {
+		const updated = venues.map((v, i) => (i === index ? { ...v, ...patch } : v));
+		onUpdateLocation({ venues: updated });
+	};
+
+	const removeVenue = (index: number) => {
+		const updated = venues.filter((_, i) => i !== index);
+		onUpdateLocation({ venues: updated });
+	};
+
+	const toggleVenueVisibility = (index: number) => {
+		const updated = venues.map((v, i) => (i === index ? { ...v, isVisible: !v.isVisible } : v));
+		onUpdateLocation({ venues: updated });
+	};
+
+	const addVenue = (type: 'ceremony' | 'reception' | 'custom') => {
+		onUpdateLocation({ venues: [...venues, createDefaultVenue(type)] });
+	};
+
 	const updateEventTiming = (patch: Partial<EventTiming>) => {
-		onUpdateLocation({ eventTiming: { ...eventTiming, ...patch, startsAtUtc: undefined } });
+		onUpdateLocation({ eventTiming: { ...eventTiming, ...patch } });
 	};
 
 	const updateIndication = (index: number, patch: Partial<DraftIndication>) => {
@@ -158,66 +236,107 @@ export default function LocationSectionEditor({
 					)}
 				</div>
 			</div>
-			{(['ceremony', 'reception'] as const).map((venueKey) => {
-				const venue = location[venueKey] ?? {};
-				const updateVenue = (patch: Partial<VenueData>) =>
-					onUpdateLocation({ [venueKey]: { ...venue, ...patch } });
-				return (
-					<div className="invitation-editor__subsection" key={venueKey}>
-						<h3>{venueKey === 'ceremony' ? 'Ceremonia' : 'Recepción'}</h3>
-						<div className="invitation-editor__section-group">
-							<h4>Datos principales</h4>
-							<div className="invitation-editor__field-grid">
-								<Field
-									label="Lugar"
-									value={venue.venueName ?? ''}
-									onChange={(value) => updateVenue({ venueName: value })}
-								/>
-								<Field
-									label="Dirección"
-									value={venue.address ?? ''}
-									onChange={(value) => updateVenue({ address: value })}
-								/>
-								<Field
-									label="Ciudad"
-									value={venue.city ?? ''}
-									onChange={(value) => updateVenue({ city: value })}
-								/>
-								<Field
-									label="Fecha"
-									type="date"
-									value={venue.date ?? ''}
-									onChange={(value) => updateVenue({ date: value })}
-								/>
-								<Field
-									label="Hora"
-									type="time"
-									value={venue.time ?? ''}
-									onChange={(value) => updateVenue({ time: value })}
-								/>
-								<Field
-									label="Mapa"
-									type="url"
-									value={venue.mapUrl ?? ''}
-									onChange={(value) => updateVenue({ mapUrl: value })}
-								/>
-							</div>
+
+			{venues.map((venue, index) => (
+				<div className="invitation-editor__subsection" key={venue.id}>
+					<div className="invitation-editor__compact-row">
+						<h3>{venueLabel(venue.type, venue.label) || 'Ubicación personalizada'}</h3>
+						<div className="invitation-editor__reorder">
+							<button
+								type="button"
+								onClick={() => toggleVenueVisibility(index)}
+								title={venue.isVisible ? 'Ocultar ubicación' : 'Mostrar ubicación'}
+							>
+								{venue.isVisible ? 'Ocultar' : 'Mostrar'}
+							</button>
+							<button type="button" onClick={() => removeVenue(index)}>
+								Eliminar
+							</button>
 						</div>
-						<div className="invitation-editor__section-group">
-							<h4>Imagen del lugar</h4>
-							<ImageAssetField
-								label="Imagen del lugar"
-								value={venue.image}
-								assetLookupSlug={assetLookupSlug}
-								assets={assets}
-								onOpenLibrary={() =>
-									onOpenAssetPicker(`location.${venueKey}.image`)
-								}
+					</div>
+					{venue.type === 'custom' && (
+						<Field
+							label="Nombre de la ubicación"
+							value={venue.label ?? ''}
+							onChange={(value) => updateVenue(index, { label: value })}
+						/>
+					)}
+					<div className="invitation-editor__section-group">
+						<h4>Datos principales</h4>
+						<div className="invitation-editor__field-grid">
+							<Field
+								label="Lugar"
+								value={venue.venueName ?? ''}
+								onChange={(value) => updateVenue(index, { venueName: value })}
+							/>
+							<Field
+								label="Dirección"
+								value={venue.address ?? ''}
+								onChange={(value) => updateVenue(index, { address: value })}
+							/>
+							<Field
+								label="Ciudad"
+								value={venue.city ?? ''}
+								onChange={(value) => updateVenue(index, { city: value })}
+							/>
+							<Field
+								label="Fecha"
+								type="date"
+								value={venue.date ?? ''}
+								onChange={(value) => updateVenue(index, { date: value })}
+							/>
+							<Field
+								label="Hora"
+								type="time"
+								value={venue.time ?? ''}
+								onChange={(value) => updateVenue(index, { time: value })}
+							/>
+							<Field
+								label="Mapa"
+								type="url"
+								value={venue.mapUrl ?? ''}
+								onChange={(value) => updateVenue(index, { mapUrl: value })}
 							/>
 						</div>
 					</div>
-				);
-			})}
+					<div className="invitation-editor__section-group">
+						<h4>Imagen del lugar</h4>
+						<ImageAssetField
+							label="Imagen del lugar"
+							value={venue.image}
+							assetLookupSlug={assetLookupSlug}
+							assets={assets}
+							onOpenLibrary={() => onOpenAssetPicker(`location.${venue.id}.image`)}
+						/>
+					</div>
+				</div>
+			))}
+			<div className="invitation-editor__section-group">
+				<h3>Agregar ubicación</h3>
+				<div className="invitation-editor__field-grid">
+					<button
+						className="invitation-editor__secondary-button"
+						type="button"
+						onClick={() => addVenue('ceremony')}
+					>
+						+ Ceremonia
+					</button>
+					<button
+						className="invitation-editor__secondary-button"
+						type="button"
+						onClick={() => addVenue('reception')}
+					>
+						+ Recepción
+					</button>
+					<button
+						className="invitation-editor__secondary-button"
+						type="button"
+						onClick={() => addVenue('custom')}
+					>
+						+ Otra ubicación
+					</button>
+				</div>
+			</div>
 			<div className="invitation-editor__section-group">
 				<h3>Indicaciones</h3>
 				<Field

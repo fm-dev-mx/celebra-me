@@ -67,7 +67,7 @@ type PickerField =
 	| 'hero.portrait'
 	| 'family.featuredImage'
 	| 'thankYou.image'
-	| `location.${'ceremony' | 'reception'}.image`;
+	| `location.${string}.image`;
 
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
@@ -1500,11 +1500,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 					invitationId={invitationId}
 					onSelect={(assetId) => {
 						const ref = { type: 'uploaded' as const, assetId };
-						const updateLocationVenue = (venueKey: 'ceremony' | 'reception') => {
-							const venue = location[venueKey] ?? {};
-							updateLocation({ [venueKey]: { ...venue, image: ref } });
+						const updateLocationVenueById = (venueId: string) => {
+							const venueIndex = (location.venues ?? []).findIndex(
+								(v) => v.id === venueId,
+							);
+							if (venueIndex >= 0) {
+								const updated = (location.venues ?? []).map((v, i) =>
+									i === venueIndex ? { ...v, image: ref } : v,
+								);
+								updateLocation({ venues: updated });
+							}
 						};
-						const PICKER_FIELD_UPDATERS: Record<PickerField, () => void> = {
+						const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
 							'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
 							'hero.backgroundImageMobile': () =>
 								updateHero({ backgroundImageMobile: ref }),
@@ -1512,10 +1519,22 @@ export default function InvitationEditor({ initialContext }: Props) {
 							'family.featuredImage': () => updateFamily({ featuredImage: ref }),
 							'thankYou.image': () =>
 								updateContent('thankYou', { ...messages.thankYou, image: ref }),
-							'location.ceremony.image': () => updateLocationVenue('ceremony'),
-							'location.reception.image': () => updateLocationVenue('reception'),
+							'location.ceremony.image': () => {
+								const venue = location.ceremony ?? {};
+								updateLocation({ ceremony: { ...venue, image: ref } });
+							},
+							'location.reception.image': () => {
+								const venue = location.reception ?? {};
+								updateLocation({ reception: { ...venue, image: ref } });
+							},
 						};
-						PICKER_FIELD_UPDATERS[pickerField]();
+						// Handle dynamic venue ID patterns: location.{id}.image
+						const venueMatch = pickerField.match(/^location\.(.+)\.image$/);
+						if (venueMatch && !PICKER_FIELD_UPDATERS[pickerField]) {
+							updateLocationVenueById(venueMatch[1]);
+						} else {
+							PICKER_FIELD_UPDATERS[pickerField]?.();
+						}
 						setPickerField(null);
 					}}
 					onClose={() => setPickerField(null)}

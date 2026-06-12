@@ -41,9 +41,18 @@ interface Indication {
 	text: string;
 }
 
+interface VenueEntry extends VenueData {
+	id?: string;
+	type?: string;
+	label?: string;
+	isVisible?: boolean;
+	sortOrder?: number;
+}
+
 interface Props {
 	ceremony?: VenueData;
 	reception?: VenueData;
+	venues?: VenueEntry[];
 	indications?: Indication[];
 	variant?: LocationVariant;
 	showFlourishes?: boolean;
@@ -60,6 +69,7 @@ interface Props {
 const {
 	ceremony,
 	reception,
+	venues: venueEntries,
 	indications,
 	variant = 'structured',
 	showFlourishes = true,
@@ -70,7 +80,15 @@ const {
 	introLede,
 } = Astro.props;
 
-const isSingleVenue = Boolean(ceremony) !== Boolean(reception);
+// Use venues array if present, otherwise fall back to legacy ceremony/reception
+const displayVenues = venueEntries && venueEntries.length > 0
+	? venueEntries
+	: [
+			...(ceremony ? [{ ...ceremony, type: 'ceremony' as const, isVisible: true }] : []),
+			...(reception ? [{ ...reception, type: 'reception' as const, isVisible: true }] : []),
+		];
+
+const isSingleVenue = displayVenues.length === 1;
 ---
 
 <section class="event-location" id="event-location" data-variant={variant}>
@@ -83,22 +101,14 @@ const isSingleVenue = Boolean(ceremony) !== Boolean(reception);
 		</header>
 	)}
 	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-		{ceremony && (
+		{displayVenues.map((venue: VenueData & { type?: string }) => (
 			<VenueCard
-				venue={ceremony}
-				type="ceremony"
+				venue={venue}
+				type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
 				variant={variant}
 				showFlourishes={showFlourishes}
 			/>
-		)}
-		{reception && (
-			<VenueCard
-				venue={reception}
-				type="reception"
-				variant={variant}
-				showFlourishes={showFlourishes}
-			/>
-		)}
+		))}
 	</div>
 
 	{indications && indications.length > 0 && (
