@@ -33,6 +33,7 @@ interface UseSendInvitationOptions {
 		},
 	) => Promise<DashboardGuestItem>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onReminderSent?: (guestId: string) => void;
 	onAdvanceFromGuest?: (currentGuestId: string) => void;
 	onPostponeGuest?: (currentGuestId: string) => void;
 	onDone?: () => void;
@@ -96,6 +97,7 @@ export function useSendInvitation({
 	inviteUrl,
 	onSave,
 	onMarkShared,
+	onReminderSent,
 	onAdvanceFromGuest,
 	onPostponeGuest,
 	onDone,
@@ -183,6 +185,8 @@ export function useSendInvitation({
 			try {
 				if (!isReminderMode) {
 					await onMarkShared(updated);
+				} else {
+					onReminderSent?.(updated.guestId);
 				}
 				if (isQueueMode) {
 					onAdvanceFromGuest?.(updated.guestId);
@@ -192,7 +196,7 @@ export function useSendInvitation({
 				setShareStatus('fallback');
 			}
 		},
-		[onMarkShared, onAdvanceFromGuest, isQueueMode, isReminderMode],
+		[onMarkShared, onReminderSent, onAdvanceFromGuest, isQueueMode, isReminderMode],
 	);
 
 	const markSharedAndComplete = useCallback(
@@ -313,6 +317,8 @@ export function useSendInvitation({
 			}
 			if (!isReminderMode) {
 				await onMarkShared(fallbackGuest);
+			} else {
+				onReminderSent?.(fallbackGuest.guestId);
 			}
 			if (isQueueMode) {
 				onAdvanceFromGuest?.(fallbackGuest.guestId);
@@ -327,6 +333,7 @@ export function useSendInvitation({
 		advancing,
 		inviteUrl,
 		onMarkShared,
+		onReminderSent,
 		onAdvanceFromGuest,
 		isQueueMode,
 		isReminderMode,

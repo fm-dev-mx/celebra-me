@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
@@ -15,14 +15,15 @@ import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
 import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
 	getReminderEligibleGuests,
-	isUnconfirmedSharedGuest,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
+import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { useShortcuts } from '@/hooks/use-shortcuts';
@@ -80,21 +81,45 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		[items, reminderSettings.audience],
 	);
 
+	const eligibleGuestIds = useMemo(
+		() => new Set(reminderEligibleGuests.map((g) => g.guestId)),
+		[reminderEligibleGuests],
+	);
+
+	const handleReminderSent = useCallback(
+		async (guestId: string) => {
+			let previousValue: string | null | undefined;
+			setItems((prev) => {
+				const target = prev.find((g) => g.guestId === guestId);
+				previousValue = target?.lastReminderSentAt;
+				return prev.map((item) =>
+					item.guestId === guestId
+						? { ...item, lastReminderSentAt: new Date().toISOString() }
+						: item,
+				);
+			});
+			try {
+				await guestsApi.recordReminderSent(guestId);
+			} catch {
+				setItems((prev) =>
+					prev.map((item) =>
+						item.guestId === guestId
+							? { ...item, lastReminderSentAt: previousValue }
+							: item,
+					),
+				);
+			}
+		},
+		[setItems],
+	);
+
 	const showReminderCta = useMemo(
-		() =>
-			shouldShowReminderCta(
-				shareDateContext,
-				reminderSettings,
-				reminderEligibleGuests.length,
-			),
-		[shareDateContext, reminderSettings, reminderEligibleGuests.length],
+		() => shouldShowReminderCta(shareDateContext, reminderSettings, eligibleGuestIds.size),
+		[shareDateContext, reminderSettings, eligibleGuestIds.size],
 	);
 
 	const visibleItems = items.filter((item) => {
-		if (
-			reviewFilter === 'reminder-pending' &&
-			!reminderEligibleGuests.some((g) => g.guestId === item.guestId)
-		)
+		if (reviewFilter === 'reminder-pending' && !eligibleGuestIds.has(item.guestId))
 			return false;
 		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
 			return false;
@@ -203,6 +228,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onClose={closeModal}
 					onSave={handleSaveInvitation}
 					onMarkShared={handleMarkShared}
+					onReminderSent={handleReminderSent}
 					onAdvanceFromGuest={handleAdvanceFromGuest}
 					onPostponeGuest={handlePostpone}
 					templates={shareTemplates}
@@ -295,14 +321,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							}
 							className={`btn-secondary btn--compact${reviewFilter === 'reminder-pending' ? ' btn-secondary--active' : ''}`}
 						>
-							Por recordar ({reminderEligibleGuests.length})
+							Por recordar ({eligibleGuestIds.size})
 						</button>
 					)}
 					{showReminderCta && shareDateContext.rawDaysUntilEvent !== null && (
 						<span className="reminder-helper-text">
 							{reminderSettings.audience === 'unconfirmed'
-								? `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${reminderEligibleGuests.length} invitado${s(reminderEligibleGuests.length)} sin confirmar`
-								: `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${reminderEligibleGuests.length} invitado${s(reminderEligibleGuests.length)} activo${s(reminderEligibleGuests.length)} con invitación enviada`}
+								? `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${eligibleGuestIds.size} invitado${s(eligibleGuestIds.size)} sin confirmar`
+								: `Faltan ${shareDateContext.daysUntilEvent} día${s(shareDateContext.rawDaysUntilEvent)} · ${eligibleGuestIds.size} invitado${s(eligibleGuestIds.size)} activo${s(eligibleGuestIds.size)} con invitación enviada`}
 						</span>
 					)}
 					<ToolbarActionsMenu
@@ -336,6 +362,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					shareDateContext={shareDateContext}
 					celebratingGuestId={celebratingGuestId}
 					expandedGuestId={expandedGuestId}
+					reminderMode={showReminderCta}
+					eligibleGuestIds={eligibleGuestIds}
+					onReminderSent={handleReminderSent}
 					onToggleExpanded={(id) =>
 						setExpandedGuestId((prev) => (prev === id ? null : id))
 					}
@@ -361,7 +390,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					loading={loading}
 					hasPendingGenerated={items.some((item) => item.deliveryStatus === 'generated')}
 					hasReminderCta={showReminderCta}
-					reminderCount={reminderEligibleGuests.length}
+					reminderCount={eligibleGuestIds.size}
 					createDisabled={!eventId}
 					onCreate={openCreateModal}
 					onOpenNextAction={openNextGeneratedGuest}

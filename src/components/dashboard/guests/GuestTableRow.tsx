@@ -4,6 +4,7 @@ import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
+import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -28,6 +29,9 @@ interface GuestTableRowProps {
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
 	isExpanded?: boolean;
+	reminderMode?: boolean;
+	isReminderEligible?: boolean;
+	onReminderSent?: (guestId: string) => void;
 	onToggleExpanded?: () => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
@@ -48,6 +52,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	celebratingGuestId,
 	highlightedGuestId,
 	isExpanded,
+	reminderMode,
+	isReminderEligible,
+	onReminderSent,
 	onToggleExpanded,
 	onEdit,
 	onDelete,
@@ -59,6 +66,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 }) => {
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
+	const [reminderModalOpen, setReminderModalOpen] = useState(false);
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 	const progressRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +85,8 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const status = getPrimaryStatus(item);
 	const expandId = `row-details-${item.guestId}`;
 	const hasMessages = getGuestMessageCount(item.guestComment) > 0;
-	const primaryActionIsCopy = getGuestPrimaryAction(item).action === 'copy-link';
+	const primaryActionIsCopy =
+		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action === 'copy-link';
 
 	const msgPanel = hasMessages && msgOpen && (
 		<tr className="guest-message-row">
@@ -96,6 +105,52 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 			</td>
 		</tr>
 	);
+
+	const renderSendAction = () => {
+		if (reminderMode && isReminderEligible) {
+			return (
+				<>
+					<button
+						type="button"
+						className="btn-primary btn--compact guest-row__reminder-btn"
+						onClick={() => setReminderModalOpen(true)}
+						title="Enviar recordatorio"
+						aria-label={`Enviar recordatorio a ${item.fullName}`}
+					>
+						<MessageIcon size={14} />
+						<span>Recordar</span>
+					</button>
+					{reminderModalOpen && (
+						<SendInvitationModal
+							key={item.guestId}
+							guest={item}
+							pendingGuests={[]}
+							inviteUrl={inviteUrl}
+							onClose={() => setReminderModalOpen(false)}
+							onSave={onSaveGuest ?? (async () => item)}
+							onMarkShared={async () => onMarkShared(item)}
+							onReminderSent={onReminderSent}
+							templates={shareTemplates}
+							shareDateContext={shareDateContext}
+							eventTitle={eventTitle}
+							mode="single-reminder"
+						/>
+					)}
+				</>
+			);
+		}
+		return (
+			<ShareAction
+				guest={item}
+				inviteUrl={inviteUrl}
+				eventTitle={eventTitle}
+				shareTemplates={shareTemplates}
+				shareDateContext={shareDateContext}
+				onShared={async () => onMarkShared(item)}
+				onSaveGuest={onSaveGuest}
+			/>
+		);
+	};
 
 	const rowClassName = [
 		item.deliveryStatus === 'shared' ? 'row-shared' : '',
@@ -176,17 +231,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 						<span className="engagement-mini__label">{viewPercentage}%</span>
 					</div>
 				</td>
-				<td data-label="Enviar">
-					<ShareAction
-						guest={item}
-						inviteUrl={inviteUrl}
-						eventTitle={eventTitle}
-						shareTemplates={shareTemplates}
-						shareDateContext={shareDateContext}
-						onShared={async () => onMarkShared(item)}
-						onSaveGuest={onSaveGuest}
-					/>
-				</td>
+				<td data-label="Enviar">{renderSendAction()}</td>
 				<td data-label="">
 					<button
 						type="button"

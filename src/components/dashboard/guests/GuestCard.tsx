@@ -1,8 +1,9 @@
-import React from 'react';
-import { ChevronDownIcon, CopyIcon, CheckIcon } from '@/components/common/icons/ui';
+import React, { useState } from 'react';
+import { ChevronDownIcon, CopyIcon, CheckIcon, MessageIcon } from '@/components/common/icons/ui';
 import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
+import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import { useClipboard } from '@/hooks/use-clipboard';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -12,8 +13,9 @@ import {
 	getPrimaryStatus,
 	getGuestMessageCount,
 	getGuestPrimaryAction,
-	formatGuestMetadataRow,
 	getGuestMessageFallbackTimestamp,
+	formatGuestMetadataRow,
+	formatGuestMessageCount,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
@@ -27,6 +29,9 @@ interface GuestCardProps {
 	isCelebrating?: boolean;
 	isHighlighted?: boolean;
 	isExpanded?: boolean;
+	reminderMode?: boolean;
+	isReminderEligible?: boolean;
+	onReminderSent?: (guestId: string) => void;
 	onToggleExpanded?: () => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
@@ -47,6 +52,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	isCelebrating,
 	isHighlighted,
 	isExpanded,
+	reminderMode,
+	isReminderEligible,
+	onReminderSent,
 	onToggleExpanded,
 	onEdit,
 	onDelete,
@@ -57,10 +65,11 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onSaveGuest,
 }) => {
 	const { copied, copy: copyLink } = useClipboard();
+	const [reminderModalOpen, setReminderModalOpen] = useState(false);
 
 	const messageCount = getGuestMessageCount(item.guestComment);
 	const primaryStatus = getPrimaryStatus(item);
-	const primaryAction = getGuestPrimaryAction(item);
+	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible);
 	const primaryActionIsCopy = primaryAction.action === 'copy-link';
 	const expandId = `guest-details-${item.guestId}`;
 
@@ -76,7 +85,36 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		.trim();
 
 	const actionButton =
-		primaryAction.action === 'share' ? (
+		primaryAction.action === 'send-reminder' ? (
+			<>
+				<button
+					type="button"
+					className="btn-primary dashboard-guests__share-button guest-card__primary-action--reminder"
+					onClick={() => setReminderModalOpen(true)}
+					title="Enviar recordatorio"
+					aria-label={`Enviar recordatorio a ${item.fullName}`}
+				>
+					<MessageIcon className="share-icon" size={16} />
+					<span>Recordar</span>
+				</button>
+				{reminderModalOpen && (
+					<SendInvitationModal
+						key={item.guestId}
+						guest={item}
+						pendingGuests={[]}
+						inviteUrl={inviteUrl}
+						onClose={() => setReminderModalOpen(false)}
+						onSave={onSaveGuest ?? (async () => item)}
+						onMarkShared={async () => onMarkShared(item)}
+						onReminderSent={onReminderSent}
+						templates={shareTemplates}
+						shareDateContext={shareDateContext}
+						eventTitle={eventTitle}
+						mode="single-reminder"
+					/>
+				)}
+			</>
+		) : primaryAction.action === 'share' ? (
 			<ShareAction
 				guest={item}
 				inviteUrl={inviteUrl}
@@ -109,14 +147,20 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</span>
 			</header>
 
-			<p className="guest-card__meta">
-				{formatGuestMetadataRow(
-					index + 1,
-					item.attendeeCount,
-					item.maxAllowedAttendees,
-					messageCount,
+			<div className="guest-card__meta-row">
+				<p className="guest-card__meta">
+					{formatGuestMetadataRow(
+						index + 1,
+						item.attendeeCount,
+						item.maxAllowedAttendees,
+					)}
+				</p>
+				{messageCount > 0 && (
+					<span className="guest-tag guest-tag--message">
+						{messageCount === 1 ? 'Mensaje' : formatGuestMessageCount(messageCount)}
+					</span>
 				)}
-			</p>
+			</div>
 
 			<footer className="guest-card__actions">
 				{actionButton}

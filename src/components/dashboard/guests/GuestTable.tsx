@@ -18,6 +18,9 @@ interface GuestTableProps {
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
 	expandedGuestId?: string | null;
+	reminderMode?: boolean;
+	eligibleGuestIds?: Set<string>;
+	onReminderSent?: (guestId: string) => void;
 	onToggleExpanded?: (guestId: string) => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
@@ -39,6 +42,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	celebratingGuestId,
 	highlightedGuestId,
 	expandedGuestId,
+	reminderMode,
+	eligibleGuestIds,
+	onReminderSent,
 	onToggleExpanded,
 	onEdit,
 	onDelete,
@@ -71,6 +77,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						isCelebrating={celebratingGuestId === item.guestId}
 						isHighlighted={highlightedGuestId === item.guestId}
 						isExpanded={expandedGuestId === item.guestId}
+						reminderMode={reminderMode}
+						isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
+						onReminderSent={onReminderSent}
 						onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
 						onEdit={onEdit}
 						onDelete={onDelete}
@@ -111,6 +120,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								celebratingGuestId={celebratingGuestId}
 								highlightedGuestId={highlightedGuestId}
 								isExpanded={expandedGuestId === item.guestId}
+								reminderMode={reminderMode}
+								isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
+								onReminderSent={onReminderSent}
 								onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
 								onEdit={onEdit}
 								onDelete={onDelete}

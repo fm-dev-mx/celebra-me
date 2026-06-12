@@ -140,6 +140,56 @@ describe('getGuestPrimaryAction', () => {
 		expect(result.label).toBe('Copiar enlace');
 		expect(result.action).toBe('copy-link');
 	});
+
+	it('returns send-reminder with "Recordar" for eligible confirmed guest in reminder mode', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' }),
+			true,
+			true,
+		);
+		expect(result.label).toBe('Recordar');
+		expect(result.action).toBe('send-reminder');
+	});
+
+	it('returns send-reminder with "Recordar" for eligible pending guest in reminder mode', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ attendanceStatus: 'pending', deliveryStatus: 'shared' }),
+			true,
+			true,
+		);
+		expect(result.label).toBe('Recordar');
+		expect(result.action).toBe('send-reminder');
+	});
+
+	it('returns copy-link for declined guest even in reminder mode (not eligible)', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ attendanceStatus: 'declined', deliveryStatus: 'shared' }),
+			true,
+			false,
+		);
+		expect(result.label).toBe('Copiar enlace');
+		expect(result.action).toBe('copy-link');
+	});
+
+	it('returns share for guest without sent invitation even in reminder mode (not eligible)', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'pending' }),
+			true,
+			false,
+		);
+		expect(result.label).toBe('Compartir invitación');
+		expect(result.action).toBe('share');
+	});
+
+	it('returns copy-link for confirmed guest in default mode despite eligibility', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' }),
+			false,
+			true,
+		);
+		expect(result.label).toBe('Copiar enlace');
+		expect(result.action).toBe('copy-link');
+	});
 });
 
 describe('parseGuestCommentHistory', () => {

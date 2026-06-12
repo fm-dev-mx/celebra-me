@@ -23,6 +23,7 @@ interface SendInvitationModalProps {
 	onClose: () => void;
 	onSave: GuestSaveCallback;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onReminderSent?: (guestId: string) => void;
 	onAdvanceFromGuest?: (currentGuestId: string) => void;
 	onPostponeGuest?: (currentGuestId: string) => void;
 	templates?: ShareMessagesConfig;
@@ -45,6 +46,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	onClose,
 	onSave,
 	onMarkShared,
+	onReminderSent,
 	onAdvanceFromGuest,
 	onPostponeGuest,
 	templates,
@@ -91,6 +93,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		inviteUrl,
 		onSave,
 		onMarkShared,
+		onReminderSent,
 		onAdvanceFromGuest,
 		onPostponeGuest,
 		onDone: onClose,

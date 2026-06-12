@@ -88,10 +88,17 @@ export function formatGuestMetadataRow(
 
 export type GuestPrimaryAction = {
 	label: string;
-	action: 'share' | 'copy-link';
+	action: 'share' | 'copy-link' | 'send-reminder';
 };
 
-export function getGuestPrimaryAction(item: DashboardGuestItem): GuestPrimaryAction {
+export function getGuestPrimaryAction(
+	item: DashboardGuestItem,
+	reminderMode = false,
+	isReminderEligible = false,
+): GuestPrimaryAction {
+	if (reminderMode && isReminderEligible) {
+		return { label: 'Recordar', action: 'send-reminder' };
+	}
 	if (item.attendanceStatus === 'confirmed' || item.attendanceStatus === 'declined') {
 		return { label: 'Copiar enlace', action: 'copy-link' };
 	}

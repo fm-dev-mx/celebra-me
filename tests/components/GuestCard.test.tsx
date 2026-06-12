@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
@@ -11,6 +11,23 @@ jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 jest.mock('@/components/dashboard/guests/GuestExpandedActions', () => ({
 	__esModule: true,
 	default: () => <div data-testid="expanded-actions" />,
+}));
+
+jest.mock('@/components/dashboard/guests/SendInvitationModal', () => ({
+	__esModule: true,
+	default: ({
+		onMarkShared,
+		onReminderSent,
+	}: {
+		onMarkShared?: () => void;
+		onReminderSent?: (guestId: string) => void;
+	}) => (
+		<div
+			data-testid="send-invitation-modal"
+			data-reminder-sent={onReminderSent ? 'wired' : ''}
+			onClick={() => onMarkShared?.()}
+		/>
+	),
 }));
 
 describe('GuestCard status labels', () => {
@@ -102,19 +119,22 @@ describe('GuestCard status labels', () => {
 		expect(screen.getAllByText(/asistentes/).length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('shows "1 mensaje" in metadata row when guest has a message', () => {
+	it('shows message tag when guest has a message', () => {
 		render(
 			<GuestCard
 				item={makeGuest({ guestComment: 'Gracias por la invitacion' })}
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getAllByText(/1 mensaje/).length).toBeGreaterThanOrEqual(1);
+		const tag = screen.getByText('Mensaje');
+		expect(tag).toBeInTheDocument();
+		expect(tag.className).toContain('guest-tag--message');
 	});
 
-	it('does not show message count in metadata when guest has no message', () => {
+	it('does not show message tag when guest has no message', () => {
 		render(<GuestCard item={makeGuest({ guestComment: '' })} {...baseProps} />);
-		expect(screen.queryByText(/mensaje/)).not.toBeInTheDocument();
+		expect(screen.queryByText('Mensaje')).not.toBeInTheDocument();
+		expect(screen.queryByText(/mensaje/i)).not.toBeInTheDocument();
 	});
 
 	it('shows "Copiar enlace" for confirmed guests (no dominant share CTA)', () => {
@@ -135,6 +155,87 @@ describe('GuestCard status labels', () => {
 			/>,
 		);
 		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
+	});
+
+	it('shows "Recordar" for eligible confirmed guest in reminder mode', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' })}
+				reminderMode={true}
+				isReminderEligible={true}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Recordar')).toBeInTheDocument();
+		expect(screen.queryByText('Copiar enlace')).not.toBeInTheDocument();
+	});
+
+	it('opens reminder modal when "Recordar" is clicked', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' })}
+				reminderMode={true}
+				isReminderEligible={true}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.queryByTestId('send-invitation-modal')).not.toBeInTheDocument();
+		fireEvent.click(screen.getByText('Recordar'));
+		expect(screen.getByTestId('send-invitation-modal')).toBeInTheDocument();
+	});
+
+	it('shows "Copiar enlace" for confirmed guest in default mode (no reminder)', () => {
+		render(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' })}
+				reminderMode={false}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
+	});
+
+	it('falls back to normal CTA when isReminderEligible changes from true to false', () => {
+		const { rerender } = render(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' })}
+				reminderMode={true}
+				isReminderEligible={true}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Recordar')).toBeInTheDocument();
+
+		rerender(
+			<GuestCard
+				item={makeGuest({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' })}
+				reminderMode={true}
+				isReminderEligible={false}
+				{...baseProps}
+			/>,
+		);
+		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
+	});
+
+	it('passes onReminderSent to SendInvitationModal when in reminder mode', () => {
+		const onReminderSent = jest.fn();
+		render(
+			<GuestCard
+				item={makeGuest({
+					guestId: 'guest-42',
+					attendanceStatus: 'confirmed',
+					deliveryStatus: 'shared',
+				})}
+				reminderMode={true}
+				isReminderEligible={true}
+				onReminderSent={onReminderSent}
+				{...baseProps}
+			/>,
+		);
+		fireEvent.click(screen.getByText('Recordar'));
+		const modal = screen.getByTestId('send-invitation-modal');
+		expect(modal).toBeInTheDocument();
+		expect(modal.getAttribute('data-reminder-sent')).toBe('wired');
 	});
 
 	it('shows branding toggle in expanded actions when eligible', () => {
@@ -169,7 +270,7 @@ describe('GuestCard status labels', () => {
 			/>,
 		);
 		expect(container.querySelector('.guest-card__expanded--open')).toBeInTheDocument();
-		expect(screen.getByText('Vista 100%')).toBeInTheDocument();
+		expect(screen.getByText('100%')).toBeInTheDocument();
 	});
 
 	it('shows guest message in expanded panel with a formatted timestamp', () => {
