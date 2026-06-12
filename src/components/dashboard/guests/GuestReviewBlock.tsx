@@ -1,9 +1,7 @@
 import React from 'react';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import {
-	getReminderEligibleGuests,
-	isUnconfirmedSharedGuest,
-} from '@/components/dashboard/guests/reminder-eligibility';
+import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
+import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { ReminderAudience } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 export type GuestReviewFilter =

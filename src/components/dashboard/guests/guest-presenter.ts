@@ -1,7 +1,7 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
-import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
+import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { formatMessageTimestamp, parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
@@ -45,6 +45,8 @@ export type GuestSaveCallback = (
 	},
 ) => Promise<DashboardGuestItem>;
 
+export { formatPhoneDisplay } from '@/lib/phone/format';
+
 export function formatGuestDateShort(value: string | null): string {
 	if (!value) return '-';
 	const date = new Date(value);
@@ -78,13 +80,9 @@ export function formatGuestMetadataRow(
 	index: number,
 	attendeeCount: number,
 	maxAllowedAttendees: number,
-	messageCount: number,
 ): string {
 	const parts = [`#${String(index).padStart(2, '0')}`];
 	parts.push(`${attendeeCount}/${maxAllowedAttendees} asistentes`);
-	if (messageCount > 0) {
-		parts.push(formatGuestMessageCount(messageCount));
-	}
 	return parts.join(' · ');
 }
 
@@ -164,28 +162,20 @@ export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: strin
 	});
 }
 
-export interface ShareCtaResult {
-	label: string;
-	defaultMessageType: ShareMessageType;
-	priority: 'primary' | 'secondary';
-}
-
 export function hasBeenShared(item: DashboardGuestItem): boolean {
 	if (item.deliveryStatus === 'generated') return false;
 	if (item.deliveryStatus === 'shared') return true;
 	return Boolean(item.firstSharedAt);
 }
 
-export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
+export function getShareCtaLabel(item: DashboardGuestItem): {
+	label: string;
+	defaultMessageType: ShareMessageType;
+} {
 	const shared = hasBeenShared(item);
-
-	const priority: ShareCtaResult['priority'] =
-		!shared || item.attendanceStatus === 'pending' ? 'primary' : 'secondary';
-
 	return {
 		label: shared ? 'Enviar recordatorio' : 'Compartir invitación',
 		defaultMessageType: shared ? 'reminder' : 'invitation',
-		priority,
 	};
 }
 

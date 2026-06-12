@@ -5,6 +5,7 @@ import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-messa
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
 	getShareCtaLabel,
+	hasBeenShared,
 	resolveShareFlowMode,
 	type ShareFlowMode,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -49,8 +50,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 
 	const cta = getShareCtaLabel(guest);
 	const mode: ShareFlowMode = resolveShareFlowMode(guest);
-	const priorityBtnClass =
-		status === 'idle' && cta.priority === 'primary' ? 'btn-primary' : 'btn-secondary';
+	const isPrimary = !hasBeenShared(guest) || guest.attendanceStatus === 'pending';
+	const priorityBtnClass = status === 'idle' && isPrimary ? 'btn-primary' : 'btn-secondary';
 
 	const icon =
 		status === 'sending' ? (

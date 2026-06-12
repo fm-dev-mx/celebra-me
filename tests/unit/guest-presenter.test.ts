@@ -106,19 +106,9 @@ describe('getGuestMessageCount', () => {
 
 describe('formatGuestMetadataRow', () => {
 	it('includes index and attendee count', () => {
-		const result = formatGuestMetadataRow(1, 2, 4, 0);
+		const result = formatGuestMetadataRow(1, 2, 4);
 		expect(result).toContain('#01');
 		expect(result).toContain('2/4 asistentes');
-	});
-
-	it('includes message count when count > 0', () => {
-		const result = formatGuestMetadataRow(1, 2, 4, 2);
-		expect(result).toContain('2 mensajes');
-	});
-
-	it('omits message count when count is 0', () => {
-		const result = formatGuestMetadataRow(1, 2, 4, 0);
-		expect(result).not.toContain('mensaje');
 	});
 });
 
@@ -520,6 +510,43 @@ describe('getShareCtaLabel', () => {
 		);
 		expect(result.label).toBe('Compartir invitación');
 		expect(result.defaultMessageType).toBe('invitation');
+	});
+});
+
+describe('formatPhoneDisplay', () => {
+	let formatPhoneDisplay: (phone: string | null | undefined) => string;
+
+	beforeAll(async () => {
+		const mod = await import('@/components/dashboard/guests/guest-presenter');
+		formatPhoneDisplay = mod.formatPhoneDisplay;
+	});
+
+	it('formats 10-digit Mexican number with spaces', () => {
+		expect(formatPhoneDisplay('6681167477')).toBe('668 116 7477');
+	});
+
+	it('trims whitespace before formatting', () => {
+		expect(formatPhoneDisplay('  6681167477  ')).toBe('668 116 7477');
+	});
+
+	it('strips existing dashes before formatting', () => {
+		expect(formatPhoneDisplay('668-116-7477')).toBe('668 116 7477');
+	});
+
+	it('returns trimmed original for non-10-digit value', () => {
+		expect(formatPhoneDisplay('12345')).toBe('12345');
+	});
+
+	it('returns empty string for null', () => {
+		expect(formatPhoneDisplay(null)).toBe('');
+	});
+
+	it('returns empty string for undefined', () => {
+		expect(formatPhoneDisplay(undefined)).toBe('');
+	});
+
+	it('returns trimmed original for empty string', () => {
+		expect(formatPhoneDisplay('')).toBe('');
 	});
 });
 
