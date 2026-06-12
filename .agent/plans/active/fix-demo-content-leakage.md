@@ -303,6 +303,20 @@ WHERE invitation_project_id IN (SELECT id FROM invitations WHERE slug = 'cesar-r
     needed, a migration can strip `location` from `published_invitation_content`.
 - **Do not run production SQL without explicit authorization.**
 
+### Regression discovered: `cesar-ramses` gallery was real content, not demo
+
+**Context:** The cleanup incorrectly removed `content.gallery` from both draft and published content
+for `cesar-ramses`. The gallery was real content — 6 items with unique captions and focal points
+that differ from `demo-bautismo-angelic-presence`.
+
+**Fix applied locally:** `scripts/sql/restore-gallery-cesar-ramses.sql` restores the gallery in BOTH
+`invitation_content_drafts` and `published_invitation_content` using a transaction.
+
+**Lesson:** The `gallery` section is not always demo-originated. Cleanup logic must verify content
+origin — check captions, focal points, and item count — before deleting. Production cleanup MUST NOT
+delete `gallery` for `cesar-ramses`. If production already lacks gallery data, apply the same
+restore SQL (after review).
+
 ## 9. Risks and Trade-offs
 
 | Risk                                                                                                     | Impact                                   | Mitigation                                                                                                                     |
