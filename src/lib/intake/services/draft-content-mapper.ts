@@ -286,15 +286,41 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				text: str(ind.text) as string,
 			}));
 
-		result.location = {
+		const draftLocation: Record<string, unknown> = {
 			introEyebrow: str(location.introEyebrow),
 			introHeading: str(location.introHeading),
 			introLede: str(location.introLede),
 			indicationsHeading: str(location.indicationsHeading),
-			ceremony: mapVenueToDraft(location.ceremony as Record<string, unknown> | undefined),
-			reception: mapVenueToDraft(location.reception as Record<string, unknown> | undefined),
 			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
+
+		// Flatten venues array if present (preferred source)
+		const publishedVenues = location.venues as Array<Record<string, unknown>> | undefined;
+		if (publishedVenues && Array.isArray(publishedVenues) && publishedVenues.length > 0) {
+			draftLocation.venues = publishedVenues.map((v, idx) => ({
+				id: str(v.id) || `venue_legacy_${idx}`,
+				type: (v.type as string) || 'custom',
+				label: str(v.label),
+				venueName: str(v.venueName),
+				address: str(v.address),
+				city: str(v.city),
+				date: str(v.date),
+				time: str(v.time),
+				mapUrl: str(v.mapUrl),
+				...(v.image !== undefined ? { image: v.image } : {}),
+				isVisible: v.isVisible !== false,
+			}));
+		} else {
+			// Legacy ceremony/reception fields
+			draftLocation.ceremony = mapVenueToDraft(
+				location.ceremony as Record<string, unknown> | undefined,
+			);
+			draftLocation.reception = mapVenueToDraft(
+				location.reception as Record<string, unknown> | undefined,
+			);
+		}
+
+		result.location = draftLocation as DraftContent['location'];
 	}
 
 	const countdown = nestedContent.countdown as Record<string, unknown> | undefined;

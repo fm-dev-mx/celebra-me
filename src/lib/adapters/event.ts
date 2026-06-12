@@ -15,6 +15,7 @@ import type {
 	HeroViewModel,
 	EnvelopeViewModel,
 	Interlude,
+	VenueEntry,
 } from '@/lib/adapters/types';
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
@@ -328,9 +329,31 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
 
+	const rawVenues = data.location.venues as Array<Record<string, unknown>> | undefined;
+	const hasVenues = rawVenues !== undefined;
+	const venues: VenueEntry[] | undefined = rawVenues?.map((v) => ({
+		id: v.id as string | undefined,
+		type: v.type as string | undefined,
+		label: v.label as string | undefined,
+		isVisible: v.isVisible as boolean | undefined,
+		sortOrder: v.sortOrder as number | undefined,
+		venueEvent: v.venueEvent as string,
+		venueName: v.venueName as string,
+		address: v.address as string,
+		city: v.city as string | undefined,
+		date: v.date as string,
+		time: v.time as string,
+		mapUrl: v.mapUrl as string | undefined,
+		image: resolveAsset(eventSlug, v.image as string | AssetSource, data.title),
+	}));
+
 	return {
-		ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
-		reception: resolveVenueData(eventSlug, data.location.reception, data.title),
+		...(hasVenues
+			? { venues }
+			: {
+					ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
+					reception: resolveVenueData(eventSlug, data.location.reception, data.title),
+				}),
 		indications: data.location.indications,
 		variant: sectionVariant(
 			'location',

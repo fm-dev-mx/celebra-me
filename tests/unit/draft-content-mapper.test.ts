@@ -79,6 +79,133 @@ describe('mapNestedToDraftContent', () => {
 		});
 	});
 
+	it('maps published venues array to draft format', () => {
+		const input = {
+			location: {
+				introHeading: 'Ubicaciones',
+				venues: [
+					{
+						id: 'v1',
+						type: 'ceremony',
+						label: 'Ceremonia',
+						venueName: 'Iglesia A',
+						address: 'Calle 1',
+						date: '2026-01-01',
+						time: '10:00',
+						isVisible: true,
+					},
+					{
+						id: 'v2',
+						type: 'custom',
+						label: 'Cena al aire libre',
+						venueName: 'Jardín',
+						address: 'Calle 2',
+						date: '2026-01-01',
+						time: '20:00',
+						isVisible: false,
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.venues).toHaveLength(2);
+		expect(result.location?.venues?.[0]?.id).toBe('v1');
+		expect(result.location?.venues?.[0]?.venueName).toBe('Iglesia A');
+		expect(result.location?.venues?.[0]?.type).toBe('ceremony');
+		expect(result.location?.venues?.[1]?.type).toBe('custom');
+		expect(result.location?.venues?.[1]?.label).toBe('Cena al aire libre');
+		expect(result.location?.venues?.[1]?.isVisible).toBe(false);
+	});
+
+	it('maps legacy ceremony/reception when venues is absent', () => {
+		const input = {
+			location: {
+				introHeading: 'Ubicaciones',
+				ceremony: {
+					venueName: 'Iglesia Legacy',
+					address: 'Calle L',
+					date: '2026-01-01',
+					time: '10:00',
+				},
+				reception: {
+					venueName: 'Salón Legacy',
+					address: 'Calle R',
+					date: '2026-01-01',
+					time: '20:00',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.ceremony?.venueName).toBe('Iglesia Legacy');
+		expect(result.location?.reception?.venueName).toBe('Salón Legacy');
+		expect(result.location?.venues).toBeUndefined();
+	});
+
+	it('preserves existing venue IDs when present (does not regenerate)', () => {
+		const input = {
+			location: {
+				introHeading: 'Ubicaciones',
+				venues: [
+					{
+						id: 'stable-id-1',
+						type: 'ceremony',
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						date: '2026-01-01',
+						time: '10:00',
+					},
+					{
+						id: 'stable-id-2',
+						type: 'reception',
+						venueName: 'Salón',
+						address: 'Calle 2',
+						date: '2026-01-01',
+						time: '20:00',
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.venues?.[0]?.id).toBe('stable-id-1');
+		expect(result.location?.venues?.[1]?.id).toBe('stable-id-2');
+	});
+
+	it('generates deterministic fallback IDs for venues without ID', () => {
+		const input = {
+			location: {
+				introHeading: 'Ubicaciones',
+				venues: [
+					{
+						type: 'ceremony',
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						date: '2026-01-01',
+						time: '10:00',
+					},
+					{
+						type: 'reception',
+						venueName: 'Salón',
+						address: 'Calle 2',
+						date: '2026-01-01',
+						time: '20:00',
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.venues?.[0]?.id).toBeDefined();
+		expect(result.location?.venues?.[1]?.id).toBeDefined();
+		expect(result.location?.venues?.[0]?.id).not.toBe(result.location?.venues?.[1]?.id);
+	});
+
 	it('preserves countdown copy when present', () => {
 		const input = {
 			countdown: {

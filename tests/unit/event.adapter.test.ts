@@ -8,6 +8,23 @@ function loadFixture(relativePath: string) {
 	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function makeMinimalEvent(location: Record<string, unknown>) {
+	return {
+		id: 'events/test',
+		data: {
+			eventType: 'xv',
+			title: 'Test Event',
+			hero: {
+				name: 'Test',
+				date: '2027-11-20',
+				backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
+			},
+			theme: { preset: 'enchanted-rose' },
+			location,
+		},
+	} as Parameters<typeof adaptEvent>[0];
+}
+
 describe('adaptEvent', () => {
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
 		const demos = [
@@ -369,6 +386,165 @@ describe('adaptEvent', () => {
 					text: 'Confirma antes del 6 de noviembre.',
 				}),
 			);
+		});
+
+		it('passes location.venues through to the view model when present', () => {
+			const vm = adaptEvent(
+				makeMinimalEvent({
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'reception',
+							label: 'Recepción',
+							venueName: 'Salón Principal',
+							address: 'Calle 1',
+							city: 'Querétaro',
+							date: '2027-11-20',
+							time: '20:00',
+							mapUrl: 'https://maps.example.com',
+							venueEvent: 'Recepción',
+							isVisible: true,
+						},
+						{
+							id: 'v2',
+							type: 'custom',
+							label: 'Cena',
+							venueName: 'Jardín Secreto',
+							address: 'Calle 2',
+							city: 'Querétaro',
+							date: '2027-11-20',
+							time: '22:00',
+							venueEvent: 'Cena',
+							isVisible: true,
+						},
+					],
+				}),
+			);
+			const loc = vm.sections.location!;
+
+			expect(loc.venues).toBeDefined();
+			expect(loc.venues).toHaveLength(2);
+			expect(loc.venues![0]!.venueName).toBe('Salón Principal');
+			expect(loc.venues![0]!.type).toBe('reception');
+			expect(loc.venues![0]!.label).toBe('Recepción');
+			expect(loc.venues![0]!.id).toBe('v1');
+			expect(loc.venues![1]!.venueName).toBe('Jardín Secreto');
+			expect(loc.venues![1]!.type).toBe('custom');
+		});
+
+		it('resolves venue images through asset registry for venues array', () => {
+			const viewModel = adaptEvent(
+				makeMinimalEvent({
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'reception',
+							label: 'Recepción',
+							venueName: 'Salón',
+							address: 'Calle 1',
+							date: '2027-11-20',
+							time: '20:00',
+							image: { type: 'external', src: '/images/venue.jpg' },
+							venueEvent: 'Recepción',
+							isVisible: true,
+						},
+					],
+				}),
+			);
+
+			expect(viewModel.sections.location?.venues?.[0]?.image).toBeDefined();
+			expect(viewModel.sections.location?.venues?.[0]?.image?.src).toBe('/images/venue.jpg');
+		});
+
+		it('does not filter venues by isVisible in adapter (filtering happens in publish mapper)', () => {
+			const viewModel = adaptEvent(
+				makeMinimalEvent({
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'ceremony',
+							label: 'Ceremonia',
+							venueName: 'Iglesia',
+							address: 'Calle 1',
+							date: '2027-11-20',
+							time: '18:00',
+							venueEvent: 'Ceremonia',
+							isVisible: false,
+						},
+						{
+							id: 'v2',
+							type: 'reception',
+							label: 'Recepción',
+							venueName: 'Salón',
+							address: 'Calle 2',
+							date: '2027-11-20',
+							time: '20:00',
+							venueEvent: 'Recepción',
+							isVisible: undefined,
+						},
+					],
+				}),
+			);
+
+			expect(viewModel.sections.location?.venues).toHaveLength(2);
+			expect(viewModel.sections.location?.venues?.[0]?.isVisible).toBe(false);
+			expect(viewModel.sections.location?.venues?.[1]?.isVisible).toBeUndefined();
+		});
+
+		it('empty venues array stays empty and does not fall back to legacy ceremony/reception', () => {
+			const viewModel = adaptEvent(
+				makeMinimalEvent({
+					introHeading: 'Ubicaciones',
+					venues: [],
+					ceremony: {
+						venueName: 'Iglesia Legacy',
+						address: 'Calle L',
+						date: '2027-11-20',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Salón Legacy',
+						address: 'Calle R',
+						date: '2027-11-20',
+						time: '20:00',
+					},
+				}),
+			);
+
+			expect(viewModel.sections.location?.venues).toEqual([]);
+			expect(viewModel.sections.location?.ceremony).toBeUndefined();
+			expect(viewModel.sections.location?.reception).toBeUndefined();
+		});
+
+		it('absent venues allows legacy ceremony/reception fallback', () => {
+			const viewModel = adaptEvent(
+				makeMinimalEvent({
+					introHeading: 'Ubicación',
+					ceremony: {
+						venueName: 'Iglesia Legacy',
+						address: 'Calle L',
+						city: 'Querétaro',
+						date: '2027-11-20',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Salón Legacy',
+						address: 'Calle R',
+						city: 'Querétaro',
+						date: '2027-11-20',
+						time: '20:00',
+					},
+				}),
+			);
+
+			expect(viewModel.sections.location?.venues).toBeUndefined();
+			expect(viewModel.sections.location?.ceremony).toBeDefined();
+			expect(viewModel.sections.location?.ceremony?.venueName).toBe('Iglesia Legacy');
+			expect(viewModel.sections.location?.reception).toBeDefined();
+			expect(viewModel.sections.location?.reception?.venueName).toBe('Salón Legacy');
 		});
 
 		it('backward-compatibility: published snapshot without intro fields uses theme defaults', () => {
