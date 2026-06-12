@@ -66,7 +66,7 @@ export function interpolateRsvpMessage(
 
 export const RSVP_DEFAULT_RESPONSE_MESSAGES = {
 	confirmed: {
-		title: '¡Gracias por acompañarnos, {guestName}!',
+		title: '¡Gracias por confirmar, {guestName}!',
 		subtitle: 'Tu confirmación ha sido registrada.',
 	},
 	declined: {

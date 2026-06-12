@@ -1,7 +1,7 @@
 // tests/components/RSVP.test.tsx
 // Component tests for the RSVP form
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RSVP from '@/components/invitation/RSVP';
 
@@ -285,7 +285,10 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				expect(screen.getByText(/Gracias por acompañarnos/i)).toBeInTheDocument();
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toHaveTextContent(
+					'Gracias por confirmar, María Fernanda Solís',
+				);
 			});
 		});
 	});
@@ -483,24 +486,24 @@ describe('RSVP Component', () => {
 			});
 
 			await waitFor(() => {
-				expect(
-					screen.getByText((content) => content.includes('¡Gracias por confirmar!')),
-				).toBeInTheDocument();
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toHaveTextContent(
+					'¡Gracias por confirmar, Test User!',
+				);
 			});
 		});
 
 		it('should show confirmation message on successful "Yes" submission', async () => {
 			const user = userEvent.setup();
-			render(<RSVP {...defaultProps} />);
+			const { container } = render(<RSVP {...defaultProps} />);
 
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				expect(
-					screen.getByText((content) => content.includes('¡Gracias por confirmar!')),
-				).toBeInTheDocument();
+				const body = container.querySelector('.rsvp__greeting-message-body');
+				expect(body?.textContent).toContain('¡Gracias por confirmar!');
 			});
 		});
 
@@ -957,12 +960,12 @@ describe('RSVP Component', () => {
 	});
 
 	describe('Custom RSVP Response Messages', () => {
-		it('shows custom confirmed title and subtitle after submission', async () => {
+		it('shows custom confirmed title and body copy after submission', async () => {
 			const user = userEvent.setup();
 			const { container } = render(
 				<RSVP
 					{...defaultProps}
-					confirmationMessage="Legacy confirmation message that should NOT appear"
+					confirmationMessage="Esperamos verte pronto."
 					responseMessages={{
 						confirmed: {
 							title: '¡Qué bueno que vienes, {guestName}!',
@@ -977,10 +980,14 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const greeting = container.querySelector('.rsvp__greeting-message');
-				expect(greeting?.textContent).toContain('¡Qué bueno que vienes, Ana!');
+				const status = screen.getByRole('status');
+				const heading = within(status).getByRole('heading', { level: 2 });
+				const body = container.querySelector('.rsvp__greeting-message-body');
+				expect(heading).toHaveTextContent('¡Qué bueno que vienes, Ana!');
 				expect(screen.getByText('Te registramos correctamente.')).toBeInTheDocument();
-				expect(greeting?.textContent).not.toContain('Legacy confirmation message');
+				expect(heading).not.toHaveTextContent('Esperamos verte pronto.');
+				expect(body).toBeInTheDocument();
+				expect(body).toHaveTextContent('Esperamos verte pronto.');
 			});
 		});
 
@@ -1019,14 +1026,14 @@ describe('RSVP Component', () => {
 			await waitFor(() => {
 				expect(
 					screen.getByText((content) =>
-						content.includes('¡Gracias por acompañarnos, María!'),
+						content.includes('¡Gracias por confirmar, María!'),
 					),
 				).toBeInTheDocument();
 				expect(screen.getByText('Tu confirmación ha sido registrada.')).toBeInTheDocument();
 			});
 		});
 
-		it('shows confirmationMessage as fallback when responseMessages is omitted', async () => {
+		it('shows confirmationMessage as body copy when responseMessages is omitted', async () => {
 			const user = userEvent.setup();
 			const { container } = render(
 				<RSVP
@@ -1040,11 +1047,12 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const greeting = container.querySelector('.rsvp__greeting-message');
-				expect(greeting?.textContent).toContain('¡Gracias por acompañarnos, Laura!');
-				expect(greeting?.textContent).toContain(
-					'Legacy message for backward compatibility',
-				);
+				const status = screen.getByRole('status');
+				const heading = within(status).getByRole('heading', { level: 2 });
+				const body = container.querySelector('.rsvp__greeting-message-body');
+				expect(heading).toHaveTextContent('¡Gracias por confirmar, Laura!');
+				expect(heading).not.toHaveTextContent('Legacy message for backward compatibility');
+				expect(body).toHaveTextContent('Legacy message for backward compatibility');
 			});
 		});
 

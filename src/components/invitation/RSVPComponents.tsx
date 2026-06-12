@@ -185,15 +185,10 @@ export const SubmittedState = forwardRef<
 				<div className="rsvp__greeting-icon">
 					{isConfirmed ? <CheckSealIcon size={64} /> : <HeartbreakIcon size={64} />}
 				</div>
-				<h2 className="rsvp__greeting-message">
-					{greetingTitle}
-					{isConfirmed && !responseMessages?.confirmed?.title && (
-						<>
-							<br />
-							{confirmationMessage}
-						</>
-					)}
-				</h2>
+				<h2 className="rsvp__greeting-message">{greetingTitle}</h2>
+				{isConfirmed && (
+					<p className="rsvp__greeting-message-body">{confirmationMessage}</p>
+				)}
 
 				<p className="rsvp__greeting-submessage">{greetingSubtitle}</p>
 
