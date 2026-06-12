@@ -1,6 +1,7 @@
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import type { DemoPreset } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 const snapshot: DemoPreset = {
 	id: 'demo-xv-jewelry-box',
@@ -1333,5 +1334,89 @@ describe('sharing section mapping', () => {
 
 		const sharing = result.sharing as Record<string, unknown>;
 		expect(sharing.ogDescription).toBeUndefined();
+	});
+
+	it('defaults to DEFAULT_REMINDER_MESSAGE when reminder is missing from draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					invitation: 'My invitation message',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
+	});
+
+	it('defaults to DEFAULT_REMINDER_MESSAGE when reminder is empty string in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					invitation: 'My invitation message',
+					reminder: '',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
+	});
+
+	it('preserves explicitly set reminder when it is non-empty', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				sharing: {
+					invitation: 'My invitation message',
+					reminder: 'My custom reminder template',
+				},
+			},
+		});
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.reminder).toBe('My custom reminder template');
+	});
+
+	it('passes eventContentSchema when sharing.reminder was empty and defaults to default reminder', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				sharing: {
+					invitation: 'Valid invitation message',
+					reminder: '',
+				},
+				quote: { text: 'Test quote', author: 'Test author' },
+				location: {
+					ceremony: {
+						venueName: 'Church',
+						address: '123 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Reception Hall',
+						address: '456 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '20:00',
+					},
+				},
+			},
+		});
+
+		const validation = eventContentSchema.safeParse(result);
+		expect(validation.success).toBe(true);
+
+		const sharing = result.sharing as Record<string, unknown>;
+		const shareMessages = sharing.shareMessages as Record<string, string>;
+		expect(shareMessages.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
 	});
 });

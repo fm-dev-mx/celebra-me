@@ -3,6 +3,7 @@ import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
 import { str, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
 
 function isNullishSection(value: unknown): value is null | undefined {
@@ -449,7 +450,7 @@ function resolveReminderTemplate(
 		str(draftMessages.reminder) ||
 		str(demoMessages.reminder) ||
 		str(demoMessages.whatsappWithoutPhone);
-	return result ?? '';
+	return result ?? DEFAULT_REMINDER_MESSAGE;
 }
 
 function mapSharingFromDraft(
