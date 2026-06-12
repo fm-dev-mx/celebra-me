@@ -2,13 +2,18 @@ import React, { useMemo } from 'react';
 import {
 	formatGuestMessageCount,
 	parseGuestCommentHistory,
+	resolveLabel,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestMessageHistoryProps {
 	guestComment: string;
+	fallbackTimestampIso?: string;
 }
 
-const GuestMessageHistory: React.FC<GuestMessageHistoryProps> = ({ guestComment }) => {
+const GuestMessageHistory: React.FC<GuestMessageHistoryProps> = ({
+	guestComment,
+	fallbackTimestampIso,
+}) => {
 	const entries = useMemo(() => parseGuestCommentHistory(guestComment), [guestComment]);
 	if (entries.length === 0) return null;
 
@@ -29,7 +34,7 @@ const GuestMessageHistory: React.FC<GuestMessageHistoryProps> = ({ guestComment 
 					>
 						<p className="guest-message-history__text">{entry.message}</p>
 						<p className="guest-message-history__meta">
-							{entry.timestampLabel ?? 'Mensaje inicial'}
+							{resolveLabel(entry.timestampLabel, fallbackTimestampIso)}
 						</p>
 					</li>
 				))}

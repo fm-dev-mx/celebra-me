@@ -13,6 +13,7 @@ import {
 	getGuestMessageCount,
 	getGuestPrimaryAction,
 	formatGuestMetadataRow,
+	getGuestMessageFallbackTimestamp,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
@@ -139,7 +140,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				aria-label={`Detalles de ${item.fullName}`}
 			>
 				<div className="guest-card__expanded-inner">
-					{messageCount > 0 && <GuestMessageHistory guestComment={item.guestComment} />}
+					{messageCount > 0 && (
+						<GuestMessageHistory
+							guestComment={item.guestComment}
+							fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+						/>
+					)}
 					<GuestDetailGroups item={item} />
 					<div className="guest-card__expanded-actions">
 						<GuestExpandedActions

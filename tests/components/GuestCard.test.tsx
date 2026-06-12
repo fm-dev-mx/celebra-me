@@ -172,10 +172,13 @@ describe('GuestCard status labels', () => {
 		expect(screen.getByText('Vista 100%')).toBeInTheDocument();
 	});
 
-	it('shows guest message in expanded panel', () => {
+	it('shows guest message in expanded panel with a formatted timestamp', () => {
 		const { container } = render(
 			<GuestCard
-				item={makeGuest({ guestComment: 'Nos vemos pronto' })}
+				item={makeGuest({
+					guestComment: 'Nos vemos pronto',
+					respondedAt: '2026-03-22T12:30:00.000Z',
+				})}
 				isExpanded={true}
 				{...baseProps}
 			/>,
@@ -184,6 +187,9 @@ describe('GuestCard status labels', () => {
 		expect(container.querySelector('.guest-message-history__text')).toHaveTextContent(
 			'Nos vemos pronto',
 		);
+		const meta = container.querySelector('.guest-message-history__meta');
+		expect(meta).toHaveTextContent('22 mar 2026');
+		expect(meta).not.toHaveTextContent('Mensaje inicial');
 	});
 
 	it('does not show message block when no guest comment', () => {

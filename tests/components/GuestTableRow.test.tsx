@@ -177,8 +177,11 @@ describe('GuestTableRow — message toggle', () => {
 		expect(container.querySelector('.guest-message-panel')).not.toBeInTheDocument();
 	});
 
-	it('shows message label and text content', () => {
-		const { container } = renderRow({ guestComment: '¡Nos vemos!' });
+	it('shows message label and text content with a formatted timestamp', () => {
+		const { container } = renderRow({
+			guestComment: '¡Nos vemos!',
+			respondedAt: '2026-03-22T12:30:00.000Z',
+		});
 		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
 		expect(container.querySelector('.guest-message-history__title')).toHaveTextContent(
 			'Mensajes del invitado',
@@ -186,6 +189,9 @@ describe('GuestTableRow — message toggle', () => {
 		expect(container.querySelector('.guest-message-history__text')).toHaveTextContent(
 			'¡Nos vemos!',
 		);
+		const meta = container.querySelector('.guest-message-history__meta');
+		expect(meta).toHaveTextContent('22 mar 2026');
+		expect(meta).not.toHaveTextContent('Mensaje inicial');
 	});
 
 	it('closes message when row is expanded', () => {

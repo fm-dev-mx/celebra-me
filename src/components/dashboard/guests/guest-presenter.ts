@@ -3,10 +3,26 @@ import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
+import { formatMessageTimestamp, parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
 export type { GuestMessageEntry } from '@/lib/rsvp/core/guest-message';
 export { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
+
+export function resolveLabel(
+	timestampLabel: string | undefined,
+	fallbackIso: string | undefined,
+): string {
+	if (timestampLabel) return timestampLabel;
+	if (fallbackIso) {
+		const d = new Date(fallbackIso);
+		if (!isNaN(d.getTime())) return formatMessageTimestamp(d);
+	}
+	return '—';
+}
+
+export function getGuestMessageFallbackTimestamp(item: DashboardGuestItem): string {
+	return item.respondedAt ?? item.updatedAt;
+}
 
 export function formatGuestEntrySource(item: DashboardGuestItem) {
 	const isPublic = item.entrySource === 'generic_public' || item.tags.includes('system:public');

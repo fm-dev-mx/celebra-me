@@ -16,6 +16,7 @@ import {
 	getGuestMessageCount,
 	getGuestPrimaryAction,
 	formatGuestDateShort,
+	resolveLabel,
 } from '@/components/dashboard/guests/guest-presenter';
 import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
@@ -519,5 +520,30 @@ describe('getShareCtaLabel', () => {
 		);
 		expect(result.label).toBe('Compartir invitación');
 		expect(result.defaultMessageType).toBe('invitation');
+	});
+});
+
+describe('resolveLabel', () => {
+	it('returns the timestampLabel when present', () => {
+		expect(resolveLabel('12 jun 2026, 10:34', undefined)).toBe('12 jun 2026, 10:34');
+	});
+
+	it('formats a valid fallback ISO date when timestampLabel is missing', () => {
+		const result = resolveLabel(undefined, '2026-03-22T00:00:00.000Z');
+		expect(result).toMatch(/^\d{1,2} mar 2026, \d{2}:\d{2}$/);
+	});
+
+	it('returns "—" when timestampLabel and fallback are both undefined', () => {
+		expect(resolveLabel(undefined, undefined)).toBe('—');
+	});
+
+	it('returns "—" when fallbackIso is an invalid date string', () => {
+		expect(resolveLabel(undefined, 'not-a-date')).toBe('—');
+	});
+
+	it('ignores fallbackIso when timestampLabel exists even if fallback is also provided', () => {
+		expect(resolveLabel('12 jun 2026, 10:34', '2026-03-22T00:00:00.000Z')).toBe(
+			'12 jun 2026, 10:34',
+		);
 	});
 });

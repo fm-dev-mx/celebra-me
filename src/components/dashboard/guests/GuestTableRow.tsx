@@ -13,6 +13,7 @@ import {
 	getCompactGroupChips,
 	getGuestMessageCount,
 	getGuestPrimaryAction,
+	getGuestMessageFallbackTimestamp,
 	normalizeViewPercentage,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -87,7 +88,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					role="region"
 					aria-label="Mensajes del invitado"
 				>
-					<GuestMessageHistory guestComment={item.guestComment} />
+					<GuestMessageHistory
+						guestComment={item.guestComment}
+						fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+					/>
 				</div>
 			</td>
 		</tr>
@@ -214,7 +218,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					<td colSpan={GUEST_TABLE_COL_COUNT}>
 						<div className="guest-row__expanded-inner">
 							{hasMessages && (
-								<GuestMessageHistory guestComment={item.guestComment} />
+								<GuestMessageHistory
+									guestComment={item.guestComment}
+									fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+								/>
 							)}
 							<GuestDetailGroups item={item} />
 							<div className="guest-row__expanded-actions">
