@@ -291,6 +291,64 @@
 	}
 }
 
+/* Compact summary variant — single inline line for mobile */
+.guest-summary--compact {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin-bottom: 0.5rem;
+	padding: 0.4rem 0;
+	background: none;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	flex-wrap: wrap;
+	font-size: 0.75rem;
+	color: var(--color-text-secondary);
+	line-height: 1.4;
+}
+
+.guest-summary__compact-item {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.2rem;
+	white-space: nowrap;
+}
+
+.guest-summary__compact-label {
+	font-weight: 400;
+	color: var(--color-text-muted);
+}
+
+.guest-summary__compact-value {
+	font-weight: 600;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+}
+
+.guest-summary__compact-dot {
+	color: var(--color-text-muted);
+	font-weight: 700;
+	opacity: 50%;
+	user-select: none;
+}
+
+/* Mobile-only summary block — hidden on desktop, shown on mobile */
+.dashboard-guests__mobile-summary {
+	display: none;
+
+	@include mixins.respond-below(md) {
+		display: flex;
+	}
+}
+
+/* On mobile, hide the full summary — compact variant shown instead */
+@include mixins.respond-below(md) {
+	.dashboard-guests .guest-summary:not(.guest-summary--compact) {
+		display: none;
+	}
+}
+
 /* Guest group metrics — compact pill row below primary summary */
 .guest-group-metrics {
 	margin: 0 0 0.75rem;

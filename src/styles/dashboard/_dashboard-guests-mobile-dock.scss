@@ -1,6 +1,8 @@
 @use '../global/mixins' as mixins;
 
 .dashboard-guests__mobile-dock {
+	--dashboard-dock-height: 76px;
+
 	display: none;
 	position: fixed;
 	bottom: 0;

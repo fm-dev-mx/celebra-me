@@ -4,6 +4,7 @@ import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestRevie
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
+import GuestSummary from '@/components/dashboard/guests/GuestSummary';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
@@ -90,7 +91,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	const visibleItems = items.filter((item) => {
-		if (reviewFilter === 'reminder-pending' && !reminderEligibleGuests.some((g) => g.guestId === item.guestId))
+		if (
+			reviewFilter === 'reminder-pending' &&
+			!reminderEligibleGuests.some((g) => g.guestId === item.guestId)
+		)
 			return false;
 		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
 			return false;
@@ -266,6 +270,11 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					reminderAudience={reminderSettings.audience}
 				/>
 
+				{/* Mobile-only compact summary — hidden on desktop via CSS */}
+				<div className="dashboard-guests__mobile-summary">
+					<GuestSummary totals={totals} variant="compact" />
+				</div>
+
 				<div className="dashboard-guests__toolbar">
 					<button
 						type="button"
@@ -279,7 +288,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							type="button"
 							onClick={() =>
 								setReviewFilter(
-									reviewFilter === 'reminder-pending' ? 'all' : 'reminder-pending',
+									reviewFilter === 'reminder-pending'
+										? 'all'
+										: 'reminder-pending',
 								)
 							}
 							className={`btn-secondary btn--compact${reviewFilter === 'reminder-pending' ? ' btn-secondary--active' : ''}`}

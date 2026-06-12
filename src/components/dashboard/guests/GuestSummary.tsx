@@ -3,11 +3,50 @@ import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.in
 
 interface GuestSummaryProps {
 	totals: DashboardGuestListResponse['totals'];
+	variant?: 'full' | 'compact';
 }
 
-const GuestSummary: React.FC<GuestSummaryProps> = ({ totals }) => {
+const GuestSummary: React.FC<GuestSummaryProps> = ({ totals, variant = 'full' }) => {
 	const isDeliveryComplete =
 		totals.totalInvitations > 0 && totals.sharedInvitations === totals.totalInvitations;
+
+	if (variant === 'compact') {
+		return (
+			<section
+				className="guest-summary guest-summary--compact"
+				aria-label="Resumen de invitados"
+			>
+				<span className="guest-summary__compact-item">
+					<span className="guest-summary__compact-label">Enviadas</span>
+					<span className="guest-summary__compact-value">
+						{totals.sharedInvitations}
+						<span className="guest-summary__value-separator">/</span>
+						{totals.totalInvitations}
+					</span>
+				</span>
+				<span className="guest-summary__compact-dot" aria-hidden="true">
+					·
+				</span>
+				<span className="guest-summary__compact-item">
+					<span className="guest-summary__compact-label">Confirmadas</span>
+					<span className="guest-summary__compact-value">
+						{totals.confirmedInvitations}
+					</span>
+				</span>
+				<span className="guest-summary__compact-dot" aria-hidden="true">
+					·
+				</span>
+				<span className="guest-summary__compact-item">
+					<span className="guest-summary__compact-label">Asistentes</span>
+					<span className="guest-summary__compact-value">
+						{totals.confirmedPeople}
+						<span className="guest-summary__value-small">/</span>
+						{totals.totalPeople}
+					</span>
+				</span>
+			</section>
+		);
+	}
 
 	return (
 		<section className="guest-summary" aria-label="Resumen de invitados">
@@ -58,7 +97,7 @@ const GuestSummary: React.FC<GuestSummaryProps> = ({ totals }) => {
 					</div>
 
 					{isDeliveryComplete && (
-						<div className="guest-summary__badge">
+						<div className="dashboard-badge dashboard-badge--active guest-summary__badge">
 							<span className="guest-summary__badge-dot" aria-hidden="true" />
 							<span>Entrega completa</span>
 						</div>
