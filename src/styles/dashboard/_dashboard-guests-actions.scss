@@ -81,15 +81,31 @@
 	}
 }
 
-/* Expanded actions strip — replaces nested dropdown inside expanded rows/cards */
+/* Expanded actions strip — two groups separated by auto margin */
 .guest-expanded-actions {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.5rem;
+	width: 100%;
+	justify-content: space-between;
+
+	.guest-expanded-actions__group:last-child {
+		margin-left: auto;
+	}
 
 	@include mixins.respond-below(xs) {
 		gap: 0.4rem;
+		flex-direction: column;
+		align-items: stretch;
+
+		.guest-expanded-actions__group {
+			justify-content: center;
+		}
+
+		.guest-expanded-actions__group:last-child {
+			margin-left: 0;
+		}
 	}
 }
 

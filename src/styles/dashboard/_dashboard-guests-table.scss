@@ -200,11 +200,10 @@
 }
 
 .guest-row__detail-label {
-	font-size: 0.6rem;
+	font-size: 0.65rem;
 	font-weight: 600;
 	color: var(--color-text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	letter-spacing: 0.01em;
 }
 
 .guest-row__detail-value {
@@ -221,19 +220,31 @@
 }
 
 .guest-row__expanded-message {
-	padding: 0.55rem 0.7rem;
+	padding: 0.75rem 0.9rem;
 	background: rgb(var(--color-text-secondary-rgb) / 4%);
-	border-radius: 8px;
-	border-left: 3px solid rgb(var(--color-action-accent-rgb) / 22%);
+	border-radius: 10px;
+	max-width: min(100%, 600px);
+
+	.guest-row__detail-label {
+		font-size: 0.68rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		margin-bottom: 0.35rem;
+	}
 }
 
 .guest-row__expanded-message-text {
-	font-size: 0.78rem;
-	font-style: italic;
-	color: var(--color-text-secondary);
-	line-height: 1.5;
-	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	font-style: normal;
+	color: var(--color-text-primary);
+	line-height: 1.7;
+	margin: 0;
 	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	font-weight: 450;
+	padding-left: 0.5rem;
+	border-left: 2px solid
+		rgb(var(--color-border-premium-rgb, var(--color-text-secondary-rgb)) / 20%);
 }
 
 .guest-row__expanded-actions {
@@ -256,29 +267,30 @@
 }
 
 .guest-message-panel {
-	padding: 0.75rem 1rem;
+	padding: 0.85rem 1rem;
 	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
 	margin: 0 0.75rem;
 	animation: guest-message-fade-in 0.2s ease-out;
 
 	&__label {
 		display: block;
-		font-size: 0.6rem;
+		font-size: 0.68rem;
 		font-weight: 600;
 		color: var(--color-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		margin-bottom: 0.3rem;
+		margin-bottom: 0.35rem;
 	}
 
 	&__text {
 		margin: 0;
-		font-size: 0.82rem;
+		font-size: 0.85rem;
 		color: var(--color-text-primary);
-		line-height: 1.6;
+		line-height: 1.7;
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
-		font-weight: 500;
+		font-weight: 450;
+		padding-left: 0.5rem;
+		border-left: 2px solid
+			rgb(var(--color-border-premium-rgb, var(--color-text-secondary-rgb)) / 20%);
 	}
 }
 

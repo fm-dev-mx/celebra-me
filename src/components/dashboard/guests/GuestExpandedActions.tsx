@@ -83,14 +83,14 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 
 	return (
 		<div
-			className="guest-expanded-actions"
+			className="guest-expanded-actions guest-expanded-actions--grouped"
 			role="group"
 			aria-label={`Acciones para ${guestName}`}
 		>
 			<div className="guest-expanded-actions__group">
 				<button
 					type="button"
-					className="guest-expanded-actions__btn guest-expanded-actions__btn--copy"
+					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--copy"
 					onClick={handleCopyLink}
 					title="Copiar enlace de invitación"
 					aria-label={`Copiar enlace de invitación de ${guestName}`}
@@ -102,7 +102,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 				{isShared ? (
 					<button
 						type="button"
-						className={`guest-expanded-actions__btn ${confirmState === 'confirm-revert' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--revert'}`}
+						className={`btn-icon guest-expanded-actions__btn ${confirmState === 'confirm-revert' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--revert'}`}
 						onClick={() => {
 							if (onRevertShared)
 								handleConfirmAction('confirm-revert', onRevertShared);
@@ -116,7 +116,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 				) : (
 					<button
 						type="button"
-						className={`guest-expanded-actions__btn ${confirmState === 'confirm-mark-sent' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--mark-sent'}`}
+						className={`btn-icon guest-expanded-actions__btn ${confirmState === 'confirm-mark-sent' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--mark-sent'}`}
 						onClick={() => handleConfirmAction('confirm-mark-sent', onMarkShared)}
 						disabled={busy}
 						title="Marcar como enviado"
@@ -131,7 +131,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 			<div className="guest-expanded-actions__group">
 				<button
 					type="button"
-					className="guest-expanded-actions__btn guest-expanded-actions__btn--edit"
+					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--edit"
 					onClick={() => {
 						resetConfirm();
 						onEdit();
@@ -146,7 +146,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 				{canToggleBranding && (
 					<button
 						type="button"
-						className="guest-expanded-actions__btn guest-expanded-actions__btn--branding"
+						className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--branding"
 						onClick={() => {
 							resetConfirm();
 							onToggleBrandingRemoval(guestId, !hideCelebraMeBranding);
@@ -160,7 +160,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 
 				<button
 					type="button"
-					className="guest-expanded-actions__btn guest-expanded-actions__btn--delete"
+					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--delete"
 					onClick={() => {
 						resetConfirm();
 						onDelete();

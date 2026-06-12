@@ -122,7 +122,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					{hasMessage(item) ? (
 						<button
 							type="button"
-							className="guest-nota-btn"
+							className="btn-accent guest-nota-btn"
 							onClick={() => setMsgOpen((v) => !v)}
 							aria-expanded={msgOpen}
 							aria-controls={msgId}
@@ -176,7 +176,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				<td data-label="">
 					<button
 						type="button"
-						className={`guest-row__menu-btn ${isExpanded ? 'guest-row__menu-btn--open' : ''}`}
+						className={`btn-icon guest-row__menu-btn ${isExpanded ? 'guest-row__menu-btn--open' : ''}`}
 						title={isExpanded ? 'Ver menos detalles' : 'Ver más detalles'}
 						aria-label={
 							isExpanded
@@ -217,6 +217,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				>
 					<td colSpan={GUEST_TABLE_COL_COUNT}>
 						<div className="guest-row__expanded-inner">
+							{/* Zone A: Status / Activity grid */}
 							<div className="guest-row__expanded-grid">
 								<div className="guest-row__detail">
 									<span className="guest-row__detail-label">Entrega</span>
@@ -239,6 +240,39 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									</span>
 								</div>
 
+								<div className="guest-row__detail">
+									<span className="guest-row__detail-label">Origen</span>
+									<span className="guest-row__detail-value">
+										{formatGuestEntrySource(item)}
+									</span>
+								</div>
+
+								{isViewed && (
+									<div className="guest-row__detail">
+										<span className="guest-row__detail-label">
+											Última vista
+										</span>
+										<span
+											className="guest-row__detail-value"
+											title={formatGuestDate(item.firstViewedAt)}
+										>
+											{formatGuestDate(item.firstViewedAt).split(',')[0]}
+										</span>
+									</div>
+								)}
+
+								{item.respondedAt && (
+									<div className="guest-row__detail">
+										<span className="guest-row__detail-label">Respuesta</span>
+										<span
+											className="guest-row__detail-value"
+											title={formatGuestDate(item.respondedAt)}
+										>
+											{formatGuestDate(item.respondedAt).split(',')[0]}
+										</span>
+									</div>
+								)}
+
 								{item.email && (
 									<div className="guest-row__detail">
 										<span className="guest-row__detail-label">Email</span>
@@ -247,13 +281,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 										</span>
 									</div>
 								)}
-
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Origen</span>
-									<span className="guest-row__detail-value">
-										{formatGuestEntrySource(item)}
-									</span>
-								</div>
 
 								{hasTags && (
 									<div className="guest-row__detail">
@@ -270,22 +297,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 										</div>
 									</div>
 								)}
-
-								{isViewed && (
-									<div className="guest-row__detail">
-										<span className="guest-row__detail-label">
-											Última vista
-										</span>
-										<span
-											className="guest-row__detail-value"
-											title={formatGuestDate(item.firstViewedAt)}
-										>
-											{formatGuestDate(item.firstViewedAt).split(',')[0]}
-										</span>
-									</div>
-								)}
 							</div>
 
+							{/* Zone B: Guest message */}
 							{hasMessage(item) && (
 								<div className="guest-row__expanded-message">
 									<div className="guest-row__detail-label">
@@ -297,6 +311,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								</div>
 							)}
 
+							{/* Zone C: Actions */}
 							<div className="guest-row__expanded-actions">
 								<GuestExpandedActions
 									guestName={item.fullName}
