@@ -43,4 +43,5 @@ export interface UpdateGuestDTO {
 	tags?: string[];
 	maxAllowedAttendees?: number;
 	deliveryStatus?: DeliveryStatus;
+	lastReminderSentAt?: string | null;
 }

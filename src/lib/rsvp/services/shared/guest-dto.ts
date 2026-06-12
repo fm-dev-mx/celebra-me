@@ -71,5 +71,6 @@ export function toGuestDto(
 		eventType: options.eventType,
 		eventSlug: options.eventSlug,
 		shortId: guest.shortId,
+		lastReminderSentAt: guest.lastReminderSentAt,
 	};
 }

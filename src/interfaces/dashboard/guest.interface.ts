@@ -37,6 +37,7 @@ export interface DashboardGuestItem {
 	eventSlug?: string;
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
+	lastReminderSentAt?: string | null;
 }
 
 export interface DashboardGuestListResponse {

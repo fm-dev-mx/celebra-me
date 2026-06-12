@@ -1,3 +1,5 @@
+import type { EventType } from '@/lib/theme/theme-contract';
+
 export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
 export type DeliveryStatus = 'generated' | 'shared';
 export type DeliveryFilter = DeliveryStatus | 'all';
@@ -8,7 +10,7 @@ export interface EventRecord {
 	id: string;
 	ownerUserId: string;
 	slug: string;
-	eventType: 'xv' | 'boda' | 'bautizo' | 'cumple';
+	eventType: EventType;
 	title: string;
 	status: 'draft' | 'published' | 'archived';
 	publishedAt: string | null;
@@ -42,6 +44,7 @@ export interface GuestInvitationRecord {
 	tags?: string[];
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
+	lastReminderSentAt?: string | null;
 }
 
 export interface GuestInvitationAuditRecord {
@@ -89,6 +92,7 @@ export interface GuestInvitationDTO {
 	eventSlug?: string;
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
+	lastReminderSentAt?: string | null;
 }
 
 export interface DashboardGuestMutationResponse {

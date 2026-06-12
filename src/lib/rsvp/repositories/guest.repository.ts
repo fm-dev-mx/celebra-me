@@ -69,6 +69,7 @@ const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
 	responded_at: 'respondedAt',
 	tags: 'tags',
 	hide_celebra_me_branding: 'hideCelebraMeBranding',
+	last_reminder_sent_at: 'lastReminderSentAt',
 };
 
 function buildGuestUpdateBody(input: UpdateGuestInput) {
