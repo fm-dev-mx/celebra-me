@@ -11,6 +11,118 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.
 
 <!-- Items for the next release go here -->
 
+## [0.7.0-beta.1] - 2026-06-11
+
+### Added
+
+- **Short ID resolver with OG metadata shell**: new `/i/[shortId]` short-code page,
+  `InvitationOGShell.astro` component, OG meta tag rendering for social crawlers, and social crawler
+  detection utility
+- **Guest message sharing UX overhaul**: redesigned ShareMessagesModal with editor card, clickable
+  template variables, server-side defaults, two-click reset, and ARIA labels; redesigned
+  SendInvitationModal with preview mode and compact secondary actions; inline ShareComposer popup
+  with invitation/reminder toggle; date-aware share message preview with date-based template
+  variables
+- **Reminder system**: reminder-eligibility utility, ReminderSettings types/schema/defaults,
+  persistence through service and API, reminder batch flow, dashboard CTA and settings UI,
+  `Por confirmar` status pill and review filter, `isUnconfirmedSharedGuest` utility and
+  `unconfirmedShared` totals, `confirmationDeadline` field to invitation editor
+- **eventTiming system**: timezone-aware schema, date-fns-tz dependency, timezone utilities, editor
+  UI fields in LocationSectionEditor, mapper pipeline through draft and publishing
+- **Social SEO**: `og:image:alt`, `ogDescription` field through editor/schemas/mappers/OG tags,
+  `resolveShareDescription` fallback for invitation meta description
+- **Guest form**: custom attendee count option with "Otro" input
+- **Family parents order**: configurable parents order in Family component, editor dropdown, intake
+  types/schemas/mappers
+- **Editor enhancements**: sharing section UI with schemas/mappers/registry, envelope seal monogram
+  field, `buildPreviewUrl` utility, `shareDateContext` in dashboard guest API and components,
+  `firstSharedAt` wiring through sharing flow, `ShareFlowMode` types and utility, copy-success
+  feedback and auto-close on share in single mode
+- **ModalShell**: enhanced with subtitle, className, and improved ARIA
+- **Neutral state color tokens** added to semantic token system
+- **Share message renderer** and configurable share templates for RSVP
+
+### Changed
+
+- Dashboard styling refactored: focus patterns centralized into mixins, semantic state tokens
+  adopted across form/button/phone-input components, media queries normalized, form field styles
+  extracted from modals, intake and guest modal styles extracted into dedicated partials,
+  `_intake-editor.scss` and `_intake-list.scss` partitioned from monolithic `_intake.scss`
+- Countdown `eventDate` prop renamed to `targetIso` for timezone-aware countdown
+- Invitation link generation simplified to prefer `/i/{shortId}` path
+- Share message templates migrated to Spanish double-brace syntax, updated with friendlier wording
+  and improved type safety; sharing config extracted with `resolveShareTemplates`, message variables
+  and preview context constants; fields renamed to invitation/reminder
+- Draft mapper refactored: null-safety, dead code removal, `Object.assign` replaced with direct
+  property assignment
+- Schemas enforced strict mode with modernized UUID validation
+- Icon consolidation: `ICON_NAMES_TUPLE` extracted as shared export
+- Dependencies bumped: `astro` 6.3.1→6.4.4, `@astrojs/react` 5.0.4→5.0.7, `eslint` 10.4.0→10.4.1,
+  `@commitlint/config-conventional` 20.5.3→21.0.2, `eslint-import-resolver-typescript`
+- pnpm lockfile deduplicated; Vercel security headers added for preview route
+
+### Database / Migrations
+
+- 1 migration: `add_first_shared_at` to `guest_invitations` (20260610000000)
+
+### Fixed
+
+- 404 status code and cache headers set for invitation routes
+- Vercel preview route exclusion regex corrected in catch-all pattern
+- Editor: activity editor collapse prevented on icon or time change in ItineraryEditor
+- Editor: preview scale recalculated on frame resize
+- Short-ID resolver: `ogDescription` populated for social preview fallback
+- Import: invitation-link alias corrected from `@utils` to `@/utils`
+- Mapper: stale `themeId` fallback removed from hero variant resolution
+- Adopt-legacy: actual theme resolved from content files instead of hardcoded value
+- Intake: form tokens migrated to semantic state and on-light variables
+- Share state: `deliveryStatus` made the source of truth; `firstSharedAt` synced on delivery status
+  transition
+- Default message templates: `inviteUrl` removed, friendlier wording applied
+- ShareComposer: country code support added and popover positioning fixed
+- Sharing: legacy `whatsappTemplate` stripped from non-demo published content
+- Draft-mapper: demo-only sharing fields prevented from leaking to client publications
+- Invitation: defensive guards added, Astro site origin used in short-code page
+
+### Tests / Validation
+
+- **New test suites** (20+): eventTiming (time utilities, mappers, publishing flow),
+  shortid-metadata, social-crawler, page-data, preview-url, message-type-resolver,
+  share-message-defaults, share-message-renderer, sharing-config, update-share-messages,
+  invitation-helpers, reminder-eligibility, reminder batch flow, GuestFormModal, ItineraryEditor,
+  ShareMessagesModal, guests hooks, share-messages API, social-preview e2e audit
+- **Updated suites**: guest-presenter, GuestCard, GuestDashboardApp review-filter,
+  GuestExpandedActions, GuestTableRow, SendInvitationModal, ShareAction, draft-content-mapper,
+  draft-to-published.mapper, publishing.service, event.adapter, header-navigation,
+  invitation-editor.service, invitation-section-registry, rsvp-v2.service, service.limits,
+  guest-dto, use-send-invitation, guest-factory, schema, time-normalization, invitation-link
+- E2E social preview audit spec added
+
+### Deployment Notes
+
+- Apply `add_first_shared_at` migration (20260610000000) before deployment
+- Verify short-ID route (`/i/[shortId]`) works with Vercel routing
+- Validate OG metadata rendering for social crawlers on short-code page
+- Test guest reminder flow end-to-end (eligibility → settings → batch send)
+- Verify share message templates render correctly with date-based variables
+- Test eventTiming pipeline across draft, editor, and published content
+- Preview route security headers deployed with Vercel configuration update
+
+### Validation
+
+| Check      | Result                                                                    |
+| :--------- | :------------------------------------------------------------------------ |
+| Type-check | Passed — 0 errors, 0 warnings, 0 hints                                    |
+| Tests      | 175 suites passed, 1 skipped; 2111 tests passed, 2 skipped                |
+| Build      | Passed — event parity validated, server + client built, sitemap generated |
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.6.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+- The `add_first_shared_at` migration is additive and backward-compatible.
+
 ## [0.6.0-beta.1] - 2026-06-08
 
 ### Added
