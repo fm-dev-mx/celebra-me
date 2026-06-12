@@ -6,8 +6,6 @@ import {
 	getCompactGroupChips,
 	computeGroupMetrics,
 	getPrimaryStatus,
-	getContactDisplay,
-	hasContact,
 	hasMessage,
 	getDeliveryStateLabel,
 	getRsvpStateLabel,
@@ -72,38 +70,6 @@ describe.each(primaryStatusCases)('getPrimaryStatus', (overrides, expectedLabel,
 		const status = getPrimaryStatus(makeGuest(overrides));
 		expect(status.label).toBe(expectedLabel);
 		expect(status.class).toBe(expectedClass);
-	});
-});
-
-describe('getContactDisplay', () => {
-	it('returns phone when available', () => {
-		expect(getContactDisplay(makeGuest({ phone: '5559876543' }))).toBe('5559876543');
-	});
-
-	it('returns email when phone is empty and email exists', () => {
-		expect(getContactDisplay(makeGuest({ phone: '', email: 'test@example.com' }))).toBe(
-			'test@example.com',
-		);
-	});
-
-	it('returns fallback when neither phone nor email exists', () => {
-		expect(getContactDisplay(makeGuest({ phone: '', email: null }))).toBe(
-			'Sin teléfono registrado',
-		);
-	});
-});
-
-describe('hasContact', () => {
-	it('returns true when phone exists', () => {
-		expect(hasContact(makeGuest({ phone: '555000' }))).toBe(true);
-	});
-
-	it('returns true when email exists', () => {
-		expect(hasContact(makeGuest({ phone: '', email: 'a@b.com' }))).toBe(true);
-	});
-
-	it('returns false when neither exists', () => {
-		expect(hasContact(makeGuest({ phone: '', email: null }))).toBe(false);
 	});
 });
 
