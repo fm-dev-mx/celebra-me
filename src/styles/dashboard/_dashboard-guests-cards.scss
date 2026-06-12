@@ -57,6 +57,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding-left: 0.05rem;
+	flex-shrink: 1;
+	min-width: 0;
+
+	+ .guest-tag--message {
+		flex-shrink: 0;
+	}
 }
 
 /* ───── Footer actions ───── */
