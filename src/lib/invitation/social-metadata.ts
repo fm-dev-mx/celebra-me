@@ -39,6 +39,13 @@ export function buildAbsoluteSocialUrl(pathOrUrl: string, origin: string): strin
 	}
 }
 
+export interface SocialImageMetadata {
+	url: string;
+	width: number;
+	height: number;
+	type: string;
+}
+
 export function buildSocialImageMetadata(
 	pathOrUrl: string,
 	options: {
@@ -47,7 +54,7 @@ export function buildSocialImageMetadata(
 		height?: number;
 		type?: string;
 	},
-): { url: string; width: number; height: number; type: string } {
+): SocialImageMetadata {
 	const url = buildAbsoluteSocialUrl(pathOrUrl, options.origin);
 	return {
 		url,

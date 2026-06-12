@@ -1,12 +1,18 @@
 ---
+import { SOCIAL_CRAWLER_PATTERN } from '@/lib/social/social-crawler';
+import type { SocialImageMetadata } from '@/lib/invitation/social-metadata';
+
 export interface Props {
 	ogTitle: string;
 	ogDescription: string;
-	ogImage: { url: string; width: number; height: number; type: string };
+	ogImage: SocialImageMetadata;
 	canonicalUrl: string;
+	redirectTarget?: string;
 }
 
-const { ogTitle, ogDescription, ogImage, canonicalUrl } = Astro.props;
+const { ogTitle, ogDescription, ogImage, canonicalUrl, redirectTarget } = Astro.props;
+
+const FALLBACK_REDIRECT_SCRIPT = `(function(){var el=document.getElementById('__cm_fallback');if(!el)return;var t=el.getAttribute('data-target');if(!t)return;var ua=navigator.userAgent.toLowerCase();if(new RegExp("${SOCIAL_CRAWLER_PATTERN.source}","i").test(ua))return;window.location.replace(t);})();`;
 ---
 
 <html lang="es">
@@ -31,6 +37,12 @@ const { ogTitle, ogDescription, ogImage, canonicalUrl } = Astro.props;
 		<meta property="og:site_name" content="Celebra.me" />
 		<link rel="canonical" href={canonicalUrl} />
 
+		<style>
+			.cm-fallback {
+				display: none;
+			}
+		</style>
+
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:url" content={canonicalUrl} />
@@ -40,5 +52,17 @@ const { ogTitle, ogDescription, ogImage, canonicalUrl } = Astro.props;
 	</head>
 	<body>
 		<p>Cargando tu invitación...</p>
+
+		{
+			redirectTarget && (
+				<div id="__cm_fallback" class="cm-fallback" data-target={redirectTarget} aria-hidden="true"></div>
+			)
+		}
 	</body>
 </html>
+
+{
+	redirectTarget && (
+		<script is:inline set:html={FALLBACK_REDIRECT_SCRIPT}></script>
+	)
+}

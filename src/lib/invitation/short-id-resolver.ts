@@ -3,9 +3,11 @@ import { buildInvitationPath } from '@/utils/invitation-link';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { buildLayoutData } from '@/lib/invitation/page-data';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
-import { buildSocialImageMetadata } from '@/lib/invitation/social-metadata';
-
-type SocialImageMetadata = ReturnType<typeof buildSocialImageMetadata>;
+import {
+	buildSocialImageMetadata,
+	type SocialImageMetadata,
+} from '@/lib/invitation/social-metadata';
+import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 export interface ShortIdOGData {
 	ogTitle: string;
@@ -15,7 +17,7 @@ export interface ShortIdOGData {
 
 export type ShortIdResolution =
 	| { kind: 'redirect'; redirectTarget: string; canonicalUrl: string }
-	| { kind: 'crawler'; ogData: ShortIdOGData; canonicalUrl: string }
+	| { kind: 'crawler'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string }
 	| { kind: 'error' };
 
 export async function resolveShortIdRequest(
@@ -27,7 +29,7 @@ export async function resolveShortIdRequest(
 		return { kind: 'error' };
 	}
 
-	let context: Awaited<ReturnType<typeof getInvitationContextByShortId>>;
+	let context;
 	try {
 		context = await getInvitationContextByShortId(shortId);
 	} catch (error) {
@@ -39,22 +41,23 @@ export async function resolveShortIdRequest(
 		return { kind: 'error' };
 	}
 
+	const redirectTarget = buildInvitationPath({
+		eventType: context.eventType,
+		eventSlug: context.eventSlug,
+		inviteId: context.inviteId,
+	});
 	const canonicalUrl = new URL(`/i/${shortId}`, siteOrigin).href;
 
 	if (!isSocialCrawler(userAgent)) {
 		return {
 			kind: 'redirect',
-			redirectTarget: buildInvitationPath({
-				eventType: context.eventType,
-				eventSlug: context.eventSlug,
-				inviteId: context.inviteId,
-			}),
+			redirectTarget,
 			canonicalUrl,
 		};
 	}
 
 	let ogTitle = context.eventTitle;
-	let ogDescription = context.eventTitle ? `Invitación digital para ${context.eventTitle}` : '';
+	let ogDescription = resolveShareDescription(null, context.eventTitle);
 	let ogImage = buildSocialImageMetadata('/images/og-image.webp', { origin: siteOrigin });
 
 	try {
@@ -75,6 +78,7 @@ export async function resolveShortIdRequest(
 	return {
 		kind: 'crawler',
 		ogData: { ogTitle, ogDescription, ogImage },
+		redirectTarget,
 		canonicalUrl,
 	};
 }
