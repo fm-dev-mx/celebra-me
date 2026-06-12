@@ -18,10 +18,12 @@ import type {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	formatPhoneError,
+	MAX_GUEST_COMMENT_LEN,
 	normalizeOptionalNationalPhone,
 	sanitize,
 	toSafeAttendeeCount,
 } from '@/lib/rsvp/core/utils';
+import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 
@@ -166,11 +168,15 @@ export async function persistRsvpResponse(
 	}
 
 	const respondedAt = new Date().toISOString();
+	const sanitizedNewMessage = sanitize(payload.guestComment, MAX_GUEST_COMMENT_LEN);
+	const finalGuestComment = !sanitizedNewMessage
+		? invitation.guestComment
+		: appendGuestMessage(invitation.guestComment, sanitizedNewMessage);
 	const updateBody: UpdateGuestInput = {
 		guestId: invitation.id,
 		attendanceStatus,
 		attendeeCount,
-		guestComment: sanitize(payload.guestComment, 500),
+		guestComment: finalGuestComment,
 		respondedAt,
 		lastResponseSource: responseSource,
 	};

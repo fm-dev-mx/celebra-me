@@ -1,4 +1,5 @@
 export const MAX_TEXT_LEN = 500;
+export const MAX_GUEST_COMMENT_LEN = 1000;
 export const DEFAULT_COUNTRY_CODE = '+52';
 
 /**

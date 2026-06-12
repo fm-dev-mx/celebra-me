@@ -1,7 +1,12 @@
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { EventRecord, GuestRSVPSubmitDTO } from '@/interfaces/rsvp/domain.interface';
 import { badRequest, parseJsonBody } from '@/lib/rsvp/core/http';
-import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
+import {
+	formatPhoneError,
+	MAX_GUEST_COMMENT_LEN,
+	normalizeOptionalNationalPhone,
+	sanitize,
+} from '@/lib/rsvp/core/utils';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 
 export interface PublicGuestRsvpRequest {
@@ -27,7 +32,7 @@ function parseRsvpPayload(body: Record<string, unknown>): GuestRSVPSubmitDTO | R
 	return {
 		attendanceStatus,
 		attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : 0,
-		guestComment: sanitize(body.guestComment as string, 500),
+		guestComment: sanitize(body.guestComment as string, MAX_GUEST_COMMENT_LEN),
 	};
 }
 
