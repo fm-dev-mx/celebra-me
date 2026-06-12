@@ -100,7 +100,11 @@ export const InvitationEditorSectionSchemas = {
 	messages: z.object({
 		quote: z.object({ text: optionalText(1000), author: optionalText(200) }).optional(),
 		thankYou: z
-			.object({ message: optionalText(2000), closingName: optionalText(200) })
+			.object({
+				message: optionalText(2000),
+				closingName: optionalText(200),
+				image: editableAssetSchema.optional(),
+			})
 			.optional(),
 	}),
 	gallery: gallerySchema,

@@ -401,6 +401,26 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('maps thankYou section with image', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias',
+					closingName: 'Familia',
+					image: { type: 'uploaded', assetId: '00000000-0000-0000-0000-000000000001' },
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			message: 'Gracias',
+			closingName: 'Familia',
+			image: { type: 'uploaded', assetId: '00000000-0000-0000-0000-000000000001' },
+		});
+	});
+
 	it('maps location with ceremony and reception venues', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
