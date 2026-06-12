@@ -55,17 +55,6 @@ export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
 	return { label: 'Enviada', class: 'sent' };
 }
 
-/** Displayable contact: phone > email > "Sin teléfono registrado" */
-export function getContactDisplay(item: DashboardGuestItem): string {
-	if (item.phone?.trim()) return item.phone.trim();
-	if (item.email?.trim()) return item.email.trim();
-	return 'Sin teléfono registrado';
-}
-
-export function hasContact(item: DashboardGuestItem): boolean {
-	return !!(item.phone || item.email);
-}
-
 /** True when the guest left an RSVP comment/message */
 export function hasMessage(item: DashboardGuestItem): boolean {
 	return (item.guestComment ?? '').trim().length > 0;
@@ -146,6 +135,7 @@ export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: strin
 export interface ShareCtaResult {
 	label: string;
 	defaultMessageType: ShareMessageType;
+	priority: 'primary' | 'secondary';
 }
 
 /**
@@ -164,9 +154,14 @@ export function hasBeenShared(item: DashboardGuestItem): boolean {
 
 export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
 	const shared = hasBeenShared(item);
+
+	const priority: ShareCtaResult['priority'] =
+		!shared || item.attendanceStatus === 'pending' ? 'primary' : 'secondary';
+
 	return {
 		label: shared ? 'Enviar recordatorio' : 'Compartir invitación',
 		defaultMessageType: shared ? 'reminder' : 'invitation',
+		priority,
 	};
 }
 

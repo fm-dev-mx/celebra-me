@@ -49,6 +49,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 
 	const cta = getShareCtaLabel(guest);
 	const mode: ShareFlowMode = resolveShareFlowMode(guest);
+	const priorityBtnClass =
+		status === 'idle' && cta.priority === 'primary' ? 'btn-primary' : 'btn-secondary';
 
 	const icon =
 		status === 'sending' ? (
@@ -71,7 +73,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 		<>
 			<button
 				type="button"
-				className={`dashboard-guests__share-button dashboard-guests__share-button--${status} ${guest.deliveryStatus === 'shared' && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
+				className={`${priorityBtnClass} dashboard-guests__share-button dashboard-guests__share-button--${status} ${guest.deliveryStatus === 'shared' && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
 				onClick={() => setComposerOpen(true)}
 				disabled={status !== 'idle'}
 				title={cta.label}
