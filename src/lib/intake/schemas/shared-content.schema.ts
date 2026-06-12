@@ -34,6 +34,16 @@ export const venueSchema = z
 	})
 	.strict();
 
+export const venueEntrySchema = venueSchema
+	.extend({
+		id: z.string().min(1),
+		type: z.enum(['ceremony', 'reception', 'custom']),
+		label: optionalText(200),
+		isVisible: z.boolean().optional().default(true),
+		sortOrder: z.number().int().min(0).optional(),
+	})
+	.strict();
+
 export const gallerySchema = z
 	.object({
 		eyebrow: optionalText(200),

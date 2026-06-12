@@ -68,6 +68,26 @@ export interface ItineraryItem {
 	time: string;
 }
 
+export interface VenueEntry {
+	id?: string;
+	type?: string;
+	label?: string;
+	isVisible?: boolean;
+	sortOrder?: number;
+	venueEvent: string;
+	venueName: string;
+	address: string;
+	city?: string;
+	date: string;
+	time: string;
+	mapUrl?: string;
+	appleMapsUrl?: string;
+	googleMapsUrl?: string;
+	wazeUrl?: string;
+	image?: ImageAsset;
+	coordinates?: Coordinate;
+}
+
 export interface Reception {
 	venueEvent: string;
 	venueName: string;
@@ -207,6 +227,7 @@ export interface InvitationViewModel {
 		location?: {
 			ceremony?: Ceremony;
 			reception?: Reception;
+			venues?: VenueEntry[];
 			indications?: Indication[];
 			variant?: LocationVariant;
 			showFlourishes?: boolean;

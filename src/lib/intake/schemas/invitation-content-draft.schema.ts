@@ -5,6 +5,7 @@ import {
 	optionalUrl,
 	editableAssetSchema,
 	venueSchema,
+	venueEntrySchema,
 	gallerySchema,
 	itinerarySchema,
 	giftsSchema,
@@ -68,6 +69,7 @@ export const InvitationContentDraftContentSchema = z
 				indicationsHeading: optionalText(200),
 				ceremony: venueSchema.optional(),
 				reception: venueSchema.optional(),
+				venues: z.array(venueEntrySchema).optional(),
 				indications: z.array(draftIndicationSchema).optional(),
 			})
 			.optional(),
