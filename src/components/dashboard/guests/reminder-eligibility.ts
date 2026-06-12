@@ -6,14 +6,13 @@ import type {
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 
-export { isUnconfirmedSharedGuest };
-
 export function getReminderEligibleGuests(
 	items: DashboardGuestItem[],
 	audience: ReminderAudience,
 ): DashboardGuestItem[] {
 	return items.filter((item) => {
 		if (item.deliveryStatus !== 'shared') return false;
+		if (item.lastReminderSentAt) return false;
 
 		if (audience === 'unconfirmed') {
 			return isUnconfirmedSharedGuest(item);

@@ -3,9 +3,9 @@ import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	getReminderEligibleGuests,
-	isUnconfirmedSharedGuest,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
+import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 
 function makeDateContext(
 	overrides: Partial<ShareMessageDateContext> = {},
@@ -164,6 +164,18 @@ describe('getReminderEligibleGuests', () => {
 			const result = getReminderEligibleGuests(items, 'unconfirmed');
 			expect(result).toHaveLength(0);
 		});
+
+		it('excludes guest with lastReminderSentAt even if otherwise eligible', () => {
+			const items = [
+				makeGuest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'pending',
+					lastReminderSentAt: '2026-06-12T00:00:00.000Z',
+				}),
+			];
+			const result = getReminderEligibleGuests(items, 'unconfirmed');
+			expect(result).toHaveLength(0);
+		});
 	});
 
 	describe('audience: all-shared', () => {
@@ -189,6 +201,29 @@ describe('getReminderEligibleGuests', () => {
 			const items = [makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'pending' })];
 			const result = getReminderEligibleGuests(items, 'all-shared');
 			expect(result).toHaveLength(0);
+		});
+
+		it('excludes shared + confirmed guest with lastReminderSentAt', () => {
+			const items = [
+				makeGuest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'confirmed',
+					lastReminderSentAt: '2026-06-12T00:00:00.000Z',
+				}),
+			];
+			const result = getReminderEligibleGuests(items, 'all-shared');
+			expect(result).toHaveLength(0);
+		});
+
+		it('includes shared + confirmed guest without lastReminderSentAt', () => {
+			const items = [
+				makeGuest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'confirmed',
+				}),
+			];
+			const result = getReminderEligibleGuests(items, 'all-shared');
+			expect(result).toHaveLength(1);
 		});
 	});
 
