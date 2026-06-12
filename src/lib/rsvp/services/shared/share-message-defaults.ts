@@ -1,3 +1,5 @@
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
+
 export const DEFAULT_PREVIEW_CONTEXT = {
 	guestName: 'Invitado',
 	eventTitle: 'tu evento',
@@ -40,6 +42,50 @@ export const DEFAULT_INVITATION_MESSAGE =
 
 export const DEFAULT_REMINDER_MESSAGE =
 	'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}';
+
+export const CONFIRMED_RSVP_TEXT =
+	'Ya tenemos registrada tu asistencia. Te esperamos con mucho gusto.';
+
+// V1 system-generated reminder (observed in persisted data). Kept so the normalization layer
+// still recognizes it as a default and can swap it for the status-aware variant.
+export const LEGACY_REMINDER_TEMPLATE_V1 =
+	'Hola {guestName}, te recordamos tu invitación a los {eventTitle}.\n\n{eventTimingText}\n\nPor favor confirma tu asistencia aquí:';
+
+export const DEFAULT_REMINDER_MESSAGE_CONFIRMED = `Hola {{invitado}},\n\n{{hora_evento}}\n\n${CONFIRMED_RSVP_TEXT}\n\nPuedes consultar nuevamente los detalles del evento aquí:\n{{enlace}}`;
+
+export function getDefaultReminderTemplate(status: AttendanceStatus | undefined): string {
+	if (status === 'confirmed') return DEFAULT_REMINDER_MESSAGE_CONFIRMED;
+	return DEFAULT_REMINDER_MESSAGE;
+}
+
+const KNOWN_DEFAULT_REMINDER_TEMPLATES = [
+	DEFAULT_REMINDER_MESSAGE,
+	LEGACY_REMINDER_TEMPLATE_V1,
+] as const;
+
+function normalizeReminderTemplate(template: string): string {
+	return template.replace(/\r\n/g, '\n').trim();
+}
+
+const NORMALIZED_DEFAULT_REMINDER_TEMPLATES =
+	KNOWN_DEFAULT_REMINDER_TEMPLATES.map(normalizeReminderTemplate);
+
+export function isDefaultReminderTemplate(template?: string | null): boolean {
+	if (!template) return true;
+
+	return NORMALIZED_DEFAULT_REMINDER_TEMPLATES.includes(normalizeReminderTemplate(template));
+}
+
+export function resolveReminderTemplate(
+	template: string | null | undefined,
+	attendanceStatus?: AttendanceStatus,
+): string {
+	if (isDefaultReminderTemplate(template)) {
+		return getDefaultReminderTemplate(attendanceStatus);
+	}
+
+	return template ?? '';
+}
 
 export interface ShareMessagesConfig {
 	invitation: string;

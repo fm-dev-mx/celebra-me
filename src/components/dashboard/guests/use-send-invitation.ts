@@ -9,7 +9,10 @@ import { useMessageEditor } from '@/components/dashboard/guests/use-message-edit
 import { copyToClipboard } from '@/utils/clipboard';
 import { hasValidPhone, buildWhatsAppNumber } from '@/lib/phone/validation';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
-import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
+import {
+	resolveReminderTemplate,
+	type ShareMessagesConfig,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { resolveDefaultMessageKind } from '@/lib/rsvp/services/shared/message-type-resolver';
@@ -145,10 +148,15 @@ export function useSendInvitation({
 					deliveryStatus: guest.deliveryStatus,
 				});
 		const template = templates[kind];
-		return renderShareMessage(template, {
+		const effectiveTemplate =
+			kind === 'reminder'
+				? resolveReminderTemplate(template, guest.attendanceStatus)
+				: template;
+		return renderShareMessage(effectiveTemplate, {
 			guestName: editName || guest.fullName,
 			eventTitle: eventTitle || '',
 			inviteUrl,
+			attendanceStatus: guest.attendanceStatus,
 			...(shareDateContext || {}),
 		});
 	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext, isReminderMode]);

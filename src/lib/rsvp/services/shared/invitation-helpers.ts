@@ -1,4 +1,4 @@
-import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { AttendanceStatus, EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolveSiteOrigin } from '@/lib/shared/origin';
@@ -7,6 +7,7 @@ import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-ren
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
+	resolveReminderTemplate,
 	resolveReminderSettings,
 	type ShareMessagesConfig,
 	type ReminderSettings,
@@ -31,6 +32,7 @@ export interface BuildShareMessageInput {
 	includeLink?: boolean;
 	eventDate?: string | null;
 	rsvpDeadline?: string | null;
+	attendanceStatus?: AttendanceStatus;
 }
 
 export function resolveOrigin(providedOrigin?: string): string {
@@ -49,13 +51,15 @@ export function resolveOrigin(providedOrigin?: string): string {
 function resolveTemplate(input: BuildShareMessageInput): string {
 	const messageType = input.messageType ?? 'invitation';
 
-	if (input.shareMessages) {
-		return messageType === 'reminder'
-			? input.shareMessages.reminder || DEFAULT_REMINDER_MESSAGE
-			: input.shareMessages.invitation || DEFAULT_INVITATION_MESSAGE;
+	if (messageType === 'reminder') {
+		return resolveReminderTemplate(input.shareMessages?.reminder, input.attendanceStatus);
 	}
 
-	return messageType === 'reminder' ? DEFAULT_REMINDER_MESSAGE : DEFAULT_INVITATION_MESSAGE;
+	if (input.shareMessages?.invitation) {
+		return input.shareMessages.invitation;
+	}
+
+	return DEFAULT_INVITATION_MESSAGE;
 }
 
 export function buildShareMessage(input: BuildShareMessageInput): string {
@@ -95,6 +99,7 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 		guestName: input.fullName,
 		eventTitle: input.eventTitle,
 		inviteUrl,
+		attendanceStatus: input.attendanceStatus,
 		...dateContext,
 	});
 }

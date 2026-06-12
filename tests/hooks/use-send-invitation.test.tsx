@@ -7,8 +7,12 @@ import {
 	createMockWindow,
 	stubWindowOpen,
 } from '@tests/helpers/nav-test-utils';
+import {
+	DEFAULT_REMINDER_MESSAGE,
+	type ShareMessagesConfig,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
+import { defaultShareDateContext } from '@tests/helpers/test-fixtures';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 
 const TEST_TEMPLATES: ShareMessagesConfig = {
@@ -245,13 +249,7 @@ describe('useSendInvitation', () => {
 		});
 
 		const { result, rerender } = renderHook(
-			({
-				guest,
-				mode,
-			}: {
-				guest: DashboardGuestItem;
-				mode?: ShareFlowMode;
-			}) =>
+			({ guest, mode }: { guest: DashboardGuestItem; mode?: ShareFlowMode }) =>
 				useSendInvitation({
 					guest,
 					pendingGuests: [guest],
@@ -301,5 +299,87 @@ describe('useSendInvitation', () => {
 		);
 
 		expect(result.current.activeMessage).toContain('INVITE: Reverted Guest');
+	});
+
+	describe('reminder status-awareness on client', () => {
+		it('confirmed guest with default reminder template gets confirmed variant', () => {
+			const guest = makeGuest({
+				guestId: 'g-1',
+				fullName: 'Ana López',
+				attendanceStatus: 'confirmed',
+				deliveryStatus: 'shared',
+				shareText: '',
+			});
+			const { result } = renderHook(() =>
+				useSendInvitation({
+					guest,
+					pendingGuests: [guest],
+					templates: {
+						invitation: 'Hola {guestName}',
+						reminder: DEFAULT_REMINDER_MESSAGE,
+					},
+					shareDateContext: defaultShareDateContext(),
+					inviteUrl: 'http://localhost/invitacion/invite-1',
+					eventTitle: 'Test Event',
+					onSave: jest.fn(),
+					onMarkShared: jest.fn(),
+				}),
+			);
+			expect(result.current.activeMessage).toContain('Ya tenemos registrada tu asistencia');
+			expect(result.current.activeMessage).not.toContain('Confirma tu asistencia');
+		});
+
+		it('pending guest with default reminder template gets pending variant', () => {
+			const guest = makeGuest({
+				guestId: 'g-1',
+				fullName: 'Ana López',
+				attendanceStatus: 'pending',
+				deliveryStatus: 'shared',
+				shareText: '',
+			});
+			const { result } = renderHook(() =>
+				useSendInvitation({
+					guest,
+					pendingGuests: [guest],
+					templates: {
+						invitation: 'Hola {guestName}',
+						reminder: DEFAULT_REMINDER_MESSAGE,
+					},
+					shareDateContext: defaultShareDateContext(),
+					inviteUrl: 'http://localhost/invitacion/invite-1',
+					eventTitle: 'Test Event',
+					onSave: jest.fn(),
+					onMarkShared: jest.fn(),
+				}),
+			);
+			expect(result.current.activeMessage).toContain('Confirma tu asistencia');
+		});
+
+		it('confirmed guest with custom reminder template uses custom template', () => {
+			const guest = makeGuest({
+				guestId: 'g-1',
+				fullName: 'Ana López',
+				attendanceStatus: 'confirmed',
+				deliveryStatus: 'shared',
+				shareText: '',
+			});
+			const { result } = renderHook(() =>
+				useSendInvitation({
+					guest,
+					pendingGuests: [guest],
+					templates: {
+						invitation: 'Hola {guestName}',
+						reminder: 'Mensaje personalizado para {guestName}: {inviteUrl}',
+					},
+					shareDateContext: defaultShareDateContext(),
+					inviteUrl: 'http://localhost/invitacion/invite-1',
+					eventTitle: 'Test Event',
+					onSave: jest.fn(),
+					onMarkShared: jest.fn(),
+				}),
+			);
+			expect(result.current.activeMessage).toContain('Mensaje personalizado para Ana López');
+			expect(result.current.activeMessage).not.toContain('Ya tenemos registrada');
+		});
 	});
 });

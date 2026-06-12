@@ -43,6 +43,7 @@ export function toGuestDto(
 		messageType,
 		eventDate: options.eventDate,
 		rsvpDeadline: options.rsvpDeadline,
+		attendanceStatus: guest.attendanceStatus,
 	};
 
 	return {

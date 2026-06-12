@@ -2,6 +2,7 @@ import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-ren
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
+	DEFAULT_REMINDER_MESSAGE_CONFIRMED,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 describe('renderShareMessage', () => {
@@ -128,6 +129,23 @@ describe('renderShareMessage', () => {
 		expect(lines[lines.length - 1].trim()).toBe(baseContext.inviteUrl);
 	});
 
+	it('renders DEFAULT_REMINDER_MESSAGE_CONFIRMED without asking to confirm again', () => {
+		const result = renderShareMessage(DEFAULT_REMINDER_MESSAGE_CONFIRMED, {
+			...baseContext,
+			...timingContext,
+		});
+		expect(result).toMatch(/^Hola María García/);
+		expect(result).toContain('Te recordamos que faltan 51 días');
+		expect(result).toContain(
+			'Ya tenemos registrada tu asistencia. Te esperamos con mucho gusto.',
+		);
+		expect(result).toContain('Puedes consultar nuevamente los detalles del evento aquí');
+		expect(result).not.toContain('Confirma tu asistencia');
+		expect(result).not.toContain('limite_confirmacion');
+		const lines = result.split('\n').filter(Boolean);
+		expect(lines[lines.length - 1].trim()).toBe(baseContext.inviteUrl);
+	});
+
 	it('renders DEFAULT_REMINDER_MESSAGE with custom rsvpDeadlineText', () => {
 		const result = renderShareMessage(DEFAULT_REMINDER_MESSAGE, {
 			...baseContext,
@@ -167,5 +185,62 @@ describe('renderShareMessage', () => {
 		});
 		expect(result).not.toContain('undefined');
 		expect(result).not.toContain('null');
+	});
+
+	describe('placeholder-level status awareness', () => {
+		it('confirmed guest sees acknowledgment text in {{limite_confirmacion}} placeholder', () => {
+			const templateWithPlaceholder = 'Hola {guestName},\n\n{rsvpDeadlineText}';
+			const result = renderShareMessage(templateWithPlaceholder, {
+				...baseContext,
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				attendanceStatus: 'confirmed',
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('pending guest sees confirmation text in {{limite_confirmacion}} placeholder', () => {
+			const templateWithPlaceholder = 'Hola {guestName},\n\n{rsvpDeadlineText}';
+			const result = renderShareMessage(templateWithPlaceholder, {
+				...baseContext,
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				attendanceStatus: 'pending',
+			});
+			expect(result).toContain('Confirma tu asistencia');
+			expect(result).not.toContain('Ya tenemos registrada tu asistencia');
+		});
+
+		it('undefined attendanceStatus leaves rsvpDeadlineText unchanged', () => {
+			const templateWithPlaceholder = 'Hola {guestName},\n\n{rsvpDeadlineText}';
+			const result = renderShareMessage(templateWithPlaceholder, {
+				...baseContext,
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				attendanceStatus: undefined,
+			});
+			expect(result).toContain('Confirma tu asistencia');
+		});
+
+		it('confirmed guest with custom template using {{limite_confirmacion}} gets acknowledgment', () => {
+			const customTemplate =
+				'Hola {guestName},\n\nTe recordamos el evento.\n\n{rsvpDeadlineText}\n\n{inviteUrl}';
+			const result = renderShareMessage(customTemplate, {
+				...baseContext,
+				rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
+				attendanceStatus: 'confirmed',
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toContain('Te recordamos el evento');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('confirmed guest with DEFAULT_REMINDER_MESSAGE gets acknowledgment via template and placeholder', () => {
+			const result = renderShareMessage(DEFAULT_REMINDER_MESSAGE, {
+				...baseContext,
+				...timingContext,
+				attendanceStatus: 'confirmed',
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
 	});
 });

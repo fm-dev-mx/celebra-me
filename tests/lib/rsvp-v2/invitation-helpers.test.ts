@@ -2,6 +2,10 @@ import {
 	buildShareMessage,
 	buildWhatsAppShareUrl,
 } from '@/lib/rsvp/services/shared/invitation-helpers';
+import {
+	DEFAULT_REMINDER_MESSAGE,
+	LEGACY_REMINDER_TEMPLATE_V1,
+} from '@/lib/rsvp/services/shared/share-message-defaults';
 
 const baseInput = {
 	origin: 'https://www.celebra-me.com',
@@ -145,6 +149,161 @@ describe('buildShareMessage', () => {
 		});
 		expect(result).not.toContain('Hola ,');
 		expect(result).not.toContain('Hola  ');
+	});
+
+	describe('reminder status-awareness', () => {
+		it('uses pending default reminder for pending guest when no shareMessages provided', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'pending',
+				includeLink: true,
+			});
+			expect(result).toContain('Confirma tu asistencia');
+			expect(result).not.toContain('Ya tenemos registrada');
+		});
+
+		it('uses confirmed default reminder for confirmed guest when no shareMessages provided', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				includeLink: true,
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('uses confirmed default reminder when shareMessages.reminder is DEFAULT_REMINDER_MESSAGE', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: DEFAULT_REMINDER_MESSAGE,
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('uses confirmed default reminder when shareMessages.reminder is empty string', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: '',
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+		});
+
+		it('respects truly custom reminder template for confirmed guests', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: 'Custom reminder for {guestName}: {inviteUrl}',
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Custom reminder for Francisco Prueba');
+			expect(result).not.toContain('Ya tenemos registrada');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('uses pending default for pending guest even when shareMessages has explicit DEFAULT_REMINDER_MESSAGE', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'pending',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: DEFAULT_REMINDER_MESSAGE,
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Confirma tu asistencia');
+			expect(result).not.toContain('Ya tenemos registrada');
+		});
+
+		it('uses pending default when attendanceStatus is undefined', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: undefined,
+				includeLink: true,
+			});
+			expect(result).toContain('Confirma tu asistencia');
+		});
+
+		it('confirmed guest with custom template containing {{limite_confirmacion}} gets acknowledgment via placeholder safety net', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder:
+						'Hola {guestName}, te recordamos el evento.\n\n{rsvpDeadlineText}\n\n{inviteUrl}',
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toContain('te recordamos el evento');
+			expect(result).not.toContain('Confirma tu asistencia');
+		});
+
+		it('confirmed guest with custom template having hardcoded confirmation text keeps it (custom is intentional)', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder:
+						'Hola {guestName}.\n\nPor favor confirma tu asistencia aquí:\n\n{inviteUrl}',
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Por favor confirma tu asistencia aquí');
+		});
+
+		it('confirmed guest with legacy reminder template V1 gets confirmed variant (known default)', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'confirmed',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: LEGACY_REMINDER_TEMPLATE_V1,
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).not.toContain('Por favor confirma tu asistencia aquí');
+		});
+
+		it('pending guest with legacy reminder template V1 gets confirmation CTA (known default)', () => {
+			const result = buildShareMessage({
+				...baseInput,
+				messageType: 'reminder',
+				attendanceStatus: 'pending',
+				shareMessages: {
+					invitation: 'Invitation text',
+					reminder: LEGACY_REMINDER_TEMPLATE_V1,
+				},
+				includeLink: true,
+			});
+			expect(result).toContain('Confirma tu asistencia');
+		});
 	});
 });
 
