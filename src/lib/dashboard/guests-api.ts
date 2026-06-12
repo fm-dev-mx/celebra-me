@@ -136,6 +136,13 @@ export class GuestsApi {
 	 * Uses raw fetch (blob response) because the shared fetchJSON helper
 	 * only handles JSON payloads.
 	 */
+	async recordReminderSent(guestId: string): Promise<DashboardGuestItem> {
+		const result = await dashboardApi.post<{ item: DashboardGuestItem }>(
+			`/api/dashboard/guests/${encodeURIComponent(guestId)}/record-reminder`,
+		);
+		return this.handleResponse(result, 'guests.recordReminderSent').item;
+	}
+
 	async toggleBrandingRemoval(
 		guestId: string,
 		hideCelebraMeBranding: boolean,

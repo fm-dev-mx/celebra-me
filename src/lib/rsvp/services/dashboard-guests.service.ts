@@ -519,6 +519,51 @@ export async function markGuestShared(input: {
 	};
 }
 
+export async function recordGuestReminderSent(input: {
+	guestId: string;
+	hostAccessToken: string;
+	origin: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
+}): Promise<DashboardGuestMutationResponse> {
+	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
+	const updated = await updateGuestById(
+		{
+			guestId: input.guestId,
+			lastReminderSentAt: new Date().toISOString(),
+		},
+		input.hostAccessToken,
+	);
+
+	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	const sharingContext = await resolveEventSharingContext(event);
+	const item = buildGuestDto(
+		updated,
+		event,
+		input.origin,
+		sharingContext.shareMessages,
+		sharingContext.eventDate,
+		sharingContext.rsvpDeadline,
+	);
+
+	if (input.isSuperAdmin && input.actorUserId) {
+		await logAdminAction({
+			actorId: input.actorUserId,
+			action: 'record_guest_reminder_sent',
+			targetTable: 'guest_invitations',
+			targetId: input.guestId,
+			oldData: existing as unknown as Record<string, unknown>,
+			newData: updated as unknown as Record<string, unknown>,
+		});
+	}
+
+	return {
+		item,
+		updatedAt: item.updatedAt,
+		source: 'mutation',
+	};
+}
+
 export async function toggleGuestBrandingRemoval(input: {
 	guestId: string;
 	hostAccessToken: string;
