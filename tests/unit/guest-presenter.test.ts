@@ -1,19 +1,21 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
-	formatGuestDate,
 	formatGuestEntrySource,
+	formatGuestMessageCount,
+	formatGuestMetadataRow,
 	getCompactGroupChips,
 	computeGroupMetrics,
 	getPrimaryStatus,
-	hasMessage,
 	getDeliveryStateLabel,
-	getRsvpStateLabel,
-	getViewStateLabel,
 	getGuestInviteUrl,
 	getShareCtaLabel,
 	hasBeenShared,
 	normalizeViewPercentage,
+	parseGuestCommentHistory,
+	getGuestMessageCount,
+	getGuestPrimaryAction,
+	formatGuestDateShort,
 } from '@/components/dashboard/guests/guest-presenter';
 import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
@@ -73,17 +75,135 @@ describe.each(primaryStatusCases)('getPrimaryStatus', (overrides, expectedLabel,
 	});
 });
 
-describe('hasMessage', () => {
-	it('returns true when guestComment is non-empty', () => {
-		expect(hasMessage(makeGuest({ guestComment: 'Looking forward!' }))).toBe(true);
+describe('formatGuestMessageCount', () => {
+	it('returns "1 mensaje" for count 1', () => {
+		expect(formatGuestMessageCount(1)).toBe('1 mensaje');
 	});
 
-	it('returns false when guestComment is empty', () => {
-		expect(hasMessage(makeGuest({ guestComment: '' }))).toBe(false);
+	it('returns "2 mensajes" for count 2', () => {
+		expect(formatGuestMessageCount(2)).toBe('2 mensajes');
 	});
 
-	it('returns false when guestComment is whitespace only', () => {
-		expect(hasMessage(makeGuest({ guestComment: '   ' }))).toBe(false);
+	it('returns "0 mensajes" for count 0', () => {
+		expect(formatGuestMessageCount(0)).toBe('0 mensajes');
+	});
+});
+
+describe('getGuestMessageCount', () => {
+	it('returns 0 for empty string', () => {
+		expect(getGuestMessageCount('')).toBe(0);
+	});
+
+	it('returns 1 for a single message', () => {
+		expect(getGuestMessageCount('Hola')).toBe(1);
+	});
+
+	it('returns 2 for cumulative messages', () => {
+		expect(getGuestMessageCount('Hola\n\n[12 jun 2026, 10:34] Adios')).toBe(2);
+	});
+});
+
+describe('formatGuestMetadataRow', () => {
+	it('includes index and attendee count', () => {
+		const result = formatGuestMetadataRow(1, 2, 4, 0);
+		expect(result).toContain('#01');
+		expect(result).toContain('2/4 asistentes');
+	});
+
+	it('includes message count when count > 0', () => {
+		const result = formatGuestMetadataRow(1, 2, 4, 2);
+		expect(result).toContain('2 mensajes');
+	});
+
+	it('omits message count when count is 0', () => {
+		const result = formatGuestMetadataRow(1, 2, 4, 0);
+		expect(result).not.toContain('mensaje');
+	});
+});
+
+describe('getGuestPrimaryAction', () => {
+	it('returns share with "Compartir invitación" for generated/pending', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ deliveryStatus: 'generated', attendanceStatus: 'pending' }),
+		);
+		expect(result.label).toBe('Compartir invitación');
+		expect(result.action).toBe('share');
+	});
+
+	it('returns share with "Enviar recordatorio" for shared/pending', () => {
+		const result = getGuestPrimaryAction(
+			makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'pending' }),
+		);
+		expect(result.label).toBe('Enviar recordatorio');
+		expect(result.action).toBe('share');
+	});
+
+	it('returns copy-link for confirmed', () => {
+		const result = getGuestPrimaryAction(makeGuest({ attendanceStatus: 'confirmed' }));
+		expect(result.label).toBe('Copiar enlace');
+		expect(result.action).toBe('copy-link');
+	});
+
+	it('returns copy-link for declined', () => {
+		const result = getGuestPrimaryAction(makeGuest({ attendanceStatus: 'declined' }));
+		expect(result.label).toBe('Copiar enlace');
+		expect(result.action).toBe('copy-link');
+	});
+});
+
+describe('parseGuestCommentHistory', () => {
+	it('returns empty array for blank input', () => {
+		expect(parseGuestCommentHistory('')).toEqual([]);
+		expect(parseGuestCommentHistory('   ')).toEqual([]);
+	});
+
+	it('handles one legacy plain-text message', () => {
+		const result = parseGuestCommentHistory('Sí asistimos, gracias.');
+		expect(result).toHaveLength(1);
+		expect(result[0].message).toBe('Sí asistimos, gracias.');
+		expect(result[0].isInitial).toBe(true);
+		expect(result[0].timestampLabel).toBeUndefined();
+	});
+
+	it('handles one timestamped message', () => {
+		const result = parseGuestCommentHistory('[12 jun 2026, 11:03] Vamos a llegar tarde.');
+		expect(result).toHaveLength(1);
+		expect(result[0].message).toBe('Vamos a llegar tarde.');
+		expect(result[0].timestampLabel).toBe('12 jun 2026, 11:03');
+		expect(result[0].isInitial).toBe(false);
+	});
+
+	it('handles mixed legacy + timestamped cumulative messages', () => {
+		const input = 'Sí asistimos, muchas gracias.\n\n[12 jun 2026, 11:03] Vamos a llegar tarde.';
+		const result = parseGuestCommentHistory(input);
+		expect(result).toHaveLength(2);
+		expect(result[0].message).toBe('Vamos a llegar tarde.');
+		expect(result[0].timestampLabel).toBe('12 jun 2026, 11:03');
+		expect(result[0].isInitial).toBe(false);
+		expect(result[1].message).toBe('Sí asistimos, muchas gracias.');
+		expect(result[1].isInitial).toBe(true);
+	});
+
+	it('returns newest-first order', () => {
+		const input = 'First\n\n[12 jun 2026, 10:00] Second\n\n[12 jun 2026, 11:00] Third';
+		const result = parseGuestCommentHistory(input);
+		expect(result).toHaveLength(3);
+		expect(result[0].message).toBe('Third');
+		expect(result[1].message).toBe('Second');
+		expect(result[2].message).toBe('First');
+	});
+
+	it('trims whitespace from entries', () => {
+		const result = parseGuestCommentHistory('  Hola  \n\n  [12 jun 2026, 10:00]  Adios  ');
+		expect(result).toHaveLength(2);
+		expect(result[0].message).toBe('Adios');
+		expect(result[1].message).toBe('Hola');
+	});
+
+	it('has stable ids based on order', () => {
+		const result = parseGuestCommentHistory('A\n\nB');
+		expect(result[0].id).toBe('msg-1');
+		expect(result[1].id).toBe('msg-0');
 	});
 });
 
@@ -96,30 +216,6 @@ describe('getDeliveryStateLabel', () => {
 		expect(getDeliveryStateLabel(makeGuest({ deliveryStatus: 'generated' }))).toBe(
 			'Por enviar',
 		);
-	});
-});
-
-describe('getRsvpStateLabel', () => {
-	it('returns "Confirmada" for confirmed', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'confirmed' }))).toBe('Confirmada');
-	});
-
-	it('returns "No asiste" for declined', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'declined' }))).toBe('No asiste');
-	});
-
-	it('returns "Sin respuesta" for pending', () => {
-		expect(getRsvpStateLabel(makeGuest({ attendanceStatus: 'pending' }))).toBe('Sin respuesta');
-	});
-});
-
-describe('getViewStateLabel', () => {
-	it('returns "Sin ver" when not viewed', () => {
-		expect(getViewStateLabel(makeGuest({ isViewed: false }))).toBe('Sin ver');
-	});
-
-	it('returns percentage when viewed', () => {
-		expect(getViewStateLabel(makeGuest({ isViewed: true, viewPercentage: 75 }))).toBe('75%');
 	});
 });
 
@@ -157,23 +253,22 @@ describe('normalizeViewPercentage', () => {
 	});
 });
 
-describe('formatGuestDate', () => {
+describe('formatGuestDateShort', () => {
 	it('returns dash for null value', () => {
-		expect(formatGuestDate(null)).toBe('-');
+		expect(formatGuestDateShort(null)).toBe('-');
 	});
 
 	it('returns dash for empty string', () => {
-		expect(formatGuestDate('')).toBe('-');
+		expect(formatGuestDateShort('')).toBe('-');
 	});
 
-	it('formats valid ISO date for es-MX locale', () => {
-		const result = formatGuestDate('2026-03-22T00:00:00.000Z');
-		expect(result).not.toBe('-');
+	it('formats short date for es-MX locale', () => {
+		const result = formatGuestDateShort('2026-03-22T00:00:00.000Z');
 		expect(result).toContain('2026');
 	});
 
 	it('returns the raw value when date parsing fails', () => {
-		expect(formatGuestDate('not-a-date')).toBe('not-a-date');
+		expect(formatGuestDateShort('not-a-date')).toBe('not-a-date');
 	});
 });
 

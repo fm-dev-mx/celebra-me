@@ -180,10 +180,10 @@ describe('GuestTableRow — message toggle', () => {
 	it('shows message label and text content', () => {
 		const { container } = renderRow({ guestComment: '¡Nos vemos!' });
 		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
-		expect(container.querySelector('.guest-message-panel__label')).toHaveTextContent(
-			'Mensaje del invitado',
+		expect(container.querySelector('.guest-message-history__title')).toHaveTextContent(
+			'Mensajes del invitado',
 		);
-		expect(container.querySelector('.guest-message-panel__text')).toHaveTextContent(
+		expect(container.querySelector('.guest-message-history__text')).toHaveTextContent(
 			'¡Nos vemos!',
 		);
 	});

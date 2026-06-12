@@ -3,6 +3,10 @@ import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/components/dashboard/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
+import { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
+
+export type { GuestMessageEntry } from '@/lib/rsvp/core/guest-message';
+export { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
 export function formatGuestEntrySource(item: DashboardGuestItem) {
 	const isPublic = item.entrySource === 'generic_public' || item.tags.includes('system:public');
@@ -25,11 +29,11 @@ export type GuestSaveCallback = (
 	},
 ) => Promise<DashboardGuestItem>;
 
-export function formatGuestDate(value: string | null): string {
+export function formatGuestDateShort(value: string | null): string {
 	if (!value) return '-';
 	const date = new Date(value);
 	if (isNaN(date.getTime())) return value;
-	return date.toLocaleString('es-MX');
+	return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export type PrimaryStatus = {
@@ -37,15 +41,6 @@ export type PrimaryStatus = {
 	class: string;
 };
 
-/**
- * Primary status for the closed card.
- *
- * Priority order:
- *   1. confirmed / declined     (terminal RSVP)
- *   2. generated                (not yet sent)
- *   3. shared + unconfirmed     (reminder eligible — Por confirmar)
- *   4. default                  (Enviada)
- */
 export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
 	if (item.attendanceStatus === 'confirmed') return { label: 'Confirmada', class: 'confirmed' };
 	if (item.attendanceStatus === 'declined') return { label: 'No asiste', class: 'declined' };
@@ -55,9 +50,41 @@ export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
 	return { label: 'Enviada', class: 'sent' };
 }
 
-/** True when the guest left an RSVP comment/message */
-export function hasMessage(item: DashboardGuestItem): boolean {
-	return (item.guestComment ?? '').trim().length > 0;
+export function formatGuestMessageCount(count: number): string {
+	return count === 1 ? '1 mensaje' : `${count} mensajes`;
+}
+
+export function getGuestMessageCount(guestComment: string): number {
+	return parseGuestCommentHistory(guestComment).length;
+}
+
+export function formatGuestMetadataRow(
+	index: number,
+	attendeeCount: number,
+	maxAllowedAttendees: number,
+	messageCount: number,
+): string {
+	const parts = [`#${String(index).padStart(2, '0')}`];
+	parts.push(`${attendeeCount}/${maxAllowedAttendees} asistentes`);
+	if (messageCount > 0) {
+		parts.push(formatGuestMessageCount(messageCount));
+	}
+	return parts.join(' · ');
+}
+
+export type GuestPrimaryAction = {
+	label: string;
+	action: 'share' | 'copy-link';
+};
+
+export function getGuestPrimaryAction(item: DashboardGuestItem): GuestPrimaryAction {
+	if (item.attendanceStatus === 'confirmed' || item.attendanceStatus === 'declined') {
+		return { label: 'Copiar enlace', action: 'copy-link' };
+	}
+	if (item.deliveryStatus === 'generated') {
+		return { label: 'Compartir invitación', action: 'share' };
+	}
+	return { label: 'Enviar recordatorio', action: 'share' };
 }
 
 /** Expanded-panel detail labels */
@@ -65,19 +92,8 @@ export function getDeliveryStateLabel(item: DashboardGuestItem): string {
 	return item.deliveryStatus === 'shared' ? 'Enviado' : 'Por enviar';
 }
 
-export function getRsvpStateLabel(item: DashboardGuestItem): string {
-	if (item.attendanceStatus === 'confirmed') return 'Confirmada';
-	if (item.attendanceStatus === 'declined') return 'No asiste';
-	return 'Sin respuesta';
-}
-
 export function normalizeViewPercentage(value: number): number {
 	return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.round(value))) : 0;
-}
-
-export function getViewStateLabel(item: DashboardGuestItem): string {
-	if (!item.isViewed) return 'Sin ver';
-	return `${normalizeViewPercentage(item.viewPercentage)}%`;
 }
 
 export function getCompactGroupChips(
@@ -138,14 +154,6 @@ export interface ShareCtaResult {
 	priority: 'primary' | 'secondary';
 }
 
-/**
- * Determines whether a guest has been previously shared for CTA purposes.
- *
- * `deliveryStatus` is the source of truth:
- * - 'generated' → not shared (even if `firstSharedAt` is set)
- * - 'shared'    → shared
- * - null/undefined → falls back to `firstSharedAt` for legacy data
- */
 export function hasBeenShared(item: DashboardGuestItem): boolean {
 	if (item.deliveryStatus === 'generated') return false;
 	if (item.deliveryStatus === 'shared') return true;
@@ -165,7 +173,6 @@ export function getShareCtaLabel(item: DashboardGuestItem): ShareCtaResult {
 	};
 }
 
-/** Determines the share flow mode based on guest history, not UI labels. */
 export function resolveShareFlowMode(guest: DashboardGuestItem): ShareFlowMode {
 	return hasBeenShared(guest) ? 'single-reminder' : 'single-invitation';
 }

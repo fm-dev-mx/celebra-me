@@ -7,7 +7,7 @@
 	padding: 1rem 1.15rem;
 	display: flex;
 	flex-direction: column;
-	gap: 0.65rem;
+	gap: 0.4rem;
 	transition:
 		border-color 0.25s ease,
 		box-shadow 0.25s ease;
@@ -24,34 +24,15 @@
 
 	@include mixins.respond-below(xs) {
 		padding: 0.85rem 1rem;
-		gap: 0.5rem;
 	}
 }
 
-/* ───── Header: identity + primary status ───── */
+/* ───── Header: name + status ───── */
 .guest-card__header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	gap: 0.75rem;
-}
-
-.guest-card__identity {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.3rem 0.5rem;
-	min-width: 0;
-	flex: 1;
-}
-
-.guest-card__index {
-	font-size: 0.58rem;
-	font-weight: 500;
-	color: var(--color-text-muted);
-	flex-shrink: 0;
-	letter-spacing: 0.02em;
-	opacity: 70%;
 }
 
 .guest-card__name {
@@ -65,40 +46,17 @@
 	white-space: nowrap;
 }
 
-/* ───── Metrics row: attendance + view + indicators ───── */
-.guest-card__metrics {
-	display: flex;
-	align-items: center;
-	gap: 0.6rem;
-	flex-wrap: wrap;
+/* ───── Metadata row: #01 · 0/6 asistentes · 2 mensajes ───── */
+.guest-card__meta {
+	margin: 0;
 	font-size: 0.68rem;
-	color: var(--color-text-secondary);
-}
-
-.guest-card__stat {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 0.15rem;
-}
-
-.guest-card__stat-label {
-	font-size: 0.62rem;
-	color: var(--color-text-muted);
 	font-weight: 500;
-	letter-spacing: 0.01em;
-}
-
-.guest-card__stat-value {
-	font-family: var(--font-ui);
-	font-size: 0.75rem;
-	font-weight: 600;
-	color: var(--color-text-secondary);
-}
-
-.guest-card__stat-sep {
-	font-size: 0.75em;
 	color: var(--color-text-muted);
-	margin: 0 1px;
+	line-height: 1.4;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-left: 0.05rem;
 }
 
 /* ───── Footer actions ───── */
@@ -107,7 +65,7 @@
 	align-items: center;
 	gap: 0.4rem;
 	justify-content: flex-end;
-	margin-top: 0.15rem;
+	margin-top: 0.25rem;
 }
 
 .guest-card__menu-btn {
@@ -172,45 +130,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-	padding: 0.85rem;
-	margin: 0.3rem -0.1rem 0;
-	border-radius: 10px;
-	background: var(--color-surface-soft);
-	border: 1px solid var(--color-border-subtle);
+	padding: 0.75rem 0.65rem;
+	margin: 0.25rem 0 0;
 	position: relative;
-}
-
-/* Detail grid inside expanded panel */
-.guest-card__expanded-details {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 0.5rem 1rem;
-
-	@include mixins.respond-below(xs) {
-		grid-template-columns: 1fr;
-		gap: 0.4rem 0;
-	}
-}
-
-.guest-card__detail {
-	display: flex;
-	flex-direction: column;
-	gap: 0.15rem;
-}
-
-.guest-card__detail-label {
-	font-size: 0.65rem;
-	font-weight: 600;
-	color: var(--color-text-muted);
-	letter-spacing: 0.01em;
-}
-
-.guest-card__detail-value {
-	font-size: 0.78rem;
-	color: var(--color-text-primary);
-	font-weight: 500;
-	line-height: 1.4;
-	overflow-wrap: break-word;
 }
 
 /* Expanded panel actions */
@@ -224,43 +146,77 @@
 	border-top: 1px solid var(--color-border-subtle);
 }
 
-/* Expanded card message section — meaningful guest content */
-.guest-card__expanded-msg {
-	padding: 0.85rem 1rem;
-	background: rgb(var(--color-text-secondary-rgb) / 4%);
-	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
-	border-radius: 10px;
-	border-left: 3px solid var(--color-border-premium);
-	max-width: min(100%, 600px);
-	position: relative;
+/* ───── Grouped detail sections ───── */
+.guest-detail-groups {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
 
-	&-label {
-		display: block;
-		font-size: 0.68rem;
+.guest-detail-group {
+	&__title {
+		margin: 0 0 0.2rem;
+		font-size: 0.58rem;
 		font-weight: 600;
 		color: var(--color-text-muted);
-		margin-bottom: 0.5rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		opacity: 70%;
 	}
 
-	&-text {
+	&__content {
 		margin: 0;
-		font-size: 0.88rem;
-		color: var(--color-text-primary);
-		line-height: 1.7;
-		white-space: pre-wrap;
-		overflow-wrap: anywhere;
+		font-size: 0.75rem;
+		color: var(--color-text-secondary);
 		font-weight: 450;
-		padding-left: 0.5rem;
-		border-left: 2px solid
-			rgb(var(--color-border-premium-rgb, var(--color-text-secondary-rgb)) / 20%);
+		line-height: 1.7;
+
+		.guest-tag {
+			font-size: 0.68rem;
+			padding: 0.05rem 0.4rem;
+		}
+	}
+
+	&__value {
+		display: inline;
+		color: var(--color-text-secondary);
+	}
+
+	&__sep {
+		color: var(--color-text-muted);
+		opacity: 30%;
+		font-weight: 400;
 	}
 }
 
-/* Tags row inside expanded panel */
-.guest-card__tags {
+/* ───── Expanded action rows (no visible labels) ───── */
+.guest-expanded-actions {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.3rem;
+	flex-direction: column;
+	gap: 0.4rem;
+
+	&__row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem;
+
+		&--admin {
+			padding-top: 0.4rem;
+			border-top: 1px solid var(--color-border-subtle);
+			opacity: 75%;
+
+			&:hover {
+				opacity: 100%;
+			}
+		}
+	}
+
+	&__btn {
+		&--delete {
+			color: rgb(var(--color-state-danger-rgb) / 80%);
+		}
+	}
 }
 
 /* ───── Cards container (CSS grid, no duplicated DOM) ───── */

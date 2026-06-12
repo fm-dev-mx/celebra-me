@@ -1,21 +1,18 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
+import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
+import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
-import { getVisibleTags } from '@/lib/guests/guest-tags';
 import {
-	formatGuestDate,
-	formatGuestEntrySource,
 	getPrimaryStatus,
 	getCompactGroupChips,
-	getDeliveryStateLabel,
-	getRsvpStateLabel,
-	getViewStateLabel,
-	hasMessage,
+	getGuestMessageCount,
+	getGuestPrimaryAction,
 	normalizeViewPercentage,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -61,7 +58,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 }) => {
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
-	const isViewed = item.firstViewedAt != null;
 	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
 	const progressRef = useRef<HTMLDivElement>(null);
 
@@ -75,13 +71,27 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 		}
 	}, [viewPercentage]);
 
-	const isShared = item.deliveryStatus === 'shared';
-	const visibleTags = getVisibleTags(item.tags);
-	const hasTags = visibleTags.length > 0;
 	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
 	const hasCompactChips = compactChips.length > 0;
 	const status = getPrimaryStatus(item);
 	const expandId = `row-details-${item.guestId}`;
+	const hasMessages = getGuestMessageCount(item.guestComment) > 0;
+	const primaryActionIsCopy = getGuestPrimaryAction(item).action === 'copy-link';
+
+	const msgPanel = hasMessages && msgOpen && (
+		<tr className="guest-message-row">
+			<td colSpan={GUEST_TABLE_COL_COUNT}>
+				<div
+					className="guest-message-panel"
+					id={msgId}
+					role="region"
+					aria-label="Mensajes del invitado"
+				>
+					<GuestMessageHistory guestComment={item.guestComment} />
+				</div>
+			</td>
+		</tr>
+	);
 
 	const rowClassName = [
 		item.deliveryStatus === 'shared' ? 'row-shared' : '',
@@ -119,7 +129,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					</div>
 				</td>
 				<td data-label="Nota">
-					{hasMessage(item) ? (
+					{hasMessages ? (
 						<button
 							type="button"
 							className="btn-accent guest-nota-btn"
@@ -192,21 +202,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				</td>
 			</tr>
 
-			{msgOpen && (
-				<tr className="guest-message-row">
-					<td colSpan={GUEST_TABLE_COL_COUNT}>
-						<div
-							className="guest-message-panel"
-							id={msgId}
-							role="region"
-							aria-label="Mensaje del invitado"
-						>
-							<span className="guest-message-panel__label">Mensaje del invitado</span>
-							<p className="guest-message-panel__text">{item.guestComment}</p>
-						</div>
-					</td>
-				</tr>
-			)}
+			{msgPanel}
 
 			{isExpanded && (
 				<tr
@@ -217,106 +213,16 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				>
 					<td colSpan={GUEST_TABLE_COL_COUNT}>
 						<div className="guest-row__expanded-inner">
-							{/* Zone A: Status / Activity grid */}
-							<div className="guest-row__expanded-grid">
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Entrega</span>
-									<span className="guest-row__detail-value">
-										{getDeliveryStateLabel(item)}
-									</span>
-								</div>
-
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">RSVP</span>
-									<span className="guest-row__detail-value">
-										{getRsvpStateLabel(item)}
-									</span>
-								</div>
-
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Visualización</span>
-									<span className="guest-row__detail-value">
-										{getViewStateLabel(item)}
-									</span>
-								</div>
-
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Origen</span>
-									<span className="guest-row__detail-value">
-										{formatGuestEntrySource(item)}
-									</span>
-								</div>
-
-								{isViewed && (
-									<div className="guest-row__detail">
-										<span className="guest-row__detail-label">
-											Última vista
-										</span>
-										<span
-											className="guest-row__detail-value"
-											title={formatGuestDate(item.firstViewedAt)}
-										>
-											{formatGuestDate(item.firstViewedAt).split(',')[0]}
-										</span>
-									</div>
-								)}
-
-								{item.respondedAt && (
-									<div className="guest-row__detail">
-										<span className="guest-row__detail-label">Respuesta</span>
-										<span
-											className="guest-row__detail-value"
-											title={formatGuestDate(item.respondedAt)}
-										>
-											{formatGuestDate(item.respondedAt).split(',')[0]}
-										</span>
-									</div>
-								)}
-
-								{item.email && (
-									<div className="guest-row__detail">
-										<span className="guest-row__detail-label">Email</span>
-										<span className="guest-row__detail-value">
-											{item.email}
-										</span>
-									</div>
-								)}
-
-								{hasTags && (
-									<div className="guest-row__detail">
-										<span className="guest-row__detail-label">Categoría</span>
-										<div className="guest-row__detail-tags">
-											{visibleTags.map((tag) => (
-												<span
-													key={tag}
-													className="guest-tag guest-tag--group"
-												>
-													{tag}
-												</span>
-											))}
-										</div>
-									</div>
-								)}
-							</div>
-
-							{/* Zone B: Guest message */}
-							{hasMessage(item) && (
-								<div className="guest-row__expanded-message">
-									<div className="guest-row__detail-label">
-										Mensaje del invitado
-									</div>
-									<p className="guest-row__expanded-message-text">
-										"{item.guestComment}"
-									</p>
-								</div>
+							{hasMessages && (
+								<GuestMessageHistory guestComment={item.guestComment} />
 							)}
-
-							{/* Zone C: Actions */}
+							<GuestDetailGroups item={item} />
 							<div className="guest-row__expanded-actions">
 								<GuestExpandedActions
 									guestName={item.fullName}
 									inviteUrl={inviteUrl}
-									isShared={isShared}
+									isShared={item.deliveryStatus === 'shared'}
+									hideCopyLink={primaryActionIsCopy}
 									onEdit={() => onEdit(item)}
 									onDelete={() => onDelete(item)}
 									onMarkShared={async () => onMarkShared(item)}

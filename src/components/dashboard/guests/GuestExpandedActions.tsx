@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import { useClipboard } from '@/hooks/use-clipboard';
 type ConfirmState = 'idle' | 'confirm-mark-sent' | 'confirm-revert';
 
 interface GuestExpandedActionsProps {
 	guestName: string;
 	inviteUrl: string;
 	isShared: boolean;
+	hideCopyLink?: boolean;
 	onEdit: () => void;
 	onDelete: () => void;
 	onMarkShared: () => void | Promise<void>;
@@ -21,6 +23,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	guestName,
 	inviteUrl,
 	isShared,
+	hideCopyLink = false,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -30,17 +33,11 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
 }) => {
-	const [copied, setCopied] = useState(false);
+	const { copied, copy: copyLink } = useClipboard();
 	const [busy, setBusy] = useState(false);
 	const [confirmState, setConfirmState] = useState<ConfirmState>('idle');
 
 	const resetConfirm = () => setConfirmState('idle');
-
-	const handleCopyLink = async () => {
-		await navigator.clipboard.writeText(inviteUrl);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
 
 	const handleConfirmAction = async (
 		targetState: ConfirmState,
@@ -83,22 +80,40 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 
 	return (
 		<div
-			className="guest-expanded-actions guest-expanded-actions--grouped"
+			className="guest-expanded-actions"
 			role="group"
 			aria-label={`Acciones para ${guestName}`}
 		>
-			<div className="guest-expanded-actions__group">
+			<div className="guest-expanded-actions__row guest-expanded-actions__row--safe">
+				{!hideCopyLink && (
+					<button
+						type="button"
+						className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--copy"
+						onClick={() => copyLink(inviteUrl)}
+						title="Copiar enlace de invitación"
+						aria-label={`Copiar enlace de invitación de ${guestName}`}
+					>
+						{copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+						<span>{copied ? 'Copiado' : 'Copiar enlace'}</span>
+					</button>
+				)}
+
 				<button
 					type="button"
-					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--copy"
-					onClick={handleCopyLink}
-					title="Copiar enlace de invitación"
-					aria-label={`Copiar enlace de invitación de ${guestName}`}
+					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--edit"
+					onClick={() => {
+						resetConfirm();
+						onEdit();
+					}}
+					title="Editar invitado"
+					aria-label={`Editar ${guestName}`}
 				>
-					{copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-					<span>{copied ? 'Copiado' : 'Copiar enlace'}</span>
+					<EditGlyph size={14} />
+					<span>Editar</span>
 				</button>
+			</div>
 
+			<div className="guest-expanded-actions__row guest-expanded-actions__row--admin">
 				{isShared ? (
 					<button
 						type="button"
@@ -126,22 +141,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 						<span>{markSentLabel}</span>
 					</button>
 				)}
-			</div>
-
-			<div className="guest-expanded-actions__group">
-				<button
-					type="button"
-					className="btn-icon guest-expanded-actions__btn guest-expanded-actions__btn--edit"
-					onClick={() => {
-						resetConfirm();
-						onEdit();
-					}}
-					title="Editar invitado"
-					aria-label={`Editar ${guestName}`}
-				>
-					<EditGlyph size={14} />
-					<span>Editar</span>
-				</button>
 
 				{canToggleBranding && (
 					<button
