@@ -86,6 +86,7 @@
 	margin-bottom: 0.25rem;
 	font-size: 0.75rem;
 	font-weight: 500;
+	color: var(--color-text-emphasis);
 }
 
 .send-invitation__input {
@@ -120,7 +121,8 @@
 
 .send-invitation__mode-label {
 	font-size: 0.65rem;
-	font-weight: 500;
+	font-weight: 600;
+	font-family: var(--font-calligraphy);
 	color: var(--color-text-muted);
 	letter-spacing: 0.02em;
 	text-transform: uppercase;
@@ -136,7 +138,7 @@
 
 .send-invitation__preview-card {
 	padding: 0.875rem 1rem;
-	background: var(--color-surface-soft);
+	background: var(--color-surface-canvas);
 	border: 1px solid var(--color-border-subtle);
 	border-left: 3px solid var(--color-border-premium);
 	border-radius: 0.5rem;
@@ -151,10 +153,10 @@
 .send-invitation__preview-text {
 	margin: 0;
 	white-space: pre-wrap;
-	font-size: 0.8125rem;
+	font-size: 0.75rem;
 	line-height: 1.6;
 	font-family: inherit;
-	color: var(--color-text-primary);
+	color: rgb(var(--color-text-secondary-rgb) / 50%);
 }
 
 .send-invitation__textarea {

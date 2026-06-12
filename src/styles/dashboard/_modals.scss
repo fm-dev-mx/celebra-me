@@ -252,12 +252,7 @@
 	@include mixins.respond-below(sm) {
 		margin: 0.05rem;
 		border-radius: 1.2rem 1.2rem 0 0;
-		background: linear-gradient(
-			180deg,
-			var(--dashboard-surface-card-roof),
-			var(--dashboard-card-bg-strong),
-			transparent
-		);
+		background: var(--dashboard-surface-bg);
 	}
 
 	h3 {
@@ -377,9 +372,9 @@
 	input:not([type='checkbox'], [type='radio'], [type='hidden']),
 .dashboard-modal .dashboard-form-field select,
 .dashboard-modal .dashboard-form-field textarea {
-	background: var(--color-surface-elevated);
-	color: var(--color-text-primary);
-	font-weight: 400;
+	background: rgb(var(--color-text-primary-rgb) / 70%);
+	color: var(--color-text-on-light);
+	font-weight: 500;
 
 	&::placeholder {
 		color: var(--color-text-muted);
