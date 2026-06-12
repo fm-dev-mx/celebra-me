@@ -108,6 +108,11 @@ export function formatTime12h(value: string): string {
 	return `${displayHours}:${displayMinutes} ${period}`;
 }
 
+/** Shared venue label resolver — centralizes the type→label mapping used in 4 places. */
+export function venueLabel(type: string, label?: string): string {
+	return label || (type === 'ceremony' ? 'Ceremonia' : type === 'reception' ? 'Recepción' : '');
+}
+
 export function mergeOverlay(
 	base: Record<string, unknown>,
 	overlay: Record<string, unknown>,
