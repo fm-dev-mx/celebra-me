@@ -4,6 +4,7 @@ import InvitationEditor, {
 	getCriticalSections,
 } from '@/components/dashboard/intake/editor/InvitationEditor';
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 let saveSection: jest.Mock;
 let saveMetadata: jest.Mock;
@@ -469,5 +470,146 @@ describe('InvitationEditor', () => {
 
 		expect(within(desktopField).getByText('Sin imagen')).toBeInTheDocument();
 		expect(within(mobileField).getByText('Imagen faltante')).toBeInTheDocument();
+	});
+
+	it('passes invitation.updatedAt as expectedUpdatedAt for metadata saves via Guardar borrador', async () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Cliente Editado' },
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveMetadata).toHaveBeenCalledWith(
+				expect.objectContaining({ clientName: 'Cliente Editado' }),
+				'2026-05-30T01:00:00Z',
+			);
+		});
+	});
+
+	it('uses separate expectedUpdatedAt chains for section and metadata saves', async () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.change(screen.getByLabelText('Título público'), {
+			target: { value: 'Título Sección Editado' },
+		});
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Cliente Editado' },
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveSection).toHaveBeenCalledWith(
+				'main',
+				expect.anything(),
+				'2026-05-30T02:00:00Z',
+			);
+		});
+
+		expect(saveMetadata).toHaveBeenCalledWith(
+			expect.objectContaining({ clientName: 'Cliente Editado' }),
+			'2026-05-30T01:00:00Z',
+		);
+	});
+
+	it('shows conflict recovery button with neutral copy when metadata save fails with conflict', async () => {
+		const conflictError = new ApiError(409, 'conflict', 'Conflicto al guardar.');
+		saveMetadata = jest.fn().mockRejectedValue(conflictError);
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Cliente Conflictivo' },
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(
+				screen.getByText(
+					'Los datos cambiaron desde que abriste esta vista. Recarga para continuar.',
+				),
+			).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: 'Recargar datos' })).toBeInTheDocument();
+		});
+	});
+
+	it('does not show recovery button for non-conflict metadata errors', async () => {
+		const badRequestError = new ApiError(422, 'bad_request', 'Revisa los campos.');
+		saveMetadata = jest.fn().mockRejectedValue(badRequestError);
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Cliente con error' },
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(screen.getByText('Revisa los campos.')).toBeInTheDocument();
+		});
+
+		expect(screen.queryByRole('button', { name: 'Recargar datos' })).not.toBeInTheDocument();
+	});
+
+	it('passes updated invitation.updatedAt from the first metadata save to the second', async () => {
+		saveMetadata = jest.fn().mockImplementation(() => {
+			const updatedInvitation = {
+				...createContext().invitation,
+				updatedAt: '2026-05-30T04:00:00Z',
+			};
+			mockContext = { ...mockContext, invitation: updatedInvitation };
+			return Promise.resolve(updatedInvitation);
+		});
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Primer Cambio' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveMetadata).toHaveBeenCalledTimes(1);
+		});
+
+		await waitFor(() => {
+			expect(screen.queryByText('1 cambio sin guardar')).not.toBeInTheDocument();
+		});
+
+		fireEvent.change(screen.getByLabelText('Nombre del cliente'), {
+			target: { value: 'Segundo Cambio' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveMetadata).toHaveBeenCalledTimes(2);
+		});
+
+		expect(saveMetadata).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ clientName: 'Segundo Cambio' }),
+			'2026-05-30T04:00:00Z',
+		);
 	});
 });

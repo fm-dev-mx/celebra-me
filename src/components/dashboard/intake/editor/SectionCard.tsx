@@ -10,6 +10,7 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	visible?: boolean;
+	onRetry?: () => void;
 }
 
 export default function SectionCard({
@@ -22,10 +23,12 @@ export default function SectionCard({
 	success,
 	sourceBadge,
 	visible = true,
+	onRetry,
 }: Props) {
 	if (!visible) return null;
 
 	const headingId = `section-${id}-heading`;
+	const showRetry = !!(error && onRetry);
 	return (
 		<section
 			className={`invitation-editor__card${dirty ? ' invitation-editor__card--dirty' : ''}${error ? ' invitation-editor__card--error' : ''}`}
@@ -52,6 +55,15 @@ export default function SectionCard({
 			<div className="invitation-editor__card-footer" aria-live="polite">
 				<div>
 					{error && <p className="invitation-editor__error">{error}</p>}
+					{showRetry && (
+						<button
+							type="button"
+							className="invitation-editor__retry-button"
+							onClick={onRetry}
+						>
+							Recargar datos
+						</button>
+					)}
 					{success && <p className="invitation-editor__success">{success}</p>}
 				</div>
 			</div>

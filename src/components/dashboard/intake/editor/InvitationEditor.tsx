@@ -28,7 +28,7 @@ import { useInvitationEditor } from '@/hooks/use-invitation-editor';
 import { useAssetLibrary } from '@/lib/intake/use-asset-library';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { toErrorMessage } from '@/lib/rsvp/core/errors';
+import { ApiError, toErrorMessage } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { formatDateLong } from '@/lib/intake/constants';
 import {
@@ -175,6 +175,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [success, setSuccess] = useState<Record<string, string>>({});
 	const [previewVersion, setPreviewVersion] = useState(0);
 	const [previewHash, setPreviewHash] = useState('');
+	const [metadataConflict, setMetadataConflict] = useState(false);
 	const [selectedSection, setSelectedSection] = useState<EditorSectionId>('hero');
 	const previewPaneRef = useRef<HTMLElement | null>(null);
 	const refreshSavedPreview = () => {
@@ -207,10 +208,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 		markDirty(getDirtySectionKey(key));
 	};
 
-	const sectionValue = useCallback(
-		(section: InvitationEditorSectionKey): unknown => getSectionValue(content, section),
-		[content],
-	);
+	const sectionValue = (section: InvitationEditorSectionKey): unknown =>
+		getSectionValue(content, section);
 
 	const updateContentBaseline = (section: InvitationEditorSectionKey, value: DraftContent) => {
 		setContentBaseline((current) => applySectionToBaseline(current, section, value));
@@ -246,6 +245,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	};
 
 	const saveMetadata = async (expectedUpdatedAt?: string, shouldRefreshPreview = true) => {
+		setMetadataConflict(false);
 		setErrors((current) => ({ ...current, metadata: '' }));
 		try {
 			const invitation = await editor.saveMetadata(metadata, expectedUpdatedAt);
@@ -261,10 +261,20 @@ export default function InvitationEditor({ initialContext }: Props) {
 			if (shouldRefreshPreview) refreshSavedPreview();
 			return invitation;
 		} catch (error) {
-			setErrors((current) => ({
-				...current,
-				metadata: toErrorMessage(error, 'No se pudieron guardar los datos.'),
-			}));
+			const isConflict = error instanceof ApiError && error.code === 'conflict';
+			if (isConflict) {
+				setMetadataConflict(true);
+				setErrors((current) => ({
+					...current,
+					metadata:
+						'Los datos cambiaron desde que abriste esta vista. Recarga para continuar.',
+				}));
+			} else {
+				setErrors((current) => ({
+					...current,
+					metadata: toErrorMessage(error, 'No se pudieron guardar los datos.'),
+				}));
+			}
 		}
 	};
 
@@ -313,12 +323,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const sharing = content.sharing ?? {};
 	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
 
-	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
-		updateContent('gifts', {
-			...gifts,
-			items: giftItems.map((item, i) => (i === index ? { ...item, ...patch } : item)),
-		});
-	};
+	const updateGiftItem = useCallback(
+		(index: number, patch: Record<string, unknown>) => {
+			updateContent('gifts', {
+				...gifts,
+				items: giftItems.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+			});
+		},
+		[gifts, giftItems, updateContent],
+	);
 
 	const updateHero = (patch: Partial<typeof main>) =>
 		updateContent('hero', { ...main, ...patch });
@@ -458,6 +471,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setDirty(new Set());
 		setErrors({});
 		setSuccess({});
+		setMetadataConflict(false);
 	};
 
 	const saveAllDirty = useCallback(async (): Promise<boolean> => {
@@ -468,28 +482,30 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setSuccess({});
 
 		let allSucceeded = true;
-		let nextExpectedUpdatedAt: string | undefined;
-		const initialExpectedUpdatedAt =
+		let nextSectionExpected: string | undefined;
+		let nextMetadataExpected: string | undefined;
+		const initialSectionExpected =
 			editor.context.draftUpdatedAt ?? editor.context.invitation.updatedAt;
+		const initialMetadataExpected = editor.context.invitation.updatedAt;
 
 		for (const section of dirtyArray) {
-			const expectedUpdateAt = nextExpectedUpdatedAt ?? initialExpectedUpdatedAt;
-
 			if (section === 'metadata') {
-				const result = await saveMetadata(expectedUpdateAt, false);
+				const expected = nextMetadataExpected ?? initialMetadataExpected;
+				const result = await saveMetadata(expected, false);
 				if (!result) {
 					allSucceeded = false;
 					break;
 				}
-				nextExpectedUpdatedAt = result.updatedAt;
+				nextMetadataExpected = result.updatedAt;
 			} else {
 				const sectionKey = section as InvitationEditorSectionKey;
-				const result = await saveSection(sectionKey, expectedUpdateAt, false);
+				const expected = nextSectionExpected ?? initialSectionExpected;
+				const result = await saveSection(sectionKey, expected, false);
 				if (!result) {
 					allSucceeded = false;
 					break;
 				}
-				nextExpectedUpdatedAt = result.draftUpdatedAt;
+				nextSectionExpected = result.draftUpdatedAt;
 			}
 		}
 
@@ -717,6 +733,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.metadata}
 						sourceBadge={undefined}
 						visible={activeEditorCardId === 'metadata'}
+						onRetry={metadataConflict ? () => window.location.reload() : undefined}
 					>
 						<MetadataSection
 							value={metadata}

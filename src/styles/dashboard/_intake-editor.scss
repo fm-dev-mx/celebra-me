@@ -658,6 +658,22 @@
 	color: var(--color-state-danger-text);
 }
 
+.invitation-editor__retry-button {
+	margin-top: 0.5rem;
+	padding: 0.35rem 0.75rem;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--color-action-primary-text);
+	background: var(--color-action-primary);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+
+	&:hover {
+		opacity: 90%;
+	}
+}
+
 .invitation-editor__success {
 	color: var(--color-state-success-text);
 }

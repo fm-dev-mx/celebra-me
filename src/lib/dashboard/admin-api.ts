@@ -1,4 +1,5 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
+import { ApiError, type ApiErrorCode } from '@/lib/rsvp/core/errors';
 import type { EventListItemDTO } from './dto/events';
 import type {
 	UsersListResponse,
@@ -34,7 +35,12 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 export class AdminApi {
 	private handleResponse<T>(result: ApiResult<T>): T {
 		if (!result.ok) {
-			throw new Error(result.message);
+			throw new ApiError(
+				result.status,
+				result.code as ApiErrorCode,
+				result.message,
+				result.details as Record<string, unknown> | undefined,
+			);
 		}
 		return result.data;
 	}
