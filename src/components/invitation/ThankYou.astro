@@ -35,6 +35,7 @@ const usesEditorialLayout = EDITORIAL_THANK_YOU_VARIANTS.includes(
 	variant as (typeof EDITORIAL_THANK_YOU_VARIANTS)[number],
 );
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
+const LARGE_PHOTO_VARIANTS: ReadonlySet<string> = new Set(['sacred-keepsake']);
 
 const firstLetter = message.charAt(0);
 const remainingMessage = message.slice(1);
@@ -66,7 +67,8 @@ const IMAGE_CONFIGS = {
 	},
 } as const;
 
-const configKey: keyof typeof IMAGE_CONFIGS = hasSubjectAwareOverlay ? 'subject-aware' : (variant in IMAGE_CONFIGS ? (variant as keyof typeof IMAGE_CONFIGS) : 'standard');
+const needsLargePhoto = hasSubjectAwareOverlay || LARGE_PHOTO_VARIANTS.has(variant);
+const configKey: keyof typeof IMAGE_CONFIGS = needsLargePhoto ? 'subject-aware' : (variant in IMAGE_CONFIGS ? (variant as keyof typeof IMAGE_CONFIGS) : 'standard');
 const imageConfig = IMAGE_CONFIGS[configKey];
 
 ---
@@ -75,9 +77,8 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	id="thank-you-section"
 	class="thank-you-section"
 	data-variant={variant}
-	data-focal-point={focalPoint || 'center'}
 	data-overlay-anchor={overlayAnchor}
-	data-has-overlay-safe-area={overlaySafeArea ? '' : undefined}
+	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >
 	{
 		usesEditorialLayout ? (
@@ -153,8 +154,10 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	safeY: overlaySafeArea ? `${overlaySafeArea.y * 100}%` : '0%',
 	safeW: overlaySafeArea ? `${overlaySafeArea.width * 100}%` : '0%',
 	safeH: overlaySafeArea ? `${overlaySafeArea.height * 100}%` : '0%',
+	thankYouFocalPoint: focalPoint || 'center',
 }}>
 	.thank-you-section {
+		--thank-you-focal-point: var(--thankYouFocalPoint);
 		--thank-you-safe-x: var(--safeX);
 		--thank-you-safe-y: var(--safeY);
 		--thank-you-safe-width: var(--safeW);
@@ -164,10 +167,6 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 
 <script>
 import { initSectionReveal } from '@/utils/animations';
-
-document.querySelectorAll<HTMLElement>('.thank-you-section[data-focal-point]').forEach((section) => {
-	section.style.setProperty('--thank-you-focal-point', section.dataset.focalPoint || 'center');
-});
 
 initSectionReveal('.thank-you-section');
 </script>

@@ -470,15 +470,26 @@ function mapThankYouSection(
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const message = str(draftThankYou?.message);
+	const overlayFields = {
+		focalPoint: draftThankYou?.focalPoint,
+		overlayAnchor: draftThankYou?.overlayAnchor,
+		overlaySafeArea: draftThankYou?.overlaySafeArea,
+	};
 	if (message) {
 		return {
 			message,
 			closingName: str(draftThankYou?.closingName) || demoStr(ctx, demoThankYou?.closingName),
 			image: draftThankYou?.image ?? (ctx.isDemo ? demoThankYou?.image : undefined),
+			...overlayFields,
 		};
 	}
 	if (draftThankYou?.image) {
-		return { message: '', closingName: '', image: draftThankYou.image };
+		return {
+			message: '',
+			closingName: '',
+			image: draftThankYou.image,
+			...overlayFields,
+		};
 	}
 	return ctx.isDemo && demoThankYou ? { ...demoThankYou } : undefined;
 }

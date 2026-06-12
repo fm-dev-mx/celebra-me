@@ -295,9 +295,6 @@ describe('mapDraftToPublished', () => {
 		});
 
 		const validation = eventContentSchema.safeParse(result);
-		if (!validation.success) {
-			console.log('Validation errors:', JSON.stringify(validation.error.issues, null, 2));
-		}
 		expect(validation.success).toBe(true);
 	});
 
@@ -419,6 +416,106 @@ describe('mapDraftToPublished', () => {
 			closingName: 'Familia',
 			image: { type: 'uploaded', assetId: '00000000-0000-0000-0000-000000000001' },
 		});
+	});
+
+	it('preserves thankYou focalPoint when provided in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias a todos',
+					closingName: 'Ana Sofia',
+					focalPoint: '50% 42%',
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			message: 'Gracias a todos',
+			closingName: 'Ana Sofia',
+			focalPoint: '50% 42%',
+		});
+	});
+
+	it('preserves thankYou focalPoint in image-only branch when provided in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: '',
+					closingName: '',
+					image: { type: 'uploaded', assetId: '00000000-0000-0000-0000-000000000001' },
+					focalPoint: '50% 30%',
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			focalPoint: '50% 30%',
+			image: { type: 'uploaded', assetId: '00000000-0000-0000-0000-000000000001' },
+		});
+	});
+
+	it('preserves thankYou overlayAnchor and overlaySafeArea when provided in draft', () => {
+		const overlaySafeArea = { x: 0.5, y: 0.31, width: 0.21, height: 0.24 };
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias a todos',
+					closingName: 'César Ramses',
+					overlayAnchor: 'left',
+					overlaySafeArea,
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			message: 'Gracias a todos',
+			closingName: 'César Ramses',
+			overlayAnchor: 'left',
+			overlaySafeArea,
+		});
+	});
+
+	it('passes eventContentSchema validation when thankYou has overlay fields', () => {
+		const overlaySafeArea = { x: 0.5, y: 0.31, width: 0.21, height: 0.24 };
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias a todos',
+					closingName: 'César Ramses',
+					focalPoint: '50% 42%',
+					overlayAnchor: 'left',
+					overlaySafeArea,
+				},
+				quote: { text: 'Test quote', author: 'Test author' },
+				location: {
+					ceremony: {
+						venueName: 'Church',
+						address: '123 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Reception Hall',
+						address: '456 Main St',
+						city: 'City',
+						date: '2026-06-15',
+						time: '20:00',
+					},
+				},
+			},
+		});
+
+		const validation = eventContentSchema.safeParse(result);
+		expect(validation.success).toBe(true);
 	});
 
 	it('maps location with ceremony and reception venues', () => {
