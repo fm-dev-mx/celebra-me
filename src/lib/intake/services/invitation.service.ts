@@ -16,10 +16,7 @@ import type { IntakeRequest } from '@/lib/intake/types';
 import { getCollection } from 'astro:content';
 import { getContentEntrySlug } from '@/lib/content/events';
 import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
-import {
-	findDraftByInvitationId,
-	upsertDraft,
-} from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { upsertDraft } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 export function toEnrichedInvitationDTO(
@@ -223,14 +220,16 @@ export async function duplicateInvitationFromDemo(
 		createdBy: input.createdBy,
 	});
 
-	const demoDraft = await findDraftByInvitationId(demo.id);
-	if (demoDraft) {
-		await upsertDraft({
-			invitationId: invitation.id,
-			submissionId: null,
-			content: demoDraft.content,
-		});
-	}
+	// Seed a minimal draft with metadata only — full demo content is not
+	// cloned into client invitations. The editor will show empty sections
+	// and the user populates their own data.
+	await upsertDraft({
+		invitationId: invitation.id,
+		submissionId: null,
+		content: {
+			title: input.title,
+		},
+	});
 
 	return invitation;
 }

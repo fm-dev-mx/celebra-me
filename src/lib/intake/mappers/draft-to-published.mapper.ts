@@ -1,10 +1,15 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
-import { str, normalizeDate } from '@/lib/intake/utils';
+import { str, venueLabel, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
+
+type PublishCtx = { isDemo: boolean };
+
+const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
+	ctx.isDemo ? str(val) : undefined;
 
 function isNullishSection(value: unknown): value is null | undefined {
 	return value == null;
@@ -27,8 +32,9 @@ type VenueDraft = {
 function buildEnvelopeFromDraft(
 	draftEnvelope: Record<string, unknown> | undefined,
 	demoEnvelope: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> {
-	const result = { ...(demoEnvelope ?? { disabled: true }) };
+	const result = { ...(ctx.isDemo ? (demoEnvelope ?? { disabled: true }) : { disabled: true }) };
 	const draftInitials = draftEnvelope?.sealInitials;
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
 	if (typeof draftInitials === 'string' && draftInitials.trim().length > 0)
@@ -39,9 +45,9 @@ function buildEnvelopeFromDraft(
 function mapCountdownFromDraft(
 	draftCountdown: DraftContent['countdown'],
 	demoCountdown: Record<string, unknown> | undefined,
-	isDemo: boolean,
+	ctx: PublishCtx,
 ): Record<string, unknown> {
-	if (isDemo && demoCountdown) return { ...demoCountdown };
+	if (ctx.isDemo && demoCountdown) return { ...demoCountdown };
 
 	return {
 		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
@@ -167,10 +173,13 @@ function mapFamilyFromDraft(
 
 function mapVenue(
 	draftVenue: VenueDraft | undefined,
-	demoVenue?: Record<string, unknown>,
+	demoVenue: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!draftVenue || Object.keys(draftVenue).length === 0) {
-		return demoVenue && Object.keys(demoVenue).length > 0 ? { ...demoVenue } : undefined;
+		return ctx.isDemo && demoVenue && Object.keys(demoVenue).length > 0
+			? { ...demoVenue }
+			: undefined;
 	}
 	const result: Record<string, unknown> = {};
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
@@ -181,7 +190,7 @@ function mapVenue(
 	if (str(draftVenue.mapUrl)) result.mapUrl = str(draftVenue.mapUrl);
 	if (draftVenue.image) {
 		result.image = draftVenue.image;
-	} else if (demoVenue?.image) {
+	} else if (ctx.isDemo && demoVenue?.image) {
 		result.image = demoVenue.image;
 	}
 	return Object.keys(result).length > 0 ? result : undefined;
@@ -190,16 +199,19 @@ function mapVenue(
 function resolveIntroFields(
 	draftLocation: NonNullable<DraftContent['location']>,
 	demoLocation: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> {
 	const fields: Record<string, unknown> = {};
-	const introEyebrow = str(draftLocation.introEyebrow) || str(demoLocation?.introEyebrow);
+	const introEyebrow =
+		str(draftLocation.introEyebrow) || demoStr(ctx, demoLocation?.introEyebrow);
 	if (introEyebrow) fields.introEyebrow = introEyebrow;
-	const introHeading = str(draftLocation.introHeading) || str(demoLocation?.introHeading);
+	const introHeading =
+		str(draftLocation.introHeading) || demoStr(ctx, demoLocation?.introHeading);
 	if (introHeading) fields.introHeading = introHeading;
-	const introLede = str(draftLocation.introLede) || str(demoLocation?.introLede);
+	const introLede = str(draftLocation.introLede) || demoStr(ctx, demoLocation?.introLede);
 	if (introLede) fields.introLede = introLede;
 	const indicationsHeading =
-		str(draftLocation.indicationsHeading) || str(demoLocation?.indicationsHeading);
+		str(draftLocation.indicationsHeading) || demoStr(ctx, demoLocation?.indicationsHeading);
 	if (indicationsHeading) fields.indicationsHeading = indicationsHeading;
 	return fields;
 }
@@ -220,30 +232,59 @@ function mapIndicationsFromDraft(
 
 function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
-	demoContent?: Record<string, unknown>,
+	demoContent: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!draftLocation || Object.keys(draftLocation).length === 0) return undefined;
+	if (!draftLocation || Object.keys(draftLocation).length === 0) {
+		return ctx.isDemo ? undefined : { indicationsHeading: '' };
+	}
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 
-	const ceremony = mapVenue(
-		draftLocation.ceremony,
-		demoLocation?.ceremony as Record<string, unknown> | undefined,
-	);
-	if (ceremony) result.ceremony = ceremony;
-	const reception = mapVenue(
-		draftLocation.reception,
-		demoLocation?.reception as Record<string, unknown> | undefined,
-	);
-	if (reception) result.reception = reception;
+	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
+		const mappedVenues = draftLocation.venues
+			.filter((v) => v.isVisible !== false)
+			.map((v) => ({
+				id: v.id,
+				type: v.type,
+				label: venueLabel(v.type, v.label),
+				venueName: v.venueName || '',
+				address: v.address || '',
+				city: v.city || '',
+				date: v.date || '',
+				time: v.time || '',
+				mapUrl: v.mapUrl || undefined,
+				...(v.image ? { image: v.image } : {}),
+				isVisible: true,
+				venueEvent: venueLabel(v.type, v.label),
+			}));
+		if (mappedVenues.length === 0 && Object.keys(result).length === 0) {
+			return ctx.isDemo ? undefined : { indicationsHeading: '' };
+		}
+		result.venues = mappedVenues;
+	} else {
+		const ceremony = mapVenue(
+			draftLocation.ceremony,
+			demoLocation?.ceremony as Record<string, unknown> | undefined,
+			ctx,
+		);
+		if (ceremony) result.ceremony = ceremony;
+		const reception = mapVenue(
+			draftLocation.reception,
+			demoLocation?.reception as Record<string, unknown> | undefined,
+			ctx,
+		);
+		if (reception) result.reception = reception;
+	}
 
-	const introFields = resolveIntroFields(draftLocation, demoLocation);
+	const introFields = resolveIntroFields(draftLocation, demoLocation, ctx);
 	Object.assign(result, introFields);
 
 	const indications = mapIndicationsFromDraft(draftLocation.indications);
 	if (indications) result.indications = indications;
 
-	return Object.keys(result).length > 0 ? result : undefined;
+	const hasContent = Object.keys(result).length > 0;
+	return hasContent ? result : ctx.isDemo ? undefined : { indicationsHeading: '' };
 }
 
 export interface PublishInput {
@@ -258,11 +299,12 @@ export interface PublishInput {
 	isDemo?: boolean;
 }
 
+// eslint-disable-next-line complexity -- The hero resolution naturally has many fallback paths.
 function buildHeroFromDraft(
 	draftHero: NonNullable<DraftContent['hero']>,
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
-	isDemo: boolean,
+	ctx: PublishCtx,
 ): Record<string, unknown> {
 	const {
 		name: demoName,
@@ -278,24 +320,21 @@ function buildHeroFromDraft(
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
-		name: str(draftHero.name) || (demoName as string) || invitationTitle,
-		secondaryName: str(draftHero.secondaryName) || (demoSecondaryName as string) || '',
-		label: str(draftHero.label) || (demoLabel as string) || 'Invitación Especial',
-		nickname: str(draftHero.nickname) || (demoNickname as string) || '',
-		date: normalizeDate(str(draftHero.date) || (demoDate as string) || ''),
+		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
+		secondaryName:
+			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',
+		label: str(draftHero.label) || demoStr(ctx, demoLabel as string) || 'Invitación Especial',
+		nickname: str(draftHero.nickname) || demoStr(ctx, demoNickname as string) || '',
+		date: normalizeDate(str(draftHero.date) || demoStr(ctx, demoDate as string) || ''),
 		backgroundImage: draftHero.backgroundImage ??
-			demoBackgroundImage ?? { type: 'internal', key: 'hero' },
-		backgroundImageDesktop: demoBackgroundImageDesktop,
+			(ctx.isDemo ? demoBackgroundImage : undefined) ?? { type: 'internal', key: 'hero' },
+		backgroundImageDesktop: ctx.isDemo ? demoBackgroundImageDesktop : undefined,
 		backgroundImageMobile:
-			draftHero.backgroundImageMobile ?? (isDemo ? demoBackgroundImageMobile : undefined),
-		portrait: draftHero.portrait ?? demoPortrait,
+			draftHero.backgroundImageMobile ?? (ctx.isDemo ? demoBackgroundImageMobile : undefined),
+		portrait: draftHero.portrait ?? (ctx.isDemo ? demoPortrait : undefined),
 	};
 
-	// Only set hero variant when the demo content explicitly defines it.
-	// Omitting the variant lets the adaptation layer (buildHero in event.ts)
-	// fall back to theme.preset, avoiding divergence when snapshot.themeId
-	// is stale or incorrect (e.g., legacy-adopt script).
-	if (demoVariant) {
+	if (ctx.isDemo && demoVariant) {
 		result.variant = demoVariant as string;
 	}
 
@@ -306,10 +345,10 @@ function mapHeroSection(
 	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
-	isDemo: boolean,
+	ctx: PublishCtx,
 ): Record<string, unknown> {
 	if (isBlankSection(draftHero)) {
-		if (demoHero && Object.keys(demoHero).length > 0) return demoHero;
+		if (ctx.isDemo && demoHero && Object.keys(demoHero).length > 0) return demoHero;
 		return {
 			name: invitationTitle,
 			label: 'Invitación Especial',
@@ -321,40 +360,50 @@ function mapHeroSection(
 		draftHero as NonNullable<DraftContent['hero']>,
 		demoHero,
 		invitationTitle,
-		isDemo,
+		ctx,
 	);
 }
 
 function resolveRsvpResponseMessages(
 	draftRsvp: NonNullable<DraftContent['rsvp']>,
 	demoRsvp: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	return (
-		draftRsvp.responseMessages ??
-		(demoRsvp?.responseMessages as Record<string, unknown> | undefined)
-	);
+	const fromDemo = ctx.isDemo
+		? (demoRsvp?.responseMessages as Record<string, unknown> | undefined)
+		: undefined;
+	return draftRsvp.responseMessages ?? fromDemo;
 }
 
 function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
 	const demo = demoRsvp || {};
-	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp);
-	const whatsappPhone = str(draftRsvp.whatsappPhone) || str(demo.whatsappPhone);
+	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp, ctx);
+	const whatsappPhone = str(draftRsvp.whatsappPhone) || demoStr(ctx, demo.whatsappPhone);
 	const guestCap =
 		typeof draftRsvp.guestCap === 'number'
 			? draftRsvp.guestCap
-			: (demo.guestCap as number | undefined);
-	const confirmationMode = str(draftRsvp.confirmationMode) || str(demo.confirmationMode) || 'api';
-	const title = str(draftRsvp.title) || str(demo.title);
-	const confirmationMessage = str(draftRsvp.confirmationMessage) || str(demo.confirmationMessage);
-	const accessMode = str(demo.accessMode) || 'personalized-only';
-	const whatsappConfig = whatsappPhone ? { phone: whatsappPhone } : demo.whatsappConfig;
-	const subcopy = str(draftRsvp.subcopy) || str(demo.subcopy);
+			: ctx.isDemo
+				? (demo.guestCap as number | undefined)
+				: undefined;
+	const confirmationMode =
+		str(draftRsvp.confirmationMode) || demoStr(ctx, demo.confirmationMode) || 'api';
+	const title = str(draftRsvp.title) || demoStr(ctx, demo.title);
+	const confirmationMessage =
+		str(draftRsvp.confirmationMessage) || demoStr(ctx, demo.confirmationMessage);
+	const accessMode = (ctx.isDemo ? str(demo.accessMode) : undefined) || 'personalized-only';
+	const whatsappConfig = whatsappPhone
+		? { phone: whatsappPhone }
+		: ctx.isDemo
+			? demo.whatsappConfig
+			: undefined;
+	const subcopy = str(draftRsvp.subcopy) || demoStr(ctx, demo.subcopy);
 	const confirmationDeadline =
-		str(draftRsvp.confirmationDeadline) || str(demo.confirmationDeadline);
+		str(draftRsvp.confirmationDeadline) || demoStr(ctx, demo.confirmationDeadline);
 	return {
 		title,
 		guestCap,
@@ -371,29 +420,31 @@ function mapRsvpSection(
 function mapMusicSection(
 	draftMusic: DraftContent['music'],
 	demoMusic: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const url = str(draftMusic?.url);
 	const title = str(draftMusic?.title);
 	if (url) {
 		const autoPlay = typeof draftMusic?.autoPlay === 'boolean' ? draftMusic.autoPlay : false;
-		return { url, title: title || str(demoMusic?.title), autoPlay };
+		return { url, title: title || demoStr(ctx, demoMusic?.title), autoPlay };
 	}
-	return demoMusic ? { ...demoMusic } : undefined;
+	return ctx.isDemo && demoMusic ? { ...demoMusic } : undefined;
 }
 
 function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!draftGifts || Object.keys(draftGifts).length === 0) {
-		return demoGifts ? { ...demoGifts } : undefined;
+		return ctx.isDemo && demoGifts ? { ...demoGifts } : undefined;
 	}
 	return {
-		title: str(draftGifts.title) || str(demoGifts?.title),
-		subtitle: str(draftGifts.subtitle) || str(demoGifts?.subtitle),
+		title: str(draftGifts.title) || demoStr(ctx, demoGifts?.title),
+		subtitle: str(draftGifts.subtitle) || demoStr(ctx, demoGifts?.subtitle),
 		items:
 			(draftGifts.items as unknown as Array<Record<string, unknown>>) ||
-			(demoGifts?.items as Array<Record<string, unknown>>) ||
+			(ctx.isDemo ? (demoGifts?.items as Array<Record<string, unknown>>) : undefined) ||
 			[],
 	};
 }
@@ -401,79 +452,82 @@ function mapGiftsSection(
 function mapQuoteSection(
 	draftQuote: DraftContent['quote'],
 	demoQuote: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const text = str(draftQuote?.text);
 	if (text) {
 		return {
 			text,
-			author: str(draftQuote?.author) || str(demoQuote?.author),
+			author: str(draftQuote?.author) || demoStr(ctx, demoQuote?.author),
 		};
 	}
-	return demoQuote ? { ...demoQuote } : undefined;
+	return ctx.isDemo && demoQuote ? { ...demoQuote } : undefined;
 }
 
 function mapThankYouSection(
 	draftThankYou: DraftContent['thankYou'],
 	demoThankYou: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const message = str(draftThankYou?.message);
 	if (message) {
 		return {
 			message,
-			closingName: str(draftThankYou?.closingName) || str(demoThankYou?.closingName),
-			image: draftThankYou?.image ?? demoThankYou?.image,
+			closingName: str(draftThankYou?.closingName) || demoStr(ctx, demoThankYou?.closingName),
+			image: draftThankYou?.image ?? (ctx.isDemo ? demoThankYou?.image : undefined),
 		};
 	}
 	if (draftThankYou?.image) {
 		return { message: '', closingName: '', image: draftThankYou.image };
 	}
-	return demoThankYou ? { ...demoThankYou } : undefined;
+	return ctx.isDemo && demoThankYou ? { ...demoThankYou } : undefined;
 }
 
 function resolveInvitationTemplate(
 	draftMessages: Record<string, unknown>,
 	demoMessages: Record<string, unknown>,
+	ctx: PublishCtx,
 ): string {
 	const result =
 		str(draftMessages.invitation) ||
 		str(draftMessages.whatsappWithPhone) ||
-		str(demoMessages.invitation) ||
-		str(demoMessages.whatsappWithPhone);
+		demoStr(ctx, demoMessages.invitation) ||
+		demoStr(ctx, demoMessages.whatsappWithPhone);
 	return result ?? '';
 }
 
 function resolveReminderTemplate(
 	draftMessages: Record<string, unknown>,
 	demoMessages: Record<string, unknown>,
+	ctx: PublishCtx,
 ): string {
 	const result =
 		str(draftMessages.reminder) ||
-		str(demoMessages.reminder) ||
-		str(demoMessages.whatsappWithoutPhone);
+		demoStr(ctx, demoMessages.reminder) ||
+		demoStr(ctx, demoMessages.whatsappWithoutPhone);
 	return result ?? DEFAULT_REMINDER_MESSAGE;
 }
 
 function mapSharingFromDraft(
 	draftSharing: Record<string, unknown> | undefined,
 	demoSharing: Record<string, unknown> | undefined,
-	isDemo: boolean,
+	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const draftMessages = (draftSharing || {}) as Record<string, unknown>;
-	const demoMessages = ((demoSharing && demoSharing.shareMessages) || {}) as Record<
-		string,
-		unknown
-	>;
+	const demoMessages = (ctx.isDemo ? demoSharing && demoSharing.shareMessages : undefined) as
+		| Record<string, unknown>
+		| undefined;
 
-	const invitation = resolveInvitationTemplate(draftMessages, demoMessages);
-	const reminder = resolveReminderTemplate(draftMessages, demoMessages);
+	const invitation = resolveInvitationTemplate(draftMessages, demoMessages ?? {}, ctx);
+	const reminder = resolveReminderTemplate(draftMessages, demoMessages ?? {}, ctx);
 
 	const shareMessages = invitation ? { invitation, reminder } : undefined;
 
 	const whatsappTemplate =
-		isDemo && typeof demoSharing?.whatsappTemplate === 'string'
+		ctx.isDemo && typeof demoSharing?.whatsappTemplate === 'string'
 			? demoSharing.whatsappTemplate
 			: undefined;
-	const ogImage = demoSharing?.ogImage;
+	const ogImage = ctx.isDemo ? demoSharing?.ogImage : undefined;
 	const ogDescription = str(draftMessages.ogDescription);
 
 	const hasAnyContent = shareMessages || whatsappTemplate || ogImage || ogDescription;
@@ -487,38 +541,45 @@ function mapSharingFromDraft(
 	return result;
 }
 
+// eslint-disable-next-line complexity -- The publish mapping covers many sections with optional demo fallback.
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
 	const { draftContent, invitation, demoContent, isDemo = false } = input;
+	const ctx: PublishCtx = { isDemo };
 	const snapshot = invitation.snapshot;
 
 	const celebName = str(draftContent.hero?.name) || invitation.title;
 
-	const locationSection = mapLocationFromDraft(draftContent.location, demoContent);
+	const locationSection = mapLocationFromDraft(draftContent.location, demoContent, ctx);
 	const rsvpSection = mapRsvpSection(
 		draftContent.rsvp,
 		demoContent.rsvp as Record<string, unknown> | undefined,
+		ctx,
 	);
 	const musicSection = mapMusicSection(
 		draftContent.music,
 		demoContent.music as Record<string, unknown> | undefined,
+		ctx,
 	);
 	const giftsSection = mapGiftsSection(
 		draftContent.gifts,
 		demoContent.gifts as Record<string, unknown> | undefined,
+		ctx,
 	);
 	const quoteSection = mapQuoteSection(
 		draftContent.quote,
 		demoContent.quote as Record<string, unknown> | undefined,
+		ctx,
 	);
 	const thankYouSection = mapThankYouSection(
 		draftContent.thankYou,
 		demoContent.thankYou as Record<string, unknown> | undefined,
+		ctx,
 	);
 	const heroSection = mapHeroSection(
 		draftContent.hero,
 		demoContent.hero as Record<string, unknown> | undefined,
 		invitation.title,
-		isDemo,
+		ctx,
 	);
 	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
 
@@ -527,43 +588,48 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	return {
 		eventType: invitation.eventType,
 		title: invitation.title,
-		description: str(draftContent.description) || str(demoContent.description),
+		description: str(draftContent.description) || demoStr(ctx, demoContent.description),
 		isDemo,
 
-		theme: {
-			fontFamily: str(demoTheme?.fontFamily),
-			preset: snapshot.themeId,
-		},
+		theme: Object.assign(
+			{ preset: snapshot.themeId },
+			ctx.isDemo && str(demoTheme?.fontFamily)
+				? { fontFamily: str(demoTheme?.fontFamily) }
+				: {},
+		) as Record<string, unknown>,
 
-		sectionOrder: draftContent.sectionOrder ?? demoContent.sectionOrder,
+		sectionOrder:
+			draftContent.sectionOrder ?? (ctx.isDemo ? demoContent.sectionOrder : undefined),
 		eventTiming: mapEventTimingFromDraft(draftContent.eventTiming),
 
 		hero: heroSection,
 		envelope: buildEnvelopeFromDraft(
 			draftContent.envelope as Record<string, unknown> | undefined,
 			demoContent.envelope as Record<string, unknown> | undefined,
+			ctx,
 		),
-		family: familySection ?? demoContent.family,
-		location: locationSection ?? demoContent.location,
-		gallery: draftContent.gallery ?? demoContent.gallery,
-		itinerary: draftContent.itinerary ?? demoContent.itinerary,
+		family: familySection ?? (ctx.isDemo ? demoContent.family : undefined),
+		location:
+			locationSection ?? (ctx.isDemo ? demoContent.location : { indicationsHeading: '' }),
+		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : { items: [] }),
+		itinerary: draftContent.itinerary ?? (ctx.isDemo ? demoContent.itinerary : { items: [] }),
 		countdown: mapCountdownFromDraft(
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
-			isDemo,
+			ctx,
 		),
 		rsvp: rsvpSection,
 		music: musicSection,
 		gifts: giftsSection,
-		quote: quoteSection,
+		quote: quoteSection ?? (ctx.isDemo ? undefined : { text: '' }),
 		thankYou: thankYouSection,
 
-		interludes: demoContent.interludes,
-		sectionStyles: demoContent.sectionStyles,
+		interludes: ctx.isDemo ? demoContent.interludes : undefined,
+		sectionStyles: ctx.isDemo ? demoContent.sectionStyles : undefined,
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,
 			demoContent.sharing as Record<string, unknown> | undefined,
-			isDemo,
+			ctx,
 		),
 
 		_assetSlug: input.assetSlug ?? snapshot.previewSlug,

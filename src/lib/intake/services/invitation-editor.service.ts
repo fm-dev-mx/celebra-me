@@ -94,10 +94,12 @@ function shallowMergeDefined(base: unknown, overlay: unknown): Record<string, un
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
+// eslint-disable-next-line complexity -- Section hydration has several branching paths for obj vs scalar and allowDemoFallback.
 function hydrateEditableContent(
 	draftContent: Record<string, unknown>,
 	publishedContent: Record<string, unknown>,
 	demoContent: Record<string, unknown>,
+	options: { allowDemoFallback?: boolean } = {},
 ): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
 	const draftBase = structuredClone(draftContent) as DraftContent;
 	const publishedFlat = mapNestedToDraftContent(publishedContent);
@@ -105,6 +107,7 @@ function hydrateEditableContent(
 
 	const result: DraftContent = {};
 	const sectionStates: Record<string, SectionSource> = {};
+	const { allowDemoFallback = false } = options;
 
 	for (const key of ALL_EDITOR_KEYS) {
 		const draftVal = draftBase[key];
@@ -115,17 +118,19 @@ function hydrateEditableContent(
 			OBJECT_SECTION_KEYS.has(key) &&
 			(isRecord(draftVal) || isRecord(publishedVal) || isRecord(demoVal))
 		) {
-			// Merge field-by-field: demo → published → draft
-			// Each higher-priority source only overrides defined (non-undefined) fields.
-			const merged = shallowMergeDefined(
-				shallowMergeDefined(
-					isRecord(demoVal) ? demoVal : undefined,
+			if (isRecord(draftVal) || isRecord(publishedVal)) {
+				// Merge existing data: published → draft only.
+				// Demo is excluded — only user-authored content may appear.
+				const merged = shallowMergeDefined(
 					isRecord(publishedVal) ? publishedVal : undefined,
-				),
-				isRecord(draftVal) ? draftVal : undefined,
-			);
-			if (merged !== undefined) {
-				result[key] = structuredClone(merged) as DraftContent[typeof key];
+					isRecord(draftVal) ? draftVal : undefined,
+				);
+				if (merged !== undefined) {
+					result[key] = structuredClone(merged) as DraftContent[typeof key];
+				}
+			} else if (allowDemoFallback && isRecord(demoVal)) {
+				// Only use demo content when explicitly allowed (demo invitations).
+				result[key] = structuredClone(demoVal) as DraftContent[typeof key];
 			}
 		} else {
 			// Simple priority replace for scalar / array fields
@@ -133,7 +138,7 @@ function hydrateEditableContent(
 				result[key] = structuredClone(draftVal);
 			} else if (publishedVal !== undefined) {
 				result[key] = structuredClone(publishedVal);
-			} else if (demoVal !== undefined) {
+			} else if (allowDemoFallback && demoVal !== undefined) {
 				result[key] = structuredClone(demoVal);
 			}
 		}
@@ -142,7 +147,7 @@ function hydrateEditableContent(
 			sectionStates[key] = 'draft';
 		} else if (publishedVal !== undefined && result[key] !== undefined) {
 			sectionStates[key] = 'published';
-		} else if (demoVal !== undefined && result[key] !== undefined) {
+		} else if (allowDemoFallback && demoVal !== undefined && result[key] !== undefined) {
 			sectionStates[key] = 'demo';
 		} else {
 			sectionStates[key] = 'empty';
@@ -196,6 +201,7 @@ export async function getInvitationEditorContext(
 		draft?.content ?? {},
 		published?.content ?? {},
 		demoContent,
+		{ allowDemoFallback: invitation.kind === 'demo' },
 	);
 
 	const contentSource = resolveContentSource(sectionStates);
@@ -241,11 +247,17 @@ export async function saveInvitationEditorSection(
 
 	const normalizedValue = valueResult.data;
 
-	const context = await getInvitationEditorContext(invitationId);
-	const nextContent = applySectionValue(context.content, section, normalizedValue);
+	// Use the persisted draft (not hydrated content) as baseline so
+	// demo-originated values are never persisted into the draft.
+	const [draft, published] = await Promise.all([
+		findDraftByInvitationId(invitationId),
+		findPublishedByInvitationId(invitationId),
+	]);
+	const currentContent = draft?.content ?? {};
+	const nextContent = applySectionValue(currentContent, section, normalizedValue);
 
-	const savedDraft = context.currentDraftId
-		? await updateDraftContentConditionally(context.currentDraftId, input.expectedUpdatedAt, {
+	const savedDraft = draft
+		? await updateDraftContentConditionally(draft.id, input.expectedUpdatedAt, {
 				content: nextContent,
 				status: 'draft',
 			})
@@ -268,7 +280,9 @@ export async function saveInvitationEditorSection(
 		value: input.value,
 		draftUpdatedAt: savedDraft.updatedAt,
 		publication: {
-			...context.publication,
+			hasPublishedContent: !!published,
+			version: published?.version ?? null,
+			publishedAt: published?.publishedAt ?? null,
 			hasUnpublishedChanges: true,
 		},
 	};

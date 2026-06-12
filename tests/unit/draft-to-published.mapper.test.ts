@@ -96,8 +96,9 @@ describe('mapDraftToPublished', () => {
 			label: 'Mis XV Anos',
 			date: '2027-11-20T00:00:00.000Z',
 			backgroundImage: { type: 'internal', key: 'hero' },
-			variant: 'jewelry-box',
 		});
+		// Variant from demo is not included for non-demo invitations
+		expect(result.hero).not.toHaveProperty('variant');
 	});
 
 	it('includes backgroundImageMobile when draft provides it', () => {
@@ -420,7 +421,7 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('merges venue image from demo content when draft has location data', () => {
+	it('merges venue image from demo content when isDemo is true', () => {
 		const demoWithLocation = {
 			...baseDemoContent,
 			location: {
@@ -430,6 +431,7 @@ describe('mapDraftToPublished', () => {
 		};
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			demoContent: demoWithLocation,
 			draftContent: {
 				...baseInput.draftContent,
@@ -446,24 +448,210 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('omits sections with empty content', () => {
+	it('omits optional sections and provides empty valid structures for required ones', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.family).toBeUndefined();
 		expect(result.rsvp).toBeUndefined();
 		expect(result.music).toBeUndefined();
 		expect(result.gifts).toBeUndefined();
-		expect(result.quote).toBeUndefined();
 		expect(result.thankYou).toBeUndefined();
-		expect(result.location).toBeUndefined();
+		expect(result.quote).toEqual({ text: '' });
+		expect(result.location as Record<string, unknown>).toEqual({ indicationsHeading: '' });
+		expect(result.gallery).toEqual({ items: [] });
+		expect(result.itinerary).toEqual({ items: [] });
 	});
 
-	it('includes envelope, gallery, itinerary from demo content', () => {
+	it('publishes location.venues when present, preferring it over legacy ceremony/reception', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'ceremony',
+							label: 'Ceremonia',
+							venueName: 'Iglesia A',
+							address: 'Calle 1',
+							date: '2026-01-01',
+							time: '10:00',
+							isVisible: true,
+						},
+						{
+							id: 'v2',
+							type: 'custom',
+							label: 'Cena',
+							venueName: 'Salón B',
+							address: 'Calle 2',
+							date: '2026-01-01',
+							time: '20:00',
+							isVisible: true,
+						},
+					],
+				},
+			},
+		});
+		const loc = result.location as Record<string, unknown>;
+
+		expect(loc).toBeDefined();
+		expect(loc.venues).toBeDefined();
+		expect(loc.venues).toHaveLength(2);
+		expect((loc.venues as Array<Record<string, unknown>>)[0].venueName).toBe('Iglesia A');
+		expect((loc.venues as Array<Record<string, unknown>>)[1].venueName).toBe('Salón B');
+		expect(loc.ceremony).toBeUndefined();
+		expect(loc.reception).toBeUndefined();
+	});
+
+	it('filters out hidden venues (isVisible === false) from published output', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'ceremony',
+							label: 'Ceremonia',
+							venueName: 'Iglesia A',
+							address: 'Calle 1',
+							date: '2026-01-01',
+							time: '10:00',
+							isVisible: false,
+						},
+						{
+							id: 'v2',
+							type: 'reception',
+							label: 'Recepción',
+							venueName: 'Salón B',
+							address: 'Calle 2',
+							date: '2026-01-01',
+							time: '20:00',
+							isVisible: true,
+						},
+					],
+				},
+			},
+		});
+		const loc = result.location as Record<string, unknown>;
+
+		expect(loc.venues).toHaveLength(1);
+		expect((loc.venues as Array<Record<string, unknown>>)[0].venueName).toBe('Salón B');
+	});
+
+	it('falls back to legacy ceremony/reception when venues is absent', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+					ceremony: {
+						venueName: 'Iglesia Legacy',
+						address: 'Calle L1',
+						date: '2026-01-01',
+						time: '10:00',
+					},
+					reception: {
+						venueName: 'Salón Legacy',
+						address: 'Calle L2',
+						date: '2026-01-01',
+						time: '20:00',
+					},
+				},
+			},
+		});
+		const loc = result.location as Record<string, unknown>;
+
+		expect(loc.ceremony).toBeDefined();
+		expect(loc.reception).toBeDefined();
+		expect((loc.ceremony as Record<string, unknown>).venueName).toBe('Iglesia Legacy');
+		expect((loc.reception as Record<string, unknown>).venueName).toBe('Salón Legacy');
+		expect(loc.venues).toBeUndefined();
+	});
+
+	it('preserves custom venue labels in published venues', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'custom',
+							label: 'Mi Jardín Secreto',
+							venueName: 'Jardín X',
+							address: 'Calle X',
+							date: '2026-01-01',
+							time: '15:00',
+							isVisible: true,
+						},
+					],
+				},
+			},
+		});
+		const loc = result.location as Record<string, unknown>;
+
+		expect(loc.venues).toHaveLength(1);
+		expect((loc.venues as Array<Record<string, unknown>>)[0].label).toBe('Mi Jardín Secreto');
+		expect((loc.venues as Array<Record<string, unknown>>)[0].type).toBe('custom');
+	});
+
+	it('does not reintroduce deleted ceremony from demo fallback when venues is present', () => {
+		const demoWithLocation = {
+			...baseDemoContent,
+			location: {
+				ceremony: {
+					venueName: 'Demo Church',
+					address: 'Demo St',
+					date: '2026-01-01',
+					time: '10:00',
+				},
+			},
+		};
+		const result = mapDraftToPublished({
+			...baseInput,
+			isDemo: true,
+			demoContent: demoWithLocation,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Nuestras Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'reception',
+							label: 'Recepción',
+							venueName: 'Nuestra Casa',
+							address: 'Calle Principal',
+							date: '2026-01-01',
+							time: '20:00',
+							isVisible: true,
+						},
+					],
+				},
+			},
+		});
+		const loc = result.location as Record<string, unknown>;
+
+		expect(loc.venues).toHaveLength(1);
+		expect((loc.venues as Array<Record<string, unknown>>)[0].venueName).toBe('Nuestra Casa');
+		expect(loc.ceremony).toBeUndefined();
+	});
+
+	it('includes envelope, gallery, itinerary from draft content or leaves empty valid defaults for non-demo', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
-		expect(result.gallery).toMatchObject({ title: 'Galería' });
-		expect(result.itinerary).toMatchObject({ title: 'Itinerario' });
+		expect(result.envelope).toMatchObject({ disabled: true });
+		expect(result.envelope).not.toHaveProperty('sealStyle');
+		expect(result.gallery).toEqual({ items: [] });
+		expect(result.itinerary).toEqual({ items: [] });
 	});
 
 	it('uses neutral countdown text for non-demo invitations', () => {
@@ -588,7 +776,7 @@ describe('mapDraftToPublished', () => {
 			},
 		});
 
-		expect(result.location).not.toHaveProperty('indications');
+		expect(result.location as Record<string, unknown>).not.toHaveProperty('indications');
 	});
 
 	it('maps location from demo content when draft location is sparse', () => {
@@ -613,6 +801,7 @@ describe('mapDraftToPublished', () => {
 		};
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			demoContent: demoWithLocation,
 			draftContent: {
 				...baseInput.draftContent,
@@ -759,16 +948,17 @@ describe('mapDraftToPublished', () => {
 		}
 	});
 
-	it('includes interludes and sectionStyles from demo content without carrying demo-only sharing', () => {
-		const result = mapDraftToPublished(baseInput);
+	it('includes interludes and sectionStyles from demo content when isDemo is true', () => {
+		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 
 		expect(Array.isArray(result.interludes)).toBe(true);
 		expect(result.sectionStyles).toBeDefined();
-		expect(result.sharing).toBeUndefined();
+		// With isDemo: true, demo sharing data (whatsappTemplate) is included
+		expect(result.sharing).toBeDefined();
 	});
 
-	it('includes theme and sectionOrder from demo content', () => {
-		const result = mapDraftToPublished(baseInput);
+	it('includes theme and sectionOrder from demo content when isDemo is true', () => {
+		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 
 		expect(result.theme).toMatchObject({ fontFamily: 'serif', preset: 'jewelry-box' });
 		expect(Array.isArray(result.sectionOrder)).toBe(true);
@@ -1035,6 +1225,7 @@ describe('mapDraftToPublished', () => {
 	it('allows draft envelope disabled to override demo envelope', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				envelope: { disabled: true },
@@ -1046,7 +1237,7 @@ describe('mapDraftToPublished', () => {
 	});
 
 	it('preserves demo envelope when no draft override exists', () => {
-		const result = mapDraftToPublished(baseInput);
+		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 
 		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
 	});
@@ -1063,6 +1254,7 @@ describe('mapDraftToPublished', () => {
 	it('allows draft sealInitials to override demo sealInitials', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				envelope: { sealInitials: 'A·L' },
@@ -1077,6 +1269,7 @@ describe('mapDraftToPublished', () => {
 	it('treats empty draft sealInitials as no override, falling back to demo value', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				envelope: { sealInitials: '' },
@@ -1104,9 +1297,10 @@ describe('edge cases — blank/empty/null sections', () => {
 		expect(result.rsvp).toBeUndefined();
 	});
 
-	it('preserves demo envelope fields when draft envelope is empty', () => {
+	it('preserves demo envelope fields when draft envelope is empty and isDemo is true', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: { ...baseInput.draftContent, envelope: {} },
 		});
 		expect(result.envelope).toMatchObject({
@@ -1119,6 +1313,7 @@ describe('edge cases — blank/empty/null sections', () => {
 	it('preserves demo envelope fields when draft envelope has only some overrides', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				envelope: { disabled: true },
@@ -1131,9 +1326,10 @@ describe('edge cases — blank/empty/null sections', () => {
 		});
 	});
 
-	it('falls back to demo hero when draft hero is undefined', () => {
+	it('falls back to demo hero when draft hero is undefined and isDemo is true', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				hero: undefined,
@@ -1147,9 +1343,10 @@ describe('edge cases — blank/empty/null sections', () => {
 		});
 	});
 
-	it('falls back to demo hero when draft hero is an empty object', () => {
+	it('falls back to demo hero when draft hero is an empty object and isDemo is true', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			draftContent: {
 				...baseInput.draftContent,
 				hero: {},
@@ -1225,9 +1422,10 @@ describe('sharing section mapping', () => {
 		expect(shareMessages.reminder).toBe('Draft reminder: {eventTitle}');
 	});
 
-	it('falls back to demo shareMessages when draft has none', () => {
+	it('falls back to demo shareMessages when draft has none and isDemo is true', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			isDemo: true,
 			demoContent: {
 				...baseDemoContent,
 				sharing: {
@@ -1317,7 +1515,7 @@ describe('sharing section mapping', () => {
 		expect(shareMessages.invitation).toBe('Invitation: {guestName}');
 	});
 
-	it('does not copy ogDescription from demo for non-demo publications', () => {
+	it('does not copy any sharing from demo for non-demo publications', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			demoContent: {
@@ -1332,8 +1530,7 @@ describe('sharing section mapping', () => {
 			},
 		});
 
-		const sharing = result.sharing as Record<string, unknown>;
-		expect(sharing.ogDescription).toBeUndefined();
+		expect(result.sharing).toBeUndefined();
 	});
 
 	it('defaults to DEFAULT_REMINDER_MESSAGE when reminder is missing from draft', () => {

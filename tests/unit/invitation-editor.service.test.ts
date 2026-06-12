@@ -248,7 +248,7 @@ describe('getInvitationEditorContext', () => {
 		expect(result.content.itinerary).toEqual(published.content.itinerary);
 	});
 
-	it('uses demo value when neither draft nor published have the key', async () => {
+	it('does not populate keys from demo for client invitations even when draft and published lack them', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: { title: 'XV Ana', hero: { name: 'Ana' } },
@@ -256,8 +256,8 @@ describe('getInvitationEditorContext', () => {
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
 
 		const result = await getInvitationEditorContext('proj-1');
-		expect(result.content.gallery).toEqual(demoContent.gallery);
-		expect(result.content.sectionOrder).toEqual(demoContent.sectionOrder);
+		expect(result.content.gallery).toBeUndefined();
+		expect(result.content.sectionOrder).toBeUndefined();
 	});
 
 	it('returns contentSource=mixed when some keys are from draft and some from published', async () => {
@@ -271,11 +271,11 @@ describe('getInvitationEditorContext', () => {
 		expect(result.contentSource).toBe('published');
 	});
 
-	it('returns contentSource=demo when only demo content is available', async () => {
+	it('returns contentSource=empty when only demo content is available for client invitations', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
 		const result = await getInvitationEditorContext('proj-1');
-		expect(result.contentSource).toBe('demo');
+		expect(result.contentSource).toBe('empty');
 	});
 
 	it('returns contentSource=empty when no content is available at all', async () => {
@@ -379,7 +379,7 @@ describe('hydration edge cases', () => {
 		expect(result.sectionStates.eventTiming).toBe('published');
 	});
 
-	it('inherits eventTiming from demo content when neither draft nor published have it', async () => {
+	it('does not inherit eventTiming from demo for client invitations even when draft and published lack it', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: { ...draft.content },
@@ -400,14 +400,11 @@ describe('hydration edge cases', () => {
 		]);
 
 		const result = await getInvitationEditorContext('proj-1');
-		expect(result.content.eventTiming).toEqual({
-			localDateTime: '2026-12-01T12:00',
-			timeZone: 'America/Cancun',
-		});
-		expect(result.sectionStates.eventTiming).toBe('demo');
+		expect(result.content.eventTiming).toBeUndefined();
+		expect(result.sectionStates.eventTiming).toBe('empty');
 	});
 
-	it('prefers demo content when neither draft nor published have a key', async () => {
+	it('does not fill missing keys from demo for client invitations', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: { title: 'XV Ana' },
@@ -415,14 +412,14 @@ describe('hydration edge cases', () => {
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
 
 		const result = await getInvitationEditorContext('proj-1');
-		expect(result.content.gallery).toEqual(demoContent.gallery);
-		expect(result.content.sectionOrder).toEqual(demoContent.sectionOrder);
-		expect(result.content.location?.ceremony?.venueName).toBe('Demo Venue');
-		expect(result.sectionStates.gallery).toBe('demo');
-		expect(result.sectionStates.location).toBe('demo');
+		expect(result.content.gallery).toBeUndefined();
+		expect(result.content.sectionOrder).toBeUndefined();
+		expect(result.content.location?.ceremony?.venueName).toBeUndefined();
+		expect(result.sectionStates.gallery).toBe('empty');
+		expect(result.sectionStates.location).toBe('empty');
 	});
 
-	it('saves only the targeted section without wiping other hydrated sections', async () => {
+	it('saves only the targeted section preserving existing draft content without bringing in published or demo data', async () => {
 		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
 			...draft,
 			status: 'draft',
@@ -449,18 +446,19 @@ describe('hydration edge cases', () => {
 			.content;
 		expect(savedContent.itinerary).toEqual(value);
 		expect(savedContent.title).toBe('XV Ana');
-		expect(savedContent.gallery).toEqual(published.content.gallery);
-		expect(savedContent.rsvp).toBeDefined();
+		// Gallery and rsvp are not in the persisted draft — they should NOT
+		// appear in saved content even though published content has them.
+		expect(savedContent.gallery).toBeUndefined();
+		expect(savedContent.rsvp).toBeUndefined();
 	});
 
-	it('creates a new draft via upsert when no draft exists, preserving all hydrated sections', async () => {
+	it('creates a new draft via upsert with only the edited section when no draft exists', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
 		(upsertDraft as jest.Mock).mockResolvedValue({
 			id: 'draft-new',
 			invitationId: 'proj-1',
 			submissionId: null,
 			content: {
-				title: 'XV Ana',
 				gallery: { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] },
 			},
 			status: 'draft',
@@ -479,9 +477,10 @@ describe('hydration edge cases', () => {
 			title: 'Galería',
 			items: [{ image: { type: 'internal', key: 'gallery01' }, caption: 'Nueva' }],
 		});
-		expect(upsertCallArg.content.title).toBe(published.content.title);
-		expect(upsertCallArg.content.description).toBe(published.content.description);
-		expect(upsertCallArg.content.sectionOrder).toEqual(published.content.sectionOrder);
+		// No draft existed — baseline was empty. Only the edited section appears.
+		expect(upsertCallArg.content.title).toBeUndefined();
+		expect(upsertCallArg.content.description).toBeUndefined();
+		expect(upsertCallArg.content.sectionOrder).toBeUndefined();
 	});
 
 	it('merges partial draft section data with published to preserve draft event fields and fill missing section copy', async () => {
@@ -520,7 +519,7 @@ describe('hydration edge cases', () => {
 		expect(result.sectionStates.location).toBe('draft');
 	});
 
-	it('fills missing section copy from published before demo', async () => {
+	it('fills missing section copy from published and leaves absent fields empty for client', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
 			...published,
@@ -550,12 +549,12 @@ describe('hydration edge cases', () => {
 
 		// Published version wins over demo since both have it
 		expect(result.content.location?.introEyebrow).toBe('PUBLISHED EYEBROW');
-		// Demo fills in where published is missing
-		expect(result.content.location?.introHeading).toBe('Demo Heading');
+		// Demo is not used for client invitations — field is absent from published
+		expect(result.content.location?.introHeading).toBeUndefined();
 		expect(result.sectionStates.location).toBe('published');
 	});
 
-	it('falls back to demo section copy when both draft and published lack it', async () => {
+	it('does not fall back to demo section copy for client invitations when draft and published lack it', async () => {
 		(findInvitationById as jest.Mock).mockResolvedValue({
 			...invitation,
 			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-enchanted-rose' },
@@ -587,10 +586,10 @@ describe('hydration edge cases', () => {
 
 		const result = await getInvitationEditorContext('proj-1');
 
-		// Demo fills missing section copy
-		expect(result.content.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
-		expect(result.content.location?.introHeading).toBe('Ubicación');
-		expect(result.content.location?.introLede).toBe('Guarda la ruta.');
+		// Demo is not used for client invitations — intro fields absent from published are left empty
+		expect(result.content.location?.introEyebrow).toBeUndefined();
+		expect(result.content.location?.introHeading).toBeUndefined();
+		expect(result.content.location?.introLede).toBeUndefined();
 		// Published ceremony still wins over demo
 		expect(result.content.location?.ceremony?.venueName).toBe('Iglesia P');
 		expect(result.sectionStates.location).toBe('published');

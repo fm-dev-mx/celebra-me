@@ -861,7 +861,19 @@ describe('publishDraft', () => {
 			},
 		]);
 		mockGetProject.mockResolvedValue(baseProject as any);
-		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					...validDraft.content.hero,
+					backgroundImage: {
+						type: 'external',
+						src: 'https://images.example.com/hero.jpg',
+					},
+				},
+			},
+		} as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
