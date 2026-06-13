@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { collections } from '@/content.config';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
+import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -13,6 +14,7 @@ const eventSchema =
 	typeof rawSchema === 'function' ? rawSchema({ image: () => z.string() } as never) : rawSchema;
 
 const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
+const babyShowerDemoRoot = path.resolve(process.cwd(), 'src/content/event-demos/baby-shower');
 
 function getJsonContentFiles(root: string): string[] {
 	return fs
@@ -126,7 +128,7 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				eventType: 'baby-shower',
-				title: 'Baby Shower de Leah Lexa',
+				title: 'Baby Shower de Luna Celeste',
 				theme: {
 					fontFamily: 'serif',
 					preset: 'celestial-blue',
@@ -137,7 +139,7 @@ describe('Event content schema (real contract)', () => {
 					startsAtUtc: '2026-06-21T20:00:00.000Z',
 				},
 				hero: {
-					name: 'Leah Lexa',
+					name: 'Luna Celeste',
 					label: 'Mi Baby Shower',
 					date: '2026-06-21T20:00:00.000Z',
 					backgroundImage: 'https://example.com/hero.jpg',
@@ -146,6 +148,34 @@ describe('Event content schema (real contract)', () => {
 		);
 
 		expect(result.success).toBe(true);
+	});
+
+	it('routes the static baby-shower demo through a fictitious slug only', () => {
+		const fictitiousDemoPath = path.join(babyShowerDemoRoot, 'demo-baby-shower-celestial.json');
+		const leahDemoPath = path.join(babyShowerDemoRoot, 'leah-lexa-baby-shower.json');
+		const babyShowerPreset = DEMO_PRESET_CATALOG.find(
+			(preset) => preset.eventType === 'baby-shower',
+		);
+
+		expect(fs.existsSync(fictitiousDemoPath)).toBe(true);
+		expect(fs.existsSync(leahDemoPath)).toBe(false);
+		expect(babyShowerPreset).toMatchObject({
+			id: 'demo-baby-shower-celestial',
+			displayName: 'Baby Shower — Celestial Demo',
+			previewSlug: 'demo-baby-shower-celestial',
+		});
+	});
+
+	it('keeps real Leah Lexa details out of static baby-shower demo content', () => {
+		const targetFile = path.join(babyShowerDemoRoot, 'demo-baby-shower-celestial.json');
+		const content = fs.readFileSync(targetFile, 'utf8');
+
+		expect(content).toContain('Luna Celeste');
+		expect(content).toContain('Mateo y Valeria');
+		expect(content).toContain('"_assetSlug": "baby-shower-celestial-demo"');
+		expect(content).not.toMatch(
+			/Leah Lexa|Hugo y Fernanda|Guadalupe Proletaria|51975133|Liverpool/,
+		);
 	});
 
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {

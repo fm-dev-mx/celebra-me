@@ -181,9 +181,9 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 		previewSlug: 'demo-cumple-luxury-hacienda',
 	},
 	{
-		id: 'demo-baby-shower-leah-lexa',
+		id: 'demo-baby-shower-celestial',
 		eventType: 'baby-shower',
-		displayName: 'Baby Shower — Leah Lexa',
+		displayName: 'Baby Shower — Celestial Demo',
 		themeId: 'celestial-blue',
 		defaultSections: ['quote', 'family', 'gallery', 'location', 'gifts', 'rsvp', 'thankYou'],
 		supportedBlocks: [...ALL_MVP_BLOCKS],
@@ -197,7 +197,7 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 			'special-messages',
 		],
 		requiredAssets: ['hero', 'family', 'gallery01'],
-		previewSlug: 'leah-lexa-baby-shower',
+		previewSlug: 'demo-baby-shower-celestial',
 	},
 ] as const;
 
