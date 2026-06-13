@@ -8,7 +8,6 @@ import {
 	assertNoProdCredentialsInLocalEnv,
 	fail,
 	loadAppEnv,
-	log,
 	requireLocalSuperAdminConfig,
 	runCommand,
 	runPsql,
@@ -48,18 +47,18 @@ function main(): void {
 
 	const { email, password } = requireLocalSuperAdminConfig(appEnv);
 
-	log('Bootstrap local super admin');
-	log('- Target: local Supabase only');
-	log(`- Email: ${email}`);
+	console.info('Bootstrap local super admin');
+	console.info('- Target: local Supabase only');
+	console.info(`- Email: ${email}`);
 
 	bootstrapLocalAdmin(email, password);
 	assertLoginWorks(appEnv, email, password);
 
-	log('Local super admin bootstrap complete');
-	log('- User exists in local auth.users');
-	log('- raw_app_meta_data.role is super_admin');
-	log('- public.app_user_roles has role = super_admin');
-	log('- Password login succeeded');
+	console.info('Local super admin bootstrap complete');
+	console.info('- User exists in local auth.users');
+	console.info('- raw_app_meta_data.role is super_admin');
+	console.info('- public.app_user_roles has role = super_admin');
+	console.info('- Password login succeeded');
 }
 
 try {

@@ -3,7 +3,6 @@ import {
 	assertProductionDbUrl,
 	createProdBackup,
 	getProdDbUrl,
-	log,
 	redactDbUrl,
 	timestamp,
 } from './db-workflow-lib.ts';
@@ -19,14 +18,14 @@ const backupPath = resolve(
 	`prod-public-${schemaOnly ? 'schema' : 'data'}-${stamp}.sql`,
 );
 
-log('Production backup');
-log(`- PROD_DB_URL source: ${source}`);
-log(`- Target: ${redactDbUrl(prodDbUrl)}`);
-log('- Mode: read-only dump; production will not be mutated');
-log('- Warning: backups contain real customer data and must never be committed');
+console.info('Production backup');
+console.info(`- PROD_DB_URL source: ${source}`);
+console.info(`- Target: ${redactDbUrl(prodDbUrl)}`);
+console.info('- Mode: read-only dump; production will not be mutated');
+console.info('- Warning: backups contain real customer data and must never be committed');
 
 createProdBackup(prodDbUrl, backupPath, schemaOnly);
 
-log('Backup complete');
-log(`- File: ${backupPath}`);
-log('- Keep this file in gitignored storage only');
+console.info('Backup complete');
+console.info(`- File: ${backupPath}`);
+console.info('- Keep this file in gitignored storage only');

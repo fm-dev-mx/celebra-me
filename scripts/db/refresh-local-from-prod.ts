@@ -17,7 +17,6 @@ import {
 	fail,
 	getProdDbUrl,
 	loadAppEnv,
-	log,
 	redactDbUrl,
 	runCommand,
 	runPsql,
@@ -83,11 +82,11 @@ function loadCopySql(): string {
 function printCountTable(label: string, counts: Record<string, number>): void {
 	const entries = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b));
 	const rows = entries.map(([table, count]) => `  ${table}: ${count}`).join('\n');
-	log(`\n${label}:\n${rows}`);
+	console.info(`\n${label}:\n${rows}`);
 }
 
 function runPostRefreshRepairs(): void {
-	log('\n--- Running post-refresh content repairs ---');
+	console.info('\n--- Running post-refresh content repairs ---');
 
 	const migrationsDir = resolve(SCRIPT_DIR, '..', '..', 'supabase', 'migrations');
 	const repairMigrations = [
@@ -99,23 +98,23 @@ function runPostRefreshRepairs(): void {
 	for (const migrationFile of repairMigrations) {
 		const migrationPath = resolve(migrationsDir, migrationFile);
 		if (!existsSync(migrationPath)) {
-			log(`  SKIP: ${migrationFile} not found`);
+			console.info(`  SKIP: ${migrationFile} not found`);
 			continue;
 		}
-		log(`  Applying: ${migrationFile}`);
+		console.info(`  Applying: ${migrationFile}`);
 		// Wrap in single transaction so ON COMMIT DROP temp tables survive
 		// across statements (psql defaults to auto-commit otherwise).
 		const result = runPsql(`BEGIN;\n${readFileSync(migrationPath, 'utf8')}\nCOMMIT;`);
 		if (result.status !== 0) {
-			log(`  WARN: ${migrationFile} exited with status ${result.status}`);
-			if (result.stdout) log(result.stdout);
-			if (result.stderr) log(result.stderr);
+			console.info(`  WARN: ${migrationFile} exited with status ${result.status}`);
+			if (result.stdout) console.info(result.stdout);
+			if (result.stderr) console.info(result.stderr);
 		} else {
-			log(`  OK: ${migrationFile}`);
+			console.info(`  OK: ${migrationFile}`);
 		}
 	}
 
-	log('--- Post-refresh repairs complete ---');
+	console.info('--- Post-refresh repairs complete ---');
 }
 
 interface SetupResult {
@@ -141,10 +140,10 @@ function resolveSetup(): SetupResult {
 		if (!existsSync(dumpPath)) fail(`--reuse-dump file not found: ${dumpPath}`);
 
 		const stamp = timestamp();
-		log('Refresh local DB from production');
-		log('- PRODUCTION CONTACT: SKIPPED (--reuse-dump mode)');
-		log(`- Reusing existing dump: ${dumpPath}`);
-		log('- Local action: destructive reset of local Supabase only');
+		console.info('Refresh local DB from production');
+		console.info('- PRODUCTION CONTACT: SKIPPED (--reuse-dump mode)');
+		console.info(`- Reusing existing dump: ${dumpPath}`);
+		console.info('- Local action: destructive reset of local Supabase only');
 
 		return {
 			isReuse: true,
@@ -168,19 +167,19 @@ function resolveSetup(): SetupResult {
 	);
 	const uuidMapPath = resolve(process.cwd(), '.tmp', 'db', `uuid-map-${stamp}.json`);
 
-	log('Refresh local DB from production');
-	log('- Production access: read-only dump');
-	log('- Local action: destructive reset of local Supabase only');
-	log(`- PROD_DB_URL source: ${source}`);
-	log(`- Production target: ${redactDbUrl(prodDbUrl)}`);
+	console.info('Refresh local DB from production');
+	console.info('- Production access: read-only dump');
+	console.info('- Local action: destructive reset of local Supabase only');
+	console.info(`- PROD_DB_URL source: ${source}`);
+	console.info(`- Production target: ${redactDbUrl(prodDbUrl)}`);
 
-	log('- Capturing production row counts before dump');
+	console.info('- Capturing production row counts before dump');
 	ensureTablesExist(REFRESH_PARITY_TABLES, 'public', prodDbUrl, 'production');
 	const sourceCounts = countTableRows(REFRESH_PARITY_TABLES, 'public', prodDbUrl);
 	printCountTable('Production (source) row counts', sourceCounts);
 
 	createProdBackup(prodDbUrl, dumpPath, false);
-	log(`- Dump created: ${dumpPath}`);
+	console.info(`- Dump created: ${dumpPath}`);
 
 	return { isReuse: false, dumpPath, stagingDumpPath, uuidMapPath, stamp, sourceCounts };
 }
@@ -210,10 +209,10 @@ function cleanupOnFailure(
 		rmSync(dest, { force: true });
 		renameSync(dumpPath, dest);
 	}
-	log(
+	console.info(
 		'WARNING: Refresh failed or validation failed. Diagnostic dumps preserved at: ' + failedDir,
 	);
-	log('WARNING: These files may contain production data (check before committing).');
+	console.info('WARNING: These files may contain production data (check before committing).');
 }
 
 function validateAgainstProduction(sourceCounts: Record<string, number>): void {
@@ -227,7 +226,7 @@ function validateAgainstProduction(sourceCounts: Record<string, number>): void {
 	});
 	if (!parity.ok) {
 		for (const f of parity.failures)
-			log(
+			console.info(
 				`  FAIL parity ${f.table}: source=${f.sourceCount} local=${f.targetCount} (${f.reason})`,
 			);
 		fail(
@@ -247,7 +246,7 @@ async function main(): Promise<void> {
 
 	let refreshSucceeded = false;
 	try {
-		log('- Resetting local Supabase database (local-only destructive action)');
+		console.info('- Resetting local Supabase database (local-only destructive action)');
 		runCommand('supabase', ['db', 'reset', '--local', '--yes']);
 
 		prepareStagingSchema();
@@ -274,7 +273,9 @@ ${loadCopySql()}
 		if (sourceCounts) {
 			validateAgainstProduction(sourceCounts);
 		} else {
-			log('- SKIP: parity validation (no production source counts in --reuse-dump mode)');
+			console.info(
+				'- SKIP: parity validation (no production source counts in --reuse-dump mode)',
+			);
 		}
 
 		writeTextFile(
@@ -294,8 +295,8 @@ ${loadCopySql()}
 			),
 		);
 
-		log('Refresh complete');
-		log(`- UUID report: ${uuidMapPath}`);
+		console.info('Refresh complete');
+		console.info(`- UUID report: ${uuidMapPath}`);
 		refreshSucceeded = true;
 	} finally {
 		if (refreshSucceeded) {

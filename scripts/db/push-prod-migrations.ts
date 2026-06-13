@@ -4,7 +4,6 @@ import {
 	createProdBackup,
 	fail,
 	getProdDbUrl,
-	log,
 	redactDbUrl,
 	requireProductionConfirmation,
 	runCommand,
@@ -15,15 +14,17 @@ async function main(): Promise<void> {
 	const { url: prodDbUrl, source } = getProdDbUrl();
 	const target = assertProductionDbUrl(prodDbUrl);
 
-	log('Production migration workflow');
-	log(`- PROD_DB_URL source: ${source}`);
-	log(`- Target: ${redactDbUrl(prodDbUrl)}`);
-	log('- This is the only approved script in this repo that mutates production');
-	log('- It applies reviewed migrations only; it never restores or pushes local data dumps');
+	console.info('Production migration workflow');
+	console.info(`- PROD_DB_URL source: ${source}`);
+	console.info(`- Target: ${redactDbUrl(prodDbUrl)}`);
+	console.info('- This is the only approved script in this repo that mutates production');
+	console.info(
+		'- It applies reviewed migrations only; it never restores or pushes local data dumps',
+	);
 
 	await requireProductionConfirmation(target.hostname);
 
-	log('Running preflight checks');
+	console.info('Running preflight checks');
 	runCommand('pnpm', ['type-check']);
 	runCommand('pnpm', ['test']);
 	runCommand('pnpm', ['build']);
@@ -35,15 +36,15 @@ async function main(): Promise<void> {
 		'prod',
 		`prod-public-data-before-migrations-${timestamp()}.sql`,
 	);
-	log(`Creating production backup before migrations: ${backupPath}`);
+	console.info(`Creating production backup before migrations: ${backupPath}`);
 	createProdBackup(prodDbUrl, backupPath, false);
 
-	log('Applying pending migrations to production');
+	console.info('Applying pending migrations to production');
 	runCommand('supabase', ['db', 'push', '--db-url', prodDbUrl, '--yes'], { redact: [prodDbUrl] });
 
-	log('Production migration complete');
-	log(`- Backup for rollback/data inspection: ${backupPath}`);
-	log(
+	console.info('Production migration complete');
+	console.info(`- Backup for rollback/data inspection: ${backupPath}`);
+	console.info(
 		'- Rollback note: create a reviewed corrective migration; use the backup only as a protected reference',
 	);
 }

@@ -7,7 +7,6 @@ import {
 	ensureDir,
 	fail,
 	loadAppEnv,
-	log,
 	parseTsv,
 	quoteIdentifier,
 	runPsql,
@@ -94,9 +93,9 @@ function main(): void {
 	ensureDir(outputDir);
 
 	const columnMap = getAllTableColumns(existing);
-	log(`Local WIP backup (${existing.join(', ')})`);
+	console.info(`Local WIP backup (${existing.join(', ')})`);
 	if (missing.length > 0) {
-		log(`Skipped missing optional tables: ${missing.join(', ')}`);
+		console.info(`Skipped missing optional tables: ${missing.join(', ')}`);
 	}
 
 	const header = [
@@ -116,7 +115,7 @@ function main(): void {
 		.join('\n');
 	writeTextFile(outputPath, `${header}${body}`);
 
-	log(`Backup complete: ${outputPath}`);
+	console.info(`Backup complete: ${outputPath}`);
 }
 
 try {

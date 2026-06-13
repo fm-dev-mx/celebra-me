@@ -9,7 +9,6 @@ import {
 	getFirstSuperAdminEmail,
 	getLocalSuperAdminPassword,
 	loadAppEnv,
-	log,
 	parseTsv,
 	REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
 	runPsql,
@@ -238,13 +237,13 @@ order by table_name;
 	);
 
 	const failed = checks.filter((check) => !check.ok);
-	log('Local DB validation');
+	console.info('Local DB validation');
 	for (const check of checks) {
-		log(
+		console.info(
 			`${check.ok ? 'PASS' : 'FAIL'} ${check.name}${check.detail ? ` (${check.detail})` : ''}`,
 		);
 	}
-	log(`Rows: ${rowCounts.map(([table, count]) => `${table}=${count}`).join(', ')}`);
+	console.info(`Rows: ${rowCounts.map(([table, count]) => `${table}=${count}`).join(', ')}`);
 
 	if (failed.length) {
 		fail(`${failed.length} local DB validation check(s) failed.`);

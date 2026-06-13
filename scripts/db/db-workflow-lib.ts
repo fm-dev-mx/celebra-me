@@ -32,10 +32,6 @@ interface RunOptions {
 	throwOnError?: boolean;
 }
 
-export function log(...args: unknown[]): void {
-	console.log(...args);
-}
-
 export function quoteIdentifier(identifier: string): string {
 	return `"${identifier.replaceAll('"', '""')}"`;
 }
