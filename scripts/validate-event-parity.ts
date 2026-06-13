@@ -64,6 +64,25 @@ function loadEnvFile(relativePath: string): void {
 	}
 }
 
+function requireRemoteServiceRoleConfirmation(supabaseUrl: string, scriptName: string): void {
+	let isLocal: boolean;
+	try {
+		const host = new URL(supabaseUrl).hostname.toLowerCase();
+		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+	} catch {
+		isLocal = false;
+	}
+
+	if (isLocal) return;
+
+	const expected = `ALLOW REMOTE SERVICE ROLE ${scriptName}`;
+	if (process.env.CONFIRM_REMOTE_SERVICE_ROLE !== expected) {
+		throw new Error(
+			`${scriptName} refuses to use service role credentials against a remote Supabase target without explicit confirmation. Set CONFIRM_REMOTE_SERVICE_ROLE="${expected}" to continue.`,
+		);
+	}
+}
+
 function normalizeEvent(row: Record<string, unknown>): DbEvent {
 	return {
 		eventType: String(row.event_type || '').trim(),
@@ -202,6 +221,8 @@ Options:
 		}
 		throw new Error(message);
 	}
+
+	requireRemoteServiceRoleConfirmation(supabaseUrl, 'scripts/validate-event-parity.ts');
 
 	let dbEvents: DbEvent[];
 	let publishedSlugList: string[];

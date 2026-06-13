@@ -31,6 +31,27 @@ function loadEnvFile(relativePath) {
 	}
 }
 
+function requireRemoteServiceRoleConfirmation(supabaseUrl, scriptName) {
+	let isLocal;
+	try {
+		const host = new URL(supabaseUrl).hostname.toLowerCase();
+		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+	} catch {
+		isLocal = false;
+	}
+
+	if (isLocal) return;
+
+	const expected = `ALLOW REMOTE SERVICE ROLE ${scriptName}`;
+	if (process.env.CONFIRM_REMOTE_SERVICE_ROLE !== expected) {
+		error(
+			`${scriptName} refuses to use service role credentials against a remote Supabase target without explicit confirmation.`,
+		);
+		error(`Set CONFIRM_REMOTE_SERVICE_ROLE="${expected}" to continue.`);
+		process.exit(1);
+	}
+}
+
 loadEnvFile('.env.local');
 loadEnvFile('.env');
 
@@ -220,6 +241,7 @@ async function main() {
 		error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
 		process.exit(1);
 	}
+	requireRemoteServiceRoleConfirmation(SUPABASE_URL, 'scripts/migrate-real-events.mjs');
 
 	for (const event of EVENT_MAP) {
 		await migrateEvent(event, isDryRun);

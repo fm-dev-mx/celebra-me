@@ -38,6 +38,27 @@ function loadEnvFile(relativePath) {
 	}
 }
 
+function requireRemoteServiceRoleConfirmation(supabaseUrl, scriptName) {
+	let isLocal;
+	try {
+		const host = new URL(supabaseUrl).hostname.toLowerCase();
+		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+	} catch {
+		isLocal = false;
+	}
+
+	if (isLocal) return;
+
+	const expected = `ALLOW REMOTE SERVICE ROLE ${scriptName}`;
+	if (process.env.CONFIRM_REMOTE_SERVICE_ROLE !== expected) {
+		console.error(
+			`ERROR: ${scriptName} refuses to use service role credentials against a remote Supabase target without explicit confirmation.`,
+		);
+		console.error(`Set CONFIRM_REMOTE_SERVICE_ROLE="${expected}" to continue.`);
+		process.exit(1);
+	}
+}
+
 function isPlaceholder(v) {
 	const n = String(v || '')
 		.trim()
@@ -421,13 +442,14 @@ async function main() {
 		);
 		process.exit(1);
 	}
+	requireRemoteServiceRoleConfirmation(dbUrl, 'scripts/data-audit-events-invitations.mjs');
 
 	console.log('╔══════════════════════════════════════════════════════════════════╗');
 	console.log('║  Stage 0  Data Audit: events  invitations              ║');
 	console.log('║  Migration readiness assessment for /dashboard/eventos            ║');
 	console.log('╚══════════════════════════════════════════════════════════════════╝');
 	console.log(`\nStarted: ${new Date().toISOString()}`);
-	console.log(`Environment: ${dbUrl.includes('supabase.co') ? 'Production' : 'Development'}`);
+	console.log(`Environment: ${dbUrl.includes('supabase.co') ? 'Remote Supabase' : 'Local'}`);
 	console.log('\nFetching data from Supabase REST API (read-only)...\n');
 
 	const [events, invitations, published, guestRows, claimRows] = await Promise.all([

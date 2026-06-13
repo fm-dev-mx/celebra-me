@@ -57,6 +57,27 @@ function loadEnvFile(relativePath: string): void {
 	}
 }
 
+function requireRemoteServiceRoleConfirmation(supabaseUrl: string, scriptName: string): void {
+	let isLocal: boolean;
+	try {
+		const host = new URL(supabaseUrl).hostname.toLowerCase();
+		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+	} catch {
+		isLocal = false;
+	}
+
+	if (isLocal) return;
+
+	const expected = `ALLOW REMOTE SERVICE ROLE ${scriptName}`;
+	if (process.env.CONFIRM_REMOTE_SERVICE_ROLE !== expected) {
+		console.error(
+			`ERROR: ${scriptName} refuses to use service role credentials against a remote Supabase target without explicit confirmation.`,
+		);
+		console.error(`Set CONFIRM_REMOTE_SERVICE_ROLE="${expected}" to continue.`);
+		process.exit(1);
+	}
+}
+
 loadEnvFile('.env.production.local');
 loadEnvFile('.env.prod.local');
 loadEnvFile('.env.local');
@@ -322,16 +343,16 @@ function isExecutedDirectly(): boolean {
 }
 
 if (isExecutedDirectly()) {
-	const SUPABASE_URL =
-		process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || process.env.PROD_DB_URL;
+	const SUPABASE_URL = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
 	const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 	if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 		console.error('❌ Missing required environment variables:');
-		console.error('   - SUPABASE_URL, PUBLIC_SUPABASE_URL, or PROD_DB_URL');
+		console.error('   - SUPABASE_URL or PUBLIC_SUPABASE_URL');
 		console.error('   - SUPABASE_SERVICE_ROLE_KEY');
 		process.exitCode = 2;
 	} else {
+		requireRemoteServiceRoleConfirmation(SUPABASE_URL, 'scripts/verify-icon-migration.ts');
 		const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 		main(supabase).catch((error) => {
 			console.error('❌ Unexpected error:', error);
