@@ -180,6 +180,25 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 		requiredAssets: [...COMMON_REQUIRED_ASSETS, 'gallery01', 'gallery02'],
 		previewSlug: 'demo-cumple-luxury-hacienda',
 	},
+	{
+		id: 'demo-baby-shower-leah-lexa',
+		eventType: 'baby-shower',
+		displayName: 'Baby Shower — Leah Lexa',
+		themeId: 'celestial-blue',
+		defaultSections: ['quote', 'family', 'gallery', 'location', 'gifts', 'rsvp', 'thankYou'],
+		supportedBlocks: [...ALL_MVP_BLOCKS],
+		recommendedBlocks: [
+			'event-details',
+			'main-people',
+			'date-locations',
+			'photos',
+			'rsvp-config',
+			'gifts',
+			'special-messages',
+		],
+		requiredAssets: ['hero', 'family', 'gallery01'],
+		previewSlug: 'leah-lexa-baby-shower',
+	},
 ] as const;
 
 export function findDemoPreset(id: string): DemoPreset | undefined {
