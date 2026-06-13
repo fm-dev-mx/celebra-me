@@ -6,6 +6,8 @@ all production database work as high risk.
 ## Source Hierarchy
 
 - This file is the short operational contract and decision tree for agents.
+- [`docs/env-workflow.md`](../../docs/env-workflow.md) is the canonical environment source hierarchy
+  and variable category guide.
 - [`manual-sql-manifest.md`](manual-sql-manifest.md) defines the required manifest for manual
   production SQL patch files.
 - [`docs/database-workflow.md`](../../docs/database-workflow.md) is the full human runbook.

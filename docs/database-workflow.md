@@ -14,6 +14,9 @@ Local -> Production: allowed only for reviewed migrations.
 
 ## Environments
 
+See [`env-workflow.md`](env-workflow.md) for the canonical environment source hierarchy, variable
+categories, and precedence notes.
+
 - `.env` is for local Supabase and should point to `http://127.0.0.1:54321`.
 - Local DB workflow scripts require PostgreSQL client tools. `psql` must be installed and available
   on PATH; verify with `psql --version`.

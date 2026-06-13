@@ -35,7 +35,8 @@ pnpm dev
 ```
 
 Use `.env` for local Supabase by default. Create `.env.local` only for local overrides, and never
-point `.env.local` at production.
+point `.env.local` at production. See [`docs/env-workflow.md`](docs/env-workflow.md) for the
+canonical environment workflow.
 
 ## Core Scripts
 
@@ -154,7 +155,8 @@ production.
 can only be mutated via `pnpm db:prod:migrate`.
 
 See [`docs/database-workflow.md`](docs/database-workflow.md) for the full operational runbook,
-command details, troubleshooting, and production safety rules.
+command details, troubleshooting, and production safety rules. Environment source hierarchy and
+variable categories live in [`docs/env-workflow.md`](docs/env-workflow.md).
 
 ## Documentation
 
