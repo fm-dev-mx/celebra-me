@@ -158,13 +158,13 @@ interface MismatchRow {
 
 function printMismatch(title: string, rows: MismatchRow[]): void {
 	if (rows.length === 0) {
-		console.log(`- ${title}: 0`);
+		console.info(`- ${title}: 0`);
 		return;
 	}
 
-	console.log(`- ${title}: ${rows.length}`);
+	console.info(`- ${title}: ${rows.length}`);
 	for (const row of rows) {
-		console.log(
+		console.info(
 			`  • ${row.eventType}/${row.slug}${row.file ? ` (content: ${row.file})` : ''}${row.status ? ` [${row.status}]` : ''}`,
 		);
 	}
@@ -182,7 +182,7 @@ async function main(): Promise<void> {
 	});
 
 	if (values.help) {
-		console.log(`
+		console.info(`
 Validate routable slug uniqueness and DB/published content parity.
 
 Usage:
@@ -251,9 +251,9 @@ Options:
 		(event) => !publishedSlugs.has(entryKey(event.eventType, event.slug)),
 	);
 
-	console.log('Event parity report');
-	console.log('===================');
-	console.log(`DB events considered: ${filteredDbEvents.length}`);
+	console.info('Event parity report');
+	console.info('===================');
+	console.info(`DB events considered: ${filteredDbEvents.length}`);
 
 	printMismatch('DB events without published content', missingInContent as MismatchRow[]);
 
@@ -262,7 +262,7 @@ Options:
 		return;
 	}
 
-	console.log('Parity validation passed.');
+	console.info('Parity validation passed.');
 }
 
 main().catch((error: unknown) => {
