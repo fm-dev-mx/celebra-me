@@ -3,7 +3,7 @@
     "isDemo": true,
     "title": "Baby Shower de Luna Celeste",
     "description": "Demo ficticio de Baby Shower para mostrar una experiencia celestial en tonos pastel, nubes suaves y una narrativa tierna reutilizable.",
-    "_assetSlug": "baby-shower-celestial-demo",
+    "_assetSlug": "demo-baby-shower-celestial",
     "theme": {
         "fontFamily": "serif",
         "preset": "celestial-blue"

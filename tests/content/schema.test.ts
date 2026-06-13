@@ -28,6 +28,15 @@ function getJsonContentFiles(root: string): string[] {
 		.map((entry) => path.join(entry.parentPath, entry.name));
 }
 
+function forEachContentFile(fn: (file: string) => void): void {
+	for (const contentRoot of contentRoots) {
+		const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
+		for (const file of files) {
+			fn(file);
+		}
+	}
+}
+
 function createMinimalEvent(overrides = {}) {
 	return {
 		eventType: 'xv',
@@ -56,46 +65,37 @@ function createMinimalEvent(overrides = {}) {
 
 describe('Event content schema (real contract)', () => {
 	it('validates all real event content files', () => {
-		for (const contentRoot of contentRoots) {
-			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
-			for (const file of files) {
-				const raw = fs.readFileSync(file, 'utf8');
-				const parsed = JSON.parse(raw);
-				const result = eventSchema.safeParse(parsed);
-				if (!result.success) {
-					throw new Error(`${file}: ${JSON.stringify(result.error.issues, null, 2)}`);
-				}
-				expect(result.success).toBe(true);
+		forEachContentFile((file) => {
+			const raw = fs.readFileSync(file, 'utf8');
+			const parsed = JSON.parse(raw);
+			const result = eventSchema.safeParse(parsed);
+			if (!result.success) {
+				throw new Error(`${file}: ${JSON.stringify(result.error.issues, null, 2)}`);
 			}
-		}
+			expect(result.success).toBe(true);
+		});
 	});
 
 	it('keeps deprecated theme color fields out of real event content files', () => {
-		for (const contentRoot of contentRoots) {
-			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
-			for (const file of files) {
-				const raw = fs.readFileSync(file, 'utf8');
-				const parsed = JSON.parse(raw);
-				expect(parsed.theme?.primaryColor).toBeUndefined();
-				expect(parsed.theme?.accentColor).toBeUndefined();
-			}
-		}
+		forEachContentFile((file) => {
+			const raw = fs.readFileSync(file, 'utf8');
+			const parsed = JSON.parse(raw);
+			expect(parsed.theme?.primaryColor).toBeUndefined();
+			expect(parsed.theme?.accentColor).toBeUndefined();
+		});
 	});
 
 	it('keeps raw hex envelope palette values out of real event content files', () => {
-		for (const contentRoot of contentRoots) {
-			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
-			for (const file of files) {
-				const raw = fs.readFileSync(file, 'utf8');
-				const parsed = JSON.parse(raw);
-				const palette = parsed.envelope?.closedPalette ?? {};
-				expect(
-					Object.values(palette).some(
-						(value) => typeof value === 'string' && value.startsWith('#'),
-					),
-				).toBe(false);
-			}
-		}
+		forEachContentFile((file) => {
+			const raw = fs.readFileSync(file, 'utf8');
+			const parsed = JSON.parse(raw);
+			const palette = parsed.envelope?.closedPalette ?? {};
+			expect(
+				Object.values(palette).some(
+					(value) => typeof value === 'string' && value.startsWith('#'),
+				),
+			).toBe(false);
+		});
 	});
 
 	it('accepts all theme presets from ThemeContract', () => {
@@ -172,7 +172,7 @@ describe('Event content schema (real contract)', () => {
 
 		expect(content).toContain('Luna Celeste');
 		expect(content).toContain('Mateo y Valeria');
-		expect(content).toContain('"_assetSlug": "baby-shower-celestial-demo"');
+		expect(content).toContain('"_assetSlug": "demo-baby-shower-celestial"');
 		expect(content).not.toMatch(
 			/Leah Lexa|Hugo y Fernanda|Guadalupe Proletaria|51975133|Liverpool/,
 		);

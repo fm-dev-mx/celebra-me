@@ -150,7 +150,7 @@ describe('adaptEvent', () => {
 				eventType: 'baby-shower',
 				isDemo: true,
 				title: 'Baby Shower de Luna Celeste',
-				_assetSlug: 'baby-shower-celestial-demo',
+				_assetSlug: 'demo-baby-shower-celestial',
 				theme: { preset: 'celestial-blue' },
 				hero: {
 					name: 'Luna Celeste',
