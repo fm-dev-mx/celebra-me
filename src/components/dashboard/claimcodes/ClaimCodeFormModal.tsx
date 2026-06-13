@@ -1,6 +1,7 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import type { CreateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
+import { EVENT_TYPE_LABELS } from '@/lib/intake/labels';
 
 interface ProjectOption {
 	id: string;
@@ -14,14 +15,6 @@ interface ClaimCodeFormModalProps {
 	loading: boolean;
 	onCreate: (payload: CreateClaimCodeDTO) => Promise<void>;
 }
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-	xv: 'XV años',
-	boda: 'Boda',
-	bautizo: 'Bautizo',
-	cumple: 'Cumpleaños',
-	'baby-shower': 'Baby Shower',
-};
 
 const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({
 	invitations,
