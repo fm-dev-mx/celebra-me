@@ -23,11 +23,13 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isLocalSupabaseUrl } from '../db/_shared.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const ENV_PATH = path.join(PROJECT_ROOT, '.env.local');
+
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
 
 // ── Load .env.local ──────────────────────────────────────────────────
@@ -59,12 +61,8 @@ if (!supabaseUrl || !serviceRoleKey) {
 }
 
 // ── Environment guard ────────────────────────────────────────────────
-const PRODUCTION_PATTERNS = ['supabase.co', 'project.dev', 'prod'];
-const isProduction = PRODUCTION_PATTERNS.some((p) => supabaseUrl.includes(p));
-if (isProduction) {
-	console.error(
-		'ERROR: SUPABASE_URL appears to point to a remote Supabase target. Aborting to prevent data contamination.',
-	);
+if (!isLocalSupabaseUrl(supabaseUrl)) {
+	console.error('ERROR: SUPABASE_URL must point to local Supabase for this dev seed script.');
 	process.exit(1);
 }
 

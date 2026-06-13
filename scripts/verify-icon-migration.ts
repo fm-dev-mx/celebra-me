@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import type { IconName } from '../src/lib/icons/icon-catalog';
 import { isIconName } from '../src/lib/icons/icon-catalog';
+import { isLocalSupabaseUrl } from './db/db-workflow-lib';
 
 interface TableConfig {
 	table: string;
@@ -58,15 +59,7 @@ function loadEnvFile(relativePath: string): void {
 }
 
 function requireRemoteServiceRoleConfirmation(supabaseUrl: string, scriptName: string): void {
-	let isLocal: boolean;
-	try {
-		const host = new URL(supabaseUrl).hostname.toLowerCase();
-		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
-	} catch {
-		isLocal = false;
-	}
-
-	if (isLocal) return;
+	if (isLocalSupabaseUrl(supabaseUrl)) return;
 
 	const expected = `ALLOW REMOTE SERVICE ROLE ${scriptName}`;
 	if (process.env.CONFIRM_REMOTE_SERVICE_ROLE !== expected) {
@@ -307,7 +300,7 @@ async function main(supabase: SupabaseClient) {
 		console.info('   - Published content: ✓');
 		console.info('   - Draft content: ✓');
 		console.info('\n🎉 Migration verification complete.');
-		process.exitCode = 0;
+		process.exit(0);
 	} else {
 		console.info('❌ FAILURE: Found legacy icon names in database\n');
 
@@ -334,7 +327,7 @@ async function main(supabase: SupabaseClient) {
 		console.info(
 			'   Migration file: supabase/migrations/20260607211553_backfill_legacy_itinerary_icons_and_ayrin_location.sql',
 		);
-		process.exitCode = 1;
+		process.exit(1);
 	}
 }
 
@@ -343,20 +336,20 @@ function isExecutedDirectly(): boolean {
 }
 
 if (isExecutedDirectly()) {
-	const SUPABASE_URL = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
+	const SUPABASE_URL = process.env.SUPABASE_URL;
 	const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 	if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 		console.error('❌ Missing required environment variables:');
-		console.error('   - SUPABASE_URL or PUBLIC_SUPABASE_URL');
+		console.error('   - SUPABASE_URL');
 		console.error('   - SUPABASE_SERVICE_ROLE_KEY');
-		process.exitCode = 2;
+		process.exit(2);
 	} else {
 		requireRemoteServiceRoleConfirmation(SUPABASE_URL, 'scripts/verify-icon-migration.ts');
 		const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 		main(supabase).catch((error) => {
 			console.error('❌ Unexpected error:', error);
-			process.exitCode = 2;
+			process.exit(2);
 		});
 	}
 }

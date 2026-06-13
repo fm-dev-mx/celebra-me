@@ -165,6 +165,15 @@ export function assertProductionDbUrl(rawUrl: string): URL {
 	return url;
 }
 
+export function isLocalSupabaseUrl(url: string): boolean {
+	try {
+		const host = new URL(url).hostname.toLowerCase();
+		return ['localhost', '127.0.0.1', '::1'].includes(host);
+	} catch {
+		return false;
+	}
+}
+
 export function assertAppEnvIsLocal(appEnv = loadAppEnv()): void {
 	const supabaseUrl = appEnv.SUPABASE_URL;
 	const publicSupabaseUrl = appEnv.PUBLIC_SUPABASE_URL;

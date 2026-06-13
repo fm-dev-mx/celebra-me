@@ -1,9 +1,18 @@
+import { isLocalSupabaseUrl } from './_shared.mjs';
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const invitationId = process.argv[2];
 
 if (!supabaseUrl || !serviceRoleKey || !invitationId) {
 	console.error('Missing required arguments');
+	process.exit(1);
+}
+
+if (!isLocalSupabaseUrl(supabaseUrl)) {
+	console.error(
+		'Refusing to use service-role credentials against a remote Supabase API. SUPABASE_URL must be a local URL.',
+	);
 	process.exit(1);
 }
 
