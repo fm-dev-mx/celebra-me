@@ -55,10 +55,10 @@ async function loadValidatedLocalDemo(input: {
 		? await input.loadLocalDemo()
 		: await loadLocalDemoByIdentity(input.eventType, input.slug);
 	const result = validateLocalContent(raw);
-	if (!result.valid) {
+	if (!result) {
 		throw new ApiError(422, 'schema_mismatch', 'El contenido local del demo no es válido.');
 	}
-	return result.content as Record<string, unknown>;
+	return result;
 }
 
 async function loadLocalDemoByIdentity(

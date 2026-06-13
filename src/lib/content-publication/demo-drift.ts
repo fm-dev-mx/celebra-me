@@ -58,26 +58,10 @@ function summarize(items: DemoDriftItem[]): Record<DemoDriftStatus, number> {
 }
 
 export function resolveSourceEnvironment(): SourceEnvironment {
-	const vercelEnv = typeof process !== 'undefined' ? process.env?.VERCEL_ENV : undefined;
-	if (vercelEnv === 'production') return 'production';
-	if (vercelEnv === 'preview') return 'preview';
-
-	let isDev = false;
-	try {
-		const getMetaEnv = new Function('return import.meta.env');
-		const metaEnv = getMetaEnv();
-		if (metaEnv?.DEV) {
-			isDev = true;
-		}
-	} catch {
-		const globalImport = (globalThis as any).import;
-		if (globalImport?.meta?.env?.DEV) {
-			isDev = true;
-		}
-	}
-
-	if (isDev || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
-		return 'local';
+	if (typeof process !== 'undefined') {
+		if (process.env?.VERCEL_ENV === 'production') return 'production';
+		if (process.env?.VERCEL_ENV === 'preview') return 'preview';
+		if (process.env?.NODE_ENV === 'development') return 'local';
 	}
 	return 'unknown';
 }
@@ -93,14 +77,13 @@ export async function loadCanonicalDemoContent(): Promise<LocalDemoMap> {
 	return result;
 }
 
-export function validateLocalContent(content: Record<string, unknown> | undefined): {
-	valid: boolean;
-	content: Record<string, unknown> | null;
-} {
-	if (!content) return { valid: false, content: null };
+export function validateLocalContent(
+	content: Record<string, unknown> | undefined,
+): Record<string, unknown> | null {
+	if (!content) return null;
 	const parsed = eventContentSchema.safeParse(content);
-	if (!parsed.success) return { valid: false, content: null };
-	return { valid: true, content: parsed.data as Record<string, unknown> };
+	if (!parsed.success) return null;
+	return parsed.data as Record<string, unknown>;
 }
 
 function publishedMap(rows: PublishedInvitationContent[]): Map<string, PublishedInvitationContent> {
@@ -119,19 +102,19 @@ function buildItem(params: {
 }): DemoDriftItem {
 	const local = validateLocalContent(params.localContent);
 	const prod = params.prodRow;
-	const localHash = local.valid && local.content ? hashContent(local.content) : null;
+	const localHash = local ? hashContent(local) : null;
 	const prodHash = prod ? hashContent(prod.content) : null;
 	const status = classifyDemoDriftStatus({
 		hasLocal: !!params.localContent,
 		hasProd: !!prod,
-		localValid: params.localContent ? local.valid : undefined,
+		localValid: params.localContent ? !!local : undefined,
 		prodIsDemo: prod?.isDemo ?? null,
 		localHash,
 		prodHash,
 	});
 	const diff =
-		local.content && prod?.content && status !== 'unsafe_target'
-			? diffContent(prod.content, local.content)
+		local && prod?.content && status !== 'unsafe_target'
+			? diffContent(prod.content, local)
 			: { changedPaths: [], examples: [] };
 
 	return {
