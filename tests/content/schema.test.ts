@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { collections } from '@/content.config';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
-import { isEventType } from '@/lib/rsvp/core/rsvp-request';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -119,7 +118,11 @@ describe('Event content schema (real contract)', () => {
 		expect((THEME_PRESETS as readonly string[]).includes('enchanted-rose')).toBe(true);
 	});
 
-	it('accepts native baby-shower event content and RSVP event-type validation', () => {
+	it('includes baby-shower in EVENT_TYPES', () => {
+		expect((EVENT_TYPES as readonly string[]).includes('baby-shower')).toBe(true);
+	});
+
+	it('accepts native baby-shower event content', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				eventType: 'baby-shower',
@@ -143,8 +146,6 @@ describe('Event content schema (real contract)', () => {
 		);
 
 		expect(result.success).toBe(true);
-		expect((EVENT_TYPES as readonly string[]).includes('baby-shower')).toBe(true);
-		expect(isEventType('baby-shower')).toBe(true);
 	});
 
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {

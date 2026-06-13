@@ -2,11 +2,12 @@ import { render, act } from '@testing-library/react';
 import React from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
+import type { EventType } from '@/lib/theme/theme-contract';
 
 function createTestHarness(
 	overrides: Partial<{
 		guestCap: number;
-		eventType: 'xv' | 'boda' | 'bautizo' | 'cumple' | 'baby-shower';
+		eventType: EventType;
 		eventSlug: string;
 		accessMode: 'personalized-only' | 'hybrid';
 		prefersReducedMotion: boolean;
