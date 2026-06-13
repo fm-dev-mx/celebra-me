@@ -4,7 +4,7 @@
 -- 1. A real owner_user_id has been selected and substituted below.
 -- 2. supabase/migrations/20260612000000_add_baby_shower_event_type.sql has been applied.
 -- 3. The operator has confirmed this route should be published from DB content:
---    /baby-shower/leah-lexa-baby-shower
+--    /baby-shower/leah-lexa
 --
 -- This script is intentionally guarded and transactional. It creates or reuses
 -- only the intended Leah Lexa invitation rows and refuses to overwrite unrelated
@@ -17,7 +17,7 @@ declare
   -- REQUIRED: replace this placeholder with the invitation owner's auth.users.id.
   v_owner_user_id uuid := null::uuid;
 
-  v_slug constant text := 'leah-lexa-baby-shower';
+  v_slug constant text := 'leah-lexa';
   v_event_type constant text := 'baby-shower';
   v_title constant text := 'Baby Shower de Leah Lexa';
   v_base_demo_id constant text := 'demo-baby-shower-celestial';
@@ -82,7 +82,6 @@ begin
       'defaultSections', jsonb_build_array('quote', 'family', 'gallery', 'location', 'gifts', 'rsvp', 'thankYou'),
       'supportedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'music', 'gifts', 'special-messages'),
       'recommendedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'gifts', 'special-messages'),
-      'requiredAssets', jsonb_build_array('hero', 'family', 'gallery01'),
       'previewSlug', 'demo-baby-shower-celestial'
     );
 
@@ -192,7 +191,7 @@ begin
       'name', 'Leah Lexa',
       'label', 'Mi Baby Shower',
       'date', '2026-06-21T20:00:00.000Z',
-      'backgroundImage', 'hero'
+      'backgroundImage', 'https://images.unsplash.com/photo-1518893883800-45cd0954574b?w=1200&q=80'
     ),
     'quote', jsonb_build_object(
       'text', 'Los tiempos de Dios son perfectos, y Dios les dio la dicha a mis papis de hacer crecer nuestra familia.',
@@ -204,7 +203,6 @@ begin
         'mother', 'Fernanda'
       ),
       'parentsOrder', 'father-first',
-      'featuredImage', 'family',
       'focalPoint', '50% 50%',
       'labels', jsonb_build_object(
         'sectionTitle', 'Mis papis',
@@ -219,7 +217,6 @@ begin
       'subtitle', 'Ellos también me esperan con mucho amor y están listos para recibirme en casa.',
       'items', jsonb_build_array(
         jsonb_build_object(
-          'image', 'gallery01',
           'caption', 'Imagen provisional de referencia. Reemplazar por assets originales del cliente antes de publicación final.'
         )
       )
@@ -282,7 +279,8 @@ begin
       'disabled', false,
       'sealStyle', 'wax',
       'sealIcon', 'monogram',
-      'sealInitials', 'L',
+      'sealInitials', 'LL',
+      'sealVariant', 'premium-rose',
       'microcopy', 'Toca para abrir mi invitación',
       'documentLabel', 'Baby Shower',
       'stampText', 'Leah Lexa',
@@ -295,7 +293,6 @@ begin
     ),
     'sharing', jsonb_build_object(
       'whatsappTemplate', 'Hola {name}, soy Leah Lexa. Te comparto la invitación a mi Baby Shower: {inviteUrl}',
-      'ogImage', 'hero',
       'ogDescription', 'Acompáñame en mi Baby Shower el domingo, 21 de junio de 2026, a las 2:00 PM.'
     )
   );
