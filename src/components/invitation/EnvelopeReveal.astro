@@ -1,6 +1,7 @@
 ---
 import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.astro';
 import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	type EnvelopeSealIcon,
 	type RevealCardData,
@@ -11,6 +12,8 @@ interface Props {
 	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 	sealIcon?: EnvelopeSealIcon;
 	sealInitials?: string;
+	sealVariant?: 'premium-rose';
+	sealImage?: ImageAsset;
 	microcopy: string;
 	documentLabel?: string;
 	stampText?: string;
@@ -27,6 +30,8 @@ const {
 	sealStyle,
 	sealIcon = 'monogram',
 	sealInitials,
+	sealVariant,
+	sealImage,
 	microcopy,
 	documentLabel,
 	stampText,
@@ -34,11 +39,9 @@ const {
 	eventSlug,
 	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
-	audioUrl = '',
+	audioUrl,
 	card,
 } = Astro.props;
-
-const isDev = import.meta.env.DEV;
 
 const envelopeDisplay = card.venueName
 	? `${card.details.split(' • ')[0]} • ${card.venueName}`
@@ -49,8 +52,9 @@ const envelopeDisplay = card.venueName
 	class="envelope-wrapper"
 	data-event-slug={eventSlug}
 	data-variant={variant}
-	data-audio-url={audioUrl}
-	data-dev-skip={String(isDev)}
+	data-seal-variant={sealVariant || ''}
+	data-audio-url={audioUrl || ''}
+	data-dev-skip={String(import.meta.env.DEV)}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
@@ -81,11 +85,21 @@ const envelopeDisplay = card.venueName
 					aria-label="Abrir sobre de la invitación"
 				>
 					<div class="envelope-seal-button__visual">
-						<SealIcon
-							sealIcon={sealIcon}
-							sealInitials={sealInitials}
-							class="seal-icon"
-						/>
+						{
+							sealImage ? (
+								<img
+									src={typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src}
+									alt={sealInitials || ''}
+									class="seal-icon seal-icon--image"
+								/>
+							) : (
+								<SealIcon
+									sealIcon={sealIcon}
+									sealInitials={sealInitials}
+									class="seal-icon"
+								/>
+							)
+						}
 					</div>
 					<div class="envelope-seal-button__pulse"></div>
 					<span class="envelope-tooltip" data-envelope-tooltip hidden>
@@ -140,10 +154,7 @@ const envelopeDisplay = card.venueName
 			const invitationRoot = this.closest('.event-theme-wrapper[data-event-slug]');
 			if (!invitationRoot) return;
 
-			const isDemoInvitation =
-				invitationRoot instanceof HTMLElement
-					? invitationRoot.dataset.isDemo === 'true'
-					: false;
+			const isDemoInvitation = (invitationRoot as HTMLElement).dataset.isDemo === 'true';
 			const devSkipEnabled = this.dataset.devSkip === 'true';
 
 			const manager = new RevealManager({
@@ -201,8 +212,6 @@ const envelopeDisplay = card.venueName
 			openButton?.addEventListener('click', (event) => {
 				event.stopPropagation();
 				event.preventDefault();
-
-				if (hasRevealed) return;
 
 				clearTimeout(tooltipTimeout);
 				if (tooltip instanceof HTMLElement) tooltip.hidden = true;

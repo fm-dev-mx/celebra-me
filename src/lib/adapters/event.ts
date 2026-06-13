@@ -198,7 +198,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 }
 
 function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
-	const { data, normalizedPreset } = context;
+	const { data, eventSlug, normalizedPreset } = context;
 
 	if (!data.envelope || data.envelope.disabled) return { enabled: false };
 
@@ -208,6 +208,11 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			sealStyle: data.envelope.sealStyle,
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
+			sealVariant: data.envelope.sealVariant,
+			sealImage:
+				data.envelope.sealVariant === 'premium-rose'
+					? resolveAsset(eventSlug, 'sealImage', data.title)
+					: undefined,
 			microcopy: data.envelope.microcopy,
 			documentLabel: data.envelope.documentLabel,
 			stampText: data.envelope.stampText,
@@ -243,7 +248,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 	if (!data.interludes) return [];
 
 	return data.interludes
-		.map((interlude: InterludeInput) => {
+		.map((interlude: InterludeInput): Interlude | null => {
 			const resolvedImage = resolveAsset(eventSlug, interlude.image, data.title);
 			if (!resolvedImage) {
 				console.warn(
@@ -261,7 +266,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				lightY: interlude.lightY,
 				overlayOpacity: interlude.overlayOpacity,
 				image: resolvedImage,
-			} as Interlude;
+			};
 		})
 		.filter((i: Interlude | null): i is Interlude => i !== null);
 }
@@ -311,15 +316,19 @@ function formatVenueLocation(
 
 function resolveVenueData(
 	eventSlug: string,
-	venue:
-		| EventContentEntry['data']['location']['ceremony']
-		| EventContentEntry['data']['location']['reception'],
+	venue: NonNullable<EventContentEntry['data']['location']>['ceremony'],
 	title: string,
 ) {
 	if (!venue) return undefined;
+	const imageSource =
+		typeof venue.image === 'object' && venue.image !== null
+			? venue.image
+			: typeof venue.image === 'string'
+				? venue.image
+				: undefined;
 	return {
 		...venue,
-		image: resolveAsset(eventSlug, venue.image as string | AssetSource, title),
+		image: resolveAsset(eventSlug, imageSource, title),
 	};
 }
 
@@ -329,23 +338,27 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
 
-	const rawVenues = data.location.venues as Array<Record<string, unknown>> | undefined;
+	const rawVenues = data.location.venues;
 	const hasVenues = rawVenues !== undefined;
-	const venues: VenueEntry[] | undefined = rawVenues?.map((v) => ({
-		id: v.id as string | undefined,
-		type: v.type as string | undefined,
-		label: v.label as string | undefined,
-		isVisible: v.isVisible as boolean | undefined,
-		sortOrder: v.sortOrder as number | undefined,
-		venueEvent: v.venueEvent as string,
-		venueName: v.venueName as string,
-		address: v.address as string,
-		city: v.city as string | undefined,
-		date: v.date as string,
-		time: v.time as string,
-		mapUrl: v.mapUrl as string | undefined,
-		image: resolveAsset(eventSlug, v.image as string | AssetSource, data.title),
-	}));
+	const venues: VenueEntry[] | undefined = (
+		rawVenues as Array<Record<string, unknown>> | undefined
+	)?.map((v) => {
+		return {
+			id: v.id as string | undefined,
+			type: v.type as string | undefined,
+			label: v.label as string | undefined,
+			isVisible: v.isVisible as boolean | undefined,
+			sortOrder: v.sortOrder as number | undefined,
+			venueEvent: v.venueEvent as string,
+			venueName: v.venueName as string,
+			address: v.address as string,
+			city: v.city as string | undefined,
+			date: v.date as string,
+			time: v.time as string,
+			mapUrl: v.mapUrl as string | undefined,
+			image: resolveAsset(eventSlug, v.image as string | AssetSource, data.title),
+		};
+	});
 
 	return {
 		...(hasVenues

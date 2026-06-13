@@ -47,7 +47,7 @@ export interface Coordinate {
 	lng: number;
 }
 
-export interface Ceremony {
+export interface VenueBase {
 	venueEvent: string;
 	venueName: string;
 	address: string;
@@ -69,39 +69,15 @@ export interface ItineraryItem {
 	time: string;
 }
 
-export interface VenueEntry {
+export interface VenueEntry extends VenueBase {
 	id?: string;
 	type?: string;
 	label?: string;
 	isVisible?: boolean;
 	sortOrder?: number;
-	venueEvent: string;
-	venueName: string;
-	address: string;
-	city?: string;
-	date: string;
-	time: string;
-	mapUrl?: string;
-	appleMapsUrl?: string;
-	googleMapsUrl?: string;
-	wazeUrl?: string;
-	image?: ImageAsset;
-	coordinates?: Coordinate;
 }
 
-export interface Reception {
-	venueEvent: string;
-	venueName: string;
-	address: string;
-	city?: string;
-	date: string;
-	time: string;
-	mapUrl?: string;
-	appleMapsUrl?: string;
-	googleMapsUrl?: string;
-	wazeUrl?: string;
-	image?: ImageAsset;
-	coordinates?: Coordinate;
+export interface Reception extends VenueBase {
 	itinerary?: ItineraryItem[];
 }
 
@@ -166,6 +142,8 @@ export interface EnvelopeViewModel {
 		sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 		sealIcon?: EnvelopeSealIcon;
 		sealInitials?: string;
+		sealVariant?: 'premium-rose';
+		sealImage?: ImageAsset;
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;
@@ -226,7 +204,7 @@ export interface InvitationViewModel {
 			variant?: CountdownVariant;
 		};
 		location?: {
-			ceremony?: Ceremony;
+			ceremony?: VenueBase;
 			reception?: Reception;
 			venues?: VenueEntry[];
 			indications?: Indication[];

@@ -675,3 +675,131 @@
 		transform: scale(1.32);
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Premium rose wax seal variant — baby-shower-specific large rose seal
+// over the envelope flap intersection.
+// Activated via content config: "sealVariant": "premium-rose"
+// ---------------------------------------------------------------------------
+.envelope-wrapper[data-seal-variant='premium-rose'] {
+	--env-seal-size: clamp(8rem, 34vw, 9.75rem);
+	--env-container-width: min(96vw, 520px);
+	--env-container-ratio: 1.2;
+	--env-container-max-height: 92svh;
+
+	.envelope-zone--seal {
+		position: absolute;
+		top: 48%;
+		left: 50%;
+		z-index: 30;
+		transform: translate(-50%, -50%);
+		min-height: 0;
+	}
+
+	.envelope-seal-button__visual {
+		width: var(--env-seal-size);
+		height: var(--env-seal-size);
+		background: none;
+		border: none;
+		box-shadow: none;
+		padding: 0;
+		overflow: hidden;
+		border-radius: 50%;
+
+		.seal-icon {
+			width: 50%;
+			height: 50%;
+			color: inherit;
+			filter: none;
+		}
+
+		.seal-icon--image {
+			display: block;
+			object-fit: contain;
+			border-radius: 50%;
+		}
+	}
+
+	.envelope-seal-button {
+		background: none;
+		border: none;
+
+		&:focus-visible {
+			outline-color: rgb(216 27 96);
+		}
+	}
+
+	.envelope-seal-button__pulse {
+		border-color: color-mix(in srgb, rgb(216 27 96) 55%, transparent);
+	}
+
+	.envelope-tooltip {
+		display: none;
+	}
+
+	.envelope-zone--stamp {
+		opacity: 55%;
+		transform: scale(0.85);
+		transform-origin: top center;
+	}
+
+	.envelope-zone--identity {
+		position: absolute;
+		bottom: 4%;
+		left: 50%;
+		z-index: 15;
+		width: 100%;
+		padding: 0.5rem;
+		transform: translateX(-50%);
+		opacity: 70%;
+		gap: 0.2rem;
+	}
+
+	.envelope-tease {
+		padding: 0.5rem;
+	}
+
+	.envelope-external-instruction {
+		opacity: 65%;
+	}
+}
+
+@include mixins.respond-below(md) {
+	.envelope-wrapper[data-seal-variant='premium-rose'] {
+		--env-container-width: min(96vw, 420px);
+		--env-container-ratio: 1.25;
+		--env-container-max-height: 85svh;
+
+		.envelope-zone--seal {
+			top: 46%;
+		}
+
+		.envelope-zone--identity {
+			bottom: 2%;
+			opacity: 60%;
+		}
+	}
+}
+
+@include mixins.respond-below(sm) {
+	.envelope-wrapper[data-seal-variant='premium-rose'] {
+		--env-container-width: min(96vw, 360px);
+		--env-container-ratio: 1.3;
+		--env-container-max-height: 88svh;
+
+		.envelope-zone--seal {
+			top: 44%;
+		}
+	}
+}
+
+@include mixins.respond-to(md) {
+	.envelope-wrapper[data-seal-variant='premium-rose'] {
+		--env-container-width: min(50vw, 550px);
+		--env-container-ratio: 1.35;
+
+		.envelope-zone--seal {
+			top: 50%;
+		}
+	}
+}

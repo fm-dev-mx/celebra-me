@@ -343,6 +343,42 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('accepts sealVariant premium-rose and passes through sealInitials', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					sealInitials: 'LL',
+					sealVariant: 'premium-rose',
+					microcopy: 'Toca para abrir',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			const { sealVariant, sealInitials } = result.data.envelope ?? {};
+			expect(sealVariant).toBe('premium-rose');
+			expect(sealInitials).toBe('LL');
+		}
+	});
+
+	it('rejects sealVariant with invalid value', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					sealVariant: 'gold-foil',
+					microcopy: 'Abrir',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('supports typed location indications with explicit iconName and styleVariant', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

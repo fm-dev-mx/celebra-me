@@ -14,6 +14,7 @@ export const EVENT_KEYS = [
 	'mapReception',
 	'jardin',
 	'signature',
+	'sealImage',
 	'gallery01',
 	'gallery02',
 	'gallery03',
