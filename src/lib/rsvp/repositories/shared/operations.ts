@@ -63,28 +63,15 @@ export async function updateSingle<TRow, TRecord>(
 	mapper: (row: TRow) => TRecord,
 	options: RequestOptions = {},
 ): Promise<TRecord> {
-	const pathWithQuery = `${table}?select=${columns}&${query}`;
-	let rows: TRow[];
-	try {
-		rows = await supabaseRestRequest<TRow[]>({
-			pathWithQuery,
-			method: 'PATCH',
-			body,
-			authToken: options.authToken,
-			useServiceRole: options.useServiceRole,
-			prefer: options.prefer || 'return=representation',
-		});
-	} catch (err) {
-		console.error(
-			'[updateSingle] Supabase request failed:',
-			table,
-			query,
-			err instanceof Error ? err.message : String(err),
-		);
-		throw err;
-	}
+	const rows = await supabaseRestRequest<TRow[]>({
+		pathWithQuery: `${table}?select=${columns}&${query}`,
+		method: 'PATCH',
+		body,
+		authToken: options.authToken,
+		useServiceRole: options.useServiceRole,
+		prefer: options.prefer || 'return=representation',
+	});
 	if (!rows[0]) {
-		console.error('[updateSingle] No row returned:', table, query, `rows=${rows.length}`);
 		throw new Error(`Failed to update ${table}`);
 	}
 	return mapper(rows[0]);
