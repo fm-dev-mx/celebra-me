@@ -115,12 +115,12 @@ export default [
 					default: 'allow',
 					rules: [
 						{
-							from: 'domain',
-							disallow: ['page'],
+							from: { type: 'domain' },
+							disallow: [{ to: { type: 'page' } }],
 						},
 						{
-							from: 'adapter',
-							disallow: ['page'],
+							from: { type: 'adapter' },
+							disallow: [{ to: { type: 'page' } }],
 						},
 					],
 				},
@@ -152,7 +152,7 @@ export default [
 		rules: {
 			'@typescript-eslint/explicit-module-boundary-types': 'off',
 			'@typescript-eslint/no-explicit-any': 'warn',
-			'@typescript-eslint/no-unused-vars': 'warn',
+			'@typescript-eslint/no-unused-vars': ['warn', { ignoreRestSiblings: true }],
 		},
 	},
 
@@ -174,12 +174,12 @@ export default [
 	},
 
 	// ------------------------------------------------------------
-	// Node scripts (scripts/**/*.js|cjs|mjs)
+	// Node scripts (scripts/**/*.{js,cjs,mjs,ts})
 	// Allow require/import flexibility in tooling scripts
 	// ------------------------------------------------------------
 	{
 		files: [
-			'scripts/**/*.{js,cjs,mjs}',
+			'scripts/**/*.{js,cjs,mjs,ts}',
 			'.agent/governance/bin/**/*.{js,cjs,mjs}',
 			'**/*.config.{js,cjs,mjs}',
 		],
