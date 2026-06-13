@@ -471,7 +471,9 @@ export function adaptEvent(
 ): InvitationViewModel {
 	const { data: originalData, id: contentEntryId } = event;
 	const entrySlug = getContentEntrySlug(contentEntryId);
-	const eventSlug = assetSlugOverride ?? entrySlug;
+	const contentAssetSlug =
+		typeof originalData._assetSlug === 'string' ? originalData._assetSlug : undefined;
+	const eventSlug = assetSlugOverride ?? contentAssetSlug ?? entrySlug;
 
 	const adapterData = previewTheme
 		? {

@@ -18,14 +18,11 @@ export async function resolveInvitationContent(
 		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 		if (publishedEntry) {
 			const rawContent = publishedEntry.content;
-			const assetSlug =
-				typeof rawContent._assetSlug === 'string' ? rawContent._assetSlug : slug;
 			const viewModel = adaptDbEvent({
 				slug,
 				eventType: publishedEntry.eventType,
 				isDemo: publishedEntry.isDemo,
 				content: rawContent,
-				assetSlug,
 			});
 			return { source: 'published', viewModel, rawContent };
 		}
