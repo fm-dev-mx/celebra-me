@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import {
@@ -118,8 +118,6 @@ export function useSendInvitation({
 	const [markError, setMarkError] = useState<string | null>(null);
 	const [advancing, setAdvancing] = useState(false);
 
-	const savingRef = useRef(false);
-
 	const isQueueMode = mode === 'pending-invitation' || mode === 'pending-reminder';
 	const isReminderMode = mode === 'pending-reminder' || mode === 'single-reminder';
 
@@ -141,24 +139,24 @@ export function useSendInvitation({
 	}, [guest, editName, editMaxAttendees, editPhone, editCountryCode, onSave]);
 
 	const initiatePreShare = useCallback(
-		(target: DashboardGuestItem) => {
+		async (target: DashboardGuestItem): Promise<boolean> => {
 			if (isReminderMode) {
 				onReminderSent?.(target.guestId);
-				return { shareAttempt: Promise.resolve(), retryShare: false };
+				return false;
 			}
-			let retry = false;
-			const p = onMarkShared(target).catch(() => {
-				retry = true;
-			});
-			return { shareAttempt: p, retryShare: retry };
+			try {
+				await onMarkShared(target);
+				return false;
+			} catch {
+				return true;
+			}
 		},
 		[isReminderMode, onReminderSent, onMarkShared],
 	);
 
 	/** Await pre-share result and retry once if it failed. */
 	const completeShare = useCallback(
-		async (shareAttempt: Promise<void>, target: DashboardGuestItem, retryShare: boolean) => {
-			await shareAttempt;
+		async (target: DashboardGuestItem, retryShare: boolean) => {
 			if (retryShare && !isReminderMode) {
 				try {
 					await onMarkShared(target);
@@ -171,15 +169,7 @@ export function useSendInvitation({
 			if (isQueueMode) onAdvanceFromGuest?.(target.guestId);
 			if (!isQueueMode) onDone?.();
 		},
-		[
-			onMarkShared,
-			onAdvanceFromGuest,
-			onDone,
-			isQueueMode,
-			isReminderMode,
-			setMarkError,
-			setShareStatus,
-		],
+		[onMarkShared, onAdvanceFromGuest, onDone, isQueueMode, isReminderMode],
 	);
 
 	const renderedMessage = useMemo(() => {
@@ -223,7 +213,6 @@ export function useSendInvitation({
 
 	const handleSaveAndShare = useCallback(async () => {
 		if (!guest || shareStatus !== 'idle') return;
-		if (savingRef.current) return;
 
 		const trimmed = editPhone.trim();
 		if (trimmed && !hasValidPhone(trimmed)) {
@@ -239,7 +228,6 @@ export function useSendInvitation({
 
 		setPhoneError(null);
 		handleClearValidationState();
-		savingRef.current = true;
 		setShareStatus('saving');
 		setMarkError(null);
 
@@ -258,16 +246,13 @@ export function useSendInvitation({
 				? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(activeMessage)}`
 				: `https://wa.me/?text=${encodeURIComponent(activeMessage)}`;
 
-			// Start idempotent mark-shared ("share handoff initiated") before
-			// opening the share channel. The optimistic update is synchronous so
-			// the dashboard immediately reflects the new state. Do NOT await yet
-			// — preserve the synchronous user gesture for window.open.
-			const { shareAttempt, retryShare } = initiatePreShare(target);
+			const retrySharePromise = initiatePreShare(target);
 			setFallbackGuest(target);
 			const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
+			const retryShare = await retrySharePromise;
 
 			if (waWindow && !waWindow.closed) {
-				await completeShare(shareAttempt, target, retryShare);
+				await completeShare(target, retryShare);
 				return;
 			}
 
@@ -278,7 +263,7 @@ export function useSendInvitation({
 			const result = await shareInvitationLink(payload);
 
 			if (result === 'shared') {
-				await completeShare(shareAttempt, target, retryShare);
+				await completeShare(target, retryShare);
 				return;
 			}
 
@@ -290,7 +275,7 @@ export function useSendInvitation({
 
 			const copied = await copyToClipboard(activeMessage);
 			if (copied) {
-				await completeShare(shareAttempt, target, retryShare);
+				await completeShare(target, retryShare);
 				return;
 			}
 
@@ -298,8 +283,6 @@ export function useSendInvitation({
 		} catch {
 			setMarkError('Error al guardar los cambios.');
 			setShareStatus('idle');
-		} finally {
-			savingRef.current = false;
 		}
 	}, [
 		guest,
@@ -320,12 +303,11 @@ export function useSendInvitation({
 	]);
 
 	const handleCopyOnly = useCallback(async () => {
-		if (!fallbackGuest) return;
 		const copied = await copyToClipboard(inviteUrl);
 		if (!copied) {
 			window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 		}
-	}, [fallbackGuest, inviteUrl]);
+	}, [inviteUrl]);
 
 	const handleCopyAndMarkSent = useCallback(async () => {
 		if (!fallbackGuest || advancing) return;
@@ -361,7 +343,6 @@ export function useSendInvitation({
 	]);
 
 	const handleKeepPending = useCallback(() => {
-		savingRef.current = false;
 		setShareStatus('idle');
 		resetMessageState();
 		setFallbackGuest(null);
