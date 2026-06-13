@@ -41,6 +41,7 @@ const DEFAULT_SUBCOPY: Record<string, string> = {
 	boda: 'Tu confirmación nos ayuda a preparar cada detalle para compartir este día contigo.',
 	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
 	cumple: 'Tu confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
+	'baby-shower': 'Tu respuesta nos ayuda a preparar cada detalle para recibir a nuestro bebé.',
 };
 
 export function getDefaultRsvpSubcopy(eventType: string): string {
@@ -100,8 +101,7 @@ export function resolveLabels(
 			labels?.notesLabel ??
 			(isEditorial
 				? 'DEDICATORIA'
-				: 'Mensaje para ' +
-					(celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado')),
+				: `Mensaje para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}`),
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
 			(isEditorial
