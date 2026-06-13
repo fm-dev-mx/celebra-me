@@ -4,7 +4,7 @@ export const eventDetailsBlock: IntakeBlockDefinition = {
 	type: 'event-details',
 	displayName: 'Detalles del evento',
 	description: 'Nombre del festejado, título del evento, fecha y descripción general.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'celebrantName',

@@ -6,7 +6,7 @@ import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 function createTestHarness(
 	overrides: Partial<{
 		guestCap: number;
-		eventType: 'xv' | 'boda' | 'bautizo' | 'cumple';
+		eventType: 'xv' | 'boda' | 'bautizo' | 'cumple' | 'baby-shower';
 		eventSlug: string;
 		accessMode: 'personalized-only' | 'hybrid';
 		prefersReducedMotion: boolean;

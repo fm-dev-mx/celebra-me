@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { collections } from '@/content.config';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
+import { isEventType } from '@/lib/rsvp/core/rsvp-request';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -60,6 +61,9 @@ describe('Event content schema (real contract)', () => {
 				const raw = fs.readFileSync(file, 'utf8');
 				const parsed = JSON.parse(raw);
 				const result = eventSchema.safeParse(parsed);
+				if (!result.success) {
+					throw new Error(`${file}: ${JSON.stringify(result.error.issues, null, 2)}`);
+				}
 				expect(result.success).toBe(true);
 			}
 		}
@@ -113,6 +117,34 @@ describe('Event content schema (real contract)', () => {
 
 	it('includes enchanted-rose in THEME_PRESETS', () => {
 		expect((THEME_PRESETS as readonly string[]).includes('enchanted-rose')).toBe(true);
+	});
+
+	it('accepts native baby-shower event content and RSVP event-type validation', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				eventType: 'baby-shower',
+				title: 'Baby Shower de Leah Lexa',
+				theme: {
+					fontFamily: 'serif',
+					preset: 'celestial-blue',
+				},
+				eventTiming: {
+					localDateTime: '2026-06-21T14:00',
+					timeZone: 'America/Mexico_City',
+					startsAtUtc: '2026-06-21T20:00:00.000Z',
+				},
+				hero: {
+					name: 'Leah Lexa',
+					label: 'Mi Baby Shower',
+					date: '2026-06-21T20:00:00.000Z',
+					backgroundImage: 'https://example.com/hero.jpg',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		expect((EVENT_TYPES as readonly string[]).includes('baby-shower')).toBe(true);
+		expect(isEventType('baby-shower')).toBe(true);
 	});
 
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {

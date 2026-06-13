@@ -5,7 +5,7 @@ export const photosBlock: IntakeBlockDefinition = {
 	displayName: 'Fotografías',
 	description:
 		'Envía tus fotos por WhatsApp como documento (calidad original). Indica aquí el uso previsto para cada foto.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'whatsappSent',

@@ -78,7 +78,7 @@ Do not introduce ad-hoc preset names or section-variant literals directly in con
 
 ## Coverage Expectations
 
-- `bautizo` is part of the active event-type contract.
+- `bautizo` and `baby-shower` are part of the active event-type contract.
 - `graduacion` is not part of the live event-type contract and should remain out of active content
   until the contract changes.
 - Public event types should ship with demo/template coverage before they are treated as fully ready

@@ -12,7 +12,7 @@ const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
 const CHECKLIST_DIR = path.join(PROJECT_ROOT, 'docs', 'domains', 'invitations', 'checklists');
 
 const DEFAULT_TEMPLATE = 'template-xv-real.json';
-const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple']);
+const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple', 'baby-shower']);
 
 function toTitleCaseFromSlug(slug) {
 	return slug
@@ -58,7 +58,7 @@ Usage:
   pnpm ops new-invitation <slug> [options]
 
 Options:
-  --eventType <type>    Event type: xv | boda | bautizo | cumple (default: xv)
+  --eventType <type>    Event type: xv | boda | bautizo | cumple | baby-shower (default: xv)
   --title <title>       Invitation title (default generated from slug)
   --template <file>     Template file from src/content/events (default: ${DEFAULT_TEMPLATE})
   --force               Overwrite existing scaffold files
@@ -77,7 +77,7 @@ Options:
 
 	const eventType = values.eventType;
 	if (!EVENT_TYPES.has(eventType)) {
-		throw new Error('Invalid --eventType. Allowed: xv, boda, bautizo, cumple.');
+		throw new Error('Invalid --eventType. Allowed: xv, boda, bautizo, cumple, baby-shower.');
 	}
 
 	const templatePath = path.join(CONTENT_DIR, values.template);

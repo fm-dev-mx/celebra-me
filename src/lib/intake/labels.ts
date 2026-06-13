@@ -145,6 +145,7 @@ export const EVENT_TYPE_LABELS: Record<string, string> = {
 	boda: 'Boda',
 	bautizo: 'Bautizo',
 	cumple: 'Cumpleaños',
+	'baby-shower': 'Baby Shower',
 };
 
 export const RSVP_EVENT_STATUS_LABELS: Record<string, string> = {
@@ -209,6 +210,7 @@ const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
 		boda: 'Novia',
 		bautizo: 'Nombre del bebé',
 		cumple: 'Nombre del festejado',
+		'baby-shower': 'Nombre del bebé',
 	},
 	secondaryName: {
 		boda: 'Novio',

@@ -20,7 +20,7 @@ erDiagram
         uuid source_invitation_id "demo lineage"
         text slug UK "nullable"
         text title
-        text event_type "xv | boda | bautizo | cumple"
+        text event_type "xv | boda | bautizo | cumple | baby-shower"
         text status "draft..published"
         text base_demo_id
         text theme_id

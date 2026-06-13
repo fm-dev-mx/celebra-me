@@ -1,5 +1,6 @@
 import { eventDetailsBlockSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { getVisibleFields } from '@/lib/intake/blocks';
+import { getFieldLabel } from '@/lib/intake/labels';
 import { normalizeDate } from '@/lib/intake/utils';
 import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
 import type { IntakeRequest, IntakeSubmission, Invitation } from '@/lib/intake/types';
@@ -102,6 +103,12 @@ describe('getVisibleFields', () => {
 		expect(fieldNames).not.toContain('secondaryName');
 	});
 
+	it('hides secondaryName for baby-shower events', () => {
+		const fields = getVisibleFields('baby-shower', 'event-details');
+		const fieldNames = fields.map((f) => f.name);
+		expect(fieldNames).not.toContain('secondaryName');
+	});
+
 	it('shows spouseName for boda events', () => {
 		const fields = getVisibleFields('boda', 'main-people');
 		const fieldNames = fields.map((f) => f.name);
@@ -114,8 +121,14 @@ describe('getVisibleFields', () => {
 		expect(fieldNames).not.toContain('spouseName');
 	});
 
+	it('hides spouseName for baby-shower events', () => {
+		const fields = getVisibleFields('baby-shower', 'main-people');
+		const fieldNames = fields.map((f) => f.name);
+		expect(fieldNames).not.toContain('spouseName');
+	});
+
 	it('shows celebrantName for all event types', () => {
-		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple'] as const) {
+		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const) {
 			const fields = getVisibleFields(eventType, 'event-details');
 			const fieldNames = fields.map((f) => f.name);
 			expect(fieldNames).toContain('celebrantName');
@@ -123,11 +136,15 @@ describe('getVisibleFields', () => {
 	});
 
 	it('shows fatherName for all event types', () => {
-		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple'] as const) {
+		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const) {
 			const fields = getVisibleFields(eventType, 'main-people');
 			const fieldNames = fields.map((f) => f.name);
 			expect(fieldNames).toContain('fatherName');
 		}
+	});
+
+	it('uses baby-shower-specific hero name label', () => {
+		expect(getFieldLabel('hero', 'name', 'baby-shower')).toBe('Nombre del bebé');
 	});
 });
 

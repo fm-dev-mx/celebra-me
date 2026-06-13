@@ -4,7 +4,7 @@ export const rsvpConfigBlock: IntakeBlockDefinition = {
 	type: 'rsvp-config',
 	displayName: 'Confirmación de asistencia (RSVP)',
 	description: 'Configuración de confirmación: título, capacidad de invitados y mensaje.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'title',

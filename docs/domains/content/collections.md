@@ -31,6 +31,7 @@ The active event types come from `src/lib/theme/theme-contract.ts`:
 - `boda`
 - `bautizo`
 - `cumple`
+- `baby-shower`
 
 ## Theme Contract
 

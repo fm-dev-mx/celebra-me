@@ -4,6 +4,7 @@ import type {
 	CountdownVariant,
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
+	EventType,
 	ItineraryVariant,
 	LocationVariant,
 	QuoteVariant,
@@ -271,7 +272,7 @@ export interface InvitationViewModel {
 		};
 		rsvp?: {
 			eventSlug: string;
-			eventType: 'xv' | 'boda' | 'bautizo' | 'cumple';
+			eventType: EventType;
 			subcopy?: string;
 			title: string;
 			guestCap: number;

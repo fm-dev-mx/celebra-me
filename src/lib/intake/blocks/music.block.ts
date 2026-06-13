@@ -4,7 +4,7 @@ export const musicBlock: IntakeBlockDefinition = {
 	type: 'music',
 	displayName: 'Música de fondo',
 	description: 'URL de la canción que sonará al abrir la invitación.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'url',

@@ -20,6 +20,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 	boda: 'Boda',
 	bautizo: 'Bautizo',
 	cumple: 'Cumpleaños',
+	'baby-shower': 'Baby Shower',
 };
 
 const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({

@@ -4,7 +4,7 @@ export const specialMessagesBlock: IntakeBlockDefinition = {
 	type: 'special-messages',
 	displayName: 'Mensajes especiales',
 	description: 'Frase de apertura, mensaje de agradecimiento y despedida.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'quoteText',

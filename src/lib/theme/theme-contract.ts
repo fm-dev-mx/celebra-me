@@ -1,4 +1,4 @@
-export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple'] as const;
+export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 export const CONTENT_SECTION_KEYS = [

@@ -4,7 +4,7 @@ export const dateLocationsBlock: IntakeBlockDefinition = {
 	type: 'date-locations',
 	displayName: 'Fecha y ubicaciones',
 	description: 'Ceremonia, recepción, direcciones y códigos de vestimenta.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple'],
+	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
 	fields: [
 		{
 			name: 'ceremonyVenueName',
