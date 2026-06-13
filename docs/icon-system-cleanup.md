@@ -49,7 +49,7 @@ Uses `process.exitCode` (not `process.exit()`) for clean Windows/libuv shutdown.
 
 ## Migration Execution
 
-1. Run migration: `pnpm supabase db push`
+1. Run migration through the current database workflow: `pnpm db:prod:migrate`
 2. Verify: `pnpm tsx scripts/verify-icon-migration.ts`
 3. Deploy runtime code
 

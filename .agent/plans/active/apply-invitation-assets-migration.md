@@ -57,15 +57,15 @@ This plan covers the minimal safe fix: apply the pending migration. It explicitl
 
 ## Implementation Plan
 
-### Step 1: Apply the migration to the remote project
+### Step 1: Apply the migration through the production workflow
 
 ```bash
-supabase db push --linked
+PROD_DB_URL=... pnpm db:prod:migrate
 ```
 
-This applies `20260602000000_invitation_assets.sql` to the linked remote project
-(`ineitkdkyrxqyressllp`). The migration is additive (CREATE TABLE, INSERT INTO storage.buckets,
-CREATE POLICY) and does not conflict with any previously applied migration.
+This applies `20260602000000_invitation_assets.sql` through the reviewed production migration
+workflow. The migration is additive (CREATE TABLE, INSERT INTO storage.buckets, CREATE POLICY) and
+does not conflict with any previously applied migration.
 
 If migration order is in doubt, first verify:
 
@@ -129,18 +129,18 @@ The env audit (2026-06-03) normalized the environment setup:
 
 ```bash
 supabase start
-supabase db push
+pnpm db:local:reset
 ```
 
 ## Risk Assessment
 
-| Risk                                         | Severity | Mitigation                                                                                                                             |
-| -------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Migration order conflict                     | Low      | Migration is additive, no DDL overlaps with existing migrations                                                                        |
-| Storage bucket already exists                | Low      | `insert ... on conflict (id) do nothing` handles it                                                                                    |
-| Generated types stale                        | Low      | `InvitationAsset` is hand-typed in `types.ts`, not auto-generated                                                                      |
-| Vercel deploy without migration              | Medium   | API routes hitting `invitation_assets` will 404 until migration is applied. Run `supabase db push --linked` before or alongside deploy |
-| `.env.local` permanently overrides local dev | Low      | Optional cleanup step; not required for the fix                                                                                        |
+| Risk                                         | Severity | Mitigation                                                                                                                        |
+| -------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Migration order conflict                     | Low      | Migration is additive, no DDL overlaps with existing migrations                                                                   |
+| Storage bucket already exists                | Low      | `insert ... on conflict (id) do nothing` handles it                                                                               |
+| Generated types stale                        | Low      | `InvitationAsset` is hand-typed in `types.ts`, not auto-generated                                                                 |
+| Vercel deploy without migration              | Medium   | API routes hitting `invitation_assets` will 404 until migration is applied. Run `pnpm db:prod:migrate` before or alongside deploy |
+| `.env.local` permanently overrides local dev | Low      | Optional cleanup step; not required for the fix                                                                                   |
 
 ## Verification
 

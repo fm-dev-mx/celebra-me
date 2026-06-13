@@ -392,7 +392,7 @@ None (existing tables untouched).
 
 #### Acceptance Criteria
 
-- `pnpm db:push` succeeds against local Supabase.
+- Local Supabase migration validation succeeds through the current database workflow.
 - All three tables exist with correct constraints and indexes.
 - `touch_updated_at` triggers fire on update.
 - Repository functions pass unit tests with mocked Supabase responses.
@@ -1214,7 +1214,7 @@ pnpm lint
 pnpm lint:styles
 
 # After Phase 1.2:
-pnpm db:push
+pnpm db:local:validate
 
 # After Phase 1.4 and beyond:
 pnpm build
