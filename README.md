@@ -132,6 +132,9 @@ celebra-me/
 
 Supabase schema changes are versioned under `supabase/migrations`.
 
+For onboarding, use local Supabase for development and keep `.env.local` pointed away from
+production.
+
 | Command                                           | Purpose                                                       |
 | ------------------------------------------------- | ------------------------------------------------------------- |
 | `pnpm db:start`                                   | Start local Supabase                                          |
@@ -143,11 +146,15 @@ Supabase schema changes are versioned under `supabase/migrations`.
 | `pnpm db:local:validate`                          | Check local DB health                                         |
 | `pnpm db:prod:backup`                             | Read-only production data dump                                |
 | `pnpm db:prod:migrate`                            | Apply reviewed migrations to production                       |
+| `pnpm db:prod:patch`                              | Dry-run lint for manifest-bearing production patches          |
+| `pnpm db:sql:lint`                                | Lint a production SQL patch file                              |
 | `pnpm db:migrate:new <name>`                      | Scaffold a new migration                                      |
 
-Production is read-only for backups and local refreshes; it can only be mutated via
-`pnpm db:prod:migrate`. See `docs/database-workflow.md` for the full operational workflow,
-troubleshooting, and safety rules.
+`pnpm db:push` is intentionally blocked. Production is read-only for backups and local refreshes; it
+can only be mutated via `pnpm db:prod:migrate`.
+
+See [`docs/database-workflow.md`](docs/database-workflow.md) for the full operational runbook,
+command details, troubleshooting, and production safety rules.
 
 ## Documentation
 

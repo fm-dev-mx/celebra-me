@@ -31,6 +31,19 @@ owns the command inventory.
 | `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range                                                         |
 | `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | scaffold a new invitation content file plus related support artifacts                                                   |
 
+`pnpm ops adopt-legacy-events` remains registered for historical visibility but fails closed.
+
+## Database Command Inventory
+
+| Command                               | Owner          | Purpose                                                         |
+| ------------------------------------- | -------------- | --------------------------------------------------------------- |
+| `pnpm db:push`                        | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push |
+| `pnpm db:sql:lint -- --file <path>`   | `scripts/db/`  | lint a manifest-bearing production SQL patch                    |
+| `pnpm db:prod:patch -- --file <path>` | `scripts/db/`  | dry-run-only production patch entrypoint                        |
+
+Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
+the [manual SQL manifest](../.agent/db/manual-sql-manifest.md).
+
 ## Ownership Rules
 
 - Public npm script aliases are owned by `package.json`.

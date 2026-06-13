@@ -85,7 +85,7 @@ To set up the development environment:
    ```
 
 3. Install the Supabase CLI if you plan to run the local database workflows (`pnpm db:start`,
-   `pnpm db:push`, `pnpm db:local:reset`, `pnpm db:migrate:new`).
+   `pnpm db:local:reset`, `pnpm db:local:validate`, `pnpm db:migrate:new`).
 
 4. Clone the repository:
 

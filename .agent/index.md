@@ -50,6 +50,7 @@ Use this file after reading `.agent/README.md`. It is the current discovery map 
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/rsvp/database.md`
+- `.agent/db/README.md`
 - `docs/domains/theme/architecture.md`
 - `docs/domains/theme/typography.md`
 
@@ -64,6 +65,6 @@ truth.
 | Backend or data work                  | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` + relevant domain docs                                                              |
 | Documentation or governance drift     | `README` + `GATEKEEPER_RULES.md` + `documentation-governance` + `system-doc-alignment`                                                       |
 | Testing or regression work            | `README` + `GATEKEEPER_RULES.md` + `testing` + affected domain docs                                                                          |
-| Supabase or database work             | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant domain docs                           |
+| Supabase or database work             | `README` + `GATEKEEPER_RULES.md` + `.agent/db/README.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant domain docs   |
 | Planning or commit governance         | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `commit-planner`, depending on whether the user wants planning or commit partitioning |
 | Planning or implementation sequencing | `README` + `GATEKEEPER_RULES.md` + `agent-communication` + `.agent/plans/README.md`                                                          |

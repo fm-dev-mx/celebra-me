@@ -33,6 +33,8 @@ pnpm db:local:bootstrap-admin
 pnpm db:local:validate
 pnpm db:prod:backup
 pnpm db:prod:migrate
+pnpm db:prod:patch -- --file <path>
+pnpm db:sql:lint -- --file <path>
 ```
 
 `pnpm db:local:refresh-from-prod`
@@ -90,6 +92,21 @@ pnpm db:prod:migrate
 - Applies pending Supabase migrations only.
 - Mutates production and requires explicit confirmation.
 - This is the only approved production mutation workflow.
+
+`pnpm db:sql:lint -- --file <path>`
+
+- Reads a SQL file only.
+- Requires the production patch manifest documented in
+  [`.agent/db/manual-sql-manifest.md`](../.agent/db/manual-sql-manifest.md).
+- Blocks unsafe production-patch patterns including unscoped `UPDATE`/`DELETE`, `TRUNCATE`, broad
+  `DROP`, `ALTER TABLE`, RLS policy changes, `SECURITY DEFINER`, and `CASCADE`.
+
+`pnpm db:prod:patch -- --file <path>`
+
+- Dry-run lint only.
+- Does not open a database connection and does not execute SQL.
+- Exists so production patches have one fail-closed entrypoint while the full execution harness is
+  still intentionally deferred.
 
 ## Workflows
 
@@ -190,6 +207,16 @@ PROD_DB_URL=... pnpm db:prod:migrate
 This is the only workflow allowed to mutate production. It runs preflight checks, creates a backup
 first, applies migrations only, and never pushes local data dumps.
 
+### Check a manual production patch
+
+```bash
+pnpm db:prod:patch -- --file scripts/manual/production-patches/<script>.sql
+```
+
+This command only validates the manifest and SQL safety rules. It does not execute the patch. A
+production patch file without the [required manifest](../.agent/db/manual-sql-manifest.md) is
+blocked.
+
 ## Never Do This
 
 - Do not restore local DB dumps into production.
@@ -197,8 +224,11 @@ first, applies migrations only, and never pushes local data dumps.
 - Do not put production credentials in `.env.local`.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
+- Do not run `pnpm db:push`; it is blocked because raw Supabase push can target a linked remote.
 - Do not run `pnpm db:local:reset` before `pnpm db:local:refresh-from-prod`; refresh already resets
   local Supabase.
+- Do not run `pnpm ops adopt-legacy-events`; it is disabled because it can create invitations and
+  patch events with the service role.
 - Do not run ad-hoc `supabase db push --linked` outside the approved migration workflow.
 - Do not run `supabase link` casually.
 
