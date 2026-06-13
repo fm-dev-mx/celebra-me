@@ -98,7 +98,10 @@ export function resolveLabels(
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
 		notesLabel:
 			labels?.notesLabel ??
-			(isEditorial ? 'DEDICATORIA OPCIONAL' : 'Mensaje para el festejado'),
+			(isEditorial
+				? 'DEDICATORIA'
+				: 'Mensaje para ' +
+					(celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado')),
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
 			(isEditorial
