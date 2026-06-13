@@ -140,6 +140,48 @@ export function useSendInvitation({
 		);
 	}, [guest, editName, editMaxAttendees, editPhone, editCountryCode, onSave]);
 
+	const initiatePreShare = useCallback(
+		(target: DashboardGuestItem) => {
+			if (isReminderMode) {
+				onReminderSent?.(target.guestId);
+				return { shareAttempt: Promise.resolve(), retryShare: false };
+			}
+			let retry = false;
+			const p = onMarkShared(target).catch(() => {
+				retry = true;
+			});
+			return { shareAttempt: p, retryShare: retry };
+		},
+		[isReminderMode, onReminderSent, onMarkShared],
+	);
+
+	/** Await pre-share result and retry once if it failed. */
+	const completeShare = useCallback(
+		async (shareAttempt: Promise<void>, target: DashboardGuestItem, retryShare: boolean) => {
+			await shareAttempt;
+			if (retryShare && !isReminderMode) {
+				try {
+					await onMarkShared(target);
+				} catch {
+					setMarkError('Error al registrar el envío.');
+					setShareStatus('fallback');
+					return;
+				}
+			}
+			if (isQueueMode) onAdvanceFromGuest?.(target.guestId);
+			if (!isQueueMode) onDone?.();
+		},
+		[
+			onMarkShared,
+			onAdvanceFromGuest,
+			onDone,
+			isQueueMode,
+			isReminderMode,
+			setMarkError,
+			setShareStatus,
+		],
+	);
+
 	const renderedMessage = useMemo(() => {
 		if (!templates || !guest) return guest?.shareText || '';
 		const kind = isReminderMode
@@ -179,34 +221,6 @@ export function useSendInvitation({
 		resetMessageState,
 	} = useMessageEditor({ renderedMessage, inviteUrl, guest, trySave });
 
-	const markSharedOrFallback = useCallback(
-		async (updated: DashboardGuestItem) => {
-			setFallbackGuest(updated);
-			try {
-				if (!isReminderMode) {
-					await onMarkShared(updated);
-				} else {
-					onReminderSent?.(updated.guestId);
-				}
-				if (isQueueMode) {
-					onAdvanceFromGuest?.(updated.guestId);
-				}
-			} catch {
-				setMarkError('Error al registrar el envío.');
-				setShareStatus('fallback');
-			}
-		},
-		[onMarkShared, onReminderSent, onAdvanceFromGuest, isQueueMode, isReminderMode],
-	);
-
-	const markSharedAndComplete = useCallback(
-		async (item: DashboardGuestItem) => {
-			await markSharedOrFallback(item);
-			if (!isQueueMode) onDone?.();
-		},
-		[markSharedOrFallback, onDone, isQueueMode],
-	);
-
 	const handleSaveAndShare = useCallback(async () => {
 		if (!guest || shareStatus !== 'idle') return;
 		if (savingRef.current) return;
@@ -244,11 +258,16 @@ export function useSendInvitation({
 				? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(activeMessage)}`
 				: `https://wa.me/?text=${encodeURIComponent(activeMessage)}`;
 
-			const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
+			// Start idempotent mark-shared ("share handoff initiated") before
+			// opening the share channel. The optimistic update is synchronous so
+			// the dashboard immediately reflects the new state. Do NOT await yet
+			// — preserve the synchronous user gesture for window.open.
+			const { shareAttempt, retryShare } = initiatePreShare(target);
 			setFallbackGuest(target);
+			const waWindow = window.open(waUrl, '_blank', 'noopener,noreferrer');
 
 			if (waWindow && !waWindow.closed) {
-				await markSharedAndComplete(target);
+				await completeShare(shareAttempt, target, retryShare);
 				return;
 			}
 
@@ -259,7 +278,7 @@ export function useSendInvitation({
 			const result = await shareInvitationLink(payload);
 
 			if (result === 'shared') {
-				await markSharedAndComplete(target);
+				await completeShare(shareAttempt, target, retryShare);
 				return;
 			}
 
@@ -271,7 +290,7 @@ export function useSendInvitation({
 
 			const copied = await copyToClipboard(activeMessage);
 			if (copied) {
-				await markSharedAndComplete(target);
+				await completeShare(shareAttempt, target, retryShare);
 				return;
 			}
 
@@ -291,10 +310,12 @@ export function useSendInvitation({
 		editCountryCode,
 		validPhone,
 		editingMessage,
-		localMessageOverride,
 		activeMessage,
+		inviteUrl,
 		trySave,
-		markSharedAndComplete,
+		isReminderMode,
+		initiatePreShare,
+		completeShare,
 		handleValidateMessage,
 	]);
 

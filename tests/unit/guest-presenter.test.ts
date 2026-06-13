@@ -192,6 +192,26 @@ describe('getGuestPrimaryAction', () => {
 	});
 });
 
+describe('regression: shared guest CTA and status', () => {
+	const guest = makeGuest({ deliveryStatus: 'shared', attendanceStatus: 'pending' });
+
+	it('primary action does NOT show "Compartir invitación"', () => {
+		expect(getGuestPrimaryAction(guest).label).not.toBe('Compartir invitación');
+	});
+
+	it('primary action shows "Enviar recordatorio" in normal context', () => {
+		expect(getGuestPrimaryAction(guest).label).toBe('Enviar recordatorio');
+	});
+
+	it('primary action shows "Recordar" in reminder mode when eligible', () => {
+		expect(getGuestPrimaryAction(guest, true, true).label).toBe('Recordar');
+	});
+
+	it('share CTA label is "Enviar recordatorio"', () => {
+		expect(getShareCtaLabel(guest).label).toBe('Enviar recordatorio');
+	});
+});
+
 describe('parseGuestCommentHistory', () => {
 	it('returns empty array for blank input', () => {
 		expect(parseGuestCommentHistory('')).toEqual([]);

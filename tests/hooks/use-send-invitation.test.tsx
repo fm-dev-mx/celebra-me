@@ -39,15 +39,15 @@ function setupHook(
 	},
 ) {
 	const callbacks = { ...createMockCallbacks(), ...overrides };
-	const { templates, ...restCallbacks } = callbacks;
+	const { templates, inviteUrl, eventTitle, ...restCallbacks } = callbacks;
 
 	const { result } = renderHook(() =>
 		useSendInvitation({
 			guest,
 			pendingGuests,
-			inviteUrl: overrides?.inviteUrl ?? 'http://localhost/invitacion/invite-1',
-			eventTitle: overrides?.eventTitle ?? 'Test Event',
-			templates: overrides?.templates,
+			inviteUrl: inviteUrl ?? 'http://localhost/invitacion/invite-1',
+			eventTitle: eventTitle ?? 'Test Event',
+			templates: templates ?? undefined,
 			...restCallbacks,
 		}),
 	);
@@ -216,6 +216,72 @@ describe('useSendInvitation', () => {
 		});
 
 		expect(window.open).toHaveBeenCalledTimes(1);
+	});
+
+	it('pre-share calls onMarkShared before window.open', async () => {
+		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+		callbacks.onSave.mockResolvedValue(guest);
+		callbacks.onMarkShared.mockResolvedValue(undefined);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onMarkShared).toHaveBeenCalledTimes(1);
+		expect(callbacks.onMarkShared).toHaveBeenCalledWith(guest);
+		expect(window.open).toHaveBeenCalledTimes(1);
+	});
+
+	it('calls onMarkShared even when window.open returns null (popup blocked)', async () => {
+		stubWindowOpen(null);
+
+		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+		callbacks.onSave.mockResolvedValue(guest);
+		callbacks.onMarkShared.mockResolvedValue(undefined);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onMarkShared).toHaveBeenCalledTimes(1);
+		expect(callbacks.onMarkShared).toHaveBeenCalledWith(guest);
+	});
+
+	it('calls onMarkShared even when window.open returns a closed window', async () => {
+		const closedWindow = createMockWindow({ closed: true });
+		stubWindowOpen(closedWindow as unknown as Window);
+
+		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+		callbacks.onSave.mockResolvedValue(guest);
+		callbacks.onMarkShared.mockResolvedValue(undefined);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onMarkShared).toHaveBeenCalledTimes(1);
+		expect(callbacks.onMarkShared).toHaveBeenCalledWith(guest);
+	});
+
+	it('retries onMarkShared on pre-share failure before advancing', async () => {
+		stubWindowOpen(null);
+
+		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const { result, callbacks } = setupHook(guest, [guest]);
+		callbacks.onSave.mockResolvedValue(guest);
+		callbacks.onMarkShared
+			.mockRejectedValueOnce(new Error('First fail'))
+			.mockResolvedValueOnce(undefined);
+
+		await act(async () => {
+			await result.current.handleSaveAndShare();
+		});
+
+		expect(callbacks.onMarkShared).toHaveBeenCalledTimes(2);
+		expect(callbacks.onAdvanceFromGuest).toHaveBeenCalledWith('g-1');
 	});
 
 	it('handleCopyMessageAction uses activeMessage with invite URL', async () => {

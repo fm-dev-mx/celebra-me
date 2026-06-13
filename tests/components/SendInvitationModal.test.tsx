@@ -24,7 +24,7 @@ function createProps() {
 		inviteUrl: 'http://localhost/invitacion/invite-1',
 		onClose: jest.fn(),
 		onSave: jest.fn(),
-		onMarkShared: jest.fn(),
+		onMarkShared: jest.fn().mockResolvedValue(undefined),
 		onAdvanceFromGuest: jest.fn(),
 		onPostponeGuest: jest.fn(),
 	};
@@ -252,16 +252,17 @@ describe('SendInvitationModal', () => {
 		await waitFor(() => expect(props.onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
 	});
 
-	it('WhatsApp popup blocked shows fallback without marking sent', async () => {
+	it('WhatsApp popup blocked shows fallback without advancing', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		clearNavigatorAPIs();
 		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
 		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+		props.onMarkShared.mockResolvedValue(undefined);
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => expect(screen.getByText('Copiar invitación')).toBeInTheDocument());
-		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onMarkShared).toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
@@ -342,11 +343,12 @@ describe('SendInvitationModal', () => {
 		});
 	});
 
-	it('fallback "Copiar invitación" copies URL without marking sent', async () => {
+	it('fallback "Copiar invitación" copies URL and pre-marks sent without advancing', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		clearNavigatorAPIs();
 		const { props } = renderModal(makeGuest({ guestId: 'guest-1' }));
 		props.onSave.mockResolvedValue(makeGuest());
+		props.onMarkShared.mockResolvedValue(undefined);
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
@@ -354,7 +356,7 @@ describe('SendInvitationModal', () => {
 
 		fireEvent.click(screen.getByText('Copiar invitación'));
 
-		expect(props.onMarkShared).not.toHaveBeenCalled();
+		expect(props.onMarkShared).toHaveBeenCalled();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
@@ -540,17 +542,20 @@ describe('SendInvitationModal', () => {
 		});
 	});
 
-	it('onMarkShared failure during WhatsApp flow shows fallback error', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }));
+	it('pre-share calls onMarkShared even when the mock rejects', async () => {
+		const failingMarkShared = jest.fn().mockRejectedValue(new Error('Mark failed'));
+		const { props } = renderModal(
+			makeGuest({ guestId: 'guest-1', fullName: 'Guest One' }),
+			undefined,
+			{ onMarkShared: failingMarkShared },
+		);
 		props.onSave.mockResolvedValue(makeGuest({ guestId: 'guest-1' }));
-		props.onMarkShared.mockRejectedValue(new Error('Mark failed'));
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => {
-			expect(screen.getByText('Error al registrar el envío.')).toBeInTheDocument();
+			expect(failingMarkShared).toHaveBeenCalled();
 		});
-		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
 	it('shows hint text when phone field is empty', () => {
