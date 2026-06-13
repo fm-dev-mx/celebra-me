@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import {
@@ -113,6 +113,7 @@ export function useSendInvitation({
 		guest?.countryCode ?? DEFAULT_COUNTRY_CODE,
 	);
 	const [phoneError, setPhoneError] = useState<string | null>(null);
+	const shareInFlightRef = useRef(false);
 	const [shareStatus, setShareStatus] = useState<ShareStatus>('idle');
 	const [fallbackGuest, setFallbackGuest] = useState<DashboardGuestItem | null>(null);
 	const [markError, setMarkError] = useState<string | null>(null);
@@ -212,7 +213,7 @@ export function useSendInvitation({
 	} = useMessageEditor({ renderedMessage, inviteUrl, guest, trySave });
 
 	const handleSaveAndShare = useCallback(async () => {
-		if (!guest || shareStatus !== 'idle') return;
+		if (shareInFlightRef.current || !guest || shareStatus !== 'idle') return;
 
 		const trimmed = editPhone.trim();
 		if (trimmed && !hasValidPhone(trimmed)) {
@@ -228,6 +229,7 @@ export function useSendInvitation({
 
 		setPhoneError(null);
 		handleClearValidationState();
+		shareInFlightRef.current = true;
 		setShareStatus('saving');
 		setMarkError(null);
 
@@ -283,6 +285,8 @@ export function useSendInvitation({
 		} catch {
 			setMarkError('Error al guardar los cambios.');
 			setShareStatus('idle');
+		} finally {
+			shareInFlightRef.current = false;
 		}
 	}, [
 		guest,
