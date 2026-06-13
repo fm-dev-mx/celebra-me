@@ -25,7 +25,7 @@
         "commitlint": "commitlint",
         "prepare": "husky",
         "db:migrate:new": "supabase migration new",
-        "db:push": "supabase db push",
+        "db:push": "node scripts/db/blocked-db-push.mjs",
         "db:local:reset": "supabase db reset --local --yes",
         "db:start": "supabase start",
         "db:stop": "supabase stop",
@@ -36,6 +36,8 @@
         "db:local:validate": "tsx scripts/db/validate-local-db.ts",
         "db:prod:backup": "tsx scripts/db/backup-prod.ts",
         "db:prod:migrate": "tsx scripts/db/push-prod-migrations.ts",
+        "db:prod:patch": "tsx scripts/db/run-prod-patch.ts --dry-run",
+        "db:sql:lint": "tsx scripts/db/lint-sql.ts",
         "ops": "node scripts/cli.mjs",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb"
     },
