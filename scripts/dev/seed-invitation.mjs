@@ -63,8 +63,7 @@ const PRODUCTION_PATTERNS = ['supabase.co', 'project.dev', 'prod'];
 const isProduction = PRODUCTION_PATTERNS.some((p) => supabaseUrl.includes(p));
 if (isProduction) {
 	console.error(
-		'ERROR: SUPABASE_URL appears to point to production (%s). Aborting to prevent data contamination.',
-		supabaseUrl,
+		'ERROR: SUPABASE_URL appears to point to a remote Supabase target. Aborting to prevent data contamination.',
 	);
 	process.exit(1);
 }
@@ -150,7 +149,7 @@ function nowIso() {
 }
 
 // ── Print helpers ────────────────────────────────────────────────────
-function printSummary({ project, request, rawToken, submission, draft }) {
+function printSummary({ project, request, submission, draft }) {
 	console.log('\n=== SEED INVITATION CREATED ===\n');
 	console.log(`Project:     ${project.title} (${project.id})`);
 	console.log(`Event Type:  ${project.eventType}`);
@@ -162,11 +161,10 @@ function printSummary({ project, request, rawToken, submission, draft }) {
 	console.log(`  Status:   ${request.status}`);
 	console.log(`  Expires:  ${request.expires_at || 'N/A'}`);
 	console.log('');
-	console.log('RAW TOKEN (for capture URL):');
-	console.log(`  ${rawToken}`);
+	console.log('Raw capture token: <redacted>');
 	console.log('');
 	console.log('URLs:');
-	console.log(`  Capture:   ${BASE_URL}/captura/${rawToken}`);
+	console.log(`  Capture:   ${BASE_URL}/captura/<redacted>`);
 	console.log(
 		`  Preview:   ${BASE_URL}/${project.eventType}/${project.slug || project.id}/preview`,
 	);
@@ -326,7 +324,7 @@ async function main() {
 	}
 	console.log(`✓ Draft created: ${draft.id}`);
 
-	printSummary({ project, request, rawToken, submission, draft });
+	printSummary({ project, request, submission, draft });
 }
 
 main().catch((err) => {
