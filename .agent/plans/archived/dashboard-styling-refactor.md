@@ -175,12 +175,12 @@ catch violations.
 
 **Files:**
 
-- `.agent/dashboard-styling-rules.md` — new, see Section 4 for outline
+- `.agent/rules/dashboard-styling.md` — new, see Section 4 for outline
 - `scripts/check-dashboard-styles.sh` — new, POSIX-compatible (uses `rg` and basic shell)
 
 **Changes:**
 
-1. Write `.agent/dashboard-styling-rules.md` covering: token consumption rules, component grammar,
+1. Write `.agent/rules/dashboard-styling.md` covering: token consumption rules, component grammar,
    state color matrix, focus rules, mobile rules, file responsibilities.
 2. Write `scripts/check-dashboard-styles.sh` — a POSIX shell script using `rg` (ripgrep). Patterns:
 
@@ -573,7 +573,7 @@ touch intake.
 
 ## 4. Proposed Agent Rules File
 
-**File:** `.agent/dashboard-styling-rules.md`
+**File:** `.agent/rules/dashboard-styling.md`
 
 Outline:
 

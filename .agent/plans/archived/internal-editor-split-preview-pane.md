@@ -12,10 +12,10 @@ related_skills:
   - testing
 related_docs:
   - .agent/plans/README.md
-  - .agent/GATEKEEPER_RULES.md
+  - .agent/rules/gatekeeper.md
   - .agent/workflows/plan-authoring.md
   - docs/domains/intake/internal-invitation-editor.md
-  - .agent/plans/active/invitation-dashboard-premium-plan.md
+  - .agent/plans/archived/invitation-dashboard-premium-plan.md
 supersedes: []
 superseded_by: []
 ---

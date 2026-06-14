@@ -44,7 +44,7 @@ matches the production invitation workflow.
 | `pnpm db:prod:patch -- --file <path>` | `scripts/db/`  | dry-run-only production patch entrypoint                        |
 
 Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
-the [manual SQL manifest](../.agent/db/manual-sql-manifest.md).
+the [manual SQL manifest](../.agent/rules/manual-sql-manifest.md).
 
 ## Ownership Rules
 

@@ -5,8 +5,8 @@ preparation files.
 
 ## Current Rule
 
-New or reusable production SQL patches must include the manifest required by
-`.agent/db/manual-sql-manifest.md` and must pass both:
+New or reusable production SQL patches must include the required manual SQL manifest and must pass
+both:
 
 ```bash
 pnpm db:sql:lint -- --file <path>

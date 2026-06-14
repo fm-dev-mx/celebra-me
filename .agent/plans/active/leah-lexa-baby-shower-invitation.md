@@ -10,8 +10,8 @@ related_skills:
   - copywriting-es
   - testing
 related_docs:
-  - .agent/invitation-production-rules.md
-  - .agent/db/README.md
+  - .agent/rules/invitation-production.md
+  - .agent/rules/database.md
   - docs/domains/content/event-governance.md
   - docs/domains/intake/production-flow.md
   - scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql

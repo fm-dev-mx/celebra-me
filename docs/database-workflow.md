@@ -117,7 +117,7 @@ pnpm db:sql:lint -- --file <path>
 
 - Reads a SQL file only.
 - Requires the production patch manifest documented in
-  [`.agent/db/manual-sql-manifest.md`](../.agent/db/manual-sql-manifest.md).
+  [`.agent/rules/manual-sql-manifest.md`](../.agent/rules/manual-sql-manifest.md).
 - Blocks unsafe production-patch patterns including unscoped `UPDATE`/`DELETE`, `TRUNCATE`, broad
   `DROP`, `ALTER TABLE`, RLS policy changes, `SECURITY DEFINER`, and `CASCADE`.
 
@@ -249,7 +249,7 @@ pnpm db:prod:patch -- --file scripts/manual/production-patches/<script>.sql
 ```
 
 This command only validates the manifest and SQL safety rules. It does not execute the patch. A
-production patch file without the [required manifest](../.agent/db/manual-sql-manifest.md) is
+production patch file without the [required manifest](../.agent/rules/manual-sql-manifest.md) is
 blocked.
 
 ## Never Do This

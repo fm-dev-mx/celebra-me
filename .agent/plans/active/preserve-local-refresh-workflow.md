@@ -28,7 +28,7 @@ local DB = production snapshot + preserved local-only invitations/demos
 ## Constraints
 
 - Production is read-only. Never write to production.
-- All safety rules from `.agent/db/README.md` and the task prompt apply.
+- All safety rules from `.agent/rules/database.md` and the task prompt apply.
 - Prefer dedicated new files over bloating `db-workflow-lib.ts`.
 - Follow existing patterns: psql COPY blocks, FK-safe ordering, staging schemas.
 - Full backups already exist at `D:\code\celebra-me-backup\db-full-20260614-084026`.
