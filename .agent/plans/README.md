@@ -13,7 +13,8 @@ It is not a dumping ground for chat transcripts, logs, temporary prompts, or obs
   archived/           # Plans that are implemented, superseded, or historical
 ```
 
-Local-only paths (`tmp/`, `drafts/`, `local/`) are gitignored.
+Local-only paths (`tmp/`, `drafts/`, `local/`) are gitignored. `archived/` is the canonical archive
+location. A folder named `archive/` is legacy-only and must not receive new plan files.
 
 ## Plan Status Taxonomy
 
