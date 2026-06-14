@@ -18,7 +18,7 @@ Astro promotes the following conventional folders, though you may extend them if
 - `.agent/plans/` — Operational plans for agents. Active plans live under `active/`; completed,
   superseded, and historical plans under `archived/`. See `.agent/plans/README.md` for governance.
 - `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
-- `.agent/governance/` — Quality control scripts and policies.
+- `.agent/rules/` — Short operational rules and safety playbooks for agents.
 - `src/lib/<feature>/page-data.ts` — Route-facing page assembly modules kept inside the owning
   feature.
 
@@ -174,23 +174,22 @@ Not all situations fit the conventions. If a change requires deviating:
 - This directory is ignored by git to keep the repository clean.
 - When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
 
-## 12) Adding New Events
+## 12) Adding Real or Client Invitations
 
-When adding a new event to the platform, follow the AssetRegistry pattern to ensure type safety,
-centralized management, and consistency:
+Real/client invitations are DB-published content, not new JSON files under `src/content/events`. Use
+`docs/domains/content/event-governance.md` as the source of truth for real invitation governance.
 
-1. **Create the invitation content** under `src/content/events/{event-slug}.json`.
-2. **Create event assets** in `src/assets/images/events/{event-slug}/` when the event uses local
-   routed media.
-3. **Export event assets** from `src/assets/images/events/{event-slug}/index.ts` so discovery and
+When a real invitation uses local routed media:
+
+1. **Create event assets** in `src/assets/images/events/{asset-slug}/`.
+2. **Export event assets** from `src/assets/images/events/{asset-slug}/index.ts` so discovery and
    registry helpers can consume them consistently.
-4. **When deriving from a demo**, copy the demo content shape into the real event file, replace all
-   event-specific copy and media references, and keep assets slug-scoped instead of depending on the
-   demo asset module.
-5. **Verify the content and theme contract** by running `pnpm ops validate-schema`,
-   `pnpm type-check`, and `pnpm build`.
+3. **Set `_assetSlug`** in the DB-published content per the
+   [invitation production rules](../../.agent/rules/invitation-production.md).
+4. **Verify the content and theme contract** with the narrow relevant commands from
+   `docs/domains/content/event-governance.md`.
 
-For the active content contract, refer to `docs/domains/content/collections.md` and
-`docs/domains/content/event-governance.md`.
+Static content under `src/content/events` is legacy/static fallback content only. Demos and
+templates remain under `src/content/event-demos` and `src/content/event-templates`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

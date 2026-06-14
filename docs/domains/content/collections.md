@@ -1,9 +1,10 @@
 # Content Collections
 
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-06-14
 
-Celebra-me uses Astro content collections for routable events, showcase demos, and internal
-templates.
+Celebra-me uses Astro content collections for legacy/static fallback content, showcase demos, and
+internal templates. Real/client invitations are DB-published content; see
+[`event-governance.md`](event-governance.md) for the real invitation source-of-truth contract.
 
 ## Source of Truth
 
@@ -15,13 +16,14 @@ templates.
 
 ## Active Collections
 
-| Collection        | Path                             | Purpose                        |
-| ----------------- | -------------------------------- | ------------------------------ |
-| `events`          | `src/content/events/**`          | live routable events           |
-| `event-demos`     | `src/content/event-demos/**`     | public showcase demos          |
-| `event-templates` | `src/content/event-templates/**` | internal templates and masters |
+| Collection        | Path                             | Purpose                                     |
+| ----------------- | -------------------------------- | ------------------------------------------- |
+| `events`          | `src/content/events/**`          | legacy/static fallback; no new real clients |
+| `event-demos`     | `src/content/event-demos/**`     | public showcase demos                       |
+| `event-templates` | `src/content/event-templates/**` | internal templates and masters              |
 
-Only `events` and `event-demos` are routable through the public invitation routes.
+Only `events` and `event-demos` are routable through the public invitation routes. DB-published
+client content from `published_invitation_content` is resolved before static fallback content.
 
 ## Event Type Contract
 
@@ -58,18 +60,18 @@ Public invitation routes resolve as:
 - `/{eventType}/{slug}?invite={inviteId}`
 - `/{eventType}/{slug}/i/{shortId}`
 
-`src/lib/content/events.ts` resolves live events first and then public demos by slug and
-`eventType`.
+`src/lib/content/events.ts` resolves static fallback entries and public demos by slug and
+`eventType`. Public client invitation resolution is governed by `published_invitation_content`.
 
 ## Asset Expectations
 
-Event-specific source assets live under `src/assets/images/events/<slug>/`.
+Event-specific source assets live under `src/assets/images/events/<asset-slug>/`.
 
-Routable slugs must remain globally unique across `events` and `event-demos`. The public route,
-asset discovery, and invitation override layers assume a single owner per slug.
+Static routable slugs must remain globally unique across `events` and `event-demos`. Real/client
+route slugs live in DB publication rows and must stay distinct from demo/template slugs.
 
 When a route depends on local event assets, keep the asset exports in
-`src/assets/images/events/<slug>/index.ts` so the discovery/registry helpers can consume them
+`src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them
 consistently.
 
 ## Validation

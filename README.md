@@ -44,7 +44,6 @@ canonical environment workflow.
 | -------------------------- | ----------------------------------------------------------------------------------- |
 | `pnpm dev`                 | start the Astro dev server                                                          |
 | `pnpm build`               | run event parity validation, `astro check`, and build output                        |
-| `pnpm start`               | preview the Astro app locally                                                       |
 | `pnpm preview`             | preview the Astro app locally                                                       |
 | `pnpm type-check`          | run `astro check`                                                                   |
 | `pnpm lint`                | run ESLint across the repository                                                    |
