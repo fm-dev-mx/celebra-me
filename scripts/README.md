@@ -29,9 +29,11 @@ owns the command inventory.
 | `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`      | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
 | `pnpm ops validate-event-parity` | `scripts/validate-event-parity.ts` | compare content events against the Supabase `events` table                                                              |
 | `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range                                                         |
-| `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | scaffold a new invitation content file plus related support artifacts                                                   |
+| `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | disabled fail-closed guard; real/client invitations are DB-published content                                            |
 
 `pnpm ops adopt-legacy-events` remains registered for historical visibility but fails closed.
+`pnpm ops new-invitation` also fails closed because the old static invitation scaffold no longer
+matches the production invitation workflow.
 
 ## Database Command Inventory
 
@@ -62,5 +64,4 @@ pnpm ops check-links
 pnpm ops validate-schema
 pnpm ops validate-event-parity --allowMissingDb
 pnpm ops validate-commits HEAD~5 HEAD
-pnpm ops new-invitation mi-evento --eventType xv
 ```

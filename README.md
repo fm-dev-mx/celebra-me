@@ -63,7 +63,7 @@ canonical environment workflow.
 - `validate-schema`
 - `validate-event-parity`
 - `validate-commits`
-- `new-invitation`
+- `new-invitation` (disabled fail-closed; real/client invitations are DB-published)
 
 ## Repository Layout
 
