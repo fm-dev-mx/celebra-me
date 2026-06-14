@@ -2,7 +2,7 @@
 title: Leah Lexa Baby Shower Client Invitation
 status: active
 created: 2026-06-12
-updated: 2026-06-13
+updated: 2026-06-14
 related_skills:
   - frontend-design
   - astro-patterns
@@ -92,6 +92,58 @@ Implementation direction:
    patch. If not, either apply the guarded patch through a local-safe owner UUID workflow or report
    that visual QA cannot verify the updated DB-published content yet.
 5. Only after review, follow the approved production database workflow for any production mutation.
+
+## Visual Polish Scope (2026-06-14)
+
+Focused, non-architectural polish pass on the already-edited Leah content. Goal: make the invitation
+feel like a continuous premium editorial piece, not a collection of generic UI components.
+Architecture, content model, and `_assetSlug` remain unchanged.
+
+### SQL content-only edits (inside `v_content` jsonb)
+
+- **Location venue** — add `coordinates: { lat: 19.4853, lng: -99.1430 }` so the existing
+  `GoogleMap.astro` iframe path renders and the OptimizedImage SVG fallback (the gray block) is no
+  longer triggered. Approximate centro coords for Col. Guadalupe Proletaria / GAM; refine before any
+  production execution.
+- **Gallery** — drop `'eyebrow', 'Mis guardianes'` and the inline duplicate `'caption'`. Keep
+  `variant: 'single'`, title, subtitle, and the `gallery03` item.
+- **Thank-you** — replace the clinical line with
+  `Este primer recuerdo y cada muestra de cariño serán parte de mi historia.`
+  `closingName: 'Leah Lexa'` and `image: 'gallery02'` unchanged.
+
+### UI/SCSS surface
+
+- `src/components/invitation/Gallery.astro` — render the eyebrow `<span>` only when truthy so
+  removing it from the SQL content is enough to drop the hierarchy. No schema change.
+- `src/styles/themes/sections/gallery/_celestial-blue.scss` — add a celestial-blue-scoped
+  `.gallery-section[data-variant='single']` block:
+  - `--gallery-title-color: #3E2B22;` (warm chocolate, fixes low-contrast pastel blue on ivory)
+  - `--gallery-subtitle-color` lifted to `rgb(var(--color-soft-graphite-rgb) / 78%)`
+  - smaller max-width, restrained padding, warmer paper card treatment, square mobile aspect.
+- `src/styles/themes/sections/thank-you/_celestial-blue.scss` — soften the editorial frame:
+  - trim `.thank-you-editorial__media` width by ~10–13% on mobile and desktop
+  - replace the bluish translucent plate / glassy border with a warm paper/ivory surface and a soft
+    blush/gold hairline
+  - ease the `filter` on the photo so the dark ultrasound does not punch through
+  - keep the arched `border-radius: 999px 999px 0.8rem 0.8rem;` shape intact
+- `src/styles/themes/sections/hero/_celestial-blue.scss` — no edit; verify post-edit only.
+
+### Out of scope
+
+- No new components, no schema changes, no asset transforms, no removed assets.
+- No family component/style changes.
+- No edits to `src/lib/invitation/page-data.ts`.
+- No static `src/content/event-demos/baby-shower/leah-lexa-baby-shower.json`.
+- Production DB not touched. SQL patch stays fail-closed with `v_owner_user_id uuid := null::uuid;`.
+
+### Validation
+
+- `pnpm db:sql:lint -- --file scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql`
+- `pnpm type-check`
+- `pnpm validate:event-parity`
+- `pnpm lint` if practical
+- Visual QA at 390×844 against `http://localhost:4321/baby-shower/leah-lexa?skipEnvelope=true` with
+  screenshots saved to a temp directory outside the repo.
 
 ## Validation
 
