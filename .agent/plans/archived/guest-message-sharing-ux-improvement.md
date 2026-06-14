@@ -1,6 +1,6 @@
 ---
 title: Guest Message Sharing UX Improvement
-status: active
+status: implemented
 created: 2026-06-10
 updated: 2026-06-10
 implemented: 2026-06-10

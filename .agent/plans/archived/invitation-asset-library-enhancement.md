@@ -1,6 +1,6 @@
 ---
 title: Invitation Asset Library — Library Visibility, Metadata Editing & Demo Asset Display
-status: active
+status: implemented
 created: 2026-06-03
 updated: 2026-06-03
 phase: all

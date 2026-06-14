@@ -1,6 +1,6 @@
 ---
 title: Invitation Public Safety, Data Consistency & Editor Corrections
-status: active
+status: implemented
 created: 2026-06-03
 updated: 2026-06-03
 phase: all
@@ -16,8 +16,8 @@ related_skills:
   - frontend-design
 related_docs:
   - .agent/plans/README.md
-  - .agent/plans/active/invitation-dashboard-premium-plan.md
-  - .agent/plans/active/invitation-asset-library-enhancement.md
+  - .agent/plans/archived/invitation-dashboard-premium-plan.md
+  - .agent/plans/archived/invitation-asset-library-enhancement.md
   - docs/core/architecture.md
 supersedes: []
 superseded_by: []

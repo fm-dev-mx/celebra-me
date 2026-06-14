@@ -1,6 +1,6 @@
 ---
 title: Internal Invitation Editor Premium UX Plan
-status: active
+status: implemented
 created: 2026-05-31
 updated: 2026-06-02
 related_skills:
@@ -479,7 +479,7 @@ pnpm build
 ### Planning and Existing Plan Context
 
 - `.agent/plans/README.md`
-- `.agent/plans/active/invitation-dashboard-premium-plan.md`
+- `.agent/plans/archived/invitation-dashboard-premium-plan.md`
 - `.agent/plans/active/editor-hydration-fix.md`
 - `.agent/plans/active/section-architecture-refactor-plan.md`
 
