@@ -288,6 +288,42 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('accepts medium interlude height for compact emotional sections', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				interludes: [
+					{
+						image: 'https://example.com/interlude.jpg',
+						afterSection: 'quote',
+						height: 'medium',
+						alt: 'Antes de conocerte, ya eras nuestro sueño más bonito.',
+					},
+				],
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) throw new Error('expected parse to succeed');
+		expect(result.data.interludes?.[0]?.height).toBe('medium');
+	});
+
+	it('preserves the single gallery variant for one-image editorial galleries', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				gallery: {
+					variant: 'single',
+					title: 'La manada tambien te espera',
+					subtitle: 'En casa ya hay patitas listas para recibirte con amor.',
+					items: [{ image: 'https://example.com/dogs.jpg' }],
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) throw new Error('expected parse to succeed');
+		expect(result.data.gallery?.variant).toBe('single');
+	});
+
 	it('rejects unsupported RSVP content fields instead of silently stripping them', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
