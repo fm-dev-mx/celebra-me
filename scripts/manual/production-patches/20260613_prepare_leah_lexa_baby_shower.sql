@@ -245,13 +245,11 @@ begin
     ),
     'gallery', jsonb_build_object(
       'variant', 'single',
-      'eyebrow', 'Mis guardianes',
       'title', 'La manada también te espera',
       'subtitle', 'En casa ya hay patitas listas para recibirte con amor.',
       'items', jsonb_build_array(
         jsonb_build_object(
-          'image', 'gallery03',
-          'caption', 'La manada también te espera.'
+          'image', 'gallery03'
         )
       )
     ),
@@ -280,7 +278,11 @@ begin
           'city', 'Ciudad de México',
           'date', 'domingo, 21 de junio de 2026',
           'time', '2:00 PM',
-          'mapUrl', 'https://www.google.com/maps/search/?api=1&query=Calle%2022%2C%20Manzana%201%2C%20Lote%2020%2C%20Col.%20Guadalupe%20Proletaria%2C%20C.P.%2007670'
+          'mapUrl', 'https://www.google.com/maps/search/?api=1&query=Calle%2022%2C%20Manzana%201%2C%20Lote%2020%2C%20Col.%20Guadalupe%20Proletaria%2C%20C.P.%2007670',
+          'coordinates', jsonb_build_object(
+            'lat', 19.4853,
+            'lng', -99.1430
+          )
         )
       ),
       'indications', jsonb_build_array(
@@ -317,7 +319,7 @@ begin
     ),
     'thankYou', jsonb_build_object(
       'image', 'gallery02',
-      'message', 'Gracias por acompañarnos en este momento tan especial. Este ultrasonido y cada muestra de cariño serán parte de mis primeros recuerdos.',
+      'message', 'Este primer recuerdo y cada muestra de cariño serán parte de mi historia.',
       'closingName', 'Leah Lexa'
     ),
     'envelope', jsonb_build_object(
