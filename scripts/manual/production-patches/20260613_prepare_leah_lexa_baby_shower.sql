@@ -28,11 +28,9 @@
 -- @rollback: restore from backup
 --
 -- ╔══════════════════════════════════════════════════════════════════════════════╗
--- ║  INTERNAL PREVIEW CANDIDATE — NOT PRODUCTION-READY, NOT FOR CLIENT         ║
--- ║  DELIVERY.  This patch requires human validation, real owner UUID, and     ║
--- ║  client-approved assets before it can be considered for production.  See   ║
--- ║  the blocker comments inline and run the validation commands listed in the  ║
--- ║  Final Report section of the PR/issue.                                     ║
+-- ║  PRODUCTION CANDIDATE — client-approved assets are now wired.  The         ║
+-- ║  owner_user_id below MUST be replaced with a real auth.users.id before     ║
+-- ║  execution; the script fails closed with OWNER_USER_ID_REQUIRED if null.   ║
 -- ╚══════════════════════════════════════════════════════════════════════════════╝
 --
 -- This script is intentionally guarded and transactional. It creates or reuses
@@ -111,7 +109,7 @@ begin
       'eventType', v_event_type,
       'displayName', 'Baby Shower — Leah Lexa',
       'themeId', v_theme_id,
-      'defaultSections', jsonb_build_array('quote', 'family', 'gallery', 'location', 'gifts', 'rsvp', 'thankYou'),
+      'defaultSections', jsonb_build_array('quote', 'family', 'location', 'gifts', 'rsvp', 'gallery', 'thankYou'),
       'supportedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'music', 'gifts', 'special-messages'),
       'recommendedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'gifts', 'special-messages'),
       'previewSlug', 'leah-lexa-baby-shower'
@@ -187,7 +185,7 @@ begin
     'eventType', v_event_type,
     'isDemo', false,
     'title', v_title,
-    'description', 'Invitacion real para celebrar el Baby Shower de Leah Lexa. Los recursos visuales de ultrasonido y perritos son provisionales hasta recibir originales del cliente.',
+    'description', 'Invitacion real para celebrar el Baby Shower de Leah Lexa. Los recursos visuales incluyen imagenes oficiales del cliente.',
     -- Must match asset directory name under src/assets/images/events/ for isValidEvent()
     '_assetSlug', 'leah-lexa-baby-shower',
     'theme', jsonb_build_object(
@@ -202,11 +200,11 @@ begin
     'sectionOrder', jsonb_build_array(
       'quote',
       'family',
-      'gallery',
       'location',
       'gifts',
       'personalizedAccess',
       'rsvp',
+      'gallery',
       'thankYou'
     ),
     'sectionStyles', jsonb_build_object(
@@ -220,21 +218,18 @@ begin
         )
       )
     ),
-    -- INTERNAL PREVIEW ONLY: backgroundImage is an Unsplash external URL used as a
-    -- temporary fallback.  No local hero asset exists under
-    -- src/assets/images/events/leah-lexa-baby-shower/ yet.  Replace with a
-    -- client-approved hero asset before client delivery.
     'hero', jsonb_build_object(
       'name', 'Leah Lexa',
       'label', 'Mi Baby Shower',
       'date', '2026-06-21T20:00:00.000Z',
-      'backgroundImage', 'https://images.unsplash.com/photo-1518893883800-45cd0954574b?w=1200&q=80'
+      'backgroundImage', 'hero'
     ),
     'quote', jsonb_build_object(
       'text', 'Los tiempos de Dios son perfectos, y Dios les dio la dicha a mis papis de hacer crecer nuestra familia.',
       'author', 'Leah Lexa'
     ),
     'family', jsonb_build_object(
+      'featuredImage', 'family',
       'parents', jsonb_build_object(
         'father', 'Hugo',
         'mother', 'Fernanda'
@@ -249,13 +244,23 @@ begin
       )
     ),
     'gallery', jsonb_build_object(
-      'eyebrow', 'Mi familia de cuatro patas',
-      'title', 'Mis hermanos perruños',
-      'subtitle', 'Ellos también me esperan con mucho amor y están listos para recibirme en casa.',
+      'variant', 'single',
+      'eyebrow', 'Mis guardianes',
+      'title', 'La manada también te espera',
+      'subtitle', 'En casa ya hay patitas listas para recibirte con amor.',
       'items', jsonb_build_array(
         jsonb_build_object(
-          'caption', 'Imagen provisional de referencia. Reemplazar por assets originales del cliente antes de publicación final.'
+          'image', 'gallery03',
+          'caption', 'La manada también te espera.'
         )
+      )
+    ),
+    'interludes', jsonb_build_array(
+      jsonb_build_object(
+        'image', 'gallery01',
+        'afterSection', 'quote',
+        'height', 'medium',
+        'alt', 'Antes de conocerte, ya eras nuestro sueño más bonito.'
       )
     ),
     -- NOTE (location): venue name, address, and map URL below are unverified.
@@ -311,7 +316,8 @@ begin
       'confirmationMode', 'api'
     ),
     'thankYou', jsonb_build_object(
-      'message', 'Gracias por acompañarnos en este momento tan especial. Me emociona saber que muy pronto podré conocerlos y recibir todo su cariño.',
+      'image', 'gallery02',
+      'message', 'Gracias por acompañarnos en este momento tan especial. Este ultrasonido y cada muestra de cariño serán parte de mis primeros recuerdos.',
       'closingName', 'Leah Lexa'
     ),
     'envelope', jsonb_build_object(
@@ -332,6 +338,7 @@ begin
     ),
     'sharing', jsonb_build_object(
       'whatsappTemplate', 'Hola {name}, soy Leah Lexa. Te comparto la invitación a mi Baby Shower: {inviteUrl}',
+      'ogImage', 'hero',
       'ogDescription', 'Acompáñame en mi Baby Shower el domingo, 21 de junio de 2026, a las 2:00 PM.'
     )
   );
