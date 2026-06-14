@@ -136,6 +136,8 @@ export type GiftItem =
 	| { type: 'paypal'; title: string; url: string }
 	| { type: 'cash'; title: string; text?: string };
 
+export type GalleryVariant = SharedSectionVariant | 'single';
+
 export interface EnvelopeViewModel {
 	enabled: boolean;
 	data?: {
@@ -240,7 +242,7 @@ export interface InvitationViewModel {
 				focalPointTablet?: string;
 				focalPointDesktop?: string;
 			}>;
-			variant?: SharedSectionVariant;
+			variant: GalleryVariant;
 		};
 		itinerary?: {
 			title: string;

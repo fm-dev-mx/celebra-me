@@ -25,6 +25,10 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 		featureIndices: [0, 5],
 		wideIndices: [1, 4],
 	},
+	single: {
+		featureIndices: [],
+		wideIndices: [],
+	},
 	'jewelry-box': (index: number): LayoutClass => {
 		if (index % 5 === 0) return FEATURE;
 		if (index % 3 === 0) return WIDE;
@@ -32,7 +36,7 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 	},
 };
 
-export type GalleryVariant = keyof typeof strategies;
+type GalleryVariant = keyof typeof strategies;
 
 export function getLayoutClass(index: number, variant?: string): LayoutClass {
 	const strategy = strategies[variant as GalleryVariant];

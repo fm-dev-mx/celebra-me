@@ -57,7 +57,11 @@ export type InvitationSectionRenderDescriptor =
 	  }
 	| { component: 'quote'; props: SectionData<'quote'> & { variant: ThemePreset } }
 	| { component: 'family'; props: SectionData<'family'> & { variant: ThemePreset } }
-	| { component: 'gallery'; props: SectionData<'gallery'> & { variant: ThemePreset } }
+	| {
+			component: 'gallery';
+			// variant must be spread from sections.gallery (already resolved by adapter)
+			props: SectionData<'gallery'>;
+	  }
 	| { component: 'countdown'; props: SectionData<'countdown'> & { variant: ThemePreset } }
 	| { component: 'location'; props: LocationProps & { variant: ThemePreset } }
 	| {
@@ -235,10 +239,8 @@ function renderSection(
 			return sections.gallery
 				? {
 						component: 'gallery',
-						props: {
-							...sections.gallery,
-							variant: resolveSectionVariant(sections.gallery, variant),
-						},
+						// variant already resolved by adapter; spread includes it
+						props: sections.gallery,
 					}
 				: null;
 

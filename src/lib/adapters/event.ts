@@ -418,11 +418,13 @@ function buildGallerySectionData(context: AdaptationContext) {
 	return {
 		...data.gallery,
 		items,
-		variant: sectionVariant(
-			'gallery',
-			data.sectionStyles?.gallery?.variant,
-			context.normalizedPreset,
-		),
+		variant:
+			data.gallery.variant ??
+			sectionVariant(
+				'gallery',
+				data.sectionStyles?.gallery?.variant,
+				context.normalizedPreset,
+			),
 	};
 }
 
