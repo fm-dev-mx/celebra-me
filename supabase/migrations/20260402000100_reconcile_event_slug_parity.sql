@@ -57,8 +57,8 @@ begin
     and target_event.id is null;
 
   if missing_targets is not null then
-    raise exception
-      'Cannot reconcile event parity because these canonical events are missing and there is no demo source to clone: %',
+    raise notice
+      'Skipping event slug reconciliation — source demos not found (fresh DB): %',
       missing_targets;
   end if;
 end
