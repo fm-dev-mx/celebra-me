@@ -11,12 +11,29 @@
 -- @env: production
 -- @ticket: CELEBRA-LEAH
 -- @tables: public.invitations, public.events, public.published_invitation_content
--- @operation: INSERT / UPDATE
--- @expected-rows-min: 3
+-- @operation: update
+--   Note: This patch has both an INSERT path (first application: inserts into
+--   invitations, events, and published_invitation_content = 3 rows) and an UPDATE
+--   path (re-runs / existing rows: updates published_invitation_content and
+--   optionally invitations.status = 1-2 rows).  Per the manifest contract
+--   the @operation field must be a single value, so "update" is chosen as
+--   the highest-risk single value accepted by the guide (the UPDATE path
+--   silently modifies published content without creating new rows).
+-- @expected-rows-min: 1
 -- @expected-rows-max: 3
+--   Note: expected-rows-min = 1 (update/re-publish path touches 1-2 rows);
+--   expected-rows-max = 3 (clean insert path creates 3 rows).
 -- @requires-backup: true
 -- @dry-run-query: select count(*) from public.invitations where slug = 'leah-lexa' and event_type = 'baby-shower';
 -- @rollback: restore from backup
+--
+-- ╔══════════════════════════════════════════════════════════════════════════════╗
+-- ║  INTERNAL PREVIEW CANDIDATE — NOT PRODUCTION-READY, NOT FOR CLIENT         ║
+-- ║  DELIVERY.  This patch requires human validation, real owner UUID, and     ║
+-- ║  client-approved assets before it can be considered for production.  See   ║
+-- ║  the blocker comments inline and run the validation commands listed in the  ║
+-- ║  Final Report section of the PR/issue.                                     ║
+-- ╚══════════════════════════════════════════════════════════════════════════════╝
 --
 -- This script is intentionally guarded and transactional. It creates or reuses
 -- only the intended Leah Lexa invitation rows and refuses to overwrite unrelated
@@ -26,7 +43,10 @@ begin;
 
 do $$
 declare
-  -- REQUIRED: replace this placeholder with the invitation owner's auth.users.id.
+  -- BLOCKER (production): This patch CANNOT run until a real auth.users.id for
+  -- the intended owner (Hugo/Fernanda for Leah Lexa) is substituted below.
+  -- Do NOT fake or infer a UUID — the script fails closed with
+  -- OWNER_USER_ID_REQUIRED if null.  This is NOT production-ready.
   v_owner_user_id uuid := null::uuid;
 
   v_slug constant text := 'leah-lexa';
@@ -200,6 +220,10 @@ begin
         )
       )
     ),
+    -- INTERNAL PREVIEW ONLY: backgroundImage is an Unsplash external URL used as a
+    -- temporary fallback.  No local hero asset exists under
+    -- src/assets/images/events/leah-lexa-baby-shower/ yet.  Replace with a
+    -- client-approved hero asset before client delivery.
     'hero', jsonb_build_object(
       'name', 'Leah Lexa',
       'label', 'Mi Baby Shower',
@@ -234,6 +258,8 @@ begin
         )
       )
     ),
+    -- NOTE (location): venue name, address, and map URL below are unverified.
+    -- Requires final human validation before client delivery.
     'location', jsonb_build_object(
       'introEyebrow', 'Nos vemos para celebrar',
       'introHeading', 'Domingo, 21 de junio de 2026',
@@ -278,7 +304,7 @@ begin
     ),
     'rsvp', jsonb_build_object(
       'title', 'Confirma tu asistencia',
-      'subcopy', 'RSVP real pendiente de configuración final por el propietario.',
+      'subcopy', 'Confirma tu asistencia para compartir este día tan especial con nosotros.',
       'guestCap', 100,
       'accessMode', 'personalized-only',
       'confirmationMessage', 'Gracias por confirmar. Mis papis y yo nos ponemos muy felices de saber que nos acompañarán.',
