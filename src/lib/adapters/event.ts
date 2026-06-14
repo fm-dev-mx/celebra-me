@@ -332,6 +332,10 @@ function resolveVenueData(
 	};
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
@@ -339,7 +343,6 @@ function buildLocationSectionData(context: AdaptationContext) {
 	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
 
 	const rawVenues = data.location.venues;
-	const hasVenues = rawVenues !== undefined;
 	const venues: VenueEntry[] | undefined = (
 		rawVenues as Array<Record<string, unknown>> | undefined
 	)?.map((v) => {
@@ -356,12 +359,15 @@ function buildLocationSectionData(context: AdaptationContext) {
 			date: v.date as string,
 			time: v.time as string,
 			mapUrl: v.mapUrl as string | undefined,
+			coordinates: isRecord(v.coordinates)
+				? (v.coordinates as { lat: number; lng: number })
+				: undefined,
 			image: resolveAsset(eventSlug, v.image as string | AssetSource, data.title),
 		};
 	});
 
 	return {
-		...(hasVenues
+		...(rawVenues !== undefined
 			? { venues }
 			: {
 					ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
