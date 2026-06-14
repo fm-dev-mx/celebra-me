@@ -6,6 +6,18 @@
 -- 3. The operator has confirmed this route should be published from DB content:
 --    /baby-shower/leah-lexa
 --
+-- @script-id: 20260613_prepare_leah_lexa_baby_shower
+-- @purpose: Prepare real Leah Lexa Baby Shower invitation as DB-published content
+-- @env: production
+-- @ticket: CELEBRA-LEAH
+-- @tables: public.invitations, public.events, public.published_invitation_content
+-- @operation: INSERT / UPDATE
+-- @expected-rows-min: 3
+-- @expected-rows-max: 3
+-- @requires-backup: true
+-- @dry-run-query: select count(*) from public.invitations where slug = 'leah-lexa' and event_type = 'baby-shower';
+-- @rollback: restore from backup
+--
 -- This script is intentionally guarded and transactional. It creates or reuses
 -- only the intended Leah Lexa invitation rows and refuses to overwrite unrelated
 -- invitations, RSVP events, or published content.
@@ -75,14 +87,14 @@ begin
     v_invitation_id := v_existing_invitation.id;
   else
     v_snapshot := jsonb_build_object(
-      'id', v_base_demo_id,
+      'id', v_slug,
       'eventType', v_event_type,
-      'displayName', 'Baby Shower - Celestial Demo',
+      'displayName', 'Baby Shower — Leah Lexa',
       'themeId', v_theme_id,
       'defaultSections', jsonb_build_array('quote', 'family', 'gallery', 'location', 'gifts', 'rsvp', 'thankYou'),
       'supportedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'music', 'gifts', 'special-messages'),
       'recommendedBlocks', jsonb_build_array('event-details', 'main-people', 'date-locations', 'photos', 'rsvp-config', 'gifts', 'special-messages'),
-      'previewSlug', 'demo-baby-shower-celestial'
+      'previewSlug', 'leah-lexa-baby-shower'
     );
 
     insert into public.invitations (
@@ -110,8 +122,8 @@ begin
       v_theme_id,
       v_snapshot,
       'Hugo y Fernanda',
-      '',
-      '',
+      null::text,
+      null::text,
       false,
       v_owner_user_id
     )
@@ -156,7 +168,8 @@ begin
     'isDemo', false,
     'title', v_title,
     'description', 'Invitacion real para celebrar el Baby Shower de Leah Lexa. Los recursos visuales de ultrasonido y perritos son provisionales hasta recibir originales del cliente.',
-    '_assetSlug', v_slug,
+    -- Must match asset directory name under src/assets/images/events/ for isValidEvent()
+    '_assetSlug', 'leah-lexa-baby-shower',
     'theme', jsonb_build_object(
       'fontFamily', 'serif',
       'preset', v_theme_id
@@ -266,7 +279,7 @@ begin
     'rsvp', jsonb_build_object(
       'title', 'Confirma tu asistencia',
       'subcopy', 'RSVP real pendiente de configuración final por el propietario.',
-      'guestCap', 4,
+      'guestCap', 100,
       'accessMode', 'personalized-only',
       'confirmationMessage', 'Gracias por confirmar. Mis papis y yo nos ponemos muy felices de saber que nos acompañarán.',
       'confirmationMode', 'api'
@@ -339,9 +352,11 @@ begin
     );
   end if;
 
-  update public.invitations
-  set status = 'published'
-  where id = v_invitation_id;
+  if (select status from public.invitations where id = v_invitation_id) <> 'published' then
+    update public.invitations
+    set status = 'published'
+    where id = v_invitation_id;
+  end if;
 end;
 $$;
 
