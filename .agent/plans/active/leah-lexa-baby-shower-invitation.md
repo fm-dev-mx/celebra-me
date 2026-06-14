@@ -58,13 +58,40 @@ Slug meanings must remain distinct:
 - Do not execute production SQL from this plan. The patch entrypoint is dry-run lint only until a
   reviewed execution process exists.
 
+## Editorial Refresh Scope
+
+Approved refresh work keeps Leah Lexa on DB-published content at `/baby-shower/leah-lexa` and keeps
+`_assetSlug = 'leah-lexa-baby-shower'`. The route must not gain a static Leah JSON file.
+
+Asset mapping confirmed from local files:
+
+- `gallery01`: other parents photo.
+- `gallery02`: ultrasound/ecografia image.
+- `gallery03`: dogs image.
+
+Implementation direction:
+
+- Preserve the current hero image and improve mobile text contrast with a soft bottom overlay and
+  readable warm/light tones.
+- Add a reusable `medium` interlude height for compact emotional interludes.
+- Use `gallery01` as a medium parents-photo interlude after `quote`.
+- Keep `gallery` in Leah's section order, but repurpose it as a one-image secondary dogs section
+  using `variant: single`, `gallery03`, title `La manada también te espera`, and copy
+  `En casa ya hay patitas listas para recibirte con amor.`.
+- Use `gallery02` as the thank-you ultrasound/ecografia image with intimate closing copy.
+- Do not change family schemas/components/styles for the dogs treatment.
+- Do not remove shared gallery functionality, delete assets, or remove gallery globally.
+
 ## Next Work
 
 1. Confirm the real owner `auth.users.id`.
 2. Re-run SQL safety checks on the Leah patch.
 3. Review the Leah content embedded in the patch for final owner, map, RSVP, gift, and asset
    approval details.
-4. Only after review, follow the approved production database workflow for any production mutation.
+4. For local visual QA, confirm whether the local DB row has been updated from the edited manual
+   patch. If not, either apply the guarded patch through a local-safe owner UUID workflow or report
+   that visual QA cannot verify the updated DB-published content yet.
+5. Only after review, follow the approved production database workflow for any production mutation.
 
 ## Validation
 
