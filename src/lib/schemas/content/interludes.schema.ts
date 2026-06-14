@@ -7,7 +7,7 @@ export const interludeSchema = z.object({
 	image: AssetSchema,
 	afterSection: z.enum(CONTENT_SECTION_KEYS),
 	alt: z.string().optional(),
-	height: z.enum(['screen', 'tall']).default('screen'),
+	height: z.enum(['screen', 'tall', 'medium']).default('screen'),
 	variant: z.enum(THEME_PRESETS).optional(),
 	focalPoint: focalPointSchema.optional(),
 	lightX: z.string().optional(),

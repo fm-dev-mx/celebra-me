@@ -16,7 +16,7 @@ export type InterludeRenderItem = {
 	type: 'interlude';
 	image: ImageAsset;
 	alt?: string;
-	height: 'screen' | 'tall';
+	height: 'screen' | 'tall' | 'medium';
 	variant?: ThemePreset;
 	focalPoint?: string;
 	lightX?: string;

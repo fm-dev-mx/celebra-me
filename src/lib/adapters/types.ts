@@ -163,7 +163,7 @@ export interface Interlude {
 	image: ImageAsset;
 	afterSection: ContentSectionKey;
 	alt?: string;
-	height: 'screen' | 'tall';
+	height: 'screen' | 'tall' | 'medium';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	lightX?: string;

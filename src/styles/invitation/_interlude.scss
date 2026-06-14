@@ -28,6 +28,8 @@
 	--interlude-min-height: 100svh;
 	--interlude-min-height-sm: var(--interlude-min-height);
 	--interlude-min-height-tall: 80svh;
+	--interlude-min-height-medium: 58svh;
+	--interlude-min-height-medium-sm: 58svh;
 	--interlude-frame-inset: 0;
 	--interlude-frame-inset-sm: var(--interlude-frame-inset);
 	--interlude-frame-border: none;
@@ -47,6 +49,10 @@
 	&[data-interlude-index='1'],
 	&[data-interlude-index='2'] {
 		min-height: var(--interlude-min-height);
+	}
+
+	&[data-height='medium'] {
+		min-height: var(--interlude-min-height-medium);
 	}
 
 	&__media {
@@ -111,6 +117,10 @@
 		&[data-interlude-index='1'],
 		&[data-interlude-index='2'] {
 			min-height: var(--interlude-min-height-sm);
+		}
+
+		&[data-height='medium'] {
+			min-height: var(--interlude-min-height-medium-sm);
 		}
 	}
 
