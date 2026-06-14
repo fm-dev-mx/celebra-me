@@ -1,11 +1,16 @@
 ---
 title: Sacred Keepsake Theme Decoupling
-status: active
+status: implemented
 created: unknown
-updated: 2026-05-31
+updated: 2026-06-14
 ---
 
 # Sacred Keepsake Theme Decoupling
+
+> Implemented: the `sacred-keepsake` preset is registered in `src/lib/theme/theme-contract.ts`,
+> section partials live under `src/styles/themes/sections/*/_sacred-keepsake.scss`, and no
+> `cesar-ramses` theme alias or event override remains under `src/styles/themes/`. Retained as
+> historical reference for the decoupling sequence.
 
 ## Intent
 
