@@ -244,14 +244,23 @@
 	}
 
 	.gallery-grid__item img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 34%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 34%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 34%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 34%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 34%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 34%)
+			);
 		}
 	}
 
@@ -299,79 +308,133 @@
 	}
 
 	.gallery-grid__item[data-gallery-index='2'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 26%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 26%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 26%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 26%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 26%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 26%)
+			);
 		}
 	}
 
 	.gallery-grid__item[data-gallery-index='3'] img,
 	.gallery-grid__item[data-gallery-index='4'] img,
 	.gallery-grid__item[data-gallery-index='5'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 42%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 42%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 42%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 42%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 42%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 42%)
+			);
 		}
 	}
 
 	.gallery-grid__item[data-gallery-index='7'] img,
 	.gallery-grid__item[data-gallery-index='8'] img,
 	.gallery-grid__item[data-gallery-index='9'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 30%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 30%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 30%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 30%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 30%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 30%)
+			);
 		}
 	}
 
 	.gallery-grid__item[data-gallery-index='6'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 38%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 38%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 38%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 38%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 38%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 38%)
+			);
 		}
 	}
 
 	.gallery-grid__item[data-gallery-index='7'] img,
 	.gallery-grid__item[data-gallery-index='8'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 45%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 45%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 45%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 45%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 45%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 45%)
+			);
 		}
 	}
 
 	.gallery-grid__item[data-gallery-index='9'] img {
-		object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 24%));
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, center 24%)
+		);
 
 		@include mixins.respond-to(md) {
-			object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 24%));
+			object-position: var(
+				--gallery-item-focal-point-tablet,
+				var(--gallery-item-focal-point, center 24%)
+			);
 		}
 
 		@include mixins.respond-to(lg) {
-			object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 24%));
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, center 24%)
+			);
 		}
 	}
 
@@ -614,5 +677,85 @@
 			/* stylelint-disable-next-line declaration-no-important */
 			transition-duration: 1ms !important;
 		}
+	}
+}
+
+// ==========================================================================
+// CELESTIAL BLUE — GALLERY single VARIANT
+// Editorial single-image note (Leah Lexa dogs). Premium contained card,
+// warm chocolate title, warmer paper surface, smaller mobile footprint.
+// ==========================================================================
+
+.gallery-section[data-variant='single'] {
+	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
+	--gallery-section-bg: linear-gradient(
+		180deg,
+		rgb(var(--color-cool-ivory-rgb) / 96%) 0%,
+		rgb(var(--color-ice-blue-rgb) / 24%) 100%
+	);
+	--gallery-container-max-width: min(620px, calc(100vw - 2rem));
+	--gallery-header-gap: clamp(1.2rem, 3.5vw, 1.8rem);
+	--gallery-title-color: #3e2b22; /* stylelint-disable-line color-no-hex */
+	--gallery-title-size: clamp(1.85rem, 6.5vw, 2.6rem);
+	--gallery-title-transform: none;
+	--gallery-title-letter-spacing: 0.005em;
+	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 78%);
+	--gallery-subtitle-size: clamp(0.9rem, 2.4vw, 1.02rem);
+	--gallery-subtitle-letter-spacing: 0.01em;
+	--gallery-grid-max-width: min(420px, 100%);
+	--gallery-grid-margin-inline: auto;
+	--gallery-item-aspect-ratio: 5 / 4;
+	--gallery-item-radius: 6px;
+	--gallery-item-padding: clamp(0.4rem, 1vw, 0.55rem);
+	--gallery-item-bg: linear-gradient(
+		135deg,
+		rgb(var(--color-cool-ivory-rgb) / 86%) 0%,
+		rgb(var(--color-diamond-white-rgb) / 96%) 100%
+	);
+	--gallery-item-border: 1px solid rgb(var(--color-soft-graphite-rgb) / 14%);
+	--gallery-item-border-color: rgb(var(--color-soft-graphite-rgb) / 14%);
+	--gallery-item-shadow:
+		0 22px 52px -28px rgb(var(--color-deep-blue-graphite-rgb) / 30%),
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 86%);
+	--gallery-item-hover-transform: translateY(-2px);
+	--gallery-item-hover-shadow:
+		0 28px 60px -28px rgb(var(--color-deep-blue-graphite-rgb) / 34%),
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 90%);
+	--gallery-item-image-radius: 4px;
+	--gallery-item-image-filter-rest: saturate(0.94) contrast(0.98) brightness(1.02);
+	--gallery-item-image-filter-in-view: saturate(0.98) contrast(1) brightness(1.02);
+	--gallery-item-image-filter-hover: saturate(1.02) contrast(1.02) brightness(1.03);
+
+	.gallery-section__title {
+		font-family: var(--gallery-title-font);
+		font-style: italic;
+		text-shadow: 0 1px 0 rgb(var(--color-diamond-white-rgb) / 60%);
+		text-wrap: balance;
+	}
+
+	.gallery-section__subtitle {
+		max-width: 28rem;
+		margin-inline: auto;
+		font-style: italic;
+	}
+
+	.gallery-section__header {
+		max-width: 32rem;
+		margin-inline: auto;
+	}
+
+	.gallery-grid {
+		max-width: var(--gallery-grid-max-width);
+		margin-inline: var(--gallery-grid-margin-inline);
+	}
+
+	.gallery-grid__item {
+		cursor: zoom-in;
+	}
+
+	@include mixins.respond-below(sm) {
+		--gallery-section-padding-block: clamp(3rem, 12vw, 4rem);
+		--gallery-item-aspect-ratio: 1 / 1;
+		--gallery-item-radius: 5px;
 	}
 }
