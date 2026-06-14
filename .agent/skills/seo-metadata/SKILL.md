@@ -9,8 +9,8 @@ when_to_use:
   - Creating or updating invitation pages with share metadata
   - Reviewing Open Graph, Twitter, or structured page metadata
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Page metadata, invitation routes, assets, and social sharing requirements
 outputs:

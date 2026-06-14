@@ -9,8 +9,8 @@ when_to_use:
   - Editing SCSS tokens, presets, theme sections, or component styling architecture
   - Reviewing theme consistency, token usage, or preset isolation
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Theme SCSS files, design tokens, presets, section styles, and styling contracts
 outputs:

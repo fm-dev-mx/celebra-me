@@ -36,7 +36,7 @@ If a required path is missing, stop and report it.
 ## Workflow
 
 1. Audit the current tree, live scripts, and active governance surface before editing docs.
-2. Compare active docs against live source, `.agent/index.md`, `.agent/README.md`,
+2. Compare active docs against live source, `.agent/index.md`, `AGENTS.md`,
    `.agent/plans/README.md`, `package.json`, `scripts/cli.mjs`, and the relevant governance owner.
 3. Use conversation-scoped planning by default. Only create a repo-tracked note under
    `.agent/plans/` when the repository owner explicitly requests it.
@@ -44,7 +44,7 @@ If a required path is missing, stop and report it.
 5. Enforce the Sync Contract in the same task:
    - behavior or architecture changes update `docs/core/architecture.md` and the matching
      `docs/domains/**` doc
-   - workflow inventory or entrypoint changes update `.agent/index.md` and `.agent/README.md`
+   - workflow inventory or entrypoint changes update `.agent/index.md` and `AGENTS.md`
    - new active docs go in the correct subtree and are linked from the active discovery doc when
      they become a source of truth
    - planning contract changes update `.agent/plans/README.md` when repo-tracked planning guidance

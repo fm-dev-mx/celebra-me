@@ -9,8 +9,8 @@ when_to_use:
   - Updating API routes, services, repositories, or server-side validation
   - Reviewing external integrations or server-only code paths
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - API handlers, service layers, repositories, schemas, and integration code
 outputs:

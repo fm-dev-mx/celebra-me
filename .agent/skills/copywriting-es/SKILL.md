@@ -9,8 +9,8 @@ when_to_use:
   - Writing or revising visible UI text in Spanish
   - Reviewing invitation copy, labels, helper text, or error messages
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - User-facing Spanish copy, invitation content, and UI messaging
 outputs:

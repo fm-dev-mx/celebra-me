@@ -9,8 +9,8 @@ when_to_use:
   - Editing Astro pages, components, collections, or client boundaries
   - Reviewing SSR, hydration, and content-loading patterns
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Astro pages, components, content collections, and rendering constraints
 outputs:

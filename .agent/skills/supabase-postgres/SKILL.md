@@ -10,8 +10,8 @@ when_to_use:
   - Diagnosing slow queries or connection issues
   - Designing indexes or analyzing query plans
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 related_skills:
   - supabase
   - backend-engineering

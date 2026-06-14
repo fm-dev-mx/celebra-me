@@ -10,8 +10,8 @@ when_to_use:
   - Guiding the user towards better prompt structures
   - Validating that a request aligns with Lean Governance 2.0
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 related_docs:
   - docs/core/agent-interaction.md
   - docs/core/git-governance.md
@@ -39,10 +39,10 @@ A healthy prompt should focus on one behavioral intent.
 
 ### 3. Plan-First Workflow
 
-For any change that is not a trivial maintenance fix (as defined in `GATEKEEPER_RULES.md`), the
-agent should ensure the scope, constraints, and verification path are clear before implementation.
-Use conversation-scoped planning by default; only create repo-tracked planning notes when the
-repository owner explicitly asks for them.
+For any change that is not a trivial maintenance fix (as defined in `.agent/rules/gatekeeper.md`),
+the agent should ensure the scope, constraints, and verification path are clear before
+implementation. Use conversation-scoped planning by default; only create repo-tracked planning notes
+when the repository owner explicitly asks for them.
 
 ## Guiding the User
 
@@ -54,7 +54,7 @@ When an instruction is sub-optimal, the agent should suggest the **3-Point Templ
 
 ## Conflict Resolution
 
-If a user request contradicts `.agent/GATEKEEPER_RULES.md` or `docs/core/project-conventions.md`:
+If a user request contradicts `.agent/rules/gatekeeper.md` or `docs/core/project-conventions.md`:
 
 1. **Flag it**: Highlight the contradiction clearly.
 2. **Explain**: Briefly state the risk or the rule's intent.

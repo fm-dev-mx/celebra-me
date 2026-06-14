@@ -3,13 +3,18 @@
 This file defines how any agent (opencode, antigravity, codex, or other) loads and uses skills in
 this repository.
 
-## Loading Order
+## Prerequisites
 
-1. Read `.agent/README.md` — entry point and loading order.
-2. Read `.agent/index.md` — discovery map for all skills and workflows.
-3. Load only the skills relevant to the current task (never preload all).
-4. Follow `related_skills` links only when the task requires additional context.
-5. Respect the frontmatter schema in `.agent/skills/SCHEMA.md`.
+Before loading skills, read:
+
+- [`AGENTS.md`](../AGENTS.md) — entry point
+- `.agent/index.md` — discovery map for all skills and workflows
+
+## Loading Protocol
+
+1. Load only the skills relevant to the current task (never preload all).
+2. Follow `related_skills` links only when the task requires additional context.
+3. Respect the frontmatter schema in `.agent/skills/SCHEMA.md`.
 
 ## Constraints
 

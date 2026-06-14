@@ -10,8 +10,8 @@ when_to_use:
   - Updating interactive UI, forms, or navigation
   - Reviewing semantic HTML, contrast, focus, or motion behavior
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Astro components, React islands, SCSS styles, and visible UI copy
 outputs:

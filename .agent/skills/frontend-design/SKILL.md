@@ -9,8 +9,8 @@ when_to_use:
   - Designing or revising visual presentation, composition, typography, or layout
   - Evaluating whether an invitation UI feels premium and theme-coherent
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Visual requirements, page layouts, components, and theme context
 outputs:

@@ -9,8 +9,8 @@ when_to_use:
   - Adding or updating automated tests
   - Choosing regression coverage for a code change
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Source code changes, risk areas, and existing test suites
 outputs:

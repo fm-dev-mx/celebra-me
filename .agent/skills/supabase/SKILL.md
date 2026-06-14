@@ -11,8 +11,8 @@ when_to_use:
   - Running Supabase CLI commands or migrations
   - Debugging Data API access or JWT issues
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 related_skills:
   - backend-engineering
   - supabase-postgres

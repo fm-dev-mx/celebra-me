@@ -1,12 +1,12 @@
 # Agent Discovery Index
 
-Use this file after reading `.agent/README.md`. It is the current discovery map for the repository.
+Use this file after reading `AGENTS.md`. It is the current discovery map for the repository.
 
-## Mandatory Reads
+## Prerequisite Knowledge
 
-- `.agent/README.md`
-- `.agent/GATEKEEPER_RULES.md`
-- `.agent/load-skills.md`
+- [`AGENTS.md`](../AGENTS.md) — entry point and loading order
+- `.agent/rules/gatekeeper.md` — review/remediation contract
+- `.agent/load-skills.md` — skill loading protocol
 
 ## Plan Governance
 
@@ -50,8 +50,8 @@ Use this file after reading `.agent/README.md`. It is the current discovery map 
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/rsvp/database.md`
-- `.agent/db/README.md`
-- `.agent/invitation-production-rules.md`
+- `.agent/rules/database.md`
+- `.agent/rules/invitation-production.md`
 - `docs/domains/theme/architecture.md`
 - `docs/domains/theme/typography.md`
 
@@ -60,12 +60,12 @@ truth.
 
 ## Minimal Load Matrix
 
-| Task Type                             | Minimum Context                                                                                                                              |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visual or UI work                     | `README` + `GATEKEEPER_RULES.md` + relevant design/theme skill                                                                               |
-| Backend or data work                  | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` + relevant domain docs                                                              |
-| Documentation or governance drift     | `README` + `GATEKEEPER_RULES.md` + `documentation-governance` + `system-doc-alignment`                                                       |
-| Testing or regression work            | `README` + `GATEKEEPER_RULES.md` + `testing` + affected domain docs                                                                          |
-| Supabase or database work             | `README` + `GATEKEEPER_RULES.md` + `.agent/db/README.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant domain docs   |
-| Planning or commit governance         | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `commit-planner`, depending on whether the user wants planning or commit partitioning |
-| Planning or implementation sequencing | `README` + `GATEKEEPER_RULES.md` + `agent-communication` + `.agent/plans/README.md`                                                          |
+| Task Type                             | Minimum Context                                                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visual or UI work                     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + relevant design/theme skill                                                                           |
+| Backend or data work                  | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `backend-engineering` + relevant domain docs                                                          |
+| Documentation or governance drift     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `documentation-governance` + `system-doc-alignment`                                                   |
+| Testing or regression work            | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `testing` + affected domain docs                                                                      |
+| Supabase or database work             | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/database.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant docs |
+| Planning or commit governance         | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `plan-authoring` or `commit-planner`                                                                  |
+| Planning or implementation sequencing | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `agent-communication` + `.agent/plans/README.md`                                                      |

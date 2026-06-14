@@ -13,8 +13,8 @@ when_to_use:
   - Preparing commits or evaluating atomicity
   - Drafting or reviewing commit messages
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 related_skills: []
 related_docs:
   - docs/core/git-governance.md

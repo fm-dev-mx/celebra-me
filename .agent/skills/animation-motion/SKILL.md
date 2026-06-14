@@ -9,8 +9,8 @@ when_to_use:
   - Designing or modifying transitions, reveals, or animated interactions
   - Reviewing motion performance or reduced-motion handling
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 inputs:
   - Components, SCSS animations, and interaction requirements
 outputs:

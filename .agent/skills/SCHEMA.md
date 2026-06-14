@@ -16,8 +16,8 @@ when_to_use:
   - Concrete situation 1
   - Concrete situation 2
 preconditions:
-  - .agent/README.md
-  - .agent/GATEKEEPER_RULES.md
+  - AGENTS.md
+  - .agent/rules/gatekeeper.md
 related_skills:
   - another-skill
 related_docs:

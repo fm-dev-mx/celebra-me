@@ -10,8 +10,8 @@ when_to_use:
   - Creating, reorganizing, or reconciling documentation
   - Reviewing governance metadata or documentation drift
 preconditions:
-  - Read .agent/README.md
-  - Read .agent/GATEKEEPER_RULES.md
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
 related_skills: []
 related_docs:
   - .agent/workflows/system-doc-alignment.md
