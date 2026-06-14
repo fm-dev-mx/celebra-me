@@ -30,8 +30,9 @@
 				),
 				linear-gradient(
 					180deg,
-					transparent 45%,
-					rgb(var(--color-deep-blue-graphite-rgb) / 52%) 100%
+					transparent 38%,
+					rgb(var(--color-warm-ivory-rgb, 255 255 245) / 8%) 62%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 62%) 100%
 				);
 		}
 
@@ -145,8 +146,8 @@
 		font-weight: 500;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		color: rgb(var(--color-diamond-white-rgb) / 78%);
-		text-shadow: 0 2px 8px rgb(var(--color-surface-dark-rgb) / 52%);
+		color: rgb(var(--color-diamond-white-rgb) / 88%);
+		text-shadow: 0 2px 12px rgb(var(--color-surface-dark-rgb) / 68%);
 	}
 
 	.calligraphy-accent {
@@ -169,12 +170,19 @@
 	@include mixins.respond-below(sm) {
 		.invitation-hero__background {
 			&::after {
-				background: linear-gradient(
-					180deg,
-					var(--hero-overlay-top, rgb(var(--color-deep-blue-graphite-rgb) / 5%)) 0%,
-					transparent 22%,
-					rgb(var(--color-deep-blue-graphite-rgb) / 40%) 100%
-				);
+				background:
+					linear-gradient(
+						180deg,
+						var(--hero-overlay-top, rgb(var(--color-deep-blue-graphite-rgb) / 4%)) 0%,
+						transparent 18%,
+						rgb(var(--color-deep-blue-graphite-rgb) / 26%) 54%,
+						rgb(var(--color-deep-blue-graphite-rgb) / 72%) 100%
+					),
+					linear-gradient(
+						0deg,
+						rgb(var(--color-warm-ivory-rgb, 255 255 245) / 10%) 0%,
+						transparent 46%
+					);
 			}
 		}
 
@@ -188,6 +196,7 @@
 			max-width: 16ch;
 			margin-top: clamp(0.4rem, 1vw, 0.8rem);
 			line-height: 0.84;
+			text-shadow: 0 8px 22px rgb(var(--color-surface-dark-rgb) / 72%);
 		}
 
 		.invitation-hero__details {
@@ -204,12 +213,6 @@
 	@include mixins.short-viewport {
 		.invitation-hero__content {
 			padding-block: clamp(3rem, 7svh, 5rem);
-		}
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.invitation-hero__title-wrapper {
-			animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards;
 		}
 	}
 }
