@@ -51,6 +51,7 @@ Use this file after reading `.agent/README.md`. It is the current discovery map 
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/rsvp/database.md`
 - `.agent/db/README.md`
+- `.agent/invitation-production-rules.md`
 - `docs/domains/theme/architecture.md`
 - `docs/domains/theme/typography.md`
 
