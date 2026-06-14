@@ -4,6 +4,9 @@ Manual production SQL patch files routed through `pnpm db:prod:patch -- --file <
 with a manifest before any SQL statement. The patch entrypoint is dry-run lint only; this manifest
 does not authorize execution.
 
+Older non-manifest SQL files are historical records only. Do not copy them as templates for new
+production patches.
+
 ```sql
 -- @script-id: YYYYMMDD_short_description
 -- @purpose: one sentence describing the production correction

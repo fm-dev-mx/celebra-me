@@ -32,6 +32,7 @@ asks you to change, backfill, replay, or manually invoke them.
   never executes SQL.
 - Production patch files must include the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md).
+- Non-manifest SQL patch files are historical records only and must not be copied as templates.
 - `pnpm ops adopt-legacy-events` is disabled because it can mutate data with the service role.
 
 ## Decision Tree
