@@ -31,6 +31,7 @@ categories, and precedence notes.
 
 ```bash
 pnpm db:local:refresh-from-prod
+pnpm db:local:refresh-from-prod-preserve-local
 pnpm db:local:backup-wip
 pnpm db:local:bootstrap-admin
 pnpm db:local:validate
@@ -52,6 +53,22 @@ pnpm db:sql:lint -- --file <path>
   database dump, so metadata does not guarantee local object availability.
 - Already bootstraps the local super-admin user and role.
 - Use when local development needs a current production-shaped dataset.
+
+`pnpm db:local:refresh-from-prod-preserve-local`
+
+- Like `db:local:refresh-from-prod` but preserves local-only invitations, events, and demos.
+- Detects local-only slugs by comparing `invitations.slug`, `events.slug`, and
+  `published_invitation_content(event_type, slug)` with production.
+- Preserves all dependent FK rows (drafts, assets, RSVPs, intake, guests, audit logs, etc.).
+- Creates auth user placeholders for preserved rows that reference local-only users.
+- Checks Storage binary availability and reports missing assets.
+- Three modes:
+  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --dry-run` — report only.
+  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --export` — create preserve
+    bundle without refreshing.
+  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --confirm` — export +
+    refresh + restore.
+- Use when you need the latest production data but want to keep local demo/invitation work.
 
 `pnpm db:local:backup-wip`
 
@@ -142,6 +159,21 @@ so local metadata may point at missing local files.
 
 If schema drift is detected during staging import or copy, the script stops and reports the failure.
 Do not patch around drift manually; add or apply the missing migration locally.
+
+### Refresh local while preserving local-only data
+
+```bash
+pnpm db:start
+PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --dry-run
+PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --export
+PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --confirm
+pnpm db:local:validate
+```
+
+This workflow detects invitations, events, and published content that exist only in the local
+database, exports them with all FK-dependent rows, refreshes from production, then restores the
+preserved data. Production is never mutated. Use `--dry-run` first to inspect what will be preserved
+and what risks exist.
 
 ### Preserve local WIP before refresh
 
