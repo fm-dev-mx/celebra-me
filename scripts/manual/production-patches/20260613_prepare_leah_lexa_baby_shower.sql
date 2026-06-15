@@ -301,11 +301,12 @@ begin
     ),
     'gifts', jsonb_build_object(
       'title', 'Mesa de regalos',
-      'subtitle', 'Si desean tener un detalle para mí, mis papis prepararon una mesa de regalos en Liverpool.',
+      'subtitle', 'Si desean tener un detalle para mí, mis papis prepararon una opción especial con mucho cariño.',
       'items', jsonb_build_array(
         jsonb_build_object(
           'type', 'store',
-          'title', 'Mesa de regalos Liverpool',
+          'title', 'Un detalle con cariño',
+          'description', 'Mesa disponible en Liverpool',
           'url', 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/51975133'
         )
       )
