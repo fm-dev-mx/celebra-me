@@ -762,11 +762,10 @@ describe('mapDraftToPublished', () => {
 		expect(loc.ceremony).toBeUndefined();
 	});
 
-	it('includes envelope, gallery, itinerary from draft content or leaves empty valid defaults for non-demo', () => {
+	it('defaults envelope to disabled:true when no envelope provided and no prior published content', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.envelope).toMatchObject({ disabled: true });
-		expect(result.envelope).not.toHaveProperty('sealStyle');
 		expect(result.gallery).toEqual({ items: [] });
 		expect(result.itinerary).toEqual({ items: [] });
 	});
@@ -1394,6 +1393,122 @@ describe('mapDraftToPublished', () => {
 		});
 
 		expect(result.envelope).toMatchObject({ sealInitials: 'L·G' });
+	});
+});
+
+describe('envelope — premium field preservation (regression)', () => {
+	const PREMIUM_ENVELOPE = {
+		disabled: false,
+		cardLabel: 'Baby Shower',
+		cardTagline: 'Una celebración celestial',
+		sealInitials: 'LL',
+		sealStyle: 'wax' as const,
+		sealIcon: 'monogram' as const,
+		sealVariant: 'premium-rose' as const,
+		microcopy: 'Toca para abrir mi invitación',
+		documentLabel: 'Baby Shower',
+		stampText: 'Leah Lexa',
+		stampYear: '2026',
+		closedPalette: {
+			primary: 'surfacePrimary' as const,
+			accent: 'actionAccent' as const,
+			background: 'surfacePrimary' as const,
+		},
+	};
+
+	it('preserves sealVariant and all premium fields from effective envelope', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: PREMIUM_ENVELOPE,
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			sealVariant: 'premium-rose',
+			sealStyle: 'wax',
+			sealIcon: 'monogram',
+			microcopy: 'Toca para abrir mi invitación',
+			stampText: 'Leah Lexa',
+			stampYear: '2026',
+			closedPalette: {
+				primary: 'surfacePrimary',
+			},
+		});
+	});
+
+	it('preserves premium fields when draft edits only cardLabel', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					...PREMIUM_ENVELOPE,
+					cardLabel: 'Etiqueta editada',
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			cardLabel: 'Etiqueta editada',
+			sealVariant: 'premium-rose',
+			sealStyle: 'wax',
+		});
+	});
+
+	it('preserves premium fields when draft edits only cardTagline', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					...PREMIUM_ENVELOPE,
+					cardTagline: 'Lema editado',
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			cardTagline: 'Lema editado',
+			sealVariant: 'premium-rose',
+		});
+	});
+
+	it('preserves premium fields when draft edits only sealInitials', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					...PREMIUM_ENVELOPE,
+					sealInitials: 'HL',
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			sealInitials: 'HL',
+			sealVariant: 'premium-rose',
+		});
+	});
+
+	it('honors draft disabled:true while preserving premium fields', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					...PREMIUM_ENVELOPE,
+					disabled: true,
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			disabled: true,
+			sealVariant: 'premium-rose',
+		});
 	});
 });
 
