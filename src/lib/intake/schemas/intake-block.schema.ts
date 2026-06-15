@@ -20,6 +20,26 @@ const optionalUrl = z
 	.optional()
 	.default('');
 
+const coordinatesSchema = z
+	.object({
+		lat: z
+			.string()
+			.refine(
+				(val) =>
+					val === '' || (!isNaN(Number(val)) && Number(val) >= -90 && Number(val) <= 90),
+				{ message: 'La latitud debe ser un número entre -90 y 90.' },
+			),
+		lng: z
+			.string()
+			.refine(
+				(val) =>
+					val === '' ||
+					(!isNaN(Number(val)) && Number(val) >= -180 && Number(val) <= 180),
+				{ message: 'La longitud debe ser un número entre -180 y 180.' },
+			),
+	})
+	.optional();
+
 export const eventDetailsBlockSchema = z.object({
 	celebrantName: z.string().min(1, 'El nombre del festejado es obligatorio.').max(200).trim(),
 	secondaryName: optionalString,
@@ -57,6 +77,7 @@ const venueFieldsSchema = z.object({
 	date: optionalString,
 	time: optionalString,
 	mapUrl: optionalUrl,
+	coordinates: coordinatesSchema,
 });
 
 export const dateLocationsBlockSchema = z.object({

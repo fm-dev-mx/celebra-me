@@ -80,6 +80,70 @@ describe('mapNestedToDraftContent', () => {
 		});
 	});
 
+	it('preserves coordinates from published ceremony/reception in draft', () => {
+		const input = {
+			location: {
+				ceremony: {
+					venueName: 'Iglesia',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+				reception: {
+					venueName: 'Salon',
+					coordinates: { lat: 20.5, lng: -100.3 },
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+		expect(result.location?.reception?.coordinates).toEqual({ lat: 20.5, lng: -100.3 });
+	});
+
+	it('preserves coordinates from published venues array in draft', () => {
+		const input = {
+			location: {
+				venues: [
+					{
+						id: 'v1',
+						type: 'ceremony',
+						label: 'Ceremonia',
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						date: '2026-01-01',
+						time: '10:00',
+						coordinates: { lat: 19.4326, lng: -99.1332 },
+						isVisible: true,
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		const venue = result.location?.venues?.[0] as Record<string, unknown> | undefined;
+		expect(venue?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+	});
+
+	it('maps published mapUrl and coordinates together in draft', () => {
+		const input = {
+			location: {
+				ceremony: {
+					venueName: 'Iglesia',
+					mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.location?.ceremony?.mapUrl).toBe(
+			'https://maps.google.com/?q=19.4326,-99.1332',
+		);
+		expect(result.location?.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+	});
+
 	it('maps published venues array to draft format', () => {
 		const input = {
 			location: {

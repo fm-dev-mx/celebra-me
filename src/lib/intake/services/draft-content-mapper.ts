@@ -175,10 +175,29 @@ export function mapBlockDataToDraftContent(
 	return result;
 }
 
+function parseCoordinate(value: unknown, min: number, max: number): number | undefined {
+	if (value == null || value === '') return undefined;
+	const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+	if (isNaN(num) || num < min || num > max) return undefined;
+	return num;
+}
+
+function buildCoordinates(
+	venue: Record<string, unknown>,
+): { lat: number; lng: number } | undefined {
+	if (venue.coordinates === undefined) return undefined;
+	const c = venue.coordinates as Record<string, unknown>;
+	const lat = parseCoordinate(c.lat, -90, 90);
+	const lng = parseCoordinate(c.lng, -180, 180);
+	if (lat !== undefined && lng !== undefined) return { lat, lng };
+	return undefined;
+}
+
 function mapVenueToDraft(
 	venue: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (!venue || Object.keys(venue).length === 0) return undefined;
+	const coordinates = buildCoordinates(venue);
 	return {
 		venueName: str(venue.venueName),
 		address: str(venue.address),
@@ -187,7 +206,7 @@ function mapVenueToDraft(
 		time: normalizeTime(venue.time) ?? str(venue.time),
 		mapUrl: str(venue.mapUrl),
 		...(venue.image !== undefined ? { image: venue.image } : {}),
-		...(venue.coordinates !== undefined ? { coordinates: venue.coordinates } : {}),
+		...(coordinates !== undefined ? { coordinates } : {}),
 	};
 }
 
@@ -292,7 +311,9 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				time: str(v.time),
 				mapUrl: str(v.mapUrl),
 				...(v.image !== undefined ? { image: v.image } : {}),
-				...(v.coordinates !== undefined ? { coordinates: v.coordinates } : {}),
+				...(v.coordinates !== undefined
+					? { coordinates: buildCoordinates(v as Record<string, unknown>) }
+					: {}),
 				isVisible: v.isVisible !== false,
 			}));
 		} else {

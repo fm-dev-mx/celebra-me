@@ -18,6 +18,7 @@ interface VenueData {
 	time?: string;
 	mapUrl?: string;
 	image?: AssetField;
+	coordinates?: { lat: number; lng: number };
 }
 
 interface VenueEntryData extends VenueData {
@@ -57,8 +58,10 @@ interface Props {
 	visible?: boolean;
 }
 
+let venueIdCounter = 0;
+
 function nextVenueId(): string {
-	return `venue_${Date.now()}`;
+	return `venue_${++venueIdCounter}`;
 }
 
 function createDefaultVenue(type: 'ceremony' | 'reception' | 'custom'): VenueEntryData {
@@ -143,6 +146,60 @@ export default function LocationSectionEditor({
 
 	const addVenue = (type: 'ceremony' | 'reception' | 'custom') => {
 		onUpdateLocation({ venues: [...venues, createDefaultVenue(type)] });
+	};
+
+	const renderCoordinateField = (
+		index: number,
+		axis: 'lat' | 'lng',
+		label: string,
+		min: number,
+		max: number,
+	) => {
+		const venue = venues[index];
+		const otherAxis = axis === 'lat' ? 'lng' : 'lat';
+		const value = venue.coordinates?.[axis];
+		const displayValue = value !== undefined && !isNaN(value) ? String(value) : '';
+		const hasError =
+			displayValue !== '' &&
+			(value === undefined || isNaN(value) || value < min || value > max);
+
+		const handleChange = (raw: string) => {
+			const otherValue = venue.coordinates?.[otherAxis];
+			if (raw === '') {
+				if (otherValue !== undefined) {
+					updateVenue(index, { coordinates: undefined });
+				}
+				return;
+			}
+			const parsed = parseFloat(raw);
+			if (!isNaN(parsed) && parsed >= min && parsed <= max) {
+				if (otherValue !== undefined && !isNaN(otherValue)) {
+					const patch =
+						axis === 'lat'
+							? { lat: parsed, lng: otherValue }
+							: { lat: otherValue, lng: parsed };
+					updateVenue(index, { coordinates: patch });
+				}
+			}
+		};
+
+		return (
+			<label className="invitation-editor__field">
+				<span>{label}</span>
+				<input
+					type="number"
+					step="any"
+					inputMode="decimal"
+					value={displayValue}
+					onChange={(e) => handleChange(e.target.value)}
+				/>
+				{hasError && (
+					<p className="invitation-editor__error">
+						{label} debe ser un número entre {min} y {max}.
+					</p>
+				)}
+			</label>
+		);
 	};
 
 	const updateEventTiming = (patch: Partial<EventTiming>) => {
@@ -297,6 +354,8 @@ export default function LocationSectionEditor({
 								value={venue.mapUrl ?? ''}
 								onChange={(value) => updateVenue(index, { mapUrl: value })}
 							/>
+							{renderCoordinateField(index, 'lat', 'Latitud', -90, 90)}
+							{renderCoordinateField(index, 'lng', 'Longitud', -180, 180)}
 						</div>
 					</div>
 					<div className="invitation-editor__section-group">

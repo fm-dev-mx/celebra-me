@@ -15,6 +15,7 @@ interface VenueData {
 	date?: string;
 	time?: string;
 	mapUrl?: string;
+	coordinates?: { lat: string; lng: string };
 }
 
 function getVenue(data: Record<string, unknown>, key: string): VenueData {
@@ -100,6 +101,52 @@ const DateLocationsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					onChange={(e) => updateVenue(venueKey, 'mapUrl', e.target.value)}
 					disabled={disabled}
 					placeholder="https://maps.google.com/..."
+				/>
+			</div>
+
+			<div className="intake-field">
+				<label className="intake-field__label">Latitud</label>
+				<input
+					type="number"
+					step="any"
+					inputMode="decimal"
+					className="intake-field__input"
+					value={venue.coordinates?.lat ?? ''}
+					onChange={(e) => {
+						const current = getVenue(data, venueKey);
+						onChange(venueKey, {
+							...current,
+							coordinates: {
+								lat: e.target.value,
+								lng: current.coordinates?.lng ?? '',
+							},
+						});
+					}}
+					disabled={disabled}
+					placeholder="19.4326"
+				/>
+			</div>
+
+			<div className="intake-field">
+				<label className="intake-field__label">Longitud</label>
+				<input
+					type="number"
+					step="any"
+					inputMode="decimal"
+					className="intake-field__input"
+					value={venue.coordinates?.lng ?? ''}
+					onChange={(e) => {
+						const current = getVenue(data, venueKey);
+						onChange(venueKey, {
+							...current,
+							coordinates: {
+								lng: e.target.value,
+								lat: current.coordinates?.lat ?? '',
+							},
+						});
+					}}
+					disabled={disabled}
+					placeholder="-99.1332"
 				/>
 			</div>
 		</fieldset>

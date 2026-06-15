@@ -720,6 +720,113 @@ describe('mapDraftToPublished', () => {
 		expect((loc.venues as Array<Record<string, unknown>>)[0].type).toBe('custom');
 	});
 
+	it('preserves coordinates in legacy ceremony/reception venues', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					ceremony: {
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						coordinates: { lat: 19.4326, lng: -99.1332 },
+					},
+					reception: {
+						venueName: 'Salon',
+						address: 'Calle 2',
+						coordinates: { lat: 20.5, lng: -100.3 },
+					},
+				},
+			},
+		});
+
+		expect(result.location).toMatchObject({
+			ceremony: {
+				venueName: 'Iglesia',
+				coordinates: { lat: 19.4326, lng: -99.1332 },
+			},
+			reception: {
+				venueName: 'Salon',
+				coordinates: { lat: 20.5, lng: -100.3 },
+			},
+		});
+	});
+
+	it('preserves coordinates in venues array format', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'ceremony',
+							label: 'Ceremonia',
+							venueName: 'Iglesia',
+							address: 'Calle 1',
+							date: '2026-01-01',
+							time: '10:00',
+							coordinates: { lat: 19.4326, lng: -99.1332 },
+							isVisible: true,
+						},
+					],
+				},
+			},
+		});
+
+		const loc = result.location as Record<string, unknown>;
+		const venues = loc.venues as Array<Record<string, unknown>>;
+		expect(venues).toHaveLength(1);
+		expect(venues[0].coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+	});
+
+	it('preserves both mapUrl and coordinates in published venue', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					ceremony: {
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+						coordinates: { lat: 19.4326, lng: -99.1332 },
+					},
+				},
+			},
+		});
+
+		expect(result.location).toMatchObject({
+			ceremony: {
+				mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+				coordinates: { lat: 19.4326, lng: -99.1332 },
+			},
+		});
+	});
+
+	it('does not include coordinates in published venue when draft has none', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					ceremony: {
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+					},
+				},
+			},
+		});
+
+		const ceremony = (result.location as Record<string, unknown>).ceremony as Record<
+			string,
+			unknown
+		>;
+		expect(ceremony.coordinates).toBeUndefined();
+	});
+
 	it('does not reintroduce deleted ceremony from demo fallback when venues is present', () => {
 		const demoWithLocation = {
 			...baseDemoContent,
