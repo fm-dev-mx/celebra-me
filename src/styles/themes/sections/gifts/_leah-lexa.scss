@@ -1,9 +1,20 @@
 // LEAH LEXA — GIFTS SECTION POLISH
 // Scoped via .event--leah-lexa on the <main> wrapper.
 // Makes the subtitle the emotional anchor, refines the flourish.
+// Adds Liverpool-inspired editorial magenta accents to CTA, store label, and card border.
 
 .event--leah-lexa .gifts-section[data-variant='celestial-blue'] {
 	--gifts-title-letter-spacing: 0.18em;
+
+	// Liverpool-inspired editorial magenta
+	--gifts-accent-color: rgb(165 28 72);
+	--gifts-accent-color-rgb: 165 28 72;
+	--gifts-accent-color-dark: rgb(130 18 54);
+
+	// CTA button: filled accent, white text, pill shape
+	--gifts-button-color: var(--color-diamond-white);
+	--gifts-button-border: 1px solid var(--gifts-accent-color);
+	--gifts-button-border-radius: 999px;
 
 	.gifts-section__subtitle {
 		font-size: 1.1rem;
@@ -22,5 +33,38 @@
 			width: 36px;
 			opacity: 50%;
 		}
+	}
+
+	.gift-card {
+		border-color: rgb(var(--gifts-accent-color-rgb) / 18%);
+
+		&:hover {
+			border-color: rgb(var(--gifts-accent-color-rgb) / 42%);
+		}
+	}
+
+	.gift-card__icon-inner {
+		color: rgb(var(--gifts-accent-color-rgb) / 18%);
+	}
+
+	.gift-card__button {
+		background: rgb(var(--gifts-accent-color-rgb) / 60%);
+		border: 0;
+
+		&:hover {
+			background: var(--gifts-accent-color-dark);
+			border-color: var(--gifts-accent-color-dark);
+			color: var(--color-diamond-white);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--gifts-accent-color-dark);
+			outline-offset: 2px;
+		}
+	}
+
+	.gift-card__store-label {
+		color: var(--gifts-accent-color-dark);
+		opacity: 100%;
 	}
 }
