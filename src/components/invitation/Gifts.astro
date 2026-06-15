@@ -10,6 +10,7 @@ interface GiftStore {
 	title: string;
 	url: string;
 	logo?: string;
+	description?: string;
 }
 
 interface GiftBank {
@@ -61,7 +62,7 @@ const {
 	labels = {
 		copy: 'Copiar',
 		copied: '¡Copiado!',
-		viewRegistry: 'Ver Mesa de Regalos',
+		viewRegistry: 'Ver mesa de regalos',
 		sendGift: 'Enviar Regalo',
 		bank: 'Banco',
 		titular: 'Titular',
@@ -106,6 +107,10 @@ const ICON_MAP = {
 								</div>
 
 								<h3 class="gift-card__title">{gift.title}</h3>
+
+								{gift.type === 'store' && gift.description && (
+									<p class="gift-card__store-label">{gift.description}</p>
+								)}
 
 								{gift.type === 'store' && (
 									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">

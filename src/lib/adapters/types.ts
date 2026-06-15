@@ -16,6 +16,8 @@ import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
+import type { z } from 'zod';
+import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
 
 export interface ThemeConfig {
 	preset: ThemePreset;
@@ -123,18 +125,7 @@ export interface WhatsAppConfig {
 	omitTitle?: boolean;
 }
 
-export type GiftItem =
-	| { type: 'store'; title: string; url: string; logo?: string }
-	| {
-			type: 'bank';
-			title: string;
-			bankName: string;
-			accountHolder: string;
-			clabe: string;
-			accountNumber?: string;
-	  }
-	| { type: 'paypal'; title: string; url: string }
-	| { type: 'cash'; title: string; text?: string };
+export type GiftItem = z.infer<typeof giftItemSchema>;
 
 export type GalleryVariant = SharedSectionVariant | 'single';
 

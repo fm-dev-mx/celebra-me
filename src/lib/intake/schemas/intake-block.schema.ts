@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
+import {
+	storeGiftItemSchema,
+	bankGiftItemSchema,
+	paypalGiftItemSchema,
+	cashGiftItemSchema,
+} from '@/lib/schemas/content/gifts.schema';
 
 const pendingFieldMarker = z.literal('__pending__').optional();
 
@@ -92,26 +98,21 @@ export const musicBlockSchema = z.object({
 });
 
 export const giftItemSchema = z.discriminatedUnion('type', [
-	z.object({
-		type: z.literal('store'),
+	storeGiftItemSchema.extend({
 		title: z.string().min(1).max(200),
-		url: z.url(),
+		description: z.string().max(500).optional(),
 	}),
-	z.object({
-		type: z.literal('bank'),
+	bankGiftItemSchema.extend({
 		title: z.string().min(1).max(200).default('Transferencia'),
 		bankName: z.string().min(1).max(200),
 		accountHolder: z.string().min(1).max(200),
 		clabe: z.string().min(1).max(30),
 		accountNumber: z.string().max(30).optional(),
 	}),
-	z.object({
-		type: z.literal('paypal'),
+	paypalGiftItemSchema.extend({
 		title: z.string().min(1).max(200).default('PayPal'),
-		url: z.url(),
 	}),
-	z.object({
-		type: z.literal('cash'),
+	cashGiftItemSchema.extend({
 		title: z.string().min(1).max(200).default('Lluvia de Sobres'),
 		text: z.string().max(500).optional(),
 	}),

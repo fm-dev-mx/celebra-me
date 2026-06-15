@@ -193,6 +193,16 @@
 		color: var(--color-text-secondary);
 	}
 
+	&__store-label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.85rem;
+		letter-spacing: 0.05em;
+		color: var(--color-action-accent);
+		opacity: 75%;
+		margin-top: -0.5rem;
+		line-height: 1.4;
+	}
+
 	&__button {
 		display: inline-block;
 		padding: 0.75rem 1.5rem;
