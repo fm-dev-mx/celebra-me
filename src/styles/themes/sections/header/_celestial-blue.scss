@@ -67,9 +67,26 @@
 		height: 1px;
 	}
 
-	// Softer transparent-state backdrop
+	// Scrolled state — cream background needs dark text for contrast
+	&.header-base--scrolled {
+		--header-nav-title-color: var(--color-deep-blue-graphite);
+		--header-nav-color: var(--color-deep-blue-graphite);
+		--header-nav-hover-color: var(--color-satin-blue);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--hamburger-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-bg: rgb(var(--color-deep-blue-graphite-rgb) / 6%);
+		--header-nav-cta-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-border: rgb(var(--color-deep-blue-graphite-rgb) / 24%);
+		--header-nav-cta-shadow: none;
+		--header-nav-cta-hover-bg: var(--color-deep-blue-graphite);
+		--header-nav-cta-hover-color: var(--color-diamond-white);
+		--header-nav-cta-hover-border: var(--color-deep-blue-graphite);
+		--header-nav-cta-hover-shadow: 0 4px 14px rgb(var(--color-deep-blue-graphite-rgb) / 14%);
+	}
+
+	// Transparent state — softer backdrop over hero/interlude images
 	&.header-base--transparent {
-		backdrop-filter: blur(4px);
 		backdrop-filter: blur(4px);
 	}
 
