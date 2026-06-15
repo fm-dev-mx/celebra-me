@@ -337,15 +337,9 @@ function resolveVenueData(
 	title: string,
 ) {
 	if (!venue) return undefined;
-	const imageSource =
-		typeof venue.image === 'object' && venue.image !== null
-			? venue.image
-			: typeof venue.image === 'string'
-				? venue.image
-				: undefined;
 	return {
 		...venue,
-		image: resolveAsset(eventSlug, imageSource, title),
+		image: resolveAsset(eventSlug, venue.image, title),
 	};
 }
 
@@ -545,16 +539,21 @@ export function adaptEvent(
 
 	// Ensure synthesized sections (e.g. countdown derived from eventTiming alone)
 	// appear in the render plan even when the stored sectionOrder omits them.
-	let resolvedSectionOrder = adapterData.sectionOrder;
-	if (sections.countdown && resolvedSectionOrder && !resolvedSectionOrder.includes('countdown')) {
-		resolvedSectionOrder = [...resolvedSectionOrder];
-		const locIdx = resolvedSectionOrder.indexOf('location');
-		if (locIdx !== -1) {
-			resolvedSectionOrder.splice(locIdx, 0, 'countdown');
-		} else {
-			resolvedSectionOrder.push('countdown');
-		}
-	}
+	const resolvedSectionOrder =
+		sections.countdown &&
+		adapterData.sectionOrder &&
+		!adapterData.sectionOrder.includes('countdown')
+			? (() => {
+					const locIdx = adapterData.sectionOrder!.indexOf('location');
+					return locIdx !== -1
+						? [
+								...adapterData.sectionOrder!.slice(0, locIdx),
+								'countdown',
+								...adapterData.sectionOrder!.slice(locIdx),
+							]
+						: [...adapterData.sectionOrder!, 'countdown'];
+				})()
+			: adapterData.sectionOrder;
 
 	return {
 		id: entrySlug,
