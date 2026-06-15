@@ -5,6 +5,7 @@ import {
 	overlayAnchorSchema,
 	overlaySafeAreaSchema,
 } from '@/lib/schemas/content/shared.schema';
+import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import {
 	optionalText,
 	optionalUrl,
@@ -87,6 +88,7 @@ export const InvitationContentDraftContentSchema = z
 		gallery: gallerySchema.optional(),
 		family: familyDraftSchema.optional(),
 		gifts: giftsSchema.optional(),
+		interludes: interludesSchema,
 		rsvp: z
 			.object({
 				title: optionalText(200),

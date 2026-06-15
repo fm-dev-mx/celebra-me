@@ -404,6 +404,12 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		};
 		if (thankYou.image !== undefined)
 			(result.thankYou as Record<string, unknown>).image = thankYou.image;
+		if (thankYou.focalPoint !== undefined)
+			(result.thankYou as Record<string, unknown>).focalPoint = thankYou.focalPoint;
+		if (thankYou.overlayAnchor !== undefined)
+			(result.thankYou as Record<string, unknown>).overlayAnchor = thankYou.overlayAnchor;
+		if (thankYou.overlaySafeArea !== undefined)
+			(result.thankYou as Record<string, unknown>).overlaySafeArea = thankYou.overlaySafeArea;
 	}
 
 	const sharing = nestedContent.sharing as Record<string, unknown> | undefined;
@@ -430,6 +436,10 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	result.sectionOrder = nestedContent.sectionOrder as DraftContent['sectionOrder'];
+
+	if (nestedContent.interludes !== undefined) {
+		result.interludes = nestedContent.interludes as DraftContent['interludes'];
+	}
 
 	return result;
 }

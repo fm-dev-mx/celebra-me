@@ -114,6 +114,7 @@ export async function buildDraftPreviewPageContext(
 			assetSlug: assetLookupSlug,
 			draftContent: resolvedContent as DraftContent,
 			demoContent,
+			isDemo: invitation.kind === 'demo',
 		});
 
 		const viewModel = adaptDbEvent({

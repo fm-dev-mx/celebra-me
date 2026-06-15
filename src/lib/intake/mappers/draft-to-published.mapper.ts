@@ -634,7 +634,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		quote: quoteSection ?? (ctx.isDemo ? undefined : { text: '' }),
 		thankYou: thankYouSection,
 
-		interludes: ctx.isDemo ? demoContent.interludes : undefined,
+		interludes: draftContent.interludes ?? (ctx.isDemo ? demoContent.interludes : undefined),
 		sectionStyles: ctx.isDemo ? demoContent.sectionStyles : undefined,
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,

@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
 import {
+	focalPointSchema,
+	overlayAnchorSchema,
+	overlaySafeAreaSchema,
+} from '@/lib/schemas/content/shared.schema';
+import {
 	optionalText,
 	optionalUrl,
 	editableAssetSchema,
@@ -104,6 +109,9 @@ export const InvitationEditorSectionSchemas = {
 				message: optionalText(2000),
 				closingName: optionalText(200),
 				image: editableAssetSchema.optional(),
+				focalPoint: focalPointSchema.optional(),
+				overlayAnchor: overlayAnchorSchema.optional(),
+				overlaySafeArea: overlaySafeAreaSchema.optional(),
 			})
 			.optional(),
 	}),
