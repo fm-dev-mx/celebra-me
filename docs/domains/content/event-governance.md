@@ -45,6 +45,16 @@ invitations are DB-published content and must not be created as static JSON unde
 8. Validate the publication with schema/content tests, route isolation, asset export checks, type
    checking, linting, event parity, and the SQL manifest/lint/dry-run checks when SQL is involved.
 
+### Section Contract Checklist
+
+See [Section Contract Checks](../.agent/rules/invitation-production.md#section-contract-checks) in
+the production rules file for the authoritative checklist. The checklist there covers all layers
+(draft schema, editor schema, published schema, both mappers, editor section mapper, preview,
+publish flow, adapter, renderer component, and editor key registration).
+
+Copy the checklist from that file when working on a new section; keep the rule file as the single
+source of truth.
+
 ### Checklist: Create a Real Invitation from a Demo
 
 - [ ] Create or update DB-published content with `isDemo: false`, `eventType`, and `theme.preset`
@@ -56,6 +66,8 @@ invitations are DB-published content and must not be created as static JSON unde
 - [ ] Copy or create event-specific images (hero, ceremony, reception, family, gallery, interludes)
 - [ ] Export all images from `src/assets/images/events/<asset-slug>/index.ts` — no demo imports
 - [ ] Set `_assetSlug` to `<asset-slug>` and keep it distinct from demo `previewSlug`
+- [ ] Verify section contract for each section in the invitation (see
+      [Section Contract Checks](../.agent/rules/invitation-production.md#section-contract-checks))
 - [ ] Add content test asserting schema validity, slug isolation, and local asset exports
 - [ ] Run: `pnpm test`, `pnpm type-check`, `pnpm lint`, `pnpm validate:event-parity`, and SQL patch
       lint/dry-run when SQL is involved

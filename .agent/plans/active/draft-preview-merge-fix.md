@@ -1,8 +1,9 @@
 ---
 title: Draft Preview Merge Fix — Publish Safety
-status: active
+status: completed
 created: 2026-06-14
 updated: 2026-06-14
+completed: 2026-06-14
 related_skills:
   - backend-engineering
 related_docs:
@@ -14,14 +15,16 @@ related_docs:
   - src/lib/intake/services/merge-content.service.ts
 supersedes:
   - editor-hydration-fix.md
-superseded_by: []
+superseded_by:
+  - thank-you-overlay-preservation.md
 ---
 
 # Draft Preview Merge Fix — Publish Safety
 
 ## Status
 
-Active — implementing.
+**Completed on 2026-06-14.** All 5 phases implemented and verified. The effective content flow is
+now consistent across editor hydration, preview, publish, and first-draft seed.
 
 ## Problem
 
@@ -80,6 +83,14 @@ initialize the draft from published content.
 - `src/lib/adapters/event.ts`
 - `src/lib/intake/mappers/draft-to-published.mapper.ts`
 - `src/lib/theme/theme-contract.ts`
+
+## Remaining Work (Post-Completion)
+
+A section-by-section audit on 2026-06-14 identified a P0 data-loss bug:
+
+- `thankYou` overlay fields (`focalPoint`, `overlayAnchor`, `overlaySafeArea`) were missing from the
+  editor messages schema and the published → draft reverse mapper. Fixed in a follow-up pass that
+  also updated documentation to prevent recurrence.
 
 ## Validation
 

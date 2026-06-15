@@ -35,17 +35,20 @@ público ni las respuestas RSVP.
 Algunas invitaciones publicadas, como Ayrin Samantha, tienen borradores aprobados creados antes de
 que galería, programa y orden de secciones fueran editables desde producción.
 
-El servicio `invitation-editor.service.ts` construye el contenido efectivo usando esta precedencia:
+El servicio `invitation-editor.service.ts` construye el contenido efectivo usando
+`mergePublishedWithDraft()` en `src/lib/intake/services/merge-content.service.ts`. La precedencia
+es:
 
-1. Borrador existente.
-2. Snapshot público actual para secciones editables faltantes.
-3. Contenido demo de la plantilla para valores todavía ausentes.
+1. Borrador existente (draft).
+2. Snapshot público actual (published) para secciones editables faltantes.
+3. Contenido demo de la plantilla (solo para invitaciones demo, `allowDemoFallback: true`).
 
-Actualmente se hidratan:
+La fusión es campo por campo usando `shallowMergeDefined()` para secciones objeto: los valores del
+borrador ganan sobre los publicados, y los publicados ganan sobre los demo cuando el borrador carece
+de una clave. Los campos ausentes en el borrador no se borran del objeto resultante.
 
-- `gallery`
-- `itinerary`
-- `sectionOrder`
+Esta misma función `computeEffectiveContent()` se reutiliza en la vista previa (`preview.astro`) y
+en la publicación (`publishing.service.ts`) para garantizar consistencia.
 
 La hidratación sirve para mostrar datos completos en el editor. No escribe automáticamente en base
 de datos: el contenido heredado se persiste cuando se guarda una sección o se publica una revisión.
