@@ -195,6 +195,17 @@ export function buildInvitationRenderPlan(
 	return items;
 }
 
+function pickHeroValue(
+	sections: InvitationPageContext['viewModel']['sections'] | undefined,
+	field: 'time' | 'venueName',
+): string | undefined {
+	return (
+		sections?.location?.venues?.[0]?.[field] ||
+		sections?.location?.reception?.[field] ||
+		sections?.location?.ceremony?.[field]
+	);
+}
+
 export function buildPageContextFromViewModel(input: {
 	viewModel: InvitationViewModel;
 	slug: string;
@@ -221,9 +232,8 @@ export function buildPageContextFromViewModel(input: {
 		.join(' ');
 
 	const guestName = guestContext?.guest.fullName;
-	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
-	const heroVenueName =
-		sections.location?.reception?.venueName ?? sections.location?.ceremony?.venueName;
+	const heroTime = pickHeroValue(sections, 'time');
+	const heroVenueName = pickHeroValue(sections, 'venueName');
 
 	const isDemoPreview = isDemo && !guestContext;
 

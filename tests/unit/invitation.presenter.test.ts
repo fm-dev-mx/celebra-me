@@ -367,6 +367,74 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.wrapper.showEnvelope).toBe(true);
 	});
 
+	it('derives heroTime and heroVenueName from venues[] array before legacy ceremony/reception', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'venues-hero-test',
+			title: 'Venues Hero',
+			sections: {
+				location: {
+					venues: [
+						{
+							time: '2:00 PM',
+							venueName: 'Casa de mi familia',
+						},
+					],
+					ceremony: { time: '1:00 PM', venueName: 'Old Church' },
+				},
+			},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'venues-hero-test',
+			eventType: 'baby-shower',
+		});
+
+		expect(context.heroTime).toBe('2:00 PM');
+		expect(context.heroVenueName).toBe('Casa de mi familia');
+	});
+
+	it('falls back to legacy ceremony/reception when venues[] is absent', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'legacy-hero-test',
+			title: 'Legacy Hero',
+			sections: {
+				location: {
+					reception: { time: '6:00 PM', venueName: 'Salón Real' },
+				},
+			},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'legacy-hero-test',
+			eventType: 'xv',
+		});
+
+		expect(context.heroTime).toBe('6:00 PM');
+		expect(context.heroVenueName).toBe('Salón Real');
+	});
+
+	it('sets heroTime and heroVenueName to undefined when no location data exists', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'no-location-test',
+			title: 'No Location',
+			sections: {},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'no-location-test',
+			eventType: 'xv',
+		});
+
+		expect(context.heroTime).toBeUndefined();
+		expect(context.heroVenueName).toBeUndefined();
+	});
+
 	it('embedded preview override merges to exactly one data-reveal-state', () => {
 		const sealedAttrs: Record<string, string> = {
 			'data-reveal-state': 'sealed',
