@@ -390,12 +390,17 @@ describe('publishDraft', () => {
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		type PublishedContentShape = {
+			hero?: { name?: string };
+			gallery?: { title?: string };
+		};
+		const publishedContent = mockUpsertPublished.mock.calls[0][0]
+			.content as PublishedContentShape;
 		// Draft hero.name is preserved through the merge
 		expect(publishedContent.hero?.name).toBe('Ana');
 		// Non-edited sections from prior published content are preserved
 		expect(publishedContent.gallery).toBeDefined();
-		expect(publishedContent.gallery.title).toBe('Galería');
+		expect(publishedContent.gallery?.title).toBe('Galería');
 	});
 
 	it('upserts published content idempotently', async () => {

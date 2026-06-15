@@ -457,7 +457,7 @@ export function checkStorageReferences(
 	const rows = parseTsv(result.stdout);
 	for (const [id, invitationId, storagePath, bucket] of rows) {
 		const invitationSlug = slugToId.get(invitationId) ?? 'unknown';
-		const status = resolveStorageStatus(storagePath, bucket);
+		const status = resolveStorageStatus(storagePath);
 		refs.push({ table: 'invitation_assets', id, storagePath, bucket, status, invitationSlug });
 	}
 	return refs;
@@ -465,7 +465,6 @@ export function checkStorageReferences(
 
 function resolveStorageStatus(
 	storagePath: string,
-	_bucket: string,
 ): 'static_asset' | 'local_storage' | 'prod_storage' | 'unresolved' {
 	if (storagePath.startsWith('static/') || storagePath.startsWith('assets/')) {
 		return 'static_asset';
