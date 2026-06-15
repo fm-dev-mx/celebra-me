@@ -3,7 +3,9 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 
-const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
+const locationCoordinatesSchema = z
+	.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+	.optional();
 const richTextSchema = z.string();
 
 const venueSchema = z.object({
