@@ -245,6 +245,7 @@ begin
     ),
     'gallery', jsonb_build_object(
       'variant', 'single',
+      'presentation', 'pet-keepsake',
       'title', 'La manada también te espera',
       'subtitle', 'En casa ya hay patitas listas para recibirte con amor.',
       'items', jsonb_build_array(

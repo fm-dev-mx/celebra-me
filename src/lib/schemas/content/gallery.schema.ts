@@ -8,6 +8,7 @@ export const gallerySchema = z
 		title: z.string().default('Galería'),
 		subtitle: z.string().optional(),
 		variant: z.union([z.enum(THEME_PRESETS), z.literal('single')]).optional(),
+		presentation: z.enum(['pet-keepsake']).optional(),
 		items: z.array(
 			z.object({
 				image: AssetSchema,

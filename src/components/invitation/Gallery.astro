@@ -21,14 +21,15 @@ interface Props {
 	subtitle?: string;
 	items: GalleryItem[];
 	variant?: string;
+	presentation?: 'pet-keepsake';
 }
 
-const { eyebrow = '', title, subtitle, items, variant = 'standard' } = Astro.props;
+const { eyebrow = '', title, subtitle, items, variant = 'standard', presentation } = Astro.props;
 
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={variant}>
+<section id="galeria" class="gallery-section" data-variant={variant} {...(presentation && { 'data-presentation': presentation })}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}

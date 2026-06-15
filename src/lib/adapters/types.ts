@@ -244,6 +244,7 @@ export interface InvitationViewModel {
 				focalPointDesktop?: string;
 			}>;
 			variant: GalleryVariant;
+			presentation?: 'pet-keepsake';
 		};
 		itinerary?: {
 			title: string;
