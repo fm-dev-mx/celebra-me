@@ -40,7 +40,7 @@ const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; lab
 	thankYou: { href: '#thank-you-section', label: 'Despedida' },
 };
 
-export type InvitationSectionRenderDescriptor =
+type DescriptorData =
 	| {
 			component: 'interlude';
 			props: {
@@ -59,7 +59,6 @@ export type InvitationSectionRenderDescriptor =
 	| { component: 'family'; props: SectionData<'family'> & { variant: ThemePreset } }
 	| {
 			component: 'gallery';
-			// variant must be spread from sections.gallery (already resolved by adapter)
 			props: SectionData<'gallery'>;
 	  }
 	| { component: 'countdown'; props: SectionData<'countdown'> & { variant: ThemePreset } }
@@ -95,12 +94,11 @@ export type InvitationSectionRenderDescriptor =
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
-function renderInterlude(
-	pageContext: InvitationPageContext,
-	block: InterludeBlock,
-): InvitationSectionRenderDescriptor {
+export type InvitationSectionRenderDescriptor = { afterInterlude: boolean } & DescriptorData;
+
+function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlock) {
 	return {
-		component: 'interlude',
+		component: 'interlude' as const,
 		props: {
 			image: block.image,
 			alt: block.alt,
@@ -114,9 +112,7 @@ function renderInterlude(
 	};
 }
 
-function renderPersonalizedAccess(
-	pageContext: InvitationPageContext,
-): InvitationSectionRenderDescriptor | null {
+function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
 	const isDemoPreview = pageContext.isDemoPreview ?? false;
 	if (!isDemoPreview && !pageContext.guestContext) return null;
 
@@ -124,7 +120,7 @@ function renderPersonalizedAccess(
 	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
 
 	return {
-		component: 'personalized-access',
+		component: 'personalized-access' as const,
 		props: {
 			guestName: guestContext?.guest.fullName ?? DEMO_GUEST_NAME,
 			maxAllowedAttendees:
@@ -140,7 +136,7 @@ function renderPersonalizedAccess(
 function renderRsvpSection(
 	pageContext: InvitationPageContext,
 	themePreset: ThemePreset,
-): InvitationSectionRenderDescriptor | null {
+): DescriptorData | null {
 	const { sections, hero } = pageContext.viewModel;
 
 	if (!sections.rsvp) return null;
@@ -148,7 +144,7 @@ function renderRsvpSection(
 	const guestContext = pageContext.guestContext;
 
 	return {
-		component: 'rsvp',
+		component: 'rsvp' as const,
 		props: {
 			...sections.rsvp,
 			variant: resolveSectionVariant(sections.rsvp, themePreset),
@@ -166,13 +162,13 @@ function renderRsvpSection(
 	};
 }
 
-function renderGiftsSection(sections: Sections): InvitationSectionRenderDescriptor | null {
+function renderGiftsSection(sections: Sections): DescriptorData | null {
 	if (!sections.gifts) return null;
 
 	const { items: gifts, ...rest } = sections.gifts;
 
 	return {
-		component: 'gifts',
+		component: 'gifts' as const,
 		props: {
 			...rest,
 			gifts,
@@ -207,7 +203,7 @@ function renderSection(
 	pageContext: InvitationPageContext,
 	section: RenderableSectionKey,
 	nextSectionLink?: LocationProps['nextSectionLink'],
-): InvitationSectionRenderDescriptor | null {
+): DescriptorData | null {
 	const { sections, theme, hero } = pageContext.viewModel;
 	const variant = theme?.preset ?? THEME_PRESETS[0];
 
@@ -215,7 +211,7 @@ function renderSection(
 		case 'quote':
 			return sections.quote
 				? {
-						component: 'quote',
+						component: 'quote' as const,
 						props: {
 							...sections.quote,
 							variant: resolveSectionVariant(sections.quote, variant),
@@ -226,7 +222,7 @@ function renderSection(
 		case 'family':
 			return sections.family
 				? {
-						component: 'family',
+						component: 'family' as const,
 						props: {
 							...sections.family,
 							celebrantName: hero.name,
@@ -238,7 +234,7 @@ function renderSection(
 		case 'gallery':
 			return sections.gallery
 				? {
-						component: 'gallery',
+						component: 'gallery' as const,
 						// variant already resolved by adapter; spread includes it
 						props: sections.gallery,
 					}
@@ -247,7 +243,7 @@ function renderSection(
 		case 'countdown':
 			return sections.countdown
 				? {
-						component: 'countdown',
+						component: 'countdown' as const,
 						props: {
 							...sections.countdown,
 							variant: resolveSectionVariant(sections.countdown, variant),
@@ -258,7 +254,7 @@ function renderSection(
 		case 'location':
 			return sections.location
 				? {
-						component: 'location',
+						component: 'location' as const,
 						props: {
 							...sections.location,
 							nextSectionLink,
@@ -270,7 +266,7 @@ function renderSection(
 		case 'itinerary': {
 			return sections.itinerary
 				? {
-						component: 'itinerary',
+						component: 'itinerary' as const,
 						props: {
 							...sections.itinerary,
 							variant: resolveSectionVariant(sections.itinerary, variant),
@@ -290,7 +286,7 @@ function renderSection(
 		case 'thankYou':
 			return sections.thankYou
 				? {
-						component: 'thankYou',
+						component: 'thankYou' as const,
 						props: {
 							...sections.thankYou,
 							variant: resolveSectionVariant(sections.thankYou, variant),
@@ -308,23 +304,34 @@ function renderBlock(
 	index: number,
 	renderPlan: InvitationRenderPlanItem[],
 ): InvitationSectionRenderDescriptor | null {
+	const afterInterlude = index > 0 && renderPlan[index - 1].type === 'interlude';
+
 	switch (block.type) {
 		case 'interlude':
-			return renderInterlude(pageContext, block);
+			return { ...renderInterlude(pageContext, block), afterInterlude };
 
 		case 'personalized-access':
-			return renderPersonalizedAccess(pageContext);
+			return withAfterInterlude(renderPersonalizedAccess(pageContext), afterInterlude);
 
 		case 'section': {
 			const nextSectionLink =
 				block.section === 'location' ? findNextSectionLink(renderPlan, index) : undefined;
 
-			return renderSection(pageContext, block.section, nextSectionLink);
+			return withAfterInterlude(
+				renderSection(pageContext, block.section, nextSectionLink),
+				afterInterlude,
+			);
 		}
 	}
 }
 
-// Personalized access should feel attached to the human message, preferably just after Quote.
+function withAfterInterlude<T extends DescriptorData>(
+	descriptor: T | null,
+	afterInterlude: boolean,
+): InvitationSectionRenderDescriptor | null {
+	return descriptor ? { ...descriptor, afterInterlude } : null;
+}
+
 function prioritizePersonalizedAccess(
 	descriptors: InvitationSectionRenderDescriptor[],
 ): InvitationSectionRenderDescriptor[] {

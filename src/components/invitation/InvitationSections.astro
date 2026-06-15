@@ -21,18 +21,29 @@ interface Props {
 
 const { pageContext } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
-let interludeCount = 0;
+
+const interludeIndices = new Map<number, number>();
+{
+	let count = 0;
+	for (const [i, s] of sections.entries()) {
+		if (s.component === 'interlude') {
+			count++;
+			interludeIndices.set(i, count);
+		}
+	}
+}
 ---
 
 <div id="invitation-sections-container" data-total-sections={sections.length}>
 	{
-		sections.map(({component, props}, index) => {
-			const interludeIndex = component === 'interlude' ? ++interludeCount : undefined;
+		sections.map(({component, props, afterInterlude}, index) => {
+			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
 
 			return (
 				<div
 					data-section-id={`section-${index}-${component}`}
 					class="invitation-section-wrapper"
+					{...(afterInterlude && { 'data-after-interlude': '' })}
 				>
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
 					{component === 'quote' && <Quote {...props} />}

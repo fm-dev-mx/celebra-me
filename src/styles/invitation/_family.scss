@@ -439,6 +439,12 @@
 		--family-reveal-delay: 0.4s;
 	}
 
+	// When a section follows an interlude, collapse the top padding so content
+	// begins immediately below the full-bleed image, avoiding a visible light band.
+	[data-after-interlude] > & {
+		padding-top: 0;
+	}
+
 	@include mixins.respond-to(lg) {
 		&__panel:not(&__panel--no-media) {
 			grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
