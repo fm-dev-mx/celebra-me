@@ -1,0 +1,52 @@
+@use '../../../global/mixins' as mixins;
+
+// LEAH LEXA — PREMIUM EDITORIAL KEEPSAKE OVERRIDE
+// Scoped exclusively via .event--leah-lexa on the <main> wrapper.
+// Extends the celestial-blue base with a contained card composition.
+// Blush-pink atmospheric glow is injected via --ty-ambient-blush.
+
+.event--leah-lexa .thank-you-section[data-variant='celestial-blue'] {
+	--ty-ambient-blush: radial-gradient(
+		circle at 50% 28%,
+		rgb(244 201 216 / 48%) 0%,
+		transparent 38%
+	);
+
+	.thank-you-editorial {
+		background: rgb(255 248 242 / 92%);
+		border: 1px solid rgb(231 201 139 / 30%);
+		border-radius: 1.25rem;
+		padding: clamp(2rem, 5vw, 3rem);
+		box-shadow:
+			0 18px 45px rgb(99 62 72 / 16%),
+			0 2px 8px rgb(255 255 255 / 75%) inset;
+		max-width: min(100%, 36rem);
+	}
+
+	.thank-you-editorial__ambient {
+		background:
+			radial-gradient(ellipse at 50% 42%, rgb(244 201 216 / 24%) 0%, transparent 44%),
+			radial-gradient(
+				ellipse at 70% 20%,
+				rgb(var(--color-diamond-white-rgb) / 70%) 0%,
+				transparent 38%
+			),
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				rgb(var(--color-diamond-white-rgb) / 34%) 46%,
+				transparent 56%
+			);
+	}
+
+	.thank-you-editorial__copy {
+		max-width: 100%;
+	}
+
+	@include mixins.respond-to(lg) {
+		.thank-you-editorial {
+			max-width: min(100%, 52rem);
+			padding: clamp(2.5rem, 4vw, 3.5rem);
+		}
+	}
+}

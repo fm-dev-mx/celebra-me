@@ -3,10 +3,13 @@
 // CELESTIAL BLUE THANK YOU
 
 .thank-you-section[data-variant='celestial-blue'] {
+	--ty-ambient-blush: none;
+
 	min-height: 100svh;
 	align-items: stretch;
 	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
 	background:
+		var(--ty-ambient-blush),
 		linear-gradient(
 			180deg,
 			rgb(var(--color-deep-blue-graphite-rgb) / 10%) 0%,
