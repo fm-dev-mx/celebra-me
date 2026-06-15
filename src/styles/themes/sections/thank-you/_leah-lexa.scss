@@ -39,6 +39,17 @@
 			);
 	}
 
+	.thank-you-message .drop-cap {
+		float: none;
+		font-size: inherit;
+		font-weight: inherit;
+		line-height: inherit;
+		margin: 0;
+		padding: 0;
+		color: inherit;
+		text-shadow: none;
+	}
+
 	.thank-you-editorial__copy {
 		max-width: 100%;
 	}

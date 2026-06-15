@@ -1,0 +1,26 @@
+// LEAH LEXA — GIFTS SECTION POLISH
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Makes the subtitle the emotional anchor, refines the flourish.
+
+.event--leah-lexa .gifts-section[data-variant='celestial-blue'] {
+	--gifts-title-letter-spacing: 0.18em;
+
+	.gifts-section__subtitle {
+		font-size: 1.1rem;
+		line-height: 1.65;
+		max-width: 32rem;
+		opacity: 88%;
+	}
+
+	.gifts-section__flourish {
+		.flourish-diamond {
+			width: 6px;
+			height: 6px;
+		}
+
+		.flourish-line {
+			width: 36px;
+			opacity: 50%;
+		}
+	}
+}

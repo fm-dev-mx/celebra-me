@@ -54,3 +54,27 @@
 		backdrop-filter: blur(10px);
 	}
 }
+
+// LEAH LEXA — HEADER REFINEMENT
+// Softer scrolled background, refined monogram, subtler hamburger.
+.event--leah-lexa .header-base[data-variant='celestial-blue'] {
+	--header-bg-scrolled: rgb(var(--color-cool-ivory-rgb) / 85%);
+	--header-nav-title-color: rgb(var(--color-diamond-white-rgb) / 92%);
+	--hamburger-color: rgb(var(--color-diamond-white-rgb) / 78%);
+	--hamburger-color-menu-open: rgb(var(--color-diamond-white-rgb) / 78%);
+
+	.hamburger__line {
+		height: 1px;
+	}
+
+	// Softer transparent-state backdrop
+	&.header-base--transparent {
+		backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
+	}
+
+	.event-header__title-initials {
+		font-weight: 300;
+		letter-spacing: 0.18em;
+	}
+}

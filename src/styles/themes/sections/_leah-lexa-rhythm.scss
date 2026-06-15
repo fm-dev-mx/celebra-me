@@ -1,0 +1,25 @@
+// LEAH LEXA — SECTION RHYTHM NORMALIZATION
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Unifies spacing across sections so they read as one continuous editorial piece.
+
+.event--leah-lexa {
+	// Location
+	.event-location {
+		--location-padding-block: clamp(3.5rem, 8vw, 6rem) clamp(3.5rem, 8vh, 5rem);
+	}
+
+	// Gifts
+	.gifts-section {
+		--gifts-padding-block: clamp(4rem, 9vw, 6rem);
+	}
+
+	// Pet-keepsake gallery (single variant)
+	.gallery-section[data-variant='single'] {
+		--gallery-section-padding-block: clamp(3.5rem, 8vw, 5.5rem);
+	}
+
+	// Thank-you
+	.thank-you-section {
+		padding-block: clamp(5rem, 14svh, 8rem) clamp(5rem, 12svh, 7.5rem);
+	}
+}

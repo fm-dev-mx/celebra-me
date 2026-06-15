@@ -1,0 +1,65 @@
+@use '../../../global/mixins' as mixins;
+
+// LEAH LEXA — LOCATION PRESENTATION REFINEMENT
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Rebalances the Google Map as a secondary visual, converts indications
+// from card blocks to editorial notes.
+
+.event--leah-lexa .event-location[data-variant='celestial-blue'] {
+	// -----------------------------------------------------------------------
+	// Map: visually secondary, softer frame
+	// -----------------------------------------------------------------------
+	.event-location__card-image-container {
+		max-height: 200px;
+
+		@include mixins.respond-to(md) {
+			max-height: 220px;
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Indications (guest details): card → editorial note
+	// -----------------------------------------------------------------------
+	--location-indications-heading-color: rgb(var(--color-soft-graphite-rgb) / 48%);
+	--location-indication-item-bg: transparent;
+	--location-indication-item-border: none;
+	--location-indication-item-radius: 0;
+	--location-indication-item-box-shadow: none;
+	--location-indication-item-padding: 0.45rem 0;
+	--location-indication-item-min-height: auto;
+	--location-indication-item-gap: 0.75rem;
+	--location-indication-item-hover-bg: transparent;
+	--location-indication-item-hover-border-color: currentcolor;
+	--location-indication-item-hover-transform: none;
+	--location-indication-item-hover-box-shadow: none;
+	--location-indication-item-transition: none;
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-shadow: none;
+	--location-indication-icon-size: 1.25rem;
+	--location-indication-icon-color: rgb(var(--color-satin-blue-rgb) / 55%);
+	--location-indication-icon-opacity: 60%;
+	--location-indication-text-color: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--location-indication-text-font-size: clamp(0.82rem, 1.1vw, 0.92rem);
+	--location-indication-text-line-height: 1.55;
+	--location-indication-strong-color: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+	--location-indication-strong-font-weight: 500;
+
+	// Remove the ::before decorative border from the indications panel
+	.event-location__indications {
+		&::before {
+			display: none;
+		}
+	}
+
+	// Remove hover effects on indication items
+	.event-location__indication-item {
+		&::after {
+			display: none;
+		}
+	}
+
+	// Reserved variant gets a subtle left accent instead of full card border
+	.event-location__indication-item--reserved {
+		--location-indication-icon-color: rgb(var(--color-satin-blue-rgb) / 60%);
+	}
+}
