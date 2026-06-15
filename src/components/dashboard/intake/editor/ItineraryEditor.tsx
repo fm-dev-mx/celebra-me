@@ -4,7 +4,7 @@ import { moveArrayItem } from '@/lib/intake/utils';
 import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
 
 type Itinerary = NonNullable<DraftContent['itinerary']>;
-type ItineraryItem = Itinerary['items'][number];
+type ItineraryItem = NonNullable<Itinerary['items']>[number];
 
 interface Props {
 	value: Itinerary;
@@ -23,17 +23,18 @@ function getIconLabel(name: string): string {
 }
 
 export default function ItineraryEditor({ value, onChange }: Props) {
+	const items = value.items ?? [];
 	const updateItem = (index: number, patch: Partial<ItineraryItem>) => {
 		onChange({
 			...value,
-			items: value.items.map((item, itemIndex) =>
+			items: items.map((item, itemIndex) =>
 				itemIndex === index ? { ...item, ...patch } : item,
 			),
 		});
 	};
 
 	const move = (index: number, offset: -1 | 1) => {
-		onChange({ ...value, items: moveArrayItem(value.items, index, offset) });
+		onChange({ ...value, items: moveArrayItem(items, index, offset) });
 	};
 
 	return (
@@ -55,7 +56,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 				</label>
 			</div>
 			<div className="invitation-editor__stack">
-				{value.items.map((item, index) => (
+				{items.map((item, index) => (
 					<article className="invitation-editor__list-item" key={index}>
 						<div className="invitation-editor__compact-row">
 							<strong>
@@ -73,7 +74,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 								<button
 									type="button"
 									onClick={() => move(index, 1)}
-									disabled={index === value.items.length - 1}
+									disabled={index === items.length - 1}
 								>
 									Bajar
 								</button>
@@ -82,7 +83,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 									onClick={() =>
 										onChange({
 											...value,
-											items: value.items.filter(
+											items: items.filter(
 												(_, itemIndex) => itemIndex !== index,
 											),
 										})
@@ -140,7 +141,7 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 			<button
 				className="invitation-editor__secondary-button"
 				type="button"
-				onClick={() => onChange({ ...value, items: [...value.items, { ...EMPTY_ITEM }] })}
+				onClick={() => onChange({ ...value, items: [...items, { ...EMPTY_ITEM }] })}
 			>
 				Agregar actividad
 			</button>

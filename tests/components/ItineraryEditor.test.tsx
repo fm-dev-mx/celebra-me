@@ -4,7 +4,7 @@ import ItineraryEditor from '@/components/dashboard/intake/editor/ItineraryEdito
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
 type Itinerary = NonNullable<DraftContent['itinerary']>;
-type ItineraryItem = Itinerary['items'][number];
+type ItineraryItem = NonNullable<Itinerary['items']>[number];
 
 const DEFAULT_ITEM: ItineraryItem = {
 	iconName: 'Church' as ItineraryItem['iconName'],
