@@ -1,3 +1,5 @@
+import type { EventType } from '@/lib/theme/theme-contract';
+
 export type PresetSection =
 	| 'quote'
 	| 'description'
@@ -12,7 +14,7 @@ export interface TextPreset {
 	id: string;
 	label: string;
 	section: PresetSection;
-	eventTypes?: string[];
+	eventTypes?: EventType[];
 	text: string;
 }
 
@@ -38,6 +40,13 @@ export const TEXT_PRESETS: TextPreset[] = [
 		section: 'quote',
 		eventTypes: ['bautizo'],
 		text: 'Hoy celebramos el regalo de la vida y la fe',
+	},
+	{
+		id: 'quote-primera-comunion-1',
+		label: 'Pan de vida',
+		section: 'quote',
+		eventTypes: ['primera-comunion'],
+		text: 'Jesús es el pan de vida que llena nuestro corazón de amor y esperanza',
 	},
 	{
 		id: 'quote-cumple-1',
@@ -70,6 +79,13 @@ export const TEXT_PRESETS: TextPreset[] = [
 		text: 'Con infinito amor les compartimos el bautizo de nuestro bebé. Los invitamos a acompañarnos en este día de fe.',
 	},
 	{
+		id: 'desc-primera-comunion-1',
+		label: 'Invitación a Primera Comunión',
+		section: 'description',
+		eventTypes: ['primera-comunion'],
+		text: 'Con mucha alegría les compartimos mi Primera Comunión. Los invitamos a acompañarnos en este día de fe, amor y bendición.',
+	},
+	{
 		id: 'desc-cumple-1',
 		label: 'Invitación a cumpleaños',
 		section: 'description',
@@ -91,6 +107,13 @@ export const TEXT_PRESETS: TextPreset[] = [
 		section: 'familyMessage',
 		eventTypes: ['bautizo'],
 		text: 'Con la alegría de ser sus padrinos',
+	},
+	{
+		id: 'family-primera-comunion-1',
+		label: 'Con bendición familiar',
+		section: 'familyMessage',
+		eventTypes: ['primera-comunion'],
+		text: 'Con la bendición de mi familia y el cariño de mis padrinos',
 	},
 
 	// Thank-you messages
@@ -168,7 +191,7 @@ export const TEXT_PRESETS: TextPreset[] = [
 	},
 ];
 
-export function getPresetsForSection(section: PresetSection, eventType?: string): TextPreset[] {
+export function getPresetsForSection(section: PresetSection, eventType?: EventType): TextPreset[] {
 	return TEXT_PRESETS.filter(
 		(p) =>
 			p.section === section &&

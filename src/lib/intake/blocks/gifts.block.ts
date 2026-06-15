@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const giftsBlock: IntakeBlockDefinition = {
 	type: 'gifts',
 	displayName: 'Mesa de regalos y transferencias',
 	description: 'Opciones de regalo: tiendas, transferencia bancaria, PayPal o lluvia de sobres.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'title',

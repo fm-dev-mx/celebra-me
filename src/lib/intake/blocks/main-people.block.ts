@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const mainPeopleBlock: IntakeBlockDefinition = {
 	type: 'main-people',
 	displayName: 'Personas principales',
 	description: 'Padres, padrinos, cónyuge, hijos y personas destacadas del evento.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'fatherName',

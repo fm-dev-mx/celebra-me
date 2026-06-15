@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const eventDetailsBlock: IntakeBlockDefinition = {
 	type: 'event-details',
 	displayName: 'Detalles del evento',
 	description: 'Nombre del festejado, título del evento, fecha y descripción general.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'celebrantName',

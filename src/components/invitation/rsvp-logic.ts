@@ -42,6 +42,7 @@ const DEFAULT_SUBCOPY: Record<string, string> = {
 	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
 	cumple: 'Tu confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
 	'baby-shower': 'Tu respuesta nos ayuda a preparar cada detalle para recibir a nuestro bebé.',
+	'primera-comunion': 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
 };
 
 export function getDefaultRsvpSubcopy(eventType: string): string {

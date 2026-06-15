@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const rsvpConfigBlock: IntakeBlockDefinition = {
 	type: 'rsvp-config',
 	displayName: 'Confirmación de asistencia (RSVP)',
 	description: 'Configuración de confirmación: título, capacidad de invitados y mensaje.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'title',

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getPresetsForSection, type PresetSection } from '@/lib/intake/text-presets';
+import { isEventType } from '@/lib/theme/theme-contract';
 
 interface Props {
 	section: PresetSection;
@@ -11,7 +12,10 @@ export default function TextPresetPicker({ section, eventType, onSelect }: Props
 	const [open, setOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	const presets = getPresetsForSection(section, eventType);
+	const presets = getPresetsForSection(
+		section,
+		eventType && isEventType(eventType) ? eventType : undefined,
+	);
 
 	useEffect(() => {
 		if (!open) return;

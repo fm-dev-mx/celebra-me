@@ -124,6 +124,10 @@ describe('Event content schema (real contract)', () => {
 		expect((EVENT_TYPES as readonly string[]).includes('baby-shower')).toBe(true);
 	});
 
+	it('includes primera-comunion in EVENT_TYPES', () => {
+		expect((EVENT_TYPES as readonly string[]).includes('primera-comunion')).toBe(true);
+	});
+
 	it('accepts native baby-shower event content', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
@@ -142,6 +146,27 @@ describe('Event content schema (real contract)', () => {
 					name: 'Luna Celeste',
 					label: 'Mi Baby Shower',
 					date: '2026-06-21T20:00:00.000Z',
+					backgroundImage: 'https://example.com/hero.jpg',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+	});
+
+	it('accepts native primera-comunion event content', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				eventType: 'primera-comunion',
+				title: 'Primera Comunión de Luna y Estrella',
+				theme: {
+					fontFamily: 'serif',
+					preset: 'angelic-presence',
+				},
+				hero: {
+					name: 'Luna y Estrella',
+					label: 'Mi Primera Comunión',
+					date: '2026-09-12T17:00:00.000Z',
 					backgroundImage: 'https://example.com/hero.jpg',
 				},
 			}),

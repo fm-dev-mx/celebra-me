@@ -4,7 +4,7 @@ import { getFieldLabel } from '@/lib/intake/labels';
 import { normalizeDate } from '@/lib/intake/utils';
 import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
 import type { IntakeRequest, IntakeSubmission, Invitation } from '@/lib/intake/types';
-import type { IntakeBlockType } from '@/lib/intake/types';
+import { INTAKE_BLOCK_TYPES, type IntakeBlockType } from '@/lib/intake/types';
 
 // ---------------------------------------------------------------------------
 // Date validation
@@ -109,6 +109,12 @@ describe('getVisibleFields', () => {
 		expect(fieldNames).not.toContain('secondaryName');
 	});
 
+	it('hides secondaryName for primera-comunion events', () => {
+		const fields = getVisibleFields('primera-comunion', 'event-details');
+		const fieldNames = fields.map((f) => f.name);
+		expect(fieldNames).not.toContain('secondaryName');
+	});
+
 	it('shows spouseName for boda events', () => {
 		const fields = getVisibleFields('boda', 'main-people');
 		const fieldNames = fields.map((f) => f.name);
@@ -127,8 +133,21 @@ describe('getVisibleFields', () => {
 		expect(fieldNames).not.toContain('spouseName');
 	});
 
+	it('hides spouseName for primera-comunion events', () => {
+		const fields = getVisibleFields('primera-comunion', 'main-people');
+		const fieldNames = fields.map((f) => f.name);
+		expect(fieldNames).not.toContain('spouseName');
+	});
+
 	it('shows celebrantName for all event types', () => {
-		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const) {
+		for (const eventType of [
+			'xv',
+			'boda',
+			'bautizo',
+			'cumple',
+			'baby-shower',
+			'primera-comunion',
+		] as const) {
 			const fields = getVisibleFields(eventType, 'event-details');
 			const fieldNames = fields.map((f) => f.name);
 			expect(fieldNames).toContain('celebrantName');
@@ -136,7 +155,14 @@ describe('getVisibleFields', () => {
 	});
 
 	it('shows fatherName for all event types', () => {
-		for (const eventType of ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const) {
+		for (const eventType of [
+			'xv',
+			'boda',
+			'bautizo',
+			'cumple',
+			'baby-shower',
+			'primera-comunion',
+		] as const) {
 			const fields = getVisibleFields(eventType, 'main-people');
 			const fieldNames = fields.map((f) => f.name);
 			expect(fieldNames).toContain('fatherName');
@@ -145,6 +171,10 @@ describe('getVisibleFields', () => {
 
 	it('uses baby-shower-specific hero name label', () => {
 		expect(getFieldLabel('hero', 'name', 'baby-shower')).toBe('Nombre del bebé');
+	});
+
+	it('uses primera-comunion-specific hero name label', () => {
+		expect(getFieldLabel('hero', 'name', 'primera-comunion')).toBe('Nombre del niño(a)');
 	});
 });
 
@@ -225,17 +255,6 @@ const mockCreateSubmission = createIntakeSubmission as jest.MockedFunction<
 	typeof createIntakeSubmission
 >;
 
-const ALL_BLOCK_TYPES: IntakeBlockType[] = [
-	'event-details',
-	'main-people',
-	'date-locations',
-	'photos',
-	'rsvp-config',
-	'music',
-	'gifts',
-	'special-messages',
-];
-
 const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	id: 'proj-1',
 	kind: 'client',
@@ -275,7 +294,7 @@ const makeRequest = (overrides?: Partial<IntakeRequest>): IntakeRequest => ({
 	tokenCiphertext: null,
 	origin: 'internal',
 	status: 'active',
-	enabledBlocks: ALL_BLOCK_TYPES,
+	enabledBlocks: [...INTAKE_BLOCK_TYPES],
 	expiresAt: null,
 	createdAt: '',
 	updatedAt: '',

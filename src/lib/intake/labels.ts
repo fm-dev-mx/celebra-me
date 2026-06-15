@@ -140,12 +140,13 @@ export const CAPTURE_LINK_STATUS_LABELS: Record<string, string> = {
 	unavailable: 'No recuperable',
 };
 
-export const EVENT_TYPE_LABELS: Record<string, string> = {
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
 	xv: 'XV años',
 	boda: 'Boda',
 	bautizo: 'Bautizo',
 	cumple: 'Cumpleaños',
 	'baby-shower': 'Baby Shower',
+	'primera-comunion': 'Primera Comunión',
 };
 
 export const RSVP_EVENT_STATUS_LABELS: Record<string, string> = {
@@ -211,6 +212,7 @@ const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
 		bautizo: 'Nombre del bebé',
 		cumple: 'Nombre del festejado',
 		'baby-shower': 'Nombre del bebé',
+		'primera-comunion': 'Nombre del niño(a)',
 	},
 	secondaryName: {
 		boda: 'Novio',

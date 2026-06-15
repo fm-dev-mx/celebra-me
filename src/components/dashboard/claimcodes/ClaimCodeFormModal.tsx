@@ -2,6 +2,7 @@ import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import type { CreateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 import { EVENT_TYPE_LABELS } from '@/lib/intake/labels';
+import { isEventType } from '@/lib/theme/theme-contract';
 
 interface ProjectOption {
 	id: string;
@@ -84,7 +85,10 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({
 						{invitationsWithRsvp.map((invitation) => (
 							<option key={invitation.id} value={invitation.id}>
 								{invitation.title} (
-								{EVENT_TYPE_LABELS[invitation.eventType] ?? invitation.eventType})
+								{isEventType(invitation.eventType)
+									? EVENT_TYPE_LABELS[invitation.eventType]
+									: invitation.eventType}
+								)
 							</option>
 						))}
 					</select>

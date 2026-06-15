@@ -1,4 +1,11 @@
-export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'] as const;
+export const EVENT_TYPES = [
+	'xv',
+	'boda',
+	'bautizo',
+	'cumple',
+	'baby-shower',
+	'primera-comunion',
+] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 export const CONTENT_SECTION_KEYS = [
@@ -70,6 +77,10 @@ export const PORTRAIT_HIDDEN_THEMES: ReadonlySet<ThemePreset> = new Set(
 
 export function themeSupportsPortrait(themeId: string): boolean {
 	return PORTRAIT_SUPPORTED_THEMES.has(themeId as ThemePreset);
+}
+
+export function isEventType(value: string): value is EventType {
+	return (EVENT_TYPES as readonly string[]).includes(value);
 }
 
 // ==========================================

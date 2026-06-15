@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const musicBlock: IntakeBlockDefinition = {
 	type: 'music',
 	displayName: 'Música de fondo',
 	description: 'URL de la canción que sonará al abrir la invitación.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'url',

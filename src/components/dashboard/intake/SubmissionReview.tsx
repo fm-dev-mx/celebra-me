@@ -5,6 +5,11 @@ import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
 import { SUBMISSION_STATUS_LABELS } from '@/lib/intake/labels';
 import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
 import type { IntakeSubmissionDTO } from '@/lib/dashboard/dto/intake';
+import type { EventType } from '@/lib/theme/theme-contract';
+
+function resolveEventType(raw: string | undefined): EventType {
+	return (raw ?? 'xv') as EventType;
+}
 
 interface Props {
 	invitationId: string;
@@ -176,6 +181,7 @@ const SubmissionReview: FC<Props> = ({ invitationId }) => {
 
 	if (!currentSubmission) return null;
 	const editable = currentSubmission.status === 'submitted';
+	const eventType = resolveEventType(currentInvitation?.eventType);
 
 	return (
 		<div className="intake-review">
@@ -220,13 +226,7 @@ const SubmissionReview: FC<Props> = ({ invitationId }) => {
 									updateBlockField(blockType, field, value)
 								}
 								disabled={!editing}
-								eventType={
-									(currentInvitation?.eventType ?? 'xv') as
-										| 'xv'
-										| 'boda'
-										| 'bautizo'
-										| 'cumple'
-								}
+								eventType={eventType}
 							/>
 							{validationErrors[blockType] && (
 								<p className="intake-review__error">

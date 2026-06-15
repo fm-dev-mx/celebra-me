@@ -1,10 +1,11 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const dateLocationsBlock: IntakeBlockDefinition = {
 	type: 'date-locations',
 	displayName: 'Fecha y ubicaciones',
 	description: 'Ceremonia, recepción, direcciones y códigos de vestimenta.',
-	supportedEventTypes: ['xv', 'boda', 'bautizo', 'cumple', 'baby-shower'],
+	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'ceremonyVenueName',
