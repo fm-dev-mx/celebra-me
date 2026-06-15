@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import type { ParentsOrder } from '@/lib/intake/types';
-import { str, bool, num, normalizeDate, normalizeTime } from '@/lib/intake/utils';
+import { str, bool, num, trimmedStr, normalizeDate, normalizeTime } from '@/lib/intake/utils';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
@@ -353,12 +353,14 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const envelope = nestedContent.envelope as Record<string, unknown> | undefined;
 	if (envelope && Object.keys(envelope).length > 0) {
-		result.envelope = {
-			...(typeof envelope.disabled === 'boolean' ? { disabled: envelope.disabled } : {}),
-			...(typeof envelope.sealInitials === 'string' && envelope.sealInitials.trim()
-				? { sealInitials: envelope.sealInitials.trim() }
-				: {}),
-		};
+		result.envelope = {};
+		if (typeof envelope.disabled === 'boolean') result.envelope.disabled = envelope.disabled;
+		const trimmedLabel = trimmedStr(envelope.cardLabel);
+		if (trimmedLabel) result.envelope.cardLabel = trimmedLabel;
+		const trimmedTagline = trimmedStr(envelope.cardTagline);
+		if (trimmedTagline) result.envelope.cardTagline = trimmedTagline;
+		const trimmedInitials = trimmedStr(envelope.sealInitials);
+		if (trimmedInitials) result.envelope.sealInitials = trimmedInitials;
 	}
 
 	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;

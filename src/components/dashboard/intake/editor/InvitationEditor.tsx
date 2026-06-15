@@ -1039,6 +1039,30 @@ export default function InvitationEditor({ initialContext }: Props) {
 							<span>Mostrar sobre de apertura</span>
 						</label>
 						<Field
+							label="Etiqueta de tarjeta"
+							value={envelope.cardLabel ?? ''}
+							placeholder="Ejemplo: BABY SHOWER"
+							maxLength={60}
+							onChange={(value) =>
+								updateContent('envelope', {
+									...envelope,
+									cardLabel: value,
+								})
+							}
+						/>
+						<Field
+							label="Frase secundaria (opcional)"
+							value={envelope.cardTagline ?? ''}
+							placeholder="Ejemplo: Una celebración celestial"
+							maxLength={120}
+							onChange={(value) =>
+								updateContent('envelope', {
+									...envelope,
+									cardTagline: value,
+								})
+							}
+						/>
+						<Field
 							label="Monograma / iniciales"
 							value={envelope.sealInitials ?? ''}
 							placeholder="Ejemplo: A·L"

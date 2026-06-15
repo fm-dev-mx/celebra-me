@@ -1,7 +1,7 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
-import { str, venueLabel, normalizeDate } from '@/lib/intake/utils';
+import { str, trimmedStr, venueLabel, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
@@ -23,6 +23,13 @@ function isBlankSection(value: Record<string, unknown> | null | undefined): bool
 
 type VenueDraft = z.infer<typeof venueSchema>;
 
+/**
+ * Maps only the fields that the draft (intake form) can override on the envelope.
+ * Fields such as `sealStyle`, `sealIcon`, `microcopy`, `stampText`, etc. are never
+ * written by the draft — they come from the published content-entry defaults or the
+ * demo fallback via `Object.assign` above. If the draft provides a `disabled` value,
+ * it takes precedence over the demo default.
+ */
 function buildEnvelopeFromDraft(
 	draftEnvelope: Record<string, unknown> | undefined,
 	demoEnvelope: Record<string, unknown> | undefined,
@@ -31,9 +38,13 @@ function buildEnvelopeFromDraft(
 	const result: Record<string, unknown> = { disabled: true };
 	if (ctx.isDemo && demoEnvelope) Object.assign(result, demoEnvelope);
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
-	const draftInitials = draftEnvelope?.sealInitials;
-	if (typeof draftInitials === 'string' && draftInitials.trim().length > 0)
-		result.sealInitials = draftInitials.trim();
+
+	const trimmedLabel = trimmedStr(draftEnvelope?.cardLabel);
+	if (trimmedLabel) result.cardLabel = trimmedLabel;
+	const trimmedTagline = trimmedStr(draftEnvelope?.cardTagline);
+	if (trimmedTagline) result.cardTagline = trimmedTagline;
+	const trimmedInitials = trimmedStr(draftEnvelope?.sealInitials);
+	if (trimmedInitials) result.sealInitials = trimmedInitials;
 	return result;
 }
 
