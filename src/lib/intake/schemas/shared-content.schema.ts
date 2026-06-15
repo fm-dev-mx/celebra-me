@@ -140,6 +140,8 @@ export const rsvpResponseMessagesSchema = z
 export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional(),
+		cardLabel: z.string().trim().max(60).optional(),
+		cardTagline: z.string().trim().max(120).optional(),
 		sealInitials: z.string().trim().max(12).optional(),
 	})
 	.strict();

@@ -109,6 +109,12 @@ export function formatTime12h(value: string): string {
 }
 
 /** Shared venue label resolver — centralizes the type→label mapping used in 4 places. */
+/** Guard: returns the string trimmed, or undefined if not a non-blank string. Shared by both draft ↔ published mappers. */
+export function trimmedStr(value: unknown): string | undefined {
+	if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+	return undefined;
+}
+
 export function venueLabel(type: string, label?: string): string {
 	return label || (type === 'ceremony' ? 'Ceremonia' : type === 'reception' ? 'Recepción' : '');
 }

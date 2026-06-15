@@ -8,6 +8,8 @@ export const envelopeSchema = z
 		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
 		sealInitials: z.string().max(4).optional(),
 		sealVariant: z.enum(['premium-rose']).optional(),
+		cardLabel: z.string().trim().max(60).optional(),
+		cardTagline: z.string().trim().max(120).optional(),
 		microcopy: z.string().default('Toca para abrir mi invitación'),
 		documentLabel: z.string().optional(),
 		stampText: z.string().optional(),
