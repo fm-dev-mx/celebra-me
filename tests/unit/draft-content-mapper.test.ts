@@ -1,4 +1,5 @@
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
 
 const VALID_UUID = '550e8400-e29b-41d4-a716-446655440001';
 
@@ -255,6 +256,129 @@ describe('mapNestedToDraftContent', () => {
 		});
 	});
 
+	it('preserves thankYou overlay fields (focalPoint, overlayAnchor, overlaySafeArea)', () => {
+		const input = {
+			thankYou: {
+				message: 'Gracias a todos',
+				closingName: 'Ana Sofia',
+				image: { type: 'internal', key: 'thankYouPortrait' },
+				focalPoint: '50% 40%',
+				overlayAnchor: 'bottom',
+				overlaySafeArea: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
+			},
+		};
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+		expect(result.thankYou?.focalPoint).toBe('50% 40%');
+		expect(result.thankYou?.overlayAnchor).toBe('bottom');
+		expect(result.thankYou?.overlaySafeArea).toEqual({
+			x: 0.1,
+			y: 0.1,
+			width: 0.8,
+			height: 0.8,
+		});
+		expect(result.thankYou?.message).toBe('Gracias a todos');
+	});
+
+	it('omits thankYou overlay fields when absent from published content', () => {
+		const input = {
+			thankYou: {
+				message: 'Gracias',
+				closingName: 'Familia',
+			},
+		};
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+		expect(result.thankYou?.focalPoint).toBeUndefined();
+		expect(result.thankYou?.overlayAnchor).toBeUndefined();
+		expect(result.thankYou?.overlaySafeArea).toBeUndefined();
+	});
+});
+
+describe('mergePublishedWithDraft', () => {
+	it('preserves thankYou overlay fields when draft is empty and published has them', () => {
+		const published = {
+			thankYou: {
+				message: 'Gracias',
+				closingName: 'Familia',
+				image: { type: 'internal', key: 'thankYouPortrait' },
+				focalPoint: '50% 40%',
+				overlayAnchor: 'bottom',
+				overlaySafeArea: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
+			},
+		};
+		const draft = {};
+
+		const result = mergePublishedWithDraft(
+			published as unknown as Record<string, unknown>,
+			draft,
+		);
+
+		expect(result.content.thankYou).toMatchObject({
+			message: 'Gracias',
+			focalPoint: '50% 40%',
+			overlayAnchor: 'bottom',
+			overlaySafeArea: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
+		});
+	});
+
+	it('preserves thankYou overlay fields from published when draft has text but no overlay fields', () => {
+		const published = {
+			thankYou: {
+				message: 'Mensaje publicado',
+				closingName: 'Familia Publicada',
+				focalPoint: 'center top',
+				overlayAnchor: 'right',
+				overlaySafeArea: { x: 0.2, y: 0.2, width: 0.6, height: 0.6 },
+			},
+		};
+		const draft = {
+			thankYou: {
+				message: 'Mensaje editado',
+			},
+		};
+
+		const result = mergePublishedWithDraft(
+			published as unknown as Record<string, unknown>,
+			draft,
+		);
+
+		// Draft message wins
+		expect(result.content.thankYou?.message).toBe('Mensaje editado');
+		// Published overlay fields fill in since draft lacks them
+		expect(result.content.thankYou?.focalPoint).toBe('center top');
+		expect(result.content.thankYou?.overlayAnchor).toBe('right');
+		expect(result.content.thankYou?.overlaySafeArea).toEqual({
+			x: 0.2,
+			y: 0.2,
+			width: 0.6,
+			height: 0.6,
+		});
+	});
+
+	it('draft overlay values override published overlay values', () => {
+		const published = {
+			thankYou: {
+				message: 'Publicado',
+				focalPoint: 'center center',
+			},
+		};
+		const draft = {
+			thankYou: {
+				message: 'Editado',
+				focalPoint: '50% 30%',
+			},
+		};
+
+		const result = mergePublishedWithDraft(
+			published as unknown as Record<string, unknown>,
+			draft,
+		);
+
+		expect(result.content.thankYou?.message).toBe('Editado');
+		expect(result.content.thankYou?.focalPoint).toBe('50% 30%');
+	});
+});
+
+describe('mapNestedToDraftContent', () => {
 	it('preserves gallery items with focal points and uploaded refs', () => {
 		const input = {
 			gallery: {

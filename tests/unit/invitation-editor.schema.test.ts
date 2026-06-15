@@ -98,4 +98,40 @@ describe('InvitationEditorSectionSchemas.messages', () => {
 		expect(result.quote).toBeUndefined();
 		expect(result.thankYou).toBeUndefined();
 	});
+
+	it('preserves thankYou overlay fields (focalPoint, overlayAnchor, overlaySafeArea)', () => {
+		const result = InvitationEditorSectionSchemas.messages.parse({
+			quote: { text: 'Frase', author: 'Autor' },
+			thankYou: {
+				message: 'Gracias',
+				closingName: 'Familia',
+				focalPoint: '50% 40%',
+				overlayAnchor: 'bottom',
+				overlaySafeArea: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
+			},
+		});
+
+		expect(result.thankYou?.focalPoint).toBe('50% 40%');
+		expect(result.thankYou?.overlayAnchor).toBe('bottom');
+		expect(result.thankYou?.overlaySafeArea).toEqual({
+			x: 0.1,
+			y: 0.1,
+			width: 0.8,
+			height: 0.8,
+		});
+	});
+
+	it('allows thankYou overlay fields to be absent', () => {
+		const result = InvitationEditorSectionSchemas.messages.parse({
+			thankYou: {
+				message: 'Gracias',
+				closingName: 'Familia',
+			},
+		});
+
+		expect(result.thankYou?.message).toBe('Gracias');
+		expect(result.thankYou?.focalPoint).toBeUndefined();
+		expect(result.thankYou?.overlayAnchor).toBeUndefined();
+		expect(result.thankYou?.overlaySafeArea).toBeUndefined();
+	});
 });
