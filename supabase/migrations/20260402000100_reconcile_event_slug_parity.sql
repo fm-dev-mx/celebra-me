@@ -1,5 +1,17 @@
 begin;
 
+-- PREFLIGHT_ABORT: Safety guard — prevents re-execution on already-reconciled databases
+do $$
+begin
+  if exists (
+    select 1 from public.events
+    where (event_type, slug) in (('cumple', 'gerardo-sesenta'), ('xv', 'ximena-meza-trasvina'))
+  ) then
+    raise exception 'PREFLIGHT_ABORT: Target slugs (gerardo-sesenta, ximena-meza-trasvina) already exist — reconciliation was already applied or slugs are taken. Remove target events manually to re-run.';
+  end if;
+end;
+$$;
+
 create temp table tmp_event_slug_reconcile (
   event_type text not null,
   source_slug text not null,
