@@ -1,6 +1,6 @@
 ---
 title: Editor Data Hydration Fix
-status: active
+status: superseded
 created: 2026-05-31
 updated: 2026-05-31
 related_skills: []
@@ -13,7 +13,8 @@ related_docs:
   - src/components/dashboard/intake/editor/InvitationEditor.tsx
   - tests/unit/invitation-editor.service.test.ts
 supersedes: []
-superseded_by: []
+superseded_by:
+  - draft-preview-merge-fix.md
 ---
 
 # Editor Data Hydration Fix
