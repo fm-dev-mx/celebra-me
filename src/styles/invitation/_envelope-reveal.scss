@@ -682,7 +682,7 @@
 // Activated via content config: "sealVariant": "premium-rose"
 // ---------------------------------------------------------------------------
 .envelope-wrapper[data-seal-variant='premium-rose'] {
-	--env-seal-size: clamp(8rem, 34vw, 9.75rem);
+	--env-seal-size: clamp(56px, 16vw, 100px);
 	--env-container-width: min(96vw, 520px);
 	--env-container-ratio: 1.2;
 	--env-container-max-height: 92svh;
@@ -707,8 +707,8 @@
 		border-radius: 50%;
 
 		.seal-icon {
-			width: 50%;
-			height: 50%;
+			width: 65%;
+			height: 65%;
 			color: inherit;
 			filter: none;
 		}
