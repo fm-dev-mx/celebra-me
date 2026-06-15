@@ -22,6 +22,7 @@ interface Props {
 	tooltipText?: string;
 	variant?: string;
 	audioUrl?: string;
+	teaserDetails?: string;
 	card: RevealCardData;
 }
 
@@ -40,12 +41,9 @@ const {
 	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
 	audioUrl,
+	teaserDetails,
 	card,
 } = Astro.props;
-
-const envelopeDisplay = card.venueName
-	? `${card.details.split(' • ')[0]} • ${card.venueName}`
-	: card.details;
 ---
 
 <ds-envelope-reveal
@@ -112,7 +110,7 @@ const envelopeDisplay = card.venueName
 				<h2 class="envelope-name">{name}</h2>
 				<div class="tease-details-group">
 					<div class="tease-divider"></div>
-					<p class="envelope-details">{envelopeDisplay}</p>
+					{teaserDetails && <p class="envelope-details">{teaserDetails}</p>}
 				</div>
 
 				{

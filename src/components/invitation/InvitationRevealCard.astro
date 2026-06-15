@@ -1,5 +1,4 @@
 ---
-import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 
 interface Props {
@@ -9,18 +8,18 @@ interface Props {
 const { card } = Astro.props;
 ---
 
-<article class="invitation-reveal-card" aria-label={card.documentLabel}>
+<article class="invitation-reveal-card" aria-label={card.label}>
 	<div class="invitation-reveal-card__inner">
-		<div class="invitation-reveal-card__seal" aria-hidden="true">
-			<SealIcon
-				sealIcon={card.sealIcon}
-				sealInitials={card.sealInitials}
-				class="seal-icon invitation-reveal-card__seal-icon"
-			/>
-		</div>
-
-		<p class="invitation-reveal-card__label">{card.documentLabel}</p>
+		<p class="invitation-reveal-card__label">{card.label}</p>
 		<h2 class="invitation-reveal-card__name">{card.name}</h2>
+		<p class="invitation-reveal-card__date">{card.date}</p>
+
+		{
+			card.tagline && (
+				<p class="invitation-reveal-card__tagline">{card.tagline}</p>
+			)
+		}
+
 		<div class="invitation-reveal-card__divider" aria-hidden="true"></div>
 
 		{
@@ -31,8 +30,5 @@ const { card } = Astro.props;
 				</div>
 			)
 		}
-
-		<p class="invitation-reveal-card__details">{card.details}</p>
-		{card.venueName && <p class="invitation-reveal-card__venue"><span class="calligraphy-accent">en</span> {card.venueName}</p>}
 	</div>
 </article>

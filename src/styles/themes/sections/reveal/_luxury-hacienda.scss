@@ -159,57 +159,31 @@
 		background: var(--reveal-card-bg);
 		border: 1px solid var(--reveal-card-border);
 		box-shadow: var(--reveal-card-shadow);
-		backdrop-filter: blur(6px) saturate(120%);
-	}
-
-	.invitation-reveal-card__seal {
-		background: var(--env-seal-bg);
-		border: 1px solid hsl(38deg 50% 65% / 40%);
-		box-shadow:
-			0 6px 16px hsl(28deg 40% 20% / 35%),
-			inset 0 1px 2px hsl(40deg 60% 85% / 60%),
-			inset 0 -1px 3px hsl(28deg 30% 25% / 30%);
-	}
-
-	.invitation-reveal-card__seal-icon {
-		color: var(--env-seal-icon);
 	}
 
 	.invitation-reveal-card__label {
-		font-size: 0.58rem;
-		letter-spacing: 0.3em;
+		font-size: clamp(0.52rem, 1.8vw, 0.62rem);
+		letter-spacing: 0.32em;
 		opacity: 55%;
 	}
 
 	.invitation-reveal-card__name {
-		font-size: clamp(1.4rem, 7vw, 2.2rem);
+		font-size: clamp(1.4rem, 7vw, 2rem);
 		font-weight: 600;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.02em;
 		color: var(--reveal-card-text-primary);
 		text-shadow: 0 1px 2px hsl(30deg 30% 50% / 20%);
 	}
 
 	.invitation-reveal-card__divider {
-		width: min(8rem, 40%);
+		width: min(6rem, 35%);
 		height: 1px;
-		background: linear-gradient(
-			to right,
-			transparent,
-			hsl(38deg 45% 55% / 60%) 30%,
-			hsl(38deg 45% 55% / 60%) 70%,
-			transparent
-		);
+		background: linear-gradient(to right, transparent, hsl(38deg 45% 55% / 60%), transparent);
 	}
 
 	.invitation-reveal-card__guest-name {
 		font-size: clamp(1rem, 5vw, 1.5rem);
 		letter-spacing: 0.15em;
-	}
-
-	.invitation-reveal-card__details {
-		font-size: 0.65rem;
-		letter-spacing: 0.12em;
-		opacity: 70%;
 	}
 
 	.tease-divider {

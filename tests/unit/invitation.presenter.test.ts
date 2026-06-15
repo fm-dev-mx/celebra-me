@@ -52,13 +52,11 @@ describe('prepareInvitationPageContext', () => {
 
 		expect(context.guestName).toBe('Mariana Soto');
 		expect(context.envelope?.card).toEqual({
-			documentLabel: 'Invitación',
+			label: 'Invitación',
 			name: fixture.hero.name,
-			details: '25 abr 2026 • Monterrey',
+			date: '25 · ABR · 2026',
 			guestName: 'Mariana Soto',
-			sealIcon: 'heart',
-			sealInitials: 'L·G',
-			venueName: 'Quinta Las Flores',
+			tagline: undefined,
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
@@ -109,13 +107,11 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.envelope).not.toHaveProperty('city');
 		expect(context.envelope).not.toHaveProperty('date');
 		expect(context.envelope?.card).toEqual({
-			documentLabel: 'Invitación',
+			label: 'Invitación',
 			name: fixture.hero.name,
-			details: '25 abr 2026 • Monterrey',
+			date: '25 · ABR · 2026',
 			guestName: undefined,
-			sealIcon: 'heart',
-			sealInitials: 'L·G',
-			venueName: 'Quinta Las Flores',
+			tagline: undefined,
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toEqual([

@@ -11,43 +11,37 @@ export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 };
 
 export interface RevealCardData {
-	documentLabel: string;
+	label: string;
 	name: string;
-	details: string;
+	date: string;
+	tagline?: string;
 	guestName?: string;
-	sealIcon: EnvelopeSealIcon;
-	sealInitials?: string;
-	venueName?: string;
 }
 
-export function formatRevealDate(date: string): string {
+export function formatCardDate(date: string): string {
 	return new Intl.DateTimeFormat('es-MX', {
 		day: 'numeric',
 		month: 'short',
 		year: 'numeric',
 		timeZone: 'UTC',
-	}).format(new Date(date));
+	})
+		.format(new Date(date))
+		.replace(/ /g, ' · ')
+		.toUpperCase();
 }
 
 export function buildRevealCard(input: {
 	date: string;
-	city: string;
-	documentLabel?: string;
 	guestName?: string;
+	label?: string;
 	name: string;
-	sealIcon?: EnvelopeSealIcon;
-	sealInitials?: string;
-	venueName?: string;
+	tagline?: string;
 }): RevealCardData {
-	const formattedDate = formatRevealDate(input.date);
-
 	return {
-		documentLabel: input.documentLabel || 'Invitación',
+		label: input.label || 'Invitación',
 		name: input.name,
-		details: `${formattedDate} • ${input.city}`,
+		date: formatCardDate(input.date),
 		guestName: input.guestName,
-		sealIcon: input.sealIcon || 'monogram',
-		sealInitials: input.sealInitials,
-		venueName: input.venueName,
+		tagline: input.tagline,
 	};
 }

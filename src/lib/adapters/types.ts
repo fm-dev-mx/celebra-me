@@ -152,6 +152,7 @@ export interface EnvelopeViewModel {
 		stampYear?: string;
 		tooltipText?: string;
 		variant?: ThemePreset;
+		teaserDetails: string;
 		card: RevealCardData;
 		colors: {
 			background?: string;

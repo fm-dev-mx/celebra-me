@@ -1,15 +1,18 @@
 @use '../global/mixins' as mixins;
 
 .envelope-wrapper {
-	--reveal-card-bg: var(--color-glass-bg);
-	--reveal-card-border: var(--color-glass-border);
-	--reveal-card-text-primary: var(--color-text-primary);
-	--reveal-card-text-secondary: var(--color-text-secondary);
-	--reveal-card-accent: var(--color-action-accent);
+	--reveal-card-bg: var(--color-envelope-paper-ivory);
+	--reveal-card-border: color-mix(in srgb, rgb(150 125 110) 18%, transparent);
+	--reveal-card-text-primary: rgb(63 58 55);
+	--reveal-card-text-secondary: color-mix(in srgb, rgb(72 64 59) 58%, transparent);
+	--reveal-card-accent: color-mix(in srgb, rgb(150 125 110) 22%, transparent);
+	--reveal-card-grain-opacity: 1;
 	--reveal-card-font-display: var(--font-display);
-	--reveal-card-shadow: var(--shadow-premium);
-	--reveal-card-seal-bg: var(--env-seal-bg);
-	--reveal-card-seal-icon: var(--env-seal-icon);
+	--reveal-card-shadow:
+		0 6px 16px color-mix(in srgb, rgb(63 58 55) 8%, transparent),
+		0 18px 44px color-mix(in srgb, rgb(63 58 55) 10%, transparent),
+		inset 0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 32%, transparent),
+		inset 0 -1px 2px color-mix(in srgb, rgb(150 125 110) 10%, transparent);
 	--reveal-card-width: min(86vw, 420px);
 	--reveal-card-viewport-gap: 2rem;
 	--reveal-card-safe-padding: max(1rem, env(safe-area-inset-top)) 1rem
@@ -40,91 +43,106 @@
 }
 
 .invitation-reveal-card {
+	position: relative;
 	width: var(--reveal-card-width);
 	max-height: var(--reveal-card-max-height);
 	overflow: hidden;
 	background:
-		linear-gradient(
-			135deg,
-			color-mix(in srgb, var(--color-surface-elevated) 28%, transparent),
-			color-mix(in srgb, var(--reveal-card-accent) 6%, transparent)
+		radial-gradient(
+			ellipse at 50% 18%,
+			color-mix(in srgb, var(--color-surface-elevated) 30%, transparent),
+			transparent 60%
 		),
 		var(--reveal-card-bg);
 	border: 1px solid var(--reveal-card-border);
-	border-radius: 10px;
+	border-radius: 12px;
 	box-shadow: var(--reveal-card-shadow);
 	color: var(--reveal-card-text-primary);
-	backdrop-filter: blur(var(--glass-blur, 12px)) saturate(var(--glass-saturate, 160%));
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		border-radius: inherit;
+		opacity: var(--reveal-card-grain-opacity, 100%);
+		background:
+			radial-gradient(ellipse at 50% 80%, rgb(0 0 0 / 5%), transparent 60%),
+			radial-gradient(ellipse at 80% 20%, rgb(0 0 0 / 4%), transparent 50%),
+			radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / 3.5%), transparent 45%),
+			repeating-linear-gradient(
+				0deg,
+				transparent,
+				transparent 1px,
+				rgb(0 0 0 / 1.2%) 1px,
+				transparent 2px
+			);
+	}
 }
 
 .invitation-reveal-card__inner {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	min-height: min(58svh, 520px);
+	min-height: min(50svh, 420px);
 	max-height: inherit;
-	gap: clamp(0.55rem, 1.8svh, 0.9rem);
-	padding: clamp(1.35rem, 5vw, 2.5rem);
+	padding: clamp(2rem, 6vw, 2.8rem);
 	overflow-y: auto;
 	text-align: center;
 }
 
-.invitation-reveal-card__seal {
-	display: grid;
-	place-items: center;
-	width: clamp(44px, 12vw, 58px);
-	height: clamp(44px, 12vw, 58px);
-	background: var(--reveal-card-seal-bg);
-	border: 1px solid color-mix(in srgb, var(--color-surface-elevated) 18%, transparent);
-	border-radius: 50%;
-	box-shadow: var(--env-shadow-seal);
-	opacity: 88%;
-}
-
-.invitation-reveal-card__seal-icon {
-	width: 58%;
-	height: 58%;
-	color: var(--reveal-card-seal-icon);
-}
-
-.invitation-reveal-card__label,
-.invitation-reveal-card__details,
-.invitation-reveal-card__guest-label {
-	margin: 0;
+.invitation-reveal-card__label {
+	margin: 0 0 0.35rem;
 	font-family: var(--font-body);
-	font-size: clamp(0.62rem, 2.6vw, 0.72rem);
+	font-size: clamp(0.56rem, 2vw, 0.68rem);
 	font-weight: 500;
-	letter-spacing: 0.2em;
+	letter-spacing: 0.3em;
 	text-transform: uppercase;
 	color: var(--reveal-card-text-secondary);
-	opacity: 72%;
-}
-
-.invitation-reveal-card__name,
-.invitation-reveal-card__guest-name {
-	margin: 0;
-	font-family: var(--reveal-card-font-display);
-	line-height: 1.12;
-	color: var(--reveal-card-text-primary);
-	text-wrap: balance;
+	line-height: 1.3;
 }
 
 .invitation-reveal-card__name {
-	max-width: 100%;
-	font-size: clamp(1.55rem, 8vw, 2.65rem);
-	font-weight: 600;
+	margin: 0;
+	font-family: var(--reveal-card-font-display);
+	font-size: clamp(1.55rem, 7vw, 2rem);
+	font-weight: 550;
+	letter-spacing: -0.01em;
+	color: var(--reveal-card-text-primary);
+	line-height: 1.1;
+	text-wrap: balance;
+}
+
+.invitation-reveal-card__date {
+	margin: 0.2rem 0 0;
+	font-family: var(--font-body);
+	font-size: clamp(0.58rem, 2.2vw, 0.7rem);
+	font-weight: 500;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--reveal-card-text-secondary);
+	line-height: 1.4;
+}
+
+.invitation-reveal-card__tagline {
+	margin: 0.35rem 0 0;
+	font-family: var(--font-body-narrative);
+	font-size: clamp(0.76rem, 2.8vw, 0.92rem);
+	font-style: italic;
+	font-weight: 400;
+	color: color-mix(in srgb, var(--reveal-card-text-primary) 55%, transparent);
+	line-height: 1.4;
 }
 
 .invitation-reveal-card__divider {
-	width: min(9rem, 44%);
+	width: min(6rem, 35%);
 	height: 1px;
-	background: linear-gradient(
-		to right,
-		transparent,
-		color-mix(in srgb, var(--reveal-card-accent) 70%, transparent),
-		transparent
-	);
+	margin: 0.6rem 0 0;
+	background: linear-gradient(to right, transparent, var(--reveal-card-accent), transparent);
 }
 
 .invitation-reveal-card__guest {
@@ -133,38 +151,37 @@
 	align-items: center;
 	gap: 0.25rem;
 	width: 100%;
+	margin-top: 0.6rem;
 	padding-top: clamp(0.15rem, 1svh, 0.45rem);
 }
 
+.invitation-reveal-card__guest-label {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: clamp(0.56rem, 2vw, 0.68rem);
+	font-weight: 500;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--reveal-card-text-secondary);
+	opacity: 72%;
+}
+
 .invitation-reveal-card__guest-name {
-	max-width: 100%;
+	margin: 0;
+	font-family: var(--reveal-card-font-display);
 	font-size: clamp(1.15rem, 6vw, 1.8rem);
 	font-style: italic;
 	font-weight: 500;
 	color: var(--reveal-card-text-secondary);
 	letter-spacing: 0.2em;
 	text-transform: capitalize;
-}
-
-.invitation-reveal-card__details {
-	max-width: 100%;
-	line-height: 1.6;
-}
-
-.invitation-reveal-card__venue {
-	margin: 0.1rem 0 0;
-	font-size: clamp(0.72rem, 3vw, 0.85rem);
-	letter-spacing: 0.12em;
-	color: var(--reveal-card-text-secondary);
-	opacity: 78%;
+	line-height: 1.12;
 }
 
 .envelope-wrapper.is-opening {
 	.envelope-reveal-stage {
 		pointer-events: auto;
 		animation: envCardRise var(--duration-reveal) forwards var(--ease-premium);
-
-		// Wait for envelope flap to open
 		animation-delay: var(--duration-reveal);
 	}
 }
@@ -178,12 +195,13 @@
 
 @include mixins.respond-below(sm) {
 	.envelope-wrapper {
-		--reveal-card-width: min(88vw, 330px);
+		--reveal-card-width: min(88vw, 340px);
 		--reveal-card-rest-y: clamp(-24px, -4svh, -10px);
 	}
 
 	.invitation-reveal-card__inner {
-		min-height: min(56svh, 460px);
+		min-height: min(50svh, 400px);
+		padding: clamp(1.5rem, 5vw, 2rem);
 	}
 }
 

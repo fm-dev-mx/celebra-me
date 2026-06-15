@@ -202,9 +202,26 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 
 	if (!data.envelope || data.envelope.disabled) return { enabled: false };
 
+	const venueName = pickVenueValue(data.location, 'venueName');
+	const venueCity = pickVenueValue(data.location, 'city');
+	// Teaser uses lowercase `es-MX` date ("25 abr 2026 • Venue") intentionally
+	// distinct from the reveal-card's uppercase dot-separated format ("25 · ABR · 2026").
+	const teaserDate = new Intl.DateTimeFormat('es-MX', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+		timeZone: 'UTC',
+	}).format(new Date(data.hero.date));
+	const teaserDetails = venueName
+		? `${teaserDate} • ${venueName}`
+		: venueCity
+			? `${teaserDate} • ${venueCity}`
+			: teaserDate;
+
 	return {
 		enabled: true,
 		data: {
+			teaserDetails,
 			sealStyle: data.envelope.sealStyle,
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
@@ -222,11 +239,8 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			card: buildRevealCard({
 				name: data.hero.name,
 				date: data.hero.date,
-				city: pickVenueValue(data.location, 'city') ?? '',
-				venueName: pickVenueValue(data.location, 'venueName'),
-				documentLabel: data.envelope.documentLabel,
-				sealIcon: data.envelope.sealIcon,
-				sealInitials: data.envelope.sealInitials,
+				label: data.envelope.cardLabel ?? data.envelope.documentLabel,
+				tagline: data.envelope.cardTagline,
 			}),
 			colors: {
 				background: data.envelope.closedPalette?.background
