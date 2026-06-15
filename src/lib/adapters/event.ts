@@ -22,6 +22,7 @@ import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
+import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
 const LOCATION_THEME_DEFAULTS: Readonly<{
 	[key in ThemePreset]?: {
@@ -296,20 +297,22 @@ function buildQuoteSectionData(context: AdaptationContext) {
 
 function buildCountdownSectionData(context: AdaptationContext) {
 	const { data, normalizedPreset } = context;
-	if (!data.countdown) return undefined;
 
 	const target = resolveCountdownTarget(data.eventTiming, data.hero.date);
 	if (!target) return undefined;
 
-	// Use manual footerText if provided, otherwise fallback to venue location only (no date)
-	const footerText = data.countdown.footerText ?? formatVenueLocation(data.location);
+	const title = data.countdown?.title ?? COUNTDOWN_DEFAULTS.title;
+	const footerText =
+		data.countdown?.footerText ??
+		formatVenueLocation(data.location) ??
+		COUNTDOWN_DEFAULTS.footerText;
 
 	return {
-		...data.countdown,
+		title,
+		footerText,
 		targetIso: target.targetIso,
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,
-		footerText,
 		variant: sectionVariant(
 			'countdown',
 			data.sectionStyles?.countdown?.variant,
@@ -540,6 +543,19 @@ export function adaptEvent(
 		thankYou: buildThankYouSectionData(context),
 	};
 
+	// Ensure synthesized sections (e.g. countdown derived from eventTiming alone)
+	// appear in the render plan even when the stored sectionOrder omits them.
+	let resolvedSectionOrder = adapterData.sectionOrder;
+	if (sections.countdown && resolvedSectionOrder && !resolvedSectionOrder.includes('countdown')) {
+		resolvedSectionOrder = [...resolvedSectionOrder];
+		const locIdx = resolvedSectionOrder.indexOf('location');
+		if (locIdx !== -1) {
+			resolvedSectionOrder.splice(locIdx, 0, 'countdown');
+		} else {
+			resolvedSectionOrder.push('countdown');
+		}
+	}
+
 	return {
 		id: entrySlug,
 		isDemo,
@@ -552,7 +568,7 @@ export function adaptEvent(
 		hero: buildHero(context),
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
-		sectionOrder: adapterData.sectionOrder,
+		sectionOrder: resolvedSectionOrder,
 		sections,
 		music: adapterData.music
 			? {
@@ -561,7 +577,7 @@ export function adaptEvent(
 				}
 			: undefined,
 		interludes: buildInterludes(context),
-		navigation: buildCanonicalNavigation(sections),
+		navigation: buildCanonicalNavigation(sections, entrySlug),
 		sharing: adapterData.sharing
 			? {
 					whatsappTemplate: adapterData.sharing.whatsappTemplate,
