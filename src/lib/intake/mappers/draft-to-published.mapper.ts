@@ -13,22 +13,23 @@ type PublishCtx = { isDemo: boolean };
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
 
-function isNullishSection(value: unknown): value is null | undefined {
-	return value == null;
-}
-
 function isBlankSection(value: Record<string, unknown> | null | undefined): boolean {
-	return isNullishSection(value) || Object.keys(value).length === 0;
+	return value == null || Object.keys(value).length === 0;
 }
 
 type VenueDraft = z.infer<typeof venueSchema>;
 
+const EMPTY_LOCATION = { indicationsHeading: '' } as const;
+
 /**
- * Maps only the fields that the draft (intake form) can override on the envelope.
- * Fields such as `sealStyle`, `sealIcon`, `microcopy`, `stampText`, etc. are never
- * written by the draft — they come from the published content-entry defaults or the
- * demo fallback via `Object.assign` above. If the draft provides a `disabled` value,
- * it takes precedence over the demo default.
+ * Maps editable draft envelope fields onto the published envelope structure.
+ *
+ * For real (non-demo) publishes, seeds from the effective envelope (which
+ * already merged published + draft content via `computeEffectiveContent`)
+ * so that non-editable premium fields (`sealVariant`, `sealStyle`,
+ * `microcopy`, `stampText`, `closedPalette`, etc.) survive the round-trip.
+ * For demo publishes, seeds from the demo content, then applies draft
+ * overrides on top.
  */
 function buildEnvelopeFromDraft(
 	draftEnvelope: Record<string, unknown> | undefined,
@@ -36,7 +37,11 @@ function buildEnvelopeFromDraft(
 	ctx: PublishCtx,
 ): Record<string, unknown> {
 	const result: Record<string, unknown> = { disabled: true };
-	if (ctx.isDemo && demoEnvelope) Object.assign(result, demoEnvelope);
+
+	const seed = !ctx.isDemo ? draftEnvelope : demoEnvelope;
+	if (seed) Object.assign(result, seed);
+
+	// Draft explicit overrides (only fields the editor exposes).
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
 
 	const trimmedLabel = trimmedStr(draftEnvelope?.cardLabel);
@@ -224,14 +229,16 @@ function resolveIntroFields(
 }
 
 function mapIndicationsFromDraft(
-	draftIndications: ReadonlyArray<{ iconName: string; text: string }> | undefined,
+	draftIndications:
+		| ReadonlyArray<{ iconName: string; text: string; styleVariant?: string }>
+		| undefined,
 ): Array<Record<string, unknown>> | undefined {
 	if (!draftIndications || draftIndications.length === 0) return undefined;
 	const mapped = draftIndications
 		.filter((ind) => str(ind.text))
 		.map((ind) => ({
 			iconName: ind.iconName,
-			styleVariant: 'default',
+			styleVariant: ind.styleVariant ?? 'default',
 			text: str(ind.text),
 		}));
 	return mapped.length > 0 ? mapped : undefined;
@@ -243,7 +250,7 @@ function mapLocationFromDraft(
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!draftLocation || Object.keys(draftLocation).length === 0) {
-		return ctx.isDemo ? undefined : { indicationsHeading: '' };
+		return ctx.isDemo ? undefined : EMPTY_LOCATION;
 	}
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
@@ -267,7 +274,7 @@ function mapLocationFromDraft(
 				venueEvent: venueLabel(v.type, v.label),
 			}));
 		if (mappedVenues.length === 0 && Object.keys(result).length === 0) {
-			return ctx.isDemo ? undefined : { indicationsHeading: '' };
+			return ctx.isDemo ? undefined : EMPTY_LOCATION;
 		}
 		result.venues = mappedVenues;
 	} else {
@@ -292,7 +299,7 @@ function mapLocationFromDraft(
 	if (indications) result.indications = indications;
 
 	const hasContent = Object.keys(result).length > 0;
-	return hasContent ? result : ctx.isDemo ? undefined : { indicationsHeading: '' };
+	return hasContent ? result : ctx.isDemo ? undefined : EMPTY_LOCATION;
 }
 
 export interface PublishInput {
@@ -630,8 +637,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			ctx,
 		),
 		family: familySection ?? (ctx.isDemo ? demoContent.family : undefined),
-		location:
-			locationSection ?? (ctx.isDemo ? demoContent.location : { indicationsHeading: '' }),
+		location: locationSection ?? (ctx.isDemo ? demoContent.location : EMPTY_LOCATION),
 		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : { items: [] }),
 		itinerary: draftContent.itinerary ?? (ctx.isDemo ? demoContent.itinerary : { items: [] }),
 		countdown: mapCountdownFromDraft(

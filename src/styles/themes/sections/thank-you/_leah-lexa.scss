@@ -58,6 +58,21 @@
 		.thank-you-editorial {
 			max-width: min(100%, 52rem);
 			padding: clamp(2.5rem, 4vw, 3.5rem);
+			grid-template-columns: minmax(14rem, 0.78fr) minmax(16rem, 1fr);
+		}
+
+		.closing-name {
+			font-size: clamp(2.5rem, 4.5vw, 4.5rem);
+		}
+	}
+
+	@include mixins.respond-to(xl) {
+		.thank-you-editorial {
+			grid-template-columns: minmax(16rem, 0.8fr) minmax(18rem, 1fr);
+		}
+
+		.closing-name {
+			font-size: clamp(2.75rem, 4vw, 5rem);
 		}
 	}
 }

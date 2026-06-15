@@ -1,7 +1,12 @@
 import { z } from 'zod';
-import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
+import {
+	AssetSchema,
+	ColorTokenSchema,
+	focalPointSchema,
+} from '@/lib/schemas/content/shared.schema';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -42,6 +47,7 @@ export const venueEntrySchema = venueSchema
 		id: z.string().min(1),
 		type: z.enum(['ceremony', 'reception', 'custom']),
 		label: optionalText(200),
+		venueEvent: optionalText(200),
 		isVisible: z.boolean().optional().default(true),
 		sortOrder: z.number().int().min(0).optional(),
 	})
@@ -52,6 +58,8 @@ export const gallerySchema = z
 		eyebrow: optionalText(200),
 		title: optionalText(200),
 		subtitle: optionalText(500),
+		variant: z.union([z.enum(THEME_PRESETS), z.literal('single')]).optional(),
+		presentation: z.enum(['pet-keepsake']).optional(),
 		items: z.array(
 			z
 				.object({
@@ -70,6 +78,7 @@ export const gallerySchema = z
 export const draftIndicationSchema = z
 	.object({
 		iconName: z.enum(ICON_NAMES_TUPLE),
+		styleVariant: z.enum(INDICATION_STYLE_VARIANTS).optional(),
 		text: z.string().trim().max(500),
 	})
 	.strict();
@@ -78,20 +87,22 @@ export const itinerarySchema = z
 	.object({
 		title: optionalText(200),
 		subtitle: optionalText(500),
-		items: z.array(
-			z
-				.object({
-					iconName: z.enum(ICON_NAMES_TUPLE),
-					label: z
-						.string()
-						.trim()
-						.min(1, 'El nombre de la actividad es obligatorio.')
-						.max(200),
-					description: optionalText(500),
-					time: z.string().trim().min(1, 'La hora es obligatoria.').max(20),
-				})
-				.strict(),
-		),
+		items: z
+			.array(
+				z
+					.object({
+						iconName: z.enum(ICON_NAMES_TUPLE),
+						label: z
+							.string()
+							.trim()
+							.min(1, 'El nombre de la actividad es obligatorio.')
+							.max(200),
+						description: optionalText(500),
+						time: z.string().trim().min(1, 'La hora es obligatoria.').max(20),
+					})
+					.strict(),
+			)
+			.optional(),
 	})
 	.strict();
 
@@ -142,6 +153,21 @@ export const envelopeSchema = z
 		disabled: z.boolean().optional(),
 		cardLabel: z.string().trim().max(60).optional(),
 		cardTagline: z.string().trim().max(120).optional(),
+		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).optional(),
+		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
 		sealInitials: z.string().trim().max(12).optional(),
+		sealVariant: z.enum(['premium-rose']).optional(),
+		microcopy: z.string().max(100).optional(),
+		documentLabel: z.string().max(60).optional(),
+		stampText: z.string().max(60).optional(),
+		stampYear: z.string().max(10).optional(),
+		tooltipText: z.string().max(100).optional(),
+		closedPalette: z
+			.object({
+				primary: ColorTokenSchema.optional(),
+				accent: ColorTokenSchema.optional(),
+				background: ColorTokenSchema.optional(),
+			})
+			.optional(),
 	})
 	.strict();

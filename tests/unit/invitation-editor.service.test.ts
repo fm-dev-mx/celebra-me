@@ -763,6 +763,55 @@ describe('saveInvitationEditorSection', () => {
 		expect(result.publication.hasUnpublishedChanges).toBe(true);
 	});
 
+	it('preserves variant and presentation when saving gallery eyebrow edit from published content', async () => {
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				gallery: {
+					variant: 'single',
+					presentation: 'pet-keepsake',
+					eyebrow: 'Mis recuerdos',
+					title: 'Galería',
+					items: [{ image: 'gallery03', caption: 'Original' }],
+				},
+			},
+		});
+
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		const value = {
+			eyebrow: 'Nuevo',
+			variant: 'single',
+			presentation: 'pet-keepsake',
+			items: [{ image: 'gallery03', caption: 'Original' }],
+		};
+
+		await saveInvitationEditorSection('proj-1', 'gallery', {
+			expectedUpdatedAt: draft.updatedAt,
+			value,
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
+			'draft-1',
+			draft.updatedAt,
+			expect.objectContaining({
+				content: expect.objectContaining({
+					gallery: expect.objectContaining({
+						eyebrow: 'Nuevo',
+						variant: 'single',
+						presentation: 'pet-keepsake',
+					}),
+				}),
+				status: 'draft',
+			}),
+		);
+	});
+
 	it('returns a conflict when another admin saved the draft first', async () => {
 		(updateDraftContentConditionally as jest.Mock).mockResolvedValue(null);
 
@@ -775,6 +824,156 @@ describe('saveInvitationEditorSection', () => {
 			status: 409,
 			code: 'conflict',
 		});
+	});
+
+	it('saves envelope with premium fields from published content', async () => {
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					sealIcon: 'monogram',
+					sealVariant: 'premium-rose',
+					microcopy: 'Toca para abrir',
+					cardLabel: 'Baby Shower',
+					cardTagline: 'Una celebracin',
+					stampText: 'Leah Lexa',
+					closedPalette: {
+						primary: 'surfacePrimary',
+						accent: 'actionAccent',
+						background: 'surfacePrimary',
+					},
+				},
+			},
+		});
+
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		const value = {
+			disabled: false,
+			sealStyle: 'wax',
+			sealIcon: 'monogram',
+			sealVariant: 'premium-rose',
+			microcopy: 'Toca para abrir',
+			cardLabel: 'Baby Shower',
+			cardTagline: 'Una celebracin',
+			stampText: 'Leah Lexa',
+			closedPalette: {
+				primary: 'surfacePrimary',
+				accent: 'actionAccent',
+				background: 'surfacePrimary',
+			},
+		};
+
+		await saveInvitationEditorSection('proj-1', 'envelope', {
+			expectedUpdatedAt: draft.updatedAt,
+			value,
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
+			'draft-1',
+			draft.updatedAt,
+			expect.objectContaining({
+				content: expect.objectContaining({
+					envelope: expect.objectContaining({
+						sealStyle: 'wax',
+						sealVariant: 'premium-rose',
+						closedPalette: expect.objectContaining({ primary: 'surfacePrimary' }),
+					}),
+				}),
+				status: 'draft',
+			}),
+		);
+	});
+
+	it('saves location with venueEvent and styleVariant from published content', async () => {
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
+			...published,
+			content: {
+				...published.content,
+				location: {
+					introEyebrow: 'Nos vemos',
+					venues: [
+						{
+							id: 'ven-1',
+							type: 'custom',
+							venueEvent: 'Baby Shower',
+							venueName: 'Casa',
+							address: 'Calle 123',
+							city: 'CDMX',
+							date: '2026-06-21',
+							time: '14:00',
+						},
+					],
+					indications: [
+						{
+							iconName: 'MapLocation',
+							styleVariant: 'default',
+							text: 'Referencia',
+						},
+					],
+				},
+			},
+		});
+
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		const value = {
+			introEyebrow: 'Nos vemos editado',
+			venues: [
+				{
+					id: 'ven-1',
+					type: 'custom' as const,
+					venueEvent: 'Baby Shower',
+					venueName: 'Casa',
+					address: 'Calle 123',
+					city: 'CDMX',
+					date: '2026-06-21',
+					time: '14:00',
+				},
+			],
+			indications: [
+				{
+					iconName: 'MapLocation' as const,
+					styleVariant: 'default' as const,
+					text: 'Referencia editada',
+				},
+			],
+		};
+
+		await saveInvitationEditorSection('proj-1', 'location', {
+			expectedUpdatedAt: draft.updatedAt,
+			value,
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
+			'draft-1',
+			draft.updatedAt,
+			expect.objectContaining({
+				content: expect.objectContaining({
+					location: expect.objectContaining({
+						introEyebrow: 'Nos vemos editado',
+						venues: expect.arrayContaining([
+							expect.objectContaining({ venueEvent: 'Baby Shower' }),
+						]),
+						indications: expect.arrayContaining([
+							expect.objectContaining({ styleVariant: 'default' }),
+						]),
+					}),
+				}),
+				status: 'draft',
+			}),
+		);
 	});
 });
 

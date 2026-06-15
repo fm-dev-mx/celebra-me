@@ -403,6 +403,85 @@ describe('publishDraft', () => {
 		expect(publishedContent.gallery?.title).toBe('Galería');
 	});
 
+	it('preserves premium envelope fields from prior published content when draft only edits generic fields', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				title: 'Test Event',
+				description: 'A test event',
+				hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
+				envelope: {
+					cardLabel: 'Nueva etiqueta',
+					cardTagline: 'Nuevo lema',
+					sealInitials: 'AS',
+					disabled: false,
+				},
+			},
+		} as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			id: 'pub-prior',
+			invitationId: 'proj-1',
+			slug: 'my-slug',
+			eventType: 'xv',
+			isDemo: false,
+			version: 1,
+			publishedAt: '2026-01-01T00:00:00Z',
+			createdAt: '2026-01-01T00:00:00Z',
+			updatedAt: '2026-01-01T00:00:00Z',
+			content: {
+				eventType: 'xv',
+				title: 'Test Event',
+				hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
+				eventTiming: {
+					localDateTime: '2027-11-20T18:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2027-11-21T01:00:00.000Z',
+				},
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					sealIcon: 'monogram',
+					sealInitials: 'AS',
+					sealVariant: 'premium-rose',
+					cardLabel: 'Etiqueta anterior',
+					cardTagline: 'Lema anterior',
+					microcopy: 'Toca para abrir mi invitación',
+					documentLabel: 'Evento',
+					stampText: 'Test',
+					stampYear: '2026',
+					closedPalette: {
+						primary: 'surfacePrimary',
+						accent: 'actionAccent',
+						background: 'surfacePrimary',
+					},
+				},
+				gallery: { title: 'Galería', items: [] },
+				itinerary: { title: 'Programa', items: [] },
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+
+		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const envelope = publishedContent.envelope as Record<string, unknown>;
+
+		expect(envelope.sealVariant).toBe('premium-rose');
+		expect(envelope.sealStyle).toBe('wax');
+		expect(envelope.sealIcon).toBe('monogram');
+		expect(envelope.microcopy).toBe('Toca para abrir mi invitación');
+		expect(envelope.stampText).toBe('Test');
+		expect(envelope.closedPalette).toBeDefined();
+
+		// Draft generic overrides must still apply
+		expect(envelope.cardLabel).toBe('Nueva etiqueta');
+		expect(envelope.cardTagline).toBe('Nuevo lema');
+		expect(envelope.sealInitials).toBe('AS');
+	});
+
 	it('upserts published content idempotently', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);

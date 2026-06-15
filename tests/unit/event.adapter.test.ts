@@ -289,6 +289,107 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.countdown?.targetSource).toBe('legacyHeroDate');
 	});
 
+	it('countdown renders from eventTiming alone without explicit countdown content', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				countdown: undefined,
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeDefined();
+		expect(viewModel.sections.countdown?.targetIso).toBe(viewModel.hero.date);
+		expect(viewModel.sections.countdown?.title).toBe('¡Falta muy poco!');
+		expect(viewModel.sections.countdown?.footerText).toBeDefined();
+	});
+
+	it('countdown is undefined when neither countdown content nor resolvable target exists', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				countdown: undefined,
+				eventTiming: undefined,
+				hero: {
+					...fixture.hero,
+					date: '2026-06-21',
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeUndefined();
+	});
+
+	it('injects countdown into sectionOrder when synthesized from eventTiming alone', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				countdown: undefined,
+				sectionOrder: [
+					'quote',
+					'family',
+					'location',
+					'itinerary',
+					'rsvp',
+					'gifts',
+					'thankYou',
+				],
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeDefined();
+		expect(viewModel.sectionOrder).toBeDefined();
+		expect(viewModel.sectionOrder!.indexOf('countdown')).toBeLessThan(
+			viewModel.sectionOrder!.indexOf('location'),
+		);
+	});
+
+	it('does not inject countdown into sectionOrder when no resolvable target exists', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				countdown: undefined,
+				eventTiming: undefined,
+				hero: {
+					...fixture.hero,
+					date: '2026-06-21',
+				},
+				sectionOrder: [
+					'quote',
+					'family',
+					'location',
+					'itinerary',
+					'rsvp',
+					'gifts',
+					'thankYou',
+				],
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.countdown).toBeUndefined();
+		expect(viewModel.sectionOrder).toBeDefined();
+		expect(viewModel.sectionOrder!.includes('countdown')).toBe(false);
+	});
+
 	it('throws for invalid theme presets instead of silently falling back', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

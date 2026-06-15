@@ -135,3 +135,180 @@ describe('InvitationEditorSectionSchemas.messages', () => {
 		expect(result.thankYou?.overlaySafeArea).toBeUndefined();
 	});
 });
+
+describe('InvitationEditorSectionSchemas.gallery', () => {
+	const BASE_GALLERY = {
+		eyebrow: 'Recuerdos',
+		title: 'Galería',
+		items: [{ image: 'gallery01', caption: 'Primera' }],
+	};
+
+	it('accepts gallery with variant and presentation (premium layout)', () => {
+		const value = {
+			...BASE_GALLERY,
+			variant: 'single',
+			presentation: 'pet-keepsake',
+		};
+
+		const result = InvitationEditorSectionSchemas.gallery.safeParse(value);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.variant).toBe('single');
+			expect(result.data.presentation).toBe('pet-keepsake');
+			expect(result.data.eyebrow).toBe('Recuerdos');
+		}
+	});
+
+	it('accepts gallery without variant or presentation (non-premium)', () => {
+		const result = InvitationEditorSectionSchemas.gallery.safeParse(BASE_GALLERY);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.variant).toBeUndefined();
+			expect(result.data.presentation).toBeUndefined();
+		}
+	});
+
+	it('rejects gallery with invalid variant value', () => {
+		const value = { ...BASE_GALLERY, variant: 'bogus-variant' };
+		const result = InvitationEditorSectionSchemas.gallery.safeParse(value);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const variantIssue = result.error.issues.find((i) => i.path.includes('variant'));
+			expect(variantIssue).toBeDefined();
+		}
+	});
+
+	it('rejects gallery with invalid presentation value', () => {
+		const value = { ...BASE_GALLERY, presentation: 'invalid-presentation' };
+		const result = InvitationEditorSectionSchemas.gallery.safeParse(value);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const presentationIssue = result.error.issues.find((i) =>
+				i.path.includes('presentation'),
+			);
+			expect(presentationIssue).toBeDefined();
+		}
+	});
+
+	it('rejects gallery with extra unknown keys', () => {
+		const value = { ...BASE_GALLERY, unknownField: 'should-not-pass' };
+		const result = InvitationEditorSectionSchemas.gallery.safeParse(value);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const unknownIssue = result.error.issues.find((i) => i.code === 'unrecognized_keys');
+			expect(unknownIssue).toBeDefined();
+		}
+	});
+});
+
+describe('InvitationEditorSectionSchemas.envelope', () => {
+	it('accepts premium envelope fields from published content', () => {
+		const value = {
+			disabled: false,
+			sealStyle: 'wax',
+			sealIcon: 'monogram',
+			sealInitials: 'LL',
+			sealVariant: 'premium-rose',
+			microcopy: 'Toca para abrir',
+			documentLabel: 'Baby Shower',
+			cardLabel: 'Baby Shower',
+			cardTagline: 'Una celebracin celestial',
+			stampText: 'Leah Lexa',
+			stampYear: '2026',
+			closedPalette: {
+				primary: 'surfacePrimary',
+				accent: 'actionAccent',
+				background: 'surfacePrimary',
+			},
+		};
+		const result = InvitationEditorSectionSchemas.envelope.safeParse(value);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.sealStyle).toBe('wax');
+			expect(result.data.sealVariant).toBe('premium-rose');
+			expect(result.data.closedPalette?.primary).toBe('surfacePrimary');
+		}
+	});
+
+	it('accepts minimal envelope without premium fields (non-premium)', () => {
+		const value = { disabled: true, cardLabel: 'Invitacin' };
+		const result = InvitationEditorSectionSchemas.envelope.safeParse(value);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.disabled).toBe(true);
+			expect(result.data.cardLabel).toBe('Invitacin');
+		}
+	});
+
+	it('rejects envelope with extra unknown keys', () => {
+		const value = { unknownField: 'should-not-pass' };
+		const result = InvitationEditorSectionSchemas.envelope.safeParse(value);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const unknownIssue = result.error.issues.find((i) => i.code === 'unrecognized_keys');
+			expect(unknownIssue).toBeDefined();
+		}
+	});
+});
+
+describe('InvitationEditorSectionSchemas.location (venue + indication parity)', () => {
+	const BASE_LOCATION = {
+		introEyebrow: 'Bienvenidos',
+		indicationsHeading: 'Detalles',
+	};
+
+	it('accepts venues with venueEvent field', () => {
+		const value = {
+			...BASE_LOCATION,
+			venues: [
+				{
+					id: 'ven-1',
+					type: 'custom' as const,
+					venueEvent: 'Baby Shower',
+					venueName: 'Casa',
+					address: 'Calle 123',
+					city: 'CDMX',
+					date: '2026-06-21',
+					time: '14:00',
+				},
+			],
+		};
+		const result = InvitationEditorSectionSchemas.location.safeParse(value);
+		expect(result.success).toBe(true);
+	});
+
+	it('accepts indications with styleVariant field', () => {
+		const value = {
+			...BASE_LOCATION,
+			indications: [
+				{
+					iconName: 'MapLocation' as const,
+					styleVariant: 'reserved' as const,
+					text: 'Sigue las indicaciones',
+				},
+			],
+		};
+		const result = InvitationEditorSectionSchemas.location.safeParse(value);
+		expect(result.success).toBe(true);
+	});
+});
+
+describe('InvitationEditorSectionSchemas.rsvp (guestCap parity)', () => {
+	it('accepts large guestCap values from published content', () => {
+		const value = {
+			title: 'Confirma tu asistencia',
+			guestCap: 100,
+			confirmationMode: 'api' as const,
+		};
+		const result = InvitationEditorSectionSchemas.rsvp.safeParse(value);
+		expect(result.success).toBe(true);
+	});
+});
+
+describe('InvitationEditorSectionSchemas.itinerary (optional items)', () => {
+	it('accepts itinerary without items array', () => {
+		const value = { title: 'Programa' };
+		const result = InvitationEditorSectionSchemas.itinerary.safeParse(value);
+		expect(result.success).toBe(true);
+	});
+});
