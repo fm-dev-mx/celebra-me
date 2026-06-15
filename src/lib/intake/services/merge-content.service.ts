@@ -104,6 +104,19 @@ export function mergePublishedWithDraft(
 		}
 	}
 
+	// Copy interludes that survived published → draft flattening.
+	// Interludes are not in ALL_EDITOR_KEYS (they are not editable section values),
+	// so they are never processed by the loop above. We must pass them through
+	// explicitly so preview, publish, and render plan can access them from the
+	// effective content. Priority: draft > published > demo.
+	const interludeVal =
+		draftFlat.interludes ??
+		publishedFlat.interludes ??
+		(allowDemoFallback ? demoFlat.interludes : undefined);
+	if (interludeVal !== undefined) {
+		result.interludes = structuredClone(interludeVal);
+	}
+
 	return { content: result, sectionStates };
 }
 

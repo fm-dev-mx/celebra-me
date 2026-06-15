@@ -720,3 +720,131 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.envelope?.disabled).toBe(true);
 	});
 });
+
+describe('mergePublishedWithDraft — interlude preservation', () => {
+	it('preserves interludes from published content when no draft exists (client invitation path)', () => {
+		const published = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'gallery01' },
+					afterSection: 'quote',
+					height: 'medium',
+					alt: 'Test interlude',
+				},
+			],
+		};
+		const draft = {};
+
+		const result = mergePublishedWithDraft(published, draft);
+
+		expect(result.content.interludes).toEqual(published.interludes);
+	});
+
+	it('preserves interludes from published when draft has other sections but no interlude key', () => {
+		const published = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'gallery01' },
+					afterSection: 'quote',
+					height: 'medium',
+				},
+			],
+		};
+		const draft = {
+			title: 'Test',
+			hero: { name: 'Test' },
+		};
+
+		const result = mergePublishedWithDraft(published, draft);
+
+		expect(result.content.interludes).toBeDefined();
+		expect(result.content.interludes).toHaveLength(1);
+	});
+
+	it('uses draft interludes over published interludes', () => {
+		const published = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'published-interlude' },
+					afterSection: 'quote',
+					height: 'screen',
+				},
+			],
+		};
+		const draft = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'draft-interlude' },
+					afterSection: 'family',
+					height: 'medium',
+				},
+			],
+		};
+
+		const result = mergePublishedWithDraft(published, draft);
+
+		expect(result.content.interludes).toEqual(draft.interludes);
+	});
+
+	it('does not inject demo interludes for a client invitation without allowDemoFallback', () => {
+		const published = {};
+		const draft = {};
+		const demo = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'demo-interlude' },
+					afterSection: 'quote',
+					height: 'screen',
+				},
+			],
+		};
+
+		const result = mergePublishedWithDraft(published, draft, {
+			demoContent: demo,
+			allowDemoFallback: false,
+		});
+
+		expect(result.content.interludes).toBeUndefined();
+	});
+
+	it('injects demo interludes only when allowDemoFallback is true', () => {
+		const published = {};
+		const draft = {};
+		const demo = {
+			interludes: [
+				{
+					image: { type: 'internal', key: 'demo-interlude' },
+					afterSection: 'quote',
+					height: 'screen',
+				},
+			],
+		};
+
+		const result = mergePublishedWithDraft(published, draft, {
+			demoContent: demo,
+			allowDemoFallback: true,
+		});
+
+		expect(result.content.interludes).toEqual(demo.interludes);
+	});
+
+	it('does not inject interludes when absent from both published and draft', () => {
+		const published = {};
+		const draft = {};
+
+		const result = mergePublishedWithDraft(published, draft);
+
+		expect(result.content.interludes).toBeUndefined();
+	});
+
+	it('injects an empty interlude array when explicitly set in published content', () => {
+		const published = {
+			interludes: [],
+		};
+		const draft = {};
+
+		const result = mergePublishedWithDraft(published, draft);
+
+		expect(result.content.interludes).toEqual([]);
+	});
+});
