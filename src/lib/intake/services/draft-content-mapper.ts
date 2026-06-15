@@ -55,32 +55,15 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 			introHeading: str(data.introHeading),
 			introLede: str(data.introLede),
 			indicationsHeading: str(data.indicationsHeading),
-			ceremony: ceremony
-				? {
-						venueName: str(ceremony.venueName),
-						address: str(ceremony.address),
-						city: str(ceremony.city),
-						date: normalizeDate(ceremony.date),
-						time: normalizeTime(ceremony.time) ?? str(ceremony.time),
-						mapUrl: str(ceremony.mapUrl),
-					}
-				: undefined,
-			reception: reception
-				? {
-						venueName: str(reception.venueName),
-						address: str(reception.address),
-						city: str(reception.city),
-						date: normalizeDate(reception.date),
-						time: normalizeTime(reception.time) ?? str(reception.time),
-						mapUrl: str(reception.mapUrl),
-					}
-				: undefined,
+			ceremony: mapVenueToDraft(ceremony),
+			reception: mapVenueToDraft(reception),
 			indications: indications.length > 0 ? indications : undefined,
 		},
 		eventTiming: eventTiming
 			? {
 					localDateTime: str(eventTiming.localDateTime),
 					timeZone: str(eventTiming.timeZone),
+					startsAtUtc: str(eventTiming.startsAtUtc),
 				}
 			: undefined,
 	};
@@ -204,6 +187,7 @@ function mapVenueToDraft(
 		time: normalizeTime(venue.time) ?? str(venue.time),
 		mapUrl: str(venue.mapUrl),
 		...(venue.image !== undefined ? { image: venue.image } : {}),
+		...(venue.coordinates !== undefined ? { coordinates: venue.coordinates } : {}),
 	};
 }
 
@@ -308,6 +292,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				time: str(v.time),
 				mapUrl: str(v.mapUrl),
 				...(v.image !== undefined ? { image: v.image } : {}),
+				...(v.coordinates !== undefined ? { coordinates: v.coordinates } : {}),
 				isVisible: v.isVisible !== false,
 			}));
 		} else {

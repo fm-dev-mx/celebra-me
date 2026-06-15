@@ -5,6 +5,8 @@ import { str, venueLabel, normalizeDate } from '@/lib/intake/utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
+import { venueSchema } from '@/lib/intake/schemas/shared-content.schema';
+import type { z } from 'zod';
 
 type PublishCtx = { isDemo: boolean };
 
@@ -19,24 +21,17 @@ function isBlankSection(value: Record<string, unknown> | null | undefined): bool
 	return isNullishSection(value) || Object.keys(value).length === 0;
 }
 
-type VenueDraft = {
-	venueName?: string;
-	address?: string;
-	city?: string;
-	date?: string;
-	time?: string;
-	mapUrl?: string;
-	image?: unknown;
-};
+type VenueDraft = z.infer<typeof venueSchema>;
 
 function buildEnvelopeFromDraft(
 	draftEnvelope: Record<string, unknown> | undefined,
 	demoEnvelope: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> {
-	const result = { ...(ctx.isDemo ? (demoEnvelope ?? { disabled: true }) : { disabled: true }) };
-	const draftInitials = draftEnvelope?.sealInitials;
+	const result: Record<string, unknown> = { disabled: true };
+	if (ctx.isDemo && demoEnvelope) Object.assign(result, demoEnvelope);
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
+	const draftInitials = draftEnvelope?.sealInitials;
 	if (typeof draftInitials === 'string' && draftInitials.trim().length > 0)
 		result.sealInitials = draftInitials.trim();
 	return result;
@@ -193,6 +188,7 @@ function mapVenue(
 	} else if (ctx.isDemo && demoVenue?.image) {
 		result.image = demoVenue.image;
 	}
+	if (draftVenue.coordinates) result.coordinates = draftVenue.coordinates;
 	return Object.keys(result).length > 0 ? result : undefined;
 }
 
@@ -255,6 +251,7 @@ function mapLocationFromDraft(
 				time: v.time || '',
 				mapUrl: v.mapUrl || undefined,
 				...(v.image ? { image: v.image } : {}),
+				...(v.coordinates ? { coordinates: v.coordinates } : {}),
 				isVisible: true,
 				venueEvent: venueLabel(v.type, v.label),
 			}));
@@ -470,11 +467,13 @@ function mapThankYouSection(
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const message = str(draftThankYou?.message);
-	const overlayFields = {
-		focalPoint: draftThankYou?.focalPoint,
-		overlayAnchor: draftThankYou?.overlayAnchor,
-		overlaySafeArea: draftThankYou?.overlaySafeArea,
-	};
+	const overlayFields: Record<string, unknown> = {};
+	if (draftThankYou?.focalPoint !== undefined)
+		overlayFields.focalPoint = draftThankYou.focalPoint;
+	if (draftThankYou?.overlayAnchor !== undefined)
+		overlayFields.overlayAnchor = draftThankYou.overlayAnchor;
+	if (draftThankYou?.overlaySafeArea !== undefined)
+		overlayFields.overlaySafeArea = draftThankYou.overlaySafeArea;
 	if (message) {
 		return {
 			message,
