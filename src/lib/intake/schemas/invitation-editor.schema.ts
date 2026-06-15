@@ -75,7 +75,7 @@ export const InvitationEditorSectionSchemas = {
 	rsvp: z
 		.object({
 			title: optionalText(200),
-			guestCap: z.number().int().min(1).max(20).optional(),
+			guestCap: z.number().int().min(1).max(999).optional(),
 			confirmationMessage: optionalText(1000),
 			confirmationMode: z.enum(['api', 'whatsapp', 'both']).optional(),
 			whatsappPhone: optionalText(30),
