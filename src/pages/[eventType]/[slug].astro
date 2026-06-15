@@ -139,7 +139,7 @@ try {
 			image={page.layout.image}
 			hideHeader={true}
 			className={page.layout.className}
-			isDemo={viewModel.isDemo}
+			isDemo={page.viewModel.isDemo}
 			themeMode="dark"
 		>
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
@@ -168,15 +168,15 @@ try {
 				}
 
 				<EventHeader
-					links={viewModel.navigation ?? []}
-					variant={viewModel.theme.preset}
-					initials={viewModel.envelope?.data?.sealInitials}
-					eventName={viewModel.hero?.name}
-					eventSubtitle={viewModel.hero?.label}
-					isDemo={viewModel.isDemo}
+					links={page.viewModel.navigation ?? []}
+					variant={page.viewModel.theme.preset}
+					initials={page.viewModel.envelope?.data?.sealInitials}
+					eventName={page.viewModel.hero?.name}
+					eventSubtitle={page.viewModel.hero?.label}
+					isDemo={page.viewModel.isDemo}
 				/>
 
-				<Hero {...viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} />
+				<Hero {...page.viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} />
 
 				<InvitationSections pageContext={page} />
 
@@ -203,21 +203,21 @@ try {
 				}
 
 				<Footer
-					eventSlug={viewModel.id}
+					eventSlug={page.viewModel.id}
 					showEnvelope={page.wrapper.showEnvelope}
 					variant={page.footerVariant}
 					closingPhrase='Con cariño'
-					showFooterBranding={viewModel.brandingVisibility.showFooterBranding}
-					showContactCta={viewModel.brandingVisibility.showContactCta}
+					showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
+					showContactCta={page.viewModel.brandingVisibility.showContactCta}
 				/>
 
-				{viewModel.music && (
+				{page.viewModel.music && (
 					<MusicPlayer
-						url={viewModel.music.url}
-						autoPlay={viewModel.music.autoPlay}
-						title={viewModel.music.title}
-						revealMode={viewModel.music.revealMode}
-						variant={viewModel.theme.preset}
+						url={page.viewModel.music.url}
+						autoPlay={page.viewModel.music.autoPlay}
+						title={page.viewModel.music.title}
+						revealMode={page.viewModel.music.revealMode}
+						variant={page.viewModel.theme.preset}
 					/>
 				)}
 			</main>

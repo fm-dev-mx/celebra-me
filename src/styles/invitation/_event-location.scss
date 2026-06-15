@@ -331,6 +331,79 @@
 		}
 	}
 
+	&__locked {
+		width: min(100% - 2rem, 560px);
+		margin: 0 auto;
+		padding: clamp(1.5rem, 5vw, 2.5rem);
+		border: var(--location-card-border);
+		border-radius: var(--location-card-radius);
+		background: var(--location-card-bg);
+		box-shadow: var(--location-card-shadow);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.9rem;
+	}
+
+	&__locked-icon {
+		width: 3rem;
+		height: 3rem;
+		border-radius: 999px;
+		display: grid;
+		place-items: center;
+		color: var(--location-copy-button-color);
+		border: var(--location-copy-button-border);
+		background: var(--location-nav-bg);
+	}
+
+	&__locked-title {
+		margin: 0;
+		font-family: var(--location-place-font-family);
+		font-size: clamp(1.4rem, 5vw, 2rem);
+		font-weight: var(--location-place-font-weight);
+		line-height: 1.15;
+		color: var(--location-place-color);
+		letter-spacing: 0;
+	}
+
+	&__locked-message {
+		max-width: 34rem;
+		margin: 0;
+		color: var(--location-address-color);
+		font-family: var(--location-address-font-family);
+		font-size: var(--location-address-font-size);
+		line-height: 1.6;
+	}
+
+	&__locked-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.75rem;
+		margin-top: 0.4rem;
+		padding: var(--location-nav-padding);
+		border-radius: var(--location-nav-radius);
+		border: var(--location-nav-border);
+		background: var(--location-nav-bg);
+		color: var(--location-nav-color);
+		font-family: var(--font-body);
+		font-size: var(--location-nav-font-size);
+		letter-spacing: var(--location-nav-letter-spacing);
+		text-transform: uppercase;
+		text-decoration: none;
+		transition:
+			background var(--duration-fast) var(--ease-out),
+			color var(--duration-fast) var(--ease-out),
+			transform var(--duration-fast) var(--ease-out);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--location-nav-hover-bg);
+			color: var(--location-nav-hover-color);
+			transform: var(--location-nav-hover-transform);
+		}
+	}
+
 	&__card-wrapper {
 		width: var(--location-card-wrapper-width);
 		max-width: var(--location-card-max-width);

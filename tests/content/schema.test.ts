@@ -175,6 +175,31 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
+	it('accepts after-rsvp location visibility for protected venue details', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				eventType: 'primera-comunion',
+				title: 'Primera Comunión de Luna y Estrella',
+				location: {
+					visibility: 'after-rsvp',
+					introHeading: 'Ubicación',
+					ceremony: {
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+					},
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.location?.visibility).toBe('after-rsvp');
+		}
+	});
+
 	it('routes the static baby-shower demo through a fictitious slug only', () => {
 		const fictitiousDemoPath = path.join(babyShowerDemoRoot, 'demo-baby-shower-celestial.json');
 		const leahDemoPath = path.join(babyShowerDemoRoot, 'leah-lexa-baby-shower.json');

@@ -11,6 +11,7 @@ import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
+type LocationSection = NonNullable<InvitationViewModel['sections']['location']>;
 
 export type InterludeRenderItem = {
 	type: 'interlude';
@@ -103,6 +104,18 @@ function buildEnvelopeData(
 			...envelope.data.card,
 			guestName,
 		},
+	};
+}
+
+function redactEnvelopeTeaserWhenLocationLocked<T extends { teaserDetails?: string }>(
+	envelope: T | undefined,
+	location: LocationSection | undefined,
+): T | undefined {
+	if (!envelope || !location?.isLocked || !envelope.teaserDetails) return envelope;
+
+	return {
+		...envelope,
+		teaserDetails: envelope.teaserDetails.split('•')[0]?.trim() ?? envelope.teaserDetails,
 	};
 }
 
@@ -206,6 +219,49 @@ function pickHeroValue(
 	);
 }
 
+function isConfirmedGuest(guestContext: InvitationGuestContext | null | undefined): boolean {
+	return guestContext?.guest.attendanceStatus === 'confirmed';
+}
+
+function redactProtectedLocation(location: LocationSection): LocationSection {
+	return {
+		visibility: 'after-rsvp',
+		isLocked: true,
+		variant: location.variant,
+		showFlourishes: location.showFlourishes,
+		introEyebrow: location.introEyebrow,
+		introHeading: location.introHeading ?? 'Ubicación',
+		introLede: location.introLede,
+		indicationsHeading: '',
+		lockedTitle: 'Ubicación reservada',
+		lockedMessage:
+			'Por cuidado de la familia, los detalles del lugar se mostrarán después de confirmar asistencia.',
+		lockedCtaLabel: 'Confirmar asistencia',
+	};
+}
+
+function applyProtectedLocationRedaction(
+	viewModel: InvitationViewModel,
+	guestContext: InvitationGuestContext | null | undefined,
+): InvitationViewModel {
+	const location = viewModel.sections.location;
+	if (!location || location.visibility !== 'after-rsvp' || isConfirmedGuest(guestContext)) {
+		return viewModel;
+	}
+
+	return {
+		...viewModel,
+		hero: {
+			...viewModel.hero,
+			venueName: undefined,
+		},
+		sections: {
+			...viewModel.sections,
+			location: redactProtectedLocation(location),
+		},
+	};
+}
+
 export function buildPageContextFromViewModel(input: {
 	viewModel: InvitationViewModel;
 	slug: string;
@@ -215,18 +271,19 @@ export function buildPageContextFromViewModel(input: {
 	isPreview?: boolean;
 }): InvitationPageContext {
 	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
+	const renderViewModel = applyProtectedLocationRedaction(viewModel, guestContext);
 
-	viewModel.brandingVisibility = resolveBrandingVisibility({
-		isDemo: viewModel.isDemo,
+	renderViewModel.brandingVisibility = resolveBrandingVisibility({
+		isDemo: renderViewModel.isDemo,
 		guest: guestContext?.guest ?? null,
 		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(eventType, slug),
 	});
 
-	const { theme, envelope, sections } = viewModel;
+	const { theme, envelope, sections } = renderViewModel;
 	const eventScopeClass = `event--${slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
-	const isDemo = viewModel.isDemo;
+	const isDemo = renderViewModel.isDemo;
 
-	const styles = generateThemeScopedStyles(theme, envelope, viewModel.id, isDemo);
+	const styles = generateThemeScopedStyles(theme, envelope, renderViewModel.id, isDemo);
 	const wrapperClassName = ['event-theme-wrapper', eventScopeClass, theme.themeClass]
 		.filter(Boolean)
 		.join(' ');
@@ -236,12 +293,15 @@ export function buildPageContextFromViewModel(input: {
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
 	const isDemoPreview = isDemo && !guestContext;
+	const envelopeData = redactEnvelopeTeaserWhenLocationLocked(
+		buildEnvelopeData(styles.showEnvelope, envelope, renderViewModel.id, guestName, isDemo),
+		sections.location,
+	);
 
 	return {
-		viewModel,
 		guestContext,
 		isDemoPreview,
-		layout: buildLayoutData(viewModel, guestName),
+		layout: buildLayoutData(renderViewModel, guestName),
 		wrapper: {
 			className: wrapperClassName,
 			showEnvelope: styles.showEnvelope,
@@ -251,9 +311,10 @@ export function buildPageContextFromViewModel(input: {
 		guestName,
 		heroTime,
 		heroVenueName,
-		envelope: buildEnvelopeData(styles.showEnvelope, envelope, viewModel.id, guestName, isDemo),
+		envelope: envelopeData,
 		footerVariant: resolveFooterVariant(sectionStyles, theme.preset, isPreview),
-		renderPlan: buildInvitationRenderPlan(viewModel, {
+		viewModel: renderViewModel,
+		renderPlan: buildInvitationRenderPlan(renderViewModel, {
 			hasGuestContext: Boolean(guestContext),
 			isDemoPreview,
 		}),

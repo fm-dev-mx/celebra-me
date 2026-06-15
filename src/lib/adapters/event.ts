@@ -378,6 +378,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 	});
 
 	return {
+		visibility: data.location.visibility,
 		...(rawVenues !== undefined
 			? { venues }
 			: {

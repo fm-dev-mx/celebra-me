@@ -47,6 +47,7 @@ const venueEntrySchema = z.object({
 });
 
 export const locationSchema = z.object({
+	visibility: z.enum(['public', 'after-rsvp']).default('public'),
 	introEyebrow: z.string().optional(),
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),

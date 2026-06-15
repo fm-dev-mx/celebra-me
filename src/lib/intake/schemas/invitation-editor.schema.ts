@@ -60,6 +60,7 @@ export const InvitationEditorSectionSchemas = {
 	}),
 	family: familyDraftSchema,
 	location: z.object({
+		visibility: z.enum(['public', 'after-rsvp']).optional(),
 		introEyebrow: optionalText(200),
 		introHeading: optionalText(200),
 		introLede: optionalText(1000),

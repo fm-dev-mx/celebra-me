@@ -35,6 +35,16 @@ interface UseRsvpSubmissionOptions {
 	isDemoPreview?: boolean;
 }
 
+function notifyConfirmedRsvp(inviteId: string): void {
+	if (typeof window === 'undefined' || !inviteId) return;
+
+	window.dispatchEvent(
+		new CustomEvent('celebrame:rsvp-confirmed', {
+			detail: { inviteId },
+		}),
+	);
+}
+
 export function useRsvpSubmission({
 	guestCap,
 	eventType,
@@ -214,6 +224,9 @@ export function useRsvpSubmission({
 					}
 
 					setSubmitStatus('success');
+					if (attendanceStatus === 'confirmed' && publicResult.inviteId) {
+						notifyConfirmedRsvp(publicResult.inviteId);
+					}
 					return;
 				}
 
@@ -229,6 +242,9 @@ export function useRsvpSubmission({
 				}
 
 				setSubmitStatus('success');
+				if (attendanceStatus === 'confirmed') {
+					notifyConfirmedRsvp(initialData.inviteId);
+				}
 			} catch (err) {
 				const message =
 					err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';

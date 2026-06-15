@@ -254,6 +254,7 @@ function mapLocationFromDraft(
 	}
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
+	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 
 	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
 		const mappedVenues = draftLocation.venues

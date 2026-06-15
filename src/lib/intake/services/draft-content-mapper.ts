@@ -290,6 +290,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			}));
 
 		const draftLocation: Record<string, unknown> = {
+			visibility: str(location.visibility),
 			introEyebrow: str(location.introEyebrow),
 			introHeading: str(location.introHeading),
 			introLede: str(location.introLede),

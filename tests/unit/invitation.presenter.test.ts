@@ -250,7 +250,8 @@ const baseViewModel = {
 		name: 'Test',
 		label: 'Event',
 		date: '2027-01-01',
-		backgroundImage: { src: '/img.jpg' },
+		backgroundImage: { src: '/img.jpg', alt: 'Test image' },
+		variant: 'jewelry-box' as const,
 	},
 	envelope: { enabled: false },
 	brandingVisibility: {
@@ -433,6 +434,115 @@ describe('buildPageContextFromViewModel', () => {
 
 		expect(context.heroTime).toBeUndefined();
 		expect(context.heroVenueName).toBeUndefined();
+	});
+
+	it('redacts after-rsvp location details before the guest is confirmed', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			title: 'Primera Comunión de Luna y Estrella',
+			envelope: {
+				enabled: true,
+				data: {
+					sealStyle: 'wax',
+					microcopy: 'Primera Comunión',
+					teaserDetails: '1 ago 2026 • Salón García',
+					card: {
+						label: 'Primera Comunión',
+						name: 'Luna y Estrella',
+						date: '1 · AGO · 2026',
+					},
+					colors: {},
+				},
+			},
+			sections: {
+				location: {
+					visibility: 'after-rsvp',
+					introHeading: 'Ubicación',
+					ceremony: {
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+						mapUrl: 'https://maps.example.com/salon-garcia',
+						googleMapsUrl: 'https://google.example.com/salon-garcia',
+						wazeUrl: 'https://waze.example.com/salon-garcia',
+						coordinates: { lat: 19.42, lng: -102.06 },
+						image: { src: '/protected-map.webp', alt: 'Mapa protegido' },
+					},
+				},
+			},
+		} as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+		});
+
+		expect(context.heroVenueName).toBeUndefined();
+		expect(context.envelope?.teaserDetails).toBe('1 ago 2026');
+		expect(context.viewModel.sections.location).toMatchObject({
+			visibility: 'after-rsvp',
+			isLocked: true,
+			introHeading: 'Ubicación',
+			lockedTitle: 'Ubicación reservada',
+		});
+		expect(context.viewModel.sections.location?.ceremony).toBeUndefined();
+		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain('Salón García');
+		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain(
+			'Victoriano Huerta',
+		);
+		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain('maps.example');
+		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain('-102.06');
+	});
+
+	it('keeps after-rsvp location details when the persisted guest status is confirmed', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			title: 'Primera Comunión de Luna y Estrella',
+			sections: {
+				location: {
+					visibility: 'after-rsvp',
+					introHeading: 'Ubicación',
+					ceremony: {
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+					},
+				},
+			},
+		} as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+			guestContext: {
+				inviteId: 'invite-confirmed',
+				eventSlug: 'luna-y-estrella',
+				eventType: 'primera-comunion',
+				eventTitle: 'Primera Comunión de Luna y Estrella',
+				guest: {
+					fullName: 'Familia invitada',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: '',
+					hideCelebraMeBranding: false,
+				},
+			},
+		});
+
+		expect(context.heroVenueName).toBe('Salón García');
+		expect(context.viewModel.sections.location?.isLocked).toBeUndefined();
+		expect(context.viewModel.sections.location?.ceremony?.address).toBe(
+			'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+		);
 	});
 
 	it('embedded preview override merges to exactly one data-reveal-state', () => {

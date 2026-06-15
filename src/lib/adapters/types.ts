@@ -198,6 +198,11 @@ export interface InvitationViewModel {
 			variant?: CountdownVariant;
 		};
 		location?: {
+			visibility?: 'public' | 'after-rsvp';
+			isLocked?: boolean;
+			lockedTitle?: string;
+			lockedMessage?: string;
+			lockedCtaLabel?: string;
 			ceremony?: VenueBase;
 			reception?: Reception;
 			venues?: VenueEntry[];

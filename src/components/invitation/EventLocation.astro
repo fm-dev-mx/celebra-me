@@ -50,6 +50,11 @@ interface VenueEntry extends VenueData {
 }
 
 interface Props {
+	visibility?: 'public' | 'after-rsvp';
+	isLocked?: boolean;
+	lockedTitle?: string;
+	lockedMessage?: string;
+	lockedCtaLabel?: string;
 	ceremony?: VenueData;
 	reception?: VenueData;
 	venues?: VenueEntry[];
@@ -67,6 +72,10 @@ interface Props {
 }
 
 const {
+	isLocked = false,
+	lockedTitle = 'Ubicación reservada',
+	lockedMessage = 'Los detalles del lugar se mostrarán después de confirmar asistencia.',
+	lockedCtaLabel = 'Confirmar asistencia',
 	ceremony,
 	reception,
 	venues: venueEntries,
@@ -100,16 +109,27 @@ const isSingleVenue = displayVenues.length === 1;
 			{introLede && <p class="event-location__lede">{introLede}</p>}
 		</header>
 	)}
-	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-		{displayVenues.map((venue: VenueData & { type?: string }) => (
-			<VenueCard
-				venue={venue}
-				type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
-				variant={variant}
-				showFlourishes={showFlourishes}
-			/>
-		))}
-	</div>
+	{isLocked ? (
+		<div class="event-location__locked" data-gated-location>
+			<div class="event-location__locked-icon" aria-hidden="true">
+				<Icon name="Forbidden" size={28} />
+			</div>
+			<h3 class="event-location__locked-title">{lockedTitle}</h3>
+			<p class="event-location__locked-message">{lockedMessage}</p>
+			<a class="event-location__locked-cta" href="#rsvp">{lockedCtaLabel}</a>
+		</div>
+	) : (
+		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
+			{displayVenues.map((venue: VenueData & { type?: string }) => (
+				<VenueCard
+					venue={venue}
+					type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
+					variant={variant}
+					showFlourishes={showFlourishes}
+				/>
+			))}
+		</div>
+	)}
 
 	{indications && indications.length > 0 && (
 		<div class="event-location__indications-container">
@@ -176,4 +196,16 @@ const isSingleVenue = displayVenues.length === 1;
 			}
 		});
 	}
+
+	document.querySelectorAll('[data-gated-location]').forEach(() => {
+		window.addEventListener('celebrame:rsvp-confirmed', (event) => {
+			const inviteId = event instanceof CustomEvent ? event.detail?.inviteId : undefined;
+			if (typeof inviteId !== 'string' || inviteId.length === 0) return;
+
+			const nextUrl = new URL(window.location.href);
+			nextUrl.searchParams.set('invite', inviteId);
+			nextUrl.hash = 'event-location';
+			window.location.assign(nextUrl.toString());
+		});
+	});
 </script>
