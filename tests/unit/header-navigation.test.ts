@@ -8,12 +8,6 @@ function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 }
 
-function fixtureSections(
-	overrides: Record<string, unknown>,
-): Parameters<typeof buildCanonicalNavigation>[0] {
-	return overrides as Parameters<typeof buildCanonicalNavigation>[0];
-}
-
 function expectToken(source: string, token: string): void {
 	expect(source).toContain(`${token}:`);
 }
@@ -35,34 +29,32 @@ describe('Invitation header navigation contract', () => {
 	});
 
 	it('builds canonical navigation filtering out missing sections', () => {
-		const nav = buildCanonicalNavigation(
-			fixtureSections({
-				quote: { text: 'Test', variant: 'editorial' as const },
-				countdown: {
-					title: 'Test',
-					footerText: '',
-					targetIso: '2026-01-01T00:00:00.000Z',
-					targetSource: 'eventTiming' as const,
-					variant: 'editorial' as const,
-				},
-				location: { ceremony: {} as any, variant: 'editorial' as const },
-				family: { celebrantName: 'Test', variant: 'editorial' as const },
-				gallery: { title: 'Test', items: [], variant: 'editorial' as const },
-				itinerary: { title: 'Test', items: [], variant: 'editorial' as const },
-				rsvp: {
-					eventSlug: 'test',
-					eventType: 'xv' as const,
-					title: 'Test',
-					guestCap: 1,
-					accessMode: 'hybrid' as const,
-					confirmationMessage: '',
-					confirmationMode: 'api' as const,
-					variant: 'editorial' as const,
-				},
-				gifts: { items: [], variant: 'editorial' as const },
-				thankYou: { message: 'Test', closingName: 'Test', variant: 'editorial' as const },
-			}),
-		);
+		const nav = buildCanonicalNavigation({
+			quote: { text: 'Test', variant: 'editorial' as const },
+			countdown: {
+				title: 'Test',
+				footerText: '',
+				targetIso: '2026-01-01T00:00:00.000Z',
+				targetSource: 'eventTiming' as const,
+				variant: 'editorial' as const,
+			},
+			location: { ceremony: {} as any, variant: 'editorial' as const },
+			family: { celebrantName: 'Test', variant: 'editorial' as const },
+			gallery: { title: 'Test', items: [], variant: 'editorial' as const },
+			itinerary: { title: 'Test', items: [], variant: 'editorial' as const },
+			rsvp: {
+				eventSlug: 'test',
+				eventType: 'xv' as const,
+				title: 'Test',
+				guestCap: 1,
+				accessMode: 'hybrid' as const,
+				confirmationMessage: '',
+				confirmationMode: 'api' as const,
+				variant: 'editorial' as const,
+			},
+			gifts: { items: [], variant: 'editorial' as const },
+			thankYou: { message: 'Test', closingName: 'Test', variant: 'editorial' as const },
+		} as any);
 		expect(nav).toEqual([
 			{ label: 'Inicio', href: '#inicio' },
 			{ label: 'Evento', href: '#event-location' },
@@ -73,21 +65,19 @@ describe('Invitation header navigation contract', () => {
 	});
 
 	it('omits nav items whose section is not present', () => {
-		const nav = buildCanonicalNavigation(
-			fixtureSections({
-				location: { ceremony: {} as any, variant: 'editorial' as const },
-				rsvp: {
-					eventSlug: 'test',
-					eventType: 'xv' as const,
-					title: 'Test',
-					guestCap: 1,
-					accessMode: 'hybrid' as const,
-					confirmationMessage: '',
-					confirmationMode: 'api' as const,
-					variant: 'editorial' as const,
-				},
-			}),
-		);
+		const nav = buildCanonicalNavigation({
+			location: { ceremony: {} as any, variant: 'editorial' as const },
+			rsvp: {
+				eventSlug: 'test',
+				eventType: 'xv' as const,
+				title: 'Test',
+				guestCap: 1,
+				accessMode: 'hybrid' as const,
+				confirmationMessage: '',
+				confirmationMode: 'api' as const,
+				variant: 'editorial' as const,
+			},
+		} as any);
 		expect(nav).toEqual([
 			{ label: 'Inicio', href: '#inicio' },
 			{ label: 'Evento', href: '#event-location' },
@@ -95,7 +85,7 @@ describe('Invitation header navigation contract', () => {
 		]);
 	});
 
-	const leahLexaBase = fixtureSections({
+	const leahLexaBase = {
 		location: { ceremony: {} as any, variant: 'editorial' as const },
 		rsvp: {
 			eventSlug: 'test',
@@ -107,14 +97,14 @@ describe('Invitation header navigation contract', () => {
 			confirmationMode: 'api' as const,
 			variant: 'editorial' as const,
 		},
-	});
+	} as any;
 
 	it('returns Leah Lexa navigation exactly as [Ubicación, Fecha, Regalos, Confirmar]', () => {
 		const nav = buildCanonicalNavigation(
-			fixtureSections({
+			{
 				...leahLexaBase,
 				gifts: { items: [], variant: 'editorial' as const },
-			}),
+			},
 			'leah-lexa',
 		);
 		expect(nav).toEqual([
@@ -127,7 +117,7 @@ describe('Invitation header navigation contract', () => {
 
 	it('filters Leah Lexa nav items when their section is missing', () => {
 		const nav = buildCanonicalNavigation(
-			fixtureSections({ location: leahLexaBase.location }),
+			{ location: leahLexaBase.location } as any,
 			'leah-lexa',
 		);
 		expect(nav).toEqual([
@@ -136,21 +126,8 @@ describe('Invitation header navigation contract', () => {
 		]);
 	});
 
-	it('includes #rsvp link in Leah Lexa nav output', () => {
-		const nav = buildCanonicalNavigation(
-			fixtureSections({
-				...leahLexaBase,
-				gifts: { items: [], variant: 'editorial' as const },
-			}),
-			'leah-lexa',
-		);
-		const rsvpEntry = nav.find((link) => link.href === '#rsvp');
-		expect(rsvpEntry).toBeDefined();
-		expect(rsvpEntry!.label).toBe('Confirmar');
-	});
-
 	it('uses default canonical navigation for non-Leah-Lexa slugs', () => {
-		const allSections = fixtureSections({
+		const allSections = {
 			location: { ceremony: {} as any, variant: 'editorial' as const },
 			rsvp: {
 				eventSlug: 'test',
@@ -162,7 +139,7 @@ describe('Invitation header navigation contract', () => {
 				confirmationMode: 'api' as const,
 				variant: 'editorial' as const,
 			},
-		});
+		} as any;
 		const nav = buildCanonicalNavigation(allSections, 'some-other-invitation');
 		expect(nav).toEqual([
 			{ label: 'Inicio', href: '#inicio' },
