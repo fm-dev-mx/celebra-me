@@ -9,6 +9,11 @@ const __dirname = path.dirname(__filename);
 const ERRORS = [];
 const WARNINGS = [];
 
+// Allow specific sections to have additional valid variants beyond THEME_PRESETS
+const SECTION_SPECIFIC_VARIANTS = {
+	gallery: ['single'],
+};
+
 // Single source of truth: map section key → SCSS directory under themes/sections/
 const SECTION_DIRECTORIES = {
 	countdown: 'countdown',
@@ -38,6 +43,11 @@ function extractContractVariants() {
 	const variants = {};
 	for (const key of Object.keys(SECTION_DIRECTORIES)) {
 		variants[key] = new Set(themeVariants);
+		if (SECTION_SPECIFIC_VARIANTS[key]) {
+			for (const v of SECTION_SPECIFIC_VARIANTS[key]) {
+				variants[key].add(v);
+			}
+		}
 	}
 	return variants;
 }

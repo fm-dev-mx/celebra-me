@@ -3,8 +3,8 @@ import { spawnSync } from 'node:child_process';
 // Missing-CSS warnings accepted because the renderer falls back to base section styles.
 // Update KNOWN_VARIANT_WARNINGS when theme presets or CSS variant files change.
 //   • 5×  jewelry-box-wedding: countdown, gifts, gallery, thankYou, itinerary
-//   • 8×  location: all variants except enchanted-rose
-//   • 8×  family: all variants except enchanted-rose
+//   • 7×  location: all variants except celestial-blue and enchanted-rose
+//   • 7×  family: all variants except enchanted-rose
 //   • 2×  gifts: angelic-presence, sacred-keepsake
 const KNOWN_VARIANT_WARNINGS = [
 	"countdown: Contract variant 'jewelry-box-wedding' not found in CSS",
@@ -13,7 +13,6 @@ const KNOWN_VARIANT_WARNINGS = [
 	"location: Contract variant 'luxury-hacienda' not found in CSS",
 	"location: Contract variant 'editorial' not found in CSS",
 	"location: Contract variant 'premiere-floral' not found in CSS",
-	"location: Contract variant 'celestial-blue' not found in CSS",
 	"location: Contract variant 'sacred-keepsake' not found in CSS",
 	"location: Contract variant 'angelic-presence' not found in CSS",
 	"family: Contract variant 'jewelry-box' not found in CSS",
