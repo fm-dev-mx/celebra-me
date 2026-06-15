@@ -30,7 +30,8 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
-import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS, resolveAssetSlug } from '@/lib/assets/asset-slug';
+import { resolveAssetSlug } from '@/lib/assets/asset-slug';
+import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -57,104 +58,16 @@ export interface InvitationEditorContext {
 	sectionStates: Record<string, SectionSource>;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Shallow-merges two objects field-by-field, only overwriting with defined (non-undefined) values.
- * Undefined values in overlay are skipped so a partial object from a higher-priority
- * source does not overwrite complete data from a lower-priority source.
- * Unlike mergeOverlay (which is recursive and overwrites all values), this is shallow
- * and preserves existing fields not present in overlay.
- * Returns undefined when both inputs are empty, null, or undefined.
- */
-function shallowMergeDefined(base: unknown, overlay: unknown): Record<string, unknown> | undefined {
-	const baseObj = isRecord(base) ? base : undefined;
-	const overlayObj = isRecord(overlay) ? overlay : undefined;
-
-	if (!baseObj && !overlayObj) return undefined;
-	if (!baseObj) return { ...(overlayObj ?? {}) };
-	if (!overlayObj) return { ...baseObj };
-
-	const result: Record<string, unknown> = {};
-
-	for (const key of Object.keys(baseObj)) {
-		if (baseObj[key] !== undefined) {
-			result[key] = baseObj[key];
-		}
-	}
-
-	for (const key of Object.keys(overlayObj)) {
-		if (overlayObj[key] !== undefined) {
-			result[key] = overlayObj[key];
-		}
-	}
-
-	return Object.keys(result).length > 0 ? result : undefined;
-}
-
-// eslint-disable-next-line complexity -- Section hydration has several branching paths for obj vs scalar and allowDemoFallback.
 function hydrateEditableContent(
 	draftContent: Record<string, unknown>,
 	publishedContent: Record<string, unknown>,
 	demoContent: Record<string, unknown>,
 	options: { allowDemoFallback?: boolean } = {},
 ): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
-	const draftBase = structuredClone(draftContent) as DraftContent;
-	const publishedFlat = mapNestedToDraftContent(publishedContent);
-	const demoFlat = mapNestedToDraftContent(demoContent);
-
-	const result: DraftContent = {};
-	const sectionStates: Record<string, SectionSource> = {};
-	const { allowDemoFallback = false } = options;
-
-	for (const key of ALL_EDITOR_KEYS) {
-		const draftVal = draftBase[key];
-		const publishedVal = publishedFlat[key];
-		const demoVal = demoFlat[key];
-
-		if (
-			OBJECT_SECTION_KEYS.has(key) &&
-			(isRecord(draftVal) || isRecord(publishedVal) || isRecord(demoVal))
-		) {
-			if (isRecord(draftVal) || isRecord(publishedVal)) {
-				// Merge existing data: published → draft only.
-				// Demo is excluded — only user-authored content may appear.
-				const merged = shallowMergeDefined(
-					isRecord(publishedVal) ? publishedVal : undefined,
-					isRecord(draftVal) ? draftVal : undefined,
-				);
-				if (merged !== undefined) {
-					result[key] = structuredClone(merged) as DraftContent[typeof key];
-				}
-			} else if (allowDemoFallback && isRecord(demoVal)) {
-				// Only use demo content when explicitly allowed (demo invitations).
-				result[key] = structuredClone(demoVal) as DraftContent[typeof key];
-			}
-		} else {
-			// Simple priority replace for scalar / array fields
-			if (draftVal !== undefined) {
-				result[key] = structuredClone(draftVal);
-			} else if (publishedVal !== undefined) {
-				result[key] = structuredClone(publishedVal);
-			} else if (allowDemoFallback && demoVal !== undefined) {
-				result[key] = structuredClone(demoVal);
-			}
-		}
-
-		if (draftVal !== undefined && result[key] !== undefined) {
-			sectionStates[key] = 'draft';
-		} else if (publishedVal !== undefined && result[key] !== undefined) {
-			sectionStates[key] = 'published';
-		} else if (allowDemoFallback && demoVal !== undefined && result[key] !== undefined) {
-			sectionStates[key] = 'demo';
-		} else {
-			sectionStates[key] = 'empty';
-		}
-	}
-
-	return { content: result, sectionStates };
+	return mergePublishedWithDraft(publishedContent, draftContent, {
+		allowDemoFallback: options.allowDemoFallback,
+		demoContent,
+	});
 }
 
 function createPublicationState(
@@ -249,11 +162,12 @@ export async function saveInvitationEditorSection(
 
 	// Use the persisted draft (not hydrated content) as baseline so
 	// demo-originated values are never persisted into the draft.
+	// When no draft exists, seed from published content to prevent sparse drafts.
 	const [draft, published] = await Promise.all([
 		findDraftByInvitationId(invitationId),
 		findPublishedByInvitationId(invitationId),
 	]);
-	const currentContent = draft?.content ?? {};
+	const currentContent = draft?.content ?? published?.content ?? {};
 	const nextContent = applySectionValue(currentContent, section, normalizedValue);
 
 	const savedDraft = draft

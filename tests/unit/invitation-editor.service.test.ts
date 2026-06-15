@@ -452,8 +452,9 @@ describe('hydration edge cases', () => {
 		expect(savedContent.rsvp).toBeUndefined();
 	});
 
-	it('creates a new draft via upsert with only the edited section when no draft exists', async () => {
+	it('creates a new draft via upsert with only the edited section when no draft or published exists', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
 		(upsertDraft as jest.Mock).mockResolvedValue({
 			id: 'draft-new',
 			invitationId: 'proj-1',
@@ -477,10 +478,43 @@ describe('hydration edge cases', () => {
 			title: 'Galería',
 			items: [{ image: { type: 'internal', key: 'gallery01' }, caption: 'Nueva' }],
 		});
-		// No draft existed — baseline was empty. Only the edited section appears.
+		// No draft or published existed — baseline was empty. Only the edited section appears.
 		expect(upsertCallArg.content.title).toBeUndefined();
 		expect(upsertCallArg.content.description).toBeUndefined();
 		expect(upsertCallArg.content.sectionOrder).toBeUndefined();
+	});
+
+	it('seeds draft from published content when no draft exists', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(published);
+		(upsertDraft as jest.Mock).mockResolvedValue({
+			id: 'draft-seeded',
+			invitationId: 'proj-1',
+			submissionId: null,
+			content: {
+				title: 'XV Ana Publicada',
+				gallery: { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] },
+			},
+			status: 'draft',
+			createdAt: '2026-06-01T00:00:00Z',
+			updatedAt: '2026-06-01T00:00:00Z',
+		});
+
+		const value = { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] };
+		await saveInvitationEditorSection('proj-1', 'gallery', {
+			expectedUpdatedAt: invitation.updatedAt,
+			value,
+		});
+
+		const upsertCallArg = (upsertDraft as jest.Mock).mock.calls[0][0];
+		// Edited section is applied
+		expect(upsertCallArg.content.gallery).toEqual({
+			title: 'Galería',
+			items: [{ image: { type: 'internal', key: 'gallery01' }, caption: 'Nueva' }],
+		});
+		// Published fields outside the edited section are preserved in the seed
+		expect(upsertCallArg.content.title).toBe('XV Ana Publicada');
+		expect(upsertCallArg.content.description).toBe('Descripción publicada');
 	});
 
 	it('merges partial draft section data with published to preserve draft event fields and fill missing section copy', async () => {
