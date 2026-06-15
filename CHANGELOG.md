@@ -11,7 +11,88 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.
 
 <!-- Items for the next release go here -->
 
-## [0.7.0-beta.1] - 2026-06-11
+## [0.8.0-beta.1] - 2026-06-14
+
+### Added
+
+- **Baby-shower event type**: new `EventType` contract entry, migration, default RSVP subcopy, demo
+  event, and Leah Lexa baby shower demo fixture
+- **Multi-venue support**: `VenueEntry` type, `venues` array in location schemas, round-trip through
+  draft mapper, adapter, and new `LocationSectionEditor` multi-venue UI
+- **Reveal card redesign**: new data model, component layout, and styling with card texture assets
+- **Gift store description**: canonical schemas with optional `storeDescription` field and intake
+  mapping
+- **Guest reminders**: `last_reminder_sent_at` schema column and migration, reminder-eligibility
+  utility, backend endpoint (`record-reminder`), send-reminder CTA in card and table views
+- **RSVP message preservation**: `appendGuestMessage` flow, confirmation message extraction as
+  separate body copy
+- **Guest message history**: `GuestMessageHistory` and `GuestDetailGroups` components extracted,
+  formatted fallback timestamps
+- **Envelope enhancements**: `cardLabel` and `cardTagline` through schemas, intake mappers, editor
+  UI, and content schemas
+- **Gallery single variant**: `single` presentation mode for one-image editorial galleries,
+  pet-keepsake mode added
+- **Interlude medium height**: compact variant for shorter emotional sections
+- **Premium-rose wax seal**: new variant for envelope reveal
+- **SQL safety infrastructure**: `sql-safety.ts` linting module, fail-closed CLI commands,
+  `run-prod-patch.ts` runner, `blocked-db-push.mjs` guard
+- **Preserve-local refresh workflow**: `preserve-local-lib.ts`,
+  `refresh-local-from-prod-preserve-local.ts`, and supporting DB tooling
+- **Demo content decoupling**: `isDemo` gate in publish flow, demo drift isolation,
+  `demo-preset-catalog.ts`, `celestial-blue` demo replacing Leah Lexa static demo
+- **OG/social improvements**: social crawler JS fallback redirect, CDN caching disabled for short
+  URLs, runtime-only health endpoint
+- **Script safety**: remote service role confirmation guard, centralised Supabase URL guard,
+  redacted tokens in seed output
+- **Agent infrastructure**: `invitation-production.md`, `database.md`, `manual-sql-manifest.md`
+  rules; `AGENTS.md` entry point; `env-workflow.md` guide
+
+### Changed
+
+- `EnvvelopeReveal`: premium-rose seal variant with texture image support
+- `Gallery` component: conditional eyebrow rendering, single-variant layout class resolution
+- `ThankYou` component: premium editorial keepsake styling with celestial-blue refinements
+- `GoogleMap` component: coordinate-based rendering from venue data
+- `InvitationEditor`: metadata conflict recovery and separate OCC chains
+- `GuestCard`/`GuestTableRow`: reminder CTA, priority share CTA, compact mobile summary
+- Dashboard guests: standardised action button classes, presenter helpers cleaned up
+- Adapter layer: venue coordinates, event slug resolution from `_assetSlug` content field
+- Draft mapper: null-safety, multi-venue mapping, cardLabel/cardTagline mapping
+- Merger service (`mergePublishedWithDraft`): preserves interludes, thankYou overlays; seeds draft
+  from published
+- Merge flow: `merge-content.service.ts` extracted and tested separately
+- Intake editor: multi-venue editor, shared `venueLabel` utility, default reminder fallback
+- Scripts: `validate-event-parity` migrated to `console.info`, `adopt-legacy-events` disabled,
+  `new-invitation` fail-closed
+- Eslint config: import ordering syntax, ts file pattern alignment
+- Dependencies bumped: `@astrojs/vercel` 10.0.8, `framer-motion` 12.40.0, `nodemailer` 8.0.11,
+  `eslint` 10.5.0, `jest` 30.4.2, `@supabase/supabase-js` 2.108.1, `typescript-eslint` 8.61.0, and
+  others
+
+### Database / Migrations
+
+- 2 migrations: `add_baby_shower_event_type` (20260612000000), `add_guest_last_reminder_sent_at`
+  (20260612000001)
+- 2 production patches: `repair_samantha_guest_share_state`, `prepare_leah_lexa_baby_shower`
+- 2 SQL recovery scripts: `repair-thankyou-overlay-cesar-ramses`, `restore-gallery-cesar-ramses`
+- Migration 20260402000100 (`reconcile_event_slug_parity`) updated with PREFLIGHT_ABORT guard
+
+### Fixed
+
+- Publish: merge draft with prior published content to prevent data loss
+- Preview: use effective merged content for dashboard preview
+- Intake: preserve interludes and thankYou overlay fields through merge flow
+- Intake: default empty reminder to fallback message in draft mapper
+- Intake-publish: gate demo content fallback behind `isDemo` flag
+- Schema: constrain venue coordinate bounds with min/max validation
+- ThankYou: preserve overlay fields for sacred-keepsake variant
+- Editor schema: add missing image field to thankYou section schema
+- Events: decouple Leah Lexa invitation from demo baby shower asset slugs
+- Guests: prevent double submission in `useSendInvitation` due to stale closure
+- Short URLs: disable CDN caching, vary response by User-Agent
+- Admin: add `is:global` to content-sync styles
+- Scripts: redact sensitive token from seed invitation output
+- Baby-shower: remove duplicate `mapUrl` from Leah Lexa demo event
 
 ### Added
 
