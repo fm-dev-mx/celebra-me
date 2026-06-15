@@ -9,6 +9,7 @@ jest.mock('@/lib/rsvp/services/invitation-context.service', () => ({
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { resolveGatedLocationPayload } from '@/lib/invitation/gated-location';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockResolveInvitationContent = resolveInvitationContent as jest.MockedFunction<
 	typeof resolveInvitationContent
@@ -18,7 +19,7 @@ const mockGetInvitationContextByInviteId = getInvitationContextByInviteId as jes
 >;
 
 const confirmedContext = {
-	inviteId: 'invite-confirmed',
+	inviteId: '11111111-1111-4111-1111-111111111111',
 	eventSlug: 'luna-y-estrella',
 	eventType: 'primera-comunion' as const,
 	eventTitle: 'Primera Comunión de Luna y Estrella',
@@ -79,7 +80,7 @@ beforeEach(() => {
 describe('resolveGatedLocationPayload', () => {
 	it('returns protected location details for a confirmed matching invite context', async () => {
 		const payload = await resolveGatedLocationPayload({
-			inviteId: 'invite-confirmed',
+			inviteId: '11111111-1111-4111-1111-111111111111',
 			eventType: 'primera-comunion',
 			slug: 'luna-y-estrella',
 		});
@@ -95,12 +96,13 @@ describe('resolveGatedLocationPayload', () => {
 	it('rejects unconfirmed invite contexts', async () => {
 		mockGetInvitationContextByInviteId.mockResolvedValue({
 			...confirmedContext,
+			inviteId: '22222222-2222-4222-2222-222222222222',
 			guest: { ...confirmedContext.guest, attendanceStatus: 'pending' },
 		});
 
 		await expect(
 			resolveGatedLocationPayload({
-				inviteId: 'invite-pending',
+				inviteId: '22222222-2222-4222-2222-222222222222',
 				eventType: 'primera-comunion',
 				slug: 'luna-y-estrella',
 			}),
@@ -113,7 +115,7 @@ describe('resolveGatedLocationPayload', () => {
 	it('rejects route identity mismatches before returning location details', async () => {
 		await expect(
 			resolveGatedLocationPayload({
-				inviteId: 'invite-confirmed',
+				inviteId: '11111111-1111-4111-1111-111111111111',
 				eventType: 'bautizo',
 				slug: 'luna-y-estrella',
 			}),
@@ -123,5 +125,40 @@ describe('resolveGatedLocationPayload', () => {
 		});
 
 		expect(mockResolveInvitationContent).not.toHaveBeenCalled();
+	});
+
+	it('rejects invalid UUID format with 400 before any DB call', async () => {
+		await expect(
+			resolveGatedLocationPayload({
+				inviteId: 'not-a-uuid',
+				eventType: 'primera-comunion',
+				slug: 'luna-y-estrella',
+			}),
+		).rejects.toMatchObject({
+			status: 400,
+			code: 'bad_request',
+			message: 'Invalid invite ID format.',
+		});
+
+		expect(mockGetInvitationContextByInviteId).not.toHaveBeenCalled();
+	});
+
+	it('rejects valid-format but nonexistent UUID with 404 when the service throws', async () => {
+		mockGetInvitationContextByInviteId.mockRejectedValue(
+			new ApiError(404, 'not_found', 'Invitation not found.'),
+		);
+
+		await expect(
+			resolveGatedLocationPayload({
+				inviteId: '00000000-0000-0000-0000-000000000000',
+				eventType: 'primera-comunion',
+				slug: 'luna-y-estrella',
+			}),
+		).rejects.toMatchObject({
+			status: 404,
+			code: 'not_found',
+		});
+
+		expect(mockGetInvitationContextByInviteId).toHaveBeenCalledTimes(1);
 	});
 });
