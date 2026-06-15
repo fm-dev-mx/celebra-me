@@ -6,10 +6,9 @@ import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-co
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
-import {
-	buildDraftPreviewPageContext,
-	selectPreviewContent,
-} from '@/lib/invitation/draft-preview-helper';
+import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
+import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
+import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import type { DemoPreset } from '@/lib/intake/types';
@@ -75,38 +74,29 @@ async function tryBuildContext(
 	return result.pageContext;
 }
 
-// Fallback chain: 1) meaningful draft, 2) published, 3) empty content fallback
 const [draft, published] = await Promise.all([
 	!errorMessage ? findDraftByInvitationId(id) : null,
 	!errorMessage ? findPublishedByInvitationId(id) : null,
 ]);
 
-const previewSelection = selectPreviewContent({
-	draftContent: draft?.content,
-	publishedContent: published?.content,
-});
+const effectiveContent = computeEffectiveContent(draft?.content, published?.content);
+const hasAnyContent = Object.keys(effectiveContent).length > 0;
+const publishedAssetLookupSlug = getAssetSlugFromContent(published?.content);
+const previewLabel = draft?.content ? 'Borrador + publicado' : published?.content ? 'Versión pública' : 'Vacío';
 
-if (previewSelection) {
-	pageCtx = await tryBuildContext(
-		previewSelection.content,
-		previewSelection.label,
-		previewSelection.assetLookupSlug,
-	);
-
-	// Draft build failed — fall back to published content
-	if (!pageCtx && previewSelection.label === 'Borrador' && published?.content) {
-		pageCtx = await tryBuildContext(
-			published.content,
-			'Versión pública',
-			previewSelection.assetLookupSlug,
-		);
+if (hasAnyContent && invitation) {
+	pageCtx = await tryBuildContext(effectiveContent as unknown as Record<string, unknown>, previewLabel, publishedAssetLookupSlug);
+	if (!pageCtx && published?.content) {
+		pageCtx = await tryBuildContext(published.content, 'Versión pública', publishedAssetLookupSlug);
 		if (pageCtx) {
 			previewWarning = 'El borrador actual tiene errores. Mostrando la versión pública.';
 		}
 	}
+	if (!pageCtx) {
+		previewWarning = 'El contenido combinado tiene errores.';
+	}
 }
 
-// If no content source produced a page context, attempt with empty content
 if (!pageCtx && !errorMessage && invitation) {
 	pageCtx = await tryBuildContext({}, 'Vacío');
 	if (!pageCtx) {
