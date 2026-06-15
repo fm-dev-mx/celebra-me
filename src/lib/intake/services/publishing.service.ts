@@ -4,6 +4,7 @@ import {
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
 	upsertPublishedContent,
+	findPublishedByInvitationId,
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
@@ -23,12 +24,11 @@ import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { getPublicUrl } from '@/lib/intake/storage';
 import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
-import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
-
+import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -291,8 +291,9 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		);
 	}
 
-	const content = draft.content as unknown as DraftContent;
-	if (!content || Object.keys(content).length === 0) {
+	const priorPublished = await findPublishedByInvitationId(invitationId);
+	const effectiveDraftContent = computeEffectiveContent(draft.content, priorPublished?.content);
+	if (Object.keys(effectiveDraftContent).length === 0) {
 		throw new ApiError(422, 'bad_request', 'El borrador no tiene contenido para publicar.');
 	}
 
@@ -326,7 +327,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 			snapshot,
 		},
 		assetSlug,
-		draftContent: content,
+		draftContent: effectiveDraftContent,
 		demoContent,
 		isDemo: invitation.kind === 'demo',
 	});

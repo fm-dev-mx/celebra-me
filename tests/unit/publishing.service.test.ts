@@ -6,6 +6,7 @@ jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () =>
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
 	upsertPublishedContent: jest.fn(),
 	findPublishedBySlugAndEventType: jest.fn(),
+	findPublishedByInvitationId: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -39,6 +40,7 @@ import {
 import {
 	upsertPublishedContent,
 	findPublishedBySlugAndEventType,
+	findPublishedByInvitationId,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import {
 	findInvitationById,
@@ -103,6 +105,9 @@ const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<
 >;
 const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
 	typeof findPublishedBySlugAndEventType
+>;
+const mockFindPublishedByInvitationId = findPublishedByInvitationId as jest.MockedFunction<
+	typeof findPublishedByInvitationId
 >;
 const mockFindEventBySlug = findEventBySlugService as jest.MockedFunction<
 	typeof findEventBySlugService
@@ -214,6 +219,7 @@ beforeEach(() => {
 	mockFindAssets.mockResolvedValue([]);
 	mockGetCollection.mockResolvedValue([MINIMAL_DEMO_ENTRY]);
 	mockFindEventByProjectId.mockResolvedValue(undefined as any);
+	mockFindPublishedByInvitationId.mockResolvedValue(null);
 	mockFindEventBySlug.mockResolvedValue(undefined as any);
 });
 
@@ -347,6 +353,49 @@ describe('publishDraft', () => {
 			code: 'bad_request',
 		});
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('merges sparse draft content with prior published content when prior exists', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				title: 'Sparse Draft',
+				hero: { name: 'Ana', date: '2027-01-01' },
+			},
+		} as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			id: 'pub-prior',
+			invitationId: 'proj-1',
+			slug: 'my-slug',
+			eventType: 'xv',
+			isDemo: false,
+			version: 1,
+			publishedAt: '2026-01-01T00:00:00Z',
+			createdAt: '2026-01-01T00:00:00Z',
+			updatedAt: '2026-01-01T00:00:00Z',
+			content: {
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2026-08-02T03:00:00.000Z',
+				},
+				gallery: { title: 'Galería', items: [] },
+				itinerary: { title: 'Programa', items: [] },
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+
+		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		// Draft hero.name is preserved through the merge
+		expect(publishedContent.hero?.name).toBe('Ana');
+		// Non-edited sections from prior published content are preserved
+		expect(publishedContent.gallery).toBeDefined();
+		expect(publishedContent.gallery.title).toBe('Galería');
 	});
 
 	it('upserts published content idempotently', async () => {
