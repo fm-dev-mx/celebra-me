@@ -225,7 +225,7 @@ begin
       'backgroundImage', 'hero'
     ),
     'quote', jsonb_build_object(
-      'text', 'Los tiempos de Dios son perfectos, y Dios les dio la dicha a mis papis de hacer crecer nuestra familia.',
+      'text', 'Los tiempos de Dios son perfectos, y les ha dado la dicha a mis papis de hacer crecer nuestra familia.',
       'author', 'Leah Lexa'
     ),
     'family', jsonb_build_object(
@@ -240,7 +240,7 @@ begin
         'sectionTitle', 'Mis papis',
         'sectionSubtitle', 'Hugo y Fernanda',
         'parentsTitle', 'Con mucho amor',
-        'sectionMessage', 'Mis papis, Hugo y Fernanda, quieren compartir con ustedes mi Baby Shower. Desde la pancita de mamá, ya siento el cariño con el que me esperan.'
+        'sectionMessage', 'Quieren compartir con ustedes mi Baby Shower. Desde la pancita de mamá, ya siento el cariño con el que me esperan.'
       )
     ),
     'gallery', jsonb_build_object(
@@ -266,7 +266,7 @@ begin
     'location', jsonb_build_object(
       'introEyebrow', 'Nos vemos para celebrar',
       'introHeading', 'Domingo, 21 de junio de 2026',
-      'introLede', 'A las 2:00 PM quiero compartir este día tan especial con ustedes.',
+      'introLede', 'Quiero compartir este día tan especial con ustedes.',
       'indicationsHeading', 'Detalles para mis invitados',
       'venues', jsonb_build_array(
         jsonb_build_object(
@@ -311,10 +311,10 @@ begin
     ),
     'rsvp', jsonb_build_object(
       'title', 'Confirma tu asistencia',
-      'subcopy', 'Confirma tu asistencia para compartir este día tan especial con nosotros.',
+      'subcopy', 'Tu respuesta ayuda a mis papis a preparar cada detalle para recibirme con mucho cariño.',
       'guestCap', 100,
       'accessMode', 'personalized-only',
-      'confirmationMessage', 'Gracias por confirmar. Mis papis y yo nos ponemos muy felices de saber que nos acompañarán.',
+      'confirmationMessage', 'Gracias por confirmar. Mis papis y yo estamos muy felices de saber que nos acompañarán.',
       'confirmationMode', 'api'
     ),
     'thankYou', jsonb_build_object(
@@ -322,16 +322,18 @@ begin
       'message', 'Este primer recuerdo y cada muestra de cariño serán parte de mi historia.',
       'closingName', 'Leah Lexa'
     ),
-    'envelope', jsonb_build_object(
-      'disabled', false,
-      'sealStyle', 'wax',
-      'sealIcon', 'monogram',
-      'sealInitials', 'LL',
-      'sealVariant', 'premium-rose',
-      'microcopy', 'Toca para abrir mi invitación',
-      'documentLabel', 'Baby Shower',
-      'stampText', 'Leah Lexa',
-      'stampYear', '2026',
+      'envelope', jsonb_build_object(
+        'disabled', false,
+        'sealStyle', 'wax',
+        'sealIcon', 'monogram',
+        'sealInitials', 'LL',
+        'sealVariant', 'premium-rose',
+        'microcopy', 'Toca para abrir mi invitación',
+        'documentLabel', 'Baby Shower',
+        'cardLabel', 'Baby Shower',
+        'cardTagline', 'Una celebración celestial',
+        'stampText', 'Leah Lexa',
+        'stampYear', '2026',
       'closedPalette', jsonb_build_object(
         'primary', 'surfacePrimary',
         'accent', 'actionAccent',
