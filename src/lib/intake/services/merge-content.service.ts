@@ -1,7 +1,7 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { SectionSource } from '@/lib/intake/types';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS } from '@/lib/assets/asset-slug';
+import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS } from '@/lib/intake/constants';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);

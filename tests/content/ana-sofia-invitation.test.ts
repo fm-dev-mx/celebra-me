@@ -46,7 +46,7 @@ describe('XV demo invitation content', () => {
 		expect(event.hero).toBeDefined();
 		expect(event.hero.name).toBeTruthy();
 		expect(event.location).toBeDefined();
-		expect(event.location.ceremony).toBeDefined();
+		expect(event.location!.ceremony).toBeDefined();
 		expect(event.sharing).toBeDefined();
 	});
 

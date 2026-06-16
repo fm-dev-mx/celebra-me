@@ -20,7 +20,7 @@ declare
   v_slug constant text := 'luna-y-estrella';
   v_event_type constant text := 'primera-comunion';
   v_title constant text := 'Primera Comunión de Luna y Estrella';
-  v_base_demo_id constant text := 'demo-bautismo-angelic-presence';
+  v_base_demo_id constant text := 'demo-primera-comunion-illustrated';
   v_theme_id constant text := 'angelic-presence';
   v_asset_slug constant text := 'luna-y-estrella-primera-comunion';
   v_invitation_id uuid;
@@ -210,8 +210,8 @@ $json$::jsonb;
     v_theme_id,
     jsonb_build_object(
       'id', v_base_demo_id,
-      'eventType', 'bautizo',
-      'displayName', 'Bautizo — Angelic Presence',
+      'eventType', 'primera-comunion',
+      'displayName', 'Primera Comunión — Ilustrada',
       'themeId', v_theme_id,
       'previewSlug', v_base_demo_id
     ),
@@ -228,7 +228,6 @@ $json$::jsonb;
     theme_id = excluded.theme_id,
     snapshot = excluded.snapshot,
     client_name = excluded.client_name,
-    created_by = excluded.created_by,
     kind = excluded.kind
   returning id into v_invitation_id;
 

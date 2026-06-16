@@ -6,11 +6,8 @@ import { getPublicUrl } from '@/lib/intake/storage';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { Invitation } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import {
-	ALL_EDITOR_KEYS,
-	getAssetSlugFromContent,
-	resolveAssetSlug,
-} from '@/lib/assets/asset-slug';
+import { ALL_EDITOR_KEYS } from '@/lib/intake/constants';
+import { getAssetSlugFromContent, resolveAssetSlug } from '@/lib/assets/asset-slug';
 
 export type DraftPreviewResult =
 	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }

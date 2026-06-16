@@ -1,0 +1,166 @@
+{
+    "eventType": "primera-comunion",
+    "isDemo": true,
+    "title": "Demo — Primera Comunión Ilustrada",
+    "description": "Demo oficial de primera comunión con estilo ilustrado y fresco.",
+    "theme": {
+        "preset": "angelic-presence"
+    },
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {}
+    },
+    "hero": {
+        "name": "Sofía Valentina",
+        "label": "Primera Comunión",
+        "date": "2026-08-15T11:00:00.000Z",
+        "backgroundImage": "hero"
+    },
+    "location": {
+        "visibility": "public",
+        "ceremony": {
+            "venueEvent": "Ceremonia",
+            "venueName": "Parroquia del Sagrado Corazón",
+            "address": "Av. Principal #123, Centro",
+            "city": "Ciudad de México",
+            "date": "15 de agosto de 2026",
+            "time": "11:00 AM",
+            "image": "ceremony",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+del+Sagrado+Corazon+Ciudad+de+Mexico"
+        },
+        "reception": {
+            "venueEvent": "Celebración",
+            "venueName": "Salón de Eventos Los Olivos",
+            "address": "Calle de las Flores #45, Colonia del Valle",
+            "city": "Ciudad de México",
+            "date": "15 de agosto de 2026",
+            "time": "13:00 PM",
+            "image": "reception",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Salon+de+Eventos+Los+Olivos+Ciudad+de+Mexico"
+        },
+        "indicationsHeading": "Indicaciones",
+        "indications": [
+            {
+                "iconName": "Calendar",
+                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+            },
+            {
+                "iconName": "DressCode",
+                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Roberto García Hernández",
+            "mother": "María Fernanda López"
+        },
+        "godparents": [
+            { "name": "Sr. Luis Antonio Mendoza", "role": "Padrino" },
+            { "name": "Sra. Patricia Rojas", "role": "Madrina" }
+        ],
+        "featuredImage": "family",
+        "focalPoint": "50% 36%",
+        "labels": {
+            "sectionTitle": "Los que hacen este momento sagrado",
+            "sectionSubtitle": "Familia",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor y sus bendiciones hacen más luminoso este sacramento."
+        }
+    },
+    "gallery": {
+        "eyebrow": "Galería",
+        "title": "Instantes de luz",
+        "subtitle": "Una memoria serena de este día especial",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Pureza y ternura"
+            },
+            {
+                "image": "gallery02",
+                "caption": "La luz del sacramento"
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Detalles para Celebrar",
+        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Agradecemos su generosidad en el área de recepción."
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa",
+        "subtitle": "Primera Comunión",
+        "items": [
+            {
+                "iconName": "Reception",
+                "label": "Llegada",
+                "time": "10:45",
+                "description": "Recepción en la parroquia"
+            },
+            {
+                "iconName": "Church",
+                "label": "Misa",
+                "time": "11:00",
+                "description": "Celebración de Primera Comunión"
+            },
+            {
+                "iconName": "Reception",
+                "label": "Convivencia",
+                "time": "13:00",
+                "description": "Comida familiar"
+            }
+        ]
+    },
+    "countdown": {
+        "title": "Nos acercamos con alegría",
+        "footerText": "Gracias por preparar el corazón para acompañarnos"
+    },
+    "quote": {
+        "text": "Yo soy el pan de vida. El que viene a mí nunca tendrá hambre, y el que cree en mí nunca tendrá sed.",
+        "author": "Juan 6:35"
+    },
+    "rsvp": {
+        "title": "Confirma tu asistencia",
+        "guestCap": 4,
+        "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+        "closingName": "Sofía Valentina",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 50%"
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "quote",
+            "alt": "Detalle floral de Primera Comunión",
+            "height": "tall",
+            "focalPoint": "50% 58%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "gallery",
+            "alt": "Detalle luminoso de la celebración",
+            "height": "screen",
+            "focalPoint": "53% 55%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealInitials": "S·V",
+        "microcopy": "Primera Comunión de Sofía"
+    }
+}

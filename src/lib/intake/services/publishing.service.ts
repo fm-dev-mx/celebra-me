@@ -90,46 +90,6 @@ async function synchronizeClientRsvp(
 	});
 }
 
-function resolvePublishAssetSlug(previewSlug: string | undefined): string {
-	if (!previewSlug) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La configuración de la invitación no tiene slug de vista previa.',
-		);
-	}
-	if (!isValidEvent(previewSlug)) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La configuración visual de esta invitación no es válida. No se encontraron los recursos gráficos asociados.',
-		);
-	}
-	return previewSlug;
-}
-
-function assertCountdownHasTiming(content: Record<string, unknown>): void {
-	const countdown = content.countdown;
-	if (!countdown || typeof countdown !== 'object' || Object.keys(countdown).length === 0) {
-		return;
-	}
-
-	const sectionOrder = content.sectionOrder;
-	if (Array.isArray(sectionOrder) && !sectionOrder.includes('countdown')) {
-		return;
-	}
-
-	const eventTiming = content.eventTiming as Record<string, unknown> | undefined;
-	const startsAtUtc = eventTiming?.startsAtUtc;
-	if (!startsAtUtc || typeof startsAtUtc !== 'string') {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La cuenta regresiva necesita fecha, hora y zona horaria válidas. Revisa "Fecha y ubicaciones" en el editor antes de publicar.',
-		);
-	}
-}
-
 /**
  * Walk content recursively and freeze all { type: 'uploaded', assetId }
  * references to { type: 'uploaded', assetId, src } using the asset library.
@@ -272,6 +232,26 @@ function assertAllAssetsResolvable(
 	}
 }
 
+function assertCountdownHasTiming(content: Record<string, unknown>): void {
+	const countdown = content.countdown;
+	if (!countdown || typeof countdown !== 'object' || Object.keys(countdown).length === 0) {
+		return;
+	}
+	const sectionOrder = content.sectionOrder;
+	if (Array.isArray(sectionOrder) && !sectionOrder.includes('countdown')) {
+		return;
+	}
+	const eventTiming = content.eventTiming as Record<string, unknown> | undefined;
+	const startsAtUtc = eventTiming?.startsAtUtc;
+	if (!startsAtUtc || typeof startsAtUtc !== 'string') {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La cuenta regresiva necesita fecha, hora y zona horaria válidas. Revisa "Fecha y ubicaciones" en el editor antes de publicar.',
+		);
+	}
+}
+
 export async function publishDraft(invitationId: string): Promise<PublishResult> {
 	const invitation = await findInvitationById(invitationId);
 	if (!invitation) {
@@ -318,7 +298,22 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
 
 	const publishSlug = getPublicSlug(invitation);
-	const assetSlug = resolvePublishAssetSlug(resolveAssetSlug(invitation));
+	const rawSlug = resolveAssetSlug(invitation, priorPublished?.content);
+	if (!rawSlug) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración de la invitación no tiene slug de vista previa.',
+		);
+	}
+	if (!isValidEvent(rawSlug)) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración visual de esta invitación no es válida. No se encontraron los recursos gráficos asociados.',
+		);
+	}
+	const assetSlug = rawSlug;
 
 	const mappedContent = mapDraftToPublished({
 		invitation: {

@@ -21,7 +21,7 @@ import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema
 export const eventContentSchema = baseEventFieldsSchema.extend({
 	sectionStyles: sectionStylesSchema,
 	hero: heroSchema,
-	location: locationSchema,
+	location: locationSchema.optional(),
 	family: familySchema,
 	rsvp: rsvpSchema,
 	quote: quoteSchema,

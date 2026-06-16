@@ -13,14 +13,6 @@ type PublishCtx = { isDemo: boolean };
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
 
-function isBlankSection(value: Record<string, unknown> | null | undefined): boolean {
-	return value == null || Object.keys(value).length === 0;
-}
-
-type VenueDraft = z.infer<typeof venueSchema>;
-
-const EMPTY_LOCATION = { indicationsHeading: '' } as const;
-
 /**
  * Maps editable draft envelope fields onto the published envelope structure.
  *
@@ -127,7 +119,7 @@ function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	celebrantName: string,
 ): Record<string, unknown> | undefined {
-	if (isBlankSection(draftFamily)) return undefined;
+	if (!draftFamily || Object.keys(draftFamily).length === 0) return undefined;
 	const family = draftFamily as FamilyDraft;
 
 	const result: Record<string, unknown> = {};
@@ -183,7 +175,7 @@ function mapFamilyFromDraft(
 }
 
 function mapVenue(
-	draftVenue: VenueDraft | undefined,
+	draftVenue: z.infer<typeof venueSchema> | undefined,
 	demoVenue: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
@@ -250,7 +242,7 @@ function mapLocationFromDraft(
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!draftLocation || Object.keys(draftLocation).length === 0) {
-		return ctx.isDemo ? undefined : EMPTY_LOCATION;
+		return undefined;
 	}
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
@@ -275,7 +267,7 @@ function mapLocationFromDraft(
 				venueEvent: venueLabel(v.type, v.label),
 			}));
 		if (mappedVenues.length === 0 && Object.keys(result).length === 0) {
-			return ctx.isDemo ? undefined : EMPTY_LOCATION;
+			return undefined;
 		}
 		result.venues = mappedVenues;
 	} else {
@@ -300,7 +292,7 @@ function mapLocationFromDraft(
 	if (indications) result.indications = indications;
 
 	const hasContent = Object.keys(result).length > 0;
-	return hasContent ? result : ctx.isDemo ? undefined : EMPTY_LOCATION;
+	return hasContent ? result : undefined;
 }
 
 export interface PublishInput {
@@ -363,7 +355,7 @@ function mapHeroSection(
 	invitationTitle: string,
 	ctx: PublishCtx,
 ): Record<string, unknown> {
-	if (isBlankSection(draftHero)) {
+	if (!draftHero || Object.keys(draftHero).length === 0) {
 		if (ctx.isDemo && demoHero && Object.keys(demoHero).length > 0) return demoHero;
 		return {
 			name: invitationTitle,
@@ -638,7 +630,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			ctx,
 		),
 		family: familySection ?? (ctx.isDemo ? demoContent.family : undefined),
-		location: locationSection ?? (ctx.isDemo ? demoContent.location : EMPTY_LOCATION),
+		location: locationSection ?? (ctx.isDemo ? demoContent.location : undefined),
 		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : { items: [] }),
 		itinerary: draftContent.itinerary ?? (ctx.isDemo ? demoContent.itinerary : { items: [] }),
 		countdown: mapCountdownFromDraft(

@@ -574,7 +574,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.gifts).toBeUndefined();
 		expect(result.thankYou).toBeUndefined();
 		expect(result.quote).toEqual({ text: '' });
-		expect(result.location as Record<string, unknown>).toEqual({ indicationsHeading: '' });
+		expect(result.location).toBeUndefined();
 		expect(result.gallery).toEqual({ items: [] });
 		expect(result.itinerary).toEqual({ items: [] });
 	});
