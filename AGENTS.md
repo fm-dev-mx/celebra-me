@@ -27,7 +27,8 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 
 - Do not bypass user constraints, especially around staging, commits, production data, and
   destructive commands.
-- Do not stage or commit files unless explicitly asked.
+- Do not stage or commit files unless explicitly asked. Git write permissions are task-scoped; see
+  `.agent/rules/git-safety.md` for the full policy and harness.
 - Do not introduce provider-specific agent files such as `.cursor/`, `CLAUDE.md`, or
   `.agent/agents/*` without a concrete repository need.
 - Keep visible UI copy in Spanish; keep code, identifiers, and technical comments in English.
@@ -38,6 +39,7 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 
 ## Domain Rules
 
+- Git safety policy and harness: `.agent/rules/git-safety.md`
 - Gatekeeper/review contract: `.agent/rules/gatekeeper.md`
 - Database and production safety: `.agent/rules/database.md`
 - Manual production SQL patch manifest: `.agent/rules/manual-sql-manifest.md`
@@ -58,6 +60,7 @@ that proves the change:
 - Content/schema/theme changes: `pnpm ops validate-schema`, `pnpm validate:event-parity`, or
   `pnpm validate:no-pii` as relevant
 - Broad runtime or route changes: `pnpm build`
+- Git safety check (required after file modifications): `pnpm agent:git-safety:check`
 
 Do not run production database commands unless the user explicitly asks for that exact production
 operation.
@@ -67,3 +70,7 @@ operation.
 When finishing work, report: files changed, validations run and intentionally skipped (with
 reasons), remaining risks or second-pass cleanup candidates, and `git status --short`. Do not stage
 files unless explicitly asked.
+
+Before the final report, follow the session workflow in `.agent/rules/git-safety.md` (run
+`pnpm agent:git-safety:check`, then `pnpm agent:git-safety:end`). Explicitly state whether you
+staged or committed anything.

@@ -41,6 +41,9 @@
         "db:prod:patch": "tsx scripts/db/run-prod-patch.ts --dry-run",
         "db:sql:lint": "tsx scripts/db/lint-sql.ts",
         "ops": "node scripts/cli.mjs",
+        "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
+        "agent:git-safety:end": "node scripts/agent/git-safety.mjs end",
+        "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb"
     },
     "dependencies": {

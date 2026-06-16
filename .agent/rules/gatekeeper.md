@@ -60,6 +60,9 @@ Forbidden examples (non-exhaustive):
 - Update `.gitignore` only if the artifact is repeatedly generated.
 - Always report these actions.
 
+This is an authorized exception to the staged-file preservation rule in
+`.agent/rules/git-safety.md §4`.
+
 ---
 
 ### 2.2 Staged Diff Handling

@@ -60,6 +60,9 @@ truth.
 
 ## Minimal Load Matrix
 
+`.agent/rules/git-safety.md` is required for **all** task types and is omitted from individual rows
+for brevity.
+
 | Task Type                             | Minimum Context                                                                                                                                    |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Visual or UI work                     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + relevant design/theme skill                                                                           |
