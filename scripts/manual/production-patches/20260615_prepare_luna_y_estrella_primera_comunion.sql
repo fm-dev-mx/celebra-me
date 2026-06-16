@@ -76,7 +76,7 @@ begin
     "timeZone": "America/Mexico_City",
     "startsAtUtc": "2026-08-01T20:00:00.000Z"
   },
-  "sectionOrder": ["quote", "family", "gallery", "countdown", "location", "itinerary", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+  "sectionOrder": ["countdown", "quote", "location", "rsvp", "thankYou"],
   "sectionStyles": {
     "location": { "showFlourishes": true },
     "rsvp": {
@@ -100,35 +100,7 @@ begin
     "text": "Jesús es el pan de vida que llena nuestro corazón de amor y esperanza.",
     "author": "Juan 6:35"
   },
-  "family": {
-    "featuredImage": "family",
-    "focalPoint": "50% 38%",
-    "parents": {
-      "father": "Juan Manuel Villa Ponce",
-      "mother": "Estefanía Báez Pérez"
-    },
-    "parentsOrder": "father-first",
-    "godparents": [
-      { "name": "Emiliano Pérez Rodríguez", "role": "Padrino de Luna Yamileth" },
-      { "name": "María Guadalupe Villa Ponce", "role": "Madrina de Estrella Abigail" }
-    ],
-    "labels": {
-      "sectionTitle": "Con la bendición de Dios",
-      "sectionSubtitle": "Nuestra familia",
-      "parentsTitle": "Nuestros papás",
-      "godparentsTitle": "Padrinos",
-      "sectionMessage": "Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones."
-    }
-  },
-  "gallery": {
-    "eyebrow": "Galería",
-    "title": "Instantes de luz",
-    "subtitle": "Detalles suaves para recordar este día de fe",
-    "items": [
-      { "image": "gallery01", "caption": "Un camino de bendición" },
-      { "image": "gallery02", "caption": "Fe, flores y luz" }
-    ]
-  },
+
   "countdown": {
     "title": "Nos acercamos con alegría",
     "footerText": "Sábado, 1 de agosto de 2026"
@@ -164,35 +136,10 @@ begin
         "iconName": "Calendar",
         "styleVariant": "default",
         "text": "<strong>Llegada sugerida</strong> Favor de llegar con anticipación para recibir a Luna y Estrella."
-      },
-      {
-        "iconName": "DressCode",
-        "styleVariant": "reserved",
-        "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
       }
     ]
   },
-  "itinerary": {
-    "title": "Programa",
-    "subtitle": "Primera Comunión",
-    "items": [
-      { "iconName": "Reception", "label": "Bienvenida", "time": "14:00", "description": "Recepción de invitados" },
-      { "iconName": "Church", "label": "Bendición", "time": "14:30", "description": "Momento de fe para Luna y Estrella" },
-      { "iconName": "Dinner", "label": "Comida", "time": "15:00", "description": "Convivencia familiar" },
-      { "iconName": "Cake", "label": "Pastel", "time": "16:30", "description": "Un dulce recuerdo para compartir" }
-    ]
-  },
-  "gifts": {
-    "title": "Su presencia es nuestro regalo",
-    "subtitle": "Gracias por acompañarnos en este momento tan especial para Luna y Estrella.",
-    "items": [
-      {
-        "type": "cash",
-        "title": "Lluvia de sobres",
-        "text": "Si desean tener un detalle, podrán hacerlo con mucho cariño el día de la celebración."
-      }
-    ]
-  },
+
   "rsvp": {
     "title": "Confirma tu asistencia",
     "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.",
@@ -217,22 +164,7 @@ begin
     "image": "thankYouPortrait",
     "focalPoint": "50% 50%"
   },
-  "interludes": [
-    {
-      "image": "interlude01",
-      "afterSection": "quote",
-      "alt": "Detalle floral y religioso para Primera Comunión",
-      "height": "tall",
-      "focalPoint": "50% 58%"
-    },
-    {
-      "image": "interlude02",
-      "afterSection": "gallery",
-      "alt": "Detalle luminoso y ceremonial de Primera Comunión",
-      "height": "screen",
-      "focalPoint": "53% 55%"
-    }
-  ],
+
   "envelope": {
     "disabled": false,
     "sealStyle": "wax",
