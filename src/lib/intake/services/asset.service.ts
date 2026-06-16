@@ -16,7 +16,9 @@ import {
 } from '@/lib/intake/services/asset-usage.service';
 import { getDemoPresetAssets } from '@/lib/intake/services/demo-asset.service';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
-import { isEventAssetKey, getEventAsset } from '@/lib/assets/asset-registry';
+import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { resolveAssetSlug } from '@/lib/assets/asset-slug';
+import { isEventAssetKey, getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
 import type { InvitationAsset } from '@/lib/intake/types';
 
@@ -254,8 +256,10 @@ export async function importDemoAsset(
 		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
 	}
 
-	const previewSlug = invitation.snapshot?.previewSlug;
-	if (!previewSlug) {
+	const published = await findPublishedByInvitationId(invitationId);
+	const assetSlug = resolveAssetSlug(invitation, published?.content);
+
+	if (!isValidEvent(assetSlug)) {
 		throw new ApiError(
 			422,
 			'bad_request',
@@ -263,7 +267,7 @@ export async function importDemoAsset(
 		);
 	}
 
-	const metadata = getEventAsset(previewSlug, demoKey);
+	const metadata = getEventAsset(assetSlug, demoKey);
 	if (!metadata) {
 		throw new ApiError(
 			404,
@@ -300,8 +304,8 @@ export async function importDemoAsset(
 		bucket: DEFAULT_BUCKET,
 		storagePath,
 		mimeType: `image/${ext}`,
-		width: typeof metadata.width === 'number' ? metadata.width : undefined,
-		height: typeof metadata.height === 'number' ? metadata.height : undefined,
+		width: metadata.width,
+		height: metadata.height,
 		fileSize: blob.size,
 	});
 

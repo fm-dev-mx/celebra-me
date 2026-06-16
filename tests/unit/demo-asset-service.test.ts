@@ -4,7 +4,6 @@ const mockGetEventAsset = jest.fn();
 jest.mock('@/lib/assets/asset-registry', () => ({
 	isValidEvent: mockIsValidEvent,
 	getEventAsset: mockGetEventAsset,
-	EVENT_KEYS: ['hero', 'portrait', 'gallery01', 'gallery02'],
 }));
 
 import { getDemoPresetAssets } from '@/lib/intake/services/demo-asset.service';
@@ -21,18 +20,20 @@ describe('getDemoPresetAssets', () => {
 		expect(mockIsValidEvent).toHaveBeenCalledWith('nonexistent');
 	});
 
-	it('returns entries for registered asset keys that exist', () => {
+	it('returns entries with correct keys, data, and labels for matching assets', () => {
 		mockIsValidEvent.mockReturnValue(true);
 		mockGetEventAsset.mockImplementation((_slug: string, key: string) => {
 			if (key === 'hero') return { src: '/hero.webp', width: 1080, height: 1920 } as any;
 			if (key === 'portrait')
 				return { src: '/portrait.webp', width: 600, height: 800 } as any;
+			if (key === 'interlude02')
+				return { src: '/interlude-02.webp', width: 1080, height: 1920 } as any;
 			return undefined;
 		});
 
 		const result = getDemoPresetAssets('demo-xv-enchanted-rose');
 
-		expect(result).toHaveLength(2);
+		expect(result).toHaveLength(3);
 		expect(result[0]).toMatchObject({
 			key: 'hero',
 			displayName: 'Portada',
@@ -47,6 +48,24 @@ describe('getDemoPresetAssets', () => {
 			width: 600,
 			height: 800,
 		});
+		expect(result[2]).toMatchObject({
+			key: 'interlude02',
+			displayName: 'Interludio 2',
+			src: '/interlude-02.webp',
+			width: 1080,
+			height: 1920,
+		});
+	});
+
+	it('roundtrips: each returned entry key matches the key passed to getEventAsset', () => {
+		mockIsValidEvent.mockReturnValue(true);
+		mockGetEventAsset.mockReturnValue({ src: '/asset.webp', width: 100, height: 100 });
+
+		const result = getDemoPresetAssets('demo-xv-enchanted-rose');
+
+		for (const entry of result) {
+			expect(mockGetEventAsset).toHaveBeenCalledWith('demo-xv-enchanted-rose', entry.key);
+		}
 	});
 
 	it('returns empty array when no assets are registered for the slug', () => {
