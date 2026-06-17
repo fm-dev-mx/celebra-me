@@ -547,6 +547,9 @@ describe('adaptEvent', () => {
 							date: '2027-11-20',
 							time: '20:00',
 							mapUrl: 'https://maps.example.com',
+							googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Salon',
+							appleMapsUrl: 'https://maps.apple.com/?q=Salon',
+							wazeUrl: 'https://waze.com/ul?q=Salon',
 							venueEvent: 'Recepción',
 							isVisible: true,
 						},
@@ -573,6 +576,12 @@ describe('adaptEvent', () => {
 			expect(loc.venues![0]!.type).toBe('reception');
 			expect(loc.venues![0]!.label).toBe('Recepción');
 			expect(loc.venues![0]!.id).toBe('v1');
+			expect(loc.venues![0]!.mapUrl).toBe('https://maps.example.com');
+			expect(loc.venues![0]!.googleMapsUrl).toBe(
+				'https://www.google.com/maps/search/?api=1&query=Salon',
+			);
+			expect(loc.venues![0]!.appleMapsUrl).toBe('https://maps.apple.com/?q=Salon');
+			expect(loc.venues![0]!.wazeUrl).toBe('https://waze.com/ul?q=Salon');
 			expect(loc.venues![1]!.venueName).toBe('Jardín Secreto');
 			expect(loc.venues![1]!.type).toBe('custom');
 		});

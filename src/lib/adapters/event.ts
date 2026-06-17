@@ -370,6 +370,9 @@ function buildLocationSectionData(context: AdaptationContext) {
 			date: v.date as string,
 			time: v.time as string,
 			mapUrl: v.mapUrl as string | undefined,
+			appleMapsUrl: v.appleMapsUrl as string | undefined,
+			googleMapsUrl: v.googleMapsUrl as string | undefined,
+			wazeUrl: v.wazeUrl as string | undefined,
 			coordinates: isRecord(v.coordinates)
 				? (v.coordinates as { lat: number; lng: number })
 				: undefined,

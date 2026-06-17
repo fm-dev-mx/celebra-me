@@ -171,6 +171,24 @@ export interface InvitationViewModelBrandingVisibility {
 	showThankYouBranding: boolean;
 }
 
+export interface LocationSection {
+	visibility?: 'public' | 'after-rsvp';
+	isLocked?: boolean;
+	lockedTitle?: string;
+	lockedMessage?: string;
+	lockedCtaLabel?: string;
+	ceremony?: VenueBase;
+	reception?: Reception;
+	venues?: VenueEntry[];
+	indications?: Indication[];
+	variant?: LocationVariant;
+	showFlourishes?: boolean;
+	introEyebrow?: string;
+	introHeading?: string;
+	introLede?: string;
+	indicationsHeading?: string;
+}
+
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
 	isDemo: boolean;
@@ -197,23 +215,7 @@ export interface InvitationViewModel {
 			footerText?: string;
 			variant?: CountdownVariant;
 		};
-		location?: {
-			visibility?: 'public' | 'after-rsvp';
-			isLocked?: boolean;
-			lockedTitle?: string;
-			lockedMessage?: string;
-			lockedCtaLabel?: string;
-			ceremony?: VenueBase;
-			reception?: Reception;
-			venues?: VenueEntry[];
-			indications?: Indication[];
-			variant?: LocationVariant;
-			showFlourishes?: boolean;
-			introEyebrow?: string;
-			introHeading?: string;
-			introLede?: string;
-			indicationsHeading?: string;
-		};
+		location?: LocationSection;
 		family?: {
 			parents?: Parents;
 			parentsOrder?: ParentsOrder;
@@ -260,6 +262,8 @@ export interface InvitationViewModel {
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant?: SharedSectionVariant;
+			revealedLocation?: LocationSection;
+			enableResponseEditing?: boolean;
 			labels?: {
 				name?: string;
 				guestCount?: string;
