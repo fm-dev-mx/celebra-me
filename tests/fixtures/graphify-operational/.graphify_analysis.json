@@ -1,0 +1,50 @@
+{
+    "communities": {
+        "1": ["src_entry", "src_helper"],
+        "2": ["test_entry"],
+        "3": ["script_tool"],
+        "4": ["supabase_migration"],
+        "5": ["config_pkg"],
+        "6": ["other_doc"],
+        "7": ["missing_source"],
+        "8": ["isolated"],
+        "9": ["page_entry"],
+        "10": ["api_entry"],
+        "11": ["e2e_test"],
+        "12": ["manual_patch"],
+        "13": ["db_support_sql"],
+        "15": ["rsvp_public_component", "rsvp_hook", "rsvp_client_api"],
+        "16": ["rsvp_service", "rsvp_repository"],
+        "17": ["rsvp_api_route", "location_route"],
+        "18": ["calendar_button", "event_time"],
+        "19": ["dashboard_guest"],
+        "20": ["rsvp_test"]
+    },
+    "cohesion": {
+        "1": 1,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "15": 0.75,
+        "16": 0.5,
+        "17": 0.5,
+        "18": 0.5,
+        "19": 0,
+        "20": 0
+    },
+    "gods": [],
+    "surprises": [],
+    "tokens": {
+        "input": 0,
+        "output": 0
+    }
+}

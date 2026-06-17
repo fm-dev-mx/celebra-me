@@ -1,0 +1,267 @@
+{
+    "directed": false,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+        {
+            "id": "src_entry",
+            "label": "entry.ts",
+            "source_file": "src/lib/entry.ts",
+            "source_location": "L1",
+            "community": 1
+        },
+        {
+            "id": "src_helper",
+            "label": "helper()",
+            "source_file": "src/lib/helper.ts",
+            "source_location": "L4",
+            "community": 1
+        },
+        {
+            "id": "test_entry",
+            "label": "entry.test.ts",
+            "source_file": "tests/unit/entry.test.ts",
+            "source_location": "L1",
+            "community": 2
+        },
+        {
+            "id": "script_tool",
+            "label": "tool.mjs",
+            "source_file": "scripts/tool.mjs",
+            "community": 3
+        },
+        {
+            "id": "supabase_migration",
+            "label": "migration.sql",
+            "source_file": "supabase/migrations/001.sql",
+            "community": 4
+        },
+        {
+            "id": "config_pkg",
+            "label": "package.json",
+            "source_file": "package.json",
+            "community": 5
+        },
+        {
+            "id": "other_doc",
+            "label": "custom.config",
+            "source_file": "tools/custom.config",
+            "community": 6
+        },
+        {
+            "id": "missing_source",
+            "label": "No Source",
+            "community": 7
+        },
+        {
+            "id": "isolated",
+            "label": "isolated.ts",
+            "source_file": "src/lib/isolated.ts",
+            "community": 8
+        },
+        {
+            "id": "page_entry",
+            "label": "slug.astro",
+            "source_file": "src/pages/[eventType]/[slug].astro",
+            "community": 9
+        },
+        {
+            "id": "api_entry",
+            "label": "rsvp.ts",
+            "source_file": "src/pages/api/invitacion/[inviteId]/rsvp.ts",
+            "community": 10
+        },
+        {
+            "id": "e2e_test",
+            "label": "flow.spec.ts",
+            "source_file": "tests/e2e/flow.spec.ts",
+            "community": 11
+        },
+        {
+            "id": "manual_patch",
+            "label": "patch.sql",
+            "source_file": "scripts/manual/production-patches/20260601000000_patch.sql",
+            "community": 12
+        },
+        {
+            "id": "db_support_sql",
+            "label": "bootstrap-admin.sql",
+            "source_file": "scripts/db/sql/bootstrap-admin.sql",
+            "community": 13
+        },
+        {
+            "id": "one_off_script",
+            "label": "new-invitation.mjs",
+            "source_file": "scripts/new-invitation.mjs",
+            "community": 14
+        },
+        {
+            "id": "rsvp_public_component",
+            "label": "RsvpSection.astro",
+            "source_file": "src/components/invitation/RsvpSection.astro",
+            "community": 15
+        },
+        {
+            "id": "rsvp_hook",
+            "label": "useRsvpSubmission.ts",
+            "source_file": "src/hooks/useRsvpSubmission.ts",
+            "community": 15
+        },
+        {
+            "id": "rsvp_client_api",
+            "label": "rsvp-api.ts",
+            "source_file": "src/lib/client/rsvp-api.ts",
+            "community": 15
+        },
+        {
+            "id": "rsvp_service",
+            "label": "rsvp-submission.service.ts",
+            "source_file": "src/lib/rsvp/services/rsvp-submission.service.ts",
+            "community": 16
+        },
+        {
+            "id": "rsvp_repository",
+            "label": "guest.repository.ts",
+            "source_file": "src/lib/rsvp/repositories/guest.repository.ts",
+            "community": 16
+        },
+        {
+            "id": "rsvp_api_route",
+            "label": "rsvp.ts",
+            "source_file": "src/pages/api/invitacion/[inviteId]/rsvp.ts",
+            "community": 17
+        },
+        {
+            "id": "location_route",
+            "label": "location.ts",
+            "source_file": "src/pages/api/invitacion/[inviteId]/location.ts",
+            "community": 17
+        },
+        {
+            "id": "calendar_button",
+            "label": "AddToCalendarButton.tsx",
+            "source_file": "src/components/invitation/AddToCalendarButton.tsx",
+            "community": 18
+        },
+        {
+            "id": "event_time",
+            "label": "event-time.ts",
+            "source_file": "src/lib/time/event-time.ts",
+            "community": 18
+        },
+        {
+            "id": "dashboard_guest",
+            "label": "GuestDashboardApp.tsx",
+            "source_file": "src/components/dashboard/guests/GuestDashboardApp.tsx",
+            "community": 19
+        },
+        {
+            "id": "rsvp_test",
+            "label": "rsvp-v2.endpoints.test.ts",
+            "source_file": "tests/api/rsvp-v2.endpoints.test.ts",
+            "community": 20
+        }
+    ],
+    "links": [
+        {
+            "source": "src_entry",
+            "target": "src_helper",
+            "relation": "imports",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "test_entry",
+            "target": "src_entry",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "script_tool",
+            "target": "src_helper",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "supabase_migration",
+            "target": "config_pkg",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "missing_source",
+            "target": "other_doc",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_public_component",
+            "target": "rsvp_hook",
+            "relation": "imports",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_hook",
+            "target": "rsvp_client_api",
+            "relation": "imports",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_api_route",
+            "target": "rsvp_service",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_service",
+            "target": "rsvp_repository",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "location_route",
+            "target": "rsvp_service",
+            "relation": "checks",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "calendar_button",
+            "target": "event_time",
+            "relation": "imports",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "dashboard_guest",
+            "target": "rsvp_service",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_test",
+            "target": "rsvp_api_route",
+            "relation": "tests",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "rsvp_service",
+            "target": "src_helper",
+            "relation": "uses",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        }
+    ],
+    "hyperedges": [],
+    "built_at_commit": "abc123"
+}
