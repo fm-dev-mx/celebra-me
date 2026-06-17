@@ -1123,7 +1123,7 @@ describe('RSVP Component', () => {
 			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
 			expect(within(status).getByText(/Victoriano Huerta 51/)).toBeInTheDocument();
 			expect(
-				within(status).getByRole('link', { name: /Abrir en Google Maps/i }),
+				within(status).getByRole('link', { name: /Ver ubicación en Google Maps/i }),
 			).toHaveAttribute('href', 'https://maps.example.com/salon-garcia');
 			expect(
 				screen.getByRole('button', { name: /Cambiar mi respuesta/i }),

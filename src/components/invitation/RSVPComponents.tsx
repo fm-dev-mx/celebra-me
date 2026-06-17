@@ -154,7 +154,7 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 				const href =
 					venue.googleMapsUrl ?? venue.mapUrl ?? venue.appleMapsUrl ?? venue.wazeUrl;
 				const mapLabel = venue.googleMapsUrl
-					? 'Abrir en Google Maps'
+					? 'Ver ubicación en Google Maps'
 					: venue.appleMapsUrl
 						? 'Abrir en Apple Maps'
 						: venue.wazeUrl
@@ -162,7 +162,9 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 							: 'Ver ubicación';
 				return (
 					<div className="rsvp__revealed-location-card" key={venue.id ?? index}>
-						<p className="rsvp__revealed-location-event">{venue.venueEvent}</p>
+						{venues.length > 1 && (
+							<p className="rsvp__revealed-location-event">{venue.venueEvent}</p>
+						)}
 						<p className="rsvp__revealed-location-name">{venue.venueName}</p>
 						<p className="rsvp__revealed-location-address">{venue.address}</p>
 						{venue.time && <p className="rsvp__revealed-location-time">{venue.time}</p>}
