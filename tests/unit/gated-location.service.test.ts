@@ -20,9 +20,9 @@ const mockGetInvitationContextByInviteId = getInvitationContextByInviteId as jes
 
 const confirmedContext = {
 	inviteId: '11111111-1111-4111-1111-111111111111',
-	eventSlug: 'luna-y-estrella',
+	eventSlug: 'gated-location-test-event',
 	eventType: 'primera-comunion' as const,
-	eventTitle: 'Primera Comunión de Luna y Estrella',
+	eventTitle: 'Gated Location Test Event',
 	guest: {
 		fullName: 'Familia invitada',
 		maxAllowedAttendees: 4,
@@ -54,15 +54,15 @@ beforeEach(() => {
 		source: 'published',
 		rawContent: { location: protectedLocation },
 		viewModel: {
-			id: 'luna-y-estrella',
+			id: 'gated-location-test-event',
 			isDemo: false,
-			title: 'Primera Comunión de Luna y Estrella',
+			title: 'Gated Location Test Event',
 			theme: { preset: 'angelic-presence', themeClass: 'theme-preset--angelic-presence' },
 			hero: {
-				name: 'Luna y Estrella',
-				label: 'Primera Comunión',
+				name: 'Test Event',
+				label: 'Test Event',
 				date: '2026-08-01T20:00:00.000Z',
-				backgroundImage: { src: '/hero.webp', alt: 'Portada de Luna y Estrella' },
+				backgroundImage: { src: '/hero.webp', alt: 'Test Event' },
 				variant: 'angelic-presence',
 			},
 			envelope: { enabled: false },
@@ -82,7 +82,7 @@ describe('resolveGatedLocationPayload', () => {
 		const payload = await resolveGatedLocationPayload({
 			inviteId: '11111111-1111-4111-1111-111111111111',
 			eventType: 'primera-comunion',
-			slug: 'luna-y-estrella',
+			slug: 'gated-location-test-event',
 		});
 
 		expect(payload.location.ceremony?.venueName).toBe('Salón García');
@@ -104,7 +104,7 @@ describe('resolveGatedLocationPayload', () => {
 			resolveGatedLocationPayload({
 				inviteId: '22222222-2222-4222-2222-222222222222',
 				eventType: 'primera-comunion',
-				slug: 'luna-y-estrella',
+				slug: 'gated-location-test-event',
 			}),
 		).rejects.toMatchObject({
 			status: 403,
@@ -117,7 +117,7 @@ describe('resolveGatedLocationPayload', () => {
 			resolveGatedLocationPayload({
 				inviteId: '11111111-1111-4111-1111-111111111111',
 				eventType: 'bautizo',
-				slug: 'luna-y-estrella',
+				slug: 'gated-location-test-event',
 			}),
 		).rejects.toMatchObject({
 			status: 403,
@@ -132,7 +132,7 @@ describe('resolveGatedLocationPayload', () => {
 			resolveGatedLocationPayload({
 				inviteId: 'not-a-uuid',
 				eventType: 'primera-comunion',
-				slug: 'luna-y-estrella',
+				slug: 'gated-location-test-event',
 			}),
 		).rejects.toMatchObject({
 			status: 400,
@@ -152,7 +152,7 @@ describe('resolveGatedLocationPayload', () => {
 			resolveGatedLocationPayload({
 				inviteId: '00000000-0000-0000-0000-000000000000',
 				eventType: 'primera-comunion',
-				slug: 'luna-y-estrella',
+				slug: 'gated-location-test-event',
 			}),
 		).rejects.toMatchObject({
 			status: 404,

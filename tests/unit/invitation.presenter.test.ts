@@ -436,20 +436,56 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.heroVenueName).toBeUndefined();
 	});
 
-	it('redacts after-rsvp location details before the guest is confirmed', () => {
+	it('omits location from render plan when absent (Luna y Estrella scenario)', () => {
 		const viewModel = {
 			...baseViewModel,
 			id: 'luna-y-estrella',
 			title: 'Primera Comunión de Luna y Estrella',
+			sectionOrder: ['countdown', 'quote', 'rsvp', 'thankYou'],
+			sections: {
+				quote: { text: 'Una cita inspiradora.', author: 'Autor' },
+				countdown: { title: 'Nos acercamos', footerText: '1 de agosto de 2026' },
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'luna-y-estrella',
+					eventType: 'primera-comunion',
+				},
+				thankYou: { message: 'Gracias.' },
+			},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+		});
+
+		expect(context.viewModel.sections.location).toBeUndefined();
+		expect(context.heroVenueName).toBeUndefined();
+		expect(context.heroTime).toBeUndefined();
+
+		const plan = describeRenderPlan(context.renderPlan);
+		expect(plan).not.toContain('location');
+		expect(plan).toEqual(['countdown', 'quote', 'rsvp', 'thankYou']);
+
+		expect(context.envelope).toBeUndefined();
+	});
+
+	it('redacts after-rsvp location details before the guest is confirmed', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'regression-after-rsvp-test',
+			title: 'Regression Test — After RSVP',
 			envelope: {
 				enabled: true,
 				data: {
 					sealStyle: 'wax',
-					microcopy: 'Primera Comunión',
+					microcopy: 'Test Event',
 					teaserDetails: '1 ago 2026 • Salón García',
 					card: {
-						label: 'Primera Comunión',
-						name: 'Luna y Estrella',
+						label: 'Test Event',
+						name: 'Test',
 						date: '1 · AGO · 2026',
 					},
 					colors: {},
@@ -477,7 +513,7 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 		});
 
@@ -501,8 +537,8 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps after-rsvp location details when the persisted guest status is confirmed', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
-			title: 'Primera Comunión de Luna y Estrella',
+			id: 'regression-after-rsvp-test',
+			title: 'Regression Test — After RSVP Confirmed',
 			sections: {
 				location: {
 					visibility: 'after-rsvp',
@@ -520,13 +556,13 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'regression-after-rsvp-test',
 				eventType: 'primera-comunion',
-				eventTitle: 'Primera Comunión de Luna y Estrella',
+				eventTitle: 'Regression After-RSVP Test',
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,
