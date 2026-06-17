@@ -28,8 +28,7 @@
 	--rsvp-title-color: var(--color-sacred-gold);
 	--rsvp-title-letter-spacing: 0.01em;
 	--rsvp-radius-card: 8px;
-	--rsvp-greeting-padding: 1.5rem 0;
-	--rsvp-greeting-icon-size: 40px;
+	--angelic-greeting-icon-size: 40px;
 
 	background:
 		radial-gradient(circle at 50% 0%, rgb(var(--color-sacred-gold-rgb) / 9%), transparent 62%),
@@ -305,8 +304,8 @@
 	}
 
 	.rsvp__greeting-icon svg {
-		width: var(--rsvp-greeting-icon-size);
-		height: var(--rsvp-greeting-icon-size);
+		width: var(--angelic-greeting-icon-size);
+		height: var(--angelic-greeting-icon-size);
 		filter: drop-shadow(0 2px 6px rgb(var(--color-sacred-gold-rgb) / 24%));
 	}
 
@@ -367,8 +366,7 @@
 	/* ---- 400px-and-under mobile density ---- */
 
 	@media (width <= 400px) {
-		--rsvp-greeting-padding: 1.25rem 0;
-		--rsvp-greeting-icon-size: 36px;
+		--angelic-greeting-icon-size: 36px;
 
 		.rsvp__greeting-icon {
 			margin-bottom: 0.35rem;
