@@ -50,7 +50,9 @@ Use this file after reading `AGENTS.md`. It is the current discovery map for the
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/rsvp/database.md`
+- `.agent/rules/api-contracts.md`
 - `.agent/rules/database.md`
+- `.agent/rules/intake-publishing.md`
 - `.agent/rules/invitation-production.md`
 - `docs/domains/theme/architecture.md`
 - `docs/domains/theme/typography.md`

@@ -43,8 +43,10 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 
 - Git safety policy and harness: `.agent/rules/git-safety.md`
 - Gatekeeper/review contract: `.agent/rules/gatekeeper.md`
+- API security, CSRF, admin route composition: `.agent/rules/api-contracts.md`
 - Database and production safety: `.agent/rules/database.md`
 - Manual production SQL patch manifest: `.agent/rules/manual-sql-manifest.md`
+- Intake/publish state machine and editor flow: `.agent/rules/intake-publishing.md`
 - Real/client invitation publishing and `_assetSlug`: `.agent/rules/invitation-production.md`
 - Dashboard SCSS guardrails: `.agent/rules/dashboard-styling.md`
 - Plan governance: `.agent/plans/README.md`
@@ -105,6 +107,15 @@ operation.
 
 `pnpm db:push` is intentionally blocked. See README.md and `docs/database-workflow.md` for DB
 commands.
+
+## Optional Local Architecture Analysis
+
+Local development may generate `graphify-out/`, a Graphify knowledge graph for architecture
+exploration.
+
+- Graphify is optional and is not part of build, lint, test, CI, or deployment.
+- Do not commit `graphify-out/` or local `.graphifyignore` files.
+- Graphify findings are leads, not authority.
 
 ## Final Report
 

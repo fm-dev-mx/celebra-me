@@ -80,14 +80,64 @@ When adding or editing a section:
 - Use `mapNestedToDraftContent()` for the reverse (published → draft) mapping. If a field is not
   mapped there, it is lost when restoring from published or when merging published into the editor.
 
-## Slug Meanings
+## Theme Vocabulary Contract
 
-- Route/event slug: public URL and RSVP event identity, for example `leah-lexa`.
-- `_assetSlug`: internal asset registry key matching `src/assets/images/events/<asset-slug>/`.
-- `previewSlug`: demo/template reference metadata for editor previews and optional demo asset
-  import.
+`src/lib/theme/theme-contract.ts` is the source of truth for shared invitation vocabulary: event
+types, content section keys, render section keys, indication style variants, and theme preset names.
 
-Keep `_assetSlug` client-specific for real invitations. Do not point it at a demo asset directory.
+Do not duplicate these lists in schemas, adapters, UI components, or tests. Import the contract
+instead.
+
+High graph centrality for this file is expected: it is a small pure contract with no imports. Treat
+it as shared vocabulary, not as a place for business logic.
+
+## Asset Lifecycle
+
+Three distinct slug concepts exist, and they may differ for the same invitation:
+
+| Slug                          | Purpose                                                                       | Source                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Route/event slug** (`slug`) | Public URL and RSVP event identity                                            | `invitations.slug`, used in route personalization           |
+| **`_assetSlug`**              | Internal asset registry key matching `src/assets/images/events/<asset-slug>/` | Stored in published content JSON under `content._assetSlug` |
+| **`previewSlug`**             | Demo/template reference metadata                                              | `invitations.snapshot.previewSlug` (from preset catalog)    |
+
+Key invariants:
+
+- Keep `_assetSlug` client-specific for real invitations. Do not point it at a demo asset directory.
+- The asset registry at `src/lib/assets/asset-registry.ts` is populated via `import.meta.glob`. Each
+  directory under `src/assets/images/events/{slug}/` must export a named `assets` key conforming to
+  `EventAssets`. Missing or incomplete exports cause build failures or publish-time 422s.
+- Asset keys are defined in `src/lib/assets/asset-keys.ts`.
+- Asset resolution follows a 3-tier fallback (`resolveAssetSlug()` in
+  `src/lib/assets/asset-slug.ts`): published `_assetSlug` → client slug composite → demo
+  `previewSlug`.
+- Published assets are frozen with a public URL; draft assets store only an `assetId`. See
+  `freezeUploadedContentRefs()` for the freeze logic.
+- Publish-time validation covers: asset slug resolution, event validity, uploaded asset existence,
+  schema compliance, and internal asset resolvability. See `publishing.service.ts` and its test
+  suite for the full guard list.
+
+### Production SQL Diagnostics
+
+`scripts/sql/repair-asset-slug.sql` contains 5 diagnostic SELECT queries that detect:
+
+- Published content missing `_assetSlug`
+- Draft content with empty `_assetSlug`
+- Client content pointing to a demo invitation slug
+- Non-missing client `_assetSlug` values needing app-side registry review
+- Demo invitations with wrong `_assetSlug`
+
+These queries are **read-only**. They must pass dry-run lint (`pnpm db:sql:lint`,
+`pnpm db:prod:patch`) before any mutation is considered.
+
+## Public Content Resolution
+
+Public invitation routes must resolve content through the canonical content resolution path in
+`src/lib/content/events.ts`, then adapt DB/content records through `src/lib/adapters/event.ts`.
+
+Preserve the demo/client distinction when changing route resolution or content adaptation. Incorrect
+resolver changes can cause public 404s, serve the wrong content source, or point client invitations
+at demo assets.
 
 ## SQL Patch Safety
 
