@@ -16,9 +16,8 @@ export const lunaYEstrellaContent = {
 		timeZone: 'America/Mexico_City',
 		startsAtUtc: '2026-08-01T20:00:00.000Z',
 	},
-	sectionOrder: ['countdown', 'quote', 'location', 'rsvp', 'thankYou'],
+	sectionOrder: ['quote', 'family', 'countdown', 'personalizedAccess', 'rsvp', 'thankYou'],
 	sectionStyles: {
-		location: { showFlourishes: true },
 		rsvp: {
 			labels: {
 				name: 'Nombre completo',
@@ -40,47 +39,24 @@ export const lunaYEstrellaContent = {
 		text: 'Jesús es el pan de vida que llena nuestro corazón de amor y esperanza.',
 		author: 'Juan 6:35',
 	},
+	family: {
+		parents: {
+			father: 'Juan Manuel Villa Ponce',
+			mother: 'Estefanía Báez Pérez',
+		},
+		parentsOrder: 'father-first',
+		labels: {
+			sectionTitle: 'Con la bendición de Dios',
+			sectionMessage:
+				'Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones.',
+			parentsTitle: 'Nuestros papás',
+		},
+	},
 	countdown: {
 		title: 'Nos acercamos con alegría',
 		footerText: 'Sábado, 1 de agosto de 2026',
 	},
-	location: {
-		visibility: 'after-rsvp',
-		introEyebrow: 'Detalles reservados',
-		introHeading: 'Ubicación',
-		introLede:
-			'Por cuidado de la familia, compartiremos la dirección después de confirmar asistencia.',
-		indicationsHeading: 'Indicaciones',
-		ceremony: {
-			venueEvent: 'Celebración',
-			venueName: 'Salón García',
-			address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-			city: 'Uruapan',
-			date: '2026-08-01',
-			time: '14:00',
-			image: 'ceremony',
-			googleMapsUrl:
-				'https://www.google.com/maps/search/?api=1&query=Victoriano%20Huerta%2051%20Col.%20San%20Francisco%20Uruapan',
-		},
-		reception: {
-			venueEvent: 'Recepción',
-			venueName: 'Salón García',
-			address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-			city: 'Uruapan',
-			date: '2026-08-01',
-			time: '14:00',
-			image: 'reception',
-			googleMapsUrl:
-				'https://www.google.com/maps/search/?api=1&query=Victoriano%20Huerta%2051%20Col.%20San%20Francisco%20Uruapan',
-		},
-		indications: [
-			{
-				iconName: 'Calendar',
-				styleVariant: 'default',
-				text: '<strong>Llegada sugerida</strong> Favor de llegar con anticipación para recibir a Luna y Estrella.',
-			},
-		],
-	},
+	// Location intentionally omitted — this invitation has no venue details to display.
 	rsvp: {
 		title: 'Confirma tu asistencia',
 		subcopy: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
@@ -142,39 +118,39 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(result.data.isDemo).toBe(false);
 		expect(result.data.theme.preset).toBe('angelic-presence');
 		expect(result.data._assetSlug).toBe('luna-y-estrella-primera-comunion');
-		expect(result.data.location?.visibility).toBe('after-rsvp');
-		expect(result.data.location?.ceremony?.venueName).toBe('Salón García');
+		expect(result.data.location).toBeUndefined();
 		expect(result.data.hero.name).toBe('Luna Yamileth');
 		expect(result.data.hero.secondaryName).toBe('Estrella Abigail');
 	});
 
-	it('uses the correct simplified sectionOrder', () => {
+	it('uses the correct sectionOrder with family and no location', () => {
 		expect(lunaYEstrellaContent.sectionOrder).toEqual([
-			'countdown',
 			'quote',
-			'location',
+			'family',
+			'countdown',
+			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
 
-		expect(lunaYEstrellaContent.sectionOrder).not.toContain('family');
+		expect(lunaYEstrellaContent.sectionOrder).not.toContain('location');
 		expect(lunaYEstrellaContent.sectionOrder).not.toContain('gallery');
 		expect(lunaYEstrellaContent.sectionOrder).not.toContain('itinerary');
 		expect(lunaYEstrellaContent.sectionOrder).not.toContain('gifts');
-		expect(lunaYEstrellaContent.sectionOrder).not.toContain('personalizedAccess');
 	});
 
-	it('does not include excluded content blocks', () => {
-		expect(Object.hasOwn(lunaYEstrellaContent, 'family')).toBe(false);
+	it('does not include excluded content blocks (including location)', () => {
+		expect(Object.hasOwn(lunaYEstrellaContent, 'location')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'gallery')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'itinerary')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'gifts')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'interludes')).toBe(false);
 	});
 
-	it('does not include excluded visible copy in serialized content', () => {
+	it('does not include excluded visible copy in serialized content (including location)', () => {
 		const serialized = JSON.stringify(lunaYEstrellaContent).toLowerCase();
 
+		expect(serialized).not.toContain('ubicación');
 		expect(serialized).not.toContain('código de vestimenta');
 		expect(serialized).not.toContain('dress code');
 		expect(serialized).not.toContain('itinerario');

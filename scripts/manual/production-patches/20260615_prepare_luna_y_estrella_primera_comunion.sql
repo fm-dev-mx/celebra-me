@@ -76,9 +76,8 @@ begin
     "timeZone": "America/Mexico_City",
     "startsAtUtc": "2026-08-01T20:00:00.000Z"
   },
-  "sectionOrder": ["countdown", "quote", "location", "rsvp", "thankYou"],
+  "sectionOrder": ["quote", "family", "countdown", "personalizedAccess", "rsvp", "thankYou"],
   "sectionStyles": {
-    "location": { "showFlourishes": true },
     "rsvp": {
       "labels": {
         "name": "Nombre completo",
@@ -100,46 +99,22 @@ begin
     "text": "Jesús es el pan de vida que llena nuestro corazón de amor y esperanza.",
     "author": "Juan 6:35"
   },
-
+  "family": {
+    "parents": {
+      "father": "Juan Manuel Villa Ponce",
+      "mother": "Estefanía Báez Pérez"
+    },
+    "parentsOrder": "father-first",
+    "labels": {
+      "sectionTitle": "Con la bendición de Dios",
+      "sectionMessage": "Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones.",
+      "parentsTitle": "Nuestros papás"
+    }
+  },
   "countdown": {
     "title": "Nos acercamos con alegría",
     "footerText": "Sábado, 1 de agosto de 2026"
   },
-  "location": {
-    "visibility": "after-rsvp",
-    "introEyebrow": "Detalles reservados",
-    "introHeading": "Ubicación",
-    "introLede": "Por cuidado de la familia, compartiremos la dirección después de confirmar asistencia.",
-    "indicationsHeading": "Indicaciones",
-    "ceremony": {
-      "venueEvent": "Celebración",
-      "venueName": "Salón García",
-      "address": "Victoriano Huerta 51, Col. San Francisco, Uruapan",
-      "city": "Uruapan",
-      "date": "2026-08-01",
-      "time": "14:00",
-      "image": "ceremony",
-      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Victoriano%20Huerta%2051%20Col.%20San%20Francisco%20Uruapan"
-    },
-    "reception": {
-      "venueEvent": "Recepción",
-      "venueName": "Salón García",
-      "address": "Victoriano Huerta 51, Col. San Francisco, Uruapan",
-      "city": "Uruapan",
-      "date": "2026-08-01",
-      "time": "14:00",
-      "image": "reception",
-      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Victoriano%20Huerta%2051%20Col.%20San%20Francisco%20Uruapan"
-    },
-    "indications": [
-      {
-        "iconName": "Calendar",
-        "styleVariant": "default",
-        "text": "<strong>Llegada sugerida</strong> Favor de llegar con anticipación para recibir a Luna y Estrella."
-      }
-    ]
-  },
-
   "rsvp": {
     "title": "Confirma tu asistencia",
     "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.",
