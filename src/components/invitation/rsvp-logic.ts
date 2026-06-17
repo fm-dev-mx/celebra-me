@@ -1,6 +1,14 @@
 import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 
+/**
+ * Platform default: every invitation allows guests to change their RSVP
+ * response after submission. This is a deliberate product decision — no
+ * per-invitation opt-in is required. Individual routes may still override
+ * this by passing `allowResponseEditing={false}` to the RSVP component.
+ */
+export const ALLOW_RESPONSE_EDITING_BY_DEFAULT = true;
+
 // Shared RSVP state types.
 
 export type AttendanceStatus = 'confirmed' | 'declined' | null;

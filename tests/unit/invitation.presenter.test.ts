@@ -662,7 +662,7 @@ describe('buildPageContextFromViewModel', () => {
 			},
 		});
 
-		expect(context.viewModel.sections.rsvp?.enableResponseEditing).toBe(true);
+		expect(context.viewModel.sections.rsvp?.allowResponseEditing).toBeUndefined();
 		expect(context.viewModel.sections.rsvp?.revealedLocation).toBeUndefined();
 	});
 

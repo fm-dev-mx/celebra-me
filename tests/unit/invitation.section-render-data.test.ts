@@ -229,7 +229,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			attendeeCount: 2,
 			guestComment: 'Con gusto asistimos',
 		});
-		expect(rsvpDescriptor?.props.enableResponseEditing).toBe(true);
+		expect(rsvpDescriptor?.props.allowResponseEditing).toBeUndefined();
 		expect(rsvpDescriptor?.props.revealedLocation).toMatchObject({
 			ceremony: {
 				venueName: 'Salón García',

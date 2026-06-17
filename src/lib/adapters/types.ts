@@ -263,7 +263,14 @@ export interface InvitationViewModel {
 			responseMessages?: RsvpResponseMessages;
 			variant?: SharedSectionVariant;
 			revealedLocation?: LocationSection;
-			enableResponseEditing?: boolean;
+			/**
+			 * Controls whether the guest can change their RSVP response after
+			 * submission:
+			 * - `undefined` → uses the platform default (currently enabled).
+			 * - `true` → explicitly enables response editing.
+			 * - `false` → explicitly disables response editing.
+			 */
+			allowResponseEditing?: boolean;
 			eventStartsAt?: string;
 			eventTimeZone?: string;
 			labels?: {

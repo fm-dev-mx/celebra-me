@@ -74,7 +74,6 @@ function applyLunaEstrellaRsvpOnlyLocation(
 				? {
 						...viewModel.sections.rsvp,
 						revealedLocation,
-						enableResponseEditing: true,
 					}
 				: undefined,
 		},
