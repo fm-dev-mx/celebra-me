@@ -15,6 +15,7 @@ import {
 } from '@/components/invitation/RSVPFormFields';
 import { CheckSealIcon } from '@/components/common/icons/invitation/CheckSeal';
 import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak';
+import type { LocationSection } from '@/lib/adapters/types';
 
 export {
 	buildWhatsAppUrl,
@@ -23,6 +24,7 @@ export {
 	getDefaultRsvpSubcopy,
 } from '@/components/invitation/rsvp-logic';
 export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
+export type RevealedLocation = LocationSection;
 
 // --- Sub-components ---
 
@@ -129,6 +131,59 @@ function resolveGreetingMessages(
 	};
 }
 
+function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
+	const venues =
+		location.venues && location.venues.length > 0
+			? location.venues
+			: [
+					...(location.ceremony
+						? [{ ...location.ceremony, id: 'ceremony', type: 'ceremony' }]
+						: []),
+					...(location.reception
+						? [{ ...location.reception, id: 'reception', type: 'reception' }]
+						: []),
+				];
+
+	if (venues.length === 0) return null;
+
+	return (
+		<div className="rsvp__revealed-location">
+			{location.introHeading && (
+				<h3 className="rsvp__revealed-location-title">{location.introHeading}</h3>
+			)}
+			{venues.map((venue, index) => {
+				const href =
+					venue.googleMapsUrl ?? venue.mapUrl ?? venue.appleMapsUrl ?? venue.wazeUrl;
+				const mapLabel = venue.googleMapsUrl
+					? 'Abrir en Google Maps'
+					: venue.appleMapsUrl
+						? 'Abrir en Apple Maps'
+						: venue.wazeUrl
+							? 'Abrir en Waze'
+							: 'Ver ubicación';
+				return (
+					<div className="rsvp__revealed-location-card" key={venue.id ?? index}>
+						<p className="rsvp__revealed-location-event">{venue.venueEvent}</p>
+						<p className="rsvp__revealed-location-name">{venue.venueName}</p>
+						<p className="rsvp__revealed-location-address">{venue.address}</p>
+						{venue.time && <p className="rsvp__revealed-location-time">{venue.time}</p>}
+						{href && (
+							<a
+								className="rsvp__revealed-location-link"
+								href={href}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{mapLabel}
+							</a>
+						)}
+					</div>
+				);
+			})}
+		</div>
+	);
+}
+
 export const SubmittedState = forwardRef<
 	HTMLDivElement,
 	{
@@ -143,6 +198,9 @@ export const SubmittedState = forwardRef<
 		whatsAppUrl: string;
 		onWhatsAppClick: () => void;
 		responseMessages?: RsvpResponseMessages;
+		revealedLocation?: RevealedLocation;
+		enableResponseEditing?: boolean;
+		onChangeResponse?: () => void;
 	}
 >((props, ref) => {
 	const {
@@ -157,6 +215,9 @@ export const SubmittedState = forwardRef<
 		onWhatsAppClick,
 		onFocusCapture,
 		responseMessages,
+		revealedLocation,
+		enableResponseEditing = false,
+		onChangeResponse,
 	} = props;
 
 	const isConfirmed = attendanceStatus === 'confirmed';
@@ -192,6 +253,10 @@ export const SubmittedState = forwardRef<
 
 				<p className="rsvp__greeting-submessage">{greetingSubtitle}</p>
 
+				{isConfirmed && revealedLocation && (
+					<RevealedLocationBlock location={revealedLocation} />
+				)}
+
 				{showWhatsAppCta && (
 					<div className="rsvp__contact-host">
 						<p className="rsvp__contact-text">
@@ -217,6 +282,18 @@ export const SubmittedState = forwardRef<
 							</svg>
 							Enviar WhatsApp
 						</a>
+					</div>
+				)}
+
+				{enableResponseEditing && onChangeResponse && (
+					<div className="rsvp__edit-response">
+						<button
+							type="button"
+							className="rsvp__secondary-button"
+							onClick={onChangeResponse}
+						>
+							Cambiar mi respuesta
+						</button>
 					</div>
 				)}
 			</div>
@@ -260,7 +337,9 @@ interface RsvpFormViewProps {
 	attendanceRef: RefObject<HTMLDivElement | null>;
 	guestCountRef: RefObject<HTMLInputElement | null>;
 	isDemoPreview?: boolean;
+	showCancelEdit?: boolean;
 	onSubmit: (e: SyntheticEvent) => void;
+	onCancelEdit?: () => void;
 	onNameChange: (value: string) => void;
 	onPhoneChange: (value: string) => void;
 	onCountryCodeChange: (value: string) => void;
@@ -282,6 +361,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		isSubmitting,
 		submitStatus,
 		isDemoPreview,
+		showCancelEdit,
 		showIdentityFields,
 		touched,
 		errors,
@@ -306,6 +386,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		notesLabel,
 		notesPlaceholder,
 		onSubmit,
+		onCancelEdit,
 		onNameChange,
 		onPhoneChange,
 		onCountryCodeChange,
@@ -424,6 +505,15 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 								/>
 							</span>
 						</motion.button>
+						{showCancelEdit && onCancelEdit && (
+							<button
+								type="button"
+								className="rsvp__secondary-button"
+								onClick={onCancelEdit}
+							>
+								Cancelar
+							</button>
+						)}
 					</motion.div>
 				)}
 			</form>

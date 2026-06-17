@@ -23,6 +23,9 @@ interface InitialGuestData {
 	fullName?: string;
 	maxAllowedAttendees?: number;
 	inviteId?: string;
+	attendanceStatus?: 'pending' | 'confirmed' | 'declined';
+	attendeeCount?: number;
+	guestComment?: string;
 }
 
 interface UseRsvpSubmissionOptions {
@@ -55,21 +58,42 @@ export function useRsvpSubmission({
 	isDemoPreview,
 }: UseRsvpSubmissionOptions) {
 	const initialName = isDemoPreview ? DEMO_GUEST_NAME : initialData?.fullName || '';
+	const initialAttendanceStatus: AttendanceStatus =
+		initialData?.attendanceStatus === 'confirmed' ||
+		initialData?.attendanceStatus === 'declined'
+			? initialData.attendanceStatus
+			: null;
 
 	const [name, setName] = useState(initialName);
 	const [phone, setPhone] = useState('');
 	const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
-	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
+	const [attendanceStatus, setAttendanceStatus] =
+		useState<AttendanceStatus>(initialAttendanceStatus);
 	const effectiveGuestCap = Math.max(
 		1,
 		isDemoPreview ? guestCap : (initialData?.maxAllowedAttendees ?? guestCap),
 	);
-	const [attendeeCount, setAttendeeCount] = useState<number | string>(effectiveGuestCap);
-	const [notes, setNotes] = useState('');
+	const initialAttendeeCount =
+		initialAttendanceStatus === 'declined'
+			? 0
+			: (initialData?.attendeeCount ?? effectiveGuestCap);
+	const initialGuestComment = initialData?.guestComment ?? '';
+	const [attendeeCount, setAttendeeCount] = useState<number | string>(initialAttendeeCount);
+	const [notes, setNotes] = useState(initialGuestComment);
+	const savedResponseRef = useRef<{
+		attendanceStatus: AttendanceStatus;
+		attendeeCount: number;
+		guestComment: string;
+	}>({
+		attendanceStatus: initialAttendanceStatus,
+		attendeeCount: initialAttendeeCount,
+		guestComment: initialGuestComment,
+	});
 	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
-	const [rsvpId, setRsvpId] = useState('');
+	const rsvpTrackingRef = useRef('');
+	const [responseInviteId, setResponseInviteId] = useState(initialData?.inviteId ?? '');
 	const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-		'idle',
+		initialAttendanceStatus ? 'success' : 'idle',
 	);
 	const isSubmitting = submitStatus === 'loading';
 	const submitted = submitStatus === 'success';
@@ -102,6 +126,22 @@ export function useRsvpSubmission({
 		if (value.trim().startsWith('+')) {
 			setCountryCode(parsed.countryCode);
 		}
+	}, []);
+
+	const startEditingResponse = useCallback(() => {
+		setSubmitStatus('idle');
+		setErrors({});
+		setTouched({});
+	}, []);
+
+	const restoreInitialResponse = useCallback(() => {
+		const saved = savedResponseRef.current;
+		setAttendanceStatus(saved.attendanceStatus);
+		setAttendeeCount(saved.attendeeCount);
+		setNotes(saved.guestComment);
+		setErrors({});
+		setTouched({});
+		setSubmitStatus(saved.attendanceStatus ? 'success' : 'idle');
 	}, []);
 
 	const validate = useCallback(() => {
@@ -219,28 +259,33 @@ export function useRsvpSubmission({
 						...(normalizedPhone ? { phone: normalizedPhone, countryCode } : {}),
 					} as import('@/lib/client/rsvp-api').PublicRsvpPayload);
 
-					if (publicResult.inviteId) {
-						setRsvpId(publicResult.inviteId);
-					}
-
+					const publicInviteId = publicResult.inviteId;
+					rsvpTrackingRef.current = publicInviteId ?? '';
+					setResponseInviteId(publicInviteId ?? responseInviteId);
+					savedResponseRef.current = {
+						attendanceStatus,
+						attendeeCount: normalizedCount,
+						guestComment: trimmedNotes,
+					};
 					setSubmitStatus('success');
-					if (attendanceStatus === 'confirmed' && publicResult.inviteId) {
-						notifyConfirmedRsvp(publicResult.inviteId);
+					if (attendanceStatus === 'confirmed' && publicInviteId) {
+						notifyConfirmedRsvp(publicInviteId);
 					}
 					return;
 				}
 
-				const payload = {
+				const data = await rsvpApi.submitRsvp(initialData.inviteId, {
 					attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 					attendeeCount: normalizedCount,
 					guestComment: notes.trim(),
+				});
+				rsvpTrackingRef.current = data.rsvpId ?? '';
+				setResponseInviteId(initialData.inviteId);
+				savedResponseRef.current = {
+					attendanceStatus,
+					attendeeCount: normalizedCount,
+					guestComment: notes.trim(),
 				};
-
-				const data = await rsvpApi.submitRsvp(initialData.inviteId, payload);
-				if (data.rsvpId) {
-					setRsvpId(data.rsvpId);
-				}
-
 				setSubmitStatus('success');
 				if (attendanceStatus === 'confirmed') {
 					notifyConfirmedRsvp(initialData.inviteId);
@@ -274,16 +319,15 @@ export function useRsvpSubmission({
 	);
 
 	const handleWhatsAppClick = useCallback(async () => {
-		if (!rsvpId) {
-			return;
-		}
+		const trackingId = rsvpTrackingRef.current;
+		if (!trackingId) return;
 
 		try {
-			await rsvpApi.trackAction(rsvpId, 'clicked', 'whatsapp');
+			await rsvpApi.trackAction(trackingId, 'clicked', 'whatsapp');
 		} catch {
 			// Telemetry failure should not block the user journey.
 		}
-	}, [rsvpId]);
+	}, []);
 
 	return {
 		name,
@@ -316,6 +360,9 @@ export function useRsvpSubmission({
 		handleBlur,
 		handleSubmit,
 		handleWhatsAppClick,
+		startEditingResponse,
+		restoreInitialResponse,
+		responseInviteId,
 		validate,
 	};
 }

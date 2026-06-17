@@ -25,11 +25,10 @@
 	display: grid;
 	place-items: center;
 	min-block-size: 100svh;
-	padding-block: calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset))
-		calc(
-			var(--rsvp-section-padding-block) + var(--rsvp-player-clearance) +
-				var(--rsvp-safe-area-bottom)
-		);
+	padding-block: calc(
+		var(--rsvp-section-padding-block) + var(--rsvp-header-offset) +
+			var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom)
+	);
 	padding-inline: var(--rsvp-section-padding-inline);
 	box-sizing: border-box;
 	scroll-margin-block-start: var(--preview-banner-height, 0);
@@ -443,32 +442,34 @@
 			opacity var(--duration-standard) var(--ease-premium);
 	}
 
-	&__button {
+	%rsvp-button-base {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
+		font-family: var(--font-label);
+		font-weight: 600;
+		text-transform: uppercase;
+		border-radius: var(--rsvp-button-radius);
+		cursor: pointer;
+		transition:
+			background-color var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-premium),
+			color var(--duration-standard) var(--ease-premium),
+			transform var(--duration-standard) var(--ease-premium);
+	}
+
+	&__button {
+		@extend %rsvp-button-base;
+
 		min-height: var(--rsvp-button-min-height);
 		padding: var(--rsvp-button-padding);
 		color: var(--rsvp-button-color);
 		background: var(--rsvp-button-bg);
 		border: 1px solid var(--rsvp-button-border);
-		font-family: var(--font-label);
 		font-size: 0.85rem;
-		font-weight: 600;
-		text-transform: uppercase;
 		letter-spacing: 0.22em;
-		border-radius: var(--rsvp-button-radius);
-		transition:
-			background-color var(--duration-standard) var(--ease-premium),
-			border-color var(--duration-standard) var(--ease-premium),
-			box-shadow var(--duration-standard) var(--ease-premium),
-			color var(--duration-standard) var(--ease-premium),
-			filter var(--duration-standard) var(--ease-premium),
-			opacity var(--duration-standard) var(--ease-premium),
-			transform var(--duration-standard) var(--ease-premium);
 		position: relative;
-		cursor: pointer;
 
 		&:focus,
 		&:focus-visible {
@@ -524,6 +525,107 @@
 				filter: none;
 			}
 		}
+	}
+
+	&__secondary-button {
+		@extend %rsvp-button-base;
+
+		min-height: 2.5rem;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--rsvp-field-border);
+		background: rgb(var(--color-surface-primary-rgb) / 42%);
+		color: var(--color-text-secondary);
+		font-size: 0.78rem;
+		letter-spacing: 0.14em;
+
+		&:hover,
+		&:focus-visible {
+			border-color: var(--color-action-accent);
+			background: rgb(var(--color-action-accent-rgb) / 8%);
+			color: var(--color-text-primary);
+			outline: none;
+		}
+
+		&:active {
+			transform: translateY(1px);
+		}
+	}
+
+	&__revealed-location {
+		width: 100%;
+		margin-block: 1.25rem 0.5rem;
+		padding: 1rem;
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+		border-radius: var(--rsvp-radius-field);
+		background: rgb(var(--color-surface-primary-rgb) / 48%);
+		text-align: left;
+	}
+
+	&__revealed-location-title {
+		margin: 0 0 0.75rem;
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+		line-height: 1.25;
+		color: var(--rsvp-title-color);
+		text-align: center;
+	}
+
+	&__revealed-location-card {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	&__revealed-location-event,
+	&__revealed-location-name,
+	&__revealed-location-address,
+	&__revealed-location-time {
+		margin: 0;
+	}
+
+	&__revealed-location-event {
+		font-family: var(--font-label);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	&__revealed-location-name {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		line-height: 1.25;
+		color: var(--color-text-primary);
+	}
+
+	&__revealed-location-address,
+	&__revealed-location-time {
+		font-family: var(--font-body);
+		font-size: 0.92rem;
+		line-height: 1.45;
+		color: var(--color-text-secondary);
+	}
+
+	&__revealed-location-link {
+		width: fit-content;
+		margin-top: 0.45rem;
+		font-family: var(--font-label);
+		font-size: 0.74rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-action-accent);
+		text-decoration: none;
+
+		&:hover,
+		&:focus-visible {
+			text-decoration: underline;
+			outline: none;
+		}
+	}
+
+	&__edit-response {
+		width: 100%;
+		margin-top: 1rem;
 	}
 
 	&__greeting {

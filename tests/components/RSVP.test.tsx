@@ -4,6 +4,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RSVP from '@/components/invitation/RSVP';
+import type { ComponentProps } from 'react';
 
 const PERSONALIZED_RSVP_URL = /\/api\/invitacion\/.*\/rsvp$/;
 const PUBLIC_RSVP_URL = /\/api\/invitacion\/public\//;
@@ -18,6 +19,19 @@ describe('RSVP Component', () => {
 		confirmationMessage: '¡Gracias por confirmar! Te esperamos con mucha emoción.',
 		initialGuestData: {
 			inviteId: 'mock-invite-id',
+		},
+	};
+
+	const revealedLocation = {
+		visibility: 'after-rsvp' as const,
+		introHeading: 'Ubicación',
+		ceremony: {
+			venueEvent: 'Celebración',
+			venueName: 'Salón García',
+			address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+			date: '2026-08-01',
+			time: '14:00',
+			googleMapsUrl: 'https://maps.example.com/salon-garcia',
 		},
 	};
 
@@ -1079,6 +1093,140 @@ describe('RSVP Component', () => {
 				const greeting = container.querySelector('.rsvp__greeting-message');
 				expect(greeting?.textContent).toContain('Pedro confirma para la fiesta de Sofía');
 			});
+		});
+	});
+
+	describe('RSVP-only location reveal', () => {
+		function renderRSVP(
+			overrides: Partial<ComponentProps<typeof RSVP>> & {
+				initialGuestData?: ComponentProps<typeof RSVP>['initialGuestData'];
+			},
+		) {
+			return render(<RSVP {...defaultProps} {...overrides} />);
+		}
+
+		it('renders confirmed initial state with revealed location and edit action', async () => {
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Nos vemos pronto',
+				},
+				revealedLocation,
+				enableResponseEditing: true,
+			});
+
+			const status = await screen.findByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+			expect(within(status).getByText(/Victoriano Huerta 51/)).toBeInTheDocument();
+			expect(
+				within(status).getByRole('link', { name: /Abrir en Google Maps/i }),
+			).toHaveAttribute('href', 'https://maps.example.com/salon-garcia');
+			expect(
+				screen.getByRole('button', { name: /Cambiar mi respuesta/i }),
+			).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^Cancelar$/i })).not.toBeInTheDocument();
+		});
+
+		it('opens a prefilled form and cancels back to confirmed success state', async () => {
+			const user = userEvent.setup();
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Nos vemos pronto',
+				},
+				revealedLocation,
+				enableResponseEditing: true,
+			});
+
+			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+
+			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
+			expect(screen.getByLabelText(/Número de asistentes/i)).toHaveValue(2);
+			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toHaveValue(
+				'Nos vemos pronto',
+			);
+			expect(screen.getByRole('button', { name: /^Cancelar$/i })).toBeInTheDocument();
+
+			await user.click(screen.getByRole('button', { name: /^Cancelar$/i }));
+
+			const status = await screen.findByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^Cancelar$/i })).not.toBeInTheDocument();
+		});
+
+		it('hides revealed location after changing response to declined', async () => {
+			const user = userEvent.setup();
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: '',
+				},
+				revealedLocation,
+				enableResponseEditing: true,
+			});
+
+			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('status')).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/Salón García/)).not.toBeInTheDocument();
+		});
+
+		it('re-fetches and reveals location after re-confirming attendance', async () => {
+			const user = userEvent.setup();
+			(global.fetch as jest.Mock).mockImplementation((url: string) => {
+				if (url.includes('/location')) {
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({ success: true, data: { location: revealedLocation } }),
+					} as Response);
+				}
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: async () => ({ rsvpId: 'mock-rsvp-id' }),
+				} as Response);
+			});
+
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					guestComment: '',
+				},
+				enableResponseEditing: true,
+			});
+
+			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText(/Salón García/)).toBeInTheDocument();
+			});
+			expect(global.fetch).toHaveBeenCalledWith(
+				expect.stringContaining('/api/invitacion/mock-invite-id/location'),
+				expect.anything(),
+			);
 		});
 	});
 });
