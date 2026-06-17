@@ -1168,7 +1168,9 @@ describe('RSVP Component', () => {
 				initialGuestData?: ComponentProps<typeof RSVP>['initialGuestData'];
 			},
 		) {
-			return render(<RSVP {...defaultProps} {...overrides} />);
+			return render(
+				<RSVP {...defaultProps} locationVisibility="after-rsvp" {...overrides} />,
+			);
 		}
 
 		it('renders confirmed initial state with revealed location and edit action', async () => {

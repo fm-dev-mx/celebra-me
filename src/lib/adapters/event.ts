@@ -18,6 +18,7 @@ import type {
 	VenueEntry,
 } from '@/lib/adapters/types';
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
+import type { VenueEntryInput } from '@/lib/schemas/content/location.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
@@ -346,15 +347,8 @@ function resolveVenueData(
 	};
 }
 
-function buildLocationSectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
-	if (!data.location) return undefined;
-
-	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
-
-	const rawVenues = data.location.venues;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const venues: VenueEntry[] | undefined = (rawVenues as any[])?.map((v) => ({
+function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string): VenueEntry {
+	return {
 		id: v.id,
 		type: v.type,
 		label: v.label,
@@ -371,8 +365,20 @@ function buildLocationSectionData(context: AdaptationContext) {
 		googleMapsUrl: v.googleMapsUrl,
 		wazeUrl: v.wazeUrl,
 		coordinates: v.coordinates,
-		image: resolveAsset(eventSlug, v.image, data.title),
-	}));
+		image: resolveAsset(eventSlug, v.image, eventTitle),
+	};
+}
+
+function buildLocationSectionData(context: AdaptationContext) {
+	const { data, eventSlug, normalizedPreset } = context;
+	if (!data.location) return undefined;
+
+	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
+
+	const rawVenues = data.location.venues;
+	const venues: VenueEntry[] | undefined = rawVenues?.map((v: VenueEntryInput) =>
+		toVenueEntry(v, eventSlug, data.title),
+	);
 
 	return {
 		visibility: data.location.visibility,
@@ -469,6 +475,7 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		labels: data.sectionStyles?.rsvp?.labels,
 		eventStartsAt,
 		eventTimeZone: data.eventTiming?.timeZone,
+		locationVisibility: data.location?.visibility,
 	};
 }
 

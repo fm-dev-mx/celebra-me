@@ -44,6 +44,8 @@ export interface HeroViewModel {
 	scrollLabel?: string;
 }
 
+export type LocationVisibility = 'public' | 'after-rsvp';
+
 export interface Coordinate {
 	lat: number;
 	lng: number;
@@ -172,7 +174,7 @@ export interface InvitationViewModelBrandingVisibility {
 }
 
 export interface LocationSection {
-	visibility?: 'public' | 'after-rsvp';
+	visibility?: LocationVisibility;
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;
@@ -256,6 +258,7 @@ export interface InvitationViewModel {
 			subcopy?: string;
 			title: string;
 			guestCap: number;
+			locationVisibility?: LocationVisibility;
 			accessMode: 'personalized-only' | 'hybrid';
 			confirmationMessage: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';

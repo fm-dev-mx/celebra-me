@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { rsvpApi } from '@/lib/client/rsvp-api';
-import type { LocationSection } from '@/lib/adapters/types';
+import type { LocationSection, LocationVisibility } from '@/lib/adapters/types';
 
 export interface UseGatedLocationInput {
 	inviteId: string | undefined;
 	isConfirmed: boolean;
 	isDemoPreview: boolean | undefined;
 	serverProvidedLocation: LocationSection | undefined;
+	locationVisibility?: LocationVisibility;
 }
 
 export interface UseGatedLocationOutput {
@@ -22,6 +23,7 @@ export function useGatedLocation({
 	isConfirmed,
 	isDemoPreview,
 	serverProvidedLocation,
+	locationVisibility,
 }: UseGatedLocationInput): UseGatedLocationOutput {
 	const [location, setLocation] = useState<LocationSection | undefined>(serverProvidedLocation);
 	const [isFetching, setIsFetching] = useState(false);
@@ -29,10 +31,14 @@ export function useGatedLocation({
 	const latestFetchRef = useRef(0);
 
 	useEffect(() => {
-		if (!isConfirmed || !inviteId) {
+		function reset(): void {
 			setLocation(undefined);
 			setError(undefined);
 			setIsFetching(false);
+		}
+
+		if (locationVisibility !== 'after-rsvp' || !isConfirmed || !inviteId) {
+			reset();
 			return;
 		}
 
@@ -44,9 +50,7 @@ export function useGatedLocation({
 		}
 
 		if (isDemoPreview) {
-			setLocation(undefined);
-			setError(undefined);
-			setIsFetching(false);
+			reset();
 			return;
 		}
 
@@ -72,7 +76,7 @@ export function useGatedLocation({
 		return () => {
 			latestFetchRef.current += 1;
 		};
-	}, [isConfirmed, inviteId, isDemoPreview, serverProvidedLocation]);
+	}, [locationVisibility, isConfirmed, inviteId, isDemoPreview, serverProvidedLocation]);
 
 	return { location, isFetching, error };
 }

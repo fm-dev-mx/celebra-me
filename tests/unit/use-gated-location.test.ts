@@ -30,7 +30,41 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
+const AFTER_RSVP_VISIBILITY = { locationVisibility: 'after-rsvp' as const };
+
 describe('useGatedLocation', () => {
+	it('does not fetch or reveal when locationVisibility is public', () => {
+		const { result } = renderHook(() =>
+			useGatedLocation({
+				inviteId: 'mock-id',
+				isConfirmed: true,
+				isDemoPreview: false,
+				serverProvidedLocation: undefined,
+				locationVisibility: 'public',
+			}),
+		);
+
+		expect(result.current.location).toBeUndefined();
+		expect(result.current.isFetching).toBe(false);
+		expect(result.current.error).toBeUndefined();
+		expect(mockGetGatedLocation).not.toHaveBeenCalled();
+	});
+
+	it('does not fetch or reveal when locationVisibility is undefined', () => {
+		const { result } = renderHook(() =>
+			useGatedLocation({
+				inviteId: 'mock-id',
+				isConfirmed: true,
+				isDemoPreview: false,
+				serverProvidedLocation: undefined,
+			}),
+		);
+
+		expect(result.current.location).toBeUndefined();
+		expect(result.current.isFetching).toBe(false);
+		expect(mockGetGatedLocation).not.toHaveBeenCalled();
+	});
+
 	it('returns server-provided location immediately without fetching', () => {
 		const { result } = renderHook(() =>
 			useGatedLocation({
@@ -38,6 +72,7 @@ describe('useGatedLocation', () => {
 				isConfirmed: true,
 				isDemoPreview: false,
 				serverProvidedLocation: mockLocation,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
@@ -56,6 +91,7 @@ describe('useGatedLocation', () => {
 				isConfirmed: true,
 				isDemoPreview: false,
 				serverProvidedLocation: undefined,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
@@ -78,6 +114,7 @@ describe('useGatedLocation', () => {
 				isConfirmed: false,
 				isDemoPreview: false,
 				serverProvidedLocation: undefined,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
@@ -93,11 +130,29 @@ describe('useGatedLocation', () => {
 				isConfirmed: true,
 				isDemoPreview: true,
 				serverProvidedLocation: undefined,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
 		expect(result.current.location).toBeUndefined();
 		expect(result.current.isFetching).toBe(false);
+		expect(mockGetGatedLocation).not.toHaveBeenCalled();
+	});
+
+	it('shows server-provided location even when isDemoPreview is true', () => {
+		const { result } = renderHook(() =>
+			useGatedLocation({
+				inviteId: 'mock-id',
+				isConfirmed: true,
+				isDemoPreview: true,
+				serverProvidedLocation: mockLocation,
+				...AFTER_RSVP_VISIBILITY,
+			}),
+		);
+
+		expect(result.current.location).toEqual(mockLocation);
+		expect(result.current.isFetching).toBe(false);
+		expect(result.current.error).toBeUndefined();
 		expect(mockGetGatedLocation).not.toHaveBeenCalled();
 	});
 
@@ -110,6 +165,7 @@ describe('useGatedLocation', () => {
 				isConfirmed: true,
 				isDemoPreview: false,
 				serverProvidedLocation: undefined,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
@@ -129,6 +185,7 @@ describe('useGatedLocation', () => {
 					isConfirmed,
 					isDemoPreview: false,
 					serverProvidedLocation: mockLocation,
+					...AFTER_RSVP_VISIBILITY,
 				}),
 			{ initialProps: { isConfirmed: true } },
 		);
@@ -148,6 +205,7 @@ describe('useGatedLocation', () => {
 				isConfirmed: true,
 				isDemoPreview: false,
 				serverProvidedLocation: undefined,
+				...AFTER_RSVP_VISIBILITY,
 			}),
 		);
 
@@ -171,6 +229,7 @@ describe('useGatedLocation', () => {
 					isConfirmed: true,
 					isDemoPreview: false,
 					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
 				}),
 			{ initialProps: { inviteId: 'first-id' } },
 		);
@@ -181,7 +240,6 @@ describe('useGatedLocation', () => {
 		mockGetGatedLocation.mockResolvedValue({ location: mockLocation });
 		rerender({ inviteId: 'second-id' });
 
-		// First fetch resolves now — should be discarded by request-id guard
 		resolveFirst?.({ location: { ...mockLocation, introHeading: 'Stale' } });
 
 		await waitFor(() => {
@@ -208,6 +266,7 @@ describe('useGatedLocation', () => {
 					isConfirmed,
 					isDemoPreview: false,
 					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
 				}),
 			{ initialProps: { isConfirmed: true } },
 		);
@@ -220,7 +279,6 @@ describe('useGatedLocation', () => {
 		expect(result.current.error).toBeUndefined();
 		expect(result.current.isFetching).toBe(false);
 
-		// Old fetch resolves — should be discarded
 		resolveFetch?.({ location: mockLocation });
 
 		await waitFor(() => {
@@ -246,20 +304,19 @@ describe('useGatedLocation', () => {
 					isConfirmed: true,
 					isDemoPreview: false,
 					serverProvidedLocation,
+					...AFTER_RSVP_VISIBILITY,
 				}),
 			{ initialProps },
 		);
 
 		expect(result.current.isFetching).toBe(true);
 
-		// Server provides location while fetch is in-flight
 		rerender({ serverProvidedLocation: mockLocation });
 
 		expect(result.current.location).toEqual(mockLocation);
 		expect(result.current.isFetching).toBe(false);
 		expect(result.current.error).toBeUndefined();
 
-		// Old fetch resolves — should be discarded by request-id guard
 		resolveFetch?.({ location: { ...mockLocation, introHeading: 'Stale' } });
 
 		await waitFor(() => {

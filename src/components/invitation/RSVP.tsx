@@ -6,6 +6,7 @@ import { getCardAwareScrollTop, doubleRaf } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { LocationVisibility } from '@/lib/adapters/types';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
@@ -39,6 +40,7 @@ interface RSVPProps {
 		confirmButton?: string;
 		phone?: string;
 	};
+	locationVisibility?: LocationVisibility;
 	variant?: string;
 	confirmationMode?: 'api' | 'whatsapp' | 'both';
 	whatsappConfig?: WhatsAppConfig;
@@ -126,6 +128,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	initialGuestData,
 	isDemoPreview,
 	revealedLocation,
+	locationVisibility,
 	allowResponseEditing = ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	eventStartsAt,
 	eventTimeZone,
@@ -244,6 +247,9 @@ const RSVP: React.FC<RSVPProps> = ({
 		return () => {
 			window.removeEventListener('hashchange', doHashCorrection);
 			window.removeEventListener('load', onLoad);
+			if (recenterRef.current !== null) {
+				cancelAnimationFrame(recenterRef.current);
+			}
 		};
 	}, [prefersReducedMotion]);
 
@@ -261,16 +267,8 @@ const RSVP: React.FC<RSVPProps> = ({
 		isConfirmed: attendanceStatus === 'confirmed',
 		isDemoPreview,
 		serverProvidedLocation: revealedLocation,
+		locationVisibility,
 	});
-
-	/* ----- cleanup ----- */
-	useEffect(() => {
-		return () => {
-			if (recenterRef.current !== null) {
-				cancelAnimationFrame(recenterRef.current);
-			}
-		};
-	}, []);
 
 	/* ----- render paths ----- */
 	if (!isPersonalized && !isPublicRsvp) {
@@ -283,9 +281,8 @@ const RSVP: React.FC<RSVPProps> = ({
 			setAttendanceStatus(status);
 			if (status === 'confirmed') {
 				setAttendeeCount((current) => {
-					const currentCount =
-						typeof current === 'number' ? current : Number.parseInt(current, 10);
-					return Number.isFinite(currentCount) && currentCount >= 1 ? current : 1;
+					const currentCount = typeof current === 'number' ? current : 1;
+					return currentCount >= 1 ? currentCount : 1;
 				});
 			}
 			if (touched.attendance) validate();

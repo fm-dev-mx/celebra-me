@@ -15,6 +15,7 @@ import type {
 	IndicationStyleVariant,
 	LocationVariant,
 } from '@/lib/theme/theme-contract';
+import type { LocationVisibility } from '@/lib/adapters/types';
 
 interface VenueData {
 	venueEvent: string;
@@ -50,7 +51,7 @@ interface VenueEntry extends VenueData {
 }
 
 interface Props {
-	visibility?: 'public' | 'after-rsvp';
+	visibility?: LocationVisibility;
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;
