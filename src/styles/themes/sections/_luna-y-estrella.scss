@@ -1,0 +1,53 @@
+@use '../../global/mixins' as mixins;
+
+.event--luna-y-estrella {
+	.invitation-hero[data-variant='angelic-presence'] {
+		.invitation-hero__content {
+			min-height: auto;
+			margin-top: 6rem;
+			margin-bottom: auto;
+			align-content: start;
+			place-self: end;
+			justify-items: end;
+			width: auto;
+			max-width: min(48rem, 85vw);
+			padding-top: clamp(1.5rem, 3svh, 3rem);
+		}
+
+		.invitation-hero__content .invitation-hero__label {
+			justify-self: end;
+		}
+
+		.invitation-hero__content .invitation-hero__title-wrapper {
+			text-align: right;
+		}
+
+		@include mixins.respond-to(md) {
+			.invitation-hero__content {
+				grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.9fr);
+				grid-template-areas:
+					'label portrait'
+					'title portrait'
+					'details portrait';
+				row-gap: clamp(0.65rem, 1vw, 1.1rem);
+			}
+
+			.invitation-hero__content .invitation-hero__label {
+				grid-area: label;
+				align-self: end;
+			}
+
+			.invitation-hero__content .invitation-hero__title-wrapper {
+				grid-area: title;
+			}
+
+			.invitation-hero__content .invitation-hero__details {
+				grid-area: details;
+			}
+
+			.invitation-hero__content .invitation-hero__portrait {
+				grid-area: portrait;
+			}
+		}
+	}
+}
