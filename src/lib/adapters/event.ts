@@ -24,14 +24,17 @@ import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 
-const LOCATION_THEME_DEFAULTS: Readonly<{
-	[key in ThemePreset]?: {
-		introEyebrow: string;
-		introHeading: string;
-		introLede: string;
-		indicationsHeading: string;
-	};
-}> = {
+const LOCATION_THEME_DEFAULTS: Partial<
+	Record<
+		ThemePreset,
+		{
+			introEyebrow: string;
+			introHeading: string;
+			introLede: string;
+			indicationsHeading: string;
+		}
+	>
+> = {
 	'enchanted-rose': {
 		introEyebrow: 'El camino al palacio',
 		introHeading: 'Ubicación',
@@ -39,7 +42,7 @@ const LOCATION_THEME_DEFAULTS: Readonly<{
 			'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
 		indicationsHeading: 'Detalles adicionales',
 	},
-} as const;
+};
 
 interface AdaptationContext {
 	data: EventContentEntry['data'];
@@ -343,10 +346,6 @@ function resolveVenueData(
 	};
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
@@ -354,31 +353,26 @@ function buildLocationSectionData(context: AdaptationContext) {
 	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
 
 	const rawVenues = data.location.venues;
-	const venues: VenueEntry[] | undefined = (
-		rawVenues as Array<Record<string, unknown>> | undefined
-	)?.map((v) => {
-		return {
-			id: v.id as string | undefined,
-			type: v.type as string | undefined,
-			label: v.label as string | undefined,
-			isVisible: v.isVisible as boolean | undefined,
-			sortOrder: v.sortOrder as number | undefined,
-			venueEvent: v.venueEvent as string,
-			venueName: v.venueName as string,
-			address: v.address as string,
-			city: v.city as string | undefined,
-			date: v.date as string,
-			time: v.time as string,
-			mapUrl: v.mapUrl as string | undefined,
-			appleMapsUrl: v.appleMapsUrl as string | undefined,
-			googleMapsUrl: v.googleMapsUrl as string | undefined,
-			wazeUrl: v.wazeUrl as string | undefined,
-			coordinates: isRecord(v.coordinates)
-				? (v.coordinates as { lat: number; lng: number })
-				: undefined,
-			image: resolveAsset(eventSlug, v.image as string | AssetSource, data.title),
-		};
-	});
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const venues: VenueEntry[] | undefined = (rawVenues as any[])?.map((v) => ({
+		id: v.id,
+		type: v.type,
+		label: v.label,
+		isVisible: v.isVisible,
+		sortOrder: v.sortOrder,
+		venueEvent: v.venueEvent,
+		venueName: v.venueName,
+		address: v.address,
+		city: v.city,
+		date: v.date,
+		time: v.time,
+		mapUrl: v.mapUrl,
+		appleMapsUrl: v.appleMapsUrl,
+		googleMapsUrl: v.googleMapsUrl,
+		wazeUrl: v.wazeUrl,
+		coordinates: v.coordinates,
+		image: resolveAsset(eventSlug, v.image, data.title),
+	}));
 
 	return {
 		visibility: data.location.visibility,
@@ -543,21 +537,18 @@ export function adaptEvent(
 
 	// Ensure synthesized sections (e.g. countdown derived from eventTiming alone)
 	// appear in the render plan even when the stored sectionOrder omits them.
-	const resolvedSectionOrder =
-		sections.countdown &&
-		adapterData.sectionOrder &&
-		!adapterData.sectionOrder.includes('countdown')
-			? (() => {
-					const locIdx = adapterData.sectionOrder!.indexOf('location');
-					return locIdx !== -1
-						? [
-								...adapterData.sectionOrder!.slice(0, locIdx),
-								'countdown',
-								...adapterData.sectionOrder!.slice(locIdx),
-							]
-						: [...adapterData.sectionOrder!, 'countdown'];
-				})()
-			: adapterData.sectionOrder;
+	let resolvedSectionOrder = adapterData.sectionOrder;
+	if (resolvedSectionOrder && sections.countdown && !resolvedSectionOrder.includes('countdown')) {
+		const locIdx = resolvedSectionOrder.indexOf('location');
+		resolvedSectionOrder =
+			locIdx !== -1
+				? [
+						...resolvedSectionOrder.slice(0, locIdx),
+						'countdown',
+						...resolvedSectionOrder.slice(locIdx),
+					]
+				: [...resolvedSectionOrder, 'countdown'];
+	}
 
 	return {
 		id: entrySlug,
