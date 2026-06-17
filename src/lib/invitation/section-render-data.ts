@@ -80,6 +80,9 @@ type DescriptorData =
 					fullName: string;
 					maxAllowedAttendees: number;
 					inviteId: string;
+					attendanceStatus: 'pending' | 'confirmed' | 'declined';
+					attendeeCount: number;
+					guestComment: string;
 				};
 				isDemoPreview?: boolean;
 			};
@@ -155,6 +158,9 @@ function renderRsvpSection(
 						fullName: guestContext.guest.fullName,
 						maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
 						inviteId: guestContext.inviteId,
+						attendanceStatus: guestContext.guest.attendanceStatus,
+						attendeeCount: guestContext.guest.attendeeCount,
+						guestComment: guestContext.guest.guestComment,
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,

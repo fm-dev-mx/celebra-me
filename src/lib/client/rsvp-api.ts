@@ -1,5 +1,6 @@
 import { fetchJSON, type ApiResult } from '@/lib/api-client-shared';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { LocationSection } from '@/lib/adapters/types';
 
 export interface RsvpPayload {
 	attendanceStatus: 'confirmed' | 'declined';
@@ -11,6 +12,10 @@ export interface PublicRsvpPayload extends RsvpPayload {
 	fullName: string;
 	phone: string;
 	countryCode?: string;
+}
+
+export interface RevealedLocationPayload {
+	location: LocationSection;
 }
 
 export interface ContactPayload {
@@ -62,6 +67,20 @@ class RsvpApi {
 			inviteId: data.inviteId || data.data?.inviteId,
 			guestId: data.guestId || data.data?.guestId,
 		};
+	}
+
+	async getGatedLocation(inviteId: string): Promise<RevealedLocationPayload> {
+		const result = await fetchJSON<RevealedLocationPayload | { data: RevealedLocationPayload }>(
+			`/api/invitacion/${encodeURIComponent(inviteId)}/location`,
+			{
+				method: 'GET',
+			},
+		);
+		const data = this.handleResponse(result);
+		if ('data' in data) {
+			return data.data;
+		}
+		return data;
 	}
 
 	async markViewed(inviteId: string): Promise<void> {

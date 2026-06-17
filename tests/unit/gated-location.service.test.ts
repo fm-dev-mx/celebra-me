@@ -78,6 +78,52 @@ beforeEach(() => {
 });
 
 describe('resolveGatedLocationPayload', () => {
+	it('returns Luna y Estrella location by resolving event identity from inviteId only', async () => {
+		mockGetInvitationContextByInviteId.mockResolvedValue({
+			...confirmedContext,
+			eventSlug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+		});
+		mockResolveInvitationContent.mockResolvedValue({
+			source: 'published',
+			rawContent: {
+				_assetSlug: 'luna-y-estrella-primera-comunion',
+				location: protectedLocation,
+			},
+			viewModel: {
+				id: 'luna-y-estrella',
+				isDemo: false,
+				title: 'Primera Comunión de Luna y Estrella',
+				theme: { preset: 'angelic-presence', themeClass: 'theme-preset--angelic-presence' },
+				hero: {
+					name: 'Luna y Estrella',
+					label: 'Primera Comunión',
+					date: '2026-08-01T20:00:00.000Z',
+					backgroundImage: { src: '/hero.webp', alt: 'Luna y Estrella' },
+					variant: 'angelic-presence',
+				},
+				envelope: { enabled: false },
+				brandingVisibility: {
+					showFooterBranding: true,
+					showContactCta: true,
+					showThankYouBranding: true,
+				},
+				sections: { location: protectedLocation },
+				interludes: [],
+			},
+		} as Awaited<ReturnType<typeof resolveInvitationContent>>);
+
+		const payload = await resolveGatedLocationPayload({
+			inviteId: '11111111-1111-4111-1111-111111111111',
+		});
+
+		expect(mockResolveInvitationContent).toHaveBeenCalledWith(
+			'luna-y-estrella',
+			'primera-comunion',
+		);
+		expect(payload.location.ceremony?.venueName).toBe('Salón García');
+	});
+
 	it('returns protected location details for a confirmed matching invite context', async () => {
 		const payload = await resolveGatedLocationPayload({
 			inviteId: '11111111-1111-4111-1111-111111111111',
@@ -118,6 +164,21 @@ describe('resolveGatedLocationPayload', () => {
 				inviteId: '11111111-1111-4111-1111-111111111111',
 				eventType: 'bautizo',
 				slug: 'gated-location-test-event',
+			}),
+		).rejects.toMatchObject({
+			status: 403,
+			code: 'forbidden',
+		});
+
+		expect(mockResolveInvitationContent).not.toHaveBeenCalled();
+	});
+
+	it('rejects valid invites when requested route params do not match resolved context', async () => {
+		await expect(
+			resolveGatedLocationPayload({
+				inviteId: '11111111-1111-4111-1111-111111111111',
+				eventType: 'primera-comunion',
+				slug: 'luna-y-estrella-primera-comunion',
 			}),
 		).rejects.toMatchObject({
 			status: 403,

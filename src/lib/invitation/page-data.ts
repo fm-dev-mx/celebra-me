@@ -68,6 +68,7 @@ export interface InvitationPageContext {
 }
 
 const DEFAULT_THEME_PRESET: ThemePreset = THEME_PRESETS[0];
+const LUNA_ESTRELLA_ROUTE_SLUG = 'luna-y-estrella';
 
 export function buildLayoutData(viewModel: InvitationViewModel, guestName: string | undefined) {
 	const image = viewModel.sharing?.ogImage ?? viewModel.hero.backgroundImage;
@@ -109,9 +110,9 @@ function buildEnvelopeData(
 
 function redactEnvelopeTeaserWhenLocationLocked<T extends { teaserDetails?: string }>(
 	envelope: T | undefined,
-	location: LocationSection | undefined,
+	shouldRedact: boolean,
 ): T | undefined {
-	if (!envelope || !location?.isLocked || !envelope.teaserDetails) return envelope;
+	if (!envelope || !shouldRedact || !envelope.teaserDetails) return envelope;
 
 	return {
 		...envelope,
@@ -223,6 +224,69 @@ function isConfirmedGuest(guestContext: InvitationGuestContext | null | undefine
 	return guestContext?.guest.attendanceStatus === 'confirmed';
 }
 
+function isLunaEstrellaRoute(slug: string, eventType: string): boolean {
+	return slug === LUNA_ESTRELLA_ROUTE_SLUG && eventType === 'primera-comunion';
+}
+
+function removeLocationNavigation(
+	navigation: InvitationViewModel['navigation'],
+): InvitationViewModel['navigation'] {
+	return navigation?.filter(
+		(item) => item.href !== '#event-location' && item.href !== '#location',
+	);
+}
+
+function removeLocationFromSectionOrder(
+	sectionOrder: InvitationViewModel['sectionOrder'],
+): InvitationViewModel['sectionOrder'] {
+	return sectionOrder?.filter((section) => section !== 'location');
+}
+
+function applyLunaEstrellaRsvpOnlyLocation(
+	viewModel: InvitationViewModel,
+	guestContext: InvitationGuestContext | null | undefined,
+): InvitationViewModel {
+	const protectedLocation = viewModel.sections.location;
+	const revealedLocation =
+		protectedLocation?.visibility === 'after-rsvp' && isConfirmedGuest(guestContext)
+			? protectedLocation
+			: undefined;
+
+	const teaserDetails = viewModel.envelope.data?.teaserDetails;
+	const redactedTeaser = teaserDetails?.includes('•')
+		? (teaserDetails.split('•')[0]?.trim() ?? teaserDetails)
+		: undefined;
+
+	return {
+		...viewModel,
+		hero: viewModel.hero.venueName
+			? { ...viewModel.hero, venueName: undefined }
+			: viewModel.hero,
+		envelope: redactedTeaser
+			? {
+					...viewModel.envelope,
+					data: {
+						...viewModel.envelope.data!,
+						teaserDetails: redactedTeaser,
+					},
+				}
+			: viewModel.envelope,
+		sectionOrder: removeLocationFromSectionOrder(viewModel.sectionOrder),
+		navigation: removeLocationNavigation(viewModel.navigation),
+		sections: {
+			...viewModel.sections,
+			location: undefined,
+			rsvp: viewModel.sections.rsvp
+				? {
+						...viewModel.sections.rsvp,
+						revealedLocation,
+						enableResponseEditing: true,
+					}
+				: undefined,
+		},
+	};
+}
+
 function redactProtectedLocation(location: LocationSection): LocationSection {
 	return {
 		visibility: 'after-rsvp',
@@ -243,7 +307,12 @@ function redactProtectedLocation(location: LocationSection): LocationSection {
 function applyProtectedLocationRedaction(
 	viewModel: InvitationViewModel,
 	guestContext: InvitationGuestContext | null | undefined,
+	lunaEstrellaRoute: boolean,
 ): InvitationViewModel {
+	if (lunaEstrellaRoute) {
+		return applyLunaEstrellaRsvpOnlyLocation(viewModel, guestContext);
+	}
+
 	const location = viewModel.sections.location;
 	if (!location || location.visibility !== 'after-rsvp' || isConfirmedGuest(guestContext)) {
 		return viewModel;
@@ -271,7 +340,12 @@ export function buildPageContextFromViewModel(input: {
 	isPreview?: boolean;
 }): InvitationPageContext {
 	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
-	const renderViewModel = applyProtectedLocationRedaction(viewModel, guestContext);
+	const lunaEstrellaRoute = isLunaEstrellaRoute(slug, eventType);
+	const renderViewModel = applyProtectedLocationRedaction(
+		viewModel,
+		guestContext,
+		lunaEstrellaRoute,
+	);
 
 	renderViewModel.brandingVisibility = resolveBrandingVisibility({
 		isDemo: renderViewModel.isDemo,
@@ -293,9 +367,12 @@ export function buildPageContextFromViewModel(input: {
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
 	const isDemoPreview = isDemo && !guestContext;
+	const shouldRedactEnvelopeLocationTeaser =
+		Boolean(sections.location?.isLocked) ||
+		(lunaEstrellaRoute && viewModel.sections.location?.visibility === 'after-rsvp');
 	const envelopeData = redactEnvelopeTeaserWhenLocationLocked(
 		buildEnvelopeData(styles.showEnvelope, envelope, renderViewModel.id, guestName, isDemo),
-		sections.location,
+		shouldRedactEnvelopeLocationTeaser,
 	);
 
 	return {

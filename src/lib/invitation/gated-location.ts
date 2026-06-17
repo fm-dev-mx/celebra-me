@@ -2,16 +2,14 @@ import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import type { InvitationViewModel } from '@/lib/adapters/types';
+import type { LocationSection } from '@/lib/adapters/types';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type LocationSection = NonNullable<InvitationViewModel['sections']['location']>;
-
 export interface GatedLocationRequest {
 	inviteId: string;
-	eventType: string;
-	slug: string;
+	eventType?: string;
+	slug?: string;
 }
 
 export interface GatedLocationPayload {
@@ -22,11 +20,9 @@ export async function resolveGatedLocationPayload(
 	input: GatedLocationRequest,
 ): Promise<GatedLocationPayload> {
 	const inviteId = sanitize(input.inviteId, 100);
-	const eventType = sanitize(input.eventType, 40);
-	const slug = sanitize(input.slug, 140);
 
-	if (!inviteId || !eventType || !slug) {
-		throw new ApiError(400, 'bad_request', 'inviteId, eventType, and slug are required.');
+	if (!inviteId) {
+		throw new ApiError(400, 'bad_request', 'inviteId is required.');
 	}
 
 	if (!UUID_REGEX.test(inviteId)) {
@@ -34,7 +30,10 @@ export async function resolveGatedLocationPayload(
 	}
 
 	const guestContext = await getInvitationContextByInviteId(inviteId);
-	if (guestContext.eventType !== eventType || guestContext.eventSlug !== slug) {
+	if (
+		(input.eventType && guestContext.eventType !== input.eventType) ||
+		(input.slug && guestContext.eventSlug !== input.slug)
+	) {
 		throw new ApiError(403, 'forbidden', 'Invitation does not match this event route.');
 	}
 
@@ -42,7 +41,10 @@ export async function resolveGatedLocationPayload(
 		throw new ApiError(403, 'forbidden', 'Location is available after confirmed RSVP.');
 	}
 
-	const resolution = await resolveInvitationContent(slug, eventType);
+	const resolution = await resolveInvitationContent(
+		guestContext.eventSlug,
+		guestContext.eventType,
+	);
 	const location = resolution?.viewModel.sections.location;
 	if (!location) {
 		throw new ApiError(404, 'not_found', 'Location is not available for this invitation.');

@@ -472,6 +472,249 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.envelope).toBeUndefined();
 	});
 
+	it('keeps Luna y Estrella protected location out of anonymous page data', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			title: 'Primera Comunión de Luna y Estrella',
+			sectionOrder: [
+				'quote',
+				'family',
+				'countdown',
+				'personalizedAccess',
+				'rsvp',
+				'thankYou',
+			],
+			envelope: {
+				enabled: true,
+				data: {
+					sealStyle: 'wax',
+					microcopy: 'Primera Comunión de Luna y Estrella',
+					teaserDetails: '1 ago 2026 • Salón García',
+					card: {
+						label: 'Primera Comunión',
+						name: 'Luna y Estrella',
+						date: '1 · AGO · 2026',
+					},
+					colors: {},
+				},
+			},
+			sections: {
+				quote: { text: 'Una cita inspiradora.' },
+				location: {
+					visibility: 'after-rsvp',
+					introHeading: 'Ubicación',
+					ceremony: {
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+						googleMapsUrl: 'https://maps.example.com/salon-garcia',
+						coordinates: { lat: 19.42, lng: -102.06 },
+					},
+				},
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'luna-y-estrella',
+					eventType: 'primera-comunion',
+				},
+				thankYou: { message: 'Gracias.' },
+			},
+			navigation: [
+				{ label: 'Inicio', href: '#inicio' },
+				{ label: 'Evento', href: '#event-location' },
+				{ label: 'Confirmar', href: '#rsvp' },
+			],
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+		});
+
+		const serialized = JSON.stringify(context.viewModel);
+		expect(context.viewModel.sections.location).toBeUndefined();
+		expect(context.viewModel.sections.rsvp?.revealedLocation).toBeUndefined();
+		expect(context.viewModel.navigation).toEqual([
+			{ label: 'Inicio', href: '#inicio' },
+			{ label: 'Confirmar', href: '#rsvp' },
+		]);
+		expect(context.heroVenueName).toBeUndefined();
+		expect(context.envelope?.teaserDetails).toBe('1 ago 2026');
+		expect(describeRenderPlan(context.renderPlan)).not.toContain('location');
+		expect(serialized).not.toContain('Salón García');
+		expect(serialized).not.toContain('Victoriano Huerta');
+		expect(serialized).not.toContain('maps.example');
+		expect(serialized).not.toContain('-102.06');
+	});
+
+	it('exposes Luna y Estrella protected location only as RSVP revealedLocation for confirmed guests', () => {
+		const protectedLocation = {
+			visibility: 'after-rsvp' as const,
+			introHeading: 'Ubicación',
+			ceremony: {
+				venueEvent: 'Celebración',
+				venueName: 'Salón García',
+				address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+				date: '2026-08-01',
+				time: '14:00',
+				googleMapsUrl: 'https://maps.example.com/salon-garcia',
+			},
+		};
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			title: 'Primera Comunión de Luna y Estrella',
+			sectionOrder: [
+				'quote',
+				'family',
+				'countdown',
+				'personalizedAccess',
+				'rsvp',
+				'thankYou',
+			],
+			sections: {
+				location: protectedLocation,
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'luna-y-estrella',
+					eventType: 'primera-comunion',
+				},
+			},
+			navigation: [
+				{ label: 'Inicio', href: '#inicio' },
+				{ label: 'Evento', href: '#event-location' },
+				{ label: 'Confirmar', href: '#rsvp' },
+			],
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+			guestContext: {
+				inviteId: 'invite-confirmed',
+				eventSlug: 'luna-y-estrella',
+				eventType: 'primera-comunion',
+				eventTitle: 'Primera Comunión de Luna y Estrella',
+				guest: {
+					fullName: 'Familia invitada',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Con gusto asistimos',
+					hideCelebraMeBranding: false,
+				},
+			},
+		});
+
+		expect(context.viewModel.sections.location).toBeUndefined();
+		expect(context.viewModel.sections.rsvp?.revealedLocation).toMatchObject({
+			ceremony: {
+				venueName: 'Salón García',
+				address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+			},
+		});
+		expect(context.viewModel.navigation).toEqual([
+			{ label: 'Inicio', href: '#inicio' },
+			{ label: 'Confirmar', href: '#rsvp' },
+		]);
+		expect(context.heroVenueName).toBeUndefined();
+		expect(describeRenderPlan(context.renderPlan)).not.toContain('location');
+	});
+
+	it('keeps Luna y Estrella response editing enabled even before protected location data is patched', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			sectionOrder: ['rsvp'],
+			sections: {
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'luna-y-estrella',
+					eventType: 'primera-comunion',
+				},
+			},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+			guestContext: {
+				inviteId: 'invite-confirmed',
+				eventSlug: 'luna-y-estrella',
+				eventType: 'primera-comunion',
+				eventTitle: 'Primera Comunión de Luna y Estrella',
+				guest: {
+					fullName: 'Familia invitada',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Con gusto asistimos',
+					hideCelebraMeBranding: false,
+				},
+			},
+		});
+
+		expect(context.viewModel.sections.rsvp?.enableResponseEditing).toBe(true);
+		expect(context.viewModel.sections.rsvp?.revealedLocation).toBeUndefined();
+	});
+
+	it('keeps Luna y Estrella protected location hidden for declined guests', () => {
+		const viewModel = {
+			...baseViewModel,
+			id: 'luna-y-estrella',
+			sections: {
+				location: {
+					visibility: 'after-rsvp',
+					ceremony: {
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51',
+						date: '2026-08-01',
+						time: '14:00',
+					},
+				},
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					accessMode: 'hybrid' as const,
+					eventSlug: 'luna-y-estrella',
+					eventType: 'primera-comunion',
+				},
+			},
+		} as any;
+
+		const context = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+			guestContext: {
+				inviteId: 'invite-declined',
+				eventSlug: 'luna-y-estrella',
+				eventType: 'primera-comunion',
+				eventTitle: 'Primera Comunión de Luna y Estrella',
+				guest: {
+					fullName: 'Familia invitada',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					guestComment: '',
+					hideCelebraMeBranding: false,
+				},
+			},
+		});
+
+		expect(context.viewModel.sections.location).toBeUndefined();
+		expect(context.viewModel.sections.rsvp?.revealedLocation).toBeUndefined();
+		expect(JSON.stringify(context.viewModel)).not.toContain('Salón García');
+	});
+
 	it('redacts after-rsvp location details before the guest is confirmed', () => {
 		const viewModel = {
 			...baseViewModel,
