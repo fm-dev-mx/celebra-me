@@ -1,4 +1,5 @@
-import type { InvitationPageContext, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
+import type { InvitationPageContext } from '@/lib/invitation/page-data';
+import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
 import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 

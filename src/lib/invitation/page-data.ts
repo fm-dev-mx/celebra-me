@@ -1,39 +1,21 @@
 import { adaptEvent } from '@/lib/adapters/event';
 import { resolveBrandingVisibility } from '@/lib/adapters/branding';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
-import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
-import { CONTENT_SECTION_KEYS, THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
+import { type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
+import { buildInvitationRenderPlan } from './render-plan';
+import type { InterludeRenderItem, InvitationRenderPlanItem } from './render-plan';
+import {
+	applyProtectedLocationRules,
+	redactEnvelopeTeaserWhenLocationLocked,
+} from './protected-location';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
-type LocationSection = NonNullable<InvitationViewModel['sections']['location']>;
-
-export type InterludeRenderItem = {
-	type: 'interlude';
-	image: ImageAsset;
-	alt?: string;
-	height: 'screen' | 'tall' | 'medium';
-	variant?: ThemePreset;
-	focalPoint?: string;
-	lightX?: string;
-	lightY?: string;
-	overlayOpacity?: string;
-};
-
-export type InvitationRenderPlanItem =
-	| {
-			type: 'section';
-			section: keyof InvitationViewModel['sections'];
-	  }
-	| {
-			type: 'personalized-access';
-	  }
-	| InterludeRenderItem;
 
 export interface InvitationPageContext {
 	viewModel: InvitationViewModel;
@@ -66,9 +48,6 @@ export interface InvitationPageContext {
 		| undefined;
 	footerVariant: ThemePreset;
 }
-
-const DEFAULT_THEME_PRESET: ThemePreset = THEME_PRESETS[0];
-const LUNA_ESTRELLA_ROUTE_SLUG = 'luna-y-estrella';
 
 export function buildLayoutData(viewModel: InvitationViewModel, guestName: string | undefined) {
 	const image = viewModel.sharing?.ogImage ?? viewModel.hero.backgroundImage;
@@ -108,18 +87,6 @@ function buildEnvelopeData(
 	};
 }
 
-function redactEnvelopeTeaserWhenLocationLocked<T extends { teaserDetails?: string }>(
-	envelope: T | undefined,
-	shouldRedact: boolean,
-): T | undefined {
-	if (!envelope || !shouldRedact || !envelope.teaserDetails) return envelope;
-
-	return {
-		...envelope,
-		teaserDetails: envelope.teaserDetails.split('•')[0]?.trim() ?? envelope.teaserDetails,
-	};
-}
-
 function resolveFooterVariant(
 	sectionStyles: { footer?: { variant?: ThemePreset } } | undefined,
 	themePreset: ThemePreset,
@@ -129,84 +96,6 @@ function resolveFooterVariant(
 		return sectionStyles.footer.variant;
 	}
 	return themePreset;
-}
-
-function hasRenderableSection(
-	viewModel: InvitationViewModel,
-	section: keyof InvitationViewModel['sections'],
-): boolean {
-	return Boolean(viewModel.sections[section]);
-}
-
-function appendSectionWithInterludes(
-	items: InvitationRenderPlanItem[],
-	viewModel: InvitationViewModel,
-	section: keyof InvitationViewModel['sections'],
-): void {
-	items.push({ type: 'section', section });
-
-	for (const interlude of (viewModel.interludes ?? []).filter(
-		(i) => i.afterSection === section,
-	)) {
-		items.push(
-			interludeToRenderItem(interlude, viewModel.theme.preset ?? DEFAULT_THEME_PRESET),
-		);
-	}
-}
-
-function interludeToRenderItem(
-	interlude: NonNullable<InvitationViewModel['interludes']>[number],
-	themePreset: ThemePreset,
-): InterludeRenderItem {
-	return {
-		type: 'interlude',
-		image: interlude.image,
-		alt: interlude.alt,
-		height: interlude.height,
-		variant: interlude.variant ?? themePreset,
-		focalPoint: interlude.focalPoint,
-		lightX: interlude.lightX,
-		lightY: interlude.lightY,
-		overlayOpacity: interlude.overlayOpacity,
-	};
-}
-
-export function buildInvitationRenderPlan(
-	viewModel: InvitationViewModel,
-	options?: {
-		hasGuestContext?: boolean;
-		isDemoPreview?: boolean;
-	},
-): InvitationRenderPlanItem[] {
-	const hasGuestContext = options?.hasGuestContext ?? false;
-	const isDemoPreview = options?.isDemoPreview ?? false;
-	const items: InvitationRenderPlanItem[] = [];
-	const showPersonalizedAccess = hasGuestContext || isDemoPreview;
-	const sectionOrder = viewModel.sectionOrder;
-
-	if (sectionOrder) {
-		for (const section of sectionOrder) {
-			if (section === 'personalizedAccess') {
-				items.push({ type: 'personalized-access' });
-				continue;
-			}
-
-			if (!hasRenderableSection(viewModel, section)) continue;
-			appendSectionWithInterludes(items, viewModel, section);
-		}
-	} else {
-		for (const section of CONTENT_SECTION_KEYS) {
-			if (!hasRenderableSection(viewModel, section)) continue;
-
-			if (section === 'rsvp' && showPersonalizedAccess) {
-				items.push({ type: 'personalized-access' });
-			}
-
-			appendSectionWithInterludes(items, viewModel, section);
-		}
-	}
-
-	return items;
 }
 
 function pickHeroValue(
@@ -220,117 +109,6 @@ function pickHeroValue(
 	);
 }
 
-function isConfirmedGuest(guestContext: InvitationGuestContext | null | undefined): boolean {
-	return guestContext?.guest.attendanceStatus === 'confirmed';
-}
-
-function isLunaEstrellaRoute(slug: string, eventType: string): boolean {
-	return slug === LUNA_ESTRELLA_ROUTE_SLUG && eventType === 'primera-comunion';
-}
-
-function removeLocationNavigation(
-	navigation: InvitationViewModel['navigation'],
-): InvitationViewModel['navigation'] {
-	return navigation?.filter(
-		(item) => item.href !== '#event-location' && item.href !== '#location',
-	);
-}
-
-function removeLocationFromSectionOrder(
-	sectionOrder: InvitationViewModel['sectionOrder'],
-): InvitationViewModel['sectionOrder'] {
-	return sectionOrder?.filter((section) => section !== 'location');
-}
-
-function applyLunaEstrellaRsvpOnlyLocation(
-	viewModel: InvitationViewModel,
-	guestContext: InvitationGuestContext | null | undefined,
-): InvitationViewModel {
-	const protectedLocation = viewModel.sections.location;
-	const revealedLocation =
-		protectedLocation?.visibility === 'after-rsvp' && isConfirmedGuest(guestContext)
-			? protectedLocation
-			: undefined;
-
-	const teaserDetails = viewModel.envelope.data?.teaserDetails;
-	const redactedTeaser = teaserDetails?.includes('•')
-		? (teaserDetails.split('•')[0]?.trim() ?? teaserDetails)
-		: undefined;
-
-	return {
-		...viewModel,
-		hero: viewModel.hero.venueName
-			? { ...viewModel.hero, venueName: undefined }
-			: viewModel.hero,
-		envelope: redactedTeaser
-			? {
-					...viewModel.envelope,
-					data: {
-						...viewModel.envelope.data!,
-						teaserDetails: redactedTeaser,
-					},
-				}
-			: viewModel.envelope,
-		sectionOrder: removeLocationFromSectionOrder(viewModel.sectionOrder),
-		navigation: removeLocationNavigation(viewModel.navigation),
-		sections: {
-			...viewModel.sections,
-			location: undefined,
-			rsvp: viewModel.sections.rsvp
-				? {
-						...viewModel.sections.rsvp,
-						revealedLocation,
-						enableResponseEditing: true,
-					}
-				: undefined,
-		},
-	};
-}
-
-function redactProtectedLocation(location: LocationSection): LocationSection {
-	return {
-		visibility: 'after-rsvp',
-		isLocked: true,
-		variant: location.variant,
-		showFlourishes: location.showFlourishes,
-		introEyebrow: location.introEyebrow,
-		introHeading: location.introHeading ?? 'Ubicación',
-		introLede: location.introLede,
-		indicationsHeading: '',
-		lockedTitle: 'Ubicación reservada',
-		lockedMessage:
-			'Por cuidado de la familia, los detalles del lugar se mostrarán después de confirmar asistencia.',
-		lockedCtaLabel: 'Confirmar asistencia',
-	};
-}
-
-function applyProtectedLocationRedaction(
-	viewModel: InvitationViewModel,
-	guestContext: InvitationGuestContext | null | undefined,
-	lunaEstrellaRoute: boolean,
-): InvitationViewModel {
-	if (lunaEstrellaRoute) {
-		return applyLunaEstrellaRsvpOnlyLocation(viewModel, guestContext);
-	}
-
-	const location = viewModel.sections.location;
-	if (!location || location.visibility !== 'after-rsvp' || isConfirmedGuest(guestContext)) {
-		return viewModel;
-	}
-
-	return {
-		...viewModel,
-		hero: {
-			...viewModel.hero,
-			venueName: undefined,
-		},
-		sections: {
-			...viewModel.sections,
-			location: redactProtectedLocation(location),
-		},
-	};
-}
-
 export function buildPageContextFromViewModel(input: {
 	viewModel: InvitationViewModel;
 	slug: string;
@@ -340,12 +118,12 @@ export function buildPageContextFromViewModel(input: {
 	isPreview?: boolean;
 }): InvitationPageContext {
 	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
-	const lunaEstrellaRoute = isLunaEstrellaRoute(slug, eventType);
-	const renderViewModel = applyProtectedLocationRedaction(
+	const renderViewModel = applyProtectedLocationRules({
 		viewModel,
-		guestContext,
-		lunaEstrellaRoute,
-	);
+		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
+		routeSlug: slug,
+		eventType,
+	});
 
 	renderViewModel.brandingVisibility = resolveBrandingVisibility({
 		isDemo: renderViewModel.isDemo,
@@ -367,6 +145,7 @@ export function buildPageContextFromViewModel(input: {
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
 	const isDemoPreview = isDemo && !guestContext;
+	const lunaEstrellaRoute = slug === 'luna-y-estrella' && eventType === 'primera-comunion';
 	const shouldRedactEnvelopeLocationTeaser =
 		Boolean(sections.location?.isLocked) ||
 		(lunaEstrellaRoute && viewModel.sections.location?.visibility === 'after-rsvp');
@@ -415,3 +194,6 @@ export function prepareInvitationPageContext(input: {
 		isPreview: Boolean(input.previewTheme),
 	});
 }
+
+export type { InterludeRenderItem, InvitationRenderPlanItem };
+export { buildInvitationRenderPlan } from './render-plan';
