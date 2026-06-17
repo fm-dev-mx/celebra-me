@@ -36,6 +36,8 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 - Treat Vercel/Linux path casing as deployment-sensitive.
 - Use SCSS for maintained styling; do not introduce Tailwind.
 - Use `package.json` as the source of truth for available commands.
+- Commits must use scoped Conventional Commits, e.g. `feat(editor): ...`, `fix(invitation): ...`,
+  `chore(agent): ...`. Do not commit directly to `main` or `develop`; use a feature branch.
 
 ## Domain Rules
 
@@ -48,6 +50,27 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 - Plan governance: `.agent/plans/README.md`
 
 Human-facing architecture and domain sources live under `docs/core/**` and `docs/domains/**`.
+
+## Architecture
+
+- **Framework**: Astro 6 SSR (`output: 'server'`) with Vercel adapter.
+- **Content collections**: `events`, `event-demos`, `event-templates` loaded from JSON files under
+  `src/content/` via `astro:content`.
+- **Path aliases** (both tsconfig and Vite): `@/*` → `src/*`, plus `@components/`, `@lib/`,
+  `@utils/`, `@styles/`, `@api/`, `@assets/`, `@content/`, `@data/`, `@hooks/`, `@images/`,
+  `@interfaces/`, `@layouts/`. TSX imports must use `@/*` (relative imports are forbidden by
+  ESLint).
+- **Key directories**:
+  - `src/pages/` — all routes (public, dashboard, API)
+  - `src/lib/` — domain logic, services, adapters, schemas (server-side)
+  - `src/components/` — Astro components and React islands (`client:*`)
+  - `supabase/migrations/` — versioned SQL schema changes
+- **UI copy**: Spanish. Code, identifiers, and technical comments: English. (See Non-Negotiable
+  Rules above.)
+- **Server/client boundary**: Keep server-only logic in `src/lib/` or API routes; client islands
+  must not import server-only modules. (See Non-Negotiable Rules above.)
+- **Slug distinction**: Content slugs, route slugs, and `_assetSlug` may differ. Do not assume
+  `_assetSlug === slug`. See `.agent/rules/invitation-production.md`.
 
 ## Validation Selection
 
@@ -64,6 +87,24 @@ that proves the change:
 
 Do not run production database commands unless the user explicitly asks for that exact production
 operation.
+
+## Key Commands
+
+| Command                                | Purpose                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `pnpm dev`                             | start Astro dev server                                                              |
+| `pnpm build`                           | `astro check && astro build` — type-check then build                                |
+| `pnpm type-check`                      | `astro check`                                                                       |
+| `pnpm lint`                            | ESLint across the repo                                                              |
+| `pnpm test`                            | Jest suite                                                                          |
+| `pnpm test -- tests/path/file.test.ts` | single Jest test file                                                               |
+| `pnpm test -- --coverage`              | Jest with coverage                                                                  |
+| `pnpm test:e2e`                        | Playwright E2E suite                                                                |
+| `pnpm run ci`                          | full pre-PR gate (type-check → lint → stylelint → governance → parity → unit → e2e) |
+| `pnpm ops <command>`                   | repo ops dispatcher (`check-links`, `validate-schema`, etc.)                        |
+
+`pnpm db:push` is intentionally blocked. See README.md and `docs/database-workflow.md` for DB
+commands.
 
 ## Final Report
 
