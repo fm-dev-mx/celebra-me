@@ -1,6 +1,7 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
+import type { EventContentEntry } from '@/lib/content/events';
 
 export const lunaYEstrellaContent = {
 	eventType: 'primera-comunion',
@@ -60,7 +61,7 @@ export const lunaYEstrellaContent = {
 	},
 	location: {
 		visibility: 'after-rsvp',
-		introHeading: 'Lugar de la celebración',
+		introHeading: 'Detalles de la celebración',
 		indicationsHeading: '',
 		venues: [
 			{
@@ -86,7 +87,7 @@ export const lunaYEstrellaContent = {
 		confirmationMode: 'api',
 		responseMessages: {
 			confirmed: {
-				title: 'Gracias por acompañarnos, {guestName}.',
+				title: 'Gracias por confirmar',
 				subtitle: 'Su confirmación ha sido registrada.',
 			},
 			declined: {
@@ -128,7 +129,7 @@ function buildAnonymousLunaPageModel() {
 	const viewModel = adaptEvent({
 		id: 'event-published/primera-comunion/luna-y-estrella',
 		data: parsedContent,
-	} as EventEntry);
+	} as EventContentEntry);
 
 	return buildPageContextFromViewModel({
 		viewModel,
@@ -136,8 +137,6 @@ function buildAnonymousLunaPageModel() {
 		eventType: 'primera-comunion',
 	});
 }
-
-type EventEntry = Parameters<typeof adaptEvent>[0];
 
 describe('Luna y Estrella Primera Comunión published content', () => {
 	it('validates the target DB-published content against eventContentSchema', () => {
