@@ -44,6 +44,18 @@ export function getVisibleViewportBounds({
 	};
 }
 
+/**
+ * Schedule a callback to run two animation frames after the current paint.
+ * Useful for layout settling after DOM mutations (e.g. after a re-render
+ * that shifts element positions).
+ */
+export function doubleRaf(callback: () => void): number {
+	const id = requestAnimationFrame(() => {
+		return requestAnimationFrame(callback);
+	});
+	return id;
+}
+
 export function getCardAwareScrollTop(
 	element: HTMLElement,
 	options: VisibleViewportBoundsOptions = {},

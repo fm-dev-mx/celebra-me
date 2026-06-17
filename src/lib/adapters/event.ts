@@ -457,15 +457,18 @@ function buildItinerarySectionData(context: AdaptationContext) {
 	};
 }
 
-function buildRsvpSectionData(context: AdaptationContext, eventSlug: string) {
+function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 	const { data, normalizedPreset } = context;
 	if (!data.rsvp) return undefined;
+	const eventStartsAt = data.eventTiming?.startsAtUtc ?? data.hero.date;
 	return {
 		...data.rsvp,
-		eventSlug,
+		eventSlug: entrySlug,
 		eventType: data.eventType,
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
 		labels: data.sectionStyles?.rsvp?.labels,
+		eventStartsAt,
+		eventTimeZone: data.eventTiming?.timeZone,
 	};
 }
 
