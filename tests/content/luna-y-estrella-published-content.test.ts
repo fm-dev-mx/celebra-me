@@ -1,4 +1,6 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { adaptEvent } from '@/lib/adapters/event';
+import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 
 export const lunaYEstrellaContent = {
 	eventType: 'primera-comunion',
@@ -32,7 +34,7 @@ export const lunaYEstrellaContent = {
 		secondaryName: 'Estrella Abigail',
 		label: 'Primera Comunión',
 		date: '2026-08-01T20:00:00.000Z',
-		backgroundImage: 'hero',
+		backgroundImage: '/images/events/luna-y-estrella/hero.jpg',
 		focalPoint: '50% 42%',
 	},
 	quote: {
@@ -56,7 +58,24 @@ export const lunaYEstrellaContent = {
 		title: 'Nos acercamos con alegría',
 		footerText: 'Sábado, 1 de agosto de 2026',
 	},
-	// Location intentionally omitted — this invitation has no venue details to display.
+	location: {
+		visibility: 'after-rsvp',
+		introHeading: 'Lugar de la celebración',
+		indicationsHeading: '',
+		venues: [
+			{
+				type: 'reception',
+				id: 'celebration',
+				venueEvent: 'Celebración',
+				venueName: 'Salón García',
+				address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+				date: 'Sábado, 1 de agosto de 2026',
+				time: '2:00 PM',
+				googleMapsUrl:
+					'https://www.google.com/maps/search/?api=1&query=Sal%C3%B3n%20Garc%C3%ADa%2C%20Victoriano%20Huerta%2051%2C%20Col.%20San%20Francisco%2C%20Uruapan',
+			},
+		],
+	},
 	rsvp: {
 		title: 'Confirma tu asistencia',
 		subcopy: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
@@ -80,7 +99,7 @@ export const lunaYEstrellaContent = {
 		message:
 			'Gracias por compartir con nosotras este día de fe. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.',
 		closingName: 'Luna y Estrella',
-		image: 'thankYouPortrait',
+		image: '/images/events/luna-y-estrella/thank-you.jpg',
 		focalPoint: '50% 50%',
 	},
 	envelope: {
@@ -98,11 +117,27 @@ export const lunaYEstrellaContent = {
 	sharing: {
 		whatsappTemplate:
 			'Hola {name}, con alegría les compartimos la invitación a la Primera Comunión de Luna y Estrella: {inviteUrl}',
-		ogImage: 'hero',
+		ogImage: '/images/events/luna-y-estrella/hero.jpg',
 		ogDescription:
 			'Acompáñenos en la Primera Comunión de Luna y Estrella el sábado, 1 de agosto de 2026.',
 	},
 };
+
+function buildAnonymousLunaPageModel() {
+	const parsedContent = eventContentSchema.parse(lunaYEstrellaContent);
+	const viewModel = adaptEvent({
+		id: 'event-published/primera-comunion/luna-y-estrella',
+		data: parsedContent,
+	} as EventEntry);
+
+	return buildPageContextFromViewModel({
+		viewModel,
+		slug: 'luna-y-estrella',
+		eventType: 'primera-comunion',
+	});
+}
+
+type EventEntry = Parameters<typeof adaptEvent>[0];
 
 describe('Luna y Estrella Primera Comunión published content', () => {
 	it('validates the target DB-published content against eventContentSchema', () => {
@@ -118,7 +153,8 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(result.data.isDemo).toBe(false);
 		expect(result.data.theme.preset).toBe('angelic-presence');
 		expect(result.data._assetSlug).toBe('luna-y-estrella-primera-comunion');
-		expect(result.data.location).toBeUndefined();
+		expect(result.data.location?.visibility).toBe('after-rsvp');
+		expect(result.data.location?.venues?.[0]?.venueName).toBe('Salón García');
 		expect(result.data.hero.name).toBe('Luna Yamileth');
 		expect(result.data.hero.secondaryName).toBe('Estrella Abigail');
 	});
@@ -139,18 +175,16 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(lunaYEstrellaContent.sectionOrder).not.toContain('gifts');
 	});
 
-	it('does not include excluded content blocks (including location)', () => {
-		expect(Object.hasOwn(lunaYEstrellaContent, 'location')).toBe(false);
+	it('keeps excluded standalone content blocks out of source content', () => {
 		expect(Object.hasOwn(lunaYEstrellaContent, 'gallery')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'itinerary')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'gifts')).toBe(false);
 		expect(Object.hasOwn(lunaYEstrellaContent, 'interludes')).toBe(false);
 	});
 
-	it('does not include excluded visible copy in serialized content (including location)', () => {
+	it('does not include excluded visible copy in serialized source content', () => {
 		const serialized = JSON.stringify(lunaYEstrellaContent).toLowerCase();
 
-		expect(serialized).not.toContain('ubicación');
 		expect(serialized).not.toContain('código de vestimenta');
 		expect(serialized).not.toContain('dress code');
 		expect(serialized).not.toContain('itinerario');
@@ -158,6 +192,23 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(serialized).not.toContain('mesa de regalos');
 		expect(serialized).not.toContain('padrinos');
 		expect(serialized).not.toContain('misa');
+	});
+
+	it('does not leak protected location into the anonymous rendered page model', () => {
+		const context = buildAnonymousLunaPageModel();
+		const serialized = JSON.stringify(context.viewModel);
+
+		expect(context.viewModel.sections.location).toBeUndefined();
+		expect(context.viewModel.sections.rsvp?.revealedLocation).toBeUndefined();
+		expect(context.viewModel.sectionOrder).not.toContain('location');
+		expect(context.viewModel.navigation).not.toContainEqual(
+			expect.objectContaining({ href: '#event-location' }),
+		);
+		expect(context.heroVenueName).toBeUndefined();
+		expect(context.envelope?.teaserDetails).not.toContain('Salón García');
+		expect(serialized).not.toContain('Salón García');
+		expect(serialized).not.toContain('Victoriano Huerta');
+		expect(serialized).not.toContain('google.com/maps');
 	});
 
 	it('does not include Leah Lexa or demo baby-shower source details', () => {
