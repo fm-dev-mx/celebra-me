@@ -6,15 +6,17 @@ import { getCardAwareScrollTop } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
-import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
 	getDefaultRsvpSubcopy,
+	type RsvpResponseMessages,
+	type WhatsAppConfig,
+} from '@/components/invitation/rsvp-logic';
+import {
 	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
-	type WhatsAppConfig,
 	type RevealedLocation,
 } from '@/components/invitation/RSVPComponents';
 

@@ -20,10 +20,9 @@ import type { LocationSection } from '@/lib/adapters/types';
 export {
 	buildWhatsAppUrl,
 	resolveLabels,
-	normalizeGuestCount,
 	getDefaultRsvpSubcopy,
 } from '@/components/invitation/rsvp-logic';
-export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
+export type { WhatsAppConfig } from '@/components/invitation/rsvp-logic';
 export type RevealedLocation = LocationSection;
 
 // --- Sub-components ---
@@ -236,8 +235,8 @@ export const SubmittedState = forwardRef<
 			header={<RsvpStatusHeader title={title} />}
 		>
 			<div
-				className="rsvp__status rsvp__greeting"
 				ref={ref}
+				className="rsvp__status rsvp__greeting"
 				tabIndex={-1}
 				role="status"
 				aria-live="polite"
@@ -396,61 +395,6 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onBlur,
 	} = props;
 
-	const nameFieldProps = {
-		nameLocked,
-		touched,
-		errors,
-		nameLabel,
-		name,
-		nameRef,
-		prefersReducedMotion,
-		onNameChange,
-		onBlur,
-	};
-
-	const phoneFieldProps = {
-		showPhoneField,
-		touched,
-		errors,
-		phoneLabel,
-		phone,
-		countryCode,
-		phoneRef,
-		prefersReducedMotion,
-		onPhoneChange,
-		onCountryCodeChange,
-		onBlur,
-	};
-
-	const attendanceFieldProps = {
-		touched,
-		errors,
-		attendanceLabel,
-		attendanceStatus,
-		attendanceRef,
-		prefersReducedMotion,
-		onAttendanceChange,
-		onBlur,
-	};
-
-	const confirmedFieldsProps = {
-		attendanceStatus,
-		prefersReducedMotion,
-		supportsPlusOnes,
-		touched,
-		errors,
-		guestCountLabel,
-		effectiveGuestCap,
-		guestCountRef,
-		attendeeCount,
-		notes,
-		notesLabel,
-		notesPlaceholder,
-		onGuestCountChange,
-		onNotesChange,
-		onBlur,
-	};
-
 	return (
 		<RsvpShell
 			ref={ref}
@@ -469,12 +413,59 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
 				{showIdentityFields && (
 					<div className="rsvp__grid">
-						<NameField {...nameFieldProps} />
-						<PhoneField {...phoneFieldProps} />
+						<NameField
+							nameLocked={nameLocked}
+							touched={touched}
+							errors={errors}
+							nameLabel={nameLabel}
+							name={name}
+							nameRef={nameRef}
+							prefersReducedMotion={prefersReducedMotion}
+							onNameChange={onNameChange}
+							onBlur={onBlur}
+						/>
+						<PhoneField
+							showPhoneField={showPhoneField}
+							touched={touched}
+							errors={errors}
+							phoneLabel={phoneLabel}
+							phone={phone}
+							countryCode={countryCode}
+							phoneRef={phoneRef}
+							prefersReducedMotion={prefersReducedMotion}
+							onPhoneChange={onPhoneChange}
+							onCountryCodeChange={onCountryCodeChange}
+							onBlur={onBlur}
+						/>
 					</div>
 				)}
-				<AttendanceField {...attendanceFieldProps} />
-				<ConfirmedFields {...confirmedFieldsProps} />
+				<AttendanceField
+					touched={touched}
+					errors={errors}
+					attendanceLabel={attendanceLabel}
+					attendanceStatus={attendanceStatus}
+					attendanceRef={attendanceRef}
+					prefersReducedMotion={prefersReducedMotion}
+					onAttendanceChange={onAttendanceChange}
+					onBlur={onBlur}
+				/>
+				<ConfirmedFields
+					attendanceStatus={attendanceStatus}
+					prefersReducedMotion={prefersReducedMotion}
+					supportsPlusOnes={supportsPlusOnes}
+					touched={touched}
+					errors={errors}
+					guestCountLabel={guestCountLabel}
+					effectiveGuestCap={effectiveGuestCap}
+					guestCountRef={guestCountRef}
+					attendeeCount={attendeeCount}
+					notes={notes}
+					notesLabel={notesLabel}
+					notesPlaceholder={notesPlaceholder}
+					onGuestCountChange={onGuestCountChange}
+					onNotesChange={onNotesChange}
+					onBlur={onBlur}
+				/>
 				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">
 					{errors.global && (
 						<p className="rsvp__error" role="alert">
