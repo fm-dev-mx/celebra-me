@@ -36,10 +36,10 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 	},
 };
 
-type GalleryVariant = keyof typeof strategies;
+type LayoutVariant = keyof typeof strategies;
 
 export function getLayoutClass(index: number, variant?: string): LayoutClass {
-	const strategy = strategies[variant as GalleryVariant];
+	const strategy = strategies[variant as LayoutVariant];
 
 	if (!strategy) {
 		return STANDARD;
