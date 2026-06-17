@@ -14,6 +14,7 @@ export default [
 		ignores: [
 			'dist/',
 			'node_modules/',
+			'.opencode/',
 			'.astro/',
 			'.vercel/',
 			'.build/',
