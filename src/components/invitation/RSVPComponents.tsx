@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
 import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
+import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import {
+	getDefaultResponseMessages,
 	interpolateRsvpMessage,
-	RSVP_DEFAULT_RESPONSE_MESSAGES,
 	type AttendanceStatus,
 	type RsvpResponseMessages,
 } from '@/components/invitation/rsvp-logic';
@@ -50,6 +51,7 @@ const RsvpShell = forwardRef<
 		</section>
 	);
 });
+RsvpShell.displayName = 'RsvpShell';
 
 function RsvpVisibleHeader({
 	title,
@@ -71,10 +73,12 @@ function RsvpVisibleHeader({
 		</>
 	);
 }
+RsvpVisibleHeader.displayName = 'RsvpVisibleHeader';
 
 function RsvpStatusHeader({ title }: { title: string }) {
 	return <h2 className="sr-only">{title}</h2>;
 }
+RsvpStatusHeader.displayName = 'RsvpStatusHeader';
 
 export function SubmitButtonText({
 	submitStatus,
@@ -90,6 +94,7 @@ export function SubmitButtonText({
 	if (attendanceStatus === 'declined') return 'ENVIAR RESPUESTA';
 	return buttonLabel;
 }
+SubmitButtonText.displayName = 'SubmitButtonText';
 
 export function LockedPreview({ title, variant }: { title: string; variant?: string }) {
 	return (
@@ -111,17 +116,18 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 		</RsvpShell>
 	);
 }
+LockedPreview.displayName = 'LockedPreview';
 
 function resolveGreetingMessages(
 	attendanceStatus: AttendanceStatus,
 	responseMessages: RsvpResponseMessages | undefined,
 	name: string,
 	celebrantName?: string,
+	eventType?: string,
 ): { title: string; subtitle: string } {
-	const isConfirmed = attendanceStatus === 'confirmed';
 	const vars = { guestName: name, celebrantName };
-	const statusKey = isConfirmed ? 'confirmed' : 'declined';
-	const defaults = RSVP_DEFAULT_RESPONSE_MESSAGES[statusKey];
+	const statusKey = attendanceStatus === 'confirmed' ? 'confirmed' : 'declined';
+	const defaults = getDefaultResponseMessages(eventType, statusKey);
 	const custom = responseMessages?.[statusKey];
 
 	return {
@@ -184,6 +190,7 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 		</div>
 	);
 }
+RevealedLocationBlock.displayName = 'RevealedLocationBlock';
 
 export const SubmittedState = forwardRef<
 	HTMLDivElement,
@@ -221,12 +228,14 @@ export const SubmittedState = forwardRef<
 		onChangeResponse,
 	} = props;
 
+	const { eventType } = useRsvpContext();
 	const isConfirmed = attendanceStatus === 'confirmed';
 	const { title: greetingTitle, subtitle: greetingSubtitle } = resolveGreetingMessages(
 		attendanceStatus,
 		responseMessages,
 		name,
 		celebrantName,
+		eventType,
 	);
 
 	return (

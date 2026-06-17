@@ -66,7 +66,7 @@ export function interpolateRsvpMessage(
 		.replaceAll('{celebrantName}', variables.celebrantName ?? '');
 }
 
-export const RSVP_DEFAULT_RESPONSE_MESSAGES = {
+const RSVP_DEFAULT_RESPONSE_MESSAGES = {
 	confirmed: {
 		title: '¡Gracias por confirmar, {guestName}!',
 		subtitle: 'Tu confirmación ha sido registrada.',
@@ -76,6 +76,34 @@ export const RSVP_DEFAULT_RESPONSE_MESSAGES = {
 		subtitle: 'Gracias por avisarnos.',
 	},
 } as const;
+
+const DEFAULT_RESPONSE_MESSAGES_BY_EVENT_TYPE: Partial<
+	Record<
+		string,
+		{
+			confirmed?: { title: string; subtitle: string };
+			declined?: { title: string; subtitle: string };
+		}
+	>
+> = {
+	'primera-comunion': {
+		confirmed: {
+			title: 'Confirmación recibida',
+			subtitle:
+				'Tu asistencia ha quedado registrada. Será un honor compartir este día contigo.',
+		},
+	},
+};
+
+export function getDefaultResponseMessages(
+	eventType: string | undefined,
+	statusKey: 'confirmed' | 'declined',
+): { title: string; subtitle: string } {
+	const eventDefaults = eventType
+		? DEFAULT_RESPONSE_MESSAGES_BY_EVENT_TYPE[eventType]
+		: undefined;
+	return eventDefaults?.[statusKey] ?? RSVP_DEFAULT_RESPONSE_MESSAGES[statusKey];
+}
 
 export function resolveLabels(
 	labels?: {
