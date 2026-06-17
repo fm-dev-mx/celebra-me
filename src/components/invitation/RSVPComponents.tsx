@@ -17,6 +17,8 @@ import {
 import { CheckSealIcon } from '@/components/common/icons/invitation/CheckSeal';
 import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak';
 import type { LocationSection } from '@/lib/adapters/types';
+import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
+import { buildCalendarEventInput } from '@/lib/calendar/build-calendar-event-input';
 
 export {
 	buildWhatsAppUrl,
@@ -80,7 +82,7 @@ function RsvpStatusHeader({ title }: { title: string }) {
 }
 RsvpStatusHeader.displayName = 'RsvpStatusHeader';
 
-export function SubmitButtonText({
+function SubmitButtonText({
 	submitStatus,
 	buttonLabel,
 	attendanceStatus,
@@ -209,6 +211,9 @@ export const SubmittedState = forwardRef<
 		revealedLocation?: RevealedLocation;
 		enableResponseEditing?: boolean;
 		onChangeResponse?: () => void;
+		eventStartsAt?: string;
+		eventTimeZone?: string;
+		eventSlug?: string;
 	}
 >((props, ref) => {
 	const {
@@ -226,6 +231,9 @@ export const SubmittedState = forwardRef<
 		revealedLocation,
 		enableResponseEditing = false,
 		onChangeResponse,
+		eventStartsAt,
+		eventTimeZone,
+		eventSlug,
 	} = props;
 
 	const { eventType } = useRsvpContext();
@@ -265,6 +273,18 @@ export const SubmittedState = forwardRef<
 
 				{isConfirmed && revealedLocation && (
 					<RevealedLocationBlock location={revealedLocation} />
+				)}
+
+				{isConfirmed && (
+					<AddToCalendarButton
+						eventData={buildCalendarEventInput({
+							title: celebrantName || title,
+							startsAt: eventStartsAt,
+							timezone: eventTimeZone,
+							revealedLocation,
+							fileName: eventSlug,
+						})}
+					/>
 				)}
 
 				{showWhatsAppCta && (

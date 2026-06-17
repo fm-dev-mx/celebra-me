@@ -264,6 +264,8 @@ export interface InvitationViewModel {
 			variant?: SharedSectionVariant;
 			revealedLocation?: LocationSection;
 			enableResponseEditing?: boolean;
+			eventStartsAt?: string;
+			eventTimeZone?: string;
 			labels?: {
 				name?: string;
 				guestCount?: string;

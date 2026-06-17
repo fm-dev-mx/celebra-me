@@ -2,7 +2,7 @@ import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import { rsvpApi } from '@/lib/client/rsvp-api';
-import { getCardAwareScrollTop } from '@/lib/dom/viewport';
+import { getCardAwareScrollTop, doubleRaf } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -52,6 +52,8 @@ interface RSVPProps {
 	isDemoPreview?: boolean;
 	revealedLocation?: RevealedLocation;
 	enableResponseEditing?: boolean;
+	eventStartsAt?: string;
+	eventTimeZone?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -124,6 +126,8 @@ const RSVP: React.FC<RSVPProps> = ({
 	isDemoPreview,
 	revealedLocation,
 	enableResponseEditing = false,
+	eventStartsAt,
+	eventTimeZone,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const successRef = useRef<HTMLDivElement>(null);
@@ -197,14 +201,12 @@ const RSVP: React.FC<RSVPProps> = ({
 			cancelAnimationFrame(recenterRef.current);
 		}
 
-		recenterRef.current = requestAnimationFrame(() => {
-			recenterRef.current = requestAnimationFrame(() => {
-				const section = sectionRef.current;
-				if (section) {
-					scrollRsvpCardIntoView(section, prefersReducedMotion ? 'auto' : 'smooth');
-				}
-				recenterRef.current = null;
-			});
+		recenterRef.current = doubleRaf(() => {
+			const section = sectionRef.current;
+			if (section) {
+				scrollRsvpCardIntoView(section, prefersReducedMotion ? 'auto' : 'smooth');
+			}
+			recenterRef.current = null;
 		});
 	}, [prefersReducedMotion]);
 
@@ -369,6 +371,9 @@ const RSVP: React.FC<RSVPProps> = ({
 							onWhatsAppClick={() => {
 								void handleWhatsAppClick();
 							}}
+							eventStartsAt={eventStartsAt}
+							eventTimeZone={eventTimeZone}
+							eventSlug={eventSlug}
 						/>
 					</motion.div>
 				) : (
