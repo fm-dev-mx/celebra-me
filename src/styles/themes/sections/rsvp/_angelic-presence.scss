@@ -28,6 +28,8 @@
 	--rsvp-title-color: var(--color-sacred-gold);
 	--rsvp-title-letter-spacing: 0.01em;
 	--rsvp-radius-card: 8px;
+	--rsvp-greeting-padding: 1.5rem 0;
+	--rsvp-greeting-icon-size: 40px;
 
 	background:
 		radial-gradient(circle at 50% 0%, rgb(var(--color-sacred-gold-rgb) / 9%), transparent 62%),
@@ -169,9 +171,10 @@
 	.rsvp__revealed-location {
 		background: rgb(var(--color-pure-ivory-rgb) / 78%);
 		border: var(--border-fine-gold);
-		border-radius: var(--rsvp-radius-card);
+		border-left: 3px solid rgb(var(--color-sacred-gold-rgb) / 40%);
+		border-radius: 0 var(--rsvp-radius-card) var(--rsvp-radius-card) 0;
 		box-shadow: var(--angelic-soft-shadow);
-		padding: clamp(1.1rem, 3vw, 1.5rem);
+		padding: clamp(1rem, 3vw, 1.35rem);
 		margin-block: 1.15rem 0.5rem;
 	}
 
@@ -209,18 +212,33 @@
 
 	.rsvp__revealed-location-name {
 		font-family: var(--font-display);
-		font-size: clamp(1.35rem, 4vw, 1.75rem);
+		font-size: clamp(1.45rem, 4.5vw, 1.85rem);
 		line-height: 1.2;
-		color: var(--color-eternal-ink);
+		color: var(--color-sacred-gold);
 		margin-bottom: 0.35rem;
 	}
 
-	.rsvp__revealed-location-address,
-	.rsvp__revealed-location-time {
+	.rsvp__revealed-location-address {
 		font-family: var(--font-body);
 		font-size: 0.85rem;
 		line-height: 1.5;
 		color: rgb(var(--color-eternal-ink-rgb) / 64%);
+		margin-bottom: 0.45rem;
+	}
+
+	.rsvp__revealed-location-time {
+		display: inline-block;
+		font-family: var(--font-label);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		line-height: 1;
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		background: rgb(var(--color-sacred-gold-rgb) / 10%);
+		padding: 0.3rem 0.75rem;
+		border-radius: 999px;
+		width: fit-content;
+		margin-top: 0.15rem;
 	}
 
 	.rsvp__revealed-location-link {
@@ -275,12 +293,14 @@
 	/* ---- Greeting (confirmed / declined state) ---- */
 
 	.rsvp__greeting-icon {
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
+		color: var(--color-sacred-gold);
 	}
 
 	.rsvp__greeting-icon svg {
-		width: 48px;
-		height: 48px;
+		width: var(--rsvp-greeting-icon-size);
+		height: var(--rsvp-greeting-icon-size);
+		filter: drop-shadow(0 2px 6px rgb(var(--color-sacred-gold-rgb) / 24%));
 	}
 
 	.rsvp__greeting-message {
@@ -289,31 +309,37 @@
 	}
 
 	.rsvp__greeting-message-body {
-		margin-block: 0.5rem 0;
+		margin-block: 0.65rem 0;
+		padding-top: 0.75rem;
+		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+		max-width: 65%;
+		margin-inline: auto;
 	}
 
 	.rsvp__greeting-submessage {
 		font-size: 0.82rem;
 		line-height: 1.5;
 		color: rgb(var(--color-eternal-ink-rgb) / 52%);
-		margin-top: 0.3rem;
+		margin-top: 0.5rem;
 	}
 
 	/* ---- Tertiary edit-response button ---- */
 
 	.rsvp__edit-response {
-		margin-top: 0.85rem;
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 10%);
 	}
 
 	.rsvp__edit-response .rsvp__secondary-button {
 		border-color: transparent;
 		background: transparent;
-		color: rgb(var(--color-eternal-ink-rgb) / 36%);
+		color: rgb(var(--color-eternal-ink-rgb) / 48%);
 		font-size: 0.68rem;
 		letter-spacing: 0.06em;
 		min-height: 1.75rem;
 		padding: 0.35rem 0.75rem;
-		font-weight: 500;
+		font-weight: 600;
 
 		&:hover {
 			color: rgb(var(--color-eternal-ink-rgb) / 60%);
@@ -334,13 +360,11 @@
 	/* ---- 400px-and-under mobile density ---- */
 
 	@media (width <= 400px) {
-		.rsvp__greeting-icon {
-			margin-bottom: 0.5rem;
-		}
+		--rsvp-greeting-padding: 1.25rem 0;
+		--rsvp-greeting-icon-size: 36px;
 
-		.rsvp__greeting-icon svg {
-			width: 40px;
-			height: 40px;
+		.rsvp__greeting-icon {
+			margin-bottom: 0.35rem;
 		}
 
 		.rsvp__greeting-message {
@@ -349,12 +373,20 @@
 
 		.rsvp__greeting-message-body {
 			font-size: 0.88rem;
-			margin-block: 0.35rem 0;
+			margin-block: 0.45rem 0;
+			padding-top: 0.55rem;
+			max-width: 75%;
+		}
+
+		.rsvp__greeting-submessage {
+			margin-top: 0.35rem;
+			font-size: 0.8rem;
 		}
 
 		.rsvp__revealed-location {
 			padding: 0.85rem;
 			margin-block: 0.75rem 0.35rem;
+			border-left-width: 2px;
 		}
 
 		.rsvp__revealed-location-title {
@@ -367,12 +399,16 @@
 		}
 
 		.rsvp__revealed-location-name {
-			font-size: clamp(1.15rem, 4vw, 1.3rem);
+			font-size: clamp(1.2rem, 4vw, 1.35rem);
 		}
 
-		.rsvp__revealed-location-address,
-		.rsvp__revealed-location-time {
+		.rsvp__revealed-location-address {
 			font-size: 0.82rem;
+		}
+
+		.rsvp__revealed-location-time {
+			font-size: 0.68rem;
+			padding: 0.25rem 0.65rem;
 		}
 
 		.rsvp__revealed-location-link {
@@ -383,6 +419,7 @@
 
 		.rsvp__edit-response {
 			margin-top: 0.6rem;
+			padding-top: 0.55rem;
 		}
 	}
 }
