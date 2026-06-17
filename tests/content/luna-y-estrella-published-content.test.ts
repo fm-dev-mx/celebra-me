@@ -210,6 +210,39 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(serialized).not.toContain('google.com/maps');
 	});
 
+	it('reveals location to confirmed guests with default response editing', () => {
+		const parseResult = eventContentSchema.safeParse(lunaYEstrellaContent);
+		expect(parseResult.success).toBe(true);
+		const viewModel = adaptEvent({
+			id: 'event-published/primera-comunion/luna-y-estrella',
+			data: parseResult.data!,
+		} as EventContentEntry);
+
+		const confirmedContext = buildPageContextFromViewModel({
+			viewModel,
+			slug: 'luna-y-estrella',
+			eventType: 'primera-comunion',
+			guestContext: {
+				inviteId: 'mock-invite-uuid',
+				eventType: 'primera-comunion',
+				eventSlug: 'luna-y-estrella',
+				eventTitle: 'Primera Comunión de Luna y Estrella',
+				guest: {
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Nos vemos',
+					hideCelebraMeBranding: false,
+				},
+			},
+		});
+
+		expect(confirmedContext.viewModel.sections.rsvp?.allowResponseEditing).toBeUndefined();
+		expect(confirmedContext.viewModel.sections.rsvp?.revealedLocation).toBeDefined();
+		expect(confirmedContext.viewModel.sections.location).toBeUndefined();
+	});
+
 	it('does not include Leah Lexa or demo baby-shower source details', () => {
 		const serialized = JSON.stringify(lunaYEstrellaContent).toLowerCase();
 

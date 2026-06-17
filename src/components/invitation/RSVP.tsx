@@ -1,7 +1,7 @@
 import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
-import { rsvpApi } from '@/lib/client/rsvp-api';
+import { useGatedLocation } from '@/hooks/use-gated-location';
 import { getCardAwareScrollTop, doubleRaf } from '@/lib/dom/viewport';
 import '@/styles/invitation/_rsvp.scss';
 
@@ -10,6 +10,7 @@ import {
 	resolveLabels,
 	buildWhatsAppUrl,
 	getDefaultRsvpSubcopy,
+	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	type RsvpResponseMessages,
 	type WhatsAppConfig,
 } from '@/components/invitation/rsvp-logic';
@@ -51,7 +52,7 @@ interface RSVPProps {
 	};
 	isDemoPreview?: boolean;
 	revealedLocation?: RevealedLocation;
-	enableResponseEditing?: boolean;
+	allowResponseEditing?: boolean;
 	eventStartsAt?: string;
 	eventTimeZone?: string;
 }
@@ -125,14 +126,13 @@ const RSVP: React.FC<RSVPProps> = ({
 	initialGuestData,
 	isDemoPreview,
 	revealedLocation,
-	enableResponseEditing = false,
+	allowResponseEditing = ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	eventStartsAt,
 	eventTimeZone,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const successRef = useRef<HTMLDivElement>(null);
 	const sectionRef = useRef<HTMLElement>(null);
-	const locationFetchAttemptedRef = useRef(false);
 	const [isEditingResponse, setIsEditingResponse] = useState(false);
 
 	const {
@@ -189,7 +189,8 @@ const RSVP: React.FC<RSVPProps> = ({
 		attendanceStatus === 'confirmed' &&
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
-	const locationInviteId = initialGuestData?.inviteId || responseInviteId;
+	const initialInviteId = initialGuestData?.inviteId?.trim();
+	const locationInviteId = initialInviteId || responseInviteId;
 
 	/* ----- scheduled RSVP recenter ----- */
 	const recenterRef = useRef<number | null>(null);
@@ -255,45 +256,12 @@ const RSVP: React.FC<RSVPProps> = ({
 		scrollRsvpCardIntoView(successRef.current, prefersReducedMotion ? 'auto' : 'smooth');
 	}, [submitted, prefersReducedMotion]);
 
-	const [clientRevealedLocation, setClientRevealedLocation] = useState<
-		RevealedLocation | undefined
-	>(revealedLocation);
-
-	useEffect(() => {
-		if (!enableResponseEditing || !submitted) return;
-
-		if (attendanceStatus === 'declined') {
-			setClientRevealedLocation(undefined);
-			return;
-		}
-
-		if (attendanceStatus !== 'confirmed' || !locationInviteId) {
-			return;
-		}
-
-		if (revealedLocation) {
-			setClientRevealedLocation(revealedLocation);
-			return;
-		}
-
-		if (locationFetchAttemptedRef.current) return;
-		locationFetchAttemptedRef.current = true;
-
-		let cancelled = false;
-		void rsvpApi
-			.getGatedLocation(locationInviteId)
-			.then((payload) => {
-				if (cancelled) return;
-				setClientRevealedLocation(payload.location);
-			})
-			.catch(() => {
-				locationFetchAttemptedRef.current = false;
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [attendanceStatus, enableResponseEditing, locationInviteId, revealedLocation, submitted]);
+	const { location: resolvedLocation, error: locationError } = useGatedLocation({
+		inviteId: locationInviteId,
+		isConfirmed: attendanceStatus === 'confirmed',
+		isDemoPreview,
+		serverProvidedLocation: revealedLocation,
+	});
 
 	/* ----- cleanup ----- */
 	useEffect(() => {
@@ -357,8 +325,9 @@ const RSVP: React.FC<RSVPProps> = ({
 							confirmationMessage={confirmationMessage}
 							celebrantName={celebrantName}
 							responseMessages={responseMessages}
-							revealedLocation={revealedLocation ?? clientRevealedLocation}
-							enableResponseEditing={enableResponseEditing}
+							revealedLocation={resolvedLocation}
+							locationError={locationError}
+							allowResponseEditing={allowResponseEditing}
 							onChangeResponse={handleChangeResponse}
 							showWhatsAppCta={showWhatsAppCta}
 							whatsAppUrl={buildWhatsAppUrl({

@@ -5,6 +5,7 @@ import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import {
 	getDefaultResponseMessages,
 	interpolateRsvpMessage,
+	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	type AttendanceStatus,
 	type RsvpResponseMessages,
 } from '@/components/invitation/rsvp-logic';
@@ -209,7 +210,8 @@ export const SubmittedState = forwardRef<
 		onWhatsAppClick: () => void;
 		responseMessages?: RsvpResponseMessages;
 		revealedLocation?: RevealedLocation;
-		enableResponseEditing?: boolean;
+		locationError?: string;
+		allowResponseEditing?: boolean;
 		onChangeResponse?: () => void;
 		eventStartsAt?: string;
 		eventTimeZone?: string;
@@ -229,7 +231,8 @@ export const SubmittedState = forwardRef<
 		onFocusCapture,
 		responseMessages,
 		revealedLocation,
-		enableResponseEditing = false,
+		locationError,
+		allowResponseEditing = ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 		onChangeResponse,
 		eventStartsAt,
 		eventTimeZone,
@@ -275,6 +278,12 @@ export const SubmittedState = forwardRef<
 					<RevealedLocationBlock location={revealedLocation} />
 				)}
 
+				{isConfirmed && !revealedLocation && locationError && (
+					<p className="rsvp__greeting-submessage rsvp__location-error">
+						{locationError}
+					</p>
+				)}
+
 				{isConfirmed && (
 					<AddToCalendarButton
 						eventData={buildCalendarEventInput({
@@ -315,7 +324,7 @@ export const SubmittedState = forwardRef<
 					</div>
 				)}
 
-				{enableResponseEditing && onChangeResponse && (
+				{allowResponseEditing && onChangeResponse && (
 					<div className="rsvp__edit-response">
 						<button
 							type="button"

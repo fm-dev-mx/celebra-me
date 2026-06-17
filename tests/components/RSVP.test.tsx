@@ -1182,7 +1182,7 @@ describe('RSVP Component', () => {
 					guestComment: 'Nos vemos pronto',
 				},
 				revealedLocation,
-				enableResponseEditing: true,
+				allowResponseEditing: true,
 			});
 
 			const status = await screen.findByRole('status');
@@ -1209,7 +1209,7 @@ describe('RSVP Component', () => {
 					guestComment: 'Nos vemos pronto',
 				},
 				revealedLocation,
-				enableResponseEditing: true,
+				allowResponseEditing: true,
 			});
 
 			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
@@ -1240,7 +1240,7 @@ describe('RSVP Component', () => {
 					guestComment: '',
 				},
 				revealedLocation,
-				enableResponseEditing: true,
+				allowResponseEditing: true,
 			});
 
 			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
@@ -1251,6 +1251,180 @@ describe('RSVP Component', () => {
 				expect(screen.getByRole('status')).toBeInTheDocument();
 			});
 			expect(screen.queryByText(/Salón García/)).not.toBeInTheDocument();
+		});
+
+		it('cancelling edit mode restores original attendance values and does not fire an API request', async () => {
+			const user = userEvent.setup();
+			jest.clearAllMocks();
+
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Mensaje original',
+				},
+				revealedLocation,
+				allowResponseEditing: true,
+			});
+
+			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.clear(screen.getByLabelText(/Número de asistentes/i));
+			await user.type(screen.getByLabelText(/Número de asistentes/i), '4');
+			await user.clear(screen.getByLabelText(/Mensaje para el festejado/i));
+			await user.type(screen.getByLabelText(/Mensaje para el festejado/i), 'Mensaje editado');
+			await user.click(screen.getByRole('button', { name: /^Cancelar$/i }));
+
+			const status = await screen.findByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+			expect(screen.queryByText('Mensaje editado')).not.toBeInTheDocument();
+
+			const rsvpCalls = (global.fetch as jest.Mock).mock.calls.filter(
+				([url]: [string]) => typeof url === 'string' && PERSONALIZED_RSVP_URL.test(url),
+			);
+			expect(rsvpCalls).toHaveLength(0);
+		});
+
+		it('shows a safe fallback message when gated location fetch fails', async () => {
+			(global.fetch as jest.Mock).mockImplementation((url: string) => {
+				if (url.includes('/location')) {
+					return Promise.reject(new Error('Network error'));
+				}
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: async () => ({ rsvpId: 'mock-rsvp-id' }),
+				} as Response);
+			});
+
+			const user = userEvent.setup();
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					guestComment: '',
+				},
+				allowResponseEditing: true,
+			});
+
+			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/Salón García/)).not.toBeInTheDocument();
+			expect(screen.getByText(/No se pudo cargar la ubicación/i)).toBeInTheDocument();
+		});
+
+		it('demo mode does not fire real RSVP API calls', async () => {
+			const user = userEvent.setup();
+			jest.clearAllMocks();
+
+			renderRSVP({
+				isDemoPreview: true,
+				initialGuestData: undefined,
+			});
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toBeInTheDocument();
+			});
+
+			const rsvpCalls = (global.fetch as jest.Mock).mock.calls.filter(
+				([url]: [string]) =>
+					typeof url === 'string' &&
+					(url.includes('/api/invitacion/') || url.includes('/rsvp')),
+			);
+			expect(rsvpCalls).toHaveLength(0);
+		});
+
+		it('demo mode does not fire location API calls', async () => {
+			const user = userEvent.setup();
+			jest.clearAllMocks();
+
+			renderRSVP({
+				isDemoPreview: true,
+				initialGuestData: undefined,
+			});
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toBeInTheDocument();
+			});
+
+			const locationCalls = (global.fetch as jest.Mock).mock.calls.filter(
+				([url]: [string]) => typeof url === 'string' && url.includes('/location'),
+			);
+			expect(locationCalls).toHaveLength(0);
+		});
+
+		it('reveals location for non-Luna confirmed RSVP when server provides location prop', async () => {
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'Test User',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: '',
+				},
+				revealedLocation,
+			});
+
+			const status = await screen.findByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+		});
+
+		it('fetches and reveals gated location for confirmed guest without server-provided location', async () => {
+			(global.fetch as jest.Mock).mockImplementation((url: string) => {
+				if (url.includes('/location')) {
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({ success: true, data: { location: revealedLocation } }),
+					} as Response);
+				}
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: async () => ({ success: true, data: { rsvpId: 'mock-rsvp-id' } }),
+				} as Response);
+			});
+
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: '',
+				},
+				revealedLocation: undefined,
+			});
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+			});
+			expect(global.fetch).toHaveBeenCalledWith(
+				expect.stringContaining('/api/invitacion/mock-invite-id/location'),
+				expect.anything(),
+			);
 		});
 
 		it('re-fetches and reveals location after re-confirming attendance', async () => {
@@ -1279,7 +1453,7 @@ describe('RSVP Component', () => {
 					attendeeCount: 0,
 					guestComment: '',
 				},
-				enableResponseEditing: true,
+				allowResponseEditing: true,
 			});
 
 			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
@@ -1293,6 +1467,71 @@ describe('RSVP Component', () => {
 				expect.stringContaining('/api/invitacion/mock-invite-id/location'),
 				expect.anything(),
 			);
+		});
+	});
+
+	describe('Add-to-calendar after confirmed RSVP', () => {
+		it('renders add-to-calendar button when eventStartsAt is provided', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					{...defaultProps}
+					eventStartsAt="2026-08-01T20:00:00.000Z"
+					eventTimeZone="America/Mexico_City"
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(
+					screen.getByRole('button', { name: /Agregar al calendario/i }),
+				).toBeInTheDocument();
+			});
+		});
+
+		it('does not render add-to-calendar button when eventStartsAt is missing', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByRole('heading', { level: 2 })).toBeInTheDocument();
+			});
+			expect(
+				screen.queryByRole('button', { name: /Agregar al calendario/i }),
+			).not.toBeInTheDocument();
+		});
+
+		it('renders add-to-calendar button in demo mode when eventStartsAt is provided', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv-editorial"
+					title="Confirma tu asistencia"
+					guestCap={4}
+					accessMode="personalized-only"
+					confirmationMessage="Gracias por confirmar."
+					isDemoPreview={true}
+					eventStartsAt="2026-08-01T20:00:00.000Z"
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(
+					screen.getByRole('button', { name: /Agregar al calendario/i }),
+				).toBeInTheDocument();
+			});
 		});
 	});
 });
