@@ -1,8 +1,4 @@
-/* src/styles/invitation/_rsvp.scss
- * ----------------------------------------------------
- * Unified RSVP Premium Style System
- * ----------------------------------------------------
- */
+/* src/styles/invitation/_rsvp.scss — Unified RSVP Premium Style System */
 @use '../global/mixins' as mixins;
 
 // ------------------------------------------------------------------
@@ -16,11 +12,6 @@
 	--rsvp-safe-area-bottom: env(safe-area-inset-bottom, 0);
 	--rsvp-section-padding-inline: clamp(0.875rem, 4vw, 2rem);
 	--rsvp-section-padding-block: clamp(0.75rem, 3svh, 1.5rem);
-	--rsvp-available-block-size: calc(
-		100svh - var(--rsvp-header-offset) - var(--rsvp-player-clearance) - var(
-				--rsvp-safe-area-bottom
-			)
-	);
 
 	display: grid;
 	place-items: center;
@@ -34,9 +25,6 @@
 	scroll-margin-block-start: var(--preview-banner-height, 0);
 
 	.rsvp {
-		margin: 0 auto;
-		width: 100%;
-		max-width: var(--rsvp-card-max-width, 680px);
 		padding-bottom: 3rem;
 	}
 
@@ -113,7 +101,7 @@
 	--rsvp-bg: var(--color-surface-dark);
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
 	--color-glass-border: var(--color-border-premium, rgb(var(--color-action-accent-rgb) / 18%));
-	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 18%));
+	--color-glass-shadow: rgb(var(--color-action-accent-rgb) / 18%);
 	--shadow-premium:
 		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%), 0 8px 18px rgb(0 0 0 / 16%);
 	--rsvp-label-color: var(--color-text-secondary);
@@ -177,8 +165,6 @@
 	/* Spacing variables — overridable per state/viewport */
 	--rsvp-card-padding-block: 1.75rem;
 	--rsvp-card-padding-inline: clamp(1rem, 4vw, 1.5rem);
-	--rsvp-card-padding-y: var(--rsvp-card-padding-block);
-	--rsvp-card-padding-x: var(--rsvp-card-padding-inline);
 	--rsvp-header-margin: 0 0 1.15rem;
 	--rsvp-form-gap: 1rem;
 	--rsvp-grid-gap: 0.8rem;
@@ -191,16 +177,13 @@
 	--rsvp-button-min-height: 3rem;
 	--rsvp-textarea-height: 3.25rem;
 	--rsvp-greeting-padding: 2rem 0;
-	--rsvp-bottom-clearance: 0;
 
 	position: relative;
 	width: 100%;
 	max-width: var(--rsvp-card-max-width, 680px);
 	min-height: 0;
-	padding: var(--rsvp-card-padding-y) var(--rsvp-card-padding-x);
-	padding-bottom: calc(var(--rsvp-card-padding-y) + var(--rsvp-bottom-clearance));
+	padding: var(--rsvp-card-padding-block) var(--rsvp-card-padding-inline);
 	border-radius: var(--rsvp-radius-card);
-	overflow: visible;
 	margin: 0 auto;
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
@@ -259,7 +242,6 @@
 		gap: var(--rsvp-form-gap);
 		position: relative;
 		z-index: 1;
-		min-height: var(--rsvp-form-min-height);
 	}
 
 	&__grid {
@@ -478,7 +460,7 @@
 		}
 
 		&:active:not(:disabled) {
-			transform: translateY(-1px) scale(0.985);
+			transform: translateY(1px) scale(0.985);
 			filter: brightness(0.9);
 			transition-duration: 0.1s;
 			background: rgb(var(--color-action-accent-rgb) / 5%);
@@ -631,7 +613,6 @@
 	&__greeting {
 		text-align: center;
 		padding: var(--rsvp-greeting-padding);
-		min-height: var(--rsvp-success-min-height);
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -668,6 +649,12 @@
 			0 0 0 3px rgb(var(--color-action-accent-rgb) / 18%);
 	}
 
+	/* Suppress browser default focus outline on the programmatically-focused,
+	   non-interactive status container (tabIndex={-1}, role="status", not Tab-reachable). */
+	&__status[tabindex='-1']:focus {
+		outline: none;
+	}
+
 	&__extra-fields {
 		display: grid;
 		grid-template-rows: 0fr;
@@ -690,7 +677,13 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.rsvp__extra-fields {
+		.rsvp__button,
+		.rsvp__radio-card,
+		.rsvp__radio-indicator,
+		.rsvp__radio-label,
+		.rsvp__extra-fields,
+		.rsvp__field input,
+		.rsvp__field textarea {
 			transition: none;
 		}
 	}
