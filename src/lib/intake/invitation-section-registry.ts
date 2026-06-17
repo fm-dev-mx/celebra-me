@@ -308,7 +308,12 @@ export function getSectionVisibilityStatus(
 ): SectionVisibilityStatus {
 	const def = PUBLIC_SECTION_DEFINITIONS[sectionId as PublicSectionId];
 	if (!def) return 'Vacía';
-	if (def.isRequired) return 'Requerida';
+	if (def.isRequired) {
+		// A required section with no content and excluded from sectionOrder
+		// is intentionally absent — do not mark as required.
+		if (!hasContent && !sectionOrder.includes(sectionId)) return 'Oculta';
+		return 'Requerida';
+	}
 	if (!hasContent) return 'Vacía';
 	return sectionOrder.includes(sectionId) ? 'Visible' : 'Oculta';
 }

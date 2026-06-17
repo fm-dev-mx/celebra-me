@@ -419,13 +419,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const emptySectionsDetail = useMemo(() => {
 		const critical: string[] = [];
 		const optional: string[] = [];
+		const orderSet = new Set<string>(content.sectionOrder ?? []);
 		for (const [section, state] of Object.entries(editor.context.sectionStates)) {
 			if (state !== 'empty') continue;
+			// Skip sections excluded from sectionOrder — they are intentionally absent.
+			if (!orderSet.has(section as string)) continue;
 			if (criticalSections.has(section)) critical.push(section);
 			else optional.push(section);
 		}
 		return { critical, optional };
-	}, [editor.context.sectionStates, criticalSections]);
+	}, [editor.context.sectionStates, criticalSections, content.sectionOrder]);
 
 	const publishWarning = useMemo(() => {
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';

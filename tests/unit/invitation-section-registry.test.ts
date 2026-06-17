@@ -146,10 +146,24 @@ describe('invitation-section-registry', () => {
 	});
 
 	describe('getSectionVisibilityStatus', () => {
-		it('returns Requerida for required sections', () => {
+		it('returns Requerida for required sections with content', () => {
 			expect(getSectionVisibilityStatus('hero', ['quote', 'location'], true)).toBe(
 				'Requerida',
 			);
+		});
+
+		it('returns Oculta for required sections excluded from sectionOrder with no content', () => {
+			expect(getSectionVisibilityStatus('location', ['quote', 'rsvp'], false)).toBe('Oculta');
+		});
+
+		it('returns Requerida for required sections in sectionOrder even when empty', () => {
+			expect(
+				getSectionVisibilityStatus('location', ['quote', 'location', 'rsvp'], false),
+			).toBe('Requerida');
+		});
+
+		it('returns Requerida for required sections with content even when absent from sectionOrder', () => {
+			expect(getSectionVisibilityStatus('family', ['quote', 'rsvp'], true)).toBe('Requerida');
 		});
 
 		it('returns Vacía for sections without content', () => {
