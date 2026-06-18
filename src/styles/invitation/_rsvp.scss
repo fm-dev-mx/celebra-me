@@ -16,10 +16,9 @@
 	display: grid;
 	place-items: center;
 	min-block-size: 100svh;
-	padding-block: calc(
-		var(--rsvp-section-padding-block) + var(--rsvp-header-offset) +
-			var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom)
-	);
+
+	// prettier-ignore
+	padding-block: calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset) + var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom));
 	padding-inline: var(--rsvp-section-padding-inline);
 	box-sizing: border-box;
 	scroll-margin-block-start: var(--preview-banner-height, 0);
@@ -149,6 +148,9 @@
 		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);
 	--rsvp-button-shadow-loading: 0 4px 15px rgb(var(--color-action-primary-rgb) / 15%);
 	--rsvp-button-shadow-success: 0 0 30px rgb(var(--color-action-accent-rgb) / 40%);
+	--rsvp-shadow-popover:
+		0 10px 22px rgb(var(--color-action-primary-rgb) / 34%),
+		0 1px 0 rgb(var(--color-action-accent-rgb) / 24%);
 	--rsvp-error-field: rgb(166 46 46);
 	--rsvp-error-text: rgb(138 32 32);
 	--rsvp-error-bg: rgb(var(--color-state-danger-rgb) / 10%);
@@ -506,6 +508,54 @@
 			&:hover {
 				filter: none;
 			}
+		}
+	}
+
+	&__calendar {
+		position: relative;
+		margin-top: 1rem;
+	}
+
+	&__calendar-popover {
+		position: absolute;
+		z-index: 4;
+		inset-inline: 0;
+		top: calc(100% + 0.5rem);
+		display: grid;
+		gap: 0.35rem;
+		padding: 0.55rem;
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+		border-radius: var(--rsvp-radius-field);
+		background: var(--color-surface-elevated, rgb(var(--color-surface-primary-rgb) / 95%));
+		box-shadow: var(--rsvp-shadow-popover);
+	}
+
+	&__calendar-option {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		min-height: 2.5rem;
+		padding: 0.65rem 0.75rem;
+		border: 1px solid transparent;
+		border-radius: var(--rsvp-radius-field);
+		background: transparent;
+		color: var(--color-text-primary);
+		font-family: var(--font-label);
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		line-height: 1.2;
+		text-align: left;
+		text-decoration: none;
+		text-transform: uppercase;
+		cursor: pointer;
+
+		&:hover,
+		&:focus-visible {
+			border-color: rgb(var(--color-action-accent-rgb) / 28%);
+			background: rgb(var(--color-action-accent-rgb) / 8%);
+			color: var(--color-text-primary);
+			outline: none;
 		}
 	}
 
