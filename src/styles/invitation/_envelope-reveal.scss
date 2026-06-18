@@ -198,7 +198,6 @@
 	font-family: var(--env-font-display);
 	line-height: 1.15;
 	color: var(--env-text-primary);
-	-webkit-text-fill-color: currentcolor;
 	text-wrap: balance;
 }
 
@@ -257,6 +256,7 @@
 		'identity';
 	place-items: center;
 	padding: 1.5rem;
+	transition: opacity var(--duration-standard) var(--ease-standard);
 }
 
 .envelope-zone--stamp {
@@ -290,6 +290,7 @@
 	font-size: var(--env-title-size);
 	font-weight: 600;
 	letter-spacing: 0;
+	text-align: center;
 }
 
 .envelope-stamp {
@@ -487,7 +488,7 @@
 	.envelope-tease,
 	.envelope-external-instruction {
 		pointer-events: none;
-		animation: invitation-env-fade-out var(--duration-standard) forwards var(--ease-standard);
+		opacity: 0%;
 	}
 
 	.envelope-flap {
@@ -503,12 +504,6 @@
 @keyframes invitation-env-flap-open {
 	100% {
 		transform: rotateX(170deg);
-	}
-}
-
-@keyframes invitation-env-fade-out {
-	100% {
-		opacity: 0%;
 	}
 }
 
@@ -721,9 +716,6 @@
 	}
 
 	.envelope-seal-button {
-		background: none;
-		border: none;
-
 		&:focus-visible {
 			outline-color: rgb(216 27 96);
 		}
