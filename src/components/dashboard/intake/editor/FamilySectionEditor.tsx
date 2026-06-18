@@ -8,17 +8,15 @@ import { getFieldLabel } from '@/lib/intake/labels';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/intake/types';
 import type { FamilyDraft, FamilyGroupDraft } from '@/lib/intake/schemas/family-draft.schema';
 
-type FamilyData = FamilyDraft;
-
 interface Props {
-	family: FamilyData;
+	family: FamilyDraft;
 	eventType: string;
 	invitationId: string;
 	dirty: boolean;
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
-	onUpdateFamily: (patch: Partial<FamilyData>) => void;
+	onUpdateFamily: (patch: Partial<FamilyDraft>) => void;
 	onOpenAssetPicker: (field: 'family.featuredImage') => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
@@ -30,9 +28,9 @@ function SectionCopyFields({
 	eventType,
 	onUpdateFamily,
 }: {
-	family: FamilyData;
+	family: FamilyDraft;
 	eventType: string;
-	onUpdateFamily: (patch: Partial<FamilyData>) => void;
+	onUpdateFamily: (patch: Partial<FamilyDraft>) => void;
 }) {
 	const isBoda = eventType === 'boda';
 	return (
@@ -56,6 +54,18 @@ function SectionCopyFields({
 					placeholder="Con la bendición de"
 					value={family.parentsTitle ?? ''}
 					onChange={(value) => onUpdateFamily({ parentsTitle: value })}
+				/>
+				<Field
+					label={getFieldLabel('family', 'fatherRole', eventType)}
+					placeholder="Padre"
+					value={family.fatherRole ?? ''}
+					onChange={(value) => onUpdateFamily({ fatherRole: value })}
+				/>
+				<Field
+					label={getFieldLabel('family', 'motherRole', eventType)}
+					placeholder="Madre"
+					value={family.motherRole ?? ''}
+					onChange={(value) => onUpdateFamily({ motherRole: value })}
 				/>
 				<Field
 					label="Título de padrinos"
@@ -95,7 +105,7 @@ function GroupsEditor({
 	onUpdateFamily,
 }: {
 	groups: FamilyGroupDraft[];
-	onUpdateFamily: (patch: Partial<FamilyData>) => void;
+	onUpdateFamily: (patch: Partial<FamilyDraft>) => void;
 }) {
 	const updateGroup = (index: number, patch: Partial<FamilyGroupDraft>) => {
 		const next = groups.map((g, i) => (i === index ? { ...g, ...patch } : g));

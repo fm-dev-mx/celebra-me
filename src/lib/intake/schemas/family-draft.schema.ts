@@ -23,6 +23,8 @@ export const familyDraftSchema = z.object({
 	spouseTitle: optionalText(200),
 	spouseRole: optionalText(200),
 	childrenTitle: optionalText(200),
+	fatherRole: optionalText(200),
+	motherRole: optionalText(200),
 	visible: z.boolean().optional(),
 	groups: z.array(familyGroupDraftSchema).optional(),
 	featuredImage: editableAssetSchema.optional(),

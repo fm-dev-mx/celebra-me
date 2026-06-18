@@ -42,6 +42,8 @@ interface Props {
 		childrenTitle?: string;
 		parentsTitle?: string;
 		godparentsTitle?: string;
+		fatherRole?: string;
+		motherRole?: string;
 		sectionMessage?: string;
 	};
 	focalPoint?: string;
@@ -87,6 +89,8 @@ const resolvedLabels = {
 	childrenTitle: labels?.childrenTitle ?? 'Nuestros Hijos',
 	parentsTitle: labels?.parentsTitle ?? 'Con la bendición de',
 	godparentsTitle: labels?.godparentsTitle ?? 'Padrinos',
+	fatherRole: labels?.fatherRole ?? 'Padre',
+	motherRole: labels?.motherRole ?? 'Madre',
 	sectionMessage:
 		labels?.sectionMessage ??
 		'Gracias por caminar conmigo en este momento tan especial. Su amor, guía y bendición forman parte de este día que guardaré para siempre.',
@@ -108,6 +112,17 @@ const initials = celebrantName
 	.toLocaleUpperCase('es-MX');
 
 const parentsOrder = parentsOrderProp ?? DEFAULT_PARENTS_ORDER;
+
+const parentEntries: FamilyEntry[] = [];
+if (parents?.father) {
+	parentEntries.push({ name: parents.father, role: resolvedLabels.fatherRole || undefined, deceased: Boolean(parents.fatherDeceased) });
+}
+if (parents?.mother) {
+	parentEntries.push({ name: parents.mother, role: resolvedLabels.motherRole || undefined, deceased: Boolean(parents.motherDeceased) });
+}
+if (parentsOrder === 'mother-first') {
+	parentEntries.reverse();
+}
 
 const familyBlocks: FamilyBlock[] = (
 		groups && groups.length > 0
@@ -147,23 +162,7 @@ const familyBlocks: FamilyBlock[] = (
 								{
 									id: 'parents',
 									title: resolvedLabels.parentsTitle,
-									entries: parentsOrder === 'father-first'
-										? [
-												...(parents.father
-													? [{ name: parents.father, role: 'Padre', deceased: Boolean(parents.fatherDeceased) }]
-													: []),
-												...(parents.mother
-													? [{ name: parents.mother, role: 'Madre', deceased: Boolean(parents.motherDeceased) }]
-													: []),
-											]
-										: [
-												...(parents.mother
-													? [{ name: parents.mother, role: 'Madre', deceased: Boolean(parents.motherDeceased) }]
-													: []),
-												...(parents.father
-													? [{ name: parents.father, role: 'Padre', deceased: Boolean(parents.fatherDeceased) }]
-													: []),
-											],
+									entries: parentEntries,
 								},
 							]
 						: []),

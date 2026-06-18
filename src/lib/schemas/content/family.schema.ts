@@ -21,6 +21,8 @@ export const familySchema = z
 				spouseRole: z.string().optional(),
 				childrenTitle: z.string().optional(),
 				parentsTitle: z.string().optional(),
+				fatherRole: z.string().optional(),
+				motherRole: z.string().optional(),
 				godparentsTitle: z.string().optional(),
 				sectionMessage: z.string().optional(),
 			})
