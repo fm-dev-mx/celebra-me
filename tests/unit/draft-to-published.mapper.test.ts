@@ -1489,6 +1489,48 @@ describe('mapDraftToPublished', () => {
 		expect(result.envelope).toMatchObject({ sealStyle: 'wax' });
 	});
 
+	it('publishes editable opening reveal fields from the draft envelope', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					disabled: false,
+					envelopeName: 'Luna y Estrella',
+					documentLabel: 'Primera Comunión',
+					stampText: 'Luna y Estrella',
+					stampYear: '2026',
+					tooltipText: 'Abrir invitación',
+					microcopy: 'Toca para abrir',
+					cardLabel: 'Nuestra Primera Comunión',
+					cardName: 'Luna Yamileth',
+					cardSecondaryName: 'Estrella Abigail',
+					cardTagline: 'Una celebración de fe',
+					guestLabel: 'Con cariño para:',
+					guestNameFallback: 'Familia invitada',
+					sealInitials: 'L·E',
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({
+			disabled: false,
+			envelopeName: 'Luna y Estrella',
+			documentLabel: 'Primera Comunión',
+			stampText: 'Luna y Estrella',
+			stampYear: '2026',
+			tooltipText: 'Abrir invitación',
+			microcopy: 'Toca para abrir',
+			cardLabel: 'Nuestra Primera Comunión',
+			cardName: 'Luna Yamileth',
+			cardSecondaryName: 'Estrella Abigail',
+			cardTagline: 'Una celebración de fe',
+			guestLabel: 'Con cariño para:',
+			guestNameFallback: 'Familia invitada',
+			sealInitials: 'L·E',
+		});
+	});
+
 	it('treats empty draft sealInitials as no override, falling back to demo value', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

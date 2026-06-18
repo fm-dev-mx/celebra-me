@@ -152,7 +152,12 @@ export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional(),
 		cardLabel: z.string().trim().max(60).optional(),
+		envelopeName: z.string().trim().max(200).optional(),
+		cardName: z.string().trim().max(200).optional(),
+		cardSecondaryName: z.string().trim().max(200).optional(),
 		cardTagline: z.string().trim().max(120).optional(),
+		guestLabel: z.string().trim().max(80).optional(),
+		guestNameFallback: z.string().trim().max(200).optional(),
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).optional(),
 		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
 		sealInitials: z.string().trim().max(12).optional(),

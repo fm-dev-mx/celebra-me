@@ -381,15 +381,25 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		result.envelope = { ...envelope };
 		// Re-apply trimming/normalisation for draft-editable fields.
 		if (typeof envelope.disabled !== 'boolean') delete result.envelope.disabled;
-		const trimmedLabel = trimmedStr(envelope.cardLabel);
-		if (trimmedLabel) result.envelope.cardLabel = trimmedLabel;
-		else delete result.envelope.cardLabel;
-		const trimmedTagline = trimmedStr(envelope.cardTagline);
-		if (trimmedTagline) result.envelope.cardTagline = trimmedTagline;
-		else delete result.envelope.cardTagline;
-		const trimmedInitials = trimmedStr(envelope.sealInitials);
-		if (trimmedInitials) result.envelope.sealInitials = trimmedInitials;
-		else delete result.envelope.sealInitials;
+		for (const field of [
+			'envelopeName',
+			'documentLabel',
+			'stampText',
+			'stampYear',
+			'tooltipText',
+			'microcopy',
+			'cardLabel',
+			'cardName',
+			'cardSecondaryName',
+			'cardTagline',
+			'guestLabel',
+			'guestNameFallback',
+			'sealInitials',
+		] as const) {
+			const trimmed = trimmedStr(envelope[field]);
+			if (trimmed) result.envelope[field] = trimmed;
+			else delete result.envelope[field];
+		}
 	}
 
 	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;

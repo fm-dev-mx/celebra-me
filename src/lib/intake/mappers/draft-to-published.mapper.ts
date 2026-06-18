@@ -13,6 +13,22 @@ type PublishCtx = { isDemo: boolean };
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
 
+const ENVELOPE_TEXT_FIELDS = [
+	'envelopeName',
+	'documentLabel',
+	'stampText',
+	'stampYear',
+	'tooltipText',
+	'microcopy',
+	'cardLabel',
+	'cardName',
+	'cardSecondaryName',
+	'cardTagline',
+	'guestLabel',
+	'guestNameFallback',
+	'sealInitials',
+] as const;
+
 /**
  * Maps editable draft envelope fields onto the published envelope structure.
  *
@@ -36,12 +52,10 @@ function buildEnvelopeFromDraft(
 	// Draft explicit overrides (only fields the editor exposes).
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
 
-	const trimmedLabel = trimmedStr(draftEnvelope?.cardLabel);
-	if (trimmedLabel) result.cardLabel = trimmedLabel;
-	const trimmedTagline = trimmedStr(draftEnvelope?.cardTagline);
-	if (trimmedTagline) result.cardTagline = trimmedTagline;
-	const trimmedInitials = trimmedStr(draftEnvelope?.sealInitials);
-	if (trimmedInitials) result.sealInitials = trimmedInitials;
+	for (const field of ENVELOPE_TEXT_FIELDS) {
+		const trimmed = trimmedStr(draftEnvelope?.[field]);
+		if (trimmed) result[field] = trimmed;
+	}
 	return result;
 }
 

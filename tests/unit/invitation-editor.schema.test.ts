@@ -213,9 +213,15 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			microcopy: 'Toca para abrir',
 			documentLabel: 'Baby Shower',
 			cardLabel: 'Baby Shower',
+			envelopeName: 'Leah Lexa',
+			cardName: 'Leah',
+			cardSecondaryName: 'Lexa',
 			cardTagline: 'Una celebracin celestial',
+			guestLabel: 'Con cariño para:',
+			guestNameFallback: 'Familia invitada',
 			stampText: 'Leah Lexa',
 			stampYear: '2026',
+			tooltipText: 'Abrir invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -227,6 +233,8 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 		if (result.success) {
 			expect(result.data.sealStyle).toBe('wax');
 			expect(result.data.sealVariant).toBe('premium-rose');
+			expect(result.data.cardSecondaryName).toBe('Lexa');
+			expect(result.data.guestLabel).toBe('Con cariño para:');
 			expect(result.data.closedPalette?.primary).toBe('surfacePrimary');
 		}
 	});
