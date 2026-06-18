@@ -10,6 +10,8 @@ import type { z } from 'zod';
 
 type PublishCtx = { isDemo: boolean };
 
+const VENUE_URL_FIELDS = ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const;
+
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
 
@@ -208,7 +210,10 @@ function mapVenue(
 	if (str(draftVenue.city)) result.city = str(draftVenue.city);
 	if (str(draftVenue.date)) result.date = str(draftVenue.date);
 	if (str(draftVenue.time)) result.time = str(draftVenue.time);
-	if (str(draftVenue.mapUrl)) result.mapUrl = str(draftVenue.mapUrl);
+	for (const field of VENUE_URL_FIELDS) {
+		const val = str((draftVenue as Record<string, unknown>)[field]);
+		if (val) result[field] = val;
+	}
 	if (draftVenue.image) {
 		result.image = draftVenue.image;
 	} else if (ctx.isDemo && demoVenue?.image) {
@@ -278,7 +283,12 @@ function mapLocationFromDraft(
 				city: v.city || '',
 				date: v.date || '',
 				time: v.time || '',
-				mapUrl: v.mapUrl || undefined,
+				...Object.fromEntries(
+					VENUE_URL_FIELDS.map((f) => [
+						f,
+						(v as Record<string, unknown>)[f] || undefined,
+					]),
+				),
 				...(v.image ? { image: v.image } : {}),
 				...(v.coordinates ? { coordinates: v.coordinates } : {}),
 				isVisible: true,

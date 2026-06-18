@@ -806,6 +806,78 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it.each([
+		{
+			kind: 'ceremony venue',
+			getInput: () => ({
+				...baseInput,
+				draftContent: {
+					...baseInput.draftContent,
+					location: {
+						ceremony: {
+							venueName: 'Iglesia',
+							address: 'Calle 1',
+							mapUrl: 'https://maps.example.com/map',
+							googleMapsUrl: 'https://maps.google.com/?q=test',
+							appleMapsUrl: 'https://maps.apple.com/?q=test',
+							wazeUrl: 'https://waze.com/ul?q=test',
+						},
+					},
+				},
+			}),
+			match: {
+				ceremony: {
+					mapUrl: expect.any(String),
+					googleMapsUrl: expect.any(String),
+					appleMapsUrl: expect.any(String),
+					wazeUrl: expect.any(String),
+				},
+			},
+		},
+		{
+			kind: 'venues array',
+			getInput: () => ({
+				...baseInput,
+				draftContent: {
+					...baseInput.draftContent,
+					location: {
+						introHeading: 'Ubicaciones',
+						venues: [
+							{
+								id: 'v1',
+								type: 'ceremony' as const,
+								label: 'Ceremonia',
+								venueName: 'Iglesia',
+								address: 'Calle 1',
+								date: '2026-01-01',
+								time: '10:00',
+								mapUrl: 'https://maps.example.com/map',
+								googleMapsUrl: 'https://maps.google.com/?q=test',
+								appleMapsUrl: 'https://maps.apple.com/?q=test',
+								wazeUrl: 'https://waze.com/ul?q=test',
+								isVisible: true,
+							},
+						],
+					},
+				},
+			}),
+			match: {
+				venues: [
+					{
+						mapUrl: 'https://maps.example.com/map',
+						googleMapsUrl: 'https://maps.google.com/?q=test',
+						appleMapsUrl: 'https://maps.apple.com/?q=test',
+						wazeUrl: 'https://waze.com/ul?q=test',
+					},
+				],
+			},
+		},
+	])('preserves all map URL fields in published $kind', ({ getInput, match }) => {
+		const result = mapDraftToPublished(getInput());
+
+		expect(result.location).toMatchObject(match);
+	});
+
 	it('does not include coordinates in published venue when draft has none', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

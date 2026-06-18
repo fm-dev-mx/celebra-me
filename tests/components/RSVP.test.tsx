@@ -1429,6 +1429,45 @@ describe('RSVP Component', () => {
 			);
 		});
 
+		it('renders Google Maps link when revealedLocation uses venues array path with googleMapsUrl', async () => {
+			const venuesArrayLocation = {
+				visibility: 'after-rsvp' as const,
+				introHeading: 'Ubicación',
+				venues: [
+					{
+						id: 'celebration',
+						type: 'reception' as const,
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+						googleMapsUrl: 'https://maps.google.com/?q=Salon%20Garcia',
+					},
+				],
+			};
+
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+					maxAllowedAttendees: 4,
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Nos vemos pronto',
+				},
+				revealedLocation: venuesArrayLocation,
+				allowResponseEditing: true,
+			});
+
+			const status = await screen.findByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+			expect(within(status).getByText(/Victoriano Huerta 51/)).toBeInTheDocument();
+			expect(
+				within(status).getByRole('link', { name: /Ver ubicación en Google Maps/i }),
+			).toHaveAttribute('href', 'https://maps.google.com/?q=Salon%20Garcia');
+		});
+
 		it('re-fetches and reveals location after re-confirming attendance', async () => {
 			const user = userEvent.setup();
 			(global.fetch as jest.Mock).mockImplementation((url: string) => {

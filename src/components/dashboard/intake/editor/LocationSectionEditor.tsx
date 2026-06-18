@@ -17,6 +17,9 @@ interface VenueData {
 	date?: string;
 	time?: string;
 	mapUrl?: string;
+	googleMapsUrl?: string;
+	appleMapsUrl?: string;
+	wazeUrl?: string;
 	image?: AssetField;
 	coordinates?: { lat: number; lng: number };
 }
@@ -79,7 +82,6 @@ function createDefaultVenue(type: 'ceremony' | 'reception' | 'custom'): VenueEnt
 		city: '',
 		date: '',
 		time: '',
-		mapUrl: '',
 		isVisible: true,
 	};
 }
@@ -348,11 +350,34 @@ export default function LocationSectionEditor({
 								value={venue.time ?? ''}
 								onChange={(value) => updateVenue(index, { time: value })}
 							/>
+							<h4>Enlaces del mapa</h4>
+							<p className="invitation-editor__helper-text">
+								Deja solo uno o usa URLs específicas para cada plataforma. Se
+								mostrará el primero disponible.
+							</p>
 							<Field
-								label="Mapa"
+								label="Enlace genérico del mapa"
 								type="url"
 								value={venue.mapUrl ?? ''}
 								onChange={(value) => updateVenue(index, { mapUrl: value })}
+							/>
+							<Field
+								label="Google Maps"
+								type="url"
+								value={venue.googleMapsUrl ?? ''}
+								onChange={(value) => updateVenue(index, { googleMapsUrl: value })}
+							/>
+							<Field
+								label="Apple Maps"
+								type="url"
+								value={venue.appleMapsUrl ?? ''}
+								onChange={(value) => updateVenue(index, { appleMapsUrl: value })}
+							/>
+							<Field
+								label="Waze"
+								type="url"
+								value={venue.wazeUrl ?? ''}
+								onChange={(value) => updateVenue(index, { wazeUrl: value })}
 							/>
 							{renderCoordinateField(index, 'lat', 'Latitud', -90, 90)}
 							{renderCoordinateField(index, 'lng', 'Longitud', -180, 180)}

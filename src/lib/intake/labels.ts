@@ -104,7 +104,10 @@ export const VENUE_LABELS: Record<string, string> = {
 	city: 'Ciudad',
 	date: 'Fecha',
 	time: 'Hora',
-	mapUrl: 'Enlace de Google Maps',
+	mapUrl: 'Enlace del mapa',
+	googleMapsUrl: 'Google Maps',
+	appleMapsUrl: 'Apple Maps',
+	wazeUrl: 'Waze',
 };
 
 export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {

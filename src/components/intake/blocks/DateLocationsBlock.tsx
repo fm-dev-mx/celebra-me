@@ -15,6 +15,9 @@ interface VenueData {
 	date?: string;
 	time?: string;
 	mapUrl?: string;
+	googleMapsUrl?: string;
+	appleMapsUrl?: string;
+	wazeUrl?: string;
 	coordinates?: { lat: string; lng: string };
 }
 
@@ -93,7 +96,7 @@ const DateLocationsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 			</div>
 
 			<div className="intake-field">
-				<label className="intake-field__label">URL del mapa</label>
+				<label className="intake-field__label">Enlace genérico del mapa</label>
 				<input
 					type="url"
 					className="intake-field__input"
@@ -101,6 +104,42 @@ const DateLocationsBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					onChange={(e) => updateVenue(venueKey, 'mapUrl', e.target.value)}
 					disabled={disabled}
 					placeholder="https://maps.google.com/..."
+				/>
+			</div>
+
+			<div className="intake-field">
+				<label className="intake-field__label">Google Maps</label>
+				<input
+					type="url"
+					className="intake-field__input"
+					value={venue.googleMapsUrl ?? ''}
+					onChange={(e) => updateVenue(venueKey, 'googleMapsUrl', e.target.value)}
+					disabled={disabled}
+					placeholder="https://maps.google.com/..."
+				/>
+			</div>
+
+			<div className="intake-field">
+				<label className="intake-field__label">Apple Maps</label>
+				<input
+					type="url"
+					className="intake-field__input"
+					value={venue.appleMapsUrl ?? ''}
+					onChange={(e) => updateVenue(venueKey, 'appleMapsUrl', e.target.value)}
+					disabled={disabled}
+					placeholder="https://maps.apple.com/..."
+				/>
+			</div>
+
+			<div className="intake-field">
+				<label className="intake-field__label">Waze</label>
+				<input
+					type="url"
+					className="intake-field__input"
+					value={venue.wazeUrl ?? ''}
+					onChange={(e) => updateVenue(venueKey, 'wazeUrl', e.target.value)}
+					disabled={disabled}
+					placeholder="https://waze.com/ul?..."
 				/>
 			</div>
 

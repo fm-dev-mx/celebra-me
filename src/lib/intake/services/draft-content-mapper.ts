@@ -5,6 +5,8 @@ import type { ParentsOrder } from '@/lib/intake/types';
 import { str, bool, num, trimmedStr, normalizeDate, normalizeTime } from '@/lib/intake/utils';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
+const VENUE_URL_FIELDS = ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const;
+
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
 		title: str(data.eventTitle),
@@ -213,7 +215,7 @@ function mapVenueToDraft(
 		city: str(venue.city),
 		date: normalizeDate(venue.date),
 		time: normalizeTime(venue.time) ?? str(venue.time),
-		mapUrl: str(venue.mapUrl),
+		...Object.fromEntries(VENUE_URL_FIELDS.map((f) => [f, str(venue[f])])),
 		...(venue.image !== undefined ? { image: venue.image } : {}),
 		...(coordinates !== undefined ? { coordinates } : {}),
 	};
@@ -321,7 +323,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				city: str(v.city),
 				date: str(v.date),
 				time: str(v.time),
-				mapUrl: str(v.mapUrl),
+				...Object.fromEntries(VENUE_URL_FIELDS.map((f) => [f, str(v[f])])),
 				...(v.image !== undefined ? { image: v.image } : {}),
 				...(v.coordinates !== undefined
 					? { coordinates: buildCoordinates(v as Record<string, unknown>) }

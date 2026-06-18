@@ -35,6 +35,9 @@ export const venueSchema = z
 		date: optionalText(40),
 		time: optionalText(20),
 		mapUrl: optionalUrl,
+		googleMapsUrl: optionalUrl,
+		appleMapsUrl: optionalUrl,
+		wazeUrl: optionalUrl,
 		image: editableAssetSchema.optional(),
 		coordinates: z
 			.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })

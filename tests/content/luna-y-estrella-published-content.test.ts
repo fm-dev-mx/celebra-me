@@ -238,9 +238,15 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 			},
 		});
 
+		const revealed = confirmedContext.viewModel.sections.rsvp?.revealedLocation;
 		expect(confirmedContext.viewModel.sections.rsvp?.allowResponseEditing).toBeUndefined();
-		expect(confirmedContext.viewModel.sections.rsvp?.revealedLocation).toBeDefined();
+		expect(revealed).toBeDefined();
 		expect(confirmedContext.viewModel.sections.location).toBeUndefined();
+
+		// Fixture uses venues[] array — verify googleMapsUrl survives the adapter → viewModel → protected-location pipeline
+		const venue = revealed?.venues?.[0];
+		expect(venue?.venueName).toBe('Salón García');
+		expect(venue?.googleMapsUrl).toContain('google.com/maps');
 	});
 
 	it('does not include Leah Lexa or demo baby-shower source details', () => {

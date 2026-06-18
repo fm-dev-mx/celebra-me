@@ -144,6 +144,72 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.location?.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
 	});
 
+	it.each([
+		{
+			kind: 'ceremony venue',
+			input: {
+				location: {
+					ceremony: {
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						mapUrl: 'https://maps.example.com/map',
+						googleMapsUrl: 'https://maps.google.com/?q=test',
+						appleMapsUrl: 'https://maps.apple.com/?q=test',
+						wazeUrl: 'https://waze.com/ul?q=test',
+					},
+				},
+			},
+			assertions: (result: ReturnType<typeof mapNestedToDraftContent>) => {
+				expect(result.location?.ceremony?.mapUrl).toBe('https://maps.example.com/map');
+				expect(result.location?.ceremony?.googleMapsUrl).toBe(
+					'https://maps.google.com/?q=test',
+				);
+				expect(result.location?.ceremony?.appleMapsUrl).toBe(
+					'https://maps.apple.com/?q=test',
+				);
+				expect(result.location?.ceremony?.wazeUrl).toBe('https://waze.com/ul?q=test');
+			},
+		},
+		{
+			kind: 'venues array',
+			input: {
+				location: {
+					introHeading: 'Ubicaciones',
+					venues: [
+						{
+							id: 'v1',
+							type: 'ceremony',
+							label: 'Ceremonia',
+							venueName: 'Iglesia',
+							address: 'Calle 1',
+							date: '2026-01-01',
+							time: '10:00',
+							mapUrl: 'https://maps.example.com/map',
+							googleMapsUrl: 'https://maps.google.com/?q=test',
+							appleMapsUrl: 'https://maps.apple.com/?q=test',
+							wazeUrl: 'https://waze.com/ul?q=test',
+							isVisible: true,
+						},
+					],
+				},
+			},
+			assertions: (result: ReturnType<typeof mapNestedToDraftContent>) => {
+				expect(result.location?.venues).toHaveLength(1);
+				expect(result.location?.venues?.[0]?.mapUrl).toBe('https://maps.example.com/map');
+				expect(result.location?.venues?.[0]?.googleMapsUrl).toBe(
+					'https://maps.google.com/?q=test',
+				);
+				expect(result.location?.venues?.[0]?.appleMapsUrl).toBe(
+					'https://maps.apple.com/?q=test',
+				);
+				expect(result.location?.venues?.[0]?.wazeUrl).toBe('https://waze.com/ul?q=test');
+			},
+		},
+	])('maps published per-platform map URLs to draft $kind', ({ input, assertions }) => {
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+		assertions(result);
+	});
+
 	it('maps published venues array to draft format', () => {
 		const input = {
 			location: {

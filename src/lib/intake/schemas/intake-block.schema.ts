@@ -14,11 +14,11 @@ const optionalString = z.string().max(2000).trim().optional().default('');
 
 const optionalUrl = z
 	.string()
+	.trim()
 	.refine((value) => value === '' || z.url().safeParse(value).success, {
 		message: 'Must be a valid URL or empty.',
 	})
-	.optional()
-	.default('');
+	.optional();
 
 const coordinatesSchema = z
 	.object({
@@ -77,6 +77,9 @@ const venueFieldsSchema = z.object({
 	date: optionalString,
 	time: optionalString,
 	mapUrl: optionalUrl,
+	googleMapsUrl: optionalUrl,
+	appleMapsUrl: optionalUrl,
+	wazeUrl: optionalUrl,
 	coordinates: coordinatesSchema,
 });
 
