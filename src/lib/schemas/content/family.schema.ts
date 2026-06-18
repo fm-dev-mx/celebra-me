@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 
+const familyMemberSchema = z.object({ name: z.string(), role: z.string().optional() });
+
 export const familySchema = z
 	.object({
 		parents: z
@@ -29,12 +31,16 @@ export const familySchema = z
 			.strict()
 			.optional(),
 		spouse: z.string().optional(),
-		children: z
-			.array(z.object({ name: z.string(), role: z.string().optional() }))
-			.min(1)
-			.optional(),
-		godparents: z
-			.array(z.object({ name: z.string(), role: z.string().optional() }))
+		children: z.array(familyMemberSchema).min(1).optional(),
+		godparents: z.array(familyMemberSchema).min(1).optional(),
+		godparentGroups: z
+			.array(
+				z.object({
+					honoreeName: z.string(),
+					label: z.string().optional(),
+					godparents: z.array(familyMemberSchema).min(1),
+				}),
+			)
 			.min(1)
 			.optional(),
 		groups: z
@@ -58,5 +64,14 @@ export const familySchema = z
 		focalPoint: focalPointSchema.optional(),
 		visible: z.boolean().optional(),
 		sectionMessage: z.string().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (data.godparents && data.godparentGroups) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'Use either godparents or godparentGroups, not both',
+				path: ['godparentGroups'],
+			});
+		}
 	})
 	.optional();

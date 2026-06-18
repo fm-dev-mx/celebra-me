@@ -53,7 +53,20 @@ export const lunaYEstrellaContent = {
 			sectionMessage:
 				'Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones.',
 			parentsTitle: 'Nuestros papás',
+			godparentsTitle: 'Padrinos',
 		},
+		godparentGroups: [
+			{
+				honoreeName: 'Luna Yamileth Villa Báez',
+				label: 'Luna',
+				godparents: [{ name: 'Emiliano Pérez Rodríguez' }],
+			},
+			{
+				honoreeName: 'Estrella Abigail Villa Báez',
+				label: 'Estrella',
+				godparents: [{ name: 'María Guadalupe Villa Ponce' }],
+			},
+		],
 	},
 	countdown: {
 		title: 'Nos acercamos con alegría',
@@ -156,6 +169,18 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(result.data.location?.venues?.[0]?.venueName).toBe('Salón García');
 		expect(result.data.hero.name).toBe('Luna Yamileth');
 		expect(result.data.hero.secondaryName).toBe('Estrella Abigail');
+		expect(result.data.family?.godparentGroups).toEqual([
+			{
+				honoreeName: 'Luna Yamileth Villa Báez',
+				label: 'Luna',
+				godparents: [{ name: 'Emiliano Pérez Rodríguez' }],
+			},
+			{
+				honoreeName: 'Estrella Abigail Villa Báez',
+				label: 'Estrella',
+				godparents: [{ name: 'María Guadalupe Villa Ponce' }],
+			},
+		]);
 	});
 
 	it('uses the correct sectionOrder with family and no location', () => {
@@ -189,7 +214,6 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(serialized).not.toContain('itinerario');
 		expect(serialized).not.toContain('galería');
 		expect(serialized).not.toContain('mesa de regalos');
-		expect(serialized).not.toContain('padrinos');
 		expect(serialized).not.toContain('misa');
 	});
 

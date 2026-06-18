@@ -6,7 +6,11 @@ import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetFiel
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/intake/types';
-import type { FamilyDraft, FamilyGroupDraft } from '@/lib/intake/schemas/family-draft.schema';
+import type {
+	FamilyDraft,
+	FamilyGroupDraft,
+	GodparentGroupDraft,
+} from '@/lib/intake/schemas/family-draft.schema';
 
 interface Props {
 	family: FamilyDraft;
@@ -21,6 +25,99 @@ interface Props {
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
 	visible?: boolean;
+}
+
+interface RepeatingField<T> {
+	name: keyof T;
+	label: string;
+	placeholder?: string;
+	type: 'field' | 'textarea';
+}
+
+function RepeatingGroupEditor<T extends Record<string, unknown>>({
+	groups,
+	onUpdateGroups,
+	addButtonLabel,
+	helperText,
+	groupLabel,
+	fields,
+	createEmpty,
+	prefix,
+}: {
+	groups: T[];
+	onUpdateGroups: (groups: T[]) => void;
+	addButtonLabel: string;
+	helperText: string;
+	groupLabel: string;
+	fields: RepeatingField<T>[];
+	createEmpty: () => T;
+	prefix: string;
+}) {
+	const updateGroup = (index: number, patch: Partial<T>) => {
+		const next = groups.map((g, i) => (i === index ? { ...g, ...patch } : g));
+		onUpdateGroups(next);
+	};
+
+	return (
+		<div className="invitation-editor__stack">
+			<strong>{groupLabel}</strong>
+			<p className="invitation-editor__helper-text">{helperText}</p>
+			{groups.map((group, index) => (
+				<div className="invitation-editor__list-item" key={`${prefix}-${index}`}>
+					<div className="invitation-editor__compact-row">
+						<strong>
+							{groupLabel} {index + 1}
+						</strong>
+						<button
+							type="button"
+							className="invitation-editor__link-button"
+							onClick={() => onUpdateGroups(groups.filter((_, i) => i !== index))}
+						>
+							Eliminar
+						</button>
+					</div>
+					<div className="invitation-editor__field-grid">
+						{fields
+							.filter((f) => f.type === 'field')
+							.map((field) => (
+								<Field
+									key={String(field.name)}
+									label={field.label}
+									placeholder={field.placeholder ?? ''}
+									value={String(group[field.name] ?? '')}
+									onChange={(value) =>
+										updateGroup(index, {
+											[field.name]: value,
+										} as unknown as Partial<T>)
+									}
+								/>
+							))}
+					</div>
+					{fields
+						.filter((f) => f.type === 'textarea')
+						.map((field) => (
+							<TextArea
+								key={String(field.name)}
+								label={field.label}
+								value={String(group[field.name] ?? '')}
+								onChange={(value) =>
+									updateGroup(index, {
+										[field.name]: value,
+									} as unknown as Partial<T>)
+								}
+							/>
+						))}
+				</div>
+			))}
+			<button
+				type="button"
+				className="invitation-editor__secondary-button"
+				onClick={() => onUpdateGroups([...groups, createEmpty()])}
+			>
+				{addButtonLabel}
+			</button>
+		</div>
+	);
 }
 
 function SectionCopyFields({
@@ -100,70 +197,21 @@ function SectionCopyFields({
 	);
 }
 
-function GroupsEditor({
-	groups,
-	onUpdateFamily,
-}: {
-	groups: FamilyGroupDraft[];
-	onUpdateFamily: (patch: Partial<FamilyDraft>) => void;
-}) {
-	const updateGroup = (index: number, patch: Partial<FamilyGroupDraft>) => {
-		const next = groups.map((g, i) => (i === index ? { ...g, ...patch } : g));
-		onUpdateFamily({ groups: next });
-	};
+const GROUP_FIELDS: RepeatingField<FamilyGroupDraft>[] = [
+	{ name: 'title', label: 'Título del grupo', placeholder: 'Padrinos', type: 'field' },
+	{ name: 'names', label: 'Nombres (uno por línea)', type: 'textarea' },
+];
 
-	return (
-		<div className="invitation-editor__stack">
-			<strong>Grupos adicionales</strong>
-			<p className="invitation-editor__helper-text">
-				Usa grupos para padres de la novia, padrinos, abuelos u otros familiares. Cada
-				nombre en una línea separada.
-			</p>
-			{groups.map((group, index) => (
-				<div className="invitation-editor__list-item" key={`group-${index}`}>
-					<div className="invitation-editor__compact-row">
-						<strong>Grupo {index + 1}</strong>
-						<button
-							type="button"
-							className="invitation-editor__link-button"
-							onClick={() =>
-								onUpdateFamily({
-									groups: groups.filter((_, i) => i !== index),
-								})
-							}
-						>
-							Eliminar grupo
-						</button>
-					</div>
-					<div className="invitation-editor__field-grid">
-						<Field
-							label="Título del grupo"
-							placeholder="Padrinos"
-							value={group.title ?? ''}
-							onChange={(value) => updateGroup(index, { title: value })}
-						/>
-					</div>
-					<TextArea
-						label="Nombres (uno por línea)"
-						value={group.names ?? ''}
-						onChange={(value) => updateGroup(index, { names: value })}
-					/>
-				</div>
-			))}
-			<button
-				type="button"
-				className="invitation-editor__secondary-button"
-				onClick={() =>
-					onUpdateFamily({
-						groups: [...groups, { title: '', names: '' }],
-					})
-				}
-			>
-				Agregar grupo
-			</button>
-		</div>
-	);
-}
+const GODPARENT_GROUP_FIELDS: RepeatingField<GodparentGroupDraft>[] = [
+	{
+		name: 'honoreeName',
+		label: 'Nombre de festejada',
+		placeholder: 'Luna Yamileth',
+		type: 'field',
+	},
+	{ name: 'label', label: 'Etiqueta del grupo', placeholder: 'De Luna', type: 'field' },
+	{ name: 'names', label: 'Padrinos', type: 'textarea' },
+];
 
 export default function FamilySectionEditor({
 	family,
@@ -181,6 +229,7 @@ export default function FamilySectionEditor({
 }: Props) {
 	const isBoda = eventType === 'boda';
 	const groups = family.groups ?? [];
+	const godparentGroups = family.godparentGroups ?? [];
 
 	return (
 		<SectionCard
@@ -255,10 +304,27 @@ export default function FamilySectionEditor({
 				/>
 				<span>Mostrar cruz junto al nombre de la mamá</span>
 			</label>
-			<TextArea
-				label={getFieldLabel('family', 'godparents', eventType)}
-				value={family.godparents ?? ''}
-				onChange={(value) => onUpdateFamily({ godparents: value })}
+			{godparentGroups.length > 0 ? (
+				<p className="invitation-editor__helper-text">
+					Los padrinos generales no se usarán porque hay grupos de padrinos por festejada
+					configurados abajo.
+				</p>
+			) : (
+				<TextArea
+					label={getFieldLabel('family', 'godparents', eventType)}
+					value={family.godparents ?? ''}
+					onChange={(value) => onUpdateFamily({ godparents: value })}
+				/>
+			)}
+			<RepeatingGroupEditor
+				prefix="godparent-group"
+				groups={godparentGroups}
+				onUpdateGroups={(next) => onUpdateFamily({ godparentGroups: next })}
+				groupLabel="Grupo"
+				helperText="Usa estos grupos cuando cada festejada tenga padrinos distintos."
+				addButtonLabel="Agregar grupo de padrinos"
+				fields={GODPARENT_GROUP_FIELDS}
+				createEmpty={() => ({ honoreeName: '', label: '', names: '' })}
 			/>
 			{isBoda && (
 				<TextArea
@@ -268,7 +334,16 @@ export default function FamilySectionEditor({
 				/>
 			)}
 
-			<GroupsEditor groups={groups} onUpdateFamily={onUpdateFamily} />
+			<RepeatingGroupEditor
+				prefix="group"
+				groups={groups}
+				onUpdateGroups={(next) => onUpdateFamily({ groups: next })}
+				groupLabel="Grupo"
+				helperText="Usa grupos para padres de la novia, padrinos, abuelos u otros familiares. Cada nombre en una línea separada."
+				addButtonLabel="Agregar grupo"
+				fields={GROUP_FIELDS}
+				createEmpty={() => ({ title: '', names: '' })}
+			/>
 
 			<TextArea
 				label={getFieldLabel('family', 'sectionMessage', eventType)}

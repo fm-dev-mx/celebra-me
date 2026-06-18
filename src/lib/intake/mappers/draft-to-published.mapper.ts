@@ -111,27 +111,78 @@ function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | 
 
 function buildFamilyGroups(
 	draftFamily: FamilyDraft,
-): Array<{ title: string; items: Array<{ name: string }> }> | undefined {
+): Array<{ title: string; items: Array<{ name: string; role?: string }> }> | undefined {
 	const draftGroups = draftFamily.groups;
 	if (!draftGroups || draftGroups.length === 0) return undefined;
 	const mappedGroups = draftGroups
 		.filter((g) => str(g.title) || str(g.names))
 		.map((g) => {
 			const namesText = str(g.names);
-			const items = namesText
-				? namesText
-						.split('\n')
-						.map((l) => l.trim())
-						.filter(Boolean)
-						.map((name) => ({ name }))
-				: [];
+			const items = namesText ? parseFamilyLines(namesText) : [];
 			if (items.length === 0) return null;
 			return {
 				title: str(g.title) || 'Grupo',
 				items,
 			};
 		})
-		.filter((g): g is { title: string; items: Array<{ name: string }> } => g !== null);
+		.filter(
+			(g): g is { title: string; items: Array<{ name: string; role?: string }> } =>
+				g !== null,
+		);
+	return mappedGroups.length > 0 ? mappedGroups : undefined;
+}
+
+function parseFamilyLines(text: string): Array<{ name: string; role?: string }> {
+	return text
+		.split('\n')
+		.map((l) => l.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const parts = line.split(' — ').map((s) => s.trim());
+			return parts.length > 1 ? { name: parts[0], role: parts[1] } : { name: parts[0] };
+		});
+}
+
+function buildGodparents(
+	draftFamily: FamilyDraft,
+): Array<{ name: string; role?: string }> | undefined {
+	const godparentsText = str(draftFamily.godparents);
+	if (!godparentsText) return undefined;
+	const godparents = parseFamilyLines(godparentsText);
+	return godparents.length > 0 ? godparents : undefined;
+}
+
+function buildGodparentGroups(draftFamily: FamilyDraft):
+	| Array<{
+			honoreeName: string;
+			label?: string;
+			godparents: Array<{ name: string; role?: string }>;
+	  }>
+	| undefined {
+	const draftGroups = draftFamily.godparentGroups;
+	if (!draftGroups || draftGroups.length === 0) return undefined;
+	const mappedGroups = draftGroups
+		.map((group) => {
+			const honoreeName = str(group.honoreeName);
+			const namesText = str(group.names);
+			if (!honoreeName || !namesText) return null;
+			const godparents = parseFamilyLines(namesText);
+			if (godparents.length === 0) return null;
+			return {
+				honoreeName,
+				...(str(group.label) ? { label: str(group.label) } : {}),
+				godparents,
+			};
+		})
+		.filter(
+			(
+				group,
+			): group is {
+				honoreeName: string;
+				label?: string;
+				godparents: Array<{ name: string; role?: string }>;
+			} => group !== null,
+		);
 	return mappedGroups.length > 0 ? mappedGroups : undefined;
 }
 
@@ -154,19 +205,11 @@ function mapFamilyFromDraft(
 	if (family.parentsOrder) result.parentsOrder = family.parentsOrder;
 	if (str(family.spouseName)) result.spouse = str(family.spouseName);
 
-	const godparentsText = str(family.godparents);
-	if (godparentsText) {
-		const lines = godparentsText
-			.split('\n')
-			.map((l) => l.trim())
-			.filter(Boolean);
-		if (lines.length > 0) {
-			result.godparents = lines.map((line) => {
-				const parts = line.split(' — ').map((s) => s.trim());
-				return parts.length > 1 ? { name: parts[0], role: parts[1] } : { name: parts[0] };
-			});
-		}
-	}
+	const mappedGodparents = buildGodparents(family);
+	if (mappedGodparents) result.godparents = mappedGodparents;
+
+	const mappedGodparentGroups = buildGodparentGroups(family);
+	if (mappedGodparentGroups) result.godparentGroups = mappedGodparentGroups;
 
 	const childrenText = str(family.children);
 	if (childrenText) {

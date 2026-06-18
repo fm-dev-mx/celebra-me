@@ -10,6 +10,8 @@
 
         "selector-class-pattern": "^[a-z]([a-z0-9-]+)?(__([a-z0-9]+-?)+)?(--([a-z0-9]+-?)+)?$",
         "scss/operator-no-unspaced": true,
+        "scss/operator-no-newline-after": null,
+        "scss/operator-no-newline-before": null,
         "color-function-notation": "modern",
         "alpha-value-notation": "percentage",
         "property-no-vendor-prefix": true,

@@ -115,6 +115,12 @@ export interface FamilyMember {
 	deceased?: boolean;
 }
 
+export interface GodparentGroup {
+	honoreeName: string;
+	label?: string;
+	godparents: FamilyMember[];
+}
+
 export interface FamilyGroup {
 	title: string;
 	items: FamilyMember[];
@@ -225,6 +231,7 @@ export interface InvitationViewModel {
 			spouse?: string;
 			children?: FamilyMember[];
 			godparents?: FamilyMember[];
+			godparentGroups?: GodparentGroup[];
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
 			focalPoint?: string;

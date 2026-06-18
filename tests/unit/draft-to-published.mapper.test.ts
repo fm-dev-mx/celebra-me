@@ -210,6 +210,45 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('maps grouped family godparents to published content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					godparentGroups: [
+						{
+							honoreeName: 'Luna Yamileth',
+							label: 'De Luna',
+							names: 'Emiliano Pérez Rodríguez — Padrino',
+						},
+						{
+							honoreeName: 'Estrella Abigail',
+							label: 'De Estrella',
+							names: 'María Guadalupe Villa Ponce — Madrina',
+						},
+					],
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			godparentGroups: [
+				{
+					honoreeName: 'Luna Yamileth',
+					label: 'De Luna',
+					godparents: [{ name: 'Emiliano Pérez Rodríguez', role: 'Padrino' }],
+				},
+				{
+					honoreeName: 'Estrella Abigail',
+					label: 'De Estrella',
+					godparents: [{ name: 'María Guadalupe Villa Ponce', role: 'Madrina' }],
+				},
+			],
+		});
+	});
+
 	it('maps parentsOrder father-first from draft to published at family root level', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
@@ -1397,7 +1436,10 @@ describe('mapDraftToPublished', () => {
 				},
 				{
 					title: 'Padrinos',
-					items: [{ name: 'Carlos — Padrino' }, { name: 'María — Madrina' }],
+					items: [
+						{ name: 'Carlos', role: 'Padrino' },
+						{ name: 'María', role: 'Madrina' },
+					],
 				},
 			],
 		});

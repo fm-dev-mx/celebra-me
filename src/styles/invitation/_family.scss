@@ -333,6 +333,65 @@
 		gap: clamp(0.95rem, 2vw, 1.35rem);
 	}
 
+	&__godparent-groups {
+		display: grid;
+		gap: var(--family-godparent-groups-gap, clamp(1.15rem, 2.5vw, 1.65rem));
+	}
+
+	&__godparent-subgroup {
+		display: grid;
+		grid-template-columns: minmax(4.5rem, max-content) minmax(0, 1fr);
+		align-items: center;
+		gap: var(--family-godparent-subgroup-gap, clamp(0.75rem, 2vw, 1rem));
+		max-width: 100%;
+	}
+
+	&__godparent-label {
+		justify-self: end;
+		margin: 0;
+		padding: var(--family-godparent-label-padding, 0.35rem 0.75rem);
+		border: var(
+			--family-godparent-label-border,
+			1px solid rgb(var(--color-action-accent-rgb) / 24%)
+		);
+		border-radius: var(--family-godparent-label-radius, 999px);
+		background: var(--family-godparent-label-bg, rgb(var(--color-action-accent-rgb) / 8%));
+		font-family: var(--family-meta-font, var(--font-label, var(--font-body)));
+		font-size: var(--family-godparent-label-size, 0.42rem);
+		font-weight: var(--family-meta-weight, 600);
+		line-height: 1;
+		letter-spacing: var(--family-godparent-label-letter-spacing, 0.12em);
+		text-transform: uppercase;
+		color: var(
+			--family-godparent-label-color,
+			var(--family-accent, var(--color-action-accent))
+		);
+		white-space: nowrap;
+	}
+
+	&__godparent-names {
+		min-width: 0;
+	}
+
+	&__list--godparents-grouped {
+		grid-template-columns: var(
+			--family-godparents-grouped-list-columns,
+			repeat(auto-fit, minmax(min(100%, 12rem), 1fr))
+		);
+		align-items: center;
+		gap: var(--family-godparents-grouped-list-gap, clamp(0.55rem, 1.5vw, 0.85rem));
+
+		.family__item {
+			align-items: flex-start;
+			text-align: left;
+		}
+
+		.family__name {
+			justify-content: flex-start;
+			max-width: 100%;
+		}
+	}
+
 	&__item {
 		display: flex;
 		min-width: 0;

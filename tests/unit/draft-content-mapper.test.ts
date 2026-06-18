@@ -628,6 +628,41 @@ describe('mapNestedToDraftContent', () => {
 		]);
 	});
 
+	it('reads grouped godparents from published format into draft format', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				godparentGroups: [
+					{
+						honoreeName: 'Luna Yamileth',
+						label: 'De Luna',
+						godparents: [{ name: 'Emiliano Pérez Rodríguez', role: 'Padrino' }],
+					},
+					{
+						honoreeName: 'Estrella Abigail',
+						label: 'De Estrella',
+						godparents: [{ name: 'María Guadalupe Villa Ponce', role: 'Madrina' }],
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.godparentGroups).toEqual([
+			{
+				honoreeName: 'Luna Yamileth',
+				label: 'De Luna',
+				names: 'Emiliano Pérez Rodríguez — Padrino',
+			},
+			{
+				honoreeName: 'Estrella Abigail',
+				label: 'De Estrella',
+				names: 'María Guadalupe Villa Ponce — Madrina',
+			},
+		]);
+	});
+
 	it('reads family visible flag from published content', () => {
 		const input = {
 			family: {

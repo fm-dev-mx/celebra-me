@@ -6,6 +6,12 @@ export const familyGroupDraftSchema = z.object({
 	names: optionalText(),
 });
 
+export const godparentGroupDraftSchema = z.object({
+	honoreeName: optionalText(200),
+	label: optionalText(200),
+	names: optionalText(),
+});
+
 export const familyDraftSchema = z.object({
 	fatherName: optionalText(200),
 	fatherDeceased: z.boolean().optional(),
@@ -27,8 +33,10 @@ export const familyDraftSchema = z.object({
 	motherRole: optionalText(200),
 	visible: z.boolean().optional(),
 	groups: z.array(familyGroupDraftSchema).optional(),
+	godparentGroups: z.array(godparentGroupDraftSchema).optional(),
 	featuredImage: editableAssetSchema.optional(),
 });
 
 export type FamilyDraft = z.infer<typeof familyDraftSchema>;
 export type FamilyGroupDraft = z.infer<typeof familyGroupDraftSchema>;
+export type GodparentGroupDraft = z.infer<typeof godparentGroupDraftSchema>;

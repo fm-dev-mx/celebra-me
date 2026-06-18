@@ -137,6 +137,29 @@ describe('InvitationEditorSectionSchemas.messages', () => {
 	});
 });
 
+describe('InvitationEditorSectionSchemas.family', () => {
+	it('preserves grouped godparents when saving the family section', () => {
+		const result = InvitationEditorSectionSchemas.family.parse({
+			fatherName: 'Juan',
+			godparentGroups: [
+				{
+					honoreeName: 'Luna Yamileth',
+					label: 'De Luna',
+					names: 'Emiliano Pérez Rodríguez — Padrino',
+				},
+			],
+		});
+
+		expect(result.godparentGroups).toEqual([
+			{
+				honoreeName: 'Luna Yamileth',
+				label: 'De Luna',
+				names: 'Emiliano Pérez Rodríguez — Padrino',
+			},
+		]);
+	});
+});
+
 describe('InvitationEditorSectionSchemas.gallery', () => {
 	const BASE_GALLERY = {
 		eyebrow: 'Recuerdos',

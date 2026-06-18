@@ -78,6 +78,37 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.family?.godparents).toBeUndefined();
 	});
 
+	it('preserves grouped godparents in the invitation view model', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				family: {
+					...fixture.family,
+					godparents: undefined,
+					godparentGroups: [
+						{
+							honoreeName: 'Luna Yamileth',
+							label: 'De Luna',
+							godparents: [{ name: 'Emiliano Pérez Rodríguez', role: 'Padrino' }],
+						},
+					],
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.family?.godparentGroups).toEqual([
+			{
+				honoreeName: 'Luna Yamileth',
+				label: 'De Luna',
+				godparents: [{ name: 'Emiliano Pérez Rodríguez', role: 'Padrino' }],
+			},
+		]);
+	});
+
 	it('resolves demo content blocks and venue data', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',

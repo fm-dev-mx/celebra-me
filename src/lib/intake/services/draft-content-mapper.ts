@@ -221,6 +221,69 @@ function mapVenueToDraft(
 	};
 }
 
+// eslint-disable-next-line complexity -- Family field mapping covers many optional fields by design.
+function mapFamilyToDraft(
+	family: Record<string, unknown>,
+): NonNullable<DraftContent['family']> | undefined {
+	const parents = family.parents as Record<string, unknown> | undefined;
+	const godparentsArr = family.godparents as Array<{ name: string; role?: string }> | undefined;
+	const godparentGroupsArr = family.godparentGroups as
+		| Array<{
+				honoreeName?: string;
+				label?: string;
+				godparents?: Array<{ name: string; role?: string }>;
+		  }>
+		| undefined;
+	const childrenArr = family.children as Array<{ name: string }> | undefined;
+	const labels = family.labels as Record<string, unknown> | undefined;
+	const publishedGroups = family.groups as
+		| Array<{ title: string; items: Array<{ name: string; role?: string }> }>
+		| undefined;
+	const result = {
+		fatherName: str(parents?.father),
+		motherName: str(parents?.mother),
+		fatherDeceased: bool(parents?.fatherDeceased),
+		motherDeceased: bool(parents?.motherDeceased),
+		parentsOrder: parents?.parentsOrder as ParentsOrder | undefined,
+		spouseName: str(family.spouse),
+		godparents: godparentsArr
+			?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))
+			.join('\n'),
+		godparentGroups: godparentGroupsArr
+			?.filter((g) => g.godparents && g.godparents.length > 0)
+			.map((g) => ({
+				honoreeName: str(g.honoreeName),
+				label: str(g.label),
+				names: g.godparents
+					?.map((godparent) =>
+						godparent.role ? `${godparent.name} — ${godparent.role}` : godparent.name,
+					)
+					.join('\n'),
+			})),
+		children: childrenArr?.map((c) => c.name).join('\n'),
+		sectionMessage: str(labels?.sectionMessage) || str(family.sectionMessage),
+		sectionSubtitle: str(labels?.sectionSubtitle),
+		sectionTitle: str(labels?.sectionTitle),
+		parentsTitle: str(labels?.parentsTitle),
+		godparentsTitle: str(labels?.godparentsTitle),
+		spouseTitle: str(labels?.spouseTitle),
+		spouseRole: str(labels?.spouseRole),
+		childrenTitle: str(labels?.childrenTitle),
+		fatherRole: str(labels?.fatherRole),
+		motherRole: str(labels?.motherRole),
+		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
+		groups: publishedGroups
+			?.filter((g) => g.items && g.items.length > 0)
+			.map((g) => ({
+				title: str(g.title),
+				names: g.items.map((item) => item.name).join('\n'),
+			})),
+	};
+	if (family.featuredImage !== undefined)
+		(result as Record<string, unknown>).featuredImage = family.featuredImage;
+	return result;
+}
+
 // eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.
 export function mapNestedToDraftContent(nestedContent: Record<string, unknown>): DraftContent {
 	const result: DraftContent = {};
@@ -248,46 +311,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const family = nestedContent.family as Record<string, unknown> | undefined;
 	if (family && Object.keys(family).length > 0) {
-		const parents = family.parents as Record<string, unknown> | undefined;
-		const godparentsArr = family.godparents as
-			| Array<{ name: string; role?: string }>
-			| undefined;
-		const childrenArr = family.children as Array<{ name: string }> | undefined;
-		const labels = family.labels as Record<string, unknown> | undefined;
-		const publishedGroups = family.groups as
-			| Array<{ title: string; items: Array<{ name: string; role?: string }> }>
-			| undefined;
-		result.family = {
-			fatherName: str(parents?.father),
-			motherName: str(parents?.mother),
-			fatherDeceased: bool(parents?.fatherDeceased),
-			motherDeceased: bool(parents?.motherDeceased),
-			parentsOrder: parents?.parentsOrder as ParentsOrder | undefined,
-			spouseName: str(family.spouse),
-			godparents: godparentsArr
-				?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))
-				.join('\n'),
-			children: childrenArr?.map((c) => c.name).join('\n'),
-			sectionMessage: str(labels?.sectionMessage) || str(family.sectionMessage),
-			sectionSubtitle: str(labels?.sectionSubtitle),
-			sectionTitle: str(labels?.sectionTitle),
-			parentsTitle: str(labels?.parentsTitle),
-			godparentsTitle: str(labels?.godparentsTitle),
-			spouseTitle: str(labels?.spouseTitle),
-			spouseRole: str(labels?.spouseRole),
-			childrenTitle: str(labels?.childrenTitle),
-			fatherRole: str(labels?.fatherRole),
-			motherRole: str(labels?.motherRole),
-			visible: typeof family.visible === 'boolean' ? family.visible : undefined,
-			groups: publishedGroups
-				?.filter((g) => g.items && g.items.length > 0)
-				.map((g) => ({
-					title: str(g.title),
-					names: g.items.map((item) => item.name).join('\n'),
-				})),
-		};
-		if (family.featuredImage !== undefined)
-			(result.family as Record<string, unknown>).featuredImage = family.featuredImage;
+		result.family = mapFamilyToDraft(family);
 	}
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
