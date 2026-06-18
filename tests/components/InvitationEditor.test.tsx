@@ -252,13 +252,13 @@ describe('InvitationEditor', () => {
 		fireEvent.click(within(nav).getByRole('button', { name: 'Frase' }));
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0#quote-section',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal#quote-section',
 		);
 
 		fireEvent.click(within(nav).getByRole('button', { name: 'Agradecimiento' }));
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0#thank-you-section',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal#thank-you-section',
 		);
 	});
 
@@ -347,6 +347,77 @@ describe('InvitationEditor', () => {
 			expect(saveSection).toHaveBeenCalledWith(
 				'location',
 				expect.objectContaining({ introLede: 'Nueva descripción de ruta.' }),
+				'2026-05-30T02:00:00Z',
+			);
+		});
+	});
+
+	it('edits all visible opening reveal fields from Sobre / apertura', async () => {
+		mockContext = createContext({
+			content: {
+				...createContext().content,
+				envelope: {
+					disabled: false,
+					envelopeName: 'Luna y Estrella',
+					documentLabel: 'Primera Comunión',
+					stampText: 'Luna y Estrella',
+					stampYear: '2026',
+					tooltipText: 'Abrir invitación',
+					microcopy: 'Toca para abrir',
+					cardLabel: 'Nuestra Primera Comunión',
+					cardName: 'Luna Yamileth',
+					cardSecondaryName: 'Estrella Abigail',
+					cardTagline: 'Una celebración de fe',
+					guestLabel: 'Con cariño para:',
+					guestNameFallback: 'Familia invitada',
+					sealInitials: 'L·E',
+				},
+			},
+			sectionStates: {
+				...createContext().sectionStates,
+				envelope: 'draft',
+			},
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+
+		fireEvent.click(within(nav).getByRole('button', { name: /Sobre \/ apertura/ }));
+
+		expect(screen.getByLabelText('Nombre en el sobre (opcional)')).toHaveValue(
+			'Luna y Estrella',
+		);
+		expect(screen.getByLabelText('Etiqueta del documento')).toHaveValue('Primera Comunión');
+		expect(screen.getByLabelText('Texto del sello postal')).toHaveValue('Luna y Estrella');
+		expect(screen.getByLabelText('Año del sello')).toHaveValue('2026');
+		expect(screen.getByLabelText('Texto del botón')).toHaveValue('Abrir invitación');
+		expect(screen.getByLabelText('Texto inferior')).toHaveValue('Toca para abrir');
+		expect(screen.getByLabelText('Etiqueta de tarjeta')).toHaveValue(
+			'Nuestra Primera Comunión',
+		);
+		expect(screen.getByLabelText('Nombre principal en tarjeta (opcional)')).toHaveValue(
+			'Luna Yamileth',
+		);
+		expect(screen.getByLabelText('Segundo nombre en tarjeta (opcional)')).toHaveValue(
+			'Estrella Abigail',
+		);
+		expect(screen.getByLabelText('Etiqueta de invitado')).toHaveValue('Con cariño para:');
+		expect(screen.getByLabelText('Invitado genérico para vista previa')).toHaveValue(
+			'Familia invitada',
+		);
+
+		fireEvent.change(screen.getByLabelText('Nombre en el sobre (opcional)'), {
+			target: { value: 'Luna Yamileth y Estrella Abigail' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+		await waitFor(() => {
+			expect(saveSection).toHaveBeenCalledWith(
+				'envelope',
+				expect.objectContaining({
+					envelopeName: 'Luna Yamileth y Estrella Abigail',
+					cardSecondaryName: 'Estrella Abigail',
+					guestLabel: 'Con cariño para:',
+				}),
 				'2026-05-30T02:00:00Z',
 			);
 		});

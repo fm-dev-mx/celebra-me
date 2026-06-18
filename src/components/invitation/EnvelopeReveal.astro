@@ -24,6 +24,7 @@ interface Props {
 	audioUrl?: string;
 	teaserDetails?: string;
 	card: RevealCardData;
+	previewState?: 'closed' | 'opened';
 }
 
 const {
@@ -43,6 +44,7 @@ const {
 	audioUrl,
 	teaserDetails,
 	card,
+	previewState,
 } = Astro.props;
 ---
 
@@ -53,6 +55,7 @@ const {
 	data-seal-variant={sealVariant || ''}
 	data-audio-url={audioUrl || ''}
 	data-dev-skip={String(import.meta.env.DEV)}
+	data-preview-state={previewState}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
@@ -116,7 +119,7 @@ const {
 				{
 					card.guestName && (
 						<div class="guest-personalized">
-							<p class="personalized-label">Entrega especial para:</p>
+							<p class="personalized-label">{card.guestLabel}</p>
 							<strong class="personalized-name">{card.guestName}</strong>
 						</div>
 					)
@@ -166,6 +169,15 @@ const {
 			const tooltip = this.querySelector('[data-envelope-tooltip]');
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
+
+			if (this.dataset.previewState === 'opened') {
+				this.classList.add('is-preview-opened');
+				document.documentElement.classList.add('envelope-open');
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'preview-opened';
+				}
+				return;
+			}
 
 			const completeReveal = () => {
 				if (hasRevealed) return;

@@ -11,7 +11,17 @@ const { card } = Astro.props;
 <article class="invitation-reveal-card" aria-label={card.label}>
 	<div class="invitation-reveal-card__inner">
 		<p class="invitation-reveal-card__label">{card.label}</p>
-		<h2 class="invitation-reveal-card__name">{card.name}</h2>
+		<h2 class="invitation-reveal-card__name">
+			<span>{card.primaryName}</span>
+			{
+				card.secondaryName && (
+					<>
+						<span class="invitation-reveal-card__ampersand">&</span>
+						<span>{card.secondaryName}</span>
+					</>
+				)
+			}
+		</h2>
 		<p class="invitation-reveal-card__date">{card.date}</p>
 
 		{
@@ -25,7 +35,7 @@ const { card } = Astro.props;
 		{
 			card.guestName && (
 				<div class="invitation-reveal-card__guest">
-					<p class="invitation-reveal-card__guest-label">Entrega especial para:</p>
+					<p class="invitation-reveal-card__guest-label">{card.guestLabel}</p>
 					<strong class="invitation-reveal-card__guest-name">{card.guestName}</strong>
 				</div>
 			)

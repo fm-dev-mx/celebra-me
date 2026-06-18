@@ -7,6 +7,16 @@ import {
 } from '@/lib/editor/constants';
 import { buildPreviewUrl } from '@/lib/editor/preview-url';
 
+type RevealPreviewState = 'closed' | 'opened' | 'internal';
+
+const REVEAL_STATE_LABELS: Record<RevealPreviewState, string> = {
+	closed: 'Sobre',
+	opened: 'Tarjeta',
+	internal: 'Interior',
+};
+
+const REVEAL_STATE_ORDER: RevealPreviewState[] = ['closed', 'opened', 'internal'];
+
 export function getPreviewScale(
 	availableWidth: number,
 	virtualWidth: number,
@@ -35,9 +45,10 @@ export default function EditorPreviewPane({
 	previewHash = '',
 }: Props) {
 	const [device, setDevice] = useState<PreviewDevice>('mobile');
-	const iframeBaseUrl = buildPreviewUrl(invitationId, previewVersion, true);
+	const [revealState, setRevealState] = useState<RevealPreviewState>('internal');
+	const iframeBaseUrl = buildPreviewUrl(invitationId, previewVersion, true, revealState);
 	const iframeSrc = previewHash ? `${iframeBaseUrl}${previewHash}` : iframeBaseUrl;
-	const iframeKey = `preview-v${previewVersion}`;
+	const iframeKey = `preview-v${previewVersion}-${revealState}`;
 	const fullPreviewUrl = buildPreviewUrl(invitationId, previewVersion, false);
 	const viewportWidth = DEVICE_VIEWPORT_WIDTHS[device];
 
@@ -110,6 +121,18 @@ export default function EditorPreviewPane({
 					</span>
 				</div>
 			)}
+			<div className="invitation-editor__preview-state-tabs" aria-label="Estado de apertura">
+				{REVEAL_STATE_ORDER.map((item) => (
+					<button
+						key={item}
+						type="button"
+						aria-pressed={revealState === item}
+						onClick={() => setRevealState(item)}
+					>
+						{REVEAL_STATE_LABELS[item]}
+					</button>
+				))}
+			</div>
 			<div
 				className="invitation-editor__preview-device-tabs"
 				aria-label="Tamaño de vista previa"

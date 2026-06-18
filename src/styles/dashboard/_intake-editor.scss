@@ -1348,6 +1348,7 @@
 	}
 }
 
+.invitation-editor__preview-state-tabs,
 .invitation-editor__preview-device-tabs {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));

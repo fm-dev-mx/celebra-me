@@ -25,4 +25,16 @@ describe('buildPreviewUrl', () => {
 		expect(buildPreviewUrl('proj-1', 42, false)).toContain('v=42');
 		expect(buildPreviewUrl('proj-1', 999999, false)).toContain('v=999999');
 	});
+
+	it('includes the requested reveal preview state', () => {
+		expect(buildPreviewUrl('proj-1', 0, true, 'closed')).toBe(
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=closed',
+		);
+		expect(buildPreviewUrl('proj-1', 0, true, 'opened')).toBe(
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=opened',
+		);
+		expect(buildPreviewUrl('proj-1', 0, true, 'internal')).toBe(
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal',
+		);
+	});
 });

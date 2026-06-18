@@ -53,7 +53,7 @@ describe('EditorPreviewPane', () => {
 		expect(screen.getByText('Última versión guardada')).toBeInTheDocument();
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal',
 		);
 		expect(screen.getByRole('link', { name: 'Abrir vista completa' })).toHaveAttribute(
 			'href',
@@ -80,7 +80,7 @@ describe('EditorPreviewPane', () => {
 		render(<EditorPreviewPane {...defaultProps} previewHash="#quote-section" />);
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0#quote-section',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal#quote-section',
 		);
 	});
 
@@ -88,7 +88,28 @@ describe('EditorPreviewPane', () => {
 		render(<EditorPreviewPane {...defaultProps} previewHash="" />);
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal',
+		);
+	});
+
+	it('switches reveal preview states for the embedded iframe', () => {
+		render(<EditorPreviewPane {...defaultProps} />);
+
+		expect(screen.getByRole('button', { name: 'Interior' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Sobre' }));
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=closed',
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Tarjeta' }));
+		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
+			'src',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=opened',
 		);
 	});
 

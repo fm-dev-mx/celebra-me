@@ -107,6 +107,10 @@
 }
 
 .invitation-reveal-card__name {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.1rem;
 	margin: 0;
 	font-family: var(--reveal-card-font-display);
 	font-size: clamp(1.55rem, 7vw, 2rem);
@@ -115,6 +119,15 @@
 	color: var(--reveal-card-text-primary);
 	line-height: 1.1;
 	text-wrap: balance;
+}
+
+.invitation-reveal-card__ampersand {
+	font-family: var(--font-body-narrative);
+	font-size: 0.62em;
+	font-style: italic;
+	font-weight: 400;
+	color: var(--reveal-card-text-secondary);
+	line-height: 1;
 }
 
 .invitation-reveal-card__date {
@@ -183,6 +196,21 @@
 		pointer-events: auto;
 		animation: envCardRise var(--duration-reveal) forwards var(--ease-premium);
 		animation-delay: var(--duration-reveal);
+	}
+}
+
+.envelope-wrapper.is-preview-opened {
+	.envelope-tease,
+	.envelope-flap,
+	.envelope-pocket {
+		opacity: 0%;
+		pointer-events: none;
+	}
+
+	.envelope-reveal-stage {
+		pointer-events: auto;
+		opacity: 100%;
+		transform: translateY(var(--reveal-card-rest-y)) scale(1);
 	}
 }
 

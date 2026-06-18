@@ -106,11 +106,18 @@ if (!pageCtx && !errorMessage && invitation) {
 
 const editUrl = `/dashboard/invitaciones/${id}/editar`;
 const embeddedPreview = Astro.url.searchParams.get('embed') === '1';
+const rawRevealState = Astro.url.searchParams.get('revealState');
+const revealState =
+	rawRevealState === 'closed' || rawRevealState === 'opened' || rawRevealState === 'internal'
+		? rawRevealState
+		: embeddedPreview
+			? 'internal'
+			: 'closed';
 
 const wrapperDataAttributes = pageCtx
 	? {
 			...pageCtx.wrapper.dataAttributes,
-			...(embeddedPreview ? { 'data-reveal-state': 'revealed' } : {}),
+			...(revealState === 'internal' ? { 'data-reveal-state': 'revealed' } : {}),
 		}
 	: undefined;
 ---
@@ -155,7 +162,7 @@ const wrapperDataAttributes = pageCtx
 				{...wrapperDataAttributes}
 			>
 				{
-					!embeddedPreview && pageCtx.envelope && (
+					revealState !== 'internal' && pageCtx.envelope && (
 						<EnvelopeReveal
 							name={pageCtx.envelope.name}
 							sealStyle={pageCtx.envelope.sealStyle}
@@ -172,6 +179,7 @@ const wrapperDataAttributes = pageCtx
 							variant={pageCtx.envelope.variant}
 							teaserDetails={pageCtx.envelope.teaserDetails}
 							card={pageCtx.envelope.card}
+							previewState={revealState === 'opened' ? 'opened' : 'closed'}
 						/>
 					)
 				}

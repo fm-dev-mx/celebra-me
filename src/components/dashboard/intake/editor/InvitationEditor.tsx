@@ -1041,42 +1041,131 @@ export default function InvitationEditor({ initialContext }: Props) {
 							/>
 							<span>Mostrar sobre de apertura</span>
 						</label>
-						<Field
-							label="Etiqueta de tarjeta"
-							value={envelope.cardLabel ?? ''}
-							placeholder="Ejemplo: BABY SHOWER"
-							maxLength={60}
-							onChange={(value) =>
-								updateContent('envelope', {
-									...envelope,
-									cardLabel: value,
-								})
-							}
-						/>
-						<Field
-							label="Frase secundaria (opcional)"
-							value={envelope.cardTagline ?? ''}
-							placeholder="Ejemplo: Una celebración celestial"
-							maxLength={120}
-							onChange={(value) =>
-								updateContent('envelope', {
-									...envelope,
-									cardTagline: value,
-								})
-							}
-						/>
-						<Field
-							label="Monograma / iniciales"
-							value={envelope.sealInitials ?? ''}
-							placeholder="Ejemplo: A·L"
-							maxLength={12}
-							onChange={(value) =>
-								updateContent('envelope', {
-									...envelope,
-									sealInitials: value,
-								})
-							}
-						/>
+						<div className="invitation-editor__field-grid">
+							<Field
+								label="Nombre en el sobre (opcional)"
+								value={envelope.envelopeName ?? ''}
+								placeholder="Si se deja vacío, usa los nombres de Portada"
+								maxLength={200}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, envelopeName: value })
+								}
+							/>
+							<Field
+								label="Etiqueta del documento"
+								value={envelope.documentLabel ?? ''}
+								placeholder="Ejemplo: Primera Comunión"
+								maxLength={60}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, documentLabel: value })
+								}
+							/>
+							<Field
+								label="Texto del sello postal"
+								value={envelope.stampText ?? ''}
+								placeholder="Ejemplo: Luna y Estrella"
+								maxLength={60}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, stampText: value })
+								}
+							/>
+							<Field
+								label="Año del sello"
+								value={envelope.stampYear ?? ''}
+								placeholder="Ejemplo: 2026"
+								maxLength={10}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, stampYear: value })
+								}
+							/>
+							<Field
+								label="Texto del botón"
+								value={envelope.tooltipText ?? ''}
+								placeholder="Ejemplo: Abrir invitación"
+								maxLength={100}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, tooltipText: value })
+								}
+							/>
+							<Field
+								label="Texto inferior"
+								value={envelope.microcopy ?? ''}
+								placeholder="Ejemplo: Toca para abrir"
+								maxLength={100}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, microcopy: value })
+								}
+							/>
+							<Field
+								label="Etiqueta de tarjeta"
+								value={envelope.cardLabel ?? ''}
+								placeholder="Ejemplo: Primera Comunión"
+								maxLength={60}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, cardLabel: value })
+								}
+							/>
+							<Field
+								label="Nombre principal en tarjeta (opcional)"
+								value={envelope.cardName ?? ''}
+								placeholder="Si se deja vacío, usa el nombre principal de Portada"
+								maxLength={200}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, cardName: value })
+								}
+							/>
+							<Field
+								label="Segundo nombre en tarjeta (opcional)"
+								value={envelope.cardSecondaryName ?? ''}
+								placeholder="Si se deja vacío, usa el segundo nombre de Portada"
+								maxLength={200}
+								onChange={(value) =>
+									updateContent('envelope', {
+										...envelope,
+										cardSecondaryName: value,
+									})
+								}
+							/>
+							<Field
+								label="Frase secundaria (opcional)"
+								value={envelope.cardTagline ?? ''}
+								placeholder="Ejemplo: Una celebración de fe"
+								maxLength={120}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, cardTagline: value })
+								}
+							/>
+							<Field
+								label="Etiqueta de invitado"
+								value={envelope.guestLabel ?? ''}
+								placeholder="Ejemplo: Entrega especial para:"
+								maxLength={80}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, guestLabel: value })
+								}
+							/>
+							<Field
+								label="Invitado genérico para vista previa"
+								value={envelope.guestNameFallback ?? ''}
+								placeholder="Ejemplo: Familia invitada"
+								maxLength={200}
+								onChange={(value) =>
+									updateContent('envelope', {
+										...envelope,
+										guestNameFallback: value,
+									})
+								}
+							/>
+							<Field
+								label="Monograma / iniciales"
+								value={envelope.sealInitials ?? ''}
+								placeholder="Ejemplo: A·L"
+								maxLength={12}
+								onChange={(value) =>
+									updateContent('envelope', { ...envelope, sealInitials: value })
+								}
+							/>
+						</div>
 					</SectionCard>
 
 					<SectionCard
