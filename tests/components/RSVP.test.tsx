@@ -1473,7 +1473,7 @@ describe('RSVP Component', () => {
 	});
 
 	describe('Add-to-calendar after confirmed RSVP', () => {
-		it('renders add-to-calendar button when eventStartsAt is provided', async () => {
+		it('opens provider popover with Google, Apple, and Outlook options when eventStartsAt is provided', async () => {
 			const user = userEvent.setup();
 			render(
 				<RSVP
@@ -1492,6 +1492,14 @@ describe('RSVP Component', () => {
 					screen.getByRole('button', { name: /Agregar al calendario/i }),
 				).toBeInTheDocument();
 			});
+
+			await user.click(screen.getByRole('button', { name: /Agregar al calendario/i }));
+
+			expect(screen.getByRole('link', { name: 'Google Calendar' })).toBeInTheDocument();
+			expect(
+				screen.getByRole('button', { name: 'Apple Calendar (.ics)' }),
+			).toBeInTheDocument();
+			expect(screen.getByRole('link', { name: 'Outlook' })).toBeInTheDocument();
 		});
 
 		it('does not render add-to-calendar button when eventStartsAt is missing', async () => {
@@ -1534,6 +1542,28 @@ describe('RSVP Component', () => {
 					screen.getByRole('button', { name: /Agregar al calendario/i }),
 				).toBeInTheDocument();
 			});
+		});
+
+		it('does not render add-to-calendar for declined RSVP', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					{...defaultProps}
+					eventStartsAt="2026-08-01T20:00:00.000Z"
+					eventTimeZone="America/Mexico_City"
+				/>,
+			);
+
+			await user.type(screen.getByLabelText(/Tu nombre/i), 'María');
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('status')).toBeInTheDocument();
+			});
+			expect(
+				screen.queryByRole('button', { name: /Agregar al calendario/i }),
+			).not.toBeInTheDocument();
 		});
 	});
 });

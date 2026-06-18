@@ -85,18 +85,22 @@ function mapEventTimingFromDraft(
 	return derived as Record<string, unknown>;
 }
 
+const FAMILY_LABEL_KEYS: ReadonlyArray<keyof FamilyDraft> = [
+	'sectionSubtitle',
+	'sectionTitle',
+	'parentsTitle',
+	'fatherRole',
+	'motherRole',
+	'godparentsTitle',
+	'spouseTitle',
+	'spouseRole',
+	'childrenTitle',
+	'sectionMessage',
+] as const;
+
 function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
 	const labels: Record<string, unknown> = {};
-	for (const key of [
-		'sectionSubtitle',
-		'sectionTitle',
-		'parentsTitle',
-		'godparentsTitle',
-		'spouseTitle',
-		'spouseRole',
-		'childrenTitle',
-		'sectionMessage',
-	] as const) {
+	for (const key of FAMILY_LABEL_KEYS) {
 		const val = str(draftFamily[key]);
 		if (val) labels[key] = val;
 	}

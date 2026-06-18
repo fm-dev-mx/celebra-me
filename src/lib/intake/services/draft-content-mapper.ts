@@ -30,6 +30,15 @@ function mapMainPeople(data: Record<string, unknown>): Partial<DraftContent> {
 			godparents: str(data.godparents),
 			children: str(data.children),
 			sectionMessage: str(data.sectionMessage),
+			sectionSubtitle: str(data.sectionSubtitle),
+			sectionTitle: str(data.sectionTitle),
+			parentsTitle: str(data.parentsTitle),
+			godparentsTitle: str(data.godparentsTitle),
+			spouseTitle: str(data.spouseTitle),
+			spouseRole: str(data.spouseRole),
+			childrenTitle: str(data.childrenTitle),
+			fatherRole: str(data.fatherRole),
+			motherRole: str(data.motherRole),
 		},
 	};
 }
@@ -265,6 +274,8 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			spouseTitle: str(labels?.spouseTitle),
 			spouseRole: str(labels?.spouseRole),
 			childrenTitle: str(labels?.childrenTitle),
+			fatherRole: str(labels?.fatherRole),
+			motherRole: str(labels?.motherRole),
 			visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 			groups: publishedGroups
 				?.filter((g) => g.items && g.items.length > 0)

@@ -68,6 +68,8 @@ export const FAMILY_FIELD_LABELS: Record<string, string> = {
 	godparentsTitle: 'Título de padrinos',
 	spouseTitle: 'Título de cónyuge',
 	spouseRole: 'Rol de cónyuge',
+	fatherRole: 'Rol del padre',
+	motherRole: 'Rol de la madre',
 	childrenTitle: 'Título de hijos',
 	visible: 'Visibilidad',
 };
@@ -216,6 +218,7 @@ const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
 	},
 	secondaryName: {
 		boda: 'Novio',
+		'primera-comunion': 'Nombre del segundo niño(a)',
 	},
 };
 
