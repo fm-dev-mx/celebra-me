@@ -20,7 +20,7 @@ import type {
 import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import type { VenueEntryInput } from '@/lib/schemas/content/location.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
-import { buildRevealCard } from '@/lib/invitation/reveal-card';
+import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
@@ -206,6 +206,10 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 
 	if (!data.envelope || data.envelope.disabled) return { enabled: false };
+	const opening = buildOpeningViewModel({
+		hero: data.hero,
+		envelope: data.envelope,
+	});
 
 	const venueName = pickVenueValue(data.location, 'venueName');
 	const venueCity = pickVenueValue(data.location, 'city');
@@ -241,12 +245,8 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			stampYear: data.envelope.stampYear,
 			tooltipText: data.envelope.tooltipText,
 			variant: normalizedPreset,
-			card: buildRevealCard({
-				name: data.hero.name,
-				date: data.hero.date,
-				label: data.envelope.cardLabel ?? data.envelope.documentLabel,
-				tagline: data.envelope.cardTagline,
-			}),
+			name: opening.envelope.name,
+			card: opening.card,
 			colors: {
 				background: data.envelope.closedPalette?.background
 					? resolveColorRole(data.envelope.closedPalette.background)

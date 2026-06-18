@@ -52,9 +52,11 @@ describe('prepareInvitationPageContext', () => {
 
 		expect(context.guestName).toBe('Mariana Soto');
 		expect(context.envelope?.card).toEqual({
-			label: 'Invitación',
-			name: fixture.hero.name,
+			label: fixture.hero.label,
+			primaryName: fixture.hero.name,
+			secondaryName: undefined,
 			date: '25 · ABR · 2026',
+			guestLabel: 'Entrega especial para:',
 			guestName: 'Mariana Soto',
 			tagline: undefined,
 		});
@@ -107,9 +109,11 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.envelope).not.toHaveProperty('city');
 		expect(context.envelope).not.toHaveProperty('date');
 		expect(context.envelope?.card).toEqual({
-			label: 'Invitación',
-			name: fixture.hero.name,
+			label: fixture.hero.label,
+			primaryName: fixture.hero.name,
+			secondaryName: undefined,
 			date: '25 · ABR · 2026',
+			guestLabel: 'Entrega especial para:',
 			guestName: undefined,
 			tagline: undefined,
 		});
@@ -160,6 +164,39 @@ describe('prepareInvitationPageContext', () => {
 			'rsvp',
 			'thankYou',
 		]);
+	});
+
+	it('derives envelope and reveal-card names from primary and secondary hero names', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				hero: {
+					...fixture.hero,
+					name: 'Luna Yamileth',
+					secondaryName: 'Estrella Abigail',
+					label: 'Primera Comunión',
+				},
+				envelope: {
+					...fixture.envelope,
+					cardLabel: undefined,
+					documentLabel: undefined,
+				},
+			},
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const context = prepareInvitationPageContext({
+			eventEntry: event,
+			slug: 'demo-xv-jewelry-box',
+		});
+
+		expect(context.envelope?.name).toBe('Luna Yamileth y Estrella Abigail');
+		expect(context.envelope?.card).toMatchObject({
+			label: 'Primera Comunión',
+			primaryName: 'Luna Yamileth',
+			secondaryName: 'Estrella Abigail',
+		});
 	});
 
 	it('enchanted rose hero and interlude focal points', () => {
@@ -493,8 +530,10 @@ describe('buildPageContextFromViewModel', () => {
 					teaserDetails: '1 ago 2026 • Salón García',
 					card: {
 						label: 'Primera Comunión',
-						name: 'Luna y Estrella',
+						primaryName: 'Luna Yamileth',
+						secondaryName: 'Estrella Abigail',
 						date: '1 · AGO · 2026',
+						guestLabel: 'Entrega especial para:',
 					},
 					colors: {},
 				},
@@ -724,12 +763,14 @@ describe('buildPageContextFromViewModel', () => {
 				enabled: true,
 				data: {
 					sealStyle: 'wax',
+					name: 'Test',
 					microcopy: 'Test Event',
 					teaserDetails: '1 ago 2026 • Salón García',
 					card: {
 						label: 'Test Event',
-						name: 'Test',
+						primaryName: 'Test',
 						date: '1 · AGO · 2026',
+						guestLabel: 'Entrega especial para:',
 					},
 					colors: {},
 				},

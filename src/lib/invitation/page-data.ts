@@ -77,12 +77,12 @@ function buildEnvelopeData(
 
 	return {
 		...envelope.data,
-		name: envelope.data.card.name,
+		name: envelope.data.name,
 		eventSlug,
 		isDemo,
 		card: {
 			...envelope.data.card,
-			guestName,
+			guestName: guestName ?? envelope.data.card.guestName,
 		},
 	};
 }
