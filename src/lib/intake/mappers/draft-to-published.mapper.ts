@@ -347,13 +347,19 @@ function mapLocationFromDraft(
 			demoLocation?.ceremony as Record<string, unknown> | undefined,
 			ctx,
 		);
-		if (ceremony) result.ceremony = ceremony;
+		if (ceremony) {
+			ceremony.venueEvent = 'Ceremonia';
+			result.ceremony = ceremony;
+		}
 		const reception = mapVenue(
 			draftLocation.reception,
 			demoLocation?.reception as Record<string, unknown> | undefined,
 			ctx,
 		);
-		if (reception) result.reception = reception;
+		if (reception) {
+			reception.venueEvent = 'Recepción';
+			result.reception = reception;
+		}
 	}
 
 	const introFields = resolveIntroFields(draftLocation, demoLocation, ctx);
