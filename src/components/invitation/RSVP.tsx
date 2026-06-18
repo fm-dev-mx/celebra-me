@@ -268,6 +268,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		isDemoPreview,
 		serverProvidedLocation: revealedLocation,
 		locationVisibility,
+		submitted,
 	});
 
 	/* ----- render paths ----- */

@@ -8,6 +8,7 @@ export interface UseGatedLocationInput {
 	isDemoPreview: boolean | undefined;
 	serverProvidedLocation: LocationSection | undefined;
 	locationVisibility?: LocationVisibility;
+	submitted?: boolean;
 }
 
 export interface UseGatedLocationOutput {
@@ -17,6 +18,8 @@ export interface UseGatedLocationOutput {
 }
 
 const FETCH_ERROR_MESSAGE = 'No se pudo cargar la ubicación. Intenta de nuevo más tarde.';
+const MAX_FETCH_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [250, 500];
 
 export function useGatedLocation({
 	inviteId,
@@ -24,6 +27,7 @@ export function useGatedLocation({
 	isDemoPreview,
 	serverProvidedLocation,
 	locationVisibility,
+	submitted = true,
 }: UseGatedLocationInput): UseGatedLocationOutput {
 	const [location, setLocation] = useState<LocationSection | undefined>(serverProvidedLocation);
 	const [isFetching, setIsFetching] = useState(false);
@@ -37,7 +41,7 @@ export function useGatedLocation({
 			setIsFetching(false);
 		}
 
-		if (locationVisibility !== 'after-rsvp' || !isConfirmed || !inviteId) {
+		if (locationVisibility !== 'after-rsvp' || !isConfirmed || !submitted || !inviteId) {
 			reset();
 			return;
 		}
@@ -58,25 +62,44 @@ export function useGatedLocation({
 		setIsFetching(true);
 		setError(undefined);
 
-		rsvpApi
-			.getGatedLocation(inviteId)
-			.then((payload) => {
-				if (requestId !== latestFetchRef.current) return;
-				setLocation(payload.location);
-			})
-			.catch(() => {
-				if (requestId !== latestFetchRef.current) return;
-				setError(FETCH_ERROR_MESSAGE);
-			})
-			.finally(() => {
-				if (requestId !== latestFetchRef.current) return;
-				setIsFetching(false);
-			});
+		const attemptFetch = (attemptNumber: number): void => {
+			rsvpApi
+				.getGatedLocation(inviteId)
+				.then((payload) => {
+					if (requestId !== latestFetchRef.current) return;
+					setLocation(payload.location);
+					setError(undefined);
+					setIsFetching(false);
+				})
+				.catch(() => {
+					if (requestId !== latestFetchRef.current) return;
+
+					if (attemptNumber < MAX_FETCH_ATTEMPTS) {
+						setTimeout(
+							() => attemptFetch(attemptNumber + 1),
+							RETRY_DELAYS_MS[attemptNumber - 1],
+						);
+						return;
+					}
+
+					setError(FETCH_ERROR_MESSAGE);
+					setIsFetching(false);
+				});
+		};
+
+		attemptFetch(1);
 
 		return () => {
 			latestFetchRef.current += 1;
 		};
-	}, [locationVisibility, isConfirmed, inviteId, isDemoPreview, serverProvidedLocation]);
+	}, [
+		locationVisibility,
+		isConfirmed,
+		inviteId,
+		isDemoPreview,
+		serverProvidedLocation,
+		submitted,
+	]);
 
 	return { location, isFetching, error };
 }

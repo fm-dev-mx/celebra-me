@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { useGatedLocation } from '@/hooks/use-gated-location';
 import { rsvpApi } from '@/lib/client/rsvp-api';
 import type { LocationSection } from '@/lib/adapters/types';
@@ -107,74 +107,147 @@ describe('useGatedLocation', () => {
 		expect(mockGetGatedLocation).toHaveBeenCalledWith('mock-id');
 	});
 
-	it('does not fetch when declined', () => {
-		const { result } = renderHook(() =>
-			useGatedLocation({
-				inviteId: 'mock-id',
-				isConfirmed: false,
-				isDemoPreview: false,
-				serverProvidedLocation: undefined,
-				...AFTER_RSVP_VISIBILITY,
-			}),
-		);
+	describe('with fake timers', () => {
+		beforeEach(() => {
+			jest.useFakeTimers();
+		});
 
-		expect(result.current.location).toBeUndefined();
-		expect(result.current.isFetching).toBe(false);
-		expect(mockGetGatedLocation).not.toHaveBeenCalled();
-	});
+		afterEach(() => {
+			jest.useRealTimers();
+		});
 
-	it('does not fetch when isDemoPreview is true', () => {
-		const { result } = renderHook(() =>
-			useGatedLocation({
-				inviteId: 'mock-id',
-				isConfirmed: true,
-				isDemoPreview: true,
-				serverProvidedLocation: undefined,
-				...AFTER_RSVP_VISIBILITY,
-			}),
-		);
+		it('retries a transient failure before exposing an error', async () => {
+			mockGetGatedLocation
+				.mockRejectedValueOnce(new Error('Network error'))
+				.mockResolvedValueOnce({ location: mockLocation });
 
-		expect(result.current.location).toBeUndefined();
-		expect(result.current.isFetching).toBe(false);
-		expect(mockGetGatedLocation).not.toHaveBeenCalled();
-	});
+			const { result } = renderHook(() =>
+				useGatedLocation({
+					inviteId: 'mock-id',
+					isConfirmed: true,
+					isDemoPreview: false,
+					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
+				}),
+			);
 
-	it('shows server-provided location even when isDemoPreview is true', () => {
-		const { result } = renderHook(() =>
-			useGatedLocation({
-				inviteId: 'mock-id',
-				isConfirmed: true,
-				isDemoPreview: true,
-				serverProvidedLocation: mockLocation,
-				...AFTER_RSVP_VISIBILITY,
-			}),
-		);
+			await act(async () => {
+				await Promise.resolve();
+			});
 
-		expect(result.current.location).toEqual(mockLocation);
-		expect(result.current.isFetching).toBe(false);
-		expect(result.current.error).toBeUndefined();
-		expect(mockGetGatedLocation).not.toHaveBeenCalled();
-	});
+			expect(mockGetGatedLocation).toHaveBeenCalledTimes(1);
+			expect(result.current.isFetching).toBe(true);
+			expect(result.current.error).toBeUndefined();
 
-	it('sets error when fetch fails', async () => {
-		mockGetGatedLocation.mockRejectedValue(new Error('Network error'));
+			await act(async () => {
+				jest.advanceTimersByTime(250);
+			});
 
-		const { result } = renderHook(() =>
-			useGatedLocation({
-				inviteId: 'mock-id',
-				isConfirmed: true,
-				isDemoPreview: false,
-				serverProvidedLocation: undefined,
-				...AFTER_RSVP_VISIBILITY,
-			}),
-		);
+			await act(async () => {
+				await Promise.resolve();
+			});
 
-		await waitFor(() => {
+			expect(mockGetGatedLocation).toHaveBeenCalledTimes(2);
+			expect(result.current.location).toEqual(mockLocation);
+			expect(result.current.error).toBeUndefined();
 			expect(result.current.isFetching).toBe(false);
 		});
 
-		expect(result.current.location).toBeUndefined();
-		expect(result.current.error).toBeDefined();
+		it('does not fetch when declined', () => {
+			const { result } = renderHook(() =>
+				useGatedLocation({
+					inviteId: 'mock-id',
+					isConfirmed: false,
+					isDemoPreview: false,
+					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
+				}),
+			);
+
+			expect(result.current.location).toBeUndefined();
+			expect(result.current.isFetching).toBe(false);
+			expect(mockGetGatedLocation).not.toHaveBeenCalled();
+		});
+
+		it('does not fetch when isDemoPreview is true', () => {
+			const { result } = renderHook(() =>
+				useGatedLocation({
+					inviteId: 'mock-id',
+					isConfirmed: true,
+					isDemoPreview: true,
+					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
+				}),
+			);
+
+			expect(result.current.location).toBeUndefined();
+			expect(result.current.isFetching).toBe(false);
+			expect(mockGetGatedLocation).not.toHaveBeenCalled();
+		});
+
+		it('shows server-provided location even when isDemoPreview is true', () => {
+			const { result } = renderHook(() =>
+				useGatedLocation({
+					inviteId: 'mock-id',
+					isConfirmed: true,
+					isDemoPreview: true,
+					serverProvidedLocation: mockLocation,
+					...AFTER_RSVP_VISIBILITY,
+				}),
+			);
+
+			expect(result.current.location).toEqual(mockLocation);
+			expect(result.current.isFetching).toBe(false);
+			expect(result.current.error).toBeUndefined();
+			expect(mockGetGatedLocation).not.toHaveBeenCalled();
+		});
+
+		it('sets error when fetch keeps failing after the retry budget is exhausted', async () => {
+			mockGetGatedLocation.mockRejectedValue(new Error('Network error'));
+
+			const { result } = renderHook(() =>
+				useGatedLocation({
+					inviteId: 'mock-id',
+					isConfirmed: true,
+					isDemoPreview: false,
+					serverProvidedLocation: undefined,
+					...AFTER_RSVP_VISIBILITY,
+				}),
+			);
+
+			await act(async () => {
+				await Promise.resolve();
+			});
+
+			expect(mockGetGatedLocation).toHaveBeenCalledTimes(1);
+			expect(result.current.isFetching).toBe(true);
+			expect(result.current.error).toBeUndefined();
+
+			await act(async () => {
+				jest.advanceTimersByTime(250);
+			});
+
+			await act(async () => {
+				await Promise.resolve();
+			});
+
+			expect(mockGetGatedLocation).toHaveBeenCalledTimes(2);
+			expect(result.current.isFetching).toBe(true);
+			expect(result.current.error).toBeUndefined();
+
+			await act(async () => {
+				jest.advanceTimersByTime(500);
+			});
+
+			await act(async () => {
+				await Promise.resolve();
+			});
+
+			expect(mockGetGatedLocation).toHaveBeenCalledTimes(3);
+			expect(result.current.isFetching).toBe(false);
+			expect(result.current.location).toBeUndefined();
+			expect(result.current.error).toBeDefined();
+		});
 	});
 
 	it('clears location when isConfirmed becomes false', () => {

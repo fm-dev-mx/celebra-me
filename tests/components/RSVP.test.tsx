@@ -1289,10 +1289,19 @@ describe('RSVP Component', () => {
 			expect(rsvpCalls).toHaveLength(0);
 		});
 
-		it('shows a safe fallback message when gated location fetch fails', async () => {
+		it('retries a transient gated-location failure before showing an error', async () => {
+			let locationAttempts = 0;
 			(global.fetch as jest.Mock).mockImplementation((url: string) => {
 				if (url.includes('/location')) {
-					return Promise.reject(new Error('Network error'));
+					locationAttempts += 1;
+					if (locationAttempts === 1) {
+						return Promise.reject(new Error('Network error'));
+					}
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({ success: true, data: { location: revealedLocation } }),
+					} as Response);
 				}
 				return Promise.resolve({
 					ok: true,
@@ -1319,11 +1328,18 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				const status = screen.getByRole('status');
-				expect(within(status).getByRole('heading', { level: 2 })).toBeInTheDocument();
+				expect(locationAttempts).toBe(1);
 			});
-			expect(screen.queryByText(/Salón García/)).not.toBeInTheDocument();
-			expect(screen.getByText(/No se pudo cargar la ubicación/i)).toBeInTheDocument();
+			expect(screen.queryByText(/No se pudo cargar la ubicación/i)).not.toBeInTheDocument();
+
+			await waitFor(() => {
+				const status = screen.getByRole('status');
+				expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+				expect(
+					within(status).getByRole('link', { name: /Ver ubicación en Google Maps/i }),
+				).toHaveAttribute('href', 'https://maps.example.com/salon-garcia');
+			});
+			expect(screen.queryByText(/No se pudo cargar la ubicación/i)).not.toBeInTheDocument();
 		});
 
 		it('demo mode does not fire real RSVP API calls', async () => {
@@ -1466,6 +1482,85 @@ describe('RSVP Component', () => {
 			expect(
 				within(status).getByRole('link', { name: /Ver ubicación en Google Maps/i }),
 			).toHaveAttribute('href', 'https://maps.google.com/?q=Salon%20Garcia');
+		});
+
+		it('does not request location before RSVP submit completes', async () => {
+			let locationFetches = 0;
+			(global.fetch as jest.Mock).mockImplementation((url: string) => {
+				if (url.includes('/location')) {
+					locationFetches += 1;
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({ success: true, data: { location: revealedLocation } }),
+					} as Response);
+				}
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: async () => ({ rsvpId: 'mock-rsvp-id' }),
+				} as Response);
+			});
+
+			const user = userEvent.setup();
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+				},
+			});
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(locationFetches).toBe(0);
+
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(locationFetches).toBeGreaterThanOrEqual(1);
+			});
+
+			const status = screen.getByRole('status');
+			expect(within(status).getByText(/Salón García/)).toBeInTheDocument();
+		});
+
+		it('does not mount location reveal when RSVP submit fails', async () => {
+			(global.fetch as jest.Mock).mockImplementation((url: string) => {
+				if (url.includes('/location')) {
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({ success: true, data: { location: revealedLocation } }),
+					} as Response);
+				}
+				return Promise.resolve({
+					ok: false,
+					status: 500,
+					json: async () => ({
+						success: false,
+						error: { code: 'internal_error', message: 'Server error' },
+					}),
+				} as Response);
+			});
+
+			const user = userEvent.setup();
+			renderRSVP({
+				initialGuestData: {
+					inviteId: 'mock-invite-id',
+					fullName: 'María Solís',
+				},
+			});
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText(/Server error/i)).toBeInTheDocument();
+			});
+
+			const locationCalls = (global.fetch as jest.Mock).mock.calls.filter(
+				([url]: [string]) => typeof url === 'string' && url.includes('/location'),
+			);
+			expect(locationCalls).toHaveLength(0);
 		});
 
 		it('re-fetches and reveals location after re-confirming attendance', async () => {
