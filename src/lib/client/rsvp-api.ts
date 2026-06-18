@@ -74,19 +74,21 @@ class RsvpApi {
 			`/api/invitacion/${encodeURIComponent(inviteId)}/location`,
 			{
 				method: 'GET',
+				cache: 'no-store',
 			},
 		);
 		const data = this.handleResponse(result);
-		if ('data' in data) {
-			return data.data;
-		}
-		return data;
+		return 'data' in data ? data.data : data;
 	}
 
 	async markViewed(inviteId: string): Promise<void> {
 		const result = await fetchJSON<void>(
 			`/api/invitacion/${encodeURIComponent(inviteId)}/view`,
-			{ method: 'POST' },
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({}),
+			},
 		);
 		this.handleResponse(result);
 	}

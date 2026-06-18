@@ -3,6 +3,11 @@ import { resolveGatedLocationPayload } from '@/lib/invitation/gated-location';
 import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
+function withNoStore(response: Response): Response {
+	response.headers.set('Cache-Control', 'no-store');
+	return response;
+}
+
 export const GET: APIRoute = async ({ params, url }) => {
 	try {
 		const inviteId = sanitize(params.inviteId, 100);
@@ -10,8 +15,8 @@ export const GET: APIRoute = async ({ params, url }) => {
 		const slug = sanitize(url.searchParams.get('slug'), 140);
 
 		const payload = await resolveGatedLocationPayload({ inviteId, eventType, slug });
-		return successResponse(payload);
+		return withNoStore(successResponse(payload));
 	} catch (error) {
-		return errorResponse(error);
+		return withNoStore(errorResponse(error));
 	}
 };
