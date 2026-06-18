@@ -119,6 +119,21 @@ export function venueLabel(type: string, label?: string): string {
 	return label || (type === 'ceremony' ? 'Ceremonia' : type === 'reception' ? 'Recepción' : '');
 }
 
+export function ensureFamilyGodparentExclusivity(
+	family: Record<string, unknown>,
+): Record<string, unknown> {
+	const groups = family.godparentGroups;
+	if (Array.isArray(groups)) {
+		if (groups.length > 0) {
+			const { godparents: _unused, ...rest } = family;
+			return rest;
+		}
+		const { godparentGroups: _unused, ...rest } = family;
+		return rest;
+	}
+	return family;
+}
+
 export function mergeOverlay(
 	base: Record<string, unknown>,
 	overlay: Record<string, unknown>,

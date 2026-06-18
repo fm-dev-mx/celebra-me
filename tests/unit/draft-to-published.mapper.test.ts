@@ -249,6 +249,153 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('prefers godparentGroups when both godparents and non-empty godparentGroups are present', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					motherName: 'Maria',
+					godparents: 'Pedro — Padrino\nLuisa — Madrina',
+					godparentGroups: [
+						{
+							honoreeName: 'Luna Yamileth',
+							label: 'Luna',
+							names: 'Emiliano Pérez Rodríguez — Padrino',
+						},
+					],
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			parents: { father: 'Juan', mother: 'Maria' },
+			godparentGroups: [
+				{
+					honoreeName: 'Luna Yamileth',
+					label: 'Luna',
+					godparents: [{ name: 'Emiliano Pérez Rodríguez', role: 'Padrino' }],
+				},
+			],
+		});
+		expect(result.family).not.toHaveProperty('godparents');
+	});
+
+	it('falls back to godparents when godparentGroups is an empty array', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					godparents: 'Pedro — Padrino',
+					godparentGroups: [],
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			godparents: [{ name: 'Pedro', role: 'Padrino' }],
+		});
+		expect(result.family).not.toHaveProperty('godparentGroups');
+	});
+
+	it('maps only godparentGroups when only godparentGroups is present', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					godparentGroups: [
+						{
+							honoreeName: 'Luna Yamileth',
+							label: 'Luna',
+							names: 'Emiliano Pérez Rodríguez',
+						},
+					],
+				},
+			},
+		});
+
+		expect(result.family).toMatchObject({
+			godparentGroups: [
+				{
+					honoreeName: 'Luna Yamileth',
+					label: 'Luna',
+					godparents: [{ name: 'Emiliano Pérez Rodríguez' }],
+				},
+			],
+		});
+		expect(result.family).not.toHaveProperty('godparents');
+	});
+
+	const SCHEMA_VALIDATION_FIXTURE = {
+		quote: { text: 'Test quote', author: 'Test author' },
+		location: {
+			ceremony: {
+				venueName: 'Church',
+				address: '123 Main St',
+				city: 'City',
+				date: '2026-06-15',
+				time: '18:00',
+			},
+			reception: {
+				venueName: 'Reception Hall',
+				address: '456 Main St',
+				city: 'City',
+				date: '2026-06-15',
+				time: '20:00',
+			},
+		},
+	};
+
+	it.each([
+		{
+			name: 'godparentGroups only',
+			family: {
+				fatherName: 'Fernando Valenzuela',
+				motherName: 'Maria Duarte',
+				godparentGroups: [
+					{
+						honoreeName: 'Luna Yamileth',
+						label: 'Luna',
+						names: 'Emiliano Pérez Rodríguez — Padrino',
+					},
+				],
+			},
+		},
+		{
+			name: 'both godparents and non-empty godparentGroups',
+			family: {
+				fatherName: 'Fernando Valenzuela',
+				motherName: 'Maria Duarte',
+				godparents: 'Pedro — Padrino\nLuisa — Madrina',
+				godparentGroups: [
+					{
+						honoreeName: 'Luna Yamileth',
+						label: 'Luna',
+						names: 'Emiliano Pérez Rodríguez — Padrino',
+					},
+				],
+			},
+		},
+	])('passes eventContentSchema validation when draft has $name', ({ family }) => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family,
+				...SCHEMA_VALIDATION_FIXTURE,
+			},
+		});
+
+		const validation = eventContentSchema.safeParse(result);
+		expect(validation.success).toBe(true);
+		expect(result.family).toHaveProperty('godparentGroups');
+		expect(result.family).not.toHaveProperty('godparents');
+	});
+
 	it('maps parentsOrder father-first from draft to published at family root level', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

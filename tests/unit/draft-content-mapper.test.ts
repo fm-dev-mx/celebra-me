@@ -506,6 +506,82 @@ describe('mergePublishedWithDraft', () => {
 		expect(result.content.thankYou?.message).toBe('Editado');
 		expect(result.content.thankYou?.focalPoint).toBe('50% 30%');
 	});
+
+	it.each([
+		{
+			name: 'strips godparents when merge produces non-empty godparentGroups',
+			published: {
+				family: {
+					parents: { father: 'Juan', mother: 'Maria' },
+					godparentGroups: [
+						{
+							honoreeName: 'Luna Yamileth',
+							label: 'Luna',
+							godparents: [{ name: 'Emiliano Pérez Rodríguez' }],
+						},
+					],
+				},
+			},
+			draft: {
+				family: {
+					fatherName: 'Juan',
+					motherName: 'Maria',
+					godparents: 'Pedro — Padrino',
+				},
+			},
+			assertions: (family: Record<string, unknown> | undefined) => {
+				expect(family).toHaveProperty('godparentGroups');
+				expect(family).not.toHaveProperty('godparents');
+			},
+		},
+		{
+			name: 'strips empty godparentGroups when merge produces godparentGroups as empty array',
+			published: {
+				family: {
+					parents: { father: 'Juan', mother: 'Maria' },
+					godparentGroups: [],
+					godparents: [],
+				},
+			},
+			draft: {
+				family: {
+					fatherName: 'Juan',
+					motherName: 'Maria',
+					godparents: 'Pedro — Padrino',
+				},
+			},
+			assertions: (family: Record<string, unknown> | undefined) => {
+				expect(family).not.toHaveProperty('godparentGroups');
+			},
+		},
+		{
+			name: 'preserves godparents when merge has no godparentGroups',
+			published: {
+				family: {
+					parents: { father: 'Juan', mother: 'Maria' },
+				},
+			},
+			draft: {
+				family: {
+					fatherName: 'Juan',
+					motherName: 'Maria',
+					godparents: 'Pedro — Padrino\nLuisa — Madrina',
+				},
+			},
+			assertions: (family: Record<string, unknown> | undefined) => {
+				expect(family?.godparents).toBe('Pedro — Padrino\nLuisa — Madrina');
+				expect(family).not.toHaveProperty('godparentGroups');
+			},
+		},
+	])('$name', ({ published, draft, assertions }) => {
+		const result = mergePublishedWithDraft(
+			published as unknown as Record<string, unknown>,
+			draft,
+		);
+
+		expect(result.content.family).toBeDefined();
+		assertions(result.content.family);
+	});
 });
 
 describe('mapNestedToDraftContent', () => {

@@ -205,11 +205,13 @@ function mapFamilyFromDraft(
 	if (family.parentsOrder) result.parentsOrder = family.parentsOrder;
 	if (str(family.spouseName)) result.spouse = str(family.spouseName);
 
-	const mappedGodparents = buildGodparents(family);
-	if (mappedGodparents) result.godparents = mappedGodparents;
-
 	const mappedGodparentGroups = buildGodparentGroups(family);
-	if (mappedGodparentGroups) result.godparentGroups = mappedGodparentGroups;
+	if (mappedGodparentGroups) {
+		result.godparentGroups = mappedGodparentGroups;
+	} else {
+		const mappedGodparents = buildGodparents(family);
+		if (mappedGodparents) result.godparents = mappedGodparents;
+	}
 
 	const childrenText = str(family.children);
 	if (childrenText) {

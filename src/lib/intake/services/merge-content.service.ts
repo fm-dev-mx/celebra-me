@@ -2,6 +2,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import type { SectionSource } from '@/lib/intake/types';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS } from '@/lib/intake/constants';
+import { ensureFamilyGodparentExclusivity } from '@/lib/intake/utils';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -68,13 +69,12 @@ export function mergePublishedWithDraft(
 			(isRecord(draftVal) || isRecord(publishedVal) || isRecord(demoVal))
 		) {
 			if (isRecord(draftVal) || isRecord(publishedVal)) {
-				const merged = shallowMergeDefined(
-					isRecord(publishedVal) ? publishedVal : undefined,
-					isRecord(draftVal) ? draftVal : undefined,
-				);
+				const merged = shallowMergeDefined(publishedVal, draftVal);
 				if (merged !== undefined) {
+					const normalized =
+						key === 'family' ? ensureFamilyGodparentExclusivity(merged) : merged;
 					result[key as keyof DraftContent] = structuredClone(
-						merged,
+						normalized,
 					) as DraftContent[keyof DraftContent];
 				}
 			} else if (allowDemoFallback && isRecord(demoVal)) {
