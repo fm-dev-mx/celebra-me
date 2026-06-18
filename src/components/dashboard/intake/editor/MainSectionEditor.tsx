@@ -80,7 +80,7 @@ export default function MainSectionEditor({
 					value={main.name ?? ''}
 					onChange={(value) => onUpdateHero({ name: value })}
 				/>
-				{eventType === 'boda' && (
+				{(eventType === 'boda' || eventType === 'primera-comunion') && (
 					<Field
 						label={getFieldLabel('hero', 'secondaryName', eventType)}
 						value={main.secondaryName ?? ''}

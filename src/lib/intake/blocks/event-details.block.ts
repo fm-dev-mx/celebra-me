@@ -20,7 +20,7 @@ export const eventDetailsBlock: IntakeBlockDefinition = {
 			type: 'text',
 			required: false,
 			placeholder: 'Ej: Alejandro (para bodas)',
-			supportedEventTypes: ['boda'],
+			supportedEventTypes: ['boda', 'primera-comunion'],
 		},
 		{
 			name: 'eventLabel',

@@ -216,6 +216,7 @@ const EVENT_HERO_LABELS: Record<string, Partial<Record<EventType, string>>> = {
 	},
 	secondaryName: {
 		boda: 'Novio',
+		'primera-comunion': 'Nombre del segundo niño(a)',
 	},
 };
 

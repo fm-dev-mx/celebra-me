@@ -109,10 +109,10 @@ describe('getVisibleFields', () => {
 		expect(fieldNames).not.toContain('secondaryName');
 	});
 
-	it('hides secondaryName for primera-comunion events', () => {
+	it('shows secondaryName for primera-comunion events', () => {
 		const fields = getVisibleFields('primera-comunion', 'event-details');
 		const fieldNames = fields.map((f) => f.name);
-		expect(fieldNames).not.toContain('secondaryName');
+		expect(fieldNames).toContain('secondaryName');
 	});
 
 	it('shows spouseName for boda events', () => {
@@ -175,6 +175,12 @@ describe('getVisibleFields', () => {
 
 	it('uses primera-comunion-specific hero name label', () => {
 		expect(getFieldLabel('hero', 'name', 'primera-comunion')).toBe('Nombre del niño(a)');
+	});
+
+	it('uses primera-comunion-specific hero secondaryName label', () => {
+		expect(getFieldLabel('hero', 'secondaryName', 'primera-comunion')).toBe(
+			'Nombre del segundo niño(a)',
+		);
 	});
 });
 

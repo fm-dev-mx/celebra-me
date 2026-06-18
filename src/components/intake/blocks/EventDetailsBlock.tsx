@@ -36,7 +36,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled, eventType }) =
 			{visibleFields.has('secondaryName') && (
 				<div className="intake-field">
 					<label className="intake-field__label" htmlFor="secondaryName">
-						Nombre adicional (para bodas)
+						Nombre adicional
 					</label>
 					<input
 						id="secondaryName"
@@ -44,7 +44,7 @@ const EventDetailsBlock: FC<Props> = ({ data, onChange, disabled, eventType }) =
 						className="intake-field__input"
 						value={getValue('secondaryName')}
 						onChange={(e) => onChange('secondaryName', e.target.value)}
-						placeholder="Segundo nombre o nombre de pareja"
+						placeholder="Ej: Estrella Abigail"
 						disabled={disabled}
 					/>
 				</div>
