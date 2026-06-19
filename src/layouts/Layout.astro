@@ -107,7 +107,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GO
 			<slot />
 		</main>
 
-		{isProd && <Analytics />}
-		{isProd && <SpeedInsights />}
+		<Analytics />
+		<SpeedInsights />
 	</body>
 </html>
