@@ -1,7 +1,10 @@
 import { GET as getDrift } from '@/pages/api/dashboard/admin/content-drift';
 import { POST as dryRunPublish } from '@/pages/api/dashboard/admin/demo-publish/dry-run';
 import { POST as confirmPublish } from '@/pages/api/dashboard/admin/demo-publish/confirm';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { buildDemoDriftReport } from '@/lib/content-publication/demo-drift';
 import { confirmDemoPublish, dryRunDemoPublish } from '@/lib/content-publication/demo-publish';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -18,6 +21,7 @@ jest.mock('@/lib/rsvp/security/csrf', () => ({
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
+	requireAdminMutationAccess: jest.fn(),
 }));
 
 jest.mock('@/lib/content-publication/demo-drift', () => ({
@@ -31,6 +35,9 @@ jest.mock('@/lib/content-publication/demo-publish', () => ({
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
+>;
+const requireAdminMutationAccessMock = requireAdminMutationAccess as jest.MockedFunction<
+	typeof requireAdminMutationAccess
 >;
 const buildDemoDriftReportMock = buildDemoDriftReport as jest.MockedFunction<
 	typeof buildDemoDriftReport
@@ -50,6 +57,7 @@ describe('content sync admin APIs', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		requireAdminStrongSessionMock.mockResolvedValue(adminSession);
+		requireAdminMutationAccessMock.mockResolvedValue(adminSession);
 	});
 
 	it('rejects drift report access for non-admin users', async () => {

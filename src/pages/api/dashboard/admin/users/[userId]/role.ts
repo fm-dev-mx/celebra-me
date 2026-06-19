@@ -1,7 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security/csrf';
+import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { canChangeUserRole } from '@/lib/rsvp/security/admin-protection';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, forbidden, jsonResponse } from '@/lib/rsvp/core/http';
@@ -10,13 +8,7 @@ import { UpdateUserRoleSchema, UuidSchema } from '@/lib/schemas';
 
 export const PATCH: APIRoute = async ({ request, params, cookies }) => {
 	try {
-		await requireAdminRateLimit(request, 'admin:role');
-
-		if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
-			validateCsrfToken(request, cookies);
-		}
-
-		const session = await requireAdminStrongSession(request);
+		const session = await requireAdminMutationAccess(request, cookies, 'admin:role');
 
 		const userIdValidation = UuidSchema.safeParse(params.userId);
 		if (!userIdValidation.success) {

@@ -1,7 +1,10 @@
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[userId]/role';
 import { PATCH as updateUserMembership } from '@/pages/api/dashboard/admin/users/[userId]/memberships';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import {
 	listAdminUsers,
 	changeUserRoleAdmin,
@@ -29,6 +32,7 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
+	requireAdminMutationAccess: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
@@ -44,6 +48,9 @@ jest.mock('@/lib/rsvp/security/admin-protection', () => ({
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
+>;
+const requireAdminMutationAccessMock = requireAdminMutationAccess as jest.MockedFunction<
+	typeof requireAdminMutationAccess
 >;
 const listAdminUsersMock = listAdminUsers as jest.MockedFunction<typeof listAdminUsers>;
 const changeUserRoleAdminMock = changeUserRoleAdmin as jest.MockedFunction<
@@ -70,6 +77,13 @@ const VALID_ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
 describe('Admin Users API', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		requireAdminMutationAccessMock.mockResolvedValue({
+			userId: VALID_ADMIN_ID,
+			email: 'admin@test.com',
+			accessToken: 'token',
+			role: 'super_admin',
+			isSuperAdmin: true,
+		});
 	});
 
 	describe('GET /api/dashboard/admin/users', () => {

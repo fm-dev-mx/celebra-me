@@ -1,7 +1,10 @@
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { GET as getClaimCodes } from '@/pages/api/dashboard/claimcodes';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { listAdminUsers, createAdminUser } from '@/lib/rsvp/services/user-admin.service';
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -21,6 +24,7 @@ jest.mock('@/lib/rsvp/security/csrf', () => ({
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
+	requireAdminMutationAccess: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
@@ -34,6 +38,9 @@ jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
+>;
+const requireAdminMutationAccessMock = requireAdminMutationAccess as jest.MockedFunction<
+	typeof requireAdminMutationAccess
 >;
 
 const listAdminUsersMock = listAdminUsers as jest.MockedFunction<typeof listAdminUsers>;
@@ -78,6 +85,13 @@ function createMockRequest(
 describe('Admin API Strong Session Guard', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		requireAdminMutationAccessMock.mockResolvedValue({
+			userId: 'admin',
+			email: 'admin@test.com',
+			accessToken: 'token',
+			role: 'super_admin',
+			isSuperAdmin: true,
+		});
 	});
 
 	describe('super_admin with AAL1 (no MFA)', () => {
@@ -105,7 +119,7 @@ describe('Admin API Strong Session Guard', () => {
 		});
 
 		it('POST /api/dashboard/admin/users returns 403', async () => {
-			requireAdminStrongSessionMock.mockRejectedValue(
+			requireAdminMutationAccessMock.mockRejectedValue(
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
