@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/intake/utils';
+import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/shared/data-utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';

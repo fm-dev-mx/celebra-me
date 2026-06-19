@@ -1,7 +1,8 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
-import { str, trimmedStr, venueLabel, normalizeDate } from '@/lib/intake/utils';
+import { venueLabel } from '@/lib/intake/utils';
+import { str, trimmedStr, normalizeDate } from '@/lib/shared/data-utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';

@@ -1,6 +1,6 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { ICON_CATALOG, DEFAULT_ICON, isIconName } from '@/lib/icons/icon-catalog';
-import { moveArrayItem } from '@/lib/intake/utils';
+import { moveArrayItem } from '@/lib/shared/data-utils';
 import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
 
 type Itinerary = NonNullable<DraftContent['itinerary']>;

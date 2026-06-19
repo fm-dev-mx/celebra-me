@@ -7,7 +7,7 @@ import {
 	getGalleryPreviewRole,
 } from '@/lib/components/gallery/gallery-presentation';
 import { DEVICE_LABELS, type PreviewDevice } from '@/lib/editor/constants';
-import { moveArrayItem } from '@/lib/intake/utils';
+import { moveArrayItem } from '@/lib/shared/data-utils';
 import { useState } from 'react';
 import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
 import type { AssetItem } from '@/lib/intake/use-asset-library';

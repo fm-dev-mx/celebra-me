@@ -11,7 +11,7 @@ import {
 import { createIntakeRequest } from '@/lib/intake/repositories/intake-request.repository';
 import { createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import { mergeOverlay } from '@/lib/intake/utils';
+import { mergeOverlay } from '@/lib/shared/data-utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 export async function generateDraft(invitationId: string): Promise<InvitationContentDraft> {

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
-import { str, bool, num, trimmedStr, normalizeDate } from '@/lib/intake/utils';
+import { str, bool, num, trimmedStr, normalizeDate } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 import type { IconName } from '@/lib/icons/icon-catalog';
 

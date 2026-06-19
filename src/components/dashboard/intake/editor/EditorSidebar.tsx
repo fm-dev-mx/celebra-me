@@ -1,4 +1,4 @@
-import { moveArrayItem } from '@/lib/intake/utils';
+import { moveArrayItem } from '@/lib/shared/data-utils';
 import {
 	getConfigEditorSections,
 	getPublicSectionDefinitions,
