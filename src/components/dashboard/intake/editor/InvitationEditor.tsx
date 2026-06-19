@@ -13,6 +13,10 @@ import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import Field from '@/components/dashboard/intake/editor/Field';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
+import RsvpSectionEditor from '@/components/dashboard/intake/editor/RsvpSectionEditor';
+import EnvelopeSectionEditor from '@/components/dashboard/intake/editor/EnvelopeSectionEditor';
+import GiftsSectionEditor from '@/components/dashboard/intake/editor/GiftsSectionEditor';
+import SharingSectionEditor from '@/components/dashboard/intake/editor/SharingSectionEditor';
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
 import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
 import EditorSidebar from '@/components/dashboard/intake/editor/EditorSidebar';
@@ -35,10 +39,7 @@ import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
 	DEFAULT_PREVIEW_CONTEXT,
-	SHARE_MESSAGE_VARIABLES,
-	SHARE_MESSAGE_VARIABLE_LABELS,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
-import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
@@ -46,11 +47,7 @@ import {
 	getEditorSectionById,
 	type EditorSectionId,
 } from '@/lib/intake/invitation-section-registry';
-import {
-	EDITOR_SECTION_PRESENTATION,
-	GIFT_TYPE_LABELS,
-	INVITATION_STATUS_LABELS,
-} from '@/lib/intake/labels';
+import { EDITOR_SECTION_PRESENTATION, INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
 	getDirtySectionKey,
@@ -591,6 +588,42 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const selectedDefinition = getEditorSectionById(selectedSection);
 	const activeEditorCardId = selectedDefinition?.editorCardId ?? 'main';
 
+	const handleAssetSelect = (assetId: string) => {
+		const ref = { type: 'uploaded' as const, assetId };
+		const updateLocationVenueById = (venueId: string) => {
+			const venueIndex = (location.venues ?? []).findIndex((v) => v.id === venueId);
+			if (venueIndex >= 0) {
+				const updated = (location.venues ?? []).map((v, i) =>
+					i === venueIndex ? { ...v, image: ref } : v,
+				);
+				updateLocation({ venues: updated });
+			}
+		};
+		const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
+			'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
+			'hero.backgroundImageMobile': () => updateHero({ backgroundImageMobile: ref }),
+			'hero.portrait': () => updateHero({ portrait: ref }),
+			'family.featuredImage': () => updateFamily({ featuredImage: ref }),
+			'thankYou.image': () => updateContent('thankYou', { ...messages.thankYou, image: ref }),
+			'location.ceremony.image': () => {
+				const venue = location.ceremony ?? {};
+				updateLocation({ ceremony: { ...venue, image: ref } });
+			},
+			'location.reception.image': () => {
+				const venue = location.reception ?? {};
+				updateLocation({ reception: { ...venue, image: ref } });
+			},
+		};
+		// Handle dynamic venue ID patterns: location.{id}.image
+		const venueMatch = pickerField?.match(/^location\.(.+)\.image$/);
+		if (venueMatch && !PICKER_FIELD_UPDATERS[pickerField!]) {
+			updateLocationVenueById(venueMatch[1]);
+		} else {
+			PICKER_FIELD_UPDATERS[pickerField!]?.();
+		}
+		setPickerField(null);
+	};
+
 	return (
 		<div className="invitation-editor">
 			<EditorActionBar
@@ -849,124 +882,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 						/>
 					</SectionCard>
 
-					<SectionCard
-						id="rsvp"
-						title="Confirmación de asistencia"
-						description="Configuración visible para invitados; las respuestas permanecen separadas."
+					<RsvpSectionEditor
+						value={rsvp}
+						onChange={updateRsvp}
+						onChangeResponseMessage={updateRsvpResponseMessage}
 						dirty={dirty.has('rsvp')}
 						error={errors.rsvp}
 						success={success.rsvp}
 						sourceBadge={sectionSource('rsvp')}
 						visible={activeEditorCardId === 'rsvp'}
-					>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label="Título"
-								value={rsvp.title ?? ''}
-								onChange={(value) => updateRsvp({ title: value })}
-								labelExtra={
-									<TextPresetPicker
-										section="rsvpTitle"
-										onSelect={(value) => updateRsvp({ title: value })}
-									/>
-								}
-							/>
-							<Field
-								label="Máximo de acompañantes"
-								type="number"
-								value={String(rsvp.guestCap ?? '')}
-								onChange={(value) =>
-									updateRsvp({ guestCap: value ? Number(value) : undefined })
-								}
-							/>
-							<label className="invitation-editor__field">
-								<span>Modo de confirmación</span>
-								<select
-									value={rsvp.confirmationMode ?? 'api'}
-									onChange={(event) =>
-										updateRsvp({ confirmationMode: event.target.value })
-									}
-								>
-									<option value="api">Formulario</option>
-									<option value="whatsapp">WhatsApp</option>
-									<option value="both">Formulario y WhatsApp</option>
-								</select>
-							</label>
-							{['whatsapp', 'both'].includes(rsvp.confirmationMode ?? '') && (
-								<Field
-									label="WhatsApp"
-									value={rsvp.whatsappPhone ?? ''}
-									onChange={(value) => updateRsvp({ whatsappPhone: value })}
-								/>
-							)}
-						</div>
-						<TextArea
-							label="Mensaje de confirmación"
-							value={rsvp.confirmationMessage ?? ''}
-							onChange={(value) => updateRsvp({ confirmationMessage: value })}
-							labelExtra={
-								<TextPresetPicker
-									section="rsvpMessage"
-									onSelect={(value) => updateRsvp({ confirmationMessage: value })}
-								/>
-							}
-						/>
-						<TextArea
-							label="Texto secundario"
-							value={rsvp.subcopy ?? ''}
-							onChange={(value) => updateRsvp({ subcopy: value })}
-						/>
-						<Field
-							label="Fecha límite de confirmación"
-							placeholder="15 de marzo de 2026"
-							value={rsvp.confirmationDeadline ?? ''}
-							onChange={(value) => updateRsvp({ confirmationDeadline: value })}
-						/>
-						<p className="invitation-editor__helper-text">
-							Disponible como {'{rsvpDeadline}'} y {'{rsvpDeadlineText}'} en los
-							mensajes para compartir.
-						</p>
-						<details className="invitation-editor__row-details">
-							<summary>Mensajes de respuesta</summary>
-							<div className="invitation-editor__stack">
-								<p className="invitation-editor__hint">
-									Variables disponibles: {`{guestName}`}, {`{celebrantName}`}
-								</p>
-								<Field
-									label="Mensaje al confirmar"
-									value={rsvp.responseMessages?.confirmed?.title ?? ''}
-									onChange={(value) =>
-										updateRsvpResponseMessage('confirmed', 'title', value)
-									}
-									placeholder="¡Gracias por acompañarnos, {guestName}!"
-								/>
-								<TextArea
-									label="Subtítulo al confirmar"
-									value={rsvp.responseMessages?.confirmed?.subtitle ?? ''}
-									onChange={(value) =>
-										updateRsvpResponseMessage('confirmed', 'subtitle', value)
-									}
-									placeholder="Tu confirmación ha sido registrada."
-								/>
-								<Field
-									label="Mensaje al declinar"
-									value={rsvp.responseMessages?.declined?.title ?? ''}
-									onChange={(value) =>
-										updateRsvpResponseMessage('declined', 'title', value)
-									}
-									placeholder="Sentimos mucho que no puedas acompañarnos, {guestName}."
-								/>
-								<TextArea
-									label="Subtítulo al declinar"
-									value={rsvp.responseMessages?.declined?.subtitle ?? ''}
-									onChange={(value) =>
-										updateRsvpResponseMessage('declined', 'subtitle', value)
-									}
-									placeholder="Gracias por avisarnos."
-								/>
-							</div>
-						</details>
-					</SectionCard>
+					/>
 
 					<SectionCard
 						id="music"
@@ -1015,301 +940,32 @@ export default function InvitationEditor({ initialContext }: Props) {
 						</div>
 					</SectionCard>
 
-					<SectionCard
-						id="envelope"
-						title="Sobre / apertura"
-						description="Controla la experiencia de apertura de la invitación."
+					<EnvelopeSectionEditor
+						value={envelope}
+						onChange={(patch) => updateContent('envelope', { ...envelope, ...patch })}
 						dirty={dirty.has('envelope')}
 						error={errors.envelope}
 						success={success.envelope}
 						sourceBadge={sectionSource('envelope')}
 						visible={activeEditorCardId === 'envelope'}
-					>
-						<label className="invitation-editor__check">
-							<input
-								type="checkbox"
-								checked={envelope.disabled !== true}
-								onChange={(event) =>
-									updateContent('envelope', {
-										...envelope,
-										disabled: !event.target.checked,
-									})
-								}
-							/>
-							<span>Mostrar sobre de apertura</span>
-						</label>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label="Nombre en el sobre (opcional)"
-								value={envelope.envelopeName ?? ''}
-								placeholder="Si se deja vacío, usa los nombres de Portada"
-								maxLength={200}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, envelopeName: value })
-								}
-							/>
-							<Field
-								label="Etiqueta del documento"
-								value={envelope.documentLabel ?? ''}
-								placeholder="Ejemplo: Primera Comunión"
-								maxLength={60}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, documentLabel: value })
-								}
-							/>
-							<Field
-								label="Texto del sello postal"
-								value={envelope.stampText ?? ''}
-								placeholder="Ejemplo: Luna y Estrella"
-								maxLength={60}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, stampText: value })
-								}
-							/>
-							<Field
-								label="Año del sello"
-								value={envelope.stampYear ?? ''}
-								placeholder="Ejemplo: 2026"
-								maxLength={10}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, stampYear: value })
-								}
-							/>
-							<Field
-								label="Texto del botón"
-								value={envelope.tooltipText ?? ''}
-								placeholder="Ejemplo: Abrir invitación"
-								maxLength={100}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, tooltipText: value })
-								}
-							/>
-							<Field
-								label="Texto inferior"
-								value={envelope.microcopy ?? ''}
-								placeholder="Ejemplo: Toca para abrir"
-								maxLength={100}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, microcopy: value })
-								}
-							/>
-							<Field
-								label="Etiqueta de tarjeta"
-								value={envelope.cardLabel ?? ''}
-								placeholder="Ejemplo: Primera Comunión"
-								maxLength={60}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, cardLabel: value })
-								}
-							/>
-							<Field
-								label="Nombre principal en tarjeta (opcional)"
-								value={envelope.cardName ?? ''}
-								placeholder="Si se deja vacío, usa el nombre principal de Portada"
-								maxLength={200}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, cardName: value })
-								}
-							/>
-							<Field
-								label="Segundo nombre en tarjeta (opcional)"
-								value={envelope.cardSecondaryName ?? ''}
-								placeholder="Si se deja vacío, usa el segundo nombre de Portada"
-								maxLength={200}
-								onChange={(value) =>
-									updateContent('envelope', {
-										...envelope,
-										cardSecondaryName: value,
-									})
-								}
-							/>
-							<Field
-								label="Frase secundaria (opcional)"
-								value={envelope.cardTagline ?? ''}
-								placeholder="Ejemplo: Una celebración de fe"
-								maxLength={120}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, cardTagline: value })
-								}
-							/>
-							<Field
-								label="Etiqueta de invitado"
-								value={envelope.guestLabel ?? ''}
-								placeholder="Ejemplo: Entrega especial para:"
-								maxLength={80}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, guestLabel: value })
-								}
-							/>
-							<Field
-								label="Invitado genérico para vista previa"
-								value={envelope.guestNameFallback ?? ''}
-								placeholder="Ejemplo: Familia invitada"
-								maxLength={200}
-								onChange={(value) =>
-									updateContent('envelope', {
-										...envelope,
-										guestNameFallback: value,
-									})
-								}
-							/>
-							<Field
-								label="Monograma / iniciales"
-								value={envelope.sealInitials ?? ''}
-								placeholder="Ejemplo: A·L"
-								maxLength={12}
-								onChange={(value) =>
-									updateContent('envelope', { ...envelope, sealInitials: value })
-								}
-							/>
-						</div>
-					</SectionCard>
+					/>
 
-					<SectionCard
-						id="gifts"
-						title="Mesa de regalos"
-						description="Opciones de regalo visibles para invitados."
+					<GiftsSectionEditor
+						value={gifts}
+						onChange={(patch) =>
+							updateContent('gifts', {
+								...gifts,
+								...patch,
+								items: patch.items ?? gifts.items,
+							} as Record<string, unknown>)
+						}
+						onUpdateItem={updateGiftItem}
 						dirty={dirty.has('gifts')}
 						error={errors.gifts}
 						success={success.gifts}
 						sourceBadge={sectionSource('gifts')}
 						visible={activeEditorCardId === 'gifts'}
-					>
-						<div className="invitation-editor__field-grid">
-							<Field
-								label="Título"
-								value={gifts.title ?? ''}
-								onChange={(value) =>
-									updateContent('gifts', { ...gifts, title: value })
-								}
-								labelExtra={
-									<TextPresetPicker
-										section="gifts"
-										onSelect={(value) =>
-											updateContent('gifts', { ...gifts, title: value })
-										}
-									/>
-								}
-							/>
-							<Field
-								label="Subtítulo"
-								value={gifts.subtitle ?? ''}
-								onChange={(value) =>
-									updateContent('gifts', { ...gifts, subtitle: value })
-								}
-							/>
-						</div>
-						<div className="invitation-editor__stack">
-							{giftItems.map((item, index) => (
-								<div
-									className="invitation-editor__list-item"
-									key={`${item.type}-${index}`}
-								>
-									<div className="invitation-editor__compact-row">
-										<strong>
-											{index + 1}.{' '}
-											{item.title || GIFT_TYPE_LABELS[item.type] || item.type}
-											<span className="invitation-editor__gift-type-label">
-												{GIFT_TYPE_LABELS[item.type] ?? item.type}
-											</span>
-										</strong>
-										<button
-											type="button"
-											className="invitation-editor__link-button"
-											onClick={() =>
-												updateContent('gifts', {
-													...gifts,
-													items: giftItems.filter((_, i) => i !== index),
-												})
-											}
-										>
-											Eliminar opción
-										</button>
-									</div>
-									<details className="invitation-editor__row-details">
-										<summary>Editar opción</summary>
-										<div className="invitation-editor__field-grid">
-											<Field
-												label="Tipo"
-												value={GIFT_TYPE_LABELS[item.type] ?? item.type}
-												onChange={() => undefined}
-											/>
-											<Field
-												label="Título"
-												value={item.title ?? ''}
-												onChange={(value) =>
-													updateGiftItem(index, { title: value })
-												}
-											/>
-											{'url' in item && (
-												<Field
-													label="URL"
-													type="url"
-													value={item.url}
-													onChange={(value) =>
-														updateGiftItem(index, { url: value })
-													}
-												/>
-											)}
-											{'bankName' in item && (
-												<>
-													<Field
-														label="Banco"
-														value={item.bankName}
-														onChange={(value) =>
-															updateGiftItem(index, {
-																bankName: value,
-															})
-														}
-													/>
-													<Field
-														label="Titular"
-														value={item.accountHolder}
-														onChange={(value) =>
-															updateGiftItem(index, {
-																accountHolder: value,
-															})
-														}
-													/>
-													<Field
-														label="CLABE"
-														value={item.clabe}
-														onChange={(value) =>
-															updateGiftItem(index, { clabe: value })
-														}
-													/>
-												</>
-											)}
-											{'text' in item && (
-												<Field
-													label="Texto"
-													value={item.text ?? ''}
-													onChange={(value) =>
-														updateGiftItem(index, { text: value })
-													}
-												/>
-											)}
-										</div>
-									</details>
-								</div>
-							))}
-						</div>
-						<button
-							type="button"
-							className="invitation-editor__secondary-button"
-							onClick={() =>
-								updateContent('gifts', {
-									...gifts,
-									items: [
-										...giftItems,
-										{ type: 'cash', title: 'Lluvia de Sobres', text: '' },
-									],
-								})
-							}
-						>
-							Agregar opción
-						</button>
-					</SectionCard>
+					/>
 
 					<SectionCard
 						id="quote"
@@ -1449,112 +1105,17 @@ export default function InvitationEditor({ initialContext }: Props) {
 						)}
 					</SectionCard>
 
-					<SectionCard
-						id="sharing"
-						title="Plantillas de mensaje"
-						description="Plantillas de mensaje para compartir la invitación por WhatsApp."
+					<SharingSectionEditor
+						value={sharing}
+						onChange={(patch) => updateContent('sharing', { ...sharing, ...patch })}
+						previewContext={sharingPreviewContext}
+						resetConfirm={sharingResetConfirm}
 						dirty={dirty.has('sharing')}
 						error={errors.sharing}
 						success={success.sharing}
 						sourceBadge={sectionSource('sharing')}
 						visible={activeEditorCardId === 'sharing'}
-					>
-						<Field
-							label="Descripción para vista previa al compartir"
-							value={sharing.ogDescription ?? ''}
-							onChange={(value) =>
-								updateContent('sharing', { ...sharing, ogDescription: value })
-							}
-							placeholder="Acompáñanos a celebrar los XV años de..."
-							maxLength={200}
-						/>
-						<p className="invitation-editor__helper-text">
-							Este texto aparece en la tarjeta de vista previa cuando compartes la
-							invitación por WhatsApp u otras redes.
-						</p>
-						<TextArea
-							label="Mensaje de invitación"
-							value={sharing.invitation ?? ''}
-							onChange={(value) =>
-								updateContent('sharing', { ...sharing, invitation: value })
-							}
-							placeholder="Hola {guestName}, te comparto tu invitación a {eventTitle}..."
-						/>
-						<TextArea
-							label="Mensaje de recordatorio"
-							value={sharing.reminder ?? ''}
-							onChange={(value) =>
-								updateContent('sharing', {
-									...sharing,
-									reminder: value,
-								})
-							}
-							placeholder={DEFAULT_REMINDER_MESSAGE}
-						/>
-						<div className="invitation-editor__preview-section">
-							<span className="invitation-editor__preview-label">
-								Vista previa — invitaci&oacute;n:
-							</span>
-							<pre className="invitation-editor__preview-text">
-								{renderShareMessage(
-									sharing.invitation ?? DEFAULT_INVITATION_MESSAGE,
-									sharingPreviewContext,
-								)}
-							</pre>
-						</div>
-						<div className="invitation-editor__preview-section">
-							<span className="invitation-editor__preview-label">
-								Vista previa — recordatorio:
-							</span>
-							<pre className="invitation-editor__preview-text">
-								{renderShareMessage(
-									sharing.reminder ?? DEFAULT_REMINDER_MESSAGE,
-									sharingPreviewContext,
-								)}
-							</pre>
-						</div>
-						<p className="invitation-editor__helper-text">
-							Variables disponibles:{' '}
-							{SHARE_MESSAGE_VARIABLES.map((v) => (
-								<code
-									key={v}
-									className="invitation-editor__variable"
-									title={SHARE_MESSAGE_VARIABLE_LABELS[v]}
-								>
-									{v}
-								</code>
-							))}
-						</p>
-						{sharingResetConfirm.pending ? (
-							<div className="invitation-editor__reset-confirm">
-								<span className="invitation-editor__reset-confirm-text">
-									¿Restablecer valores predeterminados?
-								</span>
-								<button
-									type="button"
-									className="invitation-editor__secondary-button invitation-editor__secondary-button--danger"
-									onClick={sharingResetConfirm.confirm}
-								>
-									Confirmar
-								</button>
-								<button
-									type="button"
-									className="invitation-editor__secondary-button"
-									onClick={sharingResetConfirm.cancel}
-								>
-									Cancelar
-								</button>
-							</div>
-						) : (
-							<button
-								type="button"
-								className="invitation-editor__secondary-button"
-								onClick={sharingResetConfirm.request}
-							>
-								Restablecer valores predeterminados
-							</button>
-						)}
-					</SectionCard>
+					/>
 
 					<SectionCard
 						id="assetLibrary"
@@ -1614,45 +1175,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			{pickerField && (
 				<AssetPicker
 					invitationId={invitationId}
-					onSelect={(assetId) => {
-						const ref = { type: 'uploaded' as const, assetId };
-						const updateLocationVenueById = (venueId: string) => {
-							const venueIndex = (location.venues ?? []).findIndex(
-								(v) => v.id === venueId,
-							);
-							if (venueIndex >= 0) {
-								const updated = (location.venues ?? []).map((v, i) =>
-									i === venueIndex ? { ...v, image: ref } : v,
-								);
-								updateLocation({ venues: updated });
-							}
-						};
-						const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
-							'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
-							'hero.backgroundImageMobile': () =>
-								updateHero({ backgroundImageMobile: ref }),
-							'hero.portrait': () => updateHero({ portrait: ref }),
-							'family.featuredImage': () => updateFamily({ featuredImage: ref }),
-							'thankYou.image': () =>
-								updateContent('thankYou', { ...messages.thankYou, image: ref }),
-							'location.ceremony.image': () => {
-								const venue = location.ceremony ?? {};
-								updateLocation({ ceremony: { ...venue, image: ref } });
-							},
-							'location.reception.image': () => {
-								const venue = location.reception ?? {};
-								updateLocation({ reception: { ...venue, image: ref } });
-							},
-						};
-						// Handle dynamic venue ID patterns: location.{id}.image
-						const venueMatch = pickerField.match(/^location\.(.+)\.image$/);
-						if (venueMatch && !PICKER_FIELD_UPDATERS[pickerField]) {
-							updateLocationVenueById(venueMatch[1]);
-						} else {
-							PICKER_FIELD_UPDATERS[pickerField]?.();
-						}
-						setPickerField(null);
-					}}
+					onSelect={handleAssetSelect}
 					onClose={() => setPickerField(null)}
 				/>
 			)}
