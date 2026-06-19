@@ -22,17 +22,17 @@ routes share the same preamble pattern (rate-limit + CSRF + strong-session) and 
 
 **Action**: Update both to use `requireAdminMutationAccess`. No behavioral change.
 
-## Gap B — 1 excluded route (by design)
+## Gap B — RESOLVED: CSRF intentionally added
 
-`src/pages/api/dashboard/admin/events/[eventId].ts` PATCH uses `requireAdminRateLimit` +
-`requireAdminStrongSession` but does **not** perform CSRF validation. Migrating to
-`requireAdminMutationAccess` would add CSRF, which is a behavioral change.
+`src/pages/api/dashboard/admin/events/[eventId].ts` PATCH was migrated to
+`requireAdminMutationAccess`, which added CSRF validation. This was a deliberate behavioral change
+(strict security posture).
 
-| File                              | Current guard                                         | Would CSRF be added? |
-| --------------------------------- | ----------------------------------------------------- | -------------------- |
-| `admin/events/[eventId].ts` PATCH | `requireAdminRateLimit` + `requireAdminStrongSession` | Yes — do NOT update  |
+| File                              | Guard after migration        | CSRF status |
+| --------------------------------- | ---------------------------- | ----------- |
+| `admin/events/[eventId].ts` PATCH | `requireAdminMutationAccess` | Added       |
 
-**Action**: Leave as-is unless CSRF is intentionally added in a separate change.
+**Action**: No further action needed.
 
 ## Gap C — Missing targeted unit tests (MEDIUM)
 
@@ -46,7 +46,7 @@ The plan's Phase 3 specified targeted tests that were not implemented:
 **Impact**: The functionality is exercised indirectly through `InvitationEditor.test.tsx` and
 `DraftEditor.test.tsx`, but there are no isolated unit tests for:
 
-- Required hero/venue field validation (6 rules)
+- Required hero/quote/thankYou/rsvp field validation (6 rules)
 - Impossible state prevention (publishing while restoring)
 - `saving-all` variant with `currentSection` tracking
 
@@ -74,10 +74,9 @@ partial fixtures.
 
 ## Summary of pending items
 
-| Priority   | Item                                                                          | Files           | Estimated effort        |
-| ---------- | ----------------------------------------------------------------------------- | --------------- | ----------------------- |
-| **High**   | Migrate `revoke.ts` and `regenerate-token.ts` to `requireAdminMutationAccess` | 2 route files   | 5 min                   |
-| **Medium** | Add unit test for `validateDraftContent()`                                    | 1 new test file | 10 min                  |
-| **Medium** | Add unit test for discriminated union invariants                              | 1 new test file | 15 min                  |
-| **Low**    | Optionally add CSRF to `admin/events/[eventId].ts`                            | 1 route file    | 5 min (requires review) |
-| **Low**    | Type fixtures in `section-content-mapper.test.ts`                             | 1 test file     | 5 min                   |
+| Priority   | Item                                                                          | Files           | Estimated effort |
+| ---------- | ----------------------------------------------------------------------------- | --------------- | ---------------- |
+| **High**   | Migrate `revoke.ts` and `regenerate-token.ts` to `requireAdminMutationAccess` | 2 route files   | 5 min            |
+| **Medium** | Add unit test for `validateDraftContent()`                                    | 1 new test file | 10 min           |
+| **Medium** | Add unit test for discriminated union invariants                              | 1 new test file | 15 min           |
+| **Low**    | Type fixtures in `section-content-mapper.test.ts`                             | 1 test file     | 5 min            |
