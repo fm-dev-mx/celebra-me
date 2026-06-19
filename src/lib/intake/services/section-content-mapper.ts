@@ -1,31 +1,18 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
-const COMPOUND_SECTIONS = new Set<InvitationEditorSectionKey>(['main', 'messages', 'publication']);
-
-const SECTION_KEY_MAP: Record<InvitationEditorSectionKey, (keyof DraftContent)[]> = {
-	main: ['title', 'description', 'hero'],
-	family: ['family'],
-	location: ['location', 'eventTiming'],
-	countdown: ['countdown'],
-	itinerary: ['itinerary'],
-	rsvp: ['rsvp'],
-	music: ['music'],
-	envelope: ['envelope'],
-	gifts: ['gifts'],
-	messages: ['quote', 'thankYou'],
-	gallery: ['gallery'],
-	photoNotes: ['photoNotes'],
-	publication: ['sectionOrder'],
-	sharing: ['sharing'],
+const DIRTY_KEY_TO_SECTION: Partial<Record<keyof DraftContent, InvitationEditorSectionKey>> = {
+	title: 'main',
+	description: 'main',
+	hero: 'main',
+	quote: 'messages',
+	thankYou: 'messages',
+	sectionOrder: 'publication',
+	eventTiming: 'location',
 };
 
 export function getDirtySectionKey(key: keyof DraftContent): InvitationEditorSectionKey {
-	if (key === 'title' || key === 'description' || key === 'hero') return 'main';
-	if (key === 'quote' || key === 'thankYou') return 'messages';
-	if (key === 'sectionOrder') return 'publication';
-	if (key === 'eventTiming') return 'location';
-	return key as InvitationEditorSectionKey;
+	return DIRTY_KEY_TO_SECTION[key] ?? (key as InvitationEditorSectionKey);
 }
 
 export function getSectionValue(
@@ -104,5 +91,3 @@ export function applySectionToBaseline(
 	}
 	return { ...baseline, [section]: source[section as keyof DraftContent] };
 }
-
-export { COMPOUND_SECTIONS, SECTION_KEY_MAP };
