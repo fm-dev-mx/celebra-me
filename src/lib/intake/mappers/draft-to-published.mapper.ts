@@ -3,7 +3,7 @@ import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
 import { venueLabel } from '@/lib/intake/utils';
 import { str, trimmedStr, normalizeDate, isNonEmptyObject } from '@/lib/shared/data-utils';
-import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { COUNTDOWN_DEFAULTS, ENVELOPE_TEXT_FIELDS, VENUE_URL_FIELDS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
 import { venueSchema } from '@/lib/intake/schemas/shared-content.schema';
@@ -11,26 +11,8 @@ import type { z } from 'zod';
 
 type PublishCtx = { isDemo: boolean };
 
-const VENUE_URL_FIELDS = ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const;
-
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
-
-const ENVELOPE_TEXT_FIELDS = [
-	'envelopeName',
-	'documentLabel',
-	'stampText',
-	'stampYear',
-	'tooltipText',
-	'microcopy',
-	'cardLabel',
-	'cardName',
-	'cardSecondaryName',
-	'cardTagline',
-	'guestLabel',
-	'guestNameFallback',
-	'sealInitials',
-] as const;
 
 /**
  * Maps editable draft envelope fields onto the published envelope structure.

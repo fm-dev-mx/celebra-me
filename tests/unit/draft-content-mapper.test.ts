@@ -960,6 +960,62 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.envelope?.sealInitials).toBeUndefined();
 		expect(result.envelope?.disabled).toBe(true);
 	});
+
+	it('handles empty envelope without crashing (regression: for-loop inside if)', () => {
+		const input = { envelope: {} };
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.envelope).toBeUndefined();
+	});
+
+	it('handles missing envelope without crashing', () => {
+		const input = {};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.envelope).toBeUndefined();
+	});
+
+	it('does not set venue URL keys when published venue ceremony URLs are absent', () => {
+		const input = {
+			location: {
+				ceremony: {
+					venueName: 'Iglesia',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		const ceremony = result.location?.ceremony as Record<string, unknown> | undefined;
+		for (const field of ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const) {
+			expect(ceremony).not.toHaveProperty(field);
+		}
+	});
+
+	it('does not set venue URL keys when published venues array URLs are absent', () => {
+		const input = {
+			location: {
+				venues: [
+					{
+						id: 'v1',
+						type: 'ceremony',
+						label: 'Ceremonia',
+						venueName: 'Iglesia',
+						isVisible: true,
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		const venue = result.location?.venues?.[0] as Record<string, unknown> | undefined;
+		for (const field of ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const) {
+			expect(venue).not.toHaveProperty(field);
+		}
+	});
 });
 
 describe('mergePublishedWithDraft — interlude preservation', () => {

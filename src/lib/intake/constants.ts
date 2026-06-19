@@ -1,3 +1,28 @@
+export const SECTION_COMPOUND_KEYS = {
+	main: ['title', 'description', 'hero'],
+	messages: ['quote', 'thankYou'],
+	location: ['location', 'eventTiming'],
+	publication: ['sectionOrder'],
+} as const;
+
+export const VENUE_URL_FIELDS = ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const;
+
+export const ENVELOPE_TEXT_FIELDS = [
+	'envelopeName',
+	'documentLabel',
+	'stampText',
+	'stampYear',
+	'tooltipText',
+	'microcopy',
+	'cardLabel',
+	'cardName',
+	'cardSecondaryName',
+	'cardTagline',
+	'guestLabel',
+	'guestNameFallback',
+	'sealInitials',
+] as const;
+
 export const ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;

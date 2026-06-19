@@ -11,9 +11,8 @@ import {
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
+import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
-
-const VENUE_URL_FIELDS = ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const;
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -357,7 +356,11 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				city: str(v.city),
 				date: str(v.date),
 				time: str(v.time),
-				...Object.fromEntries(VENUE_URL_FIELDS.map((f) => [f, str(v[f])])),
+				...Object.fromEntries(
+					VENUE_URL_FIELDS.map((f) => [f, str(v[f])]).filter(
+						([, val]) => val !== undefined,
+					),
+				),
 				...(v.image !== undefined ? { image: v.image } : {}),
 				...(v.coordinates !== undefined
 					? { coordinates: buildCoordinates(v as Record<string, unknown>) }
@@ -428,21 +431,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		result.envelope = { ...envelope };
 		// Re-apply trimming/normalisation for draft-editable fields.
 		if (typeof envelope.disabled !== 'boolean') delete result.envelope.disabled;
-		for (const field of [
-			'envelopeName',
-			'documentLabel',
-			'stampText',
-			'stampYear',
-			'tooltipText',
-			'microcopy',
-			'cardLabel',
-			'cardName',
-			'cardSecondaryName',
-			'cardTagline',
-			'guestLabel',
-			'guestNameFallback',
-			'sealInitials',
-		] as const) {
+		for (const field of ENVELOPE_TEXT_FIELDS) {
 			const trimmed = trimmedStr(envelope[field]);
 			if (trimmed) result.envelope[field] = trimmed;
 			else delete result.envelope[field];

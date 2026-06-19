@@ -1,3 +1,4 @@
+import { SECTION_COMPOUND_KEYS } from '@/lib/intake/constants';
 import {
 	INVITATION_RENDER_SECTION_KEYS,
 	type InvitationRenderSectionKey,
@@ -43,7 +44,7 @@ export const PUBLIC_SECTION_DEFINITIONS: Record<PublicSectionId, EditorSectionDe
 		sidebarGroup: 'public',
 		editorCardId: 'main',
 		saveSectionKey: 'main',
-		draftContentKeys: ['title', 'description', 'hero'],
+		draftContentKeys: [...SECTION_COMPOUND_KEYS.main],
 		isRequired: true,
 		isOrderable: false,
 		isToggleable: false,
@@ -103,7 +104,7 @@ export const PUBLIC_SECTION_DEFINITIONS: Record<PublicSectionId, EditorSectionDe
 		sidebarGroup: 'public',
 		editorCardId: 'location',
 		saveSectionKey: 'location',
-		draftContentKeys: ['location'],
+		draftContentKeys: [...SECTION_COMPOUND_KEYS.location],
 		isRequired: true,
 		isOrderable: true,
 		isToggleable: false,
