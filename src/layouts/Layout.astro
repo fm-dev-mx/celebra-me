@@ -63,7 +63,7 @@ const ogImage = new URL(resolvedImageSrc, isProd ? Astro.url : 'https://celebra-
 const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
 
 // Google Analytics ID
-const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 <!doctype html>
 <html lang="es">
@@ -74,6 +74,7 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
+		{isProd && <meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'} isProd=${isProd}`} />}
 		<title>{title}</title>
 
 		<!-- Open Graph -->
