@@ -1,5 +1,8 @@
 import { GET, PATCH, POST } from '@/pages/api/dashboard/intake/[id]/edit';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import {
 	ensureAdminEditContext,
 	saveInternalComments,
@@ -18,6 +21,7 @@ jest.mock('@/lib/rsvp/security/csrf', () => ({
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
+	requireAdminMutationAccess: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/services/admin-edit.service', () => ({
@@ -31,6 +35,9 @@ jest.mock('@/lib/intake/services/intake-submission.service', () => ({
 
 const mockRequireAdmin = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
+>;
+const mockRequireMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
+	typeof requireAdminMutationAccess
 >;
 const mockEnsureContext = ensureAdminEditContext as jest.MockedFunction<
 	typeof ensureAdminEditContext
@@ -60,6 +67,7 @@ const context = {
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockRequireAdmin.mockResolvedValue({ userId: 'admin-1' } as never);
+	mockRequireMutationAccess.mockResolvedValue({ userId: 'admin-1' } as never);
 	mockEnsureContext.mockResolvedValue(context as never);
 	mockSaveStep.mockResolvedValue(context.submission as never);
 	mockSaveComments.mockResolvedValue(context.submission as never);

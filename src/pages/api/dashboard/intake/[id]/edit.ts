@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
-import type { AstroCookies } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security/csrf';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -20,14 +21,6 @@ import { toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
 function requireInvitationId(id: string | undefined): string {
 	if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 	return id;
-}
-
-async function requireMutationAccess(request: Request, cookies: AstroCookies) {
-	await requireAdminRateLimit(request, 'intake:edit');
-	if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
-		validateCsrfToken(request, cookies);
-	}
-	await requireAdminStrongSession(request);
 }
 
 export const GET: APIRoute = async ({ request, params }) => {
@@ -56,7 +49,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 
 export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireMutationAccess(request, cookies);
+		await requireAdminMutationAccess(request, cookies, 'intake:edit');
 		const invitationId = requireInvitationId(params.id);
 		const ctx = await ensureAdminEditContext(invitationId);
 		const parsed = await validateBodyOrRespond(request, SaveIntakeStepSchema);
@@ -76,7 +69,7 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireMutationAccess(request, cookies);
+		await requireAdminMutationAccess(request, cookies, 'intake:edit');
 		const ctx = await ensureAdminEditContext(requireInvitationId(params.id));
 		const parsed = await validateBodyOrRespond(request, SubmitIntakeSchema);
 		if (parsed instanceof Response) return parsed;

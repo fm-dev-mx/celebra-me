@@ -1,7 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security/csrf';
+import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -11,11 +9,7 @@ import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export const POST: APIRoute = async ({ request, params, cookies }) => {
 	try {
-		await requireAdminRateLimit(request, 'intake:create');
-		if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
-			validateCsrfToken(request, cookies);
-		}
-		const session = await requireAdminStrongSession(request);
+		const session = await requireAdminMutationAccess(request, cookies, 'intake:create');
 
 		const invitationId = params.id;
 		if (!invitationId) {
