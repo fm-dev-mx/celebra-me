@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/shared/data-utils';
@@ -405,104 +405,45 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 				<p className="intake-editor__section-desc">
 					Ceremonia, recepción, código de vestimenta.
 				</p>
-				{['ceremony', 'reception'].map((venueKey) => {
-					const venue = content.location?.[venueKey as keyof typeof location] as
+				{(
+					[
+						['ceremony', 'Ceremonia'],
+						['reception', 'Recepción'],
+					] as const
+				).map(([venueKey, venueLabel]) => {
+					const venue = content.location?.[venueKey] as
 						| Record<string, unknown>
 						| undefined;
-					const label = venueKey === 'ceremony' ? 'Ceremonia' : 'Recepción';
+					const VENUE_FIELDS: Array<{ fieldKey: string; label: string }> = [
+						{ fieldKey: 'venueName', label: 'Nombre del lugar' },
+						{ fieldKey: 'address', label: 'Dirección' },
+						{ fieldKey: 'city', label: 'Ciudad' },
+						{ fieldKey: 'date', label: 'Fecha' },
+						{ fieldKey: 'time', label: 'Hora' },
+						{ fieldKey: 'mapUrl', label: 'URL del mapa' },
+					];
 					return (
 						<div key={venueKey} className="intake-editor__venue">
-							<h4 className="intake-review__venue-title">{label}</h4>
-							{renderField(
-								'location',
-								'venueName',
-								'Nombre del lugar',
-								strFallback(venue?.venueName),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										venueName: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
-							{renderField(
-								'location',
-								'address',
-								'Dirección',
-								strFallback(venue?.address),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										address: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
-							{renderField(
-								'location',
-								'city',
-								'Ciudad',
-								strFallback(venue?.city),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										city: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
-							{renderField(
-								'location',
-								'date',
-								'Fecha',
-								strFallback(venue?.date),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										date: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
-							{renderField(
-								'location',
-								'time',
-								'Hora',
-								strFallback(venue?.time),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										time: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
-							{renderField(
-								'location',
-								'mapUrl',
-								'URL del mapa',
-								strFallback(venue?.mapUrl),
-								(v) => {
-									const updated = {
-										...(((location as Record<string, unknown>)[
-											venueKey
-										] as Record<string, unknown>) ?? {}),
-										mapUrl: v,
-									};
-									setField('location', venueKey, updated);
-								},
-							)}
+							<h4 className="intake-review__venue-title">{venueLabel}</h4>
+							{VENUE_FIELDS.map(({ fieldKey, label }) => (
+								<Fragment key={fieldKey}>
+									{renderField(
+										'location',
+										fieldKey,
+										label,
+										strFallback(venue?.[fieldKey]),
+										(v) => {
+											const updated = {
+												...(((location as Record<string, unknown>)[
+													venueKey
+												] as Record<string, unknown>) ?? {}),
+												[fieldKey]: v,
+											};
+											setField('location', venueKey, updated);
+										},
+									)}
+								</Fragment>
+							))}
 						</div>
 					);
 				})}
