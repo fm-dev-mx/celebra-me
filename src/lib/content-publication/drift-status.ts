@@ -15,6 +15,11 @@ export interface DemoDriftStatusInput {
 	prodHash?: string | null;
 }
 
+/** Returns true when the given drift status represents a publishable demo. */
+export function canPublishByStatus(status: DemoDriftStatus): boolean {
+	return status === 'different';
+}
+
 export function classifyDemoDriftStatus(input: DemoDriftStatusInput): DemoDriftStatus {
 	if (input.hasProd && input.prodIsDemo === false) return 'unsafe_target';
 	if (input.hasLocal && input.localValid === false) return 'schema_mismatch';

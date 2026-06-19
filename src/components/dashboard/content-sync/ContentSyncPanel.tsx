@@ -5,6 +5,7 @@ import type {
 	DemoDriftReport,
 	SourceEnvironment,
 } from '@/lib/content-publication/demo-drift';
+import { canPublishByStatus } from '@/lib/content-publication/drift-status';
 import type { DemoDriftStatus } from '@/lib/content-publication/drift-status';
 import type {
 	DemoPublishDryRunResult,
@@ -55,12 +56,6 @@ const formatValue = (value: unknown): string => {
 	return JSON.stringify(value);
 };
 
-/** V1 safety: only 'different' rows may be published. */
-const canPublishStatus = (status: DemoDriftStatus): boolean => status === 'different';
-
-/** Dry-run is useful only for statuses where a publish could follow. */
-const canDryRunStatus = (status: DemoDriftStatus): boolean => status === 'different';
-
 /** Viewing diffs makes sense when there is local + prod content to compare. */
 const canViewDiffStatus = (status: DemoDriftStatus): boolean =>
 	status === 'different' || status === 'missing_in_prod';
@@ -69,7 +64,7 @@ const hasPublishReadyDryRun = (
 	item: DemoDriftItem,
 	dryRun: DemoPublishDryRunResult | undefined,
 ): boolean =>
-	canPublishStatus(item.status) &&
+	canPublishByStatus(item.status) &&
 	dryRun?.can_publish === true &&
 	Boolean(dryRun.expected_prod_hash) &&
 	dryRun.route_key === item.route_key &&
@@ -141,7 +136,7 @@ const ContentSyncRow: React.FC<{
 					<button
 						type="button"
 						className="btn-secondary"
-						disabled={isBusy || !canDryRunStatus(item.status)}
+						disabled={isBusy || !canPublishByStatus(item.status)}
 						onClick={() => onDryRun(item)}
 					>
 						Ejecutar revisión

@@ -4,7 +4,10 @@ import {
 } from '@/lib/content-publication/normalize-content';
 import { hashContent } from '@/lib/content-publication/hash-content';
 import { diffContent } from '@/lib/content-publication/diff-content';
-import { classifyDemoDriftStatus } from '@/lib/content-publication/drift-status';
+import {
+	canPublishByStatus,
+	classifyDemoDriftStatus,
+} from '@/lib/content-publication/drift-status';
 
 describe('content publication utilities', () => {
 	it('produces stable hashes when object keys are ordered differently', () => {
@@ -37,6 +40,16 @@ describe('content publication utilities', () => {
 
 		expect(normalized._assetSlug).toBe('demo-xv-jewelry-box');
 		expect(normalized).toHaveProperty('optional', null);
+	});
+
+	it('canPublishByStatus allows only different', () => {
+		expect(canPublishByStatus('different')).toBe(true);
+
+		expect(canPublishByStatus('in_sync')).toBe(false);
+		expect(canPublishByStatus('missing_in_prod')).toBe(false);
+		expect(canPublishByStatus('missing_locally')).toBe(false);
+		expect(canPublishByStatus('schema_mismatch')).toBe(false);
+		expect(canPublishByStatus('unsafe_target')).toBe(false);
 	});
 
 	it('classifies honest v1 drift statuses', () => {

@@ -2,6 +2,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { hashContent } from '@/lib/content-publication/hash-content';
 import { diffContent, type DiffExample } from '@/lib/content-publication/diff-content';
 import {
+	canPublishByStatus,
 	classifyDemoDriftStatus,
 	type DemoDriftStatus,
 } from '@/lib/content-publication/drift-status';
@@ -102,7 +103,8 @@ function buildDryRunResult(params: {
 	const diff = params.prodRow
 		? diffContent(params.prodRow.content, params.localContent)
 		: { changedPaths: [], examples: [] };
-	const canPublish = status === 'different' || status === 'missing_in_prod';
+	// Only 'different' is publishable — 'missing_in_prod' is rejected by confirmDemoPublish
+	const canPublish = canPublishByStatus(status);
 	return {
 		can_publish: canPublish,
 		event_type: params.eventType,
