@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { parseTime, normalizeTime, isValidTime } from '@/lib/intake/utils';
+import { parseTime, normalizeTime, isValidTime } from '@/lib/time/time-format';
 import {
 	buildPublishedEventTiming,
 	deriveStartsAtUtc,
@@ -205,13 +205,22 @@ describe('eventTiming utilities', () => {
 	});
 
 	it('buildPublishedEventTiming drops fields that fail validation', () => {
-		expect(buildPublishedEventTiming({ localDateTime: 'not-valid', timeZone: 'America/Mazatlan' })).toEqual({
+		expect(
+			buildPublishedEventTiming({ localDateTime: 'not-valid', timeZone: 'America/Mazatlan' }),
+		).toEqual({
 			timeZone: 'America/Mazatlan',
 		});
-		expect(buildPublishedEventTiming({ localDateTime: '2026-08-01T20:00', timeZone: 'GMT-7' })).toEqual({
+		expect(
+			buildPublishedEventTiming({ localDateTime: '2026-08-01T20:00', timeZone: 'GMT-7' }),
+		).toEqual({
 			localDateTime: '2026-08-01T20:00',
 		});
-		expect(buildPublishedEventTiming({ localDateTime: '2026-08-01T20:00', timeZone: 'America/Mazatlan' })).toEqual({
+		expect(
+			buildPublishedEventTiming({
+				localDateTime: '2026-08-01T20:00',
+				timeZone: 'America/Mazatlan',
+			}),
+		).toEqual({
 			localDateTime: '2026-08-01T20:00',
 			timeZone: 'America/Mazatlan',
 			startsAtUtc: '2026-08-02T03:00:00.000Z',
@@ -226,7 +235,11 @@ describe('eventTiming utilities', () => {
 	it('centralizes countdown target resolution and marks legacy fallback', () => {
 		expect(
 			resolveCountdownTarget(
-				{ localDateTime: '2026-08-01T20:00', timeZone: 'America/Mazatlan', startsAtUtc: '2026-08-02T03:00:00.000Z' },
+				{
+					localDateTime: '2026-08-01T20:00',
+					timeZone: 'America/Mazatlan',
+					startsAtUtc: '2026-08-02T03:00:00.000Z',
+				},
 				'2026-08-01T20:00:00.000Z',
 			),
 		).toEqual({ targetIso: '2026-08-02T03:00:00.000Z', source: 'eventTiming' });
