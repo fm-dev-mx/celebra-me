@@ -77,9 +77,9 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 const CONTENT_SOURCE_LABELS: Record<string, string> = {
+	...SOURCE_LABELS,
 	draft: 'Con borrador local',
 	published: 'Basado en versión pública',
-	demo: 'Demo',
 	empty: 'Sin contenido',
 	mixed: 'Contenido combinado',
 };
@@ -178,9 +178,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [metadataConflict, setMetadataConflict] = useState(false);
 	const [selectedSection, setSelectedSection] = useState<EditorSectionId>('hero');
 	const previewPaneRef = useRef<HTMLElement | null>(null);
-	const refreshSavedPreview = () => {
+	const refreshSavedPreview = useCallback(() => {
 		setPreviewVersion((version) => version + 1);
-	};
+	}, []);
 
 	const handleSelectSection = useCallback((sectionId: string) => {
 		const section = getEditorSectionById(sectionId);
@@ -323,15 +323,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const sharing = content.sharing ?? {};
 	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
 
-	const updateGiftItem = useCallback(
-		(index: number, patch: Record<string, unknown>) => {
-			updateContent('gifts', {
-				...gifts,
-				items: giftItems.map((item, i) => (i === index ? { ...item, ...patch } : item)),
-			});
-		},
-		[gifts, giftItems, updateContent],
-	);
+	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
+		updateContent('gifts', {
+			...gifts,
+			items: giftItems.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+		});
+	};
 
 	const updateHero = (patch: Partial<typeof main>) =>
 		updateContent('hero', { ...main, ...patch });
@@ -528,17 +525,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const backUrl = '/dashboard/invitaciones';
 	const publishDisabled = useMemo(
 		() =>
-			editor.publishing ||
+			editor.operation.type !== 'idle' ||
 			savingAll ||
-			editor.savingSection !== null ||
 			dirty.size > 0 ||
 			editor.context.draftStatus !== 'draft' ||
 			editor.context.contentSource === 'empty' ||
 			emptySectionsDetail.critical.length > 0,
 		[
-			editor.publishing,
+			editor.operation.type,
 			savingAll,
-			editor.savingSection,
 			dirty,
 			editor.context.draftStatus,
 			editor.context.contentSource,
@@ -601,7 +596,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			<EditorActionBar
 				dirtyCount={dirty.size}
 				savingAll={savingAll}
-				publishing={editor.publishing}
+				publishing={editor.operation.type === 'publishing'}
 				publishWarning={publishWarning}
 				publishDisabled={publishDisabled}
 				onSaveAll={saveAllDirty}
@@ -714,7 +709,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 			<div className="invitation-editor__layout">
 				<EditorSidebar
 					activeSection={selectedSection}
-					savingSection={editor.savingSection}
+					savingSection={
+						editor.operation.type === 'saving-section' ? editor.operation.section : null
+					}
 					dirty={dirty}
 					errors={errors}
 					sectionSource={sectionSource}
@@ -1419,7 +1416,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onPhotoNotesChange={(value) => updateContent('photoNotes', value)}
 							onSavePhotoNotes={() => void saveSection('photoNotes')}
 							photoNotesDirty={dirty.has('photoNotes')}
-							savingPhotoNotes={editor.savingSection === 'photoNotes'}
+							savingPhotoNotes={
+								editor.operation.type === 'saving-section' &&
+								editor.operation.section === 'photoNotes'
+							}
 							assets={editorAssets}
 						/>
 					</SectionCard>
@@ -1436,9 +1436,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<PublicationSection
 							context={editor.context}
-							reconciling={editor.reconciling}
+							reconciling={editor.operation.type === 'reconciling'}
 							onReconcile={() => void editor.reconcileRsvp()}
-							restoring={editor.restoring}
+							restoring={editor.operation.type === 'restoring'}
 							onRestorePublished={() => setConfirmation('restore')}
 						/>
 						{errors.restore && (
@@ -1594,7 +1594,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					message="Esta acción reemplazará el borrador editable con el contenido de la versión pública actual. Los cambios sin guardar se perderán."
 					confirmLabel="Restaurar versión pública"
 					destructive
-					loading={editor.restoring}
+					loading={editor.operation.type === 'restoring'}
 					onCancel={() => setConfirmation(null)}
 					onConfirm={() => void restorePublished()}
 				/>
@@ -1606,7 +1606,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					confirmLabel="Publicar cambios"
 					previewUrl={previewUrl}
 					summary={publishSummary}
-					loading={editor.publishing}
+					loading={editor.operation.type === 'publishing'}
 					onCancel={() => setConfirmation(null)}
 					onConfirm={() => void publish()}
 				/>

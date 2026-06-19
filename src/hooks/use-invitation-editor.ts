@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
 	InvitationEditorContextDTO,
@@ -6,16 +6,25 @@ import type {
 } from '@/lib/dashboard/dto/intake';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
+export type EditorOperation =
+	| { type: 'idle' }
+	| { type: 'saving-section'; section: InvitationEditorSectionKey | 'metadata' }
+	| { type: 'publishing' }
+	| { type: 'reconciling' }
+	| { type: 'restoring' };
+
 export function useInvitationEditor(initialContext: InvitationEditorContextDTO) {
 	const [context, setContext] = useState(initialContext);
-	const [savingSection, setSavingSection] = useState<
-		InvitationEditorSectionKey | 'metadata' | null
-	>(null);
-	const [publishing, setPublishing] = useState(false);
-	const [reconciling, setReconciling] = useState(false);
-	const [restoring, setRestoring] = useState(false);
+	const [operation, setOperation] = useState<EditorOperation>({ type: 'idle' });
+	const operationRef = useRef(operation);
+	const transition = (next: EditorOperation) => {
+		operationRef.current = next;
+		setOperation(next);
+	};
+	const resetOperation = () => transition({ type: 'idle' });
 
 	const reload = useCallback(async () => {
+		if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
 		const nextContext = await adminApi.getInvitationEditor(initialContext.invitation.id);
 		setContext(nextContext);
 		return nextContext;
@@ -27,7 +36,8 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 			value: unknown,
 			overrideExpectedUpdatedAt?: string,
 		): Promise<InvitationEditorSectionSaveResponse> => {
-			setSavingSection(section);
+			if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
+			transition({ type: 'saving-section', section });
 			try {
 				const expectedUpdatedAt =
 					overrideExpectedUpdatedAt ??
@@ -46,7 +56,7 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 				}));
 				return result;
 			} finally {
-				setSavingSection(null);
+				resetOperation();
 			}
 		},
 		[context.draftUpdatedAt, context.invitation.id, context.invitation.updatedAt],
@@ -57,7 +67,8 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 			value: Parameters<typeof adminApi.updateInvitationEditorMetadata>[1]['value'],
 			overrideExpectedUpdatedAt?: string,
 		) => {
-			setSavingSection('metadata');
+			if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
+			transition({ type: 'saving-section', section: 'metadata' });
 			try {
 				const expectedUpdatedAt = overrideExpectedUpdatedAt ?? context.invitation.updatedAt;
 				const result = await adminApi.updateInvitationEditorMetadata(
@@ -67,36 +78,39 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 				setContext((current) => ({ ...current, invitation: result.invitation }));
 				return result.invitation;
 			} finally {
-				setSavingSection(null);
+				resetOperation();
 			}
 		},
 		[context.invitation.id, context.invitation.updatedAt],
 	);
 
 	const publish = useCallback(async () => {
-		setPublishing(true);
+		if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
+		transition({ type: 'publishing' });
 		try {
 			const result = await adminApi.publishInvitationEditor(context.invitation.id);
 			setContext(result.context);
 			return result.context;
 		} finally {
-			setPublishing(false);
+			resetOperation();
 		}
 	}, [context.invitation.id]);
 
 	const reconcileRsvp = useCallback(async () => {
-		setReconciling(true);
+		if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
+		transition({ type: 'reconciling' });
 		try {
 			const rsvpLink = await adminApi.reconcileInvitationEditorRsvp(context.invitation.id);
 			setContext((current) => ({ ...current, rsvpLink }));
 			return rsvpLink;
 		} finally {
-			setReconciling(false);
+			resetOperation();
 		}
 	}, [context.invitation.id]);
 
 	const restorePublished = useCallback(async () => {
-		setRestoring(true);
+		if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
+		transition({ type: 'restoring' });
 		try {
 			const expectedUpdatedAt = context.draftUpdatedAt ?? context.invitation.updatedAt;
 			const result = await adminApi.restoreInvitationEditorFromPublished(
@@ -106,19 +120,16 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 			setContext(result.context);
 			return result.context;
 		} finally {
-			setRestoring(false);
+			resetOperation();
 		}
 	}, [context.draftUpdatedAt, context.invitation.id, context.invitation.updatedAt]);
 
 	return {
 		context,
-		publishing,
-		reconciling,
-		restoring,
+		operation,
 		reload,
 		saveMetadata,
 		saveSection,
-		savingSection,
 		publish,
 		reconcileRsvp,
 		restorePublished,

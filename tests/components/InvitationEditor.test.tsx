@@ -111,15 +111,12 @@ function mockMatchMedia(matches: boolean) {
 jest.mock('@/hooks/use-invitation-editor', () => ({
 	useInvitationEditor: () => ({
 		context: mockContext,
-		publishing: false,
-		reconciling: false,
-		savingSection: null,
+		operation: { type: 'idle' },
 		saveSection,
 		saveMetadata,
 		publish,
 		reconcileRsvp,
 		restorePublished,
-		restoring: false,
 	}),
 }));
 
