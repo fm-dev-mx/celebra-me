@@ -63,7 +63,7 @@ const ogImage = new URL(resolvedImageSrc, isProd ? Astro.url : 'https://celebra-
 const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
 
 // Google Analytics ID
-const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 <!doctype html>
 <html lang="es">

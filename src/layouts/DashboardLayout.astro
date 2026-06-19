@@ -38,7 +38,7 @@ const navItems: DashboardNavItem[] = [
 const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ?? title;
 
 const isProd = import.meta.env.PROD;
-const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 
 <!doctype html>
