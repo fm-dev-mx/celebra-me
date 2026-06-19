@@ -53,7 +53,7 @@ const {
 } = Astro.props;
 
 // Environment guard: only load Vercel tooling in production
-const isProd = import.meta.env.PROD;
+const isProd = import.meta.env.PROD || process.env.VERCEL_ENV === 'production';
 
 // Handle both string URLs and Astro ImageMetadata objects
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
@@ -107,7 +107,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GO
 			<slot />
 		</main>
 
-		<Analytics />
-		<SpeedInsights />
+		{isProd && <Analytics />}
+		{isProd && <SpeedInsights />}
 	</body>
 </html>
