@@ -1,4 +1,6 @@
+import type { APIContext } from 'astro';
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
+import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventId]';
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { GET as getClaimCodes } from '@/pages/api/dashboard/claimcodes';
 import {
@@ -7,6 +9,7 @@ import {
 } from '@/lib/rsvp/auth/authorization';
 import { listAdminUsers, createAdminUser } from '@/lib/rsvp/services/user-admin.service';
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
+import { updateEventAdmin } from '@/lib/rsvp/services/event-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
@@ -36,6 +39,10 @@ jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
 	listClaimCodesAdmin: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/services/event-admin.service', () => ({
+	updateEventAdmin: jest.fn(),
+}));
+
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
 >;
@@ -48,38 +55,37 @@ const createAdminUserMock = createAdminUser as jest.MockedFunction<typeof create
 const listClaimCodesAdminMock = listClaimCodesAdmin as jest.MockedFunction<
 	typeof listClaimCodesAdmin
 >;
+const updateEventAdminMock = updateEventAdmin as jest.MockedFunction<typeof updateEventAdmin>;
 
-function createMockRequest(
-	payload?: unknown,
-	headers?: Record<string, string>,
-	url = 'http://localhost/api/test',
-): Pick<Request, 'json' | 'text' | 'headers' | 'url'> {
-	const defaultHeaders: Record<string, string> = {
-		'Content-Type': 'application/json',
-		...(headers ?? {}),
-	};
+function createMockContext(options?: {
+	payload?: unknown;
+	headers?: Record<string, string>;
+	url?: string;
+	params?: Record<string, string>;
+}): APIContext {
+	const h = new Headers({ 'Content-Type': 'application/json' });
+	for (const [key, value] of Object.entries(options?.headers ?? {})) {
+		h.set(key, value);
+	}
+
+	const body =
+		options?.payload === undefined || options?.payload === null
+			? ''
+			: typeof options.payload === 'string'
+				? options.payload
+				: JSON.stringify(options.payload);
 
 	return {
-		url,
-		json: async () => payload,
-		text: async () => {
-			if (payload === undefined || payload === null) {
-				return '';
-			}
-			if (typeof payload === 'string') {
-				return payload;
-			}
-			return JSON.stringify(payload);
+		request: {
+			url: options?.url ?? 'http://localhost/api/test',
+			json: async () => options?.payload,
+			text: async () => body,
+			headers: h,
 		},
-		headers: {
-			get: (name: string) => {
-				const key = Object.keys(defaultHeaders).find(
-					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
-				);
-				return key ? (defaultHeaders[key] ?? null) : null;
-			},
-		} as Headers,
-	};
+		cookies: {},
+		params: options?.params ?? {},
+		url: new URL(options?.url ?? 'http://localhost/api/test'),
+	} as unknown as APIContext;
 }
 
 describe('Admin API Strong Session Guard', () => {
@@ -100,7 +106,7 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
-			const response = await getEvents({ request: createMockRequest() } as never);
+			const response = await getEvents(createMockContext());
 			expect(response.status).toBe(403);
 			const body = await response.json();
 			expect(body.error.code).toBe('forbidden');
@@ -111,10 +117,9 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
-			const response = await getUsers({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/admin/users'),
-			} as never);
+			const response = await getUsers(
+				createMockContext({ url: 'http://localhost/api/dashboard/admin/users' }),
+			);
 			expect(response.status).toBe(403);
 		});
 
@@ -123,14 +128,25 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
-			const response = await createUser({
-				request: createMockRequest(
-					{ role: 'host_client' },
-					undefined,
-					'http://localhost/api/dashboard/admin/users',
-				),
-				cookies: {},
-			} as never);
+			const response = await createUser(
+				createMockContext({
+					payload: { role: 'host_client' },
+					url: 'http://localhost/api/dashboard/admin/users',
+				}),
+			);
+			expect(response.status).toBe(403);
+		});
+
+		it('PATCH /api/dashboard/admin/events/[eventId] returns 403', async () => {
+			requireAdminMutationAccessMock.mockRejectedValue(
+				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
+			);
+
+			const response = await updateEvent(
+				createMockContext({
+					params: { eventId: '550e8400-e29b-41d4-a716-446655440000' },
+				}),
+			);
 			expect(response.status).toBe(403);
 		});
 
@@ -139,10 +155,9 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
-			const response = await getClaimCodes({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/claimcodes'),
-			} as never);
+			const response = await getClaimCodes(
+				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
+			);
 			expect(response.status).toBe(403);
 		});
 	});
@@ -157,7 +172,7 @@ describe('Admin API Strong Session Guard', () => {
 				isSuperAdmin: true,
 			});
 
-			const response = await getEvents({ request: createMockRequest() } as never);
+			const response = await getEvents(createMockContext());
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(Array.isArray(body.items)).toBe(true);
@@ -181,10 +196,9 @@ describe('Admin API Strong Session Guard', () => {
 				},
 			]);
 
-			const response = await getUsers({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/admin/users'),
-			} as never);
+			const response = await getUsers(
+				createMockContext({ url: 'http://localhost/api/dashboard/admin/users' }),
+			);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(Array.isArray(body.items)).toBe(true);
@@ -211,15 +225,45 @@ describe('Admin API Strong Session Guard', () => {
 				},
 			});
 
-			const response = await createUser({
-				request: createMockRequest(
-					{ role: 'host_client' },
-					undefined,
-					'http://localhost/api/dashboard/admin/users',
-				),
-				cookies: {},
-			} as never);
+			const response = await createUser(
+				createMockContext({
+					payload: { role: 'host_client' },
+					url: 'http://localhost/api/dashboard/admin/users',
+				}),
+			);
 			expect(response.status).toBe(201);
+		});
+
+		it('PATCH /api/dashboard/admin/events/[eventId] returns 200', async () => {
+			requireAdminMutationAccessMock.mockResolvedValue({
+				userId: 'admin-1',
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+			updateEventAdminMock.mockResolvedValue({
+				id: '550e8400-e29b-41d4-a716-446655440000',
+				ownerUserId: 'admin-1',
+				slug: 'updated-event-title',
+				eventType: 'boda',
+				title: 'Updated Event Title',
+				status: 'draft',
+				publishedAt: null,
+				invitationId: null,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			});
+
+			const response = await updateEvent(
+				createMockContext({
+					params: { eventId: '550e8400-e29b-41d4-a716-446655440000' },
+					payload: { title: 'Updated Event Title' },
+				}),
+			);
+			expect(response.status).toBe(200);
+			const body = await response.json();
+			expect(body.item.title).toBe('Updated Event Title');
 		});
 	});
 
@@ -229,7 +273,7 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'No autorizado'),
 			);
 
-			const response = await getEvents({ request: createMockRequest() } as never);
+			const response = await getEvents(createMockContext());
 			expect(response.status).toBe(403);
 		});
 
@@ -238,19 +282,14 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'No autorizado'),
 			);
 
-			const response = await getClaimCodes({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/claimcodes'),
-			} as never);
+			const response = await getClaimCodes(
+				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
+			);
 			expect(response.status).toBe(403);
 		});
 	});
 
-	describe('CSRF validation for admin mutation endpoints', () => {
-		beforeEach(() => {
-			jest.clearAllMocks();
-		});
-
+	describe('Error propagation through guard failures', () => {
 		it('returns normalized 403 (not 500) when CSRF token is invalid', async () => {
 			requireAdminStrongSessionMock.mockRejectedValue(
 				new ApiError(
@@ -260,9 +299,9 @@ describe('Admin API Strong Session Guard', () => {
 				),
 			);
 
-			const response = await getEvents({
-				request: createMockRequest(undefined, { 'X-CSRF-Token': 'bad-token' }),
-			} as never);
+			const response = await getEvents(
+				createMockContext({ headers: { 'X-CSRF-Token': 'bad-token' } }),
+			);
 
 			expect(response.status).toBe(403);
 			const body = (await response.json()) as { error: { code: string; message: string } };
@@ -275,9 +314,9 @@ describe('Admin API Strong Session Guard', () => {
 				new ApiError(403, 'forbidden', 'Token CSRF inválido.'),
 			);
 
-			const response = await getEvents({
-				request: createMockRequest(undefined, { 'X-CSRF-Token': 'bad-token' }),
-			} as never);
+			const response = await getEvents(
+				createMockContext({ headers: { 'X-CSRF-Token': 'bad-token' } }),
+			);
 
 			expect(response.status).toBe(403);
 			const body = (await response.json()) as { error: { code: string } };
@@ -295,7 +334,7 @@ describe('Admin API Strong Session Guard', () => {
 				isSuperAdmin: true,
 			});
 
-			await getEvents({ request: createMockRequest() } as never);
+			await getEvents(createMockContext());
 			expect(requireAdminStrongSessionMock).toHaveBeenCalled();
 		});
 
@@ -309,10 +348,9 @@ describe('Admin API Strong Session Guard', () => {
 			});
 			listAdminUsersMock.mockResolvedValue([]);
 
-			await getUsers({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/admin/users'),
-			} as never);
+			await getUsers(
+				createMockContext({ url: 'http://localhost/api/dashboard/admin/users' }),
+			);
 			expect(requireAdminStrongSessionMock).toHaveBeenCalled();
 		});
 
@@ -326,10 +364,9 @@ describe('Admin API Strong Session Guard', () => {
 			});
 			listClaimCodesAdminMock.mockResolvedValue([]);
 
-			await getClaimCodes({
-				request: createMockRequest(),
-				url: new URL('http://localhost/api/dashboard/claimcodes'),
-			} as never);
+			await getClaimCodes(
+				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
+			);
 			expect(requireAdminStrongSessionMock).toHaveBeenCalled();
 		});
 	});

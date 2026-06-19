@@ -1,15 +1,13 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { updateEventAdmin } from '@/lib/rsvp/services/event-admin.service';
 import { UpdateEventSchema, UuidSchema } from '@/lib/schemas';
 
-export const PATCH: APIRoute = async ({ params, request }) => {
+export const PATCH: APIRoute = async ({ params, request, cookies }) => {
 	try {
-		await requireAdminRateLimit(request, 'admin:update');
-		const session = await requireAdminStrongSession(request);
+		const session = await requireAdminMutationAccess(request, cookies, 'admin:update');
 
 		const eventIdValidation = UuidSchema.safeParse(params.eventId);
 		if (!eventIdValidation.success) {
