@@ -1,71 +1,19 @@
 import type { FC } from 'react';
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/shared/data-utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';
+import { validateDraftContent } from '@/lib/intake/validation/validate-draft-content';
+import type { ValidationError } from '@/lib/intake/validation/validate-draft-content';
+import FormField from '@/components/dashboard/intake/FormField';
 
 interface Props {
 	invitationId: string;
 	initialContent: DraftContent;
 	onCancel: () => void;
-}
-
-interface ValidationError {
-	section: string;
-	field: string;
-	message: string;
-}
-
-function validateContent(content: DraftContent): ValidationError[] {
-	const errors: ValidationError[] = [];
-	const hero = (content.hero ?? {}) as Record<string, unknown>;
-	const rsvp = (content.rsvp ?? {}) as Record<string, unknown>;
-	const quote = (content.quote ?? {}) as Record<string, unknown>;
-	const thankYou = (content.thankYou ?? {}) as Record<string, unknown>;
-
-	if (!strFallback(content.title)) {
-		errors.push({ section: 'Hero', field: 'title', message: 'El título es obligatorio.' });
-	}
-	if (!strFallback(hero.name)) {
-		errors.push({
-			section: 'Hero',
-			field: 'name',
-			message: 'El nombre del festejado es obligatorio.',
-		});
-	}
-	if (!strFallback(hero.label)) {
-		errors.push({
-			section: 'Hero',
-			field: 'label',
-			message: 'El título del evento es obligatorio.',
-		});
-	}
-	if (!strFallback(quote.text)) {
-		errors.push({
-			section: 'quote',
-			field: 'text',
-			message: 'La frase de apertura es obligatoria.',
-		});
-	}
-	if (!strFallback(thankYou.message)) {
-		errors.push({
-			section: 'thankYou',
-			field: 'message',
-			message: 'El mensaje de agradecimiento es obligatorio.',
-		});
-	}
-	if (!strFallback(rsvp.title)) {
-		errors.push({
-			section: 'rsvp',
-			field: 'title',
-			message: 'El título de RSVP es obligatorio.',
-		});
-	}
-
-	return errors;
 }
 
 const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
@@ -93,8 +41,8 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 		setSuccess('');
 	};
 
-	const handleSave = async () => {
-		const errors = validateContent(content);
+	const handleSave = useCallback(async () => {
+		const errors = validateDraftContent(content);
 		setValidationErrors(errors);
 		if (errors.length > 0) {
 			setError('Corrige los campos marcados antes de guardar.');
@@ -109,9 +57,9 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar el borrador.');
 		}
-	};
+	}, [content, invitationId, updateDraft]);
 
-	const handleCancel = () => {
+	const handleCancel = useCallback(() => {
 		if (!success) {
 			setContent(structuredClone(initialContent));
 			setError('');
@@ -119,7 +67,7 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 			setValidationErrors([]);
 		}
 		onCancel();
-	};
+	}, [success, initialContent, onCancel]);
 
 	const hero = content.hero ?? {};
 	const family = content.family ?? {};
@@ -154,50 +102,6 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 		const nextOrder = moveArrayItem(sectionOrder, index, offset);
 		if (nextOrder === sectionOrder) return;
 		setSectionOrder(nextOrder);
-	};
-
-	const getErrors = (section: string): ValidationError[] =>
-		validationErrors.filter((e) => e.section === section);
-
-	const renderField = (
-		section: string,
-		fieldKey: string,
-		label: string,
-		value: string,
-		onChange: (v: string) => void,
-		type: 'text' | 'textarea' = 'text',
-		rows?: number,
-	) => {
-		const sectionErrors = getErrors(section);
-		const hasError = sectionErrors.some((e) => e.field === fieldKey);
-
-		return (
-			<div
-				className={`intake-editor__field${hasError ? ' intake-editor__field--error' : ''}`}
-			>
-				<label className="intake-field__label">{label}</label>
-				{type === 'textarea' ? (
-					<textarea
-						className="intake-field__textarea"
-						value={value}
-						onChange={(e) => onChange(e.target.value)}
-						rows={rows ?? 2}
-					/>
-				) : (
-					<input
-						className="intake-field__input"
-						type="text"
-						value={value}
-						onChange={(e) => onChange(e.target.value)}
-					/>
-				)}
-				{hasError && (
-					<p className="intake-field__error">
-						{sectionErrors.find((e) => e.field === fieldKey)?.message}
-					</p>
-				)}
-			</div>
-		);
 	};
 
 	return (
@@ -254,36 +158,63 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 				<p className="intake-editor__section-desc">
 					Información principal de la invitación.
 				</p>
-				{renderField('Hero', 'title', 'Título', content.title ?? '', (v) =>
-					setTopField('title', v),
-				)}
-				{renderField(
-					'Hero',
-					'description',
-					'Descripción',
-					content.description ?? '',
-					(v) => setTopField('description', v),
-					'textarea',
-				)}
-				{renderField('Hero', 'name', 'Nombre del festejado', strFallback(hero.name), (v) =>
-					setField('hero', 'name', v),
-				)}
-				{renderField(
-					'Hero',
-					'secondaryName',
-					'Segundo nombre',
-					strFallback(hero.secondaryName),
-					(v) => setField('hero', 'secondaryName', v),
-				)}
-				{renderField('Hero', 'label', 'Título del evento', strFallback(hero.label), (v) =>
-					setField('hero', 'label', v),
-				)}
-				{renderField('Hero', 'nickname', 'Apodo', strFallback(hero.nickname), (v) =>
-					setField('hero', 'nickname', v),
-				)}
-				{renderField('Hero', 'date', 'Fecha del evento', strFallback(hero.date), (v) =>
-					setField('hero', 'date', v),
-				)}
+				<FormField
+					section="hero"
+					fieldKey="title"
+					label="Título"
+					value={content.title ?? ''}
+					onChange={(v) => setTopField('title', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="description"
+					label="Descripción"
+					value={content.description ?? ''}
+					onChange={(v) => setTopField('description', v)}
+					type="textarea"
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="name"
+					label="Nombre del festejado"
+					value={strFallback(hero.name)}
+					onChange={(v) => setField('hero', 'name', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="secondaryName"
+					label="Segundo nombre"
+					value={strFallback(hero.secondaryName)}
+					onChange={(v) => setField('hero', 'secondaryName', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="label"
+					label="Título del evento"
+					value={strFallback(hero.label)}
+					onChange={(v) => setField('hero', 'label', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="nickname"
+					label="Apodo"
+					value={strFallback(hero.nickname)}
+					onChange={(v) => setField('hero', 'nickname', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="hero"
+					fieldKey="date"
+					label="Fecha del evento"
+					value={strFallback(hero.date)}
+					onChange={(v) => setField('hero', 'date', v)}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
@@ -300,41 +231,46 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						Mostrar sección de familia
 					</label>
 				</div>
-				{renderField(
-					'family',
-					'sectionSubtitle',
-					'Encabezado de sección',
-					strFallback(family.sectionSubtitle),
-					(v) => setField('family', 'sectionSubtitle', v),
-				)}
-				{renderField(
-					'family',
-					'sectionTitle',
-					'Título de sección',
-					strFallback(family.sectionTitle),
-					(v) => setField('family', 'sectionTitle', v),
-				)}
-				{renderField(
-					'family',
-					'parentsTitle',
-					'Título de padres',
-					strFallback(family.parentsTitle),
-					(v) => setField('family', 'parentsTitle', v),
-				)}
-				{renderField(
-					'family',
-					'godparentsTitle',
-					'Título de padrinos',
-					strFallback(family.godparentsTitle),
-					(v) => setField('family', 'godparentsTitle', v),
-				)}
-				{renderField(
-					'family',
-					'fatherName',
-					'Nombre del padre',
-					strFallback(family.fatherName),
-					(v) => setField('family', 'fatherName', v),
-				)}
+				<FormField
+					section="family"
+					fieldKey="sectionSubtitle"
+					label="Encabezado de sección"
+					value={strFallback(family.sectionSubtitle)}
+					onChange={(v) => setField('family', 'sectionSubtitle', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="sectionTitle"
+					label="Título de sección"
+					value={strFallback(family.sectionTitle)}
+					onChange={(v) => setField('family', 'sectionTitle', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="parentsTitle"
+					label="Título de padres"
+					value={strFallback(family.parentsTitle)}
+					onChange={(v) => setField('family', 'parentsTitle', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="godparentsTitle"
+					label="Título de padrinos"
+					value={strFallback(family.godparentsTitle)}
+					onChange={(v) => setField('family', 'godparentsTitle', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="fatherName"
+					label="Nombre del padre"
+					value={strFallback(family.fatherName)}
+					onChange={(v) => setField('family', 'fatherName', v)}
+					errors={validationErrors}
+				/>
 				<div className="intake-editor__field">
 					<label className="intake-field__label">
 						<input
@@ -346,13 +282,14 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						Padre fallecido
 					</label>
 				</div>
-				{renderField(
-					'family',
-					'motherName',
-					'Nombre de la madre',
-					strFallback(family.motherName),
-					(v) => setField('family', 'motherName', v),
-				)}
+				<FormField
+					section="family"
+					fieldKey="motherName"
+					label="Nombre de la madre"
+					value={strFallback(family.motherName)}
+					onChange={(v) => setField('family', 'motherName', v)}
+					errors={validationErrors}
+				/>
 				<div className="intake-editor__field">
 					<label className="intake-field__label">
 						<input
@@ -364,40 +301,44 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						Madre fallecida
 					</label>
 				</div>
-				{renderField(
-					'family',
-					'spouseName',
-					'Nombre del cónyuge',
-					strFallback(family.spouseName),
-					(v) => setField('family', 'spouseName', v),
-				)}
-				{renderField(
-					'family',
-					'godparents',
-					'Padrinos (uno por línea)',
-					strFallback(family.godparents),
-					(v) => setField('family', 'godparents', v),
-					'textarea',
-					3,
-				)}
-				{renderField(
-					'family',
-					'children',
-					'Hijos (uno por línea)',
-					strFallback(family.children),
-					(v) => setField('family', 'children', v),
-					'textarea',
-					3,
-				)}
-				{renderField(
-					'family',
-					'sectionMessage',
-					'Mensaje familiar',
-					strFallback(family.sectionMessage),
-					(v) => setField('family', 'sectionMessage', v),
-					'textarea',
-					2,
-				)}
+				<FormField
+					section="family"
+					fieldKey="spouseName"
+					label="Nombre del cónyuge"
+					value={strFallback(family.spouseName)}
+					onChange={(v) => setField('family', 'spouseName', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="godparents"
+					label="Padrinos (uno por línea)"
+					value={strFallback(family.godparents)}
+					onChange={(v) => setField('family', 'godparents', v)}
+					type="textarea"
+					rows={3}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="children"
+					label="Hijos (uno por línea)"
+					value={strFallback(family.children)}
+					onChange={(v) => setField('family', 'children', v)}
+					type="textarea"
+					rows={3}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="family"
+					fieldKey="sectionMessage"
+					label="Mensaje familiar"
+					value={strFallback(family.sectionMessage)}
+					onChange={(v) => setField('family', 'sectionMessage', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
@@ -427,12 +368,12 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 							<h4 className="intake-review__venue-title">{venueLabel}</h4>
 							{VENUE_FIELDS.map(({ fieldKey, label }) => (
 								<Fragment key={fieldKey}>
-									{renderField(
-										'location',
-										fieldKey,
-										label,
-										strFallback(venue?.[fieldKey]),
-										(v) => {
+									<FormField
+										section="location"
+										fieldKey={fieldKey}
+										label={label}
+										value={strFallback(venue?.[fieldKey])}
+										onChange={(v) => {
 											const updated = {
 												...(((location as Record<string, unknown>)[
 													venueKey
@@ -440,8 +381,9 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 												[fieldKey]: v,
 											};
 											setField('location', venueKey, updated);
-										},
-									)}
+										}}
+										errors={validationErrors}
+									/>
 								</Fragment>
 							))}
 						</div>
@@ -502,9 +444,14 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 				<p className="intake-editor__section-desc">
 					Configuración de confirmación de asistencia.
 				</p>
-				{renderField('rsvp', 'title', 'Título', strFallback(rsvp.title), (v) =>
-					setField('rsvp', 'title', v),
-				)}
+				<FormField
+					section="rsvp"
+					fieldKey="title"
+					label="Título"
+					value={strFallback(rsvp.title)}
+					onChange={(v) => setField('rsvp', 'title', v)}
+					errors={validationErrors}
+				/>
 				<div className="intake-editor__field">
 					<label className="intake-field__label">Acompañantes máximo</label>
 					<input
@@ -515,104 +462,128 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						min={0}
 					/>
 				</div>
-				{renderField(
-					'rsvp',
-					'confirmationMessage',
-					'Mensaje de confirmación',
-					strFallback(rsvp.confirmationMessage),
-					(v) => setField('rsvp', 'confirmationMessage', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'rsvp',
-					'confirmationMode',
-					'Modo de confirmación',
-					strFallback(rsvp.confirmationMode),
-					(v) => setField('rsvp', 'confirmationMode', v),
-				)}
-				{renderField(
-					'rsvp',
-					'whatsappPhone',
-					'WhatsApp',
-					strFallback(rsvp.whatsappPhone),
-					(v) => setField('rsvp', 'whatsappPhone', v),
-				)}
-				{renderField(
-					'rsvp',
-					'subcopy',
-					'Texto adicional',
-					strFallback(rsvp.subcopy),
-					(v) => setField('rsvp', 'subcopy', v),
-					'textarea',
-					2,
-				)}
+				<FormField
+					section="rsvp"
+					fieldKey="confirmationMessage"
+					label="Mensaje de confirmación"
+					value={strFallback(rsvp.confirmationMessage)}
+					onChange={(v) => setField('rsvp', 'confirmationMessage', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="rsvp"
+					fieldKey="confirmationMode"
+					label="Modo de confirmación"
+					value={strFallback(rsvp.confirmationMode)}
+					onChange={(v) => setField('rsvp', 'confirmationMode', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="rsvp"
+					fieldKey="whatsappPhone"
+					label="WhatsApp"
+					value={strFallback(rsvp.whatsappPhone)}
+					onChange={(v) => setField('rsvp', 'whatsappPhone', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="rsvp"
+					fieldKey="subcopy"
+					label="Texto adicional"
+					value={strFallback(rsvp.subcopy)}
+					onChange={(v) => setField('rsvp', 'subcopy', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
 				<h3 className="intake-review__section-title">{SECTION_LABELS.music}</h3>
 				<p className="intake-editor__section-desc">Canción de fondo para la invitación.</p>
-				{renderField('music', 'url', 'URL de la canción', strFallback(music.url), (v) =>
-					setField('music', 'url', v),
-				)}
-				{renderField(
-					'music',
-					'title',
-					'Título de la canción',
-					strFallback(music.title),
-					(v) => setField('music', 'title', v),
-				)}
+				<FormField
+					section="music"
+					fieldKey="url"
+					label="URL de la canción"
+					value={strFallback(music.url)}
+					onChange={(v) => setField('music', 'url', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="music"
+					fieldKey="title"
+					label="Título de la canción"
+					value={strFallback(music.title)}
+					onChange={(v) => setField('music', 'title', v)}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
 				<h3 className="intake-review__section-title">{SECTION_LABELS.gifts}</h3>
 				<p className="intake-editor__section-desc">Información de mesa de regalos.</p>
-				{renderField('gifts', 'title', 'Título', strFallback(gifts.title), (v) =>
-					setField('gifts', 'title', v),
-				)}
-				{renderField(
-					'gifts',
-					'subtitle',
-					'Subtítulo',
-					strFallback(gifts.subtitle),
-					(v) => setField('gifts', 'subtitle', v),
-					'textarea',
-					2,
-				)}
+				<FormField
+					section="gifts"
+					fieldKey="title"
+					label="Título"
+					value={strFallback(gifts.title)}
+					onChange={(v) => setField('gifts', 'title', v)}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="gifts"
+					fieldKey="subtitle"
+					label="Subtítulo"
+					value={strFallback(gifts.subtitle)}
+					onChange={(v) => setField('gifts', 'subtitle', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
 				<h3 className="intake-review__section-title">{SECTION_LABELS.quote}</h3>
 				<p className="intake-editor__section-desc">Frase de apertura y agradecimiento.</p>
-				{renderField(
-					'quote',
-					'text',
-					'Frase de apertura',
-					strFallback(quote.text),
-					(v) => setField('quote', 'text', v),
-					'textarea',
-					2,
-				)}
-				{renderField('quote', 'author', 'Autor', strFallback(quote.author), (v) =>
-					setField('quote', 'author', v),
-				)}
+				<FormField
+					section="quote"
+					fieldKey="text"
+					label="Frase de apertura"
+					value={strFallback(quote.text)}
+					onChange={(v) => setField('quote', 'text', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="quote"
+					fieldKey="author"
+					label="Autor"
+					value={strFallback(quote.author)}
+					onChange={(v) => setField('quote', 'author', v)}
+					errors={validationErrors}
+				/>
 				<h4 className="intake-review__venue-title">{SECTION_LABELS.thankYou}</h4>
-				{renderField(
-					'thankYou',
-					'message',
-					'Mensaje de agradecimiento',
-					strFallback(thankYou.message),
-					(v) => setField('thankYou', 'message', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'thankYou',
-					'closingName',
-					'Nombre de despedida',
-					strFallback(thankYou.closingName),
-					(v) => setField('thankYou', 'closingName', v),
-				)}
+				<FormField
+					section="thankYou"
+					fieldKey="message"
+					label="Mensaje de agradecimiento"
+					value={strFallback(thankYou.message)}
+					onChange={(v) => setField('thankYou', 'message', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="thankYou"
+					fieldKey="closingName"
+					label="Nombre de despedida"
+					value={strFallback(thankYou.closingName)}
+					onChange={(v) => setField('thankYou', 'closingName', v)}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<section className="intake-review__section">
@@ -629,87 +600,96 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						onChange={(e) => setField('photoNotes', 'whatsappSent', e.target.checked)}
 					/>
 				</div>
-				{renderField(
-					'photoNotes',
-					'heroPhoto',
-					'Foto principal',
-					strFallback(photoNotes.heroPhoto),
-					(v) => setField('photoNotes', 'heroPhoto', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'portraitPhoto',
-					'Retrato',
-					strFallback(photoNotes.portraitPhoto),
-					(v) => setField('photoNotes', 'portraitPhoto', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'galleryPhotos',
-					'Fotos de galería',
-					strFallback(photoNotes.galleryPhotos),
-					(v) => setField('photoNotes', 'galleryPhotos', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'familyPhoto',
-					'Foto familiar',
-					strFallback(photoNotes.familyPhoto),
-					(v) => setField('photoNotes', 'familyPhoto', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'specialPhoto',
-					'Foto especial',
-					strFallback(photoNotes.specialPhoto),
-					(v) => setField('photoNotes', 'specialPhoto', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'generalNotes',
-					'Notas generales',
-					strFallback(photoNotes.generalNotes),
-					(v) => setField('photoNotes', 'generalNotes', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'photoOrder',
-					'Orden sugerido',
-					strFallback(photoNotes.photoOrder),
-					(v) => setField('photoNotes', 'photoOrder', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'cropNotes',
-					'Notas de recorte',
-					strFallback(photoNotes.cropNotes),
-					(v) => setField('photoNotes', 'cropNotes', v),
-					'textarea',
-					2,
-				)}
-				{renderField(
-					'photoNotes',
-					'priorityNotes',
-					'Prioridad',
-					strFallback(photoNotes.priorityNotes),
-					(v) => setField('photoNotes', 'priorityNotes', v),
-					'textarea',
-					2,
-				)}
+				<FormField
+					section="photoNotes"
+					fieldKey="heroPhoto"
+					label="Foto principal"
+					value={strFallback(photoNotes.heroPhoto)}
+					onChange={(v) => setField('photoNotes', 'heroPhoto', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="portraitPhoto"
+					label="Retrato"
+					value={strFallback(photoNotes.portraitPhoto)}
+					onChange={(v) => setField('photoNotes', 'portraitPhoto', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="galleryPhotos"
+					label="Fotos de galería"
+					value={strFallback(photoNotes.galleryPhotos)}
+					onChange={(v) => setField('photoNotes', 'galleryPhotos', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="familyPhoto"
+					label="Foto familiar"
+					value={strFallback(photoNotes.familyPhoto)}
+					onChange={(v) => setField('photoNotes', 'familyPhoto', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="specialPhoto"
+					label="Foto especial"
+					value={strFallback(photoNotes.specialPhoto)}
+					onChange={(v) => setField('photoNotes', 'specialPhoto', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="generalNotes"
+					label="Notas generales"
+					value={strFallback(photoNotes.generalNotes)}
+					onChange={(v) => setField('photoNotes', 'generalNotes', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="photoOrder"
+					label="Orden sugerido"
+					value={strFallback(photoNotes.photoOrder)}
+					onChange={(v) => setField('photoNotes', 'photoOrder', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="cropNotes"
+					label="Notas de recorte"
+					value={strFallback(photoNotes.cropNotes)}
+					onChange={(v) => setField('photoNotes', 'cropNotes', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
+				<FormField
+					section="photoNotes"
+					fieldKey="priorityNotes"
+					label="Prioridad"
+					value={strFallback(photoNotes.priorityNotes)}
+					onChange={(v) => setField('photoNotes', 'priorityNotes', v)}
+					type="textarea"
+					rows={2}
+					errors={validationErrors}
+				/>
 			</section>
 
 			<div className="intake-review__actions">
