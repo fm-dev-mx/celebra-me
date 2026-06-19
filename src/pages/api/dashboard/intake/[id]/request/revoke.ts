@@ -10,7 +10,7 @@ import { toIntakeRequestDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'intake:update');
+		await requireAdminMutationAccess(request, cookies, 'intake:revoke');
 
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');

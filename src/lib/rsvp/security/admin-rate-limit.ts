@@ -39,6 +39,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'intake:update': { maxHits: 30, windowSec: 60 },
 	'intake:request': { maxHits: 10, windowSec: 60 },
 	'intake:regenerate': { maxHits: 5, windowSec: 60 },
+	'intake:revoke': { maxHits: 5, windowSec: 60 },
 	'intake:review': { maxHits: 20, windowSec: 60 },
 	'intake:draft': { maxHits: 10, windowSec: 60 },
 	'intake:publish': { maxHits: 5, windowSec: 60 },
