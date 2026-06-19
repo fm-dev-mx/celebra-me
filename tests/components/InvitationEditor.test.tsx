@@ -153,12 +153,12 @@ jest.mock('@/components/dashboard/intake/editor/AssetPicker', () => {
 	};
 });
 
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 beforeEach(() => {
 	jest.clearAllMocks();
-	jest.spyOn(globalThis, 'fetch').mockResolvedValue({
-		ok: true,
-		json: async () => ({ assets: [] }),
-	} as Response);
 	saveSection = jest.fn().mockResolvedValue({ draftUpdatedAt: '2026-05-30T03:00:00Z' });
 	saveMetadata = jest.fn().mockResolvedValue(createContext().invitation);
 	mockContext = createContext();
@@ -437,8 +437,6 @@ describe('InvitationEditor', () => {
 		expect(open).not.toHaveBeenCalled();
 
 		Element.prototype.scrollIntoView = originalScrollIntoView;
-		focus.mockRestore();
-		open.mockRestore();
 	});
 
 	it('opens the full preview route in a new tab below the split-layout breakpoint', () => {
@@ -453,7 +451,6 @@ describe('InvitationEditor', () => {
 			'_blank',
 			'noopener,noreferrer',
 		);
-		open.mockRestore();
 	});
 
 	it('handles asset selection for hero.backgroundImageMobile', () => {
