@@ -1,5 +1,6 @@
 import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
+export type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 
 /**
  * Platform default: every invitation allows guests to change their RSVP
@@ -58,11 +59,6 @@ export function getDefaultRsvpSubcopy(eventType: string): string {
 		DEFAULT_SUBCOPY[eventType] ??
 		'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.'
 	);
-}
-
-export interface RsvpResponseMessages {
-	confirmed?: { title?: string; subtitle?: string };
-	declined?: { title?: string; subtitle?: string };
 }
 
 export function interpolateRsvpMessage(
@@ -127,6 +123,7 @@ export function resolveLabels(
 	variant?: string,
 ): ResolvedLabels {
 	const isEditorial = variant === 'editorial';
+	const celebrantFirstName = celebrantName?.trim().split(/\s+/)[0] || 'el festejado';
 
 	return {
 		nameLabel: labels?.name ?? 'Tu nombre',
@@ -136,14 +133,12 @@ export function resolveLabels(
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
 		notesLabel:
 			labels?.notesLabel ??
-			(isEditorial
-				? 'DEDICATORIA'
-				: `Mensaje para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}`),
+			(isEditorial ? 'DEDICATORIA' : `Mensaje para ${celebrantFirstName}`),
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
 			(isEditorial
-				? `Escribe unas palabras para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}…`
-				: `Escribe un mensaje para ${celebrantName ? celebrantName.trim().split(/\s+/)[0] : 'el festejado'}...`),
+				? `Escribe unas palabras para ${celebrantFirstName}…`
+				: `Escribe un mensaje para ${celebrantFirstName}...`),
 	};
 }
 

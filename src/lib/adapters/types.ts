@@ -14,7 +14,7 @@ import type {
 import type { ParentsOrder } from '@/lib/intake/types';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
-import type { RsvpResponseMessages } from '@/components/invitation/rsvp-logic';
+import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
 import type { z } from 'zod';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
