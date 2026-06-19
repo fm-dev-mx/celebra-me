@@ -1,14 +1,15 @@
 ---
 title: Domain Simplification Packages
-status: active
+status: completed
 created: 2026-06-18
-updated: 2026-06-18
+updated: 2026-06-19
 related_skills:
   - supabase
 related_docs:
   - docs/core/architecture.md
   - .agent/rules/intake-publishing.md
   - .agent/rules/invitation-production.md
+  - .agent/plans/active/domain-simplification-packages-audit.md
 supersedes: []
 ---
 
@@ -601,3 +602,11 @@ If Graphify is available, use it for:
 
 Do not let Graphify visualization become the success metric. The acceptance criteria above are the
 ground truth.
+
+---
+
+## 8. Post-Implementation Audit
+
+See [domain-simplification-packages-audit.md](./domain-simplification-packages-audit.md) for the
+complete post-implementation gap analysis, including pending route updates, test coverage gaps,
+intentional deviations from the original plan, and a prioritized action summary.
