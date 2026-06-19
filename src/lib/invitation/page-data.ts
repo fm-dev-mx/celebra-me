@@ -5,7 +5,7 @@ import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
-import { type ThemePreset } from '@/lib/theme/theme-contract';
+import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import { buildInvitationRenderPlan } from './render-plan';
@@ -77,7 +77,6 @@ function buildEnvelopeData(
 
 	return {
 		...envelope.data,
-		name: envelope.data.name,
 		eventSlug,
 		isDemo,
 		card: {

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { RefObject } from 'react';
-import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
+import type { AttendanceStatus } from '@/components/invitation/rsvp-logic';
 import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
 
 const FIELD_ANIMATION_BASE_DELAY = 0.05;
