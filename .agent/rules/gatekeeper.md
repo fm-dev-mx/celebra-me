@@ -24,13 +24,14 @@ These rules are **authoritative** unless explicitly overridden by the repository
 
 ### Exception — Repository Hygiene
 
-The agent is allowed to touch files **outside the initial diff scope** when strictly required for
-repository hygiene, including:
+The agent may report files **outside the initial diff scope** when repository hygiene requires
+attention, including:
 
-- removing forbidden artifacts,
-- updating `.gitignore` to prevent repeated artifacts.
+- forbidden artifacts that may need removal,
+- `.gitignore` updates that may prevent repeated artifacts.
 
-Any such change **must be explicitly reported** as an extra action.
+Any such change outside the initial diff scope requires explicit repository-owner authorization and
+must be explicitly reported as an extra action.
 
 ---
 
@@ -56,12 +57,12 @@ Forbidden examples (non-exhaustive):
 
 **Action:**
 
-- Unstage and remove these files.
-- Update `.gitignore` only if the artifact is repeatedly generated.
-- Always report these actions.
-
-This is an authorized exception to the staged-file preservation rule in
-`.agent/rules/git-safety.md §4`.
+- If forbidden artifacts are staged or present, report them and ask for explicit authorization
+  before unstaging, deleting, cleaning, or otherwise removing them.
+- Do not run `git restore --staged`, `git clean`, `git reset`, or file-discard commands as automatic
+  hygiene.
+- Update `.gitignore` only when explicitly authorized and the artifact is repeatedly generated.
+- Always report any authorized hygiene actions.
 
 ---
 
@@ -69,7 +70,7 @@ This is an authorized exception to the staged-file preservation rule in
 
 - Writing a diff file is allowed **only** at `.git/staged.diff`.
 - Any `staged.diff` located in the repository root or tracked paths is considered an artifact and
-  must be removed.
+  must be reported before removal.
 
 ---
 

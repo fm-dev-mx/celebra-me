@@ -11,50 +11,66 @@ contract at `.agent/rules/gatekeeper.md`.
 
 Agents **may**:
 
-- Inspect the repository (read files, search, diff, log, status).
+- Inspect the repository with read-only commands (read files, search, diff, log, status).
 - Edit working tree files when the task requires it.
 
-Agents **must not** perform Git write operations unless the user explicitly authorizes them in the
-current task. Authorization is **task-scoped** — permission from a previous task does not carry
-over.
+Agents **must not** perform Git operations that modify the index, history, stash state, branch
+state, or unrelated working-tree files unless the user explicitly requests that exact Git operation
+in the current task. Authorization is **task-scoped** — permission from a previous task does not
+carry over.
 
 ---
 
-## Git Write Operations (Forbidden Without Authorization)
+## Git Write Operations (Forbidden Without Current-Task Authorization)
 
 - `git add`
+- `git add -A`
+- `git add .`
 - `git commit`
+- `git commit --amend`
 - `git restore --staged`
 - `git reset`
+- `git reset --hard`
+- `git restore <file>`
+- `git checkout -- <file>`
+- `git clean`
 - `git stash`
-- `git checkout`, `git switch`
+- `git checkout` or `git switch` when changing branches
 - `git merge`, `git rebase`, `git cherry-pick`
-- Any command that changes HEAD, the index, branches, tags, or history.
+- Any other command that changes HEAD, the index, branches, tags, history, stash state, or unrelated
+  working-tree files.
 
 ---
 
 ## Safe Read Operations (Always Allowed)
 
 - `git status`
-- `git diff`, `git diff --cached`
-- `git log`, `git show`
-- `git rev-parse HEAD`
+- `git status --short`
+- `git diff`
+- `git diff --staged`
+- `git diff --cached`
+- `git log`
+- `git show`
+- `git rev-parse`
 - `git branch --show-current`
 - Other read-only Git inspection commands.
 
 ---
 
-## Staged Files Are User-Owned
+## Worktree State Is User-Owned
 
-Pre-existing staged changes are user state. Agents must:
+Pre-existing staged, unstaged, and untracked changes are user-owned state. Agents must:
 
 - **Preserve** them during the session.
+- Work only in the requested file-edit scope.
 - **Not unstage** them unless explicitly authorized.
-- **Not auto-remediate** if staged state changes unexpectedly — report and ask the user.
+- **Not discard, reset, stash, clean, remove, or overwrite** them unless explicitly authorized.
+- **Not auto-remediate** if staged state, unstaged changes, untracked files, or HEAD change
+  unexpectedly — report the drift and ask the user.
 
-**Exception — Artifact hygiene:** The Gatekeeper (`.agent/rules/gatekeeper.md §2.1`) may unstage
-forbidden artifacts (build outputs, scratch files). This is an authorized exception to the above
-rule. All other unstaging requires explicit user authorization.
+Plan rollback snippets, release instructions, hook behavior, and cleanup guidance do not authorize
+agents to run Git write operations. Authorization must come from the user's explicit request in the
+current task.
 
 ---
 
@@ -103,8 +119,10 @@ node scripts/agent/git-safety.mjs end
 
 ## Authorization
 
-Git write operations are authorized only when the local marker file `.agent/tmp/allow-git-write`
-exists. This file is unversioned and local-only.
+Git write operations are authorized only when the user explicitly requests that exact Git operation
+in the current task. The local marker file `.agent/tmp/allow-git-write` is only a harness signal for
+an explicitly authorized current task. This file is unversioned and local-only, and its presence
+must not be treated as standing permission for future Git write operations.
 
 ---
 
