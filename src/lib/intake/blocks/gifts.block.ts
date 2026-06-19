@@ -2,7 +2,7 @@ import type { IntakeBlockDefinition } from '@/lib/intake/types';
 
 export const giftsBlock: IntakeBlockDefinition = {
 	type: 'gifts',
-	displayName: 'Mesa de regalos y transferencias',
+	displayName: 'Mesa de regalos',
 	description: 'Opciones de regalo: tiendas, transferencia bancaria, PayPal o lluvia de sobres.',
 	fields: [
 		{

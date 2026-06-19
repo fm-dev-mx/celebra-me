@@ -2,8 +2,8 @@ import type { IntakeBlockDefinition } from '@/lib/intake/types';
 
 export const rsvpConfigBlock: IntakeBlockDefinition = {
 	type: 'rsvp-config',
-	displayName: 'Confirmación de asistencia (RSVP)',
-	description: 'Configuración de confirmación: título, capacidad de invitados y mensaje.',
+	displayName: 'Confirmación de asistencia',
+	description: 'Título, capacidad de invitados y mensaje de confirmación.',
 	fields: [
 		{
 			name: 'title',

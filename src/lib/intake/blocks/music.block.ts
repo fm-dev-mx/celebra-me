@@ -2,8 +2,8 @@ import type { IntakeBlockDefinition } from '@/lib/intake/types';
 
 export const musicBlock: IntakeBlockDefinition = {
 	type: 'music',
-	displayName: 'Música de fondo',
-	description: 'URL de la canción que sonará al abrir la invitación.',
+	displayName: 'Música',
+	description: 'Canción de fondo',
 	fields: [
 		{
 			name: 'url',
