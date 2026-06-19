@@ -11,7 +11,7 @@ import type {
 	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
-import type { ParentsOrder } from '@/lib/intake/types';
+import type { ParentsOrder } from '@/lib/invitation/family-contract';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
