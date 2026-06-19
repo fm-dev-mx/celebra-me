@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -25,8 +26,43 @@ import {
 } from './render.js';
 import { serializeStableJson } from './serialize.js';
 
-function readJson(filePath: string): Record<string, unknown> {
-	return JSON.parse(readFileSync(filePath, 'utf8')) as Record<string, unknown>;
+const REPORT_NAMES = [
+	'community-summary',
+	'risk-hubs',
+	'cleanup-report',
+	'domain-rsvp',
+	'domain-intake-publishing',
+	'domain-invitation-rendering',
+	'domain-theme-assets',
+] as const;
+
+function writePair<T>(outputDir: string, name: string, data: T, render: (data: T) => string) {
+	writeFileSync(path.join(outputDir, `${name}.json`), serializeStableJson(data));
+	writeFileSync(path.join(outputDir, `${name}.md`), render(data));
+}
+
+export function requireFreshGraph(
+	graphCommit: string | null | undefined,
+	headCommit: string,
+): void {
+	const display = graphCommit ?? '<missing>';
+	if (!graphCommit || graphCommit !== headCommit) {
+		throw new Error(
+			[
+				'Graphify raw graph is stale.',
+				'',
+				`Raw graph commit: ${display}`,
+				`Current HEAD: ${headCommit}`,
+				'',
+				'Regenerate the raw Graphify graph before running operational views.',
+				'Suggested refresh sequence:',
+				'graphify extract . --out .agent/tmp/graphify-refresh',
+				'# promote generated graphify-out artifacts if verified',
+				'graphify cluster-only . --no-viz --no-label',
+				'pnpm ops graphify-views',
+			].join('\n'),
+		);
+	}
 }
 
 export function generateOperationalReports({
@@ -34,8 +70,16 @@ export function generateOperationalReports({
 	analysisPath = DEFAULT_ANALYSIS_PATH,
 	outputDir = DEFAULT_OUTPUT_DIR,
 } = {}) {
-	const graph = validateGraphShape(readJson(graphPath));
-	const analysis = validateAnalysisShape(readJson(analysisPath));
+	const graph = validateGraphShape(
+		JSON.parse(readFileSync(graphPath, 'utf8')) as Record<string, unknown>,
+	);
+	requireFreshGraph(
+		graph.built_at_commit as string | null | undefined,
+		execSync('git rev-parse HEAD').toString().trim(),
+	);
+	const analysis = validateAnalysisShape(
+		JSON.parse(readFileSync(analysisPath, 'utf8')) as Record<string, unknown>,
+	);
 	const indexes = buildGraphIndexes(graph, analysis);
 	const options = { sourceGraphPath: graphPath.replaceAll('\\', '/') };
 
@@ -63,68 +107,39 @@ export function generateOperationalReports({
 	);
 
 	mkdirSync(outputDir, { recursive: true });
-	writeFileSync(
-		path.join(outputDir, 'community-summary.json'),
-		serializeStableJson(communitySummary),
+	writePair(outputDir, 'community-summary', communitySummary, renderCommunitySummaryMarkdown);
+	writePair(outputDir, 'risk-hubs', riskHubs, renderRiskHubsMarkdown);
+	writePair(outputDir, 'cleanup-report', cleanupReport, renderCleanupMarkdown);
+	writePair(outputDir, 'domain-rsvp', rsvpDomainReport, renderRsvpDomainMarkdown);
+	writePair(
+		outputDir,
+		'domain-intake-publishing',
+		intakePublishingDomainReport,
+		renderIntakePublishingDomainMarkdown,
 	);
-	writeFileSync(
-		path.join(outputDir, 'community-summary.md'),
-		renderCommunitySummaryMarkdown(communitySummary),
+	writePair(
+		outputDir,
+		'domain-invitation-rendering',
+		invitationRenderingDomainReport,
+		renderInvitationRenderingDomainMarkdown,
 	);
-	writeFileSync(path.join(outputDir, 'risk-hubs.json'), serializeStableJson(riskHubs));
-	writeFileSync(path.join(outputDir, 'risk-hubs.md'), renderRiskHubsMarkdown(riskHubs));
-	writeFileSync(path.join(outputDir, 'cleanup-report.json'), serializeStableJson(cleanupReport));
-	writeFileSync(path.join(outputDir, 'cleanup-report.md'), renderCleanupMarkdown(cleanupReport));
-	writeFileSync(path.join(outputDir, 'domain-rsvp.json'), serializeStableJson(rsvpDomainReport));
-	writeFileSync(
-		path.join(outputDir, 'domain-rsvp.md'),
-		renderRsvpDomainMarkdown(rsvpDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-intake-publishing.json'),
-		serializeStableJson(intakePublishingDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-intake-publishing.md'),
-		renderIntakePublishingDomainMarkdown(intakePublishingDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-invitation-rendering.json'),
-		serializeStableJson(invitationRenderingDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-invitation-rendering.md'),
-		renderInvitationRenderingDomainMarkdown(invitationRenderingDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-theme-assets.json'),
-		serializeStableJson(themeAssetsDomainReport),
-	);
-	writeFileSync(
-		path.join(outputDir, 'domain-theme-assets.md'),
-		renderThemeAssetsDomainMarkdown(themeAssetsDomainReport),
+	writePair(
+		outputDir,
+		'domain-theme-assets',
+		themeAssetsDomainReport,
+		renderThemeAssetsDomainMarkdown,
 	);
 	writeFileSync(path.join(outputDir, 'README.md'), renderOperationalReadme(communitySummary));
 
 	return {
 		outputDir,
 		files: [
-			'README.md',
-			'community-summary.json',
-			'community-summary.md',
-			'risk-hubs.json',
-			'risk-hubs.md',
-			'cleanup-report.json',
-			'cleanup-report.md',
-			'domain-rsvp.json',
-			'domain-rsvp.md',
-			'domain-intake-publishing.json',
-			'domain-intake-publishing.md',
-			'domain-invitation-rendering.json',
-			'domain-invitation-rendering.md',
-			'domain-theme-assets.json',
-			'domain-theme-assets.md',
-		].map((file) => path.join(outputDir, file)),
+			path.join(outputDir, 'README.md'),
+			...REPORT_NAMES.flatMap((name) => [
+				path.join(outputDir, `${name}.json`),
+				path.join(outputDir, `${name}.md`),
+			]),
+		],
 	};
 }
 

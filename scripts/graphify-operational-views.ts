@@ -29,4 +29,4 @@ export {
 	renderOperationalReadme,
 } from './graphify/render.js';
 export { serializeStableJson } from './graphify/serialize.js';
-export { generateOperationalReports, runCli } from './graphify/cli.js';
+export { generateOperationalReports, requireFreshGraph, runCli } from './graphify/cli.js';

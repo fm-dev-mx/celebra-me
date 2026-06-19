@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -26,6 +26,14 @@ import {
 	computeIntakePublishingDomainReport,
 	computeInvitationRenderingDomainReport,
 	computeThemeAssetsDomainReport,
+	renderCommunitySummaryMarkdown,
+	renderRiskHubsMarkdown,
+	renderCleanupMarkdown,
+	renderRsvpDomainMarkdown,
+	renderIntakePublishingDomainMarkdown,
+	renderInvitationRenderingDomainMarkdown,
+	renderThemeAssetsDomainMarkdown,
+	requireFreshGraph,
 } from '../../scripts/graphify-operational-views';
 
 function generateInput(name: string) {
@@ -296,6 +304,38 @@ describe('serializeStableJson', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Stale-graph guard
+// ---------------------------------------------------------------------------
+
+describe('requireFreshGraph', () => {
+	it('passes when graph commit matches HEAD', () => {
+		expect(() => requireFreshGraph('abc123def', 'abc123def')).not.toThrow();
+	});
+
+	it('fails with actionable error when graph commit differs', () => {
+		let error: Error;
+		try {
+			requireFreshGraph('oldcommit', 'newcommit');
+		} catch (e) {
+			error = e as Error;
+		}
+		expect(error!).toBeDefined();
+		expect(error!.message).toContain('Graphify raw graph is stale.');
+		expect(error!.message).toContain('Raw graph commit: oldcommit');
+		expect(error!.message).toContain('Current HEAD: newcommit');
+		expect(error!.message).toContain('graphify extract .');
+		expect(error!.message).toContain('graphify cluster-only .');
+		expect(error!.message).toContain('pnpm ops graphify-views');
+	});
+
+	it.each([null, undefined, ''])('fails when graph commit is %p', (commit) => {
+		expect(() => requireFreshGraph(commit as string | null | undefined, 'abc123')).toThrow(
+			'Graphify raw graph is stale.',
+		);
+	});
+});
+
+// ---------------------------------------------------------------------------
 // Report computations (direct function calls, no CLI spawn)
 // ---------------------------------------------------------------------------
 
@@ -329,9 +369,7 @@ describe('community summary', () => {
 		});
 	});
 
-	it('renders community summary markdown', async () => {
-		const { renderCommunitySummaryMarkdown } =
-			await import('../../scripts/graphify-operational-views');
+	it('renders community summary markdown', () => {
 		const markdown = renderCommunitySummaryMarkdown(reports.communitySummary);
 		expect(markdown).toContain('source/target metrics are orientation hints');
 		expect(markdown).toContain('Community count mismatch');
@@ -383,8 +421,7 @@ describe('risk hubs', () => {
 		});
 	});
 
-	it('renders risk hubs markdown', async () => {
-		const { renderRiskHubsMarkdown } = await import('../../scripts/graphify-operational-views');
+	it('renders risk hubs markdown', () => {
 		const markdown = renderRiskHubsMarkdown(reports.riskHubs);
 		expect(markdown).toContain('sourceOrientedCount');
 		expect(markdown).toContain('## tests');
@@ -473,8 +510,7 @@ describe('cleanup report', () => {
 		);
 	});
 
-	it('renders cleanup markdown', async () => {
-		const { renderCleanupMarkdown } = await import('../../scripts/graphify-operational-views');
+	it('renders cleanup markdown', () => {
 		const markdown = renderCleanupMarkdown(reports.cleanupReport);
 		expect(markdown).toContain('high-confidence-review-candidates');
 		expect(markdown).toContain('entrypoints-or-runtime-boundaries');
@@ -594,9 +630,7 @@ describe('RSVP domain report', () => {
 		]);
 	});
 
-	it('renders RSVP domain markdown', async () => {
-		const { renderRsvpDomainMarkdown } =
-			await import('../../scripts/graphify-operational-views');
+	it('renders RSVP domain markdown', () => {
 		const markdown = renderRsvpDomainMarkdown(reports.rsvpDomainReport);
 		expect(markdown).toContain('# Graphify Domain RSVP');
 		expect(markdown).toContain('## practical-change-checklist');
@@ -646,9 +680,7 @@ describe('intake publishing domain report', () => {
 		);
 	});
 
-	it('renders intake publishing checklist guidance', async () => {
-		const { renderIntakePublishingDomainMarkdown } =
-			await import('../../scripts/graphify-operational-views');
+	it('renders intake publishing checklist guidance', () => {
 		const markdown = renderIntakePublishingDomainMarkdown(reports.intakePublishingDomainReport);
 		expect(markdown).toContain('# Graphify Domain Intake Publishing');
 		expect(markdown).toContain('likely related files');
@@ -687,9 +719,7 @@ describe('invitation rendering domain report', () => {
 		);
 	});
 
-	it('renders invitation rendering checklist guidance', async () => {
-		const { renderInvitationRenderingDomainMarkdown } =
-			await import('../../scripts/graphify-operational-views');
+	it('renders invitation rendering checklist guidance', () => {
 		const markdown = renderInvitationRenderingDomainMarkdown(
 			reports.invitationRenderingDomainReport,
 		);
@@ -733,9 +763,7 @@ describe('theme assets domain report', () => {
 		expect(serialized).not.toContain('src/components/invitation/RSVP.tsx');
 	});
 
-	it('renders theme assets checklist guidance', async () => {
-		const { renderThemeAssetsDomainMarkdown } =
-			await import('../../scripts/graphify-operational-views');
+	it('renders theme assets checklist guidance', () => {
 		const markdown = renderThemeAssetsDomainMarkdown(reports.themeAssetsDomainReport);
 		expect(markdown).toContain('# Graphify Domain Theme Assets');
 		expect(markdown).toContain('SCSS only');
@@ -753,17 +781,62 @@ describe('theme assets domain report', () => {
 // ---------------------------------------------------------------------------
 
 describe('CLI integration', () => {
-	it('generates all 15 output files deterministically', () => {
+	it('rejects stale fixture graph with actionable error', () => {
 		const outputRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-'));
 
 		try {
+			let error: unknown;
+			try {
+				runCommand(
+					'node',
+					[
+						CLI_PATH,
+						'graphify-views',
+						'--graph',
+						join(FIXTURE_ROOT, 'graph.json'),
+						'--analysis',
+						join(FIXTURE_ROOT, '.graphify_analysis.json'),
+						'--out',
+						outputRoot,
+					],
+					{ cwd: ROOT },
+				);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error).toBeDefined();
+			expect((error as Error).message).toContain('Graphify raw graph is stale.');
+			expect((error as Error).message).toContain('Raw graph commit: abc123');
+			expect((error as Error).message).toContain('graphify extract .');
+			expect((error as Error).message).toContain('pnpm ops graphify-views');
+		} finally {
+			rmSync(outputRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('generates all 15 output files', () => {
+		const tempRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-pass-'));
+		const outputRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-out-'));
+
+		try {
+			const headCommit = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: ROOT,
+			}).stdout.trim();
+			const graph = JSON.parse(
+				readFileSync(join(FIXTURE_ROOT, 'graph.json'), 'utf8'),
+			) as Record<string, unknown>;
+			graph.built_at_commit = headCommit;
+			const tempGraphPath = join(tempRoot, 'graph.json');
+			writeFileSync(tempGraphPath, JSON.stringify(graph), 'utf8');
+
 			runCommand(
 				'node',
 				[
 					CLI_PATH,
 					'graphify-views',
 					'--graph',
-					join(FIXTURE_ROOT, 'graph.json'),
+					tempGraphPath,
 					'--analysis',
 					join(FIXTURE_ROOT, '.graphify_analysis.json'),
 					'--out',
@@ -772,7 +845,7 @@ describe('CLI integration', () => {
 				{ cwd: ROOT },
 			);
 
-			const files = [
+			const fileNames = [
 				'README.md',
 				'community-summary.json',
 				'community-summary.md',
@@ -789,9 +862,44 @@ describe('CLI integration', () => {
 				'domain-theme-assets.json',
 				'domain-theme-assets.md',
 			];
-			for (const file of files) {
+			for (const file of fileNames) {
 				expect(readFileSync(join(outputRoot, file), 'utf8')).toBeTruthy();
 			}
+		} finally {
+			rmSync(tempRoot, { recursive: true, force: true });
+			rmSync(outputRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('produces deterministic output with expected README', () => {
+		const tempRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-pass-'));
+		const outputRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-out-'));
+
+		try {
+			const headCommit = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: ROOT,
+			}).stdout.trim();
+			const graph = JSON.parse(
+				readFileSync(join(FIXTURE_ROOT, 'graph.json'), 'utf8'),
+			) as Record<string, unknown>;
+			graph.built_at_commit = headCommit;
+			const tempGraphPath = join(tempRoot, 'graph.json');
+			writeFileSync(tempGraphPath, JSON.stringify(graph), 'utf8');
+
+			runCommand(
+				'node',
+				[
+					CLI_PATH,
+					'graphify-views',
+					'--graph',
+					tempGraphPath,
+					'--analysis',
+					join(FIXTURE_ROOT, '.graphify_analysis.json'),
+					'--out',
+					outputRoot,
+				],
+				{ cwd: ROOT },
+			);
 
 			const firstRisk = readFileSync(join(outputRoot, 'risk-hubs.json'), 'utf8');
 			runCommand(
@@ -800,7 +908,7 @@ describe('CLI integration', () => {
 					CLI_PATH,
 					'graphify-views',
 					'--graph',
-					join(FIXTURE_ROOT, 'graph.json'),
+					tempGraphPath,
 					'--analysis',
 					join(FIXTURE_ROOT, '.graphify_analysis.json'),
 					'--out',
@@ -818,6 +926,7 @@ describe('CLI integration', () => {
 			expect(readme).toContain('domain-theme-assets.json');
 			expect(readme).toContain('Graphify findings are leads, not authority');
 		} finally {
+			rmSync(tempRoot, { recursive: true, force: true });
 			rmSync(outputRoot, { recursive: true, force: true });
 		}
 	});
