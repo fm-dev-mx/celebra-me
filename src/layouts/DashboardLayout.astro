@@ -37,8 +37,7 @@ const navItems: DashboardNavItem[] = [
 ];
 const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ?? title;
 
-const isProd = import.meta.env.PROD;
-const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 
 <!doctype html>
@@ -51,7 +50,7 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<link rel="alternate icon" href="/favicon.ico" />
 		<title>{title}</title>
 
-		{isProd && gaId && <GoogleAnalytics id={gaId} />}
+		{gaId && <GoogleAnalytics id={gaId} />}
 	</head>
 
 	<body class="theme-preset--dashboard-dark dashboard-shell-body">

@@ -50,6 +50,7 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		envPrefix: ['PUBLIC_', 'VITE_'],
 		define: {
 			'import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID': JSON.stringify(
 				process.env.PUBLIC_GOOGLE_ANALYTICS_ID ?? '',

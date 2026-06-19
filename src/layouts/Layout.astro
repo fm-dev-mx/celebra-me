@@ -74,7 +74,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GO
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		{isProd && <meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'} isProd=${isProd}`} />}
+		<meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'} isProd=${isProd}`} />
 		<title>{title}</title>
 
 		<!-- Open Graph -->
@@ -97,7 +97,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GO
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
 
-		{isProd && gaId && <GoogleAnalytics id={gaId} />}
+		{gaId && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
 	</head>
 	<body class:list={[className, { 'is-demo': isDemo }]} data-theme-mode={themeMode}>
