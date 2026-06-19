@@ -93,6 +93,10 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 	</body>
 </html>
 <script>
+	const DESKTOP_BREAKPOINT = 992;
+	const SCROLL_SCROLLED_THRESHOLD = 20;
+	const SCROLL_HIDE_THRESHOLD = 50;
+
 	const sidebar = document.getElementById('dashboard-sidebar');
 	const menuButton = document.querySelector('[data-dashboard-menu-toggle]');
 	const backdrop = document.querySelector('[data-dashboard-backdrop]');
@@ -104,12 +108,11 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		backdrop instanceof HTMLElement &&
 		shell instanceof HTMLElement
 	) {
-		const collapseToggle = sidebar.querySelector('[data-dashboard-collapse-toggle]');
-
 		const updateCollapseToggleBtn = (isCollapsed: boolean) => {
-			if (!collapseToggle) return;
-			collapseToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
-			collapseToggle.setAttribute(
+			const toggle = sidebar.querySelector('[data-dashboard-collapse-toggle]');
+			if (!toggle) return;
+			toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+			toggle.setAttribute(
 				'aria-label',
 				isCollapsed ? 'Expandir menú lateral' : 'Colapsar menú lateral',
 			);
@@ -130,7 +133,7 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		// Restore collapsed state from localStorage on desktop
 		const stored = localStorage.getItem('dashboard-sidebar-collapsed');
-		if (stored === 'true' && window.innerWidth > 992) {
+		if (stored === 'true' && window.innerWidth > DESKTOP_BREAKPOINT) {
 			sidebar.classList.add('dashboard-sidebar--collapsed');
 			shell.classList.add('dashboard-shell--sidebar-collapsed');
 			updateCollapseToggleBtn(true);
@@ -144,17 +147,19 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		menuButton.addEventListener('click', toggleDashboardNav);
 		backdrop.addEventListener('click', closeDashboardNav);
-		sidebar.querySelectorAll('[data-dashboard-close]').forEach((btn) => {
-			btn.addEventListener('click', closeDashboardNav);
-		});
-		sidebar.querySelectorAll('[data-dashboard-collapse-toggle]').forEach((btn) => {
-			btn.addEventListener('click', toggleSidebarCollapse);
-		});
-		sidebar.querySelectorAll('a').forEach((link) => {
-			link.addEventListener('click', closeDashboardNav);
+		sidebar.querySelectorAll('[data-dashboard-close], [data-dashboard-collapse-toggle], a').forEach((el) => {
+			if (el.hasAttribute('data-dashboard-close')) {
+				el.addEventListener('click', closeDashboardNav);
+			}
+			if (el.hasAttribute('data-dashboard-collapse-toggle')) {
+				el.addEventListener('click', toggleSidebarCollapse);
+			}
+			if (el.tagName === 'A') {
+				el.addEventListener('click', closeDashboardNav);
+			}
 		});
 		window.addEventListener('resize', () => {
-			if (window.innerWidth > 992) {
+			if (window.innerWidth > DESKTOP_BREAKPOINT) {
 				closeDashboardNav();
 			}
 		});
@@ -169,14 +174,12 @@ const gaId = process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 	if (topbar instanceof HTMLElement) {
 		let lastScrollY = window.scrollY;
 		let isHidden = false;
-		const scrollThreshold = 50;
-
 		const handleScroll = () => {
 			const currentScrollY = window.scrollY;
 
-			topbar.classList.toggle('dashboard-topbar--scrolled', currentScrollY > 20);
+			topbar.classList.toggle('dashboard-topbar--scrolled', currentScrollY > SCROLL_SCROLLED_THRESHOLD);
 
-			if (currentScrollY > scrollThreshold) {
+			if (currentScrollY > SCROLL_HIDE_THRESHOLD) {
 				if (currentScrollY > lastScrollY && !isHidden) {
 					topbar.classList.add('dashboard-topbar--hidden');
 					isHidden = true;
