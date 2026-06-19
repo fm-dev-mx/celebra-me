@@ -1,10 +1,8 @@
 import type { FC } from 'react';
 import type { IntakeBlockType } from '@/lib/intake/types';
-import type { EventType } from '@/lib/theme/theme-contract';
-import { getBlocksForEventType } from '@/lib/intake/blocks';
+import { getAllBlockDefinitions } from '@/lib/intake/blocks';
 
 interface Props {
-	eventType: string;
 	selectedBlocks: IntakeBlockType[];
 	recommendedBlocks?: IntakeBlockType[];
 	onChange: (blocks: IntakeBlockType[]) => void;
@@ -12,13 +10,12 @@ interface Props {
 }
 
 const BlockSelector: FC<Props> = ({
-	eventType,
 	selectedBlocks,
 	recommendedBlocks = [],
 	onChange,
 	disabled = false,
 }) => {
-	const availableBlocks = getBlocksForEventType(eventType as EventType);
+	const availableBlocks = getAllBlockDefinitions();
 
 	const toggleBlock = (blockType: IntakeBlockType) => {
 		if (selectedBlocks.includes(blockType)) {

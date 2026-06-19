@@ -125,7 +125,6 @@ export interface IntakeBlockDefinition {
 	type: IntakeBlockType;
 	displayName: string;
 	description: string;
-	supportedEventTypes: EventType[];
 	fields: IntakeBlockFieldDefinition[];
 }
 

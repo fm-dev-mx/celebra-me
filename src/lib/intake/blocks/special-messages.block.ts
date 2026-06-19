@@ -1,11 +1,9 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
-import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const specialMessagesBlock: IntakeBlockDefinition = {
 	type: 'special-messages',
 	displayName: 'Mensajes especiales',
 	description: 'Frase de apertura, mensaje de agradecimiento y despedida.',
-	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'quoteText',

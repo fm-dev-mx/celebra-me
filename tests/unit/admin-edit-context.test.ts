@@ -105,7 +105,7 @@ describe('ensureAdminEditContext enabledBlocks fallback', () => {
 		jest.clearAllMocks();
 	});
 
-	it('falls back to getBlockTypesForEventType when recommendedBlocks is empty', async () => {
+	it('falls back to all block types when recommendedBlocks is empty', async () => {
 		const invitation = makeProject({
 			snapshot: { ...makeProject().snapshot, recommendedBlocks: [] },
 		});

@@ -32,16 +32,6 @@ export function getAllBlockDefinitions(): IntakeBlockDefinition[] {
 	return Object.values(BLOCK_REGISTRY);
 }
 
-export function getBlocksForEventType(eventType: EventType): IntakeBlockDefinition[] {
-	return Object.values(BLOCK_REGISTRY).filter((block) =>
-		block.supportedEventTypes.includes(eventType),
-	);
-}
-
-export function getBlockTypesForEventType(eventType: EventType): IntakeBlockType[] {
-	return getBlocksForEventType(eventType).map((block) => block.type);
-}
-
 export function getVisibleFields(
 	eventType: EventType,
 	blockType: IntakeBlockType,

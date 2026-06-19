@@ -217,7 +217,6 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 							cliente.
 						</p>
 						<BlockSelector
-							eventType={currentInvitation.eventType}
 							selectedBlocks={selectedBlocks}
 							recommendedBlocks={preset?.recommendedBlocks}
 							onChange={setSelectedBlocks}

@@ -1,12 +1,10 @@
 import type { IntakeBlockDefinition } from '@/lib/intake/types';
-import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 export const photosBlock: IntakeBlockDefinition = {
 	type: 'photos',
 	displayName: 'Fotografías',
 	description:
 		'Envía tus fotos por WhatsApp como documento (calidad original). Indica aquí el uso previsto para cada foto.',
-	supportedEventTypes: [...EVENT_TYPES],
 	fields: [
 		{
 			name: 'whatsappSent',

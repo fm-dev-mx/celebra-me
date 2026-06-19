@@ -1,4 +1,5 @@
 import type { IntakeRequest, IntakeBlockType, IntakeSubmission } from '@/lib/intake/types';
+import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import {
@@ -11,7 +12,6 @@ import {
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
-import { getBlockTypesForEventType } from '@/lib/intake/blocks';
 
 async function findOrCreateInternalRequest(
 	invitationId: string,
@@ -57,7 +57,7 @@ export async function ensureAdminEditContext(invitationId: string) {
 
 	let enabledBlocks = clientRequest?.enabledBlocks ?? invitation.snapshot.recommendedBlocks;
 	if (!enabledBlocks || enabledBlocks.length === 0) {
-		enabledBlocks = getBlockTypesForEventType(invitation.eventType);
+		enabledBlocks = [...INTAKE_BLOCK_TYPES];
 	}
 
 	const request = await findOrCreateInternalRequest(invitationId, enabledBlocks);
