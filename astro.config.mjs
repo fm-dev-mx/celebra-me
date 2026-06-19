@@ -50,6 +50,11 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		define: {
+			'import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID': JSON.stringify(
+				process.env.PUBLIC_GOOGLE_ANALYTICS_ID ?? '',
+			),
+		},
 		optimizeDeps: {
 			include: ['framer-motion'],
 		},
