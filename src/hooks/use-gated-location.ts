@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { rsvpApi } from '@/lib/client/rsvp-api';
+import { LOCATION_VISIBILITY_AFTER_RSVP } from '@/lib/invitation/location-policy';
 import type { LocationSection, LocationVisibility } from '@/lib/adapters/types';
 
 export interface UseGatedLocationInput {
@@ -41,7 +42,12 @@ export function useGatedLocation({
 			setIsFetching(false);
 		}
 
-		if (locationVisibility !== 'after-rsvp' || !isConfirmed || !submitted || !inviteId) {
+		if (
+			locationVisibility !== LOCATION_VISIBILITY_AFTER_RSVP ||
+			!isConfirmed ||
+			!submitted ||
+			!inviteId
+		) {
 			reset();
 			return;
 		}

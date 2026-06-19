@@ -11,9 +11,10 @@ import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-remo
 import { buildInvitationRenderPlan } from './render-plan';
 import type { InterludeRenderItem, InvitationRenderPlanItem } from './render-plan';
 import {
-	applyProtectedLocationRules,
+	applyLocationPolicy,
+	shouldRedactEnvelopeTeaser,
 	redactEnvelopeTeaserWhenLocationLocked,
-} from './protected-location';
+} from './location-policy';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
@@ -117,7 +118,7 @@ export function buildPageContextFromViewModel(input: {
 	isPreview?: boolean;
 }): InvitationPageContext {
 	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
-	const renderViewModel = applyProtectedLocationRules({
+	const renderViewModel = applyLocationPolicy({
 		viewModel,
 		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
 		routeSlug: slug,
@@ -144,10 +145,14 @@ export function buildPageContextFromViewModel(input: {
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
 	const isDemoPreview = isDemo && !guestContext;
-	const lunaEstrellaRoute = slug === 'luna-y-estrella' && eventType === 'primera-comunion';
-	const shouldRedactEnvelopeLocationTeaser =
-		Boolean(sections.location?.isLocked) ||
-		(lunaEstrellaRoute && viewModel.sections.location?.visibility === 'after-rsvp');
+	const confirmed = guestContext?.guest.attendanceStatus === 'confirmed';
+	const shouldRedactEnvelopeLocationTeaser = shouldRedactEnvelopeTeaser({
+		originalLocation: viewModel.sections.location,
+		postPolicyLocation: sections.location,
+		isConfirmed: confirmed,
+		slug,
+		eventType,
+	});
 	const envelopeData = redactEnvelopeTeaserWhenLocationLocked(
 		buildEnvelopeData(styles.showEnvelope, envelope, renderViewModel.id, guestName, isDemo),
 		shouldRedactEnvelopeLocationTeaser,

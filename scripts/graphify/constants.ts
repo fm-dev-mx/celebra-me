@@ -54,7 +54,7 @@ export const RSVP_DOMAIN_PREDICATES: DomainPredicate[] = [
 		matches: (normalized: string) =>
 			[
 				'src/lib/invitation/gated-location.ts',
-				'src/lib/invitation/protected-location.ts',
+				'src/lib/invitation/location-policy.ts',
 				'src/hooks/use-gated-location.ts',
 				'src/components/invitation/eventlocation.astro',
 			].includes(normalized),

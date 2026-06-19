@@ -1,8 +1,22 @@
 import type { InvitationViewModel } from '@/lib/adapters/types';
 
+export const LOCATION_VISIBILITY_AFTER_RSVP = 'after-rsvp';
+
 const LUNA_ESTRELLA_ROUTE_SLUG = 'luna-y-estrella';
 
 type LocationSection = NonNullable<InvitationViewModel['sections']['location']>;
+
+export function isLunaEstrellaRoute(slug: string, eventType: string): boolean {
+	return slug === LUNA_ESTRELLA_ROUTE_SLUG && eventType === 'primera-comunion';
+}
+
+export function isLocationLocked(
+	location: InvitationViewModel['sections']['location'] | undefined,
+	isConfirmed: boolean,
+): boolean {
+	if (!location || isConfirmed) return false;
+	return location.visibility === LOCATION_VISIBILITY_AFTER_RSVP;
+}
 
 function redactTeaserDetails(teaser: string): string {
 	return teaser.split('•')[0]?.trim() ?? teaser;
@@ -20,8 +34,18 @@ export function redactEnvelopeTeaserWhenLocationLocked<T extends { teaserDetails
 	};
 }
 
-function isLunaEstrellaRoute(slug: string, eventType: string): boolean {
-	return slug === LUNA_ESTRELLA_ROUTE_SLUG && eventType === 'primera-comunion';
+export function shouldRedactEnvelopeTeaser(input: {
+	originalLocation: InvitationViewModel['sections']['location'] | undefined;
+	postPolicyLocation: InvitationViewModel['sections']['location'] | undefined;
+	isConfirmed: boolean;
+	slug: string;
+	eventType: string;
+}): boolean {
+	return (
+		isLocationLocked(input.postPolicyLocation, input.isConfirmed) ||
+		(isLunaEstrellaRoute(input.slug, input.eventType) &&
+			input.originalLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP)
+	);
 }
 
 function removeLocationNavigation(
@@ -44,7 +68,7 @@ function applyLunaEstrellaRsvpOnlyLocation(
 ): InvitationViewModel {
 	const protectedLocation = viewModel.sections.location;
 	const revealedLocation =
-		protectedLocation?.visibility === 'after-rsvp' && isConfirmedGuest
+		protectedLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP && isConfirmedGuest
 			? protectedLocation
 			: undefined;
 
@@ -80,9 +104,9 @@ function applyLunaEstrellaRsvpOnlyLocation(
 	};
 }
 
-function redactProtectedLocation(location: LocationSection) {
+function redactProtectedLocation(location: LocationSection): LocationSection {
 	return {
-		visibility: 'after-rsvp' as const,
+		visibility: LOCATION_VISIBILITY_AFTER_RSVP,
 		isLocked: true,
 		variant: location.variant,
 		showFlourishes: location.showFlourishes,
@@ -97,7 +121,7 @@ function redactProtectedLocation(location: LocationSection) {
 	};
 }
 
-export function applyProtectedLocationRules(input: {
+export function applyLocationPolicy(input: {
 	viewModel: InvitationViewModel;
 	isConfirmedGuest: boolean;
 	routeSlug: string;
@@ -110,7 +134,7 @@ export function applyProtectedLocationRules(input: {
 	}
 
 	const location = viewModel.sections.location;
-	if (!location || location.visibility !== 'after-rsvp' || confirmed) {
+	if (!location || !isLocationLocked(location, confirmed)) {
 		return viewModel;
 	}
 
