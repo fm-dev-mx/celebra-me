@@ -133,10 +133,6 @@ export const INVITATION_CONTENT_DRAFT_STATUSES = ['draft', 'reviewed', 'approved
 
 export type InvitationContentDraftStatus = (typeof INVITATION_CONTENT_DRAFT_STATUSES)[number];
 
-export type ParentsOrder = 'father-first' | 'mother-first';
-
-export const DEFAULT_PARENTS_ORDER: ParentsOrder = 'mother-first';
-
 export type ContentSource = 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
 
 export type SectionSource = 'draft' | 'published' | 'demo' | 'empty';

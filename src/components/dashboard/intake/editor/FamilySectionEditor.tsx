@@ -5,7 +5,7 @@ import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPic
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
-import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/intake/types';
+import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
 import type {
 	FamilyDraft,
 	FamilyGroupDraft,
