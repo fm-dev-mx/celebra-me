@@ -8,6 +8,7 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 
 export type EditorOperation =
 	| { type: 'idle' }
+	| { type: 'loading' }
 	| { type: 'saving-section'; section: InvitationEditorSectionKey | 'metadata' }
 	| { type: 'publishing' }
 	| { type: 'reconciling' }
@@ -25,9 +26,14 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 
 	const reload = useCallback(async () => {
 		if (operationRef.current.type !== 'idle') throw new Error('Editor is busy');
-		const nextContext = await adminApi.getInvitationEditor(initialContext.invitation.id);
-		setContext(nextContext);
-		return nextContext;
+		transition({ type: 'loading' });
+		try {
+			const nextContext = await adminApi.getInvitationEditor(initialContext.invitation.id);
+			setContext(nextContext);
+			return nextContext;
+		} finally {
+			resetOperation();
+		}
 	}, [initialContext.invitation.id]);
 
 	const saveSection = useCallback(
