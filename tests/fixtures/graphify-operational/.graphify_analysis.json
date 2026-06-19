@@ -18,7 +18,25 @@
         "17": ["rsvp_api_route", "location_route"],
         "18": ["calendar_button", "event_time"],
         "19": ["dashboard_guest"],
-        "20": ["rsvp_test"]
+        "20": ["rsvp_test"],
+        "21": ["intake_editor_ui", "intake_editor_api"],
+        "22": [
+            "intake_draft_repo",
+            "intake_merge",
+            "intake_draft_to_published",
+            "intake_published_to_draft"
+        ],
+        "23": ["intake_publish", "intake_preview"],
+        "24": ["intake_publish_test"],
+        "25": ["render_content_resolver", "render_page_data", "render_adapter"],
+        "26": ["render_plan", "render_personalization", "render_metadata"],
+        "27": ["render_component"],
+        "28": ["render_test"],
+        "29": ["theme_contract", "asset_registry", "asset_slug"],
+        "30": ["section_registry", "section_boundary"],
+        "31": ["base_section_style", "theme_preset"],
+        "32": ["theme_asset_test"],
+        "33": ["image_inventory_noise"]
     },
     "cohesion": {
         "1": 1,
@@ -39,7 +57,20 @@
         "17": 0.5,
         "18": 0.5,
         "19": 0,
-        "20": 0
+        "20": 0,
+        "21": 0.5,
+        "22": 0.5,
+        "23": 0.5,
+        "24": 0,
+        "25": 0.5,
+        "26": 0.5,
+        "27": 0,
+        "28": 0,
+        "29": 0.5,
+        "30": 0.5,
+        "31": 0.5,
+        "32": 0,
+        "33": 0
     },
     "gods": [],
     "surprises": [],

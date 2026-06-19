@@ -13,6 +13,9 @@ import {
 	validateAnalysisShape,
 	classifyFileCategory,
 	classifyRsvpDomainGroup,
+	classifyIntakePublishingGroup,
+	classifyInvitationRenderingGroup,
+	classifyThemeAssetGroup,
 	classifyCleanupSection,
 	serializeStableJson,
 	buildGraphIndexes,
@@ -20,6 +23,9 @@ import {
 	computeRiskHubs,
 	computeCleanupReport,
 	computeRsvpDomainReport,
+	computeIntakePublishingDomainReport,
+	computeInvitationRenderingDomainReport,
+	computeThemeAssetsDomainReport,
 } from '../../scripts/graphify-operational-views';
 
 function generateInput(name: string) {
@@ -41,6 +47,19 @@ function generateFixtureReports() {
 		riskHubs: computeRiskHubs(graph, indexes, options),
 		cleanupReport: computeCleanupReport(graph, analysis, indexes, options),
 		rsvpDomainReport: computeRsvpDomainReport(graph, analysis, indexes, options),
+		intakePublishingDomainReport: computeIntakePublishingDomainReport(
+			graph,
+			analysis,
+			indexes,
+			options,
+		),
+		invitationRenderingDomainReport: computeInvitationRenderingDomainReport(
+			graph,
+			analysis,
+			indexes,
+			options,
+		),
+		themeAssetsDomainReport: computeThemeAssetsDomainReport(graph, analysis, indexes, options),
 	};
 }
 
@@ -173,6 +192,51 @@ describe('classifyRsvpDomainGroup', () => {
 	});
 });
 
+describe('domain-specific classifiers', () => {
+	it('classifies intake publishing files by operational boundary', () => {
+		expect(
+			classifyIntakePublishingGroup('src/lib/intake/services/merge-content.service.ts'),
+		).toBe('effectiveContentMerge');
+		expect(
+			classifyIntakePublishingGroup(
+				'src/pages/api/dashboard/intake/[id]/editor/sections/[section].ts',
+			),
+		).toBe('editorApi');
+		expect(classifyIntakePublishingGroup('tests/unit/draft-to-published.mapper.test.ts')).toBe(
+			'intakePublishingTests',
+		);
+		expect(classifyIntakePublishingGroup('src/lib/intake/types.ts')).toBeNull();
+	});
+
+	it('classifies invitation rendering files by public route boundary', () => {
+		expect(classifyInvitationRenderingGroup('src/pages/[eventType]/[slug].astro')).toBe(
+			'publicRoutes',
+		);
+		expect(classifyInvitationRenderingGroup('src/lib/invitation/page-data.ts')).toBe(
+			'pageDataAssembly',
+		);
+		expect(classifyInvitationRenderingGroup('src/lib/adapters/event.ts')).toBe(
+			'adapterViewModel',
+		);
+		expect(classifyInvitationRenderingGroup('src/lib/rsvp/services/foo.ts')).toBeNull();
+	});
+
+	it('classifies theme asset files without treating images as inventory', () => {
+		expect(classifyThemeAssetGroup('src/lib/theme/theme-contract.ts')).toBe('themeVocabulary');
+		expect(classifyThemeAssetGroup('src/lib/assets/asset-slug.ts')).toBe('assetSlugResolution');
+		expect(classifyThemeAssetGroup('src/styles/themes/presets/_editorial.scss')).toBe(
+			'themePresets',
+		);
+		expect(classifyThemeAssetGroup('src/styles/invitation/_section-primitives.scss')).toBe(
+			'baseInvitationSectionStyles',
+		);
+		expect(classifyThemeAssetGroup('src/assets/images/events/demo-xv/hero.webp')).toBeNull();
+		expect(classifyThemeAssetGroup('src/assets/images/events/demo-xv/index.ts')).toBeNull();
+		expect(classifyThemeAssetGroup('src/styles/invitation/_hero.scss')).toBeNull();
+		expect(classifyThemeAssetGroup('src/components/invitation/RSVP.tsx')).toBeNull();
+	});
+});
+
 describe('classifyCleanupSection', () => {
 	it('classifies isolated src file as high-confidence candidate', () => {
 		const result = classifyCleanupSection({
@@ -246,10 +310,10 @@ describe('community summary', () => {
 		expect(reports.communitySummary).toMatchObject({
 			builtAtCommit: 'abc123',
 			graphDirected: false,
-			nodeCount: 26,
-			linkCount: 14,
-			graphCommunityCount: 20,
-			analysisCommunityCount: 19,
+			nodeCount: 52,
+			linkCount: 30,
+			graphCommunityCount: 33,
+			analysisCommunityCount: 32,
 			communityCountMismatch: true,
 		});
 		expect(reports.communitySummary).not.toHaveProperty('generatedAt');
@@ -351,7 +415,7 @@ describe('cleanup report', () => {
 		const singleNodeCommunities = cleanup.singleNodeCommunities as unknown[];
 		const sections = cleanup.sections as Record<string, Array<Record<string, unknown>>>;
 
-		expect(singleNodeCommunities).toHaveLength(14);
+		expect(singleNodeCommunities).toHaveLength(19);
 		expect(isolatedNodes.byCategory.src).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: 'isolated', sourceFile: 'src/lib/isolated.ts' }),
@@ -370,9 +434,11 @@ describe('cleanup report', () => {
 				expect.objectContaining({ sourceFile: 'src/lib/isolated.ts' }),
 			]),
 		);
-		expect(sections.highConfidenceReviewCandidates).toEqual([
-			expect.objectContaining({ sourceFile: 'src/lib/isolated.ts' }),
-		]);
+		expect(sections.highConfidenceReviewCandidates).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ sourceFile: 'src/lib/isolated.ts' }),
+			]),
+		);
 		expect(sections.entrypointsOrRuntimeBoundaries).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ sourceFile: 'src/pages/[eventType]/[slug].astro' }),
@@ -430,8 +496,8 @@ describe('RSVP domain report', () => {
 			graphDirected: false,
 			sourceGraphPath: fixtureGraphPath.replaceAll('\\', '/'),
 			domain: 'rsvp',
-			nodeCount: 26,
-			linkCount: 14,
+			nodeCount: 52,
+			linkCount: 30,
 			domainNodeCount: 12,
 			domainFileCount: 11,
 		});
@@ -520,7 +586,9 @@ describe('RSVP domain report', () => {
 	});
 
 	it('reports tests touching RSVP', () => {
-		const tests = reports.rsvpDomainReport.testsTouchingRsvp as Array<Record<string, unknown>>;
+		const tests = reports.rsvpDomainReport.testsTouchingDomain as Array<
+			Record<string, unknown>
+		>;
 		expect(tests).toEqual([
 			expect.objectContaining({ sourceFile: 'tests/api/rsvp-v2.endpoints.test.ts' }),
 		]);
@@ -539,12 +607,153 @@ describe('RSVP domain report', () => {
 	});
 });
 
+describe('intake publishing domain report', () => {
+	let reports: ReturnType<typeof generateFixtureReports>;
+
+	beforeAll(() => {
+		reports = generateFixtureReports();
+	});
+
+	it('groups intake publishing files by operational boundary', () => {
+		const domain = reports.intakePublishingDomainReport;
+		expect(domain).toMatchObject({
+			domain: 'intake-publishing',
+			domainNodeCount: 9,
+			domainFileCount: 9,
+		});
+		expect(domain).not.toHaveProperty('generatedAt');
+
+		const groups = domain.groups as Record<string, { files: Array<Record<string, unknown>> }>;
+		expect(groups.editorUi.files).toEqual([
+			expect.objectContaining({
+				sourceFile: 'src/components/dashboard/intake/editor/InvitationEditor.tsx',
+			}),
+		]);
+		expect(groups.effectiveContentMerge.files).toEqual([
+			expect.objectContaining({
+				sourceFile: 'src/lib/intake/services/merge-content.service.ts',
+			}),
+		]);
+		expect(groups.draftPublishedMapping.files).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					sourceFile: 'src/lib/intake/mappers/draft-to-published.mapper.ts',
+				}),
+				expect.objectContaining({
+					sourceFile: 'src/lib/intake/services/draft-content-mapper.ts',
+				}),
+			]),
+		);
+	});
+
+	it('renders intake publishing checklist guidance', async () => {
+		const { renderIntakePublishingDomainMarkdown } =
+			await import('../../scripts/graphify-operational-views');
+		const markdown = renderIntakePublishingDomainMarkdown(reports.intakePublishingDomainReport);
+		expect(markdown).toContain('# Graphify Domain Intake Publishing');
+		expect(markdown).toContain('likely related files');
+		expect(markdown).toContain('Interludes');
+		expect(markdown).toContain('_assetSlug');
+		expect(markdown).toContain('Optimistic locking');
+	});
+});
+
+describe('invitation rendering domain report', () => {
+	let reports: ReturnType<typeof generateFixtureReports>;
+
+	beforeAll(() => {
+		reports = generateFixtureReports();
+	});
+
+	it('groups invitation rendering files by public route boundary', () => {
+		const domain = reports.invitationRenderingDomainReport;
+		expect(domain).toMatchObject({
+			domain: 'invitation-rendering',
+			domainNodeCount: 11,
+			domainFileCount: 11,
+		});
+
+		const groups = domain.groups as Record<string, { files: Array<Record<string, unknown>> }>;
+		expect(groups.publicRoutes.files).toEqual([
+			expect.objectContaining({ sourceFile: 'src/pages/[eventType]/[slug].astro' }),
+		]);
+		expect(groups.contentResolver.files).toEqual([
+			expect.objectContaining({ sourceFile: 'src/lib/invitation/content-resolver.ts' }),
+		]);
+		expect(groups.publicComponents.files).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ sourceFile: 'src/components/invitation/Hero.astro' }),
+			]),
+		);
+	});
+
+	it('renders invitation rendering checklist guidance', async () => {
+		const { renderInvitationRenderingDomainMarkdown } =
+			await import('../../scripts/graphify-operational-views');
+		const markdown = renderInvitationRenderingDomainMarkdown(
+			reports.invitationRenderingDomainReport,
+		);
+		expect(markdown).toContain('# Graphify Domain Invitation Rendering');
+		expect(markdown).toContain('Public route resolution');
+		expect(markdown).toContain('DB/static fallback');
+		expect(markdown).toContain('route slug vs `_assetSlug`');
+	});
+});
+
+describe('theme assets domain report', () => {
+	let reports: ReturnType<typeof generateFixtureReports>;
+
+	beforeAll(() => {
+		reports = generateFixtureReports();
+	});
+
+	it('groups only contract-oriented theme, section, and asset files', () => {
+		const domain = reports.themeAssetsDomainReport;
+		expect(domain).toMatchObject({
+			domain: 'theme-assets',
+			domainNodeCount: 8,
+			domainFileCount: 8,
+		});
+
+		const groups = domain.groups as Record<string, { files: Array<Record<string, unknown>> }>;
+		expect(groups.themeVocabulary.files).toEqual([
+			expect.objectContaining({ sourceFile: 'src/lib/theme/theme-contract.ts' }),
+		]);
+		expect(groups.assetRegistry.files).toEqual([
+			expect.objectContaining({ sourceFile: 'src/lib/assets/asset-registry.ts' }),
+		]);
+		expect(groups.themeAssetTests.files).toEqual([
+			expect.objectContaining({ sourceFile: 'tests/unit/theme-contract.test.ts' }),
+		]);
+
+		const serialized = JSON.stringify(domain);
+		expect(serialized).not.toContain('hero.webp');
+		expect(serialized).not.toContain('src/assets/images/events/');
+		expect(serialized).not.toContain('src/styles/invitation/_hero.scss');
+		expect(serialized).not.toContain('src/components/invitation/RSVP.tsx');
+	});
+
+	it('renders theme assets checklist guidance', async () => {
+		const { renderThemeAssetsDomainMarkdown } =
+			await import('../../scripts/graphify-operational-views');
+		const markdown = renderThemeAssetsDomainMarkdown(reports.themeAssetsDomainReport);
+		expect(markdown).toContain('# Graphify Domain Theme Assets');
+		expect(markdown).toContain('SCSS only');
+		expect(markdown).toContain('no Tailwind');
+		expect(markdown).toContain('Expected centrality');
+		expect(markdown).toContain('do not create section partials for symmetry');
+		expect(markdown).not.toContain('src/assets/images/events/');
+		expect(markdown).not.toContain('src/styles/invitation/_hero.scss');
+		expect(markdown).not.toContain('src/components/invitation/RSVP.tsx');
+	});
+});
+
 // ---------------------------------------------------------------------------
 // CLI integration — one spawn to verify the full pipeline end-to-end
 // ---------------------------------------------------------------------------
 
 describe('CLI integration', () => {
-	it('generates all 9 output files deterministically', () => {
+	it('generates all 15 output files deterministically', () => {
 		const outputRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-'));
 
 		try {
@@ -573,6 +782,12 @@ describe('CLI integration', () => {
 				'cleanup-report.md',
 				'domain-rsvp.json',
 				'domain-rsvp.md',
+				'domain-intake-publishing.json',
+				'domain-intake-publishing.md',
+				'domain-invitation-rendering.json',
+				'domain-invitation-rendering.md',
+				'domain-theme-assets.json',
+				'domain-theme-assets.md',
 			];
 			for (const file of files) {
 				expect(readFileSync(join(outputRoot, file), 'utf8')).toBeTruthy();
@@ -594,9 +809,14 @@ describe('CLI integration', () => {
 				{ cwd: ROOT },
 			);
 			const secondRisk = readFileSync(join(outputRoot, 'risk-hubs.json'), 'utf8');
+			const readme = readFileSync(join(outputRoot, 'README.md'), 'utf8');
 
 			expect(secondRisk).toBe(firstRisk);
 			expect(secondRisk).not.toContain('generatedAt');
+			expect(readme).toContain('domain-intake-publishing.json');
+			expect(readme).toContain('domain-invitation-rendering.json');
+			expect(readme).toContain('domain-theme-assets.json');
+			expect(readme).toContain('Graphify findings are leads, not authority');
 		} finally {
 			rmSync(outputRoot, { recursive: true, force: true });
 		}

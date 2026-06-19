@@ -3,6 +3,9 @@ export { validateGraphShape, validateAnalysisShape } from './graphify/validate.j
 export {
 	classifyFileCategory,
 	classifyRsvpDomainGroup,
+	classifyIntakePublishingGroup,
+	classifyInvitationRenderingGroup,
+	classifyThemeAssetGroup,
 	classifyCleanupSection,
 } from './graphify/core.js';
 export {
@@ -11,12 +14,18 @@ export {
 	computeRiskHubs,
 	computeCleanupReport,
 	computeRsvpDomainReport,
+	computeIntakePublishingDomainReport,
+	computeInvitationRenderingDomainReport,
+	computeThemeAssetsDomainReport,
 } from './graphify/reports.js';
 export {
 	renderCommunitySummaryMarkdown,
 	renderRiskHubsMarkdown,
 	renderCleanupMarkdown,
 	renderRsvpDomainMarkdown,
+	renderIntakePublishingDomainMarkdown,
+	renderInvitationRenderingDomainMarkdown,
+	renderThemeAssetsDomainMarkdown,
 	renderOperationalReadme,
 } from './graphify/render.js';
 export { serializeStableJson } from './graphify/serialize.js';

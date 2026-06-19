@@ -9,12 +9,18 @@ import {
 	computeRiskHubs,
 	computeCleanupReport,
 	computeRsvpDomainReport,
+	computeIntakePublishingDomainReport,
+	computeInvitationRenderingDomainReport,
+	computeThemeAssetsDomainReport,
 } from './reports.js';
 import {
 	renderCommunitySummaryMarkdown,
 	renderRiskHubsMarkdown,
 	renderCleanupMarkdown,
 	renderRsvpDomainMarkdown,
+	renderIntakePublishingDomainMarkdown,
+	renderInvitationRenderingDomainMarkdown,
+	renderThemeAssetsDomainMarkdown,
 	renderOperationalReadme,
 } from './render.js';
 import { serializeStableJson } from './serialize.js';
@@ -37,6 +43,24 @@ export function generateOperationalReports({
 	const riskHubs = computeRiskHubs(graph, indexes, options);
 	const cleanupReport = computeCleanupReport(graph, analysis, indexes, options);
 	const rsvpDomainReport = computeRsvpDomainReport(graph, analysis, indexes, options);
+	const intakePublishingDomainReport = computeIntakePublishingDomainReport(
+		graph,
+		analysis,
+		indexes,
+		options,
+	);
+	const invitationRenderingDomainReport = computeInvitationRenderingDomainReport(
+		graph,
+		analysis,
+		indexes,
+		options,
+	);
+	const themeAssetsDomainReport = computeThemeAssetsDomainReport(
+		graph,
+		analysis,
+		indexes,
+		options,
+	);
 
 	mkdirSync(outputDir, { recursive: true });
 	writeFileSync(
@@ -56,6 +80,30 @@ export function generateOperationalReports({
 		path.join(outputDir, 'domain-rsvp.md'),
 		renderRsvpDomainMarkdown(rsvpDomainReport),
 	);
+	writeFileSync(
+		path.join(outputDir, 'domain-intake-publishing.json'),
+		serializeStableJson(intakePublishingDomainReport),
+	);
+	writeFileSync(
+		path.join(outputDir, 'domain-intake-publishing.md'),
+		renderIntakePublishingDomainMarkdown(intakePublishingDomainReport),
+	);
+	writeFileSync(
+		path.join(outputDir, 'domain-invitation-rendering.json'),
+		serializeStableJson(invitationRenderingDomainReport),
+	);
+	writeFileSync(
+		path.join(outputDir, 'domain-invitation-rendering.md'),
+		renderInvitationRenderingDomainMarkdown(invitationRenderingDomainReport),
+	);
+	writeFileSync(
+		path.join(outputDir, 'domain-theme-assets.json'),
+		serializeStableJson(themeAssetsDomainReport),
+	);
+	writeFileSync(
+		path.join(outputDir, 'domain-theme-assets.md'),
+		renderThemeAssetsDomainMarkdown(themeAssetsDomainReport),
+	);
 	writeFileSync(path.join(outputDir, 'README.md'), renderOperationalReadme(communitySummary));
 
 	return {
@@ -70,6 +118,12 @@ export function generateOperationalReports({
 			'cleanup-report.md',
 			'domain-rsvp.json',
 			'domain-rsvp.md',
+			'domain-intake-publishing.json',
+			'domain-intake-publishing.md',
+			'domain-invitation-rendering.json',
+			'domain-invitation-rendering.md',
+			'domain-theme-assets.json',
+			'domain-theme-assets.md',
 		].map((file) => path.join(outputDir, file)),
 	};
 }

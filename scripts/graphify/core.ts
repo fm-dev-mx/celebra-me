@@ -3,7 +3,11 @@ import {
 	TOP_LIMIT,
 	FILE_CATEGORIES,
 	RSVP_DOMAIN_PREDICATES,
+	INTAKE_PUBLISHING_DOMAIN_PREDICATES,
+	INVITATION_RENDERING_DOMAIN_PREDICATES,
+	THEME_ASSETS_DOMAIN_PREDICATES,
 } from './constants.js';
+import type { DomainPredicate } from './constants.js';
 
 export function compareText(a: unknown, b: unknown): number {
 	return String(a).localeCompare(String(b));
@@ -73,13 +77,28 @@ export function classifyFileCategory(sourceFile: unknown): string {
 	return 'other';
 }
 
-export function classifyRsvpDomainGroup(sourceFile: unknown): string | null {
+function classifyGroup(sourceFile: unknown, predicates: DomainPredicate[]): string | null {
 	const normalized = toNormalizedPath(sourceFile).toLowerCase();
 	if (!normalized) {
 		return null;
 	}
+	return predicates.find((predicate) => predicate.matches(normalized))?.group ?? null;
+}
 
-	return RSVP_DOMAIN_PREDICATES.find((predicate) => predicate.matches(normalized))?.group ?? null;
+export function classifyRsvpDomainGroup(sourceFile: unknown): string | null {
+	return classifyGroup(sourceFile, RSVP_DOMAIN_PREDICATES);
+}
+
+export function classifyIntakePublishingGroup(sourceFile: unknown): string | null {
+	return classifyGroup(sourceFile, INTAKE_PUBLISHING_DOMAIN_PREDICATES);
+}
+
+export function classifyInvitationRenderingGroup(sourceFile: unknown): string | null {
+	return classifyGroup(sourceFile, INVITATION_RENDERING_DOMAIN_PREDICATES);
+}
+
+export function classifyThemeAssetGroup(sourceFile: unknown): string | null {
+	return classifyGroup(sourceFile, THEME_ASSETS_DOMAIN_PREDICATES);
 }
 
 function isTestOrFixture(sourceFile: unknown): boolean {

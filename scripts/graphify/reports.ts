@@ -1,10 +1,21 @@
-import { FILE_CATEGORIES, RSVP_DOMAIN_GROUPS, TOP_LIMIT } from './constants.js';
+import {
+	FILE_CATEGORIES,
+	RSVP_DOMAIN_GROUPS,
+	INTAKE_PUBLISHING_DOMAIN_GROUPS,
+	INVITATION_RENDERING_DOMAIN_GROUPS,
+	THEME_ASSETS_DOMAIN_GROUPS,
+	TOP_LIMIT,
+} from './constants.js';
+import type { DomainGroupDef } from './constants.js';
 import {
 	compareText,
 	compareMetricThenText,
 	createCategoryBuckets,
 	classifyFileCategory,
 	classifyRsvpDomainGroup,
+	classifyIntakePublishingGroup,
+	classifyInvitationRenderingGroup,
+	classifyThemeAssetGroup,
 	classifyCleanupSection,
 	toSourceFile,
 	fileMetricToJson,
@@ -38,7 +49,6 @@ function baseMetadata(
 		linkCount: (graph.links as unknown[]).length,
 		graphCommunityCount,
 		analysisCommunityCount,
-		communityCount: analysisCommunityCount,
 		communityCountMismatch: graphCommunityCount !== analysisCommunityCount,
 	};
 }
@@ -58,6 +68,21 @@ function compareDomainLink(a: Record<string, unknown>, b: Record<string, unknown
 		compareText(a.sourceFile, b.sourceFile) ||
 		compareText(a.targetFile, b.targetFile) ||
 		compareText(a.relation, b.relation)
+	);
+}
+
+function isThemeAssetInventoryPath(sourceFile: unknown): boolean {
+	const normalized = toSourceFile(sourceFile)?.toLowerCase().replace(/\\/g, '/') ?? '';
+	return (
+		normalized.startsWith('src/assets/images/events/') ||
+		(/^src\/styles\/invitation\/_[^/]+\.scss$/.test(normalized) &&
+			![
+				'src/styles/invitation/_section-primitives.scss',
+				'src/styles/invitation/_typography.scss',
+			].includes(normalized)) ||
+		/^src\/styles\/themes\/sections\/[^/]+\/_(?!index\.scss$|base\.scss$)[^/]+\.scss$/.test(
+			normalized,
+		)
 	);
 }
 
@@ -95,9 +120,9 @@ function buildCleanupSections(fileRecords: Record<string, unknown>[]) {
 	return sections;
 }
 
-function createRsvpGroupBuckets() {
+function createDomainGroupBuckets(groupDefs: DomainGroupDef[]) {
 	return Object.fromEntries(
-		RSVP_DOMAIN_GROUPS.map(({ id, title }) => [
+		groupDefs.map(({ id, title }) => [
 			id,
 			{
 				title,
@@ -268,7 +293,37 @@ export function computeRsvpDomainReport(
 	indexes: GraphIndexes,
 	options: { sourceGraphPath: string },
 ) {
-	const groups = createRsvpGroupBuckets() as Record<
+	return computeOperationalDomainReport({
+		graph,
+		analysis,
+		indexes,
+		options,
+		domain: 'rsvp',
+		groupDefs: RSVP_DOMAIN_GROUPS,
+		classify: classifyRsvpDomainGroup,
+	});
+}
+
+function computeOperationalDomainReport({
+	graph,
+	analysis,
+	indexes,
+	options,
+	domain,
+	groupDefs,
+	classify,
+	includeLink,
+}: {
+	graph: Record<string, unknown>;
+	analysis: Record<string, unknown>;
+	indexes: GraphIndexes;
+	options: { sourceGraphPath: string };
+	domain: string;
+	groupDefs: DomainGroupDef[];
+	classify: (sourceFile: unknown) => string | null;
+	includeLink?: (link: Record<string, unknown>) => boolean;
+}) {
+	const groups = createDomainGroupBuckets(groupDefs) as Record<
 		string,
 		{ title: string; files: Record<string, unknown>[]; nodes: Record<string, unknown>[] }
 	>;
@@ -278,7 +333,7 @@ export function computeRsvpDomainReport(
 	const nodes = graph.nodes as Record<string, unknown>[];
 	for (const node of nodes) {
 		const sourceFile = toSourceFile(node.source_file);
-		const group = classifyRsvpDomainGroup(sourceFile);
+		const group = classify(sourceFile);
 		if (!group) {
 			continue;
 		}
@@ -301,7 +356,7 @@ export function computeRsvpDomainReport(
 		});
 	}
 
-	for (const { id } of RSVP_DOMAIN_GROUPS) {
+	for (const { id } of groupDefs) {
 		groups[id].files.sort(compareDomainFile);
 		groups[id].nodes.sort(compareMetricThenText('degree', 'id'));
 	}
@@ -349,19 +404,78 @@ export function computeRsvpDomainReport(
 				(link.sourceGroup || link.targetGroup) &&
 				(link.sourceGroup !== link.targetGroup || !link.sourceGroup || !link.targetGroup),
 		)
+		.filter((link) => !includeLink || includeLink(link))
 		.sort(compareDomainLink)
 		.slice(0, TOP_LIMIT);
 
-	const testsTouchingRsvp = groups.rsvpTests.files.slice(0, TOP_LIMIT);
+	const testsTouchingDomain = groupDefs
+		.filter(({ id }) => id.toLowerCase().includes('test'))
+		.flatMap(({ id }) => groups[id].files)
+		.sort(compareDomainFile)
+		.slice(0, TOP_LIMIT);
 
 	return {
 		...baseMetadata(graph, analysis, options),
-		domain: 'rsvp',
+		domain,
 		domainNodeCount: nodeGroups.size,
 		domainFileCount: fileGroups.size,
 		groups,
 		topRiskFiles,
 		topCrossBoundaryLinks,
-		testsTouchingRsvp,
+		testsTouchingDomain,
 	};
+}
+
+export function computeIntakePublishingDomainReport(
+	graph: Record<string, unknown>,
+	analysis: Record<string, unknown>,
+	indexes: GraphIndexes,
+	options: { sourceGraphPath: string },
+) {
+	return computeOperationalDomainReport({
+		graph,
+		analysis,
+		indexes,
+		options,
+		domain: 'intake-publishing',
+		groupDefs: INTAKE_PUBLISHING_DOMAIN_GROUPS,
+		classify: classifyIntakePublishingGroup,
+	});
+}
+
+export function computeInvitationRenderingDomainReport(
+	graph: Record<string, unknown>,
+	analysis: Record<string, unknown>,
+	indexes: GraphIndexes,
+	options: { sourceGraphPath: string },
+) {
+	return computeOperationalDomainReport({
+		graph,
+		analysis,
+		indexes,
+		options,
+		domain: 'invitation-rendering',
+		groupDefs: INVITATION_RENDERING_DOMAIN_GROUPS,
+		classify: classifyInvitationRenderingGroup,
+	});
+}
+
+export function computeThemeAssetsDomainReport(
+	graph: Record<string, unknown>,
+	analysis: Record<string, unknown>,
+	indexes: GraphIndexes,
+	options: { sourceGraphPath: string },
+) {
+	return computeOperationalDomainReport({
+		graph,
+		analysis,
+		indexes,
+		options,
+		domain: 'theme-assets',
+		groupDefs: THEME_ASSETS_DOMAIN_GROUPS,
+		classify: classifyThemeAssetGroup,
+		includeLink: (link) =>
+			!isThemeAssetInventoryPath(link.sourceFile) &&
+			!isThemeAssetInventoryPath(link.targetFile),
+	});
 }

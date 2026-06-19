@@ -160,6 +160,162 @@
             "label": "rsvp-v2.endpoints.test.ts",
             "source_file": "tests/api/rsvp-v2.endpoints.test.ts",
             "community": 20
+        },
+        {
+            "id": "intake_editor_ui",
+            "label": "InvitationEditor.tsx",
+            "source_file": "src/components/dashboard/intake/editor/InvitationEditor.tsx",
+            "community": 21
+        },
+        {
+            "id": "intake_editor_api",
+            "label": "sections.ts",
+            "source_file": "src/pages/api/dashboard/intake/[id]/editor/sections/[section].ts",
+            "community": 21
+        },
+        {
+            "id": "intake_draft_repo",
+            "label": "invitation-content-draft.repository.ts",
+            "source_file": "src/lib/intake/repositories/invitation-content-draft.repository.ts",
+            "community": 22
+        },
+        {
+            "id": "intake_merge",
+            "label": "merge-content.service.ts",
+            "source_file": "src/lib/intake/services/merge-content.service.ts",
+            "community": 22
+        },
+        {
+            "id": "intake_draft_to_published",
+            "label": "draft-to-published.mapper.ts",
+            "source_file": "src/lib/intake/mappers/draft-to-published.mapper.ts",
+            "community": 22
+        },
+        {
+            "id": "intake_published_to_draft",
+            "label": "draft-content-mapper.ts",
+            "source_file": "src/lib/intake/services/draft-content-mapper.ts",
+            "community": 22
+        },
+        {
+            "id": "intake_publish",
+            "label": "publishing.service.ts",
+            "source_file": "src/lib/intake/services/publishing.service.ts",
+            "community": 23
+        },
+        {
+            "id": "intake_preview",
+            "label": "preview.astro",
+            "source_file": "src/pages/dashboard/invitaciones/[id]/preview.astro",
+            "community": 23
+        },
+        {
+            "id": "intake_publish_test",
+            "label": "publishing.service.test.ts",
+            "source_file": "tests/unit/publishing.service.test.ts",
+            "community": 24
+        },
+        {
+            "id": "render_content_resolver",
+            "label": "content-resolver.ts",
+            "source_file": "src/lib/invitation/content-resolver.ts",
+            "community": 25
+        },
+        {
+            "id": "render_page_data",
+            "label": "page-data.ts",
+            "source_file": "src/lib/invitation/page-data.ts",
+            "community": 25
+        },
+        {
+            "id": "render_adapter",
+            "label": "event.ts",
+            "source_file": "src/lib/adapters/event.ts",
+            "community": 25
+        },
+        {
+            "id": "render_plan",
+            "label": "render-plan.ts",
+            "source_file": "src/lib/invitation/render-plan.ts",
+            "community": 26
+        },
+        {
+            "id": "render_personalization",
+            "label": "route-personalization.ts",
+            "source_file": "src/lib/invitation/route-personalization.ts",
+            "community": 26
+        },
+        {
+            "id": "render_metadata",
+            "label": "social-metadata.ts",
+            "source_file": "src/lib/invitation/social-metadata.ts",
+            "community": 26
+        },
+        {
+            "id": "render_component",
+            "label": "Hero.astro",
+            "source_file": "src/components/invitation/Hero.astro",
+            "community": 27
+        },
+        {
+            "id": "render_test",
+            "label": "page-data.test.ts",
+            "source_file": "tests/unit/page-data.test.ts",
+            "community": 28
+        },
+        {
+            "id": "theme_contract",
+            "label": "theme-contract.ts",
+            "source_file": "src/lib/theme/theme-contract.ts",
+            "community": 29
+        },
+        {
+            "id": "asset_registry",
+            "label": "asset-registry.ts",
+            "source_file": "src/lib/assets/asset-registry.ts",
+            "community": 29
+        },
+        {
+            "id": "asset_slug",
+            "label": "asset-slug.ts",
+            "source_file": "src/lib/assets/asset-slug.ts",
+            "community": 29
+        },
+        {
+            "id": "section_registry",
+            "label": "invitation-section-registry.ts",
+            "source_file": "src/lib/intake/invitation-section-registry.ts",
+            "community": 30
+        },
+        {
+            "id": "section_boundary",
+            "label": "InvitationSections.astro",
+            "source_file": "src/components/invitation/InvitationSections.astro",
+            "community": 30
+        },
+        {
+            "id": "base_section_style",
+            "label": "_hero.scss",
+            "source_file": "src/styles/invitation/_hero.scss",
+            "community": 31
+        },
+        {
+            "id": "theme_preset",
+            "label": "_editorial.scss",
+            "source_file": "src/styles/themes/presets/_editorial.scss",
+            "community": 31
+        },
+        {
+            "id": "theme_asset_test",
+            "label": "theme-contract.test.ts",
+            "source_file": "tests/unit/theme-contract.test.ts",
+            "community": 32
+        },
+        {
+            "id": "image_inventory_noise",
+            "label": "hero.webp",
+            "source_file": "src/assets/images/events/demo-xv/hero.webp",
+            "community": 33
         }
     ],
     "links": [
@@ -258,6 +414,118 @@
             "source": "rsvp_service",
             "target": "src_helper",
             "relation": "uses",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_editor_ui",
+            "target": "intake_editor_api",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_editor_api",
+            "target": "intake_draft_repo",
+            "relation": "updates",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_merge",
+            "target": "intake_draft_to_published",
+            "relation": "feeds",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_draft_to_published",
+            "target": "intake_publish",
+            "relation": "feeds",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_preview",
+            "target": "intake_merge",
+            "relation": "uses",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "intake_publish_test",
+            "target": "intake_publish",
+            "relation": "tests",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "render_content_resolver",
+            "target": "render_page_data",
+            "relation": "feeds",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "render_page_data",
+            "target": "render_adapter",
+            "relation": "uses",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "render_page_data",
+            "target": "render_plan",
+            "relation": "builds",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "render_plan",
+            "target": "render_component",
+            "relation": "renders",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "render_test",
+            "target": "render_page_data",
+            "relation": "tests",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "theme_contract",
+            "target": "section_registry",
+            "relation": "defines",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "asset_slug",
+            "target": "asset_registry",
+            "relation": "resolves",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "section_registry",
+            "target": "section_boundary",
+            "relation": "orders",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "theme_preset",
+            "target": "base_section_style",
+            "relation": "configures",
+            "confidence": "EXTRACTED",
+            "weight": 1
+        },
+        {
+            "source": "theme_asset_test",
+            "target": "theme_contract",
+            "relation": "tests",
             "confidence": "EXTRACTED",
             "weight": 1
         }
