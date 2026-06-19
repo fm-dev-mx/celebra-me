@@ -2,7 +2,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
 import { venueLabel } from '@/lib/intake/utils';
-import { str, trimmedStr, normalizeDate } from '@/lib/shared/data-utils';
+import { str, trimmedStr, normalizeDate, isNonEmptyObject } from '@/lib/shared/data-utils';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
@@ -78,13 +78,13 @@ function mapCountdownFromDraft(
 function mapEventTimingFromDraft(
 	draftEventTiming: DraftContent['eventTiming'],
 ): Record<string, unknown> | undefined {
-	if (!draftEventTiming || Object.keys(draftEventTiming).length === 0) return undefined;
+	if (!isNonEmptyObject(draftEventTiming)) return undefined;
 	const rawTiming = {
 		localDateTime: str(draftEventTiming.localDateTime) ?? undefined,
 		timeZone: str(draftEventTiming.timeZone) ?? undefined,
 	};
 	const derived = buildPublishedEventTiming(rawTiming);
-	if (!derived || Object.keys(derived).length === 0) return undefined;
+	if (!isNonEmptyObject(derived)) return undefined;
 	return derived as Record<string, unknown>;
 }
 
@@ -107,7 +107,7 @@ function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | 
 		const val = str(draftFamily[key]);
 		if (val) labels[key] = val;
 	}
-	return Object.keys(labels).length > 0 ? labels : undefined;
+	return isNonEmptyObject(labels) ? labels : undefined;
 }
 
 function buildFamilyGroups(
@@ -191,7 +191,7 @@ function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	celebrantName: string,
 ): Record<string, unknown> | undefined {
-	if (!draftFamily || Object.keys(draftFamily).length === 0) return undefined;
+	if (!isNonEmptyObject(draftFamily)) return undefined;
 	const family = draftFamily as FamilyDraft;
 
 	const result: Record<string, unknown> = {};
@@ -202,7 +202,7 @@ function mapFamilyFromDraft(
 	if (str(family.motherName)) parents.mother = str(family.motherName);
 	if (typeof family.motherDeceased === 'boolean') parents.motherDeceased = family.motherDeceased;
 
-	if (Object.keys(parents).length > 0) result.parents = parents;
+	if (isNonEmptyObject(parents)) result.parents = parents;
 	if (family.parentsOrder) result.parentsOrder = family.parentsOrder;
 	if (str(family.spouseName)) result.spouse = str(family.spouseName);
 
@@ -237,7 +237,7 @@ function mapFamilyFromDraft(
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	result.celebrantName = celebrantName;
 
-	return Object.keys(result).length > 0 ? result : undefined;
+	return isNonEmptyObject(result) ? result : undefined;
 }
 
 function mapVenue(
@@ -245,10 +245,8 @@ function mapVenue(
 	demoVenue: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!draftVenue || Object.keys(draftVenue).length === 0) {
-		return ctx.isDemo && demoVenue && Object.keys(demoVenue).length > 0
-			? { ...demoVenue }
-			: undefined;
+	if (!isNonEmptyObject(draftVenue)) {
+		return ctx.isDemo && isNonEmptyObject(demoVenue) ? { ...demoVenue } : undefined;
 	}
 	const result: Record<string, unknown> = {};
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
@@ -266,7 +264,7 @@ function mapVenue(
 		result.image = demoVenue.image;
 	}
 	if (draftVenue.coordinates) result.coordinates = draftVenue.coordinates;
-	return Object.keys(result).length > 0 ? result : undefined;
+	return isNonEmptyObject(result) ? result : undefined;
 }
 
 function resolveIntroFields(
@@ -310,7 +308,7 @@ function mapLocationFromDraft(
 	demoContent: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!draftLocation || Object.keys(draftLocation).length === 0) {
+	if (!isNonEmptyObject(draftLocation)) {
 		return undefined;
 	}
 	const result: Record<string, unknown> = {};
@@ -333,14 +331,14 @@ function mapLocationFromDraft(
 					VENUE_URL_FIELDS.map((f) => [
 						f,
 						(v as Record<string, unknown>)[f] || undefined,
-					]),
+					]).filter(([, val]) => val !== undefined),
 				),
 				...(v.image ? { image: v.image } : {}),
 				...(v.coordinates ? { coordinates: v.coordinates } : {}),
 				isVisible: true,
 				venueEvent: venueLabel(v.type, v.label),
 			}));
-		if (mappedVenues.length === 0 && Object.keys(result).length === 0) {
+		if (mappedVenues.length === 0 && !isNonEmptyObject(result)) {
 			return undefined;
 		}
 		result.venues = mappedVenues;
@@ -371,8 +369,7 @@ function mapLocationFromDraft(
 	const indications = mapIndicationsFromDraft(draftLocation.indications);
 	if (indications) result.indications = indications;
 
-	const hasContent = Object.keys(result).length > 0;
-	return hasContent ? result : undefined;
+	return isNonEmptyObject(result) ? result : undefined;
 }
 
 export interface PublishInput {
@@ -435,8 +432,8 @@ function mapHeroSection(
 	invitationTitle: string,
 	ctx: PublishCtx,
 ): Record<string, unknown> {
-	if (!draftHero || Object.keys(draftHero).length === 0) {
-		if (ctx.isDemo && demoHero && Object.keys(demoHero).length > 0) return demoHero;
+	if (!isNonEmptyObject(draftHero)) {
+		if (ctx.isDemo && isNonEmptyObject(demoHero)) return demoHero;
 		return {
 			name: invitationTitle,
 			label: 'Invitación Especial',
@@ -468,7 +465,7 @@ function mapRsvpSection(
 	demoRsvp: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!draftRsvp || Object.keys(draftRsvp).length === 0) return undefined;
+	if (!isNonEmptyObject(draftRsvp)) return undefined;
 	const demo = demoRsvp || {};
 	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp, ctx);
 	const whatsappPhone = str(draftRsvp.whatsappPhone) || demoStr(ctx, demo.whatsappPhone);
@@ -524,7 +521,7 @@ function mapGiftsSection(
 	demoGifts: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!draftGifts || Object.keys(draftGifts).length === 0) {
+	if (!isNonEmptyObject(draftGifts)) {
 		return ctx.isDemo && demoGifts ? { ...demoGifts } : undefined;
 	}
 	return {

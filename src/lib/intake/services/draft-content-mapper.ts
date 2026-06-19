@@ -2,7 +2,14 @@ import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
-import { str, bool, num, trimmedStr, normalizeDate } from '@/lib/shared/data-utils';
+import {
+	str,
+	bool,
+	num,
+	trimmedStr,
+	normalizeDate,
+	isNonEmptyObject,
+} from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
@@ -208,7 +215,7 @@ function buildCoordinates(
 function mapVenueToDraft(
 	venue: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (!venue || Object.keys(venue).length === 0) return undefined;
+	if (!isNonEmptyObject(venue)) return undefined;
 	const coordinates = buildCoordinates(venue);
 	return {
 		venueName: str(venue.venueName),
@@ -216,7 +223,9 @@ function mapVenueToDraft(
 		city: str(venue.city),
 		date: normalizeDate(venue.date),
 		time: normalizeTime(venue.time) ?? str(venue.time),
-		...Object.fromEntries(VENUE_URL_FIELDS.map((f) => [f, str(venue[f])])),
+		...Object.fromEntries(
+			VENUE_URL_FIELDS.map((f) => [f, str(venue[f])]).filter(([, v]) => v !== undefined),
+		),
 		...(venue.image !== undefined ? { image: venue.image } : {}),
 		...(coordinates !== undefined ? { coordinates } : {}),
 	};
@@ -293,7 +302,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	result.description = str(nestedContent.description);
 
 	const hero = nestedContent.hero as Record<string, unknown> | undefined;
-	if (hero && Object.keys(hero).length > 0) {
+	if (isNonEmptyObject(hero)) {
 		result.hero = {
 			name: str(hero.name),
 			secondaryName: str(hero.secondaryName),
@@ -311,12 +320,12 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const family = nestedContent.family as Record<string, unknown> | undefined;
-	if (family && Object.keys(family).length > 0) {
+	if (isNonEmptyObject(family)) {
 		result.family = mapFamilyToDraft(family);
 	}
 
 	const location = nestedContent.location as Record<string, unknown> | undefined;
-	if (location && Object.keys(location).length > 0) {
+	if (isNonEmptyObject(location)) {
 		const publishedIndications = Array.isArray(location.indications)
 			? (location.indications as Array<Record<string, unknown>>)
 			: [];
@@ -369,7 +378,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const countdown = nestedContent.countdown as Record<string, unknown> | undefined;
-	if (countdown && Object.keys(countdown).length > 0) {
+	if (isNonEmptyObject(countdown)) {
 		result.countdown = {
 			title: str(countdown.title),
 			footerText: str(countdown.footerText),
@@ -377,7 +386,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const eventTiming = nestedContent.eventTiming as Record<string, unknown> | undefined;
-	if (eventTiming && Object.keys(eventTiming).length > 0) {
+	if (isNonEmptyObject(eventTiming)) {
 		result.eventTiming = {
 			localDateTime: str(eventTiming.localDateTime),
 			timeZone: str(eventTiming.timeZone),
@@ -386,7 +395,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const rsvp = nestedContent.rsvp as Record<string, unknown> | undefined;
-	if (rsvp && Object.keys(rsvp).length > 0) {
+	if (isNonEmptyObject(rsvp)) {
 		const whatsappConfig = rsvp.whatsappConfig as Record<string, unknown> | undefined;
 		const responseMessages = rsvp.responseMessages as
 			| NonNullable<DraftContent['rsvp']>['responseMessages']
@@ -403,7 +412,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const music = nestedContent.music as Record<string, unknown> | undefined;
-	if (music && Object.keys(music).length > 0) {
+	if (isNonEmptyObject(music)) {
 		result.music = {
 			url: str(music.url),
 			title: str(music.title),
@@ -412,7 +421,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const envelope = nestedContent.envelope as Record<string, unknown> | undefined;
-	if (envelope && Object.keys(envelope).length > 0) {
+	if (isNonEmptyObject(envelope)) {
 		// Start from a copy of the full published envelope so non-editable
 		// premium fields (sealVariant, sealStyle, microcopy, closedPalette, etc.)
 		// survive the draft round-trip.
@@ -441,7 +450,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;
-	if (gifts && Object.keys(gifts).length > 0) {
+	if (isNonEmptyObject(gifts)) {
 		result.gifts = {
 			title: str(gifts.title),
 			subtitle: str(gifts.subtitle),
@@ -452,12 +461,12 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const gallery = nestedContent.gallery as Record<string, unknown> | undefined;
-	if (gallery && Object.keys(gallery).length > 0) {
+	if (isNonEmptyObject(gallery)) {
 		result.gallery = gallery as DraftContent['gallery'];
 	}
 
 	const itinerary = nestedContent.itinerary as Record<string, unknown> | undefined;
-	if (itinerary && Object.keys(itinerary).length > 0) {
+	if (isNonEmptyObject(itinerary)) {
 		const normalizedItems = (
 			itinerary.items as Array<Record<string, unknown>> | undefined
 		)?.map((item) => ({
@@ -471,12 +480,12 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const quote = nestedContent.quote as Record<string, unknown> | undefined;
-	if (quote && Object.keys(quote).length > 0) {
+	if (isNonEmptyObject(quote)) {
 		result.quote = { text: str(quote.text), author: str(quote.author) };
 	}
 
 	const thankYou = nestedContent.thankYou as Record<string, unknown> | undefined;
-	if (thankYou && Object.keys(thankYou).length > 0) {
+	if (isNonEmptyObject(thankYou)) {
 		result.thankYou = {
 			message: str(thankYou.message),
 			closingName: str(thankYou.closingName),
@@ -492,10 +501,10 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	}
 
 	const sharing = nestedContent.sharing as Record<string, unknown> | undefined;
-	if (sharing && Object.keys(sharing).length > 0) {
+	if (isNonEmptyObject(sharing)) {
 		const shareMessages = sharing.shareMessages as Record<string, unknown> | undefined;
 		const ogDescription = str(sharing.ogDescription);
-		if (shareMessages && Object.keys(shareMessages).length > 0) {
+		if (isNonEmptyObject(shareMessages)) {
 			const invitation =
 				str(shareMessages.invitation) ||
 				str(shareMessages.whatsappWithPhone) ||
@@ -506,7 +515,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				...(reminder ? { reminder } : {}),
 				...(ogDescription ? { ogDescription } : {}),
 			};
-			if (Object.keys(result.sharing).length === 0) {
+			if (!isNonEmptyObject(result.sharing)) {
 				delete result.sharing;
 			}
 		} else if (ogDescription) {
