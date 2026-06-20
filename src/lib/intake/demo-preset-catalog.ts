@@ -199,6 +199,25 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 		requiredAssets: ['hero', 'family', 'gallery01'],
 		previewSlug: 'demo-baby-shower-celestial',
 	},
+	{
+		id: 'demo-primera-comunion-illustrated',
+		eventType: 'primera-comunion',
+		displayName: 'Primera Comunión — Ilustrada',
+		themeId: 'angelic-presence',
+		defaultSections: [...DEFAULT_SECTIONS],
+		supportedBlocks: [...ALL_MVP_BLOCKS],
+		recommendedBlocks: [
+			'event-details',
+			'main-people',
+			'date-locations',
+			'photos',
+			'rsvp-config',
+			'gifts',
+			'special-messages',
+		],
+		requiredAssets: ['hero', 'family', 'gallery01', 'gallery02'],
+		previewSlug: 'demo-primera-comunion-illustrated',
+	},
 ] as const;
 
 export function findDemoPreset(id: string): DemoPreset | undefined {

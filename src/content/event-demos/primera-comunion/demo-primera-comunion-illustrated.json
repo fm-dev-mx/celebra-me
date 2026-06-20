@@ -2,9 +2,15 @@
     "eventType": "primera-comunion",
     "isDemo": true,
     "title": "Demo — Primera Comunión Ilustrada",
-    "description": "Demo oficial de primera comunión con estilo ilustrado y fresco.",
+    "description": "Demo oficial de primera comunión con estilo ilustrado, floral y fresco.",
+    "_assetSlug": "demo-primera-comunion-illustrated",
     "theme": {
         "preset": "angelic-presence"
+    },
+    "eventTiming": {
+        "localDateTime": "2026-09-12T11:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2026-09-12T17:00:00.000Z"
     },
     "sectionStyles": {
         "location": {
@@ -13,32 +19,32 @@
         "rsvp": {}
     },
     "hero": {
-        "name": "Sofía Valentina",
+        "name": "Camila Aurora",
         "label": "Primera Comunión",
-        "date": "2026-08-15T11:00:00.000Z",
+        "date": "2026-09-12T11:00:00.000Z",
         "backgroundImage": "hero"
     },
     "location": {
         "visibility": "public",
         "ceremony": {
             "venueEvent": "Ceremonia",
-            "venueName": "Parroquia del Sagrado Corazón",
-            "address": "Av. Principal #123, Centro",
+            "venueName": "Parroquia Nuestra Señora de la Luz",
+            "address": "Av. de la Paz 120, Centro",
             "city": "Ciudad de México",
-            "date": "15 de agosto de 2026",
+            "date": "12 de septiembre de 2026",
             "time": "11:00 AM",
             "image": "ceremony",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+del+Sagrado+Corazon+Ciudad+de+Mexico"
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+Nuestra+Senora+de+la+Luz+Ciudad+de+Mexico"
         },
         "reception": {
             "venueEvent": "Celebración",
-            "venueName": "Salón de Eventos Los Olivos",
-            "address": "Calle de las Flores #45, Colonia del Valle",
+            "venueName": "Jardín Santa Clara",
+            "address": "Paseo de los Olivos 45, Colonia del Valle",
             "city": "Ciudad de México",
-            "date": "15 de agosto de 2026",
-            "time": "13:00 PM",
+            "date": "12 de septiembre de 2026",
+            "time": "1:00 PM",
             "image": "reception",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Salon+de+Eventos+Los+Olivos+Ciudad+de+Mexico"
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Jardin+Santa+Clara+Ciudad+de+Mexico"
         },
         "indicationsHeading": "Indicaciones",
         "indications": [
@@ -54,12 +60,12 @@
     },
     "family": {
         "parents": {
-            "father": "Roberto García Hernández",
-            "mother": "María Fernanda López"
+            "father": "Andrés Moreno",
+            "mother": "Lucía Rivera"
         },
         "godparents": [
-            { "name": "Sr. Luis Antonio Mendoza", "role": "Padrino" },
-            { "name": "Sra. Patricia Rojas", "role": "Madrina" }
+            { "name": "Elena Cruz", "role": "Madrina" },
+            { "name": "Mateo Salazar", "role": "Padrino" }
         ],
         "featuredImage": "family",
         "focalPoint": "50% 36%",
@@ -88,12 +94,12 @@
     },
     "gifts": {
         "title": "Detalles para Celebrar",
-        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
+        "subtitle": "Gracias por acompañarnos en este día de fe y alegría.",
         "items": [
             {
                 "type": "cash",
                 "title": "Lluvia de Sobres",
-                "text": "Agradecemos su generosidad en el área de recepción."
+                "text": "Si desean tener un detalle, podrán hacerlo en el área de recepción."
             }
         ]
     },
@@ -132,12 +138,12 @@
     "rsvp": {
         "title": "Confirma tu asistencia",
         "guestCap": 4,
-        "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
+        "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
-        "closingName": "Sofía Valentina",
+        "message": "Gracias por compartir este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+        "closingName": "Camila Aurora",
         "image": "thankYouPortrait",
         "focalPoint": "50% 50%"
     },
@@ -160,7 +166,7 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "sealInitials": "S·V",
-        "microcopy": "Primera Comunión de Sofía"
+        "sealInitials": "C·A",
+        "microcopy": "Primera Comunión de Camila"
     }
 }
