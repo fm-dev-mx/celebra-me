@@ -80,6 +80,9 @@ or mappers when the existing contracts cannot represent the required behavior.
 - If the demo should be selectable in the dashboard as a base, include it in the demo preset catalog
   in a separate implementation package. If it should be routable-only, document that decision near
   the demo work.
+- `demo-baby-shower-celestial` is intentionally promoted to the dashboard catalog as a decoupled
+  Baby Shower template. Its route, `previewSlug`, and `_assetSlug` all use
+  `demo-baby-shower-celestial`; do not point it at `leah-lexa-baby-shower` assets.
 - `demo-primera-comunion-illustrated` is intentionally promoted to the dashboard catalog as a
   decoupled Primera Comunión template. Its route, `previewSlug`, and `_assetSlug` all use
   `demo-primera-comunion-illustrated`.
