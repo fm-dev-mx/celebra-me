@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
+import { XARENI_SEAL_COLORS } from '@/lib/invitation/presentation-options';
 
 export const envelopeSchema = z
 	.object({
@@ -7,6 +8,7 @@ export const envelopeSchema = z
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
 		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
 		sealInitials: z.string().max(4).optional(),
+		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['premium-rose']).optional(),
 		cardLabel: z.string().trim().max(60).optional(),
 		envelopeName: z.string().trim().max(200).optional(),

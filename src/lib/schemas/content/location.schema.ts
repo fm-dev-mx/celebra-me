@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
+import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 
 const locationCoordinatesSchema = z
 	.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
@@ -50,6 +51,7 @@ export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 
 export const locationSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
+	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 	introEyebrow: z.string().optional(),
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),

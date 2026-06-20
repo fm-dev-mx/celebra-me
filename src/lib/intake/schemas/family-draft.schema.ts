@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { optionalText, editableAssetSchema } from '@/lib/intake/schemas/shared-content.schema';
+import { FAMILY_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 
 export const familyGroupDraftSchema = z.object({
 	title: optionalText(200),
@@ -32,6 +33,7 @@ export const familyDraftSchema = z.object({
 	fatherRole: optionalText(200),
 	motherRole: optionalText(200),
 	visible: z.boolean().optional(),
+	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
 	groups: z.array(familyGroupDraftSchema).optional(),
 	godparentGroups: z.array(godparentGroupDraftSchema).optional(),
 	featuredImage: editableAssetSchema.optional(),

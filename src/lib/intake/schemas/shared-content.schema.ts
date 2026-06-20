@@ -7,6 +7,7 @@ import {
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
+import { XARENI_SEAL_COLORS } from '@/lib/invitation/presentation-options';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -164,6 +165,7 @@ export const envelopeSchema = z
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).optional(),
 		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
 		sealInitials: z.string().trim().max(12).optional(),
+		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['premium-rose']).optional(),
 		microcopy: z.string().max(100).optional(),
 		documentLabel: z.string().max(60).optional(),

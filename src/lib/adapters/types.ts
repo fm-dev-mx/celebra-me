@@ -16,6 +16,10 @@ import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
+import type {
+	FamilyPresentation,
+	LocationPresentation,
+} from '@/lib/invitation/presentation-options';
 import type { z } from 'zod';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
 
@@ -158,6 +162,7 @@ export interface EnvelopeViewModel {
 			background?: string;
 			primary?: string;
 			accent?: string;
+			sealAccent?: string;
 		};
 	};
 }
@@ -182,6 +187,7 @@ export interface InvitationViewModelBrandingVisibility {
 
 export interface LocationSection {
 	visibility?: LocationVisibility;
+	presentation?: LocationPresentation;
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;
@@ -234,6 +240,7 @@ export interface InvitationViewModel {
 			godparentGroups?: GodparentGroup[];
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
+			presentation?: FamilyPresentation;
 			focalPoint?: string;
 			labels?: FamilyLabels;
 			celebrantName: string;

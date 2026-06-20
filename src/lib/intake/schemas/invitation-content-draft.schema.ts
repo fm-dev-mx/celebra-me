@@ -6,6 +6,7 @@ import {
 	overlaySafeAreaSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
+import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import {
 	optionalText,
 	optionalUrl,
@@ -73,6 +74,7 @@ export const InvitationContentDraftContentSchema = z
 		location: z
 			.object({
 				visibility: z.enum(['public', 'after-rsvp']).optional(),
+				presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 				introEyebrow: optionalText(200),
 				introHeading: optionalText(200),
 				introLede: optionalText(1000),
