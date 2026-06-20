@@ -9,6 +9,7 @@ import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { MEXICO_TIME_ZONE_OPTIONS } from '@/lib/intake/constants';
 import { venueLabel } from '@/lib/intake/utils';
 import type { EventTiming } from '@/lib/time/event-time';
+import type { LocationPresentation } from '@/lib/invitation/presentation-options';
 
 interface VenueData {
 	venueName?: string;
@@ -37,6 +38,7 @@ interface DraftIndication {
 }
 
 interface LocationData {
+	presentation?: LocationPresentation;
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
@@ -60,6 +62,8 @@ interface Props {
 	assets?: AssetItem[];
 	visible?: boolean;
 }
+
+const OTHER_OPTION = '__other__';
 
 let venueIdCounter = 0;
 
@@ -103,7 +107,6 @@ export default function LocationSectionEditor({
 	const isKnownTimeZone = MEXICO_TIME_ZONE_OPTIONS.some(
 		(option) => option.value === eventTiming.timeZone,
 	);
-	const OTHER_OPTION = '__other__';
 
 	// Use venues if present, otherwise build from legacy ceremony/reception
 	const venues: VenueEntryData[] =
@@ -236,6 +239,24 @@ export default function LocationSectionEditor({
 		>
 			<div className="invitation-editor__section-group">
 				<h3>Texto de la sección</h3>
+				<label className="invitation-editor__field">
+					<span>Presentación</span>
+					<select
+						value={location.presentation ?? ''}
+						onChange={(event) =>
+							onUpdateLocation({
+								presentation: (event.target.value || undefined) as
+									| LocationPresentation
+									| undefined,
+							})
+						}
+					>
+						<option value="">Con mapa o foto</option>
+						<option value="simple">Simple</option>
+						<option value="with-map">Con mapa</option>
+						<option value="with-photo">Con foto</option>
+					</select>
+				</label>
 				<div className="invitation-editor__field-grid">
 					<Field
 						label="Texto superior"

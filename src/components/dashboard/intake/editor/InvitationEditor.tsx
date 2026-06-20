@@ -53,6 +53,7 @@ import {
 	getDirtySectionKey,
 	getSectionValue,
 } from '@/lib/intake/services/section-content-mapper';
+import { supportsXareniPresentationOptions } from '@/lib/invitation/presentation-options';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
@@ -205,9 +206,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 		markDirty(getDirtySectionKey(key));
 	};
 
-	const sectionValue = (section: InvitationEditorSectionKey): unknown =>
-		getSectionValue(content, section);
-
 	const updateContentBaseline = (section: InvitationEditorSectionKey, value: DraftContent) => {
 		setContentBaseline((current) => applySectionToBaseline(current, section, value));
 	};
@@ -221,7 +219,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		try {
 			const result = await editor.saveSection(
 				section,
-				sectionValue(section),
+				getSectionValue(content, section),
 				expectedUpdatedAt,
 			);
 			updateContentBaseline(section, content);
@@ -406,6 +404,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const eventType = editor.context.invitation.eventType;
 	const themeId = editor.context.invitation.themeId;
+	const supportsXareniOptions = supportsXareniPresentationOptions({ assetLookupSlug });
 
 	const criticalSections = useMemo(
 		() => getCriticalSections(eventType, rsvpEnabled),
@@ -950,6 +949,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.envelope}
 						sourceBadge={sectionSource('envelope')}
 						visible={activeEditorCardId === 'envelope'}
+						supportsSealColor={supportsXareniOptions}
 					/>
 
 					<GiftsSectionEditor

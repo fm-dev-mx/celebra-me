@@ -5,12 +5,17 @@ import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPic
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
-import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
+import {
+	DEFAULT_PARENTS_ORDER,
+	formatFamilyMembersAsLines,
+	type ParentsOrder,
+} from '@/lib/invitation/family-contract';
 import type {
 	FamilyDraft,
 	FamilyGroupDraft,
 	GodparentGroupDraft,
 } from '@/lib/intake/schemas/family-draft.schema';
+import type { FamilyPresentation } from '@/lib/invitation/presentation-options';
 
 interface Props {
 	family: FamilyDraft;
@@ -251,6 +256,24 @@ export default function FamilySectionEditor({
 				<span>Mostrar sección de familia</span>
 			</label>
 
+			<label className="invitation-editor__field">
+				<span>Presentación</span>
+				<select
+					value={family.presentation ?? ''}
+					onChange={(event) =>
+						onUpdateFamily({
+							presentation: (event.target.value || undefined) as
+								| FamilyPresentation
+								| undefined,
+						})
+					}
+				>
+					<option value="">Con foto</option>
+					<option value="with-photo">Con foto</option>
+					<option value="text-only">Solo texto</option>
+				</select>
+			</label>
+
 			<SectionCopyFields
 				family={family}
 				eventType={eventType}
@@ -312,7 +335,7 @@ export default function FamilySectionEditor({
 			) : (
 				<TextArea
 					label={getFieldLabel('family', 'godparents', eventType)}
-					value={family.godparents ?? ''}
+					value={formatFamilyMembersAsLines(family.godparents) ?? ''}
 					onChange={(value) => onUpdateFamily({ godparents: value })}
 				/>
 			)}

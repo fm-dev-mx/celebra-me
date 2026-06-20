@@ -1,5 +1,10 @@
 import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import {
+	XARENI_SEAL_COLOR_LABELS,
+	XARENI_SEAL_COLORS,
+	type XareniSealColor,
+} from '@/lib/invitation/presentation-options';
 
 interface EnvelopeValue {
 	disabled?: boolean;
@@ -16,6 +21,7 @@ interface EnvelopeValue {
 	guestLabel?: string;
 	guestNameFallback?: string;
 	sealInitials?: string;
+	sealColor?: XareniSealColor;
 }
 
 interface Props {
@@ -26,6 +32,7 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	visible?: boolean;
+	supportsSealColor?: boolean;
 }
 
 const ENVELOPE_FIELDS = [
@@ -112,6 +119,7 @@ export default function EnvelopeSectionEditor({
 	success,
 	sourceBadge,
 	visible,
+	supportsSealColor = false,
 }: Props) {
 	return (
 		<SectionCard
@@ -132,6 +140,28 @@ export default function EnvelopeSectionEditor({
 				/>
 				<span>Mostrar sobre de apertura</span>
 			</label>
+			{supportsSealColor && (
+				<label className="invitation-editor__field">
+					<span>Color del sello</span>
+					<select
+						value={envelope.sealColor ?? ''}
+						onChange={(event) =>
+							onChange({
+								sealColor: (event.target.value || undefined) as
+									| XareniSealColor
+									| undefined,
+							})
+						}
+					>
+						<option value="">Color actual</option>
+						{XARENI_SEAL_COLORS.map((color) => (
+							<option key={color} value={color}>
+								{XARENI_SEAL_COLOR_LABELS[color]}
+							</option>
+						))}
+					</select>
+				</label>
+			)}
 			<div className="invitation-editor__field-grid">
 				{ENVELOPE_FIELDS.map(({ key, label, placeholder, maxLength }) => (
 					<Field
@@ -140,7 +170,7 @@ export default function EnvelopeSectionEditor({
 						value={(envelope[key as keyof EnvelopeValue] ?? '') as string}
 						placeholder={placeholder}
 						maxLength={maxLength}
-						onChange={(value) => onChange({ [key]: value } as EnvelopeValue)}
+						onChange={(value) => onChange({ [key]: value } as Partial<EnvelopeValue>)}
 					/>
 				))}
 			</div>
