@@ -6,6 +6,10 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
+import {
+	shouldRenderFamilyMedia,
+	type FamilyPresentation,
+} from '@/lib/invitation/presentation-options';
 
 interface Props {
 	parents?: {
@@ -41,6 +45,7 @@ interface Props {
 		}>;
 	}>;
 	featuredImage?: string | ImageAsset;
+	presentation?: FamilyPresentation;
 	celebrantName: string;
 	labels?: {
 		sectionTitle?: string;
@@ -86,6 +91,7 @@ const {
 	godparentGroups,
 	groups,
 	featuredImage,
+	presentation,
 	celebrantName,
 	labels,
 	focalPoint,
@@ -110,7 +116,7 @@ const resolvedLabels = {
 		'Gracias por caminar conmigo en este momento tan especial. Su amor, guía y bendición forman parte de este día que guardaré para siempre.',
 };
 
-const shouldRenderMedia = Boolean(featuredImage);
+const shouldRenderMedia = shouldRenderFamilyMedia(presentation, Boolean(featuredImage));
 const imagePath = featuredImage
 	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
 	: undefined;
@@ -221,6 +227,7 @@ if (!hasContent) return;
 	id="family-section"
 	class="family"
 	data-variant={variant}
+	data-presentation={presentation}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
 

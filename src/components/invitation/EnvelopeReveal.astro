@@ -46,6 +46,11 @@ const {
 	card,
 	previewState,
 } = Astro.props;
+
+const sealImageSrc = sealImage
+	? (typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src)
+	: undefined;
+const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 ---
 
 <ds-envelope-reveal
@@ -87,11 +92,10 @@ const {
 				>
 					<div class="envelope-seal-button__visual">
 						{
-							sealImage ? (
-								<img
-									src={typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src}
-									alt={sealInitials || ''}
+							sealImageSrc ? (
+								<span
 									class="seal-icon seal-icon--image"
+									aria-hidden="true"
 								/>
 							) : (
 								<SealIcon
@@ -254,3 +258,9 @@ const {
 
 	customElements.define('ds-envelope-reveal', DsEnvelopeReveal);
 </script>
+
+<style define:vars={{ sealImageUrl }}>
+	.envelope-wrapper {
+		--env-seal-image: var(--sealImageUrl);
+	}
+</style>

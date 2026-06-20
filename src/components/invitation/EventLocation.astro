@@ -16,6 +16,7 @@ import type {
 	LocationVariant,
 } from '@/lib/theme/theme-contract';
 import type { LocationVisibility } from '@/lib/adapters/types';
+import type { LocationPresentation } from '@/lib/invitation/presentation-options';
 
 interface VenueData {
 	venueEvent: string;
@@ -61,6 +62,7 @@ interface Props {
 	venues?: VenueEntry[];
 	indications?: Indication[];
 	variant?: LocationVariant;
+	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	indicationsHeading?: string;
 	nextSectionLink?: {
@@ -82,6 +84,7 @@ const {
 	venues: venueEntries,
 	indications,
 	variant = 'structured',
+	presentation,
 	showFlourishes = true,
 	indicationsHeading,
 	nextSectionLink,
@@ -101,7 +104,7 @@ const displayVenues = venueEntries && venueEntries.length > 0
 const isSingleVenue = displayVenues.length === 1;
 ---
 
-<section class="event-location" id="event-location" data-variant={variant}>
+<section class="event-location" id="event-location" data-variant={variant} data-presentation={presentation}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	{introHeading && (
 		<header class="event-location__intro">
@@ -126,6 +129,7 @@ const isSingleVenue = displayVenues.length === 1;
 					venue={venue}
 					type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
 					variant={variant}
+					presentation={presentation}
 					showFlourishes={showFlourishes}
 				/>
 			))}
@@ -198,7 +202,7 @@ const isSingleVenue = displayVenues.length === 1;
 		});
 	}
 
-	document.querySelectorAll('[data-gated-location]').forEach(() => {
+	if (document.querySelector('[data-gated-location]')) {
 		window.addEventListener('celebrame:rsvp-confirmed', (event) => {
 			const inviteId = event instanceof CustomEvent ? event.detail?.inviteId : undefined;
 			if (typeof inviteId !== 'string' || inviteId.length === 0) return;
@@ -208,5 +212,5 @@ const isSingleVenue = displayVenues.length === 1;
 			nextUrl.hash = 'event-location';
 			window.location.assign(nextUrl.toString());
 		});
-	});
+	}
 </script>

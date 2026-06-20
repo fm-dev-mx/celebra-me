@@ -9,6 +9,10 @@ import Icon from '@/components/common/icons/Icon.astro';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import {
+	resolveLocationMediaMode,
+	type LocationPresentation,
+} from '@/lib/invitation/presentation-options';
 
 interface VenueData {
 	venueEvent: string;
@@ -32,6 +36,7 @@ interface Props {
 	venue: VenueData;
 	type: 'ceremony' | 'reception' | 'custom';
 	variant?: string;
+	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 }
 
@@ -39,6 +44,7 @@ const {
 	venue,
 	type,
 	variant = 'structured',
+	presentation,
 	showFlourishes = true,
 } = Astro.props;
 
@@ -63,6 +69,10 @@ function formatVenueDate(raw: string): string | null {
 }
 
 const formattedDate = formatVenueDate(venue.date);
+const mediaMode = resolveLocationMediaMode(presentation, {
+	hasCoordinates: Boolean(venue.coordinates),
+	hasImage: Boolean(venue.image),
+});
 ---
 
 <div class="event-location__card-wrapper">
@@ -74,27 +84,30 @@ const formattedDate = formatVenueDate(venue.date);
 			<span class="flourish-line"></span>
 		</div>
 	)}
-	<article class={`event-location__card event-location__card--${type}`}>
-		<div class="event-location__card-image-outer-frame">
-			<div class="event-location__card-image-inner-frame">
-				<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
-					{venue.coordinates ? (
-						<GoogleMap
-							lat={venue.coordinates.lat}
-							lng={venue.coordinates.lng}
-							title={venue.venueName}
-							variant={variant}
-						/>
-					) : (
-						<OptimizedImage
-							imagePath={venue.image}
-							alt={venue.venueName}
-							class="event-location__card-image"
-						/>
-					)}
+	<article class={`event-location__card event-location__card--${type}`} data-media-mode={mediaMode}>
+		{mediaMode !== 'none' && (
+			<div class="event-location__card-image-outer-frame">
+				<div class="event-location__card-image-inner-frame">
+					<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
+						{mediaMode === 'map' && venue.coordinates && (
+							<GoogleMap
+								lat={venue.coordinates.lat}
+								lng={venue.coordinates.lng}
+								title={venue.venueName}
+								variant={variant}
+							/>
+						)}
+						{mediaMode === 'image' && venue.image && (
+							<OptimizedImage
+								imagePath={venue.image}
+								alt={venue.venueName}
+								class="event-location__card-image"
+							/>
+						)}
+					</div>
 				</div>
 			</div>
-		</div>
+		)}
 		<div class="event-location__card-content">
 			<ul class="event-location__card-content-list">
 				<li class="event-location__card-content-place">
