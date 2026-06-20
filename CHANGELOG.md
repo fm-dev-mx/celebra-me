@@ -3,13 +3,119 @@
 Todos los cambios notables en el proyecto Celebra-me serán documentados en este archivo.
 
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este
-proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/spec/v2.0.0.html).
+proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
 ### Added (pending)
 
 <!-- Items for the next release go here -->
+
+## [0.9.0-beta.1] - 2026-06-19
+
+### Added
+
+- **Primera Comunión event type**: new `EventType` contract entry, migration, Luna y Estrella
+  invitation content, and illustrated demo content with assets
+- **Gated location reveal**: `LocationVisibility` type, `useGatedLocation` hook, server-side
+  endpoint, RSVP-only location reveal with response editing UI
+- **ICS calendar download**: add-to-calendar button and provider popover, ICS file generation with
+  provider URLs for Google, Apple, Outlook
+- **Godparent groups**: grouped godparents by honoree with mutual exclusivity enforcement,
+  `fatherRole`/`motherRole` custom label fields
+- **Venue enhancements**: per-platform map URL fields (Google Maps, Apple Maps, Waze), venue event
+  labels, coordinate inputs with validation
+- **Envelope presentation overrides**: `OpeningViewModel` resolver with two-honoree and guest label
+  support, reveal preview states, editor opening fields
+- **Admin mutation guard**: `requireAdminMutationAccess` helper combining rate-limit, CSRF, and
+  session validation; consolidated admin events PATCH guard
+- **Editor loading states**: loading operation state added to `useInvitationEditor`
+- **Event-type-specific RSVP greetings**: default greeting messages per event type
+- **Schema extensions**: envelope presentation overrides, gallery, location, itinerary, RSVP schemas
+- **Graphify tooling**: core graph library with indexing, metrics, classification; CLI entry point;
+  markdown report rendering; stale-graph guard; domain reports for intake-publishing,
+  invitation-rendering, and theme-assets
+- **Git safety harness**: agent-side Git write authorization and safety enforcement scripts
+- **Per-theme canonical nav overrides**: navigation supports theme-based canonical URL overrides
+
+### Changed
+
+- `InvitationEditor`: extracted standalone section editors (`EnvelopeSectionEditor`,
+  `GiftsSectionEditor`, `RsvpSectionEditor`, `SharingSectionEditor`); editor state consolidated into
+  `EditorOperation` discriminated union; DraftEditor inline helpers extracted into reusable modules
+- `page-data.ts`: render-plan and protected-location logic extracted to `render-plan.ts` and
+  `gated-location.ts`
+- Intake layer: mutation guard consolidated into `requireAdminMutationAccess`; delete action logic
+  consolidated into ACTIONS lookup table; venue/envelope/section constants consolidated; event-type
+  block filtering removed; `Object.keys` emptiness checks replaced with `isNonEmptyObject`;
+  `SECTION_KEY_MAP` replaced with `DIRTY_KEY_TO_SECTION` lookup
+- Event adapter: `LocationSection` type extracted, per-platform map URLs added, venue mapping
+  simplified, sectionOrder made immutable
+- Location policy: consolidated into single `location-policy.ts` module
+- Shared utilities: `data-utils.ts`, `time-format.ts`, `family-contract.ts`, `rsvp-messages.ts`
+  extracted from inline code
+- RSVP: `enableResponseEditing` renamed to `allowResponseEditing` with platform default; exports and
+  form field props cleaned up
+- Gallery: `GalleryVariant` type alias renamed to `LayoutVariant`
+- Styles: angelic-presence RSVP greeting and location visuals refined; celestial-blue header
+  scrolled state added; leah-lexa gifts editorial accents and thank-you responsive layout improved
+- Dependencies bumped: `nodemailer` 8.0.11 → 9.0.1, `astro` 6.4.4 → 6.4.6
+
+### Database / Migrations
+
+- 1 migration: `add_primera_comunion_event_type` (20260615180924)
+- 4 production patches: `prepare_luna_y_estrella_primera_comunion`,
+  `refine_luna_y_estrella_rsvp_copy`, `add_luna_y_estrella_godparent_groups`,
+  `add_luna_y_estrella_location_map_url`
+- 1 dev patch: `restore_leah_lexa_premium_envelope_fields`
+
+### Fixed
+
+- Analytics: remove isProd guard from Speed Insights, Analytics, and GA rendering; add Vite define
+  for GA env var injection; add gaId fallback chain; read GA ID from env vars instead of
+  `import.meta.env`; use `VERCEL_ENV` as fallback for `isProd`
+- Editor: suppress no-draft warning for demo invitations; handle nullable itinerary items array
+- Intake: use dedicated rate limit key for revoke endpoint
+- Gated location: prevent caching of gated-location endpoint with improved fetch options
+- Publish: preserve non-editable premium envelope fields through round-trip
+- Production patches: add godparent groups and venue location data to Luna y Estrella published
+  content
+- Invitation: suppress browser default focus outline on RSVP confirmed-state status; improve
+  revealed location UI with map link and conditional venue rendering; use direct icon module paths
+  in `Gifts.astro`
+- Envelope: reduce premium-rose seal size for proportional mobile layout
+- Gifts: remove redundant border-color on leah-lexa button hover
+- Content: update Luna y Estrella RSVP confirmed copy and location heading
+
+### Tests / Validation
+
+- **New test suites** (15+): `validateDraftContent`, Luna y Estrella published content validation,
+  gated-location service, `useGatedLocation` hook, `location-policy`, ICS calendar
+  (`build-calendar-event-input`, `download-calendar-file`, `ics`, `provider-urls`),
+  `editor-schema-parity`, `admin-edit-context`, architecture boundary tests, `asset-slug`,
+  `section-content-mapper`, `repair-asset-slug-sql`, `data-utils`, `demo-sync-invitation.service`,
+  Graphify operational views
+- **Updated suites**: `EditorPreviewPane`, `InvitationEditor`, `RSVP`, `header-navigation`,
+  `demo-asset-import`, `demo-asset-service`, `draft-content-mapper`, `draft-to-published.mapper`,
+  `event.adapter`, `envelope-reveal-contract`, `intake-field-visibility`, `intake-utils`,
+  `invitation-editor.schema`, `invitation-editor.service`, `invitation.presenter`,
+  `invitation.section-render-data`, `preview-url`, `publishing.service`, `time-normalization`
+
+### Deployment Notes
+
+- Apply `add_primera_comunion_event_type` migration (20260615180924) before deployment
+- Apply 4 Luna y Estrella production patches in dependency order
+- Verify analytics env injection with new VERCEL_ENV-based isProd guard
+- Test gated location reveal flow end-to-end for Luna y Estrella
+- Validate ICS calendar download on RSVP confirmed state
+- Verify godparent group rendering in Family component
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.8.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+- The `add_primera_comunion_event_type` migration is additive and backward-compatible.
 
 ## [0.8.0-beta.1] - 2026-06-14
 
