@@ -174,47 +174,21 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
-	it('uses content _assetSlug for static demos whose route slug differs from asset slug', () => {
+	it('resolves the Baby Shower catalog demo through its explicit asset slug', () => {
 		const event = {
 			id: 'event-demos/baby-shower/demo-baby-shower-celestial',
-			data: {
-				eventType: 'baby-shower',
-				isDemo: true,
-				title: 'Baby Shower de Luna Celeste',
-				_assetSlug: 'demo-baby-shower-celestial',
-				theme: { preset: 'celestial-blue' },
-				hero: {
-					name: 'Luna Celeste',
-					date: '2026-08-15T22:00:00.000Z',
-					backgroundImage: 'hero',
-				},
-				location: {
-					venues: [
-						{
-							type: 'custom',
-							venueName: 'Jardín Las Nubes',
-							address: 'Av. Cielo Pastel 123',
-							date: 'sábado, 15 de agosto de 2026',
-							time: '4:00 PM',
-							venueEvent: 'Baby Shower',
-						},
-					],
-				},
-				rsvp: {
-					title: 'Confirma tu asistencia',
-					guestCap: 4,
-					accessMode: 'hybrid',
-					confirmationMessage: 'Gracias por confirmar',
-					confirmationMode: 'api',
-				},
-			},
+			data: loadFixture(
+				'src/content/event-demos/baby-shower/demo-baby-shower-celestial.json',
+			),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.id).toBe('demo-baby-shower-celestial');
+		expect(viewModel.theme.preset).toBe('celestial-blue');
 		expect(viewModel.sections.rsvp?.eventSlug).toBe('demo-baby-shower-celestial');
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
+		expect(viewModel.sections.family?.featuredImage?.src).toBe('test-file-stub');
 	});
 
 	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {

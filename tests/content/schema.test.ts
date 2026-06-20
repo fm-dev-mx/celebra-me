@@ -16,6 +16,14 @@ const eventSchema =
 
 const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
 const babyShowerDemoRoot = path.resolve(process.cwd(), 'src/content/event-demos/baby-shower');
+const babyShowerDemoPath = path.resolve(
+	process.cwd(),
+	'src/content/event-demos/baby-shower/demo-baby-shower-celestial.json',
+);
+const babyShowerAssetIndexPath = path.resolve(
+	process.cwd(),
+	'src/assets/images/events/demo-baby-shower-celestial/index.ts',
+);
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
 	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
@@ -210,13 +218,12 @@ describe('Event content schema (real contract)', () => {
 	});
 
 	it('routes the static baby-shower demo through a fictitious slug only', () => {
-		const fictitiousDemoPath = path.join(babyShowerDemoRoot, 'demo-baby-shower-celestial.json');
 		const leahDemoPath = path.join(babyShowerDemoRoot, 'leah-lexa-baby-shower.json');
 		const babyShowerPreset = DEMO_PRESET_CATALOG.find(
 			(preset) => preset.eventType === 'baby-shower',
 		);
 
-		expect(fs.existsSync(fictitiousDemoPath)).toBe(true);
+		expect(fs.existsSync(babyShowerDemoPath)).toBe(true);
 		expect(fs.existsSync(leahDemoPath)).toBe(false);
 		expect(babyShowerPreset).toMatchObject({
 			id: 'demo-baby-shower-celestial',
@@ -226,8 +233,7 @@ describe('Event content schema (real contract)', () => {
 	});
 
 	it('keeps real Leah Lexa details out of static baby-shower demo content', () => {
-		const targetFile = path.join(babyShowerDemoRoot, 'demo-baby-shower-celestial.json');
-		const content = fs.readFileSync(targetFile, 'utf8');
+		const content = fs.readFileSync(babyShowerDemoPath, 'utf8');
 
 		expect(content).toContain('Luna Celeste');
 		expect(content).toContain('Mateo y Valeria');
@@ -235,6 +241,56 @@ describe('Event content schema (real contract)', () => {
 		expect(content).not.toMatch(
 			/Leah Lexa|Hugo y Fernanda|Guadalupe Proletaria|51975133|Liverpool/,
 		);
+	});
+
+	it('registers the Baby Shower catalog demo in the preset catalog', () => {
+		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
+
+		expect(preset).toMatchObject({
+			id: 'demo-baby-shower-celestial',
+			eventType: 'baby-shower',
+			displayName: 'Baby Shower — Celestial Demo',
+			themeId: 'celestial-blue',
+			previewSlug: 'demo-baby-shower-celestial',
+		});
+	});
+
+	it('aligns Baby Shower demo content fields with the preset catalog', () => {
+		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
+		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
+
+		expect(content.eventType).toBe(preset?.eventType);
+		expect(content.theme?.preset).toBe(preset?.themeId);
+	});
+
+	it('uses demo-owned asset slug, not the Leah Lexa client folder', () => {
+		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
+
+		expect(content._assetSlug).toBe('demo-baby-shower-celestial');
+		expect(content._assetSlug).not.toBe('leah-lexa-baby-shower');
+	});
+
+	it('has an asset index file for the Baby Shower catalog demo', () => {
+		expect(fs.existsSync(babyShowerAssetIndexPath)).toBe(true);
+	});
+
+	it('includes all referenced assets in the Baby Shower demo asset index', () => {
+		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
+		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
+
+		const referencedAssetKeys = [
+			content.hero?.backgroundImage,
+			content.family?.featuredImage,
+			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
+			content.thankYou?.image,
+		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
+
+		const assetIndexSource = fs.readFileSync(babyShowerAssetIndexPath, 'utf8');
+		for (const key of [
+			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
+		]) {
+			expect(assetIndexSource).toContain(key);
+		}
 	});
 
 	it('registers the Primera Comunión demo in the preset catalog', () => {
