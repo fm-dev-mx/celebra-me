@@ -391,9 +391,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const hasDraft = editor.context.draftStatus !== null;
 	const noDraftWarning =
-		!hasDraft && editor.context.contentSource !== 'empty'
-			? 'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.'
-			: null;
+		hasDraft ||
+		editor.context.contentSource === 'empty' ||
+		editor.context.invitation.kind === 'demo'
+			? null
+			: 'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.';
 
 	const rsvpEnabled = useMemo(
 		() =>
