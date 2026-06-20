@@ -72,6 +72,7 @@ Defines the minimum height of the interlude section.
 - **Valid values**:
   - `"screen"`: 100svh (fills the viewport)
   - `"tall"`: 80svh
+  - `"medium"`: compact editorial interlude height
 - **Default**: `"screen"`
 
 ## Section Order

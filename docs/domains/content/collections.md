@@ -1,6 +1,6 @@
 # Content Collections
 
-**Last Updated:** 2026-06-14
+**Last Updated:** 2026-06-19
 
 Celebra-me uses Astro content collections for legacy/static fallback content, showcase demos, and
 internal templates. Real/client invitations are DB-published content; see
@@ -16,14 +16,17 @@ internal templates. Real/client invitations are DB-published content; see
 
 ## Active Collections
 
-| Collection        | Path                             | Purpose                                     |
-| ----------------- | -------------------------------- | ------------------------------------------- |
-| `events`          | `src/content/events/**`          | legacy/static fallback; no new real clients |
-| `event-demos`     | `src/content/event-demos/**`     | public showcase demos                       |
-| `event-templates` | `src/content/event-templates/**` | internal templates and masters              |
+| Collection        | Path                             | Purpose                                       |
+| ----------------- | -------------------------------- | --------------------------------------------- |
+| `events`          | `src/content/events/**`          | legacy/static fallback; no new client content |
+| `event-demos`     | `src/content/event-demos/**`     | public showcase demos                         |
+| `event-templates` | `src/content/event-templates/**` | internal templates; verify runtime use        |
 
 Only `events` and `event-demos` are routable through the public invitation routes. DB-published
 client content from `published_invitation_content` is resolved before static fallback content.
+`src/content/events` should not receive new client invitation content by default. `event-templates`
+exists for internal masters, but its runtime use is limited and should be verified before relying on
+it for a creation workflow.
 
 ## Event Type Contract
 
@@ -34,6 +37,7 @@ The active event types come from `src/lib/theme/theme-contract.ts`:
 - `bautizo`
 - `cumple`
 - `baby-shower`
+- `primera-comunion`
 
 ## Theme Contract
 
@@ -73,6 +77,12 @@ route slugs live in DB publication rows and must stay distinct from demo/templat
 When a route depends on local event assets, keep the asset exports in
 `src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them
 consistently.
+
+Dashboard-selectable demos are not inferred from routable static JSON alone. A demo becomes a
+dashboard preset only when it is added to `DEMO_PRESET_CATALOG` and has explicit render-safe asset
+resolution through an approved demo-owned namespace. `demo-primera-comunion-illustrated` is promoted
+this way with `_assetSlug` set to `demo-primera-comunion-illustrated`, separate from any client
+invitation asset folder.
 
 ## Validation
 
