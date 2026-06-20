@@ -217,6 +217,23 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 	});
 
+	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {
+		const event = {
+			id: 'event-demos/primera-comunion/demo-primera-comunion-illustrated',
+			data: loadFixture(
+				'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
+			),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.id).toBe('demo-primera-comunion-illustrated');
+		expect(viewModel.theme.preset).toBe('angelic-presence');
+		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
+		expect(viewModel.sections.location?.ceremony?.image?.src).toBe('test-file-stub');
+		expect(viewModel.sections.thankYou?.image?.src).toBe('test-file-stub');
+	});
+
 	it('resolves backgroundImageMobile when present in hero data', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

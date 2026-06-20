@@ -5,6 +5,7 @@ import { collections } from '@/content.config';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
+import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -15,6 +16,14 @@ const eventSchema =
 
 const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
 const babyShowerDemoRoot = path.resolve(process.cwd(), 'src/content/event-demos/baby-shower');
+const primeraComunionDemoPath = path.resolve(
+	process.cwd(),
+	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
+);
+const primeraComunionAssetIndexPath = path.resolve(
+	process.cwd(),
+	'src/assets/images/events/demo-primera-comunion-illustrated/index.ts',
+);
 
 function getJsonContentFiles(root: string): string[] {
 	return fs
@@ -226,6 +235,48 @@ describe('Event content schema (real contract)', () => {
 		expect(content).not.toMatch(
 			/Leah Lexa|Hugo y Fernanda|Guadalupe Proletaria|51975133|Liverpool/,
 		);
+	});
+
+	it('registers the Primera Comunión demo in the preset catalog', () => {
+		const preset = DEMO_PRESET_CATALOG.find(
+			(item) => item.id === 'demo-primera-comunion-illustrated',
+		);
+
+		expect(preset).toMatchObject({
+			id: 'demo-primera-comunion-illustrated',
+			eventType: 'primera-comunion',
+			displayName: 'Primera Comunión — Ilustrada',
+			themeId: 'angelic-presence',
+			previewSlug: 'demo-primera-comunion-illustrated',
+		});
+		expect(preset?.requiredAssets).toEqual(['hero', 'family', 'gallery01', 'gallery02']);
+	});
+
+	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {
+		const content = JSON.parse(fs.readFileSync(primeraComunionDemoPath, 'utf8'));
+		const preset = DEMO_PRESET_CATALOG.find(
+			(item) => item.id === 'demo-primera-comunion-illustrated',
+		);
+
+		expect(content._assetSlug).toBe('demo-primera-comunion-illustrated');
+		expect(fs.existsSync(primeraComunionAssetIndexPath)).toBe(true);
+
+		const referencedAssetKeys = [
+			content.hero?.backgroundImage,
+			content.location?.ceremony?.image,
+			content.location?.reception?.image,
+			content.family?.featuredImage,
+			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
+			content.thankYou?.image,
+			...(content.interludes ?? []).map((item: { image?: string }) => item.image),
+		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
+
+		const assetIndexSource = fs.readFileSync(primeraComunionAssetIndexPath, 'utf8');
+		for (const key of [
+			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
+		]) {
+			expect(assetIndexSource).toContain(key);
+		}
 	});
 
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {
