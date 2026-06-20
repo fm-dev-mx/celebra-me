@@ -1,36 +1,17 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { SectionSource } from '@/lib/intake/types';
-import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import {
+	mapNestedToDraftContent,
+	normalizeDraftContent,
+} from '@/lib/intake/services/draft-content-mapper';
+import { isRecord } from '@/lib/shared/data-utils';
 import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS } from '@/lib/intake/constants';
 import { ensureFamilyGodparentExclusivity } from '@/lib/intake/utils';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function shallowMergeDefined(base: unknown, overlay: unknown): Record<string, unknown> | undefined {
-	const baseObj = isRecord(base) ? base : undefined;
-	const overlayObj = isRecord(overlay) ? overlay : undefined;
-
-	if (!baseObj && !overlayObj) return undefined;
-	if (!baseObj) return { ...(overlayObj ?? {}) };
-	if (!overlayObj) return { ...baseObj };
-
-	const result: Record<string, unknown> = {};
-
-	for (const key of Object.keys(baseObj)) {
-		if (baseObj[key] !== undefined) {
-			result[key] = baseObj[key];
-		}
-	}
-
-	for (const key of Object.keys(overlayObj)) {
-		if (overlayObj[key] !== undefined) {
-			result[key] = overlayObj[key];
-		}
-	}
-
-	return Object.keys(result).length > 0 ? result : undefined;
+	const merged = { ...(isRecord(base) ? base : {}), ...(isRecord(overlay) ? overlay : {}) };
+	const defined = Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined));
+	return Object.keys(defined).length > 0 ? defined : undefined;
 }
 
 interface MergeResult {
@@ -50,7 +31,7 @@ export function mergePublishedWithDraft(
 	options: MergeOptions = {},
 ): MergeResult {
 	const publishedFlat = mapNestedToDraftContent(publishedContent as Record<string, unknown>);
-	const draftFlat = draftContent as DraftContent;
+	const draftFlat = normalizeDraftContent(draftContent as Record<string, unknown>);
 	const demoFlat = options.demoContent
 		? mapNestedToDraftContent(options.demoContent as Record<string, unknown>)
 		: ({} as DraftContent);

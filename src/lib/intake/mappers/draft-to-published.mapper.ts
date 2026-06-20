@@ -36,6 +36,7 @@ function buildEnvelopeFromDraft(
 
 	// Draft explicit overrides (only fields the editor exposes).
 	if (typeof draftEnvelope?.disabled === 'boolean') result.disabled = draftEnvelope.disabled;
+	if (draftEnvelope?.sealColor) result.sealColor = draftEnvelope.sealColor;
 
 	for (const field of ENVELOPE_TEXT_FIELDS) {
 		const trimmed = trimmedStr(draftEnvelope?.[field]);
@@ -216,6 +217,7 @@ function mapFamilyFromDraft(
 	if (mappedGroups) result.groups = mappedGroups;
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
+	if (family.presentation) result.presentation = family.presentation;
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	result.celebrantName = celebrantName;
 
@@ -296,6 +298,7 @@ function mapLocationFromDraft(
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
+	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
 
 	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
 		const mappedVenues = draftLocation.venues

@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import type { ParentsOrder } from '@/lib/invitation/family-contract';
+import { formatFamilyMembersAsLines, type ParentsOrder } from '@/lib/invitation/family-contract';
 import {
 	str,
 	bool,
 	num,
 	trimmedStr,
 	normalizeDate,
+	isRecord,
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
@@ -235,7 +236,6 @@ function mapFamilyToDraft(
 	family: Record<string, unknown>,
 ): NonNullable<DraftContent['family']> | undefined {
 	const parents = family.parents as Record<string, unknown> | undefined;
-	const godparentsArr = family.godparents as Array<{ name: string; role?: string }> | undefined;
 	const godparentGroupsArr = family.godparentGroups as
 		| Array<{
 				honoreeName?: string;
@@ -255,9 +255,7 @@ function mapFamilyToDraft(
 		motherDeceased: bool(parents?.motherDeceased),
 		parentsOrder: parents?.parentsOrder as ParentsOrder | undefined,
 		spouseName: str(family.spouse),
-		godparents: godparentsArr
-			?.map((g) => (g.role ? `${g.name} — ${g.role}` : g.name))
-			.join('\n'),
+		godparents: formatFamilyMembersAsLines(family.godparents),
 		godparentGroups: godparentGroupsArr
 			?.filter((g) => g.godparents && g.godparents.length > 0)
 			.map((g) => ({
@@ -281,6 +279,9 @@ function mapFamilyToDraft(
 		fatherRole: str(labels?.fatherRole),
 		motherRole: str(labels?.motherRole),
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
+		presentation: str(family.presentation) as
+			| NonNullable<DraftContent['family']>['presentation']
+			| undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
@@ -291,6 +292,40 @@ function mapFamilyToDraft(
 	if (family.featuredImage !== undefined)
 		(result as Record<string, unknown>).featuredImage = family.featuredImage;
 	return result;
+}
+
+function stripVenueEvent(value: unknown): unknown {
+	if (!isRecord(value)) return value;
+	const { venueEvent: _, ...rest } = value;
+	return rest;
+}
+
+export function normalizeDraftContent(
+	content: DraftContent | Record<string, unknown>,
+): DraftContent {
+	const result = structuredClone(content) as Record<string, unknown>;
+	const family = result.family;
+	if (isRecord(family)) {
+		const normalizedFamily = { ...family };
+		const normalizedGodparents = formatFamilyMembersAsLines(family.godparents);
+		if (family.godparents !== undefined) {
+			if (normalizedGodparents !== undefined)
+				normalizedFamily.godparents = normalizedGodparents;
+			else delete normalizedFamily.godparents;
+		}
+		result.family = normalizedFamily;
+	}
+
+	const location = result.location;
+	if (isRecord(location)) {
+		result.location = {
+			...location,
+			ceremony: stripVenueEvent(location.ceremony),
+			reception: stripVenueEvent(location.reception),
+		};
+	}
+
+	return result as DraftContent;
 }
 
 // eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.
@@ -337,6 +372,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 		const draftLocation: Record<string, unknown> = {
 			visibility: str(location.visibility),
+			presentation: str(location.presentation),
 			introEyebrow: str(location.introEyebrow),
 			introHeading: str(location.introHeading),
 			introLede: str(location.introLede),

@@ -24,6 +24,7 @@ import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { resolveXareniSealColor, XARENI_ASSET_SLUG } from '@/lib/invitation/presentation-options';
 
 const LOCATION_THEME_DEFAULTS: Partial<
 	Record<
@@ -257,6 +258,10 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 				accent: data.envelope.closedPalette?.accent
 					? resolveColorRole(data.envelope.closedPalette.accent)
 					: undefined,
+				sealAccent:
+					eventSlug === XARENI_ASSET_SLUG
+						? resolveXareniSealColor(data.envelope.sealColor)
+						: undefined,
 			},
 		},
 	};
@@ -382,6 +387,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	return {
 		visibility: data.location.visibility,
+		presentation: data.location.presentation,
 		...(rawVenues !== undefined
 			? { venues }
 			: {
