@@ -724,6 +724,43 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('preserves presentation options through draft-to-published mapping', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			assetSlug: 'xv-xareni-iyarit',
+			draftContent: {
+				...baseInput.draftContent,
+				envelope: {
+					disabled: false,
+					sealColor: 'roseGold',
+				},
+				family: {
+					fatherName: 'Juan',
+					featuredImage: { type: 'internal', key: 'family' },
+					presentation: 'text-only',
+				},
+				location: {
+					presentation: 'with-map',
+					ceremony: {
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+						date: '2026-06-15',
+						time: '18:00',
+						coordinates: { lat: 19.4326, lng: -99.1332 },
+					},
+				},
+			},
+		});
+
+		expect(result.envelope).toMatchObject({ sealColor: 'roseGold' });
+		expect(result.family).toMatchObject({
+			presentation: 'text-only',
+			featuredImage: { type: 'internal', key: 'family' },
+		});
+		expect(result.location).toMatchObject({ presentation: 'with-map' });
+		expect(eventContentSchema.safeParse(result).success).toBe(true);
+	});
+
 	it('merges venue image from demo content when isDemo is true', () => {
 		const demoWithLocation = {
 			...baseDemoContent,

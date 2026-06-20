@@ -1,5 +1,10 @@
-import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import {
+	mapNestedToDraftContent,
+	normalizeDraftContent,
+} from '@/lib/intake/services/draft-content-mapper';
 import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
+import { InvitationEditorSectionSchemas } from '@/lib/intake/schemas/invitation-editor.schema';
+import { formatFamilyMembersAsLines } from '@/lib/invitation/family-contract';
 
 const VALID_UUID = '550e8400-e29b-41d4-a716-446655440001';
 
@@ -36,6 +41,98 @@ describe('mapNestedToDraftContent', () => {
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 		expect(result.family?.fatherName).toBe('Juan');
 		expect(result.family?.featuredImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
+	});
+
+	it('maps published family godparents arrays to editable textarea lines', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				godparents: [
+					{ name: 'José Rosendo Hernández Martínez', role: 'Padrino' },
+					{ name: 'Airemy Grisel Hernández García', role: 'Madrina' },
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.godparents).toBe(
+			'José Rosendo Hernández Martínez — Padrino\nAiremy Grisel Hernández García — Madrina',
+		);
+	});
+
+	it('formats family member arrays without rendering object placeholders', () => {
+		const result = formatFamilyMembersAsLines([
+			{ name: 'José Rosendo Hernández Martínez', role: 'Padrino' },
+			{ name: 'Airemy Grisel Hernández García', role: 'Madrina' },
+		]);
+
+		expect(result).toBe(
+			'José Rosendo Hernández Martínez — Padrino\nAiremy Grisel Hernández García — Madrina',
+		);
+		expect(result).not.toContain('[object Object]');
+	});
+
+	it('restores presentation options from published content into draft content', () => {
+		const input = {
+			envelope: {
+				disabled: false,
+				sealColor: 'roseGold',
+			},
+			family: {
+				parents: { father: 'Juan' },
+				featuredImage: { type: 'uploaded', assetId: VALID_UUID },
+				presentation: 'text-only',
+			},
+			location: {
+				presentation: 'with-photo',
+				ceremony: {
+					venueName: 'Iglesia',
+					image: { type: 'internal', key: 'ceremony' },
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.envelope?.sealColor).toBe('roseGold');
+		expect(result.family?.presentation).toBe('text-only');
+		expect(result.family?.featuredImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
+		expect(result.location?.presentation).toBe('with-photo');
+		expect(result.location?.ceremony?.image).toEqual({ type: 'internal', key: 'ceremony' });
+	});
+
+	it('normalizes raw draft family arrays and legacy venueEvent keys before editor validation', () => {
+		const rawDraft = {
+			family: {
+				fatherName: 'Juan',
+				godparents: [{ name: 'Pedro López', role: 'Padrino' }],
+				presentation: 'text-only',
+			},
+			location: {
+				presentation: 'simple',
+				ceremony: {
+					venueEvent: 'Ceremonia',
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+				},
+				reception: {
+					venueEvent: 'Recepción',
+					venueName: 'Salón',
+					address: 'Calle 2',
+				},
+			},
+		};
+
+		const result = normalizeDraftContent(rawDraft);
+
+		expect(result.family?.godparents).toBe('Pedro López — Padrino');
+		expect(InvitationEditorSectionSchemas.family.safeParse(result.family).success).toBe(true);
+		expect(result.location?.ceremony).not.toHaveProperty('venueEvent');
+		expect(result.location?.reception).not.toHaveProperty('venueEvent');
+		expect(InvitationEditorSectionSchemas.location.safeParse(result.location).success).toBe(
+			true,
+		);
 	});
 
 	it('preserves venue image when present in ceremony', () => {
@@ -255,12 +352,14 @@ describe('mapNestedToDraftContent', () => {
 			location: {
 				introHeading: 'Ubicaciones',
 				ceremony: {
+					venueEvent: 'Ceremonia',
 					venueName: 'Iglesia Legacy',
 					address: 'Calle L',
 					date: '2026-01-01',
 					time: '10:00',
 				},
 				reception: {
+					venueEvent: 'Recepción',
 					venueName: 'Salón Legacy',
 					address: 'Calle R',
 					date: '2026-01-01',
@@ -273,6 +372,8 @@ describe('mapNestedToDraftContent', () => {
 
 		expect(result.location?.ceremony?.venueName).toBe('Iglesia Legacy');
 		expect(result.location?.reception?.venueName).toBe('Salón Legacy');
+		expect(result.location?.ceremony).not.toHaveProperty('venueEvent');
+		expect(result.location?.reception).not.toHaveProperty('venueEvent');
 		expect(result.location?.venues).toBeUndefined();
 	});
 
@@ -505,6 +606,51 @@ describe('mergePublishedWithDraft', () => {
 
 		expect(result.content.thankYou?.message).toBe('Editado');
 		expect(result.content.thankYou?.focalPoint).toBe('50% 30%');
+	});
+
+	it('normalizes raw draft family godparents arrays before merging editor content', () => {
+		const result = mergePublishedWithDraft(
+			{},
+			{
+				family: {
+					fatherName: 'Juan',
+					godparents: [{ name: 'Pedro López', role: 'Padrino' }],
+					featuredImage: { type: 'uploaded', assetId: VALID_UUID },
+					presentation: 'text-only',
+				},
+			},
+		);
+
+		expect(result.content.family?.godparents).toBe('Pedro López — Padrino');
+		expect(result.content.family?.featuredImage).toEqual({
+			type: 'uploaded',
+			assetId: VALID_UUID,
+		});
+	});
+
+	it('normalizes raw draft legacy location venueEvent keys before merging editor content', () => {
+		const result = mergePublishedWithDraft(
+			{},
+			{
+				location: {
+					presentation: 'with-map',
+					ceremony: {
+						venueEvent: 'Ceremonia',
+						venueName: 'Iglesia',
+						address: 'Calle 1',
+					},
+					reception: {
+						venueEvent: 'Recepción',
+						venueName: 'Salón',
+						address: 'Calle 2',
+					},
+				},
+			},
+		);
+
+		expect(result.content.location?.ceremony).not.toHaveProperty('venueEvent');
+		expect(result.content.location?.reception).not.toHaveProperty('venueEvent');
+		expect(result.content.location?.presentation).toBe('with-map');
 	});
 
 	it.each([

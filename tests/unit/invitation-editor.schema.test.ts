@@ -158,6 +158,27 @@ describe('InvitationEditorSectionSchemas.family', () => {
 			},
 		]);
 	});
+
+	it('accepts supported family presentation values', () => {
+		const result = InvitationEditorSectionSchemas.family.safeParse({
+			fatherName: 'Juan',
+			presentation: 'text-only',
+		});
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.presentation).toBe('text-only');
+		}
+	});
+
+	it('rejects unknown family presentation values', () => {
+		const result = InvitationEditorSectionSchemas.family.safeParse({
+			fatherName: 'Juan',
+			presentation: 'with-video',
+		});
+
+		expect(result.success).toBe(false);
+	});
 });
 
 describe('InvitationEditorSectionSchemas.gallery', () => {
@@ -250,6 +271,7 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 				accent: 'actionAccent',
 				background: 'surfacePrimary',
 			},
+			sealColor: 'roseGold',
 		};
 		const result = InvitationEditorSectionSchemas.envelope.safeParse(value);
 		expect(result.success).toBe(true);
@@ -259,6 +281,7 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			expect(result.data.cardSecondaryName).toBe('Lexa');
 			expect(result.data.guestLabel).toBe('Con cariño para:');
 			expect(result.data.closedPalette?.primary).toBe('surfacePrimary');
+			expect(result.data.sealColor).toBe('roseGold');
 		}
 	});
 
@@ -280,6 +303,14 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			const unknownIssue = result.error.issues.find((i) => i.code === 'unrecognized_keys');
 			expect(unknownIssue).toBeDefined();
 		}
+	});
+
+	it('rejects raw CSS seal colors', () => {
+		const result = InvitationEditorSectionSchemas.envelope.safeParse({
+			sealColor: '#c9a36a',
+		});
+
+		expect(result.success).toBe(false);
 	});
 });
 
@@ -350,6 +381,27 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 		if (result.success) {
 			expect(result.data.ceremony?.coordinates).toBeUndefined();
 		}
+	});
+
+	it('accepts supported location presentation values', () => {
+		const result = InvitationEditorSectionSchemas.location.safeParse({
+			...BASE_LOCATION,
+			presentation: 'with-map',
+		});
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.presentation).toBe('with-map');
+		}
+	});
+
+	it('rejects unknown location presentation values', () => {
+		const result = InvitationEditorSectionSchemas.location.safeParse({
+			...BASE_LOCATION,
+			presentation: 'gallery',
+		});
+
+		expect(result.success).toBe(false);
 	});
 
 	it('rejects ceremony with latitude below -90', () => {
