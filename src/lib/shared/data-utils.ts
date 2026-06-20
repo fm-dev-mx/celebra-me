@@ -51,13 +51,12 @@ export function trimmedStr(value: unknown): string | undefined {
 	return undefined;
 }
 
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export function isNonEmptyObject(value: unknown): value is Record<string, unknown> {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		!Array.isArray(value) &&
-		Object.keys(value).length > 0
-	);
+	return isRecord(value) && Object.keys(value).length > 0;
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
