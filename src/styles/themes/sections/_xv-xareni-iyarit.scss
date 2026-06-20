@@ -1,0 +1,261 @@
+.event--xv-xareni-iyarit.theme-preset--celestial-blue {
+	--xareni-ivory-rgb: 255 248 244;
+	--xareni-blush-rgb: 243 214 207;
+	--xareni-champagne-rgb: 232 200 184;
+	--xareni-rose-gold-rgb: 201 143 142;
+	--xareni-mauve-rgb: 185 130 145;
+	--xareni-deep-mauve-rgb: 122 62 87;
+	--xareni-plum-rgb: 58 42 46;
+	--xareni-white-rgb: 255 253 251;
+	--xareni-ivory: rgb(var(--xareni-ivory-rgb));
+	--xareni-blush: rgb(var(--xareni-blush-rgb));
+	--xareni-champagne: rgb(var(--xareni-champagne-rgb));
+	--xareni-rose-gold: rgb(var(--xareni-rose-gold-rgb));
+	--xareni-mauve: rgb(var(--xareni-mauve-rgb));
+	--xareni-deep-mauve: rgb(var(--xareni-deep-mauve-rgb));
+	--xareni-plum: rgb(var(--xareni-plum-rgb));
+	--xareni-white: rgb(var(--xareni-white-rgb));
+	--color-ice-blue: var(--xareni-blush);
+	--color-ice-blue-rgb: var(--xareni-blush-rgb);
+	--color-satin-blue: var(--xareni-rose-gold);
+	--color-satin-blue-rgb: var(--xareni-rose-gold-rgb);
+	--color-moon-blue: var(--xareni-mauve);
+	--color-deep-blue: var(--xareni-deep-mauve);
+	--color-night-blue: var(--xareni-plum);
+	--color-celestial-white: var(--xareni-white);
+	--color-mist-blue: var(--xareni-ivory);
+	--color-powder-blue: var(--xareni-champagne);
+	--color-pearl-gray: var(--xareni-champagne);
+	--color-pearl-gray-rgb: var(--xareni-champagne-rgb);
+	--color-soft-graphite: var(--xareni-plum);
+	--color-soft-graphite-rgb: var(--xareni-plum-rgb);
+	--color-cold-silver: var(--xareni-mauve);
+	--color-cold-silver-rgb: var(--xareni-mauve-rgb);
+	--color-deep-blue-graphite: var(--xareni-plum);
+	--color-deep-blue-graphite-rgb: var(--xareni-plum-rgb);
+	--color-cool-ivory: var(--xareni-ivory);
+	--color-cool-ivory-rgb: var(--xareni-ivory-rgb);
+	--color-liquid-silver: var(--xareni-rose-gold);
+	--color-liquid-silver-rgb: var(--xareni-rose-gold-rgb);
+	--color-diamond-white: var(--xareni-white);
+	--color-diamond-white-rgb: var(--xareni-white-rgb);
+	--color-surface-primary: var(--xareni-ivory);
+	--color-surface-primary-rgb: var(--xareni-ivory-rgb);
+	--color-surface-secondary: var(--xareni-white);
+	--color-surface-secondary-rgb: var(--xareni-white-rgb);
+	--color-surface-elevated: rgb(var(--xareni-white-rgb) / 94%);
+	--color-surface-soft: rgb(var(--xareni-blush-rgb) / 34%);
+	--color-surface-canvas: var(--xareni-ivory);
+	--color-surface-dark: var(--xareni-plum);
+	--color-surface-dark-rgb: var(--xareni-plum-rgb);
+	--color-text-primary: var(--xareni-plum);
+	--color-text-primary-rgb: var(--xareni-plum-rgb);
+	--color-text-secondary: rgb(var(--xareni-plum-rgb) / 74%);
+	--color-text-secondary-rgb: var(--xareni-plum-rgb);
+	--color-text-emphasis: var(--xareni-plum);
+	--color-text-muted: rgb(var(--xareni-plum-rgb) / 64%);
+	--color-text-on-dark: var(--xareni-white);
+	--color-text-on-dark-rgb: var(--xareni-white-rgb);
+	--color-text-on-light: var(--xareni-plum);
+	--color-text-inverse: var(--xareni-white);
+	--color-action-primary: var(--xareni-deep-mauve);
+	--color-action-primary-rgb: var(--xareni-deep-mauve-rgb);
+	--color-action-primary-hover: rgb(99 49 71);
+	--color-action-accent: var(--xareni-rose-gold);
+	--color-action-accent-rgb: var(--xareni-rose-gold-rgb);
+	--color-accent-primary: var(--xareni-rose-gold);
+	--color-accent-secondary: var(--xareni-mauve);
+	--color-border-subtle: rgb(var(--xareni-rose-gold-rgb) / 28%);
+	--color-border-strong: rgb(var(--xareni-deep-mauve-rgb) / 42%);
+	--color-border-premium: rgb(var(--xareni-rose-gold-rgb) / 54%);
+	--color-glass-bg: rgb(var(--xareni-white-rgb) / 58%);
+	--color-glass-border: rgb(var(--xareni-rose-gold-rgb) / 48%);
+	--color-glass-shadow: rgb(var(--xareni-plum-rgb) / 8%);
+	--hero-overlay-start: rgb(var(--xareni-plum-rgb) / 64%);
+	--hero-overlay-mid: rgb(var(--xareni-deep-mauve-rgb) / 36%);
+	--hero-overlay-end: rgb(var(--xareni-blush-rgb) / 20%);
+	--hero-title-color-start: var(--xareni-white);
+	--hero-title-color-mid: var(--xareni-blush);
+	--hero-title-color-end: var(--xareni-champagne);
+	--hero-label-color: var(--xareni-champagne);
+	--hero-date-color: rgb(var(--xareni-white-rgb) / 90%);
+	--hero-scroll-color: var(--xareni-white);
+	--countdown-surface: rgb(var(--xareni-white-rgb) / 90%);
+	--countdown-border: rgb(var(--xareni-rose-gold-rgb) / 34%);
+	--countdown-number: var(--xareni-deep-mauve);
+	--countdown-label: rgb(var(--xareni-plum-rgb) / 70%);
+	--section-kicker-color: var(--xareni-deep-mauve);
+	--section-title-color: var(--xareni-plum);
+	--section-divider-color: var(--xareni-rose-gold);
+	--itinerary-paper-white: var(--xareni-white);
+	--itinerary-cream: var(--xareni-ivory);
+	--itinerary-ink-dark: var(--xareni-plum);
+	--itinerary-ink-dark-rgb: var(--xareni-plum-rgb);
+	--itinerary-slate: var(--xareni-deep-mauve);
+	--itinerary-slate-rgb: var(--xareni-deep-mauve-rgb);
+	--quote-background:
+		radial-gradient(circle at 20% 16%, rgb(var(--xareni-blush-rgb) / 42%), transparent 34%),
+		linear-gradient(140deg, var(--xareni-ivory), rgb(var(--xareni-champagne-rgb) / 72%));
+	--quote-mark-color: rgb(var(--xareni-rose-gold-rgb) / 38%);
+	--quote-text-color: var(--xareni-plum);
+	--quote-author-color: var(--xareni-deep-mauve);
+	--card-background: rgb(var(--xareni-white-rgb) / 92%);
+	--card-border: rgb(var(--xareni-rose-gold-rgb) / 26%);
+	--card-shadow: 0 22px 64px rgb(var(--xareni-plum-rgb) / 13%);
+	--gallery-background: linear-gradient(
+		180deg,
+		var(--xareni-ivory),
+		rgb(var(--xareni-blush-rgb) / 38%)
+	);
+	--interlude-overlay: linear-gradient(
+		180deg,
+		rgb(var(--xareni-plum-rgb) / 12%),
+		rgb(var(--xareni-ivory-rgb) / 18%)
+	);
+	--rsvp-background:
+		radial-gradient(circle at 75% 20%, rgb(var(--xareni-blush-rgb) / 50%), transparent 32%),
+		linear-gradient(160deg, var(--xareni-ivory), rgb(var(--xareni-champagne-rgb) / 68%));
+	--rsvp-active-background: var(--xareni-deep-mauve);
+	--rsvp-active-color: var(--xareni-white);
+	--rsvp-focus-ring: rgb(var(--xareni-deep-mauve-rgb) / 28%);
+
+	background:
+		radial-gradient(circle at top left, rgb(var(--xareni-blush-rgb) / 34%), transparent 36rem),
+		linear-gradient(
+			180deg,
+			var(--xareni-ivory),
+			rgb(var(--xareni-champagne-rgb) / 38%) 44%,
+			var(--xareni-white)
+		);
+	color: var(--xareni-plum);
+
+	.invitation-hero,
+	.hero,
+	[data-section='hero'] {
+		background-color: var(--xareni-plum);
+
+		&::before {
+			background:
+				linear-gradient(
+					180deg,
+					var(--hero-overlay-start),
+					var(--hero-overlay-mid) 48%,
+					var(--hero-overlay-end)
+				),
+				radial-gradient(
+					circle at 50% 82%,
+					rgb(var(--xareni-blush-rgb) / 28%),
+					transparent 42%
+				);
+		}
+	}
+
+	.section,
+	.invitation-section,
+	[data-section] {
+		--surface: var(--xareni-ivory);
+		--accent: var(--xareni-rose-gold);
+		--accent-strong: var(--xareni-deep-mauve);
+	}
+
+	.button,
+	.btn,
+	button[type='submit'],
+	.rsvp-submit,
+	.rsvp-option.is-selected,
+	[aria-pressed='true'],
+	[data-active='true'] {
+		background: var(--xareni-deep-mauve);
+		border-color: var(--xareni-deep-mauve);
+		box-shadow: 0 14px 36px rgb(var(--xareni-deep-mauve-rgb) / 20%);
+		color: var(--xareni-white);
+	}
+
+	.button:hover,
+	.btn:hover,
+	button[type='submit']:hover {
+		background: var(--color-action-primary-hover);
+		border-color: var(--color-action-primary-hover);
+	}
+
+	.card,
+	.location-card,
+	.gift-card,
+	.family-card,
+	.rsvp-card,
+	.personalized-access,
+	.thank-you-card {
+		background: var(--card-background);
+		border-color: var(--card-border);
+		box-shadow: var(--card-shadow);
+		color: var(--xareni-plum);
+	}
+
+	.countdown,
+	.countdown-card,
+	.countdown__item {
+		background: var(--countdown-surface);
+		border-color: var(--countdown-border);
+		color: var(--countdown-number);
+	}
+
+	.gallery,
+	.gallery-section,
+	[data-section='gallery'] {
+		background: var(--gallery-background);
+	}
+
+	.interlude,
+	.interlude-section,
+	[data-section*='interlude'] {
+		background-color: var(--xareni-ivory);
+
+		&::after {
+			background: var(--interlude-overlay);
+		}
+	}
+
+	.rsvp,
+	.rsvp-section,
+	[data-section='rsvp'] {
+		background: var(--rsvp-background);
+	}
+
+	.location,
+	[data-section='location'],
+	[data-section='ceremony'],
+	[data-section='reception'] {
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--xareni-white-rgb) / 86%),
+				rgb(var(--xareni-blush-rgb) / 24%)
+			),
+			var(--xareni-ivory);
+	}
+
+	.thank-you,
+	[data-section='thank-you'] {
+		background:
+			radial-gradient(circle at 20% 10%, rgb(var(--xareni-blush-rgb) / 32%), transparent 34%),
+			linear-gradient(150deg, var(--xareni-plum), var(--xareni-deep-mauve));
+		color: var(--xareni-white);
+	}
+
+	a,
+	.section-kicker,
+	.kicker,
+	.location-time,
+	.gift-title,
+	.family-role,
+	.rsvp-title,
+	.thank-you-title {
+		color: var(--xareni-deep-mauve);
+	}
+
+	.divider,
+	.section-divider,
+	hr {
+		border-color: rgb(var(--xareni-rose-gold-rgb) / 42%);
+	}
+}

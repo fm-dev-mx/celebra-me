@@ -26,4 +26,5 @@ export const discoverEventModules = jest.fn(() => ({
 	'../../assets/images/events/ana-sofia-cota-guillen/index.ts': assetStub,
 	'../../assets/images/events/cesar-ramses/index.ts': assetStub,
 	'../../assets/images/events/gerardo-sesenta/index.ts': assetStub,
+	'../../assets/images/events/xv-xareni-iyarit/index.ts': assetStub,
 }));

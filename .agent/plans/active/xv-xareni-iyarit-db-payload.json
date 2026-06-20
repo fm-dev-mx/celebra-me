@@ -1,0 +1,272 @@
+{
+    "eventType": "xv",
+    "isDemo": false,
+    "title": "XV años de Xareni Iyarit",
+    "description": "Invitación para los XV años de Xareni Iyarit Sánchez Hernández, con una estética romántica en tonos blush, champagne, ivory, rose gold y mauve.",
+    "_assetSlug": "xv-xareni-iyarit",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "celestial-blue"
+    },
+    "eventTiming": {
+        "localDateTime": "2026-09-12T19:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2026-09-13T01:00:00.000Z"
+    },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "itinerary",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Tu nombre",
+                "guestCount": "Personas que asistirán",
+                "attendance": "¿Me acompañas?",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Xareni Iyarit",
+        "label": "Mis XV años",
+        "date": "2026-09-13T01:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "focalPoint": "50% 38%",
+        "focalPointMobile": "50% 32%"
+    },
+    "quote": {
+        "text": "La vida es una aventura atrevida o no es nada.",
+        "author": "Helen Keller"
+    },
+    "family": {
+        "featuredImage": "family",
+        "parents": {
+            "father": "Ignacio Sabino Sánchez Hernández",
+            "mother": "Nabil Hernández García"
+        },
+        "parentsOrder": "father-first",
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de mis papás",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace que mis XV años sean un recuerdo inolvidable."
+        },
+        "godparents": [
+            {
+                "name": "José Rosendo Hernández Martínez",
+                "role": "Padrino"
+            },
+            {
+                "name": "Airemy Grisel Hernández García",
+                "role": "Madrina"
+            }
+        ],
+        "focalPoint": "50% 38%"
+    },
+    "countdown": {
+        "title": "La celebración comienza en",
+        "footerText": "12 de septiembre de 2026, Apizaco, Tlaxcala"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "iconName": "Church",
+                "label": "Ceremonia",
+                "time": "19:00",
+                "description": "Misa de Acción de Gracias en la Basílica De Nuestra Señora Misericordia."
+            },
+            {
+                "iconName": "Reception",
+                "label": "Recepción",
+                "time": "20:30",
+                "description": "Bienvenida en Las Camelinas."
+            },
+            {
+                "iconName": "Waltz",
+                "label": "Vals",
+                "time": "21:30",
+                "description": "Un momento especial para celebrar mis XV años."
+            },
+            {
+                "iconName": "Dinner",
+                "label": "Cena",
+                "time": "22:00",
+                "description": "Cena y convivencia con familia e invitados."
+            },
+            {
+                "iconName": "Party",
+                "label": "Celebración",
+                "time": "23:00",
+                "description": "Baile y festejo para compartir esta noche inolvidable."
+            }
+        ]
+    },
+    "location": {
+        "introEyebrow": "Nos vemos en Apizaco",
+        "introHeading": "Sábado, 12 de septiembre de 2026",
+        "introLede": "Será una alegría compartir contigo esta celebración.",
+        "indicationsHeading": "Detalles para mis invitados",
+        "ceremony": {
+            "venueEvent": "Ceremonia",
+            "venueName": "Basílica De Nuestra Señora Misericordia",
+            "address": "Av. Cuauhtémoc 101, Centro, 90300 Cdad. de Apizaco, Tlax.",
+            "city": "Apizaco, Tlaxcala",
+            "date": "12 de septiembre de 2026",
+            "time": "7:00 p.m.",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Bas%C3%ADlica%20De%20Nuestra%20Se%C3%B1ora%20Misericordia%2C%20Av.%20Cuauht%C3%A9moc%20101%2C%20Centro%2C%2090300%20Cdad.%20de%20Apizaco%2C%20Tlax."
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Las Camelinas",
+            "address": "C. José Aramburu 3, San Martín de Porres, 90360 Cdad. de Apizaco, Tlax.",
+            "city": "Apizaco, Tlaxcala",
+            "date": "12 de septiembre de 2026",
+            "time": "8:30 p.m.",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Las%20Camelinas%2C%20C.%20Jos%C3%A9%20Aramburu%203%2C%20San%20Mart%C3%ADn%20de%20Porres%2C%2090360%20Cdad.%20de%20Apizaco%2C%20Tlax."
+        },
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta: <strong>formal elegante</strong>."
+            },
+            {
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia para ayudarnos a preparar cada detalle."
+            }
+        ]
+    },
+    "gallery": {
+        "eyebrow": "Galería",
+        "title": "Momentos que guardan la emoción de mis XV años.",
+        "subtitle": "Un recuerdo visual en tonos románticos, delicados y elegantes.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Un sueño en rosa champagne."
+            },
+            {
+                "image": "gallery02",
+                "caption": "La ilusión de una noche inolvidable."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Detalles que cuentan mi historia."
+            },
+            {
+                "image": "gallery04",
+                "caption": "Elegancia y gratitud en cada instante."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Un recuerdo para llevar en el corazón."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Celebrar rodeada de amor."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Lluvia de sobres",
+        "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, contaremos con lluvia de sobres.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de sobres",
+                "text": "Contaremos con un espacio especial durante la recepción."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma tu asistencia",
+        "subcopy": "Tu respuesta nos ayuda a preparar cada detalle para recibirte con mucho cariño.",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán de esta noche un recuerdo que guardaré para siempre.",
+        "closingName": "Xareni Iyarit",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 36%"
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "location",
+            "alt": "Detalle decorativo de tul blush champagne y bordado rose gold",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "48%",
+            "lightY": "40%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "family",
+            "alt": "Marco ornamental ivory con sombras florales blush",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "55%",
+            "lightY": "34%"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "itinerary",
+            "alt": "Divisor decorativo ivory y blush con encaje sutil",
+            "height": "medium",
+            "focalPoint": "50% 52%",
+            "lightX": "50%",
+            "lightY": "46%"
+        },
+        {
+            "image": "interlude04",
+            "afterSection": "rsvp",
+            "alt": "Fondo decorativo blush con tul y detalle rose gold",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "46%",
+            "lightY": "38%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "sealInitials": "X·I",
+        "sealVariant": "premium-rose",
+        "microcopy": "Toca para abrir mi invitación",
+        "documentLabel": "Mis XV años",
+        "cardLabel": "Mis XV años",
+        "cardTagline": "Una noche para recordar",
+        "stampText": "Xareni Iyarit",
+        "stampYear": "2026",
+        "closedPalette": {
+            "primary": "surfacePrimary",
+            "accent": "actionAccent",
+            "background": "surfacePrimary"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+        "ogImage": "portrait",
+        "ogDescription": "Acompáñame en mis XV años el sábado, 12 de septiembre de 2026, en Apizaco, Tlaxcala."
+    }
+}
