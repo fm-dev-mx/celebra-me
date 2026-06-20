@@ -15,8 +15,14 @@ import { hasRsvpContent } from '@/lib/intake/utils';
 import type { IntakeRequest } from '@/lib/intake/types';
 import { getCollection } from 'astro:content';
 import { getContentEntrySlug } from '@/lib/content/events';
-import { upsertPublishedContent } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { upsertDraft } from '@/lib/intake/repositories/invitation-content-draft.repository';
+import {
+	findPublishedByInvitationId,
+	upsertPublishedContent,
+} from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	findDraftByInvitationId,
+	upsertDraft,
+} from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 export function toEnrichedInvitationDTO(
@@ -160,14 +166,39 @@ export async function createInvitation(input: {
 export async function synchronizeDemoInvitations(createdBy: string): Promise<void> {
 	const demoEntries = await getCollection('event-demos');
 
-	for (const preset of DEMO_PRESET_CATALOG) {
-		const existing = await findInvitationBySlug(preset.previewSlug, true);
-		if (existing) continue;
+	const entryBySlug = new Map<string, (typeof demoEntries)[number]>();
+	for (const entry of demoEntries) {
+		entryBySlug.set(getContentEntrySlug(entry.id), entry);
+	}
 
-		const entry = demoEntries.find(
-			(item: { id: string }) => getContentEntrySlug(item.id) === preset.previewSlug,
-		);
+	for (const preset of DEMO_PRESET_CATALOG) {
+		const entry = entryBySlug.get(preset.previewSlug);
 		if (!entry) continue;
+
+		const existing = await findInvitationBySlug(preset.previewSlug, true);
+
+		if (existing) {
+			if (existing.kind !== 'demo') continue;
+
+			const draft = await findDraftByInvitationId(existing.id);
+			if (draft) continue;
+
+			const freshContent = { ...(entry.data as Record<string, unknown>), isDemo: true };
+
+			const published = await findPublishedByInvitationId(existing.id);
+			if (published && JSON.stringify(published.content) === JSON.stringify(freshContent))
+				continue;
+
+			await upsertPublishedContent({
+				invitationId: existing.id,
+				slug: preset.previewSlug,
+				eventType: preset.eventType,
+				isDemo: true,
+				content: freshContent,
+			});
+			await updateInvitation(existing.id, { status: 'published' });
+			continue;
+		}
 
 		const invitation = await createInvitationRecord({
 			title: preset.displayName,
