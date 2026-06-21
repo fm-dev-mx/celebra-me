@@ -27,6 +27,7 @@ export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 		clientEmail: invitation.clientEmail,
 		clientWhatsapp: invitation.clientWhatsapp,
 		photosReceived: invitation.photosReceived,
+		createdBy: invitation.createdBy,
 		archivedAt: invitation.archivedAt,
 		createdAt: invitation.createdAt,
 		updatedAt: invitation.updatedAt,

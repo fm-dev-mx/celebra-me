@@ -168,6 +168,25 @@ export async function updateInvitation(
 	return toInvitation(rows[0]);
 }
 
+export async function assignInvitationOwner(
+	id: string,
+	ownerUserId: string,
+): Promise<Invitation | null> {
+	const pathWithQuery = `invitations?id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`;
+
+	const rows = await supabaseRestRequest<InvitationRow[]>({
+		pathWithQuery,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			created_by: ownerUserId,
+		},
+	});
+
+	return rows[0] ? toInvitation(rows[0]) : null;
+}
+
 export async function updateInvitationConditionally(
 	id: string,
 	expectedUpdatedAt: string,

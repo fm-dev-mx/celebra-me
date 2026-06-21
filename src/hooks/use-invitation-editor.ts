@@ -12,7 +12,8 @@ export type EditorOperation =
 	| { type: 'saving-section'; section: InvitationEditorSectionKey | 'metadata' }
 	| { type: 'publishing' }
 	| { type: 'reconciling' }
-	| { type: 'restoring' };
+	| { type: 'restoring' }
+	| { type: 'assigning-owner' };
 
 export function useInvitationEditor(initialContext: InvitationEditorContextDTO) {
 	const [context, setContext] = useState(initialContext);
@@ -104,6 +105,14 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		});
 	}, [context.invitation.id]);
 
+	const assignOwner = useCallback(async () => {
+		return guard({ type: 'assigning-owner' }, async () => {
+			const result = await adminApi.assignOwner(context.invitation.id);
+			setContext((current) => ({ ...current, invitation: result.invitation }));
+			return result;
+		});
+	}, [context.invitation.id]);
+
 	const restorePublished = useCallback(async () => {
 		return guard({ type: 'restoring' }, async () => {
 			const expectedUpdatedAt = context.draftUpdatedAt ?? context.invitation.updatedAt;
@@ -125,5 +134,6 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		publish,
 		reconcileRsvp,
 		restorePublished,
+		assignOwner,
 	};
 }

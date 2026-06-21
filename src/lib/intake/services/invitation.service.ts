@@ -5,6 +5,7 @@ import {
 	findInvitationById,
 	findInvitationBySlug,
 	updateInvitation,
+	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
 import { DEMO_PRESET_CATALOG, findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
@@ -273,4 +274,33 @@ export async function duplicateInvitationFromDemo(
 	});
 
 	return invitation;
+}
+
+export async function assignInvitationOwnerService(
+	invitationId: string,
+	ownerUserId: string,
+): Promise<Invitation> {
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'Invitación no encontrada.');
+	}
+	if (invitation.kind !== 'client') {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'Solo las invitaciones de tipo cliente pueden tener un propietario.',
+		);
+	}
+	if (invitation.createdBy) {
+		throw new ApiError(409, 'conflict', 'La invitación ya tiene un propietario asignado.');
+	}
+
+	const updated = await assignInvitationOwner(invitationId, ownerUserId);
+	if (!updated)
+		throw new ApiError(
+			409,
+			'conflict',
+			'La invitación fue modificada por otro usuario. Recarga e intenta de nuevo.',
+		);
+	return updated;
 }

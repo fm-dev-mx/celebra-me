@@ -12,6 +12,7 @@ jest.mock('@/lib/dashboard/admin-api', () => ({
 		publishInvitationEditor: jest.fn(),
 		restoreInvitationEditorFromPublished: jest.fn(),
 		reconcileInvitationEditorRsvp: jest.fn(),
+		assignOwner: jest.fn(),
 	},
 }));
 
@@ -30,6 +31,7 @@ const mockContext: InvitationEditorContextDTO = {
 		clientWhatsapp: '',
 		photosReceived: false,
 		archivedAt: null,
+		createdBy: 'user-1',
 		createdAt: '2026-01-01T00:00:00Z',
 		updatedAt: '2026-01-01T00:00:00Z',
 		baseDemoId: 'demo-xv',
@@ -115,6 +117,14 @@ describe('useInvitationEditor operation invariants', () => {
 					eventId: 'event-1',
 				}),
 			call: (api) => api.reconcileRsvp(),
+		},
+		{
+			name: 'assignOwner',
+			mock: () =>
+				mockedAdminApi.assignOwner.mockResolvedValue({
+					invitation: mockContext.invitation,
+				}),
+			call: (api) => api.assignOwner(),
 		},
 		{
 			name: 'restorePublished',

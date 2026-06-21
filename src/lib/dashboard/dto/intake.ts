@@ -26,6 +26,7 @@ export interface InvitationDTO {
 	archivedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+	createdBy: string | null;
 	hasRequest: boolean;
 	hasSubmission: boolean;
 	published: boolean;
@@ -171,8 +172,19 @@ export interface InvitationEditorContextDTO {
 
 export type InvitationEditorMetadata = Pick<
 	InvitationEditorContextDTO['invitation'],
-	'title' | 'slug' | 'status' | 'clientName' | 'clientEmail' | 'clientWhatsapp' | 'photosReceived'
+	| 'title'
+	| 'slug'
+	| 'status'
+	| 'clientName'
+	| 'clientEmail'
+	| 'clientWhatsapp'
+	| 'photosReceived'
+	| 'createdBy'
 >;
+
+export interface AssignOwnerResponse {
+	invitation: InvitationEditorContextDTO['invitation'];
+}
 
 export interface InvitationEditorSectionSaveResponse {
 	section: InvitationEditorSectionKey;

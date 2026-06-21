@@ -625,6 +625,33 @@
 			@include mixins.focus-ring;
 		}
 	}
+
+	&--readonly {
+		input {
+			background: var(--color-surface-secondary);
+			color: var(--color-text-muted);
+			cursor: default;
+		}
+	}
+
+	&--warning {
+		input {
+			border-color: var(--color-state-warning-border);
+			background: var(--color-state-warning-bg);
+			color: var(--color-state-warning-text);
+			cursor: default;
+		}
+	}
+}
+
+.invitation-editor__owner-row {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+
+	input {
+		flex: 1;
+	}
 }
 
 .invitation-editor__check {

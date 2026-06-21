@@ -27,6 +27,7 @@ import type {
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	DraftResponse,
+	AssignOwnerResponse,
 	InvitationEditorContextDTO,
 	InvitationEditorSectionSaveResponse,
 } from './dto/intake';
@@ -290,6 +291,14 @@ export class AdminApi {
 		const result = await dashboardApi.post<DraftResponse>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/draft`,
 			{ action: 'revise' },
+		);
+		return this.handleResponse(result);
+	}
+
+	async assignOwner(invitationId: string): Promise<AssignOwnerResponse> {
+		const result = await dashboardApi.post<AssignOwnerResponse>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assign-owner`,
+			{},
 		);
 		return this.handleResponse(result);
 	}

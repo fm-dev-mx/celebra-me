@@ -31,6 +31,7 @@ function createContext(
 			clientWhatsapp: '',
 			photosReceived: true,
 			archivedAt: null,
+			createdBy: 'user-1',
 			createdAt: '2026-05-30T00:00:00Z',
 			updatedAt: '2026-05-30T01:00:00Z',
 			rsvpSectionHasContent: false,
@@ -117,6 +118,7 @@ jest.mock('@/hooks/use-invitation-editor', () => ({
 		publish,
 		reconcileRsvp,
 		restorePublished,
+		assignOwner: jest.fn(),
 	}),
 }));
 
@@ -676,6 +678,42 @@ describe('InvitationEditor', () => {
 			expect.objectContaining({ clientName: 'Segundo Cambio' }),
 			'2026-05-30T04:00:00Z',
 		);
+	});
+
+	it('shows owner-required publish warning when client invitation has no owner', () => {
+		mockContext = createContext({
+			invitation: {
+				...createContext().invitation,
+				createdBy: null,
+			},
+		});
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		expect(screen.getByText(/no se puede publicar sin un propietario/i)).toBeInTheDocument();
+	});
+
+	it('disables publish button when client invitation has no owner', () => {
+		mockContext = createContext({
+			invitation: {
+				...createContext().invitation,
+				createdBy: null,
+			},
+		});
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		expect(screen.getByRole('button', { name: 'Publicar cambios' })).toBeDisabled();
+	});
+
+	it('does not show owner-required warning when owner is set', () => {
+		mockContext = createContext();
+
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		expect(
+			screen.queryByText(/no se puede publicar sin un propietario/i),
+		).not.toBeInTheDocument();
 	});
 
 	it('shows no-draft warning for client invitations without a draft', () => {

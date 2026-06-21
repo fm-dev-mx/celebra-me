@@ -151,9 +151,26 @@ export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Se
 }
 
 function metadataFromContext(context: InvitationEditorContextDTO): InvitationEditorMetadata {
-	const { title, slug, status, clientName, clientEmail, clientWhatsapp, photosReceived } =
-		context.invitation;
-	return { title, slug, status, clientName, clientEmail, clientWhatsapp, photosReceived };
+	const {
+		title,
+		slug,
+		status,
+		clientName,
+		clientEmail,
+		clientWhatsapp,
+		photosReceived,
+		createdBy,
+	} = context.invitation;
+	return {
+		title,
+		slug,
+		status,
+		clientName,
+		clientEmail,
+		clientWhatsapp,
+		photosReceived,
+		createdBy,
+	};
 }
 
 // eslint-disable-next-line complexity -- Editor shell with 12+ sections tracking dirty/error/saving state independently
@@ -276,6 +293,29 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
 	const [pickerField, setPickerField] = useState<PickerField | null>(null);
+
+	const handleAssignOwner = useCallback(async () => {
+		if (!window.confirm('¿Asignarte como propietario de esta invitación?')) return;
+		try {
+			const result = await editor.assignOwner();
+			const nextMetadata = metadataFromContext({
+				...editor.context,
+				invitation: result.invitation,
+			});
+			setMetadata(nextMetadata);
+			setMetadataBaseline(nextMetadata);
+			setSuccess((current) => ({
+				...current,
+				metadata: 'Propietario asignado correctamente.',
+			}));
+		} catch (error) {
+			setErrors((current) => ({
+				...current,
+				metadata: toErrorMessage(error, 'No se pudo asignar el propietario.'),
+			}));
+		}
+	}, [editor.assignOwner, editor.context]);
+
 	const sharingResetConfirm = useConfirmAction(() => {
 		updateContent('sharing', {
 			invitation: DEFAULT_INVITATION_MESSAGE,
@@ -426,6 +466,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 	}, [editor.context.sectionStates, criticalSections, content.sectionOrder]);
 
 	const publishWarning = useMemo(() => {
+		if (editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy) {
+			return 'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.';
+		}
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
 		if (emptySectionsDetail.critical.length > 0) {
 			const labels = emptySectionsDetail.critical
@@ -440,7 +483,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 			return 'No hay cambios sin publicar. Guarda una sección primero.';
 		}
 		return null;
-	}, [editor.context.contentSource, emptySectionsDetail, hasDraft]);
+	}, [
+		editor.context.invitation.kind,
+		editor.context.invitation.createdBy,
+		editor.context.contentSource,
+		emptySectionsDetail,
+		hasDraft,
+	]);
 	const publishWarningSections = useMemo(
 		() =>
 			uniqueSectionPresentation([
@@ -528,7 +577,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 			dirty.size > 0 ||
 			editor.context.draftStatus !== 'draft' ||
 			editor.context.contentSource === 'empty' ||
-			emptySectionsDetail.critical.length > 0,
+			emptySectionsDetail.critical.length > 0 ||
+			(editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy),
 		[
 			editor.operation.type,
 			savingAll,
@@ -536,6 +586,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 			editor.context.draftStatus,
 			editor.context.contentSource,
 			emptySectionsDetail.critical.length,
+			editor.context.invitation.kind,
+			editor.context.invitation.createdBy,
 		],
 	);
 
@@ -589,6 +641,26 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const selectedDefinition = getEditorSectionById(selectedSection);
 	const activeEditorCardId = selectedDefinition?.editorCardId ?? 'main';
 
+	const pickerFieldUpdaters = useMemo(() => {
+		return (ref: { type: 'uploaded'; assetId: string }) =>
+			({
+				'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
+				'hero.backgroundImageMobile': () => updateHero({ backgroundImageMobile: ref }),
+				'hero.portrait': () => updateHero({ portrait: ref }),
+				'family.featuredImage': () => updateFamily({ featuredImage: ref }),
+				'thankYou.image': () =>
+					updateContent('thankYou', { ...messages.thankYou, image: ref }),
+				'location.ceremony.image': () => {
+					const venue = location.ceremony ?? {};
+					updateLocation({ ceremony: { ...venue, image: ref } });
+				},
+				'location.reception.image': () => {
+					const venue = location.reception ?? {};
+					updateLocation({ reception: { ...venue, image: ref } });
+				},
+			}) as Record<string, () => void>;
+	}, [updateHero, updateFamily, updateContent, updateLocation, location, messages]);
+
 	const handleAssetSelect = (assetId: string) => {
 		const ref = { type: 'uploaded' as const, assetId };
 		const updateLocationVenueById = (venueId: string) => {
@@ -600,27 +672,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 				updateLocation({ venues: updated });
 			}
 		};
-		const PICKER_FIELD_UPDATERS: Record<string, () => void> = {
-			'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
-			'hero.backgroundImageMobile': () => updateHero({ backgroundImageMobile: ref }),
-			'hero.portrait': () => updateHero({ portrait: ref }),
-			'family.featuredImage': () => updateFamily({ featuredImage: ref }),
-			'thankYou.image': () => updateContent('thankYou', { ...messages.thankYou, image: ref }),
-			'location.ceremony.image': () => {
-				const venue = location.ceremony ?? {};
-				updateLocation({ ceremony: { ...venue, image: ref } });
-			},
-			'location.reception.image': () => {
-				const venue = location.reception ?? {};
-				updateLocation({ reception: { ...venue, image: ref } });
-			},
-		};
+		const updaters = pickerFieldUpdaters(ref);
 		// Handle dynamic venue ID patterns: location.{id}.image
 		const venueMatch = pickerField?.match(/^location\.(.+)\.image$/);
-		if (venueMatch && !PICKER_FIELD_UPDATERS[pickerField!]) {
+		if (venueMatch && !updaters[pickerField!]) {
 			updateLocationVenueById(venueMatch[1]);
 		} else {
-			PICKER_FIELD_UPDATERS[pickerField!]?.();
+			updaters[pickerField!]?.();
 		}
 		setPickerField(null);
 	};
@@ -771,10 +829,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<MetadataSection
 							value={metadata}
+							kind={editor.context.invitation.kind}
 							onChange={(value) => {
 								setMetadata(value);
 								markDirty('metadata');
 							}}
+							onAssignOwner={handleAssignOwner}
 						/>
 					</SectionCard>
 
