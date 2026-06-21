@@ -185,13 +185,28 @@
         ]
     },
     "gifts": {
-        "title": "Lluvia de sobres",
-        "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, contaremos con lluvia de sobres.",
+        "title": "Regalos",
+        "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones:",
         "items": [
+            {
+                "type": "store",
+                "title": "Mesa de regalos",
+                "description": "Puedes consultar mis listas de regalos en Amazon y Liverpool.",
+                "links": [
+                    {
+                        "label": "Amazon",
+                        "url": "https://www.amazon.com.mx/registries/gl/guest-view/9ZB19QOMLJ45"
+                    },
+                    {
+                        "label": "Liverpool",
+                        "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52015693"
+                    }
+                ]
+            },
             {
                 "type": "cash",
                 "title": "Lluvia de sobres",
-                "text": "Contaremos con un espacio especial durante la recepción."
+                "text": "También contaremos con un espacio especial durante la recepción."
             }
         ]
     },
