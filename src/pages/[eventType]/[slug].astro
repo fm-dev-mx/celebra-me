@@ -20,6 +20,7 @@ import type { ThemePreset } from '@/lib/theme/theme-contract';
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
+const hasInviteParam = Astro.url.searchParams.has('invite');
 
 let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
@@ -99,7 +100,14 @@ try {
 	);
 	renderError =
 		error instanceof Error ? error.message : 'Error desconocido al cargar la invitación.';
-}
+	}
+
+const cacheControl =
+	!hasInviteParam && page && viewModel
+		? 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
+		: 'no-store, private';
+Astro.response.headers.set('Cache-Control', cacheControl);
+
 ---
 
 {
