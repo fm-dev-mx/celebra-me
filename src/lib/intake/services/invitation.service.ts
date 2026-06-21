@@ -237,12 +237,22 @@ export async function duplicateInvitationFromDemo(
 		throw new ApiError(404, 'not_found', 'Demo no encontrado.');
 	}
 
+	const preset = findDemoPreset(demo.baseDemoId);
+	if (!preset) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'No se encontró el preset asociado a la invitación demo.',
+		);
+	}
+	const freshSnapshot = { ...preset };
+
 	const invitation = await createInvitationRecord({
 		title: input.title,
 		eventType: demo.eventType,
 		baseDemoId: demo.baseDemoId,
-		themeId: demo.themeId,
-		snapshot: demo.snapshot,
+		themeId: freshSnapshot.themeId,
+		snapshot: freshSnapshot,
 		kind: 'client',
 		sourceInvitationId: demo.id,
 		clientName: input.clientName,
