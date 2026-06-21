@@ -43,6 +43,7 @@
         "label": "Mis XV años",
         "date": "2026-09-13T01:00:00.000Z",
         "backgroundImage": "hero",
+        "backgroundImageDesktop": "heroDesktop",
         "portrait": "portrait",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"

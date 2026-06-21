@@ -13,6 +13,7 @@ const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_in
 
 const expectedAssets = [
 	'hero.webp',
+	'hero-desktop.webp',
 	'portrait.webp',
 	'family.webp',
 	'gallery-01.webp',
