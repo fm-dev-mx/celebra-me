@@ -28,7 +28,11 @@ export function generateThemeScopedStyles(
 		}
 		if (colors.primary) overrides['--env-text-primary'] = colors.primary;
 		if (colors.accent) overrides['--env-accent'] = colors.accent;
-		if (colors.sealAccent) overrides['--env-seal-accent'] = colors.sealAccent;
+		if (colors.sealAccent) {
+			overrides['--env-seal-accent'] = colors.sealAccent;
+			overrides['--env-seal-icon-override'] =
+				`color-mix(in srgb, ${colors.sealAccent} 70%, var(--color-surface-dark) 30%)`;
+		}
 	}
 
 	const overrideStyles = Object.entries(overrides)

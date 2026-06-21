@@ -141,7 +141,7 @@
 
 		.seal-icon {
 			z-index: 1;
-			color: var(--env-seal-icon);
+			color: var(--env-seal-icon-override, var(--env-seal-icon));
 			filter: drop-shadow(0 1px 1px hsl(40deg 60% 85% / 80%))
 				drop-shadow(0 -1px 0 hsl(28deg 30% 40% / 30%));
 		}

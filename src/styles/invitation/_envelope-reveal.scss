@@ -431,7 +431,7 @@
 	.seal-icon {
 		width: 32px;
 		height: 32px;
-		color: var(--env-seal-icon);
+		color: var(--env-seal-icon-override, var(--env-seal-icon));
 		filter: drop-shadow(
 				0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 50%, transparent)
 			)
@@ -694,7 +694,11 @@
 	.envelope-seal-button__visual {
 		width: var(--env-seal-size);
 		height: var(--env-seal-size);
-		background: none;
+		background: radial-gradient(
+			circle at center,
+			color-mix(in srgb, var(--env-seal-accent) 22%, transparent) 0%,
+			transparent 70%
+		);
 		border: none;
 		box-shadow: none;
 		padding: 0;
@@ -704,7 +708,7 @@
 		.seal-icon {
 			width: 65%;
 			height: 65%;
-			color: inherit;
+			color: var(--env-seal-icon-override, inherit);
 			filter: none;
 		}
 
@@ -712,7 +716,7 @@
 			display: block;
 			background: var(--env-seal-bg);
 			mask: var(--env-seal-image) center / contain no-repeat;
-			-webkit-mask: var(--env-seal-image) center / contain no-repeat;
+			mask: var(--env-seal-image) center / contain no-repeat;
 		}
 	}
 
