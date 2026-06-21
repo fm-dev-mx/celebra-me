@@ -10,8 +10,6 @@ import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-hel
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
-import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
-import type { DemoPreset } from '@/lib/intake/types';
 
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import Layout from '@/layouts/Layout.astro';
@@ -22,6 +20,8 @@ import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import '@/styles/invitation.scss';
+
+import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
 
 const { id } = Astro.params;
 
@@ -35,15 +35,29 @@ if (!id) {
 }
 
 const invitationRecord = await findInvitationById(id);
-const resolvedSnapshot: DemoPreset | undefined = invitationRecord?.snapshot
-	?? DEMO_PRESET_CATALOG.find((p) => p.id === invitationRecord?.baseDemoId);
 
-if (!invitationRecord || !resolvedSnapshot) {
+if (!invitationRecord) {
 	errorMessage = 'Invitación no encontrada.';
 }
 
-const invitation = invitationRecord && resolvedSnapshot
-	? { ...invitationRecord, snapshot: resolvedSnapshot }
+const resolvedTheme = invitationRecord
+	? resolveInvitationTheme(invitationRecord)
+	: null;
+
+const effectivePreviewSlug = invitationRecord
+	? resolvePreviewSlug(invitationRecord)
+	: '';
+
+const invitation = invitationRecord && resolvedTheme
+	? {
+			...invitationRecord,
+			themeId: resolvedTheme,
+			snapshot: {
+				...invitationRecord.snapshot,
+				themeId: resolvedTheme,
+				previewSlug: effectivePreviewSlug,
+			},
+		}
 	: null;
 
 const entries = !errorMessage ? await getCollection('event-demos') : [];
@@ -59,10 +73,9 @@ async function tryBuildContext(
 ): Promise<InvitationPageContext | null> {
 	if (!invitation) return null;
 
-	// Resolve demo content defensively — only look up when previewSlug exists
 	const demoContent: Record<string, unknown> =
-		invitation.snapshot.previewSlug
-			? (demoEntryForSlug(invitation.snapshot.previewSlug)?.data as Record<string, unknown>) ?? {}
+		effectivePreviewSlug
+			? (demoEntryForSlug(effectivePreviewSlug)?.data as Record<string, unknown>) ?? {}
 			: {};
 
 	const result = await buildDraftPreviewPageContext(invitation, content, demoContent, {

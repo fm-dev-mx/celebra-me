@@ -19,7 +19,6 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { getPublicUrl } from '@/lib/intake/storage';
@@ -29,6 +28,11 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
+import {
+	checkPublishGuard,
+	resolveInvitationTheme,
+} from '@/lib/intake/services/invitation-preset-resolver';
+import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -283,8 +287,13 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		throw new ApiError(422, 'bad_request', 'El borrador no tiene contenido para publicar.');
 	}
 
-	const snapshot =
-		invitation.snapshot ?? DEMO_PRESET_CATALOG.find((p) => p.id === invitation.baseDemoId);
+	const guardResult = checkPublishGuard(invitation);
+	if (!guardResult.ok) {
+		throw new ApiError(422, 'config_error', guardResult.errors.join(' '));
+	}
+	const resolvedTheme = resolveInvitationTheme(invitation);
+	const catalogEntry = findDemoPreset(invitation.baseDemoId);
+	const snapshot = catalogEntry ?? invitation.snapshot;
 	if (!snapshot) {
 		throw new ApiError(
 			422,
@@ -325,7 +334,7 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		invitation: {
 			title: invitation.title,
 			eventType: invitation.eventType,
-			snapshot,
+			snapshot: { ...snapshot, themeId: resolvedTheme },
 		},
 		assetSlug,
 		draftContent: effectiveDraftContent,
