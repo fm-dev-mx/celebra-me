@@ -196,8 +196,8 @@ a meaningful contributor to LCP/FCP.
 **Decision gate for CSS optimization**:
 
 - If unused CSS > 60% for all measured themes → CSS splitting is justified
-- If unused CSS < 30% → CSS is already efficient; skip CSS optimization and proceed to Phase 5
-  (fonts) or close the plan
+- If unused CSS < 30% → CSS is already efficient; skip CSS optimization and proceed to Phase 4 (font
+  measurement) or close the plan
 - If unused CSS 30-60% → evaluate cost vs benefit of splitting; may defer to a later cycle
 
 **If gate passes**: Create a sub-plan with the smallest possible CSS split. Do not refactor all 106+
@@ -291,7 +291,7 @@ request and personalized requests (which cannot be cached).
 | Risk                                                 | Likelihood | Mitigation                                                                                                                                           |
 | ---------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cache leakage: guest data served with public headers | Low        | Use `.has()` discriminator; always set `no-store, private` if `invite` param exists in any form; safety invariant #1 is the first check in the route |
-| Vercel ignores `Cache-Control` from SSR functions    | Very low   | Vercel edge respects `Cache-Control` from serverless functions; verified in production by thousands of Astro + Vercel deployments                    |
+| Vercel ignores `Cache-Control` from SSR functions    | Very low   | Validate actual behavior with Vercel Preview response headers, `x-vercel-cache` where available, and production verification after deploy            |
 | CSS split breaks a theme variant                     | Medium     | Visual regression check across all 9 demo themes; start with smallest split possible; easy rollback to single CSS import                             |
 | Dynamic font loading fails in Astro SSR              | Medium     | Test with `pnpm build` before committing; fallback to `<link rel="stylesheet">` approach                                                             |
 | Empty `?invite=` param treated as anonymous          | Low        | `.has()` catches this; only `.get()` would return empty string and be falsy                                                                          |
