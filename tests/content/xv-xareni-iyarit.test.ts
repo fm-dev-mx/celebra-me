@@ -46,7 +46,7 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			const styles = fs.readFileSync(stylePath, 'utf8');
 
 			expect(sectionIndex).toContain("@forward 'xv-xareni-iyarit';");
-			expect(styles).toContain('.event--xv-xareni-iyarit.theme-preset--celestial-blue');
+			expect(styles).toContain('.event--xareni-iyarit.theme-preset--celestial-blue');
 			expect(styles).toContain('--xareni-deep-mauve-rgb: 122 62 87;');
 			expect(styles).toContain('--xareni-ivory-rgb: 255 248 244;');
 			expect(styles).toContain('--color-satin-blue: var(--xareni-rose-gold);');
@@ -88,14 +88,14 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			} as EventContentEntry);
 			const pageContext = buildPageContextFromViewModel({
 				viewModel,
-				slug: 'xv-xareni-iyarit',
+				slug: 'xareni-iyarit',
 				eventType: 'xv',
 			});
 
 			expect(pageContext.wrapper.className.split(' ')).toEqual(
 				expect.arrayContaining([
 					'event-theme-wrapper',
-					'event--xv-xareni-iyarit',
+					'event--xareni-iyarit',
 					'theme-preset--celestial-blue',
 				]),
 			);
