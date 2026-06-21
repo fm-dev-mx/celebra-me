@@ -44,6 +44,7 @@ export const InvitationContentDraftContentSchema = z
 				nickname: optionalText(200),
 				date: optionalText(40),
 				backgroundImage: editableAssetSchema.optional(),
+				backgroundImageDesktop: editableAssetSchema.optional(),
 				backgroundImageMobile: editableAssetSchema.optional(),
 				portrait: editableAssetSchema.optional(),
 			})

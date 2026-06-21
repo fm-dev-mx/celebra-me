@@ -5,6 +5,7 @@
 
 export const EVENT_KEYS = [
 	'hero',
+	'heroDesktop',
 	'portrait',
 
 	'family',

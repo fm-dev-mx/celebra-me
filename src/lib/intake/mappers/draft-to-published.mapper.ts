@@ -398,7 +398,9 @@ function buildHeroFromDraft(
 		date: normalizeDate(str(draftHero.date) || demoStr(ctx, demoDate as string) || ''),
 		backgroundImage: draftHero.backgroundImage ??
 			(ctx.isDemo ? demoBackgroundImage : undefined) ?? { type: 'internal', key: 'hero' },
-		backgroundImageDesktop: ctx.isDemo ? demoBackgroundImageDesktop : undefined,
+		backgroundImageDesktop:
+			draftHero.backgroundImageDesktop ??
+			(ctx.isDemo ? demoBackgroundImageDesktop : undefined),
 		backgroundImageMobile:
 			draftHero.backgroundImageMobile ?? (ctx.isDemo ? demoBackgroundImageMobile : undefined),
 		portrait: draftHero.portrait ?? (ctx.isDemo ? demoPortrait : undefined),

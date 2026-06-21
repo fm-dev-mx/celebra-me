@@ -154,9 +154,15 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 	const refs: AssetRefEntry[] = [];
 
 	const hero = content.hero as Record<string, unknown> | undefined;
-	tryAddAssetRef(refs, 'hero.backgroundImage', hero?.backgroundImage);
-	tryAddAssetRef(refs, 'hero.backgroundImageMobile', hero?.backgroundImageMobile);
-	tryAddAssetRef(refs, 'hero.portrait', hero?.portrait);
+	const HERO_ASSET_FIELDS = [
+		'backgroundImage',
+		'backgroundImageDesktop',
+		'backgroundImageMobile',
+		'portrait',
+	] as const;
+	for (const field of HERO_ASSET_FIELDS) {
+		tryAddAssetRef(refs, `hero.${field}`, hero?.[field]);
+	}
 
 	const family = content.family as
 		| { featuredImage?: { type?: string; key?: string } }

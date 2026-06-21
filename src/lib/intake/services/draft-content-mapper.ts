@@ -344,13 +344,16 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			nickname: str(hero.nickname),
 			date: normalizeDate(hero.date),
 		};
-		if (hero.backgroundImage !== undefined)
-			(result.hero as Record<string, unknown>).backgroundImage = hero.backgroundImage;
-		if (hero.backgroundImageMobile !== undefined)
-			(result.hero as Record<string, unknown>).backgroundImageMobile =
-				hero.backgroundImageMobile;
-		if (hero.portrait !== undefined)
-			(result.hero as Record<string, unknown>).portrait = hero.portrait;
+		const HERO_ASSET_FIELDS = [
+			'backgroundImage',
+			'backgroundImageMobile',
+			'backgroundImageDesktop',
+			'portrait',
+		] as const;
+		for (const field of HERO_ASSET_FIELDS) {
+			if (hero[field] !== undefined)
+				(result.hero as Record<string, unknown>)[field] = hero[field];
+		}
 	}
 
 	const family = nestedContent.family as Record<string, unknown> | undefined;

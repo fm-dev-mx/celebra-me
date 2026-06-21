@@ -1,5 +1,6 @@
 const assetStub = {
 	hero: 'test-file-stub',
+	heroDesktop: 'test-file-stub',
 	portrait: 'test-file-stub',
 	jardin: 'test-file-stub',
 	family: 'test-file-stub',
