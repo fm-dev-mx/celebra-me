@@ -6,10 +6,16 @@ import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
 import { CashIcon } from '@/components/common/icons/ui/Cash';
 import { PayPalIcon } from '@/components/common/icons/social/PayPal';
 
+interface GiftStoreLink {
+	label: string;
+	url: string;
+}
+
 interface GiftStore {
 	type: 'store';
 	title: string;
-	url: string;
+	url?: string;
+	links?: GiftStoreLink[];
 	logo?: string;
 	description?: string;
 }
@@ -114,9 +120,24 @@ const ICON_MAP = {
 								)}
 
 								{gift.type === 'store' && (
-									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
-										{labels.viewRegistry}
-									</a>
+									<div class="gift-card__actions">
+										{gift.links && gift.links.length > 0 ? (
+											gift.links.map((link) => (
+												<a
+													href={link.url}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="gift-card__button"
+												>
+													{link.label}
+												</a>
+											))
+										) : (
+											<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
+												{labels.viewRegistry}
+											</a>
+										)}
+									</div>
 								)}
 
 								{gift.type === 'bank' && (

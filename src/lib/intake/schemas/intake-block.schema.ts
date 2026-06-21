@@ -122,7 +122,7 @@ export const musicBlockSchema = z.object({
 });
 
 export const giftItemSchema = z.discriminatedUnion('type', [
-	storeGiftItemSchema.extend({
+	storeGiftItemSchema.safeExtend({
 		title: z.string().min(1).max(200),
 		description: z.string().max(500).optional(),
 	}),

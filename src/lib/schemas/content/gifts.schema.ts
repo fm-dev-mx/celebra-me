@@ -5,13 +5,32 @@ import { z } from 'zod';
 // giftItemSchema. Intake schemas import and extend these with stricter
 // validation constraints.
 
-export const storeGiftItemSchema = z.object({
-	type: z.literal('store'),
-	title: z.string(),
+const storeGiftLinkSchema = z.object({
+	label: z.string().min(1),
 	url: z.url(),
-	logo: z.string().optional(),
-	description: z.string().optional(),
 });
+
+export const storeGiftItemSchema = z
+	.object({
+		type: z.literal('store'),
+		title: z.string(),
+		url: z.url().optional(),
+		links: z.array(storeGiftLinkSchema).optional(),
+		logo: z.string().optional(),
+		description: z.string().optional(),
+	})
+	.superRefine((value, ctx) => {
+		const hasLegacyUrl = typeof value.url === 'string' && value.url.length > 0;
+		const hasLinks = Array.isArray(value.links) && value.links.length > 0;
+
+		if (!hasLegacyUrl && !hasLinks) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'A store gift item must include either url or links.',
+				path: [],
+			});
+		}
+	});
 
 export const bankGiftItemSchema = z.object({
 	type: z.literal('bank'),
