@@ -72,15 +72,37 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 				);
 			}
 
-			expect(result.data.eventType).toBe('xv');
-			expect(result.data.isDemo).toBe(false);
-			expect(result.data._assetSlug).toBe('xv-xareni-iyarit');
-			expect(result.data.theme.preset).toBe('celestial-blue');
-			expect(Object.hasOwn(result.data, 'music')).toBe(false);
-			expect(result.data.rsvp?.accessMode).toBe('hybrid');
-			expect(result.data.rsvp?.confirmationMode).toBe('api');
-			expect(result.data.location?.ceremony?.image).toBeUndefined();
-			expect(result.data.location?.reception?.image).toBeUndefined();
+			expect(result.data.gifts?.title).toBe('Regalos');
+			expect(result.data.gifts?.items).toHaveLength(2);
+
+			const [registry, cash] = result.data.gifts!.items;
+			expect(registry).toMatchObject({
+				type: 'store',
+				title: 'Mesa de regalos',
+				description: 'Puedes consultar mis listas de regalos en Amazon y Liverpool.',
+			});
+			const storeRegistry = registry as {
+				type: 'store';
+				links: { label: string; url: string }[];
+				title: string;
+				description?: string;
+			};
+			expect(storeRegistry.links).toHaveLength(2);
+			expect(storeRegistry.links).toEqual([
+				{
+					label: 'Amazon',
+					url: 'https://www.amazon.com.mx/registries/gl/guest-view/9ZB19QOMLJ45',
+				},
+				{
+					label: 'Liverpool',
+					url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52015693',
+				},
+			]);
+			expect(cash).toMatchObject({
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'También contaremos con un espacio especial durante la recepción.',
+			});
 
 			const viewModel = adaptEvent({
 				id: 'event-published/xv/xv-xareni-iyarit',
