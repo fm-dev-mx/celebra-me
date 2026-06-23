@@ -52,18 +52,14 @@ const {
 	themeMode = 'dark',
 } = Astro.props;
 
-// Environment guard: only load Vercel tooling in production
-const isProd = import.meta.env.PROD || process.env.VERCEL_ENV === 'production';
+const isProd = import.meta.env.PROD;
 
-// Handle both string URLs and Astro ImageMetadata objects
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 const ogImage = new URL(resolvedImageSrc, isProd ? Astro.url : 'https://celebra-me.com/');
 
-// Canonical URL (avoid leaking dev localhost into metadata)
 const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
 
-// Google Analytics ID
-const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || process.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 <!doctype html>
 <html lang="es">
