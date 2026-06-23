@@ -18,6 +18,7 @@ phase: 1–3 completed, 3b deferred, 4–5 roadmap
 | **Phase 3a** | CSS waste measurement                          | ✅ **Done**                                                             |
 | **Phase 3b** | Per-preset CSS split                           | ✅ **Implemented** (accepted slice)                                     |
 | **Phase 3c** | Per-theme section split                        | ✅ **Full section split implemented on branch** — base CSS 545→184.6 KB |
+| **Phase 3d** | Consolidated per-preset section bundles        | ✅ **Implemented locally** — request count 5–13→4 app stylesheets       |
 | **Phase 4**  | Font measurement / optimization                | ⏳ **Deferred** — not a primary bottleneck                              |
 | **Phase 5**  | Supabase query parallelization                 | ⏳ **Deferred** — phase 1 caching reduces impact                        |
 
@@ -96,6 +97,28 @@ All section `_index.scss` files forward only `_base.scss`; concrete variants are
 styles. The base chunk still contains some component-level and event-specific `[data-variant]`
 selectors, which were outside this phase and are not `themes/sections` variant barrel imports.
 
+### Section Bundle Consolidation
+
+The production diagnosis after the full split found a real architecture risk: bytes improved, but
+public routes loaded 5–13 render-blocking CSS files. The current branch consolidates section
+entrypoints into `src/styles/invitation-sections-by-preset/<preset>.scss` and routes load one active
+section bundle through `resolveSectionBundleCssUrl(themePreset)`.
+
+Local build output:
+
+| Metric                  | Before consolidation | After consolidation |
+| ----------------------- | -------------------- | ------------------- |
+| Base invitation CSS     | 184.6 KB             | 184.6 KB            |
+| Total CSS per route     | 245–409 KB           | ~244.6–367.0 KB     |
+| CSS request count       | 5–13                 | 4 app stylesheets   |
+| Section CSS link count  | 3–11                 | 1                   |
+| Production field caveat | Yes                  | Yes                 |
+
+Preview validation was attempted at
+`https://celebra-rhewiuu99-francisco-mendoza-s-projects.vercel.app`, but Vercel kept the deployment
+status at `Building` and unauthenticated fetches returned a protected shell. Production was not
+deployed.
+
 ---
 
 ## Explicit Non-Goals (this pass)
@@ -130,7 +153,8 @@ selectors, which were outside this phase and are not `themes/sections` variant b
 2. **Font measurement (Phase 4)** — not a primary bottleneck (69 KB vs 704 KB CSS baseline)
 3. **Supabase query optimization (Phase 5)** — cache headers already reduce anonymous repeat-request
    impact
-4. **Per-preset section chunk splitting** — follow-up after section architecture refactor
+4. **Preview validation retry** — rerun route, CSS, mobile lab, and cache checks once Vercel serves
+   the actual Preview app instead of the protected shell
 
 ---
 

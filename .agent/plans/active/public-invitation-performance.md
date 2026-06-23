@@ -253,6 +253,31 @@ are not `themes/sections` variant barrel imports and remain outside this phase.
 | Layout CSS              | 52 KB            | 52 KB                  | 52 KB                                        |
 | Total per route         | 756 KB           | ~611 KB (−19%)         | ~245–409 KB across target route presets      |
 
+### Phase 3 Follow-up — Section Bundle Consolidation
+
+The full section split reduced bytes but increased the render-blocking stylesheet count. Production
+routes after commit `d0811f9` returned valid non-empty `200` responses, but loaded 5–13 CSS files
+per route, all render-blocking. The likely regression cause is CSS request count, with Speed
+Insights field data still caveated because the selected window may include pre-deploy samples.
+
+The accepted follow-up architecture is:
+
+```txt
+Layout CSS
++ shared invitation base CSS
++ active preset CSS
++ active preset section bundle CSS
+```
+
+Local build output after consolidation keeps the base invitation CSS at **184.6 KB**, reduces
+section loading to **one bundle per preset**, and produces **~244.6–367.0 KB** total CSS per public
+invitation route. This remains materially below the original **~602–622 KB** accepted state while
+reducing app stylesheet requests to four per route.
+
+Preview validation caveat: a non-production Preview deployment was attempted, but Vercel reported it
+as `Building` for the duration of validation and unauthenticated route checks returned a protected
+Vercel shell rather than the app. Production was not deployed.
+
 ---
 
 ### Phase 4 — Font Impact Measurement (deferred)

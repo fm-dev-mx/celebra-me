@@ -152,7 +152,7 @@ Per public invitation route:
   Layout.*.css           → shared (52 KB)
   invitation.*.css       → shared (base only: structural + section base styles)
   invitation-{preset}.css → per-preset (active theme preset)
-  invitation-{preset}-{section}.css → per-theme-per-section (active section variants)
+  invitation-sections-{preset}.css → per-preset section bundle (active section variants)
 ```
 
 ### Rules
@@ -163,8 +163,8 @@ Per public invitation route:
    overrides or animations.
 3. **Base section CSS** remains in the shared `invitation.*.css` chunk — structural layout, default
    values.
-4. **Active theme section CSS** is loaded as a per-theme chunk alongside the existing per-preset
-   chunk.
+4. **Active theme section CSS** is loaded as one per-preset section bundle alongside the existing
+   per-preset theme chunk.
 5. **Unknown theme fallback**: renders base styles only — safe, no missing styles.
 6. **Preview route** uses the same resolution mechanism as `[slug].astro`.
 7. **Glob `.default` guardrail**: every `import.meta.glob(...?url)` must be typed as
@@ -176,7 +176,7 @@ Per public invitation route:
 1. Layout CSS                    (always, in Layout.astro)
 2. Base invitation CSS           (always, static import in [slug].astro)
 3. Active preset CSS             (dynamic link, via resolvePresetCssUrl)
-4. Active section CSS per chunk  (dynamic link, via analogous section resolver)
+4. Active section bundle CSS     (dynamic link, via resolveSectionBundleCssUrl)
 ```
 
 ---
@@ -815,7 +815,7 @@ is **hero** (has `:where()` base, 8 of 9 variants, low structural risk).
 | Base CSS after hero     | 437 KB                                                                                                                                          |
 | Base CSS final          | **184.6 KB**                                                                                                                                    |
 | Total CSS final         | ~245–409 KB across the target route presets in local build                                                                                      |
-| Route integration       | Public route and dashboard preview both use `resolveInvitationSectionCssUrls()`                                                                 |
+| Route integration       | Public route and dashboard preview now use `resolveSectionBundleCssUrl()` after the consolidation follow-up                                     |
 | Cache behavior          | Unchanged; anonymous public cacheable, invite/private no-store                                                                                  |
 
 ### Architecture Decisions
@@ -852,3 +852,67 @@ is **hero** (has `:where()` base, 8 of 9 variants, low structural risk).
   refactored in this loop.
 - Mobile Speed Insights field data will lag any deployment. A fresh observation window is still
   required before attributing field-score changes to this split.
+
+---
+
+## 18. Section Bundle Consolidation Result (2026-06-23)
+
+### Summary
+
+| Field                    | Value                                                                      |
+| ------------------------ | -------------------------------------------------------------------------- |
+| Chosen path              | Path B — consolidate section chunks by preset                              |
+| Production diagnosis     | Valid rendering; lower bytes; high render-blocking CSS request count       |
+| Likely regression cause  | CSS request count, with Speed Insights field-data lag caveat               |
+| Final section load shape | One `src/styles/invitation-sections-by-preset/<preset>.scss` per route     |
+| Route integration        | Public route and dashboard preview both use `resolveSectionBundleCssUrl()` |
+| Base CSS                 | 184.6 KB                                                                   |
+| Total CSS after          | ~244.6–367.0 KB in local build                                             |
+| CSS request count after  | 4 app stylesheets per route                                                |
+| Production deploy        | Not performed                                                              |
+
+### Architecture Decisions
+
+1. **Keep section variant files in place.** Existing
+   `src/styles/invitation-sections/<section>/<entrypoint>.scss` files remain as the source
+   entrypoints for section styling.
+2. **Add bundle entrypoints by preset.** New `src/styles/invitation-sections-by-preset/*.scss` files
+   compose the active section entrypoints for each preset.
+3. **Resolve one bundle URL.** `resolveSectionBundleCssUrl(themePreset)` uses
+   `import.meta.glob(...?url)` with `Record<string, { default: string }>` and stores only
+   `mod.default`.
+4. **Preserve route parity.** Public invitation routes and dashboard preview routes construct
+   identical `headLinks`: active preset CSS plus active section bundle CSS.
+5. **Preserve cache behavior.** Anonymous and invite/private cache logic was not changed.
+
+### Validation
+
+| Check                      | Result                                                                 |
+| -------------------------- | ---------------------------------------------------------------------- |
+| Focused resolver test      | PASS — bundle map uses `.default`, resolves one string URL per preset  |
+| `pnpm build`               | PASS — Astro check/build completed                                     |
+| `pnpm test`                | PASS — 209 suites passed, 1 skipped; 2741 tests passed, 2 skipped      |
+| Local CSS artifact audit   | PASS — section bundle files emitted; route CSS target is 4 stylesheets |
+| Preview deployment attempt | INCONCLUSIVE — Vercel stayed `Building` and returned a protected shell |
+
+### CSS Output
+
+| Preset                | Preset CSS | Section bundle CSS | Estimated total route CSS |
+| --------------------- | ---------- | ------------------ | ------------------------- |
+| `jewelry-box-wedding` | 6.3 KB     | 2.9 KB             | ~244.6 KB                 |
+| `jewelry-box`         | 9.3 KB     | 23.3 KB            | ~268.0 KB                 |
+| `luxury-hacienda`     | 17.0 KB    | 41.6 KB            | ~294.0 KB                 |
+| `editorial`           | 12.7 KB    | 45.4 KB            | ~293.5 KB                 |
+| `premiere-floral`     | 15.2 KB    | 41.5 KB            | ~292.1 KB                 |
+| `celestial-blue`      | 26.1 KB    | 69.7 KB            | ~331.2 KB                 |
+| `enchanted-rose`      | 19.1 KB    | 112.5 KB           | ~367.0 KB                 |
+| `sacred-keepsake`     | 17.4 KB    | 42.3 KB            | ~295.1 KB                 |
+| `angelic-presence`    | 19.2 KB    | 45.8 KB            | ~300.4 KB                 |
+
+### Caveats
+
+- Preview validation must be rerun before production approval because the attempted Preview did not
+  reach a measurable READY app state.
+- Mobile Speed Insights field data remains caveated; use a fresh 3–7 day window after any future
+  production deploy.
+- Production was not deployed in this loop.

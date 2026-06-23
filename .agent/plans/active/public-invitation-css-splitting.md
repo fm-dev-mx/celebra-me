@@ -19,9 +19,10 @@ Imported statically via `import '@/styles/invitation.scss'`.
 **Per-preset chunks**: theme preset CSS. Loaded dynamically via `import.meta.glob('?url')` with a
 `<link>` tag, based on `viewModel.theme.preset`.
 
-**Per-section chunks**: migrated theme-section variants under
-`src/styles/invitation-sections/<section>/`. Loaded dynamically by
-`resolveInvitationSectionCssUrls(viewModel.theme.preset)`.
+**Per-preset section bundle**: migrated theme-section variants remain under
+`src/styles/invitation-sections/<section>/`, but routes load one consolidated bundle from
+`src/styles/invitation-sections-by-preset/<preset>.scss` via
+`resolveSectionBundleCssUrl(viewModel.theme.preset)`.
 
 ## Files to change
 
@@ -161,6 +162,36 @@ Base chunk caveat: `invitation.*.css` no longer receives migrated theme-section 
 `themes/sections/_index.scss`, but it still contains some `[data-variant]` selectors from
 component-level base styles and event-specific overrides. Those were outside this loop's allowed
 scope and should not be described as migrated theme-section chunks.
+
+## Section Bundle Consolidation Result (2026-06-23)
+
+Production diagnosis after commit `d0811f9` found valid public rendering, lower total CSS bytes, and
+a high render-blocking stylesheet count: 5–13 CSS files per route, all render-blocking. Mobile lab
+TTFB was low, so the reported Speed Insights mobile TTFB remains field-window/route-mix caveated,
+but the CSS waterfall risk was real enough to consolidate section loading.
+
+Final route architecture:
+
+```txt
+Layout CSS
++ shared invitation base CSS
++ active preset CSS
++ one active section bundle CSS
+```
+
+Local build result after consolidation:
+
+| Metric                              | Before full consolidation | After consolidation |
+| ----------------------------------- | ------------------------- | ------------------- |
+| Base invitation CSS                 | 184.6 KB                  | 184.6 KB            |
+| Section CSS request count per route | 3–11 section links        | 1 section bundle    |
+| Total CSS request count per route   | 5–13                      | 4 app stylesheets   |
+| Total CSS per route                 | 245–409 KB                | ~244.6–367.0 KB     |
+
+Preview validation caveat: a Preview deploy was attempted at
+`https://celebra-rhewiuu99-francisco-mendoza-s-projects.vercel.app`, but Vercel continued reporting
+the deployment as `Building` and unauthenticated fetches returned a protected shell rather than the
+app. Production was not deployed.
 
 ### Per-preset files emitted
 
