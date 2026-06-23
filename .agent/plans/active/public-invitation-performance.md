@@ -1,8 +1,8 @@
 ---
 title: Public Invitation Route Performance
-status: draft
+status: final — accepted slices only, see final-report
 created: 2026-06-20
-updated: 2026-06-20
+updated: 2026-06-21
 related_skills:
   - supabase
 related_docs:
@@ -20,14 +20,26 @@ related_docs:
   - .vercel/output/static/_astro/invitation.Dn6LPABC.css
   - .vercel/output/static/_astro/Layout.DjxAMGn1.css
 supersedes: []
-superseded_by: []
+superseded_by:
+  - .agent/plans/active/public-invitation-performance-final-report.md
 ---
 
 # Public Invitation Route Performance
 
 ## Status
 
-Draft — not yet approved.
+**Final — accepted slices only.** See
+`.agent/plans/active/public-invitation-performance-final-report.md` for the full closure report.
+
+| Phase                          | Status                                    |
+| ------------------------------ | ----------------------------------------- |
+| Phase 1 — Cache Headers        | ✅ Implemented, Preview-validated         |
+| Phase 2 — LCP Measurement      | ✅ Completed                              |
+| Phase 3 — CSS Measurement      | ✅ Completed                              |
+| Phase 3 — Per-Preset CSS Split | ✅ Implemented (accepted slice)           |
+| Phase 3 — Section Splitting    | 🛑 Deferred (architecture too interwoven) |
+| Phase 4 — Font Optimization    | ⏳ Deferred (not a primary bottleneck)    |
+| Phase 5 — Supabase Query Opt.  | ⏳ Roadmap/deferred                       |
 
 ## Scope
 
@@ -210,12 +222,41 @@ SCSS files at once. Options, in priority order:
 **Visual regression requirement**: Every demo theme must render identically before and after any CSS
 change. Use manual review across all 9 demo themes.
 
+### Phase 3 — Result
+
+**Per-preset CSS split**: Implemented and accepted as the Phase 3 implementation slice.
+
+- 9 per-preset entrypoints created at `src/styles/invitation-presets/*.scss`, each importing exactly
+  one theme preset.
+- Base `invitation.scss` retains shared structural CSS plus all section variants (section splitting
+  deferred).
+- `Layout.astro` gained `headLinks` prop for `<head>` CSS placement.
+- `[slug].astro` and `preview.astro` resolve the active preset URL via `import.meta.glob` with
+  `?url` and render a `<link>` in `<head>`.
+
+**Section splitting**: **Deferred.** Sections are organized by section type with per-theme variant
+files. 7 of 15 sections lack `_base.scss` (header, gifts, family, location, music-player, quote,
+thank-you are 100% theme-specific). Theme coverage is inconsistent — moving all variant files out of
+the shared base would leave sections unstyled for themes without a matching variant. Safe splitting
+requires a dedicated section architecture refactor before per-theme section chunks can ship.
+
+**CSS size impact**:
+
+| Metric                  | Baseline         | Per-preset split       |
+| ----------------------- | ---------------- | ---------------------- |
+| Base invitation CSS     | 704 KB           | 545 KB (sections kept) |
+| Active preset per route | embedded in base | 6–26 KB                |
+| Layout CSS              | 52 KB            | 52 KB                  |
+| Total per route         | 756 KB           | ~611 KB (−19%)         |
+
 ---
 
-### Phase 4 — Font Impact Measurement
+### Phase 4 — Font Impact Measurement (deferred)
 
-**Evidence required before starting**: Phase 1 complete. Only start if Phase 2 or Speed Insights
-data shows font loading as a meaningful contributor.
+**Evidence for deferral**: Phase 2 LCP measurement showed 2 font families totaling ~69 KB (39 KB
+pinyon-script + 30 KB instrument-sans). This is not a primary bottleneck — CSS waste (704 KB
+baseline) dominates. Font optimization should be revisited only after section splitting is
+addressed.
 
 **Scope**: Measurement only. No production code changes.
 
@@ -252,11 +293,13 @@ font CSS per theme.
 
 ---
 
-### Phase 5 (Roadmap) — Supabase Query Optimization
+### Phase 5 (Roadmap) — Supabase Query Optimization (deferred)
 
-**Evidence required before starting**: All previous phases complete AND Phase 1 caching is proven in
-production AND TTFB is still a concern for anonymous pages (inspecting `x-vercel-cache: HIT` should
-make this irrelevant for returning visitors).
+**Evidence for deferral**: Phase 1 cache headers cache anonymous responses at the Vercel edge for
+60s (stale-while-revalidate 300s). This means most anonymous repeat requests skip the database
+entirely. Query optimization mainly affects uncached first visits and personalized requests (which
+cannot be cached). Deferred until Phase 1 caching is proven in production and TTFB for uncached
+requests is still a concern.
 
 **Deferred scope**:
 
