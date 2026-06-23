@@ -17,7 +17,7 @@ import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveInvitationSectionCssUrls } from '@/lib/invitation/section-css-resolver';
+import { resolveSectionBundleCssUrl } from '@/lib/invitation/section-css-resolver';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 
 const slug = Astro.params.slug!;
@@ -115,13 +115,15 @@ const activePresetUrl = viewModel?.theme?.preset
 	? resolvePresetCssUrl(viewModel.theme.preset)
 	: undefined;
 
-const activeSectionUrls = viewModel?.theme?.preset
-	? resolveInvitationSectionCssUrls(viewModel.theme.preset)
-	: [];
+const activeSectionBundleUrl = viewModel?.theme?.preset
+	? resolveSectionBundleCssUrl(viewModel.theme.preset)
+	: undefined;
 
 const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
-	...activeSectionUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
+	...(activeSectionBundleUrl
+		? [{ rel: 'stylesheet' as const, href: activeSectionBundleUrl }]
+		: []),
 ];
 
 ---

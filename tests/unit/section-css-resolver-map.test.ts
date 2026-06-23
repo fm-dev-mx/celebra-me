@@ -1,5 +1,7 @@
 import {
+	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
+	resolveSectionBundleCssUrl,
 	resolveSectionCssUrl,
 	resolveSectionCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
@@ -80,5 +82,35 @@ describe('section-css-resolver-map', () => {
 			'/_astro/gallery-editorial.css',
 			'/_astro/hero-editorial.css',
 		]);
+	});
+
+	it('builds preset section bundle maps from glob module defaults', () => {
+		const bundleModules = {
+			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
+				default: '/_astro/jewelry-box-bundle.css',
+			},
+			'/src/styles/invitation-sections-by-preset/celestial-blue.scss': {
+				default: '/_astro/celestial-blue-bundle.css',
+			},
+		};
+
+		expect(buildSectionBundleUrlMap(bundleModules)).toEqual({
+			'jewelry-box': '/_astro/jewelry-box-bundle.css',
+			'celestial-blue': '/_astro/celestial-blue-bundle.css',
+		});
+	});
+
+	it('resolves one section bundle URL per preset without returning module objects', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
+				default: '/_astro/jewelry-box-bundle.css',
+			},
+		});
+
+		expect(resolveSectionBundleCssUrl(bundleUrlMap, 'jewelry-box')).toBe(
+			'/_astro/jewelry-box-bundle.css',
+		);
+		expect(resolveSectionBundleCssUrl(bundleUrlMap, 'missing-preset')).toBeUndefined();
+		expect(typeof resolveSectionBundleCssUrl(bundleUrlMap, 'jewelry-box')).toBe('string');
 	});
 });

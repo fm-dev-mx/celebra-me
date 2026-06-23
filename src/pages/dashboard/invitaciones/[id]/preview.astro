@@ -11,7 +11,7 @@ import { computeEffectiveContent } from '@/lib/intake/services/merge-content.ser
 import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveInvitationSectionCssUrls } from '@/lib/invitation/section-css-resolver';
+import { resolveSectionBundleCssUrl } from '@/lib/invitation/section-css-resolver';
 
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import Layout from '@/layouts/Layout.astro';
@@ -140,13 +140,15 @@ const activePresetUrl = pageCtx?.viewModel?.theme?.preset
 	? resolvePresetCssUrl(pageCtx.viewModel.theme.preset)
 	: undefined;
 
-const activeSectionUrls = pageCtx?.viewModel?.theme?.preset
-	? resolveInvitationSectionCssUrls(pageCtx.viewModel.theme.preset)
-	: [];
+const activeSectionBundleUrl = pageCtx?.viewModel?.theme?.preset
+	? resolveSectionBundleCssUrl(pageCtx.viewModel.theme.preset)
+	: undefined;
 
 const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
-	...activeSectionUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
+	...(activeSectionBundleUrl
+		? [{ rel: 'stylesheet' as const, href: activeSectionBundleUrl }]
+		: []),
 ];
 ---
 

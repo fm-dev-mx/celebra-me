@@ -1,6 +1,7 @@
 type CssModule = { default: string };
 
 export type SectionUrlMap = Record<string, Record<string, string>>;
+export type SectionBundleUrlMap = Record<string, string>;
 
 export type SectionCssConfig = {
 	section: string;
@@ -22,6 +23,27 @@ export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionU
 	}
 
 	return sectionUrlMap;
+}
+
+export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): SectionBundleUrlMap {
+	const sectionBundleUrlMap: SectionBundleUrlMap = {};
+
+	for (const [path, mod] of Object.entries(modules)) {
+		const fileName = path.split('/').at(-1);
+		if (!fileName) continue;
+
+		const preset = fileName.replace(/\.scss$/, '');
+		sectionBundleUrlMap[preset] = mod.default;
+	}
+
+	return sectionBundleUrlMap;
+}
+
+export function resolveSectionBundleCssUrl(
+	sectionBundleUrlMap: SectionBundleUrlMap,
+	preset: string,
+): string | undefined {
+	return sectionBundleUrlMap[preset];
 }
 
 export function resolveSectionCssUrl(
