@@ -74,6 +74,19 @@ superseded_by:
 
 Plans should be written as executable loops, not static documents.
 
+### Current Public Invitation Performance State
+
+As of 2026-06-23, the active public invitation performance work is tracked in
+`.agent/plans/active/public-invitation-performance.md` and
+`.agent/plans/active/public-invitation-section-architecture.md`.
+
+- Production is not assumed to match the current branch. Validate production headers and CSS chunks
+  before drawing conclusions from branch-local plans.
+- Production currently has the per-preset CSS split; full section theme splitting is branch/local
+  until preview or production deployment is explicitly approved.
+- Any future section split must update the active plan in the same loop and record base CSS size,
+  emitted section chunks, preview-vs-production state, validation, and remaining risks.
+
 ### Loop Model
 
 ```text

@@ -2,7 +2,7 @@
 title: Public Invitation Route Performance
 status: final — accepted slices only, see final-report
 created: 2026-06-20
-updated: 2026-06-21
+updated: 2026-06-23
 related_skills:
   - supabase
 related_docs:
@@ -31,15 +31,15 @@ superseded_by:
 **Final — accepted slices only.** See
 `.agent/plans/active/public-invitation-performance-final-report.md` for the full closure report.
 
-| Phase                          | Status                                                         |
-| ------------------------------ | -------------------------------------------------------------- |
-| Phase 1 — Cache Headers        | ✅ Implemented, Preview-validated                              |
-| Phase 2 — LCP Measurement      | ✅ Completed                                                   |
-| Phase 3 — CSS Measurement      | ✅ Completed                                                   |
-| Phase 3 — Per-Preset CSS Split | ✅ Implemented (accepted slice)                                |
-| Phase 3 — Section Splitting    | ✅ Gallery split implemented (proof-of-pattern); hero deferred |
-| Phase 4 — Font Optimization    | ⏳ Deferred (not a primary bottleneck)                         |
-| Phase 5 — Supabase Query Opt.  | ⏳ Roadmap/deferred                                            |
+| Phase                          | Status                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| Phase 1 — Cache Headers        | ✅ Implemented, Preview-validated                                                 |
+| Phase 2 — LCP Measurement      | ✅ Completed                                                                      |
+| Phase 3 — CSS Measurement      | ✅ Completed                                                                      |
+| Phase 3 — Per-Preset CSS Split | ✅ Implemented (accepted slice)                                                   |
+| Phase 3 — Section Splitting    | ✅ Full section theme split implemented on branch; production has per-preset only |
+| Phase 4 — Font Optimization    | ⏳ Deferred (not a primary bottleneck)                                            |
+| Phase 5 — Supabase Query Opt.  | ⏳ Roadmap/deferred                                                               |
 
 ## Scope
 
@@ -234,20 +234,24 @@ change. Use manual review across all 9 demo themes.
 - `[slug].astro` and `preview.astro` resolve the active preset URL via `import.meta.glob` with
   `?url` and render a `<link>` in `<head>`.
 
-**Section splitting**: **Deferred.** Sections are organized by section type with per-theme variant
-files. 7 of 15 sections lack `_base.scss` (header, gifts, family, location, music-player, quote,
-thank-you are 100% theme-specific). Theme coverage is inconsistent — moving all variant files out of
-the shared base would leave sections unstyled for themes without a matching variant. Safe splitting
-requires a dedicated section architecture refactor before per-theme section chunks can ship.
+**Section splitting**: **Fully implemented on branch for theme-section variants.** Gallery and hero
+were split first, then the remaining sections were migrated with minimal safe base fallbacks where
+needed. Production currently has per-preset CSS only (`invitation.CLuf74H_.css` ~558 KB decoded on
+2026-06-23); all section chunks are branch/local until preview or production deploy.
+
+Missing preset variants intentionally fall back to section/component base styles. Component-level
+base files and event-specific override files still contain some `[data-variant]` selectors; those
+are not `themes/sections` variant barrel imports and remain outside this phase.
 
 **CSS size impact**:
 
-| Metric                  | Baseline         | Per-preset split       |
-| ----------------------- | ---------------- | ---------------------- |
-| Base invitation CSS     | 704 KB           | 545 KB (sections kept) |
-| Active preset per route | embedded in base | 6–26 KB                |
-| Layout CSS              | 52 KB            | 52 KB                  |
-| Total per route         | 756 KB           | ~611 KB (−19%)         |
+| Metric                  | Baseline         | Per-preset split       | Gallery + hero branch                        |
+| ----------------------- | ---------------- | ---------------------- | -------------------------------------------- |
+| Base invitation CSS     | 704 KB           | 545 KB (sections kept) | 184.6 KB                                     |
+| Active preset per route | embedded in base | 6–26 KB                | 6–26 KB                                      |
+| Section chunks          | embedded in base | embedded in base       | 75 emitted section chunks, ~0.7–28.8 KB each |
+| Layout CSS              | 52 KB            | 52 KB                  | 52 KB                                        |
+| Total per route         | 756 KB           | ~611 KB (−19%)         | ~245–409 KB across target route presets      |
 
 ---
 

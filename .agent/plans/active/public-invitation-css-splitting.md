@@ -1,6 +1,6 @@
 ---
 title: Public Invitation CSS Splitting — Accepted Slice
-status: accepted
+status: accepted, updated for full section split branch
 created: 2026-06-21
 branch: perf/public-invitation-css-splitting
 supersedes: []
@@ -16,8 +16,12 @@ Split `invitation.*.css` (704 KB) into a shared base chunk + per-preset theme ch
 **Shared base** (`invitation.scss`): structural layout, envelope/reveal, component base styles.
 Imported statically via `import '@/styles/invitation.scss'`.
 
-**Per-preset chunks**: theme preset CSS + section variant CSS. Loaded dynamically via
-`import.meta.glob('?url')` with a `<link>` tag, based on `viewModel.theme.preset`.
+**Per-preset chunks**: theme preset CSS. Loaded dynamically via `import.meta.glob('?url')` with a
+`<link>` tag, based on `viewModel.theme.preset`.
+
+**Per-section chunks**: migrated theme-section variants under
+`src/styles/invitation-sections/<section>/`. Loaded dynamically by
+`resolveInvitationSectionCssUrls(viewModel.theme.preset)`.
 
 ## Files to change
 
@@ -32,7 +36,7 @@ Keep:
 - `@use 'layout/event-wrapper';`
 - `@use 'invitation/envelope-reveal';`
 - `@use 'invitation/reveal-card';`
-- `@use 'themes/sections';` (kept — section splitting deferred)
+- `@use 'themes/sections';` (kept for shared section base styles and unsplit sections)
 
 Component styles (`_hero.scss`, `_gallery.scss`, etc.) are already imported by their respective
 `.astro` components — they stay in the page bundle automatically. No change needed.
@@ -102,6 +106,62 @@ And pass it as `headLinks` to `Layout.astro`.
 | Layout `Layout.*.css`   | 52 KB                           | 52 KB                        | unchanged                   |
 | **Total CSS per route** | **756 KB**                      | **~602–622 KB**              | **−19%**                    |
 
+## Section Split Result (2026-06-23)
+
+All named section theme variant files have been moved out of the shared `themes/sections` barrel.
+Each section `_index.scss` now forwards only `_base.scss`, and per-section/per-entrypoint chunks are
+loaded from `src/styles/invitation-sections/**`.
+
+Migrated sections:
+
+```txt
+gallery
+hero
+rsvp
+countdown
+footer
+itinerary
+reveal
+thank-you
+quote
+family
+gifts
+header
+location
+music-player
+personalized-access
+```
+
+No sections are blocked in the current branch. Sections with previously missing bases use a minimal
+theme-neutral `_base.scss` and fall back to component base styles when a preset has no variant
+entrypoint.
+
+Current local build output:
+
+| Metric                                     | Size / result |
+| ------------------------------------------ | ------------- |
+| Base invitation CSS before gallery         | 545 KB        |
+| Base invitation CSS after gallery          | 483 KB        |
+| Base invitation CSS after hero             | 437 KB        |
+| Base invitation CSS after remaining split  | **184.6 KB**  |
+| Layout CSS                                 | 50.8 KB       |
+| Total CSS per validated route, local build | ~245–409 KB   |
+
+Validation:
+
+| Check                         | Result                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| `pnpm build`                  | PASS                                                                    |
+| `pnpm test`                   | PASS                                                                    |
+| `pnpm agent:git-safety:check` | PASS                                                                    |
+| Route QA, 9 target routes     | PASS — 200, nonempty body, no console errors, active section CSS loaded |
+| Cache privacy                 | PASS — anonymous cacheable, `?invite=debug` private/no-store            |
+
+Base chunk caveat: `invitation.*.css` no longer receives migrated theme-section variant files from
+`themes/sections/_index.scss`, but it still contains some `[data-variant]` selectors from
+component-level base styles and event-specific overrides. Those were outside this loop's allowed
+scope and should not be described as migrated theme-section chunks.
+
 ### Per-preset files emitted
 
 | Preset                | Size    | Route                                                                    |
@@ -118,10 +178,10 @@ And pass it as `headLinks` to `Layout.astro`.
 
 ### Known deferred work
 
-| Item                      | Reason                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Section splitting**     | **Gallery POC implemented.** 7 of 15 sections have no `_base.scss`; gallery was chosen as the proof-of-pattern because it has a substantive `:where()` base. Base CSS reduced from ~545 KB to ~483 KB. See `.agent/plans/active/public-invitation-section-architecture.md`. Remaining sections still require dedicated architecture work before splitting. |
-| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                                                                                    |
+| Item                      | Reason                                                                                                                                                                                                                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Section splitting**     | **All listed section theme variants implemented on branch.** Base CSS reduced from ~545 KB before gallery to **184.6 KB** after full section split. Production/preview deployment still requires explicit approval. See `.agent/plans/active/public-invitation-section-architecture.md`. |
+| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                  |
 
 ## Risk mitigation
 

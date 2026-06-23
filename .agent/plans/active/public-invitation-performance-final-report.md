@@ -1,6 +1,6 @@
 ---
 title: Public Invitation Performance — Final Closure Report
-status: accepted, pending commit and production deploy
+status: accepted, branch updated with full section split
 created: 2026-06-21
 branch: perf/public-invitation-css-splitting
 supersedes: .agent/plans/active/public-invitation-performance.md (accepted slices only)
@@ -11,15 +11,15 @@ phase: 1–3 completed, 3b deferred, 4–5 roadmap
 
 ## Phase Status Table
 
-| Phase        | Description                                    | Status                                               |
-| ------------ | ---------------------------------------------- | ---------------------------------------------------- |
-| **Phase 1**  | Cache-Control headers on `/[eventType]/[slug]` | ✅ **Done** — Preview-validated                      |
-| **Phase 2**  | LCP measurement across demo routes             | ✅ **Done**                                          |
-| **Phase 3a** | CSS waste measurement                          | ✅ **Done**                                          |
-| **Phase 3b** | Per-preset CSS split                           | ✅ **Implemented** (accepted slice)                  |
-| **Phase 3c** | Per-theme section split                        | ✅ **Gallery POC implemented** — base CSS 545→483 KB |
-| **Phase 4**  | Font measurement / optimization                | ⏳ **Deferred** — not a primary bottleneck           |
-| **Phase 5**  | Supabase query parallelization                 | ⏳ **Deferred** — phase 1 caching reduces impact     |
+| Phase        | Description                                    | Status                                                                  |
+| ------------ | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| **Phase 1**  | Cache-Control headers on `/[eventType]/[slug]` | ✅ **Done** — Preview-validated                                         |
+| **Phase 2**  | LCP measurement across demo routes             | ✅ **Done**                                                             |
+| **Phase 3a** | CSS waste measurement                          | ✅ **Done**                                                             |
+| **Phase 3b** | Per-preset CSS split                           | ✅ **Implemented** (accepted slice)                                     |
+| **Phase 3c** | Per-theme section split                        | ✅ **Full section split implemented on branch** — base CSS 545→184.6 KB |
+| **Phase 4**  | Font measurement / optimization                | ⏳ **Deferred** — not a primary bottleneck                              |
+| **Phase 5**  | Supabase query parallelization                 | ⏳ **Deferred** — phase 1 caching reduces impact                        |
 
 ---
 
@@ -84,19 +84,24 @@ per-preset sizes.
 **Summary**: Base invitation CSS reduced from 704 KB to 545 KB (−23%). Active preset loaded as
 separate 6–26 KB chunk per route. Total CSS per route ~611 KB (−19%).
 
-### Remaining Section CSS
+### Section CSS
 
-The 545 KB base chunk still includes all section variants from `themes/sections/_index.scss`. 7 of
-15 sections lack `_base.scss` (header, gifts, family, location, music-player, quote, thank-you are
-100% theme-specific), making them unsafe to split without a dedicated section architecture refactor.
-See the CSS splitting plan for details.
+Production on 2026-06-23 still serves the per-preset-only state: anonymous public routes return
+non-empty `200` responses, invite requests return `no-store, private`, and `invitation.CLuf74H_.css`
+is ~558 KB decoded. The current branch additionally splits all listed theme-section variants,
+reducing local build base CSS to **184.6 KB**. These branch changes are not deployed.
+
+All section `_index.scss` files forward only `_base.scss`; concrete variants are loaded from
+`src/styles/invitation-sections/<section>/`. Missing preset variants fall back to base/component
+styles. The base chunk still contains some component-level and event-specific `[data-variant]`
+selectors, which were outside this phase and are not `themes/sections` variant barrel imports.
 
 ---
 
 ## Explicit Non-Goals (this pass)
 
 - No production deploy
-- No commit
+- Local commits allowed after final validation
 - No section architecture refactor
 - No font implementation
 - No Supabase query changes
@@ -108,20 +113,20 @@ See the CSS splitting plan for details.
 
 ## Risks
 
-| Risk                              | Likelihood | Impact                    | Mitigation                                        |
-| --------------------------------- | ---------- | ------------------------- | ------------------------------------------------- |
-| Remaining 545 KB base section CSS | High       | Performance ceiling       | Deferred — requires section architecture refactor |
-| Visual regression after split     | Low        | Broken themes             | Manual review across 7 demo routes                |
-| Unknown preset not in map         | Low        | Fallback to `jewelry-box` | Implemented fallback + type-safe                  |
-| Preview route out of sync         | Low        | Broken preview            | Preview uses same preset resolution               |
-| Production edge cache differs     | Low        | Different cache behavior  | Validate after production deploy                  |
+| Risk                                  | Likelihood | Impact                         | Mitigation                                                  |
+| ------------------------------------- | ---------- | ------------------------------ | ----------------------------------------------------------- |
+| Remaining component/event variant CSS | Medium     | Additional performance ceiling | Deferred — requires narrower component/event override audit |
+| Visual regression after split         | Low        | Broken themes                  | Manual review across 7 demo routes                          |
+| Unknown preset not in map             | Low        | Fallback to `jewelry-box`      | Implemented fallback + type-safe                            |
+| Preview route out of sync             | Low        | Broken preview                 | Preview uses same preset resolution                         |
+| Production edge cache differs         | Low        | Different cache behavior       | Validate after production deploy                            |
 
 ---
 
 ## Deferred Work
 
-1. **Section splitting** — requires dedicated section architecture refactor (sections organized by
-   section type, not preset; inconsistent theme coverage; 7 sections with no base styles)
+1. **Component/event override audit** — remaining `[data-variant]` selectors in the base chunk
+   should be assessed separately from `themes/sections` splitting.
 2. **Font measurement (Phase 4)** — not a primary bottleneck (69 KB vs 704 KB CSS baseline)
 3. **Supabase query optimization (Phase 5)** — cache headers already reduce anonymous repeat-request
    impact
@@ -131,12 +136,13 @@ See the CSS splitting plan for details.
 
 ## Next Recommended Sequence (after human review)
 
-1. ✅ **Perform final visual QA** — 7 demo routes checked (this report)
-2. ⬜ **Commit** the current accepted slice on `perf/public-invitation-css-splitting`
-3. ⬜ **Deploy to Vercel Preview** — validate headers, CSS chunks, and rendering
-4. ⬜ **Production deploy** — after approval
-5. ⬜ **Monitor Speed Insights** — Phase 1 cache impact on TTFB, FCP, LCP
-6. ⬜ **Plan section refactor** — separate plan for section architecture
+1. ✅ **Build and measure local CSS output** — full section split branch base CSS is 184.6 KB.
+2. ✅ **Complete local visual QA** — target public routes render with preset and active section
+   chunks.
+3. ⬜ **Commit after validation** if approved by the current task scope.
+4. ⬜ **Deploy to Vercel Preview** — validate headers, CSS chunks, rendering, and no empty `200`.
+5. ⬜ **Production deploy** — requires explicit approval.
+6. ⬜ **Monitor Speed Insights** — compare mobile field data after deployment window.
 
 ---
 

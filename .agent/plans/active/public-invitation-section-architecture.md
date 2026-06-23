@@ -4,7 +4,7 @@ status: accepted
 autonomy_level: 3
 plan_type: implementation
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-23
 hardening_run: 2026-06-22
 closure_run: 2026-06-22
 related_docs:
@@ -736,10 +736,11 @@ is **hero** (has `:where()` base, 8 of 9 variants, low structural risk).
 1. **Gallery proof-of-pattern is accepted.** The section splitting architecture is validated: base
    CSS stays in the shared chunk, variant CSS loads via per-preset dynamic chunks, unknown presets
    fall back safely to base-only styling.
-2. **Do not continue to another section in this loop.** The `hero` section may be considered in a
-   separate future loop.
-3. **Production deployment requires explicit approval.** This branch is ready for merge and deploy
-   when authorized.
+2. **The 2026-06-23 loop superseded the stop-after-gallery decision for local work only.** Mobile
+   lab evidence still pointed to render-blocking CSS, so hero was selected as the next low-risk
+   section.
+3. **Production deployment requires explicit approval.** The branch still needs preview validation
+   before production approval.
 
 ### Files Committed
 
@@ -758,3 +759,96 @@ is **hero** (has `:where()` base, 8 of 9 variants, low structural risk).
 - `src/lib/invitation/section-css-resolver.ts`
 - `src/pages/[eventType]/[slug].astro`
 - `src/pages/dashboard/invitaciones/[id]/preview.astro`
+
+---
+
+## 16. Hero Section Split Result (2026-06-23)
+
+### Summary
+
+| Field                 | Value                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| Section migrated      | hero                                                                                 |
+| Deployment state      | Branch/local only; production still has per-preset CSS only                          |
+| Base CSS before       | ~483 KB after gallery split                                                          |
+| Base CSS after        | **437 KB**                                                                           |
+| Total per-route after | ~504–546 KB for mapped gallery+hero routes, depending on preset and gallery coverage |
+| Hero chunks emitted   | 8 chunks; `jewelry-box-wedding` intentionally falls back to base-only hero styling   |
+| P0 glob guardrail     | Preserved with `Record<string, { default: string }>` + `.default`                    |
+| Resolver hardening    | Added section-keyed URL map to avoid gallery/hero filename collisions                |
+| Preview parity        | Public route and dashboard preview both load preset, gallery, and hero links         |
+| Build                 | PASS on 2026-06-23                                                                   |
+| Focused test          | PASS: `tests/unit/section-css-resolver-map.test.ts`                                  |
+
+### Decisions
+
+1. **Hero split is accepted for branch validation.** It follows the gallery pattern and keeps
+   `hero/_base.scss` in the shared chunk while moving concrete hero variants to
+   `src/styles/invitation-sections/hero/`.
+2. **No `jewelry-box-wedding` hero chunk is emitted.** There is no source variant file, so the route
+   keeps the pre-existing base-only fallback.
+3. **Do not proceed to another section in this loop.** The next loop should validate preview output
+   and field/lab metrics before considering countdown or rsvp.
+
+### Remaining Risks
+
+- Local visual QA is still required across mapped hero presets before preview deployment.
+- Production on 2026-06-23 is behind this branch: it serves `invitation.CLuf74H_.css` at ~558 KB
+  decoded and does not include gallery or hero section chunks.
+- Some event-specific overrides remain in the base chunk, notably Luna y Estrella hero overrides;
+  these are not generic hero variants and should be reviewed separately before any event override
+  splitting.
+
+---
+
+## 17. Full Section Split Result (2026-06-23)
+
+### Summary
+
+| Field                   | Value                                                                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sections migrated       | gallery, hero, rsvp, countdown, footer, itinerary, reveal, thank-you, quote, family, gifts, header, location, music-player, personalized-access |
+| Sections blocked        | None                                                                                                                                            |
+| Deployment state        | Branch/local only; production deploy not performed                                                                                              |
+| Base CSS before gallery | 545 KB                                                                                                                                          |
+| Base CSS after gallery  | 483 KB                                                                                                                                          |
+| Base CSS after hero     | 437 KB                                                                                                                                          |
+| Base CSS final          | **184.6 KB**                                                                                                                                    |
+| Total CSS final         | ~245–409 KB across the target route presets in local build                                                                                      |
+| Route integration       | Public route and dashboard preview both use `resolveInvitationSectionCssUrls()`                                                                 |
+| Cache behavior          | Unchanged; anonymous public cacheable, invite/private no-store                                                                                  |
+
+### Architecture Decisions
+
+1. **Every section now has a `_base.scss`**. Sections without a substantive theme base use a minimal
+   theme-neutral fallback that intentionally inherits component base styles.
+2. **Section `_index.scss` files forward only `base`**. Concrete theme variants are no longer loaded
+   through the shared section barrel.
+3. **Variant files are loaded through `src/styles/invitation-sections/<section>/` entrypoints**.
+   Shared variant files such as `reveal/shared-light`, `gifts/elegant`, and
+   `gifts/editorial-premium` remain shared entrypoints and are mapped explicitly.
+4. **Missing variants fall back safely to base styles**. No synthetic empty chunks were created for
+   presets without a known variant.
+5. **The `import.meta.glob(...?url)` guardrail remains active** through
+   `Record<string, { default: string }>` and `.default` extraction in the shared resolver map.
+
+### Validation
+
+| Command / check                  | Result                                                                                                    |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `pnpm build`                     | PASS                                                                                                      |
+| `pnpm test`                      | PASS                                                                                                      |
+| `pnpm agent:git-safety:check`    | PASS                                                                                                      |
+| 9-route browser QA on `pnpm dev` | PASS — all routes returned 200, nonempty body, active section CSS links, no console errors                |
+| Cache header check               | PASS — anonymous `public, max-age=0, s-maxage=60, stale-while-revalidate=300`; invite `no-store, private` |
+
+### Caveats
+
+- Production is not updated. This remains branch/local until a preview or production deployment is
+  explicitly approved.
+- `invitation.*.css` no longer includes migrated files from the `themes/sections` variant barrel,
+  but component-level base styles and event-specific override files still contain some
+  `[data-variant]` selectors. Those are not section theme chunks and were intentionally not
+  refactored in this loop.
+- Mobile Speed Insights field data will lag any deployment. A fresh observation window is still
+  required before attributing field-score changes to this split.
