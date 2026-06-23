@@ -17,6 +17,7 @@ import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
+import { resolveGallerySectionCssUrl } from '@/lib/invitation/section-css-resolver';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 
 const slug = Astro.params.slug!;
@@ -114,6 +115,15 @@ const activePresetUrl = viewModel?.theme?.preset
 	? resolvePresetCssUrl(viewModel.theme.preset)
 	: undefined;
 
+const activeGallerySectionUrl = viewModel?.theme?.preset
+	? resolveGallerySectionCssUrl(viewModel.theme.preset)
+	: undefined;
+
+const headLinks = [
+	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
+	...(activeGallerySectionUrl ? [{ rel: 'stylesheet' as const, href: activeGallerySectionUrl }] : []),
+];
+
 ---
 
 {
@@ -128,7 +138,7 @@ const activePresetUrl = viewModel?.theme?.preset
 			className={page.layout.className}
 			isDemo={page.viewModel.isDemo}
 			themeMode="dark"
-			headLinks={activePresetUrl ? [{ rel: 'stylesheet', href: activePresetUrl }] : []}
+			headLinks={headLinks}
 		>
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
 			<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
