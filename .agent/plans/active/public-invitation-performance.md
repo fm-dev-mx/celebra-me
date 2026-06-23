@@ -31,15 +31,15 @@ superseded_by:
 **Final — accepted slices only.** See
 `.agent/plans/active/public-invitation-performance-final-report.md` for the full closure report.
 
-| Phase                          | Status                                    |
-| ------------------------------ | ----------------------------------------- |
-| Phase 1 — Cache Headers        | ✅ Implemented, Preview-validated         |
-| Phase 2 — LCP Measurement      | ✅ Completed                              |
-| Phase 3 — CSS Measurement      | ✅ Completed                              |
-| Phase 3 — Per-Preset CSS Split | ✅ Implemented (accepted slice)           |
-| Phase 3 — Section Splitting    | 🛑 Deferred (architecture too interwoven) |
-| Phase 4 — Font Optimization    | ⏳ Deferred (not a primary bottleneck)    |
-| Phase 5 — Supabase Query Opt.  | ⏳ Roadmap/deferred                       |
+| Phase                          | Status                                                         |
+| ------------------------------ | -------------------------------------------------------------- |
+| Phase 1 — Cache Headers        | ✅ Implemented, Preview-validated                              |
+| Phase 2 — LCP Measurement      | ✅ Completed                                                   |
+| Phase 3 — CSS Measurement      | ✅ Completed                                                   |
+| Phase 3 — Per-Preset CSS Split | ✅ Implemented (accepted slice)                                |
+| Phase 3 — Section Splitting    | ✅ Gallery split implemented (proof-of-pattern); hero deferred |
+| Phase 4 — Font Optimization    | ⏳ Deferred (not a primary bottleneck)                         |
+| Phase 5 — Supabase Query Opt.  | ⏳ Roadmap/deferred                                            |
 
 ## Scope
 
@@ -410,3 +410,22 @@ redirects, or API routes.
    hit rate? Currently using conservative values (60s / 300s). These can be tuned after production
    data is available, but that tuning should be a separate minor revision to this plan, not a new
    plan.
+
+## Post-Deploy P0 RCA / Guardrail
+
+**Commit**: `fbb680ba fix(invitation): restore public route SSR rendering`
+
+A P0 blank-page regression was introduced by the per-preset CSS split and fixed in production.
+
+**Root cause**: `import.meta.glob(..., { query: '?url', eager: true })` returns module objects
+`{ default: string }` with `__proto__: null`. The TypeScript assertion `as Record<string, string>`
+was incorrect — the runtime value is a null-prototype module object. When this object reached
+`Astro.response.headers.set('Cache-Control', ...)` → _[no, it reached]_ the `<link href>` attribute,
+`String()` threw because null-prototype objects lack `toString()`/`valueOf()`.
+
+**Fixed**: extract `.default` from glob modules; use explicit `rel`/`href` attributes instead of
+Astro object spread on `<link>`.
+
+**Guardrail**: Any future `import.meta.glob(...?url)` must be typed as
+`Record<string, { default: string }>` and values accessed via `.default`. Null-prototype objects
+must never reach HTML attribute positions.

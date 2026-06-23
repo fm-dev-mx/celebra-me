@@ -118,10 +118,10 @@ And pass it as `headLinks` to `Layout.astro`.
 
 ### Known deferred work
 
-| Item                      | Reason                                                                                                                                                                                                                                                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Section splitting**     | **Stopped.** 7 of 15 sections have no `_base.scss` (header, gifts, family, location, music-player, quote, thank-you are 100% theme-specific). Moving variants out of the base would leave sections unstyled for themes without a matching variant. Requires a dedicated section architecture refactor. |
-| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                                |
+| Item                      | Reason                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Section splitting**     | **Gallery POC implemented.** 7 of 15 sections have no `_base.scss`; gallery was chosen as the proof-of-pattern because it has a substantive `:where()` base. Base CSS reduced from ~545 KB to ~483 KB. See `.agent/plans/active/public-invitation-section-architecture.md`. Remaining sections still require dedicated architecture work before splitting. |
+| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                                                                                    |
 
 ## Risk mitigation
 
@@ -130,3 +130,22 @@ And pass it as `headLinks` to `Layout.astro`.
   same as before — no regression.
 - Cache behavior: the base chunk is cacheable; the preset chunk is cacheable. Repeat visits use both
   from Vercel edge cache.
+
+## Post-Deploy P0 RCA / Guardrail
+
+**Commit**: `fbb680ba fix(invitation): restore public route SSR rendering`
+
+The per-preset CSS split caused a P0 blank-page regression in production. Root cause:
+
+1. `import.meta.glob(...{ query: '?url' })` returns module objects `{ default: string }` with
+   `__proto__: null`.
+2. The resolver stored the raw module object instead of `mod.default`.
+3. The null-prototype object reached `<link href={...}>` — `String()` threw because the object has
+   no `toString()`/`valueOf()`.
+4. Astro SSR produced 200 OK with empty body.
+
+**Fix**:
+
+- `preset-css-resolver.ts`: extract `.default` from glob modules; correct TypeScript type.
+- `Layout.astro`: use explicit `rel` and `href` instead of object spread on `<link>`.
+- Both the shared resolver and the Layout change are required for correct rendering.

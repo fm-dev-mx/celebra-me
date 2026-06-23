@@ -11,15 +11,15 @@ phase: 1–3 completed, 3b deferred, 4–5 roadmap
 
 ## Phase Status Table
 
-| Phase        | Description                                    | Status                                           |
-| ------------ | ---------------------------------------------- | ------------------------------------------------ |
-| **Phase 1**  | Cache-Control headers on `/[eventType]/[slug]` | ✅ **Done** — Preview-validated                  |
-| **Phase 2**  | LCP measurement across demo routes             | ✅ **Done**                                      |
-| **Phase 3a** | CSS waste measurement                          | ✅ **Done**                                      |
-| **Phase 3b** | Per-preset CSS split                           | ✅ **Implemented** (accepted slice)              |
-| **Phase 3c** | Per-theme section split                        | 🛑 **Deferred** — architecture too interwoven    |
-| **Phase 4**  | Font measurement / optimization                | ⏳ **Deferred** — not a primary bottleneck       |
-| **Phase 5**  | Supabase query parallelization                 | ⏳ **Deferred** — phase 1 caching reduces impact |
+| Phase        | Description                                    | Status                                               |
+| ------------ | ---------------------------------------------- | ---------------------------------------------------- |
+| **Phase 1**  | Cache-Control headers on `/[eventType]/[slug]` | ✅ **Done** — Preview-validated                      |
+| **Phase 2**  | LCP measurement across demo routes             | ✅ **Done**                                          |
+| **Phase 3a** | CSS waste measurement                          | ✅ **Done**                                          |
+| **Phase 3b** | Per-preset CSS split                           | ✅ **Implemented** (accepted slice)                  |
+| **Phase 3c** | Per-theme section split                        | ✅ **Gallery POC implemented** — base CSS 545→483 KB |
+| **Phase 4**  | Font measurement / optimization                | ⏳ **Deferred** — not a primary bottleneck           |
+| **Phase 5**  | Supabase query parallelization                 | ⏳ **Deferred** — phase 1 caching reduces impact     |
 
 ---
 
@@ -148,3 +148,39 @@ See the CSS splitting plan for details.
 | `.agent/plans/active/lcp-measurement-results.md`         | Phase 2 LCP measurements                 |
 | `.agent/plans/active/css-measurement-results.md`         | Phase 3 CSS coverage measurements        |
 | `.agent/plans/active/public-invitation-css-splitting.md` | Per-preset split implementation plan     |
+
+## Post-Deploy P0 RCA / Guardrail
+
+**Commit**: `fbb680ba fix(invitation): restore public route SSR rendering` **Date**: 2026-06-22
+**Status**: Deployed to production, rendering confirmed restored.
+
+### Root Cause
+
+1. `import.meta.glob('/src/styles/invitation-presets/*.scss', { query: '?url', eager: true })`
+   returns Vite module objects shaped like `{ default: string }` with `__proto__: null`.
+2. The TypeScript assertion `as Record<string, string>` was incorrect — the runtime values are not
+   raw strings but frozen module objects lacking `toString()`/`valueOf()` (null-prototype).
+3. The resolver stored the raw module object (`url` from `Object.entries()`) instead of
+   `mod.default`.
+4. That module object reached the Layout.astro `href` attribute on a `<link>` element.
+5. Astro SSR failed with `TypeError: Cannot convert object to primitive value` because `String()` on
+   a null-prototype object throws.
+6. The SSR function produced a 200 OK response with zero-length body — blank white page.
+
+### Guardrails Applied
+
+| File                                              | Fix                                                                                                                                |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/invitation/preset-css-resolver.ts`       | Changed type from `as Record<string, string>` to `as Record<string, { default: string }>`; uses `mod.default` instead of raw `url` |
+| `src/layouts/Layout.astro`                        | Replaced `{...link}` object spread with explicit `rel={l.rel} href={l.href}` to avoid Astro spread-attribute ambiguity             |
+| `src/components/invitation/InvitationError.astro` | Removed `#a0a0a0` hex fallback that violated style-boundary tests                                                                  |
+
+### Lessons
+
+- `import.meta.glob(..., { query: '?url' })` glob modules must always be accessed via `.default`.
+- Null-prototype objects (`__proto__: null`) lack `toString()` — do not pass them to HTML attributes
+  or `String()` calls.
+- Avoid Astro template object spread (`{...x}`) for critical attributes on stylesheet `<link>`
+  elements. Use explicit attributes.
+- Production blank-page events can result from SSR exceptions that produce 200 with empty body —
+  always check response `Content-Length` or `Transfer-Encoding: chunked` with zero body.
