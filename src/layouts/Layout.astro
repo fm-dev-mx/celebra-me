@@ -95,7 +95,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
 
-		{headLinks.map(link => <link {...link} />)}
+		{headLinks.map(l => <link rel={l.rel} href={l.href} />)}
 
 		{gaId && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />

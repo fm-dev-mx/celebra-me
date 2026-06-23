@@ -5,16 +5,16 @@ const FALLBACK_PRESET = 'jewelry-box';
 const presetModules = import.meta.glob('/src/styles/invitation-presets/*.scss', {
 	query: '?url',
 	eager: true,
-}) as Record<string, string>;
+}) as Record<string, { default: string }>;
 
 const presetUrlMap: Record<string, string> = {};
-for (const [path, url] of Object.entries(presetModules)) {
+for (const [path, mod] of Object.entries(presetModules)) {
 	const name =
 		path
 			.split('/')
 			.pop()
 			?.replace(/\.scss$/, '') ?? '';
-	presetUrlMap[name] = url;
+	presetUrlMap[name] = mod.default;
 }
 
 if (import.meta.env.DEV) {
