@@ -40,6 +40,7 @@ interface Props {
 	className?: string;
 	isDemo?: boolean;
 	themeMode?: 'light' | 'dark';
+	headLinks?: Array<{ rel: 'stylesheet'; href: string }>;
 }
 
 const {
@@ -50,6 +51,7 @@ const {
 	className,
 	isDemo = false,
 	themeMode = 'dark',
+	headLinks = [],
 } = Astro.props;
 
 const isProd = import.meta.env.PROD;
@@ -92,6 +94,8 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+
+		{headLinks.map(link => <link {...link} />)}
 
 		{gaId && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
