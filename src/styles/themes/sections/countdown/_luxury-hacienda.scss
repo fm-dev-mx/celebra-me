@@ -162,3 +162,31 @@
 		}
 	}
 }
+
+// ==========================================================================
+// REDUCED MOTION
+// ==========================================================================
+
+@media (prefers-reduced-motion: reduce) {
+	.countdown-section[data-variant='luxury-hacienda'] {
+		.countdown-title {
+			animation: none;
+			background: var(--color-action-accent);
+			-webkit-text-fill-color: initial;
+			background-clip: initial;
+			color: var(--color-action-accent);
+		}
+
+		.countdown__segment {
+			transition: none;
+
+			&:hover {
+				transform: none;
+			}
+		}
+
+		.countdown__value {
+			transition: color 0.2s ease;
+		}
+	}
+}

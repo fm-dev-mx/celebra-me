@@ -1,0 +1,122 @@
+// Shared countdown variant layer
+// Groups visually similar variants to avoid duplication
+
+// ==========================================================================
+// EDITORIAL & PREMIERE FLORAL (dark background, gold accents)
+// ==========================================================================
+
+.countdown-section:is([data-variant='editorial'], [data-variant='premiere-floral']) {
+	--countdown-editorial-segment-shadow-hover:
+		0 30px 60px rgb(0 0 0 / 40%), 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
+
+	background: var(--countdown-bg, var(--color-surface-dark));
+	color: var(--color-text-on-dark);
+	padding-block: var(--section-padding-block);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			circle at 50% 40%,
+			rgb(var(--color-action-accent-rgb) / 12%) 0%,
+			transparent 60%
+		);
+		pointer-events: none;
+	}
+
+	.countdown-container {
+		max-width: 1000px;
+	}
+
+	.countdown-title {
+		font-family: var(--font-display);
+		background: var(--gold-metallic);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		letter-spacing: 0.15em;
+		margin-bottom: 3rem;
+	}
+
+	.countdown__timer {
+		gap: 1.5rem;
+		margin-top: 4rem;
+
+		@media (width <= 860px) {
+			gap: 0.75rem;
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	.countdown__segment {
+		background: var(--countdown-segment-bg);
+		backdrop-filter: blur(12px);
+		border: 1px solid var(--section-border-subtle);
+		padding: clamp(2rem, 4vw, 3.5rem) 1.5rem;
+		border-radius: 4px;
+		transition:
+			transform var(--duration-slower) var(--ease-premium),
+			border-color var(--duration-slower) var(--ease-premium),
+			background-color var(--duration-slower) var(--ease-premium),
+			box-shadow var(--duration-slower) var(--ease-premium);
+
+		&:hover {
+			transform: translateY(-8px);
+			border-color: var(--section-card-border-alt);
+			background: rgb(255 255 255 / 6%);
+			box-shadow: var(--countdown-editorial-segment-shadow-hover);
+		}
+	}
+
+	.countdown__value-wrapper {
+		height: auto;
+		width: auto;
+		min-height: 1.25em;
+		overflow: visible;
+		margin-bottom: 1rem;
+	}
+
+	.countdown__value {
+		font-family: var(--font-display);
+		color: var(--color-text-on-dark);
+		font-size: 2rem;
+		line-height: 1;
+		padding: 0;
+		margin: 0;
+		text-shadow: 0 4px 20px rgb(var(--color-action-accent-rgb) / 30%);
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.02em;
+	}
+
+	.countdown__label {
+		font-family: var(--font-label);
+		letter-spacing: 0.35em;
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		font-size: 0.72rem;
+		margin-top: 0.5rem;
+		opacity: 100%;
+	}
+
+	.countdown-invitation-text {
+		color: rgb(var(--color-text-primary-rgb) / 60%);
+		font-family: var(--font-body);
+		letter-spacing: 0.1em;
+		font-size: 1rem;
+		font-weight: 100;
+		max-inline-size: 25ch;
+		margin-top: 4rem;
+		margin-inline: auto;
+	}
+
+	@media (width >= 860px) {
+		.countdown__value {
+			font-size: var(--countdown-value-size-desktop);
+		}
+
+		.countdown__segment {
+			padding-inline: 2rem;
+		}
+	}
+}

@@ -24,6 +24,15 @@ function getExistingPartials(sectionDir: string): string[] {
 		.map((f) => f.replace(/^_|\.scss$/g, ''));
 }
 
+function getSectionEntrypoints(section: string): string[] {
+	const absoluteDir = path.join(projectRoot, `src/styles/invitation-sections/${section}`);
+	if (!fs.existsSync(absoluteDir)) return [];
+	return fs
+		.readdirSync(absoluteDir)
+		.filter((f) => f.endsWith('.scss'))
+		.map((f) => f.replace(/\.scss$/g, ''));
+}
+
 function getFilesRecursively(dir: string, extensions: string[]): string[] {
 	const absoluteDir = path.join(projectRoot, dir);
 	if (!fs.existsSync(absoluteDir)) return [];
@@ -204,10 +213,13 @@ describe('Style boundary governance', () => {
 	it('location enchanted-rose visuals live in a scoped section variant', () => {
 		const sectionsIndex = read('src/styles/themes/sections/_index.scss');
 		const locationIndex = read('src/styles/themes/sections/location/_index.scss');
+		const locationEntrypoints = getSectionEntrypoints('location');
 		const locationVariant = read('src/styles/themes/sections/location/_enchanted-rose.scss');
 
 		expect(sectionsIndex).toContain("@forward 'location';");
-		expect(locationIndex).toContain("@forward 'enchanted-rose';");
+		expect(locationIndex).toContain("@forward 'base';");
+		expect(locationIndex).not.toContain("@forward 'enchanted-rose';");
+		expect(locationEntrypoints).toContain('enchanted-rose');
 		expect(locationVariant).toContain(".event-location[data-variant='enchanted-rose']");
 		expect(locationVariant).toContain('--location-er-frame-bg');
 		expect(locationVariant).toContain(':focus-visible');
@@ -296,10 +308,11 @@ describe('Style boundary governance', () => {
 		}
 	});
 
-	it('personalized-access index only forwards base and current variants', () => {
+	it('personalized-access index keeps base while variants move to section entrypoints', () => {
 		const dir = 'src/styles/themes/sections/personalized-access';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
+		const entrypoints = getSectionEntrypoints('personalized-access');
 
 		expect(forwarded).toContain('base');
 
@@ -308,9 +321,9 @@ describe('Style boundary governance', () => {
 			expect(fs.existsSync(path.join(projectRoot, dir, `_${name}.scss`))).toBe(true);
 		}
 
-		// Every existing partial must be forwarded (no orphans)
+		// Every existing partial must be forwarded or intentionally split into an entrypoint.
 		for (const name of existing) {
-			expect(forwarded).toContain(name);
+			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
 		}
 	});
 
@@ -339,14 +352,16 @@ describe('Style boundary governance', () => {
 		const dir = 'src/styles/themes/sections/personalized-access';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
+		const entrypoints = getSectionEntrypoints('personalized-access');
 
-		// Every file on disk must be intentionally forwarded
+		// Every file on disk must be intentionally forwarded or split.
 		for (const name of existing) {
-			expect(forwarded).toContain(name);
+			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
 		}
 
-		// No extra files beyond what's forwarded
-		expect(existing.length).toBe(forwarded.length);
+		for (const name of entrypoints) {
+			expect(existing).toContain(name);
+		}
 	});
 
 	it('preset files contain --pa-* overrides for all required variables', () => {
@@ -398,11 +413,14 @@ describe('Style boundary governance', () => {
 		const dir = 'src/styles/themes/sections/family';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
+		const entrypoints = getSectionEntrypoints('family');
 
 		for (const name of existing) {
-			expect(forwarded).toContain(name);
+			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
 		}
 
-		expect(existing.length).toBe(forwarded.length);
+		for (const name of entrypoints) {
+			expect(existing).toContain(name);
+		}
 	});
 });
