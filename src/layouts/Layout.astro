@@ -54,12 +54,18 @@ const {
 	headLinks = [],
 } = Astro.props;
 
-const isProd = import.meta.env.PROD;
+const isVercelProduction = process.env.VERCEL_ENV === 'production';
 
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
-const ogImage = new URL(resolvedImageSrc, isProd ? Astro.url : 'https://celebra-me.com/');
 
-const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
+const canonicalOrigin = Astro.site?.origin ?? 'https://www.celebra-me.com';
+
+let canonicalUrl = new URL(Astro.url.pathname, canonicalOrigin);
+if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
+	canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
+}
+
+const ogImage = new URL(resolvedImageSrc, canonicalOrigin);
 
 const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
@@ -72,7 +78,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'} isProd=${isProd}`} />
+		{!isVercelProduction && <meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'}`} />}
 		<title>{title}</title>
 
 		<!-- Open Graph -->
@@ -97,7 +103,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		{headLinks.map(l => <link rel={l.rel} href={l.href} />)}
 
-		{gaId && <GoogleAnalytics id={gaId} />}
+		{isVercelProduction && gaId && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
 	</head>
 	<body class:list={[className, { 'is-demo': isDemo }]} data-theme-mode={themeMode}>
@@ -107,7 +113,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 			<slot />
 		</main>
 
-		{isProd && <Analytics />}
-		{isProd && <SpeedInsights />}
+		{isVercelProduction && <Analytics />}
+		{isVercelProduction && <SpeedInsights />}
 	</body>
 </html>
