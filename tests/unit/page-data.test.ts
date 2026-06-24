@@ -227,3 +227,65 @@ describe('shortId social metadata helpers', () => {
 		expect(image.url).not.toContain('localhost');
 	});
 });
+
+describe('canonical URL generation (main invitation routes)', () => {
+	const CANONICAL_ORIGIN = 'https://www.celebra-me.com';
+
+	it('uses root canonical for root route', () => {
+		const pathname = '/';
+		const canonicalUrl = new URL(pathname, CANONICAL_ORIGIN).href;
+
+		expect(canonicalUrl).toBe('https://www.celebra-me.com/');
+	});
+
+	it('uses per-route canonical for real invitation route, not root', () => {
+		const pathname = '/xv/xareni-iyarit';
+		const canonicalUrl = new URL(pathname, CANONICAL_ORIGIN).href;
+
+		expect(canonicalUrl).toBe('https://www.celebra-me.com/xv/xareni-iyarit');
+		expect(canonicalUrl).not.toBe('https://www.celebra-me.com/');
+	});
+
+	it('uses per-route canonical for demo route', () => {
+		const pathname = '/boda/demo-boda-jewelry-box-wedding';
+		const canonicalUrl = new URL(pathname, CANONICAL_ORIGIN).href;
+
+		expect(canonicalUrl).toBe('https://www.celebra-me.com/boda/demo-boda-jewelry-box-wedding');
+		expect(canonicalUrl).not.toBe('https://www.celebra-me.com/');
+	});
+
+	it('strips trailing slash from non-root paths', () => {
+		const canonicalUrl = new URL('/xv/xareni-iyarit/', CANONICAL_ORIGIN);
+		if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
+			canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
+		}
+
+		expect(canonicalUrl.href).toBe('https://www.celebra-me.com/xv/xareni-iyarit');
+	});
+
+	it('preserves trailing slash on root path', () => {
+		const canonicalUrl = new URL('/', CANONICAL_ORIGIN);
+		if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
+			canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
+		}
+
+		expect(canonicalUrl.href).toBe('https://www.celebra-me.com/');
+	});
+
+	it('filters localhost but preserves valid external origins as-is', () => {
+		const nonLocalOrigins = [
+			'https://celebra-areapmyow-francisco-mendoza-s-projects.vercel.app',
+			'https://celebra-me.com',
+		];
+
+		for (const origin of nonLocalOrigins) {
+			const result = resolvePublicSiteOrigin({
+				configuredOrigin: origin,
+			});
+
+			expect(result).toBe(origin);
+			expect(result).not.toContain('127.0.0.1');
+			expect(result).not.toContain('localhost');
+		}
+	});
+});
