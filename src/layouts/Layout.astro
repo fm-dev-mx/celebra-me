@@ -7,6 +7,7 @@ import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
 import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
+import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 
 // Typography: Core 5 Font System (@fontsource includes font-display: swap)
 // Display Formal
@@ -58,7 +59,7 @@ const isVercelProduction = process.env.VERCEL_ENV === 'production';
 
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 
-const canonicalOrigin = Astro.site?.origin ?? 'https://www.celebra-me.com';
+const canonicalOrigin = resolvePublicSiteOrigin();
 
 let canonicalUrl = new URL(Astro.url.pathname, canonicalOrigin);
 if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
