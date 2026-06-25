@@ -192,8 +192,6 @@ export async function confirmDemoPublish(input: {
 		version: nextVersion,
 		publishedAt: new Date().toISOString(),
 	});
-	const reread = await findPublishedBySlugAndEventType(input.slug, input.eventType);
-	const afterContent = reread?.content ?? published.content;
 
 	return {
 		published: true,
@@ -204,6 +202,6 @@ export async function confirmDemoPublish(input: {
 		new_version: published.version,
 		local_hash: localHash,
 		prod_hash_before: currentProdHash,
-		prod_hash_after: hashContent(afterContent),
+		prod_hash_after: hashContent(published.content),
 	};
 }
