@@ -12,8 +12,9 @@ const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-b
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 
 if (import.meta.env.DEV) {
+	const map = new Map(Object.entries(sectionBundleUrlMap));
 	for (const preset of THEME_PRESETS) {
-		if (!sectionBundleUrlMap[preset]) {
+		if (!map.has(preset)) {
 			console.warn(
 				`[section-css-resolver] Missing section bundle for preset "${preset}". No file found at src/styles/invitation-sections-by-preset/${preset}.scss.`,
 			);
