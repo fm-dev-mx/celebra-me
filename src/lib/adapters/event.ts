@@ -384,7 +384,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
 
-	const themeDefaults = LOCATION_THEME_DEFAULTS[normalizedPreset];
+	const themeDefaults =
+		normalizedPreset === 'enchanted-rose'
+			? LOCATION_THEME_DEFAULTS['enchanted-rose']
+			: undefined;
 
 	const rawVenues = data.location.venues;
 	const venues: VenueEntry[] | undefined = rawVenues?.map((v: VenueEntryInput) =>
