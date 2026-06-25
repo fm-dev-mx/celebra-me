@@ -176,7 +176,7 @@ const headLinks = [
 					isDemo={page.viewModel.isDemo}
 				/>
 
-				<Hero {...page.viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} />
+				<Hero {...page.viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} highPriority={!page.wrapper.showEnvelope} />
 
 				<InvitationSections pageContext={page} />
 
