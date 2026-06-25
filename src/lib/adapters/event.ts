@@ -56,7 +56,13 @@ function pickVenueValue(
 	location: EventContentEntry['data']['location'] | undefined,
 	key: 'venueName' | 'city',
 ): string | undefined {
-	return location?.reception?.[key] ?? location?.ceremony?.[key];
+	if (key === 'venueName') {
+		return location?.reception?.venueName ?? location?.ceremony?.venueName;
+	}
+	if (key === 'city') {
+		return location?.reception?.city ?? location?.ceremony?.city;
+	}
+	return undefined;
 }
 
 function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
