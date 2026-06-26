@@ -31,7 +31,7 @@ const hasInviteParam = Astro.url.searchParams.has('invite');
 let resolveContentDur: number | null = null;
 let routePersonalizationDur: number | null = null;
 let pagePrepareDur: number | null = null;
-const perfStart = performance.now();
+const renderStart = performance.now();
 
 let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
@@ -63,7 +63,6 @@ try {
 			Astro.response.headers.set('Cache-Control', 'no-store');
 			return;
 		}
-
 		if (eventType !== eventEntry.data.eventType) {
 			const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
 			if (inviteId) {
@@ -71,7 +70,6 @@ try {
 			}
 			return Astro.redirect(canonicalUrl.href, 301);
 		}
-
 		routeEventType = eventEntry.data.eventType;
 		routeIsDemo = Boolean(eventEntry.data.isDemo);
 	} else {
@@ -123,20 +121,20 @@ try {
 	);
 	renderError =
 		error instanceof Error ? error.message : 'Error desconocido al cargar la invitación.';
-	}
+}
 
 const cacheControl =
 	!hasInviteParam && page && viewModel
-		? 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400'
+		? 'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 
 // Render-Timing — always set a simple baseline to confirm header survives Vercel
 Astro.response.headers.set('X-Render-Timing', 'active');
 
-// Extended timing header with detailed spans
-try {
-	if (page && viewModel) {
+// Extended timing header with detailed spans — only for successful pages
+if (page && viewModel) {
+	try {
 		const entries: string[] = [];
 		if (resolveContentDur !== null) {
 			entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
@@ -147,11 +145,11 @@ try {
 		if (pagePrepareDur !== null) {
 			entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
 		}
-		entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
+		entries.push(`total;dur=${(performance.now() - renderStart).toFixed(2)}`);
 		Astro.response.headers.set('X-Render-Timing-Detail', entries.join(', '));
+	} catch {
+		// Timing header is diagnostic-only; never break the page
 	}
-} catch {
-	// Timing header is diagnostic-only; never break the page
 }
 
 const activePresetUrl = viewModel?.theme?.preset
@@ -189,6 +187,33 @@ const headLinks = [
 		>
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
 			<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
+				{
+					page.envelope && (
+						<script is:inline>
+							(function() {
+								try {
+									const script = document.currentScript;
+									const wrapper = script ? script.closest('.event-theme-wrapper') : null;
+									if (!wrapper) return;
+									const slug = wrapper.getAttribute('data-event-slug');
+									if (!slug) return;
+									const key = 'envelope-opened-' + slug;
+									const force = new URLSearchParams(window.location.search).get('forceEnvelope') === 'true';
+									if (!force && window.localStorage.getItem(key) === 'true') {
+										wrapper.setAttribute('data-reveal-state', 'revealed');
+										const envelope = wrapper.querySelector('ds-envelope-reveal');
+										if (envelope) {
+											envelope.hidden = true;
+										}
+										document.documentElement.classList.remove('envelope-open');
+									}
+								} catch {
+									// Ignore localStorage access errors
+								}
+							})();
+						</script>
+					)
+				}
 
 				{
 					page.envelope && (
