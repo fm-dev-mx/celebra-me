@@ -1,0 +1,530 @@
+-- ============================================================================
+-- Scripted creation patch: Valentina Hernández Almaguer — XV Invitation
+--
+-- Creates the full invitation data pipeline in a single reproducible step:
+--   1. invitation_projects  (dashboard project record)
+--   2. published_invitation_content  (public invitation content payload)
+--   3. events  (RSVP event record)
+--   4. event_memberships  (owner membership)
+--
+-- REQUIRED before execution:
+--   1. Replace the __OWNER_USER_ID__ placeholder in the set_config block
+--      actual admin UUID from auth.users (run: SELECT id FROM auth.users LIMIT 1)
+--   2. Verify the content payload in the INSERT matches
+--      .agent/plans/active/xv-valentina-hernandez-db-payload.json
+--   3. Take and verify a production DB backup
+--   4. Validate on local/staging environment first
+--   5. Obtain explicit Paco approval
+--
+-- Preflight checks:
+--   - No existing invitation_projects row with slug 'valentina-hernandez'
+--   - No existing published_invitation_content row with slug 'valentina-hernandez'
+--   - No existing events row with slug 'valentina-hernandez'
+--   - Owner UUID resolves to an active auth.users row
+--
+-- Rollback: See rollback section at bottom.
+-- ============================================================================
+
+-- @script-id: 20260626_valentina_hernandez_xv
+-- @purpose: Initial creation of Valentina Hernández Almaguer's XV invitation
+-- @env: production
+-- @ticket: spec audit + SDD at .agent/plans/active/valentina-hernandez-xv-invitation.spec.md
+-- @tables: invitation_projects, published_invitation_content, events, event_memberships
+-- @operation: insert
+-- @expected-rows-min: 4
+-- @expected-rows-max: 4
+-- @requires-backup: true
+-- @dry-run-query: See preflight SELECT queries below
+-- @rollback: See rollback section at bottom
+-- NOTE: The content payload below is DUPLICATED from
+-- .agent/plans/active/xv-valentina-hernandez-db-payload.json.
+-- Keep both in sync when either is updated.
+
+BEGIN;
+
+-- ============================================================================
+-- 0. OWNER CONFIG
+-- ============================================================================
+-- Set the owner user ID once so every downstream reference resolves through
+-- current_setting. Change the placeholder below to the real admin UUID.
+SELECT set_config(
+  'app.owner_user_id',
+  '__OWNER_USER_ID__',
+  true
+);
+
+-- ============================================================================
+-- 1. PREFLIGHT
+-- ============================================================================
+DO $$
+DECLARE
+  v_project_count integer;
+  v_pub_count integer;
+  v_event_count integer;
+  v_owner_exists integer;
+  v_owner_id uuid;
+BEGIN
+  -- Check no existing project for this slug
+  SELECT count(*) INTO v_project_count
+  FROM public.invitation_projects
+  WHERE slug = 'valentina-hernandez'
+    AND deleted_at IS NULL;
+
+  IF v_project_count > 0 THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: Found % existing invitation_projects row(s) for slug valentina-hernandez. Expected 0.',
+      v_project_count;
+  END IF;
+
+  -- Check no existing published content for this slug
+  SELECT count(*) INTO v_pub_count
+  FROM public.published_invitation_content
+  WHERE slug = 'valentina-hernandez'
+    AND deleted_at IS NULL;
+
+  IF v_pub_count > 0 THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: Found % existing published_invitation_content row(s) for slug valentina-hernandez. Expected 0.',
+      v_pub_count;
+  END IF;
+
+  -- Check no existing event for this slug
+  SELECT count(*) INTO v_event_count
+  FROM public.events
+  WHERE slug = 'valentina-hernandez'
+    AND deleted_at IS NULL;
+
+  IF v_event_count > 0 THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: Found % existing events row(s) for slug valentina-hernandez. Expected 0.',
+      v_event_count;
+  END IF;
+
+  -- Resolve and verify owner
+  v_owner_id := current_setting('app.owner_user_id')::uuid;
+
+  SELECT count(*) INTO v_owner_exists
+  FROM auth.users
+  WHERE id = v_owner_id
+    AND deleted_at IS NULL;
+
+  IF v_owner_exists = 0 THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: Owner user ID % not found in auth.users. Verify the value passed to set_config(''app.owner_user_id'').',
+      v_owner_id;
+  END IF;
+
+  RAISE NOTICE
+    'Preflight OK: 0 existing rows for valentina-hernandez across all 3 tables. Owner % resolved.',
+    v_owner_id;
+END $$;
+
+-- ============================================================================
+-- 2. CREATE INVITATION PROJECT
+-- ============================================================================
+INSERT INTO public.invitation_projects (
+  slug,
+  title,
+  event_type,
+  status,
+  base_demo_id,
+  theme_id,
+  snapshot,
+  client_name,
+  client_email,
+  client_whatsapp,
+  photos_received,
+  created_by,
+  created_at,
+  updated_at,
+  deleted_at
+) VALUES (
+  'valentina-hernandez',
+  'XV Años — Valentina Hernández Almaguer',
+  'xv',
+  'published',
+  'demo-xv-celestial-blue',
+  'celestial-blue',
+  '{
+    "id": "demo-xv-celestial-blue",
+    "eventType": "xv",
+    "displayName": "XV Años — Celestial Blue",
+    "themeId": "celestial-blue",
+    "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
+    "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
+    "recommendedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
+    "requiredAssets": ["hero", "portrait", "gallery01", "gallery02", "gallery03"],
+    "previewSlug": "demo-xv-celestial-blue"
+  }'::jsonb,
+  'Valentina Hernández Almaguer',
+  '',
+  '',
+  false,
+  current_setting('app.owner_user_id')::uuid,
+  now(),
+  now(),
+  NULL
+);
+
+-- ============================================================================
+-- 3. CREATE PUBLISHED INVITATION CONTENT
+--    The full content payload matching eventContentSchema.
+--    See .agent/plans/active/xv-valentina-hernandez-db-payload.json for the
+--    reference artifact. Update this JSON if the payload changes.
+-- ============================================================================
+INSERT INTO public.published_invitation_content (
+  invitation_project_id,
+  slug,
+  event_type,
+  is_demo,
+  content,
+  version,
+  published_at,
+  created_at,
+  updated_at,
+  deleted_at
+)
+SELECT
+  id,
+  'valentina-hernandez',
+  'xv',
+  false,
+  -- Full content payload matching eventContentSchema
+  '{
+    "eventType": "xv",
+    "isDemo": false,
+    "title": "XV Años — Valentina Hernández Almaguer",
+    "description": "Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.",
+    "_assetSlug": "xv-valentina-hernandez",
+    "theme": {
+      "fontFamily": "serif",
+      "preset": "celestial-blue"
+    },
+    "eventTiming": {
+      "localDateTime": "2026-08-29T15:45",
+      "timeZone": "America/Mexico_City",
+      "startsAtUtc": "2026-08-29T21:45:00.000Z"
+    },
+    "sectionOrder": [
+      "quote",
+      "family",
+      "countdown",
+      "itinerary",
+      "location",
+      "gallery",
+      "gifts",
+      "personalizedAccess",
+      "rsvp",
+      "thankYou"
+    ],
+    "sectionStyles": {
+      "location": { "showFlourishes": true },
+      "rsvp": {
+        "labels": {
+          "name": "Tu nombre",
+          "guestCount": "Personas que asistirán",
+          "attendance": "¿Me acompañas?",
+          "confirmButton": "Confirmar asistencia"
+        }
+      }
+    },
+    "hero": {
+      "name": "Valentina Hernández Almaguer",
+      "label": "XV Edition",
+      "date": "2026-08-29T21:45:00.000Z",
+      "backgroundImage": "hero",
+      "portrait": "portrait",
+      "focalPoint": "50% 38%",
+      "focalPointMobile": "50% 32%"
+    },
+    "quote": {
+      "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia...",
+      "author": "Valentina Hernández Almaguer"
+    },
+    "family": {
+      "featuredImage": "family",
+      "parents": {
+        "father": "PENDIENTE — Juan Carlos Hernández [confirmar apellido]",
+        "mother": "PENDIENTE — Nadia Estrella Almaguer [confirmar apellido]"
+      },
+      "parentsOrder": "father-first",
+      "labels": {
+        "sectionTitle": "Mi familia",
+        "sectionSubtitle": "Con amor y gratitud",
+        "parentsTitle": "Con la bendición de mis padres",
+        "godparentsTitle": "Padrinos",
+        "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+      },
+      "godparents": [
+        { "name": "PENDIENTE — Nayeli Almaguer [confirmar apellido]", "role": "Madrina" },
+        { "name": "César A. Pérez Monroy", "role": "Padrino" }
+      ],
+      "focalPoint": "50% 38%"
+    },
+    "countdown": {
+      "title": "La celebración comienza en",
+      "footerText": "29 de agosto de 2026, Texcoco, Estado de México"
+    },
+    "itinerary": {
+      "title": "Programa",
+      "items": [
+        { "iconName": "Church", "label": "Ceremonia religiosa", "time": "15:45", "description": "Ceremonia religiosa — Pendiente de confirmar ubicación." },
+        { "iconName": "Reception", "label": "Cóctel de bienvenida", "time": "16:30", "description": "Cóctel de bienvenida en Finca Las Palmas." },
+        { "iconName": "Party", "label": "Recepción", "time": "Por confirmar", "description": "Recepción y celebración en Finca Las Palmas." }
+      ]
+    },
+    "location": {
+      "introEyebrow": "Te esperamos en Texcoco",
+      "introHeading": "Sábado, 29 de agosto de 2026",
+      "introLede": "Será una alegría compartir contigo esta celebración.",
+      "indicationsHeading": "Detalles para mis invitados",
+      "ceremony": {
+        "venueEvent": "Ceremonia religiosa",
+        "venueName": "PENDIENTE — Confirmar ubicación de la ceremonia",
+        "address": "PENDIENTE — Puede ser en Finca Las Palmas o iglesia por confirmar",
+        "city": "Texcoco, Estado de México",
+        "date": "29 de agosto de 2026",
+        "time": "3:45 p.m.",
+        "mapUrl": "PENDIENTE"
+      },
+      "reception": {
+        "venueEvent": "Recepción",
+        "venueName": "Finca Las Palmas",
+        "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
+        "city": "Texcoco, Estado de México",
+        "date": "29 de agosto de 2026",
+        "time": "4:30 p.m.",
+        "mapUrl": "PENDIENTE — Solicitar enlace de Google Maps"
+      },
+      "indications": [
+        { "iconName": "DressCode", "styleVariant": "reserved", "text": "Código de vestimenta: <strong>formal</strong>. El color <strong>rosa y lila</strong> están reservados para la quinceañera." },
+        { "iconName": "Calendar", "styleVariant": "default", "text": "Confirma tu asistencia <strong>PENDIENTE — definir fecha límite</strong>." },
+        { "iconName": "Enveloped", "styleVariant": "default", "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche." }
+      ]
+    },
+    "gallery": {
+      "eyebrow": "Galería",
+      "title": "Brillar es la actitud.",
+      "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+      "items": [
+        { "image": "gallery01", "caption": "PENDIENTE — Agregar descripción cuando se tengan las fotos originales." },
+        { "image": "gallery02", "caption": "PENDIENTE" },
+        { "image": "gallery03", "caption": "PENDIENTE" },
+        { "image": "gallery04", "caption": "PENDIENTE" },
+        { "image": "gallery05", "caption": "PENDIENTE" },
+        { "image": "gallery06", "caption": "PENDIENTE" },
+        { "image": "gallery07", "caption": "PENDIENTE" },
+        { "image": "gallery08", "caption": "PENDIENTE" }
+      ]
+    },
+    "gifts": {
+      "title": "Regalos",
+      "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+      "items": [
+        {
+          "type": "store",
+          "title": "Mesa de regalos Liverpool",
+          "description": "PENDIENTE — Confirmar número de registro y nombre de la lista.",
+          "links": [{ "label": "Liverpool", "url": "PENDIENTE — https://mesaderegalos.liverpool.com.mx/milistaderegalos/[NUMERO]" }]
+        },
+        { "type": "cash", "title": "Lluvia de sobres", "text": "Se proporcionará un sobre el día del evento." }
+      ]
+    },
+    "rsvp": {
+      "title": "Confirma tu asistencia",
+      "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que vienes.",
+      "guestCap": 4,
+      "accessMode": "hybrid",
+      "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+      "confirmationMode": "api"
+    },
+    "thankYou": {
+      "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
+      "closingName": "Valentina Hernández Almaguer",
+      "image": "thankYouPortrait",
+      "focalPoint": "50% 36%"
+    },
+    "interludes": [
+      { "image": "interlude01", "afterSection": "location", "alt": "Detalle editorial rosa plata con brillo", "height": "screen", "focalPoint": "50% 50%", "lightX": "48%", "lightY": "40%" },
+      { "image": "interlude02", "afterSection": "family", "alt": "Marco decorativo rosa palo con acentos plateados", "height": "screen", "focalPoint": "50% 50%", "lightX": "55%", "lightY": "34%" },
+      { "image": "interlude03", "afterSection": "itinerary", "alt": "Divisor decorativo con textura editorial", "height": "medium", "focalPoint": "50% 52%", "lightX": "50%", "lightY": "46%" },
+      { "image": "interlude04", "afterSection": "rsvp", "alt": "Fondo decorativo rosa con destellos plateados", "height": "screen", "focalPoint": "50% 50%", "lightX": "46%", "lightY": "38%" }
+    ],
+    "envelope": {
+      "disabled": false,
+      "sealStyle": "wax",
+      "sealIcon": "flower",
+      "sealInitials": "V·H",
+      "sealVariant": "premium-rose",
+      "microcopy": "Toca para abrir mi invitación",
+      "documentLabel": "XV Edition",
+      "cardLabel": "XV Edition",
+      "cardTagline": "Brillar es la actitud",
+      "stampText": "Valentina",
+      "stampYear": "2026",
+      "closedPalette": { "primary": "surfacePrimary", "accent": "actionAccent", "background": "surfacePrimary" }
+    },
+    "sharing": {
+      "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+      "ogImage": "portrait",
+      "ogDescription": "Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México."
+    }
+  }'::jsonb,
+  1,
+  now(),
+  now(),
+  now(),
+  NULL
+FROM public.invitation_projects
+WHERE slug = 'valentina-hernandez'
+  AND deleted_at IS NULL;
+
+-- ============================================================================
+-- 4. CREATE RSVP EVENT
+-- ============================================================================
+INSERT INTO public.events (
+  owner_user_id,
+  slug,
+  event_type,
+  title,
+  status,
+  published_at,
+  created_at,
+  updated_at,
+  deleted_at,
+  invitation_project_id
+)
+SELECT
+  current_setting('app.owner_user_id')::uuid,
+  'valentina-hernandez',
+  'xv',
+  'XV Años — Valentina Hernández Almaguer',
+  'published',
+  now(),
+  now(),
+  now(),
+  NULL,
+  id
+FROM public.invitation_projects
+WHERE slug = 'valentina-hernandez'
+  AND deleted_at IS NULL;
+
+-- ============================================================================
+-- 5. CREATE OWNER MEMBERSHIP
+-- ============================================================================
+INSERT INTO public.event_memberships (
+  event_id,
+  user_id,
+  membership_role,
+  created_at,
+  updated_at,
+  deleted_at
+)
+SELECT
+  e.id,
+  current_setting('app.owner_user_id')::uuid,
+  'owner',
+  now(),
+  now(),
+  NULL
+FROM public.events e
+WHERE e.slug = 'valentina-hernandez'
+  AND e.deleted_at IS NULL;
+
+-- ============================================================================
+-- 6. VERIFICATION
+-- ============================================================================
+
+-- Verify invitation project
+SELECT
+  id::text,
+  slug,
+  title,
+  event_type,
+  status,
+  base_demo_id,
+  theme_id,
+  snapshot ->> 'id' AS snapshot_id,
+  created_at,
+  updated_at
+FROM public.invitation_projects
+WHERE slug = 'valentina-hernandez'
+  AND deleted_at IS NULL;
+
+-- Verify published content
+SELECT
+  pc.id::text AS published_content_id,
+  pc.slug,
+  pc.event_type,
+  pc.is_demo,
+  pc.content ->> '_assetSlug' AS asset_slug,
+  pc.content -> 'rsvp' ->> 'confirmationMode' AS rsvp_confirmation_mode,
+  pc.content -> 'rsvp' ->> 'accessMode' AS rsvp_access_mode,
+  pc.content -> 'hero' ->> 'name' AS hero_name,
+  pc.content -> 'hero' ->> 'label' AS hero_label,
+  pc.version
+FROM public.published_invitation_content pc
+WHERE pc.slug = 'valentina-hernandez'
+  AND pc.deleted_at IS NULL;
+
+-- Verify event
+SELECT
+  e.id::text AS event_id,
+  e.owner_user_id::text,
+  e.slug,
+  e.event_type,
+  e.title,
+  e.status,
+  e.invitation_project_id::text,
+  e.created_at,
+  e.updated_at
+FROM public.events e
+WHERE e.slug = 'valentina-hernandez'
+  AND e.deleted_at IS NULL;
+
+-- Verify membership
+SELECT
+  m.id::text AS membership_id,
+  m.event_id::text,
+  m.user_id::text,
+  m.membership_role,
+  m.created_at
+FROM public.event_memberships m
+JOIN public.events e ON e.id = m.event_id
+WHERE e.slug = 'valentina-hernandez'
+  AND e.deleted_at IS NULL;
+
+-- Count all rows created by this patch
+SELECT
+  (SELECT count(*) FROM public.invitation_projects WHERE slug = 'valentina-hernandez' AND deleted_at IS NULL) AS projects,
+  (SELECT count(*) FROM public.published_invitation_content WHERE slug = 'valentina-hernandez' AND deleted_at IS NULL) AS published_content,
+  (SELECT count(*) FROM public.events WHERE slug = 'valentina-hernandez' AND deleted_at IS NULL) AS events,
+  (SELECT count(*) FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'valentina-hernandez' AND e.deleted_at IS NULL) AS memberships;
+
+COMMIT;
+
+-- ============================================================================
+-- ROLLBACK
+-- ============================================================================
+-- Run only if the patch must be reverted before any other operations touch
+-- these rows. THIS DESTROYS DATA. Use only for immediate rollback.
+--
+-- BEGIN;
+--
+-- DELETE FROM public.event_memberships
+-- WHERE event_id IN (
+--   SELECT id FROM public.events
+--   WHERE slug = 'valentina-hernandez'
+-- );
+--
+-- DELETE FROM public.events
+-- WHERE slug = 'valentina-hernandez';
+--
+-- DELETE FROM public.published_invitation_content
+-- WHERE slug = 'valentina-hernandez';
+--
+-- DELETE FROM public.invitation_projects
+-- WHERE slug = 'valentina-hernandez';
+--
+-- COMMIT;
+-- ============================================================================

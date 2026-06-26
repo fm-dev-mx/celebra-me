@@ -1,0 +1,284 @@
+{
+    "eventType": "xv",
+    "isDemo": false,
+    "title": "XV Años — Valentina Hernández Almaguer",
+    "description": "Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.",
+    "_assetSlug": "xv-valentina-hernandez",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "celestial-blue"
+    },
+    "eventTiming": {
+        "localDateTime": "2026-08-29T15:45",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2026-08-29T21:45:00.000Z"
+    },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "itinerary",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Tu nombre",
+                "guestCount": "Personas que asistirán",
+                "attendance": "¿Me acompañas?",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Valentina Hernández Almaguer",
+        "label": "XV Edition",
+        "date": "2026-08-29T21:45:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "focalPoint": "50% 38%",
+        "focalPointMobile": "50% 32%"
+    },
+    "quote": {
+        "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia...",
+        "author": "Valentina Hernández Almaguer"
+    },
+    "family": {
+        "featuredImage": "family",
+        "parents": {
+            "father": "PENDIENTE — Juan Carlos Hernández [confirmar apellido]",
+            "mother": "PENDIENTE — Nadia Estrella Almaguer [confirmar apellido]"
+        },
+        "parentsOrder": "father-first",
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de mis padres",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+        },
+        "godparents": [
+            {
+                "name": "PENDIENTE — Nayeli Almaguer [confirmar apellido]",
+                "role": "Madrina"
+            },
+            {
+                "name": "César A. Pérez Monroy",
+                "role": "Padrino"
+            }
+        ],
+        "focalPoint": "50% 38%"
+    },
+    "countdown": {
+        "title": "La celebración comienza en",
+        "footerText": "29 de agosto de 2026, Texcoco, Estado de México"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "iconName": "Church",
+                "label": "Ceremonia religiosa",
+                "time": "15:45",
+                "description": "Ceremonia religiosa — Pendiente de confirmar ubicación."
+            },
+            {
+                "iconName": "Reception",
+                "label": "Cóctel de bienvenida",
+                "time": "16:30",
+                "description": "Cóctel de bienvenida en Finca Las Palmas."
+            },
+            {
+                "iconName": "Party",
+                "label": "Recepción",
+                "time": "Por confirmar",
+                "description": "Recepción y celebración en Finca Las Palmas."
+            }
+        ]
+    },
+    "location": {
+        "introEyebrow": "Te esperamos en Texcoco",
+        "introHeading": "Sábado, 29 de agosto de 2026",
+        "introLede": "Será una alegría compartir contigo esta celebración.",
+        "indicationsHeading": "Detalles para mis invitados",
+        "ceremony": {
+            "venueEvent": "Ceremonia religiosa",
+            "venueName": "PENDIENTE — Confirmar ubicación de la ceremonia",
+            "address": "PENDIENTE — Puede ser en Finca Las Palmas o iglesia por confirmar",
+            "city": "Texcoco, Estado de México",
+            "date": "29 de agosto de 2026",
+            "time": "3:45 p.m.",
+            "mapUrl": "PENDIENTE"
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Finca Las Palmas",
+            "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
+            "city": "Texcoco, Estado de México",
+            "date": "29 de agosto de 2026",
+            "time": "4:30 p.m.",
+            "mapUrl": "PENDIENTE — Solicitar enlace de Google Maps"
+        },
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta: <strong>formal</strong>. El color <strong>rosa y lila</strong> están reservados para la quinceañera."
+            },
+            {
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia <strong>PENDIENTE — definir fecha límite</strong>."
+            },
+            {
+                "iconName": "Enveloped",
+                "styleVariant": "default",
+                "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche."
+            }
+        ]
+    },
+    "gallery": {
+        "eyebrow": "Galería",
+        "title": "Brillar es la actitud.",
+        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "PENDIENTE — Agregar descripción cuando se tengan las fotos originales."
+            },
+            {
+                "image": "gallery02",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery03",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery04",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery05",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery06",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery07",
+                "caption": "PENDIENTE"
+            },
+            {
+                "image": "gallery08",
+                "caption": "PENDIENTE"
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Regalos",
+        "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+        "items": [
+            {
+                "type": "store",
+                "title": "Mesa de regalos Liverpool",
+                "description": "PENDIENTE — Confirmar número de registro y nombre de la lista.",
+                "links": [
+                    {
+                        "label": "Liverpool",
+                        "url": "PENDIENTE — https://mesaderegalos.liverpool.com.mx/milistaderegalos/[NUMERO]"
+                    }
+                ]
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de sobres",
+                "text": "Se proporcionará un sobre el día del evento."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma tu asistencia",
+        "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que vienes.",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
+        "closingName": "Valentina Hernández Almaguer",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 36%"
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "location",
+            "alt": "Detalle editorial rosa plata con brillo",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "48%",
+            "lightY": "40%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "family",
+            "alt": "Marco decorativo rosa palo con acentos plateados",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "55%",
+            "lightY": "34%"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "itinerary",
+            "alt": "Divisor decorativo con textura editorial",
+            "height": "medium",
+            "focalPoint": "50% 52%",
+            "lightX": "50%",
+            "lightY": "46%"
+        },
+        {
+            "image": "interlude04",
+            "afterSection": "rsvp",
+            "alt": "Fondo decorativo rosa con destellos plateados",
+            "height": "screen",
+            "focalPoint": "50% 50%",
+            "lightX": "46%",
+            "lightY": "38%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "sealInitials": "V·H",
+        "sealVariant": "premium-rose",
+        "microcopy": "Toca para abrir mi invitación",
+        "documentLabel": "XV Edition",
+        "cardLabel": "XV Edition",
+        "cardTagline": "Brillar es la actitud",
+        "stampText": "Valentina",
+        "stampYear": "2026",
+        "closedPalette": {
+            "primary": "surfacePrimary",
+            "accent": "actionAccent",
+            "background": "surfacePrimary"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+        "ogImage": "portrait",
+        "ogDescription": "Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México."
+    }
+}
