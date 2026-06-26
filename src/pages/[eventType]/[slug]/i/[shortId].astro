@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
-import { resolveShortIdRequest } from '@/lib/invitation/short-id-resolver';
+import { resolveShortIdPage } from '@/lib/invitation/short-id-resolver';
 import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
 
 const SITE_ORIGIN = resolvePublicSiteOrigin();
@@ -12,25 +12,21 @@ const { shortId } = Astro.params;
 Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('Vary', 'User-Agent');
 
-const resolution = await resolveShortIdRequest(
-  shortId,
-  Astro.request.headers.get('user-agent') || '',
-  SITE_ORIGIN,
-);
+const result = await resolveShortIdPage(shortId, Astro.request, SITE_ORIGIN);
 
-if (resolution.kind === 'error') {
-  return Astro.redirect('/404');
+if (result.kind === 'error') {
+  return new Response(null, { status: 404 });
 }
 
-if (resolution.kind === 'redirect') {
-  return Astro.redirect(resolution.redirectTarget);
+if (result.kind === 'redirect') {
+  return Astro.redirect(result.target);
 }
 ---
 
 <InvitationOGShell
-  ogTitle={resolution.ogData.ogTitle}
-  ogDescription={resolution.ogData.ogDescription}
-  ogImage={resolution.ogData.ogImage}
-  canonicalUrl={resolution.canonicalUrl}
-  redirectTarget={resolution.redirectTarget}
+  ogTitle={result.ogData.ogTitle}
+  ogDescription={result.ogData.ogDescription}
+  ogImage={result.ogData.ogImage}
+  canonicalUrl={result.canonicalUrl}
+  redirectTarget={result.redirectTarget}
 />

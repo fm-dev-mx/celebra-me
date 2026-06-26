@@ -20,6 +20,39 @@ export type ShortIdResolution =
 	| { kind: 'crawler'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string }
 	| { kind: 'error' };
 
+/**
+ * Convenience wrapper around resolveShortIdRequest that returns a page-friendly
+ * result suitable for Astro page frontmatter (no Response/Astro.redirect objects
+ * that depend on the Astro global). Used by the two short-ID OG pages to avoid
+ * code duplication.
+ */
+export type ShortIdPageResult =
+	| { kind: 'error' }
+	| { kind: 'redirect'; target: string }
+	| { kind: 'render'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string };
+
+export async function resolveShortIdPage(
+	shortId: string | undefined,
+	request: Request,
+	siteOrigin: string,
+): Promise<ShortIdPageResult> {
+	const userAgent = request.headers.get('user-agent') || '';
+	const resolution = await resolveShortIdRequest(shortId, userAgent, siteOrigin);
+
+	if (resolution.kind === 'error') {
+		return { kind: 'error' };
+	}
+	if (resolution.kind === 'redirect') {
+		return { kind: 'redirect', target: resolution.redirectTarget };
+	}
+	return {
+		kind: 'render',
+		ogData: resolution.ogData,
+		canonicalUrl: resolution.canonicalUrl,
+		redirectTarget: resolution.redirectTarget,
+	};
+}
+
 export async function resolveShortIdRequest(
 	shortId: string | undefined,
 	userAgent: string,
