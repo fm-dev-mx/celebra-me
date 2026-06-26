@@ -28,8 +28,9 @@ const {
 	interludeIndex,
 } = Astro.props;
 
-// Prioritize first interlude for LCP if it's likely to be above/near fold.
-const shouldPrioritizeImage = interludeIndex === 0 || interludeIndex === 1;
+// Interludes render after the hero/reveal sections in current public routes, so
+// they are below the initial mobile viewport. Keep them lazy to avoid competing
+// with the real above-the-fold/LCP content.
 ---
 
 <section
@@ -50,9 +51,10 @@ const shouldPrioritizeImage = interludeIndex === 0 || interludeIndex === 1;
 			width={1920}
 			height={1400}
 			class="invitation-interlude__image"
-			loading={shouldPrioritizeImage ? 'eager' : 'lazy'}
+			loading="lazy"
 			decoding="async"
-			fetchpriority={shouldPrioritizeImage ? 'high' : 'auto'}
+			fetchpriority="low"
+			quality={80}
 		/>
 	</div>
 </section>

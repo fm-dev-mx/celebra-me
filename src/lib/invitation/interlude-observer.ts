@@ -9,10 +9,12 @@ export function initInterludeObserver(): void {
 
 	interludes.forEach((interlude) => {
 		if (interlude instanceof HTMLElement) {
-			interlude.style.setProperty(
-				'--interlude-focal-point',
-				interlude.dataset.focalPoint || 'center',
-			);
+			if (interlude.dataset.focalPoint) {
+				interlude.style.setProperty(
+					'--interlude-focal-point',
+					interlude.dataset.focalPoint,
+				);
+			}
 			interlude.style.setProperty('--interlude-light-x', interlude.dataset.lightX || '50%');
 			interlude.style.setProperty('--interlude-light-y', interlude.dataset.lightY || '34%');
 			if (interlude.dataset.overlayOpacity) {

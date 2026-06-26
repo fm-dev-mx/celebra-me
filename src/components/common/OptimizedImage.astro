@@ -48,35 +48,19 @@ const finalSrc = resolveSrc(imagePath);
 
 {
 	finalSrc ? (
-		widths ? (
-			<Image
-				src={finalSrc as any}
-				alt={alt}
-				widths={widths as number[]}
-				sizes={sizes}
-				width={width}
-				height={height}
-				class:list={[rounded, className]}
-				loading={loading}
-				decoding={decoding}
-				fetchpriority={fetchpriority}
-				format={format}
-				quality={quality}
-			/>
-		) : (
-			<Image
-				src={finalSrc as any}
-				alt={alt}
-				width={width}
-				height={height}
-				class:list={[rounded, className]}
-				loading={loading}
-				decoding={decoding}
-				fetchpriority={fetchpriority}
-				format={format}
-				quality={quality}
-			/>
-		)
+		<Image
+			src={finalSrc as any}
+			alt={alt}
+			{...widths ? { widths: widths as number[], sizes } : {}}
+			width={width}
+			height={height}
+			class:list={[rounded, className]}
+			loading={loading}
+			decoding={decoding}
+			fetchpriority={fetchpriority}
+			format={format}
+			quality={quality}
+		/>
 	) : (
 		<svg
 			width={width}

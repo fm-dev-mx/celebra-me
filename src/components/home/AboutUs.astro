@@ -5,7 +5,7 @@ import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-// import type { IconNames } from '@/core/types/ui/iconNames.type';
+
 import Icon from '@components/common/icons/Icon.astro';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
 
@@ -73,6 +73,9 @@ const aboutToast = getCommonAsset('aboutToast');
 						width={800}
 						height={1000}
 						class="about-us__image"
+						quality={80}
+						widths={[320, 480, 640]}
+						sizes="(max-width: 767px) 334px, 40vw"
 					/>
 					<div class="about-us__image-glow"></div>
 					<div class="about-us__image-decoration"></div>

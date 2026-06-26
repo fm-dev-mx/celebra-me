@@ -129,7 +129,7 @@ export const ImageRegistry: Registry = {
 			alt: 'Fondo Hero',
 		},
 		heroBgMobile: {
-			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
 			alt: 'Fondo Hero',
 		},
 	} satisfies Record<CommonAssetKey, ImageAsset>,

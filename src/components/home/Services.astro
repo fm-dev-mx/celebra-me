@@ -43,7 +43,7 @@ const serviceImages: Record<string, ImageAsset> = {
 			{
 				data.services.map((service, index) => {
 					const image = serviceImages[service.title] || serviceImages['XV Años'];
-					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
+					// Calculate delay for staggered animation: 0ms, 200ms, 400ms, 600ms
 					const delay = `${index * 200}ms`;
 					const href = service.href || '#contacto';
 					return (
@@ -56,6 +56,9 @@ const serviceImages: Record<string, ImageAsset> = {
 									width={600}
 									height={800}
 									class="services__image"
+									quality={80}
+									widths={[320, 480, 640]}
+									sizes="(max-width: 767px) 356px, 25vw"
 								/>
 							</div>
 							<div class="services__overlay"></div>

@@ -23,20 +23,29 @@ const { data } = Astro.props;
 const avatar1 = getCommonAsset('avatar1');
 const avatar2 = getCommonAsset('avatar2');
 const avatar3 = getCommonAsset('avatar3');
+// Hero image uses quality=80 for premium appearance;
+// decorative/social assets default to 75 per perf spec.
+const heroMobileSrc = data.backgroundImage.mobileUrl;
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title">
 	<!-- 1. Background Layer -->
 	<div class="hero-prime__bg">
 		<!-- Priority Image (Lazy load off for LCP) -->
-		<Image
-			src={data.backgroundImage.desktopUrl}
-			alt="Experiencia de lujo en invitaciones digitales para eventos exclusivos"
-			class="hero-bg-img"
-			width={1920}
-			height={1080}
-			loading="eager"
-		/>
+		<picture>
+			{heroMobileSrc && <source media="(max-width: 767px)" srcset={heroMobileSrc} />}
+			<Image
+				src={data.backgroundImage.desktopUrl}
+				alt="Experiencia de lujo en invitaciones digitales para eventos exclusivos"
+				class="hero-bg-img"
+				width={1920}
+				height={1080}
+				quality={80}
+				loading="eager"
+				decoding="sync"
+				fetchpriority="high"
+			/>
+		</picture>
 
 		{data.backgroundImage.videoUrl && (
 			<video
@@ -85,9 +94,9 @@ const avatar3 = getCommonAsset('avatar3');
 		{data.socialProofText && (
 			<div class="hero-prime__social-proof stagger-3">
 				<div class="avatars">
-					<Image src={avatar1.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} />
-					<Image src={avatar2.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} />
-					<Image src={avatar3.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} />
+					<Image src={avatar1.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
+					<Image src={avatar2.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
+					<Image src={avatar3.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
 				</div>
 				<span>{data.socialProofText}</span>
 			</div>
@@ -109,9 +118,12 @@ const avatar3 = getCommonAsset('avatar3');
 <!-- Keep premium hero motion local instead of depending on a separate behavior wrapper. -->
 <script>
 	const hero = document.getElementById('inicio');
-	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	if (hero instanceof HTMLElement && !shouldReduceMotion) {
+	if (hero instanceof HTMLElement) {
+		const controller = new AbortController();
+		const { signal } = controller;
+
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 		const background = hero.querySelector('.hero-prime__bg');
 		const media = Array.from(background?.querySelectorAll('img, video') ?? []);
 
@@ -123,17 +135,27 @@ const avatar3 = getCommonAsset('avatar3');
 			});
 		};
 
-		const handleMouseMove = (event: MouseEvent) => {
-			const moveX = (event.clientX - window.innerWidth / 2) / 50;
-			const moveY = (event.clientY - window.innerHeight / 2) / 50;
-			applyTransform(moveX, moveY);
+		const enableParallax = () => {
+			if (prefersReducedMotion.matches) {
+				applyTransform(0, 0);
+				return;
+			}
+
+			const handleMouseMove = (event: MouseEvent) => {
+				const moveX = (event.clientX - window.innerWidth / 2) / 50;
+				const moveY = (event.clientY - window.innerHeight / 2) / 50;
+				applyTransform(moveX, moveY);
+			};
+
+			const handleMouseLeave = () => {
+				applyTransform(0, 0);
+			};
+
+			hero.addEventListener('mousemove', handleMouseMove, { signal });
+			hero.addEventListener('mouseleave', handleMouseLeave, { signal });
 		};
 
-		const handleMouseLeave = () => {
-			applyTransform(0, 0);
-		};
-
-		hero.addEventListener('mousemove', handleMouseMove);
-		hero.addEventListener('mouseleave', handleMouseLeave);
+		enableParallax();
+		prefersReducedMotion.addEventListener('change', enableParallax, { signal });
 	}
 </script>
