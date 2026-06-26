@@ -44,7 +44,9 @@ try {
 	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
-		return Astro.redirect('/404');
+		Astro.response.status = 404;
+		Astro.response.headers.set('Cache-Control', 'no-store');
+		return;
 	}
 
 	viewModel = resolution.viewModel;
@@ -57,7 +59,9 @@ try {
 	if (resolution.source === 'static') {
 		eventEntry = await getRoutableEventEntry(slug, eventType);
 		if (!eventEntry) {
-			return Astro.redirect('/404');
+			Astro.response.status = 404;
+			Astro.response.headers.set('Cache-Control', 'no-store');
+			return;
 		}
 
 		if (eventType !== eventEntry.data.eventType) {
@@ -132,20 +136,18 @@ Astro.response.headers.set('X-Render-Timing', 'active');
 
 // Extended timing header with detailed spans
 try {
-	const entries: string[] = [];
-	if (page && viewModel && resolveContentDur !== null) {
-		entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
-	}
-	if (page && viewModel && routePersonalizationDur !== null) {
-		entries.push(`routePersonalization;dur=${routePersonalizationDur.toFixed(2)}`);
-	}
-	if (page && viewModel && pagePrepareDur !== null) {
-		entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
-	}
 	if (page && viewModel) {
+		const entries: string[] = [];
+		if (resolveContentDur !== null) {
+			entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
+		}
+		if (routePersonalizationDur !== null) {
+			entries.push(`routePersonalization;dur=${routePersonalizationDur.toFixed(2)}`);
+		}
+		if (pagePrepareDur !== null) {
+			entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
+		}
 		entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
-	}
-	if (entries.length > 0) {
 		Astro.response.headers.set('X-Render-Timing-Detail', entries.join(', '));
 	}
 } catch {
@@ -166,6 +168,8 @@ const headLinks = [
 		? [{ rel: 'stylesheet' as const, href: activeSectionBundleUrl }]
 		: []),
 ];
+
+// page.heroVenueName intentionally overrides viewModel.hero.venueName
 
 ---
 
@@ -217,7 +221,13 @@ const headLinks = [
 					isDemo={page.viewModel.isDemo}
 				/>
 
-				<Hero {...page.viewModel.hero} time={page.heroTime} venueName={page.heroVenueName} guestName={page.guestName} highPriority={!page.wrapper.showEnvelope} />
+				<Hero
+					{...page.viewModel.hero}
+					venueName={page.heroVenueName}
+					time={page.heroTime}
+					guestName={page.guestName}
+					highPriority={!page.wrapper.showEnvelope}
+				/>
 
 				<InvitationSections pageContext={page} />
 
