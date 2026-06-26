@@ -20,6 +20,8 @@ import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
 import { resolveSectionBundleCssUrl } from '@/lib/invitation/section-css-resolver';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 
+import { performance } from 'node:perf_hooks';
+
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
@@ -125,20 +127,26 @@ const cacheControl =
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 
-// Render-Timing header — Vercel strips Server-Timing, use custom header instead
-if (page && viewModel && !renderError) {
+// Render-Timing header — expose server-side timing for diagnostics
+try {
 	const entries: string[] = [];
-	if (resolveContentDur !== null) {
+	if (page && viewModel && resolveContentDur !== null) {
 		entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
 	}
-	if (routePersonalizationDur !== null) {
+	if (page && viewModel && routePersonalizationDur !== null) {
 		entries.push(`routePersonalization;dur=${routePersonalizationDur.toFixed(2)}`);
 	}
-	if (pagePrepareDur !== null) {
+	if (page && viewModel && pagePrepareDur !== null) {
 		entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
 	}
-	entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
-	Astro.response.headers.set('X-Render-Timing', entries.join(', '));
+	if (page && viewModel) {
+		entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
+	}
+	if (entries.length > 0) {
+		Astro.response.headers.set('X-Render-Timing', entries.join(', '));
+	}
+} catch {
+	// Timing header is diagnostic-only; never break the page
 }
 
 const activePresetUrl = viewModel?.theme?.preset
