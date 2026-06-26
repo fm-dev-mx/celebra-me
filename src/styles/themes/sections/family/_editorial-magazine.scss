@@ -1,0 +1,88 @@
+.family[data-variant='editorial-magazine'] {
+	position: relative;
+	background: var(--family-bg);
+	color: var(--family-text-primary);
+
+	.family__header {
+		max-width: 780px;
+		margin-inline: auto;
+		text-align: center;
+	}
+
+	.family__eyebrow {
+		color: var(--family-accent);
+		font-family: var(--font-label);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.22em;
+	}
+
+	.family__title {
+		color: var(--family-text-primary);
+		font-family: var(--family-title-font);
+		font-size: clamp(4rem, 13vw, 9rem);
+		font-weight: 800;
+		line-height: 0.78;
+		text-transform: uppercase;
+		letter-spacing: 0;
+	}
+
+	.family__panel,
+	.family__content,
+	.family__group {
+		border-radius: var(--family-panel-radius);
+	}
+
+	.family__panel,
+	.family__group {
+		border: var(--family-panel-border);
+		background: var(--family-panel-bg);
+		box-shadow: var(--family-panel-shadow);
+	}
+
+	.family__group-title,
+	.family__meta,
+	.family__godparent-label {
+		display: inline-block;
+		padding: 0.45rem 0.75rem;
+		background: var(--editorial-magazine-ink);
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-label);
+		font-size: clamp(0.66rem, 1.2vw, 0.78rem);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.family__name {
+		color: var(--family-text-primary);
+		font-family: var(--family-name-font);
+		font-size: var(--family-name-size);
+		font-weight: 700;
+		line-height: 0.95;
+		letter-spacing: 0;
+	}
+
+	.family__message {
+		color: var(--family-text-muted);
+		font-family: var(--font-body);
+		line-height: 1.7;
+	}
+
+	.family__media-frame {
+		border: 2px solid var(--editorial-magazine-ink);
+		border-radius: 0;
+		overflow: hidden;
+	}
+
+	.family__media-frame img {
+		filter: grayscale(0.4) contrast(1.08);
+	}
+
+	@media (width <= 640px) {
+		.family__panel,
+		.family__group {
+			box-shadow: 9px 9px 0 var(--editorial-magazine-ink);
+		}
+	}
+}

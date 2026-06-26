@@ -39,6 +39,7 @@ export const THEME_PRESETS = [
 	'luxury-hacienda',
 	'editorial',
 	'editorial-rose',
+	'editorial-magazine',
 	'premiere-floral',
 	'celestial-blue',
 	'enchanted-rose',
@@ -63,6 +64,7 @@ export type ThemePreset = (typeof THEME_PRESETS)[number];
  */
 export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set([
 	'editorial',
+	'editorial-magazine',
 	'premiere-floral',
 	'sacred-keepsake',
 	'angelic-presence',

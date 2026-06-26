@@ -1,0 +1,71 @@
+.countdown-section[data-variant='editorial-magazine'] {
+	position: relative;
+	background: var(--countdown-bg);
+	color: var(--editorial-magazine-ink);
+	border-block: 2px solid var(--editorial-magazine-ink);
+	overflow: hidden;
+
+	.countdown-title {
+		color: var(--countdown-title-color);
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 10vw, 8rem);
+		font-weight: 800;
+		line-height: 0.86;
+		text-transform: uppercase;
+		letter-spacing: 0;
+	}
+
+	.countdown-timer {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: clamp(0.5rem, 2vw, 1.25rem);
+		margin-top: clamp(2rem, 6vw, 4rem);
+	}
+
+	.countdown-timer__segment {
+		padding: clamp(1rem, 3vw, 2rem) 0.75rem;
+		border: 2px solid var(--editorial-magazine-ink);
+		background: var(--editorial-magazine-paper);
+		box-shadow: 8px 8px 0 var(--editorial-magazine-red);
+	}
+
+	.countdown-timer__value {
+		color: var(--countdown-value-color);
+		font-family: var(--font-display);
+		font-size: var(--countdown-value-size-mobile);
+		font-weight: 800;
+		line-height: 0.78;
+	}
+
+	.countdown-timer__label {
+		color: var(--countdown-label-color);
+		font-family: var(--font-label);
+		font-size: clamp(0.62rem, 1.2vw, 0.76rem);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: var(--countdown-label-letter-spacing);
+	}
+
+	.countdown-section__footer {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 66%);
+		font-family: var(--font-label);
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+	}
+
+	@media (width >= 760px) {
+		.countdown-timer__value {
+			font-size: var(--countdown-value-size-desktop);
+		}
+	}
+
+	@media (width <= 560px) {
+		.countdown-timer {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.countdown-timer__segment {
+			box-shadow: 5px 5px 0 var(--editorial-magazine-red);
+		}
+	}
+}

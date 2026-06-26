@@ -1,0 +1,113 @@
+.rsvp[data-variant='editorial-magazine'] {
+	position: relative;
+	border: 2px solid var(--editorial-magazine-red);
+	border-radius: 0;
+	background:
+		linear-gradient(
+			90deg,
+			transparent 49.8%,
+			rgb(var(--editorial-magazine-white-rgb) / 8%) 50%,
+			transparent 50.2%
+		),
+		var(--rsvp-bg);
+	box-shadow: 14px 14px 0 rgb(var(--editorial-magazine-red-rgb) / 70%);
+	color: var(--editorial-magazine-white);
+	overflow: hidden;
+
+	.rsvp__eyebrow,
+	.rsvp__locked-eyebrow,
+	label,
+	legend {
+		color: var(--rsvp-label-color);
+		font-family: var(--font-label);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.rsvp__title {
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-display);
+		font-size: clamp(2.8rem, 8vw, 6.8rem);
+		font-weight: 800;
+		line-height: 0.86;
+		text-transform: uppercase;
+		letter-spacing: 0;
+		overflow-wrap: normal;
+	}
+
+	.rsvp__subcopy,
+	.rsvp__demo-footer,
+	.rsvp__locked-detail {
+		color: rgb(var(--editorial-magazine-white-rgb) / 70%);
+		font-family: var(--font-body);
+	}
+
+	input[type='text'],
+	input[type='number'],
+	textarea {
+		border: var(--rsvp-field-border);
+		border-radius: 0;
+		background: var(--rsvp-field-bg);
+		color: var(--editorial-magazine-white);
+	}
+
+	input[type='text']:focus,
+	input[type='number']:focus,
+	textarea:focus {
+		border-color: var(--editorial-magazine-red);
+		background: var(--rsvp-field-bg-focus);
+		outline: 2px solid rgb(var(--editorial-magazine-red-rgb) / 38%);
+		outline-offset: 2px;
+	}
+
+	.rsvp__radio-card {
+		border: var(--rsvp-radio-border);
+		border-radius: 0;
+		background: var(--rsvp-radio-bg);
+		color: var(--editorial-magazine-white);
+	}
+
+	.rsvp__radio-card:hover {
+		background: var(--rsvp-radio-bg-hover);
+	}
+
+	.rsvp__radio-card:has(input:checked) {
+		border-color: var(--rsvp-radio-selected-border);
+		background: var(--rsvp-radio-selected-bg);
+	}
+
+	.rsvp__button {
+		border: 1px solid var(--editorial-magazine-red);
+		border-radius: 0;
+		background: transparent;
+		color: var(--rsvp-button-color);
+		font-family: var(--font-label);
+		font-weight: 900;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		box-shadow: var(--rsvp-button-shadow-rest);
+	}
+
+	.rsvp__button:hover:not(:disabled),
+	.rsvp__button--success {
+		background: var(--rsvp-button-bg-hover);
+		color: var(--rsvp-button-color-hover);
+		box-shadow: var(--rsvp-button-shadow-hover);
+	}
+
+	.rsvp__locked-card {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 26%);
+		border-radius: 0;
+		background: rgb(var(--editorial-magazine-white-rgb) / 6%);
+	}
+
+	@media (width <= 640px) {
+		box-shadow: 8px 8px 0 rgb(var(--editorial-magazine-red-rgb) / 70%);
+
+		.rsvp__title {
+			font-size: clamp(2.1rem, 9vw, 2.75rem);
+			line-height: 0.96;
+		}
+	}
+}

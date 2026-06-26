@@ -1,0 +1,140 @@
+@use '../../../global/mixins' as mixins;
+
+.invitation-hero[data-variant='editorial-magazine'] {
+	position: relative;
+	min-height: 100svh;
+	padding: clamp(1rem, 4vw, 3rem);
+	background: var(--editorial-magazine-ink);
+	color: var(--editorial-magazine-white);
+	overflow: hidden;
+
+	&::before {
+		position: absolute;
+		inset: clamp(0.9rem, 3vw, 2rem);
+		z-index: 3;
+		pointer-events: none;
+		content: '';
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 72%);
+	}
+
+	.invitation-hero__background::after {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		content: '';
+		background: var(--hero-overlay);
+	}
+
+	.invitation-hero__background img {
+		filter: var(--hero-image-filter);
+	}
+
+	.invitation-hero__content {
+		position: relative;
+		z-index: 4;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.58fr);
+		align-items: end;
+		gap: clamp(1rem, 4vw, 3rem);
+		width: min(1180px, 100%);
+		min-height: calc(100svh - clamp(2rem, 8vw, 6rem));
+		margin-inline: auto;
+		padding-block: clamp(4rem, 12svh, 8rem) clamp(5rem, 10svh, 7rem);
+	}
+
+	.invitation-hero__label {
+		align-self: start;
+		max-width: 24rem;
+		margin: 0;
+		padding-bottom: 0.75rem;
+		border-bottom: 3px solid var(--editorial-magazine-red);
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-label);
+		font-size: clamp(0.72rem, 1.2vw, 0.9rem);
+		font-weight: 800;
+		line-height: 1.15;
+		text-transform: uppercase;
+		letter-spacing: 0.24em;
+	}
+
+	.invitation-hero__title {
+		max-width: 11ch;
+		margin: 0;
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-display);
+		font-size: var(--hero-title-size);
+		font-weight: 800;
+		line-height: 0.78;
+		text-transform: uppercase;
+		letter-spacing: 0;
+		text-shadow: 0 14px 32px rgb(var(--editorial-magazine-ink-rgb) / 58%);
+	}
+
+	.invitation-hero__portrait {
+		justify-self: end;
+		width: min(100%, 360px);
+		aspect-ratio: 0.72;
+		border: 2px solid var(--editorial-magazine-white);
+		border-radius: 0;
+		box-shadow: 18px 18px 0 var(--editorial-magazine-red);
+		overflow: hidden;
+	}
+
+	.invitation-hero__portrait img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: var(--hero-portrait-filter);
+	}
+
+	.invitation-hero__details {
+		position: absolute;
+		right: clamp(1.25rem, 4vw, 3rem);
+		bottom: clamp(1.25rem, 4vw, 3rem);
+		left: clamp(1.25rem, 4vw, 3rem);
+		z-index: 5;
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-top: 0.9rem;
+		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 74%);
+	}
+
+	.invitation-hero__details p {
+		margin: 0;
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-label);
+		font-size: clamp(0.78rem, 1.4vw, 1rem);
+		font-weight: 750;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.invitation-hero__divider,
+	.invitation-hero__scroll-indicator {
+		display: none;
+	}
+
+	@include mixins.respond-below(md) {
+		.invitation-hero__content {
+			grid-template-columns: 1fr;
+			align-content: end;
+			padding-block: clamp(3rem, 10svh, 5rem) clamp(8rem, 18svh, 10rem);
+		}
+
+		.invitation-hero__title {
+			font-size: clamp(3.45rem, 15vw, 5.6rem);
+		}
+
+		.invitation-hero__portrait {
+			justify-self: start;
+			width: min(72vw, 260px);
+			box-shadow: 10px 10px 0 var(--editorial-magazine-red);
+		}
+
+		.invitation-hero__details {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+}

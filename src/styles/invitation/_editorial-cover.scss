@@ -692,3 +692,64 @@
 	--ec-rule-soft: rgb(252 242 245 / 14%);
 	--ec-panel: rgb(252 242 245 / 4%);
 }
+
+.editorial-cover-wrapper[data-variant='editorial-magazine'] {
+	--ec-bg:
+		linear-gradient(90deg, rgb(215 25 32 / 92%) 0 34%, transparent 34%),
+		radial-gradient(ellipse at 78% 20%, rgb(255 255 255 / 18%), transparent 38%),
+		linear-gradient(135deg, rgb(13 13 15), rgb(25 25 28) 58%, rgb(215 25 32));
+	--ec-text-primary: rgb(255 255 255);
+	--ec-text-secondary: rgb(255 255 255 / 78%);
+	--ec-text-muted: rgb(255 255 255 / 58%);
+	--ec-accent: rgb(215 25 32);
+	--ec-accent-strong: rgb(255 255 255);
+	--ec-rule: rgb(255 255 255 / 72%);
+	--ec-rule-soft: rgb(255 255 255 / 18%);
+	--ec-panel: rgb(13 13 15 / 74%);
+	--ec-masthead-size: clamp(4.4rem, 15vw, 12rem);
+	--ec-headline-size: clamp(4.8rem, 14vw, 11rem);
+
+	.editorial-masthead__eyebrow,
+	.editorial-cover__metadata-label,
+	.editorial-cover__label,
+	.editorial-cover__guest-label,
+	.editorial-cover__issue {
+		font-weight: 850;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.editorial-cover__metadata-value,
+	.editorial-cover__cover-line,
+	.editorial-cover__date {
+		color: var(--ec-text-primary);
+	}
+
+	.editorial-cover__cover-line--secondary,
+	.editorial-cover__venue,
+	.editorial-cover__ampersand {
+		color: var(--ec-accent-strong);
+	}
+
+	.editorial-cover__headline {
+		text-transform: uppercase;
+		text-shadow: 0 16px 38px rgb(0 0 0 / 48%);
+	}
+
+	.editorial-cover__cta {
+		border-color: var(--ec-text-primary);
+		background: var(--ec-text-primary);
+		color: rgb(13 13 15);
+	}
+
+	.editorial-cover__cta:hover {
+		border-color: var(--ec-text-primary);
+		background: rgb(215 25 32);
+		color: var(--ec-text-primary);
+	}
+
+	@media (width <= 640px) {
+		--ec-masthead-size: clamp(3rem, 13.5vw, 4.8rem);
+		--ec-headline-size: clamp(3.4rem, 14vw, 5rem);
+	}
+}
