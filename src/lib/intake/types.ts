@@ -31,6 +31,16 @@ export const INVITATION_STATUSES = [
 
 export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
 
+/** Statuses considered "locked" — no further intake edits allowed. */
+export const LOCKED_INVITATION_STATUSES: InvitationStatus[] = [
+	'in_review',
+	'in_production',
+	'preview_sent',
+	'approved',
+	'published',
+	'archived',
+];
+
 export const INTAKE_REQUEST_STATUSES = [
 	'draft',
 	'active',

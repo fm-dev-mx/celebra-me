@@ -7,12 +7,9 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import { findSubmissionByRequestId, createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import type { EventType } from '@/lib/theme/theme-contract';
 import type { IntakeBlockType } from '@/lib/intake/types';
+import { LOCKED_INVITATION_STATUSES } from '@/lib/intake/types';
 
 const { token } = Astro.params;
-
-if (!token) {
-	return Astro.redirect('/404');
-}
 
 let invitationTitle = '';
 let invitationEventType: EventType = 'xv';
@@ -22,15 +19,25 @@ let initialStatus = 'in_progress';
 let isLocked = false;
 let errorMessage = '';
 
+// Astro only matches this route when [token] is present; the guard is defensive against
+// middleware / rewrite edge cases that could produce an empty param.
+if (!token) {
+	Astro.response.status = 404;
+	Astro.response.headers.set('Cache-Control', 'no-store');
+	// eslint-disable-next-line no-useless-assignment
+	errorMessage = 'Enlace no válido.';
+	return;
+}
+
 try {
 	const tokenHash = hashIntakeToken(token);
 	const intakeRequest = await findIntakeRequestByTokenHash(tokenHash);
 
 	if (!intakeRequest) {
 		errorMessage = 'Enlace no valido o no encontrado.';
-	} else if (intakeRequest.status === 'closed' || intakeRequest.status === 'expired') {
-		errorMessage = 'Este enlace ha expirado o fue cerrado.';
-	} else if (intakeRequest.expiresAt && new Date(intakeRequest.expiresAt) < new Date()) {
+	} else if (intakeRequest.status === 'closed') {
+		errorMessage = 'Este enlace ha sido cerrado.';
+	} else if (intakeRequest.status === 'expired' || (intakeRequest.expiresAt && new Date(intakeRequest.expiresAt) < new Date())) {
 		errorMessage = 'Este enlace ha expirado.';
 	} else {
 		const invitation = await findInvitationById(intakeRequest.invitationId);
@@ -41,8 +48,7 @@ try {
 			invitationEventType = invitation.eventType;
 			enabledBlocks = intakeRequest.enabledBlocks;
 
-			const lockedStatuses = ['in_review', 'in_production', 'preview_sent', 'approved', 'published', 'archived'];
-			isLocked = lockedStatuses.includes(invitation.status);
+			isLocked = LOCKED_INVITATION_STATUSES.includes(invitation.status);
 
 			let submission = await findSubmissionByRequestId(intakeRequest.id);
 			if (!submission) {
