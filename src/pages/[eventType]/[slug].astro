@@ -25,13 +25,21 @@ const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');
 
+// Server-Timing instrumentation
+let resolveContentDur: number | null = null;
+let routePersonalizationDur: number | null = null;
+let pagePrepareDur: number | null = null;
+const perfStart = performance.now();
+
 let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
 let renderError: string | null = null;
 let viewModel: InvitationViewModel | null = null;
 
 try {
+	const resolveContentStart = performance.now();
 	const resolution = await resolveInvitationContent(slug, eventType);
+	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
 		return Astro.redirect('/404');
@@ -66,6 +74,7 @@ try {
 	}
 
 	if (inviteId) {
+		const personalizationStart = performance.now();
 		const personalization = await resolveRoutePersonalization({
 			inviteId,
 			currentPathWithQuery,
@@ -73,6 +82,7 @@ try {
 			routeSlug: slug,
 			routeIsDemo,
 		});
+		routePersonalizationDur = performance.now() - personalizationStart;
 		if (personalization.redirectPath) {
 			return Astro.redirect(personalization.redirectPath, 302);
 		}
@@ -80,12 +90,15 @@ try {
 	}
 
 	if (resolution.source === 'static') {
+		const prepareStart = performance.now();
 		page = prepareInvitationPageContext({
 			eventEntry: eventEntry!,
 			slug,
 			guestContext,
 		});
+		pagePrepareDur = performance.now() - prepareStart;
 	} else {
+		const prepareStart = performance.now();
 		page = buildPageContextFromViewModel({
 			viewModel,
 			slug,
@@ -95,6 +108,7 @@ try {
 				| { footer?: { variant?: ThemePreset } }
 				| undefined,
 		});
+		pagePrepareDur = performance.now() - prepareStart;
 	}
 } catch (error) {
 	console.error(
@@ -107,9 +121,25 @@ try {
 
 const cacheControl =
 	!hasInviteParam && page && viewModel
-		? 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
+		? 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400'
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
+
+// Server-Timing header — only when rendering (not on redirect/error paths)
+if (page && viewModel && !renderError) {
+	const entries: string[] = [];
+	if (resolveContentDur !== null) {
+		entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
+	}
+	if (routePersonalizationDur !== null) {
+		entries.push(`routePersonalization;dur=${routePersonalizationDur.toFixed(2)}`);
+	}
+	if (pagePrepareDur !== null) {
+		entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
+	}
+	entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
+	Astro.response.headers.set('Server-Timing', entries.join(', '));
+}
 
 const activePresetUrl = viewModel?.theme?.preset
 	? resolvePresetCssUrl(viewModel.theme.preset)
