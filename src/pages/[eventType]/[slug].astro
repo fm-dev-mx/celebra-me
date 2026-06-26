@@ -127,7 +127,10 @@ const cacheControl =
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 
-// Render-Timing header — expose server-side timing for diagnostics
+// Render-Timing — always set a simple baseline to confirm header survives Vercel
+Astro.response.headers.set('X-Render-Timing', 'active');
+
+// Extended timing header with detailed spans
 try {
 	const entries: string[] = [];
 	if (page && viewModel && resolveContentDur !== null) {
@@ -143,7 +146,7 @@ try {
 		entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
 	}
 	if (entries.length > 0) {
-		Astro.response.headers.set('X-Render-Timing', entries.join(', '));
+		Astro.response.headers.set('X-Render-Timing-Detail', entries.join(', '));
 	}
 } catch {
 	// Timing header is diagnostic-only; never break the page
