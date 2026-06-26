@@ -37,6 +37,8 @@ const {
 const ctaText = coverEdition
 	? `ABRIR EDICIÓN ${coverEdition}`
 	: 'ABRIR INVITACIÓN';
+const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
+const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
 const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
 	day: 'numeric',
 	month: 'long',
@@ -44,16 +46,18 @@ const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
 	timeZone: 'UTC',
 });
 
-// Build magazine metadata footer
-const issueParts: string[] = [];
-if (coverVolume) issueParts.push(`Vol. ${coverVolume}`);
-if (coverIssue) issueParts.push(`No. ${coverIssue}`);
-const issueMetadata = issueParts.length > 0 ? issueParts.join(' · ') : undefined;
+// Build magazine-style metadata for the cover rail.
+const issueParts: { label: string; value: string }[] = [];
+if (coverVolume) issueParts.push({ label: 'VOL.', value: coverVolume });
+if (coverIssue) issueParts.push({ label: 'NÚM.', value: coverIssue });
+if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
 
 // For SSR fallback when JS is disabled: compute the skip URL
 const skipParams = new URLSearchParams(Astro.url.search);
 skipParams.set('skipEnvelope', 'true');
 const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
+const shouldRenderHidden =
+	Astro.url.searchParams.get('skipEnvelope') === 'true' || previewState === 'opened';
 ---
 
 <ds-editorial-cover
@@ -61,6 +65,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-event-slug={eventSlug}
 	data-variant={variant || ''}
 	data-preview-state={previewState}
+	hidden={shouldRenderHidden ? true : undefined}
 >
 	<div class="editorial-cover-container">
 		<!-- Paper grain overlay -->
@@ -68,14 +73,31 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 		<!-- Magazine masthead -->
 		<header class="editorial-masthead">
-			<span class="editorial-masthead__brand">Celebra·Me</span>
-			<span class="editorial-masthead__separator" aria-hidden="true">·</span>
-			<span class="editorial-masthead__edition">EDICIÓN {coverEdition}</span>
+			<p class="editorial-masthead__eyebrow">Portada digital</p>
+			<span class="editorial-masthead__brand">CELEBRA <span aria-hidden="true">·</span> ME</span>
 		</header>
+
+		{issueParts.length > 0 && (
+			<aside class="editorial-cover__metadata" aria-label="Datos de portada">
+				{issueParts.map((item) => (
+					<span class="editorial-cover__metadata-item">
+						<span class="editorial-cover__metadata-label">{item.label}</span>
+						<span class="editorial-cover__metadata-value">{item.value}</span>
+					</span>
+				))}
+			</aside>
+		)}
 
 		<!-- Cover headline area -->
 		<div class="editorial-cover__content">
-			{heroLabel && <span class="editorial-cover__label">{heroLabel}</span>}
+			<div class="editorial-cover__cover-lines" aria-label="Líneas editoriales">
+				<span class="editorial-cover__cover-line">{coverLines[0]}</span>
+				<span class="editorial-cover__cover-line editorial-cover__cover-line--secondary">
+					{coverLines[1]}
+				</span>
+			</div>
+
+			{coverKicker && <span class="editorial-cover__label">{coverKicker}</span>}
 
 			<h1 class="editorial-cover__headline">
 				{heroName}
@@ -87,24 +109,21 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					</>
 				)}
 			</h1>
-
-			<!-- Divider line -->
-			<div class="editorial-cover__divider" aria-hidden="true"></div>
-
-			<!-- Event details -->
-			<div class="editorial-cover__details">
-				<p class="editorial-cover__date">{formattedDate}</p>
-				{heroVenueName && <p class="editorial-cover__venue">{heroVenueName}</p>}
-			</div>
-
-			<!-- Guest name (if personalizing) -->
-			{guestName && (
-				<p class="editorial-cover__guest">
-					<small class="editorial-cover__guest-label">Entrega especial para</small>
-					<strong class="editorial-cover__guest-name">{guestName}</strong>
-				</p>
-			)}
 		</div>
+
+		<!-- Event details -->
+		<div class="editorial-cover__details" aria-label="Datos del evento">
+			<p class="editorial-cover__date">{formattedDate}</p>
+			{heroVenueName && <p class="editorial-cover__venue">{heroVenueName}</p>}
+		</div>
+
+		<!-- Guest name (if personalizing) -->
+		{guestName && (
+			<p class="editorial-cover__guest">
+				<small class="editorial-cover__guest-label">Entrega especial para</small>
+				<strong class="editorial-cover__guest-name">{guestName}</strong>
+			</p>
+		)}
 
 		<!-- CTA button -->
 		<div class="editorial-cover__action">
@@ -128,11 +147,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 		</div>
 
 		<!-- Magazine footer metadata -->
-		{issueMetadata && (
-			<footer class="editorial-cover__footer">
-				<span class="editorial-cover__issue">{issueMetadata}</span>
-			</footer>
-		)}
+		<footer class="editorial-cover__footer">
+			<span class="editorial-cover__issue">Colección editorial · Celebra Me</span>
+		</footer>
 	</div>
 </ds-editorial-cover>
 
