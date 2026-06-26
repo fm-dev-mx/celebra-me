@@ -19,6 +19,16 @@ export class RevealManager {
 		this.storageKey = `envelope-opened-${this.eventSlug}`;
 
 		window.addEventListener('pagehide', () => this.cleanupAudio(), { once: true });
+
+		if (this.audioUrl) {
+			try {
+				this.audio = new Audio(this.audioUrl);
+				this.audio.preload = 'auto';
+				this.audio.volume = 0.4;
+			} catch {
+				// Fallback for environments without Audio support
+			}
+		}
 	}
 
 	private getStoredFlag(key: string): boolean {
@@ -50,18 +60,22 @@ export class RevealManager {
 	}
 
 	public playOpenSound(): void {
-		if (!this.audioUrl) return;
+		if (!this.audio) return;
 
-		this.audio?.pause();
-		this.audio = new Audio(this.audioUrl);
-		this.audio.volume = 0.4;
-		void this.audio.play().catch(() => {});
+		try {
+			this.audio.currentTime = 0;
+			void this.audio.play().catch(() => {});
+		} catch {
+			// Ignore playback failures
+		}
 	}
 
 	private cleanupAudio(): void {
-		this.audio?.pause();
-		if (this.audio) this.audio.src = '';
-		this.audio = null;
+		if (this.audio) {
+			this.audio.pause();
+			this.audio.src = '';
+			this.audio = null;
+		}
 	}
 }
 
