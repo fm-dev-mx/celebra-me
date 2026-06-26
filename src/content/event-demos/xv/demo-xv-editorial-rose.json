@@ -227,6 +227,10 @@
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "editorial-cover",
+        "coverEdition": "XV",
+        "coverVolume": "1",
+        "coverIssue": "2027",
         "sealStyle": "wax",
         "sealIcon": "flower",
         "sealInitials": "A·V",

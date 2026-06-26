@@ -164,6 +164,14 @@ export interface EnvelopeViewModel {
 			accent?: string;
 			sealAccent?: string;
 		};
+		/** Editorial cover reveal: edition label (e.g. "XV"). When set, triggers editorial-cover reveal instead of envelope. */
+		coverEdition?: string;
+		/** Editorial cover reveal: volume number (e.g. "1"). */
+		coverVolume?: string;
+		/** Editorial cover reveal: issue year (e.g. "2027"). */
+		coverIssue?: string;
+		/** Explicit reveal variant. When 'editorial-cover', renders the editorial cover instead of the envelope. */
+		revealVariant?: 'editorial-cover';
 	};
 }
 

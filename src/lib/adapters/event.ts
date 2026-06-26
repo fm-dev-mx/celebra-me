@@ -269,6 +269,10 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 						? resolveXareniSealColor(data.envelope.sealColor)
 						: undefined,
 			},
+			coverEdition: data.envelope.coverEdition,
+			coverVolume: data.envelope.coverVolume,
+			coverIssue: data.envelope.coverIssue,
+			revealVariant: data.envelope.revealVariant,
 		},
 	};
 }
