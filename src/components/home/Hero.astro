@@ -93,7 +93,7 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 		<!-- Social Proof (Optional) -->
 		{data.socialProofText && (
 			<div class="hero-prime__social-proof stagger-3">
-				<div class="avatars">
+				<div class="hero-prime__avatars">
 					<Image src={avatar1.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
 					<Image src={avatar2.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
 					<Image src={avatar3.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
@@ -135,11 +135,23 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 			});
 		};
 
+		const setMediaWillChange = (value: string) => {
+			media.forEach((element) => {
+				if (element instanceof HTMLElement) {
+					element.style.willChange = value;
+				}
+			});
+		};
+
 		const enableParallax = () => {
 			if (prefersReducedMotion.matches) {
+				setMediaWillChange('');
 				applyTransform(0, 0);
 				return;
 			}
+
+			// Parallax is active — promote GPU layer for smooth transforms
+			setMediaWillChange('transform');
 
 			const handleMouseMove = (event: MouseEvent) => {
 				const moveX = (event.clientX - window.innerWidth / 2) / 50;
