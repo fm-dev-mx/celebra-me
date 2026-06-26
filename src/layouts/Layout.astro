@@ -9,27 +9,8 @@ import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 
-// Typography: Core 5 Font System (@fontsource includes font-display: swap)
-// Display Formal
-import '@fontsource-variable/cinzel';
-// Display Elegant
-import '@fontsource-variable/playfair-display';
-// Calligraphy
-import '@fontsource/pinyon-script/400.css';
-// Body Narrative
-import '@fontsource-variable/eb-garamond';
-// UI/Functional
+// Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
-// Premium Hacienda Display
-import '@fontsource-variable/cormorant-garamond';
-// Premium Editorial Display
-import '@fontsource-variable/bodoni-moda';
-// Editorial UI Sans
-import '@fontsource-variable/instrument-sans';
-// Accent Script (Nautigal)
-import '@fontsource/the-nautigal';
-// Western/Typewriter (keep for fallback)
-import '@fontsource/special-elite/400.css';
 
 import type { ImageMetadata } from 'astro';
 
