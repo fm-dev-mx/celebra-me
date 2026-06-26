@@ -8,6 +8,7 @@ updated: 2026-06-25
 supersedes: []
 superseded_by: []
 ---
+
 # Spec: Public Invitation Route Speed
 
 > **Status:** Analysis complete — ready for implementation **Route:** `/[eventType]/[slug]` **Test
