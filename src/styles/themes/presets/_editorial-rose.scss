@@ -1,0 +1,366 @@
+// Editorial Rose Theme Preset
+// Aesthetic: Pink editorial/fashion-magazine with silver accents
+// Extracted from Valentina Hernández Almaguer event-scoped override.
+// Palette: rosewater, blush, rose-gold, silver, white, charcoal, fuchsia, pale-pink
+
+.theme-preset--editorial-rose {
+	// ==========================================================================
+	// 1. PALETTE TOKENS
+	// ==========================================================================
+
+	--v-rosewater-rgb: 245 214 214;
+	--v-blush-rgb: 242 196 196;
+	--v-rose-gold-rgb: 232 180 184;
+	--v-silver-rgb: 212 212 212;
+	--v-white-rgb: 255 255 255;
+	--v-charcoal-rgb: 26 26 26;
+	--v-fuchsia-rgb: 212 20 90;
+	--v-pale-pink-rgb: 253 245 245;
+	--v-rosewater: rgb(var(--v-rosewater-rgb));
+	--v-blush: rgb(var(--v-blush-rgb));
+	--v-rose-gold: rgb(var(--v-rose-gold-rgb));
+	--v-silver: rgb(var(--v-silver-rgb));
+	--v-white: rgb(var(--v-white-rgb));
+	--v-charcoal: rgb(var(--v-charcoal-rgb));
+	--v-fuchsia: rgb(var(--v-fuchsia-rgb));
+	--v-pale-pink: rgb(var(--v-pale-pink-rgb));
+
+	// ==========================================================================
+	// 2. SEMANTIC COLOR BRIDGE
+	// ==========================================================================
+
+	// Surface colors
+	--color-surface-primary: var(--v-white);
+	--color-surface-primary-rgb: var(--v-white-rgb);
+	--color-surface-secondary: var(--v-pale-pink);
+	--color-surface-secondary-rgb: var(--v-pale-pink-rgb);
+	--color-surface-elevated: rgb(var(--v-white-rgb) / 94%);
+	--color-surface-soft: rgb(var(--v-blush-rgb) / 34%);
+	--color-surface-canvas: var(--v-white);
+	--color-surface-dark: var(--v-charcoal);
+	--color-surface-dark-rgb: var(--v-charcoal-rgb);
+
+	// Text colors
+	--color-text-primary: var(--v-charcoal);
+	--color-text-primary-rgb: var(--v-charcoal-rgb);
+	--color-text-secondary: rgb(var(--v-charcoal-rgb) / 74%);
+	--color-text-secondary-rgb: var(--v-charcoal-rgb);
+	--color-text-emphasis: var(--v-charcoal);
+	--color-text-muted: rgb(var(--v-charcoal-rgb) / 64%);
+	--color-text-on-dark: var(--v-white);
+	--color-text-on-dark-rgb: var(--v-white-rgb);
+	--color-text-on-light: var(--v-charcoal);
+
+	// Action colors
+	--color-action-primary: var(--v-charcoal);
+	--color-action-primary-rgb: var(--v-charcoal-rgb);
+	--color-action-accent: var(--v-rose-gold);
+	--color-action-accent-rgb: var(--v-rose-gold-rgb);
+
+	// Accent colors — editorial pink/silver remapping of celestial-blue tokens
+	--color-ice-blue: var(--v-blush);
+	--color-ice-blue-rgb: var(--v-blush-rgb);
+	--color-satin-blue: var(--v-rose-gold);
+	--color-satin-blue-rgb: var(--v-rose-gold-rgb);
+	--color-moon-blue: var(--v-rosewater);
+	--color-deep-blue: var(--v-fuchsia);
+	--color-night-blue: var(--v-charcoal);
+	--color-celestial-white: var(--v-white);
+	--color-mist-blue: var(--v-pale-pink);
+	--color-powder-blue: var(--v-rosewater);
+	--color-pearl-gray: var(--v-silver);
+	--color-pearl-gray-rgb: var(--v-silver-rgb);
+	--color-soft-graphite: var(--v-charcoal);
+	--color-soft-graphite-rgb: var(--v-charcoal-rgb);
+	--color-cold-silver: var(--v-silver);
+	--color-cold-silver-rgb: var(--v-silver-rgb);
+	--color-deep-blue-graphite: var(--v-charcoal);
+	--color-deep-blue-graphite-rgb: var(--v-charcoal-rgb);
+	--color-cool-ivory: var(--v-white);
+	--color-cool-ivory-rgb: var(--v-white-rgb);
+	--color-liquid-silver: var(--v-silver);
+	--color-liquid-silver-rgb: var(--v-silver-rgb);
+	--color-diamond-white: var(--v-white);
+	--color-diamond-white-rgb: var(--v-white-rgb);
+
+	// Border and divider colors
+	--color-border-light: rgb(var(--v-silver-rgb) / 24%);
+	--color-border-medium: rgb(var(--v-silver-rgb) / 40%);
+	--color-border-strong: var(--v-charcoal);
+
+	// ==========================================================================
+	// 3. TYPOGRAPHY
+	// ==========================================================================
+
+	--font-display: 'Cormorant Garamond', georgia, serif;
+	--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-calligraphy: 'Pinyon Script', cursive;
+
+	// ==========================================================================
+	// 4. GLASS, SHADOWS AND SHARED EFFECTS
+	// ==========================================================================
+
+	--color-glass-bg: rgb(var(--v-white-rgb) / 58%);
+	--color-glass-border: rgb(var(--v-rose-gold-rgb) / 48%);
+	--color-glass-shadow: rgb(var(--v-charcoal-rgb) / 8%);
+	--glass-blur: 8px;
+	--glass-saturate: 145%;
+	--shadow-premium:
+		0 24px 62px rgb(var(--v-charcoal-rgb) / 10%), 0 1px 0 rgb(var(--v-white-rgb) / 72%);
+	--shadow-editorial: 0 18px 46px rgb(var(--v-charcoal-rgb) / 9%);
+	--border-fine-silver: 1px solid rgb(var(--v-silver-rgb) / 58%);
+	--border-image: 1px solid rgb(var(--v-rose-gold-rgb) / 62%);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		rgb(var(--v-white-rgb) / 94%) 0%,
+		rgb(var(--v-silver-rgb) / 86%) 50%,
+		rgb(var(--v-blush-rgb) / 72%) 100%
+	);
+
+	// ==========================================================================
+	// 5. HERO SECTION
+	// ==========================================================================
+
+	--hero-card-bg: transparent;
+	--hero-card-border-hairline: rgb(var(--v-silver-rgb) / 58%);
+	--hero-card-shadow-ambient: none;
+	--hero-title-color-start: rgb(var(--v-charcoal-rgb) / 92%);
+	--hero-title-color-mid: var(--v-rose-gold);
+	--hero-title-color-end: rgb(var(--v-silver-rgb) / 75%);
+	--hero-badge-bg: rgb(var(--v-white-rgb) / 12%);
+	--hero-badge-border: rgb(var(--v-silver-rgb) / 62%);
+	--hero-badge-text: var(--v-white);
+	--hero-label-color: var(--v-rose-gold);
+
+	// ==========================================================================
+	// 6. QUOTE SECTION
+	// ==========================================================================
+
+	--quote-bg: var(--v-white);
+	--quote-text-color: var(--v-charcoal);
+	--quote-author-color: var(--v-rose-gold);
+	--quote-divider-color: var(--v-silver);
+	--quote-divider-display: none;
+	--quote-ornament-color: var(--v-rose-gold);
+	--quote-content-font: var(--font-calligraphy);
+	--quote-content-size: clamp(1.6rem, 4.6vw, 2.95rem);
+	--quote-content-line-height: 1.35;
+	--quote-content-letter-spacing: -0.01em;
+	--quote-padding-block: clamp(4rem, 12vh, 7.5rem);
+	--quote-content-max-width: 640px;
+
+	// ==========================================================================
+	// 7. FAMILY SECTION
+	// ==========================================================================
+
+	--family-bg: var(--v-white);
+	--family-text-primary: var(--v-charcoal);
+	--family-text-muted: rgb(var(--v-charcoal-rgb) / 72%);
+	--family-accent: var(--v-rose-gold);
+	--family-panel-bg: rgb(var(--v-pale-pink-rgb) / 60%);
+	--family-panel-border: 1px solid rgb(var(--v-rose-gold-rgb) / 24%);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--v-rose-gold-rgb) / 72%) 50%,
+		transparent 100%
+	);
+	--family-media-bg: var(--v-silver);
+	--family-media-border: 1px solid rgb(var(--v-silver-rgb) / 40%);
+	--family-title-font: var(--font-calligraphy);
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.45rem, 3.2vw, 2.1rem);
+	--family-lead-name-size: clamp(2.2rem, 4.8vw, 3rem);
+	--family-panel-radius: clamp(20px, 5vw, 35px);
+	--family-panel-spacing: clamp(2.2rem, 5vw, 4.6rem) clamp(1.15rem, 4vw, 4.25rem);
+	--family-panel-shadow: 0 24px 64px rgb(var(--v-charcoal-rgb) / 6%);
+	--family-media-shadow: 0 18px 44px rgb(var(--v-charcoal-rgb) / 10%);
+
+	// ==========================================================================
+	// 8. GALLERY SECTION
+	// ==========================================================================
+
+	--gallery-section-bg: radial-gradient(
+		circle at 50% 10%,
+		rgb(var(--v-blush-rgb) / 62%) 0%,
+		var(--v-white) 56%,
+		rgb(var(--v-silver-rgb) / 72%) 100%
+	);
+	--gallery-card-bg: rgb(var(--v-white-rgb) / 64%);
+	--gallery-card-radius: 6px;
+	--gallery-card-padding: 7px;
+	--gallery-image-radius: 2px;
+	--gallery-title-font: var(--font-display);
+	--gallery-title-color: var(--v-charcoal);
+	--gallery-subtitle-color: rgb(var(--v-charcoal-rgb) / 72%);
+	--gallery-caption-bg: rgb(var(--v-white-rgb) / 86%);
+	--gallery-caption-color: var(--v-charcoal);
+	--gallery-caption-font: var(--font-body);
+	--gallery-caption-size: 0.8rem;
+	--gallery-caption-letter-spacing: 0.02em;
+
+	// ==========================================================================
+	// 9. GIFTS SECTION
+	// ==========================================================================
+
+	--gifts-bg: var(--v-pale-pink);
+	--gifts-title-color: var(--v-charcoal);
+	--gifts-subtitle-color: rgb(var(--v-charcoal-rgb) / 72%);
+	--gifts-card-bg: var(--v-white);
+	--gifts-card-border: 1px solid rgb(var(--v-rose-gold-rgb) / 24%);
+	--gifts-card-shadow: 0 4px 20px rgb(var(--v-charcoal-rgb) / 6%);
+	--gifts-card-title-color: var(--v-charcoal);
+	--gifts-text-color: var(--v-charcoal);
+	--gifts-icon-color: var(--v-rose-gold);
+
+	// ==========================================================================
+	// 10. COUNTDOWN SECTION
+	// ==========================================================================
+
+	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);
+	--countdown-value-size-desktop: clamp(2.8rem, 4.5vw, 4rem);
+	--countdown-label-letter-spacing: 0.22em;
+
+	// ==========================================================================
+	// 11. LOCATION SECTION
+	// ==========================================================================
+
+	--location-text-color: var(--v-charcoal);
+	--location-bg: var(--v-white);
+	--location-card-bg: rgb(var(--v-pale-pink-rgb) / 60%);
+	--location-card-border: 1px solid rgb(var(--v-rose-gold-rgb) / 25%);
+	--location-card-radius: 8px;
+	--location-card-shadow: 0 4px 20px rgb(var(--v-charcoal-rgb) / 6%);
+	--location-title-color: var(--v-rose-gold);
+	--location-place-color: var(--v-charcoal);
+	--location-date-color: var(--v-rose-gold);
+	--location-hour-color: rgb(var(--v-charcoal-rgb) / 50%);
+	--location-nav-bg: var(--v-rose-gold);
+	--location-nav-color: var(--v-white);
+	--location-nav-hover-border-color: var(--v-fuchsia);
+	--location-indication-item-border: 1px solid rgb(var(--v-rose-gold-rgb) / 12%);
+	--location-indication-item-hover-border-color: rgb(var(--v-rose-gold-rgb) / 30%);
+	--location-image-filter: saturate(0.92) contrast(0.94) brightness(0.82);
+	--location-image-hover-scale: 1.045;
+	--location-container-max-width: min(1120px, calc(100vw - 2rem));
+	--location-indications-grid-template: repeat(auto-fit, minmax(320px, 1fr));
+
+	// ==========================================================================
+	// 12. PERSONALIZED ACCESS SECTION
+	// ==========================================================================
+
+	--pa-card-bg-color: var(--v-white);
+	--pa-card-bg-image: linear-gradient(165deg, var(--v-white) 0%, var(--v-pale-pink) 100%);
+	--pa-card-border: 1px solid rgb(var(--v-rose-gold-rgb) / 25%);
+	--pa-card-shadow: 0 12px 40px rgb(var(--v-charcoal-rgb) / 8%);
+	--pa-eyebrow-color: var(--v-rose-gold);
+	--pa-title-color: var(--v-charcoal);
+	--pa-subtitle-color: rgb(var(--v-charcoal-rgb) / 72%);
+	--pa-guest-color: var(--v-charcoal);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--v-rose-gold) 50%,
+		transparent 100%
+	);
+	--pa-count-color: var(--v-fuchsia);
+	--pa-count-frame-border: 1px solid rgb(var(--v-rose-gold-rgb) / 30%);
+	--pa-count-frame-bg: linear-gradient(180deg, var(--v-white) 0%, var(--v-pale-pink) 100%);
+	--pa-footer-border-top: 1px solid rgb(var(--v-rose-gold-rgb) / 20%);
+	--pa-footer-text-color: rgb(var(--v-charcoal-rgb) / 64%);
+	--pa-label-color: rgb(var(--v-rose-gold-rgb) / 80%);
+
+	// ==========================================================================
+	// 13. THANK-YOU SECTION
+	// ==========================================================================
+
+	--thank-you-frame-size-mobile: 220px;
+	--thank-you-frame-size-desktop: 280px;
+	--thank-you-image-fit: contain;
+	--thank-you-image-position: center;
+
+	// ==========================================================================
+	// 14. MUSIC PLAYER
+	// ==========================================================================
+
+	--music-player-prompt-bg: rgb(var(--v-white-rgb) / 52%);
+	--music-player-prompt-color: rgb(var(--v-charcoal-rgb) / 62%);
+	--music-player-prompt-border: 1px solid rgb(var(--v-silver-rgb) / 30%);
+	--music-player-prompt-accent: rgb(var(--v-rose-gold-rgb) / 72%);
+	--music-player-button-bg:
+		radial-gradient(circle at 32% 26%, rgb(var(--v-white-rgb) / 15%) 0%, transparent 48%),
+		rgb(var(--v-charcoal-rgb) / 78%);
+	--music-player-button-color: var(--v-white);
+	--music-player-button-border: 1px solid rgb(var(--v-silver-rgb) / 22%);
+	--music-player-ring-color: rgb(var(--v-rose-gold-rgb) / 48%);
+
+	// ==========================================================================
+	// 15. INTERLUDE SECTION
+	// ==========================================================================
+
+	--interlude-bg: rgb(var(--v-charcoal-rgb));
+	--interlude-image-filter: saturate(1.04) contrast(1.04) brightness(0.94);
+	--interlude-overlay-opacity: 0.18;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			rgb(var(--v-charcoal-rgb) / 14%) 0%,
+			rgb(var(--v-charcoal-rgb) / 2%) 38%,
+			rgb(var(--v-charcoal-rgb) / 22%) 100%
+		),
+		radial-gradient(
+			circle at var(--interlude-light-x, 50%) var(--interlude-light-y, 34%),
+			rgb(var(--v-blush-rgb) / 16%) 0%,
+			transparent 44%
+		),
+		radial-gradient(
+			ellipse at center,
+			transparent 42%,
+			rgb(var(--v-charcoal-rgb) / var(--interlude-overlay-opacity)) 100%
+		);
+
+	// ==========================================================================
+	// 16. TEXTURE AND LIGHT EFFECTS
+	// ==========================================================================
+
+	--texture-silk: linear-gradient(
+		115deg,
+		rgb(var(--v-white-rgb) / 72%) 0%,
+		rgb(var(--v-blush-rgb) / 42%) 46%,
+		rgb(var(--v-silver-rgb) / 34%) 100%
+	);
+	--metallic-silver: linear-gradient(
+		135deg,
+		var(--v-silver) 0%,
+		var(--v-white) 38%,
+		var(--v-rose-gold) 54%,
+		var(--v-silver) 72%,
+		var(--v-charcoal) 100%
+	);
+	--satin-sheen: linear-gradient(
+		120deg,
+		rgb(var(--v-white-rgb) / 0%) 0%,
+		rgb(var(--v-white-rgb) / 34%) 46%,
+		rgb(var(--v-rose-gold-rgb) / 18%) 56%,
+		rgb(var(--v-white-rgb) / 0%) 100%
+	);
+
+	// ==========================================================================
+	// 17. ITINERARY SECTION
+	// ==========================================================================
+
+	--itinerary-paper-white: rgb(253 251 247);
+	--itinerary-cream: rgb(250 248 244);
+	--itinerary-ink-dark: var(--v-charcoal);
+	--itinerary-ink-dark-rgb: var(--v-charcoal-rgb);
+	--itinerary-slate: rgb(44 44 44);
+	--itinerary-slate-rgb: 44 44 44;
+
+	// ==========================================================================
+	// 18. LAYOUT
+	// ==========================================================================
+
+	--container-max-width-lg: 1280px;
+}
