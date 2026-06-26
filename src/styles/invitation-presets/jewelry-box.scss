@@ -1,4 +1,4 @@
-@import '@fontsource-variable/playfair-display/index.css';
-@import '@fontsource-variable/eb-garamond/index.css';
-@import '@fontsource/pinyon-script/400.css';
 @use '../themes/presets/jewelry-box';
+@use '@fontsource-variable/playfair-display/index.css' as playfair-display;
+@use '@fontsource-variable/eb-garamond/index.css' as eb-garamond;
+@use '@fontsource/pinyon-script/400.css' as pinyon-script;

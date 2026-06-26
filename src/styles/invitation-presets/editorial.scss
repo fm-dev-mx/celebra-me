@@ -1,5 +1,5 @@
-@import '@fontsource-variable/playfair-display/index.css';
-@import '@fontsource-variable/cinzel/index.css';
-@import '@fontsource/pinyon-script/400.css';
-@import '@fontsource-variable/eb-garamond/index.css';
 @use '../themes/presets/editorial';
+@use '@fontsource-variable/playfair-display/index.css' as playfair-display;
+@use '@fontsource-variable/cinzel/index.css' as cinzel;
+@use '@fontsource/pinyon-script/400.css' as pinyon-script;
+@use '@fontsource-variable/eb-garamond/index.css' as eb-garamond;

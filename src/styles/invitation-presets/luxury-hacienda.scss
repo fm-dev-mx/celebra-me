@@ -1,4 +1,4 @@
-@import '@fontsource-variable/cormorant-garamond/index.css';
-@import '@fontsource-variable/eb-garamond/index.css';
-@import '@fontsource/special-elite/400.css';
 @use '../themes/presets/luxury-hacienda';
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/eb-garamond/index.css' as eb-garamond;
+@use '@fontsource/special-elite/400.css' as special-elite;
