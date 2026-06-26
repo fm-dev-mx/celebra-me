@@ -15,6 +15,7 @@ export default [
 			'dist/',
 			'node_modules/',
 			'.opencode/',
+			'.agent/tmp/',
 			'.astro/',
 			'.vercel/',
 			'.build/',
