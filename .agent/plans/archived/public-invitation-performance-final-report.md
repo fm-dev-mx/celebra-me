@@ -1,9 +1,11 @@
 ---
 title: Public Invitation Performance — Final Closure Report
-status: accepted, branch updated with full section split
+status: archived
+archived_date: 2026-06-25
 created: 2026-06-21
 branch: perf/public-invitation-css-splitting
-supersedes: .agent/plans/active/public-invitation-performance.md (accepted slices only)
+reason: final closure report, plan complete
+supersedes: .agent/plans/archived/public-invitation-performance.md (accepted slices only)
 phase: 1–3 completed, 3b deferred, 4–5 roadmap
 ---
 

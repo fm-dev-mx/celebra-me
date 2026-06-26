@@ -125,7 +125,7 @@ const cacheControl =
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 
-// Server-Timing header — only when rendering (not on redirect/error paths)
+// Render-Timing header — Vercel strips Server-Timing, use custom header instead
 if (page && viewModel && !renderError) {
 	const entries: string[] = [];
 	if (resolveContentDur !== null) {
@@ -138,7 +138,7 @@ if (page && viewModel && !renderError) {
 		entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
 	}
 	entries.push(`total;dur=${(performance.now() - perfStart).toFixed(2)}`);
-	Astro.response.headers.set('Server-Timing', entries.join(', '));
+	Astro.response.headers.set('X-Render-Timing', entries.join(', '));
 }
 
 const activePresetUrl = viewModel?.theme?.preset

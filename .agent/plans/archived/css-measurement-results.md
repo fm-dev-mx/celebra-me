@@ -1,10 +1,12 @@
 ---
 title: CSS Waste Measurement Results — Phase 3
-status: draft
+status: archived
+archived_date: 2026-06-25
 created: 2026-06-21
 source_deployment: celebra-areapmyow-francisco-mendoza-s-projects.vercel.app
 measurement_method: Playwright CSS Coverage API
 phase: 3
+reason: historical measurement data, work completed
 ---
 
 # CSS Waste Measurement Results

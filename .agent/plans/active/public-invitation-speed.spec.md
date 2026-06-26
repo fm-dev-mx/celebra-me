@@ -1,3 +1,14 @@
+---
+title: Public Invitation Route — Speed Diagnosis & Correction Spec
+status: active
+plan_type: implementation
+autonomy_level: 2
+created: 2026-06-25
+updated: 2026-06-25
+supersedes: []
+superseded_by: []
+---
+
 # Spec: Public Invitation Route Speed
 
 > **Status:** Analysis complete — ready for implementation **Route:** `/[eventType]/[slug]` **Test
@@ -49,7 +60,7 @@ highest-leverage layer first, with instrumentation to measure each component.
   ```
   (when no `?invite=` param and page/viewModel resolve successfully)
 - Error path: `'no-store, private'`
-- **No `Server-Timing` header is set anywhere.** Zero instrumentation exists for the public route.
+- **No `X-Render-Timing` header is set anywhere.** Zero instrumentation exists for the public route.
 - No ISR, no prerender, no Vercel Edge config for this route.
 
 **Middleware (`src/middleware.ts`):**
@@ -57,7 +68,7 @@ highest-leverage layer first, with instrumentation to measure each component.
 - Auth middleware **short-circuits** for public routes: `shouldHandleAuth` returns `false` for
   `/[eventType]/[slug]`, so `return next()` is immediate.
 - No `set-cookie`, no cookie reads on public routes — caching is NOT impeded by middleware.
-- No cache-control or Server-Timing headers set by middleware for any route.
+- No cache-control or X-Render-Timing headers set by middleware for any route.
 
 **Astro/Vercel config (`astro.config.mjs`):**
 
@@ -119,7 +130,7 @@ X-Vercel-Cache: STALE
 - `X-Vercel-Cache: STALE` confirms Vercel CDN cached the response and is serving
   stale-with-revalidation.
 - No `set-cookie` present.
-- No `Server-Timing` header present.
+- No `X-Render-Timing` header present.
 - `Age: 109` — the edge cache age.
 
 **Repeated TTFB (3 runs each, datacenter curl):**
@@ -222,13 +233,13 @@ highest-leverage fix. Cache policy changes and instrumentation are the correct f
 
 Priority order (correct by evidence, not by assumption):
 
-### Phase 1: Instrument — add `Server-Timing` headers
+### Phase 1: Instrument — add `X-Render-Timing` headers
 
-**Why first:** Without Server-Timing, any future optimization is blind. The route makes 1–3 Supabase
-queries with no timing data. Adding instrumentation costs near-zero overhead and provides the data
-to decide whether Phase 3 is needed.
+**Why first:** Without X-Render-Timing, any future optimization is blind. The route makes 1–3
+Supabase queries with no timing data. Adding instrumentation costs near-zero overhead and provides
+the data to decide whether Phase 3 is needed.
 
-**Change:** Add `Server-Timing` metrics for these spans:
+**Change:** Add `X-Render-Timing` metrics for these spans:
 
 - `resolveInvitationContent` (total Supabase + adapter time)
 - `getRoutableEventEntry` (content collection read, if used)
@@ -329,16 +340,16 @@ TTFB→FCP gap.
 
 ## 5. Implementation plan — first batch (Phase 1 + 2)
 
-### Phase 1: Add Server-Timing instrumentation
+### Phase 1: Add X-Render-Timing instrumentation
 
-| Aspect                     | Detail                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Objective**              | Measure real server-side time splits for public invitation route                                                                                                                                                                                                                                                                                                          |
-| **Files affected**         | `src/pages/[eventType]/[slug].astro`                                                                                                                                                                                                                                                                                                                                      |
-| **Exact change**           | Wrap the async operations (`resolveInvitationContent`, `getRoutableEventEntry`, `resolveRoutePersonalization`, `prepareInvitationPageContext` / `buildPageContextFromViewModel`) with `performance.now()` measurements. At the end of frontmatter, before `---`, build a `Server-Timing` header string and set it via `Astro.response.headers.set('Server-Timing', ...)`. |
-| **Risk**                   | Minimal. Server-Timing is a no-op for browsers that don't support it. No data leaks (only timing, no PII).                                                                                                                                                                                                                                                                |
-| **Validation**             | `curl -I https://www.celebra-me.com/xv/xareni-iyarit \| grep -i server-timing`                                                                                                                                                                                                                                                                                            |
-| **Expected metric impact** | Zero on Speed Insights scores. Diagnostic only.                                                                                                                                                                                                                                                                                                                           |
+| Aspect                     | Detail                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Objective**              | Measure real server-side time splits for public invitation route                                                                                                                                                                                                                                                                                                              |
+| **Files affected**         | `src/pages/[eventType]/[slug].astro`                                                                                                                                                                                                                                                                                                                                          |
+| **Exact change**           | Wrap the async operations (`resolveInvitationContent`, `getRoutableEventEntry`, `resolveRoutePersonalization`, `prepareInvitationPageContext` / `buildPageContextFromViewModel`) with `performance.now()` measurements. At the end of frontmatter, before `---`, build a `X-Render-Timing` header string and set it via `Astro.response.headers.set('X-Render-Timing', ...)`. |
+| **Risk**                   | Minimal. X-Render-Timing is a no-op for browsers that don't support it. No data leaks (only timing, no PII).                                                                                                                                                                                                                                                                  |
+| **Validation**             | `curl -I https://www.celebra-me.com/xv/xareni-iyarit \| grep -i server-timing`                                                                                                                                                                                                                                                                                                |
+| **Expected metric impact** | Zero on Speed Insights scores. Diagnostic only.                                                                                                                                                                                                                                                                                                                               |
 
 ### Phase 2: Extend CDN + browser cache
 
@@ -382,7 +393,7 @@ refactor of the Astro page structure is required for either layer.
 
 Minimum viable change (first batch):
 
-1. Add Server-Timing instrumentation (~15 lines added to one file)
+1. Add X-Render-Timing instrumentation (~15 lines added to one file)
 2. Change one line: the cacheControl string
 3. Deploy
 4. Measure with the parallel diagnostic
@@ -415,15 +426,15 @@ Changes to avoid:
       is a `.md` file and is not scanned by ESLint. Fixing the tmp files is outside the spec scope
       unless the project convention excludes `.agent/tmp/` from lint.
 
-### Phase 1 (Server-Timing) acceptance
+### Phase 1 (X-Render-Timing) acceptance
 
-- [ ] Preview deployment shows `Server-Timing` header on `/[eventType]/[slug]`:
+- [ ] Preview deployment shows `X-Render-Timing` header on `/[eventType]/[slug]`:
   ```
   curl -I $PREVIEW_URL/xv/xareni-iyarit | grep -i server-timing
   ```
-- [ ] `Server-Timing` contains at least these metric names: `resolveContent`,
+- [ ] `X-Render-Timing` contains at least these metric names: `resolveContent`,
       `routePersonalization`, `pagePrepare`, `total`
-- [ ] No `Server-Timing` data leaks PII (only timing numbers, no URLs or invite IDs)
+- [ ] No `X-Render-Timing` data leaks PII (only timing numbers, no URLs or invite IDs)
 
 ### Phase 2 (Cache-Control) acceptance
 

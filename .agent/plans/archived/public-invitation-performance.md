@@ -1,8 +1,10 @@
 ---
 title: Public Invitation Route Performance
-status: final — accepted slices only, see final-report
+status: archived
+archived_date: 2026-06-25
 created: 2026-06-20
 updated: 2026-06-23
+reason: implementation complete, merged to main
 related_skills:
   - supabase
 related_docs:

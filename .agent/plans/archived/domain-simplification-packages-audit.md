@@ -1,6 +1,12 @@
 ---
 title: Domain Simplification Packages — Post-Implementation Audit
-status: completed
+status: archived
+archived_date: 2026-06-25
+unresolved_gaps:
+  - Gap A:
+      2 route handlers missing requireAdminMutationAccess
+      (src/pages/api/dashboard/intake/[id]/request/revoke.ts POST,
+      src/pages/api/dashboard/intake/[id]/request/unrevoke.ts POST)
 created: 2026-06-19
 supersedes: []
 ---

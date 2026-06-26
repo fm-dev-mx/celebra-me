@@ -1,6 +1,7 @@
 ---
 title: Draft Preview Merge Fix — Publish Safety
-status: completed
+status: archived
+archived_date: 2026-06-25
 created: 2026-06-14
 updated: 2026-06-14
 completed: 2026-06-14
@@ -14,9 +15,8 @@ related_docs:
   - src/pages/dashboard/invitaciones/[id]/preview.astro
   - src/lib/intake/services/merge-content.service.ts
 supersedes:
-  - editor-hydration-fix.md
-superseded_by:
-  - thank-you-overlay-preservation.md
+  - .agent/plans/archived/editor-hydration-fix.md
+superseded_by: []
 ---
 
 # Draft Preview Merge Fix — Publish Safety

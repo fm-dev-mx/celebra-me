@@ -1,6 +1,8 @@
 ---
 title: Editor Data Hydration Fix
-status: superseded
+status: archived
+archived_date: 2026-06-25
+reason: superseded by draft-preview-merge-fix.md
 created: 2026-05-31
 updated: 2026-05-31
 related_skills: []
@@ -14,7 +16,7 @@ related_docs:
   - tests/unit/invitation-editor.service.test.ts
 supersedes: []
 superseded_by:
-  - draft-preview-merge-fix.md
+  - .agent/plans/archived/draft-preview-merge-fix.md
 ---
 
 # Editor Data Hydration Fix

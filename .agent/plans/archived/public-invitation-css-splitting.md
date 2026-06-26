@@ -1,8 +1,10 @@
 ---
 title: Public Invitation CSS Splitting — Accepted Slice
-status: accepted, updated for full section split branch
+status: archived
+archived_date: 2026-06-25
 created: 2026-06-21
 branch: perf/public-invitation-css-splitting
+reason: implemented and merged to main
 supersedes: []
 phase: 3 (implementation)
 ---

@@ -1,6 +1,8 @@
 ---
 title: Opening Reveal Content Contract
-status: draft
+status: archived
+archived_date: 2026-06-25
+reason: stale draft, never approved for implementation
 created: 2026-06-18
 updated: 2026-06-18
 related_skills:
