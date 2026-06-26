@@ -695,17 +695,17 @@
 
 .editorial-cover-wrapper[data-variant='editorial-magazine'] {
 	--ec-bg:
-		linear-gradient(90deg, rgb(215 25 32 / 92%) 0 34%, transparent 34%),
-		radial-gradient(ellipse at 78% 20%, rgb(255 255 255 / 18%), transparent 38%),
-		linear-gradient(135deg, rgb(13 13 15), rgb(25 25 28) 58%, rgb(215 25 32));
+		linear-gradient(90deg, rgb(215 25 32 / 78%) 0 18%, transparent 22%),
+		radial-gradient(ellipse at 72% 24%, rgb(255 255 255 / 10%), transparent 34%),
+		linear-gradient(135deg, rgb(13 13 15), rgb(22 22 24) 58%, rgb(13 13 15));
 	--ec-text-primary: rgb(255 255 255);
 	--ec-text-secondary: rgb(255 255 255 / 78%);
-	--ec-text-muted: rgb(255 255 255 / 58%);
+	--ec-text-muted: rgb(255 255 255 / 52%);
 	--ec-accent: rgb(215 25 32);
 	--ec-accent-strong: rgb(255 255 255);
-	--ec-rule: rgb(255 255 255 / 72%);
-	--ec-rule-soft: rgb(255 255 255 / 18%);
-	--ec-panel: rgb(13 13 15 / 74%);
+	--ec-rule: rgb(255 255 255 / 48%);
+	--ec-rule-soft: rgb(255 255 255 / 12%);
+	--ec-panel: rgb(255 255 255 / 5%);
 	--ec-masthead-size: clamp(4.4rem, 15vw, 12rem);
 	--ec-headline-size: clamp(4.8rem, 14vw, 11rem);
 
@@ -733,19 +733,28 @@
 
 	.editorial-cover__headline {
 		text-transform: uppercase;
-		text-shadow: 0 16px 38px rgb(0 0 0 / 48%);
+		text-shadow: 0 12px 28px rgb(0 0 0 / 38%);
 	}
 
 	.editorial-cover__cta {
-		border-color: var(--ec-text-primary);
-		background: var(--ec-text-primary);
-		color: rgb(13 13 15);
+		min-height: 3.6rem;
+		padding: 1.05rem 1.4rem;
+		border-color: rgb(255 255 255 / 62%);
+		background: rgb(255 255 255 / 8%);
+		color: var(--ec-text-primary);
+		font-size: clamp(0.74rem, 1vw, 0.88rem);
+		letter-spacing: 0.16em;
+		backdrop-filter: blur(6px);
 	}
 
 	.editorial-cover__cta:hover {
 		border-color: var(--ec-text-primary);
-		background: rgb(215 25 32);
+		background: rgb(215 25 32 / 88%);
 		color: var(--ec-text-primary);
+	}
+
+	.editorial-cover__cta:focus-visible {
+		outline-color: rgb(215 25 32);
 	}
 
 	@media (width <= 640px) {

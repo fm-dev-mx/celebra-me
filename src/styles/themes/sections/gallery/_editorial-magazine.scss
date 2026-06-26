@@ -1,0 +1,104 @@
+// Editorial-magazine gallery: editorial spread with rectangular crops and visible captions
+
+@use '../../../global/mixins' as mixins;
+
+.gallery-section[data-variant='editorial-magazine'] {
+	background: var(--gallery-section-bg, var(--editorial-magazine-paper));
+	padding-block: var(--section-padding-block);
+
+	.gallery-section__header {
+		margin-bottom: clamp(2.5rem, 7vw, 5rem);
+		text-align: left;
+	}
+
+	.gallery-section__eyebrow {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		font-family: var(--font-label);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.28em;
+	}
+
+	.gallery-section__title {
+		font-family: var(--section-title-font);
+		font-size: clamp(3rem, 9vw, 7rem);
+		font-weight: 800;
+		line-height: 0.86;
+		color: var(--gallery-title-color);
+		text-transform: uppercase;
+		letter-spacing: 0;
+	}
+
+	.gallery-section__subtitle {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 58%);
+		font-family: var(--font-body);
+		font-size: clamp(0.92rem, 1.6vw, 1.08rem);
+		text-transform: none;
+		font-weight: 400;
+		letter-spacing: 0;
+		margin-top: 0.75rem;
+	}
+
+	.gallery-grid__item {
+		border-radius: 0;
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		background: var(--editorial-magazine-white);
+		box-shadow: none;
+		padding: 0;
+
+		img {
+			filter: grayscale(0.3) contrast(1.06) brightness(0.96);
+		}
+
+		&.is-in-view,
+		&[data-in-view='true'],
+		&:focus-visible {
+			img {
+				filter: grayscale(0.06) contrast(1.02) brightness(0.99);
+			}
+
+			.gallery-grid__caption {
+				opacity: 100%;
+				transform: translateY(0);
+			}
+		}
+
+		&:hover {
+			z-index: 10;
+
+			img {
+				filter: grayscale(0) contrast(1.02) brightness(1);
+			}
+
+			.gallery-grid__caption {
+				opacity: 100%;
+				transform: translateY(0);
+			}
+		}
+	}
+
+	.gallery-grid__caption {
+		opacity: 0%;
+		transform: none;
+		transition: opacity var(--duration-standard, 0.3s) var(--ease-premium, ease);
+		background: var(--gallery-caption-bg);
+		backdrop-filter: blur(6px);
+		bottom: 0;
+		left: 0;
+		right: 0;
+		text-align: left;
+		padding: 0.75rem 1rem;
+		color: var(--gallery-caption-color);
+		font-family: var(--font-label);
+		font-size: clamp(0.66rem, 1vw, 0.76rem);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+	}
+
+	@media (hover: none), (pointer: coarse) {
+		.gallery-grid__item:hover img {
+			filter: grayscale(0.06) contrast(1.02) brightness(0.99);
+		}
+	}
+}

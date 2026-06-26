@@ -76,7 +76,7 @@
         "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
         "indicationsHeading": "Notas de la edición",
         "ceremony": {
-            "venueEvent": "Ceremonia religiosa",
+            "venueEvent": "Acto I — Ceremonia religiosa",
             "venueName": "Parroquia de Santa María",
             "address": "Av. Reforma 120, Ciudad de México",
             "city": "Ciudad de México",
@@ -88,7 +88,7 @@
             "image": "gallery02"
         },
         "reception": {
-            "venueEvent": "Recepción",
+            "venueEvent": "Acto II — Recepción",
             "venueName": "Maison Lumière Eventos",
             "address": "Av. de la Luz 456, Ciudad de México",
             "city": "Ciudad de México",
@@ -103,7 +103,7 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal editorial</strong>. El color rojo está reservado para la quinceañera."
+                "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
             },
             {
                 "iconName": "Calendar",
@@ -132,29 +132,29 @@
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Retrato de portada."
+                "caption": "Portada — retrato principal"
             },
             {
                 "image": "gallery02",
-                "caption": "Detalles para el gran día."
+                "caption": "Interior — detalles del gran día"
             },
             {
                 "image": "gallery03",
-                "caption": "Escena de recepción."
+                "caption": "Locación — la recepción"
             },
             {
                 "image": "gallery04",
-                "caption": "Texturas y luces."
+                "caption": "Bodegón — texturas y luces"
             },
             {
                 "image": "gallery05",
-                "caption": "El brillo de la noche."
+                "caption": "Nocturno — brillo de celebración"
             }
         ]
     },
     "gifts": {
         "title": "Guía de regalos",
-        "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle, estas opciones estarán disponibles.",
+        "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
         "items": [
             {
                 "type": "store",

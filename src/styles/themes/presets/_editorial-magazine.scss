@@ -51,16 +51,16 @@
 	--section-card-border-alt: 1px solid rgb(var(--editorial-magazine-red-rgb) / 88%);
 	--hero-overlay: linear-gradient(
 		90deg,
-		rgb(var(--editorial-magazine-ink-rgb) / 76%) 0%,
-		rgb(var(--editorial-magazine-ink-rgb) / 24%) 48%,
-		rgb(var(--editorial-magazine-red-rgb) / 28%) 100%
+		rgb(var(--editorial-magazine-ink-rgb) / 72%) 0%,
+		rgb(var(--editorial-magazine-ink-rgb) / 22%) 48%,
+		rgb(var(--editorial-magazine-ink-rgb) / 14%) 100%
 	);
 	--hero-title-size: clamp(4.8rem, 14vw, 10rem);
 	--hero-image-filter: grayscale(0.18) contrast(1.08) brightness(0.92);
 	--hero-portrait-filter: grayscale(0.08) contrast(1.08) brightness(0.96);
 	--hero-label-color: var(--editorial-magazine-red);
 	--hero-card-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
-	--hero-card-border-hairline: var(--editorial-magazine-ink);
+	--hero-card-border-hairline: rgb(var(--editorial-magazine-ink-rgb) / 44%);
 	--quote-bg: var(--editorial-magazine-ink);
 	--quote-text-color: var(--editorial-magazine-white);
 	--quote-author-color: var(--editorial-magazine-red);
@@ -79,9 +79,6 @@
 	--family-text-muted: rgb(var(--editorial-magazine-ink-rgb) / 62%);
 	--family-accent: var(--editorial-magazine-red);
 	--family-panel-bg: var(--editorial-magazine-white);
-	--family-panel-border: 2px solid var(--editorial-magazine-ink);
-	--family-panel-radius: 0;
-	--family-panel-shadow: 18px 18px 0 var(--editorial-magazine-ink);
 	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
 	--family-name-size: clamp(2rem, 5vw, 4.2rem);
@@ -89,57 +86,28 @@
 	--countdown-bg: var(--editorial-magazine-white);
 	--countdown-title-color: var(--editorial-magazine-ink);
 	--countdown-value-color: var(--editorial-magazine-ink);
-	--countdown-label-color: var(--editorial-magazine-red);
 	--countdown-value-size-mobile: clamp(3.5rem, 20vw, 6rem);
 	--countdown-value-size-desktop: clamp(5rem, 12vw, 11rem);
 	--countdown-label-letter-spacing: 0.22em;
 	--location-bg: var(--editorial-magazine-paper);
 	--location-text-color: var(--editorial-magazine-ink);
 	--location-card-bg: var(--editorial-magazine-white);
-	--location-card-border: 2px solid var(--editorial-magazine-ink);
-	--location-card-radius: 0;
-	--location-card-shadow: 16px 16px 0 var(--editorial-magazine-red);
-	--location-title-color: var(--editorial-magazine-red);
 	--location-place-color: var(--editorial-magazine-ink);
-	--location-date-color: var(--editorial-magazine-red);
 	--location-hour-color: rgb(var(--editorial-magazine-ink-rgb) / 66%);
 	--location-address-color: rgb(var(--editorial-magazine-ink-rgb) / 64%);
-	--location-nav-bg: var(--editorial-magazine-ink);
-	--location-nav-color: var(--editorial-magazine-white);
-	--location-nav-border: 1px solid var(--editorial-magazine-ink);
-	--location-nav-radius: 0;
-	--location-nav-primary-bg: var(--editorial-magazine-red);
-	--location-nav-primary-color: var(--editorial-magazine-white);
-	--location-indication-item-bg: var(--editorial-magazine-white);
-	--location-indication-item-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 82%);
 	--location-indication-text-color: rgb(var(--editorial-magazine-ink-rgb) / 76%);
-	--location-indication-strong-color: var(--editorial-magazine-red);
 	--location-image-filter: grayscale(0.55) contrast(1.08) brightness(0.96);
 	--rsvp-bg: var(--editorial-magazine-ink);
-	--rsvp-label-color: var(--editorial-magazine-red);
-	--rsvp-field-bg: rgb(var(--editorial-magazine-white-rgb) / 8%);
-	--rsvp-field-bg-focus: rgb(var(--editorial-magazine-white-rgb) / 12%);
-	--rsvp-field-border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
-	--rsvp-radio-bg: rgb(var(--editorial-magazine-white-rgb) / 6%);
-	--rsvp-radio-bg-hover: rgb(var(--editorial-magazine-white-rgb) / 10%);
-	--rsvp-radio-border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 26%);
-	--rsvp-radio-selected-bg: rgb(var(--editorial-magazine-red-rgb) / 18%);
-	--rsvp-radio-selected-border: var(--editorial-magazine-red);
-	--rsvp-button-color: var(--editorial-magazine-white);
-	--rsvp-button-color-hover: var(--editorial-magazine-white);
-	--rsvp-button-bg-hover: var(--editorial-magazine-red);
-	--rsvp-button-shadow-rest: none;
-	--rsvp-button-shadow-hover: 8px 8px 0 rgb(var(--editorial-magazine-white-rgb) / 18%);
 	--gifts-bg: var(--editorial-magazine-paper);
 	--gifts-title-color: var(--editorial-magazine-ink);
 	--gifts-subtitle-color: rgb(var(--editorial-magazine-ink-rgb) / 68%);
 	--gifts-card-bg: var(--editorial-magazine-white);
-	--gifts-card-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 30%);
+	--gifts-card-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 18%);
 	--gifts-card-radius: 0;
-	--gifts-icon-color: var(--editorial-magazine-red);
+	--gifts-icon-color: var(--editorial-magazine-ink);
 	--gallery-section-bg: var(--editorial-magazine-paper);
 	--gallery-title-color: var(--editorial-magazine-ink);
-	--gallery-caption-bg: var(--editorial-magazine-white);
+	--gallery-caption-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
 	--gallery-caption-color: var(--editorial-magazine-ink);
 	--music-player-prompt-bg: var(--editorial-magazine-white);
 	--music-player-prompt-color: var(--editorial-magazine-ink);

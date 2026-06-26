@@ -14,7 +14,7 @@
 		z-index: 3;
 		pointer-events: none;
 		content: '';
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 72%);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
 	}
 
 	.invitation-hero__background::after {
@@ -33,9 +33,9 @@
 		position: relative;
 		z-index: 4;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.58fr);
+		grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.52fr);
 		align-items: end;
-		gap: clamp(1rem, 4vw, 3rem);
+		gap: clamp(1.5rem, 5vw, 4rem);
 		width: min(1180px, 100%);
 		min-height: calc(100svh - clamp(2rem, 8vw, 6rem));
 		margin-inline: auto;
@@ -46,15 +46,15 @@
 		align-self: start;
 		max-width: 24rem;
 		margin: 0;
-		padding-bottom: 0.75rem;
-		border-bottom: 3px solid var(--editorial-magazine-red);
-		color: var(--editorial-magazine-white);
+		padding-bottom: 0.65rem;
+		border-bottom: 2px solid var(--editorial-magazine-red);
+		color: rgb(var(--editorial-magazine-white-rgb) / 72%);
 		font-family: var(--font-label);
-		font-size: clamp(0.72rem, 1.2vw, 0.9rem);
+		font-size: clamp(0.68rem, 1.1vw, 0.82rem);
 		font-weight: 800;
 		line-height: 1.15;
 		text-transform: uppercase;
-		letter-spacing: 0.24em;
+		letter-spacing: 0.28em;
 	}
 
 	.invitation-hero__title {
@@ -67,16 +67,16 @@
 		line-height: 0.78;
 		text-transform: uppercase;
 		letter-spacing: 0;
-		text-shadow: 0 14px 32px rgb(var(--editorial-magazine-ink-rgb) / 58%);
+		text-shadow: 0 10px 24px rgb(var(--editorial-magazine-ink-rgb) / 48%);
 	}
 
 	.invitation-hero__portrait {
 		justify-self: end;
-		width: min(100%, 360px);
+		width: min(100%, 340px);
 		aspect-ratio: 0.72;
-		border: 2px solid var(--editorial-magazine-white);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 48%);
 		border-radius: 0;
-		box-shadow: 18px 18px 0 var(--editorial-magazine-red);
+		box-shadow: 0 28px 56px rgb(var(--editorial-magazine-ink-rgb) / 52%);
 		overflow: hidden;
 	}
 
@@ -96,18 +96,18 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 1rem;
-		padding-top: 0.9rem;
-		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 74%);
+		padding-top: 0.75rem;
+		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 36%);
 	}
 
 	.invitation-hero__details p {
 		margin: 0;
-		color: var(--editorial-magazine-white);
+		color: rgb(var(--editorial-magazine-white-rgb) / 68%);
 		font-family: var(--font-label);
-		font-size: clamp(0.78rem, 1.4vw, 1rem);
-		font-weight: 750;
+		font-size: clamp(0.72rem, 1.2vw, 0.88rem);
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.2em;
 	}
 
 	.invitation-hero__divider,
@@ -129,7 +129,7 @@
 		.invitation-hero__portrait {
 			justify-self: start;
 			width: min(72vw, 260px);
-			box-shadow: 10px 10px 0 var(--editorial-magazine-red);
+			box-shadow: 0 18px 36px rgb(var(--editorial-magazine-ink-rgb) / 52%);
 		}
 
 		.invitation-hero__details {

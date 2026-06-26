@@ -1,16 +1,9 @@
 .rsvp[data-variant='editorial-magazine'] {
 	position: relative;
-	border: 2px solid var(--editorial-magazine-red);
+	border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
 	border-radius: 0;
-	background:
-		linear-gradient(
-			90deg,
-			transparent 49.8%,
-			rgb(var(--editorial-magazine-white-rgb) / 8%) 50%,
-			transparent 50.2%
-		),
-		var(--rsvp-bg);
-	box-shadow: 14px 14px 0 rgb(var(--editorial-magazine-red-rgb) / 70%);
+	background: var(--rsvp-bg);
+	box-shadow: none;
 	color: var(--editorial-magazine-white);
 	overflow: hidden;
 
@@ -18,17 +11,17 @@
 	.rsvp__locked-eyebrow,
 	label,
 	legend {
-		color: var(--rsvp-label-color);
+		color: rgb(var(--editorial-magazine-white-rgb) / 48%);
 		font-family: var(--font-label);
-		font-weight: 800;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.24em;
 	}
 
 	.rsvp__title {
 		color: var(--editorial-magazine-white);
 		font-family: var(--font-display);
-		font-size: clamp(2.8rem, 8vw, 6.8rem);
+		font-size: clamp(2.6rem, 7.5vw, 6rem);
 		font-weight: 800;
 		line-height: 0.86;
 		text-transform: uppercase;
@@ -39,72 +32,71 @@
 	.rsvp__subcopy,
 	.rsvp__demo-footer,
 	.rsvp__locked-detail {
-		color: rgb(var(--editorial-magazine-white-rgb) / 70%);
+		color: rgb(var(--editorial-magazine-white-rgb) / 58%);
 		font-family: var(--font-body);
 	}
 
 	input[type='text'],
 	input[type='number'],
 	textarea {
-		border: var(--rsvp-field-border);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
 		border-radius: 0;
-		background: var(--rsvp-field-bg);
+		background: rgb(var(--editorial-magazine-white-rgb) / 5%);
 		color: var(--editorial-magazine-white);
 	}
 
 	input[type='text']:focus,
 	input[type='number']:focus,
 	textarea:focus {
-		border-color: var(--editorial-magazine-red);
-		background: var(--rsvp-field-bg-focus);
-		outline: 2px solid rgb(var(--editorial-magazine-red-rgb) / 38%);
+		border-color: rgb(var(--editorial-magazine-white-rgb) / 42%);
+		background: rgb(var(--editorial-magazine-white-rgb) / 8%);
+		outline: 2px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
 		outline-offset: 2px;
 	}
 
 	.rsvp__radio-card {
-		border: var(--rsvp-radio-border);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 16%);
 		border-radius: 0;
-		background: var(--rsvp-radio-bg);
+		background: rgb(var(--editorial-magazine-white-rgb) / 4%);
 		color: var(--editorial-magazine-white);
 	}
 
 	.rsvp__radio-card:hover {
-		background: var(--rsvp-radio-bg-hover);
+		background: rgb(var(--editorial-magazine-white-rgb) / 7%);
 	}
 
 	.rsvp__radio-card:has(input:checked) {
-		border-color: var(--rsvp-radio-selected-border);
-		background: var(--rsvp-radio-selected-bg);
+		border-color: rgb(var(--editorial-magazine-white-rgb) / 42%);
+		background: rgb(var(--editorial-magazine-white-rgb) / 9%);
 	}
 
 	.rsvp__button {
-		border: 1px solid var(--editorial-magazine-red);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--rsvp-button-color);
+		color: var(--editorial-magazine-white);
 		font-family: var(--font-label);
-		font-weight: 900;
+		font-weight: 800;
 		text-transform: uppercase;
-		letter-spacing: 0.18em;
-		box-shadow: var(--rsvp-button-shadow-rest);
+		letter-spacing: 0.2em;
+		box-shadow: none;
 	}
 
 	.rsvp__button:hover:not(:disabled),
 	.rsvp__button--success {
-		background: var(--rsvp-button-bg-hover);
-		color: var(--rsvp-button-color-hover);
-		box-shadow: var(--rsvp-button-shadow-hover);
+		border-color: var(--editorial-magazine-white);
+		background: var(--editorial-magazine-white);
+		color: var(--editorial-magazine-ink);
+		box-shadow: none;
 	}
 
 	.rsvp__locked-card {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 26%);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 14%);
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-white-rgb) / 6%);
+		background: rgb(var(--editorial-magazine-white-rgb) / 4%);
 	}
 
 	@media (width <= 640px) {
-		box-shadow: 8px 8px 0 rgb(var(--editorial-magazine-red-rgb) / 70%);
-
 		.rsvp__title {
 			font-size: clamp(2.1rem, 9vw, 2.75rem);
 			line-height: 0.96;

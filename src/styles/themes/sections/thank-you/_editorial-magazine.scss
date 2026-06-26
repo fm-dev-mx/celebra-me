@@ -1,0 +1,55 @@
+// Editorial-magazine thank-you: back cover with editorial palette
+
+.thank-you-section[data-variant='editorial-magazine'] {
+	background: var(--editorial-magazine-ink);
+	color: var(--editorial-magazine-white);
+	min-height: 60svh;
+
+	&::before {
+		background: none;
+	}
+
+	.photo-frame {
+		width: min(100%, 320px);
+		height: auto;
+		aspect-ratio: 3 / 4;
+		border-radius: 0;
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 24%);
+		background: transparent;
+		box-shadow: none;
+		padding: 0;
+
+		.photo-image {
+			border-radius: 0;
+			filter: grayscale(0.3) contrast(1.06);
+		}
+
+		&:hover .photo-image {
+			filter: grayscale(0.08) contrast(1.04);
+		}
+	}
+
+	.thank-you-message {
+		color: rgb(var(--editorial-magazine-white-rgb) / 78%);
+		font-size: 1.05rem;
+		line-height: 1.85;
+
+		.drop-cap {
+			color: var(--editorial-magazine-white);
+			text-shadow: none;
+		}
+	}
+
+	.closing-name {
+		color: var(--editorial-magazine-white);
+		background: none;
+		-webkit-text-fill-color: unset;
+		text-shadow: none;
+		font-family: var(--font-calligraphy);
+	}
+
+	.thank-you-footer {
+		border-top-color: rgb(var(--editorial-magazine-white-rgb) / 14%);
+		color: rgb(var(--editorial-magazine-white-rgb) / 34%);
+	}
+}

@@ -247,3 +247,138 @@ Manual/visual QA:
 - Replacing reveal architecture.
 - Duplicating routes or invitation render flow.
 - Copying third-party magazine brands.
+
+## Visual Hardening Pass
+
+### Current Visual Problems
+
+The initial implementation delivers a functional editorial-magazine preset, but several sections
+still reveal inherited generic UI patterns that damage premium perception. The overall theme reads
+as "luxury wedding template with red/black accents" rather than "premium fashion/editorial magazine
+issue."
+
+Section-by-section diagnosis:
+
+1. **Cover reveal**: The red vertical block dominates too much. The masthead feels
+   forced/compressed. The cover is mostly typographic and slightly empty. The CTA looks like a web
+   form control instead of an editorial opening action.
+
+2. **Hero**: The double-image composition feels like a collage. The red portrait frame is too
+   literal and decorative. The inset portrait feels pasted on top of the background rather than
+   editorially composed.
+
+3. **Quote**: Good dramatic mood, but too poster-like and centered. The red bar feels isolated. It
+   lacks editorial structure such as a heading, folio, or credit.
+
+4. **Family**: The "Elenco familiar" concept is good, but white layout with thick borders, hard
+   shadows, and label stickers feel rough. Parent/godparent cards look like pasted signs rather than
+   editorial credits.
+
+5. **Countdown**: Still feels like a widget. The boxed segments with red offset shadows are too
+   heavy. The repeated date treatment feels flat.
+
+6. **Location**: Strongly reveals inherited UI: white cards, map buttons, generic layout. The red
+   divider is too heavy. Should feel like an editorial itinerary.
+
+7. **Gallery**: Good direction but still behaves like stacked image cards. Rounded corners and lack
+   of visible captions make it less magazine-like.
+
+8. **Gifts**: Looks like ecommerce/dashboard cards. Icon-in-circle, shadows, and button styling are
+   generic.
+
+9. **Thank-you/closing**: Circular image feels like avatar/profile. The gradient background breaks
+   the black/red/marfil editorial system. Feels like a generic thank-you card rather than a magazine
+   back cover.
+
+10. **RSVP/access pass**: Looks like a certificate/card from a generic elegant template. The light
+    ornamental style breaks the editorial system.
+
+11. **Notes/indications**: Rows and icons feel administrative. Red highlights feel like warnings.
+
+### Scope Boundaries
+
+- Changes isolated to `editorial-magazine` preset/demo.
+- Prefer SCSS and demo content/copy refinements.
+- No Astro component refactors unless markup makes the visual target impossible.
+- No changes to reveal mechanics, CTA behavior, no-JS fallback, routing.
+- No schema, adapter, theme contract, or dashboard preview behavior changes.
+- No new dependencies or image assets.
+- Use existing demo-owned assets only.
+- Code/comments in English; visible UI text in Spanish.
+
+### Affected Files
+
+Priority 1 (high-impact):
+
+- `src/styles/invitation/_editorial-cover.scss` — cover variant refinements
+- `src/styles/themes/sections/hero/_editorial-magazine.scss` — hero composition
+- `src/styles/themes/sections/family/_editorial-magazine.scss` — editorial credits
+- `src/styles/themes/sections/location/_editorial-magazine.scss` — editorial itinerary
+- `src/styles/themes/presets/_editorial-magazine.scss` — token adjustments
+
+Priority 2 (new section variants):
+
+- `src/styles/themes/sections/gallery/_editorial-magazine.scss` — new gallery variant
+- `src/styles/themes/sections/gifts/_editorial-magazine.scss` — new gifts variant
+- `src/styles/themes/sections/thank-you/_editorial-magazine.scss` — new closing variant
+- `src/styles/invitation-sections/gallery/editorial-magazine.scss` — new section wrapper
+- `src/styles/invitation-sections/gifts/editorial-magazine.scss` — new section wrapper
+- `src/styles/invitation-sections/thank-you/editorial-magazine.scss` — new section wrapper
+- `src/styles/invitation-sections-by-preset/editorial-magazine.scss` — add new section imports
+
+Priority 3 (refinements):
+
+- `src/styles/themes/sections/quote/_editorial-magazine.scss` — editorial framing
+- `src/styles/themes/sections/countdown/_editorial-magazine.scss` — reduce widget feel
+- `src/styles/themes/sections/rsvp/_editorial-magazine.scss` — press-pass refinement
+- `src/content/event-demos/xv/demo-xv-editorial-magazine.json` — copy refinements
+
+### Acceptance Criteria
+
+- `/xv/demo-xv-editorial-magazine` renders with improved editorial aesthetic.
+- Cover CTA remains a real `<button>`.
+- Reveal transitions to the revealed state correctly.
+- Cover becomes hidden after reveal.
+- No-JS `?skipEnvelope=true` shows the hero directly.
+- Expected preset and section bundle CSS links are present.
+- Existing related routes render without regression:
+  - `/xv/demo-xv-editorial`
+  - `/xv/demo-xv-editorial-rose`
+  - `/xv/demo-xv-jewelry-box`
+- All sections read as editorial/magazine, not generic UI.
+- Red is used sparingly as accent, not as heavy decoration.
+- No rounded cards, icon circles, heavy shadows, or dashboard-like buttons remain.
+- `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build` pass.
+
+### Validation Commands
+
+```bash
+pnpm type-check
+pnpm lint
+pnpm test
+pnpm build
+pnpm lint:styles:changed
+pnpm ops validate-schema
+```
+
+### Visual QA Checklist
+
+Viewports: 360px, 390px, 430px, desktop width.
+
+- [ ] Cover CTA is a real button.
+- [ ] Reveal transitions to revealed state.
+- [ ] Cover hidden after reveal.
+- [ ] No-JS `?skipEnvelope=true` shows hero directly.
+- [ ] Preset and section bundle CSS links present.
+- [ ] Cover: reduced red block, improved masthead, integrated CTA.
+- [ ] Hero: deliberate editorial portrait spread, reduced red framing.
+- [ ] Quote: editorial breathing room, structured composition.
+- [ ] Family: editorial credits page feel, reduced sticker labels.
+- [ ] Countdown: editorial announcement, reduced widget feel.
+- [ ] Location: editorial itinerary with usable but secondary map actions.
+- [ ] Gallery: editorial spread with rectangular crops, visible captions.
+- [ ] Gifts: editorial gift guide, reduced UI-card appearance.
+- [ ] Thank-you: back cover feel, no avatar-like photo, on-palette.
+- [ ] RSVP: press pass feel, restrained ornamentation.
+- [ ] Notes/indications: editorial notes, reduced icon/table feel.
+- [ ] Related routes render without regression.

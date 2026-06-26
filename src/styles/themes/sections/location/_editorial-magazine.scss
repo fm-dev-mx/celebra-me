@@ -4,42 +4,42 @@
 
 	.event-location__eyebrow,
 	.event-location__intro-eyebrow {
-		color: var(--editorial-magazine-red);
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
 		font-family: var(--font-label);
-		font-weight: 800;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.22em;
+		letter-spacing: 0.28em;
 	}
 
 	.event-location__title,
 	.event-location__intro-heading {
 		color: var(--editorial-magazine-ink);
 		font-family: var(--font-display);
-		font-size: clamp(3.4rem, 10vw, 8.5rem);
+		font-size: clamp(3rem, 9vw, 7.5rem);
 		font-weight: 800;
-		line-height: 0.82;
+		line-height: 0.84;
 		text-transform: uppercase;
 		letter-spacing: 0;
 	}
 
 	.event-location__intro-lede {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 68%);
+		color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
 		font-family: var(--font-body);
-		font-size: clamp(1rem, 2vw, 1.2rem);
+		font-size: clamp(0.95rem, 1.8vw, 1.12rem);
 		line-height: 1.7;
 	}
 
 	.event-location__card,
 	.venue-card {
-		border: var(--location-card-border);
-		border-radius: var(--location-card-radius);
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+		border-radius: 0;
 		background: var(--location-card-bg);
-		box-shadow: var(--location-card-shadow);
+		box-shadow: none;
 	}
 
 	.venue-card__media,
 	.event-location__card-media {
-		border-bottom: 2px solid var(--editorial-magazine-ink);
+		border-bottom: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 18%);
 	}
 
 	.venue-card__media img,
@@ -49,19 +49,19 @@
 
 	.venue-card__event,
 	.event-location__venue-event {
-		color: var(--location-title-color);
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
 		font-family: var(--font-label);
-		font-weight: 800;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
+		letter-spacing: 0.24em;
 	}
 
 	.venue-card__name,
 	.event-location__venue-name {
 		color: var(--location-place-color);
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 5vw, 4rem);
-		font-weight: 750;
+		font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+		font-weight: 700;
 		line-height: 0.95;
 		letter-spacing: 0;
 	}
@@ -70,11 +70,11 @@
 	.venue-card__time,
 	.event-location__date,
 	.event-location__time {
-		color: var(--location-date-color);
+		color: rgb(var(--editorial-magazine-ink-rgb) / 56%);
 		font-family: var(--font-label);
-		font-weight: 800;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.16em;
+		letter-spacing: 0.18em;
 	}
 
 	.venue-card__address,
@@ -87,34 +87,29 @@
 	.venue-card__nav,
 	.event-location__nav-link,
 	.event-location__map-button {
-		border: var(--location-nav-border);
-		border-radius: var(--location-nav-radius);
-		background: var(--location-nav-bg);
-		color: var(--location-nav-color);
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 24%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-ink);
 		font-family: var(--font-label);
-		font-weight: 800;
+		font-size: clamp(0.66rem, 1vw, 0.76rem);
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.14em;
+		letter-spacing: 0.16em;
 	}
 
 	.event-location__indication {
-		border: var(--location-indication-item-border);
+		border: none;
+		border-top: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
 		border-radius: 0;
-		background: var(--location-indication-item-bg);
+		background: transparent;
 	}
 
 	.event-location__indication-text {
-		color: var(--location-indication-text-color);
+		color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
 	}
 
 	.event-location__indication-text strong {
-		color: var(--location-indication-strong-color);
-	}
-
-	@media (width <= 640px) {
-		.event-location__card,
-		.venue-card {
-			box-shadow: 8px 8px 0 var(--editorial-magazine-red);
-		}
+		color: var(--editorial-magazine-ink);
 	}
 }

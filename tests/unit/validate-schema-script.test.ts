@@ -36,10 +36,7 @@ const KNOWN_VARIANT_WARNINGS = [
 	"gifts: Contract variant 'editorial-rose' not found in CSS",
 	"thankYou: Contract variant 'editorial-rose' not found in CSS",
 	"itinerary: Contract variant 'editorial-rose' not found in CSS",
-	// editorial-magazine MVP does not include custom gallery/gifts/thank-you/itinerary styling.
-	"gifts: Contract variant 'editorial-magazine' not found in CSS",
-	"gallery: Contract variant 'editorial-magazine' not found in CSS",
-	"thankYou: Contract variant 'editorial-magazine' not found in CSS",
+	// editorial-magazine custom itinerary variant not yet created
 	"itinerary: Contract variant 'editorial-magazine' not found in CSS",
 ];
 
