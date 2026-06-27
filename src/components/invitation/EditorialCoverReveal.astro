@@ -1,0 +1,317 @@
+---
+// Editorial Cover Reveal — replaces the envelope when revealVariant === 'editorial-cover'.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+
+interface Props {
+	coverEdition?: string;
+	coverVolume?: string;
+	coverIssue?: string;
+	microcopy: string;
+	eventSlug: string;
+	variant?: string;
+	/** Hero data for cover composition */
+	heroName: string;
+	heroSecondaryName?: string;
+	heroLabel?: string;
+	heroDate: string;
+	heroVenueName?: string;
+	guestName?: string;
+	previewState?: 'closed' | 'opened';
+	backgroundImage?: ImageMetadata | ImageAsset;
+	portrait?: ImageMetadata | ImageAsset;
+	focalPoint?: string;
+	focalPointMobile?: string;
+}
+
+const {
+	coverEdition = 'I',
+	coverVolume,
+	coverIssue,
+	microcopy,
+	eventSlug,
+	variant,
+	heroName,
+	heroSecondaryName,
+	heroLabel,
+	heroDate,
+	heroVenueName,
+	guestName,
+	previewState,
+	backgroundImage,
+	portrait,
+	focalPoint,
+	focalPointMobile,
+} = Astro.props;
+
+const ctaText = coverEdition
+	? `ABRIR EDICIÓN ${coverEdition}`
+	: 'ABRIR INVITACIÓN';
+const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
+const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
+const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+
+// Build magazine-style metadata for the cover rail.
+const issueParts: { label: string; value: string }[] = [];
+if (coverVolume) issueParts.push({ label: 'VOL.', value: coverVolume });
+if (coverIssue) issueParts.push({ label: 'NÚM.', value: coverIssue });
+if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
+
+// Resolve cover image from portrait or fallback to background image
+const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
+	'src' in image ? (image.src as ImageMetadata) : image;
+
+const resolvedImage = portrait ? resolveImage(portrait) : (backgroundImage ? resolveImage(backgroundImage) : null);
+
+// For SSR fallback when JS is disabled: compute the skip URL
+const skipParams = new URLSearchParams(Astro.url.search);
+skipParams.set('skipEnvelope', 'true');
+const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
+const shouldRenderHidden =
+	Astro.url.searchParams.get('skipEnvelope') === 'true' || previewState === 'opened';
+---
+
+<ds-editorial-cover
+	class="editorial-cover-wrapper"
+	data-event-slug={eventSlug}
+	data-variant={variant || ''}
+	data-preview-state={previewState}
+	hidden={shouldRenderHidden ? true : undefined}
+>
+	<div class="editorial-cover-container">
+		<!-- Photographic cover background -->
+		{resolvedImage && (
+			<div class="editorial-cover__background" aria-hidden="true">
+				<Image
+					src={resolvedImage}
+					alt=""
+					width={1080}
+					height={1920}
+					format="webp"
+					quality={80}
+					loading="eager"
+				/>
+			</div>
+		)}
+
+		<!-- Paper grain overlay -->
+		<div class="editorial-cover__grain" aria-hidden="true"></div>
+
+		<!-- Magazine masthead -->
+		<header class="editorial-masthead">
+			<p class="editorial-masthead__eyebrow">Portada digital</p>
+			<span class="editorial-masthead__brand">CELEBRA <span aria-hidden="true">·</span> ME</span>
+		</header>
+
+		{issueParts.length > 0 && (
+			<aside class="editorial-cover__metadata" aria-label="Datos de portada">
+				{issueParts.map((item) => (
+					<span class="editorial-cover__metadata-item">
+						<span class="editorial-cover__metadata-label">{item.label}</span>
+						<span class="editorial-cover__metadata-value">{item.value}</span>
+					</span>
+				))}
+			</aside>
+		)}
+
+		<!-- Cover headline area -->
+		<div class="editorial-cover__content">
+			<div class="editorial-cover__cover-lines" aria-label="Líneas editoriales">
+				<span class="editorial-cover__cover-line">{coverLines[0]}</span>
+				<span class="editorial-cover__cover-line editorial-cover__cover-line--secondary">
+					{coverLines[1]}
+				</span>
+			</div>
+
+			{coverKicker && <span class="editorial-cover__label">{coverKicker}</span>}
+
+			<h1 class="editorial-cover__headline">
+				{heroName}
+				{heroSecondaryName && (
+					<>
+						<br />
+						<span class="editorial-cover__ampersand">&</span>
+						<span class="editorial-cover__secondary">{heroSecondaryName}</span>
+					</>
+				)}
+			</h1>
+		</div>
+
+		<!-- Event details -->
+		<div class="editorial-cover__details" aria-label="Datos del evento">
+			<p class="editorial-cover__date">{formattedDate}</p>
+			{heroVenueName && <p class="editorial-cover__venue">{heroVenueName}</p>}
+		</div>
+
+		<!-- Guest name (if personalizing) -->
+		{guestName && (
+			<p class="editorial-cover__guest">
+				<small class="editorial-cover__guest-label">Entrega especial para</small>
+				<strong class="editorial-cover__guest-name">{guestName}</strong>
+			</p>
+		)}
+
+		<!-- CTA button -->
+		<div class="editorial-cover__action">
+			<button
+				type="button"
+				class="editorial-cover__cta"
+				data-editorial-open
+				aria-label={microcopy}
+			>
+				<span class="editorial-cover__cta-text">{ctaText}</span>
+				<svg class="editorial-cover__cta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m6 9 6 6 6-6"/>
+				</svg>
+			</button>
+			<!-- No-JS fallback -->
+			<noscript>
+				<a href={skipUrl} class="editorial-cover__cta editorial-cover__cta--fallback">
+					<span class="editorial-cover__cta-text">{ctaText}</span>
+				</a>
+			</noscript>
+		</div>
+
+		<!-- Magazine footer metadata -->
+		<footer class="editorial-cover__footer">
+			<span class="editorial-cover__issue">Colección editorial · Celebra Me</span>
+		</footer>
+	</div>
+</ds-editorial-cover>
+
+<script>
+	const EXIT_ANIMATION_MS = 1600;
+
+	class DsEditorialCover extends HTMLElement {
+		connectedCallback() {
+			const { eventSlug } = this.dataset;
+			if (!eventSlug) return;
+
+			const invitationRoot = this.closest('.event-theme-wrapper[data-event-slug]');
+			if (!invitationRoot) return;
+
+			const isDemoInvitation = (invitationRoot as HTMLElement).dataset.isDemo === 'true';
+			const openButton = this.querySelector('[data-editorial-open]');
+			let hasRevealed = false;
+
+			// Preview state handling
+			if (this.dataset.previewState === 'opened') {
+				this.classList.add('is-revealed');
+				document.documentElement.classList.remove('envelope-open');
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'revealed';
+				}
+				this.hidden = true;
+				return;
+			}
+
+			const completeReveal = () => {
+				if (hasRevealed) return;
+				hasRevealed = true;
+
+				document.documentElement.classList.remove('envelope-open');
+
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'revealed';
+				}
+
+				window.requestAnimationFrame(() => {
+					const hero = document.getElementById('inicio');
+					if (hero instanceof HTMLElement) {
+						hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+					} else {
+						window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+					}
+				});
+
+				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
+
+				window.setTimeout(() => {
+					this.hidden = true;
+				}, EXIT_ANIMATION_MS);
+			};
+
+			// Check localStorage skip (same as envelope)
+			const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			const storageKey = 'envelope-opened-' + eventSlug;
+			const stored = (() => {
+				try {
+					return !isDemoInvitation && localStorage.getItem(storageKey) === 'true';
+				} catch {
+					return false;
+				}
+			})();
+			const skipEnvelope = new URLSearchParams(window.location.search).get('skipEnvelope') === 'true';
+			const forceEnvelope = new URLSearchParams(window.location.search).get('forceEnvelope') === 'true';
+
+			// skipEnvelope param — same noscript fallback path as envelope
+			if (skipEnvelope) {
+				completeReveal();
+				this.hidden = true;
+				return;
+			}
+
+			if (stored && !forceEnvelope) {
+				completeReveal();
+				this.hidden = true;
+				return;
+			}
+
+			document.documentElement.classList.add('envelope-open');
+
+			openButton?.addEventListener('click', (event) => {
+				event.stopPropagation();
+				event.preventDefault();
+
+				// Store flag
+				if (!isDemoInvitation) {
+					try {
+						localStorage.setItem(storageKey, 'true');
+					} catch {
+					// Ignore localStorage access errors
+				}
+				}
+
+				if (motionPreference) {
+					completeReveal();
+					this.hidden = true;
+					return;
+				}
+
+				this.classList.add('is-opening');
+
+				const onAnimationEnd = (e: AnimationEvent) => {
+					if (e.animationName.includes('editorialCoverExit')) {
+						this.removeEventListener('animationend', onAnimationEnd);
+						completeReveal();
+					}
+				};
+
+				this.addEventListener('animationend', onAnimationEnd);
+
+				// Fallback timeout
+				window.setTimeout(() => {
+					if (!hasRevealed) {
+						this.removeEventListener('animationend', onAnimationEnd);
+						completeReveal();
+					}
+				}, EXIT_ANIMATION_MS + 400);
+			});
+		}
+	}
+
+	customElements.define('ds-editorial-cover', DsEditorialCover);
+</script>
+
+<style define:vars={{ coverFocalPoint: focalPoint || 'center', coverFocalPointMobile: focalPointMobile || 'center' }}>
+	.editorial-cover-wrapper {
+		--cover-focal-point: var(--coverFocalPoint);
+		--cover-focal-point-mobile: var(--coverFocalPointMobile);
+	}
+</style>

@@ -29,6 +29,11 @@ const showOrnaments = variant !== 'standard';
 	data-variant={variant}
 >
 	<div class="personalized-access__container">
+		{isDemoPreview && variant === 'editorial-magazine' && (
+			<div class="personalized-access__demo-badge" aria-hidden="true">
+				VISTA PREVIA DEMO
+			</div>
+		)}
 		<article class="access-card" aria-label={accessAriaLabel}>
 			{
 				showOrnaments && (
@@ -43,7 +48,7 @@ const showOrnaments = variant !== 'standard';
 
 			<header class="access-card__header">
 				<span class="access-card__eyebrow" data-demo-label>
-					{isDemoPreview ? 'Vista previa demo' : 'Invitación personalizada'}
+					{isDemoPreview && variant !== 'editorial-magazine' ? 'Vista previa demo' : 'Invitación personalizada'}
 				</span>
 				<div class="access-card__seal" aria-hidden="true">
 					<svg
@@ -95,6 +100,15 @@ const showOrnaments = variant !== 'standard';
 					</div>
 				</div>
 			</div>
+
+			{variant === 'editorial-magazine' && (
+				<div class="access-card__barcode-wrapper" aria-hidden="true">
+					<div class="access-card__barcode"></div>
+					<span class="access-card__serial">
+						ED-XV · {guestName ? guestName.toUpperCase().split(/\s+/)[0] : 'INVITADO'} · 2027
+					</span>
+				</div>
+			)}
 
 			<footer class="access-card__footer">
 				<p>

@@ -13,10 +13,11 @@ export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
 ): Promise<ContentResolution | null> {
-	// DB-published content first — this is the source of truth for real invitations
+	// DB-published content first — this is the source of truth for real invitations.
+	// Skip DB for demos: static JSON files are the canonical source for demo content.
 	if (eventType) {
 		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
-		if (publishedEntry) {
+		if (publishedEntry && publishedEntry.isDemo !== true) {
 			const rawContent = publishedEntry.content;
 			const viewModel = adaptDbEvent({
 				slug,

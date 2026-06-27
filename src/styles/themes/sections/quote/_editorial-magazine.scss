@@ -1,0 +1,53 @@
+.quote-section[data-variant='editorial-magazine'] {
+	--quote-bg: var(--editorial-magazine-ink);
+	--quote-text-color: var(--editorial-magazine-white);
+	--quote-author-color: rgb(var(--editorial-magazine-white-rgb) / 62%);
+	--quote-content-font: var(--font-display);
+	--quote-content-size: clamp(2.2rem, 7vw, 5.6rem);
+	--quote-content-line-height: 1.02;
+	--quote-content-style: normal;
+	--quote-content-letter-spacing: 0;
+
+	position: relative;
+	background: var(--quote-bg);
+	color: var(--quote-text-color);
+	text-align: left;
+	overflow: hidden;
+
+	&::before {
+		display: block;
+		width: 3.5rem;
+		height: 2px;
+		margin: 0 0 clamp(2rem, 6vw, 4rem);
+		content: '';
+		background: var(--editorial-magazine-red);
+	}
+
+	.quote-section__content {
+		max-width: var(--quote-content-max-width);
+	}
+
+	.quote-section__text {
+		color: var(--quote-text-color);
+		font-family: var(--quote-content-font);
+		font-size: var(--quote-content-size);
+		font-style: italic;
+		font-weight: 500;
+		line-height: var(--quote-content-line-height);
+		text-transform: none;
+		letter-spacing: var(--quote-content-letter-spacing);
+		text-wrap: pretty;
+	}
+
+	.quote-section__author {
+		margin-top: clamp(2rem, 6vw, 3.5rem);
+		padding-top: clamp(1rem, 3vw, 1.5rem);
+		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 16%);
+		color: var(--quote-author-color);
+		font-family: var(--font-label);
+		font-size: clamp(0.68rem, 1.2vw, 0.82rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.24em;
+	}
+}

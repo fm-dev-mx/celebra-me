@@ -1,0 +1,93 @@
+.countdown-section[data-variant='editorial-magazine'] {
+	position: relative;
+	background: var(--countdown-bg);
+	color: var(--editorial-magazine-ink);
+	border-block: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+	overflow: hidden;
+
+	.countdown-title {
+		color: var(--countdown-title-color);
+		font-family: var(--font-display);
+		font-size: clamp(2.8rem, 9vw, 7rem);
+		font-weight: 800;
+		line-height: 0.86;
+		text-transform: uppercase;
+		letter-spacing: 0;
+	}
+
+	.countdown__timer {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0;
+		margin-top: clamp(2rem, 6vw, 4rem);
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+	}
+
+	.countdown__segment {
+		padding: clamp(1.2rem, 3vw, 2.2rem) 0.5rem;
+		border: none;
+		border-right: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+		background: transparent;
+		box-shadow: none;
+		border-radius: 0;
+		transform: none;
+
+		&:last-child {
+			border-right: none;
+		}
+	}
+
+	.countdown__value {
+		color: var(--countdown-value-color);
+		font-family: var(--font-display);
+		font-size: var(--countdown-value-size-mobile);
+		font-weight: 800;
+		line-height: 0.78;
+	}
+
+	.countdown__label {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		font-family: var(--font-label);
+		font-size: clamp(0.6rem, 1.1vw, 0.72rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--countdown-label-letter-spacing);
+	}
+
+	.countdown-footer {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 56%);
+		font-family: var(--font-label);
+		font-size: clamp(0.72rem, 1.2vw, 0.86rem);
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+	}
+
+	@media (width >= 760px) {
+		.countdown__value {
+			font-size: var(--countdown-value-size-desktop);
+		}
+	}
+
+	@media (width <= 560px) {
+		.countdown__timer {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.countdown__segment {
+			border-bottom: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+
+			&:nth-child(2) {
+				border-right: none;
+			}
+
+			&:nth-child(3) {
+				border-bottom: none;
+			}
+
+			&:nth-child(4) {
+				border-right: none;
+				border-bottom: none;
+			}
+		}
+	}
+}

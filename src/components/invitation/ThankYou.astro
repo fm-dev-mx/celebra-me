@@ -30,7 +30,7 @@ const {
 	overlaySafeArea,
 	showThankYouBranding = true,
 } = Astro.props;
-const EDITORIAL_THANK_YOU_VARIANTS = ['celestial-blue', 'enchanted-rose'] as const;
+const EDITORIAL_THANK_YOU_VARIANTS = ['celestial-blue', 'enchanted-rose', 'editorial-magazine'] as const;
 const usesEditorialLayout = EDITORIAL_THANK_YOU_VARIANTS.includes(
 	variant as (typeof EDITORIAL_THANK_YOU_VARIANTS)[number],
 );
@@ -58,6 +58,11 @@ const IMAGE_CONFIGS = {
 	'enchanted-rose': {
 		width: 700,
 		height: 1050,
+		class: 'photo-image thank-you-editorial__image',
+	},
+	'editorial-magazine': {
+		width: 800,
+		height: 1000,
 		class: 'photo-image thank-you-editorial__image',
 	},
 	standard: {

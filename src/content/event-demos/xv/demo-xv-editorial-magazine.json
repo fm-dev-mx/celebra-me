@@ -1,0 +1,232 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "_assetSlug": "demo-xv-editorial",
+    "title": "XV Años — Revista Editorial",
+    "description": "Una invitación XV con lenguaje de revista editorial: portada, titulares, fecha destacada, elenco familiar y acceso a la celebración.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "editorial-magazine"
+    },
+    "sectionStyles": {
+        "quote": {
+            "variant": "editorial-magazine"
+        },
+        "countdown": {
+            "variant": "editorial-magazine"
+        },
+        "family": {
+            "variant": "editorial-magazine"
+        },
+        "location": {
+            "variant": "editorial-magazine",
+            "showFlourishes": false
+        },
+        "rsvp": {
+            "variant": "editorial-magazine"
+        }
+    },
+    "hero": {
+        "name": "Roberta",
+        "label": "Edición XV",
+        "date": "2027-09-25T21:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "variant": "editorial-magazine",
+        "focalPoint": "54% 38%",
+        "focalPointMobile": "52% 30%"
+    },
+    "quote": {
+        "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia.",
+        "author": "Roberta"
+    },
+    "countdown": {
+        "title": "Reserve la fecha",
+        "footerText": "25 de septiembre de 2027 · Ciudad de México"
+    },
+    "family": {
+        "featuredImage": "family",
+        "parents": {
+            "father": "Luis Rodríguez",
+            "mother": "Ana García"
+        },
+        "parentsOrder": "mother-first",
+        "labels": {
+            "sectionTitle": "Elenco familiar",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Mis padres",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por hacer este sueño realidad y por acompañarme en cada paso de esta historia."
+        },
+        "godparents": [
+            {
+                "name": "Mariana García",
+                "role": "Madrina"
+            },
+            {
+                "name": "Carlos Rodríguez",
+                "role": "Padrino"
+            }
+        ],
+        "focalPoint": "50% 38%"
+    },
+    "location": {
+        "introEyebrow": "Edición especial",
+        "introHeading": "Sábado, 25 de septiembre de 2027",
+        "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
+        "indicationsHeading": "Notas de la edición",
+        "ceremony": {
+            "venueEvent": "Acto I — Ceremonia religiosa",
+            "venueName": "Parroquia de Santa María",
+            "address": "Av. Reforma 120, Ciudad de México",
+            "city": "Ciudad de México",
+            "date": "25 de septiembre de 2027",
+            "time": "5:00 p.m.",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
+            "appleMapsUrl": "https://maps.apple.com/?q=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
+            "image": "gallery02"
+        },
+        "reception": {
+            "venueEvent": "Acto II — Recepción",
+            "venueName": "Maison Lumière Eventos",
+            "address": "Av. de la Luz 456, Ciudad de México",
+            "city": "Ciudad de México",
+            "date": "25 de septiembre de 2027",
+            "time": "7:30 p.m.",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "appleMapsUrl": "https://maps.apple.com/?q=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "image": "jardin"
+        },
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
+            },
+            {
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia antes del <strong>10 de septiembre de 2027</strong>."
+            },
+            {
+                "iconName": "Enveloped",
+                "styleVariant": "default",
+                "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Acceso a la celebración",
+        "subcopy": "Confirma tu asistencia y reserva tu pase para esta noche de edición limitada.",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
+        "confirmationMode": "api"
+    },
+    "gallery": {
+        "eyebrow": "Galería",
+        "title": "Doble página editorial",
+        "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Portada — retrato principal"
+            },
+            {
+                "image": "gallery02",
+                "caption": "Interior — detalles del gran día"
+            },
+            {
+                "image": "gallery03",
+                "caption": "Locación — la recepción"
+            },
+            {
+                "image": "gallery04",
+                "caption": "Bodegón — texturas y luces"
+            },
+            {
+                "image": "gallery05",
+                "caption": "Nocturno — brillo de celebración"
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Guía de regalos",
+        "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
+        "items": [
+            {
+                "type": "store",
+                "title": "Mesa de regalos",
+                "description": "Una selección especial para esta nueva etapa.",
+                "links": [
+                    {
+                        "label": "Ver mesa",
+                        "url": "https://mesaderegalos.liverpool.com.mx/"
+                    }
+                ]
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de sobres",
+                "text": "Se proporcionará un sobre el día del evento."
+            }
+        ]
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
+        "closingName": "Roberta",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 36%"
+    },
+    "interludes": [
+        {
+            "image": "interlude02",
+            "afterSection": "location",
+            "alt": "Retrato editorial con contraste rojo y negro",
+            "height": "screen",
+            "variant": "editorial"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "family",
+            "alt": "Detalle editorial de celebración XV",
+            "height": "screen",
+            "variant": "editorial"
+        },
+        {
+            "image": "interlude04",
+            "afterSection": "rsvp",
+            "alt": "Cierre visual de revista editorial",
+            "height": "screen",
+            "variant": "editorial"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "revealVariant": "editorial-cover",
+        "coverEdition": "XV",
+        "coverVolume": "XV",
+        "coverIssue": "2027",
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "sealInitials": "R·X",
+        "microcopy": "Abrir edición XV",
+        "documentLabel": "Edición especial",
+        "cardLabel": "Edición XV",
+        "cardTagline": "Brillar es la actitud",
+        "stampText": "Roberta",
+        "stampYear": "2027",
+        "closedPalette": {
+            "primary": "surfaceDark",
+            "accent": "actionAccent",
+            "background": "surfaceDark"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+        "ogImage": "portrait",
+        "ogDescription": "Acompáñame en mis XV años el sábado, 25 de septiembre de 2027, en Ciudad de México."
+    }
+}

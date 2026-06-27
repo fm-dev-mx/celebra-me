@@ -29,5 +29,10 @@ export const envelopeSchema = z
 				background: ColorTokenSchema.optional(),
 			})
 			.optional(),
+		revealVariant: z.enum(['editorial-cover']).optional(),
+		coverEdition: z.string().optional(),
+		coverVolume: z.string().optional(),
+		coverIssue: z.string().optional(),
 	})
+	.passthrough() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
 	.optional();

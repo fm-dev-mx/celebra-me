@@ -40,3 +40,8 @@ declare namespace App {
 		hasAdminStrongAuth?: boolean;
 	}
 }
+
+declare module '*.svg' {
+	const content: string;
+	export default content;
+}

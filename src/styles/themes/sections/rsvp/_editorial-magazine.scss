@@ -1,0 +1,162 @@
+.rsvp[data-variant='editorial-magazine'] {
+	position: relative;
+	border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
+	border-radius: 0;
+	background: var(--rsvp-bg);
+	box-shadow: none;
+	color: var(--editorial-magazine-white);
+	overflow: hidden;
+
+	.rsvp__eyebrow,
+	.rsvp__locked-eyebrow,
+	label,
+	legend {
+		color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+		font-family: var(--font-label);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.24em;
+	}
+
+	.rsvp__title {
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-display);
+		font-size: clamp(2.6rem, 7.5vw, 6rem);
+		font-weight: 800;
+		line-height: 0.86;
+		text-transform: uppercase;
+		letter-spacing: 0;
+		overflow-wrap: normal;
+	}
+
+	.rsvp__subcopy,
+	.rsvp__demo-footer,
+	.rsvp__locked-detail {
+		color: rgb(var(--editorial-magazine-white-rgb) / 58%);
+		font-family: var(--font-body);
+	}
+
+	input[type='text'],
+	input[type='tel'],
+	input[type='number'],
+	textarea,
+	select {
+		border: none;
+		border-bottom: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-white);
+		padding: 0.75rem 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		width: 100%;
+		transition: border-color 0.3s ease;
+
+		option {
+			background: rgb(13 13 15);
+			color: var(--editorial-magazine-white);
+		}
+	}
+
+	input[type='text']:focus,
+	input[type='tel']:focus,
+	input[type='number']:focus,
+	textarea:focus,
+	select:focus {
+		border-bottom-color: var(--editorial-magazine-white);
+		background: transparent;
+		outline: none;
+	}
+
+	.rsvp__radio-card {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 22%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-white);
+		padding: 1.25rem;
+		transition: all 0.3s ease;
+	}
+
+	.rsvp__radio-card:hover {
+		background: rgb(var(--editorial-magazine-white-rgb) / 6%);
+		border-color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+	}
+
+	.rsvp__radio-card:has(input:checked) {
+		border-color: var(--editorial-magazine-white);
+		background: rgb(var(--editorial-magazine-white-rgb) / 10%);
+	}
+
+	.rsvp__button {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-label);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		box-shadow: none;
+	}
+
+	.rsvp__button:hover:not(:disabled),
+	.rsvp__button--success {
+		border-color: var(--editorial-magazine-white);
+		background: var(--editorial-magazine-white);
+		color: var(--editorial-magazine-ink);
+		box-shadow: none;
+	}
+
+	.rsvp__button:disabled {
+		opacity: 46%;
+		border-color: rgb(var(--editorial-magazine-white-rgb) / 22%);
+		color: rgb(var(--editorial-magazine-white-rgb) / 46%);
+		background: transparent;
+		cursor: not-allowed;
+	}
+
+	.rsvp__whatsapp-cta,
+	.rsvp__secondary-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-white);
+		font-family: var(--font-label);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		padding: 0.75rem 1.5rem;
+		text-decoration: none;
+		transition: all 0.3s ease;
+		cursor: pointer;
+
+		.rsvp__whatsapp-icon {
+			width: 1.1rem;
+			height: 1.1rem;
+			fill: currentcolor;
+		}
+
+		&:hover {
+			border-color: var(--editorial-magazine-white);
+			background: var(--editorial-magazine-white);
+			color: var(--editorial-magazine-ink);
+		}
+	}
+
+	.rsvp__locked-card {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 14%);
+		border-radius: 0;
+		background: rgb(var(--editorial-magazine-white-rgb) / 4%);
+	}
+
+	@media (width <= 640px) {
+		.rsvp__title {
+			font-size: clamp(2.1rem, 9vw, 2.75rem);
+			line-height: 0.96;
+		}
+	}
+}

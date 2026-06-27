@@ -6,6 +6,11 @@ import {
 } from '@/lib/theme/theme-contract';
 
 describe('themeSupportsPortrait', () => {
+	it('includes editorial-magazine as a portrait-capable preset', () => {
+		expect(THEME_PRESETS as readonly string[]).toContain('editorial-magazine');
+		expect(themeSupportsPortrait('editorial-magazine')).toBe(true);
+	});
+
 	it('returns false for an unknown theme', () => {
 		expect(themeSupportsPortrait('nonexistent-theme')).toBe(false);
 	});

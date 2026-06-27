@@ -1,6 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
-.invitation-footer[data-variant='editorial'] {
+.invitation-footer[data-variant='editorial'],
+.invitation-footer[data-variant='editorial-magazine'] {
 	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
 	background-color: var(--color-surface-dark);
 	background-image: linear-gradient(
@@ -131,5 +132,12 @@
 			opacity: 100%;
 			transform: translateX(3px);
 		}
+	}
+}
+
+/* Editorial-magazine footer: flat rectangular buttons instead of pills */
+.invitation-footer[data-variant='editorial-magazine'] {
+	.whatsapp-button {
+		border-radius: 0;
 	}
 }

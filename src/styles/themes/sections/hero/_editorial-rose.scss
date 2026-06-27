@@ -1,0 +1,94 @@
+// ==========================================================================
+// EDITORIAL ROSE HERO
+// Editorial full-bleed hero with refined rose/silver palette
+// ==========================================================================
+
+.invitation-hero[data-variant='editorial-rose'] {
+	justify-content: flex-end;
+	min-height: 100svh;
+	background: var(--color-surface-dark);
+	color: var(--color-text-on-dark);
+
+	.invitation-hero__background {
+		&::after {
+			background:
+				linear-gradient(
+					100deg,
+					rgb(var(--color-deep-blue-graphite-rgb) / 48%) 0%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 8%) 40%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 28%) 65%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 50%) 100%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--color-deep-blue-graphite-rgb) / 5%) 0%,
+					transparent 30%
+				),
+				linear-gradient(
+					180deg,
+					transparent 38%,
+					rgb(var(--color-cool-ivory-rgb) / 8%) 62%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 62%) 100%
+				);
+		}
+
+		img {
+			filter: var(--hero-image-filter, saturate(1.02) contrast(1.02));
+		}
+	}
+
+	.invitation-hero__content {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-block-end: clamp(4rem, 8vh, 6rem);
+		padding-inline: clamp(1.5rem, 4vw, 3rem);
+		width: 100%;
+	}
+
+	.invitation-hero__label {
+		font-family: var(--font-body);
+		font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+		letter-spacing: 0.38em;
+		text-transform: uppercase;
+		margin-bottom: 0.75rem;
+		color: var(--hero-label-color);
+	}
+
+	.invitation-hero__title {
+		font-family: var(--font-calligraphy);
+		font-size: clamp(3rem, 9vw, 5.5rem);
+		font-weight: 400;
+		line-height: 0.92;
+		margin-bottom: 0.25rem;
+		color: var(--color-diamond-white);
+		background: linear-gradient(
+			135deg,
+			var(--hero-title-color-start) 0%,
+			var(--hero-title-color-mid) 30%,
+			var(--hero-title-color-end) 100%
+		);
+		background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.invitation-hero__date {
+		font-family: var(--font-body);
+		font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+		letter-spacing: 0.18em;
+		color: rgb(var(--color-text-on-dark-rgb) / 72%);
+		margin-bottom: 1.5rem;
+	}
+
+	.invitation-hero__card {
+		background: var(--hero-card-bg);
+		border: 1px solid var(--hero-card-border-hairline);
+		border-radius: 8px;
+		padding: 1.25rem 1.75rem;
+		backdrop-filter: blur(12px);
+		box-shadow: var(--hero-card-shadow-ambient);
+	}
+}

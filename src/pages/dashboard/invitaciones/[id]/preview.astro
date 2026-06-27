@@ -21,6 +21,7 @@ import Hero from '@/components/invitation/Hero.astro';
 import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
 import '@/styles/invitation.scss';
 
 import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
@@ -193,27 +194,47 @@ const headLinks = [
 				{...wrapperDataAttributes}
 			>
 				{
-					revealState !== 'internal' && pageCtx.envelope && (
-						<EnvelopeReveal
-							name={pageCtx.envelope.name}
-							sealStyle={pageCtx.envelope.sealStyle}
-							sealIcon={pageCtx.envelope.sealIcon}
-							sealInitials={pageCtx.envelope.sealInitials}
-							sealVariant={pageCtx.envelope.sealVariant}
-							sealImage={pageCtx.envelope.sealImage}
-							microcopy={pageCtx.envelope.microcopy}
-							documentLabel={pageCtx.envelope.documentLabel}
-							stampText={pageCtx.envelope.stampText}
-							stampYear={pageCtx.envelope.stampYear}
-							tooltipText={pageCtx.envelope.tooltipText}
-							eventSlug={pageCtx.envelope.eventSlug}
-							variant={pageCtx.envelope.variant}
-							teaserDetails={pageCtx.envelope.teaserDetails}
-							card={pageCtx.envelope.card}
-							previewState={revealState === 'opened' ? 'opened' : 'closed'}
-						/>
-					)
-				}
+							revealState !== 'internal' && pageCtx.envelope?.revealVariant === 'editorial-cover' ? (
+								<EditorialCoverReveal
+									coverEdition={pageCtx.envelope.coverEdition}
+									coverVolume={pageCtx.envelope.coverVolume}
+									coverIssue={pageCtx.envelope.coverIssue}
+									microcopy={pageCtx.envelope.microcopy}
+									eventSlug={pageCtx.envelope.eventSlug}
+									variant={pageCtx.envelope.variant}
+									heroName={pageCtx.viewModel.hero.name}
+									heroSecondaryName={pageCtx.viewModel.hero.secondaryName}
+									heroLabel={pageCtx.viewModel.hero.label}
+									heroDate={pageCtx.viewModel.hero.date}
+									heroVenueName={pageCtx.heroVenueName}
+									guestName={pageCtx.guestName}
+									previewState={revealState === 'opened' ? 'opened' : 'closed'}
+									backgroundImage={pageCtx.viewModel.hero.backgroundImage}
+									portrait={pageCtx.viewModel.hero.portrait}
+									focalPoint={pageCtx.viewModel.hero.focalPoint}
+									focalPointMobile={pageCtx.viewModel.hero.focalPointMobile}
+								/>
+							) : revealState !== 'internal' && pageCtx.envelope ? (
+								<EnvelopeReveal
+									name={pageCtx.envelope.name}
+									sealStyle={pageCtx.envelope.sealStyle}
+									sealIcon={pageCtx.envelope.sealIcon}
+									sealInitials={pageCtx.envelope.sealInitials}
+									sealVariant={pageCtx.envelope.sealVariant}
+									sealImage={pageCtx.envelope.sealImage}
+									microcopy={pageCtx.envelope.microcopy}
+									documentLabel={pageCtx.envelope.documentLabel}
+									stampText={pageCtx.envelope.stampText}
+									stampYear={pageCtx.envelope.stampYear}
+									tooltipText={pageCtx.envelope.tooltipText}
+									eventSlug={pageCtx.envelope.eventSlug}
+									variant={pageCtx.envelope.variant}
+									teaserDetails={pageCtx.envelope.teaserDetails}
+									card={pageCtx.envelope.card}
+									previewState={revealState === 'opened' ? 'opened' : 'closed'}
+								/>
+							) : null
+						}
 
 				<EventHeader
 					links={pageCtx.viewModel.navigation ?? []}

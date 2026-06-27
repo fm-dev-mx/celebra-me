@@ -13,6 +13,7 @@ import Hero from '@/components/invitation/Hero.astro';
 import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
@@ -188,7 +189,7 @@ const headLinks = [
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
 			<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
 				{
-					page.envelope && (
+					page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>
 							(function() {
 								try {
@@ -216,26 +217,45 @@ const headLinks = [
 				}
 
 				{
-					page.envelope && (
-						<EnvelopeReveal
-							name={page.envelope.name}
-							sealStyle={page.envelope.sealStyle}
-							sealIcon={page.envelope.sealIcon}
-							sealInitials={page.envelope.sealInitials}
-							sealVariant={page.envelope.sealVariant}
-							sealImage={page.envelope.sealImage}
-							microcopy={page.envelope.microcopy}
-							documentLabel={page.envelope.documentLabel}
-							stampText={page.envelope.stampText}
-							stampYear={page.envelope.stampYear}
-							tooltipText={page.envelope.tooltipText}
-							eventSlug={page.envelope.eventSlug}
-							variant={page.envelope.variant}
-							teaserDetails={page.envelope.teaserDetails}
-							card={page.envelope.card}
-						/>
-					)
-				}
+							page.envelope?.revealVariant === 'editorial-cover' ? (
+								<EditorialCoverReveal
+									coverEdition={page.envelope.coverEdition}
+									coverVolume={page.envelope.coverVolume}
+									coverIssue={page.envelope.coverIssue}
+									microcopy={page.envelope.microcopy}
+									eventSlug={page.envelope.eventSlug}
+									variant={page.envelope.variant}
+									heroName={page.viewModel.hero.name}
+									heroSecondaryName={page.viewModel.hero.secondaryName}
+									heroLabel={page.viewModel.hero.label}
+									heroDate={page.viewModel.hero.date}
+									heroVenueName={page.heroVenueName}
+									guestName={page.guestName}
+									backgroundImage={page.viewModel.hero.backgroundImage}
+									portrait={page.viewModel.hero.portrait}
+									focalPoint={page.viewModel.hero.focalPoint}
+									focalPointMobile={page.viewModel.hero.focalPointMobile}
+								/>
+							) : page.envelope ? (
+								<EnvelopeReveal
+									name={page.envelope.name}
+									sealStyle={page.envelope.sealStyle}
+									sealIcon={page.envelope.sealIcon}
+									sealInitials={page.envelope.sealInitials}
+									sealVariant={page.envelope.sealVariant}
+									sealImage={page.envelope.sealImage}
+									microcopy={page.envelope.microcopy}
+									documentLabel={page.envelope.documentLabel}
+									stampText={page.envelope.stampText}
+									stampYear={page.envelope.stampYear}
+									tooltipText={page.envelope.tooltipText}
+									eventSlug={page.envelope.eventSlug}
+									variant={page.envelope.variant}
+									teaserDetails={page.envelope.teaserDetails}
+									card={page.envelope.card}
+								/>
+							) : null
+						}
 
 				<EventHeader
 					links={page.viewModel.navigation ?? []}

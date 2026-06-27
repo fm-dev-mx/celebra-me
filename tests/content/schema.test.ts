@@ -32,6 +32,14 @@ const primeraComunionAssetIndexPath = path.resolve(
 	process.cwd(),
 	'src/assets/images/events/demo-primera-comunion-illustrated/index.ts',
 );
+const editorialMagazineDemoPath = path.resolve(
+	process.cwd(),
+	'src/content/event-demos/xv/demo-xv-editorial-magazine.json',
+);
+const editorialMagazineAssetIndexPath = path.resolve(
+	process.cwd(),
+	'src/assets/images/events/demo-xv-editorial/index.ts',
+);
 
 function getJsonContentFiles(root: string): string[] {
 	return fs
@@ -135,6 +143,10 @@ describe('Event content schema (real contract)', () => {
 
 	it('includes enchanted-rose in THEME_PRESETS', () => {
 		expect((THEME_PRESETS as readonly string[]).includes('enchanted-rose')).toBe(true);
+	});
+
+	it('includes editorial-magazine in THEME_PRESETS', () => {
+		expect((THEME_PRESETS as readonly string[]).includes('editorial-magazine')).toBe(true);
 	});
 
 	it('includes baby-shower in EVENT_TYPES', () => {
@@ -306,6 +318,53 @@ describe('Event content schema (real contract)', () => {
 			previewSlug: 'demo-primera-comunion-illustrated',
 		});
 		expect(preset?.requiredAssets).toEqual(['hero', 'family', 'gallery01', 'gallery02']);
+	});
+
+	it('registers the Editorial Magazine XV demo in the preset catalog', () => {
+		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-xv-editorial-magazine');
+
+		expect(preset).toMatchObject({
+			id: 'demo-xv-editorial-magazine',
+			eventType: 'xv',
+			displayName: 'XV Años — Revista Editorial',
+			themeId: 'editorial-magazine',
+			previewSlug: 'demo-xv-editorial-magazine',
+		});
+		expect(preset?.requiredAssets).toEqual([
+			'hero',
+			'portrait',
+			'family',
+			'gallery01',
+			'gallery02',
+			'gallery03',
+		]);
+	});
+
+	it('uses existing demo-owned assets for the Editorial Magazine XV demo', () => {
+		const content = JSON.parse(fs.readFileSync(editorialMagazineDemoPath, 'utf8'));
+		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-xv-editorial-magazine');
+
+		expect(content._assetSlug).toBe('demo-xv-editorial');
+		expect(content.theme?.preset).toBe('editorial-magazine');
+		expect(content.envelope?.revealVariant).toBe('editorial-cover');
+		expect(fs.existsSync(editorialMagazineAssetIndexPath)).toBe(true);
+
+		const referencedAssetKeys = [
+			content.hero?.backgroundImage,
+			content.hero?.portrait,
+			content.location?.reception?.image,
+			content.family?.featuredImage,
+			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
+			content.thankYou?.image,
+			...(content.interludes ?? []).map((item: { image?: string }) => item.image),
+		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
+
+		const assetIndexSource = fs.readFileSync(editorialMagazineAssetIndexPath, 'utf8');
+		for (const key of [
+			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
+		]) {
+			expect(assetIndexSource).toContain(key);
+		}
 	});
 
 	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {

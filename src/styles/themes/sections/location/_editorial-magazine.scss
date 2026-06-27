@@ -1,0 +1,186 @@
+.event-location[data-variant='editorial-magazine'] {
+	background: var(--location-bg);
+	color: var(--location-text-color);
+
+	.event-location__eyebrow,
+	.event-location__intro-eyebrow {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		font-family: var(--font-label);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.28em;
+	}
+
+	.event-location__title,
+	.event-location__intro-heading {
+		color: var(--editorial-magazine-ink);
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 9vw, 7.5rem);
+		font-weight: 800;
+		line-height: 0.84;
+		text-transform: uppercase;
+		letter-spacing: 0;
+	}
+
+	.event-location__intro-lede {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
+		font-family: var(--font-body);
+		font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+		line-height: 1.7;
+	}
+
+	.event-location__card,
+	.venue-card {
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+		border-radius: 0;
+		background: var(--location-card-bg);
+		box-shadow: none;
+	}
+
+	.venue-card__media,
+	.event-location__card-media {
+		border-bottom: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 18%);
+	}
+
+	.venue-card__media img,
+	.event-location__card-media img {
+		filter: var(--location-image-filter);
+	}
+
+	.venue-card__event,
+	.event-location__venue-event {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		font-family: var(--font-label);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.24em;
+	}
+
+	.venue-card__name,
+	.event-location__venue-name,
+	.event-location__card-content-place {
+		color: var(--location-place-color);
+		font-family: var(--font-display);
+		font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+		font-weight: 700;
+		line-height: 0.95;
+		letter-spacing: 0;
+	}
+
+	.venue-card__date,
+	.venue-card__time,
+	.event-location__date,
+	.event-location__time,
+	.event-location__card-content-date,
+	.event-location__card-content-hour {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 56%);
+		font-family: var(--font-label);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.venue-card__address,
+	.event-location__address,
+	.event-location__card-content-address {
+		color: var(--location-address-color);
+		font-family: var(--font-body);
+		line-height: 1.6;
+	}
+
+	.event-location__nav-button {
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 38%);
+		border-radius: 0;
+		background: transparent;
+		color: var(--editorial-magazine-ink);
+		font-family: var(--font-label);
+		font-size: clamp(0.66rem, 1vw, 0.76rem);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		padding: 0.75rem 1.25rem;
+		transition: all 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			border-color: var(--editorial-magazine-ink);
+			background: var(--editorial-magazine-ink);
+			color: var(--editorial-magazine-white);
+		}
+	}
+
+	.copy-button {
+		border: none;
+		background: transparent;
+		color: var(--editorial-magazine-ink);
+		padding: 0.25rem;
+		cursor: pointer;
+		opacity: 70%;
+		transition: opacity 0.2s;
+
+		&:hover {
+			opacity: 100%;
+			background: transparent;
+			color: var(--editorial-magazine-red);
+		}
+	}
+
+	.event-location__indications {
+		counter-reset: notes-counter;
+	}
+
+	.event-location__indication-item {
+		border: none;
+		border-top: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		padding: 1rem 0;
+		margin: 0;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		counter-increment: notes-counter;
+
+		&::before {
+			display: none;
+		}
+
+		&::after {
+			display: none;
+		}
+
+		&:hover {
+			background: transparent;
+			border-color: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+			transform: none;
+			box-shadow: none;
+		}
+	}
+
+	.event-location__indication-icon {
+		display: none;
+	}
+
+	.event-location__indication-text {
+		color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
+		font-family: var(--font-body);
+		font-size: 0.88rem;
+		line-height: 1.6;
+
+		&::before {
+			content: 'NOTA 0' counter(notes-counter) ' / ';
+			font-family: var(--font-label);
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.16em;
+			color: var(--editorial-magazine-red);
+		}
+	}
+
+	.event-location__indication-text strong {
+		color: var(--editorial-magazine-ink);
+	}
+}

@@ -25,6 +25,10 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 		featureIndices: [0, 5],
 		wideIndices: [1, 4],
 	},
+	'editorial-magazine': {
+		featureIndices: [0, 4],
+		wideIndices: [3, 7],
+	},
 	single: {
 		featureIndices: [],
 		wideIndices: [],

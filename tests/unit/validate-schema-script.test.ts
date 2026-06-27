@@ -29,6 +29,15 @@ const KNOWN_VARIANT_WARNINGS = [
 	"gallery: Contract variant 'jewelry-box-wedding' not found in CSS",
 	"thankYou: Contract variant 'jewelry-box-wedding' not found in CSS",
 	"itinerary: Contract variant 'jewelry-box-wedding' not found in CSS",
+	// editorial-rose sections using base-style fallback (expected — variant files not yet created)
+	"countdown: Contract variant 'editorial-rose' not found in CSS",
+	"location: Contract variant 'editorial-rose' not found in CSS",
+	"family: Contract variant 'editorial-rose' not found in CSS",
+	"gifts: Contract variant 'editorial-rose' not found in CSS",
+	"thankYou: Contract variant 'editorial-rose' not found in CSS",
+	"itinerary: Contract variant 'editorial-rose' not found in CSS",
+	// editorial-magazine custom itinerary variant not yet created
+	"itinerary: Contract variant 'editorial-magazine' not found in CSS",
 ];
 
 describe('validate-schema script', () => {
