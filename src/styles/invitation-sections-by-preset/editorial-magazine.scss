@@ -7,3 +7,73 @@
 @use '../invitation-sections/gallery/editorial-magazine' as gallery-editorial-magazine;
 @use '../invitation-sections/gifts/editorial-magazine' as gifts-editorial-magazine;
 @use '../invitation-sections/thank-you/editorial-magazine' as thank-you-editorial-magazine;
+@use '../invitation-sections/header/editorial-magazine' as header-editorial-magazine;
+@use '../invitation-sections/personalized-access/editorial-magazine' as
+	personalized-access-editorial-magazine;
+
+/* Semantic Folios for Editorial Magazine Theme */
+.countdown-section[data-variant='editorial-magazine'],
+.event-location[data-variant='editorial-magazine'],
+.gifts-section[data-variant='editorial-magazine'],
+.gallery-section[data-variant='editorial-magazine'],
+.family[data-variant='editorial-magazine'],
+.rsvp[data-variant='editorial-magazine'] {
+	position: relative;
+	padding-bottom: clamp(6.5rem, 15vw, 9.5rem);
+
+	&::after {
+		content: '';
+		position: absolute;
+		left: clamp(1rem, 5vw, 4.5rem);
+		right: clamp(1rem, 5vw, 4.5rem);
+		bottom: 3.5rem;
+		height: 1px;
+		background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		pointer-events: none;
+	}
+
+	&::before {
+		position: absolute;
+		left: clamp(1.2rem, 5.2vw, 4.7rem);
+		bottom: 2.2rem;
+		font-family: var(--font-label);
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		pointer-events: none;
+		z-index: 5;
+	}
+}
+
+.countdown-section[data-variant='editorial-magazine']::before {
+	content: 'CELEBRA-ME | EDICIÓN XV · SAVE THE DATE';
+}
+
+.family[data-variant='editorial-magazine']::before {
+	content: 'CELEBRA-ME | EDICIÓN XV · CRÉDITOS';
+}
+
+.event-location[data-variant='editorial-magazine']::before {
+	content: 'CELEBRA-ME | EDICIÓN XV · CRÓNICA DE LA JORNADA';
+}
+
+.gallery-section[data-variant='editorial-magazine']::before {
+	content: 'CELEBRA-ME | EDICIÓN XV · EDITORIAL DE MODA';
+}
+
+.gifts-section[data-variant='editorial-magazine']::before {
+	content: 'CELEBRA-ME | EDICIÓN XV · GUÍA DE REGALOS';
+}
+
+.rsvp[data-variant='editorial-magazine'] {
+	&::after {
+		background: rgb(var(--editorial-magazine-white-rgb) / 14%);
+	}
+
+	&::before {
+		content: 'CELEBRA-ME | EDICIÓN XV · CONFIRMACIÓN';
+		color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+	}
+}

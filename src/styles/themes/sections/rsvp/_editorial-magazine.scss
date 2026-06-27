@@ -37,37 +37,54 @@
 	}
 
 	input[type='text'],
+	input[type='tel'],
 	input[type='number'],
-	textarea {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
+	textarea,
+	select {
+		border: none;
+		border-bottom: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-white-rgb) / 5%);
+		background: transparent;
 		color: var(--editorial-magazine-white);
+		padding: 0.75rem 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		width: 100%;
+		transition: border-color 0.3s ease;
+
+		option {
+			background: rgb(13 13 15);
+			color: var(--editorial-magazine-white);
+		}
 	}
 
 	input[type='text']:focus,
+	input[type='tel']:focus,
 	input[type='number']:focus,
-	textarea:focus {
-		border-color: rgb(var(--editorial-magazine-white-rgb) / 42%);
-		background: rgb(var(--editorial-magazine-white-rgb) / 8%);
-		outline: 2px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
-		outline-offset: 2px;
+	textarea:focus,
+	select:focus {
+		border-bottom-color: var(--editorial-magazine-white);
+		background: transparent;
+		outline: none;
 	}
 
 	.rsvp__radio-card {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 16%);
-		border-radius: 0;
-		background: rgb(var(--editorial-magazine-white-rgb) / 4%);
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 22%);
+		border-radius: 2px;
+		background: transparent;
 		color: var(--editorial-magazine-white);
+		padding: 1.25rem;
+		transition: all 0.3s ease;
 	}
 
 	.rsvp__radio-card:hover {
-		background: rgb(var(--editorial-magazine-white-rgb) / 7%);
+		background: rgb(var(--editorial-magazine-white-rgb) / 6%);
+		border-color: rgb(var(--editorial-magazine-white-rgb) / 48%);
 	}
 
 	.rsvp__radio-card:has(input:checked) {
-		border-color: rgb(var(--editorial-magazine-white-rgb) / 42%);
-		background: rgb(var(--editorial-magazine-white-rgb) / 9%);
+		border-color: var(--editorial-magazine-white);
+		background: rgb(var(--editorial-magazine-white-rgb) / 10%);
 	}
 
 	.rsvp__button {

@@ -196,7 +196,6 @@ const headLinks = [
 				{
 							revealState !== 'internal' && pageCtx.envelope?.revealVariant === 'editorial-cover' ? (
 								<EditorialCoverReveal
-
 									coverEdition={pageCtx.envelope.coverEdition}
 									coverVolume={pageCtx.envelope.coverVolume}
 									coverIssue={pageCtx.envelope.coverIssue}
@@ -210,6 +209,10 @@ const headLinks = [
 									heroVenueName={pageCtx.heroVenueName}
 									guestName={pageCtx.guestName}
 									previewState={revealState === 'opened' ? 'opened' : 'closed'}
+									backgroundImage={pageCtx.viewModel.hero.backgroundImage}
+									portrait={pageCtx.viewModel.hero.portrait}
+									focalPoint={pageCtx.viewModel.hero.focalPoint}
+									focalPointMobile={pageCtx.viewModel.hero.focalPointMobile}
 								/>
 							) : revealState !== 'internal' && pageCtx.envelope ? (
 								<EnvelopeReveal

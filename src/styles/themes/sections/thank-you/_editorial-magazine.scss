@@ -3,14 +3,32 @@
 .thank-you-section[data-variant='editorial-magazine'] {
 	background: var(--editorial-magazine-ink);
 	color: var(--editorial-magazine-white);
-	min-height: 60svh;
+	min-height: 100svh;
+	display: flex;
+	align-items: center;
+	padding: clamp(4rem, 10vw, 8rem) clamp(1rem, 5vw, 4rem);
 
 	&::before {
 		background: none;
 	}
 
-	.photo-frame {
-		width: min(100%, 320px);
+	.thank-you-editorial {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(2.5rem, 8vw, 5rem);
+		align-items: center;
+		width: 100%;
+		max-width: 1100px;
+		margin: 0 auto;
+
+		@media (width >= 768px) {
+			grid-template-columns: 1fr 1.1fr;
+		}
+	}
+
+	.thank-you-editorial__media.photo-frame {
+		width: 100%;
+		max-width: 440px;
 		height: auto;
 		aspect-ratio: 3 / 4;
 		border-radius: 0;
@@ -18,38 +36,82 @@
 		background: transparent;
 		box-shadow: none;
 		padding: 0;
+		justify-self: center;
+		overflow: hidden;
+
+		.thank-you-editorial__image-shell {
+			width: 100%;
+			height: 100%;
+		}
 
 		.photo-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 			border-radius: 0;
-			filter: grayscale(0.3) contrast(1.06);
+			filter: grayscale(0.5) contrast(1.12) brightness(0.85);
+			transition:
+				filter 0.5s ease,
+				transform 0.5s ease;
 		}
 
 		&:hover .photo-image {
-			filter: grayscale(0.08) contrast(1.04);
+			filter: grayscale(0.2) contrast(1.08) brightness(0.95);
+			transform: scale(1.03);
 		}
+	}
+
+	.thank-you-editorial__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		text-align: left;
+		gap: 2rem;
 	}
 
 	.thank-you-message {
 		color: rgb(var(--editorial-magazine-white-rgb) / 78%);
-		font-size: 1.05rem;
-		line-height: 1.85;
+		font-family: var(--font-body);
+		font-size: clamp(1rem, 1.8vw, 1.25rem);
+		line-height: 1.8;
+		letter-spacing: -0.01em;
+		margin: 0;
 
 		.drop-cap {
 			color: var(--editorial-magazine-white);
+			font-family: var(--font-display);
+			font-size: 3.8em;
+			float: left;
+			line-height: 0.78;
+			padding-right: 0.12em;
 			text-shadow: none;
 		}
 	}
 
+	.signature-block {
+		margin-top: 1rem;
+	}
+
 	.closing-name {
 		color: var(--editorial-magazine-white);
+		font-family: var(--font-calligraphy);
+		font-size: clamp(3rem, 7vw, 4.8rem);
 		background: none;
 		-webkit-text-fill-color: unset;
 		text-shadow: none;
-		font-family: var(--font-calligraphy);
+		line-height: 1.1;
+		margin: 0;
 	}
 
 	.thank-you-footer {
-		border-top-color: rgb(var(--editorial-magazine-white-rgb) / 14%);
-		color: rgb(var(--editorial-magazine-white-rgb) / 34%);
+		margin-top: 2rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 14%);
+		width: 100%;
+		color: rgb(var(--editorial-magazine-white-rgb) / 38%);
+		font-family: var(--font-label);
+		font-size: 0.68rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
 	}
 }

@@ -84,18 +84,43 @@
 		line-height: 1.6;
 	}
 
-	.venue-card__nav,
-	.event-location__nav-link,
-	.event-location__map-button {
-		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 24%);
+	.event-location__nav-button {
+		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 38%);
 		border-radius: 0;
 		background: transparent;
 		color: var(--editorial-magazine-ink);
 		font-family: var(--font-label);
 		font-size: clamp(0.66rem, 1vw, 0.76rem);
-		font-weight: 700;
+		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.16em;
+		padding: 0.75rem 1.25rem;
+		transition: all 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			border-color: var(--editorial-magazine-ink);
+			background: var(--editorial-magazine-ink);
+			color: var(--editorial-magazine-white);
+		}
+	}
+
+	.copy-button {
+		border: none;
+		background: transparent;
+		color: var(--editorial-magazine-ink);
+		padding: 0.25rem;
+		cursor: pointer;
+		opacity: 70%;
+		transition: opacity 0.2s;
+
+		&:hover {
+			opacity: 100%;
+			background: transparent;
+			color: var(--editorial-magazine-red);
+		}
 	}
 
 	.event-location__indication {

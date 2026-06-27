@@ -219,7 +219,6 @@ const headLinks = [
 				{
 							page.envelope?.revealVariant === 'editorial-cover' ? (
 								<EditorialCoverReveal
-
 									coverEdition={page.envelope.coverEdition}
 									coverVolume={page.envelope.coverVolume}
 									coverIssue={page.envelope.coverIssue}
@@ -232,6 +231,10 @@ const headLinks = [
 									heroDate={page.viewModel.hero.date}
 									heroVenueName={page.heroVenueName}
 									guestName={page.guestName}
+									backgroundImage={page.viewModel.hero.backgroundImage}
+									portrait={page.viewModel.hero.portrait}
+									focalPoint={page.viewModel.hero.focalPoint}
+									focalPointMobile={page.viewModel.hero.focalPointMobile}
 								/>
 							) : page.envelope ? (
 								<EnvelopeReveal
