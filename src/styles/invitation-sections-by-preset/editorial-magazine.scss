@@ -10,6 +10,7 @@
 @use '../invitation-sections/header/editorial-magazine' as header-editorial-magazine;
 @use '../invitation-sections/personalized-access/editorial-magazine' as
 	personalized-access-editorial-magazine;
+@use '../invitation-sections/footer/editorial' as footer-editorial;
 
 /* Semantic Folios for Editorial Magazine Theme */
 .countdown-section[data-variant='editorial-magazine'],

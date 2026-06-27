@@ -24,11 +24,11 @@
 		width: max-content;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		border-radius: 2px;
+		border-radius: 0;
 	}
 
 	.access-card {
-		border-radius: 2px;
+		border-radius: 0;
 		border: 1px solid var(--editorial-magazine-ink);
 		background-color: var(--editorial-magazine-white);
 		box-shadow: none;
@@ -62,7 +62,7 @@
 			letter-spacing: 0.2em;
 			font-weight: 700;
 			text-transform: uppercase;
-			border-radius: 2px;
+			border-radius: 0;
 		}
 
 		&__seal {

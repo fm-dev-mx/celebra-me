@@ -55,9 +55,10 @@
 		rgb(var(--editorial-magazine-ink-rgb) / 22%) 48%,
 		rgb(var(--editorial-magazine-ink-rgb) / 14%) 100%
 	);
+	--editorial-image-filter: grayscale(0.6) contrast(1.1) brightness(0.95);
 	--hero-title-size: clamp(4.8rem, 14vw, 10rem);
-	--hero-image-filter: grayscale(0.5) contrast(1.1) brightness(0.9);
-	--hero-portrait-filter: grayscale(0.5) contrast(1.1) brightness(0.95);
+	--hero-image-filter: var(--editorial-image-filter);
+	--hero-portrait-filter: var(--editorial-image-filter);
 	--hero-label-color: var(--editorial-magazine-red);
 	--hero-card-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
 	--hero-card-border-hairline: rgb(var(--editorial-magazine-ink-rgb) / 44%);
@@ -79,6 +80,7 @@
 	--family-text-muted: rgb(var(--editorial-magazine-ink-rgb) / 62%);
 	--family-accent: var(--editorial-magazine-red);
 	--family-panel-bg: var(--editorial-magazine-white);
+	--family-image-filter: var(--editorial-image-filter);
 	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
 	--family-name-size: clamp(2rem, 5vw, 4.2rem);
@@ -96,7 +98,7 @@
 	--location-hour-color: rgb(var(--editorial-magazine-ink-rgb) / 66%);
 	--location-address-color: rgb(var(--editorial-magazine-ink-rgb) / 64%);
 	--location-indication-text-color: rgb(var(--editorial-magazine-ink-rgb) / 76%);
-	--location-image-filter: grayscale(0.55) contrast(1.08) brightness(0.96);
+	--location-image-filter: var(--editorial-image-filter);
 	--rsvp-bg: var(--editorial-magazine-ink);
 	--gifts-bg: var(--editorial-magazine-paper);
 	--gifts-title-color: var(--editorial-magazine-ink);
@@ -109,6 +111,7 @@
 	--gallery-title-color: var(--editorial-magazine-ink);
 	--gallery-caption-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
 	--gallery-caption-color: var(--editorial-magazine-ink);
+	--gallery-image-filter: var(--editorial-image-filter);
 	--music-player-prompt-bg: var(--editorial-magazine-white);
 	--music-player-prompt-color: var(--editorial-magazine-ink);
 	--music-player-prompt-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 24%);
