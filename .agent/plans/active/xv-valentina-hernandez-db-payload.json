@@ -6,7 +6,7 @@
     "_assetSlug": "xv-valentina-hernandez",
     "theme": {
         "fontFamily": "serif",
-        "preset": "celestial-blue"
+        "preset": "editorial-magazine"
     },
     "eventTiming": {
         "localDateTime": "2026-08-29T15:45",
@@ -26,16 +26,39 @@
         "thankYou"
     ],
     "sectionStyles": {
+        "hero": {
+            "variant": "editorial-magazine"
+        },
+        "quote": {
+            "variant": "editorial-magazine"
+        },
+        "countdown": {
+            "variant": "editorial-magazine"
+        },
+        "family": {
+            "variant": "editorial-magazine"
+        },
         "location": {
-            "showFlourishes": true
+            "variant": "editorial-magazine",
+            "showFlourishes": false
+        },
+        "gallery": {
+            "variant": "editorial-magazine"
+        },
+        "gifts": {
+            "variant": "editorial-magazine"
         },
         "rsvp": {
+            "variant": "editorial-magazine",
             "labels": {
                 "name": "Tu nombre",
                 "guestCount": "Personas que asistirán",
                 "attendance": "¿Me acompañas?",
                 "confirmButton": "Confirmar asistencia"
             }
+        },
+        "thankYou": {
+            "variant": "editorial-magazine"
         }
     },
     "hero": {
@@ -44,6 +67,7 @@
         "date": "2026-08-29T21:45:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
+        "variant": "editorial-magazine",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"
     },
@@ -260,20 +284,24 @@
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "editorial-cover",
+        "coverEdition": "XV",
+        "coverVolume": "1",
+        "coverIssue": "2026",
         "sealStyle": "wax",
         "sealIcon": "flower",
         "sealInitials": "V·H",
         "sealVariant": "premium-rose",
-        "microcopy": "Toca para abrir mi invitación",
-        "documentLabel": "XV Edition",
-        "cardLabel": "XV Edition",
+        "microcopy": "Abrir edición XV",
+        "documentLabel": "Edición XV",
+        "cardLabel": "Edición XV",
         "cardTagline": "Brillar es la actitud",
         "stampText": "Valentina",
         "stampYear": "2026",
         "closedPalette": {
-            "primary": "surfacePrimary",
+            "primary": "surfaceDark",
             "accent": "actionAccent",
-            "background": "surfacePrimary"
+            "background": "surfaceDark"
         }
     },
     "sharing": {
