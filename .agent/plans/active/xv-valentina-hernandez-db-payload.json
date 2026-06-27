@@ -77,23 +77,13 @@
     },
     "family": {
         "featuredImage": "family",
-        "parents": {
-            "father": "PENDIENTE — Juan Carlos Hernández [confirmar apellido]",
-            "mother": "PENDIENTE — Nadia Estrella Almaguer [confirmar apellido]"
-        },
-        "parentsOrder": "father-first",
         "labels": {
             "sectionTitle": "Mi familia",
             "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de mis padres",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+            "sectionMessage": "Con la bendición de mi familia y el cariño de quienes han acompañado mi historia, celebro este día con el corazón lleno de gratitud."
         },
         "godparents": [
-            {
-                "name": "PENDIENTE — Nayeli Almaguer [confirmar apellido]",
-                "role": "Madrina"
-            },
             {
                 "name": "César A. Pérez Monroy",
                 "role": "Padrino"
@@ -112,18 +102,12 @@
                 "iconName": "Church",
                 "label": "Ceremonia religiosa",
                 "time": "15:45",
-                "description": "Ceremonia religiosa — Pendiente de confirmar ubicación."
+                "description": "Inicio de la celebración con una ceremonia llena de gratitud."
             },
             {
                 "iconName": "Reception",
-                "label": "Cóctel de bienvenida",
-                "time": "16:30",
-                "description": "Cóctel de bienvenida en Finca Las Palmas."
-            },
-            {
-                "iconName": "Party",
                 "label": "Recepción",
-                "time": "Por confirmar",
+                "time": "16:30",
                 "description": "Recepción y celebración en Finca Las Palmas."
             }
         ]
@@ -133,23 +117,13 @@
         "introHeading": "Sábado, 29 de agosto de 2026",
         "introLede": "Será una alegría compartir contigo esta celebración.",
         "indicationsHeading": "Detalles para mis invitados",
-        "ceremony": {
-            "venueEvent": "Ceremonia religiosa",
-            "venueName": "PENDIENTE — Confirmar ubicación de la ceremonia",
-            "address": "PENDIENTE — Puede ser en Finca Las Palmas o iglesia por confirmar",
-            "city": "Texcoco, Estado de México",
-            "date": "29 de agosto de 2026",
-            "time": "3:45 p.m.",
-            "mapUrl": "PENDIENTE"
-        },
         "reception": {
             "venueEvent": "Recepción",
             "venueName": "Finca Las Palmas",
             "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
             "city": "Texcoco, Estado de México",
             "date": "29 de agosto de 2026",
-            "time": "4:30 p.m.",
-            "mapUrl": "PENDIENTE — Solicitar enlace de Google Maps"
+            "time": "4:30 p.m."
         },
         "indications": [
             {
@@ -160,7 +134,7 @@
             {
                 "iconName": "Calendar",
                 "styleVariant": "default",
-                "text": "Confirma tu asistencia <strong>PENDIENTE — definir fecha límite</strong>."
+                "text": "Agradecemos confirmar asistencia con anticipación para preparar cada detalle con cariño."
             },
             {
                 "iconName": "Enveloped",
@@ -175,58 +149,39 @@
         "subtitle": "Un recorrido visual por la magia de esta celebración única.",
         "items": [
             {
-                "image": "gallery01",
-                "caption": "PENDIENTE — Agregar descripción cuando se tengan las fotos originales."
+                "image": "gallery01"
             },
             {
-                "image": "gallery02",
-                "caption": "PENDIENTE"
+                "image": "gallery02"
             },
             {
-                "image": "gallery03",
-                "caption": "PENDIENTE"
+                "image": "gallery03"
             },
             {
-                "image": "gallery04",
-                "caption": "PENDIENTE"
+                "image": "gallery04"
             },
             {
-                "image": "gallery05",
-                "caption": "PENDIENTE"
+                "image": "gallery05"
             },
             {
-                "image": "gallery06",
-                "caption": "PENDIENTE"
+                "image": "gallery06"
             },
             {
-                "image": "gallery07",
-                "caption": "PENDIENTE"
+                "image": "gallery07"
             },
             {
-                "image": "gallery08",
-                "caption": "PENDIENTE"
+                "image": "gallery08"
             }
         ]
     },
     "gifts": {
         "title": "Regalos",
-        "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+        "subtitle": "Su presencia es mi mejor regalo. Si desean tener un detalle adicional, habrá un espacio especial para sobres el día del evento.",
         "items": [
-            {
-                "type": "store",
-                "title": "Mesa de regalos Liverpool",
-                "description": "PENDIENTE — Confirmar número de registro y nombre de la lista.",
-                "links": [
-                    {
-                        "label": "Liverpool",
-                        "url": "PENDIENTE — https://mesaderegalos.liverpool.com.mx/milistaderegalos/[NUMERO]"
-                    }
-                ]
-            },
             {
                 "type": "cash",
                 "title": "Lluvia de sobres",
-                "text": "Se proporcionará un sobre el día del evento."
+                "text": "Gracias por acompañarme con tanto cariño en esta noche tan especial."
             }
         ]
     },
