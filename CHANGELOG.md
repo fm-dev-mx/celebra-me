@@ -5,6 +5,133 @@ Todos los cambios notables en el proyecto Celebra-me serán documentados en este
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este
 proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.10.0-beta.1] - 2026-06-28
+
+### Added
+
+- **Valentina Hernández XV invitation**: full client invitation with editorial-magazine theme,
+  editorial cover reveal, asymmetric hero layout, mobile full-bleed hero, editorial takeover,
+  section dividers, production payload and audit corrections
+- **Xareni Iyarit XV invitation**: full client invitation with hero desktop background and demo
+  payload, presentation options, multi-gift-registry support, and accompanying production patches
+- **Editorial-magazine theme preset and demo**: new invitation theme with cover reveal variant,
+  asymmetric hero, section overrides, visual hardening and polish
+- **Editorial-rose demo preset and theme**: new demo with editorial rose styling
+- **Presentation options system**: `presentationOptions` through schemas, editor controls
+  (FamilySectionEditor, LocationSectionEditor, MetadataSection, EnvelopeSectionEditor), adapter
+  mapping pipeline, and invitation component rendering with variant selection; `sealColor` field for
+  envelope icon
+- **Editorial cover reveal variant**: magazine-style cover reveal component and SCSS
+  (`EditorialCoverReveal.astro`, `_editorial-cover.scss`)
+- **Assign-owner feature**: API endpoint and editor UI to assign owners to unowned client
+  invitations with publish block for unassigned invitations
+- **Invitation preset resolver**: `invitation-preset-resolver` service with theme validation guard,
+  used during draft creation and duplication
+- **BackgroundImageDesktop pipeline**: `backgroundImageDesktop` field through schemas, editor,
+  mapper, and invitation rendering for hero section
+- **Multi-link store gift items**: `GiftItemLink` array support with presentation variant rendering
+  in gift component
+- **Seal icon color override**: `--env-seal-icon-override` CSS custom property for seal fill color
+  customization
+- **Cache-Control header**: `s-maxage=31536000, stale-while-revalidate` on public invitation route
+  for CDN caching
+- **Hero image optimization**: `getImage` integration for responsive hero background images
+- **Per-preset font loading**: stylesheet loading per invitation preset instead of global font
+  imports
+- **HighPriority prop**: conditional `fetchpriority="high"` on hero images for LCP optimization
+- **Hero tablet responsive band**: adaptive hero layout for tablet viewports
+- **RSVP attendance collapse**: collapsible attendance section with cancel link and mobile
+  compression
+- **Cover CTA refinements**: updated copy, icon, and scroll-intent hint on editorial-cover reveal
+- **Gifts label polish**: refined label formatting and presentation
+- **InvitationError component**: extracted reusable error boundary for invitation routes
+- **Location helper module**: `location-helper.ts` for shared venue rendering logic
+- **Family helper module**: `family-helper.ts` for family presentation logic
+- **Section CSS resolver**: `section-css-resolver.ts` and `section-css-resolver-map.ts` for
+  per-section CSS chunk resolution
+
+### Changed
+
+- **Performance CSS restructuring**: per-theme CSS split into dedicated chunks
+  (`src/styles/invitation-presets/`, `src/styles/invitation-sections-by-preset/`,
+  `src/styles/invitation-sections/`); section-level CSS bundles extracted for hero, gallery, gifts,
+  countdown, family, footer, header, itinerary, location, music-player, personalized-access, quote,
+  reveal, rsvp, thank-you; gallery section CSS extracted; remaining section CSS split — reducing
+  per-route CSS payload
+- **Hero SCSS**: GPU layer promotion, BEM convention adoption, parallax reactivity optimized for
+  mobile
+- **SEO hardening**: canonical URLs use `resolvePublicSiteOrigin` utility instead of `Astro.site`;
+  OG and Twitter URLs corrected; production detection fixed
+- **Envelope reveal SCSS**: seal size refinement for premium-rose variant, responsive mobile layout
+- **Gift component styling**: redundant border-color removed on leah-lexa button hover
+- **Event adapter**: explicit property access in `pickVenueValue`; location theme defaults scoped to
+  enchanted-rose preset only
+- **Draft-to-published mapper**: rebuild snapshot from demo preset catalog on duplication
+- **Section CSS resolver**: `Map.has` usage for preset existence checks instead of object key
+  iteration
+- **Event location helper**: shared venue rendering extracted into `location-helper.ts` with unit
+  tests
+- **Family contract**: `family-contract.ts` and `family-helper.ts` extracted from inline code
+- **Intake editor**: presentation controls added to section editors; assign-owner UI in metadata
+  section
+- **Dependencies**: `astro` 6.4.6→6.4.8, `eslint-plugin-astro` 1.7.0→2.0.0, `sharp` 0.34.5→0.35.2,
+  `supabase` 2.105.0→2.107.0, `typescript-eslint` 8.61.0→8.61.1
+- **Lockfile**: pnpm-lock.yaml regenerated with updated dependency resolution
+
+### Database / Migrations
+
+- 4 production patches for Xareni Iyarit XV: hero desktop background (20260620120000), event publish
+  (20260620120001), snapshot theme repair (20260620120002), assign owner (20260620120003)
+- 1 production patch for Xareni gift registries (20260620120004)
+- 1 production patch for Valentina Hernández XV (20260626)
+
+### Fixed
+
+- Music config preservation during content payload replacement in publish flow
+- Valentina payload alignment with client source of truth
+- Font CSS imports: `@use` with explicit namespaces for `sass:math`
+- Audio lifecycle: pre-create audio element and refactor reveal-manager lifecycle
+- Render-Timing headers: use `X-Render-Timing` instead of `Server-Timing` (stripped by Vercel edge);
+  add unconditional baseline with `performance.now()` and try-catch guard
+- SEO URL resolution: canonical, OG, and Twitter URLs use `resolvePublicSiteOrigin`; production
+  detection uses `VERCEL_ENV` or `isProd`
+- Xareni Iyarit event class slug corrected from `xv-xareni-iyarit` to `xareni-iyarit`
+- Demo publish: removed redundant reread, use `published.content` directly
+- Public route SSR rendering restored after CSS splitting refactor
+- Cross-browser seal image: `-webkit-mask` prefix added for Safari support
+- Invitation route: return 404 status instead of redirect for missing invitations
+- Event adapter: location theme defaults only applied for enchanted-rose preset
+- Fragment key removal from surname map in RSVP components
+- Demo content: validate snapshot rebuild from demo preset catalog on duplication
+
+### Tests / Validation
+
+- **New test suites** (10+): Valentina Hernández payload validation, Xareni Iyarit
+  content/presentation-options/schema/data mapping, assign-owner service, editorial-cover-reveal
+  contract, family-helper, location-helper, invitation-preset-resolver, section-css-resolver-map
+- **New E2E suites**: debug-styles (production-style audit), visual-qa-editorial-magazine,
+  valentina-face-audit
+- **Updated suites**: InvitationEditor, draft-content-mapper, draft-to-published.mapper,
+  invitation-editor.schema, style-boundaries, theme-contract, display-status, page-data,
+  validate-schema-script, use-invitation-editor, schema, assets discovery
+
+### Deployment Notes
+
+- Apply 5 Xareni Iyarit production patches in dependency order (hero desktop → publish → snapshot →
+  assign-owner → gift registries)
+- Apply Valentina Hernández XV production patch
+- Verify Cache-Control headers on public invitation routes
+- Validate editorial-magazine theme rendering for Valentina Hernández XV invitation
+- Verify presentation options round-trip through editor, adapter, and invitation rendering
+- Test assign-owner flow: metadata editor → endpoint → publish block behaviour
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.9.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+- Production patches are additive and backward-compatible.
+
 ## [Unreleased]
 
 ### Added (pending)
