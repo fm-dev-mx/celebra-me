@@ -116,16 +116,28 @@
 
 		.editorial-cover__cta {
 			border-color: rgb(var(--v-white-rgb) / 68%);
-			background: transparent;
+			border-block-width: 2px;
+			background: rgb(var(--v-white-rgb) / 6%);
+			backdrop-filter: blur(4px);
+			/* stylelint-disable-next-line property-no-vendor-prefix */
+			-webkit-backdrop-filter: blur(4px);
+			padding-inline: 0.5rem;
 			color: var(--v-white);
 		}
 
 		.editorial-cover__cta:hover {
-			background: transparent;
+			border-color: var(--v-white);
+			border-block-width: 2px;
+			background: rgb(var(--v-white-rgb) / 14%);
 		}
 
 		.editorial-cover__cta:focus-visible {
 			outline-color: var(--v-accent);
+		}
+
+		.editorial-cover__cta[data-cta-hint='active'] {
+			background: rgb(var(--v-white-rgb) / 20%);
+			border-color: var(--v-white);
 		}
 
 		@media (width <= 640px) {
@@ -176,10 +188,43 @@
 				display: none;
 			}
 		}
+
+		// ── Intermediate responsive band (≥640px up to 991px) ──
+		// Reduces typography dominance at tablet/intermediate widths so the
+		// masthead, headline, and Valentina's face remain visible and composed.
+		// Uses raw @media (consistent with the existing <=640px pattern in this file)
+		// instead of nested mixins to avoid exceeding max-nesting-depth: 3.
+		@media (width >= 640px) and (width <= 991px) {
+			--ec-masthead-size: clamp(2.8rem, 6.5vw, 4.2rem);
+			--ec-headline-size: clamp(3.4rem, 9.5vw, 5.4rem);
+
+			.editorial-cover__cover-lines {
+				display: none;
+			}
+
+			.editorial-cover__metadata {
+				opacity: 60%;
+			}
+
+			.editorial-cover__headline {
+				max-width: min(100%, 24rem);
+				line-height: 0.88;
+			}
+
+			.editorial-cover__footer {
+				display: none;
+			}
+		}
+
+		// ── Desktop responsive guardrails (≥992px) ──
+		// Keeps masthead and headline proportional on desktop so they don't
+		// overwhelm the composition or push content out of the 100svh frame.
+		@include mixins.respond-to(lg) {
+			--ec-masthead-size: clamp(3.5rem, 7vw, 7rem);
+			--ec-headline-size: clamp(4.5rem, 9vw, 8rem);
+		}
 	}
 
-	// ==========================================================================
-	// 4. SECTION-SPECIFIC POLISH OVERRIDES
 	// ==========================================================================
 	// Hero / Cover variables
 	--hero-portrait-filter: none; // Disable desaturation filter on portraits to keep blush tones

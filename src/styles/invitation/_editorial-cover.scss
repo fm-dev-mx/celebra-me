@@ -413,7 +413,7 @@
 	justify-content: space-between;
 	gap: 0.9rem;
 	width: 100%;
-	min-height: 2.85rem;
+	min-height: 3rem;
 	padding: 0.72rem 0;
 	border: 0;
 	border-top: 1px solid var(--ec-rule);
@@ -499,8 +499,23 @@
 	white-space: nowrap;
 }
 
-.editorial-cover__cta:hover .editorial-cover__cta-icon {
-	transform: translateY(2px);
+// ── Scroll-intent CTA hint ──
+// Briefly enhances the CTA when the user attempts to scroll while the cover
+// is still sealed, providing a subtle cue that the button must be pressed.
+.editorial-cover__cta[data-cta-hint='active'] {
+	background: rgb(255 255 255 / 14%);
+	border-color: var(--ec-accent);
+	transition-duration: 0ms;
+
+	.editorial-cover__cta-icon {
+		transform: translateX(4px);
+	}
+
+	// Suppress the hover underline while the hint is showing
+	&::before {
+		opacity: 0%;
+		transform: scaleX(0);
+	}
 }
 
 .editorial-cover__cta--fallback {
@@ -860,7 +875,8 @@
 		min-height: 3.15rem;
 		padding: 0.95rem 0;
 		border-color: rgb(255 255 255 / 62%);
-		background: transparent;
+		border-block-width: 2px;
+		background: var(--ec-panel);
 		color: var(--ec-text-primary);
 		font-size: clamp(0.74rem, 1vw, 0.88rem);
 		letter-spacing: 0.22em;
@@ -868,7 +884,8 @@
 
 	.editorial-cover__cta:hover {
 		border-color: var(--ec-text-primary);
-		background: transparent;
+		border-block-width: 2px;
+		background: rgb(255 255 255 / 10%);
 		color: var(--ec-text-primary);
 	}
 

@@ -26,8 +26,8 @@ describe('editorial cover reveal transition contract', () => {
 	});
 
 	it('uses the approved editorial CTA copy', () => {
-		expect(componentSource).toContain('ENTRAR A LA EDICIÓN');
-		expect(componentSource).not.toContain('ABRIR EDICIÓN');
+		expect(componentSource).toContain('ABRIR INVITACIÓN');
+		expect(componentSource).not.toContain('ENTRAR A LA');
 	});
 
 	it('styles the revealing phase across cover, hero, and header scopes', () => {

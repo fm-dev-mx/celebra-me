@@ -45,7 +45,7 @@ const {
 	focalPointMobile,
 } = Astro.props;
 
-const ctaText = coverEdition ? 'ENTRAR A LA EDICIÓN' : 'DESCUBRIR';
+const ctaText = coverEdition ? 'ABRIR INVITACIÓN' : 'DESCUBRIR';
 const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
 const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
@@ -165,7 +165,7 @@ const shouldRenderHidden =
 			>
 				<span class="editorial-cover__cta-text">{ctaText}</span>
 				<svg class="editorial-cover__cta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="m6 9 6 6 6-6"/>
+					<path d="M5 12h14M12 5l7 7-7 7"/>
 				</svg>
 			</button>
 			<!-- No-JS fallback -->
@@ -227,9 +227,17 @@ const shouldRenderHidden =
 				return;
 			}
 
+			let ctaHintTimer = 0;
+			let lastCtaHint = 0;
+			let touchStartY = 0;
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
+
+				// Clean up CTA scroll hint
+				window.clearTimeout(ctaHintTimer);
+				if (openButton) openButton.removeAttribute('data-cta-hint');
+
 				const shouldMoveFocus = this.contains(document.activeElement);
 
 				clearRevealPhase();
@@ -326,6 +334,48 @@ const shouldRenderHidden =
 						completeReveal();
 					}
 				}, EXIT_COMPLETION_FALLBACK_MS);
+			});
+
+			// ── Scroll-intent CTA hint ──
+			// When the cover is sealed and the user tries to scroll (wheel, touch,
+			// or keyboard arrow/page), briefly highlight the CTA to indicate it
+			// must be pressed to open the invitation.
+			const CTA_HINT_DURATION_MS = 1200;
+			const CTA_HINT_THROTTLE_MS = 2000;
+
+			const cueCta = () => {
+				if (hasRevealed || !openButton || motionPreference) return;
+				const now = Date.now();
+				if (now - lastCtaHint < CTA_HINT_THROTTLE_MS) return;
+				lastCtaHint = now;
+
+				openButton.dataset.ctaHint = 'active';
+				window.clearTimeout(ctaHintTimer);
+				ctaHintTimer = window.setTimeout(() => {
+					openButton.removeAttribute('data-cta-hint');
+				}, CTA_HINT_DURATION_MS);
+			};
+
+			// Desktop mouse-wheel scroll
+			this.addEventListener('wheel', () => { cueCta(); }, { passive: true });
+
+			// Mobile touch scroll — track touch start and hint on threshold
+			this.addEventListener('touchstart', (e: TouchEvent) => {
+				touchStartY = e.touches[0]?.clientY ?? 0;
+			}, { passive: true });
+
+			this.addEventListener('touchmove', (e: TouchEvent) => {
+				const dy = Math.abs((e.touches[0]?.clientY ?? 0) - touchStartY);
+				if (dy > 8) cueCta();
+			}, { passive: true });
+
+			// Keyboard scroll intent — only when CTA is not focused (so Enter/Space on
+			// the button still activates it without the hint interfering)
+			this.addEventListener('keydown', (e: KeyboardEvent) => {
+				if (e.target === openButton) return;
+				if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp'].includes(e.key)) {
+					cueCta();
+				}
 			});
 		}
 	}
