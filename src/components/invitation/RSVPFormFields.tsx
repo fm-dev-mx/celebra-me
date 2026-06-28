@@ -329,21 +329,29 @@ export function ConfirmedFields(props: {
 		>
 			<div className="rsvp__extra-fields-inner">
 				{attendanceStatus === 'confirmed' && supportsPlusOnes && (
-					<FloatingField
-						id="guestCount"
-						type="number"
-						label={guestCountLabel}
-						labelSuffix={effectiveGuestCap <= 10 ? ` (Máx. ${effectiveGuestCap})` : ''}
-						value={String(attendeeCount)}
-						error={errors.guestCount}
-						touched={touched.guestCount}
-						prefersReducedMotion={prefersReducedMotion}
-						fieldRef={guestCountRef}
-						onChange={onGuestCountChange}
-						onBlur={onBlur}
-						min={1}
-						max={effectiveGuestCap}
-					/>
+					<>
+						<FloatingField
+							id="guestCount"
+							type="number"
+							label={guestCountLabel}
+							labelSuffix={
+								effectiveGuestCap <= 10 ? ` (Máx. ${effectiveGuestCap})` : ''
+							}
+							value={String(attendeeCount)}
+							error={errors.guestCount}
+							touched={touched.guestCount}
+							prefersReducedMotion={prefersReducedMotion}
+							fieldRef={guestCountRef}
+							onChange={onGuestCountChange}
+							onBlur={onBlur}
+							min={1}
+							max={effectiveGuestCap}
+						/>
+						<p className="rsvp__guest-hint">
+							Hemos reservado {effectiveGuestCap} lugares para tu invitación. Puedes
+							ajustar el número si asistirán menos personas.
+						</p>
+					</>
 				)}
 				<div className="rsvp__field">
 					<label htmlFor="notes">{notesLabel}</label>

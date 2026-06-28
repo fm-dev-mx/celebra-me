@@ -12,7 +12,13 @@ function createTestHarness(
 		accessMode: 'personalized-only' | 'hybrid';
 		prefersReducedMotion: boolean;
 		isDemoPreview: boolean;
-		initialGuestData: { fullName?: string; maxAllowedAttendees?: number; inviteId?: string };
+		initialGuestData: {
+			fullName?: string;
+			maxAllowedAttendees?: number;
+			inviteId?: string;
+			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
+			attendeeCount?: number;
+		};
 	}> = {},
 ) {
 	let hook: ReturnType<typeof useRsvpSubmission> | null = null;
@@ -54,6 +60,49 @@ describe('RSVP guest count behavior', () => {
 			initialGuestData: { maxAllowedAttendees: 4 },
 		});
 		expect(getHook()?.attendeeCount).toBe(4);
+	});
+
+	it('defaults to maxAllowedAttendees when attendeeCount is 0 (unresponded guest)', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 4, attendeeCount: 0 },
+		});
+		expect(getHook()?.attendeeCount).toBe(4);
+	});
+
+	it('defaults to maxAllowedAttendees (2) when attendeeCount is 0', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 2, attendeeCount: 0 },
+		});
+		expect(getHook()?.attendeeCount).toBe(2);
+	});
+
+	it('defaults to maxAllowedAttendees (1) when attendeeCount is 0 and cap is 1', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 1, attendeeCount: 0 },
+		});
+		expect(getHook()?.attendeeCount).toBe(1);
+	});
+
+	it('preserves existing attendeeCount when guest already responded (3)', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: {
+				maxAllowedAttendees: 4,
+				attendeeCount: 3,
+				attendanceStatus: 'confirmed',
+			},
+		});
+		expect(getHook()?.attendeeCount).toBe(3);
+	});
+
+	it('preserves existing attendeeCount when guest already responded (1)', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: {
+				maxAllowedAttendees: 4,
+				attendeeCount: 1,
+				attendanceStatus: 'confirmed',
+			},
+		});
+		expect(getHook()?.attendeeCount).toBe(1);
 	});
 
 	it('preserves attendeeCount when toggling confirmed -> declined -> confirmed', () => {
@@ -117,6 +166,58 @@ describe('RSVP guest count behavior', () => {
 			guestCap: 6,
 		});
 		expect(getHook()?.attendeeCount).toBe(6);
+	});
+
+	it('allows guest to reduce from maxAllowedAttendees to a lower valid number (4->2)', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 4, attendeeCount: 0 },
+		});
+		expect(getHook()?.attendeeCount).toBe(4);
+
+		act(() => {
+			getHook()!.setAttendeeCount('2');
+		});
+		expect(getHook()!.attendeeCount).toBe('2');
+	});
+
+	it('does not clamp on setAttendeeCount — validation handles clamping', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 4, attendeeCount: 0 },
+		});
+		act(() => {
+			getHook()!.setAttendanceStatus('confirmed');
+		});
+		// The effectiveGuestCap is 4 — values should not exceed it
+		act(() => {
+			getHook()!.setAttendeeCount('10');
+		});
+		expect(getHook()!.attendeeCount).toBe('10'); // setAttendeeCount doesn't clamp; validation does
+	});
+
+	it('sets attendeeCount to 0 only when initial status is declined', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: {
+				maxAllowedAttendees: 4,
+				attendeeCount: 0,
+				attendanceStatus: 'declined',
+			},
+		});
+		// When initialGuestData has attendanceStatus='declined', initialAttendeeCount should be 0
+		expect(getHook()!.attendeeCount).toBe(0);
+	});
+
+	it('preserves attendeeCount when toggling to declined (submission-time normalization)', () => {
+		// The hook preserves attendeeCount through toggles; normalization
+		// to 0 for declined happens at submission time via normalizeGuestCount.
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 4, attendeeCount: 0 },
+		});
+		expect(getHook()!.attendeeCount).toBe(4); // defaults to maxAllowedAttendees
+
+		act(() => {
+			getHook()!.setAttendanceStatus('declined');
+		});
+		expect(getHook()!.attendeeCount).toBe(4); // preserved across toggle
 	});
 });
 

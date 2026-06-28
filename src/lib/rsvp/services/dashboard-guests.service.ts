@@ -50,7 +50,7 @@ import {
 } from '@/lib/rsvp/services/shared/share-message-date';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 
-function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
+export function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
 	let totalPeople = 0;
 	let pendingInvitations = 0;

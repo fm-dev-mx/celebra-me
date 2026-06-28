@@ -76,7 +76,7 @@ export function useRsvpSubmission({
 	const initialAttendeeCount =
 		initialAttendanceStatus === 'declined'
 			? 0
-			: (initialData?.attendeeCount ?? effectiveGuestCap);
+			: (initialData?.attendeeCount ?? 0) || effectiveGuestCap;
 	const initialGuestComment = initialData?.guestComment ?? '';
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(initialAttendeeCount);
 	const [notes, setNotes] = useState(initialGuestComment);

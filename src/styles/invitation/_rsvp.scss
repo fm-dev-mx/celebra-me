@@ -816,6 +816,17 @@
 		border-radius: var(--rsvp-radius-field);
 	}
 
+	// Hint text shown near the guest count field when the attendance
+	// capacity is greater than 1.
+	&__guest-hint {
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		line-height: 1.4;
+		color: rgb(var(--color-text-on-dark-rgb) / 50%);
+		margin: 0 0 1.2rem;
+		padding: 0 0.5rem;
+	}
+
 	// Submit + Cancel action row — stacked on mobile so the submit button
 	// is the clear primary action and Cancel is a thin text link below it.
 	&__actions {
@@ -892,7 +903,7 @@
 		font-family: var(--font-body, serif);
 		font-size: 0.72rem;
 		letter-spacing: 0.1em;
-		color: var(--color-text-muted, rgb(var(--color-text-primary-rgb) / 40%));
+		color: rgb(var(--color-text-on-dark-rgb) / 40%);
 	}
 
 	// Base styles for progressive-disclosure attendance summary row.
@@ -913,7 +924,7 @@
 		font-weight: 700;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--color-text-muted);
+		color: rgb(var(--color-text-on-dark-rgb) / 70%);
 		flex: 0 0 auto;
 	}
 
@@ -954,7 +965,7 @@
 		border: none;
 		border-radius: 0;
 		background: transparent;
-		color: var(--color-text-muted);
+		color: rgb(var(--color-text-on-dark-rgb) / 70%);
 		font-family: var(--font-label);
 		font-size: 0.72rem;
 		font-weight: 600;
