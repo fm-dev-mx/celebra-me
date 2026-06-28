@@ -1,17 +1,24 @@
 # Git Governance: Commit Policy
 
 **Status:** Active  
-**Last Updated:** 2026-03-24  
-**Change Note:** Expanded commit governance into a practical policy and moved subjective checks to
-audit-only warnings.
+**Last Updated:** 2026-06-28  
+**Change Note:** Transitioned to linear two-branch model with develop as active trunk and main as
+protected production branch. Added Production Promotion section with fast-forward flow.
 
 ## Overview
 
 This document defines the commit policy and validation workflow for the repository.
 
-The repository relies on conventional commits, branch protection, local hooks, and pull-request
-validation. Planning records under `.agent/plans/` remain useful for human coordination, but commits
-are no longer staged or created through a dedicated governance runner.
+The repository uses a **linear two-branch workflow** with annotated tags for releases:
+
+- `develop` is the active trunk for daily development. Direct commits are allowed.
+- `main` is the protected production branch, updated only via fast-forward from `develop`.
+- Annotated tags (`vX.Y.Z`) mark versions/checkpoints.
+- Release history is documented in `CHANGELOG.md`.
+
+The repository relies on conventional commits, hook-based branch protection, local validation, and
+CI push/PR validation. Planning records under `.agent/plans/` remain useful for human coordination,
+but commits are no longer staged or created through a dedicated governance runner.
 
 The goal is to keep hard gates narrow and objective while still giving developers useful feedback
 about commit hygiene.
@@ -157,12 +164,12 @@ judgment.
 
 ## Active Validation Sequence
 
-1. `pre-commit` blocks direct commits to protected branches unless explicitly bypassed and runs
-   `pnpm lint-staged`.
-2. `commit-msg` runs `commitlint` against the pending commit message.
-3. `pre-push` validates the pushed commit range with `scripts/validate-commits.mjs` in audit-only
-   mode.
-4. CI re-runs commit-range validation and documentation link checks for pull requests.
+1. `pre-commit` blocks direct commits to `main` unless explicitly bypassed and runs
+   `pnpm lint-staged` on all branches. Commits to `develop` and other branches are allowed.
+2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
+3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
+   pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
+4. CI runs on push to `develop` and on pull requests targeting `main`.
 
 ## Guarantees
 
@@ -170,6 +177,39 @@ judgment.
 - Subjects must describe the actual change with a concrete target.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
-- Branch protection remains in place for `main` and `develop`.
+- Branch protection remains in place for `main`. `develop` is the active trunk — direct commits are
+  allowed but commitlint and lint-staged still apply.
 - Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
   local gate.
+
+## Production Promotion
+
+### Fast-Forward Flow
+
+When a release is ready:
+
+```bash
+# 1. Ensure develop is up to date and validated
+git checkout develop
+git pull --rebase
+pnpm run ci           # or narrower: build, lint, test
+
+# 2. Fast-forward main to match develop
+git checkout main
+git merge --ff-only develop
+
+# 3. Tag the release
+git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
+
+# 4. Push main and the tag
+git push origin main
+git push origin vX.Y.Z
+```
+
+Rules:
+
+- `main` is always a subset of `develop` — never diverges.
+- `git merge --ff-only` fails if `main` has drifted; investigate before force-pushing.
+- Tags are annotated (`-a`) to carry release metadata.
+- Never rewrite or force-push `main` without explicit approval.
+- Rollback: `git revert` on `develop`, then fast-forward promote again.

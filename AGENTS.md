@@ -37,7 +37,8 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 - Use SCSS for maintained styling; do not introduce Tailwind.
 - Use `package.json` as the source of truth for available commands.
 - Commits must use scoped Conventional Commits, e.g. `feat(editor): ...`, `fix(invitation): ...`,
-  `chore(agent): ...`. Do not commit directly to `main` or `develop`; use a feature branch.
+  `chore(agent): ...`. Work directly on `develop` by default. Do not commit directly to `main`. Use
+  short-lived branches only when complexity or the task explicitly requires it.
 
 ## Domain Rules
 

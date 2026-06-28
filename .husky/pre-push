@@ -2,18 +2,27 @@
 
 set -e
 
-# No branch protection on push, allowed for 'main' and 'develop'
+# Main push guard blocks refs/heads/main unless ALLOW_MAIN_PUSH=true.
 # (The commit validation and tests below still apply)
+
+ZERO_SHA="0000000000000000000000000000000000000000"
 
 if [ "$SKIP_BRANCH_PROTECTION" = "true" ]; then
   echo "⚠️  Bypassing commit validation and tests (SKIP_BRANCH_PROTECTION=true)..."
 else
   echo "🧪 Running commit-range validation before push..."
   validated=0
-  ZERO_SHA="0000000000000000000000000000000000000000"
 
   while read local_ref local_sha remote_ref remote_sha
   do
+    # Block direct pushes to main unless ALLOW_MAIN_PUSH=true
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+      if [ "$ALLOW_MAIN_PUSH" != "true" ]; then
+        echo "❌ Error: Pushing directly to 'main' is not allowed."
+        echo "💡 Use 'ALLOW_MAIN_PUSH=true git push origin main' if absolutely necessary."
+        exit 1
+      fi
+    fi
     if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
       continue
     fi
