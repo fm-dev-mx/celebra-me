@@ -58,6 +58,10 @@
 -- NOTE: The content payload below is DUPLICATED from
 --       .agent/plans/active/xv-valentina-hernandez-db-payload.json.
 --       Keep both in sync when either is updated.
+--
+-- MUSIC PRESERVATION:
+--   If published_invitation_content already has content.music, this patch
+--   preserves that existing music config instead of overwriting/removing it.
 
 BEGIN;
 
@@ -288,6 +292,8 @@ END $$;
 --    On every update, version is incremented to signal that a patch was applied
 --    (cache invalidation downstream).
 --    published_at is preserved if already set (COALESCE).
+--    Existing content.music is preserved when present, so production music is
+--    not overwritten or removed by the replacement payload.
 -- ============================================================================
 DO $$
 DECLARE
@@ -295,6 +301,8 @@ DECLARE
   v_pub_deleted_at timestamptz;
   v_project_id uuid;
   v_new_content jsonb;
+  v_existing_music jsonb;
+  v_has_existing_music boolean := false;
 BEGIN
   v_project_id := current_setting('app.invitation_project_id')::uuid;
 
@@ -624,6 +632,28 @@ BEGIN
     }
 }'::jsonb;
 
+  -- Preserve existing music config when this invitation already has one.
+  -- The replacement payload above intentionally controls the invitation copy,
+  -- structure, theme, RSVP, gifts, locations, and media references; it should
+  -- not erase a production music configuration already stored under content.music.
+  IF v_pub_id IS NOT NULL THEN
+    SELECT
+      content ? 'music',
+      content -> 'music'
+    INTO
+      v_has_existing_music,
+      v_existing_music
+    FROM public.published_invitation_content
+    WHERE id = v_pub_id;
+
+    IF v_has_existing_music THEN
+      v_new_content := jsonb_set(v_new_content, '{music}', v_existing_music, true);
+      RAISE NOTICE 'PRESERVED existing music config on published_invitation_content: id=%', v_pub_id;
+    ELSE
+      RAISE NOTICE 'No existing music config found on published_invitation_content: id=%', v_pub_id;
+    END IF;
+  END IF;
+
   IF v_pub_id IS NULL THEN
     -- No row exists at all: INSERT
     INSERT INTO public.published_invitation_content (
@@ -827,6 +857,8 @@ SELECT
   pc.content ->> '_assetSlug' AS asset_slug,
   pc.content -> 'rsvp' ->> 'confirmationMode' AS rsvp_confirmation_mode,
   pc.content -> 'rsvp' ->> 'accessMode' AS rsvp_access_mode,
+  pc.content ? 'music' AS has_music,
+  pc.content -> 'music' ->> 'src' AS music_src,
   pc.content -> 'hero' ->> 'name' AS hero_name,
   pc.content -> 'hero' ->> 'label' AS hero_label,
   pc.version
