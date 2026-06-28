@@ -48,3 +48,39 @@
 		letter-spacing: 0;
 	}
 }
+
+.event-theme-wrapper[data-editorial-reveal-phase='revealing']
+	#event-header.header-base[data-variant='editorial-magazine'] {
+	opacity: 0%;
+	transform: translateY(-0.45rem);
+	pointer-events: none;
+}
+
+.event-theme-wrapper[data-reveal-state='revealed']
+	#event-header.header-base[data-variant='editorial-magazine'] {
+	animation: editorialMagazineHeaderReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.05s both;
+	pointer-events: none;
+}
+
+@keyframes editorialMagazineHeaderReveal {
+	from {
+		opacity: 0%;
+		transform: translateY(-0.45rem);
+		pointer-events: none;
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+		pointer-events: auto;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.event-theme-wrapper[data-reveal-state='revealed']
+		#event-header.header-base[data-variant='editorial-magazine'] {
+		animation: none;
+		opacity: 100%;
+		transform: none;
+	}
+}

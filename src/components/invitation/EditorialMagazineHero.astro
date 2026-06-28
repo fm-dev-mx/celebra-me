@@ -1,0 +1,204 @@
+---
+// src/components/invitation/EditorialMagazineHero.astro
+import { Image, getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+
+interface Props {
+	name: string;
+	secondaryName?: string;
+	label?: string;
+	nickname?: string;
+	date: string;
+	time?: string;
+	venueName?: string;
+	backgroundImage: ImageMetadata | ImageAsset;
+	backgroundImageDesktop?: { src: string };
+	backgroundImageMobile?: ImageMetadata | ImageAsset;
+	portrait?: ImageMetadata | ImageAsset;
+	focalPoint?: string;
+	focalPointMobile?: string;
+	focalPointTablet?: string;
+	focalPointDesktop?: string;
+	highPriority?: boolean;
+}
+
+const {
+	name,
+	secondaryName,
+	label,
+	nickname,
+	date,
+	time,
+	venueName,
+	backgroundImage,
+	backgroundImageDesktop,
+	backgroundImageMobile,
+	portrait,
+	focalPoint,
+	focalPointMobile,
+	focalPointTablet,
+	focalPointDesktop,
+	highPriority = true,
+} = Astro.props;
+
+const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
+	? 'CAPÍTULO XV'
+	: label;
+
+const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
+	'src' in image ? (image.src as ImageMetadata) : image;
+
+const bgSrc = resolveImage(backgroundImage);
+const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
+const optimizedMobileBg = resolvedMobileBg
+	? await getImage({
+			src: resolvedMobileBg,
+			width: 640,
+			format: 'webp',
+			quality: 80,
+	  })
+	: null;
+
+const optimizedDesktopBg = backgroundImageDesktop
+	? await getImage({
+			src: backgroundImageDesktop.src,
+			width: 1920,
+			format: 'webp',
+			quality: 80,
+	  })
+	: null;
+
+const portraitSrc = portrait ? resolveImage(portrait) : null;
+
+// Dates formatting
+const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+
+// Name parser for aggressive editorial composition
+const names = name.trim().split(/\s+/);
+let firstName = name;
+let lastNames = '';
+if (names.length >= 2) {
+	firstName = names[0].toUpperCase();
+	lastNames = names.slice(1).join(' ');
+}
+
+const fpDefault = focalPoint || '50% 40%';
+const fpMobile = focalPointMobile || fpDefault;
+const fpTablet = focalPointTablet || fpDefault;
+const fpDesktop = focalPointDesktop || fpDefault;
+---
+
+<section
+	id="inicio"
+	class="invitation-hero"
+	data-variant="editorial-magazine"
+>
+	<!-- Graphic editorial watermark behind all content -->
+	<div class="invitation-hero__watermark" aria-hidden="true">XV</div>
+
+	<div class="invitation-hero__background">
+		<picture>
+			{optimizedMobileBg && (
+				<source media="(max-width: 991px)" srcset={optimizedMobileBg.src} />
+			)}
+			{optimizedDesktopBg && (
+				<source media="(min-width: 992px)" srcset={optimizedDesktopBg.src} />
+			)}
+			<Image
+				src={bgSrc}
+				alt={name}
+				width={1080}
+				height={1920}
+				format="webp"
+				quality={80}
+				loading="eager"
+				fetchpriority={highPriority ? 'high' : undefined}
+			/>
+		</picture>
+	</div>
+
+	<!-- Top Folio Header Rail -->
+	<div class="invitation-hero__folio-header">
+		<span class="invitation-hero__folio-label">{displayLabel}</span>
+		<div class="invitation-hero__folio-line"></div>
+		<span class="invitation-hero__folio-page">PÁG. 15</span>
+	</div>
+
+	<div class="invitation-hero__content">
+		{portraitSrc && (
+			<div class="invitation-hero__portrait">
+				<Image
+					src={portraitSrc}
+					alt={`Retrato de ${name}`}
+					width={600}
+					height={800}
+					format="webp"
+					quality={90}
+					loading="eager"
+				/>
+			</div>
+		)}
+
+		<div class="invitation-hero__text-column">
+			<div class="invitation-hero__title-wrapper">
+				<h1 class="invitation-hero__title">
+					<span class="invitation-hero__first-name">{firstName}</span>
+					{lastNames && <span class="invitation-hero__last-name">{lastNames}</span>}
+					{secondaryName && (
+						<>
+							<span class="invitation-hero__ampersand">&</span>
+							<span class="invitation-hero__secondary-name">{secondaryName}</span>
+						</>
+					)}
+				</h1>
+			</div>
+
+			{nickname && (
+				<div class="invitation-hero__nickname-badge">
+					<span>{nickname}</span>
+				</div>
+			)}
+
+			<p class="invitation-hero__deck">
+				Una noche entre moda, memoria y celebración.
+			</p>
+
+			<div class="invitation-hero__divider"></div>
+
+			<div class="invitation-hero__details">
+				<p class="invitation-hero__date">{formattedDate}</p>
+				{time && <p class="invitation-hero__time">{time}</p>}
+				{venueName && <p class="invitation-hero__venue">
+					<span class="calligraphy-accent">en</span> {venueName}
+				</p>}
+			</div>
+
+			<!-- Fashion/Publication credits block -->
+			<div class="invitation-hero__credits">
+				<span class="invitation-hero__credit-item">FOTOGRAFÍA / ESTUDIO CRISTAL</span>
+				<span class="invitation-hero__credit-divider">•</span>
+				<span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style define:vars={{
+	fpDefault,
+	fpMobile,
+	fpTablet,
+	fpDesktop,
+}}>
+	.invitation-hero {
+		--hero-focal-point-default: var(--fpDefault);
+		--hero-focal-point-mobile: var(--fpMobile);
+		--hero-focal-point-tablet: var(--fpTablet);
+		--hero-focal-point-desktop: var(--fpDesktop);
+	}
+</style>

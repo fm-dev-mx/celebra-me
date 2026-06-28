@@ -45,9 +45,7 @@ const {
 	focalPointMobile,
 } = Astro.props;
 
-const ctaText = coverEdition
-	? `ABRIR EDICIÓN ${coverEdition}`
-	: 'ABRIR INVITACIÓN';
+const ctaText = coverEdition ? 'ENTRAR A LA EDICIÓN' : 'DESCUBRIR';
 const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
 const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
@@ -63,11 +61,11 @@ if (coverVolume) issueParts.push({ label: 'VOL.', value: coverVolume });
 if (coverIssue) issueParts.push({ label: 'NÚM.', value: coverIssue });
 if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
 
-// Resolve cover image from portrait or fallback to background image
+// Resolve cover image from background image or fallback to portrait
 const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 	'src' in image ? (image.src as ImageMetadata) : image;
 
-const resolvedImage = portrait ? resolveImage(portrait) : (backgroundImage ? resolveImage(backgroundImage) : null);
+const resolvedImage = backgroundImage ? resolveImage(backgroundImage) : (portrait ? resolveImage(portrait) : null);
 
 // For SSR fallback when JS is disabled: compute the skip URL
 const skipParams = new URLSearchParams(Astro.url.search);
@@ -187,6 +185,7 @@ const shouldRenderHidden =
 
 <script>
 	const EXIT_ANIMATION_MS = 1600;
+	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
 
 	class DsEditorialCover extends HTMLElement {
 		connectedCallback() {
@@ -197,12 +196,29 @@ const shouldRenderHidden =
 			if (!invitationRoot) return;
 
 			const isDemoInvitation = (invitationRoot as HTMLElement).dataset.isDemo === 'true';
-			const openButton = this.querySelector('[data-editorial-open]');
+			const openButton = this.querySelector<HTMLButtonElement>('[data-editorial-open]');
 			let hasRevealed = false;
+
+			const clearRevealPhase = () => {
+				delete this.dataset.editorialRevealPhase;
+
+				if (invitationRoot instanceof HTMLElement) {
+					delete invitationRoot.dataset.editorialRevealPhase;
+				}
+			};
+
+			const setRevealPhase = () => {
+				this.dataset.editorialRevealPhase = 'revealing';
+
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.editorialRevealPhase = 'revealing';
+				}
+			};
 
 			// Preview state handling
 			if (this.dataset.previewState === 'opened') {
 				this.classList.add('is-revealed');
+				clearRevealPhase();
 				document.documentElement.classList.remove('envelope-open');
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'revealed';
@@ -214,7 +230,9 @@ const shouldRenderHidden =
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
+				const shouldMoveFocus = this.contains(document.activeElement);
 
+				clearRevealPhase();
 				document.documentElement.classList.remove('envelope-open');
 
 				if (invitationRoot instanceof HTMLElement) {
@@ -225,16 +243,20 @@ const shouldRenderHidden =
 					const hero = document.getElementById('inicio');
 					if (hero instanceof HTMLElement) {
 						hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+						if (shouldMoveFocus) {
+							if (!hero.hasAttribute('tabindex')) {
+								hero.setAttribute('tabindex', '-1');
+							}
+							hero.focus({ preventScroll: true });
+						}
 					} else {
 						window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 					}
+
+					this.hidden = true;
 				});
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
-
-				window.setTimeout(() => {
-					this.hidden = true;
-				}, EXIT_ANIMATION_MS);
 			};
 
 			// Check localStorage skip (same as envelope)
@@ -268,6 +290,8 @@ const shouldRenderHidden =
 			openButton?.addEventListener('click', (event) => {
 				event.stopPropagation();
 				event.preventDefault();
+				openButton.disabled = true;
+				openButton.setAttribute('aria-disabled', 'true');
 
 				// Store flag
 				if (!isDemoInvitation) {
@@ -280,14 +304,14 @@ const shouldRenderHidden =
 
 				if (motionPreference) {
 					completeReveal();
-					this.hidden = true;
 					return;
 				}
 
 				this.classList.add('is-opening');
+				setRevealPhase();
 
 				const onAnimationEnd = (e: AnimationEvent) => {
-					if (e.animationName.includes('editorialCoverExit')) {
+					if (e.animationName.includes('editorialCoverWrapperExit')) {
 						this.removeEventListener('animationend', onAnimationEnd);
 						completeReveal();
 					}
@@ -301,7 +325,7 @@ const shouldRenderHidden =
 						this.removeEventListener('animationend', onAnimationEnd);
 						completeReveal();
 					}
-				}, EXIT_ANIMATION_MS + 400);
+				}, EXIT_COMPLETION_FALLBACK_MS);
 			});
 		}
 	}

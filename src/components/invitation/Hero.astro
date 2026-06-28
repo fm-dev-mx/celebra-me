@@ -5,6 +5,7 @@ import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import '@/styles/invitation/_hero.scss';
+import EditorialMagazineHero from './EditorialMagazineHero.astro';
 
 interface Props {
 	name: string;
@@ -49,12 +50,19 @@ const {
 	highPriority = true,
 } = Astro.props;
 
+const isEditorialMagazine = variant === 'editorial-magazine';
+
+const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
+	? 'CAPÍTULO XV'
+	: label;
+
+
 const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 	'src' in image ? (image.src as ImageMetadata) : image;
 
 const bgSrc = resolveImage(backgroundImage);
 const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
-const optimizedMobileBg = resolvedMobileBg
+const optimizedMobileBg = (resolvedMobileBg && !isEditorialMagazine)
 	? await getImage({
 			src: resolvedMobileBg,
 			width: 640,
@@ -63,7 +71,7 @@ const optimizedMobileBg = resolvedMobileBg
 	  })
 	: null;
 
-const optimizedDesktopBg = backgroundImageDesktop
+const optimizedDesktopBg = (backgroundImageDesktop && !isEditorialMagazine)
 	? await getImage({
 			src: backgroundImageDesktop.src,
 			width: 1920,
@@ -96,93 +104,99 @@ const fpDesktop = focalPointDesktop || fpDefault;
 
 ---
 
-<section
-	id="inicio"
-	class="invitation-hero"
-	data-variant={variant}
->
-	<div class="invitation-hero__background">
-		<picture>
-			{optimizedMobileBg && (
-				<source media="(max-width: 991px)" srcset={optimizedMobileBg.src} />
-			)}
-			{optimizedDesktopBg && (
-				<source media="(min-width: 992px)" srcset={optimizedDesktopBg.src} />
-			)}
-			<Image
-				src={bgSrc}
-				alt={name}
-				width={1080}
-				height={1920}
-				format="webp"
-				quality={80}
-				loading="eager"
-				fetchpriority={highPriority ? 'high' : undefined}
-			/>
-		</picture>
-	</div>
+{
+	isEditorialMagazine ? (
+		<EditorialMagazineHero {...Astro.props} />
+	) : (
+		<section
+			id="inicio"
+			class="invitation-hero"
+			data-variant={variant}
+		>
+			<div class="invitation-hero__background">
+				<picture>
+					{optimizedMobileBg && (
+						<source media="(max-width: 991px)" srcset={optimizedMobileBg.src} />
+					)}
+					{optimizedDesktopBg && (
+						<source media="(min-width: 992px)" srcset={optimizedDesktopBg.src} />
+					)}
+					<Image
+						src={bgSrc}
+						alt={name}
+						width={1080}
+						height={1920}
+						format="webp"
+						quality={80}
+						loading="eager"
+						fetchpriority={highPriority ? 'high' : undefined}
+					/>
+				</picture>
+			</div>
 
-	<div class="invitation-hero__content">
-		{label && <span class="invitation-hero__label">{label}</span>}
+			<div class="invitation-hero__content">
+				{displayLabel && <span class="invitation-hero__label">{displayLabel}</span>}
 
-		<div class="invitation-hero__title-wrapper">
-			<h1 class="invitation-hero__title">
-				<span class="invitation-hero__title-line">{firstName}</span>
-				{surnames.map((surname) => (
-					<Fragment>
-						<br />
-						<span class="invitation-hero__title-line invitation-hero__title-line--surname">{surname}</span>
-					</Fragment>
-				))}
-				{secondaryName && (
-					<>
-						<br />
-						<span class="invitation-hero__ampersand">&</span>
-						<span class="invitation-hero__secondary-name">{secondaryName}</span>
-					</>
+				<div class="invitation-hero__title-wrapper">
+					<h1 class="invitation-hero__title">
+						<span class="invitation-hero__title-line">{firstName}</span>
+						{surnames.map((surname) => (
+							<Fragment>
+								<br />
+								<span class="invitation-hero__title-line invitation-hero__title-line--surname">{surname}</span>
+							</Fragment>
+						))}
+						{secondaryName && (
+							<>
+								<br />
+								<span class="invitation-hero__ampersand">&</span>
+								<span class="invitation-hero__secondary-name">{secondaryName}</span>
+							</>
+						)}
+					</h1>
+				</div>
+
+				{nickname && (
+					<div class="invitation-hero__nickname-badge">
+						<span>{nickname}</span>
+					</div>
 				)}
-			</h1>
-		</div>
 
-		{nickname && (
-			<div class="invitation-hero__nickname-badge">
-				<span>{nickname}</span>
+				{portraitSrc && (
+					<div class="invitation-hero__portrait">
+						<Image
+							src={portraitSrc}
+							alt={`Retrato de ${name}`}
+							width={600}
+							height={800}
+							format="webp"
+							quality={90}
+						/>
+					</div>
+				)}
+
+				<div class="invitation-hero__divider"></div>
+
+				<div class="invitation-hero__details">
+					<p class="invitation-hero__date">{formattedDate}</p>
+					{time && <p class="invitation-hero__time">{time}</p>}
+					{venueName && <p class="invitation-hero__venue">
+						<span class="calligraphy-accent">en</span> {venueName}
+					</p>}
+				</div>
 			</div>
-		)}
 
-		{portraitSrc && (
-			<div class="invitation-hero__portrait">
-				<Image
-					src={portraitSrc}
-					alt={`Retrato de ${name}`}
-					width={600}
-					height={800}
-					format="webp"
-					quality={90}
-				/>
+			<div class="invitation-hero__scroll-indicator">
+				<span class="invitation-hero__scroll-text">{scrollLabel || 'Desliza'}</span>
+				<div class="invitation-hero__scroll-chevron">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="m6 9 6 6 6-6"/>
+					</svg>
+				</div>
 			</div>
-		)}
-
-		<div class="invitation-hero__divider"></div>
-
-		<div class="invitation-hero__details">
-			<p class="invitation-hero__date">{formattedDate}</p>
-			{time && <p class="invitation-hero__time">{time}</p>}
-			{venueName && <p class="invitation-hero__venue">
-				<span class="calligraphy-accent">en</span> {venueName}
-			</p>}
-		</div>
-	</div>
-
-	<div class="invitation-hero__scroll-indicator">
-		<span class="invitation-hero__scroll-text">{scrollLabel || 'Desliza'}</span>
-		<div class="invitation-hero__scroll-chevron">
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="m6 9 6 6 6-6"/>
-			</svg>
-		</div>
-	</div>
-</section>
+		</section>
+	)
+}
 
 <style define:vars={{
 	fpDefault,
