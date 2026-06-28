@@ -38,6 +38,7 @@ interface Props {
 	variant?: string;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
+	accessLabel?: string;
 }
 
 const {
@@ -46,6 +47,7 @@ const {
 	variant = 'structured',
 	presentation,
 	showFlourishes = true,
+	accessLabel,
 } = Astro.props;
 
 // Format venue date as human-readable Spanish string.
@@ -76,6 +78,7 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 ---
 
 <div class="event-location__card-wrapper">
+	{accessLabel && <p class="event-location__access-label">{accessLabel}</p>}
 	<h3 class="event-location__card-title">{venue.venueEvent}</h3>
 	{showFlourishes && (
 		<div class="event-location__card-flourish" aria-hidden="true">

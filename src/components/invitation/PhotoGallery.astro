@@ -20,6 +20,7 @@ interface Props {
 }
 
 const { items, variant = 'standard' } = Astro.props;
+const isEditorialMagazine = variant === 'editorial-magazine';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	const src = typeof image.src === 'string' ? image.src : image.src.src;
@@ -54,6 +55,12 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 					decoding="async"
 					fetchpriority={index >= 2 ? 'low' : undefined}
 				/>
+				<!-- "LOOK" is intentionally English — editorial fashion label style -->
+				{isEditorialMagazine && (
+					<span class="gallery-grid__editorial-label">
+						LOOK {String(index + 1).padStart(2, '0')}
+					</span>
+				)}
 				{item.caption && (
 					<div class="gallery-grid__overlay">
 						<p class="gallery-grid__caption">{item.caption}</p>

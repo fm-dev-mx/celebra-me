@@ -272,7 +272,7 @@ export function AttendanceField(props: {
 						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
-					<span className="rsvp__radio-label">No podré</span>
+					<span className="rsvp__radio-label">No podré asistir</span>
 				</label>
 			</div>
 			{touched.attendance && errors.attendance && (

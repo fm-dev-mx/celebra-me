@@ -25,6 +25,7 @@ interface Props {
 }
 
 const { eyebrow = '', title, subtitle, items, variant = 'standard', presentation } = Astro.props;
+const isEditorialMagazine = variant === 'editorial-magazine';
 
 if (!items || items.length === 0) return null;
 ---
@@ -35,6 +36,9 @@ if (!items || items.length === 0) return null;
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}
 			<h2 class="gallery-section__title">{title}</h2>
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
+			{isEditorialMagazine && (
+				<p class="gallery-section__swipe-hint">Desliza la edición</p>
+			)}
 		</header>
 
 		<PhotoGallery items={items} variant={variant} />

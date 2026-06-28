@@ -77,6 +77,9 @@ const {
 	},
 } = Astro.props;
 
+const isEditorialMagazine = variant === 'editorial-magazine';
+const displayTitle = isEditorialMagazine ? 'Mesa de cortesía' : title;
+
 const ICON_MAP = {
 	store: GiftIcon,
 	bank: BankCardIcon,
@@ -89,7 +92,7 @@ const ICON_MAP = {
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
-			<h2 class="gifts-section__title">{title}</h2>
+			<h2 class="gifts-section__title">{displayTitle}</h2>
 			<div class="gifts-section__flourish" aria-hidden="true">
 				<span class="flourish-line"></span>
 				<span class="flourish-diamond"></span>
@@ -102,11 +105,25 @@ const ICON_MAP = {
 
 		<div class="gifts-grid" data-count={gifts.length}>
 			{
-				gifts.map((gift) => {
+				gifts.map((gift, index) => {
 					const Icon = ICON_MAP[gift.type];
+					const giftNumber = String(index + 1).padStart(2, '0');
 					return (
 						<div class={`gift-card gift-card--${gift.type}`}>
 							<div class="gift-card__inner">
+								{isEditorialMagazine && (
+									<div class="gift-card__folio" aria-hidden="true">
+										<span>VH</span>
+										<span>EDICIÓN XV</span>
+									</div>
+								)}
+								{isEditorialMagazine && (
+									<p class="gift-card__issue-label">
+										<span>{giftNumber}</span>
+										<span>{gift.title}</span>
+									</p>
+								)}
+
 								<div class="gift-card__icon-medallion">
 									<div class="gift-card__icon-inner">
 										<Icon size={24} />

@@ -41,6 +41,7 @@ interface Indication {
 	iconName: IconName;
 	styleVariant: IndicationStyleVariant;
 	text: string;
+	title?: string;
 }
 
 interface VenueEntry extends VenueData {
@@ -93,6 +94,20 @@ const {
 	introLede,
 } = Astro.props;
 
+// 5-entry limit — indications beyond index 4 without explicit title
+// gracefully degrade to no title display (undefined → hidden by && guard)
+const EDITORIAL_GUEST_NOTE_TITLES = [
+	'CÓDIGO DE VESTIMENTA',
+	'CONFIRMACIÓN',
+	'PUNTUALIDAD',
+	'CELEBRACIÓN',
+	'MOMENTOS',
+] as const;
+const resolvedIndicationsHeading =
+	variant === 'editorial-magazine'
+		? 'GUÍA PRIVADA PARA INVITADOS'
+		: indicationsHeading;
+
 // Use venues array if present, otherwise fall back to legacy ceremony/reception
 const displayVenues = venueEntries && venueEntries.length > 0
 	? venueEntries
@@ -124,13 +139,14 @@ const isSingleVenue = displayVenues.length === 1;
 		</div>
 	) : (
 		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-			{displayVenues.map((venue: VenueData & { type?: string }) => (
+			{displayVenues.map((venue: VenueData & { type?: string }, index) => (
 				<VenueCard
 					venue={venue}
 					type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
 					variant={variant}
 					presentation={presentation}
 					showFlourishes={showFlourishes}
+					accessLabel={variant === 'editorial-magazine' ? `ACCESO ${String(index + 1).padStart(2, '0')}` : undefined}
 				/>
 			))}
 		</div>
@@ -139,18 +155,32 @@ const isSingleVenue = displayVenues.length === 1;
 	{indications && indications.length > 0 && (
 		<div class="event-location__indications-container">
 			<div class="event-location__divider" aria-hidden="true"></div>
-			{indicationsHeading && (
-				<p class="event-location__indications-heading">{indicationsHeading}</p>
+			{resolvedIndicationsHeading && (
+				<p class="event-location__indications-heading">{resolvedIndicationsHeading}</p>
 			)}
 			<div class="event-location__indications">
-				{indications.map((indication) => {
+				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
+					const editorialNoteTitle =
+						variant === 'editorial-magazine'
+							? indication.title ?? EDITORIAL_GUEST_NOTE_TITLES[index]
+							: indication.title;
 					return (
 						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
 							<div class="event-location__indication-icon">
 								<Icon name={indication.iconName} size={24} />
 							</div>
-							<p class="event-location__indication-text" set:html={indication.text} />
+							<div class="event-location__indication-copy">
+								{editorialNoteTitle && (
+									<p class="event-location__indication-title">
+										<span class="event-location__indication-number">
+											{String(index + 1).padStart(2, '0')}
+										</span>
+										<span>{editorialNoteTitle}</span>
+									</p>
+								)}
+								<p class="event-location__indication-text" set:html={indication.text} />
+							</div>
 						</div>
 					);
 				})}
