@@ -77,13 +77,23 @@
     },
     "family": {
         "featuredImage": "family",
+        "parents": {
+            "father": "Juan Carlos Hernández Calixco",
+            "mother": "María Estrella Almaguer Casarreal"
+        },
+        "parentsOrder": "mother-first",
         "labels": {
             "sectionTitle": "Mi familia",
             "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Mis padres",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Con la bendición de mi familia y el cariño de quienes han acompañado mi historia, celebro este día con el corazón lleno de gratitud."
+            "sectionMessage": "Gracias por darme la vida y tanto amor. Gracias por guiar mis pasos. Con la bendición de mi familia y el cariño de quienes han acompañado mi historia, celebro este día con el corazón lleno de gratitud."
         },
         "godparents": [
+            {
+                "name": "Nayeli Almaguer Casarreal",
+                "role": "Madrina"
+            },
             {
                 "name": "César A. Pérez Monroy",
                 "role": "Padrino"
@@ -117,6 +127,14 @@
         "introHeading": "Sábado, 29 de agosto de 2026",
         "introLede": "Será una alegría compartir contigo esta celebración.",
         "indicationsHeading": "Detalles para mis invitados",
+        "ceremony": {
+            "venueEvent": "Ceremonia religiosa",
+            "venueName": "Finca Las Palmas",
+            "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
+            "city": "Texcoco, Estado de México",
+            "date": "29 de agosto de 2026",
+            "time": "3:45 p.m."
+        },
         "reception": {
             "venueEvent": "Recepción",
             "venueName": "Finca Las Palmas",
@@ -129,7 +147,7 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal</strong>. El color <strong>rosa y lila</strong> están reservados para la quinceañera."
+                "text": "Código de vestimenta: <strong>formal</strong>. Quiero que te veas <strong>INCREÍBLE</strong>. Damas: Divinas (Reserva el color <strong>rosa y lila</strong> para la XV). Caballeros: Guapos."
             },
             {
                 "iconName": "Calendar",
@@ -140,13 +158,23 @@
                 "iconName": "Enveloped",
                 "styleVariant": "default",
                 "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche."
+            },
+            {
+                "iconName": "Sparkles",
+                "styleVariant": "default",
+                "text": "Prepárate para una noche llena de magia, sueños y mucha diversión."
+            },
+            {
+                "iconName": "Photo",
+                "styleVariant": "default",
+                "text": "Comparte tus mejores fotos y videos de la fiesta etiquetándome en <strong>@val27_0811</strong>. ¡Me encantará ver la celebración desde tu perspectiva!"
             }
         ]
     },
     "gallery": {
         "eyebrow": "Galería",
         "title": "Brillar es la actitud.",
-        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+        "subtitle": "Prepárate para una noche llena de magia, sueños y mucha diversión. Un recorrido visual por los momentos que hacen de esta celebración algo único.",
         "items": [
             {
                 "image": "gallery01"
@@ -176,22 +204,41 @@
     },
     "gifts": {
         "title": "Regalos",
-        "subtitle": "Su presencia es mi mejor regalo. Si desean tener un detalle adicional, habrá un espacio especial para sobres el día del evento.",
+        "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
         "items": [
             {
                 "type": "cash",
-                "title": "Lluvia de sobres",
-                "text": "Gracias por acompañarme con tanto cariño en esta noche tan especial."
+                "title": "Regalo Sorpresa",
+                "text": "Un regalo con todo tu cariño para hacer de este día algo aún más especial."
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Se proporcionará un sobre el día del evento."
+            },
+            {
+                "type": "store",
+                "title": "Mesa en Liverpool",
+                "description": "VALENS DREAM TEAM",
+                "links": [
+                    {
+                        "label": "Ver lista",
+                        "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52020257"
+                    }
+                ]
             }
         ]
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
-        "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que vienes.",
+        "subcopy": "Por favor, confirma tu asistencia enviándome un mensaje directo o desde esta invitación. ¡Me encantará saber que vienes!",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
-        "confirmationMode": "api"
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "525518323934"
+        }
     },
     "thankYou": {
         "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
