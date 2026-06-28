@@ -257,6 +257,27 @@
 		flex-direction: column;
 		gap: var(--rsvp-field-gap);
 
+		// Error state — highlights the field border and decorative line
+		&--error {
+			input,
+			textarea,
+			select {
+				border-color: var(--rsvp-error-field);
+			}
+
+			.rsvp__field-line {
+				background: var(--rsvp-error-field);
+			}
+		}
+
+		// Has-value state — subtly promotes the label color
+		// when the field contains user-entered text.
+		&--has-value {
+			label {
+				color: var(--color-text-primary);
+			}
+		}
+
 		label {
 			font-family: var(--font-body);
 			font-size: 0.88rem;
@@ -264,6 +285,38 @@
 			color: var(--rsvp-label-color);
 			letter-spacing: var(--rsvp-label-letter-spacing, 0.08em);
 			text-transform: uppercase;
+		}
+
+		// Explicit class alias so JSX className='rsvp__label' is always styled
+		// even when the label is not nested under .rsvp__field.
+		.rsvp__label {
+			font-family: var(--font-body);
+			font-size: 0.88rem;
+			font-weight: 500;
+			color: var(--rsvp-label-color);
+			letter-spacing: var(--rsvp-label-letter-spacing, 0.08em);
+			text-transform: uppercase;
+		}
+
+		// Decorative underline bar below each text/tel/number input.
+		// Rendered unconditionally by FloatingField; styled to be subtle
+		// so it does not create excessive blank space.
+		.rsvp__field-line {
+			height: 1px;
+			background: var(--color-border-light, rgb(var(--color-text-primary-rgb) / 12%));
+			margin-top: -1px;
+			pointer-events: none;
+		}
+
+		// Error message directly beneath the input — compact, contextual.
+		.rsvp__field-error {
+			font-family: var(--font-body);
+			font-size: 0.68rem;
+			line-height: 1.2;
+			color: var(--rsvp-error-text);
+			margin: 0;
+			min-height: 0;
+			padding: 0.1rem 0 0;
 		}
 
 		input[type='text'],
@@ -687,6 +740,14 @@
 			color: var(--color-text-secondary);
 			margin-block: 0.75rem 0;
 		}
+
+		&-submessage {
+			font-family: var(--font-body);
+			font-size: 0.88rem;
+			line-height: 1.5;
+			color: var(--color-text-secondary);
+			margin-block: 0.5rem 0;
+		}
 	}
 
 	&:focus {
@@ -740,6 +801,28 @@
 
 	&__error-region {
 		min-height: 0;
+	}
+
+	// Global error message (non-field-specific validation errors)
+	&__error {
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		line-height: 1.4;
+		color: var(--rsvp-error-text);
+		margin: 0;
+		padding: 0.35rem 0.5rem;
+		background: var(--rsvp-error-bg);
+		border: 1px solid var(--rsvp-error-border);
+		border-radius: var(--rsvp-radius-field);
+	}
+
+	// Submit + Cancel action row — stacked on mobile so the submit button
+	// is the clear primary action and Cancel is a thin text link below it.
+	&__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-top: 0.25rem;
 	}
 
 	&__field--phone .rsvp__phone-group {
@@ -810,5 +893,89 @@
 		font-size: 0.72rem;
 		letter-spacing: 0.1em;
 		color: var(--color-text-muted, rgb(var(--color-text-primary-rgb) / 40%));
+	}
+
+	// Base styles for progressive-disclosure attendance summary row.
+	// Theme-preset files override these with their palette.
+	&__attendance-summary {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.65rem 0.75rem;
+		border: 1px solid var(--rsvp-field-border);
+		border-radius: var(--rsvp-radius-field);
+		background: var(--rsvp-radio-bg);
+	}
+
+	&__attendance-summary-label {
+		font-family: var(--font-label);
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		flex: 0 0 auto;
+	}
+
+	&__attendance-summary-value {
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		font-weight: 500;
+		color: var(--color-text-primary);
+		flex: 1;
+	}
+
+	&__attendance-change {
+		display: inline;
+		padding: 0.2rem 0.5rem;
+		border: 1px solid var(--rsvp-field-border);
+		border-radius: var(--rsvp-radius-field);
+		background: transparent;
+		color: var(--color-text-secondary);
+		font-family: var(--font-label);
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: all 0.2s ease;
+
+		&:hover {
+			border-color: var(--color-action-accent);
+			color: var(--color-action-accent);
+		}
+	}
+
+	// Cancelar text link — low-emphasis alternative to secondary-button.
+	// Used when editing an existing response; should not compete with submit.
+	&__cancel-link {
+		display: inline;
+		padding: 0.25rem 0.5rem;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-label);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		cursor: pointer;
+		transition: color 0.2s ease;
+		min-height: auto;
+		width: auto;
+		line-height: 1;
+
+		&:hover,
+		&:focus-visible {
+			color: var(--color-text-primary);
+			outline: none;
+		}
+
+		&:active {
+			transform: translateY(1px);
+		}
 	}
 }

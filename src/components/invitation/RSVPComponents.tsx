@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import {
@@ -445,6 +445,12 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onBlur,
 	} = props;
 	const isEditorialMagazine = variant === 'editorial-magazine';
+	const [attendanceCollapsed, setAttendanceCollapsed] = useState(false);
+
+	const handleAttendanceCollapse = (status: Exclude<AttendanceStatus, null>) => {
+		onAttendanceChange(status);
+		setAttendanceCollapsed(true);
+	};
 
 	return (
 		<RsvpShell
@@ -475,16 +481,32 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						<span>EDICIÓN XV</span>
 					</div>
 				)}
-				<AttendanceField
-					touched={touched}
-					errors={errors}
-					attendanceLabel={attendanceLabel}
-					attendanceStatus={attendanceStatus}
-					attendanceRef={attendanceRef}
-					prefersReducedMotion={prefersReducedMotion}
-					onAttendanceChange={onAttendanceChange}
-					onBlur={onBlur}
-				/>
+				{attendanceStatus !== null && attendanceCollapsed ? (
+					<div className="rsvp__attendance-summary">
+						<span className="rsvp__attendance-summary-label">Respuesta</span>
+						<span className="rsvp__attendance-summary-value">
+							{attendanceStatus === 'confirmed' ? 'Sí, asistiré' : 'No podré asistir'}
+						</span>
+						<button
+							type="button"
+							className="rsvp__attendance-change"
+							onClick={() => setAttendanceCollapsed(false)}
+						>
+							Cambiar
+						</button>
+					</div>
+				) : (
+					<AttendanceField
+						touched={touched}
+						errors={errors}
+						attendanceLabel={attendanceLabel}
+						attendanceStatus={attendanceStatus}
+						attendanceRef={attendanceRef}
+						prefersReducedMotion={prefersReducedMotion}
+						onAttendanceChange={handleAttendanceCollapse}
+						onBlur={onBlur}
+					/>
+				)}
 				{showIdentityFields && (
 					<div className="rsvp__grid">
 						<NameField
@@ -563,7 +585,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						{showCancelEdit && onCancelEdit && (
 							<button
 								type="button"
-								className="rsvp__secondary-button"
+								className="rsvp__cancel-link"
 								onClick={onCancelEdit}
 							>
 								Cancelar
