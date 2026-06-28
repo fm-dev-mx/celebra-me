@@ -532,7 +532,7 @@
 			}
 		}
 
-		@include mixins.respond-below(md) {
+		@include mixins.respond-below(lg) {
 			min-height: 100svh;
 			padding: clamp(0.75rem, 3vw, 1rem);
 
@@ -680,6 +680,47 @@
 				text-align: left;
 				color: rgb(var(--v-white-rgb) / 36%);
 				margin-top: 1.25rem;
+			}
+
+			// Tablet sub-breakpoint (768-991px): larger portrait, larger text,
+			// adjusted background focal point for the wider full-bleed canvas.
+			@media (width >= 768px) {
+				.invitation-hero__first-name {
+					font-size: clamp(4rem, 7.5vw, 5.5rem);
+				}
+
+				.invitation-hero__last-name {
+					font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+				}
+
+				.invitation-hero__title-wrapper,
+				.invitation-hero__title {
+					max-width: min(100%, 30rem);
+				}
+
+				.invitation-hero__deck {
+					font-size: clamp(0.85rem, 1.4vw, 1rem);
+				}
+
+				.invitation-hero__label {
+					font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+				}
+
+				.invitation-hero__background img {
+					object-position: var(--hero-focal-point, 50% 38%);
+				}
+
+				.invitation-hero__details p {
+					font-size: clamp(0.74rem, 1.2vw, 0.82rem);
+				}
+
+				.invitation-hero__content {
+					gap: clamp(0.85rem, 1.5svh, 1.25rem);
+				}
+
+				.invitation-hero__cover-lines {
+					display: none;
+				}
 			}
 		}
 	}
@@ -1374,7 +1415,7 @@
 
 		.gift-card__table-number {
 			font-family: var(--font-label);
-			font-size: 0.85rem;
+			font-size: 0.6rem;
 			letter-spacing: 0.1em;
 			color: var(--v-ink);
 			margin-top: -0.25rem;
@@ -1797,6 +1838,34 @@
 			font-family: var(--font-label);
 			font-size: 0.58rem;
 			font-weight: 500;
+		}
+	}
+
+	.quote-section[data-variant='editorial-magazine'] {
+		&::before {
+			display: none;
+		}
+
+		.quote-line {
+			margin: 0 auto;
+
+			&::before {
+				display: block;
+				width: 4rem;
+				height: 1px;
+				margin: 1rem 0 1.5rem;
+				content: '';
+				background: var(--editorial-magazine-red);
+			}
+		}
+
+		.quote-divider-top,
+		.quote-divider-bottom {
+			position: relative;
+			left: auto;
+			right: auto;
+			display: block;
+			margin: 0 auto;
 			letter-spacing: 0.22em;
 			color: rgb(var(--v-white-rgb) / 28%);
 		}

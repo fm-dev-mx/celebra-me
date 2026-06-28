@@ -18,6 +18,8 @@ interface GiftStore {
 	links?: GiftStoreLink[];
 	logo?: string;
 	description?: string;
+	// Labeled as 'Evento:' in the template (line 163). Field name kept as tableNumber
+	// for backward compatibility with the data model.
 	tableNumber?: string;
 }
 
@@ -137,19 +139,16 @@ const ICON_MAP = {
 									<p class="gift-card__store-label">{gift.description}</p>
 								)}
 
-								{gift.type === 'store' && gift.tableNumber && (
-									<p class="gift-card__table-number">Mesa: {gift.tableNumber}</p>
-								)}
 
 								{gift.type === 'store' && (
 									<div class="gift-card__actions">
 										{gift.links && gift.links.length > 0 ? (
 											gift.links.map((link) => (
 												<a
-													href={link.url}
-													target="_blank"
-													rel="noopener noreferrer"
-													class="gift-card__button"
+												href={link.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="gift-card__button"
 												>
 													{link.label}
 												</a>
@@ -160,6 +159,10 @@ const ICON_MAP = {
 											</a>
 										)}
 									</div>
+								)}
+
+								{gift.type === 'store' && gift.tableNumber && (
+									<p class="gift-card__table-number">Evento: {gift.tableNumber}</p>
 								)}
 
 								{gift.type === 'bank' && (
