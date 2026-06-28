@@ -373,6 +373,7 @@ BEGIN
         "label": "XV Edition",
         "date": "2026-08-29T21:45:00.000Z",
         "backgroundImage": "hero",
+        "backgroundImageMobile": "portrait",
         "portrait": "portrait",
         "variant": "editorial-magazine",
         "focalPoint": "50% 38%",
