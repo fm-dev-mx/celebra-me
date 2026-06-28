@@ -18,6 +18,7 @@ export const storeGiftItemSchema = z
 		links: z.array(storeGiftLinkSchema).optional(),
 		logo: z.string().optional(),
 		description: z.string().optional(),
+		tableNumber: z.string().optional(),
 	})
 	.superRefine((value, ctx) => {
 		const hasLegacyUrl = typeof value.url === 'string' && value.url.length > 0;

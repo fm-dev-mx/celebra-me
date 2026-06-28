@@ -5,6 +5,7 @@
  */
 import '@/styles/invitation/_event-location.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
+import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 
@@ -109,12 +110,14 @@ const resolvedIndicationsHeading =
 		: indicationsHeading;
 
 // Use venues array if present, otherwise fall back to legacy ceremony/reception
-const displayVenues = venueEntries && venueEntries.length > 0
+const rawVenues = venueEntries && venueEntries.length > 0
 	? venueEntries
 	: [
 			...(ceremony ? [{ ...ceremony, type: 'ceremony' as const, isVisible: true }] : []),
 			...(reception ? [{ ...reception, type: 'reception' as const, isVisible: true }] : []),
 		];
+
+const displayVenues = groupVenues(rawVenues);
 
 const isSingleVenue = displayVenues.length === 1;
 ---
@@ -139,10 +142,10 @@ const isSingleVenue = displayVenues.length === 1;
 		</div>
 	) : (
 		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-			{displayVenues.map((venue: VenueData & { type?: string }, index) => (
+			{displayVenues.map((venue: GroupedVenue, index) => (
 				<VenueCard
 					venue={venue}
-					type={venue.type === 'ceremony' || venue.type === 'reception' ? venue.type : 'custom'}
+					type={venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom'}
 					variant={variant}
 					presentation={presentation}
 					showFlourishes={showFlourishes}

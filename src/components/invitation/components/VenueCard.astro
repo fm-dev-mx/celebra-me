@@ -14,6 +14,11 @@ import {
 	type LocationPresentation,
 } from '@/lib/invitation/presentation-options';
 
+interface VenueEventItem {
+	name: string;
+	time: string;
+}
+
 interface VenueData {
 	venueEvent: string;
 	venueName: string;
@@ -30,11 +35,12 @@ interface VenueData {
 		lat: number;
 		lng: number;
 	};
+	events?: VenueEventItem[];
 }
 
 interface Props {
 	venue: VenueData;
-	type: 'ceremony' | 'reception' | 'custom';
+	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
 	variant?: string;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
@@ -121,7 +127,21 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 						{formattedDate}
 					</li>
 				)}
-				<li class="event-location__card-content-hour">{venue.time}</li>
+				{venue.events && venue.events.length > 0 ? (
+					<li class="event-location__card-content-itinerary">
+						<ul class="event-location__card-content-itinerary-list">
+							{venue.events.map((evt) => (
+								<li class="event-location__card-content-itinerary-item">
+									<span class="event-location__card-content-itinerary-dot" />
+									<span class="event-location__card-content-itinerary-label">{evt.name}</span>
+									<span class="event-location__card-content-itinerary-time">{evt.time}</span>
+								</li>
+							))}
+						</ul>
+					</li>
+				) : (
+					<li class="event-location__card-content-hour">{venue.time}</li>
+				)}
 				<li class="event-location__card-content-address">
 					<span class="event-location__card-content-address-text">{venue.address}</span>
 					<button class="event-location__card-content-copy-button copy-button" data-address={venue.address} aria-label="Copiar dirección" title="Copiar dirección">
@@ -149,7 +169,7 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						Ver en Google Maps
+						Abrir en Google Maps
 					</a>
 				)}
 				{venue.wazeUrl && (

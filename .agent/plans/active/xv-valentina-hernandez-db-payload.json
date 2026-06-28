@@ -133,7 +133,8 @@
             "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
             "city": "Texcoco, Estado de México",
             "date": "29 de agosto de 2026",
-            "time": "3:45 p.m."
+            "time": "3:45 p.m.",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
         },
         "reception": {
             "venueEvent": "Recepción",
@@ -141,7 +142,8 @@
             "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
             "city": "Texcoco, Estado de México",
             "date": "29 de agosto de 2026",
-            "time": "4:30 p.m."
+            "time": "4:30 p.m.",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
         },
         "indications": [
             {
@@ -220,6 +222,7 @@
                 "type": "store",
                 "title": "Mesa en Liverpool",
                 "description": "VALENS DREAM TEAM",
+                "tableNumber": "52020257",
                 "links": [
                     {
                         "label": "Ver lista",

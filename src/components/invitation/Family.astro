@@ -6,6 +6,7 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
+import { shouldHideRoleVisually } from '@/lib/invitation/family-helper';
 import {
 	shouldRenderFamilyMedia,
 	type FamilyPresentation,
@@ -284,7 +285,11 @@ if (!hasContent) return;
 														<p class="family__name">
 															<span>{entry.name}</span>
 														</p>
-														{entry.role && <span class="family__meta">{entry.role}</span>}
+														{entry.role && (
+															<span class={shouldHideRoleVisually(group.label ?? block.title, entry.role) ? 'sr-only' : 'family__meta'}>
+																{entry.role}
+															</span>
+														)}
 													</li>
 												))}
 											</ul>
@@ -308,7 +313,11 @@ if (!hasContent) return;
 												<span class="family__deceased-indicator" aria-hidden="true">†</span>
 											)}
 										</p>
-										{entry.role && <span class="family__meta">{entry.role}</span>}
+										{entry.role && (
+											<span class={shouldHideRoleVisually(block.title, entry.role) ? 'sr-only' : 'family__meta'}>
+												{entry.role}
+											</span>
+										)}
 									</li>
 								))}
 							</ul>

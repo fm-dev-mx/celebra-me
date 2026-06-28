@@ -18,6 +18,7 @@ interface GiftStore {
 	links?: GiftStoreLink[];
 	logo?: string;
 	description?: string;
+	tableNumber?: string;
 }
 
 interface GiftBank {
@@ -134,6 +135,10 @@ const ICON_MAP = {
 
 								{gift.type === 'store' && gift.description && (
 									<p class="gift-card__store-label">{gift.description}</p>
+								)}
+
+								{gift.type === 'store' && gift.tableNumber && (
+									<p class="gift-card__table-number">Mesa: {gift.tableNumber}</p>
 								)}
 
 								{gift.type === 'store' && (

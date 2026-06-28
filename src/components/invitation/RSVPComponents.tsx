@@ -469,6 +469,22 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			}
 		>
 			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
+				{isEditorialMagazine && (
+					<div className="rsvp__response-heading" id="rsvp-response-heading">
+						<span>SELECCIONA TU RESPUESTA</span>
+						<span>EDICIÓN XV</span>
+					</div>
+				)}
+				<AttendanceField
+					touched={touched}
+					errors={errors}
+					attendanceLabel={attendanceLabel}
+					attendanceStatus={attendanceStatus}
+					attendanceRef={attendanceRef}
+					prefersReducedMotion={prefersReducedMotion}
+					onAttendanceChange={onAttendanceChange}
+					onBlur={onBlur}
+				/>
 				{showIdentityFields && (
 					<div className="rsvp__grid">
 						<NameField
@@ -497,22 +513,6 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						/>
 					</div>
 				)}
-				{isEditorialMagazine && (
-					<div className="rsvp__response-heading" id="rsvp-response-heading">
-						<span>SELECCIONA TU RESPUESTA</span>
-						<span>EDICIÓN XV</span>
-					</div>
-				)}
-				<AttendanceField
-					touched={touched}
-					errors={errors}
-					attendanceLabel={attendanceLabel}
-					attendanceStatus={attendanceStatus}
-					attendanceRef={attendanceRef}
-					prefersReducedMotion={prefersReducedMotion}
-					onAttendanceChange={onAttendanceChange}
-					onBlur={onBlur}
-				/>
 				<ConfirmedFields
 					attendanceStatus={attendanceStatus}
 					prefersReducedMotion={prefersReducedMotion}

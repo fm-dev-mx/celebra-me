@@ -68,7 +68,7 @@ BEGIN;
 -- current_setting. Change the placeholder below to the real admin UUID.
 SELECT set_config(
   'app.owner_user_id',
-  '__OWNER_USER_ID__',
+  '52f5136b-3701-4b2a-a5c6-a867686f63a8',
   true
 );
 

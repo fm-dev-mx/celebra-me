@@ -119,6 +119,7 @@ export function NameField(props: {
 			id="name"
 			type="text"
 			label={nameLabel}
+			labelSuffix=" *"
 			value={name}
 			error={errors.name}
 			touched={touched.name}
@@ -170,7 +171,7 @@ export function PhoneField(props: {
 			transition={prefersReducedMotion ? undefined : { delay: 0.1 }}
 		>
 			<label htmlFor="phone" className="rsvp__label">
-				{phoneLabel}
+				{phoneLabel} *
 			</label>
 			<div className="rsvp__phone-group">
 				<select
