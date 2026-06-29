@@ -1,6 +1,8 @@
 {
     "eventType": "xv",
     "isDemo": true,
+    "templateId": "xv-enchanted-rose",
+    "_assetSlug": "demo-xv-enchanted-rose",
     "title": "XV Años — Isabella Rose",
     "description": "Una invitación de palacio con rosas rojas, luz de velas y una atmósfera cálida de gala para celebrar XV años.",
     "theme": {
@@ -104,14 +106,38 @@
         "title": "Instantes de Ayrin",
         "subtitle": "Una selección de momentos entre rosas, luz de velas y detalles dorados.",
         "items": [
-            { "image": "gallery01", "caption": "Bajo la luz de las velas" },
-            { "image": "gallery02", "caption": "Detalles dorados" },
-            { "image": "gallery06", "caption": "Entre rosas" },
-            { "image": "gallery03", "caption": "Una noche para recordar" },
-            { "image": "gallery08", "caption": "El brillo de Isabella Rose" },
-            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida" },
-            { "image": "gallery10", "caption": "La rosa encantada bajo la luz de las velas" },
-            { "image": "interlude01", "caption": "Un nuevo capítulo entre rosas" }
+            {
+                "image": "gallery01",
+                "caption": "Bajo la luz de las velas"
+            },
+            {
+                "image": "gallery02",
+                "caption": "Detalles dorados"
+            },
+            {
+                "image": "gallery06",
+                "caption": "Entre rosas"
+            },
+            {
+                "image": "gallery03",
+                "caption": "Una noche para recordar"
+            },
+            {
+                "image": "gallery08",
+                "caption": "El brillo de Isabella Rose"
+            },
+            {
+                "image": "gallery04",
+                "caption": "Mármol, terciopelo y luz cálida"
+            },
+            {
+                "image": "gallery10",
+                "caption": "La rosa encantada bajo la luz de las velas"
+            },
+            {
+                "image": "interlude01",
+                "caption": "Un nuevo capítulo entre rosas"
+            }
         ]
     },
     "gifts": {

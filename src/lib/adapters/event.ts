@@ -582,6 +582,7 @@ export function adaptEvent(
 	return {
 		id: entrySlug,
 		isDemo,
+		visualProfileId: adapterData.visualProfileId,
 		title: adapterData.title,
 		description: adapterData.description,
 		theme: {

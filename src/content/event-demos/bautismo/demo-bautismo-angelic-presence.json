@@ -1,6 +1,8 @@
 {
     "eventType": "bautizo",
     "isDemo": true,
+    "templateId": "bautizo-angelic-presence",
+    "_assetSlug": "demo-bautismo-angelic-presence",
     "title": "Demo - Bautismo de María",
     "description": "Demo oficial de bautismo con tema angelic-presence.",
     "theme": {
@@ -57,8 +59,14 @@
             "mother": "Mercedes Elena de Rodríguez"
         },
         "godparents": [
-            { "name": "Dr. Alejandro Gómez", "role": "Padrino" },
-            { "name": "Sra. Beatriz Mendoza", "role": "Madrina" }
+            {
+                "name": "Dr. Alejandro Gómez",
+                "role": "Padrino"
+            },
+            {
+                "name": "Sra. Beatriz Mendoza",
+                "role": "Madrina"
+            }
         ],
         "featuredImage": "family",
         "focalPoint": "50% 36%",

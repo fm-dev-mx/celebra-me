@@ -1,6 +1,7 @@
 {
     "eventType": "primera-comunion",
     "isDemo": true,
+    "templateId": "primera-comunion-angelic-presence",
     "title": "Demo — Primera Comunión Ilustrada",
     "description": "Demo oficial de primera comunión con estilo ilustrado, floral y fresco.",
     "_assetSlug": "demo-primera-comunion-illustrated",
@@ -64,8 +65,14 @@
             "mother": "Lucía Rivera"
         },
         "godparents": [
-            { "name": "Elena Cruz", "role": "Madrina" },
-            { "name": "Mateo Salazar", "role": "Padrino" }
+            {
+                "name": "Elena Cruz",
+                "role": "Madrina"
+            },
+            {
+                "name": "Mateo Salazar",
+                "role": "Padrino"
+            }
         ],
         "featuredImage": "family",
         "focalPoint": "50% 36%",

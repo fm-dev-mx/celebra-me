@@ -192,6 +192,34 @@ const sectionOrderSchema = z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).optio
 export const baseEventFieldsSchema = z.object({
 	eventType: z.enum(EVENT_TYPES),
 	isDemo: z.boolean().default(false),
+	templateId: z
+		.string()
+		.regex(
+			/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+			'templateId must be a valid slug (lowercase, hyphens allowed)',
+		)
+		.describe(
+			'Identifies the visual template SKU this content implements. ' +
+				'Both real invitations and demos sharing the same templateId ' +
+				'must also share the same theme.preset for visual consistency. ' +
+				'Template SKU format: {eventType}-{themePreset} (e.g. xv-celestial-blue).',
+		)
+		.optional(),
+	visualProfileId: z
+		.string()
+		.regex(
+			/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+			'visualProfileId must be a valid slug (lowercase, hyphens allowed)',
+		)
+		.describe(
+			'Identifies the visual profile (CSS scope class) for custom ' +
+				'SCSS overrides. Real invitations and their demo counterparts ' +
+				'sharing the same visualProfileId will use the same CSS scope ' +
+				'class, enabling shared custom styling. ' +
+				'Typically matches the route slug of the real invitation ' +
+				'(e.g. "valentina-hernandez" for xv-valentina-hernandez).',
+		)
+		.optional(),
 	title: z.string(),
 	description: z.string().optional(),
 	theme: themeSchema,

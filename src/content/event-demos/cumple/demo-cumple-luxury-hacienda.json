@@ -1,6 +1,8 @@
 {
     "eventType": "cumple",
     "isDemo": true,
+    "templateId": "cumple-luxury-hacienda",
+    "_assetSlug": "demo-cumple-luxury-hacienda",
     "title": "Demo - Alberto 60 Años",
     "description": "Demo oficial: celebración estilo Luxury Hacienda para cumpleaños de Don Alberto.",
     "theme": {
@@ -107,10 +109,18 @@
             "motherDeceased": true
         },
         "children": [
-            { "name": "Alberto Valenzuela Jr." },
-            { "name": "Sofía Valenzuela" },
-            { "name": "Ricardo Valenzuela" },
-            { "name": "Elena Valenzuela" }
+            {
+                "name": "Alberto Valenzuela Jr."
+            },
+            {
+                "name": "Sofía Valenzuela"
+            },
+            {
+                "name": "Ricardo Valenzuela"
+            },
+            {
+                "name": "Elena Valenzuela"
+            }
         ],
         "featuredImage": "family"
     },

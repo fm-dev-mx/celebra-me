@@ -215,6 +215,7 @@ export interface LocationSection {
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
 	isDemo: boolean;
+	visualProfileId?: string;
 	title: string;
 	description?: string;
 	theme: ThemeConfig;

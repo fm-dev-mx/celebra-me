@@ -1,6 +1,8 @@
 {
     "eventType": "xv",
     "isDemo": true,
+    "templateId": "xv-jewelry-box",
+    "_assetSlug": "demo-xv-jewelry-box",
     "title": "XV Años - Demo Invitación",
     "description": "Acompáñanos a celebrar estos XV años de ensueño.",
     "theme": {
@@ -73,8 +75,14 @@
             "mother": "Sra. Esthela de Pérez"
         },
         "godparents": [
-            { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
-            { "name": "Sra. Ana María", "role": "Madrina de Honor" }
+            {
+                "name": "Sr. Juan Carlos",
+                "role": "Padrino de Honor"
+            },
+            {
+                "name": "Sra. Ana María",
+                "role": "Madrina de Honor"
+            }
         ],
         "featuredImage": "family"
     },
@@ -202,10 +210,26 @@
                 "time": "20:00",
                 "description": "Quinta Las Flores"
             },
-            { "iconName": "Waltz", "label": "Vals de Honor", "time": "21:00" },
-            { "iconName": "Dinner", "label": "Cena de Gala", "time": "22:00" },
-            { "iconName": "Toast", "label": "Brindis", "time": "23:30" },
-            { "iconName": "Party", "label": "Tornafiesta", "time": "00:30" }
+            {
+                "iconName": "Waltz",
+                "label": "Vals de Honor",
+                "time": "21:00"
+            },
+            {
+                "iconName": "Dinner",
+                "label": "Cena de Gala",
+                "time": "22:00"
+            },
+            {
+                "iconName": "Toast",
+                "label": "Brindis",
+                "time": "23:30"
+            },
+            {
+                "iconName": "Party",
+                "label": "Tornafiesta",
+                "time": "00:30"
+            }
         ]
     },
     "countdown": {

@@ -132,7 +132,8 @@ export function buildPageContextFromViewModel(input: {
 	});
 
 	const { theme, envelope, sections } = renderViewModel;
-	const eventScopeClass = `event--${slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
+	const scopeSlug = renderViewModel.visualProfileId || slug;
+	const eventScopeClass = `event--${scopeSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const isDemo = renderViewModel.isDemo;
 
 	const styles = generateThemeScopedStyles(theme, envelope, renderViewModel.id, isDemo);

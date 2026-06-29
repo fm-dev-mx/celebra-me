@@ -1,6 +1,8 @@
 {
     "eventType": "xv",
     "isDemo": true,
+    "templateId": "xv-editorial-rose",
+    "_assetSlug": "demo-xv-editorial-rose",
     "title": "XV Años — Editorial Rose",
     "description": "Una invitación editorial con estética de revista de moda en tonos rosa, blanco y plata. Elegancia, brillo y un toque fashion para una celebración inolvidable.",
     "theme": {

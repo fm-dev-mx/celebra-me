@@ -1,6 +1,8 @@
 {
     "eventType": "xv",
     "isDemo": true,
+    "templateId": "xv-editorial",
+    "_assetSlug": "demo-xv-editorial",
     "title": "Demo XV Editorial",
     "description": "Una invitación editorial donde la elegancia noir y el brillo dorado presentan una noche de quince años con presencia cinematográfica.",
     "theme": {
@@ -70,14 +72,38 @@
         "title": "Galería Editorial",
         "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",
         "items": [
-            { "image": "gallery01", "caption": "Portada de la noche." },
-            { "image": "gallery02", "caption": "El vals en primer plano." },
-            { "image": "gallery03", "caption": "Escena de salón y reflejos." },
-            { "image": "gallery04", "caption": "Rosas, luz y metal." },
-            { "image": "gallery05", "caption": "Texturas en seda y brillo." },
-            { "image": "gallery07", "caption": "Silueta en composición editorial." },
-            { "image": "gallery09", "caption": "El sobre dorado." },
-            { "image": "gallery10", "caption": "Destellos sobre la pista." }
+            {
+                "image": "gallery01",
+                "caption": "Portada de la noche."
+            },
+            {
+                "image": "gallery02",
+                "caption": "El vals en primer plano."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Escena de salón y reflejos."
+            },
+            {
+                "image": "gallery04",
+                "caption": "Rosas, luz y metal."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Texturas en seda y brillo."
+            },
+            {
+                "image": "gallery07",
+                "caption": "Silueta en composición editorial."
+            },
+            {
+                "image": "gallery09",
+                "caption": "El sobre dorado."
+            },
+            {
+                "image": "gallery10",
+                "caption": "Destellos sobre la pista."
+            }
         ]
     },
     "gifts": {

@@ -1,6 +1,7 @@
 {
     "eventType": "baby-shower",
     "isDemo": true,
+    "templateId": "baby-shower-celestial-blue",
     "title": "Baby Shower de Luna Celeste",
     "description": "Demo ficticio de Baby Shower para mostrar una experiencia celestial en tonos pastel, nubes suaves y una narrativa tierna reutilizable.",
     "_assetSlug": "demo-baby-shower-celestial",

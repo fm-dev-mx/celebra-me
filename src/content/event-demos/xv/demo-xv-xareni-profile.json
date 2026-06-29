@@ -2,21 +2,20 @@
     "eventType": "xv",
     "isDemo": true,
     "templateId": "xv-celestial-blue",
+    "visualProfileId": "xareni-iyarit",
     "_assetSlug": "demo-xv-celestial-blue",
-    "title": "XV Años — Camila Fernanda",
-    "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
+    "title": "XV Años — Edición Xareni",
+    "description": "Demo visualmente idéntico a la invitación XV Xareni Iyarit. Misma estructura celestial-blue, mismo perfil visual, datos ficticios.",
     "theme": {
         "fontFamily": "serif",
         "preset": "celestial-blue"
     },
     "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
+        "location": { "showFlourishes": true },
         "rsvp": {}
     },
     "hero": {
-        "name": "Camila Torres Rivas",
+        "name": "Xareni Demo",
         "label": "Mis XV Años",
         "date": "2027-09-12T19:00:00.000Z",
         "backgroundImage": "hero",
@@ -26,7 +25,7 @@
         "ceremony": {
             "venueEvent": "Misa de Acción de Gracias",
             "venueName": "Catedral de la Asunción",
-            "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+            "address": "Av. Morelos 105, Centro, Cuernavaca",
             "city": "Cuernavaca",
             "date": "12 de septiembre de 2027",
             "time": "5:00 PM",
@@ -36,7 +35,7 @@
         "reception": {
             "venueEvent": "Recepción",
             "venueName": "Hacienda Los Claustros",
-            "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+            "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, Cuernavaca",
             "city": "Cuernavaca",
             "date": "12 de septiembre de 2027",
             "time": "7:00 PM",
@@ -47,7 +46,7 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
+                "text": "Código de vestimenta <strong>formal</strong>."
             },
             {
                 "iconName": "Calendar",
@@ -58,29 +57,19 @@
     },
     "family": {
         "parents": {
-            "father": "Alejandro Torres Mendoza",
-            "mother": "Mariana Fernanda Rivas"
+            "father": "Alejandro Demo",
+            "mother": "Mariana Demo"
         },
         "labels": {
             "sectionTitle": "Mi Familia",
             "sectionSubtitle": "Con amor y gratitud",
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche que siempre llevaré en el corazón."
+            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche."
         },
         "godparents": [
-            {
-                "name": "Ricardo Torres Mendoza",
-                "role": "Padrino"
-            },
-            {
-                "name": "Daniela Rivas Hernández",
-                "role": "Madrina"
-            },
-            {
-                "name": "Fernando Castillo López",
-                "role": "Padrino"
-            }
+            { "name": "Ricardo Torres", "role": "Padrino" },
+            { "name": "Daniela Rivas", "role": "Madrina" }
         ]
     },
     "gallery": {
@@ -93,11 +82,7 @@
             { "image": "gallery03", "caption": "Elegancia que trasciende el momento." },
             { "image": "gallery04", "caption": "Reflejos de una velada inolvidable." },
             { "image": "gallery05", "caption": "Sonrisas que iluminan la noche." },
-            { "image": "gallery06", "caption": "Detalles que cuentan una historia." },
-            { "image": "gallery07", "caption": "Brillo y distinción en cada rincón." },
-            { "image": "gallery08", "caption": "La magia de los quince años." },
-            { "image": "gallery09", "caption": "Gratitud y felicidad compartida." },
-            { "image": "gallery10", "caption": "Un capítulo que comienza con luz propia." }
+            { "image": "gallery06", "caption": "Detalles que cuentan una historia." }
         ]
     },
     "gifts": {
@@ -108,7 +93,7 @@
                 "type": "bank",
                 "title": "Transferencia",
                 "bankName": "BBVA México",
-                "accountHolder": "Alejandro Torres Mendoza",
+                "accountHolder": "Fondo Demo",
                 "clabe": "0121 8001 2345 6789 01",
                 "accountNumber": "1234567890"
             },
@@ -128,11 +113,11 @@
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
-        "author": "Camila Fernanda"
+        "author": "Xareni Demo"
     },
     "thankYou": {
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
-        "closingName": "Camila Torres Rivas",
+        "closingName": "Xareni Demo",
         "image": "thankYouPortrait",
         "focalPoint": "50% 30%"
     },
@@ -143,13 +128,13 @@
                 "iconName": "Church",
                 "label": "Misa",
                 "time": "17:00",
-                "description": "Ceremonia de Acción de Gracias en la Catedral."
+                "description": "Ceremonia de Acción de Gracias."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
                 "time": "19:00",
-                "description": "Bienvenida en Hacienda Los Claustros."
+                "description": "Bienvenida en la recepción."
             },
             {
                 "iconName": "Waltz",
@@ -179,7 +164,7 @@
         {
             "image": "interlude01",
             "afterSection": "location",
-            "alt": "Camila Fernanda con vestido azul cielo en Cuernavaca",
+            "alt": "Detalle decorativo de la celebración",
             "height": "screen",
             "focalPoint": "50% 35%",
             "lightX": "44%",
@@ -188,7 +173,7 @@
         {
             "image": "interlude02",
             "afterSection": "family",
-            "alt": "Retrato elegante de Camila Fernanda",
+            "alt": "Retrato elegante de la quinceañera",
             "height": "screen",
             "focalPoint": "50% 25%",
             "lightX": "54%",
@@ -197,7 +182,7 @@
         {
             "image": "interlude03",
             "afterSection": "itinerary",
-            "alt": "Detalle de la celebración en Hacienda Los Claustros",
+            "alt": "Detalle de la celebración",
             "height": "screen",
             "focalPoint": "54% 62%",
             "lightX": "68%",
@@ -207,7 +192,7 @@
         {
             "image": "interlude04",
             "afterSection": "rsvp",
-            "alt": "Retrato final de Camila Fernanda en tonos plata y azul",
+            "alt": "Retrato final",
             "height": "screen",
             "focalPoint": "50% 34%",
             "lightX": "42%",
@@ -218,7 +203,7 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
-        "sealInitials": "C·F",
+        "sealInitials": "X·D",
         "microcopy": "Abre tu invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
@@ -229,10 +214,5 @@
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
         "ogImage": "portrait"
-    },
-    "music": {
-        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
-        "autoPlay": true,
-        "title": "Música de fondo"
     }
 }

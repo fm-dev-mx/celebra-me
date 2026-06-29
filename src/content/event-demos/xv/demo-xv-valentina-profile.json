@@ -2,33 +2,23 @@
     "eventType": "xv",
     "isDemo": true,
     "templateId": "xv-editorial-magazine",
+    "visualProfileId": "valentina-hernandez",
     "_assetSlug": "demo-xv-editorial",
-    "title": "XV Años — Revista Editorial",
-    "description": "Una invitación XV con lenguaje de revista editorial: portada, titulares, fecha destacada, elenco familiar y acceso a la celebración.",
+    "title": "XV Años — Edición Valentina",
+    "description": "Demo visualmente idéntico a la invitación XV Valentina Hernández. Misma estructura editorial-magazine, mismo perfil visual, datos ficticios.",
     "theme": {
         "fontFamily": "serif",
         "preset": "editorial-magazine"
     },
     "sectionStyles": {
-        "quote": {
-            "variant": "editorial-magazine"
-        },
-        "countdown": {
-            "variant": "editorial-magazine"
-        },
-        "family": {
-            "variant": "editorial-magazine"
-        },
-        "location": {
-            "variant": "editorial-magazine",
-            "showFlourishes": false
-        },
-        "rsvp": {
-            "variant": "editorial-magazine"
-        }
+        "quote": { "variant": "editorial-magazine" },
+        "countdown": { "variant": "editorial-magazine" },
+        "family": { "variant": "editorial-magazine" },
+        "location": { "variant": "editorial-magazine", "showFlourishes": false },
+        "rsvp": { "variant": "editorial-magazine" }
     },
     "hero": {
-        "name": "Roberta",
+        "name": "Valentina Demo",
         "label": "Edición XV",
         "date": "2027-09-25T21:00:00.000Z",
         "backgroundImage": "hero",
@@ -38,8 +28,8 @@
         "focalPointMobile": "52% 30%"
     },
     "quote": {
-        "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia.",
-        "author": "Roberta"
+        "text": "Dicen que los momentos más bellos se vuelven eternos cuando se comparten. Acompáñame a escribir el primer capítulo de mi nueva historia.",
+        "author": "Valentina Demo"
     },
     "countdown": {
         "title": "Reserve la fecha",
@@ -48,8 +38,8 @@
     "family": {
         "featuredImage": "family",
         "parents": {
-            "father": "Luis Rodríguez",
-            "mother": "Ana García"
+            "father": "Carlos Demo",
+            "mother": "María Demo"
         },
         "parentsOrder": "mother-first",
         "labels": {
@@ -60,14 +50,8 @@
             "sectionMessage": "Gracias por hacer este sueño realidad y por acompañarme en cada paso de esta historia."
         },
         "godparents": [
-            {
-                "name": "Mariana García",
-                "role": "Madrina"
-            },
-            {
-                "name": "Carlos Rodríguez",
-                "role": "Padrino"
-            }
+            { "name": "Sofía García", "role": "Madrina" },
+            { "name": "Roberto Martínez", "role": "Padrino" }
         ],
         "focalPoint": "50% 38%"
     },
@@ -77,34 +61,34 @@
         "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
         "indicationsHeading": "Notas de la edición",
         "ceremony": {
-            "venueEvent": "Acto I — Ceremonia religiosa",
-            "venueName": "Parroquia de Santa María",
+            "venueEvent": "Ceremonia religiosa",
+            "venueName": "Parroquia de Santa Clara",
             "address": "Av. Reforma 120, Ciudad de México",
             "city": "Ciudad de México",
             "date": "25 de septiembre de 2027",
             "time": "5:00 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
-            "appleMapsUrl": "https://maps.apple.com/?q=Parroquia+de+Santa+Maria+Ciudad+de+Mexico",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
+            "appleMapsUrl": "https://maps.apple.com/?q=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
             "image": "gallery02"
         },
         "reception": {
-            "venueEvent": "Acto II — Recepción",
-            "venueName": "Maison Lumière Eventos",
+            "venueEvent": "Recepción",
+            "venueName": "Salón Diamante",
             "address": "Av. de la Luz 456, Ciudad de México",
             "city": "Ciudad de México",
             "date": "25 de septiembre de 2027",
             "time": "7:30 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
-            "appleMapsUrl": "https://maps.apple.com/?q=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
+            "appleMapsUrl": "https://maps.apple.com/?q=Salon+Diamante+Ciudad+de+Mexico",
             "image": "jardin"
         },
         "indications": [
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
+                "text": "Código de vestimenta: <strong>formal</strong>."
             },
             {
                 "iconName": "Calendar",
@@ -128,29 +112,14 @@
     },
     "gallery": {
         "eyebrow": "Galería",
-        "title": "Doble página editorial",
+        "title": "Galería editorial",
         "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
         "items": [
-            {
-                "image": "gallery01",
-                "caption": "Portada — retrato principal"
-            },
-            {
-                "image": "gallery02",
-                "caption": "Interior — detalles del gran día"
-            },
-            {
-                "image": "gallery03",
-                "caption": "Locación — la recepción"
-            },
-            {
-                "image": "gallery04",
-                "caption": "Bodegón — texturas y luces"
-            },
-            {
-                "image": "gallery05",
-                "caption": "Nocturno — brillo de celebración"
-            }
+            { "image": "gallery01", "caption": "Portada — retrato principal" },
+            { "image": "gallery02", "caption": "Interior — detalles del gran día" },
+            { "image": "gallery03", "caption": "Locación — la recepción" },
+            { "image": "gallery04", "caption": "Bodegón — texturas y luces" },
+            { "image": "gallery05", "caption": "Nocturno — brillo de celebración" }
         ]
     },
     "gifts": {
@@ -161,12 +130,7 @@
                 "type": "store",
                 "title": "Mesa de regalos",
                 "description": "Una selección especial para esta nueva etapa.",
-                "links": [
-                    {
-                        "label": "Ver mesa",
-                        "url": "https://mesaderegalos.liverpool.com.mx/"
-                    }
-                ]
+                "links": [{ "label": "Ver mesa", "url": "https://mesaderegalos.liverpool.com.mx/" }]
             },
             {
                 "type": "cash",
@@ -177,7 +141,7 @@
     },
     "thankYou": {
         "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
-        "closingName": "Roberta",
+        "closingName": "Valentina Demo",
         "image": "thankYouPortrait",
         "focalPoint": "50% 36%"
     },
@@ -208,16 +172,14 @@
         "disabled": false,
         "revealVariant": "editorial-cover",
         "coverEdition": "XV",
-        "coverVolume": "XV",
+        "coverVolume": "1",
         "coverIssue": "2027",
         "sealStyle": "wax",
         "sealIcon": "flower",
-        "sealInitials": "R·X",
+        "sealInitials": "V·D",
         "microcopy": "Abrir edición XV",
         "documentLabel": "Edición especial",
-        "cardLabel": "Edición XV",
-        "cardTagline": "Brillar es la actitud",
-        "stampText": "Roberta",
+        "stampText": "Valentina Demo",
         "stampYear": "2027",
         "closedPalette": {
             "primary": "surfaceDark",
@@ -226,8 +188,8 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación: {inviteUrl}",
         "ogImage": "portrait",
-        "ogDescription": "Acompáñame en mis XV años el sábado, 25 de septiembre de 2027, en Ciudad de México."
+        "ogDescription": "Demo visual de invitación XV con estilo editorial-magazine en tonos rosa, plata y blanco."
     }
 }
