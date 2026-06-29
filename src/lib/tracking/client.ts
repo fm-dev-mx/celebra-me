@@ -1,4 +1,7 @@
 import { createLeadCode } from '@/lib/tracking/lead-code';
+import { readConsent } from '@/lib/tracking/consent-client';
+import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
+import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
 
 type TrackingEventName =
 	| 'page_viewed'
@@ -73,10 +76,11 @@ function getSessionId(): string {
 }
 
 function getConsentSnapshot(): ConsentSnapshot {
+	const state = readConsent();
 	return {
 		necessary: true,
-		analytics: true,
-		marketing: false,
+		analytics: state.analytics,
+		marketing: state.marketing,
 	};
 }
 
@@ -150,6 +154,10 @@ async function trackEvent(
 	} catch {
 		// Tracking must never break the page experience.
 	}
+
+	// Forward to consent-gated third-party integrations.
+	forwardToGA4(eventName, eventProperties);
+	forwardToMetaPixel(eventName, eventProperties);
 }
 
 function setContactHiddenFields(leadCode: string): void {
@@ -296,6 +304,11 @@ export function initCommercialTracking(): void {
 
 	if (!document.body.dataset.trackingRouteClass || shouldIgnoreTracking()) return;
 	const routeClass = document.body.dataset.trackingRouteClass;
+
+	// Initialize third-party integrations gated by consent.
+	initGA4();
+	initMetaPixel();
+
 	void trackEvent('page_viewed', { page_type: routeClass });
 	if (routeClass === 'demo') {
 		const [, eventType = '', demoSlug = ''] = window.location.pathname.split('/');

@@ -5,10 +5,10 @@ import '@/styles/global.scss';
 import Header from '@/components/home/HomeHeader.astro';
 import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
-import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
+import ConsentBanner from '@/components/common/ConsentBanner.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
-import { classifyTrackingRoute, shouldLoadGoogleAnalytics } from '@/lib/tracking/route-policy';
+import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
@@ -50,12 +50,7 @@ if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 
 const ogImage = new URL(resolvedImageSrc, canonicalOrigin);
 
-const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 const routePolicy = classifyTrackingRoute(Astro.url);
-const loadGoogleAnalytics = shouldLoadGoogleAnalytics(Astro.url, {
-	vercelEnv: process.env.VERCEL_ENV,
-	gaId,
-});
 const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed;
 ---
 <!doctype html>
@@ -67,7 +62,6 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		{!isVercelProduction && <meta name="ga-debug" content={`gaId=${gaId ?? '(empty)'}`} />}
 		<title>{title}</title>
 
 		<!-- Open Graph -->
@@ -92,7 +86,6 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 
 		{headLinks.map(l => <link rel={l.rel} href={l.href} />)}
 
-		{loadGoogleAnalytics && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
 	</head>
 	<body
@@ -106,6 +99,7 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 			<slot />
 		</main>
 
+		<ConsentBanner />
 		{isVercelProduction && <Analytics />}
 		{isVercelProduction && <SpeedInsights />}
 		{loadCommercialTracking && (

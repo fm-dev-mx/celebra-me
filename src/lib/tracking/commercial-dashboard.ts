@@ -17,6 +17,8 @@ export interface CommercialEventRow {
 	source?: string | null;
 	medium?: string | null;
 	campaign?: string | null;
+	consent_snapshot?: Record<string, unknown> | null;
+	occurred_at?: string | null;
 }
 
 export interface CommercialLeadRow {
@@ -63,6 +65,15 @@ export interface CommercialDashboardSummary {
 	leadsByStatus: CountItem[];
 	leadsByChannel: CountItem[];
 	recentLeads: CommercialLeadRow[];
+	/** Tracking quality — consent distribution */
+	trackingQuality: {
+		totalEvents: number;
+		analyticsConsented: number;
+		analyticsBlocked: number;
+		marketingConsented: number;
+		marketingBlocked: number;
+		lastEventAt: string | null;
+	};
 }
 
 const LEAD_STATUS_LABELS: Record<string, string> = {
@@ -130,6 +141,12 @@ export function summarizeCommercialAnalytics(
 	const leadsByStatus = new Map<string, number>();
 	const leadsByChannel = new Map<string, number>();
 
+	// Tracking quality consent distribution.
+	let analyticsConsented = 0;
+	let analyticsBlocked = 0;
+	let marketingConsented = 0;
+	let marketingBlocked = 0;
+
 	externalSessions.forEach((session) => {
 		increment(campaigns, campaignLabel(session.source, session.medium, session.campaign));
 	});
@@ -149,7 +166,28 @@ export function summarizeCommercialAnalytics(
 		if (event.event_name === 'section_seen') {
 			increment(sections, propertyAsString(event.event_properties, 'section_id'));
 		}
+
+		// Consent distribution.
+		const snapshot = event.consent_snapshot;
+		if (snapshot?.analytics === true) {
+			analyticsConsented += 1;
+		} else {
+			analyticsBlocked += 1;
+		}
+		if (snapshot?.marketing === true) {
+			marketingConsented += 1;
+		} else {
+			marketingBlocked += 1;
+		}
 	});
+
+	// Last event timestamp.
+	const timestamps = rows.events
+		.map((e) => e.occurred_at)
+		.filter((t): t is string => typeof t === 'string')
+		.sort()
+		.reverse();
+	const lastEventAt = timestamps.length > 0 ? timestamps[0] : null;
 
 	rows.leads.forEach((lead) => {
 		increment(leadsByStatus, labelLeadStatus(lead.status));
@@ -178,6 +216,14 @@ export function summarizeCommercialAnalytics(
 		leadsByStatus: toCountItems(leadsByStatus),
 		leadsByChannel: toCountItems(leadsByChannel),
 		recentLeads: rows.leads.slice(0, 10),
+		trackingQuality: {
+			totalEvents: rows.events.length,
+			analyticsConsented,
+			analyticsBlocked,
+			marketingConsented,
+			marketingBlocked,
+			lastEventAt,
+		},
 	};
 }
 
@@ -190,7 +236,7 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 		}),
 		supabaseRestRequest<CommercialEventRow[]>({
 			pathWithQuery:
-				'tracking_events?select=event_name,event_properties,source,medium,campaign&order=occurred_at.desc&limit=2000',
+				'tracking_events?select=event_name,event_properties,source,medium,campaign,consent_snapshot,occurred_at&order=occurred_at.desc&limit=2000',
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<CommercialLeadRow[]>({

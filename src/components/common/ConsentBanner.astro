@@ -1,0 +1,19 @@
+---
+/**
+ * src/components/common/ConsentBanner.astro
+ *
+ * Consent banner and preferences modal.
+ * Renders only on commercial and demo routes (where third-party tracking may apply).
+ * Route classification happens at the server so the banner never renders
+ * on non-tracking routes.
+ */
+import ConsentBanner from './ConsentBanner';
+import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+
+const routePolicy = classifyTrackingRoute(Astro.url);
+const showBanner = routePolicy.routeClass === 'commercial' || routePolicy.routeClass === 'demo';
+---
+
+{showBanner && (
+  <ConsentBanner client:load />
+)}

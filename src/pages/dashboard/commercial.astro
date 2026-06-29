@@ -35,6 +35,19 @@ const metricCards = dashboardData
 		]
 	: [];
 
+const trackingQualityCards = dashboardData
+	? [
+			{ label: 'Eventos con consentimiento analítico', value: formatCount(dashboardData.trackingQuality.analyticsConsented), muted: false },
+			{ label: 'Eventos sin consentimiento analítico', value: formatCount(dashboardData.trackingQuality.analyticsBlocked), muted: true },
+			{ label: 'Eventos con consentimiento marketing', value: formatCount(dashboardData.trackingQuality.marketingConsented), muted: false },
+			{ label: 'Eventos sin consentimiento marketing', value: formatCount(dashboardData.trackingQuality.marketingBlocked), muted: true },
+			{ label: 'Total de eventos de seguimiento', value: formatCount(dashboardData.trackingQuality.totalEvents), muted: false },
+			{ label: 'Último evento', value: dashboardData.trackingQuality.lastEventAt
+				? new Intl.DateTimeFormat('es-MX', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(dashboardData.trackingQuality.lastEventAt))
+				: 'Sin datos', muted: true },
+		]
+	: [];
+
 const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 'Sin datos suficientes todavía', count: 0 }];
 ---
 
@@ -75,6 +88,21 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 						<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
 					</article>
 				</div>
+
+				<section class="commercial-dashboard__quality">
+					<header class="commercial-dashboard__quality-header">
+						<h3>Calidad del seguimiento</h3>
+						<p>Distribución de consentimiento entre eventos persistidos.</p>
+					</header>
+					<div class="commercial-dashboard__metrics">
+						{trackingQualityCards.map((card) => (
+							<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
+								<span>{card.label}</span>
+								<strong>{card.value}</strong>
+							</article>
+						))}
+					</div>
+				</section>
 
 				<div class="commercial-dashboard__grid">
 					<section class="dashboard-card">
@@ -290,6 +318,26 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 				display: grid;
 				align-items: start;
 			}
+		}
+
+		.commercial-dashboard__quality {
+			margin-top: 1rem;
+		}
+
+		.commercial-dashboard__quality-header {
+			margin-bottom: 0.75rem;
+		}
+
+		.commercial-dashboard__quality-header h3 {
+			margin: 0 0 0.25rem;
+			font-size: 0.95rem;
+			color: var(--color-text-primary);
+		}
+
+		.commercial-dashboard__quality-header p {
+			margin: 0;
+			font-size: 0.82rem;
+			color: var(--color-text-muted);
 		}
 	</style>
 </DashboardLayout>

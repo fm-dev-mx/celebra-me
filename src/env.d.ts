@@ -15,6 +15,9 @@ interface ImportMetaEnv {
 	readonly PUBLIC_SUPABASE_URL: string;
 	readonly PUBLIC_SUPABASE_ANON_KEY: string;
 	readonly PUBLIC_GOOGLE_ANALYTICS_ID: string;
+	readonly PUBLIC_GA_MEASUREMENT_ID: string;
+	readonly PUBLIC_META_PIXEL_ID: string;
+	readonly PUBLIC_META_PIXEL_ENABLED: string;
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
 	readonly RSVP_CLAIM_CODE_PEPPER: string;
