@@ -18,6 +18,7 @@ const contactSchema = z.object({
 	leadCode: z.string().trim().optional(),
 	sessionId: z.string().trim().optional(),
 	sourceEventId: z.string().trim().optional(),
+	visitorId: z.string().trim().min(6).max(120).optional(),
 	utmSource: z.string().trim().optional(),
 	utmMedium: z.string().trim().optional(),
 	utmCampaign: z.string().trim().optional(),

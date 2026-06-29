@@ -166,6 +166,7 @@ function setContactHiddenFields(leadCode: string): void {
 		if (!(form instanceof HTMLFormElement)) return;
 		const values: Record<string, string> = {
 			sessionId: getSessionId(),
+			visitorId: getVisitorId(),
 			leadCode,
 			utmSource: utm.source ?? '',
 			utmMedium: utm.medium ?? '',

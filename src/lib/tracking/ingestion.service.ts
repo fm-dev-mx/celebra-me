@@ -7,6 +7,7 @@ import {
 	type TrackingEventInput,
 } from '@/lib/tracking/event-contract';
 import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion';
+import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
@@ -85,6 +86,33 @@ export async function ingestTrackingEvent(
 		consentSnapshot,
 		isInternal: false,
 	});
+
+	// Auto-create a WhatsApp channel lead when a whatsapp_contact_clicked
+	// event carries a non-empty lead_code. This bridges the attribution gap
+	// between anonymous visitor/session and identifiable commercial intent.
+	if (payload.eventName === 'whatsapp_contact_clicked') {
+		const leadCode =
+			typeof eventProperties['lead_code'] === 'string' &&
+			eventProperties['lead_code'].trim().length > 0
+				? eventProperties['lead_code']
+				: undefined;
+		if (leadCode) {
+			try {
+				await createLeadFromTrackingEvent({
+					leadCode,
+					sessionId: payload.sessionId,
+					sourceEventId: event.id,
+					channel: 'whatsapp',
+					visitorId: payload.visitorId,
+					utmSource: payload.source,
+					utmMedium: payload.medium,
+					utmCampaign: payload.campaign,
+				});
+			} catch (leadError) {
+				console.error('[tracking] Failed to auto-create WhatsApp lead:', leadError);
+			}
+		}
+	}
 
 	return { accepted: true, eventId: event.id };
 }

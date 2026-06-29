@@ -167,6 +167,10 @@ const GA4_EVENT_MAP: Record<string, string> = {
 	whatsapp_contact_clicked: 'contact',
 	form_started: 'form_start',
 	form_submitted: 'form_submit',
+	// lead_created is currently emitted server-side only, so the client-side GA4
+	// forwarder cannot receive it yet. Re-enable when lead_created is dispatched
+	// client-side or when server-side GA4 Measurement Protocol is implemented.
+	// lead_created: 'generate_lead',
 };
 
 function mapEventName(firstPartyName: string): string | undefined {

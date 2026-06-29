@@ -41,6 +41,18 @@ function emptyToUndefined(value: string | undefined): string | undefined {
 	return trimmed ? trimmed : undefined;
 }
 
+export async function findLeadByCode(leadCode: string): Promise<StoredLead | null> {
+	const rows = await supabaseRestRequest<
+		Array<{ id: string; lead_code: string; status: LeadStatus }>
+	>({
+		pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(leadCode)}&select=id,lead_code,status&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (rows.length === 0) return null;
+	return { id: rows[0].id, leadCode: rows[0].lead_code, status: rows[0].status };
+}
+
 export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 	const rows = await supabaseRestRequest<
 		Array<{ id: string; lead_code: string; status: LeadStatus }>
