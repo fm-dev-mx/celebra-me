@@ -337,6 +337,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 			data.sectionStyles?.countdown?.variant,
 			normalizedPreset,
 		),
+		isDemo: data.isDemo,
 	};
 }
 

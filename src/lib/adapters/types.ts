@@ -238,6 +238,8 @@ export interface InvitationViewModel {
 			title: string;
 			footerText?: string;
 			variant?: CountdownVariant;
+			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
+			isDemo?: boolean;
 		};
 		location?: LocationSection;
 		family?: {

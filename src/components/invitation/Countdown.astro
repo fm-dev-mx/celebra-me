@@ -11,6 +11,7 @@ interface Props {
 	title?: string;
 	footerText?: string;
 	variant?: CountdownVariant;
+	isDemo?: boolean;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
 	title = "¡Falta muy poco!",
 	footerText,
 	variant = 'editorial',
+	isDemo = false,
 } = Astro.props;
 
 function formatCountdownDate(
@@ -48,7 +50,7 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
-			<CountdownTimer targetIso={targetIso} />
+			<CountdownTimer targetIso={targetIso} isDemo={isDemo} />
 		</div>
 
 		<div class="countdown-date">

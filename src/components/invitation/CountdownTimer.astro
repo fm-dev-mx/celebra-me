@@ -1,9 +1,10 @@
 ---
 interface Props {
 	targetIso: string;
+	isDemo?: boolean;
 }
 
-const { targetIso } = Astro.props;
+const { targetIso, isDemo } = Astro.props;
 
 const targetDate = new Date(targetIso);
 const difference = targetDate.getTime() - Date.now();
@@ -25,7 +26,7 @@ const segments = [
 ];
 ---
 
-<div class="countdown__timer" data-countdown data-target-iso={targetIso}>
+<div class="countdown__timer" data-countdown data-target-iso={targetIso} data-is-demo={isDemo ? "true" : undefined}>
 	{
 		segments.map((segment, index) => (
 			<div class="countdown__segment" data-index={index} data-unit={segment.key}>
@@ -57,8 +58,16 @@ const segments = [
 			return;
 		}
 
+		// Demo countdown: compute a random target 30-60 days in the future,
+		// recomputed on each new page load/session entry.
+		// Does NOT affect real invitations (isDemo=false or absent).
+		const isDemo = root.dataset.isDemo === 'true';
+		const effectiveTarget = isDemo
+			? new Date(Date.now() + (Math.floor(Math.random() * 31) + 30) * 86400000).toISOString()
+			: targetIso;
+
 		const updateCountdown = () => {
-			const difference = new Date(targetIso).getTime() - Date.now();
+			const difference = new Date(effectiveTarget).getTime() - Date.now();
 			const values =
 				difference > 0
 					? {
@@ -82,6 +91,40 @@ const segments = [
 		};
 
 		updateCountdown();
+
+		// Demo: also update the date text below the timer to match the randomized
+		// countdown target, keeping date display consistent with the timer.
+		if (isDemo) {
+			const section = root.closest('.countdown-section');
+			if (section) {
+				const dateContainer = section.querySelector('.countdown-date');
+				if (dateContainer) {
+					const demoDate = new Date(effectiveTarget);
+					const locale = 'es-MX';
+
+					const desktopEl = dateContainer.querySelector('.event-date-desktop');
+					const mobileWeekdayEl = dateContainer.querySelector('.event-date-mobile-weekday');
+					const mobileFullEl = dateContainer.querySelector('.event-date-mobile-full');
+
+					if (desktopEl) {
+						desktopEl.textContent = new Intl.DateTimeFormat(locale, {
+							weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+						}).format(demoDate).toUpperCase();
+					}
+					if (mobileWeekdayEl) {
+						mobileWeekdayEl.textContent = new Intl.DateTimeFormat(locale, {
+							weekday: 'long',
+						}).format(demoDate).toUpperCase();
+					}
+					if (mobileFullEl) {
+						mobileFullEl.textContent = new Intl.DateTimeFormat(locale, {
+							day: '2-digit', month: 'long', year: 'numeric',
+						}).format(demoDate).toUpperCase();
+					}
+				}
+			}
+		}
+
 		window.setInterval(updateCountdown, 1000);
 	});
 </script>
