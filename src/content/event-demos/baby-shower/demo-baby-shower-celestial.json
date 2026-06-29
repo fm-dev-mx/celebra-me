@@ -3,7 +3,7 @@
     "isDemo": true,
     "templateId": "baby-shower-celestial-blue",
     "title": "Baby Shower de Luna Celeste",
-    "description": "Demo ficticio de Baby Shower para mostrar una experiencia celestial en tonos pastel, nubes suaves y una narrativa tierna reutilizable.",
+    "description": "Una celebración celestial para recibir a nuestra bebé con nubes suaves, tonos pastel y la calidez de la familia.",
     "_assetSlug": "demo-baby-shower-celestial",
     "theme": {
         "fontFamily": "serif",
@@ -16,9 +16,11 @@
     },
     "sectionOrder": [
         "quote",
+        "countdown",
         "family",
         "gallery",
         "location",
+        "itinerary",
         "gifts",
         "personalizedAccess",
         "rsvp",
@@ -41,25 +43,32 @@
         "name": "Luna Celeste",
         "label": "Mi Baby Shower",
         "date": "2026-08-15T22:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "portrait": "hero",
+        "focalPoint": "50% 40%",
+        "focalPointMobile": "50% 35%"
     },
     "quote": {
         "text": "Una nueva estrellita viene en camino, y queremos recibirla rodeados de cariño, luz y abrazos.",
         "author": "Luna Celeste"
     },
+    "countdown": {
+        "title": "La llegada de nuestra estrellita",
+        "footerText": "15 de agosto de 2026 · Jardín Las Nubes"
+    },
     "family": {
         "parents": {
-            "father": "Mateo",
-            "mother": "Valeria"
+            "father": "Mateo García",
+            "mother": "Valeria Ruiz"
         },
         "parentsOrder": "father-first",
         "featuredImage": "family",
         "focalPoint": "50% 50%",
         "labels": {
-            "sectionTitle": "Mis papis",
-            "sectionSubtitle": "Mateo y Valeria",
-            "parentsTitle": "Con mucho amor",
-            "sectionMessage": "Mis papis, Mateo y Valeria, preparan una tarde especial para celebrar mi llegada con quienes más quieren."
+            "sectionTitle": "Nuestra familia",
+            "sectionSubtitle": "Con todo el corazón",
+            "parentsTitle": "Papás de Luna Celeste",
+            "sectionMessage": "Mis papás, Mateo y Valeria, preparan con amor una tarde especial para celebrar mi llegada con quienes más quieren."
         }
     },
     "gallery": {
@@ -70,6 +79,14 @@
             {
                 "image": "gallery01",
                 "caption": "Inspiración celestial para una bienvenida dulce y luminosa."
+            },
+            {
+                "image": "gallery02",
+                "caption": "Detalles hechos con amor para nuestra pequeña."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Un rincón mágico lleno de ternura y luz."
             }
         ]
     },
@@ -104,6 +121,35 @@
             }
         ]
     },
+    "itinerary": {
+        "title": "Programa de la tarde",
+        "items": [
+            {
+                "iconName": "Reception",
+                "label": "Bienvenida",
+                "time": "16:00",
+                "description": "Recibimiento en el jardín con limonada y bocadillos."
+            },
+            {
+                "iconName": "Party",
+                "label": "Dinámicas y juegos",
+                "time": "16:30",
+                "description": "Actividades divertidas para celebrar la llegada de la bebé."
+            },
+            {
+                "iconName": "Cake",
+                "label": "Pastel y brindis",
+                "time": "17:30",
+                "description": "Corte del pastel y brindis por la nueva integrante de la familia."
+            },
+            {
+                "iconName": "Gift",
+                "label": "Apertura de regalos",
+                "time": "18:15",
+                "description": "Compartiendo la emoción de los primeros detalles para la bebé."
+            }
+        ]
+    },
     "gifts": {
         "title": "Mesa de regalos",
         "subtitle": "Si desean tener un detalle para la bebé, pueden elegir algo práctico, tierno o hecho con mucho cariño.",
@@ -117,15 +163,17 @@
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
-        "subcopy": "Esta es una vista demo para mostrar el flujo de confirmación de un Baby Shower.",
+        "subcopy": "Confirma tu asistencia desde esta invitación. Nos encantará saber que nos acompañarás.",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarás en esta celebración.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por acompañarnos en este momento tan especial. Tu cariño hace más bonita la espera.",
-        "closingName": "Luna Celeste"
+        "message": "Gracias por acompañarnos en este momento tan especial. Tu cariño hace más bonita la espera de nuestra pequeña.",
+        "closingName": "Mateo, Valeria y Luna Celeste",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 50%"
     },
     "envelope": {
         "disabled": false,

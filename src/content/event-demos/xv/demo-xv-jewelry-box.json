@@ -3,8 +3,8 @@
     "isDemo": true,
     "templateId": "xv-jewelry-box",
     "_assetSlug": "demo-xv-jewelry-box",
-    "title": "XV Años - Demo Invitación",
-    "description": "Acompáñanos a celebrar estos XV años de ensueño.",
+    "title": "XV Años — Lucía García",
+    "description": "Una invitación con la elegancia de una joya: detalles dorados, velas y un jardín de ensueño para celebrar quince años de luz propia.",
     "theme": {
         "fontFamily": "serif",
         "preset": "jewelry-box"
@@ -16,12 +16,18 @@
         "rsvp": {}
     },
     "hero": {
-        "name": "Lucía García",
+        "name": "Lucía García Pérez",
         "label": "Mis XV Años",
         "date": "2026-04-25T18:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "focalPoint": "50% 40%",
+        "focalPointMobile": "50% 35%"
     },
     "location": {
+        "introEyebrow": "Monterrey nos espera",
+        "introHeading": "Sábado, 25 de abril de 2026",
+        "introLede": "Te invitamos a celebrar una noche mágica llena de luz, alegría y recuerdos inolvidables.",
         "ceremony": {
             "venueEvent": "Ceremonia",
             "venueName": "Parroquia de la Sagrada Familia",
@@ -71,20 +77,28 @@
     },
     "family": {
         "parents": {
-            "father": "Sr. Roberto Pérez",
-            "mother": "Sra. Esthela de Pérez"
+            "father": "Roberto Pérez García",
+            "mother": "Esthela de Pérez"
         },
         "godparents": [
             {
-                "name": "Sr. Juan Carlos",
+                "name": "Juan Carlos Mendoza",
                 "role": "Padrino de Honor"
             },
             {
-                "name": "Sra. Ana María",
+                "name": "Ana María López",
                 "role": "Madrina de Honor"
             }
         ],
-        "featuredImage": "family"
+        "featuredImage": "family",
+        "focalPoint": "50% 40%",
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de mis padres",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+        }
     },
     "gallery": {
         "eyebrow": "Galería",
@@ -93,55 +107,57 @@
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Momentos de ilusión"
+                "caption": "Momentos de ilusión previa al gran día."
             },
             {
                 "image": "gallery02",
-                "caption": "Sonrisas que iluminan"
+                "caption": "Sonrisas que iluminan el camino."
             },
             {
                 "image": "gallery03",
-                "caption": "Elegancia y gracia"
+                "caption": "Elegancia y gracia en cada detalle."
             },
             {
                 "image": "gallery04",
-                "caption": "Un sueño hecho realidad"
+                "caption": "Un sueño hecho realidad."
             },
             {
                 "image": "gallery05",
-                "caption": "Esperando el gran día"
+                "caption": "Esperando con emoción el gran día."
             },
             {
                 "image": "gallery06",
-                "caption": "Brillo propio"
+                "caption": "Brillo propio de una nueva etapa."
             },
             {
                 "image": "gallery07",
-                "caption": "Naturalidad"
+                "caption": "Naturalidad y belleza genuina."
             },
             {
                 "image": "gallery08",
-                "caption": "Retratos inolvidables"
+                "caption": "Retratos que guardaré por siempre."
             },
             {
                 "image": "gallery09",
-                "caption": "Dulce transición"
+                "caption": "Dulce transición hacia la nueva etapa."
             },
             {
                 "image": "gallery10",
-                "caption": "Cada detalle cuenta"
+                "caption": "Cada detalle cuenta en esta historia."
             },
             {
                 "image": "gallery11",
-                "caption": "En el jardín"
+                "caption": "En el jardín, entre flores y luz."
             },
             {
                 "image": "gallery12",
-                "caption": "Felicidad pura"
+                "caption": "Felicidad pura, compartida en familia."
             }
         ]
     },
     "gifts": {
+        "title": "Detalle especial",
+        "subtitle": "Tu presencia es el regalo más valioso. Si deseas compartir un detalle adicional, aquí compartimos algunas opciones.",
         "items": [
             {
                 "type": "store",
@@ -170,15 +186,16 @@
         ]
     },
     "rsvp": {
-        "title": "¿Vienes a celebrar conmigo?",
+        "title": "Confirma tu asistencia",
+        "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que estarás ahí.",
         "guestCap": 2,
         "accessMode": "hybrid",
-        "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción.",
+        "confirmationMessage": "Gracias por confirmar. Te esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "+521000000000",
-            "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta. Asistiremos {guestCount} persona(s).",
-            "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta, pero no podré asistir."
+            "phone": "+521****0000",
+            "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración. Asistiremos {guestCount} persona(s).",
+            "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración, pero no podré asistir."
         }
     },
     "quote": {
@@ -187,8 +204,9 @@
     },
     "thankYou": {
         "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
-        "closingName": "Lucía",
-        "image": "signature"
+        "closingName": "Lucía García",
+        "image": "signature",
+        "focalPoint": "50% 50%"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
@@ -196,7 +214,7 @@
         "title": "Música de fondo"
     },
     "itinerary": {
-        "title": "Nuestra Celebración",
+        "title": "Programa de la noche",
         "items": [
             {
                 "iconName": "Church",
@@ -213,28 +231,32 @@
             {
                 "iconName": "Waltz",
                 "label": "Vals de Honor",
-                "time": "21:00"
+                "time": "21:00",
+                "description": "El momento más esperado de la noche."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena de Gala",
-                "time": "22:00"
+                "time": "22:00",
+                "description": "Cena elegante para disfrutar en familia."
             },
             {
                 "iconName": "Toast",
                 "label": "Brindis",
-                "time": "23:30"
+                "time": "23:30",
+                "description": "Un brindis por una nueva etapa."
             },
             {
                 "iconName": "Party",
-                "label": "Tornafiesta",
-                "time": "00:30"
+                "label": "Gran cierre",
+                "time": "00:30",
+                "description": "Música y alegría hasta el amanecer."
             }
         ]
     },
     "countdown": {
-        "title": "¡Falta muy poco!",
-        "footerText": "Prepárate para una noche inolvidable"
+        "title": "La noche más especial comienza en",
+        "footerText": "25 de abril de 2026 · Monterrey"
     },
     "envelope": {
         "disabled": false,
@@ -263,7 +285,7 @@
         {
             "image": "gallery03",
             "afterSection": "countdown",
-            "alt": "Moments captured",
+            "alt": "Momento inolvidable en el jardín",
             "height": "screen"
         },
         {
@@ -274,6 +296,8 @@
         }
     ],
     "sharing": {
-        "whatsappTemplate": "¡Hola {name}! Te comparto tu invitación para {eventTitle}: {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
+        "ogImage": "portrait",
+        "ogDescription": "Acompáñame en mis XV años el sábado, 25 de abril de 2026, en Monterrey."
     }
 }

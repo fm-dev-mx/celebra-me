@@ -2,7 +2,9 @@
     "eventType": "xv",
     "isDemo": true,
     "templateId": "xv-enchanted-rose",
-    "_assetSlug": "demo-xv-enchanted-rose",
+    "_assetSlug": "demo-xv-editorial",
+    "_mediaFallback": true,
+    "_mediaFallbackNote": "Uses demo-xv-editorial assets as temporary fallback. Needs dedicated AI-generated enchanted-rose media.",
     "title": "XV Años — Isabella Rose",
     "description": "Una invitación de palacio con rosas rojas, luz de velas y una atmósfera cálida de gala para celebrar XV años.",
     "theme": {
@@ -48,8 +50,7 @@
             "city": "Querétaro",
             "date": "20 de noviembre de 2027",
             "time": "6:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
-            "image": "mapCeremony"
+            "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon"
         },
         "reception": {
             "venueEvent": "Recepción",
@@ -58,8 +59,7 @@
             "city": "Querétaro",
             "date": "20 de noviembre de 2027",
             "time": "8:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
-            "image": "mapReception"
+            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial"
         },
         "indications": [
             {

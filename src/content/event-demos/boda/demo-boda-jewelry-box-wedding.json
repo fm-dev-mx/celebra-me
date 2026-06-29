@@ -3,8 +3,8 @@
     "isDemo": true,
     "templateId": "boda-jewelry-box-wedding",
     "_assetSlug": "demo-boda-jewelry-box-wedding",
-    "title": "Demo - Sofía & Alejandro",
-    "description": "Demo oficial de boda con dirección editorial premium para Sofía y Alejandro.",
+    "title": "Sofía & Alejandro",
+    "description": "Una boda de ensueño con estilo editorial premium. Ceremonia en capilla, recepción en hacienda y una noche llena de amor, elegancia y celebración.",
     "theme": {
         "preset": "jewelry-box-wedding"
     },
@@ -19,9 +19,15 @@
         "secondaryName": "Alejandro",
         "label": "¡Nos Casamos!",
         "date": "2026-12-12T18:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "focalPoint": "50% 38%",
+        "focalPointMobile": "50% 32%"
     },
     "location": {
+        "introEyebrow": "Puebla de los Ángeles",
+        "introHeading": "Sábado, 12 de diciembre de 2026",
+        "introLede": "Te invitamos a celebrar con nosotros el día en que nuestros caminos se unen para siempre.",
         "ceremony": {
             "venueEvent": "Ceremonia Religiosa",
             "venueName": "Capilla de la Inmaculada",
@@ -57,7 +63,9 @@
     },
     "rsvp": {
         "title": "¿Nos acompañan a celebrar nuestro amor?",
+        "subcopy": "Confirma tu asistencia desde esta invitación. Será un honor compartir este día con ustedes.",
         "guestCap": 10,
+        "accessMode": "hybrid",
         "confirmationMessage": "¡Gracias por ser parte de nuestra historia!",
         "confirmationMode": "both",
         "whatsappConfig": {
@@ -111,7 +119,14 @@
                 "role": "Madrina de Velación"
             }
         ],
-        "featuredImage": "family"
+        "featuredImage": "family",
+        "labels": {
+            "sectionTitle": "Nuestras familias",
+            "sectionSubtitle": "Unidos por el amor",
+            "parentsTitle": "Con la bendición de nuestros padres",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por ser parte de este día tan especial. Su amor y apoyo nos acompañan en el inicio de esta nueva etapa."
+        }
     },
     "gallery": {
         "eyebrow": "Galería",
@@ -145,8 +160,8 @@
         ]
     },
     "gifts": {
-        "title": "Wedding Concierge",
-        "subtitle": "Su presencia es lo mas importante; si desean acompañarnos con un detalle, aqui les compartimos opciones discretas.",
+        "title": "Mesa de regalos",
+        "subtitle": "Su presencia es el regalo más importante. Si desean tener un detalle con nosotros, aquí compartimos algunas opciones.",
         "items": [
             {
                 "type": "store",
@@ -199,19 +214,20 @@
     "thankYou": {
         "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
         "closingName": "Sofía & Alejandro",
-        "image": "portrait"
+        "image": "portrait",
+        "focalPoint": "50% 38%"
     },
     "countdown": {
-        "title": "La celebracion comienza en",
-        "footerText": "Estamos ansiosos de compartir este día con ustedes."
+        "title": "Nuestra boda comienza en",
+        "footerText": "12 de diciembre de 2026 · Puebla"
     },
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
         "sealInitials": "S·A",
-        "documentLabel": "M & S",
-        "stampText": "BODA REAL",
+        "documentLabel": "S & A",
+        "stampText": "BODA",
         "stampYear": "2026",
         "microcopy": "Toca para abrir nuestra invitación"
     },
@@ -225,7 +241,7 @@
         {
             "image": "gallery06",
             "afterSection": "gifts",
-            "alt": "Cierre fotografico de la boda",
+            "alt": "Cierre fotográfico de la boda",
             "height": "screen"
         }
     ]

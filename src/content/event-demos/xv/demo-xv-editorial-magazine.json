@@ -3,6 +3,8 @@
     "isDemo": true,
     "templateId": "xv-editorial-magazine",
     "_assetSlug": "demo-xv-editorial",
+    "_mediaFallback": true,
+    "_mediaFallbackNote": "Uses demo-xv-editorial assets as temporary fallback. Needs dedicated editorial-magazine media.",
     "title": "XV Años — Revista Editorial",
     "description": "Una invitación XV con lenguaje de revista editorial: portada, titulares, fecha destacada, elenco familiar y acceso a la celebración.",
     "theme": {

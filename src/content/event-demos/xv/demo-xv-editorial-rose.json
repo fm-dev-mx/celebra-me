@@ -2,7 +2,9 @@
     "eventType": "xv",
     "isDemo": true,
     "templateId": "xv-editorial-rose",
-    "_assetSlug": "demo-xv-editorial-rose",
+    "_assetSlug": "demo-xv-editorial",
+    "_mediaFallback": true,
+    "_mediaFallbackNote": "Uses demo-xv-editorial assets as temporary fallback. Previously used SVG placeholders (no photos). Needs dedicated editorial-rose media.",
     "title": "XV Años — Editorial Rose",
     "description": "Una invitación editorial con estética de revista de moda en tonos rosa, blanco y plata. Elegancia, brillo y un toque fashion para una celebración inolvidable.",
     "theme": {
