@@ -41,9 +41,20 @@ export async function supabaseRestRequest<T>(options: SupabaseRequestOptions): P
 		throw new Error(`Supabase error (${response.status}): ${raw || response.statusText}`);
 	}
 
-	if (response.status === 204) {
+	// Read body once so we can safely attempt JSON parsing
+	const text = await response.text();
+
+	// Some Supabase endpoints (e.g. with Prefer: return=minimal) return
+	// 2xx with an empty body. Return an empty array rather than crashing.
+	if (!text.trim()) {
 		return [] as T;
 	}
 
-	return (await response.json()) as T;
+	try {
+		return JSON.parse(text) as T;
+	} catch {
+		throw new Error(
+			`Supabase response parse error (${response.status} ${options.method ?? 'GET'} /rest/v1/${options.pathWithQuery}): invalid JSON body`,
+		);
+	}
 }

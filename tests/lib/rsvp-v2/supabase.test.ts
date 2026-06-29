@@ -37,6 +37,7 @@ describe('rsvp supabase rest client', () => {
 			ok: true,
 			status: 204,
 			json: async () => [],
+			text: async () => '',
 		}) as typeof fetch;
 
 		const result = await supabaseRestRequest<{ id: string }[]>({
@@ -44,5 +45,72 @@ describe('rsvp supabase rest client', () => {
 			authToken: 'token',
 		});
 		expect(result).toEqual([]);
+	});
+
+	it('returns empty array for 201 with empty body (return=minimal)', async () => {
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			status: 201,
+			text: async () => '',
+		}) as typeof fetch;
+
+		const result = await supabaseRestRequest<{ id: string }[]>({
+			pathWithQuery: 'visitor_sessions?on_conflict=id',
+			method: 'POST',
+			prefer: 'resolution=merge-duplicates,return=minimal',
+			body: { id: 'test' },
+			authToken: 'token',
+		});
+		expect(result).toEqual([]);
+	});
+
+	it('returns empty array for 200 with empty body', async () => {
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			status: 200,
+			text: async () => '',
+		}) as typeof fetch;
+
+		const result = await supabaseRestRequest<{ id: string }[]>({
+			pathWithQuery: 'events?select=*',
+			authToken: 'token',
+		});
+		expect(result).toEqual([]);
+	});
+
+	it('parses valid JSON body from 201 response', async () => {
+		const rows = [{ id: 'evt-1', event_name: 'page_viewed' }];
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			status: 201,
+			text: async () => JSON.stringify(rows),
+		}) as typeof fetch;
+
+		const result = await supabaseRestRequest<Array<{ id: string; event_name: string }>>({
+			pathWithQuery: 'tracking_events?select=id,event_name',
+			method: 'POST',
+			prefer: 'return=representation',
+			body: { event_name: 'page_viewed' },
+			authToken: 'token',
+		});
+		expect(result).toEqual([{ id: 'evt-1', event_name: 'page_viewed' }]);
+	});
+
+	it('throws descriptive error for 200 with non-empty invalid JSON body', async () => {
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			status: 200,
+			text: async () => '<html>Server error</html>',
+		}) as typeof fetch;
+
+		await expect(
+			supabaseRestRequest<unknown[]>({
+				pathWithQuery: 'tracking_events?select=id',
+				method: 'GET',
+				authToken: 'token',
+			}),
+		).rejects.toThrow(
+			'Supabase response parse error (200 GET /rest/v1/tracking_events?select=id): invalid JSON body',
+		);
 	});
 });
