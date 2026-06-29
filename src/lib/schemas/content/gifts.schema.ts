@@ -26,7 +26,7 @@ export const storeGiftItemSchema = z
 
 		if (!hasLegacyUrl && !hasLinks) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: 'custom',
 				message: 'A store gift item must include either url or links.',
 				path: [],
 			});

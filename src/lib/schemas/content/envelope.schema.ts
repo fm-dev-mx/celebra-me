@@ -34,5 +34,5 @@ export const envelopeSchema = z
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),
 	})
-	.passthrough() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
+	.loose() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
 	.optional();

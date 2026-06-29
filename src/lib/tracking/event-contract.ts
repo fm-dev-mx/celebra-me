@@ -107,7 +107,7 @@ export const TrackingEventSchema = z.object({
 	sessionId: z.uuid(),
 	visitorId: z.string().trim().min(6).max(120),
 	eventName: z.enum(TRACKING_EVENT_NAMES),
-	occurredAt: z.string().datetime().optional(),
+	occurredAt: z.iso.datetime().optional(),
 	routePath: z.string().trim().min(1).max(300),
 	routeClass: z.enum(TRACKING_ROUTE_CLASSES),
 	source: z.string().trim().max(120).optional(),
