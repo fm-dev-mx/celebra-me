@@ -170,6 +170,18 @@ function setContactHiddenFields(leadCode: string): void {
 	});
 }
 
+function getOrCreateFormLeadCode(form: HTMLFormElement, fallbackLeadCode: string): string {
+	const field = form.elements.namedItem('leadCode');
+	if (!(field instanceof HTMLInputElement)) return fallbackLeadCode;
+
+	const currentLeadCode = field.value.trim();
+	if (currentLeadCode) return currentLeadCode;
+
+	const nextLeadCode = fallbackLeadCode || createLeadCode();
+	field.value = nextLeadCode;
+	return nextLeadCode;
+}
+
 function bindSectionVisibility(): void {
 	if (!('IntersectionObserver' in window)) return;
 
@@ -267,9 +279,10 @@ function bindForms(): void {
 			{ passive: true },
 		);
 		form.addEventListener('submit', () => {
+			const currentLeadCode = getOrCreateFormLeadCode(form, leadCode);
 			void trackEvent('form_submitted', {
 				form_id: 'contact',
-				lead_code: leadCode,
+				lead_code: currentLeadCode,
 			});
 		});
 	});
@@ -282,7 +295,15 @@ export function initCommercialTracking(): void {
 	}
 
 	if (!document.body.dataset.trackingRouteClass || shouldIgnoreTracking()) return;
-	void trackEvent('page_viewed', { page_type: document.body.dataset.trackingRouteClass });
+	const routeClass = document.body.dataset.trackingRouteClass;
+	void trackEvent('page_viewed', { page_type: routeClass });
+	if (routeClass === 'demo') {
+		const [, eventType = '', demoSlug = ''] = window.location.pathname.split('/');
+		void trackEvent('demo_viewed', {
+			demo_slug: demoSlug,
+			event_type: eventType,
+		});
+	}
 	bindSectionVisibility();
 	bindScrollDepth();
 	bindClicks();
