@@ -48,6 +48,99 @@ Completed:
 - `demo-xv-editorial-magazine` temporarily shares media with `demo-xv-editorial` (documented
   fallback, needs dedicated media)
 - Real invitation DB rows need `templateId` added at next publish/update
+- `demo-xv-enchanted-rose` and `demo-xv-editorial-rose` both use `_assetSlug: "demo-xv-editorial"`
+  as documented temporary fallback (needs dedicated AI-generated assets)
+- `demo-xv-enchanted-rose` location map images (`mapCeremony`/`mapReception`) are unresolvable with
+  the editorial fallback — venue cards render without image overlays
+
+## Quality Pass — 2026-06-29
+
+### User-reported issues and fixes
+
+| Issue                                                         | Root cause                                                                                            | Fix                                                                                                                     |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `demo-xv-enchanted-rose` uses real client photos              | Asset directory contained real client photography                                                     | `_assetSlug` redirected to `demo-xv-editorial` (documented fallback) with `_mediaFallback: true`                        |
+| `/xv/demo-xv-editorial-rose` has no photos                    | Used SVG placeholders only (decorative florals, no photos)                                            | `_assetSlug` redirected to `demo-xv-editorial` (documented fallback) with `_mediaFallback: true`                        |
+| `/baby-shower/demo-baby-shower-celestial` is very low quality | Only 1 gallery item, no itinerary, no countdown section data, no portrait, no interludes, sparse copy | Added itinerary (4 items), countdown, expanded gallery to 3 items, improved hero focal points, improved copy throughout |
+| `/xv/demo-xv-jewelry-box` is very low quality                 | Generic title/description, no location intro, no family labels, no hero portrait, missing gifts title | Improved all copy, added location intro text, added hero portrait, added family labels, improved gifts section          |
+| `/boda/demo-boda-jewelry-box-wedding` is very low quality     | Generic title, no location intro, no hero portrait, no family labels, no RSVP access mode             | Improved all copy, added location intro, added hero portrait and focal points, added family labels and RSVP access mode |
+
+### Media safety decisions
+
+- Three demos now use `_assetSlug: "demo-xv-editorial"` as documented fallback:
+  - `demo-xv-editorial-magazine` (pre-existing)
+  - `demo-xv-editorial-rose` (new, was SVG placeholders)
+  - `demo-xv-enchanted-rose` (new, was real client photos)
+- All three have `_mediaFallback: true` flag for audit detection
+- The original `demo-xv-enchanted-rose` asset directory still exists but is no longer referenced
+- No real client media was copied into demo directories
+- No real client media was deleted
+- No production queries were executed
+
+### Countdown randomization (P1)
+
+**Implementation**: Client-side only, in `CountdownTimer.astro`.
+
+How it works:
+
+- `buildCountdownSectionData` in `event.ts` now includes `isDemo` flag
+- `Countdown.astro` and `CountdownTimer.astro` pass `isDemo` as prop
+- In the client script, when `data-is-demo="true"`, the countdown target is overridden with a random
+  date between 30-60 days from `Date.now()`
+- Randomness is per page load (recomputed on each page navigation; date text updated client-side to
+  match randomized target)
+- Real invitations (`isDemo` absent or false) are completely unaffected
+- The server renders the JSON date (harmless — SSR initial values are immediately replaced by client
+  script)
+
+**Do NOT affect**:
+
+- `hero.date` — unchanged
+- Location venue dates — unchanged
+- Metadata/OG dates — unchanged
+- Real event countdown behavior — completely bypassed
+
+### Audit improvements
+
+| Test                           | What it catches                                                     |
+| ------------------------------ | ------------------------------------------------------------------- |
+| Unknown asset key references   | Any demo referencing an asset key not in `EVENT_KEYS_SET`           |
+| Missing asset keys in registry | Any referenced key not exported by the target `index.ts`            |
+| `_mediaFallback` detection     | Any demo with `_mediaFallback: true` must have `_mediaFallbackNote` |
+| Fallback documentation         | Documented fallbacks are now programmatically detectable            |
+
+### AI asset requirements
+
+The following demos need dedicated AI-generated assets to replace documented fallbacks:
+
+1. **`demo-xv-enchanted-rose`** → Needs enchant-rose themed photos: roses, candlelight, palace/gala
+   setting, portrait of a quinceañera, ceremony/reception maps
+2. **`demo-xv-editorial-rose`** → Needs editorial-rose themed photos: pink/silver aesthetic, fashion
+   editorial style, portrait, florals, magazine-style compositions
+3. **`demo-xv-editorial-magazine`** → Already documented: needs dedicated assets instead of
+   `demo-xv-editorial` fallback
+
+Target: 15-20 images per demo, 1920px wide, webp format, matching the theme's color palette.
+
+### Rollback notes for this pass
+
+Revert logic changes:
+
+- `src/lib/adapters/event.ts` — remove `isDemo: data.isDemo ?? false` from countdown section data
+- `src/lib/adapters/types.ts` — remove `isDemo?: boolean` from countdown type
+- `src/components/invitation/Countdown.astro` — remove `isDemo` prop passing
+- `src/components/invitation/CountdownTimer.astro` — revert to original client script
+
+Revert content changes:
+
+- `demo-xv-enchanted-rose.json` — restore `_assetSlug: "demo-xv-enchanted-rose"`, remove
+  `_mediaFallback*`, restore `image: "mapCeremony"` and `image: "mapReception"`
+- `demo-xv-editorial-rose.json` — restore `_assetSlug: "demo-xv-editorial-rose"`, remove
+  `_mediaFallback*`
+- `demo-baby-shower-celestial.json` — restore original content
+- `demo-xv-jewelry-box.json` — restore original content
+- `demo-boda-jewelry-box-wedding.json` — restore original content
+- `tests/content/demo-counterpart-audit.test.ts` — remove new test blocks
 
 ---
 
@@ -184,10 +277,13 @@ Generates human-readable matrix. Run: `npx tsx scripts/audit/demo-coverage-repor
 
 - Add `templateId` to production DB content for published real invitations
 - Create dedicated demo counterparts for real invitations with custom SCSS
-- Create dedicated asset directories for `demo-xv-editorial-magazine`
-- Replace temporary demo media with AI-generated assets
+- Create dedicated asset directories for `demo-xv-editorial-magazine`, `demo-xv-editorial-rose`, and
+  `demo-xv-enchanted-rose`
+- Generate AI media assets for the three fallback demos (see AI Asset Requirements above)
 - Decide on `noindex` policy for demo pages
 - Add demo-specific SEO metadata for each template
+- Replace `demo-xv-editorial-rose` and `demo-xv-enchanted-rose` dedicated `_assetSlug` once assets
+  exist
 
 ## Acceptance Criteria
 
@@ -198,8 +294,14 @@ Generates human-readable matrix. Run: `npx tsx scripts/audit/demo-coverage-repor
 5. ✅ Build passes
 6. ✅ RSVP/tracking safety intact
 7. ✅ No duplicated images, SCSS, or components
-8. ✅ Strict audit test passes (68/68)
+8. ✅ Strict audit test passes (111/111)
 9. ✅ Coverage reporting script produces matrix
+10. ✅ All demos use only demo-safe media (no real client photos)
+11. ✅ Every demo has visible photos (no SVG-only placeholders in catalog)
+12. ✅ Demo countdown shows 30-60 days in the future (client-side, per page load)
+13. ✅ Countdown randomization does NOT affect real invitations
+14. ✅ Low-quality demos improved (baby-shower-celestial, xv-jewelry-box, boda-jewelry-box-wedding)
+15. ✅ Audit detects `_mediaFallback` usage, unknown asset keys, and missing registry exports
 
 ## Rollback Notes
 
@@ -243,8 +345,14 @@ the published content's `theme.preset`.
 - [ ] Confirm all demo data is commercially acceptable
 - [ ] Decide whether demo pages should be `noindex`
 - [ ] Decide whether RSVP should be active/disabled/simulated for demo routes
-- [ ] Replace `demo-xv-editorial-magazine` temporary media fallback with dedicated assets
+- [ ] Replace `demo-xv-editorial-magazine`, `demo-xv-editorial-rose`, and `demo-xv-enchanted-rose`
+      temporary media fallbacks with dedicated AI-generated assets
 - [ ] Add `templateId` to production DB content for published real invitations
 - [ ] Create dedicated demo counterparts for highly customized invitations
-- [ ] Replace temporary demo photos with AI-generated assets
 - [ ] Verify Vercel production build after merge
+- [ ] Manual visual QA on these routes:
+  - `/xv/demo-xv-enchanted-rose` (editorial fallback photos, no location map images)
+  - `/xv/demo-xv-editorial-rose` (editorial fallback photos)
+  - `/baby-shower/demo-baby-shower-celestial` (improved content, countdown)
+  - `/xv/demo-xv-jewelry-box` (improved content, countdown)
+  - `/boda/demo-boda-jewelry-box-wedding` (improved content, countdown)
