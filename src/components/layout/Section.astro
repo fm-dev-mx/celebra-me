@@ -22,6 +22,7 @@ const {
 	fullHeight = false,
 	backgroundEffect,
 	class: className,
+	...rest
 } = Astro.props;
 
 ---
@@ -29,6 +30,7 @@ const {
 <section
 	id={id}
 	class:list={['section', padding, relative, { 'section--full-width': fullWidth, 'section--full-height': fullHeight }, className]}
+	{...rest}
 >
 	{backgroundEffect && <div class={backgroundEffect} />}
 	

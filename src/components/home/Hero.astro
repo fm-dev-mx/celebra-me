@@ -28,7 +28,7 @@ const avatar3 = getCommonAsset('avatar3');
 const heroMobileSrc = data.backgroundImage.mobileUrl;
 ---
 
-<section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title">
+<section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero">
 	<!-- 1. Background Layer -->
 	<div class="hero-prime__bg">
 		<!-- Priority Image (Lazy load off for LCP) -->
@@ -85,7 +85,17 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 				message={data.whatsappMessage}
 				label={data.primaryCtaLabel}
 			/>
-			<ActionBase as="a" href={data.secondaryCtaUrl || '#servicios'} variant="outline" color="white" class="shine-effect">
+			<ActionBase
+				as="a"
+				href={data.secondaryCtaUrl || '#servicios'}
+				variant="outline"
+				color="white"
+				class="shine-effect"
+				data-track-event="cta_clicked"
+				data-track-section="hero"
+				data-track-cta="hero_secondary"
+				data-track-intent="section_nav"
+			>
 				{data.secondaryCtaLabel}
 			</ActionBase>
 		</div>
@@ -104,7 +114,7 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 	</div>
 
 	<!-- Scroll Indicator -->
-	<div class="hero-prime__scroll-indicator">
+	<div class="hero-prime__scroll-indicator" data-track-event="cta_clicked" data-track-section="hero" data-track-cta="hero_scroll" data-track-intent="section_nav">
 		<ActionIcon
 			icon="ArrowDownIcon"
 			variant="scroll"

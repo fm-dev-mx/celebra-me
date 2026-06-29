@@ -1,0 +1,295 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import {
+	labelLeadChannel,
+	labelLeadStatus,
+	loadCommercialDashboardData,
+	type CommercialDashboardSummary,
+	type CountItem,
+} from '@/lib/tracking/commercial-dashboard';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+
+let dashboardData: CommercialDashboardSummary | null = null;
+let loadError = false;
+
+try {
+	dashboardData = await loadCommercialDashboardData();
+} catch (error) {
+	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
+	loadError = true;
+}
+
+const formatCount = (value: number) => new Intl.NumberFormat('es-MX').format(value);
+
+const metricCards = dashboardData
+	? [
+			{ label: 'Sesiones', value: dashboardData.totals.sessions },
+			{ label: 'Clics CTA', value: dashboardData.totals.ctaClicks },
+			{ label: 'Intenciones WhatsApp', value: dashboardData.totals.whatsappClicks },
+			{ label: 'Formularios enviados', value: dashboardData.totals.formSubmissions },
+			{ label: 'Demos vistas', value: dashboardData.totals.demoViews },
+			{ label: 'Leads confirmados', value: dashboardData.totals.leads },
+		]
+	: [];
+
+const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 'Sin datos suficientes todavía', count: 0 }];
+---
+
+<DashboardLayout title="Dashboard comercial">
+	<section class="commercial-dashboard">
+		<header class="commercial-dashboard__header">
+			<div>
+				<p class="commercial-dashboard__eyebrow">Atribución first-party</p>
+				<h2>Comercial</h2>
+			</div>
+			<p>
+				Mide sesiones, intención por WhatsApp, formularios y leads confirmados sin mezclar
+				RSVP, invitados ni enlaces personalizados.
+			</p>
+		</header>
+
+		{loadError && (
+			<div class="dashboard-card commercial-dashboard__notice">
+				<h3>Datos no disponibles</h3>
+				<p>
+					El dashboard está listo, pero las tablas comerciales aún no respondieron en esta
+					ambiente. Aplica la migración MVP antes de usarlo en producción.
+				</p>
+			</div>
+		)}
+
+		{dashboardData && (
+			<>
+				<div class="commercial-dashboard__metrics">
+					{metricCards.map((card) => (
+						<article class="commercial-dashboard__metric">
+							<span>{card.label}</span>
+							<strong>{formatCount(card.value)}</strong>
+						</article>
+					))}
+					<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
+						<span>Sesiones internas excluidas</span>
+						<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
+					</article>
+				</div>
+
+				<div class="commercial-dashboard__grid">
+					<section class="dashboard-card">
+						<h3>Tráfico</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.campaigns).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+
+					<section class="dashboard-card">
+						<h3>Engagement</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.sections).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+
+					<section class="dashboard-card">
+						<h3>Scroll</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.scrollDepth).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+
+					<section class="dashboard-card">
+						<h3>CTAs</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.topCtas).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+
+					<section class="dashboard-card">
+						<h3>Demos</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.topDemos).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+
+					<section class="dashboard-card">
+						<h3>Leads por estado</h3>
+						<ul class="commercial-dashboard__list">
+							{renderList(dashboardData.leadsByStatus).map((item) => (
+								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+							))}
+						</ul>
+					</section>
+				</div>
+
+				<section class="dashboard-card commercial-dashboard__table-card">
+					<h3>Leads recientes</h3>
+					<div class="commercial-dashboard__table-wrap">
+						<table class="commercial-dashboard__table">
+							<thead>
+								<tr>
+									<th>Código</th>
+									<th>Nombre</th>
+									<th>Contacto</th>
+									<th>Evento</th>
+									<th>Paquete</th>
+									<th>Estado</th>
+									<th>Canal</th>
+								</tr>
+							</thead>
+							<tbody>
+								{dashboardData.recentLeads.length === 0 ? (
+									<tr>
+										<td colspan="7">Sin leads registrados todavía.</td>
+									</tr>
+								) : (
+									dashboardData.recentLeads.map((lead) => (
+										<tr>
+											<td>{lead.lead_code}</td>
+											<td>{lead.name || 'Sin nombre'}</td>
+											<td>{lead.email || lead.phone || 'Sin contacto'}</td>
+											<td>{lead.event_type || 'Sin clasificar'}</td>
+											<td>{lead.package_interest || 'Sin clasificar'}</td>
+											<td>{labelLeadStatus(lead.status)}</td>
+											<td>{labelLeadChannel(lead.channel)}</td>
+										</tr>
+									))
+								)}
+							</tbody>
+						</table>
+					</div>
+				</section>
+			</>
+		)}
+	</section>
+
+	<style lang="scss">
+		.commercial-dashboard {
+			display: grid;
+			gap: 1.5rem;
+		}
+
+		.commercial-dashboard__header {
+			display: flex;
+			justify-content: space-between;
+			gap: 1.5rem;
+			align-items: end;
+
+			h2 {
+				margin: 0;
+				font-size: clamp(1.9rem, 3vw, 2.7rem);
+				color: var(--color-text-primary);
+			}
+
+			p {
+				max-width: 46rem;
+				margin: 0;
+				color: var(--color-text-secondary);
+				line-height: 1.6;
+			}
+		}
+
+		.commercial-dashboard__eyebrow {
+			margin: 0 0 0.35rem;
+			color: var(--color-text-muted);
+			text-transform: uppercase;
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+		}
+
+		.commercial-dashboard__metrics,
+		.commercial-dashboard__grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 1rem;
+		}
+
+		.commercial-dashboard__metric {
+			padding: 1.25rem;
+			border: 1px solid var(--dashboard-card-border);
+			border-radius: 0.75rem;
+			background: var(--dashboard-card-bg);
+			box-shadow: var(--shadow-subtle);
+
+			span {
+				display: block;
+				color: var(--color-text-secondary);
+				font-size: 0.86rem;
+			}
+
+			strong {
+				display: block;
+				margin-top: 0.45rem;
+				font-size: 2rem;
+				color: var(--color-action-primary);
+			}
+		}
+
+		.commercial-dashboard__metric--muted strong {
+			color: var(--color-text-secondary);
+		}
+
+		.commercial-dashboard__list {
+			display: grid;
+			gap: 0.7rem;
+			padding: 0;
+			margin: 1rem 0 0;
+			list-style: none;
+
+			li {
+				display: flex;
+				justify-content: space-between;
+				gap: 1rem;
+				padding-bottom: 0.7rem;
+				border-bottom: 1px solid var(--dashboard-card-border);
+				color: var(--color-text-secondary);
+			}
+
+			strong {
+				color: var(--color-text-primary);
+			}
+		}
+
+		.commercial-dashboard__table-wrap {
+			overflow-x: auto;
+		}
+
+		.commercial-dashboard__table {
+			width: 100%;
+			min-width: 760px;
+			border-collapse: collapse;
+
+			th,
+			td {
+				padding: 0.85rem 0.75rem;
+				text-align: left;
+				border-bottom: 1px solid var(--dashboard-card-border);
+				color: var(--color-text-secondary);
+			}
+
+			th {
+				color: var(--color-text-muted);
+				font-size: 0.72rem;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+		}
+
+		@media (max-width: 760px) {
+			.commercial-dashboard__header {
+				display: grid;
+				align-items: start;
+			}
+		}
+	</style>
+</DashboardLayout>

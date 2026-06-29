@@ -25,6 +25,7 @@ const {
 	class: classNameAttr,
 	className: classNameProp,
 	target,
+	...restProps
 } = Astro.props as _Props;
 
 const finalClassName = classNameAttr || classNameProp;
@@ -34,6 +35,7 @@ const finalClassName = classNameAttr || classNameProp;
 	href={href}
 	title={title}
 	target={target}
+	{...restProps}
 	class:list={[
 		'action-base',
 		`action-base--${color}`,

@@ -18,7 +18,7 @@ const { data } = Astro.props;
 ---
 
 <!-- Contact Section -->
-<section id="contacto" class="contact-section">
+<section id="contacto" class="contact-section" data-track-section="contact">
 	<div class="contact-texture"></div>
 
 	<div class="container">
@@ -38,7 +38,15 @@ const { data } = Astro.props;
 					</p>
 
 					<div class="contact-channels">
-						<a href={getWhatsAppLink('Hola, me gustaría conocer más sobre sus invitaciones digitales para eventos.')} target="_blank" class="channel-link">
+						<a
+							href={getWhatsAppLink('Hola, me gustaría conocer más sobre sus invitaciones digitales para eventos.')}
+							target="_blank"
+							class="channel-link"
+							data-track-event="whatsapp_contact_clicked"
+							data-track-section="contact"
+							data-track-cta="contact_whatsapp"
+							data-track-intent="whatsapp"
+						>
 							<div class="channel-icon-wrapper">
 								<Icon name="WhatsApp" size={24} />
 							</div>
@@ -48,7 +56,15 @@ const { data } = Astro.props;
 							</div>
 						</a>
 
-						<a href="mailto:contacto@celebra-me.com" target="_blank" class="channel-link">
+						<a
+							href="mailto:contacto@celebra-me.com"
+							target="_blank"
+							class="channel-link"
+							data-track-event="cta_clicked"
+							data-track-section="contact"
+							data-track-cta="contact_email"
+							data-track-intent="email"
+						>
 							<div class="channel-icon-wrapper">
 								<Icon name="Message" size={24} />
 							</div>

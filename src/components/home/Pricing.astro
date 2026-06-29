@@ -9,7 +9,7 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<section id="pricing" class="pricing-section">
+<section id="pricing" class="pricing-section" data-track-section="pricing">
 	<div class="pricing-noise"></div>
 
 	<div class="container">
@@ -70,7 +70,16 @@ const { data } = Astro.props;
 
 							{tier.footnote && <p class="tier-footnote">{tier.footnote}</p>}
 
-							<a href={tier.href} class="cta-button" aria-label={`Elegir plan ${tier.title}`}>
+							<a
+								href={tier.href}
+								class="cta-button"
+								aria-label={`Elegir plan ${tier.title}`}
+								data-track-event="cta_clicked"
+								data-track-section="pricing"
+								data-track-cta={`pricing_${tier.title.toLowerCase().replaceAll(' ', '_')}`}
+								data-track-intent="package_interest"
+								data-package-interest={tier.title}
+							>
 								{tier.cta}
 							</a>
 						</div>

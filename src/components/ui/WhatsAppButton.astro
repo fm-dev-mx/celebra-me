@@ -24,6 +24,10 @@ const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
 	rel="noopener noreferrer"
 	class:list={['whatsapp-button', className]}
 	aria-label="Contactar por WhatsApp"
+	data-track-event="whatsapp_contact_clicked"
+	data-track-section="hero"
+	data-track-cta="hero_whatsapp"
+	data-track-intent="whatsapp"
 >
 	<Icon name="WhatsApp" size={20} />
 	{label}

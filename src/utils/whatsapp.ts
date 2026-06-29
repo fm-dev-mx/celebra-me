@@ -11,6 +11,6 @@ export function isPlaceholderContactPhone(phone: string): boolean {
 
 export function getWhatsAppLink(message?: string): string {
 	const phone = getContactPhone();
-	const text = message ? `&text=${encodeURIComponent(message)}` : '';
+	const text = message ? `?text=${encodeURIComponent(message)}` : '';
 	return `https://wa.me/${phone}${text}`;
 }

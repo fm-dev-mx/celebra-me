@@ -2,7 +2,13 @@
 ---
 
 <div class="contact-card" data-contact-form>
-	<form class="contact-form" novalidate>
+	<form class="contact-form" novalidate data-commercial-contact-form>
+		<input type="hidden" name="sessionId" />
+		<input type="hidden" name="leadCode" />
+		<input type="hidden" name="utmSource" />
+		<input type="hidden" name="utmMedium" />
+		<input type="hidden" name="utmCampaign" />
+
 		<div class="input-group">
 			<input
 				type="text"
@@ -28,6 +34,40 @@
 		</div>
 
 		<div class="input-group">
+			<input
+				type="tel"
+				id="contact-phone"
+				name="phone"
+				class="input-group__input"
+				placeholder=" "
+			/>
+			<label for="contact-phone" class="input-group__label">WhatsApp</label>
+		</div>
+
+		<div class="input-group">
+			<select id="contact-event-type" name="eventType" class="input-group__input">
+				<option value="">Tipo de evento</option>
+				<option value="xv">XV años</option>
+				<option value="boda">Boda</option>
+				<option value="bautizo">Bautizo</option>
+				<option value="cumple">Cumpleaños</option>
+				<option value="baby-shower">Baby shower</option>
+				<option value="primera-comunion">Primera comunión</option>
+			</select>
+			<label for="contact-event-type" class="input-group__label">Tipo de evento</label>
+		</div>
+
+		<div class="input-group">
+			<select id="contact-package" name="packageInterest" class="input-group__input">
+				<option value="">Paquete de interés</option>
+				<option value="essential">Essential</option>
+				<option value="premium">Premium</option>
+				<option value="signature">Signature</option>
+			</select>
+			<label for="contact-package" class="input-group__label">Paquete de interés</label>
+		</div>
+
+		<div class="input-group">
 			<textarea
 				id="contact-message"
 				name="message"
@@ -41,6 +81,15 @@
 		<button type="submit" class="submit-btn" data-submit-label>
 			Solicitar asesoría
 		</button>
+
+		<label class="contact-form__consent">
+			<input type="checkbox" name="consentContact" value="true" checked required />
+			Acepto que Celebra-me me contacte sobre mi solicitud.
+		</label>
+		<label class="contact-form__consent">
+			<input type="checkbox" name="consentMarketing" value="true" />
+			Deseo recibir novedades y recomendaciones para mi evento.
+		</label>
 
 		<p class="form-feedback form-feedback--success" data-feedback-success hidden>
 			Solicitud enviada. Un asesor le contactará a la brevedad.
@@ -73,7 +122,9 @@
 
 			try {
 				const formData = new FormData(form);
-				const payload = Object.fromEntries(formData.entries());
+				const payload: Record<string, unknown> = Object.fromEntries(formData.entries());
+				payload.consentContact = formData.has('consentContact');
+				payload.consentMarketing = formData.has('consentMarketing');
 
 				const response = await fetch('/api/contact', {
 					method: 'POST',

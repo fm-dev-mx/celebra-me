@@ -33,7 +33,7 @@ const serviceImages: Record<string, ImageAsset> = {
 // All services link to contact section for inquiry
 ---
 
-<Section id="servicios" class="services section-padding">
+<Section id="servicios" class="services section-padding" data-track-section="services">
 	<Container class="services__container">
 		<header class="services__header">
 			<h2 class="services__heading">{data.title}</h2>
@@ -47,7 +47,17 @@ const serviceImages: Record<string, ImageAsset> = {
 					const delay = `${index * 200}ms`;
 					const href = service.href || '#contacto';
 					return (
-					<a href={href} class="services__card" data-delay={delay} aria-label={`Ver detalles del servicio ${service.title}`}>
+					<a
+						href={href}
+						class="services__card"
+						data-delay={delay}
+						aria-label={`Ver detalles del servicio ${service.title}`}
+						data-track-event="cta_clicked"
+						data-track-section="services"
+						data-track-cta={`service_${service.title.toLowerCase().replaceAll(' ', '_')}`}
+						data-track-intent="service_interest"
+						data-package-interest={service.title}
+					>
 						<div class="services__card-visual">
 							<div class="services__image-wrapper">
 								<OptimizedImage

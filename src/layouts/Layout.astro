@@ -8,6 +8,7 @@ import SpeedInsights from '@vercel/speed-insights/astro';
 import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
+import { classifyTrackingRoute, shouldLoadGoogleAnalytics } from '@/lib/tracking/route-policy';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
@@ -50,6 +51,12 @@ if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 const ogImage = new URL(resolvedImageSrc, canonicalOrigin);
 
 const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const routePolicy = classifyTrackingRoute(Astro.url);
+const loadGoogleAnalytics = shouldLoadGoogleAnalytics(Astro.url, {
+	vercelEnv: process.env.VERCEL_ENV,
+	gaId,
+});
+const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed;
 ---
 <!doctype html>
 <html lang="es">
@@ -85,10 +92,14 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		{headLinks.map(l => <link rel={l.rel} href={l.href} />)}
 
-		{isVercelProduction && gaId && <GoogleAnalytics id={gaId} />}
+		{loadGoogleAnalytics && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
 	</head>
-	<body class:list={[className, { 'is-demo': isDemo }]} data-theme-mode={themeMode}>
+	<body
+		class:list={[className, { 'is-demo': isDemo }]}
+		data-theme-mode={themeMode}
+		data-tracking-route-class={loadCommercialTracking ? routePolicy.routeClass : undefined}
+	>
 		{!hideHeader && <Header />}
 
 		<main>
@@ -97,5 +108,11 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		{isVercelProduction && <Analytics />}
 		{isVercelProduction && <SpeedInsights />}
+		{loadCommercialTracking && (
+			<script>
+				import { initCommercialTracking } from '@/lib/tracking/client';
+				initCommercialTracking();
+			</script>
+		)}
 	</body>
 </html>
