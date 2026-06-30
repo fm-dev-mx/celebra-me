@@ -31,12 +31,16 @@ export interface AboutData {
 
 export interface ServicesData {
 	title: string;
-	services: Array<{
-		href: string;
+	subtitle: string;
+	items: Array<{
 		title: string;
 		description: string;
 		icon?: string;
 	}>;
+	cta: {
+		label: string;
+		href: string;
+	};
 }
 
 export interface PricingSection {

@@ -1,0 +1,46 @@
+---
+import DemoCard from '@/components/showroom/DemoCard.astro';
+
+import type {
+	DemoShowroomEvent,
+	DemoShowroomItem,
+} from '@/interfaces/ui/sections/demo-showroom.interface';
+
+interface Props {
+	showroom: DemoShowroomEvent;
+	items: readonly DemoShowroomItem[];
+}
+
+const { showroom, items } = Astro.props;
+---
+
+<section
+	class="demo-showroom__gallery"
+	aria-labelledby="demo-showroom-gallery-title"
+	data-track-section="demo_showroom_gallery"
+>
+	<div class="demo-showroom__gallery-header">
+		<p class="demo-showroom__eyebrow">Demos disponibles</p>
+		<h2 id="demo-showroom-gallery-title" class="demo-showroom__section-title">
+			Elija el estilo que más se acerca a su celebración
+		</h2>
+	</div>
+
+	{
+		items.length > 0 ? (
+			<div class="demo-showroom__grid">
+				{items.map((item) => (
+					<DemoCard item={item} />
+				))}
+			</div>
+		) : (
+			<div class="demo-showroom__empty">
+				<h2 class="demo-showroom__empty-title">Estamos preparando más ejemplos</h2>
+				<p class="demo-showroom__empty-copy">
+					Aún no hay demos aprobados para {showroom.label.toLowerCase()}. Puede solicitar una
+					propuesta personalizada y le mostramos opciones cercanas a su estilo.
+				</p>
+			</div>
+		)
+	}
+</section>

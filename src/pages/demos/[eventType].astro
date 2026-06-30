@@ -1,0 +1,125 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import DemoShowroomGrid from '@/components/showroom/DemoShowroomGrid.astro';
+
+import {
+	DEMO_SHOWROOM_EVENTS,
+	getDemoShowroomByPublicSlug,
+	getFeaturedDemoShowroomItems,
+} from '@/data/demo-showroom.data';
+import { getEventAsset } from '@/lib/assets/asset-registry';
+import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
+
+import '@/styles/showroom/_demo-showroom.scss';
+
+export function getStaticPaths() {
+	return DEMO_SHOWROOM_EVENTS.map((showroom) => ({
+		params: { eventType: showroom.publicSlug },
+		props: { publicSlug: showroom.publicSlug },
+	}));
+}
+
+interface Props {
+	publicSlug: string;
+}
+
+const { publicSlug } = Astro.props;
+const showroom = getDemoShowroomByPublicSlug(publicSlug);
+
+if (!showroom) {
+	return Astro.redirect('/', 302);
+}
+
+const featuredItems = getFeaturedDemoShowroomItems(showroom.eventType).filter((item) =>
+	Boolean(getEventAsset(item.thumbnail.assetSlug, item.thumbnail.key)),
+);
+const phone = getContactPhone();
+const showWhatsAppCta = !isPlaceholderContactPhone(phone);
+const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '';
+const pageTitle = `${showroom.heroTitle} | Celebra.me`;
+const pageDescription = showroom.heroDescription;
+---
+
+<Layout title={pageTitle} description={pageDescription} className="theme-preset--jewelry-box-landing">
+	<div class="demo-showroom">
+		<header class="demo-showroom__hero" data-track-section="demo_showroom_hero">
+			<a class="demo-showroom__breadcrumb" href="/#tipo-evento">← Ver tipos de evento</a>
+			<p class="demo-showroom__eyebrow">Showroom Celebra.me</p>
+			<h1 class="demo-showroom__title">{showroom.heroTitle}</h1>
+			<p class="demo-showroom__description">{showroom.heroDescription}</p>
+			<div class="demo-showroom__hero-actions">
+				<a
+					class="demo-showroom__button demo-showroom__button--primary"
+					href="#demos"
+					data-track-event="cta_clicked"
+					data-track-section="demo_showroom_hero"
+					data-track-cta={`showroom_view_demos_${showroom.eventType}`}
+					data-track-intent="anchor"
+				>
+					Ver demos
+				</a>
+				{
+					showWhatsAppCta && (
+						<a
+							class="demo-showroom__button demo-showroom__button--secondary"
+							href={whatsAppHref}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-track-event="whatsapp_contact_clicked"
+							data-track-section="demo_showroom_hero"
+							data-track-cta={`showroom_whatsapp_${showroom.eventType}`}
+							data-track-intent="whatsapp"
+						>
+							Solicitar asesoría
+						</a>
+					)
+				}
+			</div>
+		</header>
+
+		<div id="demos">
+			<DemoShowroomGrid showroom={showroom} items={featuredItems} />
+		</div>
+
+		<section class="demo-showroom__final" data-track-section="demo_showroom_final">
+			<p class="demo-showroom__eyebrow">Siguiente paso</p>
+			<h2 class="demo-showroom__final-title">
+				Podemos adaptar un estilo similar para su celebración
+			</h2>
+			<p class="demo-showroom__final-copy">
+				Comparta el tipo de evento y el estilo que más le gustó. Le orientamos sobre paquete,
+				contenido y tiempos de entrega.
+			</p>
+			<div class="demo-showroom__final-actions">
+				<a
+					class="demo-showroom__button demo-showroom__button--secondary"
+					href="/#pricing"
+					data-track-event="cta_clicked"
+					data-track-section="demo_showroom_final"
+					data-track-cta={`showroom_pricing_${showroom.eventType}`}
+					data-track-intent="pricing"
+				>
+					Ver paquetes
+				</a>
+				{
+					showWhatsAppCta && (
+						<a
+							class="demo-showroom__button demo-showroom__button--primary"
+							href={whatsAppHref}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-track-event="whatsapp_contact_clicked"
+							data-track-section="demo_showroom_final"
+							data-track-cta={`showroom_final_whatsapp_${showroom.eventType}`}
+							data-track-intent="whatsapp"
+						>
+							Cotizar mi invitación
+						</a>
+					)
+				}
+			</div>
+		</section>
+	</div>
+</Layout>

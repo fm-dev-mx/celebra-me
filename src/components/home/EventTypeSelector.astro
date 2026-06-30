@@ -1,0 +1,61 @@
+---
+import Container from '@components/layout/Container.astro';
+import Section from '@components/layout/Section.astro';
+import Icon from '@components/common/icons/Icon.astro';
+
+import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
+
+import '@/styles/home/_event-selector.scss';
+
+interface Props {
+	events: readonly DemoShowroomEvent[];
+}
+
+const { events } = Astro.props;
+---
+
+<Section
+	id="tipo-evento"
+	class="event-selector"
+	data-track-section="event_selector"
+	aria-labelledby="event-selector-title"
+>
+	<Container class="event-selector__container">
+		<header class="event-selector__header">
+			<p class="event-selector__eyebrow">Demos por tipo de evento</p>
+			<h2 id="event-selector-title" class="event-selector__title">
+				¿Qué tipo de evento está preparando?
+			</h2>
+			<p class="event-selector__subtitle">
+				Elija una categoría para ver demos y opciones pensadas para su celebración.
+			</p>
+		</header>
+
+		<div class="event-selector__grid" aria-label="Tipos de evento disponibles">
+			{
+				events.map((event) => (
+					<a
+						class="event-selector__card"
+						href={event.showroomHref}
+						data-track-event="cta_clicked"
+						data-track-section="event_selector"
+						data-track-cta={`event_selector_${event.eventType}`}
+						data-track-intent="demo_showroom"
+					>
+						<span class="event-selector__icon" aria-hidden="true">
+							<Icon name={event.icon} />
+						</span>
+						<span class="event-selector__content">
+							<span class="event-selector__label">{event.label}</span>
+							<span class="event-selector__description">{event.description}</span>
+							<span class="event-selector__cta">
+								{event.ctaLabel}
+								<Icon name="ArrowRight" class="event-selector__cta-icon" />
+							</span>
+						</span>
+					</a>
+				))
+			}
+		</div>
+	</Container>
+</Section>

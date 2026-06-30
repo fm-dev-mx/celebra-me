@@ -1,167 +1,102 @@
-/* src/styles/home/_services.scss */
 @use '../global/mixins' as mixins;
 
 .services {
 	position: relative;
 	overflow: hidden;
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-surface-primary-rgb) / 96%),
+			rgb(var(--color-overlay-light-rgb) / 52%)
+		),
+		var(--color-surface-primary);
+	padding-block: clamp(2.4rem, 7vw, 4.5rem);
 
-	// Header Styling
+	&__container {
+		width: min(1120px, calc(100% - 2rem));
+		margin-inline: auto;
+	}
+
 	&__header {
+		max-width: 720px;
+		margin: 0 auto clamp(1.25rem, 3.5vw, 2.25rem);
 		text-align: center;
-		margin-bottom: 2rem;
-
-		@include mixins.respond-to(md) {
-			margin-bottom: 3rem;
-		}
 	}
 
 	&__heading {
 		@include mixins.typography(display-2);
 
-		font-size: clamp(2.25rem, 4vw, 3rem);
+		margin: 0;
+		font-size: clamp(2rem, 4vw, 3rem);
 		color: var(--color-text-primary);
-		position: relative;
-		display: inline-block;
-
-		// Optional accent underline
-		&::after {
-			content: '';
-			position: absolute;
-			bottom: -1rem;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 60px;
-			height: 3px;
-			background-color: var(--services-heading-accent-color);
-		}
 	}
 
-	// Grid Layout
+	&__subtitle {
+		max-width: 620px;
+		margin: 0.65rem auto 0;
+		color: var(--color-text-secondary);
+		font-size: clamp(1rem, 2vw, 1.125rem);
+		line-height: 1.55;
+	}
+
 	&__grid {
-		display: flex;
-		flex-direction: column; // Vertical stack on mobile
-		gap: 2rem;
-
-		// Mobile: No horizontal scroll, full visibility
-		overflow: visible;
-		padding-bottom: 0;
-		padding-inline: 1rem; // Add side margins requested by user
-
-		@include mixins.respond-to(md) {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr); // 3 Cols Desktop
-			gap: 2.5rem;
-			overflow-x: visible;
-			padding-bottom: 0;
-			padding-inline: 0; // Layout container handles desktop padding
-		}
-	}
-
-	// Card Component
-	&__card {
-		text-decoration: none;
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		width: 100%; // Full width relative to container
-		border-radius: 1.5rem;
-		overflow: hidden;
-		background: var(--services-card-bg);
-		backdrop-filter: blur(var(--services-card-backdrop-blur)); // Glassmorphism
-		border: 1px solid var(--services-card-border);
-		transition:
-			transform var(--services-card-transition-duration) ease,
-			box-shadow var(--services-card-transition-duration) ease;
-
-		@include mixins.respond-to(md) {
-			// flex: auto; // Reset flex for grid - Removed as width: 100% handles it
-		}
-
-		// Hover Effects (Desktop mainly)
-		&:hover {
-			transform: var(--services-card-hover-transform);
-			box-shadow: var(--services-card-hover-shadow);
-
-			.services__image {
-				filter: var(--services-image-filter-hover);
-				transform: scale(1.05);
-			}
-
-			.services__overlay {
-				opacity: 0%; // Revealing full brightness
-			}
-
-			.services__cta-icon {
-				transform: translateX(4px);
-			}
-
-			.services__icon {
-				transform: scale(1.1);
-			}
-		}
-	}
-
-	&__card-visual {
-		position: relative;
-		aspect-ratio: 16/9; // Mobile: Shorter
-		overflow: hidden;
-
-		@include mixins.respond-to(md) {
-			aspect-ratio: 16/10; // Desktop: Compact elegance
-		}
-	}
-
-	&__image-wrapper {
-		width: 100%;
-		height: 100%;
-		background-color: var(--color-surface-secondary); // Placeholder
-	}
-
-	&__image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition:
-			filter 0.5s ease,
-			transform 0.7s ease;
-		filter: var(--services-image-filter-default);
-	}
-
-	&__overlay {
-		position: absolute;
-		inset: 0;
-		background: var(--services-image-overlay-bg);
-		opacity: var(--services-image-overlay-opacity);
-		transition: opacity var(--services-card-transition-duration) ease;
-	}
-
-	&__content {
-		padding: 1.5rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		flex-grow: 1;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: 0.75rem;
+
+		@include mixins.respond-to(sm) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		@include mixins.respond-to(lg) {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	&__card {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.75rem;
+		align-items: start;
+		min-height: 100%;
+		padding: clamp(0.78rem, 2vw, 1.15rem);
+		background: rgb(var(--color-overlay-light-rgb) / 70%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
+		border-radius: 0.5rem;
+		box-shadow: 0 18px 44px -36px rgb(0 0 0 / 32%);
+		transition:
+			transform 180ms ease,
+			border-color 180ms ease,
+			box-shadow 180ms ease,
+			background-color 180ms ease;
+
+		&:hover {
+			transform: translateY(-3px);
+			border-color: rgb(var(--color-action-accent-rgb) / 38%);
+			background: rgb(var(--color-overlay-light-rgb) / 88%);
+			box-shadow: 0 22px 48px -34px rgb(0 0 0 / 38%);
+		}
 	}
 
 	&__icon-wrapper {
-		width: 3rem;
-		height: 3rem;
-		padding: 0.6rem;
-		border-radius: 50%;
-		background-color: var(--services-icon-wrapper-bg);
-		color: var(--services-icon-wrapper-color);
-		box-shadow: var(--services-icon-wrapper-shadow);
-		margin-top: -3rem; // Overlap effect
-		position: relative;
-		z-index: 2;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.3rem;
+		height: 2.3rem;
+		border-radius: 999px;
+		color: var(--color-text-emphasis);
+		background: rgb(var(--color-action-accent-rgb) / 10%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	}
 
 	&__icon {
-		width: 100%;
-		height: 100%;
-		transition: transform var(--services-card-transition-duration) ease;
+		width: 1.05rem;
+		height: 1.05rem;
+	}
+
+	&__card-body {
+		min-width: 0;
 	}
 
 	&__title {
@@ -169,54 +104,51 @@
 
 		margin: 0;
 		color: var(--services-title-color);
+		font-size: clamp(1.08rem, 2vw, 1.22rem);
+		line-height: 1.25;
 	}
 
 	&__description {
 		@include mixins.typography(body-small);
 
+		margin: 0.45rem 0 0;
 		color: var(--services-description-color);
-		margin-bottom: 1.5rem;
-		line-height: 1.6;
+		line-height: 1.5;
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: center;
+		margin-top: clamp(1.2rem, 3.5vw, 2rem);
 	}
 
 	&__cta {
-		margin-top: auto;
+		gap: 0.55rem;
 
-		@include mixins.typography(button);
+		&:focus-visible {
+			outline: 3px solid rgb(var(--color-action-accent-rgb) / 72%);
+			outline-offset: 4px;
+		}
 
-		color: var(--services-cta-color);
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		transition: color var(--services-card-transition-duration) ease;
+		&:hover .services__cta-icon {
+			transform: translateX(4px);
+		}
 	}
 
 	&__cta-icon {
-		width: 1.25rem;
-		height: 1.25rem;
-		transition: transform 0.3s ease;
+		width: 1.1rem;
+		height: 1.1rem;
+		transition: transform 180ms ease;
 	}
 }
 
-.services--motion-ready .services__card {
-	opacity: 0%;
-	transform: translateY(30px);
-}
-
-.services--motion-ready .services__card.is-visible {
-	animation: fadeInUp 0.8s var(--ease-premium, cubic-bezier(0.25, 0.46, 0.45, 0.94)) forwards;
-
-	@for $i from 1 through 6 {
-		&:nth-child(#{$i}) {
-			animation-delay: #{($i - 1) * 200}ms;
-		}
+@media (prefers-reduced-motion: reduce) {
+	.services__card,
+	.services__cta-icon {
+		transition: none;
 	}
-}
 
-// Keyframes
-@keyframes fadeInUp {
-	to {
-		opacity: 100%;
-		transform: translateY(0);
+	.services__card:hover {
+		transform: none;
 	}
 }

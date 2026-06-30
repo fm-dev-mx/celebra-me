@@ -1,18 +1,11 @@
 ---
-// /src/sections/Services.astro
-// This component displays the services offered, utilizing the Prime design system.
-
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import OptimizedImage from '@components/common/OptimizedImage.astro';
+import ActionBase from '@components/common/actions/ActionBase.astro';
 import Icon from '@components/common/icons/Icon.astro';
 
-import { getCommonAsset } from '@/lib/assets/asset-registry';
-
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
-import type { ImageAsset } from '@/lib/assets/asset-registry';
 
-// Import stylesheet
 import '@/styles/home/_services.scss';
 
 interface Props {
@@ -20,98 +13,46 @@ interface Props {
 }
 
 const { data } = Astro.props;
-
-
-// Map images to services by title
-const serviceImages: Record<string, ImageAsset> = {
-	'XV Años': getCommonAsset('serviceXv'),
-	Bodas: getCommonAsset('serviceWedding'),
-	Bautizos: getCommonAsset('serviceBaptism'),
-	Cumpleaños: getCommonAsset('serviceCumple'),
-};
-
-// All services link to contact section for inquiry
 ---
 
 <Section id="servicios" class="services section-padding" data-track-section="services">
 	<Container class="services__container">
 		<header class="services__header">
 			<h2 class="services__heading">{data.title}</h2>
+			<p class="services__subtitle">{data.subtitle}</p>
 		</header>
 
 		<div class="services__grid">
 			{
-				data.services.map((service, index) => {
-					const image = serviceImages[service.title] || serviceImages['XV Años'];
-					// Calculate delay for staggered animation: 0ms, 200ms, 400ms, 600ms
-					const delay = `${index * 200}ms`;
-					const href = service.href || '#contacto';
+				data.items.map((item) => {
 					return (
-					<a
-						href={href}
-						class="services__card"
-						data-delay={delay}
-						aria-label={`Ver detalles del servicio ${service.title}`}
-						data-track-event="cta_clicked"
-						data-track-section="services"
-						data-track-cta={`service_${service.title.toLowerCase().replaceAll(' ', '_')}`}
-						data-track-intent="service_interest"
-						data-service-name={service.title}
-					>
-						<div class="services__card-visual">
-							<div class="services__image-wrapper">
-								<OptimizedImage
-									imagePath={image}
-									alt={`Servicio de ${service.title}`}
-									width={600}
-									height={800}
-									class="services__image"
-									quality={80}
-									widths={[320, 480, 640]}
-									sizes="(max-width: 767px) 356px, 25vw"
-								/>
+						<article class="services__card">
+							<div class="services__icon-wrapper" aria-hidden="true">
+								<Icon name={item.icon || 'CheckIcon'} class="services__icon" />
 							</div>
-							<div class="services__overlay"></div>
-						</div>
-
-						<div class="services__content">
-							<div class="services__icon-wrapper">
-								<Icon name={service.icon || 'StarIcon'} class="services__icon" />
+							<div class="services__card-body">
+								<h3 class="services__title">{item.title}</h3>
+								<p class="services__description">{item.description}</p>
 							</div>
-
-							<h3 class="services__title">{service.title}</h3>
-							<p class="services__description">{service.description}</p>
-
-							<span class="services__cta">
-								Ver Ejemplos
-								<Icon name="ArrowRight" class="services__cta-icon" />
-							</span>
-						</div>
-					</a>
-				)})
+						</article>
+					);
+				})
 			}
+		</div>
+
+		<div class="services__actions">
+			<ActionBase
+				as="a"
+				href={data.cta.href}
+				class="services__cta"
+				data-track-event="cta_clicked"
+				data-track-section="services"
+				data-track-cta="services_contact"
+				data-track-intent="lead_consultation"
+			>
+				<span>{data.cta.label}</span>
+				<Icon name="ArrowRightIcon" class="services__cta-icon" />
+			</ActionBase>
 		</div>
 	</Container>
 </Section>
-<script>
-	import { createIntersectionObserver } from '@/utils/animations';
-
-	const servicesSection = document.querySelector('.services');
-	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-	document.querySelectorAll('.services__card').forEach((element) => {
-		if (element instanceof HTMLElement && element.dataset.delay) {
-			element.style.setProperty('--animation-delay', element.dataset.delay);
-		}
-	});
-
-	if (servicesSection instanceof HTMLElement && !shouldReduceMotion) {
-		servicesSection.classList.add('services--motion-ready');
-
-		createIntersectionObserver(
-			'.services--motion-ready .services__card',
-			(target) => target.classList.add('is-visible'),
-			{ rootMargin: '0px', threshold: 0.15 },
-		);
-	}
-</script>

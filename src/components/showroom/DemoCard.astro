@@ -1,0 +1,91 @@
+---
+import OptimizedImage from '@components/common/OptimizedImage.astro';
+import Icon from '@components/common/icons/Icon.astro';
+
+import { getEventAsset } from '@/lib/assets/asset-registry';
+import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
+
+import type { DemoShowroomItem } from '@/interfaces/ui/sections/demo-showroom.interface';
+
+interface Props {
+	item: DemoShowroomItem;
+}
+
+const { item } = Astro.props;
+const thumbnail = getEventAsset(item.thumbnail.assetSlug, item.thumbnail.key);
+const phone = getContactPhone();
+const showWhatsAppCta = !isPlaceholderContactPhone(phone);
+const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(item.ctaMessage) : '';
+---
+
+{
+	thumbnail && (
+		<article class="demo-card">
+			<a
+				class="demo-card__image-link"
+				href={item.href}
+				aria-label={`Ver demo completo: ${item.title}`}
+				data-track-event="cta_clicked"
+				data-track-section="demo_showroom"
+				data-track-cta="demo_card_image"
+				data-track-intent="demo"
+				data-demo-slug={item.slug}
+			>
+				<OptimizedImage
+					imagePath={thumbnail}
+					alt={item.thumbnail.alt}
+					width={720}
+					height={480}
+					class="demo-card__image"
+					loading="lazy"
+					decoding="async"
+					quality={82}
+					widths={[360, 540, 720, 960]}
+					sizes="(max-width: 767px) 92vw, (max-width: 1199px) 44vw, 360px"
+				/>
+			</a>
+
+			<div class="demo-card__body">
+				<div class="demo-card__tags" aria-label="Estilo del demo">
+					{item.styleTags.map((tag) => (
+						<span class="demo-card__tag">{tag}</span>
+					))}
+				</div>
+
+				<h2 class="demo-card__title">{item.title}</h2>
+				<p class="demo-card__description">{item.description}</p>
+
+				<div class="demo-card__actions">
+					<a
+						class="demo-card__button demo-card__button--primary"
+						href={item.href}
+						data-track-event="cta_clicked"
+						data-track-section="demo_showroom"
+						data-track-cta="demo_card_open"
+						data-track-intent="demo"
+						data-demo-slug={item.slug}
+					>
+						Ver demo completo
+						<Icon name="ArrowRight" class="demo-card__button-icon" />
+					</a>
+
+					{showWhatsAppCta && (
+						<a
+							class="demo-card__button demo-card__button--secondary"
+							href={whatsAppHref}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-track-event="whatsapp_contact_clicked"
+							data-track-section="demo_showroom"
+							data-track-cta="demo_card_whatsapp"
+							data-track-intent="whatsapp"
+							data-demo-slug={item.slug}
+						>
+							Solicitar una invitación similar
+						</a>
+					)}
+				</div>
+			</div>
+		</article>
+	)
+}

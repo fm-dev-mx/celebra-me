@@ -60,24 +60,8 @@
 	// ==========================================
 
 	// Services Section
-	--services-card-bg: rgb(var(--color-overlay-light-rgb) / 70%);
-	--services-card-backdrop-blur: 10px;
-	--services-card-border: rgb(var(--color-overlay-light-rgb) / 50%);
-	--services-card-hover-transform: translateY(-8px);
-	--services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
-	--services-image-overlay-bg: linear-gradient(to top, rgb(0 0 0 / 40%), transparent);
-	--services-image-overlay-opacity: 0.6;
-	--services-image-filter-default: grayscale(100%);
-	--services-image-filter-hover: grayscale(0%);
-	--services-icon-wrapper-bg: #{sys.$sys-color-neutral-0};
-	--services-icon-wrapper-color: #{sys.$sys-color-gold-500};
-	--services-icon-wrapper-shadow: 0 4px 10px rgb(0 0 0 / 5%);
-	--services-heading-accent-color: #{sys.$sys-color-gold-500};
 	--services-title-color: var(--color-text-primary);
 	--services-description-color: var(--color-text-secondary);
-	--services-cta-color: #{sys.$sys-color-gold-500};
-	--services-card-transition-duration: 0.4s;
-	--services-card-stagger-delay: 100ms;
 
 	// Header Section
 	--header-bg-transparent: transparent;

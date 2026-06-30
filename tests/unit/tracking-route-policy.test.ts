@@ -9,6 +9,11 @@ describe('tracking route policy', () => {
 		['/', 'commercial'],
 		['/privacidad', 'commercial'],
 		['/terminos', 'commercial'],
+		['/demos/xv', 'commercial'],
+		['/demos/boda', 'commercial'],
+		['/demos/bautizo', 'commercial'],
+		['/demos/baby-shower', 'commercial'],
+		['/demos/cumpleanos', 'commercial'],
 		['/xv/demo-xv-editorial', 'demo'],
 		['/xv/valentina-hernandez', 'real_invitation'],
 		['/xv/valentina-hernandez?invite=abc', 'personalized_invitation'],
@@ -39,6 +44,7 @@ describe('tracking route policy', () => {
 		const env = { vercelEnv: 'production', gaId: 'G-TEST' };
 
 		expect(shouldLoadGoogleAnalytics('/', env)).toBe(true);
+		expect(shouldLoadGoogleAnalytics('/demos/cumpleanos', env)).toBe(true);
 		expect(shouldLoadGoogleAnalytics('/xv/demo-xv-editorial', env)).toBe(true);
 		expect(shouldLoadGoogleAnalytics('/xv/valentina-hernandez', env)).toBe(false);
 		expect(shouldLoadGoogleAnalytics('/xv/valentina-hernandez?invite=abc', env)).toBe(false);

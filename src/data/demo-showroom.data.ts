@@ -1,0 +1,317 @@
+import type {
+	DemoShowroomEvent,
+	DemoShowroomItem,
+	DemoShowroomPublicSlug,
+} from '@/interfaces/ui/sections/demo-showroom.interface';
+import type { EventType } from '@/lib/theme/theme-contract';
+
+export const DEMO_SHOWROOM_EVENTS = [
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		label: 'XV años',
+		description: 'Diseños editoriales, elegantes y memorables para una noche única.',
+		icon: 'Crown',
+		showroomHref: '/demos/xv',
+		ctaLabel: 'Ver demos',
+		heroTitle: 'Demos de invitaciones para XV años',
+		heroDescription:
+			'Explore estilos digitales para una celebración de XV años elegante, clara y memorable.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para XV años. Vi sus demos y quiero asesoría para elegir estilo.',
+		sortOrder: 10,
+	},
+	{
+		eventType: 'boda',
+		publicSlug: 'boda',
+		label: 'Boda',
+		description: 'Invitaciones refinadas para ceremonia, recepción y detalles del gran día.',
+		icon: 'Rings',
+		showroomHref: '/demos/boda',
+		ctaLabel: 'Ver demos',
+		heroTitle: 'Demos de invitaciones para boda',
+		heroDescription:
+			'Conozca experiencias digitales pensadas para comunicar ceremonia, recepción y detalles con sobriedad.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para boda. Quiero conocer opciones similares a sus demos.',
+		sortOrder: 20,
+	},
+	{
+		eventType: 'bautizo',
+		publicSlug: 'bautizo',
+		label: 'Bautizo',
+		description: 'Diseños cálidos y delicados para una celebración familiar.',
+		icon: 'Dove',
+		showroomHref: '/demos/bautizo',
+		ctaLabel: 'Ver demos',
+		heroTitle: 'Demos de invitaciones para bautizo',
+		heroDescription:
+			'Vea propuestas digitales delicadas para compartir la celebración con familia y padrinos.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para bautizo. Vi sus demos y quiero asesoría para mi celebración.',
+		sortOrder: 30,
+	},
+	{
+		eventType: 'baby-shower',
+		publicSlug: 'baby-shower',
+		label: 'Baby shower',
+		description: 'Invitaciones suaves y emotivas para recibir a su bebé.',
+		icon: 'Sparkles',
+		showroomHref: '/demos/baby-shower',
+		ctaLabel: 'Ver demos',
+		heroTitle: 'Demos de invitaciones para baby shower',
+		heroDescription:
+			'Descubra diseños digitales tiernos y ordenados para anunciar una celebración llena de ilusión.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
+		sortOrder: 40,
+	},
+	{
+		eventType: 'cumple',
+		publicSlug: 'cumpleanos',
+		label: 'Cumpleaños',
+		description: 'Experiencias digitales para celebraciones con personalidad.',
+		icon: 'Cake',
+		showroomHref: '/demos/cumpleanos',
+		ctaLabel: 'Ver demos',
+		heroTitle: 'Demos de invitaciones para cumpleaños',
+		heroDescription:
+			'Explore una experiencia digital pensada para celebraciones personales, familiares o de aniversario.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
+		sortOrder: 50,
+	},
+] as const satisfies readonly DemoShowroomEvent[];
+
+export const DEMO_SHOWROOM_ITEMS = [
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-jewelry-box',
+		href: '/xv/demo-xv-jewelry-box',
+		title: 'XV años estilo Jewelry Box',
+		description:
+			'Una experiencia elegante con acentos luminosos, galería amplia y tono premium.',
+		styleTags: ['elegante', 'fotográfica', 'premium'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Jewelry Box.',
+		thumbnail: {
+			assetSlug: 'demo-xv-jewelry-box',
+			key: 'hero',
+			alt: 'Vista principal del demo de XV años estilo Jewelry Box',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-celestial-blue',
+		href: '/xv/demo-xv-celestial-blue',
+		title: 'XV años estilo Celestial Blue',
+		description:
+			'Una propuesta luminosa y editorial con paleta azul suave y presencia fotográfica.',
+		styleTags: ['celestial', 'azul', 'editorial'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 20,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Celestial Blue.',
+		thumbnail: {
+			assetSlug: 'demo-xv-celestial-blue',
+			key: 'hero',
+			alt: 'Vista principal del demo de XV años estilo Celestial Blue',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-editorial',
+		href: '/xv/demo-xv-editorial',
+		title: 'XV años estilo Editorial',
+		description: 'Un diseño sobrio y visual, ideal para una presentación moderna y refinada.',
+		styleTags: ['editorial', 'moderna', 'sobria'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 30,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial.',
+		thumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'hero',
+			alt: 'Vista principal del demo de XV años estilo Editorial',
+		},
+	},
+	{
+		eventType: 'boda',
+		publicSlug: 'boda',
+		slug: 'demo-boda-jewelry-box-wedding',
+		href: '/boda/demo-boda-jewelry-box-wedding',
+		title: 'Boda estilo Jewelry Box',
+		description:
+			'Una invitación refinada para ceremonia y recepción con estética clásica y luminosa.',
+		styleTags: ['romántica', 'clásica', 'refinada'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para boda similar al demo Jewelry Box.',
+		thumbnail: {
+			assetSlug: 'demo-boda-jewelry-box-wedding',
+			key: 'hero',
+			alt: 'Vista principal del demo de boda estilo Jewelry Box',
+		},
+	},
+	{
+		eventType: 'bautizo',
+		publicSlug: 'bautizo',
+		slug: 'demo-bautismo-angelic-presence',
+		href: '/bautizo/demo-bautismo-angelic-presence',
+		title: 'Bautizo estilo Angelic Presence',
+		description:
+			'Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción.',
+		styleTags: ['delicada', 'familiar', 'angelical'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para bautizo similar al demo Angelic Presence.',
+		thumbnail: {
+			assetSlug: 'demo-bautismo-angelic-presence',
+			key: 'hero',
+			alt: 'Vista principal del demo de bautizo estilo Angelic Presence',
+		},
+	},
+	{
+		eventType: 'baby-shower',
+		publicSlug: 'baby-shower',
+		slug: 'demo-baby-shower-celestial',
+		href: '/baby-shower/demo-baby-shower-celestial',
+		title: 'Baby shower estilo Celestial',
+		description:
+			'Un diseño suave y emotivo para anunciar una bienvenida con detalles memorables.',
+		styleTags: ['celestial', 'suave', 'emotiva'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para baby shower similar al demo Celestial.',
+		thumbnail: {
+			assetSlug: 'demo-baby-shower-celestial',
+			key: 'hero',
+			alt: 'Vista principal del demo de baby shower estilo Celestial',
+		},
+	},
+	{
+		eventType: 'cumple',
+		publicSlug: 'cumpleanos',
+		slug: 'demo-cumple-luxury-hacienda',
+		href: '/cumple/demo-cumple-luxury-hacienda',
+		title: 'Cumpleaños estilo Luxury Hacienda',
+		description:
+			'Una experiencia con carácter para celebrar una fecha especial con familia e invitados.',
+		styleTags: ['hacienda', 'cálida', 'con carácter'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para cumpleaños similar al demo Luxury Hacienda.',
+		thumbnail: {
+			assetSlug: 'demo-cumple-luxury-hacienda',
+			key: 'hero',
+			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-valentina-profile',
+		href: '/xv/demo-xv-valentina-profile',
+		title: 'XV años edición Valentina',
+		description:
+			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
+		styleTags: ['perfil', 'editorial'],
+		visibility: 'hidden',
+		reviewStatus: 'needs-review',
+		featured: false,
+		sortOrder: 900,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones editoriales.',
+		thumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'hero',
+			alt: 'Vista principal de variante editorial de XV años',
+		},
+		exclusionReason: 'Perfil/client-like demo pendiente de revisión manual.',
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-xareni-profile',
+		href: '/xv/demo-xv-xareni-profile',
+		title: 'XV años edición Xareni',
+		description:
+			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
+		styleTags: ['perfil', 'celestial'],
+		visibility: 'hidden',
+		reviewStatus: 'needs-review',
+		featured: false,
+		sortOrder: 910,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones celestiales.',
+		thumbnail: {
+			assetSlug: 'demo-xv-celestial-blue',
+			key: 'hero',
+			alt: 'Vista principal de variante celestial de XV años',
+		},
+		exclusionReason: 'Perfil/client-like demo pendiente de revisión manual.',
+	},
+	{
+		eventType: 'primera-comunion',
+		publicSlug: 'bautizo',
+		slug: 'demo-primera-comunion-illustrated',
+		href: '/primera-comunion/demo-primera-comunion-illustrated',
+		title: 'Primera comunión ilustrada',
+		description: 'Demo relacionado, no incluido en el alcance público inicial de showrooms.',
+		styleTags: ['familiar', 'ilustrada'],
+		visibility: 'hidden',
+		reviewStatus: 'needs-review',
+		featured: false,
+		sortOrder: 920,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para primera comunión. Quiero conocer opciones.',
+		thumbnail: {
+			assetSlug: 'demo-primera-comunion-illustrated',
+			key: 'hero',
+			alt: 'Vista principal del demo de primera comunión ilustrada',
+		},
+		exclusionReason: 'Tipo de evento diferido fuera del alcance Phase 1/2.',
+	},
+] as const satisfies readonly DemoShowroomItem[];
+
+export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
+	return DEMO_SHOWROOM_EVENTS.find((event) => event.publicSlug === publicSlug);
+}
+
+export function getDemoShowroomByEventType(eventType: EventType): DemoShowroomEvent | undefined {
+	return DEMO_SHOWROOM_EVENTS.find((event) => event.eventType === eventType);
+}
+
+export function getFeaturedDemoShowroomItems(eventType?: EventType): DemoShowroomItem[] {
+	return DEMO_SHOWROOM_ITEMS.filter((item) => {
+		if (eventType && item.eventType !== eventType) return false;
+		return item.visibility === 'featured' && item.reviewStatus === 'approved' && item.featured;
+	}).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export function getShowroomPublicSlugs(): DemoShowroomPublicSlug[] {
+	return DEMO_SHOWROOM_EVENTS.map((event) => event.publicSlug);
+}

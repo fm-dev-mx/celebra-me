@@ -22,6 +22,13 @@ export interface AnalyticsEnvironment {
 }
 
 const COMMERCIAL_PATHS = new Set(['/', '/privacidad', '/terminos']);
+const COMMERCIAL_DEMO_SHOWROOM_PATHS = new Set([
+	'/demos/xv',
+	'/demos/boda',
+	'/demos/bautizo',
+	'/demos/baby-shower',
+	'/demos/cumpleanos',
+]);
 const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple', 'baby-shower', 'primera-comunion']);
 
 function normalizePath(input: string | URL): {
@@ -110,6 +117,16 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 			gaAllowed: true,
 			metaAllowed: true,
 			reason: 'commercial_route',
+		};
+	}
+
+	if (COMMERCIAL_DEMO_SHOWROOM_PATHS.has(pathname)) {
+		return {
+			routeClass: 'commercial',
+			internalAllowed: true,
+			gaAllowed: true,
+			metaAllowed: true,
+			reason: 'demo_showroom_route',
 		};
 	}
 

@@ -13,41 +13,47 @@ export const landingData: LandingPageData = {
 		},
 		primaryCtaLabel: 'Solicitar asesoría',
 		primaryCtaUrl: '#contacto',
-		secondaryCtaLabel: 'Ver Catálogo',
-		secondaryCtaUrl: '#servicios',
+		secondaryCtaLabel: 'Ver demos',
+		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
 			'¡Hola! Me gustaría crear una invitación digital premium para mi próximo evento. ¿Podrían asesorarme?',
 		socialProofText: 'Más de 500 eventos inolvidables',
 	},
 	services: {
-		title: 'Nuestros Servicios',
-		services: [
+		title: 'Qué incluye tu invitación digital',
+		subtitle:
+			'Todo lo necesario para compartir tu evento con claridad, estilo y control desde un solo enlace.',
+		items: [
 			{
-				href: '/xv/demo-xv-editorial',
-				title: 'XV Años',
-				description: 'Invitaciones mágicas para una noche inolvidable.',
-				icon: 'CrownIcon',
+				title: 'RSVP y confirmaciones',
+				description:
+					'Sus invitados pueden confirmar asistencia y número de acompañantes desde la invitación.',
+				icon: 'CheckSealIcon',
 			},
 			{
-				href: '/boda/demo-boda-jewelry-box-wedding',
-				title: 'Bodas',
-				description: 'Elegancia y distinción para el día más importante.',
-				icon: 'RingsIcon',
+				title: 'Pases personalizados',
+				description:
+					'Cada invitado puede recibir su propio enlace o pase digital para acceder a los detalles del evento.',
+				icon: 'EnvelopedIcon',
 			},
 			{
-				href: '/bautizo/demo-bautismo-angelic-presence',
-				title: 'Bautizos',
-				description: 'Detalles tiernos para celebrar la vida.',
-				icon: 'DoveIcon',
+				title: 'Galería, música y mapas',
+				description:
+					'Integramos fotos, canción, ubicación, itinerario y detalles importantes en una experiencia cuidada.',
+				icon: 'MapLocationIcon',
 			},
 			{
-				href: '/cumple/demo-cumple-luxury-hacienda',
-				title: 'Cumpleaños',
-				description: 'Demo premium para celebraciones con estilo.',
-				icon: 'StarIcon',
+				title: 'Lista de invitados',
+				description:
+					'Organice invitados, pases y respuestas para tener mejor control antes del evento.',
+				icon: 'UserGroupIcon',
 			},
 		],
+		cta: {
+			label: 'Solicitar asesoría',
+			href: '#contacto',
+		},
 	},
 	about: {
 		title: 'Nuestra Esencia',
