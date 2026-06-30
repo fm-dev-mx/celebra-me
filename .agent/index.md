@@ -32,6 +32,22 @@ Use this file after reading `AGENTS.md`. It is the current discovery map for the
 | `supabase`                 | Supabase Auth, RLS, Edge Functions, Storage, CLI, and MCP guidance            |
 | `supabase-postgres`        | Postgres query optimization, indexes, connections, schema design, and locking |
 
+## Available Briefs
+
+| Brief        | Status | Purpose                                        |
+| ------------ | ------ | ---------------------------------------------- |
+| `celebra-me` | active | Brand brief for Celebra-me digital invitations |
+
+## Available Templates (Creative)
+
+| Template              | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `reel-brief`          | short-form video reel script structure                 |
+| `social-image-brief`  | social post / carousel copy and image prompt structure |
+| `video-frame-brief`   | initial/final video frame prompt with ComfyUI params   |
+| `image-prompt-output` | generation parameter log for reproducibility           |
+| `creative-qa-report`  | checklist and report for reviewing creative outputs    |
+
 ## Available Workflows
 
 | Workflow                        | Use When                                                                                |
@@ -75,3 +91,4 @@ for brevity.
 | Supabase or database work             | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/database.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant docs |
 | Planning or commit governance         | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `plan-authoring` or `commit-planner`                                                                  |
 | Planning or implementation sequencing | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `agent-communication` + `.agent/plans/README.md`                                                      |
+| Creative or marketing production      | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/briefs/celebra-me.md` + relevant creative template                                            |

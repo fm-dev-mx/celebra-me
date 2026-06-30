@@ -11,15 +11,19 @@ This is the canonical entry point for coding agents working in this repository.
 2. Read `.agent/index.md` for the current discovery map.
 3. Read `.agent/load-skills.md` before using repo-local skills.
 4. Read `.agent/rules/gatekeeper.md` before changing files.
-5. Load only the smallest relevant rule, workflow, skill, or domain doc for the task.
+5. Read `.agent/briefs/` for brand context when producing creative or marketing content.
+6. Read `.agent/templates/creative/` for structured output formats (reels, posts, prompts, QA).
+7. Load only the smallest relevant rule, workflow, skill, domain doc, or template for the task.
 
 ## Authority Order
 
 1. Explicit repository-owner and current-task instructions.
 2. Active repository governance in this file, `.agent/rules/gatekeeper.md` (review/remediation
    contract), and `.agent/**`.
-3. Active architecture and domain docs in `docs/core/**` and `docs/domains/**`.
-4. Historical material in `docs/archive/**` and `.agent/plans/archived/**` for background only.
+3. Active brand briefs in `.agent/briefs/`.
+4. Active architecture and domain docs in `docs/core/**` and `docs/domains/**`.
+5. Templates in `.agent/templates/creative/` for structured output formats.
+6. Historical material in `docs/archive/**` and `.agent/plans/archived/**` for background only.
 
 If sources disagree, prefer the live codebase plus the highest-priority active source above.
 
@@ -53,6 +57,10 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
 - Plan governance: `.agent/plans/README.md`
 
 Human-facing architecture and domain sources live under `docs/core/**` and `docs/domains/**`.
+
+Brand context for creative and marketing production: `.agent/briefs/`. Structured output templates
+for creative assets: `.agent/templates/creative/`. Creative system discovery audit (June 2026):
+`.agent/plans/archived/hermes-creative-system-discovery.md`.
 
 ## Architecture
 
