@@ -30,6 +30,7 @@ import {
 	type ConsentState,
 } from '@/lib/tracking/consent-client';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { getPixelIdFromEnv, isPixelEnabledInEnv } from '@/lib/tracking/meta-pixel-env';
 
 declare global {
 	interface Window {
@@ -49,11 +50,11 @@ let pixelLoading = false;
 let pixelId = '';
 
 function getPixelId(): string {
-	return import.meta.env.PUBLIC_META_PIXEL_ID?.trim() || '';
+	return getPixelIdFromEnv();
 }
 
 function isPixelEnabled(): boolean {
-	return import.meta.env.PUBLIC_META_PIXEL_ENABLED === 'true';
+	return isPixelEnabledInEnv();
 }
 
 function routeAllowsMeta(): boolean {
@@ -146,6 +147,9 @@ export function initMetaPixel(): void {
 
 /**
  * Track a Meta Pixel event. Called only after marketing consent is verified.
+ * Standard Meta events (PageView, ViewContent, Lead, Contact) are sent via
+ * fbq('track', ...). Any other mapped event is sent via fbq('trackCustom', ...)
+ * and appears as a custom event in Events Manager.
  */
 function trackMetaEvent(
 	eventName: string,
@@ -157,7 +161,8 @@ function trackMetaEvent(
 
 	// No eventID is sent in this phase. Contact and Lead are different
 	// funnel stages and are not deduplicated against each other.
-	window.fbq?.('track', eventName, parameters ?? {});
+	const method = STANDARD_META_EVENTS.has(eventName) ? 'track' : 'trackCustom';
+	window.fbq?.(method, eventName, parameters ?? {});
 }
 
 /**
@@ -175,11 +180,22 @@ export function forwardToMetaPixel(
 	trackMetaEvent(metaEvent, params);
 }
 
+/**
+ * Standard Meta Pixel events that are recognized conversion events in
+ * Events Manager. Mapped first-party events whose target is in this set
+ * are sent via fbq('track', ...). All other mapped events are sent via
+ * fbq('trackCustom', ...) and appear as custom events.
+ */
+const STANDARD_META_EVENTS = new Set(['PageView', 'ViewContent', 'Lead', 'Contact']);
+
 const META_EVENT_MAP: Record<string, string> = {
 	page_viewed: 'PageView',
 	demo_viewed: 'ViewContent',
 	package_viewed: 'ViewContent',
 	whatsapp_contact_clicked: 'Contact',
+	// lead_created is currently server-side only; mapped here for
+	// code-level versioning of the tracking contract.
+	lead_created: 'Lead',
 };
 
 function mapToMetaEvent(firstPartyName: string): string | undefined {
