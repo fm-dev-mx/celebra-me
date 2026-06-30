@@ -93,6 +93,16 @@ export interface ContactData {
 	subtitle: string;
 }
 
+export interface HowItWorksData {
+	title: string;
+	subtitle: string;
+	steps: Array<{
+		icon: string;
+		title: string;
+		description: string;
+	}>;
+}
+
 export interface LandingPageData {
 	hero: HeroData;
 	about: AboutData;
@@ -101,4 +111,5 @@ export interface LandingPageData {
 	testimonials: TestimonialsData;
 	faq: FAQData;
 	contact: ContactData;
+	howItWorks: HowItWorksData;
 }

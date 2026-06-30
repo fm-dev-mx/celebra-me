@@ -1,0 +1,39 @@
+---
+// src/components/home/HowItWorks.astro
+import Container from '@components/layout/Container.astro';
+import Section from '@components/layout/Section.astro';
+import Icon from '@components/common/icons/Icon.astro';
+import type { HowItWorksData } from '@/interfaces/ui/sections/landing-page.interface';
+
+import '@/styles/home/_how-it-works.scss';
+
+interface Props {
+	data: HowItWorksData;
+}
+
+const { data } = Astro.props;
+---
+
+<Section id="como-funciona" class="how-it-works" data-track-section="how_it_works">
+	<Container class="how-it-works__container">
+		<header class="how-it-works__header">
+			<h2 class="how-it-works__title">{data.title}</h2>
+			<p class="how-it-works__subtitle">{data.subtitle}</p>
+		</header>
+
+		<div class="how-it-works__steps">
+			{
+				data.steps.map((step, index) => (
+					<div class="how-it-works__step" data-step={index + 1}>
+						<div class="how-it-works__step-number" aria-hidden="true">{index + 1}</div>
+						<div class="how-it-works__step-icon">
+							<Icon name={step.icon} size={28} />
+						</div>
+						<h3 class="how-it-works__step-title">{step.title}</h3>
+						<p class="how-it-works__step-description">{step.description}</p>
+					</div>
+				))
+			}
+		</div>
+	</Container>
+</Section>

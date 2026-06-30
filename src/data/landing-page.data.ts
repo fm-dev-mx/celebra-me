@@ -221,6 +221,37 @@ export const landingData: LandingPageData = {
 			},
 		],
 	},
+	howItWorks: {
+		title: 'Cómo funciona',
+		subtitle:
+			'Crear la invitación digital perfecta para tu celebración es más sencillo de lo que imaginas.',
+		steps: [
+			{
+				icon: 'SparklesIcon',
+				title: 'Elige tu estilo',
+				description:
+					'Selecciona entre nuestros niveles Colección, Premium o Exclusivo y el diseño que más se ajuste a la personalidad de tu evento.',
+			},
+			{
+				icon: 'HeartIcon',
+				title: 'Envíanos tu contenido',
+				description:
+					'Comparte tus fotos, textos, fecha, lugar, música y la lista de invitados. Nosotros nos encargamos de armar todo.',
+			},
+			{
+				icon: 'CheckIcon',
+				title: 'Revisamos y ajustamos',
+				description:
+					'Te presentamos una propuesta de diseño, revisamos contigo y hacemos los ajustes necesarios hasta que quede perfecta.',
+			},
+			{
+				icon: 'MessageIcon',
+				title: 'Comparte tu invitación',
+				description:
+					'Recibes un enlace personalizado listo para compartir por WhatsApp, redes sociales o donde prefieras. Tus invitados confirman desde ahí.',
+			},
+		],
+	},
 	contact: {
 		title: 'Su Asesor Personal',
 		subtitle:

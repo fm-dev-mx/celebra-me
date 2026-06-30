@@ -1,0 +1,125 @@
+// src/styles/home/_how-it-works.scss
+// "Cómo funciona" section — simple, static, no hydration.
+// Matches the existing landing section visual language.
+
+@use '../global/mixins' as mixins;
+
+.how-it-works {
+	position: relative;
+	padding: 5rem 0;
+	background: var(--color-surface-secondary);
+
+	&__container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	&__header {
+		text-align: center;
+		margin-bottom: 4rem;
+	}
+
+	&__title {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4vw, 2.75rem);
+		color: var(--color-text-primary);
+		margin-bottom: 1rem;
+	}
+
+	&__subtitle {
+		font-size: 1.1rem;
+		color: var(--color-text-secondary);
+		max-width: 640px;
+		margin: 0 auto;
+		line-height: 1.6;
+	}
+
+	&__steps {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2rem;
+	}
+
+	&__step {
+		position: relative;
+		text-align: center;
+		padding: 2.5rem 1.5rem;
+		background: var(--color-surface-primary);
+		border-radius: 1rem;
+		border: 1px solid var(--color-border-subtle);
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
+
+		&:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
+		}
+	}
+
+	&__step-number {
+		position: absolute;
+		top: -0.75rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 2rem;
+		height: 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-action-accent);
+		color: var(--color-text-on-accent);
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 600;
+		border-radius: 50%;
+	}
+
+	&__step-icon {
+		margin-bottom: 1rem;
+		color: var(--color-action-accent);
+		display: flex;
+		justify-content: center;
+	}
+
+	&__step-title {
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		color: var(--color-text-primary);
+		margin-bottom: 0.75rem;
+	}
+
+	&__step-description {
+		font-size: 0.9rem;
+		color: var(--color-text-secondary);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	// Tablet: 2x2 grid
+	@include mixins.respond-below(xl) {
+		&__steps {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.5rem;
+		}
+	}
+
+	// Mobile: single column
+	@include mixins.respond-below(sm) {
+		padding: 3rem 0;
+
+		&__header {
+			margin-bottom: 2.5rem;
+		}
+
+		&__steps {
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+		}
+
+		&__step {
+			padding: 2rem 1.25rem;
+		}
+	}
+}
