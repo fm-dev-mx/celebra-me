@@ -17,7 +17,7 @@
     "hero": {
         "name": "María Santos",
         "label": "Bautismo",
-        "date": "2026-06-15T10:00:00.000Z",
+        "date": "2026-10-18T10:00:00.000Z",
         "backgroundImage": "hero"
     },
     "location": {
@@ -26,7 +26,7 @@
             "venueName": "Parroquia de San José",
             "address": "Calle Principal #10, Centro",
             "city": "Ciudad de México",
-            "date": "15 de junio de 2026",
+            "date": "18 de octubre de 2026",
             "time": "10:00 AM",
             "image": "ceremony",
             "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20San%20Jose%20Ciudad%20de%20Mexico"
@@ -36,7 +36,7 @@
             "venueName": "Casa Jardín Santa Clara",
             "address": "Av. de los Encinos #24, Ciudad de México",
             "city": "Ciudad de México",
-            "date": "15 de junio de 2026",
+            "date": "18 de octubre de 2026",
             "time": "12:00 PM",
             "image": "reception",
             "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Casa%20Jardin%20Santa%20Clara%20Ciudad%20de%20Mexico"
