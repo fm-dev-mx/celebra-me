@@ -11,7 +11,7 @@ export const landingData: LandingPageData = {
 			mobileUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
 		},
-		primaryCtaLabel: 'Crea tu Invitación',
+		primaryCtaLabel: 'Solicitar asesoría',
 		primaryCtaUrl: '#contacto',
 		secondaryCtaLabel: 'Ver Catálogo',
 		secondaryCtaUrl: '#servicios',
@@ -218,6 +218,22 @@ export const landingData: LandingPageData = {
 			{
 				question: '¿La promoción de $499 aplica para cualquier diseño?',
 				answer: 'No. La promoción de $499 MXN aplica solo para diseños seleccionados de colección. Los niveles Premium y Exclusivo se cotizan por separado.',
+			},
+			{
+				question: '¿Cuánto tiempo tarda la entrega?',
+				answer: 'Los diseños de Colección se entregan en 24 horas hábiles una vez que recibimos todo tu contenido. Los niveles Premium y Exclusivo requieren de 3 a 7 días hábiles dependiendo de la complejidad del diseño y la agenda de producción.',
+			},
+			{
+				question: '¿Cómo funciona el pago?',
+				answer: 'El pago se realiza por transferencia bancaria o depósito. Para Colección se paga por adelantado al iniciar tu diseño. Para Premium y Exclusivo se requiere un anticipo del 50 % y el resto al aprobar el diseño final. Próximamente habilitaremos pagos con tarjeta en línea.',
+			},
+			{
+				question: '¿Puedo solicitar cambios o revisiones después de la entrega?',
+				answer: 'Sí. Todos los niveles incluyen rondas de revisión. En Colección puedes solicitar ajustes menores (textos, fotos, fechas). Premium y Exclusivo incluyen revisiones de diseño más profundas. Los cambios adicionales fuera del alcance del nivel contratado se cotizan por separado.',
+			},
+			{
+				question: '¿Qué contenido necesito proporcionar para comenzar?',
+				answer: 'Para cualquier nivel necesitas: fecha y hora del evento, lugar, nombres de los festejados, fotos que quieras incluir y la lista de invitados con sus números de WhatsApp. Para Premium y Exclusivo también compartimos una guía de contenido para asegurar el mejor resultado visual.',
 			},
 		],
 	},
