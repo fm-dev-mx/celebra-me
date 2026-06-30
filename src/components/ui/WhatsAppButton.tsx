@@ -1,5 +1,6 @@
 import React from 'react';
 import { WhatsAppIcon } from '@/components/common/icons/social';
+import { getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 interface WhatsAppButtonProps {
 	className?: string;
@@ -10,11 +11,15 @@ interface WhatsAppButtonProps {
 
 const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
 	className = '',
-	phone = '5215500000000', // Placeholder, should come from config
+	phone: explicitPhone,
 	message = '¡Hola! Me gustaría recibir información sobre las invitaciones digitales premium.',
-	label = 'Crea tu Invitación',
+	label = 'Solicitar asesoría',
 }) => {
-	const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+	const phone = explicitPhone || '';
+	const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
+	const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
+
+	if (isPlaceholder) return null;
 
 	return (
 		<a

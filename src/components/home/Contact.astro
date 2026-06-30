@@ -4,7 +4,7 @@ import ContactForm from '@components/ui/ContactForm.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getWhatsAppLink } from '@/utils/whatsapp';
+import { getWhatsAppLink, getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 // Import stylesheet
 import '@/styles/home/_contact.scss';
@@ -15,6 +15,9 @@ interface Props {
 
 // Destructure the data prop
 const { data } = Astro.props;
+
+const hasValidWhatsApp = !isPlaceholderContactPhone(getContactPhone());
+const whatsappMessage = 'Hola, me gustaría conocer más sobre sus invitaciones digitales para eventos.';
 ---
 
 <!-- Contact Section -->
@@ -38,23 +41,25 @@ const { data } = Astro.props;
 					</p>
 
 					<div class="contact-channels">
-						<a
-							href={getWhatsAppLink('Hola, me gustaría conocer más sobre sus invitaciones digitales para eventos.')}
-							target="_blank"
-							class="channel-link"
-							data-track-event="whatsapp_contact_clicked"
-							data-track-section="contact"
-							data-track-cta="contact_whatsapp"
-							data-track-intent="whatsapp"
-						>
-							<div class="channel-icon-wrapper">
-								<Icon name="WhatsApp" size={24} />
-							</div>
-							<div class="channel-text">
-								<span class="channel-label">Asesoría Inmediata</span>
-								<span class="channel-value">Contáctanos por WhatsApp</span>
-							</div>
-						</a>
+						{hasValidWhatsApp && (
+							<a
+								href={getWhatsAppLink(whatsappMessage)}
+								target="_blank"
+								class="channel-link"
+								data-track-event="whatsapp_contact_clicked"
+								data-track-section="contact"
+								data-track-cta="contact_whatsapp"
+								data-track-intent="whatsapp"
+							>
+								<div class="channel-icon-wrapper">
+									<Icon name="WhatsApp" size={24} />
+								</div>
+								<div class="channel-text">
+									<span class="channel-label">Asesoría Inmediata</span>
+									<span class="channel-value">Contáctanos por WhatsApp</span>
+								</div>
+							</a>
+						)}
 
 						<a
 							href="mailto:contacto@celebra-me.com"

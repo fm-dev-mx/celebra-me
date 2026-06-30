@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
+import { getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	className?: string;
@@ -10,14 +11,19 @@ interface Props {
 
 const {
 	className = '',
-	phone = '5215500000000',
+	phone: explicitPhone,
 	message = '¡Hola! Me gustaría recibir información sobre las invitaciones digitales premium.',
-	label = 'Crea tu invitación',
+	label = 'Solicitar asesoría',
 } = Astro.props;
 
-const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+// If no phone is explicitly provided, try the env var.
+// If the phone is a placeholder, hide the CTA to avoid broken links.
+const phone = explicitPhone || '';
+const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
+const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 ---
 
+{!isPlaceholder && (
 <a
 	href={whatsappUrl}
 	target="_blank"
@@ -32,3 +38,4 @@ const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
 	<Icon name="WhatsApp" size={20} />
 	{label}
 </a>
+)}
