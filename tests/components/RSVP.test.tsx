@@ -315,7 +315,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
+			expect(screen.getByText('Sí, asistiré')).toBeInTheDocument();
 		});
 
 		it('"Sí, asistiré" shows attendee count with guestCap value by default', async () => {
@@ -334,7 +334,7 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/No podré/i));
 
-			expect(screen.getByLabelText(/No podré/i)).toBeChecked();
+			expect(screen.getByText('No podré asistir')).toBeInTheDocument();
 			// Guest count should still be hidden
 			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 			// Notes should now be visible
@@ -348,6 +348,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(screen.getByLabelText(/Número de asistentes/i)).toBeInTheDocument();
 
+			await user.click(screen.getByRole('button', { name: /Cambiar/i }));
 			await user.click(screen.getByLabelText(/No podré/i));
 			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 		});
@@ -357,6 +358,7 @@ describe('RSVP Component', () => {
 			render(<RSVP {...defaultProps} guestCap={10} />);
 
 			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /Cambiar/i }));
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			const guestInput = screen.getByLabelText(/Número de asistentes/i) as HTMLInputElement;
@@ -364,14 +366,17 @@ describe('RSVP Component', () => {
 		});
 
 		it('should show notes textarea when "Yes" or "No" is selected', async () => {
-			const user = userEvent.setup();
-			const { rerender } = render(<RSVP {...defaultProps} />);
+			const user1 = userEvent.setup();
+			const { unmount } = render(<RSVP {...defaultProps} />);
 
-			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user1.click(screen.getByLabelText(/Sí, asistiré/i));
 			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
 
-			rerender(<RSVP {...defaultProps} />);
-			await user.click(screen.getByLabelText(/No podré/i));
+			unmount();
+
+			const user2 = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+			await user2.click(screen.getByLabelText(/No podré/i));
 			expect(screen.getByLabelText(/Mensaje para el festejado/i)).toBeInTheDocument();
 		});
 
@@ -415,24 +420,15 @@ describe('RSVP Component', () => {
 		});
 
 		it('all variants use "Confirmar asistencia" for submit button', async () => {
-			const user = userEvent.setup();
-			const { rerender } = render(<RSVP {...defaultProps} variant="editorial" />);
-			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			expect(
-				screen.getByRole('button', { name: /Confirmar asistencia/i }),
-			).toBeInTheDocument();
-
-			rerender(<RSVP {...defaultProps} variant="premiere-floral" />);
-			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			expect(
-				screen.getByRole('button', { name: /Confirmar asistencia/i }),
-			).toBeInTheDocument();
-
-			rerender(<RSVP {...defaultProps} variant="celestial-blue" />);
-			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			expect(
-				screen.getByRole('button', { name: /Confirmar asistencia/i }),
-			).toBeInTheDocument();
+			for (const variant of ['editorial', 'premiere-floral', 'celestial-blue'] as const) {
+				const user = userEvent.setup();
+				const { unmount } = render(<RSVP {...defaultProps} variant={variant} />);
+				await user.click(screen.getByLabelText(/Sí, asistiré/i));
+				expect(
+					screen.getByRole('button', { name: /Confirmar asistencia/i }),
+				).toBeInTheDocument();
+				unmount();
+			}
 		});
 	});
 

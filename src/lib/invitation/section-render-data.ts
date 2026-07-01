@@ -2,6 +2,7 @@ import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
 import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -146,14 +147,32 @@ function renderRsvpSection(
 	if (!sections.rsvp) return null;
 
 	const guestContext = pageContext.guestContext;
+	const isDemo = pageContext.viewModel.isDemo;
+	const rsvpProps = { ...sections.rsvp };
+
+	if (isDemo) {
+		const businessPhone = getContactPhone();
+		const hasRealBusinessPhone = !isPlaceholderContactPhone(businessPhone);
+		if (hasRealBusinessPhone) {
+			if (rsvpProps.whatsappConfig) {
+				rsvpProps.whatsappConfig = {
+					...rsvpProps.whatsappConfig,
+					phone: businessPhone,
+				};
+			}
+		} else {
+			// No real business contact configured, change RSVP mode to pure API/screen confirmation
+			rsvpProps.confirmationMode = 'api';
+		}
+	}
 
 	return {
 		component: 'rsvp' as const,
 		props: {
-			...sections.rsvp,
-			variant: resolveSectionVariant(sections.rsvp, themePreset),
+			...rsvpProps,
+			variant: resolveSectionVariant(rsvpProps, themePreset),
 			celebrantName: hero.name,
-			guestCap: guestContext?.guest.maxAllowedAttendees ?? sections.rsvp.guestCap,
+			guestCap: guestContext?.guest.maxAllowedAttendees ?? rsvpProps.guestCap,
 			initialGuestData: guestContext
 				? {
 						fullName: guestContext.guest.fullName,

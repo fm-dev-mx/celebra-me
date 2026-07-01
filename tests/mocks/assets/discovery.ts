@@ -18,10 +18,13 @@ const assetStub = {
 
 export const discoverEventModules = jest.fn(() => ({
 	'../../assets/images/events/demo-xv-jewelry-box/index.ts': assetStub,
+	'../../assets/images/events/demo-xv-celestial-blue/index.ts': assetStub,
 	'../../assets/images/events/demo-xv-editorial/index.ts': assetStub,
 	'../../assets/images/events/demo-xv-enchanted-rose/index.ts': assetStub,
 	'../../assets/images/events/demo-bautismo-angelic-presence/index.ts': assetStub,
 	'../../assets/images/events/demo-baby-shower-celestial/index.ts': assetStub,
+	'../../assets/images/events/demo-boda-jewelry-box-wedding/index.ts': assetStub,
+	'../../assets/images/events/demo-cumple-luxury-hacienda/index.ts': assetStub,
 	'../../assets/images/events/demo-primera-comunion-illustrated/index.ts': assetStub,
 	'../../assets/images/events/ximena-meza-trasvina/index.ts': assetStub,
 	'../../assets/images/events/ana-sofia-cota-guillen/index.ts': assetStub,

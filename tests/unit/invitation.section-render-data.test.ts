@@ -9,6 +9,7 @@ import {
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type RsvpDescriptor = Extract<InvitationSectionRenderDescriptor, { component: 'rsvp' }>;
 type PersonalizedAccessDescriptor = Extract<
@@ -384,5 +385,87 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const descriptorComponents = descriptors.map((d) => d.component);
 
 		expect(descriptorComponents).toContain('rsvp');
+	});
+
+	describe('RSVP demo override boundary', () => {
+		const originalRsvpSection = {
+			title: 'Confirma tu asistencia',
+			accessMode: 'hybrid' as const,
+			eventSlug: 'test-event',
+			eventType: 'xv' as const,
+			confirmationMessage: 'Gracias',
+			confirmationMode: 'both' as const,
+			whatsappConfig: {
+				phone: '521999999999',
+				textTemplate: 'Hola',
+			},
+		};
+
+		const buildTestContext = (isDemo: boolean) => {
+			return buildPageContextFromViewModel({
+				slug: 'test-event',
+				eventType: 'xv',
+				viewModel: {
+					id: 'test-event',
+					isDemo,
+					title: 'Test Event',
+					theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+					hero: {
+						name: 'Test',
+						date: '2026-08-01',
+						backgroundImage: { src: '/hero.jpg', alt: 'Portada' },
+					},
+					envelope: { disabled: true },
+					brandingVisibility: {
+						showFooterBranding: true,
+						showContactCta: true,
+						showThankYouBranding: true,
+					},
+					sectionOrder: ['rsvp'],
+					sections: {
+						rsvp: { ...originalRsvpSection },
+					},
+				} as any,
+			});
+		};
+
+		it('does not affect real invitations when isDemo is false', () => {
+			const pageContext = buildTestContext(false);
+			const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+			const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
+
+			expect(rsvpDescriptor).toBeDefined();
+			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('521999999999');
+			expect(rsvpDescriptor?.props.confirmationMode).toBe('both');
+		});
+
+		it('overrides phone number with business phone when isDemo is true and business phone is real', () => {
+			const mockGetContactPhone = jest.mocked(getContactPhone);
+			const mockIsPlaceholderContactPhone = jest.mocked(isPlaceholderContactPhone);
+			mockGetContactPhone.mockReturnValue('5218112345678');
+			mockIsPlaceholderContactPhone.mockReturnValue(false);
+
+			const pageContext = buildTestContext(true);
+			const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+			const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
+
+			expect(rsvpDescriptor).toBeDefined();
+			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('5218112345678');
+			expect(rsvpDescriptor?.props.confirmationMode).toBe('both');
+		});
+
+		it('falls back to confirmationMode api when isDemo is true and business phone is placeholder', () => {
+			const mockGetContactPhone = jest.mocked(getContactPhone);
+			const mockIsPlaceholderContactPhone = jest.mocked(isPlaceholderContactPhone);
+			mockGetContactPhone.mockReturnValue('521000000000');
+			mockIsPlaceholderContactPhone.mockReturnValue(true);
+
+			const pageContext = buildTestContext(true);
+			const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+			const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
+
+			expect(rsvpDescriptor).toBeDefined();
+			expect(rsvpDescriptor?.props.confirmationMode).toBe('api');
+		});
 	});
 });

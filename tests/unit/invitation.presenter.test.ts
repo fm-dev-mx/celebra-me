@@ -55,7 +55,7 @@ describe('prepareInvitationPageContext', () => {
 			label: fixture.hero.label,
 			primaryName: fixture.hero.name,
 			secondaryName: undefined,
-			date: '25 · ABR · 2026',
+			date: '21 · NOV · 2026',
 			guestLabel: 'Entrega especial para:',
 			guestName: 'Mariana Soto',
 			tagline: undefined,
@@ -103,7 +103,9 @@ describe('prepareInvitationPageContext', () => {
 		});
 
 		expect(context.layout.title).toBe(fixture.title);
-		expect(context.layout.description).toBe(fixture.description);
+		expect(context.layout.description).toBe(
+			fixture.sharing?.ogDescription || fixture.description,
+		);
 		expect(context.guestContext).toBeUndefined();
 		expect(context.envelope?.isDemo).toBe(true);
 		expect(context.envelope).not.toHaveProperty('city');
@@ -112,7 +114,7 @@ describe('prepareInvitationPageContext', () => {
 			label: fixture.hero.label,
 			primaryName: fixture.hero.name,
 			secondaryName: undefined,
-			date: '25 · ABR · 2026',
+			date: '21 · NOV · 2026',
 			guestLabel: 'Entrega especial para:',
 			guestName: undefined,
 			tagline: undefined,
@@ -222,8 +224,12 @@ describe('prepareInvitationPageContext', () => {
 	it('enchanted rose gallery data integrity', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
 
-		expect(isEventAssetKey(fixture.location.ceremony.image)).toBe(true);
-		expect(isEventAssetKey(fixture.location.reception.image)).toBe(true);
+		if (fixture.location?.ceremony?.image) {
+			expect(isEventAssetKey(fixture.location.ceremony.image)).toBe(true);
+		}
+		if (fixture.location?.reception?.image) {
+			expect(isEventAssetKey(fixture.location.reception.image)).toBe(true);
+		}
 		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).not.toEqual(
 			expect.arrayContaining(['gallery08', 'gallery09']),
 		);

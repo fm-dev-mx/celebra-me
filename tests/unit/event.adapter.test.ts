@@ -55,8 +55,8 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.sections.family?.godparents).toEqual([
-			{ name: 'Sr. Juan Carlos', role: 'Padrino de Honor' },
-			{ name: 'Sra. Ana María', role: 'Madrina de Honor' },
+			{ name: 'Juan Carlos Mendoza', role: 'Padrino de Honor' },
+			{ name: 'Ana María López', role: 'Madrina de Honor' },
 		]);
 	});
 

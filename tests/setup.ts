@@ -231,3 +231,13 @@ jest.mock('framer-motion', () => {
 		useReducedMotion: () => false,
 	};
 });
+
+// Mock @/utils/whatsapp to prevent import.meta syntax errors in Jest CJS runtime
+jest.mock('@/utils/whatsapp', () => ({
+	getContactPhone: jest.fn(() => '521000000000'),
+	isPlaceholderContactPhone: jest.fn((phone: string) => phone.includes('0000000000')),
+	getWhatsAppLink: jest.fn(
+		(message?: string) =>
+			`https://wa.me/521000000000${message ? `?text=${encodeURIComponent(message)}` : ''}`,
+	),
+}));

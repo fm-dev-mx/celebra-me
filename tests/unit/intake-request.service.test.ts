@@ -51,7 +51,7 @@ const baseRequest = {
 	origin: 'client' as const,
 	status: 'active' as const,
 	enabledBlocks: ['event-details' as const, 'photos' as const],
-	expiresAt: '2026-06-28T00:00:00Z',
+	expiresAt: '2036-06-28T00:00:00Z',
 	createdAt: '2026-05-28T00:00:00Z',
 	updatedAt: '2026-05-28T00:00:00Z',
 };
