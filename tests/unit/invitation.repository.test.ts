@@ -2,6 +2,7 @@ import {
 	findInvitationById,
 	createInvitation,
 	updateInvitation,
+	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
 import type { DemoPreset } from '@/lib/intake/types';
 
@@ -262,6 +263,44 @@ describe('invitation repository', () => {
 			await expect(updateInvitation('non-existent', { title: 'Test' })).rejects.toThrow(
 				'Invitation not found.',
 			);
+		});
+	});
+
+	describe('assignInvitationOwner', () => {
+		it('only assigns an owner when the invitation is still unowned', async () => {
+			mockSupabaseRequest.mockResolvedValue([
+				{
+					id: 'proj-123',
+					kind: 'client',
+					slug: 'test-event',
+					title: 'Test Event',
+					event_type: 'xv',
+					status: 'draft',
+					base_demo_id: 'demo-xv-jewelry-box',
+					theme_id: 'jewelry-box',
+					snapshot: {} as DemoPreset,
+					client_name: 'John Doe',
+					client_email: 'john@example.com',
+					client_whatsapp: '+521234567890',
+					photos_received: false,
+					created_by: 'user-456',
+					archived_at: null,
+					created_at: '2026-05-28T00:00:00Z',
+					updated_at: '2026-05-28T00:00:00Z',
+				},
+			]);
+
+			await assignInvitationOwner('proj-123', 'user-456');
+
+			expect(mockSupabaseRequest).toHaveBeenCalledWith({
+				pathWithQuery: expect.stringContaining('id=eq.proj-123&created_by=is.null'),
+				method: 'PATCH',
+				useServiceRole: true,
+				prefer: 'return=representation',
+				body: {
+					created_by: 'user-456',
+				},
+			});
 		});
 	});
 });

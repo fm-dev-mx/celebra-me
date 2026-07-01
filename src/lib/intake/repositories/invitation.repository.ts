@@ -172,7 +172,7 @@ export async function assignInvitationOwner(
 	id: string,
 	ownerUserId: string,
 ): Promise<Invitation | null> {
-	const pathWithQuery = `invitations?id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`;
+	const pathWithQuery = `invitations?id=eq.${encodeURIComponent(id)}&created_by=is.null&select=${SELECT_COLUMNS}`;
 
 	const rows = await supabaseRestRequest<InvitationRow[]>({
 		pathWithQuery,
