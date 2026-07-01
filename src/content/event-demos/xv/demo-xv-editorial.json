@@ -3,7 +3,7 @@
     "isDemo": true,
     "templateId": "xv-editorial",
     "_assetSlug": "demo-xv-editorial",
-    "title": "Demo XV Editorial",
+    "title": "XV Años — Valentina Noir",
     "description": "Una invitación editorial donde la elegancia noir y el brillo dorado presentan una noche de quince años con presencia cinematográfica.",
     "theme": {
         "fontFamily": "serif",
@@ -116,12 +116,9 @@
                 "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/demo-xv-editorial"
             },
             {
-                "type": "bank",
-                "title": "Fondo de celebración",
-                "bankName": "BBVA Mexico",
-                "accountHolder": "PENDIENTE",
-                "clabe": "0000 0000 0000 0000 00",
-                "accountNumber": "0000000000"
+                "type": "cash",
+                "title": "Depósito o Transferencia",
+                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
             },
             {
                 "type": "cash",

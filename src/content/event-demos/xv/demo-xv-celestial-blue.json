@@ -105,12 +105,9 @@
         "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
         "items": [
             {
-                "type": "bank",
-                "title": "Transferencia",
-                "bankName": "BBVA México",
-                "accountHolder": "Alejandro Torres Mendoza",
-                "clabe": "0121 8001 2345 6789 01",
-                "accountNumber": "1234567890"
+                "type": "cash",
+                "title": "Depósito o Transferencia",
+                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
             },
             {
                 "type": "cash",
@@ -173,7 +170,7 @@
     },
     "countdown": {
         "title": "La celebración comienza en",
-        "footerText": "12 de septiembre de 2027, Cuernavaca, Morelos"
+        "footerText": "Cuernavaca, Morelos"
     },
     "interludes": [
         {

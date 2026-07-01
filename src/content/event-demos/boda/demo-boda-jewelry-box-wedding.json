@@ -35,8 +35,7 @@
             "city": "Puebla",
             "date": "12 de Diciembre de 2026",
             "time": "6:00 PM",
-            "googleMapsUrl": "https://maps.app.goo.gl/example-church",
-            "image": "ceremony"
+            "googleMapsUrl": "https://maps.app.goo.gl/example-church"
         },
         "reception": {
             "venueEvent": "Gran Recepción",
@@ -45,8 +44,7 @@
             "city": "Puebla",
             "date": "12 de Diciembre de 2026",
             "time": "20:00",
-            "googleMapsUrl": "https://maps.app.goo.gl/example-reception",
-            "image": "reception"
+            "googleMapsUrl": "https://maps.app.goo.gl/example-reception"
         },
         "indications": [
             {
@@ -219,7 +217,7 @@
     },
     "countdown": {
         "title": "Nuestra boda comienza en",
-        "footerText": "12 de diciembre de 2026 · Puebla"
+        "footerText": "Puebla, Puebla"
     },
     "envelope": {
         "disabled": false,

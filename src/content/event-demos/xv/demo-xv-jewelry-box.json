@@ -166,12 +166,9 @@
                 "logo": "liverpool"
             },
             {
-                "type": "bank",
-                "title": "Transferencia",
-                "bankName": "BBVA México",
-                "accountHolder": "Roberto Pérez García",
-                "clabe": "0121 8001 2345 6789 01",
-                "accountNumber": "1234567890"
+                "type": "cash",
+                "title": "Depósito o Transferencia",
+                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
             },
             {
                 "type": "paypal",
@@ -193,7 +190,7 @@
         "confirmationMessage": "Gracias por confirmar. Te esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "+521****0000",
+            "phone": "5218112345678",
             "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración. Asistiremos {guestCount} persona(s).",
             "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración, pero no podré asistir."
         }
@@ -256,7 +253,7 @@
     },
     "countdown": {
         "title": "La noche más especial comienza en",
-        "footerText": "25 de abril de 2026 · Monterrey"
+        "footerText": "Monterrey, Nuevo León"
     },
     "envelope": {
         "disabled": false,
@@ -298,6 +295,6 @@
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
         "ogImage": "portrait",
-        "ogDescription": "Acompáñame en mis XV años el sábado, 25 de abril de 2026, en Monterrey."
+        "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí."
     }
 }

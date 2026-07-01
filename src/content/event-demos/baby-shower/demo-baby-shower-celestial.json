@@ -54,7 +54,7 @@
     },
     "countdown": {
         "title": "La llegada de nuestra estrellita",
-        "footerText": "15 de agosto de 2026 · Jardín Las Nubes"
+        "footerText": "Jardín Las Nubes"
     },
     "family": {
         "parents": {
@@ -194,6 +194,6 @@
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
         "ogImage": "hero",
-        "ogDescription": "Acompáñanos en el Baby Shower de Luna Celeste el sábado, 15 de agosto de 2026, a las 4:00 PM."
+        "ogDescription": "Te invitamos a celebrar el Baby Shower de Luna Celeste. Consulta la fecha, horario y ubicación en esta invitación."
     }
 }

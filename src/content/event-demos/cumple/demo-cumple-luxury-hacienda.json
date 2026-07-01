@@ -3,8 +3,8 @@
     "isDemo": true,
     "templateId": "cumple-luxury-hacienda",
     "_assetSlug": "demo-cumple-luxury-hacienda",
-    "title": "Demo - Alberto 60 Años",
-    "description": "Demo oficial: celebración estilo Luxury Hacienda para cumpleaños de Don Alberto.",
+    "title": "60 Años — Alberto Valenzuela",
+    "description": "Una celebración cálida y con carácter en una hacienda tradicional para festejar seis décadas de historia.",
     "theme": {
         "preset": "luxury-hacienda"
     },
@@ -168,11 +168,9 @@
         "subtitle": "Si desean hacerme un presente",
         "items": [
             {
-                "type": "bank",
-                "title": "Cuenta Bancaria",
-                "bankName": "Banco Lux",
-                "accountHolder": "Alberto Valenzuela",
-                "clabe": "123 456 789 012 345 678"
+                "type": "cash",
+                "title": "Depósito o Transferencia",
+                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
             },
             {
                 "type": "store",

@@ -172,7 +172,7 @@ export const DEMO_SHOWROOM_ITEMS = [
 		publicSlug: 'bautizo',
 		slug: 'demo-bautismo-angelic-presence',
 		href: '/bautizo/demo-bautismo-angelic-presence',
-		title: 'Bautizo estilo Angelic Presence',
+		title: 'Bautizo estilo Angelical',
 		description:
 			'Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción.',
 		styleTags: ['delicada', 'familiar', 'angelical'],
@@ -214,7 +214,7 @@ export const DEMO_SHOWROOM_ITEMS = [
 		publicSlug: 'cumpleanos',
 		slug: 'demo-cumple-luxury-hacienda',
 		href: '/cumple/demo-cumple-luxury-hacienda',
-		title: 'Cumpleaños estilo Luxury Hacienda',
+		title: 'Cumpleaños estilo Hacienda',
 		description:
 			'Una experiencia con carácter para celebrar una fecha especial con familia e invitados.',
 		styleTags: ['hacienda', 'cálida', 'con carácter'],
