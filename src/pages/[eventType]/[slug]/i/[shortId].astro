@@ -9,6 +9,9 @@ import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
 const SITE_ORIGIN = resolvePublicSiteOrigin();
 const { shortId } = Astro.params;
 
+// These headers ONLY apply on the 200 (OG shell) path.
+// For 404 responses, the middleware (applyShortId404Headers) sets no-store + Vary.
+// For 302 redirects, browser follows immediately; CDN caching is acceptable.
 Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('Vary', 'User-Agent');
 

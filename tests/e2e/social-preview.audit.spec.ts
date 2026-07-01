@@ -144,7 +144,7 @@ test.describe('Social preview: short-code redirect page', () => {
 	});
 
 	test.describe('invalid shortId', () => {
-		test('redirects non-existent shortId to /404 regardless of user-agent', async ({
+		test('returns 404 with no-store cache headers for non-existent shortId', async ({
 			request,
 		}) => {
 			const response = await request.get('/xv/demo-xv/i/NONEXISTENT', {
@@ -152,8 +152,7 @@ test.describe('Social preview: short-code redirect page', () => {
 				maxRedirects: 0,
 			});
 
-			expect(response.status()).toBe(302);
-			expect(response.headers()['location']).toContain('/404');
+			expect(response.status()).toBe(404);
 			assertNoStoreCache(response.headers());
 			assertVaryUserAgent(response.headers());
 		});

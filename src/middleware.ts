@@ -45,6 +45,34 @@ function shouldHandleAuth(pathname: string): boolean {
 	);
 }
 
+function isShortIdRoute(pathname: string): boolean {
+	// NB: The regex is broader than necessary (matches any /{a}/{b}/i/{c}).
+	// Only 404s are affected, so the imprecision is acceptable.
+	return /^\/i\/[^/]+\/?$/.test(pathname) || /^\/[^/]+\/[^/]+\/i\/[^/]+\/?$/.test(pathname);
+}
+
+function appendVaryHeader(response: Response, value: string) {
+	const current = response.headers.get('Vary');
+	const values = new Set(
+		(current ?? '')
+			.split(',')
+			.map((entry) => entry.trim())
+			.filter(Boolean),
+	);
+	values.add(value);
+	response.headers.set('Vary', Array.from(values).join(', '));
+}
+
+function applyShortId404Headers(pathname: string, response: Response): Response {
+	if (!isShortIdRoute(pathname) || response.status !== 404) {
+		return response;
+	}
+
+	response.headers.set('Cache-Control', 'no-store');
+	appendVaryHeader(response, 'User-Agent');
+	return response;
+}
+
 function isPreviewRoute(pathname: string): boolean {
 	return pathname.startsWith('/dashboard/invitaciones/') && pathname.endsWith('/preview');
 }
@@ -326,7 +354,8 @@ async function handleProtectedAuthRequest(
 export const onRequest = defineMiddleware(
 	async ({ url, cookies, redirect, request, locals }, next) => {
 		if (!shouldHandleAuth(url.pathname)) {
-			return next();
+			const response = await next();
+			return applyShortId404Headers(url.pathname, response);
 		}
 
 		if (!url.pathname.startsWith('/api/') && !isPreviewRoute(url.pathname)) {
@@ -334,7 +363,7 @@ export const onRequest = defineMiddleware(
 		}
 
 		try {
-			return await handleProtectedAuthRequest(
+			const response = await handleProtectedAuthRequest(
 				url,
 				cookies,
 				redirect,
@@ -342,9 +371,10 @@ export const onRequest = defineMiddleware(
 				next as () => Promise<Response>,
 				locals,
 			);
+			return applyShortId404Headers(url.pathname, response);
 		} catch (error) {
 			console.error('[Middleware] Auth error:', error);
-			return redirect('/login');
+			return applyShortId404Headers(url.pathname, redirect('/login'));
 		}
 	},
 );
