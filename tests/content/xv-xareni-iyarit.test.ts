@@ -72,6 +72,15 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 				);
 			}
 
+			expect(result.data.eventType).toBe('xv');
+			expect(result.data.isDemo).toBe(false);
+			expect(result.data._assetSlug).toBe('xv-xareni-iyarit');
+			expect(result.data.theme.preset).toBe('celestial-blue');
+			expect(Object.hasOwn(result.data, 'music')).toBe(false);
+			expect(result.data.rsvp?.accessMode).toBe('hybrid');
+			expect(result.data.rsvp?.confirmationMode).toBe('api');
+			expect(result.data.location?.ceremony?.image).toBeUndefined();
+			expect(result.data.location?.reception?.image).toBeUndefined();
 			expect(result.data.gifts?.title).toBe('Regalos');
 			expect(result.data.gifts?.items).toHaveLength(2);
 
