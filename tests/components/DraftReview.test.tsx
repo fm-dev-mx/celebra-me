@@ -192,6 +192,52 @@ describe('DraftReview', () => {
 		expect(screen.getByText('Lluvia de Sobres')).toBeInTheDocument();
 	});
 
+	it('renders multi-link store gift registries in the review summary', () => {
+		mockCurrentDraft = makeDraftContent({
+			content: {
+				...makeDraftContent().content,
+				gifts: {
+					title: 'Regalos',
+					subtitle: 'Elige la opción que prefieras',
+					items: [
+						{
+							type: 'store',
+							title: 'Mesa de regalos',
+							description: 'Amazon y Liverpool',
+							links: [
+								{
+									label: 'Amazon',
+									url: 'https://www.amazon.com.mx/registries/gl/guest-view/9ZB19QOMLJ45',
+								},
+								{
+									label: 'Liverpool',
+									url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52015693',
+								},
+							],
+						},
+					],
+				},
+			},
+		});
+
+		render(<DraftReview invitationId="proj-1" />);
+
+		expect(screen.getByText(/Amazon:/)).toBeInTheDocument();
+		expect(
+			screen.getByText((content) =>
+				content.includes('https://www.amazon.com.mx/registries/gl/guest-view/9ZB19QOMLJ45'),
+			),
+		).toBeInTheDocument();
+		expect(screen.getByText(/Liverpool:/)).toBeInTheDocument();
+		expect(
+			screen.getByText((content) =>
+				content.includes(
+					'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52015693',
+				),
+			),
+		).toBeInTheDocument();
+	});
+
 	it('renders quote and thank you sections', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview invitationId="proj-1" />);

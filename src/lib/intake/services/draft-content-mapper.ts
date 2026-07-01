@@ -15,6 +15,13 @@ import { normalizeTime } from '@/lib/time/time-format';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 
+function formatFamilyMemberLine(member: { name?: string; role?: string }): string {
+	const name = str(member.name);
+	if (!name) return '';
+	const role = str(member.role);
+	return role ? `${name} — ${role}` : name;
+}
+
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
 		title: str(data.eventTitle),
@@ -286,7 +293,10 @@ function mapFamilyToDraft(
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
 				title: str(g.title),
-				names: g.items.map((item) => item.name).join('\n'),
+				names: g.items
+					.map((item) => formatFamilyMemberLine(item))
+					.filter(Boolean)
+					.join('\n'),
 			})),
 	};
 	if (family.featuredImage !== undefined)

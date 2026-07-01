@@ -850,6 +850,29 @@ describe('mapNestedToDraftContent', () => {
 		]);
 	});
 
+	it('preserves family group roles when mapping published content back to draft', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				groups: [
+					{
+						title: 'Padrinos',
+						items: [
+							{ name: 'Carlos', role: 'Padrino' },
+							{ name: 'María', role: 'Madrina' },
+						],
+					},
+				],
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.groups).toEqual([
+			{ title: 'Padrinos', names: 'Carlos — Padrino\nMaría — Madrina' },
+		]);
+	});
+
 	it('reads grouped godparents from published format into draft format', () => {
 		const input = {
 			family: {

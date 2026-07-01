@@ -313,17 +313,52 @@ function renderGiftItems(items: Array<Record<string, unknown>> | undefined): Rea
 			{items.map((item, idx) => {
 				const type = String(item.type ?? '');
 				const title = String(item.title ?? '');
+				const linkDetails = Array.isArray(item.links)
+					? item.links
+							.map((link) => {
+								if (
+									typeof link !== 'object' ||
+									link === null ||
+									typeof (link as { label?: unknown }).label !== 'string' ||
+									typeof (link as { url?: unknown }).url !== 'string'
+								) {
+									return null;
+								}
+
+								return {
+									label: (link as { label: string }).label,
+									url: (link as { url: string }).url,
+								};
+							})
+							.filter(
+								(
+									link,
+								): link is {
+									label: string;
+									url: string;
+								} => link !== null,
+							)
+					: [];
 				const detail = item.bankName
 					? `${item.bankName} — ${item.accountHolder ?? ''}`
 					: item.url
 						? String(item.url)
-						: item.text
-							? String(item.text)
-							: '';
+						: linkDetails.length > 0
+							? null
+							: item.text
+								? String(item.text)
+								: '';
 				return (
 					<li key={idx} className="intake-review__gift-item">
 						<strong>{title}</strong>
 						{detail && <span> — {detail}</span>}
+						{linkDetails.length > 0 &&
+							linkDetails.map((link) => (
+								<span key={`${idx}-${link.label}-${link.url}`}>
+									{' '}
+									— {link.label}: {link.url}
+								</span>
+							))}
 						{type && <span className="intake-review__gift-type"> ({type})</span>}
 					</li>
 				);
