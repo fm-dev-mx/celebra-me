@@ -319,6 +319,7 @@ BEGIN
     "title": "XV Años — Valentina Hernández Almaguer",
     "description": "Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.",
     "_assetSlug": "xv-valentina-hernandez",
+    "templateId": "xv-editorial-magazine",
     "theme": {
         "fontFamily": "serif",
         "preset": "editorial-magazine"
