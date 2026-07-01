@@ -10,6 +10,18 @@
         "fontFamily": "serif",
         "preset": "editorial-magazine"
     },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "itinerary",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
     "sectionStyles": {
         "quote": { "variant": "editorial-magazine" },
         "countdown": { "variant": "editorial-magazine" },

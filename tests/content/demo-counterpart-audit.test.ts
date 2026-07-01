@@ -18,6 +18,19 @@ interface DemoInfo {
 	data: Record<string, unknown>;
 }
 
+function getRealPayloadSectionOrder(visualProfileId: string): string[] | undefined {
+	const payloadPath = path.join(
+		projectRoot,
+		'.agent/plans/active',
+		`xv-${visualProfileId}-db-payload.json`,
+	);
+	if (!fs.existsSync(payloadPath)) return undefined;
+
+	const raw = fs.readFileSync(payloadPath, 'utf8');
+	const data = JSON.parse(raw) as { sectionOrder?: string[] };
+	return Array.isArray(data.sectionOrder) ? data.sectionOrder : undefined;
+}
+
 // Known safe asset keys that any asset registry can provide
 const EVENT_KEYS_SET = new Set([
 	'hero',
@@ -324,6 +337,17 @@ describe('Strict Demo Counterpart Audit', () => {
 			const vpid = demo.data.visualProfileId as string;
 			it(`demo "${demo.slug}" visualProfileId "${vpid}" is a valid slug`, () => {
 				expect(vpid).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+			});
+		}
+
+		for (const demo of demosWithVpid) {
+			const vpid = demo.data.visualProfileId as string;
+			const expectedSectionOrder = getRealPayloadSectionOrder(vpid);
+
+			if (!expectedSectionOrder) continue;
+
+			it(`demo "${demo.slug}" preserves real payload sectionOrder for "${vpid}"`, () => {
+				expect(demo.data.sectionOrder).toEqual(expectedSectionOrder);
 			});
 		}
 	});

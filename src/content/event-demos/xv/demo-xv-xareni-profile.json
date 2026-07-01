@@ -10,6 +10,18 @@
         "fontFamily": "serif",
         "preset": "celestial-blue"
     },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "itinerary",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
     "sectionStyles": {
         "location": { "showFlourishes": true },
         "rsvp": {}
