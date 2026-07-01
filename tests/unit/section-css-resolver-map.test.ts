@@ -1,6 +1,7 @@
 import {
 	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
+	resolveInvitationCssUrls,
 	resolveSectionBundleCssUrl,
 	resolveSectionCssUrl,
 	resolveSectionCssUrls,
@@ -112,5 +113,48 @@ describe('section-css-resolver-map', () => {
 		);
 		expect(resolveSectionBundleCssUrl(bundleUrlMap, 'missing-preset')).toBeUndefined();
 		expect(typeof resolveSectionBundleCssUrl(bundleUrlMap, 'jewelry-box')).toBe('string');
+	});
+
+	it('adds footer variant CSS when the rendered footer variant differs from the theme preset', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/invitation-sections/footer/editorial.scss': {
+				default: '/_astro/footer-editorial.css',
+			},
+			'/src/styles/invitation-sections/footer/enchanted-rose.scss': {
+				default: '/_astro/footer-enchanted-rose.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				footerVariant: 'enchanted-rose',
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/footer-enchanted-rose.css']);
+	});
+
+	it('does not add duplicate footer CSS when the footer follows the theme preset', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/invitation-sections/footer/editorial.scss': {
+				default: '/_astro/footer-editorial.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				footerVariant: 'editorial',
+			}),
+		).toEqual(['/_astro/editorial-bundle.css']);
 	});
 });

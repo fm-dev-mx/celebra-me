@@ -1,14 +1,24 @@
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
+	buildSectionUrlMap,
 	buildSectionBundleUrlMap,
+	resolveInvitationCssUrls as resolveInvitationCssUrlsFromMaps,
 	resolveSectionBundleCssUrl as resolveBundleCssUrl,
 } from '@/lib/invitation/section-css-resolver-map';
+
+const sectionModules = import.meta.glob('/src/styles/invitation-sections/**/*.scss', {
+	query: '?url',
+	eager: true,
+}) as Record<string, { default: string }>;
+// Eager glob over a small directory (~dozen files, URLs only).
+// If this directory grows significantly, consider lazy imports.
 
 const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-by-preset/*.scss', {
 	query: '?url',
 	eager: true,
 }) as Record<string, { default: string }>;
 
+const sectionUrlMap = buildSectionUrlMap(sectionModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 
 if (import.meta.env.DEV) {
@@ -24,4 +34,11 @@ if (import.meta.env.DEV) {
 
 export function resolveSectionBundleCssUrl(preset: string): string | undefined {
 	return resolveBundleCssUrl(sectionBundleUrlMap, preset);
+}
+
+export function resolveInvitationCssUrls(input: {
+	themePreset: string;
+	footerVariant?: string;
+}): string[] {
+	return resolveInvitationCssUrlsFromMaps(sectionBundleUrlMap, sectionUrlMap, input);
 }

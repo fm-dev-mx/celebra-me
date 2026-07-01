@@ -18,7 +18,7 @@ import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveSectionBundleCssUrl } from '@/lib/invitation/section-css-resolver';
+import { resolveInvitationCssUrls } from '@/lib/invitation/section-css-resolver';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 
 import { performance } from 'node:perf_hooks';
@@ -157,15 +157,17 @@ const activePresetUrl = viewModel?.theme?.preset
 	? resolvePresetCssUrl(viewModel.theme.preset)
 	: undefined;
 
-const activeSectionBundleUrl = viewModel?.theme?.preset
-	? resolveSectionBundleCssUrl(viewModel.theme.preset)
-	: undefined;
+const activeSectionCssUrls =
+	page && viewModel?.theme?.preset
+		? resolveInvitationCssUrls({
+				themePreset: viewModel.theme.preset,
+				footerVariant: page.footerVariant,
+			})
+		: [];
 
 const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
-	...(activeSectionBundleUrl
-		? [{ rel: 'stylesheet' as const, href: activeSectionBundleUrl }]
-		: []),
+	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
 ];
 
 // page.heroVenueName intentionally overrides viewModel.hero.venueName

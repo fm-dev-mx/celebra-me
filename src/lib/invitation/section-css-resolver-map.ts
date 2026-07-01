@@ -8,6 +8,21 @@ export type SectionCssConfig = {
 	presetToEntrypoint: Record<string, string>;
 };
 
+export type InvitationCssInput = {
+	themePreset: string;
+	footerVariant?: string;
+};
+
+const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
+	editorial: 'editorial',
+	'premiere-floral': 'premiere-floral',
+	'enchanted-rose': 'enchanted-rose',
+	'angelic-presence': 'angelic-presence',
+};
+
+// Only presets with a dedicated footer/*.scss file go here.
+// All other presets fall back to the bundle default footer.
+
 export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionUrlMap {
 	const sectionUrlMap: SectionUrlMap = {};
 
@@ -66,4 +81,30 @@ export function resolveSectionCssUrls(
 		const url = resolveSectionCssUrl(sectionUrlMap, section, presetToEntrypoint, preset);
 		return url ? [url] : [];
 	});
+}
+
+export function resolveInvitationCssUrls(
+	sectionBundleUrlMap: SectionBundleUrlMap,
+	sectionUrlMap: SectionUrlMap,
+	input: InvitationCssInput,
+): string[] {
+	const urls: string[] = [];
+	const bundleUrl = resolveSectionBundleCssUrl(sectionBundleUrlMap, input.themePreset);
+	if (bundleUrl) {
+		urls.push(bundleUrl);
+	}
+
+	if (input.footerVariant && input.footerVariant !== input.themePreset) {
+		const footerUrl = resolveSectionCssUrl(
+			sectionUrlMap,
+			'footer',
+			FOOTER_PRESET_TO_ENTRYPOINT,
+			input.footerVariant,
+		);
+		if (footerUrl) {
+			urls.push(footerUrl);
+		}
+	}
+
+	return urls;
 }
