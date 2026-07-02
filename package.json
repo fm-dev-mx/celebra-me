@@ -44,7 +44,11 @@
         "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
         "agent:git-safety:end": "node scripts/agent/git-safety.mjs end",
         "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
-        "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb"
+        "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
+        "screenshot": "tsx scripts/screenshot/cli.ts",
+        "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
+        "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
+        "screenshot:page": "tsx scripts/screenshot/cli.ts"
     },
     "dependencies": {
         "@astrojs/vercel": "10.0.8",
@@ -75,6 +79,7 @@
         "@commitlint/cli": "^21.0.2",
         "@commitlint/config-conventional": "^21.0.2",
         "@eslint/js": "^10.0.1",
+        "@inquirer/prompts": "^8.5.2",
         "@playwright/test": "^1.60.0",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",

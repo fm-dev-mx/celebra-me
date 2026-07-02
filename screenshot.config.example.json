@@ -1,0 +1,48 @@
+{
+    "//": "Celebra-me Screenshot Tool — Example Configuration",
+    "baseUrl": "http://localhost:4321",
+    "defaultViewportProfile": "site",
+    "defaultAnimationHandling": "disable",
+    "defaultOutputFormat": "png",
+    "defaultOutputFolderStyle": "default",
+    "storageStatePath": "playwright/.auth/user.json",
+    "pages": [
+        {
+            "name": "Boda Jewelry Box Wedding",
+            "pageType": "invitation",
+            "route": "/boda/demo-boda-jewelry-box-wedding",
+            "profile": "invitation",
+            "invitationSet": "essential",
+            "revealHandling": "auto",
+            "animationHandling": "disable",
+            "sectionCapture": "known",
+            "outputFormat": "png"
+        },
+        {
+            "name": "XV Demo Premium",
+            "pageType": "invitation",
+            "route": "/xv/demo-xv-premium",
+            "profile": "full",
+            "invitationSet": "full-qa",
+            "revealHandling": "force-open",
+            "animationHandling": "disable",
+            "sectionCapture": "known"
+        },
+        {
+            "name": "Landing Page",
+            "pageType": "landing",
+            "route": "/",
+            "profile": "site",
+            "generalSet": "full-qa",
+            "sectionCapture": "auto"
+        },
+        {
+            "name": "Dashboard",
+            "pageType": "dashboard",
+            "route": "/dashboard",
+            "profile": "site",
+            "generalSet": "basic",
+            "authMethod": "storage-state"
+        }
+    ]
+}

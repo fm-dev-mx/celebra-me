@@ -138,6 +138,11 @@ docs/implementation-log.md
 # *.svg
 # *.webp
 
+
+# --- SCREENSHOTS --------------------------------------------------------------
+# Generated screenshots — not source files
+screenshots/
+
 # ==============================================================================
 # End of Git Ignore Configuration
 # ==============================================================================
