@@ -4,7 +4,7 @@
     "templateId": "xv-jewelry-box",
     "_assetSlug": "demo-xv-jewelry-box",
     "title": "XV Años — Lucía García",
-    "description": "Una invitación con la elegancia de una joya: detalles dorados, velas y un jardín de ensueño para celebrar quince años de luz propia.",
+    "description": "Una invitación editorial con brillo de joyero: retratos serenos, detalles dorados y una noche de XV años pensada como una pieza única.",
     "theme": {
         "fontFamily": "serif",
         "preset": "jewelry-box"
@@ -27,14 +27,14 @@
     "location": {
         "introEyebrow": "Monterrey nos espera",
         "introHeading": "Sábado, 21 de noviembre de 2026",
-        "introLede": "Te invitamos a celebrar una noche mágica llena de luz, alegría y recuerdos inolvidables.",
+        "introLede": "Con la bendición de su familia, Lucía celebrará una noche de luz, gratitud y recuerdos cuidadosamente guardados.",
         "ceremony": {
             "venueEvent": "Ceremonia",
             "venueName": "Parroquia de la Sagrada Familia",
             "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
             "city": "Monterrey",
             "date": "21 de noviembre de 2026",
-            "time": "6:00 PM",
+            "time": "18:00",
             "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
             "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
             "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
@@ -51,7 +51,7 @@
             "address": "Av. Real de Catorce 123, Col. Valle Alto",
             "city": "Monterrey",
             "date": "21 de noviembre de 2026",
-            "time": "8:00 PM",
+            "time": "20:00",
             "mapUrl": "https://maps.app.goo.gl/example",
             "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
             "googleMapsUrl": "https://maps.app.goo.gl/example",
@@ -97,67 +97,43 @@
             "sectionSubtitle": "Con amor y gratitud",
             "parentsTitle": "Con la bendición de mis padres",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+            "sectionMessage": "Con la bendición de sus padres y padrinos, Lucía comparte esta nueva etapa con gratitud y emoción."
         }
     },
     "gallery": {
-        "eyebrow": "Galería",
-        "title": "Recuerdos antes del gran día",
-        "subtitle": "Momentos de ilusión y elegancia que brillan con luz propia.",
+        "eyebrow": "Retratos de una nueva etapa",
+        "title": "Antes de abrir la joya",
+        "subtitle": "Una selección breve de retratos y detalles: suficiente para sentir la historia sin convertirla en catálogo.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Momentos de ilusión previa al gran día."
-            },
-            {
-                "image": "gallery02",
-                "caption": "Sonrisas que iluminan el camino."
+                "caption": "El primer retrato guarda la calma antes de la celebración."
             },
             {
                 "image": "gallery03",
-                "caption": "Elegancia y gracia en cada detalle."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Un sueño hecho realidad."
+                "caption": "Una mirada serena marca el inicio de la nueva etapa."
             },
             {
                 "image": "gallery05",
-                "caption": "Esperando con emoción el gran día."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Brillo propio de una nueva etapa."
-            },
-            {
-                "image": "gallery07",
-                "caption": "Naturalidad y belleza genuina."
+                "caption": "La luz dorada convierte los detalles en memoria."
             },
             {
                 "image": "gallery08",
-                "caption": "Retratos que guardaré por siempre."
+                "caption": "Un retrato íntimo, sin prisa, pensado para conservarse."
             },
             {
                 "image": "gallery09",
-                "caption": "Dulce transición hacia la nueva etapa."
-            },
-            {
-                "image": "gallery10",
-                "caption": "Cada detalle cuenta en esta historia."
+                "caption": "La transición hacia sus XV años se siente ligera y firme."
             },
             {
                 "image": "gallery11",
-                "caption": "En el jardín, entre flores y luz."
-            },
-            {
-                "image": "gallery12",
-                "caption": "Felicidad pura, compartida en familia."
+                "caption": "El jardín cierra la serie con aire de celebración."
             }
         ]
     },
     "gifts": {
         "title": "Detalle especial",
-        "subtitle": "Tu presencia es el regalo más valioso. Si deseas compartir un detalle adicional, aquí compartimos algunas opciones.",
+        "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen tener un detalle adicional, compartimos una opción principal y una alternativa el día del evento.",
         "items": [
             {
                 "type": "store",
@@ -167,32 +143,22 @@
             },
             {
                 "type": "cash",
-                "title": "Depósito o Transferencia",
-                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
-            },
-            {
-                "type": "paypal",
-                "title": "PayPal",
-                "url": "https://paypal.me/lucia-xv"
-            },
-            {
-                "type": "cash",
                 "title": "Lluvia de Sobres",
-                "text": "Contaremos con una tómbola para sobres el día del evento."
+                "text": "El día del evento habrá un buzón discreto para quienes prefieran compartir un sobre."
             }
         ]
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
-        "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que estarás ahí.",
+        "title": "Confirme su asistencia",
+        "subcopy": "Favor de confirmar asistencia desde esta invitación. Será un honor contar con su presencia.",
         "guestCap": 2,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Te esperamos con mucha emoción.",
+        "confirmationMessage": "Gracias por confirmar. Los esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5218112345678",
-            "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración. Asistiremos {guestCount} persona(s).",
-            "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu celebración, pero no podré asistir."
+            "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
+            "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
         }
     },
     "quote": {
@@ -233,7 +199,7 @@
             },
             {
                 "iconName": "Dinner",
-                "label": "Cena de Gala",
+                "label": "Cena",
                 "time": "22:00",
                 "description": "Cena elegante para disfrutar en familia."
             },
@@ -268,25 +234,25 @@
     },
     "interludes": [
         {
-            "image": "gallery01",
+            "image": "gallery02",
             "afterSection": "family",
             "alt": "Galería editorial Lucía García",
             "height": "screen"
         },
         {
-            "image": "gallery02",
+            "image": "gallery04",
             "afterSection": "gallery",
             "alt": "Detalles de la celebración",
             "height": "screen"
         },
         {
-            "image": "gallery03",
+            "image": "gallery06",
             "afterSection": "countdown",
             "alt": "Momento inolvidable en el jardín",
             "height": "screen"
         },
         {
-            "image": "gallery04",
+            "image": "gallery07",
             "afterSection": "gifts",
             "alt": "Celebración inolvidable",
             "height": "screen"

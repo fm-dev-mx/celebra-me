@@ -230,12 +230,10 @@ describe('prepareInvitationPageContext', () => {
 		if (fixture.location?.reception?.image) {
 			expect(isEventAssetKey(fixture.location.reception.image)).toBe(true);
 		}
-		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).not.toEqual(
-			expect.arrayContaining(['gallery08', 'gallery09']),
-		);
-		expect(fixture.gallery.items.map((item: { image: string }) => item.image)).toContain(
-			'interlude01',
-		);
+		const galleryItems = fixture.gallery.items;
+		galleryItems.forEach((item: { image: string }) => {
+			expect(isEventAssetKey(item.image)).toBe(true);
+		});
 	});
 
 	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {

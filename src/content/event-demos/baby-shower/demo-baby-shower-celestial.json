@@ -3,7 +3,7 @@
     "isDemo": true,
     "templateId": "baby-shower-celestial-blue",
     "title": "Baby Shower de Luna Celeste",
-    "description": "Una celebración celestial para recibir a nuestra bebé con nubes suaves, tonos pastel y la calidez de la familia.",
+    "description": "Una bienvenida serena y luminosa para recibir a Luna Celeste entre detalles de cielo, flores suaves y la calidez de la familia.",
     "_assetSlug": "demo-baby-shower-celestial",
     "theme": {
         "fontFamily": "serif",
@@ -32,7 +32,7 @@
         },
         "rsvp": {
             "labels": {
-                "name": "Tu nombre",
+                "name": "Nombre completo",
                 "guestCount": "Personas que asistirán",
                 "attendance": "¿Nos acompañas?",
                 "confirmButton": "Confirmar asistencia"
@@ -49,7 +49,7 @@
         "focalPointMobile": "50% 35%"
     },
     "quote": {
-        "text": "Una nueva estrellita viene en camino, y queremos recibirla rodeados de cariño, luz y abrazos.",
+        "text": "Antes de conocer su mirada, ya celebramos la luz que Luna Celeste trae a nuestra familia.",
         "author": "Luna Celeste"
     },
     "countdown": {
@@ -68,32 +68,32 @@
             "sectionTitle": "Nuestra familia",
             "sectionSubtitle": "Con todo el corazón",
             "parentsTitle": "Papás de Luna Celeste",
-            "sectionMessage": "Mis papás, Mateo y Valeria, preparan con amor una tarde especial para celebrar mi llegada con quienes más quieren."
+            "sectionMessage": "Mateo y Valeria preparan una tarde íntima para recibir a Luna Celeste con las personas que han acompañado esta espera con cariño."
         }
     },
     "gallery": {
-        "eyebrow": "Un sueño en tonos pastel",
-        "title": "Detalles para recibirla",
-        "subtitle": "Nubes suaves, destellos de cielo y pequeños recuerdos que anuncian una bienvenida llena de ternura.",
+        "eyebrow": "Ensayo de bienvenida",
+        "title": "La luz que la espera",
+        "subtitle": "Tres escenas suaves: el cielo como guía, la mesa familiar y los primeros detalles elegidos para Luna Celeste.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Inspiración celestial para una bienvenida dulce y luminosa."
+                "caption": "Un cielo delicado abre la tarde con calma."
             },
             {
                 "image": "gallery02",
-                "caption": "Detalles hechos con amor para nuestra pequeña."
+                "caption": "La mesa reúne flores suaves y pequeños recuerdos."
             },
             {
                 "image": "gallery03",
-                "caption": "Un rincón mágico lleno de ternura y luz."
+                "caption": "La luz final anuncia una bienvenida tranquila."
             }
         ]
     },
     "location": {
         "introEyebrow": "Nos vemos para celebrar",
         "introHeading": "Sábado, 15 de agosto de 2026",
-        "introLede": "A las 4:00 PM compartiremos una tarde tranquila para celebrar la llegada de nuestra bebé.",
+        "introLede": "A las 16:00 compartiremos una tarde tranquila para celebrar la llegada de Luna Celeste.",
         "indicationsHeading": "Detalles para invitados",
         "venues": [
             {
@@ -104,7 +104,7 @@
                 "address": "Av. Cielo Pastel 123, Col. Jardines del Alba",
                 "city": "Ciudad de México",
                 "date": "sábado, 15 de agosto de 2026",
-                "time": "4:00 PM",
+                "time": "16:00",
                 "mapUrl": "https://www.google.com/maps/search/?api=1&query=Jardin%20Las%20Nubes%20Ciudad%20de%20Mexico"
             }
         ],
@@ -117,7 +117,7 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>ropa casual en colores pastel.</strong>"
+                "text": "Código de vestimenta: <strong>casual elegante en colores pastel.</strong>"
             }
         ]
     },
@@ -128,13 +128,13 @@
                 "iconName": "Reception",
                 "label": "Bienvenida",
                 "time": "16:00",
-                "description": "Recibimiento en el jardín con limonada y bocadillos."
+                "description": "Recepción tranquila en el jardín con bebidas frescas y bocadillos."
             },
             {
                 "iconName": "Party",
-                "label": "Dinámicas y juegos",
+                "label": "Recuerdos de familia",
                 "time": "16:30",
-                "description": "Actividades divertidas para celebrar la llegada de la bebé."
+                "description": "Un momento para compartir deseos, consejos y mensajes para Luna Celeste."
             },
             {
                 "iconName": "Cake",
@@ -144,33 +144,33 @@
             },
             {
                 "iconName": "Gift",
-                "label": "Apertura de regalos",
+                "label": "Bendición final",
                 "time": "18:15",
-                "description": "Compartiendo la emoción de los primeros detalles para la bebé."
+                "description": "Palabras de agradecimiento y despedida con la familia reunida."
             }
         ]
     },
     "gifts": {
         "title": "Mesa de regalos",
-        "subtitle": "Si desean tener un detalle para la bebé, pueden elegir algo práctico, tierno o hecho con mucho cariño.",
+        "subtitle": "Si desean tener un detalle para Luna Celeste, será recibido con gratitud y mucho cariño.",
         "items": [
             {
                 "type": "cash",
-                "title": "Detalles para la bebé",
-                "text": "Pañales, libros infantiles, ropita en tonos neutros o cualquier detalle pensado con amor será bienvenido."
+                "title": "Detalles para Luna Celeste",
+                "text": "Pañales, libros infantiles, ropita en tonos neutros o un recuerdo elegido con cariño será bienvenido."
             }
         ]
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
-        "subcopy": "Confirma tu asistencia desde esta invitación. Nos encantará saber que nos acompañarás.",
+        "title": "Confirme su asistencia",
+        "subcopy": "Favor de confirmar asistencia desde esta invitación. Será una alegría contar con su presencia.",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarás en esta celebración.",
+        "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarán en esta celebración.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por acompañarnos en este momento tan especial. Tu cariño hace más bonita la espera de nuestra pequeña.",
+        "message": "Gracias por acompañarnos en este momento tan especial. Su cariño hace más bonita la espera de nuestra pequeña.",
         "closingName": "Mateo, Valeria y Luna Celeste",
         "image": "thankYouPortrait",
         "focalPoint": "50% 50%"
@@ -181,7 +181,7 @@
         "sealIcon": "monogram",
         "sealInitials": "LC",
         "sealVariant": "premium-rose",
-        "microcopy": "Toca para abrir mi invitación",
+        "microcopy": "Abrir invitación",
         "documentLabel": "Baby Shower",
         "stampText": "Luna Celeste",
         "stampYear": "2026",
@@ -191,6 +191,20 @@
             "background": "surfacePrimary"
         }
     },
+    "interludes": [
+        {
+            "image": "gallery01",
+            "afterSection": "quote",
+            "alt": "Decoración celestial para recibir a Luna Celeste",
+            "height": "screen"
+        },
+        {
+            "image": "gallery03",
+            "afterSection": "family",
+            "alt": "Rincón luminoso preparado para el Baby Shower de Luna Celeste",
+            "height": "screen"
+        }
+    ],
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
         "ogImage": "hero",

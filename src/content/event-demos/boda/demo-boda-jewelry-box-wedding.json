@@ -4,7 +4,7 @@
     "templateId": "boda-jewelry-box-wedding",
     "_assetSlug": "demo-boda-jewelry-box-wedding",
     "title": "Sofía & Alejandro",
-    "description": "Una boda de ensueño con estilo editorial premium. Ceremonia en capilla, recepción en hacienda y una noche llena de amor, elegancia y celebración.",
+    "description": "Una boda editorial en Puebla: ceremonia en capilla, recepción en hacienda y una noche diseñada con calma, elegancia y sentido familiar.",
     "theme": {
         "preset": "jewelry-box-wedding"
     },
@@ -17,24 +17,23 @@
     "hero": {
         "name": "Sofía",
         "secondaryName": "Alejandro",
-        "label": "¡Nos Casamos!",
+        "label": "Nuestro enlace",
         "date": "2026-12-12T18:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"
     },
     "location": {
         "introEyebrow": "Puebla de los Ángeles",
         "introHeading": "Sábado, 12 de diciembre de 2026",
-        "introLede": "Te invitamos a celebrar con nosotros el día en que nuestros caminos se unen para siempre.",
+        "introLede": "Sofía y Alejandro unirán sus vidas en una celebración íntima, pensada para compartir con las personas que han acompañado su historia.",
         "ceremony": {
             "venueEvent": "Ceremonia Religiosa",
             "venueName": "Capilla de la Inmaculada",
             "address": "Calle de los Artistas #45, Centro",
             "city": "Puebla",
-            "date": "12 de Diciembre de 2026",
-            "time": "6:00 PM",
+            "date": "12 de diciembre de 2026",
+            "time": "18:00",
             "googleMapsUrl": "https://maps.app.goo.gl/example-church"
         },
         "reception": {
@@ -42,7 +41,7 @@
             "venueName": "Salón Real Mendocinas",
             "address": "Ex Hacienda de Mendocinas",
             "city": "Puebla",
-            "date": "12 de Diciembre de 2026",
+            "date": "12 de diciembre de 2026",
             "time": "20:00",
             "googleMapsUrl": "https://maps.app.goo.gl/example-reception"
         },
@@ -50,26 +49,26 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "default",
-                "text": "Código de vestimenta: Gala (Riguroso)"
+                "text": "Código de vestimenta: gala formal."
             },
             {
                 "iconName": "Forbidden",
                 "styleVariant": "reserved",
-                "text": "Evento solo para adultos"
+                "text": "Celebración reservada para adultos."
             }
         ]
     },
     "rsvp": {
-        "title": "¿Nos acompañan a celebrar nuestro amor?",
-        "subcopy": "Confirma tu asistencia desde esta invitación. Será un honor compartir este día con ustedes.",
+        "title": "Favor de confirmar asistencia",
+        "subcopy": "Será un honor recibirles. Les pedimos confirmar su asistencia desde esta invitación para preparar cada detalle con el cuidado que la ocasión merece.",
         "guestCap": 10,
         "accessMode": "hybrid",
-        "confirmationMessage": "¡Gracias por ser parte de nuestra historia!",
+        "confirmationMessage": "Gracias por acompañarnos en el inicio de esta nueva etapa.",
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5212221234567",
-            "confirmedTemplate": "¡Hola! Somos {name}. Confirmamos con mucha emoción nuestra asistencia a la boda de Sofía y Alejandro. (Asistentes: {guestCount})",
-            "declinedTemplate": "Hola chicos, somos {name}. Lamentamos mucho no poder acompañarlos, pero les enviamos todo nuestro cariño.",
+            "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
+            "declinedTemplate": "Hola. Somos {name}. Lamentamos no poder acompañarles, pero les enviamos nuestros mejores deseos.",
             "omitTitle": true
         }
     },
@@ -120,99 +119,91 @@
         "featuredImage": "family",
         "labels": {
             "sectionTitle": "Nuestras familias",
-            "sectionSubtitle": "Unidos por el amor",
+            "sectionSubtitle": "El origen de nuestra historia",
             "parentsTitle": "Con la bendición de nuestros padres",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por ser parte de este día tan especial. Su amor y apoyo nos acompañan en el inicio de esta nueva etapa."
+            "sectionMessage": "Con gratitud honramos a quienes nos han dado ejemplo, cuidado y bendición para llegar a este día."
         }
     },
     "gallery": {
         "eyebrow": "Galería",
-        "title": "Crónica de un Sí",
-        "subtitle": "Un recorrido editorial por los momentos, miradas y lugares que nos trajeron hasta este día.",
+        "title": "Crónica de un sí",
+        "subtitle": "Retratos de la historia que antecede a la ceremonia: la ciudad, la luz y los gestos que guardaremos para siempre.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Donde todo comenzó."
+                "caption": "La hacienda espera."
             },
             {
                 "image": "gallery02",
-                "caption": "Nuestra pausa favorita."
+                "caption": "La promesa en papel."
             },
             {
                 "image": "gallery03",
-                "caption": "Promesas entre jardines."
+                "caption": "La mesa encendida."
             },
             {
                 "image": "gallery04",
-                "caption": "Luz dorada al final de la tarde."
+                "caption": "El umbral de la ceremonia."
             },
             {
                 "image": "gallery05",
-                "caption": "Detalles que también cuentan la historia."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Listos para comenzar la siguiente etapa."
+                "caption": "La primera noche."
             }
         ]
     },
     "gifts": {
         "title": "Mesa de regalos",
-        "subtitle": "Su presencia es el regalo más importante. Si desean tener un detalle con nosotros, aquí compartimos algunas opciones.",
+        "subtitle": "Su presencia será nuestro mayor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado una mesa de regalos en Liverpool. También podrán acompañarnos con un sobre de buenos deseos el día de la recepción.",
         "items": [
             {
                 "type": "store",
                 "title": "Liverpool",
                 "url": "https://www.liverpool.com.mx/tienda/giftregistry/example",
-                "logo": "LIVERPOOL"
-            },
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Si desean hacernos un presente en efectivo, contaremos con un buzón en la recepción."
+                "logo": "LIVERPOOL",
+                "description": "Mesa seleccionada para quienes deseen tener un detalle adicional."
             }
         ]
     },
     "itinerary": {
-        "title": "Programa del Día",
+        "title": "Programa del día",
         "items": [
             {
                 "iconName": "Church",
-                "label": "Ceremonia Religiosa",
+                "label": "Ceremonia religiosa",
                 "time": "18:00",
                 "description": "Capilla de la Inmaculada."
             },
             {
                 "iconName": "Toast",
-                "label": "Cóctel de Bienvenida",
+                "label": "Cóctel de bienvenida",
                 "time": "19:30",
                 "description": "Jardín Central."
             },
             {
                 "iconName": "Dinner",
-                "label": "Cena de Gala",
+                "label": "Cena de gala",
                 "time": "21:00",
                 "description": "Salón Mendocinas."
             },
             {
                 "iconName": "Waltz",
-                "label": "Nuestro Primer Baile",
+                "label": "Primer baile",
                 "time": "22:30",
                 "description": "Bajo las estrellas."
             },
             {
                 "iconName": "Party",
-                "label": "Gran Festejo",
+                "label": "Celebración",
                 "time": "23:00",
-                "description": "Música y alegría."
+                "description": "Música, brindis y despedida de la noche."
             }
         ]
     },
     "thankYou": {
         "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
         "closingName": "Sofía & Alejandro",
-        "image": "portrait",
+        "image": "thankYouPortrait",
         "focalPoint": "50% 38%"
     },
     "countdown": {
@@ -227,19 +218,19 @@
         "documentLabel": "S & A",
         "stampText": "BODA",
         "stampYear": "2026",
-        "microcopy": "Toca para abrir nuestra invitación"
+        "microcopy": "Abrir invitación"
     },
     "interludes": [
         {
-            "image": "gallery04",
+            "image": "interlude01",
             "afterSection": "quote",
-            "alt": "Retrato editorial de la pareja",
+            "alt": "Corredor de hacienda con flores marfil y luz cálida",
             "height": "screen"
         },
         {
-            "image": "gallery06",
+            "image": "interlude02",
             "afterSection": "gifts",
-            "alt": "Cierre fotográfico de la boda",
+            "alt": "Detalle ceremonial con copas, flores y sobre sellado",
             "height": "screen"
         }
     ]

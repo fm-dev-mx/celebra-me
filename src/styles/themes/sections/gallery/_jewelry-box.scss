@@ -56,3 +56,66 @@
 		line-height: 1.5;
 	}
 }
+
+.gallery-section[data-variant='jewelry-box-wedding'] {
+	--gallery-section-bg: linear-gradient(
+		180deg,
+		rgb(var(--color-surface-primary-rgb) / 96%) 0%,
+		rgb(var(--color-surface-soft-rgb, var(--color-surface-primary-rgb)) / 84%) 100%
+	);
+	--gallery-title-transform: none;
+	--gallery-title-letter-spacing: 0;
+	--gallery-subtitle-letter-spacing: 0;
+	--gallery-item-bg: transparent;
+	--gallery-item-border: 0;
+	--gallery-item-radius: 6px;
+	--gallery-item-padding: 0;
+	--gallery-item-shadow: 0 18px 42px rgb(0 0 0 / 10%);
+	--gallery-item-hover-transform: translateY(-4px);
+	--gallery-item-hover-shadow: 0 22px 44px rgb(0 0 0 / 14%);
+	--gallery-item-image-radius: 6px;
+	--gallery-caption-bg: rgb(var(--color-surface-primary-rgb) / 82%);
+	--gallery-caption-padding: 0.4rem 0.7rem;
+	--gallery-caption-radius: 999px;
+
+	.gallery-section__title {
+		line-height: 1.08;
+	}
+
+	.gallery-section__subtitle {
+		max-width: 40rem;
+		margin-inline: auto;
+	}
+
+	.gallery-grid {
+		gap: clamp(0.85rem, 2vw, 1.4rem);
+	}
+
+	.gallery-grid__item {
+		overflow: hidden;
+	}
+
+	.gallery-grid__item:nth-child(1) {
+		grid-column: 1 / -1;
+		aspect-ratio: 16 / 10;
+	}
+
+	@include mixins.respond-to(md) {
+		.gallery-grid {
+			grid-template-columns: repeat(6, minmax(0, 1fr));
+		}
+
+		.gallery-grid__item:nth-child(1),
+		.gallery-grid__item:nth-child(4) {
+			grid-column: span 3;
+			aspect-ratio: 4 / 5;
+		}
+
+		.gallery-grid__item:nth-child(2),
+		.gallery-grid__item:nth-child(3),
+		.gallery-grid__item:nth-child(5) {
+			grid-column: span 2;
+			aspect-ratio: 1 / 1;
+		}
+	}
+}

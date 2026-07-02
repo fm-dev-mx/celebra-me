@@ -4,9 +4,9 @@
     "templateId": "xv-editorial-rose",
     "_assetSlug": "demo-xv-editorial",
     "_mediaFallback": true,
-    "_mediaFallbackNote": "Uses demo-xv-editorial assets as temporary fallback. Previously used SVG placeholders (no photos). Needs dedicated editorial-rose media.",
+    "_mediaFallbackNote": "Uses demo-xv-editorial assets as curated temporary fallback. Needs dedicated editorial-rose media before production sale.",
     "title": "XV Años — Editorial Rose",
-    "description": "Una invitación editorial con estética de revista de moda en tonos rosa, blanco y plata. Elegancia, brillo y un toque fashion para una celebración inolvidable.",
+    "description": "Una invitación editorial en tonos rosa, blanco y plata, con ritmo de revista social y una lectura visual más limpia para XV años de gala.",
     "theme": {
         "fontFamily": "serif",
         "preset": "editorial-rose"
@@ -27,17 +27,17 @@
         "focalPointMobile": "50% 32%"
     },
     "location": {
-        "introEyebrow": "Te esperamos en la Ciudad",
+        "introEyebrow": "Ciudad de México",
         "introHeading": "Sábado, 28 de agosto de 2027",
-        "introLede": "Será una alegría compartir contigo esta celebración editorial.",
-        "indicationsHeading": "Detalles para mis invitados",
+        "introLede": "Aurora celebrará sus XV años en una noche de ceremonia, cena y baile preparada para recibir a sus invitados con especial cuidado.",
+        "indicationsHeading": "Detalles para invitados",
         "ceremony": {
             "venueEvent": "Ceremonia religiosa",
             "venueName": "Parroquia de Nuestra Señora del Carmen",
             "address": "Av. Revolución 123, Col. Del Valle, Ciudad de México",
             "city": "Ciudad de México",
             "date": "28 de agosto de 2027",
-            "time": "4:00 p.m.",
+            "time": "16:00",
             "mapUrl": "https://maps.app.goo.gl/example-ceremony"
         },
         "reception": {
@@ -46,24 +46,19 @@
             "address": "Calzada de la Luz 456, Col. Jardines del Pedregal, Ciudad de México",
             "city": "Ciudad de México",
             "date": "28 de agosto de 2027",
-            "time": "6:30 p.m.",
+            "time": "18:30",
             "mapUrl": "https://maps.app.goo.gl/example-reception"
         },
         "indications": [
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal</strong>. El color <strong>rosa y lila</strong> están reservados para la quinceañera."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "text": "Confirma tu asistencia antes del <strong>14 de agosto de 2027</strong>."
+                "text": "Código de vestimenta: <strong>formal</strong>. Los tonos <strong>rosa y lila</strong> están reservados para la quinceañera."
             },
             {
                 "iconName": "Enveloped",
                 "styleVariant": "default",
-                "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche."
+                "text": "Agradecemos confirmar antes del <strong>14 de agosto de 2027</strong> y llegar con puntualidad para disfrutar cada momento."
             }
         ]
     },
@@ -79,7 +74,7 @@
             "sectionSubtitle": "Con amor y gratitud",
             "parentsTitle": "Con la bendición de mis padres",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarme en este momento tan especial. Su cariño hace de mis XV años un recuerdo inolvidable."
+            "sectionMessage": "Con gratitud celebro el amor, la guía y la presencia de quienes han acompañado mi historia."
         },
         "godparents": [
             {
@@ -94,7 +89,7 @@
         "focalPoint": "50% 40%"
     },
     "quote": {
-        "text": "Dicen que los sueños se vuelven realidad cuando los compartes con quienes más te aman. Cada paso, cada risa y cada abrazo me han traído hasta aquí, lista para brillar en mi noche más especial.",
+        "text": "Los sueños se vuelven memorables cuando se comparten con quienes han estado cerca en cada etapa. Esta noche celebra el camino recorrido y la ilusión de todo lo que comienza.",
         "author": "Aurora Valencia"
     },
     "countdown": {
@@ -102,67 +97,63 @@
         "footerText": "28 de agosto de 2027, Ciudad de México"
     },
     "itinerary": {
-        "title": "Programa",
+        "title": "Programa de la noche",
         "items": [
             {
                 "iconName": "Church",
                 "label": "Ceremonia religiosa",
                 "time": "16:00",
-                "description": "Ceremonia religiosa en la Parroquia de Nuestra Señora del Carmen."
+                "description": "Parroquia de Nuestra Señora del Carmen."
             },
             {
                 "iconName": "Reception",
                 "label": "Cóctel de bienvenida",
                 "time": "18:30",
-                "description": "Cóctel de bienvenida en Salón Magnolia."
+                "description": "Recibimiento en Salón Magnolia."
             },
             {
                 "iconName": "Party",
                 "label": "Recepción",
                 "time": "20:00",
-                "description": "Cena, baile y celebración en Salón Magnolia."
+                "description": "Cena, brindis y celebración."
             }
         ]
     },
     "gallery": {
         "eyebrow": "Galería",
-        "title": "Brillar es la actitud.",
-        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+        "title": "Brillar es la actitud",
+        "subtitle": "Una secuencia editorial con detalles de luz, textura y ceremonia.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Detalles que cuentan una historia."
+                "caption": "Texturas de gala."
             },
             {
                 "image": "gallery02",
-                "caption": "Cada momento brilla con luz propia."
+                "caption": "Luz suave para la portada."
             },
             {
                 "image": "gallery03",
-                "caption": "La elegancia está en los detalles."
+                "caption": "Detalles con acento plateado."
             },
             {
                 "image": "gallery04",
-                "caption": "Texturas y colores que inspiran."
+                "caption": "Una pausa de revista."
             },
             {
                 "image": "gallery05",
-                "caption": "Una noche para recordar."
-            },
-            {
-                "image": "gallery06",
-                "caption": "La magia del editorial."
+                "caption": "El cierre de la historia visual."
             }
         ]
     },
     "gifts": {
         "title": "Regalos",
-        "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+        "subtitle": "Su presencia será el detalle más valioso. Para quienes deseen tener una atención adicional, compartimos estas opciones.",
         "items": [
             {
                 "type": "store",
                 "title": "Mesa de regalos",
-                "description": "Contribuye con mi lista de regalos.",
+                "description": "Lista seleccionada para esta celebración.",
                 "links": [
                     {
                         "label": "Ver lista",
@@ -172,21 +163,21 @@
             },
             {
                 "type": "cash",
-                "title": "Lluvia de sobres",
-                "text": "Se proporcionará un sobre el día del evento."
+                "title": "Sobre de felicitación",
+                "text": "Habrá un espacio reservado para sobres durante la recepción."
             }
         ]
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
-        "subcopy": "Confirma tu asistencia desde esta invitación. Me encantará saber que vienes.",
+        "title": "Confirme su asistencia",
+        "subcopy": "Les pedimos confirmar su asistencia desde esta invitación para preparar la recepción con precisión.",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+        "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
+        "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
         "closingName": "Aurora Valencia",
         "image": "thankYouPortrait",
         "focalPoint": "50% 36%"
@@ -202,15 +193,6 @@
             "lightY": "40%"
         },
         {
-            "image": "interlude02",
-            "afterSection": "family",
-            "alt": "Marco decorativo rosa palo con acentos plateados",
-            "height": "screen",
-            "focalPoint": "50% 50%",
-            "lightX": "55%",
-            "lightY": "34%"
-        },
-        {
             "image": "interlude03",
             "afterSection": "itinerary",
             "alt": "Divisor decorativo con textura editorial",
@@ -218,15 +200,6 @@
             "focalPoint": "50% 52%",
             "lightX": "50%",
             "lightY": "46%"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "Fondo decorativo rosa con destellos plateados",
-            "height": "screen",
-            "focalPoint": "50% 50%",
-            "lightX": "46%",
-            "lightY": "38%"
         }
     ],
     "envelope": {
@@ -239,10 +212,10 @@
         "sealIcon": "flower",
         "sealInitials": "A·V",
         "sealVariant": "premium-rose",
-        "microcopy": "Toca para abrir mi invitación",
+        "microcopy": "Abrir invitación",
         "documentLabel": "XV Edition",
         "cardLabel": "XV Edition",
-        "cardTagline": "Brillar es la actitud",
+        "cardTagline": "Edición de gala",
         "stampText": "Aurora",
         "stampYear": "2027",
         "closedPalette": {

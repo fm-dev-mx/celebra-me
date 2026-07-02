@@ -4,7 +4,8 @@
 // EDITORIAL ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='jewelry-box'] {
+.itinerary[data-variant='jewelry-box'],
+.itinerary[data-variant='jewelry-box-wedding'] {
 	--itinerary-bg: radial-gradient(
 		circle at center,
 		rgb(var(--color-surface-primary-rgb) / 5%) 0%,
@@ -31,5 +32,70 @@
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-shadow: 0 2px 4px rgb(0 0 0 / 10%); // Safer text-shadow instead of filter
+	}
+}
+
+.itinerary[data-variant='jewelry-box-wedding'] {
+	--itinerary-bg: linear-gradient(
+		180deg,
+		rgb(var(--color-surface-primary-rgb) / 92%) 0%,
+		rgb(var(--color-surface-primary-rgb) / 98%) 100%
+	);
+
+	.itinerary__items {
+		max-width: 48rem;
+		margin-inline: auto;
+		gap: clamp(1rem, 2vw, 1.35rem);
+	}
+
+	.itinerary__animated-line-container {
+		opacity: 35%;
+	}
+
+	.itinerary__item {
+		grid-template-columns: minmax(4.75rem, 7rem) minmax(0, 1fr);
+		gap: clamp(0.9rem, 2vw, 1.2rem);
+		align-items: start;
+	}
+
+	.itinerary__item--left,
+	.itinerary__item--right {
+		.itinerary__item-content {
+			text-align: left;
+		}
+	}
+
+	.itinerary__item-icon-wrapper {
+		display: none;
+	}
+
+	.itinerary__item-time {
+		padding-top: 0.2rem;
+		font-size: clamp(0.78rem, 1.8vw, 0.9rem);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.itinerary__item-content {
+		padding: 0 0 clamp(0.85rem, 2vw, 1.05rem);
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
+		box-shadow: none;
+	}
+
+	.itinerary__item-label {
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		text-shadow: none;
+	}
+
+	@media (max-width: 47.9375rem) {
+		.itinerary__item {
+			grid-template-columns: 1fr;
+			gap: 0.35rem;
+		}
+
+		.itinerary__item-time {
+			padding-top: 0;
+		}
 	}
 }

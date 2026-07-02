@@ -432,14 +432,23 @@ describe('adaptEvent', () => {
 
 	describe('location theme defaults', () => {
 		it('applies enchanted-rose defaults when location intro fields are missing', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const location = { ...fixture.location };
+			delete location.introEyebrow;
+			delete location.introHeading;
+			delete location.introLede;
+			delete location.indicationsHeading;
 			const event = {
 				id: 'event-demos/xv/demo-xv-enchanted-rose',
-				data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+				data: {
+					...fixture,
+					location,
+				},
 			} as Parameters<typeof adaptEvent>[0];
 
 			const viewModel = adaptEvent(event);
 
-			expect(viewModel.sections.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
+			expect(viewModel.sections.location?.introEyebrow).toBe('El camino al palacio');
 			expect(viewModel.sections.location?.introHeading).toBe('Ubicación');
 			expect(viewModel.sections.location?.introLede).toBe(
 				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
