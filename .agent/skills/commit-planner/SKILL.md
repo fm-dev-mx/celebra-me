@@ -1,14 +1,8 @@
 ---
 name: commit-planner
-description:
-  Full commit lifecycle: plan atomic commits, then optionally execute them. Use when preparing
-  commits, splitting a large diff, reviewing atomicity, grouping staged/unstaged changes into commit
-  units, drafting messages, committing staged changes, or recovering from common git accidents.
-  Inspect `git status`, `git diff`, and `git diff --cached`, then propose commit boundaries,
-  excluded changes, and Conventional Commit messages matching `docs/core/git-governance.md` and
-  `commitlint.config.cjs`. Can also execute the commit after user confirmation.
+description: Full commit lifecycle: plan atomic commits, then optionally execute them. Use when preparing commits, splitting a large diff, reviewing atomicity, grouping staged/unstaged changes into commit units, drafting messages, committing staged changes, or recovering from common git accidents. Inspect `git status`, `git diff`, and `git diff --cached`, then propose commit boundaries, excluded changes, and Conventional Commit messages matching `docs/core/git-governance.md` and `commitlint.config.cjs`. Can also execute the commit after user confirmation.
 domain: meta
-version: 2.0.0
+version: 2.1.0
 absorbed_skills: [commit-staged]
 when_to_use:
   - Preparing commits or evaluating atomicity
@@ -212,3 +206,42 @@ Verify with `git diff --cached` before committing.
   (e.g. "exclude generated working files" instead of "exclude .agent/tmp").
 - **`git add -p` for shared files**: when a single file contains changes belonging to different
   commits, stage hunks separately with `git add -p` rather than staging the whole file.
+- **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to
+  `develop` and other branches pass through to commitlint + lint-staged normally. For approved
+  exceptions to `main`, use `SKIP_BRANCH_PROTECTION=true git commit`. The pre-push hook also
+  rejects pushes to `main` (override: `ALLOW_MAIN_PUSH=true git push origin main`).
+- **Stash-pop merge conflicts**: when stashing from one branch and popping onto another that
+  modified the same files, `git stash pop` reports merge conflicts (`UU` in `git status`).
+  Resolve with `git checkout --theirs <file>` (stash version) or `git checkout --ours <file>`
+  (branch version). Then `git add <file>` to mark resolved and `git stash drop` if preserved.
+  Verify with `git diff --cached` before committing.
+- **Stash across branches may advance develop**: the stash + branch switch + stash-pop cycle
+  can trigger husky rebase hooks that fast-forward `develop`. Always verify the current branch
+  after stash-pop with `git branch --show-current`. If `develop` was advanced accidentally, use
+  `git reflog show develop` to find its prior position, then reset with
+  `git checkout develop && git reset --hard <prior-commit>`.
+- **SCSS pre-commit hooks (stylelint)**: lint-staged runs stylelint on staged SCSS files. Common
+  rejections and fixes:
+
+  * `no-invalid-position-at-import-rule` when adding CSS font imports to files with existing
+    `@use` rules. **Fix**: use Sass `@use` with explicit `as` namespaces instead of `@import`:
+    ```scss
+    @use "@fontsource-variable/cormorant-garamond/index.css" as cormorant-garamond;
+    @use "@fontsource/pinyon-script/400.css" as pinyon-script;
+    ```
+    The `as` namespace is required because `index.css` generates a colliding namespace and
+    numeric segments like `400.css` generate an invalid Sass namespace. **Test first** with
+    `pnpm build && pnpm lint` to catch these before the hook rejects.
+
+  * `scss/comment-no-empty` — empty `//` lines as visual separators.
+    **Fix**: remove empty comment lines or append text so every `//` line carries content.
+
+  * `no-duplicate-selectors` — adding new properties to an existing selector by writing a new
+    block instead of merging.
+    **Fix**: merge new properties into the existing block and remove the duplicate block.
+
+  * `max-nesting-depth` — exceeding the project limit (typically 3). Common pattern:
+    `&::placeholder`, `&:hover`, or `option` inside `input` inside a class (depth 4+).
+    **Fix**: extract to a sibling level-3 rule — e.g., `input::placeholder` instead of
+    `&::placeholder` nested inside `input`. For `&:hover`, extract to `.parent:hover`.
+    For `option`, extract to `.parent option`.
