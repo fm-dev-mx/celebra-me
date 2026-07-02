@@ -8,7 +8,7 @@ interface Props {
 const { card } = Astro.props;
 ---
 
-<article class="invitation-reveal-card" aria-label={card.label}>
+<article class="invitation-reveal-card" aria-label={card.label} data-screenshot="reveal-letter">
 	<div class="invitation-reveal-card__inner">
 		<p class="invitation-reveal-card__label">{card.label}</p>
 		<h2 class="invitation-reveal-card__name">

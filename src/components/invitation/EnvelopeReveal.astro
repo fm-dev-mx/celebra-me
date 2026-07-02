@@ -55,6 +55,7 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 
 <ds-envelope-reveal
 	class="envelope-wrapper"
+	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
 	data-variant={variant}
 	data-seal-variant={sealVariant || ''}
@@ -88,6 +89,7 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 					type="button"
 					class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
 					data-envelope-open
+					data-screenshot="reveal-trigger"
 					aria-label="Abrir sobre de la invitación"
 				>
 					<div class="envelope-seal-button__visual">
@@ -174,12 +176,20 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
 
+			// Helper: reveal card should be visible to accessibility when shown
+			const showCardToAccessibility = () => {
+				if (revealCard instanceof HTMLElement) {
+					revealCard.removeAttribute('aria-hidden');
+				}
+			};
+
 			if (this.dataset.previewState === 'opened') {
 				this.classList.add('is-preview-opened');
 				document.documentElement.classList.add('envelope-open');
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'preview-opened';
 				}
+				showCardToAccessibility();
 				return;
 			}
 
@@ -188,6 +198,7 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 				hasRevealed = true;
 
 				document.documentElement.classList.remove('envelope-open');
+				showCardToAccessibility();
 
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'revealed';

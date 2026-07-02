@@ -28,6 +28,12 @@ const eventType = Astro.params.eventType!;
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');
 
+// ── Screenshot mode ───────────────────────────────────────────────────
+const screenshotMode = Astro.url.searchParams.has('screenshot');
+const revealState = Astro.url.searchParams.get('reveal') as 'open' | 'closed' | null;
+const animationsOff = screenshotMode || Astro.url.searchParams.has('animations');
+const previewState = screenshotMode && revealState === 'open' ? 'opened' : undefined;
+
 // Server-Timing instrumentation
 let resolveContentDur: number | null = null;
 let routePersonalizationDur: number | null = null;
@@ -189,7 +195,20 @@ const headLinks = [
 			headLinks={headLinks}
 		>
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
-			<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
+			{
+				animationsOff && (
+					<style is:global>
+						*, *::before, *::after {
+							animation-duration: 0s !important;
+							animation-delay: 0s !important;
+							transition-duration: 0s !important;
+							transition-delay: 0s !important;
+							scroll-behavior: auto !important;
+						}
+					</style>
+				)
+			}
+			<main class={page.wrapper.className} {...page.wrapper.dataAttributes} data-screenshot="invitation-root">
 				{
 					page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>
@@ -255,70 +274,75 @@ const headLinks = [
 									variant={page.envelope.variant}
 									teaserDetails={page.envelope.teaserDetails}
 									card={page.envelope.card}
+									previewState={previewState}
 								/>
 							) : null
 						}
 
-				<EventHeader
-					links={page.viewModel.navigation ?? []}
-					variant={page.viewModel.theme.preset}
-					initials={page.viewModel.envelope?.data?.sealInitials}
-					eventName={page.viewModel.hero?.name}
-					eventSubtitle={page.viewModel.hero?.label}
-					isDemo={page.viewModel.isDemo}
-				/>
+						<div data-screenshot="invitation-content">
+							<EventHeader
+								links={page.viewModel.navigation ?? []}
+								variant={page.viewModel.theme.preset}
+								initials={page.viewModel.envelope?.data?.sealInitials}
+								eventName={page.viewModel.hero?.name}
+								eventSubtitle={page.viewModel.hero?.label}
+								isDemo={page.viewModel.isDemo}
+							/>
+						</div>
 
-				<Hero
-					{...page.viewModel.hero}
-					venueName={page.heroVenueName}
-					time={page.heroTime}
-					guestName={page.guestName}
-					highPriority={!page.wrapper.showEnvelope}
-				/>
+						<div data-screenshot="invitation-open-content">
+							<Hero
+								{...page.viewModel.hero}
+								venueName={page.heroVenueName}
+								time={page.heroTime}
+								guestName={page.guestName}
+								highPriority={!page.wrapper.showEnvelope}
+							/>
 
-				<InvitationSections pageContext={page} />
+							<InvitationSections pageContext={page} />
 
-				{
-					guestContext && (
-						<script>
-							import { initEngagementTracking } from '@/lib/invitation/engagement';
+							{
+								guestContext && (
+									<script>
+										import { initEngagementTracking } from '@/lib/invitation/engagement';
 
-							const container = document.getElementById('invitation-sections-container');
-							if (container) {
-								const inviteId = new URLSearchParams(window.location.search).get('invite');
-								const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
+										const container = document.getElementById('invitation-sections-container');
+										if (container) {
+											const inviteId = new URLSearchParams(window.location.search).get('invite');
+											const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
 
-								if (inviteId && totalSections > 0) {
-									initEngagementTracking({
-										inviteId,
-										totalSections,
-										throttleMs: 10000
-									});
-								}
+											if (inviteId && totalSections > 0) {
+												initEngagementTracking({
+													inviteId,
+													totalSections,
+													throttleMs: 10000
+												});
+											}
+										}
+									</script>
+								)
 							}
-						</script>
-					)
-				}
 
-				<Footer
-					eventSlug={page.viewModel.id}
-					showEnvelope={page.wrapper.showEnvelope}
-					variant={page.footerVariant}
-					closingPhrase='Con cariño'
-					showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
-					showContactCta={page.viewModel.brandingVisibility.showContactCta}
-				/>
+							<Footer
+								eventSlug={page.viewModel.id}
+								showEnvelope={page.wrapper.showEnvelope}
+								variant={page.footerVariant}
+								closingPhrase='Con cariño'
+								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
+								showContactCta={page.viewModel.brandingVisibility.showContactCta}
+							/>
 
-				{page.viewModel.music && (
-					<MusicPlayer
-						url={page.viewModel.music.url}
-						autoPlay={page.viewModel.music.autoPlay}
-						title={page.viewModel.music.title}
-						revealMode={page.viewModel.music.revealMode}
-						variant={page.viewModel.theme.preset}
-					/>
-				)}
-			</main>
+							{page.viewModel.music && (
+								<MusicPlayer
+									url={page.viewModel.music.url}
+									autoPlay={page.viewModel.music.autoPlay}
+									title={page.viewModel.music.title}
+									revealMode={page.viewModel.music.revealMode}
+									variant={page.viewModel.theme.preset}
+								/>
+							)}
+						</div>
+					</main>
 		</Layout>
 	) : (
 		<InvitationError />

@@ -11,7 +11,7 @@ import ConsentBanner from './ConsentBanner';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 const routePolicy = classifyTrackingRoute(Astro.url);
-const showBanner = routePolicy.routeClass === 'commercial' || routePolicy.routeClass === 'demo';
+const showBanner = !Astro.url.searchParams.has('screenshot') && (routePolicy.routeClass === 'commercial' || routePolicy.routeClass === 'demo');
 ---
 
 {showBanner && (
