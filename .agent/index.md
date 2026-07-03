@@ -6,7 +6,21 @@ Use this file after reading `AGENTS.md`. It is the current discovery map for the
 
 - [`AGENTS.md`](../AGENTS.md) — entry point and loading order
 - `.agent/rules/gatekeeper.md` — review/remediation contract
+- `.agent/rules/agent-routing.md` — role-based agent routing decision tree
 - `.agent/load-skills.md` — skill loading protocol
+
+## Agent Architecture
+
+This repository uses a role-based agent system. Role contracts live in
+`.agent/agents/*.yaml`. See the [Agent Architecture section in AGENTS.md](../AGENTS.md#role-based-agent-architecture)
+for the full model, or `.agent/rules/agent-routing.md` for the routing decision tree.
+
+| Role Contract | File | Purpose |
+|---|---|---|
+| `celebra-builder` | `.agent/agents/celebra-builder.yaml` | Code implementation |
+| `celebra-copywriter` | `.agent/agents/celebra-copywriter.yaml` | Spanish copy and marketing text |
+| `celebra-qa` | `.agent/agents/celebra-qa.yaml` | Mobile-first quality review |
+| `celebra-visual-director` | `.agent/agents/celebra-visual-director.yaml` | Visual direction and image prompts |
 
 ## Plan Governance
 
@@ -23,6 +37,7 @@ Use this file after reading `AGENTS.md`. It is the current discovery map for the
 | `astro-patterns`           | Astro rendering, routing, and client-boundary guidance                        |
 | `backend-engineering`      | API routes, services, validation, and integrations                            |
 | `commit-planner`           | executable commit partitioning and message planning                           |
+| `celebra-delegation-patterns` | delegate_task templates, context fields, and synthesis rules for Celebra-me temporary subagents |
 | `copywriting-es`           | Spanish UI and invitation copy standards                                      |
 | `documentation-governance` | loads the active documentation alignment workflow                             |
 | `frontend-design`          | visual design and composition guidance                                        |
@@ -84,11 +99,11 @@ for brevity.
 
 | Task Type                             | Minimum Context                                                                                                                                    |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visual or UI work                     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + relevant design/theme skill                                                                           |
-| Backend or data work                  | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `backend-engineering` + relevant domain docs                                                          |
-| Documentation or governance drift     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `documentation-governance` + `system-doc-alignment`                                                   |
-| Testing or regression work            | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `testing` + affected domain docs                                                                      |
-| Supabase or database work             | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/database.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant docs |
-| Planning or commit governance         | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `plan-authoring` or `commit-planner`                                                                  |
-| Planning or implementation sequencing | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `agent-communication` + `.agent/plans/README.md`                                                      |
-| Creative or marketing production      | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/briefs/celebra-me.md` + relevant creative template                                            |
+| Visual or UI work                     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + relevant design/theme skill                                                                           |
+| Backend or data work                  | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `backend-engineering` + relevant domain docs                                                          |
+| Documentation or governance drift     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `documentation-governance` + `system-doc-alignment`                                                                                   |
+| Testing or regression work            | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `testing` + affected domain docs                                                                    |
+| Supabase or database work             | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `.agent/rules/database.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant docs |
+| Planning or commit governance         | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `plan-authoring` or `commit-planner`                                                                |
+| Planning or implementation sequencing | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `agent-communication` + `.agent/plans/README.md`                                                    |
+| Creative or marketing production      | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `.agent/briefs/celebra-me.md` + relevant creative template                                          |

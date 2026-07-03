@@ -35,6 +35,8 @@ If sources disagree, prefer the live codebase plus the highest-priority active s
   `.agent/rules/git-safety.md` for the full policy and harness.
 - Do not introduce provider-specific agent files such as `.cursor/`, `CLAUDE.md`, or
   `.agent/agents/*` without a concrete repository need.
+  **Exception:** documentation role-contract YAML files (`.agent/agents/celebra-*.yaml`)
+  are permitted as part of the role-based agent architecture described below.
 - Keep visible UI copy in Spanish; keep code, identifiers, and technical comments in English.
 - Preserve Astro server/client boundaries: UI and client islands must not import server-only code.
 - Treat Vercel/Linux path casing as deployment-sensitive.
@@ -82,6 +84,60 @@ for creative assets: `.agent/templates/creative/`. Creative system discovery aud
   must not import server-only modules. (See Non-Negotiable Rules above.)
 - **Slug distinction**: Content slugs, route slugs, and `_assetSlug` may differ. Do not assume
   `_assetSlug === slug`. See `.agent/rules/invitation-production.md`.
+
+## Role-Based Agent Architecture
+
+This repository uses a role-based agent system. Jeremías acts as the **orchestrator**
+— the single entry point that interprets requests, routes sub-tasks to the
+appropriate role, and synthesizes results.
+
+### Role Contracts
+
+Role contracts are defined in `.agent/agents/*.yaml`. They are **documentation
+contracts** describing responsibilities, model assignment, tool access, and
+constraints for each role. They are NOT executable agent definitions — routing
+is handled by Jeremías via `delegate_task`.
+
+| Role Contract | Responsibility | Model | Reasoning |
+|---|---|---|---|
+| `celebra-builder` | Code implementation (Astro, TS, SCSS) | `gpt-5.5` via opencode-go | medium |
+| `celebra-copywriter` | Spanish copy and marketing text | `gpt-5.5` via opencode-go | low |
+| `celebra-qa` | Mobile-first quality review | `gpt-5.5` via opencode-go | medium |
+| `celebra-visual-director` | Visual direction and image prompts | `gpt-5.5` via opencode-go | high |
+
+All roles currently use the same model because only `opencode-go` credentials
+are configured. Model diversity will be introduced when additional providers
+are added.
+
+### When to Delegate
+
+Delegate via `delegate_task` only when the sub-task meets ALL of these criteria:
+- Is expected to take more than 2 minutes of work
+- Is self-contained (can complete without asking clarifying questions)
+- Does not require user interaction
+- Has clear success criteria
+
+### When NOT to Delegate
+
+- Tasks requiring tight visual coordination or user approval
+- Tasks that take one or two tool calls
+- Planning, research, or documentation governance
+
+### Permission Model
+
+Per-agent tool restrictions are **instruction-based, not hard-enforced**.
+The orchestrator passes constraints via the `context` field of `delegate_task`.
+Subagents are expected to follow instructions but there is no system-level tool
+gating at delegation time. See `.agent/rules/agent-routing.md` for the full
+decision tree and constraint-passing patterns.
+
+### Loading Order
+
+When loading an agent role, read in this order:
+1. `AGENTS.md` — this file
+2. `.agent/rules/agent-routing.md` — routing decision tree
+3. `.agent/agents/<role>.yaml` — role contract
+4. Relevant skills from `.agent/index.md`
 
 ## Validation Selection
 
