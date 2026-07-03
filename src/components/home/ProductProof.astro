@@ -24,9 +24,36 @@ const phone = getContactPhone();
 >
 	<Container class="product-proof__container">
 		<div class="product-proof__intro">
-			<p class="product-proof__eyebrow">Más que una invitación visual</p>
+			<p class="product-proof__eyebrow">Menos mensajes. Más control.</p>
 			<h2 id="product-proof-title" class="product-proof__title">{data.title}</h2>
 			<p class="product-proof__description">{data.description}</p>
+			
+			<div class="product-proof__comparison">
+				<div class="comparison-card comparison-card--antes">
+					<div class="comparison-card__badge">Antes</div>
+					<h3 class="comparison-card__title">El caos habitual</h3>
+					<ul class="comparison-card__list">
+						<li>Mensajes sueltos y grupos saturados</li>
+						<li>Confirmaciones a medias o duplicadas</li>
+						<li>Cambios de ubicación sin leer</li>
+					</ul>
+				</div>
+				<div class="comparison-card comparison-card--con">
+					<div class="comparison-card__badge">Con Celebra-me</div>
+					<h3 class="comparison-card__title">El control absoluto</h3>
+					<ul class="comparison-card__list">
+						<li>Confirmación (RSVP) automatizada y directa</li>
+						<li>Control estricto de pases y acompañantes</li>
+						<li>Itinerario y ubicaciones claras en un solo enlace</li>
+					</ul>
+				</div>
+				<div class="comparison-card comparison-card--resultado">
+					<div class="comparison-card__badge">Resultado</div>
+					<h3 class="comparison-card__title">Tranquilidad para ti</h3>
+					<p class="comparison-card__text">Invitados 100% informados en tiempo real, pases digitales listos en su celular y un panel de anfitrión siempre actualizado.</p>
+				</div>
+			</div>
+
 			<WhatsAppButton
 				className="product-proof__cta"
 				phone={phone}

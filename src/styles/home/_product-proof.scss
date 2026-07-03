@@ -25,6 +25,88 @@
 		max-width: 32rem;
 	}
 
+	&__comparison {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1.25rem;
+		margin-bottom: 1.25rem;
+		text-align: left;
+	}
+
+	.comparison-card {
+		position: relative;
+		padding: 0.85rem 1rem;
+		border-radius: 0.5rem;
+		border: 1px solid;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+
+		&--antes {
+			background: rgb(220 53 69 / 5%);
+			border-color: rgb(220 53 69 / 15%);
+			.comparison-card__badge {
+				background: rgb(220 53 69 / 10%);
+				color: #dc3545;
+			}
+		}
+
+		&--con {
+			background: rgb(40 167 69 / 5%);
+			border-color: rgb(40 167 69 / 15%);
+			.comparison-card__badge {
+				background: rgb(40 167 69 / 10%);
+				color: #28a745;
+			}
+		}
+
+		&--resultado {
+			background: rgb(var(--color-action-accent-rgb) / 5%);
+			border-color: rgb(var(--color-action-accent-rgb) / 15%);
+			.comparison-card__badge {
+				background: rgb(var(--color-action-accent-rgb) / 10%);
+				color: var(--color-action-accent);
+			}
+		}
+
+		&__badge {
+			align-self: flex-start;
+			font-size: 0.65rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			padding: 0.15rem 0.4rem;
+			border-radius: 0.25rem;
+		}
+
+		&__title {
+			font-size: 0.9rem;
+			font-weight: 700;
+			color: var(--color-text-primary);
+			margin: 0;
+		}
+
+		&__list {
+			margin: 0;
+			padding-left: 1.1rem;
+			font-size: 0.8rem;
+			color: var(--color-text-secondary);
+			line-height: 1.4;
+
+			li {
+				margin-bottom: 0.2rem;
+			}
+		}
+
+		&__text {
+			margin: 0;
+			font-size: 0.8rem;
+			color: var(--color-text-secondary);
+			line-height: 1.4;
+		}
+	}
+
 	&__eyebrow {
 		margin: 0 0 0.75rem;
 		font-family: var(--font-body);
