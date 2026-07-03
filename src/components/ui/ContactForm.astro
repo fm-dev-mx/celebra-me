@@ -23,29 +23,6 @@
 		</div>
 
 		<div class="input-group">
-			<input
-				type="email"
-				id="contact-email"
-				name="email"
-				class="input-group__input"
-				required
-				placeholder=" "
-			/>
-			<label for="contact-email" class="input-group__label">Correo electrónico</label>
-		</div>
-
-		<div class="input-group">
-			<input
-				type="tel"
-				id="contact-phone"
-				name="phone"
-				class="input-group__input"
-				placeholder=" "
-			/>
-			<label for="contact-phone" class="input-group__label">WhatsApp</label>
-		</div>
-
-		<div class="input-group">
 			<select id="contact-event-type" name="eventType" class="input-group__input">
 				<option value="">Tipo de evento</option>
 				<option value="xv">XV años</option>
@@ -59,13 +36,26 @@
 		</div>
 
 		<div class="input-group">
-			<select id="contact-package" name="packageInterest" class="input-group__input">
-				<option value="">Paquete de interés</option>
-				<option value="coleccion">Colección</option>
-				<option value="premium">Premium</option>
-				<option value="exclusivo">Exclusivo</option>
-			</select>
-			<label for="contact-package" class="input-group__label">Paquete de interés</label>
+			<input
+				type="date"
+				id="contact-event-date"
+				name="eventDate"
+				class="input-group__input"
+				placeholder=" "
+			/>
+			<label for="contact-event-date" class="input-group__label">Fecha del evento</label>
+		</div>
+
+		<div class="input-group">
+			<input
+				type="tel"
+				id="contact-phone"
+				name="phone"
+				class="input-group__input"
+				required
+				placeholder=" "
+			/>
+			<label for="contact-phone" class="input-group__label">WhatsApp</label>
 		</div>
 
 		<div class="input-group">
@@ -73,14 +63,13 @@
 				id="contact-message"
 				name="message"
 				class="input-group__input input-group__input--textarea"
-				required
 				placeholder=" "
 			></textarea>
-			<label for="contact-message" class="input-group__label">Detalles de su evento</label>
+			<label for="contact-message" class="input-group__label">Mensaje opcional</label>
 		</div>
 
 		<button type="submit" class="submit-btn" data-submit-label>
-			Solicitar asesoría
+			Enviar solicitud
 		</button>
 
 		<label class="contact-form__consent">
@@ -139,6 +128,7 @@
 					throw new Error('No se pudo enviar la solicitud.');
 				}
 
+				form.dispatchEvent(new CustomEvent('commercial-contact-submitted', { bubbles: true }));
 				form.reset();
 				successMessage?.removeAttribute('hidden');
 			} catch (error) {

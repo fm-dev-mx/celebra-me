@@ -20,8 +20,9 @@ export const ContactLeadSubmissionSchema = z.object({
 	email: z.email().optional().or(z.literal('')),
 	phone: z.string().trim().max(40).optional().or(z.literal('')),
 	eventType: z.string().trim().max(80).optional().or(z.literal('')),
+	eventDate: z.string().trim().max(40).optional().or(z.literal('')),
 	packageInterest: z.string().trim().max(80).optional().or(z.literal('')),
-	message: z.string().trim().min(10).max(2000),
+	message: z.string().trim().max(2000).optional().or(z.literal('')),
 	consentContact: z.coerce.boolean().default(true),
 	consentMarketing: z.coerce.boolean().default(false),
 	leadCode: LeadCodeSchema,
@@ -40,8 +41,10 @@ function blankToUndefined(value: string | undefined): string | undefined {
 	return trimmed ? trimmed : undefined;
 }
 
-function summarizeMessage(message: string): string {
-	return message.trim().replace(/\s+/g, ' ').slice(0, 500);
+function summarizeMessage(message: string | undefined): string {
+	return (message?.trim() || 'Solicitud desde formulario de contacto.')
+		.replace(/\s+/g, ' ')
+		.slice(0, 500);
 }
 
 export async function createLeadFromContactSubmission(

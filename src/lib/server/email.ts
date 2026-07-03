@@ -3,7 +3,7 @@ import { getEnv } from '@/lib/server/env';
 
 export interface EmailPayload {
 	name: string;
-	email: string;
+	email?: string;
 	phone?: string;
 	message: string;
 	type?: 'contact' | 'rsvp';
@@ -40,17 +40,18 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 	});
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
+	const senderEmail = data.email?.trim();
 
 	const mailOptions = {
 		from: `"Celebra-me Concierge" <${user}>`,
 		to: recipient,
-		replyTo: data.email,
+		replyTo: senderEmail || undefined,
 		subject: `✨ Nueva Solicitud: ${data.name} - ${data.type || 'Contacto'}`,
 		text: `
 			Nueva solicitud desde Celebra-me.com:
 
 			Nombre: ${data.name}
-			Correo: ${data.email}
+			Correo: ${senderEmail || 'No proporcionado'}
 			Teléfono: ${data.phone || 'N/A'}
 			Tipo: ${data.type || 'General'}
 
@@ -63,7 +64,7 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 		html: `
 			<div style="font-family: sans-serif; color: ${EMAIL_COLORS.text}; max-width: 600px; border: 1px solid ${EMAIL_COLORS.border}; padding: 20px; border-radius: 8px;">
 				<h2 style="color: ${EMAIL_COLORS.accent}; border-bottom: 2px solid ${EMAIL_COLORS.background}; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
-				<p><strong>De:</strong> ${data.name} (${data.email})</p>
+				<p><strong>De:</strong> ${data.name} (${senderEmail || 'No proporcionado'})</p>
 				<p><strong>Teléfono:</strong> ${data.phone || 'N/A'}</p>
 				<p><strong>Tipo de Evento:</strong> ${data.type || 'General'}</p>
 				<div style="background: ${EMAIL_COLORS.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${EMAIL_COLORS.accent}; margin: 20px 0;">

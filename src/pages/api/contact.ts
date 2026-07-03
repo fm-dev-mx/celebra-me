@@ -8,11 +8,12 @@ import { createLeadFromContactSubmission } from '@/lib/tracking/lead.service';
 
 const contactSchema = z.object({
 	name: z.string().min(2, 'Name is required.').max(160),
-	email: z.email('Email format is invalid.'),
+	email: z.email('Email format is invalid.').optional().or(z.literal('')),
 	phone: z.string().trim().max(40).optional().or(z.literal('')),
 	eventType: z.string().trim().max(80).optional().or(z.literal('')),
+	eventDate: z.string().trim().max(40).optional().or(z.literal('')),
 	packageInterest: z.string().trim().max(80).optional().or(z.literal('')),
-	message: z.string().min(10, 'Message is required.'),
+	message: z.string().trim().max(2000).optional().or(z.literal('')),
 	consentContact: z.coerce.boolean().default(true),
 	consentMarketing: z.coerce.boolean().default(false),
 	leadCode: z.string().trim().optional(),
@@ -28,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
 	try {
 		const body = await validateBodyOrRespond(request, contactSchema);
 		if (body instanceof Response) return body;
-		const { name, email, message } = body;
+		const { name, email, phone, eventType, eventDate, message } = body;
 
 		const lead = await createLeadFromContactSubmission(body);
 
@@ -36,7 +37,15 @@ export const POST: APIRoute = async ({ request }) => {
 		const success = await sendEmail({
 			name,
 			email,
-			message: `${message}\n\nCódigo de lead: ${lead.leadCode}`,
+			phone,
+			message: [
+				message || 'Solicitud desde formulario de contacto.',
+				eventType ? `Tipo de evento: ${eventType}` : '',
+				eventDate ? `Fecha del evento: ${eventDate}` : '',
+				`Código de lead: ${lead.leadCode}`,
+			]
+				.filter(Boolean)
+				.join('\n\n'),
 			type: 'contact',
 		});
 
