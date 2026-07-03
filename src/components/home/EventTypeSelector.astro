@@ -34,6 +34,137 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 	cumple: mockupBirthday,
 	'baby-shower': mockupBabyshower,
 };
+
+interface ShowroomMockupInfo {
+	kicker: string;
+	title: string;
+	subtitle: string;
+	date: string;
+	venue: string;
+	note: string;
+	sectionTitle: string;
+	description: string;
+}
+
+interface ShowroomQuoteInfo {
+	label: string;
+	message: string;
+	promoCode: string;
+	trackValue: number;
+	packageName?: string;
+	packageInterest?: string;
+}
+
+const defaultMockup = {
+	kicker: 'XV años',
+	title: 'Sofía Valentina',
+	subtitle: 'Una noche para celebrar',
+	date: 'Sábado 28 de septiembre',
+	venue: 'Gran Salón del Triunfo',
+	note: 'Control de pases por familia',
+	sectionTitle: 'Una entrada luminosa para una noche de XV',
+	description:
+		'Presenta la celebración con galería, música, RSVP y pases digitales listos para compartir con cada familia.',
+} satisfies ShowroomMockupInfo;
+
+const mockupInfo: Partial<Record<EventType, ShowroomMockupInfo>> = {
+	xv: defaultMockup,
+	boda: {
+		kicker: 'Boda',
+		title: 'Laura & Daniel',
+		subtitle: 'Celebración nupcial',
+		date: 'Sábado 14 de septiembre',
+		venue: 'La Quinta Santa Teresa',
+		note: 'Mesa de regalos e itinerario',
+		sectionTitle: 'Ceremonia, recepción y confirmaciones con sobriedad',
+		description:
+			'Una invitación nupcial con itinerario claro, ubicación, mesa de regalos y contexto Premium para una experiencia más editorial.',
+	},
+	bautizo: {
+		kicker: 'Bautizo',
+		title: 'Mateo Alejandro',
+		subtitle: 'Celebración familiar',
+		date: 'Domingo 6 de octubre',
+		venue: 'Parroquia de San Miguel',
+		note: 'Ceremonia y recepción',
+		sectionTitle: 'Una celebración familiar comunicada con delicadeza',
+		description:
+			'Comparte ceremonia, recepción, padrinos y confirmaciones en una experiencia serena para familia e invitados cercanos.',
+	},
+	'baby-shower': {
+		kicker: 'Baby shower',
+		title: 'Valentina',
+		subtitle: 'Bienvenida con amor',
+		date: 'Sábado 12 de octubre',
+		venue: 'La Casona del Lago',
+		note: 'Mesa de regalos y RSVP',
+		sectionTitle: 'Una bienvenida cálida, ordenada y fácil de compartir',
+		description:
+			'Reúne ubicación, mesa de regalos, galería y confirmaciones en una invitación suave para anunciar la celebración.',
+	},
+	cumple: {
+		kicker: 'Cumpleaños',
+		title: 'Cena de celebración',
+		subtitle: 'Una noche especial',
+		date: 'Viernes 18 de octubre',
+		venue: 'Salón Aurora',
+		note: 'Música, galería y RSVP',
+		sectionTitle: 'Celebraciones sociales con información clara',
+		description:
+			'Ideal para cumpleaños, aniversarios y reuniones especiales que necesitan estilo, ubicación, música y confirmaciones.',
+	},
+};
+
+const defaultQuote: ShowroomQuoteInfo = {
+	label: 'Cotizar este estilo',
+	message:
+		'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
+	promoCode: 'LANZAMIENTO-899',
+	trackValue: 899,
+};
+
+const showroomQuotes: Partial<Record<EventType, ShowroomQuoteInfo>> = {
+	xv: {
+		label: 'Cotizar mis XV',
+		message:
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: XV años\n\nCupón: LANZAMIENTO-899',
+		promoCode: 'LANZAMIENTO-899',
+		trackValue: 899,
+	},
+	boda: {
+		label: 'Cotizar mi boda',
+		message:
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499',
+		promoCode: 'LANZAMIENTO-1499',
+		trackValue: 1499,
+		packageName: 'Premium',
+		packageInterest: 'premium',
+	},
+	bautizo: {
+		label: 'Cotizar mi bautizo',
+		message:
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Bautizo\n\nCupón: LANZAMIENTO-899',
+		promoCode: 'LANZAMIENTO-899',
+		trackValue: 899,
+	},
+	'baby-shower': {
+		label: 'Cotizar mi baby shower',
+		message:
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Baby shower\n\nCupón: LANZAMIENTO-899',
+		promoCode: 'LANZAMIENTO-899',
+		trackValue: 899,
+	},
+	cumple: {
+		label: 'Cotizar mi evento',
+		message:
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Cumpleaños\n\nCupón: LANZAMIENTO-899',
+		promoCode: 'LANZAMIENTO-899',
+		trackValue: 899,
+	},
+};
+
+const getMockupInfo = (eventType: EventType) => mockupInfo[eventType] || defaultMockup;
+const getQuoteInfo = (eventType: EventType) => showroomQuotes[eventType] || defaultQuote;
 ---
 
 <Section
@@ -47,16 +178,16 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 		<header class="event-selector__header">
 			<p class="event-selector__eyebrow">Demos por tipo de evento</p>
 			<h2 id="event-selector-title" class="event-selector__title">
-				¿Qué tipo de evento estás preparando?
+				Explora una experiencia diseñada para cada celebración
 			</h2>
 			<p class="event-selector__subtitle">
-				Explora nuestros diseños reales y cotiza el estilo perfecto para tu celebración.
+				Elige tu tipo de evento y mira cómo se adaptan la invitación, el RSVP, los pases y la cotización.
 			</p>
 		</header>
 
 		<div class="event-showroom">
 			<!-- 1. Chips/Tabs Selector -->
-			<div class="event-showroom__tabs" role="tablist">
+			<div class="event-showroom__tabs" role="tablist" aria-label="Tipos de evento">
 				{events.map((event, index) => (
 					<button
 						class:list={["event-showroom__tab-btn", { active: index === 0 }]}
@@ -74,7 +205,11 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 
 			<!-- 2. Panels container -->
 			<div class="event-showroom__panels">
-				{events.map((event, index) => (
+				{events.map((event, index) => {
+					const mockup = getMockupInfo(event.eventType);
+					const quote = getQuoteInfo(event.eventType);
+
+					return (
 					<div
 						class:list={["event-showroom__panel-item", { active: index === 0 }]}
 						id={`panel-${event.eventType}`}
@@ -87,18 +222,36 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 								<div class="event-showroom__phone-frame">
 									<Image
 										src={mockupImages[event.eventType] || mockupXv}
-										alt={`Demo de ${event.label}`}
-										class="event-showroom__mockup-img"
+										alt=""
+										class="event-showroom__mockup-texture"
 										width={260}
 										height={520}
 										quality={80}
 										loading={index === 0 ? "eager" : "lazy"}
+										aria-hidden="true"
 									/>
+									<div class="event-showroom__phone-card">
+										<p class="event-showroom__card-kicker" data-showroom-kicker>{mockup.kicker}</p>
+										<p class="event-showroom__card-title" data-showroom-title>{mockup.title}</p>
+										<p class="event-showroom__card-subtitle">{mockup.subtitle}</p>
+										<div class="event-showroom__card-details">
+											<span>{mockup.date}</span>
+											<span>{mockup.venue}</span>
+										</div>
+										<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
+											<li data-showroom-feature>RSVP</li>
+											<li data-showroom-feature>Pases</li>
+											<li data-showroom-feature>WhatsApp</li>
+										</ul>
+										<p class="event-showroom__card-action">Confirmar asistencia</p>
+										<p class="event-showroom__card-note">{mockup.note}</p>
+									</div>
 								</div>
 							</div>
 							<div class="event-showroom__info-side">
-								<h3 class="event-showroom__info-title">Invitación digital para {event.label}</h3>
-								<p class="event-showroom__info-text">{event.description}</p>
+								<p class="event-showroom__info-kicker">{event.label}</p>
+								<h3 class="event-showroom__info-title">{mockup.sectionTitle}</h3>
+								<p class="event-showroom__info-text">{mockup.description}</p>
 								<div class="event-showroom__actions">
 									<a
 										href={event.showroomHref}
@@ -116,21 +269,26 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 									<WhatsAppButton
 										className="action-btn action-btn--primary"
 										phone={phone}
-										message={`Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: ${event.label}\n\nCupón: LANZAMIENTO-899`}
-										label="Cotizar este estilo"
+										message={quote.message}
+										label={quote.label}
 										trackSection="event-types"
 										trackCta={`showroom_quote_${event.eventType}`}
 										trackCampaign="DEMO-LANZAMIENTO-899"
-										trackValue={899}
+										trackValue={quote.trackValue}
 										trackCurrency="MXN"
-										promoCode="LANZAMIENTO-899"
+										promoCode={quote.promoCode}
+										trackPackage={quote.packageInterest}
+										packageName={quote.packageName}
+										eventType={event.eventType}
+										eventLabel={event.label}
 										ariaLabel={`Cotizar estilo ${event.label}`}
 									/>
 								</div>
 							</div>
 						</div>
 					</div>
-				))}
+					);
+				})}
 			</div>
 		</div>
 	</Container>
@@ -139,10 +297,20 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 <script>
 	const tabs = document.querySelectorAll('.event-showroom__tab-btn');
 	const panels = document.querySelectorAll('.event-showroom__panel-item');
+	const activeTab = document.querySelector('.event-showroom__tab-btn.active');
+
+	if (activeTab instanceof HTMLElement) {
+		document.documentElement.setAttribute(
+			'data-selected-event',
+			activeTab.getAttribute('data-tab-event') || 'xv',
+		);
+	}
 
 	tabs.forEach((tab) => {
 		tab.addEventListener('click', () => {
 			const targetEvent = tab.getAttribute('data-tab-event');
+			if (!targetEvent) return;
+			document.documentElement.setAttribute('data-selected-event', targetEvent);
 
 			// Update active tabs
 			tabs.forEach((t) => {
@@ -151,6 +319,12 @@ const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
 			});
 			tab.classList.add('active');
 			tab.setAttribute('aria-selected', 'true');
+			if (tab instanceof HTMLElement) {
+				const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+					? 'auto'
+					: 'smooth';
+				tab.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
+			}
 
 			// Update active panels
 			panels.forEach((panel) => {

@@ -17,6 +17,8 @@ interface Props {
 	trackCurrency?: string;
 	trackDestination?: string;
 	promoCode?: string;
+	eventType?: string;
+	eventLabel?: string;
 	ariaLabel?: string;
 }
 
@@ -35,10 +37,12 @@ const {
 	trackCurrency,
 	trackDestination = 'whatsapp',
 	promoCode,
+	eventType,
+	eventLabel,
 	ariaLabel = 'Contactar por WhatsApp',
 } = Astro.props;
 
-// If no phone is explicitly provided, try the env var.
+// If no phone is explicitly provided, fall back to empty string (caller provides phone).
 // If the phone is a placeholder, hide the CTA to avoid broken links.
 const phone = explicitPhone || '';
 const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
@@ -62,6 +66,8 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 	data-package-interest={trackPackage}
 	data-package-name={packageName}
 	data-promo-code={promoCode}
+	data-event-type={eventType}
+	data-event-label={eventLabel}
 	data-track-value={trackValue}
 	data-track-currency={trackCurrency}
 	data-phone={phone}
@@ -103,6 +109,7 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 		// 2. Format the message dynamically based on context
 		const isPackage = anchor.getAttribute('data-package-interest');
 		const packageName = anchor.getAttribute('data-package-name') || '';
+		const eventLabel = anchor.getAttribute('data-event-label') || '';
 
 		const messageHeader = (isPackage && packageName)
 			? `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${packageName}.`
@@ -110,6 +117,7 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 
 		const messageParts = [
 			messageHeader,
+			...(eventLabel ? [`Evento: ${eventLabel}`] : []),
 			`Cupón: ${promoCode}`,
 			`Folio: ${createPromoFolio(price)}`
 		];

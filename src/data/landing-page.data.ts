@@ -2,9 +2,9 @@ import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.inte
 
 export const landingData: LandingPageData = {
 	hero: {
-		title: 'Invitaciones digitales premium con RSVP y control de invitados',
+		title: 'Invitaciones digitales elegantes para confirmar y guiar a tus invitados',
 		subtitle:
-			'Experiencia personalizada para tu evento: confirmaciones en tiempo real, pases digitales y envío por WhatsApp.',
+			'RSVP, pases digitales, ubicación, música y galería en una experiencia personalizada para compartir por WhatsApp.',
 		primaryCtaLabel: 'Cotizar por WhatsApp',
 		secondaryCtaLabel: 'Ver demos reales',
 		secondaryCtaUrl: '#tipo-evento',
@@ -13,7 +13,7 @@ export const landingData: LandingPageData = {
 			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
 		socialProofText: 'Acompañamiento personalizado para eventos especiales',
 		highlights: [
-			{ label: 'RSVP integrado', icon: 'CheckSealIcon' },
+			{ label: 'RSVP', icon: 'CheckSealIcon' },
 			{ label: 'Pases digitales', icon: 'EnvelopedIcon' },
 			{ label: 'Control de invitados', icon: 'UserGroupIcon' },
 			{ label: 'Envío por WhatsApp', icon: 'WhatsApp' },

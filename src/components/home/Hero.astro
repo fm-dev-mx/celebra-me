@@ -4,27 +4,12 @@
  * Hero "Prime" Component
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import Icon from '@components/common/icons/Icon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getCommonAsset } from '@/lib/assets/asset-registry';
 import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
 
 import heroXv from '@/assets/images/hero/xv.png';
-import heroWedding from '@/assets/images/hero/wedding.png';
-import heroBabyshower from '@/assets/images/hero/babyshower.png';
-import heroBaptism from '@/assets/images/hero/baptism.png';
-import heroBirthday from '@/assets/images/hero/birthday.png';
 
-import mockupXv from '@/assets/images/hero/mockup_xv.png';
-import mockupWedding from '@/assets/images/hero/mockup_wedding.png';
-import mockupBabyshower from '@/assets/images/hero/mockup_babyshower.png';
-import mockupBaptism from '@/assets/images/hero/mockup_baptism.png';
-import mockupBirthday from '@/assets/images/hero/mockup_birthday.png';
-
-// Import consolidated Premium styles
 import '@/styles/components/_hero.scss';
 
 interface Props {
@@ -32,76 +17,31 @@ interface Props {
 }
 
 const { data } = Astro.props;
-
-const avatar1 = getCommonAsset('avatar1');
-const avatar2 = getCommonAsset('avatar2');
-const avatar3 = getCommonAsset('avatar3');
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
-	<!-- 1. Background Layer -->
-	<div class="hero-prime__bg">
-		<!-- Event specific background images -->
-		<picture class="hero-prime__bg-picture hero-prime__bg-picture--active" data-event-bg="xv">
-			<Image src={heroXv} alt="XV Años Fondo" class="hero-bg-img" width={1920} height={1080} quality={80} loading="eager" decoding="sync" fetchpriority="high" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-event-bg="wedding">
-			<Image src={heroWedding} alt="Boda Fondo" class="hero-bg-img" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-event-bg="babyshower">
-			<Image src={heroBabyshower} alt="Baby Shower Fondo" class="hero-bg-img" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-event-bg="baptism">
-			<Image src={heroBaptism} alt="Bautizo Fondo" class="hero-bg-img" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-event-bg="birthday">
-			<Image src={heroBirthday} alt="Cumpleaños Fondo" class="hero-bg-img" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
+	<div class="hero-prime__bg" aria-hidden="true">
+		<picture class="hero-prime__bg-picture hero-prime__bg-picture--active">
+			<Image src={heroXv} alt=""  width={1920} height={1080} quality={80} loading="eager" decoding="sync" fetchpriority="high" />
 		</picture>
 	</div>
 
-	<!-- 2. Overlay Layer -->
-	<div class="hero-prime__overlay"></div>
+	<div class="hero-prime__overlay" aria-hidden="true"></div>
 
-	<!-- 3. Content Layer -->
 	<div class="hero-prime__content">
 		<div class="hero-prime__left">
-			<!-- Event Selector (Stagger 1) -->
-			<div class="hero-prime__selector stagger-1">
-				<span class="hero-prime__selector-label">¿Qué evento estás preparando?</span>
-				<div class="hero-prime__selector-options">
-					<button class="hero-prime__selector-btn active" data-event-type="xv">XV años</button>
-					<button class="hero-prime__selector-btn" data-event-type="wedding">Boda</button>
-					<button class="hero-prime__selector-btn" data-event-type="babyshower">Baby shower</button>
-					<button class="hero-prime__selector-btn" data-event-type="baptism">Bautizo</button>
-					<button class="hero-prime__selector-btn" data-event-type="birthday">Cumpleaños</button>
-				</div>
-			</div>
+			<p class="hero-prime__eyebrow stagger-1">Invitaciones digitales premium</p>
 
-			<!-- Title (Stagger 1) -->
-			<h1 class="hero-prime__title stagger-1" id="hero-title">
+			<h1 class="hero-prime__title stagger-2" id="hero-title">
 				{data.title}
 			</h1>
 
-			<!-- Subtitle (Stagger 2) -->
-			<p class="hero-prime__subtitle stagger-2">
+			<p class="hero-prime__subtitle stagger-3">
 				{data.subtitle}
 			</p>
 
-			{data.highlights && data.highlights.length > 0 && (
-				<ul class="hero-prime__highlights stagger-3" aria-label="Beneficios principales">
-					{data.highlights.map((highlight) => (
-						<li class="hero-prime__highlight">
-							{highlight.icon && <Icon name={highlight.icon} class="hero-prime__highlight-icon" />}
-							<span>{highlight.label}</span>
-						</li>
-					))}
-				</ul>
-			)}
-
-			<!-- Actions (Stagger 3) -->
-			<div class="hero-prime__actions stagger-3">
+			<div class="hero-prime__actions stagger-4">
 				<WhatsAppButton
-					className="shine-effect"
 					phone={data.whatsappPhone}
 					message={data.whatsappMessage}
 					label={data.primaryCtaLabel}
@@ -116,9 +56,9 @@ const avatar3 = getCommonAsset('avatar3');
 				<ActionBase
 					as="a"
 					href={data.secondaryCtaUrl || '#tipo-evento'}
-					variant="outline"
+					variant="text"
 					color="white"
-					class="shine-effect"
+					class="hero-prime__secondary-action"
 					data-track-event="cta_clicked"
 					data-track-section="hero"
 					data-track-cta="hero_secondary"
@@ -133,210 +73,6 @@ const avatar3 = getCommonAsset('avatar3');
 					{data.secondaryCtaLabel}
 				</ActionBase>
 			</div>
-
-			<!-- Social Proof (Optional) -->
-			{data.socialProofText && (
-				<div class="hero-prime__social-proof stagger-3">
-					<div class="hero-prime__avatars">
-						<Image src={avatar1.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
-						<Image src={avatar2.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
-						<Image src={avatar3.src as ImageMetadata} alt="Usuario de Celebra-me" width={40} height={40} widths={[40, 80]} sizes="40px" quality={75} loading="lazy" decoding="async" />
-					</div>
-					<span>{data.socialProofText}</span>
-				</div>
-			)}
 		</div>
-
-		<div class="hero-prime__right stagger-4">
-			<div class="phone-mockup">
-				<div class="phone-mockup__screen">
-					<Image src={mockupXv} alt="XV Años Demo" class="phone-mockup__image active" data-mockup-img="xv" width={280} height={560} quality={85} loading="eager" />
-					<Image src={mockupWedding} alt="Boda Demo" class="phone-mockup__image" data-mockup-img="wedding" width={280} height={560} quality={85} loading="lazy" />
-					<Image src={mockupBabyshower} alt="Baby Shower Demo" class="phone-mockup__image" data-mockup-img="babyshower" width={280} height={560} quality={85} loading="lazy" />
-					<Image src={mockupBaptism} alt="Bautizo Demo" class="phone-mockup__image" data-mockup-img="baptism" width={280} height={560} quality={85} loading="lazy" />
-					<Image src={mockupBirthday} alt="Cumpleaños Demo" class="phone-mockup__image" data-mockup-img="birthday" width={280} height={560} quality={85} loading="lazy" />
-				</div>
-				<div class="phone-mockup__speaker"></div>
-				<div class="phone-mockup__camera"></div>
-				<div class="phone-mockup__home-bar"></div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Scroll Indicator -->
-	<div class="hero-prime__scroll-indicator" data-track-event="cta_clicked" data-track-section="hero" data-track-cta="hero_scroll" data-track-intent="section_nav" data-track-destination="event-types">
-		<ActionIcon
-			icon="ArrowDownIcon"
-			variant="scroll"
-			color="white"
-			as="a"
-			href="#tipo-evento"
-			title="Descubre más"
-		/>
 	</div>
 </section>
-
-<script>
-	const hero = document.getElementById('inicio');
-
-	if (hero instanceof HTMLElement) {
-		const controller = new AbortController();
-		const { signal } = controller;
-
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-		const background = hero.querySelector('.hero-prime__bg');
-		const media = Array.from(background?.querySelectorAll('img, video') ?? []);
-
-		const applyTransform = (moveX: number, moveY: number) => {
-			media.forEach((element) => {
-				if (element instanceof HTMLElement) {
-					element.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
-				}
-			});
-		};
-
-		const setMediaWillChange = (value: string) => {
-			media.forEach((element) => {
-				if (element instanceof HTMLElement) {
-					element.style.willChange = value;
-				}
-			});
-		};
-
-		const enableParallax = () => {
-			if (prefersReducedMotion.matches) {
-				setMediaWillChange('');
-				applyTransform(0, 0);
-				return;
-			}
-
-			setMediaWillChange('transform');
-
-			const handleMouseMove = (event: MouseEvent) => {
-				const moveX = (event.clientX - window.innerWidth / 2) / 50;
-				const moveY = (event.clientY - window.innerHeight / 2) / 50;
-				applyTransform(moveX, moveY);
-			};
-
-			const handleMouseLeave = () => {
-				applyTransform(0, 0);
-			};
-
-			hero.addEventListener('mousemove', handleMouseMove, { signal });
-			hero.addEventListener('mouseleave', handleMouseLeave, { signal });
-		};
-
-		enableParallax();
-		prefersReducedMotion.addEventListener('change', enableParallax, { signal });
-	}
-
-	// Dynamic selector client handler
-	const buttons = document.querySelectorAll('.hero-prime__selector-btn');
-	const backgrounds = document.querySelectorAll('.hero-prime__bg-picture[data-event-bg]');
-	const mockups = document.querySelectorAll('.phone-mockup__image[data-mockup-img]');
-	const titleEl = document.getElementById('hero-title');
-	const subtitleEl = document.querySelector('.hero-prime__subtitle');
-	const heroCta = document.querySelector('.hero-prime__actions .whatsapp-button') as HTMLAnchorElement | null;
-
-	interface HeroEventInfo {
-		title: string;
-		subtitle: string;
-		cta: string;
-		message: string;
-		promoCode?: string;
-		trackValue?: number;
-		packageName?: string;
-		packageInterest?: string;
-	}
-
-	const eventData: Record<string, HeroEventInfo> = {
-		xv: {
-			title: "Invitaciones digitales premium con RSVP y control de invitados",
-			subtitle: "Experiencia personalizada para tu evento: confirmaciones en tiempo real, pases digitales y envío por WhatsApp.",
-			cta: "Cotizar mis XV por WhatsApp",
-			message: "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899",
-		},
-		wedding: {
-			title: "Invitaciones digitales premium para tu Boda",
-			subtitle: "Una experiencia elegante para tus invitados: confirmaciones de asistencia controladas, itinerario interactivo, mesa de regalos y pases por WhatsApp.",
-			cta: "Cotizar mi boda por WhatsApp",
-			message: "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nCupón: LANZAMIENTO-1499",
-			promoCode: "LANZAMIENTO-1499",
-			trackValue: 1499,
-			packageName: "Premium",
-			packageInterest: "premium",
-		},
-		babyshower: {
-			title: "Invitaciones digitales premium para tu Baby Shower",
-			subtitle: "Comparte la alegría de tu nuevo integrante con una invitación interactiva, galería de fotos, mesa de regalos y confirmación sin complicaciones.",
-			cta: "Cotizar mi baby shower",
-			message: "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899",
-		},
-		baptism: {
-			title: "Invitaciones digitales premium para tu Bautizo",
-			subtitle: "Celebra este momento especial con un diseño refinado, mapas interactivos de la ceremonia y recepción, y control de asistencia familiar.",
-			cta: "Cotizar mi bautizo",
-			message: "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899",
-		},
-		birthday: {
-			title: "Invitaciones digitales premium para tu Cumpleaños",
-			subtitle: "La mejor presentación para tu fiesta: ubicación de Google Maps, playlist de música, galería de fotos y confirmación rápida por WhatsApp.",
-			cta: "Cotizar mi cumpleaños",
-			message: "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899",
-		}
-	};
-
-	buttons.forEach((btn) => {
-		btn.addEventListener('click', () => {
-			const eventType = btn.getAttribute('data-event-type') || 'xv';
-
-			// Update buttons
-			buttons.forEach((b) => b.classList.remove('active'));
-			btn.classList.add('active');
-
-			// Update background images
-			backgrounds.forEach((bg) => {
-				if (bg.getAttribute('data-event-bg') === eventType) {
-					bg.classList.add('hero-prime__bg-picture--active');
-				} else {
-					bg.classList.remove('hero-prime__bg-picture--active');
-				}
-			});
-
-			// Update mockup images
-			mockups.forEach((mock) => {
-				if (mock.getAttribute('data-mockup-img') === eventType) {
-					mock.classList.add('active');
-				} else {
-					mock.classList.remove('active');
-				}
-			});
-
-			// Update text copy
-			const copy = eventData[eventType];
-			if (copy) {
-				if (titleEl) titleEl.textContent = copy.title;
-				if (subtitleEl) subtitleEl.textContent = copy.subtitle;
-				if (heroCta) {
-					const iconHtml = heroCta.querySelector('svg')?.outerHTML || '';
-					heroCta.innerHTML = `${iconHtml} ${copy.cta}`;
-					const phone = heroCta.getAttribute('data-phone') || '521000000000';
-					heroCta.href = `https://wa.me/${phone}?text=${encodeURIComponent(copy.message)}`;
-					
-					// Update tracking datasets
-					heroCta.setAttribute('data-event-type', eventType);
-					heroCta.setAttribute('data-track-label', copy.cta);
-					heroCta.setAttribute('data-promo-code', copy.promoCode || 'LANZAMIENTO-899');
-					heroCta.setAttribute('data-track-value', String(copy.trackValue || 899));
-					if (copy.packageName) {
-						heroCta.setAttribute('data-package-name', copy.packageName);
-						heroCta.setAttribute('data-package-interest', copy.packageInterest || '');
-					} else {
-						heroCta.removeAttribute('data-package-name');
-						heroCta.removeAttribute('data-package-interest');
-					}
-				}
-			}
-		});
-	});
-</script>

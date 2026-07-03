@@ -180,17 +180,41 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 
 		await expect(page.locator('#hero-title')).toContainText(
-			'Invitaciones digitales premium con RSVP y control de invitados',
+			'Invitaciones digitales elegantes para confirmar y guiar a tus invitados',
 		);
-		await expect(page.locator('.hero-prime__subtitle')).toContainText('confirmaciones');
+		await expect(page.locator('.hero-prime__eyebrow')).toContainText(
+			'Invitaciones digitales premium',
+		);
+		await expect(page.locator('.hero-prime__subtitle')).toContainText('RSVP');
 		await expect(page.locator('.hero-prime__subtitle')).toContainText('pases digitales');
-		await expect(page.locator('#hero-title')).toContainText('control de invitados');
 		await expect(page.locator('.hero-prime__subtitle')).toContainText('WhatsApp');
-		await expect(page.locator('.hero-prime__highlight')).toHaveText(
-			['RSVP integrado', 'Pases digitales', 'Control de invitados', 'Envío por WhatsApp'],
-			{ useInnerText: true },
-		);
-		await expect(page.locator('[data-track-cta="whatsapp-hero"]')).toBeVisible();
+		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
+		await expect(heroCta).toBeVisible();
+		await expect(page.locator('.hero-prime__selector')).toHaveCount(0);
+		await expect(page.locator('.hero-prime .phone-mockup')).toHaveCount(0);
+		await expect(page.locator('.hero-prime__proof')).toHaveCount(0);
+		await expect(page.locator('#tipo-evento .event-showroom__tabs')).toBeVisible();
+		await expect(
+			page.locator('#tipo-evento [data-panel-event="xv"] .event-showroom__phone-card'),
+		).toContainText('Sofía Valentina');
+		await expect(page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-feature]')).toContainText([
+			'RSVP',
+			'Pases',
+			'WhatsApp',
+		]);
+	});
+
+	test('keeps the hero CTA in reach on narrow mobile', async ({ page }) => {
+		await page.setViewportSize({ width: 360, height: 740 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
+		await expect(heroCta).toBeVisible();
+		const ctaBox = await heroCta.boundingBox();
+
+		expect(ctaBox).not.toBeNull();
+		expect(ctaBox!.y).toBeLessThanOrEqual(740);
+		expect(ctaBox!.y + ctaBox!.height).toBeLessThanOrEqual(780);
 	});
 
 	test('uses the launch coupon and structured tracking on WhatsApp CTAs', async ({ page }) => {
@@ -216,6 +240,46 @@ test.describe('Landing page regressions', () => {
 		const clickedMessage = new URL(clickedHref).searchParams.get('text') ?? '';
 		expect(clickedMessage).toContain('Cupón: LANZAMIENTO-899');
 		expect(clickedMessage).toMatch(/Folio: CM-899-[A-Z0-9]{4}/);
+	});
+
+	test('keeps the event showroom personalization wired to WhatsApp context', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+		await page.locator('#tipo-evento').scrollIntoViewIfNeeded();
+
+		await page.locator('[data-tab-event="boda"]').click();
+
+		const eventCta = page.locator('[data-track-cta="showroom_quote_boda"]');
+		await expect(page.locator('html')).toHaveAttribute('data-selected-event', 'boda');
+		await expect(page.locator('.event-showroom__tab-btn[data-tab-event="boda"]')).toHaveClass(
+			/active/,
+		);
+		await expect(page.locator('[data-panel-event="boda"]')).toHaveClass(/active/);
+		await expect(page.locator('[data-panel-event="boda"] [data-showroom-kicker]')).toContainText(
+			'Boda',
+		);
+		await expect(page.locator('[data-panel-event="boda"] [data-showroom-title]')).toContainText(
+			'Laura & Daniel',
+		);
+		await expect(eventCta).toContainText('Cotizar mi boda');
+		await expect(eventCta).toHaveAttribute('data-event-type', 'boda');
+		await expect(eventCta).toHaveAttribute('data-event-label', 'Boda');
+		await expect(eventCta).toHaveAttribute('data-package-interest', 'premium');
+		await expect(eventCta).toHaveAttribute('data-package-name', 'Premium');
+		await expect(eventCta).toHaveAttribute('data-promo-code', 'LANZAMIENTO-1499');
+		await expect(eventCta).toHaveAttribute('data-track-value', '1499');
+		const eventHref = await eventCta.getAttribute('href');
+		expect(decodeURIComponent(eventHref ?? '')).toContain('Evento: Boda');
+		const clickedHref = await eventCta.evaluate((anchor) => {
+			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
+			anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+			return anchor.getAttribute('href') ?? '';
+		});
+		const clickedMessage = new URL(clickedHref).searchParams.get('text') ?? '';
+		expect(clickedMessage).toContain('paquete Premium');
+		expect(clickedMessage).toContain('Evento: Boda');
+		expect(clickedMessage).toContain('Cupón: LANZAMIENTO-1499');
+		expect(clickedMessage).toMatch(/Folio: CM-1499-[A-Z0-9]{4}/);
 	});
 
 	test('shows event categories before product proof', async ({ page }) => {
@@ -305,6 +369,29 @@ test.describe('Landing page regressions', () => {
 				}),
 			)
 			.toBe('1');
+	});
+
+	test('keeps hero content visible with reduced motion', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		for (const selector of [
+			'.hero-prime__eyebrow',
+			'#hero-title',
+			'.hero-prime__subtitle',
+			'.hero-prime__actions',
+		]) {
+			await expect
+				.poll(async () =>
+					page.locator(selector).evaluate((element) => window.getComputedStyle(element).opacity),
+				)
+				.toBe('1');
+		}
+		await expect(page.locator('.hero-prime__selector')).toHaveCount(0);
+		await page.locator('#tipo-evento').scrollIntoViewIfNeeded();
+		await page.locator('[data-tab-event="baby-shower"]').click();
+		await expect(page.locator('[data-panel-event="baby-shower"]')).toHaveClass(/active/);
 	});
 
 	test('does not create horizontal overflow on narrow mobile', async ({ page }) => {
