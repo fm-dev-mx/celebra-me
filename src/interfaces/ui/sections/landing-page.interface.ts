@@ -15,6 +15,21 @@ export interface HeroData {
 	socialProofText?: string;
 }
 
+export interface ProductProofData {
+	title: string;
+	description: string;
+	items: Array<{
+		title: string;
+		description: string;
+		icon?: string;
+	}>;
+	cta: {
+		label: string;
+		href: string;
+		message?: string;
+	};
+}
+
 export interface AboutData {
 	title: string;
 	description: string;
@@ -109,6 +124,7 @@ export interface HowItWorksData {
 
 export interface LandingPageData {
 	hero: HeroData;
+	productProof: ProductProofData;
 	about: AboutData;
 	services: ServicesData;
 	pricing: PricingData;

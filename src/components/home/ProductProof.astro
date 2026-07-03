@@ -1,0 +1,59 @@
+---
+import Container from '@components/layout/Container.astro';
+import Section from '@components/layout/Section.astro';
+import Icon from '@components/common/icons/Icon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+import type { ProductProofData } from '@/interfaces/ui/sections/landing-page.interface';
+import { getContactPhone } from '@/utils/whatsapp';
+
+import '@/styles/home/_product-proof.scss';
+
+interface Props {
+	data: ProductProofData;
+}
+
+const { data } = Astro.props;
+const phone = getContactPhone();
+---
+
+<Section
+	id="prueba-producto"
+	class="product-proof"
+	data-track-section="product-proof"
+	aria-labelledby="product-proof-title"
+>
+	<Container class="product-proof__container">
+		<div class="product-proof__intro">
+			<p class="product-proof__eyebrow">Más que una invitación visual</p>
+			<h2 id="product-proof-title" class="product-proof__title">{data.title}</h2>
+			<p class="product-proof__description">{data.description}</p>
+			<WhatsAppButton
+				className="product-proof__cta"
+				phone={phone}
+				message={data.cta.message}
+				label={data.cta.label}
+				trackSection="product-proof"
+				trackCta="whatsapp-product-proof"
+				trackCampaign="DEMO-LANZAMIENTO-899"
+				trackValue={899}
+				trackCurrency="MXN"
+				promoCode="LANZAMIENTO-899"
+				ariaLabel="Hablar sobre mi evento por WhatsApp"
+			/>
+		</div>
+
+		<div class="product-proof__panel" aria-label="Funciones operativas de la invitación">
+			{data.items.map((item) => (
+				<article class="product-proof__item">
+					<span class="product-proof__item-icon" aria-hidden="true">
+						<Icon name={item.icon || 'CheckIcon'} />
+					</span>
+					<div class="product-proof__item-body">
+						<h3>{item.title}</h3>
+						<p>{item.description}</p>
+					</div>
+				</article>
+			))}
+		</div>
+	</Container>
+</Section>

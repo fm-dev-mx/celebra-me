@@ -2,280 +2,297 @@ import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.inte
 
 export const landingData: LandingPageData = {
 	hero: {
-		title: 'El primer recuerdo de su gran día',
-		subtitle: 'Invitaciones digitales diseñadas para compartir su historia con cada invitado.',
+		title: 'Invitaciones digitales premium con RSVP y control de invitados',
+		subtitle:
+			'Diseñamos una experiencia personalizada para tu evento, con confirmaciones, pases digitales, ubicación, música, galería y envío por WhatsApp.',
 		backgroundImage: {
 			desktopUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			mobileUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
 		},
-		primaryCtaLabel: 'Agendar asesoría',
+		backgroundImages: [
+			{
+				desktopUrl:
+					'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+				mobileUrl:
+					'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
+				alt: 'Recepción elegante con iluminación cálida para invitaciones digitales premium',
+			},
+			{
+				desktopUrl:
+					'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=1800',
+				alt: 'Celebración nupcial elegante con flores y mesa preparada',
+			},
+			{
+				desktopUrl:
+					'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1800',
+				alt: 'Evento social con vestido formal y ambiente editorial',
+			},
+			{
+				desktopUrl:
+					'https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?auto=format&fit=crop&q=80&w=1800',
+				alt: 'Mesa de celebración familiar con detalles delicados',
+			},
+		],
+		primaryCtaLabel: 'Cotizar por WhatsApp',
 		primaryCtaUrl: '#contacto',
-		secondaryCtaLabel: 'Ver demos',
+		secondaryCtaLabel: 'Ver demos reales',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
-			'¡Hola! Quisiera información sobre sus invitaciones digitales para celebrar mi evento. ¿Podrían asesorarme?',
-		socialProofText: 'Más de 500 familias confían en nosotros',
+			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
+		socialProofText: 'Acompañamiento personalizado para eventos especiales',
+		highlights: [
+			{ label: 'RSVP integrado', icon: 'CheckSealIcon' },
+			{ label: 'Pases digitales', icon: 'EnvelopedIcon' },
+			{ label: 'Control de invitados', icon: 'UserGroupIcon' },
+			{ label: 'Envío por WhatsApp', icon: 'WhatsApp' },
+		],
 	},
-	services: {
-		title: 'Qué incluye tu invitación digital',
-		subtitle:
-			'Todo lo necesario para compartir tu evento con claridad, estilo y control desde un solo enlace.',
+	productProof: {
+		title: 'Más que una invitación bonita',
+		description:
+			'Una experiencia digital que informa, confirma asistencia y ayuda a organizar invitados.',
 		items: [
 			{
-				title: 'RSVP y confirmaciones',
+				title: 'Primera impresión premium',
 				description:
-					'Sus invitados pueden confirmar asistencia y número de acompañantes desde la invitación.',
-				icon: 'CheckSealIcon',
+					'Una portada cuidada presenta su celebración con elegancia desde el primer enlace.',
+				icon: 'SparklesIcon',
 			},
 			{
-				title: 'Pases personalizados',
+				title: 'Información clara',
 				description:
-					'Cada invitado puede recibir su propio enlace o pase digital para acceder a los detalles del evento.',
-				icon: 'EnvelopedIcon',
-			},
-			{
-				title: 'Galería, música y mapas',
-				description:
-					'Integramos fotos, canción, ubicación, itinerario y detalles importantes en una experiencia cuidada.',
+					'Ubicación, horarios, galería, música y detalles importantes quedan en un solo lugar.',
 				icon: 'MapLocationIcon',
 			},
 			{
-				title: 'Lista de invitados',
+				title: 'Control real',
 				description:
-					'Organice invitados, pases y respuestas para tener mejor control antes del evento.',
+					'RSVP, acompañantes y pases digitales ayudan a organizar antes del evento.',
+				icon: 'CheckIcon',
+			},
+		],
+		cta: {
+			label: 'Hablar sobre mi evento',
+			href: '#contacto',
+			message:
+				'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
+		},
+	},
+	services: {
+		title: 'Incluido en tu invitación',
+		subtitle:
+			'Lo esencial para compartir, confirmar y organizar sin fricción.',
+		items: [
+			{
+				title: 'RSVP integrado',
+				description:
+					'Sus invitados confirman asistencia desde el enlace.',
+				icon: 'CheckSealIcon',
+			},
+			{
+				title: 'Pases por WhatsApp',
+				description:
+					'Comparta enlaces o pases personalizados en segundos.',
+				icon: 'EnvelopedIcon',
+			},
+			{
+				title: 'Detalles del evento',
+				description:
+					'Fotos, música, horarios, ubicación y notas importantes.',
+				icon: 'MapLocationIcon',
+			},
+			{
+				title: 'Lista ordenada',
+				description:
+					'Vea respuestas y acompañantes antes de celebrar.',
 				icon: 'UserGroupIcon',
 			},
 		],
 		cta: {
-			label: 'Solicitar asesoría',
+			label: 'Resolver dudas por WhatsApp',
 			href: '#contacto',
 		},
 	},
 	about: {
-		title: 'Nuestra Esencia',
+		title: 'Diseño con intención',
 		description:
-			'En Celebra-me, nos apasiona diseñar los momentos más significativos de tu vida, fusionando arte digital con calidez humana para crear invitaciones que trascienden el tiempo.',
+			'Cada invitación combina dirección visual, estructura clara y acompañamiento cercano.',
 		values: [
 			{
 				name: 'Vanguardia Digital',
-				description: 'Experiencias interactivas que sorprenden y deleitan.',
+				description: 'Interacciones útiles, no adornos innecesarios.',
 				icon: 'DiamondIcon',
 			},
 			{
 				name: 'Detalle Impecable',
-				description: 'Atención absoluta en cada trazo, color y tipografía.',
+				description: 'Tipografía, ritmo visual y lectura cuidada.',
 				icon: 'SparklesIcon',
 			},
 			{
 				name: 'Cercanía y Calidez',
-				description: 'Acompañamiento personal para que todo sea perfecto.',
+				description: 'Le guiamos desde contenido hasta envío.',
 				icon: 'UserGroupIcon',
 			},
 		],
 		cta: {
-			label: 'Agenda una consulta',
+			label: 'Hablar sobre mi evento',
 			href: '#contacto',
 		},
 	},
 	testimonials: {
-		title: 'Experiencias que trascienden',
+		title: 'Clientes que organizaron mejor',
+		subtitle: 'Opiniones anónimas basadas en eventos reales y patrones aprobados.',
 		testimonials: [
 			{
-				name: 'Sofía & Alejandro',
-				text: 'Nuestra boda fue un sueño hecho realidad. La invitación digital fue el primer detalle que dejó a todos sin palabras, capturando perfectamente la elegancia de nuestro gran día.',
-				role: 'Boda en Hacienda del Mar',
+				name: 'Boda',
+				text: 'Pudimos enviar la invitación por WhatsApp y tener las confirmaciones más claras desde el primer día.',
+				role: 'Ceremonia nupcial',
 			},
 			{
-				name: 'Isabella Martínez',
-				text: 'Mis XV años fueron mágicos. Quería algo diferente y sofisticado; Celebra-me logró que mi invitación fuera tan especial como mi fiesta.',
-				role: 'XV Años - Gala de Invierno',
+				name: 'Cliente de XV años',
+				text: 'La invitación se sintió premium y nos ayudó a explicar horarios, ubicación y pases sin repetir mensajes.',
+				role: 'Celebración de XV años',
 			},
 			{
-				name: 'Familia Villarreal',
-				text: 'Buscábamos excelencia y atención personalizada para el bautizo de nuestro hijo. Superaron nuestras expectativas con un diseño impecable y un servicio de acompañamiento único.',
-				role: 'Bautizo',
+				name: 'Baby shower',
+				text: 'El enlace reunió toda la información y fue fácil de compartir con familia e invitados.',
+				role: 'Celebración familiar',
 			},
 		],
 	},
 	pricing: {
 		eyebrow: 'Inversión para tu celebración',
-		title: 'Niveles de Exclusividad',
-		intro: 'Tres propuestas diseñadas para elevar tu celebración. Todas las opciones incluyen invitación digital completa, confirmación de asistencia, panel de invitados y enlace personalizado.',
-		note: 'Beneficio de lanzamiento en diseños seleccionados de colección: desde $499 MXN. Tarifa regular desde $899 MXN.',
+		title: 'Paquetes claros',
+		intro: 'La promo de lanzamiento aplica al paquete base. Los niveles superiores agregan diseño y operación.',
+		note: 'Promo base: $899 MXN. Precio regular base: $1,299 MXN.',
 		tiers: [
 			{
+				id: 'coleccion',
 				title: 'Colección',
-				description: 'Diseños de autor, elegantes y listos para personalizar con agilidad.',
+				description: 'Diseño premium listo para personalizar.',
 				badge: 'Beneficio de Lanzamiento',
-				price: { amount: '499', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Tarifa regular desde $899 MXN',
+				price: { amount: '899', currency: 'MXN', period: 'pago único' },
+				regularPrice: 'Precio regular: $1,299 MXN',
 				sections: [
-					{
-						title: 'Ideal para',
-						items: [
-							'Entregas ágiles en 24 horas hábiles*',
-							'Quienes buscan un diseño de alta gama listo para usar',
-							'Seguimiento impecable de invitados',
-						],
-					},
 					{
 						title: 'Incluye',
 						items: [
-							'Adaptación de fotos, textos y fechas',
-							'Configuración de paleta de colores y música',
-							'Logística completa: Galería, ubicación y RSVP',
-							'Panel avanzado para gestionar invitados',
-							'Enlace personalizado de alta disponibilidad',
+							'Personalización de diseño seleccionado',
+							'RSVP y control de acompañantes',
+							'Galería, música, ubicación e itinerario',
+							'Pases digitales por WhatsApp',
 						],
 					},
 				],
 				footnote: '*Tiempo estimado una vez recibido el contenido completo del evento.',
-				cta: 'Elegir diseño de colección',
-				href: '#contacto',
+				cta: 'Quiero este paquete',
+				ctaMessage:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium de $899 MXN para el paquete Colección.\n\nCupón: LANZAMIENTO-899',
+				href: '#',
 			},
 			{
+				id: 'premium',
 				title: 'Premium',
 				description:
-					'Dirección de arte aplicada para reflejar la identidad visual de tu evento.',
+					'Dirección visual para un evento con estilo propio.',
 				badge: 'El Favorito',
 				isPrimary: true,
 				price: { amount: '1,499', currency: 'MXN', period: 'pago único' },
 				sections: [
 					{
-						title: 'Ideal para',
+						title: 'Incluye',
 						items: [
-							'Celebraciones con un concepto visual definido',
-							'Eventos que buscan distinción y exclusividad editorial',
-						],
-					},
-					{
-						title: 'Diferencial',
-						items: [
-							'Propuesta de diseño adaptada a tu identidad visual',
-							'Composición cuidada de fotografía y tipografía',
-							'Curaduría estética para un resultado premium',
-							'Refinamiento de cada detalle interactivo',
+							'Todo lo de Colección',
+							'Adaptación editorial de fotografía y paleta',
+							'Mayor curaduría visual',
+							'Revisión prioritaria de contenido',
 						],
 					},
 				],
-				cta: 'Solicitar adaptación editorial',
-				href: '#contacto',
+				cta: 'Quiero este paquete',
+				ctaMessage:
+					'Hola, quiero cotizar el paquete Premium para mi invitación digital.\n\nCupón: LANZAMIENTO-899',
+				href: '#',
 			},
 			{
+				id: 'exclusivo',
 				title: 'Exclusivo',
-				description: 'Experiencia artística única, creada desde cero para tu visión.',
+				description: 'Experiencia completa con mayor personalización.',
 				isExclusive: true,
-				price: { amount: 'Cotización personalizada', currency: '', period: '' },
-				regularPrice: 'Proyectos exclusivos desde $2,500 MXN',
+				price: { amount: '2,199', currency: 'MXN', period: 'pago único' },
 				sections: [
 					{
-						title: 'Ideal para',
+						title: 'Incluye',
 						items: [
-							'Eventos de autor o conceptos disruptivos',
-							'Visiones que requieren una pieza única e irrepetible',
-						],
-					},
-					{
-						title: 'Diferencial',
-						items: [
-							'Concepto creativo original y exclusivo',
-							'Piezas audiovisuales o animaciones personalizadas',
-							'Estructura y secciones diseñadas bajo demanda',
-							'Acompañamiento y consultoría de diseño prioritaria',
+							'Todo lo de Premium',
+							'Estructura extendida de secciones',
+							'Personalización visual avanzada',
+							'Acompañamiento prioritario',
 						],
 					},
 				],
-				cta: 'Solicitar propuesta de autor',
-				href: '#contacto',
+				cta: 'Cotizar por WhatsApp',
+				ctaMessage:
+					'Hola, quiero cotizar el paquete Exclusivo para mi invitación digital.\n\nCupón: LANZAMIENTO-899',
+				href: '#',
 			},
 		],
 	},
 	faq: {
-		title: 'Preguntas Frecuentes',
+		title: 'Preguntas frecuentes',
 		faqs: [
 			{
-				question: '¿Qué opción me conviene?',
-				answer: 'Elige Colección si buscas una invitación rápida, elegante y lista para personalizar. Elige Premium si quieres una propuesta visual más cuidada y alineada al estilo de tu evento. Elige Exclusivo si necesitas una experiencia completamente personalizada desde cero.',
+				question: '¿Qué incluye la invitación digital premium?',
+				answer: 'Incluye diseño, galería, música, ubicación, itinerario, RSVP, pases digitales y enlace para compartir.',
 			},
 			{
-				question: '¿Todas las invitaciones incluyen las mismas secciones?',
-				answer: 'Sí. Todas las invitaciones pueden incluir portada, cuenta regresiva, itinerario, galería, ubicación, confirmación de asistencia, mesa de regalos, música, pase de acceso y otras secciones esenciales.',
+				question: '¿Cómo funciona el RSVP?',
+				answer: 'Sus invitados confirman desde la invitación. Usted consulta las respuestas antes del evento.',
 			},
 			{
-				question: 'Entonces, ¿qué cambia entre cada opción?',
-				answer: 'Lo que cambia es el nivel de diseño, dirección visual y personalización. No pagas por desbloquear secciones, sino por el grado de adaptación estética, composición y detalle de tu invitación.',
+				question: '¿Puedo controlar acompañantes?',
+				answer: 'Sí. Puede definir acompañantes por invitación y evitar confirmaciones fuera de control.',
 			},
 			{
-				question: '¿Incluye sistema para registrar y enviar invitaciones?',
-				answer: 'Sí. Incluye un panel para registrar invitados, organizarlos por grupos, definir el número de invitados por invitación, enviar enlaces personalizados por WhatsApp y consultar si cada invitación ya fue vista, incluyendo un avance aproximado de visualización.',
+				question: '¿Cuánto tarda la entrega?',
+				answer: 'La entrega estimada es de 24 a 72 horas hábiles tras recibir la información completa.',
 			},
 			{
-				question: '¿Cómo reciben la invitación mis invitados?',
-				answer: 'Cada invitado puede recibir un enlace personalizado por WhatsApp, redes sociales o correo. Si actualizas información después, los cambios se reflejan en el mismo enlace.',
+				question: '¿Cómo se comparte por WhatsApp?',
+				answer: 'Recibe un enlace listo para enviar. También puede usar pases personalizados por invitado.',
 			},
 			{
-				question: '¿Puedo realizar cambios después de publicar?',
-				answer: 'Sí. Puedes solicitar ajustes en datos, imágenes o secciones. El alcance de los cambios depende del nivel contratado y del momento en que se soliciten.',
-			},
-			{
-				question: '¿La promoción de $499 aplica para cualquier diseño?',
-				answer: 'No. La promoción de $499 MXN aplica solo para diseños seleccionados de colección. Los niveles Premium y Exclusivo se cotizan por separado.',
-			},
-			{
-				question: '¿Cuánto tiempo tarda la entrega?',
-				answer: 'Los diseños de Colección se entregan en 24 horas hábiles una vez que recibimos todo tu contenido. Los niveles Premium y Exclusivo requieren de 3 a 7 días hábiles dependiendo de la complejidad del diseño y la agenda de producción.',
-			},
-			{
-				question: '¿Cómo funciona el pago?',
-				answer: 'El pago se realiza por transferencia bancaria o depósito. Para Colección se paga por adelantado al iniciar tu diseño. Para Premium y Exclusivo se requiere un anticipo del 50 % y el resto al aprobar el diseño final. Próximamente habilitaremos pagos con tarjeta en línea.',
-			},
-			{
-				question: '¿Puedo solicitar cambios o revisiones después de la entrega?',
-				answer: 'Sí. Todos los niveles incluyen rondas de revisión. En Colección puedes solicitar ajustes menores (textos, fotos, fechas). Premium y Exclusivo incluyen revisiones de diseño más profundas. Los cambios adicionales fuera del alcance del nivel contratado se cotizan por separado.',
-			},
-			{
-				question: '¿Qué contenido necesito proporcionar para comenzar?',
-				answer: 'Para cualquier nivel necesitas: fecha y hora del evento, lugar, nombres de los festejados, fotos que quieras incluir y la lista de invitados con sus números de WhatsApp. Para Premium y Exclusivo también compartimos una guía de contenido para asegurar el mejor resultado visual.',
+				question: '¿Qué necesito para comenzar?',
+				answer: 'Nombre del evento, fecha, ubicación, fotos, música y lista de invitados si desea pases personalizados.',
 			},
 		],
 	},
 	howItWorks: {
 		title: 'Cómo funciona',
-		subtitle:
-			'Crear la invitación digital perfecta para tu celebración es más sencillo de lo que imaginas.',
+		subtitle: 'Tres pasos para publicar y compartir con control.',
 		steps: [
 			{
 				icon: 'SparklesIcon',
-				title: 'Elige tu estilo',
-				description:
-					'Selecciona entre nuestros niveles Colección, Premium o Exclusivo y el diseño que más se ajuste a la personalidad de tu evento.',
+				title: 'Cuéntanos tu evento',
+				description: 'Comparta fecha, lugar, fotos, música y lista de invitados.',
 			},
 			{
 				icon: 'HeartIcon',
-				title: 'Envíanos tu contenido',
-				description:
-					'Comparte tus fotos, textos, fecha, lugar, música y la lista de invitados. Nosotros nos encargamos de armar todo.',
+				title: 'Diseñamos tu invitación',
+				description: 'Armamos una experiencia clara, elegante y lista para revisar.',
 			},
 			{
 				icon: 'CheckIcon',
-				title: 'Revisamos y ajustamos',
-				description:
-					'Te presentamos una propuesta de diseño, revisamos contigo y hacemos los ajustes necesarios hasta que quede perfecta.',
-			},
-			{
-				icon: 'MessageIcon',
-				title: 'Comparte tu invitación',
-				description:
-					'Recibes un enlace personalizado listo para compartir por WhatsApp, redes sociales o donde prefieras. Tus invitados confirman desde ahí.',
+				title: 'Comparte y controla',
+				description: 'Envíe por WhatsApp y consulte confirmaciones, pases y acompañantes.',
 			},
 		],
 	},
 	contact: {
-		title: 'Su Asesor Personal',
-		subtitle:
-			'Comience su viaje hacia una celebración inolvidable. Permita que nuestro equipo de expertos le asista en cada detalle de su invitación digital.',
+		title: 'Cotice su invitación',
+		subtitle: 'Comparta los datos básicos y le orientamos por WhatsApp.',
 	},
 };
