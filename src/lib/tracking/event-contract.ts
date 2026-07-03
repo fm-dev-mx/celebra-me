@@ -45,10 +45,16 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'visibility_bucket',
 	'depth_bucket',
 	'cta_id',
+	'cta_label',
 	'cta_location',
+	'destination',
 	'destination_type',
 	'package_id',
 	'package_tier',
+	'promo_code',
+	'campaign_code',
+	'value',
+	'currency',
 	'demo_slug',
 	'event_type',
 	'is_demo',
@@ -57,6 +63,7 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'lead_channel',
 	'lead_source',
 	'lead_code',
+	'folio',
 ]);
 
 const UNSAFE_KEY_PATTERN =

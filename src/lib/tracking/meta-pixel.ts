@@ -193,6 +193,7 @@ const META_EVENT_MAP: Record<string, string> = {
 	demo_viewed: 'ViewContent',
 	package_viewed: 'ViewContent',
 	whatsapp_contact_clicked: 'Contact',
+	form_submitted: 'Lead',
 	// lead_created is currently server-side only; mapped here for
 	// code-level versioning of the tracking contract.
 	lead_created: 'Lead',

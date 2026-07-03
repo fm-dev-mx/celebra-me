@@ -124,6 +124,14 @@ describe('forwardToMetaPixel', () => {
 		expect(fbq()).toHaveBeenCalledWith('track', 'Contact', {});
 	});
 
+	it('forwards successful form_submitted as fbq("track", "Lead", ...)', () => {
+		forwardToMetaPixel('form_submitted', {
+			form_id: 'contact',
+			promo_code: 'LANZAMIENTO-899',
+		});
+		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {});
+	});
+
 	it('forwards lead_created as fbq("track", "Lead", ...) — future standard event', () => {
 		forwardToMetaPixel('lead_created', {
 			lead_channel: 'web',
@@ -139,7 +147,6 @@ describe('forwardToMetaPixel', () => {
 		'scroll_depth_reached',
 		'cta_clicked',
 		'form_started',
-		'form_submitted',
 		'session_started',
 		'session_ended',
 		'converted_to_demo',

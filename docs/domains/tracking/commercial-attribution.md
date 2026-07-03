@@ -44,7 +44,7 @@ triggers automatic lead creation during ingestion (`ingestion.service.ts`).
 | Name/contact | `null` initially — filled later through manual reconciliation or eventual form submission |
 | Intent       | Early commercial intent, NOT a qualified lead, sale, or confirmed customer                |
 
-The WhatsApp URL is rewritten client-side to include `Código: CM-XXXXXX`. The lead code bridges the
+The WhatsApp URL is rewritten client-side to include `Folio: CM-899-XXXX`. The lead code bridges the
 anonymous click to any future contact form submission.
 
 ### Contact form submissions

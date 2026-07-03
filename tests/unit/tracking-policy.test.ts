@@ -64,6 +64,7 @@ describe('tracking event contract', () => {
 		const properties = sanitizeEventProperties({
 			cta_id: 'hero_whatsapp',
 			depth_bucket: 75,
+			folio: 'CM-899-ABCD',
 			success: true,
 			ignored: { nested: true },
 		});
@@ -71,6 +72,7 @@ describe('tracking event contract', () => {
 		expect(properties).toEqual({
 			cta_id: 'hero_whatsapp',
 			depth_bucket: 75,
+			folio: 'CM-899-ABCD',
 			success: true,
 		});
 	});
