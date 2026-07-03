@@ -3,12 +3,14 @@
 .hero-prime {
 	position: relative;
 	width: 100%;
-	height: 100dvh; // Full viewport height
+	min-height: 100dvh;
+	height: auto;
+	padding-block: 4rem;
 	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: rgb(var(--color-text-on-dark-rgb)); // Default text color
+	color: rgb(var(--color-text-on-dark-rgb));
 
 	// 1. Background Layer (Image/Video)
 	&__bg {
@@ -20,36 +22,24 @@
 			position: absolute;
 			inset: 0;
 			display: block;
+			opacity: 0;
+			transition: opacity 0.5s ease-in-out;
+			z-index: 0;
 		}
 
-		&-picture--crossfade {
-			opacity: 0%;
-			animation: heroBgCrossfade 24s ease-in-out infinite;
+		&-picture--active {
+			opacity: 100%;
+			z-index: 1;
 		}
 
-		&-picture--crossfade-1 {
-			animation-delay: 6s;
-		}
-
-		&-picture--crossfade-2 {
-			animation-delay: 12s;
-		}
-
-		&-picture--crossfade-3 {
-			animation-delay: 18s;
-		}
-
-		img,
-		video {
+		img {
 			position: absolute;
 			inset: 0;
 			width: 100%;
-			height: 110%; // Extra height for parallax (only needed when parallax is active)
+			height: 110%;
 			object-fit: cover;
 			object-position: center;
 			transition: transform 0.1s ease-out;
-
-			// will-change: transform is applied dynamically by the parallax script in home/Hero.astro
 		}
 	}
 
@@ -59,30 +49,122 @@
 		inset: 0;
 		z-index: 1;
 		background:
-			radial-gradient(circle at 20% 30%, rgb(0 0 0 / 45%) 0%, transparent 70%),
+			radial-gradient(circle at 20% 30%, rgb(0 0 0 / 55%) 0%, transparent 70%),
 			radial-gradient(circle at 80% 70%, rgb(197 160 89 / 15%) 0%, transparent 50%),
-			linear-gradient(to bottom, rgb(0 0 0 / 20%) 0%, rgb(0 0 0 / 70%) 100%);
-		background-color: rgb(0 0 0 / 20%);
+			linear-gradient(to bottom, rgb(0 0 0 / 30%) 0%, rgb(0 0 0 / 80%) 100%);
+		background-color: rgb(0 0 0 / 30%);
 	}
 
 	// 3. Content Layer
 	&__content {
 		position: relative;
 		z-index: 2;
-		text-align: center;
-		max-width: 800px;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
 		padding: var(--spacing-xl) var(--spacing-xl);
-		padding-top: calc(var(--spacing-xl) * 1.25); // Reduced from 2x to restore balance
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-xl);
+
+		@media (max-width: 991px) {
+			flex-direction: column;
+			text-align: center;
+			align-items: center;
+			justify-content: center;
+			max-width: 800px;
+			gap: var(--spacing-lg);
+		}
+	}
+
+	&__left {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
+		align-items: flex-start;
+		text-align: left;
+		gap: var(--spacing-md);
+
+		@media (max-width: 991px) {
+			align-items: center;
+			text-align: center;
+		}
+	}
+
+	&__right {
+		flex-shrink: 0;
+		display: flex;
+		justify-content: center;
 		align-items: center;
-		gap: var(--spacing-lg);
+
+		@media (max-width: 991px) {
+			margin-top: 1.5rem;
+		}
+	}
+
+	// Selector
+	&__selector {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		width: 100%;
+		margin-bottom: 0.5rem;
+
+		@media (max-width: 991px) {
+			align-items: center;
+		}
+	}
+
+	&__selector-label {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--color-action-accent);
+	}
+
+	&__selector-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+
+		@media (max-width: 991px) {
+			justify-content: center;
+		}
+	}
+
+	&__selector-btn {
+		padding: 0.38rem 0.8rem;
+		font-size: 0.76rem;
+		font-weight: 600;
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 20%);
+		border-radius: 999px;
+		background: rgb(0 0 0 / 25%);
+		backdrop-filter: blur(8px);
+		color: rgb(var(--color-text-on-dark-rgb) / 80%);
+		cursor: pointer;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: rgb(var(--color-text-on-dark-rgb) / 10%);
+			border-color: rgb(var(--color-text-on-dark-rgb) / 50%);
+			color: rgb(var(--color-text-on-dark-rgb));
+		}
+
+		&.active {
+			background: rgb(var(--color-action-accent-rgb) / 20%);
+			border-color: var(--color-action-accent);
+			color: #fff;
+			box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 15%);
+		}
 	}
 
 	// Typography
 	&__title {
 		font-family: var(--font-display);
-		font-size: clamp(2.5rem, 5vw, 4.5rem);
+		font-size: clamp(2.25rem, 4.5vw, 4rem);
 		line-height: 1.1;
 		color: rgb(var(--color-text-on-dark-rgb) / 90%);
 		margin: 0;
@@ -91,7 +173,7 @@
 
 	&__subtitle {
 		font-family: var(--font-body);
-		font-size: clamp(1.1rem, 2vw, 1.5rem);
+		font-size: clamp(1rem, 1.8vw, 1.25rem);
 		font-weight: 300;
 		letter-spacing: 0.02em;
 		color: rgb(var(--color-text-on-dark-rgb) / 72%);
@@ -105,13 +187,13 @@
 		gap: var(--spacing-md);
 		margin-top: var(--spacing-md);
 		flex-wrap: wrap;
-		justify-content: center;
 		width: 100%;
 
-		// Ensure all buttons in the hero have consistent minimum presence
-		.whatsapp-button,
-		:global(.inline-block) {
-			// ActionBase uses inline-block px-6 py-2
+		@media (max-width: 991px) {
+			justify-content: center;
+		}
+
+		.whatsapp-button {
 			min-width: 200px;
 			justify-content: center;
 			text-align: center;
@@ -124,11 +206,14 @@
 		color: rgb(var(--color-text-on-dark-rgb) / 90%);
 		display: flex;
 		align-items: center;
-		justify-content: center;
 		gap: var(--spacing-sm);
 		width: 100%;
 		max-width: min(100%, 38rem);
 		flex-wrap: wrap;
+
+		@media (max-width: 991px) {
+			justify-content: center;
+		}
 
 		span {
 			font-weight: 500;
@@ -139,12 +224,14 @@
 	&__highlights {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
 		gap: 0.55rem;
-		width: min(100%, 720px);
 		margin: 0.2rem 0 0;
 		padding: 0;
 		list-style: none;
+
+		@media (max-width: 991px) {
+			justify-content: center;
+		}
 	}
 
 	&__highlight {
@@ -202,6 +289,10 @@
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 10;
+
+		@media (max-height: 700px) {
+			display: none;
+		}
 	}
 
 	// Animations (Stagger Fade Up)
@@ -240,54 +331,95 @@
 			transform: translateY(0);
 		}
 	}
-
-	@keyframes heroBgCrossfade {
-		0%,
-		18%,
-		100% {
-			opacity: 0%;
-		}
-
-		26%,
-		43% {
-			opacity: 100%;
-		}
-
-		52% {
-			opacity: 0%;
-		}
-	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.hero-prime {
-		&__bg-picture--crossfade {
-			display: none;
-			animation: none;
+// Smartphone Mockup Styling
+.phone-mockup {
+	position: relative;
+	width: 260px;
+	height: 520px;
+	border-radius: 36px;
+	border: 10px solid #1c1c1e;
+	background: #000;
+	box-shadow: 
+		0 25px 50px -12px rgb(0 0 0 / 60%),
+		inset 0 0 10px rgb(255 255 255 / 10%);
+	overflow: hidden;
+
+	&__screen {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		background: #111;
+		overflow: hidden;
+		border-radius: 26px;
+	}
+
+	&__image {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0;
+		transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+		transform: scale(1.04);
+		z-index: 1;
+
+		&.active {
+			opacity: 1;
+			transform: scale(1);
+			z-index: 2;
 		}
+	}
+
+	&__speaker {
+		position: absolute;
+		top: 10px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 50px;
+		height: 4px;
+		background: #2a2a2a;
+		border-radius: 2px;
+		z-index: 15;
+	}
+
+	&__camera {
+		position: absolute;
+		top: 8px;
+		left: calc(50% + 35px);
+		width: 6px;
+		height: 6px;
+		background: #1a1a1a;
+		border-radius: 50%;
+		z-index: 15;
+	}
+
+	&__home-bar {
+		position: absolute;
+		bottom: 6px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 80px;
+		height: 4px;
+		background: rgb(255 255 255 / 30%);
+		border-radius: 2px;
+		z-index: 15;
 	}
 }
 
 // Mobile Adjustments
-@media (width <= 768px) {
+@media (max-width: 768px) {
 	.hero-prime {
-		height: auto;
-		min-height: 100dvh;
-
-		&__content {
-			width: min(100%, 38rem);
-			padding-inline: clamp(1rem, 5vw, 1.5rem);
-			gap: 0.9rem;
-		}
-
 		&__title {
-			font-size: clamp(2rem, 9.2vw, 3rem);
+			font-size: clamp(2rem, 9.2vw, 2.75rem);
 			line-height: 1.05;
 		}
 
 		&__subtitle {
-			max-width: 100%;
-			font-size: clamp(1rem, 4.4vw, 1.16rem);
+			font-size: clamp(0.95rem, 4.4vw, 1.1rem);
 			line-height: 1.46;
 		}
 
@@ -299,8 +431,7 @@
 			margin-left: auto;
 			margin-right: auto;
 
-			.whatsapp-button,
-			:global(.inline-block) {
+			.whatsapp-button {
 				width: 100%;
 				max-width: 320px;
 			}
@@ -322,22 +453,6 @@
 	}
 }
 
-@media (width <= 380px) {
-	.hero-prime {
-		&__actions {
-			order: 3;
-		}
-
-		&__highlights {
-			order: 4;
-		}
-
-		&__social-proof {
-			order: 5;
-		}
-	}
-}
-
 // Global/Shared Shine Animation
 @keyframes shineSweep {
 	0% {
@@ -350,9 +465,7 @@
 }
 
 .shine-effect {
-	/* stylelint-disable-next-line declaration-no-important */
 	position: relative !important;
-	/* stylelint-disable-next-line declaration-no-important */
 	overflow: hidden !important;
 
 	&::after {
