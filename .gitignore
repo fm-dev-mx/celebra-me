@@ -98,6 +98,7 @@ astro/types.d.ts
 .agent/plans/tmp/
 .agent/plans/drafts/
 .agent/plans/local/
+.hermes/
 
 # Other local/provider-specific agent state
 _agent/
