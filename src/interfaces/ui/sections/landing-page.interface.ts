@@ -43,12 +43,12 @@ export interface ServicesData {
 	};
 }
 
-export interface PricingSection {
+interface PricingSection {
 	title: string;
 	items: string[];
 }
 
-export interface PricingTier {
+interface PricingTier {
 	id?: string;
 	title: string;
 	description: string;
