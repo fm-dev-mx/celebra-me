@@ -58,12 +58,12 @@ export interface ServicesData {
 	};
 }
 
-interface PricingSection {
+export interface PricingSection {
 	title: string;
 	items: string[];
 }
 
-interface PricingTier {
+export interface PricingTier {
 	id?: string;
 	title: string;
 	description: string;
