@@ -22,7 +22,7 @@ export const landingData: LandingPageData = {
 	productProof: {
 		title: 'Una invitación elegante con control de invitados',
 		description:
-			'Celebra-me reúne invitación digital, RSVP, pases y seguimiento de invitados en una experiencia clara para compartir por WhatsApp.',
+			'Celebra-me reúne invitación digital, confirmaciones, pases y seguimiento de invitados en una experiencia clara para compartir por WhatsApp.',
 		cta: {
 			label: 'Quiero una invitación con RSVP',
 			href: '#contacto',
