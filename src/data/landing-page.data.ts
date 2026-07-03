@@ -4,39 +4,8 @@ export const landingData: LandingPageData = {
 	hero: {
 		title: 'Invitaciones digitales premium con RSVP y control de invitados',
 		subtitle:
-			'Diseñamos una experiencia personalizada para tu evento, con confirmaciones, pases digitales, ubicación, música, galería y envío por WhatsApp.',
-		backgroundImage: {
-			desktopUrl:
-				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
-			mobileUrl:
-				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
-		},
-		backgroundImages: [
-			{
-				desktopUrl:
-					'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
-				mobileUrl:
-					'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
-				alt: 'Recepción elegante con iluminación cálida para invitaciones digitales premium',
-			},
-			{
-				desktopUrl:
-					'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=1800',
-				alt: 'Celebración nupcial elegante con flores y mesa preparada',
-			},
-			{
-				desktopUrl:
-					'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1800',
-				alt: 'Evento social con vestido formal y ambiente editorial',
-			},
-			{
-				desktopUrl:
-					'https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?auto=format&fit=crop&q=80&w=1800',
-				alt: 'Mesa de celebración familiar con detalles delicados',
-			},
-		],
+			'Experiencia personalizada para tu evento: confirmaciones en tiempo real, pases digitales y envío por WhatsApp.',
 		primaryCtaLabel: 'Cotizar por WhatsApp',
-		primaryCtaUrl: '#contacto',
 		secondaryCtaLabel: 'Ver demos reales',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
@@ -58,19 +27,19 @@ export const landingData: LandingPageData = {
 			{
 				title: 'Primera impresión premium',
 				description:
-					'Una portada cuidada presenta su celebración con elegancia desde el primer enlace.',
+					'Presentación elegante que impresiona a sus invitados desde el primer instante.',
 				icon: 'SparklesIcon',
 			},
 			{
 				title: 'Información clara',
 				description:
-					'Ubicación, horarios, galería, música y detalles importantes quedan en un solo lugar.',
+					'Horarios, ubicación, itinerario y mesa de regalos en un solo enlace.',
 				icon: 'MapLocationIcon',
 			},
 			{
 				title: 'Control real',
 				description:
-					'RSVP, acompañantes y pases digitales ayudan a organizar antes del evento.',
+					'Confirme asistencia, límite de pases y acompañantes sin hojas de cálculo.',
 				icon: 'CheckIcon',
 			},
 		],
@@ -89,25 +58,25 @@ export const landingData: LandingPageData = {
 			{
 				title: 'RSVP integrado',
 				description:
-					'Sus invitados confirman asistencia desde el enlace.',
+					'Confirmación inmediata y control de pases desde cualquier dispositivo.',
 				icon: 'CheckSealIcon',
 			},
 			{
 				title: 'Pases por WhatsApp',
 				description:
-					'Comparta enlaces o pases personalizados en segundos.',
+					'Envíe pases digitales personalizados directamente por WhatsApp.',
 				icon: 'EnvelopedIcon',
 			},
 			{
 				title: 'Detalles del evento',
 				description:
-					'Fotos, música, horarios, ubicación y notas importantes.',
+					'Ubicación de Google Maps, itinerario interactivo y mesa de regalos.',
 				icon: 'MapLocationIcon',
 			},
 			{
 				title: 'Lista ordenada',
 				description:
-					'Vea respuestas y acompañantes antes de celebrar.',
+					'Descargue la lista de asistencia en tiempo real con un clic.',
 				icon: 'UserGroupIcon',
 			},
 		],
@@ -119,21 +88,21 @@ export const landingData: LandingPageData = {
 	about: {
 		title: 'Diseño con intención',
 		description:
-			'Cada invitación combina dirección visual, estructura clara y acompañamiento cercano.',
+			'Diseños sofisticados y soporte personalizado para que su evento sea impecable.',
 		values: [
 			{
 				name: 'Vanguardia Digital',
-				description: 'Interacciones útiles, no adornos innecesarios.',
+				description: 'Interacciones fluidas diseñadas para facilitar la confirmación.',
 				icon: 'DiamondIcon',
 			},
 			{
 				name: 'Detalle Impecable',
-				description: 'Tipografía, ritmo visual y lectura cuidada.',
+				description: 'Estética premium, tipografía curada y maquetación editorial.',
 				icon: 'SparklesIcon',
 			},
 			{
 				name: 'Cercanía y Calidez',
-				description: 'Le guiamos desde contenido hasta envío.',
+				description: 'Acompañamiento personal en el proceso de diseño y publicación.',
 				icon: 'UserGroupIcon',
 			},
 		],
@@ -144,7 +113,7 @@ export const landingData: LandingPageData = {
 	},
 	testimonials: {
 		title: 'Clientes que organizaron mejor',
-		subtitle: 'Opiniones anónimas basadas en eventos reales y patrones aprobados.',
+		subtitle: 'Experiencias reales de anfitriones que simplificaron su organización.',
 		testimonials: [
 			{
 				name: 'Boda',
@@ -166,7 +135,7 @@ export const landingData: LandingPageData = {
 	pricing: {
 		eyebrow: 'Inversión para tu celebración',
 		title: 'Paquetes claros',
-		intro: 'La promo de lanzamiento aplica al paquete base. Los niveles superiores agregan diseño y operación.',
+		intro: 'Ahorre hoy con la promoción de lanzamiento. Precios transparentes y sin sorpresas.',
 		note: 'Promo base: $899 MXN. Precio regular base: $1,299 MXN.',
 		tiers: [
 			{
@@ -190,7 +159,7 @@ export const landingData: LandingPageData = {
 				footnote: '*Tiempo estimado una vez recibido el contenido completo del evento.',
 				cta: 'Quiero este paquete',
 				ctaMessage:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium de $899 MXN para el paquete Colección.\n\nCupón: LANZAMIENTO-899',
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Colección.\n\nCupón: LANZAMIENTO-899',
 				href: '#',
 			},
 			{
@@ -214,7 +183,7 @@ export const landingData: LandingPageData = {
 				],
 				cta: 'Quiero este paquete',
 				ctaMessage:
-					'Hola, quiero cotizar el paquete Premium para mi invitación digital.\n\nCupón: LANZAMIENTO-899',
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nCupón: LANZAMIENTO-1499',
 				href: '#',
 			},
 			{
@@ -222,7 +191,7 @@ export const landingData: LandingPageData = {
 				title: 'Exclusivo',
 				description: 'Experiencia completa con mayor personalización.',
 				isExclusive: true,
-				price: { amount: '2,199', currency: 'MXN', period: 'pago único' },
+				price: { amount: '2,299', currency: 'MXN', period: 'pago único' },
 				sections: [
 					{
 						title: 'Incluye',
@@ -234,9 +203,9 @@ export const landingData: LandingPageData = {
 						],
 					},
 				],
-				cta: 'Cotizar por WhatsApp',
+				cta: 'Quiero este paquete',
 				ctaMessage:
-					'Hola, quiero cotizar el paquete Exclusivo para mi invitación digital.\n\nCupón: LANZAMIENTO-899',
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Exclusivo.\n\nCupón: LANZAMIENTO-2299',
 				href: '#',
 			},
 		],
@@ -246,27 +215,27 @@ export const landingData: LandingPageData = {
 		faqs: [
 			{
 				question: '¿Qué incluye la invitación digital premium?',
-				answer: 'Incluye diseño, galería, música, ubicación, itinerario, RSVP, pases digitales y enlace para compartir.',
+				answer: 'Diseño personalizado, RSVP, pases digitales por WhatsApp, mapa, música, itinerario y mesa de regalos.',
 			},
 			{
 				question: '¿Cómo funciona el RSVP?',
-				answer: 'Sus invitados confirman desde la invitación. Usted consulta las respuestas antes del evento.',
+				answer: 'Ingresan al enlace, seleccionan sus nombres y confirman asistencia y acompañantes al instante.',
 			},
 			{
 				question: '¿Puedo controlar acompañantes?',
-				answer: 'Sí. Puede definir acompañantes por invitación y evitar confirmaciones fuera de control.',
+				answer: 'Sí, puede asignar un número exacto de pases para cada familia o invitado principal.',
 			},
 			{
 				question: '¿Cuánto tarda la entrega?',
-				answer: 'La entrega estimada es de 24 a 72 horas hábiles tras recibir la información completa.',
+				answer: 'De 24 a 72 horas hábiles una vez que nos comparte los datos de su evento.',
 			},
 			{
 				question: '¿Cómo se comparte por WhatsApp?',
-				answer: 'Recibe un enlace listo para enviar. También puede usar pases personalizados por invitado.',
+				answer: 'Le entregamos un enlace y pases listos para compartir fácilmente por WhatsApp.',
 			},
 			{
-				question: '¿Qué necesito para comenzar?',
-				answer: 'Nombre del evento, fecha, ubicación, fotos, música y lista de invitados si desea pases personalizados.',
+				question: '¿Cómo empiezo el diseño?',
+				answer: 'Elija su paquete, realice el pago y le guiaremos para recopilar su información.',
 			},
 		],
 	},

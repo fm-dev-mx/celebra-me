@@ -1,18 +1,7 @@
 export interface HeroData {
 	title: string;
 	subtitle: string;
-	backgroundImage: {
-		desktopUrl: string;
-		mobileUrl: string;
-		videoUrl?: string;
-	};
-	backgroundImages?: Array<{
-		desktopUrl: string;
-		mobileUrl?: string;
-		alt: string;
-	}>;
 	primaryCtaLabel: string;
-	primaryCtaUrl: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;
 	whatsappPhone?: string;
