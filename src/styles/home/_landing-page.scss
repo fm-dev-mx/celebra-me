@@ -9,9 +9,10 @@ html {
 	gap: var(--spacing-section-gap);
 }
 
-section,
-.hero-prime {
+:global(.landing-sections-wrapper) section,
+:global(.landing-sections-wrapper) .hero-prime {
 	scroll-snap-align: start;
+	scroll-margin-top: calc(var(--nav-current-height, var(--nav-height-scrolled, 70px)) + 1rem);
 	min-height: auto;
 	display: flex;
 	flex-direction: column;

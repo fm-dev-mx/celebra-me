@@ -7,6 +7,16 @@ interface Props {
 	phone?: string;
 	message?: string;
 	label?: string;
+	trackSection?: string;
+	trackCta?: string;
+	trackIntent?: string;
+	trackCampaign?: string;
+	trackPackage?: string;
+	trackValue?: number;
+	trackCurrency?: string;
+	trackDestination?: string;
+	promoCode?: string;
+	ariaLabel?: string;
 }
 
 const {
@@ -14,6 +24,16 @@ const {
 	phone: explicitPhone,
 	message = '¡Hola! Me gustaría recibir información sobre las invitaciones digitales premium.',
 	label = 'Solicitar asesoría',
+	trackSection = 'hero',
+	trackCta = 'hero_whatsapp',
+	trackIntent = 'whatsapp',
+	trackCampaign,
+	trackPackage,
+	trackValue,
+	trackCurrency,
+	trackDestination = 'whatsapp',
+	promoCode,
+	ariaLabel = 'Contactar por WhatsApp',
 } = Astro.props;
 
 // If no phone is explicitly provided, try the env var.
@@ -29,13 +49,58 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 	target="_blank"
 	rel="noopener noreferrer"
 	class:list={['whatsapp-button', className]}
-	aria-label="Contactar por WhatsApp"
+	aria-label={ariaLabel}
 	data-track-event="whatsapp_contact_clicked"
-	data-track-section="hero"
-	data-track-cta="hero_whatsapp"
-	data-track-intent="whatsapp"
+	data-track-section={trackSection}
+	data-track-cta={trackCta}
+	data-track-label={label}
+	data-track-intent={trackIntent}
+	data-track-destination={trackDestination}
+	data-campaign-code={trackCampaign}
+	data-package-interest={trackPackage}
+	data-promo-code={promoCode}
+	data-track-value={trackValue}
+	data-track-currency={trackCurrency}
 >
 	<Icon name="WhatsApp" size={20} />
 	{label}
 </a>
 )}
+
+<script>
+	const PROMO_CODE = 'LANZAMIENTO-899';
+	const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+	const FOLIO_PATTERN = /Folio:\s*CM-899-[A-Z0-9]{4}/i;
+
+	const createPromoFolio = () => {
+		const values = new Uint8Array(4);
+		crypto.getRandomValues(values);
+		const suffix = [...values]
+			.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
+			.join('');
+		return `CM-899-${suffix}`;
+	};
+
+	const ensureWhatsAppPromoFolio = (anchor: HTMLAnchorElement) => {
+		const url = new URL(anchor.href);
+		const baseMessage =
+			url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
+		if (FOLIO_PATTERN.test(baseMessage)) return;
+
+		const messageParts = [baseMessage.trim()];
+		if (!baseMessage.includes(`Cupón: ${PROMO_CODE}`)) {
+			messageParts.push(`Cupón: ${PROMO_CODE}`);
+		}
+		messageParts.push(`Folio: ${createPromoFolio()}`);
+		url.searchParams.set('text', messageParts.join('\n\n'));
+		anchor.href = url.toString();
+	};
+
+	document.addEventListener('click', (event) => {
+		const target =
+			event.target instanceof Element
+				? event.target.closest('[data-track-event="whatsapp_contact_clicked"]')
+				: null;
+		if (target instanceof HTMLAnchorElement) ensureWhatsAppPromoFolio(target);
+	});
+</script>

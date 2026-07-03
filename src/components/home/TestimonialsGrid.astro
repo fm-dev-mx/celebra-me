@@ -7,6 +7,7 @@ interface Testimonial {
 
 interface Props {
 	title?: string;
+	subtitle?: string;
 	testimonials: Testimonial[];
 }
 
@@ -18,10 +19,10 @@ if (!testimonials.length) {
 ---
 
 <div class="testimonials">
-	<div class="testimonials__grid">
+	<div class="testimonials__carousel" role="list" aria-label="Opiniones de clientes">
 		{
 			testimonials.map((testimonial) => (
-				<article class="testimonials__card">
+				<article class="testimonials__card" role="listitem">
 					<span class="testimonials__quote-icon">“</span>
 					<p class="testimonials__text">“{testimonial.text}”</p>
 					<div class="testimonials__footer">

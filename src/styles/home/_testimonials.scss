@@ -25,21 +25,34 @@
 		}
 	}
 
-	&__grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		gap: var(--spacing-component-gap);
+	&__subtitle {
+		max-width: 42rem;
+		margin: 0 auto var(--spacing-xl);
+		color: var(--testimonials-text-color);
+		font-family: var(--font-body);
+		font-size: clamp(1rem, 2vw, 1.12rem);
+		line-height: 1.6;
+		text-align: center;
+	}
 
-		@include mixins.respond-to('md') {
-			grid-template-columns: repeat(2, 1fr);
-		}
+	&__carousel {
+		display: flex;
+		gap: var(--spacing-component-gap);
+		margin-inline: calc(var(--spacing-md) * -1);
+		padding: 0 var(--spacing-md) var(--spacing-sm);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scrollbar-color: var(--testimonials-card-border) transparent;
 
 		@include mixins.respond-to('lg') {
-			grid-template-columns: repeat(3, 1fr);
+			margin-inline: 0;
+			padding-inline: 0;
 		}
 	}
 
 	&__card {
+		flex: 0 0 min(86vw, 25rem);
 		background: var(--testimonials-card-bg);
 		backdrop-filter: blur(var(--testimonials-card-backdrop-blur));
 		border: 1px solid var(--testimonials-card-border);
@@ -48,7 +61,17 @@
 		position: relative;
 		overflow: hidden;
 		box-shadow: var(--testimonials-card-shadow);
+		scroll-snap-align: center;
 		transition: var(--testimonials-card-transition);
+
+		@include mixins.respond-to('md') {
+			flex-basis: min(42vw, 25rem);
+		}
+
+		@include mixins.respond-to('lg') {
+			flex-basis: calc((100% - (var(--spacing-component-gap) * 2)) / 3);
+			scroll-snap-align: start;
+		}
 
 		&::before {
 			content: '';
@@ -84,8 +107,8 @@
 		font-family: serif;
 		line-height: 1;
 		transition:
-			opacity 0.5s ease,
-			color 0.5s ease;
+			opacity var(--duration-snappy) var(--ease-standard),
+			color var(--duration-snappy) var(--ease-standard);
 		pointer-events: none;
 	}
 
@@ -104,7 +127,7 @@
 	&__footer {
 		display: flex;
 		flex-direction: column;
-		border-top: 1px solid var(--testimonials-footer-border);
+		border-top: 1px solid var(--testimonials-footer-border, rgb(var(--color-overlay-light-rgb) / 15%));
 		padding-top: var(--spacing-8);
 	}
 

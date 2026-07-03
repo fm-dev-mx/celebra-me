@@ -5,6 +5,7 @@
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
+import Icon from '@components/common/icons/Icon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
@@ -25,18 +26,29 @@ const avatar2 = getCommonAsset('avatar2');
 const avatar3 = getCommonAsset('avatar3');
 // Hero image uses quality=80 for premium appearance;
 // decorative/social assets default to 75 per perf spec.
-const heroMobileSrc = data.backgroundImage.mobileUrl;
+const heroImages =
+	data.backgroundImages && data.backgroundImages.length > 0
+		? data.backgroundImages
+		: [
+				{
+					desktopUrl: data.backgroundImage.desktopUrl,
+					mobileUrl: data.backgroundImage.mobileUrl,
+					alt: 'Experiencia de lujo en invitaciones digitales para eventos exclusivos',
+				},
+			];
+const [primaryHeroImage, ...secondaryHeroImages] = heroImages;
+const heroMobileSrc = primaryHeroImage.mobileUrl;
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
 	<!-- 1. Background Layer -->
 	<div class="hero-prime__bg">
 		<!-- Priority Image (Lazy load off for LCP) -->
-		<picture>
+		<picture class="hero-prime__bg-picture">
 			{heroMobileSrc && <source media="(max-width: 767px)" srcset={heroMobileSrc} />}
 			<Image
-				src={data.backgroundImage.desktopUrl}
-				alt="Experiencia de lujo en invitaciones digitales para eventos exclusivos"
+				src={primaryHeroImage.desktopUrl}
+				alt={primaryHeroImage.alt}
 				class="hero-bg-img"
 				width={1920}
 				height={1080}
@@ -46,6 +58,23 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 				fetchpriority="high"
 			/>
 		</picture>
+
+		{secondaryHeroImages.map((image, index) => (
+			<picture class={`hero-prime__bg-picture hero-prime__bg-picture--crossfade hero-prime__bg-picture--crossfade-${index + 1}`}>
+				{image.mobileUrl && <source media="(max-width: 767px)" srcset={image.mobileUrl} />}
+				<Image
+					src={image.desktopUrl}
+					alt=""
+					class="hero-bg-img hero-bg-img--crossfade"
+					width={1920}
+					height={1080}
+					quality={78}
+					loading="lazy"
+					decoding="async"
+					aria-hidden="true"
+				/>
+			</picture>
+		))}
 
 		{data.backgroundImage.videoUrl && (
 			<video
@@ -77,6 +106,17 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 			{data.subtitle}
 		</p>
 
+		{data.highlights && data.highlights.length > 0 && (
+			<ul class="hero-prime__highlights stagger-3" aria-label="Beneficios principales">
+				{data.highlights.map((highlight) => (
+					<li class="hero-prime__highlight">
+						{highlight.icon && <Icon name={highlight.icon} class="hero-prime__highlight-icon" />}
+						<span>{highlight.label}</span>
+					</li>
+				))}
+			</ul>
+		)}
+
 		<!-- Actions (Stagger 3) -->
 		<div class="hero-prime__actions stagger-3">
 			<WhatsAppButton
@@ -84,6 +124,13 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 				phone={data.whatsappPhone}
 				message={data.whatsappMessage}
 				label={data.primaryCtaLabel}
+				trackSection="hero"
+				trackCta="whatsapp-hero"
+				trackCampaign="HERO-LANZAMIENTO-899"
+				trackValue={899}
+				trackCurrency="MXN"
+				promoCode="LANZAMIENTO-899"
+				ariaLabel="Cotizar por WhatsApp"
 			/>
 			<ActionBase
 				as="a"
@@ -94,7 +141,13 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 				data-track-event="cta_clicked"
 				data-track-section="hero"
 				data-track-cta="hero_secondary"
+				data-track-label={data.secondaryCtaLabel}
 				data-track-intent="section_nav"
+				data-track-destination="event-types"
+				data-campaign-code="DEMO-LANZAMIENTO-899"
+				data-promo-code="LANZAMIENTO-899"
+				data-track-value="899"
+				data-track-currency="MXN"
 			>
 				{data.secondaryCtaLabel}
 			</ActionBase>
@@ -114,7 +167,7 @@ const heroMobileSrc = data.backgroundImage.mobileUrl;
 	</div>
 
 	<!-- Scroll Indicator -->
-	<div class="hero-prime__scroll-indicator" data-track-event="cta_clicked" data-track-section="hero" data-track-cta="hero_scroll" data-track-intent="section_nav">
+	<div class="hero-prime__scroll-indicator" data-track-event="cta_clicked" data-track-section="hero" data-track-cta="hero_scroll" data-track-intent="section_nav" data-track-destination="event-types">
 		<ActionIcon
 			icon="ArrowDownIcon"
 			variant="scroll"

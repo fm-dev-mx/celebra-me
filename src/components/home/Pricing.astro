@@ -1,12 +1,18 @@
 ---
 import CheckIcon from '@components/ui/CheckIcon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
+import { getContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	data: PricingData;
 }
 
 const { data } = Astro.props;
+const phone = getContactPhone();
+const promoCode = 'LANZAMIENTO-899';
+const launchValue = 899;
+// Future: numbered promo folios require reliable persistence; frontend-only counters are not acceptable.
 ---
 
 <section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing">
@@ -70,36 +76,42 @@ const { data } = Astro.props;
 
 							{tier.footnote && <p class="tier-footnote">{tier.footnote}</p>}
 
-							<a
-								href={tier.href}
-								class="cta-button"
-								aria-label={`Elegir plan ${tier.title}`}
-								data-track-event="cta_clicked"
-								data-track-section="pricing"
-								data-track-cta={`pricing_${tier.title.toLowerCase().replaceAll(' ', '_')}`}
-								data-track-intent="package_interest"
-								data-package-interest={tier.title}
-							>
-								{tier.cta}
-							</a>
+							<WhatsAppButton
+								className="cta-button"
+								phone={phone}
+								message={tier.ctaMessage}
+								label={tier.cta}
+								ariaLabel={`Elegir plan ${tier.title}`}
+								trackSection="pricing"
+								trackCta={`pricing_${tier.title.toLowerCase().replaceAll(' ', '_')}`}
+								trackIntent="package_interest"
+								trackCampaign="PRICING-LANZAMIENTO-899"
+								trackPackage={tier.id ?? tier.title.toLowerCase()}
+								trackValue={launchValue}
+								trackCurrency="MXN"
+								promoCode={promoCode}
+							/>
 						</div>
 					</article>
 				))
 			}
 		</div>
+
+		<div class="pricing-actions">
+			<WhatsAppButton
+				className="pricing-whatsapp"
+				phone={phone}
+				message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium de $899 MXN.\n\nCupón: LANZAMIENTO-899"
+				label="Elegir mi nivel por WhatsApp"
+				trackSection="pricing"
+				trackCta="whatsapp-pricing"
+				trackIntent="package_interest"
+				trackCampaign="PRICING-LANZAMIENTO-899"
+				trackValue={launchValue}
+				trackCurrency="MXN"
+				promoCode={promoCode}
+				ariaLabel="Elegir mi nivel por WhatsApp"
+			/>
+		</div>
 	</div>
 </section>
-<script>
-	import { createIntersectionObserver } from '@/utils/animations';
-
-	createIntersectionObserver(
-		'.pricing-card',
-		(target) => {
-			target.classList.add('is-visible');
-		},
-		{
-			threshold: 0.1,
-			rootMargin: '0px 0px -100px 0px',
-		}
-	);
-</script>

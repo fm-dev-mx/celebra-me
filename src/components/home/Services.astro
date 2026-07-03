@@ -1,10 +1,11 @@
 ---
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import ActionBase from '@components/common/actions/ActionBase.astro';
 import Icon from '@components/common/icons/Icon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
+import { getContactPhone } from '@/utils/whatsapp';
 
 import '@/styles/home/_services.scss';
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const { data } = Astro.props;
+const phone = getContactPhone();
 ---
 
 <Section id="servicios" class="services section-padding" data-track-section="services" data-screenshot="landing-includes">
@@ -41,18 +43,19 @@ const { data } = Astro.props;
 		</div>
 
 		<div class="services__actions">
-			<ActionBase
-				as="a"
-				href={data.cta.href}
-				class="services__cta"
-				data-track-event="cta_clicked"
-				data-track-section="services"
-				data-track-cta="services_contact"
-				data-track-intent="lead_consultation"
-			>
-				<span>{data.cta.label}</span>
-				<Icon name="ArrowRightIcon" class="services__cta-icon" />
-			</ActionBase>
+			<WhatsAppButton
+				className="services__cta"
+				phone={phone}
+				message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899"
+				label={data.cta.label}
+				trackSection="services"
+				trackCta="whatsapp-includes"
+				trackCampaign="DEMO-LANZAMIENTO-899"
+				trackValue={899}
+				trackCurrency="MXN"
+				promoCode="LANZAMIENTO-899"
+				ariaLabel="Resolver dudas por WhatsApp"
+			/>
 		</div>
 	</Container>
 </Section>

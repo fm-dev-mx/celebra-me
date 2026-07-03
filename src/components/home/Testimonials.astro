@@ -26,6 +26,7 @@ const { data } = Astro.props;
 		<SectionTitle color="text-secondary-dark" extraClass="testimonials__title-text">
 			{data.title}
 		</SectionTitle>
+		{data.subtitle && <p class="testimonials__subtitle">{data.subtitle}</p>}
 		<TestimonialsGrid {...data} />
 	</Container>
 </Section>

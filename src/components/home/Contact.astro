@@ -17,7 +17,8 @@ interface Props {
 const { data } = Astro.props;
 
 const hasValidWhatsApp = !isPlaceholderContactPhone(getContactPhone());
-const whatsappMessage = 'Hola, me gustaría conocer más sobre sus invitaciones digitales para eventos.';
+const whatsappMessage =
+	'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
 ---
 
 <!-- Contact Section -->
@@ -49,7 +50,13 @@ const whatsappMessage = 'Hola, me gustaría conocer más sobre sus invitaciones 
 								data-track-event="whatsapp_contact_clicked"
 								data-track-section="contact"
 								data-track-cta="contact_whatsapp"
+								data-track-label="Contáctanos por WhatsApp"
 								data-track-intent="whatsapp"
+								data-track-destination="whatsapp"
+								data-campaign-code="FINAL-LANZAMIENTO-899"
+								data-promo-code="LANZAMIENTO-899"
+								data-track-value="899"
+								data-track-currency="MXN"
 							>
 								<div class="channel-icon-wrapper">
 									<Icon name="WhatsApp" size={24} />

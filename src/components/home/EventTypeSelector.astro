@@ -17,7 +17,7 @@ const { events } = Astro.props;
 <Section
 	id="tipo-evento"
 	class="event-selector"
-	data-track-section="event_selector"
+	data-track-section="event-types"
 	aria-labelledby="event-selector-title"
 	data-screenshot="landing-event-types"
 >
@@ -39,9 +39,15 @@ const { events } = Astro.props;
 						class="event-selector__card"
 						href={event.showroomHref}
 						data-track-event="cta_clicked"
-						data-track-section="event_selector"
-						data-track-cta={`event_selector_${event.eventType}`}
+						data-track-section="event-types"
+						data-track-cta={`event_types_${event.eventType}`}
+						data-track-label={event.ctaLabel}
 						data-track-intent="demo_showroom"
+						data-track-destination="event-types"
+						data-campaign-code="DEMO-LANZAMIENTO-899"
+						data-promo-code="LANZAMIENTO-899"
+						data-track-value="899"
+						data-track-currency="MXN"
 					>
 						<span class="event-selector__icon" aria-hidden="true">
 							<Icon name={event.icon} />

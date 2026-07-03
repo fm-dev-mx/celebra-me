@@ -4,28 +4,32 @@
 	justify-content: center;
 	gap: 0.5rem;
 	padding: 0.625rem 1.5rem;
-	background-color: var(--color-whatsapp, #25d366); /* stylelint-disable-line color-no-hex */
-	opacity: 80%;
+	background:
+		linear-gradient(135deg, rgb(20 18 16 / 94%), rgb(48 41 32 / 92%)),
+		var(--color-action-primary);
 	color: var(--color-text-on-dark);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
 	border-radius: 9999px;
-	font-weight: 500;
+	box-shadow: 0 14px 34px rgb(0 0 0 / 18%);
+	font-weight: 700;
+	letter-spacing: 0.02em;
 	transition:
 		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard),
 		transform var(--duration-snappy) var(--ease-standard),
 		opacity var(--duration-snappy) var(--ease-standard);
-	border: none;
 	cursor: pointer;
 	min-width: 180px;
 
 	svg {
 		flex-shrink: 0;
+		color: var(--color-whatsapp, #25d366); /* stylelint-disable-line color-no-hex */
 	}
 
 	&:hover {
-		background-color: var(
-			--color-whatsapp-hover,
-			#128c7e /* stylelint-disable-line color-no-hex */
-		);
+		border-color: rgb(var(--color-action-accent-rgb) / 72%);
+		box-shadow: 0 18px 42px rgb(0 0 0 / 24%);
 		transform: translateY(-1px);
 	}
 

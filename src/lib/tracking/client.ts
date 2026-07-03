@@ -44,6 +44,8 @@ const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
+const PROMO_CODE = 'LANZAMIENTO-899';
+const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -57,6 +59,22 @@ function fallbackUuid(): string {
 	values[8] = (values[8] & 0x3f) | 0x80;
 	const hex = [...values].map((value) => value.toString(16).padStart(2, '0')).join('');
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function createPromoFolio(): string {
+	const values = new Uint8Array(4);
+	if (crypto.getRandomValues) {
+		crypto.getRandomValues(values);
+	} else {
+		values.forEach((_, index) => {
+			values[index] = Math.floor(Math.random() * 256);
+		});
+	}
+
+	const suffix = [...values]
+		.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
+		.join('');
+	return `CM-899-${suffix}`;
 }
 
 function getVisitorId(): string {
@@ -234,15 +252,42 @@ function bindScrollDepth(): void {
 	handleScroll();
 }
 
-function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string): void {
+function updateWhatsAppUrl(anchor: HTMLAnchorElement, folio: string): void {
 	const url = new URL(anchor.href);
 	const baseMessage =
 		url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
-	const message = baseMessage.includes('Código:')
-		? baseMessage
-		: `${baseMessage} Código: ${leadCode}`;
+	const messageParts = [baseMessage.trim()];
+	if (!baseMessage.includes(`Cupón: ${PROMO_CODE}`)) {
+		messageParts.push(`Cupón: ${PROMO_CODE}`);
+	}
+	if (!/Folio:\s*CM-899-[A-Z0-9]{4}/i.test(baseMessage)) {
+		messageParts.push(`Folio: ${folio}`);
+	}
+	const message = messageParts.join('\n\n');
 	url.searchParams.set('text', message);
 	anchor.href = url.toString();
+}
+
+function getTrackedClickProperties(
+	target: HTMLElement,
+	leadCode: string,
+	folio: string,
+): TrackingPayload['eventProperties'] {
+	return {
+		cta_id: target.dataset.trackCta ?? '',
+		cta_label: target.dataset.trackLabel ?? target.textContent?.trim().slice(0, 120) ?? '',
+		cta_location: target.dataset.trackSection ?? '',
+		destination: target.dataset.trackDestination ?? target.dataset.trackIntent ?? '',
+		destination_type: target.dataset.trackIntent ?? '',
+		package_id: target.dataset.packageInterest ?? '',
+		promo_code: target.dataset.promoCode ?? '',
+		campaign_code: target.dataset.campaignCode ?? '',
+		value: Number(target.dataset.trackValue ?? 0) || 0,
+		currency: target.dataset.trackCurrency ?? '',
+		demo_slug: target.dataset.demoSlug ?? '',
+		lead_code: leadCode,
+		folio,
+	};
 }
 
 function bindClicks(): void {
@@ -254,20 +299,15 @@ function bindClicks(): void {
 		const eventName = target.dataset.trackEvent as TrackingEventName | undefined;
 		if (!eventName) return;
 
-		const leadCode = eventName === 'whatsapp_contact_clicked' ? createLeadCode() : '';
+		const isWhatsAppClick = eventName === 'whatsapp_contact_clicked';
+		const leadCode = isWhatsAppClick ? createLeadCode() : '';
+		const folio = isWhatsAppClick ? createPromoFolio() : '';
 		if (leadCode) {
 			setContactHiddenFields(leadCode);
-			if (target instanceof HTMLAnchorElement) updateWhatsAppUrl(target, leadCode);
+			if (target instanceof HTMLAnchorElement) updateWhatsAppUrl(target, folio);
 		}
 
-		void trackEvent(eventName, {
-			cta_id: target.dataset.trackCta ?? '',
-			cta_location: target.dataset.trackSection ?? '',
-			destination_type: target.dataset.trackIntent ?? '',
-			package_id: target.dataset.packageInterest ?? '',
-			demo_slug: target.dataset.demoSlug ?? '',
-			lead_code: leadCode,
-		});
+		void trackEvent(eventName, getTrackedClickProperties(target, leadCode, folio));
 	});
 }
 
@@ -287,11 +327,15 @@ function bindForms(): void {
 			},
 			{ passive: true },
 		);
-		form.addEventListener('submit', () => {
+		form.addEventListener('commercial-contact-submitted', () => {
 			const currentLeadCode = getOrCreateFormLeadCode(form, leadCode);
 			void trackEvent('form_submitted', {
 				form_id: 'contact',
 				lead_code: currentLeadCode,
+				promo_code: 'LANZAMIENTO-899',
+				campaign_code: 'FINAL-LANZAMIENTO-899',
+				value: 899,
+				currency: 'MXN',
 			});
 		});
 	});

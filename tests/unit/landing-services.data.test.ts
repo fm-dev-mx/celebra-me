@@ -38,22 +38,37 @@ describe('landing services product value data', () => {
 		const hero = landingData.hero;
 
 		// Hero fields (changed in this changeset)
-		expect(hero.title).toBe('El primer recuerdo de su gran día');
+		expect(hero.title).toBe(
+			'Invitaciones digitales premium con RSVP y control de invitados',
+		);
 		expect(hero.subtitle).toBe(
-			'Invitaciones digitales diseñadas para compartir su historia con cada invitado.',
+			'Diseñamos una experiencia personalizada para tu evento, con confirmaciones, pases digitales, ubicación, música, galería y envío por WhatsApp.',
 		);
-		expect(hero.primaryCtaLabel).toBe('Agendar asesoría');
-		expect(hero.whatsappMessage).toBe(
-			'¡Hola! Quisiera información sobre sus invitaciones digitales para celebrar mi evento. ¿Podrían asesorarme?',
-		);
-		expect(hero.socialProofText).toBe('Más de 500 familias confían en nosotros');
-		expect(hero.secondaryCtaLabel).toBe('Ver demos');
+		expect(hero.primaryCtaLabel).toBe('Cotizar por WhatsApp');
+		expect(hero.whatsappMessage).toContain('Cupón: LANZAMIENTO-899');
+		expect(hero.socialProofText).toBe('Acompañamiento personalizado para eventos especiales');
+		expect(hero.secondaryCtaLabel).toBe('Ver demos reales');
 		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
+		expect(hero.backgroundImages).toHaveLength(4);
 
 		// Services block assertions
-		expect(services.title).toBe('Qué incluye tu invitación digital');
+		expect(services.title).toBe('Incluido en tu invitación');
 		expect(services.items).toHaveLength(4);
-		expect(services.cta.label).toBe('Solicitar asesoría');
+		expect(services.cta.label).toBe('Resolver dudas por WhatsApp');
 		expect(services.cta.href).toBe('#contacto');
+	});
+
+	it('publishes the launch promo price and compact high-intent FAQ', () => {
+		const landingData = loadLandingData();
+
+		expect(landingData.pricing.title).toBe('Paquetes claros');
+		expect(landingData.pricing.note).toContain('Promo base: $899 MXN');
+		expect(landingData.pricing.tiers[0].price.amount).toBe('899');
+		expect(landingData.pricing.tiers[1].price.amount).toBe('1,499');
+		expect(landingData.pricing.tiers[2].price.amount).toBe('2,199');
+		expect(landingData.pricing.tiers[0].regularPrice).toBe('Precio regular: $1,299 MXN');
+		expect(landingData.pricing.tiers[0].ctaMessage).toContain('Cupón: LANZAMIENTO-899');
+		expect(landingData.faq.faqs).toHaveLength(6);
+		expect(landingData.howItWorks.steps).toHaveLength(3);
 	});
 });

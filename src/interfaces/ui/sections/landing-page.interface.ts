@@ -6,6 +6,11 @@ export interface HeroData {
 		mobileUrl: string;
 		videoUrl?: string;
 	};
+	backgroundImages?: Array<{
+		desktopUrl: string;
+		mobileUrl?: string;
+		alt: string;
+	}>;
 	primaryCtaLabel: string;
 	primaryCtaUrl: string;
 	secondaryCtaLabel: string;
@@ -13,7 +18,13 @@ export interface HeroData {
 	whatsappPhone?: string;
 	whatsappMessage?: string;
 	socialProofText?: string;
+	highlights?: Array<{
+		label: string;
+		icon?: string;
+	}>;
 }
+
+
 
 export interface ProductProofData {
 	title: string;
@@ -76,6 +87,7 @@ interface PricingTier {
 	};
 	regularPrice?: string;
 	cta: string;
+	ctaMessage?: string;
 	href: string;
 	isPrimary?: boolean;
 	isExclusive?: boolean;
@@ -92,6 +104,7 @@ export interface PricingData {
 
 export interface TestimonialsData {
 	title: string;
+	subtitle?: string;
 	testimonials: Array<{
 		name: string;
 		text: string;
