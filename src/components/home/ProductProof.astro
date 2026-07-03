@@ -1,7 +1,6 @@
 ---
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import Icon from '@components/common/icons/Icon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { ProductProofData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone } from '@/utils/whatsapp';
@@ -22,65 +21,161 @@ const phone = getContactPhone();
 	data-track-section="product-proof"
 	aria-labelledby="product-proof-title"
 >
+	<!-- Subtle top gold hairline separator -->
+	<div class="product-proof__top-separator" aria-hidden="true"></div>
+
 	<Container class="product-proof__container">
-		<div class="product-proof__intro">
-			<p class="product-proof__eyebrow">Menos mensajes. Más control.</p>
-			<h2 id="product-proof-title" class="product-proof__title">{data.title}</h2>
-			<p class="product-proof__description">{data.description}</p>
-			
-			<div class="product-proof__comparison">
-				<div class="comparison-card comparison-card--antes">
-					<div class="comparison-card__badge">Antes</div>
-					<h3 class="comparison-card__title">El caos habitual</h3>
-					<ul class="comparison-card__list">
-						<li>Mensajes sueltos y grupos saturados</li>
-						<li>Confirmaciones a medias o duplicadas</li>
-						<li>Cambios de ubicación sin leer</li>
-					</ul>
-				</div>
-				<div class="comparison-card comparison-card--con">
-					<div class="comparison-card__badge">Con Celebra-me</div>
-					<h3 class="comparison-card__title">El control absoluto</h3>
-					<ul class="comparison-card__list">
-						<li>Confirmación (RSVP) automatizada y directa</li>
-						<li>Control estricto de pases y acompañantes</li>
-						<li>Itinerario y ubicaciones claras en un solo enlace</li>
-					</ul>
-				</div>
-				<div class="comparison-card comparison-card--resultado">
-					<div class="comparison-card__badge">Resultado</div>
-					<h3 class="comparison-card__title">Tranquilidad para ti</h3>
-					<p class="comparison-card__text">Invitados 100% informados en tiempo real, pases digitales listos en su celular y un panel de anfitrión siempre actualizado.</p>
-				</div>
+		<div class="product-proof__layout">
+			<!-- Left side: Editorial copy -->
+			<div class="product-proof__narrative">
+				<p class="product-proof__eyebrow">MENOS MENSAJES. MÁS CLARIDAD.</p>
+				<h2 id="product-proof-title" class="product-proof__title">{data.title}</h2>
+				<p class="product-proof__description">{data.description}</p>
+				
+				<WhatsAppButton
+					className="product-proof__cta"
+					phone={phone}
+					message={data.cta.message}
+					label={data.cta.label}
+					trackSection="product-proof"
+					trackCta="whatsapp-product-proof"
+					trackCampaign="DEMO-LANZAMIENTO-899"
+					trackValue={899}
+					trackCurrency="MXN"
+					promoCode="LANZAMIENTO-899"
+					ariaLabel="Solicitar asesoría por WhatsApp"
+				/>
 			</div>
 
-			<WhatsAppButton
-				className="product-proof__cta"
-				phone={phone}
-				message={data.cta.message}
-				label={data.cta.label}
-				trackSection="product-proof"
-				trackCta="whatsapp-product-proof"
-				trackCampaign="DEMO-LANZAMIENTO-899"
-				trackValue={899}
-				trackCurrency="MXN"
-				promoCode="LANZAMIENTO-899"
-				ariaLabel="Hablar sobre mi evento por WhatsApp"
-			/>
+			<!-- Right side: Premium mock dashboard panel (curated version) -->
+			<div class="product-proof__system-preview" aria-label="Visualización del panel de invitados de Celebra-me">
+				<div class="evidence-panel">
+					<!-- Panel Header -->
+					<div class="evidence-panel__header">
+						<div class="evidence-panel__dots">
+							<span class="evidence-panel__dot"></span>
+							<span class="evidence-panel__dot"></span>
+							<span class="evidence-panel__dot"></span>
+						</div>
+						<div class="evidence-panel__label">Celebra-me panel</div>
+					</div>
+
+					<!-- Panel Dashboard Content -->
+					<div class="evidence-panel__body">
+						<!-- Page Header & Event Selector -->
+						<div class="dashboard-header">
+							<h3 class="dashboard-header__page-label">Invitados</h3>
+							<div class="dashboard-header__selector" aria-label="Selector de evento">
+								<span>XV Años — Evento muestra</span>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dashboard-header__chevron">
+									<path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+								</svg>
+							</div>
+						</div>
+
+						<!-- KPI Strip -->
+						<div class="kpi-strip" role="list" aria-label="Métricas del evento">
+							<div class="kpi-card" role="listitem">
+								<span class="kpi-card__val">15 / 15</span>
+								<span class="kpi-card__label">Enviadas</span>
+							</div>
+							<div class="kpi-card" role="listitem">
+								<span class="kpi-card__val">3</span>
+								<span class="kpi-card__label">Confirmadas</span>
+							</div>
+							<div class="kpi-card" role="listitem">
+								<span class="kpi-card__val">7 / 33</span>
+								<span class="kpi-card__label">Asistentes</span>
+							</div>
+							<div class="kpi-card" role="listitem">
+								<span class="kpi-card__val">12</span>
+								<span class="kpi-card__label">Por confirmar</span>
+							</div>
+						</div>
+
+						<!-- Group Chips -->
+						<div class="group-chips" role="group" aria-label="Filtros de grupos de invitados">
+							<span class="group-chip group-chip--active">Familia</span>
+							<span class="group-chip">Amigos</span>
+							<span class="group-chip">Trabajo</span>
+						</div>
+
+						<!-- Guest List Module -->
+						<div class="guest-list">
+							<h4 class="guest-list__title">Seguimiento de invitados</h4>
+							
+							<div class="guest-list__rows" role="table" aria-label="Lista de invitados y estado de pases">
+								<!-- Table Headers for accessibility -->
+								<div class="guest-list__row guest-list__row--header" role="row">
+									<span role="columnheader">Invitado</span>
+									<span role="columnheader">Pases</span>
+									<span role="columnheader">Estado</span>
+									<span role="columnheader">Acción</span>
+								</div>
+
+								<!-- Row 1: Familia Rivera -->
+								<div class="guest-list__row" role="row">
+									<span class="guest-list__name" role="cell">Familia Rivera</span>
+									<span class="guest-list__passes" role="cell">0 / 2</span>
+									<span class="guest-list__status guest-list__status--to-confirm" role="cell">Por confirmar</span>
+									<button class="guest-list__action-btn" aria-label="Enviar recordatorio a Familia Rivera">Recordar</button>
+								</div>
+
+								<!-- Row 2: Familia Torres -->
+								<div class="guest-list__row" role="row">
+									<span class="guest-list__name" role="cell">Familia Torres</span>
+									<span class="guest-list__passes" role="cell">2 / 2</span>
+									<span class="guest-list__status guest-list__status--confirmed" role="cell">Confirmada</span>
+									<span class="guest-list__action-placeholder" role="cell" aria-hidden="true"></span>
+								</div>
+
+								<!-- Row 3: Sofía Mendoza -->
+								<div class="guest-list__row" role="row">
+									<span class="guest-list__name" role="cell">Sofía Mendoza</span>
+									<span class="guest-list__passes" role="cell">1 / 1</span>
+									<span class="guest-list__status guest-list__status--confirmed" role="cell">Confirmada</span>
+									<span class="guest-list__action-placeholder" role="cell" aria-hidden="true"></span>
+								</div>
+
+								<!-- Row 4: Familia Ortega -->
+								<div class="guest-list__row" role="row">
+									<span class="guest-list__name" role="cell">Familia Ortega</span>
+									<span class="guest-list__passes" role="cell">0 / 1</span>
+									<span class="guest-list__status guest-list__status--pending" role="cell">Pendiente</span>
+									<span class="guest-list__action-placeholder" role="cell" aria-hidden="true"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
-		<div class="product-proof__panel" aria-label="Funciones operativas de la invitación">
-			{data.items.map((item) => (
-				<article class="product-proof__item">
-					<span class="product-proof__item-icon" aria-hidden="true">
-						<Icon name={item.icon || 'CheckIcon'} />
-					</span>
-					<div class="product-proof__item-body">
-						<h3>{item.title}</h3>
-						<p>{item.description}</p>
-					</div>
-				</article>
-			))}
+		<!-- Bottom proof rail (compact rail instead of cards) -->
+		<div class="product-proof__rail" aria-labelledby="proof-rail-heading">
+			<h3 id="proof-rail-heading" class="product-proof__rail-title">Diseñado para saber, antes del evento</h3>
+			
+			<div class="proof-rail-flow" role="list">
+				<div class="proof-rail-flow__item" role="listitem">
+					<span class="proof-rail-flow__num">01</span>
+					<span class="proof-rail-flow__text">Quién recibió la invitación</span>
+				</div>
+				<div class="proof-rail-flow__item" role="listitem">
+					<span class="proof-rail-flow__num">02</span>
+					<span class="proof-rail-flow__text">Quién confirmó asistencia</span>
+				</div>
+				<div class="proof-rail-flow__item" role="listitem">
+					<span class="proof-rail-flow__num">03</span>
+					<span class="proof-rail-flow__text">Cuántos pases están registrados</span>
+				</div>
+				<div class="proof-rail-flow__item" role="listitem">
+					<span class="proof-rail-flow__num">04</span>
+					<span class="proof-rail-flow__text">A quién falta recordar</span>
+				</div>
+			</div>
 		</div>
 	</Container>
+
+	<!-- Subtle bottom gold hairline separator and fade transition -->
+	<div class="product-proof__bottom-separator" aria-hidden="true"></div>
 </Section>

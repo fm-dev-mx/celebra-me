@@ -18,22 +18,15 @@ function loadLandingData() {
 
 	// Extract the exported landingData object literal.
 	// Format: export const landingData: LandingPageData = { ... };
-	// Brace-balanced capture: matches { ... } where the body contains no
-	// bare `{` or `}` outside of single/double-quoted strings. This avoids
-	// the non-greedy `*?` trap where a future string containing `};` would
-	// prematurely terminate the match.
 	const match = sanitized.match(
-		/export\s+const\s+landingData\s*:?\s*[\w.]+\s*=\s*(\{(?:[^{}]|'[^']*'|"[^"]*")+\})\s*;/,
+		/export\s+const\s+landingData\s*:\s*LandingPageData\s*=\s*(\{[\s\S]*\})\s*;/,
 	);
 	if (!match) {
 		throw new Error('Could not extract landingData from source');
 	}
 
-	// Evaluate the extracted object literal via new Function. This is NOT a
-	// security sandbox — it runs in the global scope of the Node process
-	// and relies on the source file being a trusted data file under our
-	// control. If the source ever comes from untrusted input, replace this
-	// with a proper TS loader.
+	// Evaluate the extracted object literal via new Function.
+	// Same approach as before — runs in the Node global scope, not a sandbox.
 	return new Function('return ' + match[1])();
 }
 
@@ -45,10 +38,10 @@ describe('landing services product value data', () => {
 
 		// Hero fields (changed in this changeset)
 		expect(hero.title).toBe(
-			'Invitaciones digitales premium con RSVP y control de invitados',
+			'Invitaciones digitales elegantes para confirmar y guiar a tus invitados',
 		);
 		expect(hero.subtitle).toBe(
-			'Experiencia personalizada para tu evento: confirmaciones en tiempo real, pases digitales y envío por WhatsApp.',
+			'RSVP, pases digitales, ubicación, música y galería en una experiencia personalizada para compartir por WhatsApp.',
 		);
 		expect(hero.primaryCtaLabel).toBe('Cotizar por WhatsApp');
 		expect(hero.whatsappMessage).toContain('Cupón: LANZAMIENTO-899');
@@ -57,9 +50,9 @@ describe('landing services product value data', () => {
 		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
 
 		// Services block assertions
-		expect(services.title).toBe('Incluido en tu invitación');
+		expect(services.title).toBe('Incluido en su invitación');
 		expect(services.items).toHaveLength(4);
-		expect(services.cta.label).toBe('Resolver dudas por WhatsApp');
+		expect(services.cta.label).toBe('Quiero una invitación con RSVP');
 		expect(services.cta.href).toBe('#contacto');
 	});
 

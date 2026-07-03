@@ -53,7 +53,7 @@ test.describe('Landing page regressions', () => {
 
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
-			await expect(page.locator('.services__card').first()).toBeVisible();
+			await expect(page.locator('.services__spec-row').first()).toBeVisible();
 			await expect(page.locator('#nosotros .about-us__content')).toBeVisible();
 
 			await page.locator('[data-nav-mobile-toggle]').click();
@@ -295,13 +295,12 @@ test.describe('Landing page regressions', () => {
 
 		expect(eventSelectorTop).toBeLessThan(proofTop);
 		await expect(page.locator('#product-proof-title')).toContainText(
-			'Más que una invitación bonita',
+			'Una invitación elegante con control de invitados',
 		);
-		await expect(page.locator('.product-proof__item')).toContainText([
-			/Primera impresión premium/,
-			/Información clara/,
-			/Control real/,
-		]);
+		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
+		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
+			'Quién recibió la invitación',
+		);
 		await expect(page.locator('#prueba-producto')).toHaveAttribute(
 			'data-track-section',
 			'product-proof',

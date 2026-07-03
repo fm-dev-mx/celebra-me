@@ -1,7 +1,6 @@
 ---
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import Icon from '@components/common/icons/Icon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
@@ -24,19 +23,17 @@ const phone = getContactPhone();
 			<p class="services__subtitle">{data.subtitle}</p>
 		</header>
 
-		<div class="services__grid">
+		<div class="services__spec-list" role="list">
 			{
 				data.items.map((item) => {
 					return (
-						<article class="services__card">
-							<div class="services__icon-wrapper" aria-hidden="true">
-								<Icon name={item.icon || 'CheckIcon'} class="services__icon" />
+						<div class="services__spec-row" role="listitem">
+							<span class="services__spec-accent" aria-hidden="true"></span>
+							<div class="services__spec-content">
+								<h3 class="services__spec-title">{item.title}</h3>
+								<p class="services__spec-detail">{item.description}</p>
 							</div>
-							<div class="services__card-body">
-								<h3 class="services__title">{item.title}</h3>
-								<p class="services__description">{item.description}</p>
-							</div>
-						</article>
+						</div>
 					);
 				})
 			}
@@ -54,7 +51,7 @@ const phone = getContactPhone();
 				trackValue={899}
 				trackCurrency="MXN"
 				promoCode="LANZAMIENTO-899"
-				ariaLabel="Resolver dudas por WhatsApp"
+				ariaLabel="Cotizar una invitación con estas funciones por WhatsApp"
 			/>
 		</div>
 	</Container>

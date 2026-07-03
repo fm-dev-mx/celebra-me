@@ -126,14 +126,12 @@
 	--about-noise-opacity: 0.04;
 	--about-bg-gradient-1: #{color.change(sys.$sys-color-gold-400, $alpha: 0.14)};
 	--about-bg-gradient-2: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.08)};
-	--about-bg-gradient-3: #{color.change(sys.$sys-color-parchment-300, $alpha: 0.7)};
 	--about-underline-gradient: linear-gradient(
 		90deg,
 		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)},
 		#{color.change(sys.$sys-color-gold-500, $alpha: 0.95)},
 		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)}
 	);
-	--about-underline-shine-color: rgb(var(--color-overlay-light-rgb) / 60%);
 	--about-image-wrapper-bg: linear-gradient(
 		135deg,
 		rgb(var(--color-overlay-light-rgb) / 40%) 0%,
@@ -149,37 +147,8 @@
 		0 40px 80px -20px rgb(0 0 0 / 20%),
 		0 15px 40px -15px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
 	--about-image-frame-border: rgb(var(--color-overlay-light-rgb) / 35%);
-	--about-image-glow-color: #{color.change(sys.$sys-color-gold-400, $alpha: 0.18)};
-	--about-decoration-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.35)};
-	--about-decoration-bg: linear-gradient(
-		135deg,
-		#{color.change(sys.$sys-color-gold-400, $alpha: 0.18)},
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)}
-	);
-	--about-decoration-shadow: 0 20px 40px #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
-	--about-value-card-bg: linear-gradient(
-		180deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.72)},
-		#{color.change(sys.$sys-color-parchment-300, $alpha: 0.42)}
-	);
-	--about-value-card-border: rgb(var(--color-overlay-light-rgb) / 50%);
-	--about-value-card-shadow:
-		0 20px 50px -28px rgb(0 0 0 / 18%),
-		0 10px 24px -20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
-	--about-value-card-hover-bg: linear-gradient(
-		180deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)},
-		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.78)}
-	);
-	--about-value-card-hover-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.4)};
-	--about-value-icon-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
-	--about-value-icon-color: var(--color-action-accent);
-	--about-value-icon-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
-	--about-value-icon-hover-bg: var(--color-action-accent);
-	--about-sparkle-color: var(--color-action-accent);
 	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
 	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
-	--about-glint-angle: 45deg;
 	--about-animation-duration: 10s;
 
 	// Pricing Section

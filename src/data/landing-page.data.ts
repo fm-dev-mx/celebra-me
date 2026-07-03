@@ -20,100 +20,74 @@ export const landingData: LandingPageData = {
 		],
 	},
 	productProof: {
-		title: 'Más que una invitación bonita',
+		title: 'Una invitación elegante con control de invitados',
 		description:
-			'Una experiencia digital que informa, confirma asistencia y ayuda a organizar invitados.',
-		items: [
-			{
-				title: 'Primera impresión premium',
-				description:
-					'Presentación elegante que impresiona a sus invitados desde el primer instante.',
-				icon: 'SparklesIcon',
-			},
-			{
-				title: 'Información clara',
-				description:
-					'Horarios, ubicación, itinerario y mesa de regalos en un solo enlace.',
-				icon: 'MapLocationIcon',
-			},
-			{
-				title: 'Control real',
-				description:
-					'Confirme asistencia, límite de pases y acompañantes sin hojas de cálculo.',
-				icon: 'CheckIcon',
-			},
-		],
+			'Celebra-me reúne invitación digital, RSVP, pases y seguimiento de invitados en una experiencia clara para compartir por WhatsApp.',
 		cta: {
-			label: 'Hablar sobre mi evento',
+			label: 'Quiero una invitación con RSVP',
 			href: '#contacto',
 			message:
 				'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
 		},
 	},
 	services: {
-		title: 'Incluido en tu invitación',
+		title: 'Incluido en su invitación',
 		subtitle:
-			'Lo esencial para compartir, confirmar y organizar sin fricción.',
+			'Funciones concretas para compartir, confirmar y ordenar la celebración sin fricción.',
 		items: [
 			{
-				title: 'RSVP integrado',
+				title: 'Confirmaciones sin perseguir invitados',
 				description:
-					'Confirmación inmediata y control de pases desde cualquier dispositivo.',
-				icon: 'CheckSealIcon',
+					'Cada invitado confirma asistencia desde el enlace y la información queda organizada.',
 			},
 			{
-				title: 'Pases por WhatsApp',
+				title: 'Pases personalizados listos para compartir',
 				description:
-					'Envíe pases digitales personalizados directamente por WhatsApp.',
-				icon: 'EnvelopedIcon',
+					'Pases digitales claros para familias, acompañantes o invitados principales.',
 			},
 			{
-				title: 'Detalles del evento',
+				title: 'Detalles importantes en un solo enlace',
 				description:
-					'Ubicación de Google Maps, itinerario interactivo y mesa de regalos.',
-				icon: 'MapLocationIcon',
+					'Ubicación, itinerario, música y mesa de regalos siempre a la mano.',
 			},
 			{
-				title: 'Lista ordenada',
+				title: 'Control claro de invitados y acompañantes',
 				description:
-					'Descargue la lista de asistencia en tiempo real con un clic.',
-				icon: 'UserGroupIcon',
+					'Revise confirmaciones y acompañantes con una lista fácil de consultar.',
 			},
 		],
 		cta: {
-			label: 'Resolver dudas por WhatsApp',
+			label: 'Quiero una invitación con RSVP',
 			href: '#contacto',
 		},
 	},
 	about: {
 		title: 'Diseño con intención',
 		description:
-			'Diseños sofisticados y soporte personalizado para que su evento sea impecable.',
+			'Diseñamos una experiencia visual coherente con el tono de su celebración: elegante, clara y lista para compartir. No solo se ve bien; guía a sus invitados desde el primer mensaje.',
 		values: [
 			{
-				name: 'Vanguardia Digital',
-				description: 'Interacciones fluidas diseñadas para facilitar la confirmación.',
-				icon: 'DiamondIcon',
+				name: 'Dirección visual',
+				description: 'Paleta, tipografía y ritmo pensados para que la invitación se sienta propia.',
 			},
 			{
-				name: 'Detalle Impecable',
-				description: 'Estética premium, tipografía curada y maquetación editorial.',
-				icon: 'SparklesIcon',
+				name: 'Claridad para invitados',
+				description: 'Cada sección orienta sin saturar: ceremonia, recepción, ubicación y confirmación.',
 			},
 			{
-				name: 'Cercanía y Calidez',
-				description: 'Acompañamiento personal en el proceso de diseño y publicación.',
-				icon: 'UserGroupIcon',
+				name: 'Entrega cuidada',
+				description: 'Acompañamiento personal para revisar contenido, estilo y publicación.',
 			},
 		],
 		cta: {
-			label: 'Hablar sobre mi evento',
+			label: 'Solicitar asesoría',
 			href: '#contacto',
 		},
 	},
 	testimonials: {
-		title: 'Clientes que organizaron mejor',
-		subtitle: 'Experiencias reales de anfitriones que simplificaron su organización.',
+		title: 'Anfitriones que ganaron claridad',
+		subtitle:
+			'Experiencias reales de anfitriones que compartieron por WhatsApp, confirmaron asistencia y ordenaron mejor su evento.',
 		testimonials: [
 			{
 				name: 'Boda',
@@ -241,22 +215,22 @@ export const landingData: LandingPageData = {
 	},
 	howItWorks: {
 		title: 'Cómo funciona',
-		subtitle: 'Tres pasos para publicar y compartir con control.',
+		subtitle: 'Un proceso simple para convertir la información de su evento en una invitación lista para compartir.',
 		steps: [
 			{
 				icon: 'SparklesIcon',
-				title: 'Cuéntanos tu evento',
-				description: 'Comparta fecha, lugar, fotos, música y lista de invitados.',
+				title: 'Definimos la información clave',
+				description: 'Fecha, lugar, fotos, música, itinerario y lista de invitados.',
 			},
 			{
 				icon: 'HeartIcon',
-				title: 'Diseñamos tu invitación',
+				title: 'Diseñamos una experiencia personalizada',
 				description: 'Armamos una experiencia clara, elegante y lista para revisar.',
 			},
 			{
 				icon: 'CheckIcon',
-				title: 'Comparte y controla',
-				description: 'Envíe por WhatsApp y consulte confirmaciones, pases y acompañantes.',
+				title: 'Comparte por WhatsApp y recibe confirmaciones',
+				description: 'Sus invitados confirman asistencia y reciben la información importante.',
 			},
 		],
 	},

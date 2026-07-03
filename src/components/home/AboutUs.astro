@@ -4,7 +4,6 @@ import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
 import ActionBase from '@components/common/actions/ActionBase.astro';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
 import Icon from '@components/common/icons/Icon.astro';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
@@ -27,7 +26,29 @@ const aboutToast = getCommonAsset('aboutToast');
 
 	<Container class="about-us__container">
 		<div class="about-us__grid">
-			{/* Content Side */}
+			{/* Visual side — image dominant */}
+			<div
+				class="about-us__visual animate-on-scroll"
+				data-delay="200ms"
+			>
+				<div class="about-us__image-wrapper">
+					<div class="about-us__image-frame"></div>
+					<OptimizedImage
+						imagePath={aboutToast}
+						alt="Celebración elegante con brindis"
+						width={800}
+						height={1000}
+						class="about-us__image"
+						quality={80}
+						widths={[320, 480, 640]}
+						sizes="(max-width: 767px) 334px, 44vw"
+					/>
+					<div class="about-us__image-glow"></div>
+					<div class="about-us__image-decoration"></div>
+				</div>
+			</div>
+
+			{/* Content side — editorial flow */}
 			<div class="about-us__content">
 				<header
 					class="about-us__header animate-on-scroll"
@@ -44,9 +65,26 @@ const aboutToast = getCommonAsset('aboutToast');
 					{data.description}
 				</p>
 
+				{/* Pullquote — typographic statement */}
+				<blockquote
+					class="about-us__pullquote animate-on-scroll"
+					data-delay="380ms"
+				>
+					Elegante, clara y lista para compartir.
+				</blockquote>
+
+				{/* Simplified editorial values — no dots/marks, flowing lines */}
+				<div class="about-us__values animate-on-scroll" data-delay="420ms">
+					{data.values.map((value) => (
+						<p class="about-us__value-line">
+							<strong>{value.name}.</strong> {value.description}
+						</p>
+					))}
+				</div>
+
 				<div
 					class="about-us__actions animate-on-scroll"
-					data-delay="500ms"
+					data-delay="560ms"
 				>
 					<ActionBase
 						variant="outline"
@@ -60,60 +98,8 @@ const aboutToast = getCommonAsset('aboutToast');
 					</ActionBase>
 				</div>
 			</div>
-
-			<div
-				class="about-us__visual animate-on-scroll"
-				data-delay="200ms"
-			>
-				<div class="about-us__image-wrapper">
-					<div class="about-us__image-frame"></div>
-					<OptimizedImage
-						imagePath={aboutToast}
-						alt="Celebración elegante con brindis"
-						width={800}
-						height={1000}
-						class="about-us__image"
-						quality={80}
-						widths={[320, 480, 640]}
-						sizes="(max-width: 767px) 334px, 40vw"
-					/>
-					<div class="about-us__image-glow"></div>
-					<div class="about-us__image-decoration"></div>
-				</div>
-			</div>
-		</div>
-
-		{/* Values Grid */}
-		<div class="about-us__values">
-			{data.values.map((value, index) => (
-				<div
-					class="about-us__value-card animate-on-scroll"
-					data-delay={`${(index + 4) * 150}ms`}
-				>
-					<div class="sparkle sparkle--1"></div>
-					<div class="sparkle sparkle--2"></div>
-					<div class="sparkle sparkle--3"></div>
-					<div class="about-us__value-icon-wrapper">
-						<Icon name={value.icon} class="about-us__value-icon" />
-					</div>
-					<h3 class="about-us__value-title">{value.name}</h3>
-					<p class="about-us__value-description">{value.description}</p>
-				</div>
-			))}
 		</div>
 	</Container>
-
-	{/* Scroll Indicator */}
-	<div class="about-us__scroll-indicator">
-		<ActionIcon
-			icon="ArrowDownIcon"
-			variant="scroll"
-			color="primary"
-			as="a"
-			href="#testimonios"
-			title="Explorar testimonios"
-		/>
-	</div>
 </Section>
 <script>
 	import { createIntersectionObserver } from '@/utils/animations';

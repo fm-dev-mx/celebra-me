@@ -25,12 +25,16 @@ const { data } = Astro.props;
 			{
 				data.steps.map((step, index) => (
 					<div class="how-it-works__step" data-step={index + 1}>
-						<div class="how-it-works__step-number" aria-hidden="true">{index + 1}</div>
-						<div class="how-it-works__step-icon">
-							<Icon name={step.icon} size={28} />
+						<div class="how-it-works__step-head">
+							<div class="how-it-works__step-number" aria-hidden="true">0{index + 1}</div>
+							<div class="how-it-works__step-icon" aria-hidden="true">
+								<Icon name={step.icon} size={22} />
+							</div>
 						</div>
-						<h3 class="how-it-works__step-title">{step.title}</h3>
-						<p class="how-it-works__step-description">{step.description}</p>
+						<div class="how-it-works__step-copy">
+							<h3 class="how-it-works__step-title">{step.title}</h3>
+							<p class="how-it-works__step-description">{step.description}</p>
+						</div>
 					</div>
 				))
 			}

@@ -1,125 +1,193 @@
-// src/styles/home/_how-it-works.scss
-// "Cómo funciona" section — simple, static, no hydration.
-// Matches the existing landing section visual language.
-
 @use '../global/mixins' as mixins;
 
 .how-it-works {
 	position: relative;
-	padding: 5rem 0;
-	background: var(--color-surface-secondary);
+	padding-block: clamp(2.6rem, 6vw, 4.65rem);
+	overflow: hidden;
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-surface-primary-rgb) / 98%),
+			rgb(var(--color-overlay-light-rgb) / 58%)
+		),
+		var(--color-surface-primary);
 
 	&__container {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 0 1.5rem;
+		width: min(1120px, calc(100% - 2rem));
+		margin-inline: auto;
+		display: grid;
+		grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+		gap: clamp(1.5rem, 5vw, 3.75rem);
+		align-items: start;
 	}
 
 	&__header {
-		text-align: center;
-		margin-bottom: 4rem;
+		max-width: 25rem;
+		text-align: left;
 	}
 
 	&__title {
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 4vw, 2.75rem);
+		@include mixins.typography(display-2);
+
+		margin: 0;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.08;
 		color: var(--color-text-primary);
-		margin-bottom: 1rem;
 	}
 
 	&__subtitle {
-		font-size: 1.1rem;
+		margin: 0.75rem 0 0;
 		color: var(--color-text-secondary);
-		max-width: 640px;
-		margin: 0 auto;
-		line-height: 1.6;
+		font-size: clamp(1rem, 1.7vw, 1.1rem);
+		line-height: 1.62;
 	}
 
 	&__steps {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 2rem;
+		gap: 0;
+		border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	}
 
 	&__step {
 		position: relative;
-		text-align: center;
-		padding: 2.5rem 1.5rem;
-		background: var(--color-surface-primary);
-		border-radius: 1rem;
-		border: 1px solid var(--color-border-subtle);
+		display: grid;
+		grid-template-columns: 5.5rem minmax(0, 1fr);
+		gap: clamp(0.85rem, 2vw, 1.25rem);
+		align-items: start;
+		padding-block: clamp(1.05rem, 2.4vw, 1.45rem);
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 		transition:
-			transform 0.3s ease,
-			box-shadow 0.3s ease;
+			background-color 180ms ease,
+			padding-inline 180ms ease;
 
 		&:hover {
-			transform: translateY(-4px);
-			box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
+			padding-inline: 0.65rem;
+			background: rgb(var(--color-overlay-light-rgb) / 50%);
 		}
+	}
+
+	&__step-head {
+		display: grid;
+		gap: 0.55rem;
+		justify-items: start;
 	}
 
 	&__step-number {
-		position: absolute;
-		top: -0.75rem;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 2rem;
-		height: 2rem;
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		background: var(--color-action-accent);
-		color: var(--color-text-on-accent);
-		font-family: var(--font-display);
-		font-size: 0.85rem;
-		font-weight: 600;
-		border-radius: 50%;
+		color: var(--color-action-accent);
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		font-weight: 800;
+		letter-spacing: 0.16em;
 	}
 
 	&__step-icon {
-		margin-bottom: 1rem;
-		color: var(--color-action-accent);
-		display: flex;
+		display: inline-flex;
+		align-items: center;
 		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 999px;
+		background: rgb(var(--color-action-accent-rgb) / 8%);
+		color: var(--color-action-accent);
+	}
+
+	&__step-copy {
+		min-width: 0;
 	}
 
 	&__step-title {
-		font-family: var(--font-display);
-		font-size: 1.15rem;
+		@include mixins.typography(h3);
+
+		margin: 0;
+		font-size: clamp(1.08rem, 2vw, 1.28rem);
+		line-height: 1.28;
 		color: var(--color-text-primary);
-		margin-bottom: 0.75rem;
 	}
 
 	&__step-description {
-		font-size: 0.9rem;
-		color: var(--color-text-secondary);
-		line-height: 1.5;
-		margin: 0;
-	}
+		@include mixins.typography(body-small);
 
-	// Tablet: 2x2 grid
-	@include mixins.respond-below(xl) {
-		&__steps {
-			grid-template-columns: repeat(2, 1fr);
-			gap: 1.5rem;
+		max-width: 36rem;
+		margin: 0.42rem 0 0;
+		color: var(--color-text-secondary);
+		line-height: 1.56;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.how-it-works__step {
+		transition: none;
+
+		&:hover {
+			padding-inline: 0;
 		}
 	}
+}
 
-	// Mobile: single column
-	@include mixins.respond-below(sm) {
-		padding: 3rem 0;
+@include mixins.respond-below(lg) {
+	.how-it-works {
+		&__container {
+			grid-template-columns: 1fr;
+		}
 
 		&__header {
-			margin-bottom: 2.5rem;
+			max-width: 44rem;
+			margin-inline: auto;
+			text-align: center;
+		}
+
+		&__subtitle {
+			max-width: 36rem;
+			margin-inline: auto;
 		}
 
 		&__steps {
-			grid-template-columns: 1fr;
-			gap: 1.25rem;
+			max-width: 48rem;
+			margin-inline: auto;
+		}
+	}
+}
+
+@include mixins.respond-below(sm) {
+	.how-it-works {
+		padding-block: clamp(2.15rem, 8vw, 3.25rem);
+
+		&__container {
+			width: min(100% - 1.25rem, 44rem);
+			gap: 1.2rem;
+		}
+
+		&__header {
+			text-align: left;
+		}
+
+		&__subtitle {
+			margin-inline: 0;
 		}
 
 		&__step {
-			padding: 2rem 1.25rem;
+			grid-template-columns: 3.15rem minmax(0, 1fr);
+			gap: 0.75rem;
+			padding-block: 0.9rem;
+
+			&:hover {
+				padding-inline: 0;
+				background: transparent;
+			}
+		}
+
+		&__step-icon {
+			display: none;
+		}
+
+		&__step-number {
+			font-size: 0.72rem;
+		}
+
+		&__step-description {
+			margin-top: 0.34rem;
 		}
 	}
 }

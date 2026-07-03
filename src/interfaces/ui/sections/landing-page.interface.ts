@@ -13,16 +13,9 @@ export interface HeroData {
 	}>;
 }
 
-
-
 export interface ProductProofData {
 	title: string;
 	description: string;
-	items: Array<{
-		title: string;
-		description: string;
-		icon?: string;
-	}>;
 	cta: {
 		label: string;
 		href: string;
@@ -36,7 +29,6 @@ export interface AboutData {
 	values: Array<{
 		name: string;
 		description: string;
-		icon: string;
 	}>;
 	cta: {
 		label: string;
@@ -50,7 +42,6 @@ export interface ServicesData {
 	items: Array<{
 		title: string;
 		description: string;
-		icon?: string;
 	}>;
 	cta: {
 		label: string;
