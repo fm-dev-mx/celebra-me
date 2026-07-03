@@ -9,13 +9,13 @@ import {
 	type InvitationSet,
 	type GeneralSet,
 	type RevealHandling,
-	type AnimationHandling,
 	type SectionCapture,
 	type AuthMethod,
 	type OutputFormat,
 	type OutputFolderStyle,
 	type ScreenshotJob,
 	type Viewport,
+	type ScreenshotMode,
 	DEFAULT_BASE_URL,
 } from './types.js';
 import {
@@ -24,6 +24,8 @@ import {
 	getDefaultProfile,
 	resolveViewports,
 	formatViewport,
+	getDefaultCriticalSelectors,
+	getViewportProfileSummary,
 } from './utils.js';
 
 // =============================================================================
@@ -40,11 +42,11 @@ async function askViewportProfile(
 		message: 'Which viewport profile do you want?',
 		choices: [
 			{
-				name: 'Invitation  (mobile-small, mobile-standard, mobile-large)',
+				name: `Invitation  (${getViewportProfileSummary('invitation')})`,
 				value: 'invitation',
 			},
-			{ name: 'Site        (mobile-standard, tablet, desktop)', value: 'site' },
-			{ name: 'Full        (all 5 viewports)', value: 'full' },
+			{ name: `Site        (${getViewportProfileSummary('site')})`, value: 'site' },
+			{ name: `Full        (${getViewportProfileSummary('full')})`, value: 'full' },
 			{ name: 'Single viewport (pick one)', value: 'single' },
 		],
 		default: defaultProfile,
@@ -54,7 +56,7 @@ async function askViewportProfile(
 		const vpName = await select<string>({
 			message: 'Which viewport?',
 			choices: [
-				{ name: 'mobile-small    (360×740, @2x)', value: 'mobile-small' },
+				{ name: 'mobile-narrow   (360×740, @2x)', value: 'mobile-narrow' },
 				{ name: 'mobile-standard (390×844, @2x)', value: 'mobile-standard' },
 				{ name: 'mobile-large    (430×932, @3x)', value: 'mobile-large' },
 				{ name: 'tablet          (768×1024, @2x)', value: 'tablet' },
@@ -82,9 +84,10 @@ async function askSectionCapture(
 	}
 
 	const sectionCapture = await select<SectionCapture>({
-		message: 'Capture individual sections?',
+		message:
+			'Capture optional configured sections? Audit mode may still generate critical validation captures automatically.',
 		choices: [
-			{ name: 'No, only main screenshots', value: 'none' },
+			{ name: 'No, skip optional sections', value: 'none' },
 			{ name: 'Yes, auto-detect sections', value: 'auto' },
 			...(pageType === 'invitation'
 				? [{ name: 'Yes, known invitation sections', value: 'known' as SectionCapture }]
@@ -250,15 +253,14 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		});
 	}
 
-	// ── 6. Animation Handling ──────────────────────────────────────────────
-	const animHandling = await select<AnimationHandling>({
-		message: 'How should animations be handled?',
+	// ── 6. Screenshot Mode ─────────────────────────────────────────────────
+	const mode = await select<ScreenshotMode>({
+		message: 'Screenshot mode?',
 		choices: [
-			{ name: 'Disable animations (stable screenshots)', value: 'disable' },
-			{ name: 'Keep animations, wait for final state', value: 'wait' },
-			{ name: 'Use screenshot mode query param (?screenshot=1)', value: 'query-param' },
+			{ name: 'Audit (stable visual QA)', value: 'audit' },
+			{ name: 'Raw (minimal intervention)', value: 'raw' },
 		],
-		default: 'disable',
+		default: 'audit',
 	});
 
 	// ── 7. Section Capture ─────────────────────────────────────────────────
@@ -325,6 +327,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 
 	const job: ScreenshotJob = {
 		pageType,
+		mode,
 		url: resolvedUrl,
 		baseUrl,
 		viewportProfile,
@@ -332,9 +335,12 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		invitationSet,
 		generalSet,
 		revealHandling,
-		animationHandling: animHandling,
+		animationHandling: mode === 'audit' ? 'disable' : 'wait',
 		sectionCapture,
 		sectionSelectors,
+		criticalSelectors: getDefaultCriticalSelectors(pageType),
+		waitSelectors: [],
+		hideSelectors: [],
 		authMethod,
 		outputFormat,
 		outputFolderStyle: outputStyle,
@@ -369,7 +375,7 @@ async function confirmJob(job: ScreenshotJob): Promise<ScreenshotJob | null> {
 	} else {
 		console.log(`  Page set:       ${job.generalSet}`);
 	}
-	console.log(`  Animations:    ${job.animationHandling}`);
+	console.log(`  Mode:          ${job.mode}`);
 	console.log(`  Sections:      ${job.sectionCapture}`);
 	if (job.sectionSelectors?.length) {
 		console.log(`  Selectors:     ${job.sectionSelectors.join(', ')}`);

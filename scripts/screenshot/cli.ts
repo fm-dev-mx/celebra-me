@@ -26,6 +26,8 @@ import {
 	resolveViewports,
 	getDefaultProfile,
 	resolveOutputDir,
+	loadScreenshotConfig,
+	getDefaultCriticalSelectors,
 } from './utils.js';
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
@@ -37,6 +39,12 @@ async function main() {
 
 	// ── Route to interactive or direct mode ────────────────────────────────
 	const isInteractive = shouldRunInteractive(cliOptions);
+
+	if (!isInteractive && cliOptions.config) {
+		const result = await runConfigJobs(cliOptions);
+		if (result.failed > 0) process.exit(1);
+		return;
+	}
 
 	const job = isInteractive ? await runInteractiveFlow() : buildJobFromCli(cliOptions);
 
@@ -87,13 +95,6 @@ function shouldRunInteractive(options: CliOptions): boolean {
 // ── Build job from CLI flags ─────────────────────────────────────────────
 
 function validateCliOptions(options: CliOptions): void {
-	if (options.config) {
-		console.error('✕ --config / batch mode is not yet implemented.');
-		console.error('  The --config flag is parsed but batch execution has not been built.');
-		console.error('  For now, run the tool once per page with --url=<route>.');
-		process.exit(1);
-	}
-
 	if (options.auth === 'storage-state') {
 		const storagePath = path.join(process.cwd(), DEFAULT_STORAGE_STATE_PATH);
 		if (!fs.existsSync(storagePath)) {
@@ -160,6 +161,7 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 
 	const job: ScreenshotJob = {
 		pageType,
+		mode: options.mode ?? 'audit',
 		url: resolvedUrl,
 		baseUrl,
 		viewportProfile: profile,
@@ -170,6 +172,9 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 		animationHandling: options.animation ?? 'disable',
 		sectionCapture,
 		sectionSelectors,
+		criticalSelectors: getDefaultCriticalSelectors(pageType),
+		waitSelectors: [],
+		hideSelectors: [],
 		authMethod: options.auth ?? 'none',
 		outputFormat: options.format ?? 'png',
 		outputFolderStyle,
@@ -177,6 +182,61 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 	};
 
 	return job;
+}
+
+// eslint-disable-next-line complexity -- Config defaults are resolved in one place for predictable batch jobs.
+async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
+	if (!options.config) return { failed: 0 };
+
+	const config = loadScreenshotConfig(options.config);
+	const pages = config.pages ?? [];
+	let failed = 0;
+
+	if (pages.length === 0) {
+		console.error(`✕ Config has no pages: ${options.config}`);
+		return { failed: 1 };
+	}
+
+	for (const page of pages) {
+		const baseUrl = config.baseUrl ?? options.baseUrl ?? DEFAULT_BASE_URL;
+		const profile = page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
+		const viewports = resolveViewports(profile, page.viewports);
+		const route = page.route;
+		const outputFolderStyle = page.outputFormat ? (options.outputStyle ?? 'default') : (options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default');
+		const outputFolder =
+			options.output ??
+			(config.outputDir ? path.join(config.outputDir, page.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) : undefined);
+
+		const job: ScreenshotJob = {
+			pageType: page.pageType,
+			mode: page.mode ?? config.defaultMode ?? options.mode ?? 'audit',
+			url: resolveUrl(route, baseUrl),
+			baseUrl,
+			viewportProfile: profile,
+			viewports,
+			invitationSet: page.invitationSet ?? 'essential',
+			generalSet: page.generalSet ?? 'basic',
+			revealHandling: page.revealHandling ?? 'auto',
+			animationHandling: page.animationHandling ?? options.animation ?? 'disable',
+			sectionCapture: page.sectionCapture ?? 'none',
+			sectionSelectors: page.sectionSelectors,
+			criticalSelectors:
+				page.criticalSelectors && page.criticalSelectors.length > 0
+					? page.criticalSelectors
+					: getDefaultCriticalSelectors(page.pageType),
+			waitSelectors: page.waitSelectors ?? [],
+			hideSelectors: page.hideSelectors ?? [],
+			authMethod: page.authMethod ?? 'none',
+			outputFormat: page.outputFormat ?? config.defaultOutputFormat ?? 'png',
+			outputFolderStyle: outputFolder ? 'custom' : outputFolderStyle,
+			outputFolder,
+		};
+
+		const result = await runScreenshotJob(job);
+		if (result.failed > 0) failed++;
+	}
+
+	return { failed };
 }
 
 // ── Run ──────────────────────────────────────────────────────────────────

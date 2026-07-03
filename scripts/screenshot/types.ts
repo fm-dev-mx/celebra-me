@@ -8,6 +8,9 @@ export type PageType = 'invitation' | 'landing' | 'dashboard' | 'admin' | 'login
 /** Viewport profile selector */
 export type ViewportProfileType = 'invitation' | 'site' | 'full' | 'single' | 'custom';
 
+/** Screenshot preparation mode */
+export type ScreenshotMode = 'audit' | 'raw';
+
 /** Screenshot set for invitation pages */
 export type InvitationSet = 'essential' | 'full-qa' | 'reveal-only' | 'full-page';
 
@@ -46,6 +49,7 @@ export interface Viewport {
 
 export interface ScreenshotJob {
 	pageType: PageType;
+	mode: ScreenshotMode;
 	/** Resolved full URL to capture (e.g. http://localhost:4321/boda/...) */
 	url: string;
 	/** Base URL for route resolution (e.g. http://localhost:4321) */
@@ -59,6 +63,9 @@ export interface ScreenshotJob {
 	animationHandling: AnimationHandling;
 	sectionCapture: SectionCapture;
 	sectionSelectors?: string[];
+	criticalSelectors: ScreenshotSelectorConfig[];
+	waitSelectors: string[];
+	hideSelectors: string[];
 	authMethod: AuthMethod;
 	outputFormat: OutputFormat;
 	outputFolderStyle: OutputFolderStyle;
@@ -73,6 +80,7 @@ export interface CliOptions {
 	url?: string;
 	baseUrl?: string;
 	pageType?: PageType;
+	mode?: ScreenshotMode;
 	/** Viewport names to capture, e.g. ['mobile-standard', 'desktop'] */
 	viewport?: string[];
 	profile?: ViewportProfileType;
@@ -98,6 +106,8 @@ export interface CliOptions {
 /** Minimal shape for a screenshot config JSON file */
 export interface ScreenshotConfig {
 	baseUrl?: string;
+	outputDir?: string;
+	defaultMode?: ScreenshotMode;
 	defaultViewportProfile?: ViewportProfileType;
 	defaultAnimationHandling?: AnimationHandling;
 	defaultOutputFormat?: OutputFormat;
@@ -110,6 +120,7 @@ export interface ScreenshotConfigPage {
 	name: string;
 	pageType: PageType;
 	route: string;
+	mode?: ScreenshotMode;
 	viewports?: string[];
 	profile?: ViewportProfileType;
 	invitationSet?: InvitationSet;
@@ -118,8 +129,18 @@ export interface ScreenshotConfigPage {
 	animationHandling?: AnimationHandling;
 	sectionCapture?: SectionCapture;
 	sectionSelectors?: string[];
+	criticalSelectors?: ScreenshotSelectorConfig[];
+	waitSelectors?: string[];
+	hideSelectors?: string[];
 	authMethod?: AuthMethod;
 	outputFormat?: OutputFormat;
+}
+
+export interface ScreenshotSelectorConfig {
+	selector: string;
+	required: boolean;
+	capture?: boolean;
+	label?: string;
 }
 
 /** Result of a single screenshot capture */
@@ -131,6 +152,78 @@ export interface CaptureResult {
 	error?: string;
 }
 
+export type ValidationStatus = 'passed' | 'warning' | 'failed';
+
+export type RequestFailureSeverity = 'critical' | 'warning';
+
+export interface ScreenshotOutputFileReport {
+	path: string;
+	label: string;
+	width?: number;
+	height?: number;
+}
+
+export interface SelectorValidationReport {
+	selector: string;
+	required: boolean;
+	label?: string;
+	visibleBeforeNormalization?: boolean;
+	visibleAfterNormalization?: boolean;
+	status: ValidationStatus;
+	warnings?: string[];
+	failures?: string[];
+}
+
+export interface RequestFailureReport {
+	url: string;
+	method: string;
+	errorText: string;
+	severity: RequestFailureSeverity;
+}
+
+export interface ConsoleErrorReport {
+	message: string;
+	severity: RequestFailureSeverity;
+	source: 'vite-dev-runtime' | 'page-script' | 'browser';
+	environment: 'development' | 'unknown';
+	productionRisk: 'unlikely' | 'unknown';
+	affectsScreenshotReliability: boolean;
+	note: string;
+}
+
+export interface ViewportManifestReport {
+	name: string;
+	files: number;
+	expected: number;
+	status: ValidationStatus;
+}
+
+export interface ViewportRunReport {
+	name: string;
+	width: number;
+	height: number;
+	deviceScaleFactor: number;
+	documentHeight: number;
+	outputFiles: ScreenshotOutputFileReport[];
+	criticalSelectors: SelectorValidationReport[];
+	warnings: string[];
+	failures: string[];
+	consoleErrors: ConsoleErrorReport[];
+	requestFailures: RequestFailureReport[];
+}
+
+export interface ScreenshotRunReport {
+	route: string;
+	mode: ScreenshotMode;
+	startedAt: string;
+	durationMs: number;
+	status: ValidationStatus;
+	viewports: ViewportRunReport[];
+	manifest: ViewportManifestReport[];
+	warnings: string[];
+	failures: string[];
+}
+
 /** Overall job result */
 export interface JobResult {
 	total: number;
@@ -139,6 +232,7 @@ export interface JobResult {
 	captures: CaptureResult[];
 	outputDir: string;
 	durationMs: number;
+	report?: ScreenshotRunReport;
 }
 
 /** Named viewport profile mapping */
@@ -155,7 +249,7 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 	invitation: {
 		name: 'invitation',
 		viewports: [
-			{ width: 360, height: 740, deviceScaleFactor: 2, name: 'mobile-small' },
+			{ width: 360, height: 740, deviceScaleFactor: 2, name: 'mobile-narrow' },
 			{ width: 390, height: 844, deviceScaleFactor: 2, name: 'mobile-standard' },
 			{ width: 430, height: 932, deviceScaleFactor: 3, name: 'mobile-large' },
 		],
@@ -163,6 +257,7 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 	site: {
 		name: 'site',
 		viewports: [
+			{ width: 360, height: 740, deviceScaleFactor: 2, name: 'mobile-narrow' },
 			{ width: 390, height: 844, deviceScaleFactor: 2, name: 'mobile-standard' },
 			{ width: 768, height: 1024, deviceScaleFactor: 2, name: 'tablet' },
 			{ width: 1440, height: 1200, deviceScaleFactor: 1, name: 'desktop' },
@@ -171,7 +266,7 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 	full: {
 		name: 'full',
 		viewports: [
-			{ width: 360, height: 740, deviceScaleFactor: 2, name: 'mobile-small' },
+			{ width: 360, height: 740, deviceScaleFactor: 2, name: 'mobile-narrow' },
 			{ width: 390, height: 844, deviceScaleFactor: 2, name: 'mobile-standard' },
 			{ width: 430, height: 932, deviceScaleFactor: 3, name: 'mobile-large' },
 			{ width: 768, height: 1024, deviceScaleFactor: 2, name: 'tablet' },

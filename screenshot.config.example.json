@@ -1,6 +1,8 @@
 {
     "//": "Celebra-me Screenshot Tool — Example Configuration",
     "baseUrl": "http://localhost:4321",
+    "outputDir": "screenshots",
+    "defaultMode": "audit",
     "defaultViewportProfile": "site",
     "defaultAnimationHandling": "disable",
     "defaultOutputFormat": "png",
@@ -32,9 +34,23 @@
             "name": "Landing Page",
             "pageType": "landing",
             "route": "/",
+            "mode": "audit",
             "profile": "site",
             "generalSet": "full-qa",
-            "sectionCapture": "auto"
+            "sectionCapture": "auto",
+            "criticalSelectors": [
+                { "selector": "main", "required": true, "capture": true },
+                { "selector": "[data-screenshot=\"landing-hero\"], #inicio", "required": true, "capture": true, "label": "hero" },
+                { "selector": "[data-screenshot=\"landing-pricing\"], #pricing", "required": true, "capture": true, "label": "pricing" },
+                { "selector": "[data-screenshot=\"landing-faq\"], #faq-section", "required": true, "capture": true, "label": "faq" },
+                { "selector": "[data-screenshot=\"landing-contact\"], #contacto", "required": true, "capture": true, "label": "contact" },
+                { "selector": "[data-screenshot=\"landing-event-types\"], #tipo-evento", "required": false },
+                { "selector": "[data-screenshot=\"landing-includes\"], #servicios", "required": false },
+                { "selector": "[data-screenshot=\"landing-essence\"], #nosotros", "required": false },
+                { "selector": "[data-screenshot=\"landing-testimonials\"], #testimonios", "required": false, "capture": true, "label": "testimonials" },
+                { "selector": "[data-screenshot=\"landing-process\"], #como-funciona", "required": false },
+                { "selector": "[data-screenshot=\"landing-footer\"], footer", "required": false }
+            ]
         },
         {
             "name": "Dashboard",

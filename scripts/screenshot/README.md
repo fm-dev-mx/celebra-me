@@ -12,7 +12,7 @@ dashboard, login, and custom routes.
 | Dashboard/admin (no auth)                          | ✅ Functional                           |
 | Dashboard/admin (requires auth)                    | ⚠️ Not validated — no auth pipeline yet |
 | Login pages                                        | ⚠️ Not validated                        |
-| Batch mode (`--config`)                            | ❌ Not implemented — clear error on use |
+| Batch mode (`--config`)                            | ✅ Implemented — see Configuration File section |
 
 ## Quick Start
 
@@ -26,6 +26,17 @@ pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding
 # Direct — general page (flags) — VERIFIED for landing
 pnpm screenshot:page --url=http://localhost:4321/
 ```
+
+## Default Mode
+
+The default mode is `audit`, which is intended for recurring visual QA. It marks the page with
+`html[data-screenshot='audit']` immediately after DOM readiness, waits for fonts/images, scrolls the
+page to trigger lazy loading and reveal effects, waits for height stability, records critical
+selector visibility, then normalizes reveal states and disables animations right before capture.
+
+Use `--mode=raw` only when debugging real runtime behavior with minimal intervention. Each run writes
+`report.json` with route, mode, viewport metadata, generated files, dimensions, document height,
+selector checks, warnings, failures, console errors, and request failures.
 
 ## Commands
 
@@ -59,9 +70,9 @@ $ pnpm screenshot
     ...
 
 ? Which viewport profile do you want?
-  ❯ Invitation  (mobile-small, mobile-standard, mobile-large)
-    Site        (mobile-standard, tablet, desktop)
-    Full        (all 5 viewports)
+  ❯ Invitation  (mobile-narrow, mobile-standard, mobile-large)
+    Site        (mobile-narrow, mobile-standard, tablet, desktop)
+    Full        (mobile-narrow, mobile-standard, mobile-large, tablet, desktop)
     ...
 
 ? How should reveal sections be handled?
@@ -83,8 +94,8 @@ pnpm screenshot:page \
   --profile=site \
   --general-set=basic \
   --format=png \
-  --viewport=mobile-standard,desktop \
-  --animation=disable \
+  --viewport=mobile-narrow,mobile-standard,desktop \
+  --mode=audit \
   --auth=storage-state
 
 # Short forms
@@ -102,12 +113,13 @@ pnpm screenshot:invite \
 | `--url=<url>`            | `-u`  | URL or route to capture                                                                      |
 | `--base-url=<url>`       |       | Base URL for route resolution (default: http://localhost:4321)                               |
 | `--type=<type>`          | `-t`  | Page type: invitation, landing, dashboard, admin, login, custom                              |
+| `--mode=<mode>`          |       | Mode: audit (default), raw                                                                   |
 | `--profile=<name>`       | `-p`  | Viewport profile: invitation, site, full, single                                             |
-| `--viewport=<names>`     |       | Comma-separated viewport names: mobile-small, mobile-standard, mobile-large, tablet, desktop |
+| `--viewport=<names>`     |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop |
 | `--set=<name>`           |       | Invitation set: essential, full-qa, reveal-only, full-page                                   |
 | `--general-set=<name>`   |       | Page set: basic, full-qa                                                                     |
 | `--reveal=<mode>`        |       | Reveal handling: auto, force-open, closed-only, open-only, skip                              |
-| `--animation=<mode>`     |       | Animation: disable, wait, query-param, custom                                                |
+| `--animation=<mode>`     |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead.                         |
 | `--sections=<mode>`      |       | Sections: none, auto, known, custom                                                          |
 | `--auth=<method>`        |       | Auth: none, existing-session, storage-state, manual-login                                    |
 | `--format=<fmt>`         | `-f`  | Output: png, jpeg, webp, pdf                                                                 |
@@ -126,7 +138,7 @@ screenshots/
       03-reveal-letter-open.png
       04-reveal-section-open.png
       05-invitation-full-open.png
-    mobile-small/
+    mobile-narrow/
       ...
     mobile-large/
       ...
@@ -135,6 +147,8 @@ screenshots/
     desktop/
       01-viewport.png
       02-full-page.png
+      20-critical-main.png
+    report.json
 ```
 
 ### Invitation Screenshots
@@ -158,14 +172,12 @@ screenshots/
 | `05-footer.png`         | Footer element (full QA)    |
 | `06-section-{name}.png` | Individual sections         |
 
-## Configuration File (Not Yet Implemented)
+## Configuration File
 
-Batch mode via `--config=screenshot.config.example.json` is **parsed but not executed**. The tool
-will exit with a clear error if you pass `--config`. Run the tool once per page with `--url=<route>`
-instead.
-
-The example config file at `screenshot.config.example.json` shows the planned shape for future batch
-execution.
+Batch mode via `--config=screenshot.config.example.json` runs each configured page sequentially. The
+config supports `defaultMode`, `outputDir`, viewport presets, page routes, wait selectors, hide
+selectors, and page-specific critical selectors. Missing required selectors fail validation; missing
+optional selectors warn.
 
 ## Viewport Profiles
 
@@ -173,7 +185,7 @@ execution.
 
 | Name            | Resolution | DPR |
 | --------------- | ---------- | --- |
-| mobile-small    | 360×740    | @2x |
+| mobile-narrow   | 360×740    | @2x |
 | mobile-standard | 390×844    | @2x |
 | mobile-large    | 430×932    | @3x |
 
@@ -181,6 +193,7 @@ execution.
 
 | Name            | Resolution | DPR |
 | --------------- | ---------- | --- |
+| mobile-narrow   | 360×740    | @2x |
 | mobile-standard | 390×844    | @2x |
 | tablet          | 768×1024   | @2x |
 | desktop         | 1440×1200  | @1x |
@@ -188,6 +201,9 @@ execution.
 ### full
 
 All 5 viewports combined (for comprehensive QA).
+
+Mobile-small is accepted as a CLI alias for `mobile-narrow`; reports use the canonical
+`mobile-narrow` name.
 
 ## Reveal Detection Priority
 
@@ -206,7 +222,9 @@ Before each screenshot, the tool ensures:
 - Fonts loaded (`document.fonts.ready`)
 - Visible images loaded
 - Lazy-loaded images (scroll-triggered)
-- CSS animations disabled (when `--animation=disable`)
+- Reveal/animated content normalized only in `audit` mode
+- CSS animations disabled right before capture in `audit` mode
+- Critical selector visibility and image readiness validated
 
 ## Recommended Data Attributes
 
@@ -246,6 +264,21 @@ Add these attributes to Celebra-me components for more reliable captures:
 
 The tool always prefers `[data-screenshot-*]` attributes over CSS classes or text matching. Missing
 optional elements produce warnings, not errors.
+
+### Landing page recommended data-screenshot attributes
+
+```html
+<section data-screenshot="landing-hero">
+<section data-screenshot="landing-event-types">
+<section data-screenshot="landing-includes">
+<section data-screenshot="landing-essence">
+<section data-screenshot="landing-testimonials">
+<section data-screenshot="landing-process">
+<section data-screenshot="landing-pricing">
+<section data-screenshot="landing-faq">
+<section data-screenshot="landing-contact">
+<footer data-screenshot="landing-footer">
+```
 
 ## Requirements
 

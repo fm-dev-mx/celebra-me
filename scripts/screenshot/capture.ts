@@ -1,7 +1,7 @@
 // =============================================================================
 // CELEBRA-ME | Screenshot Tool — Playwright Capture Functions
 // =============================================================================
-// eslint-disable max-lines
+/* eslint-disable max-lines -- Screenshot orchestration is intentionally centralized for CLI maintainability. */
 
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
@@ -11,14 +11,21 @@ import {
 	type ScreenshotJob,
 	type OutputFormat,
 	type CaptureResult,
+	type ScreenshotMode,
+	type ScreenshotSelectorConfig,
 	KNOWN_INVITATION_SECTIONS,
 	REVEAL_TRIGGER_TEXTS,
 	DEFAULT_NAVIGATION_TIMEOUT,
 	DEFAULT_NETWORK_IDLE_TIMEOUT,
 	DEFAULT_ELEMENT_TIMEOUT,
+	DEFAULT_IMAGE_TIMEOUT,
 	DEFAULT_STABILITY_DELAY,
 } from './types.js';
-import { buildScreenshotPath } from './utils.js';
+import {
+	buildScreenshotPath,
+	getAboveFoldCriticalSelector,
+	getDefaultHideSelectors,
+} from './utils.js';
 
 // =============================================================================
 // Browser Management
@@ -77,41 +84,47 @@ export async function waitForPageStability(page: Page): Promise<void> {
 		// Page may be polling or using SSE — continue anyway
 	}
 
-	// Wait for fonts
+	await waitForFonts(page);
+	await waitForImages(page);
+
+	// Small settle delay
+	await page.waitForTimeout(DEFAULT_STABILITY_DELAY);
+}
+
+export async function waitForFonts(page: Page): Promise<void> {
 	try {
 		await page.evaluate(() => document.fonts.ready);
 	} catch {
-		// Font loading failed — continue
+		// Font loading failed — validation reports the final state later.
 	}
+}
 
-	// Wait for visible images to load
+export async function waitForImages(page: Page): Promise<void> {
 	try {
-		await page.evaluate(() => {
+		await page.evaluate((timeoutMs) => {
 			const images = Array.from(document.querySelectorAll('img'));
 			return Promise.all(
 				images.map(
 					(img) =>
 						new Promise<void>((resolve) => {
-							if (img.complete) resolve();
-							else {
-								const handler = () => {
-									resolve();
-								};
-								img.addEventListener('load', handler, { once: true });
-								img.addEventListener('error', handler, { once: true });
-								// Timeout per image
-								setTimeout(resolve, 8000);
+							if (img.complete && img.naturalWidth > 0) {
+								resolve();
+								return;
 							}
+
+							const handler = () => {
+								resolve();
+							};
+							img.addEventListener('load', handler, { once: true });
+							img.addEventListener('error', handler, { once: true });
+							setTimeout(resolve, timeoutMs);
 						}),
 				),
 			);
-		});
+		}, DEFAULT_IMAGE_TIMEOUT);
 	} catch {
-		// Image loading failed — continue
+		// Image loading failures are classified by validation.
 	}
-
-	// Small settle delay
-	await page.waitForTimeout(DEFAULT_STABILITY_DELAY);
 }
 
 /**
@@ -120,21 +133,55 @@ export async function waitForPageStability(page: Page): Promise<void> {
 export async function scrollForLazyLoad(page: Page): Promise<void> {
 	try {
 		await page.evaluate(async () => {
-			const scrollHeight = document.body.scrollHeight;
-			const viewportHeight = window.innerHeight;
-			const steps = Math.min(10, Math.ceil(scrollHeight / viewportHeight));
-			const stepSize = scrollHeight / steps;
+			let previousHeight = 0;
 
-			for (let i = 0; i <= steps; i++) {
-				window.scrollTo(0, i * stepSize);
-				await new Promise((r) => setTimeout(r, 150));
+			for (let pass = 0; pass < 3; pass++) {
+				const scrollHeight = Math.max(
+					document.body.scrollHeight,
+					document.documentElement.scrollHeight,
+				);
+				const viewportHeight = window.innerHeight;
+				const stepSize = Math.max(250, Math.floor(viewportHeight * 0.75));
+
+				for (let y = 0; y <= scrollHeight; y += stepSize) {
+					window.scrollTo(0, y);
+					await new Promise((r) => setTimeout(r, 180));
+				}
+
+				window.scrollTo(0, scrollHeight);
+				await new Promise((r) => setTimeout(r, 250));
+
+				const nextHeight = Math.max(
+					document.body.scrollHeight,
+					document.documentElement.scrollHeight,
+				);
+				if (Math.abs(nextHeight - previousHeight) < 2) break;
+				previousHeight = nextHeight;
 			}
-			// Return to top
+
 			window.scrollTo(0, 0);
 		});
-		await page.waitForTimeout(300);
+		await waitForImages(page);
+		await waitForLayoutHeightStable(page);
 	} catch {
 		// Scroll failed — continue
+	}
+}
+
+export async function waitForLayoutHeightStable(page: Page): Promise<void> {
+	try {
+		await page.waitForFunction(async () => {
+			const readHeight = () =>
+				Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+			const first = readHeight();
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			const second = readHeight();
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			const third = readHeight();
+			return Math.abs(first - second) < 2 && Math.abs(second - third) < 2;
+		}, { timeout: 5000 });
+	} catch {
+		// Reported later as document height metadata; do not block capture forever.
 	}
 }
 
@@ -160,6 +207,141 @@ export async function disableAnimations(page: Page): Promise<void> {
 	await page.waitForTimeout(100);
 }
 
+export async function prepareAuditPage(
+	page: Page,
+	criticalSelectors: ScreenshotSelectorConfig[],
+	hideSelectors: string[] = [],
+): Promise<void> {
+	await page.evaluate(() => {
+		document.documentElement.dataset.screenshot = 'audit';
+		document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => {
+			img.loading = 'eager';
+		});
+	});
+	await waitForPageStability(page);
+	await scrollForLazyLoad(page);
+	await waitForLayoutHeightStable(page);
+	await storePreNormalizationSelectorState(page, criticalSelectors);
+	await normalizeForAudit(page);
+	await normalizeOperationalOverlaysForAudit(page, hideSelectors);
+	await disableAnimations(page);
+	await page.waitForTimeout(100);
+}
+
+export async function prepareRawPage(page: Page): Promise<void> {
+	await waitForPageStability(page);
+}
+
+async function storePreNormalizationSelectorState(
+	page: Page,
+	criticalSelectors: ScreenshotSelectorConfig[],
+): Promise<void> {
+	await page.evaluate((selectors) => {
+		const state: Record<string, boolean> = {};
+		for (const selector of selectors) {
+			const element = document.querySelector(selector.selector);
+			if (!element) {
+				state[selector.selector] = false;
+				continue;
+			}
+			const style = window.getComputedStyle(element);
+			const box = element.getBoundingClientRect();
+			state[selector.selector] =
+				style.display !== 'none' &&
+				style.visibility !== 'hidden' &&
+				Number.parseFloat(style.opacity || '1') > 0.01 &&
+				!style.filter.includes('blur') &&
+				box.width > 0 &&
+				box.height > 0;
+		}
+		(
+			window as Window & {
+				__screenshotPreNormalizationVisibility?: Record<string, boolean>;
+			}
+		).__screenshotPreNormalizationVisibility = state;
+	}, criticalSelectors);
+}
+
+async function normalizeForAudit(page: Page): Promise<void> {
+	await page.addStyleTag({
+		content: `
+      html[data-screenshot='audit'] .has-motion,
+      html[data-screenshot='audit'] .animate-on-scroll,
+      html[data-screenshot='audit'] .stagger-container,
+      html[data-screenshot='audit'] [data-screenshot-section],
+      html[data-screenshot='audit'] [data-screenshot='invitation-open-hero'],
+      html[data-screenshot='audit'] [data-screenshot='invitation-open-content'],
+      html[data-screenshot='audit'] [data-screenshot^='landing-'] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        filter: none !important;
+        transform: none !important;
+      }
+
+      html[data-screenshot='audit'] .has-motion,
+      html[data-screenshot='audit'] .animate-on-scroll,
+      html[data-screenshot='audit'] .stagger-container,
+      html[data-screenshot='audit'] .stagger-container > * {
+        transition-delay: 0s !important;
+        animation-delay: 0s !important;
+      }
+    `,
+	});
+	await page.evaluate(() => {
+		const revealSelectors = [
+			'.has-motion',
+			'.animate-on-scroll',
+			'.stagger-container',
+			'[data-screenshot-section]',
+			'[data-screenshot^="landing-"] .pricing-card',
+		];
+		for (const selector of revealSelectors) {
+			document.querySelectorAll(selector).forEach((element) => {
+				element.classList.add('is-visible', 'animate-visible');
+			});
+		}
+	});
+}
+
+async function normalizeOperationalOverlaysForAudit(
+	page: Page,
+	hideSelectors: string[],
+): Promise<void> {
+	const selectors = Array.from(new Set([...getDefaultHideSelectors(), ...hideSelectors]));
+	const selectorText = selectors.join(',\n      ');
+
+	await page.addStyleTag({
+		content: `
+      html[data-screenshot='audit'] :is(
+        ${selectorText}
+      ) {
+        display: none !important;
+      }
+    `,
+	});
+
+	await page.evaluate((normalizedSelectors) => {
+		const state = (
+			window as Window & {
+				__screenshotAuditNormalizations?: string[];
+			}
+		).__screenshotAuditNormalizations ?? [];
+		state.push(
+			'Operational overlays normalized for audit screenshots: local consent decision is set before navigation; configured hide selectors are hidden only while html[data-screenshot="audit"] is active.',
+		);
+		for (const selector of normalizedSelectors) {
+			if (document.querySelector(selector)) {
+				state.push(`Audit hide selector matched: ${selector}`);
+			}
+		}
+		(
+			window as Window & {
+				__screenshotAuditNormalizations?: string[];
+			}
+		).__screenshotAuditNormalizations = Array.from(new Set(state));
+	}, selectors);
+}
+
 // =============================================================================
 // URL & Navigation
 // =============================================================================
@@ -183,18 +365,46 @@ export function buildScreenshotUrl(baseUrl: string, revealState?: 'open' | 'clos
 export async function navigateTo(
 	page: Page,
 	url: string,
+	mode: ScreenshotMode,
 	animationHandling: string,
+	criticalSelectors: ScreenshotSelectorConfig[] = [],
+	hideSelectors: string[] = [],
 ): Promise<void> {
+	if (mode === 'audit') {
+		await page.addInitScript(() => {
+			if (document.documentElement) {
+				document.documentElement.dataset.screenshot = 'audit';
+			}
+			try {
+				localStorage.setItem(
+					'cm_consent',
+					JSON.stringify({
+						necessary: true,
+						analytics: false,
+						marketing: false,
+						updatedAt: new Date(0).toISOString(),
+					}),
+				);
+			} catch {
+				// localStorage may be unavailable in unusual browser contexts.
+			}
+		});
+	}
+
 	await page.goto(url, {
 		waitUntil: 'domcontentloaded',
 		timeout: DEFAULT_NAVIGATION_TIMEOUT,
 	});
 
+	if (mode === 'audit') {
+		await prepareAuditPage(page, criticalSelectors, hideSelectors);
+		return;
+	}
+
+	await prepareRawPage(page);
 	if (animationHandling === 'disable') {
 		await disableAnimations(page);
 	}
-
-	await waitForPageStability(page);
 }
 
 // =============================================================================
@@ -205,7 +415,7 @@ export async function navigateTo(
  * Find the reveal section element using data attributes.
  * Returns the selector string, or null if not found.
  */
-export async function findRevealSection(page: Page): Promise<string | null> {
+async function findRevealSection(page: Page): Promise<string | null> {
 	const selectors = [
 		'[data-screenshot="reveal-section"]',
 		'[data-screenshot="invitation-container"]',
@@ -228,7 +438,7 @@ export async function findRevealSection(page: Page): Promise<string | null> {
  * Find the reveal trigger button/link using data attributes and text fallbacks.
  * Returns the selector string, or null if not found.
  */
-export async function findRevealTrigger(page: Page): Promise<string | null> {
+async function findRevealTrigger(page: Page): Promise<string | null> {
 	// Priority 1: data attribute
 	try {
 		const count = await page.locator('[data-screenshot="reveal-trigger"]').count();
@@ -273,7 +483,7 @@ export async function findRevealTrigger(page: Page): Promise<string | null> {
  * Find the reveal letter/card content element.
  * Returns the selector, or null if not found.
  */
-export async function findRevealLetter(page: Page): Promise<string | null> {
+async function findRevealLetter(page: Page): Promise<string | null> {
 	const selectors = [
 		'[data-screenshot="reveal-letter"]',
 		'[data-screenshot="invitation-letter"]',
@@ -297,7 +507,7 @@ export async function findRevealLetter(page: Page): Promise<string | null> {
  * Try to open the reveal section by clicking the trigger.
  * Returns true if the reveal was triggered, false otherwise.
  */
-export async function openRevealSection(page: Page): Promise<boolean> {
+async function openRevealSection(page: Page): Promise<boolean> {
 	const trigger = await findRevealTrigger(page);
 	if (!trigger) return false;
 
@@ -327,16 +537,19 @@ export async function openRevealSection(page: Page): Promise<boolean> {
  * falling back to click automation if the page doesn't support screenshot mode.
  * Logs detailed diagnostic information on failure.
  */
-export async function tryOpenReveal(
+async function tryOpenReveal(
 	page: Page,
 	url: string,
+	mode: ScreenshotMode,
 	animationHandling: string,
 	closedUrl: string,
 	revealMode: string,
+	criticalSelectors: ScreenshotSelectorConfig[] = [],
+	hideSelectors: string[] = [],
 ): Promise<boolean> {
 	const openUrl = buildScreenshotUrl(url, 'open');
 	console.log(`  ℹ Navigating (open via query param): ${openUrl}`);
-	await navigateTo(page, openUrl, animationHandling);
+	await navigateTo(page, openUrl, mode, animationHandling, criticalSelectors, hideSelectors);
 	await page.waitForTimeout(500);
 	await scrollForLazyLoad(page);
 
@@ -348,7 +561,7 @@ export async function tryOpenReveal(
 
 	if (revealMode === 'auto') {
 		console.log('  ℹ Query-param state not supported — trying click automation...');
-		await navigateTo(page, closedUrl, animationHandling);
+		await navigateTo(page, closedUrl, mode, animationHandling, criticalSelectors, hideSelectors);
 		await page.waitForTimeout(300);
 		await scrollForLazyLoad(page);
 		const clicked = await openRevealSection(page);
@@ -426,6 +639,37 @@ export async function captureViewport(
 		label: pathLabel(outputPath),
 		success: true,
 	};
+}
+
+async function resetScrollAndAssertAboveFold(
+	page: Page,
+	selector: string,
+): Promise<void> {
+	await page.evaluate(() => {
+		window.scrollTo(0, 0);
+	});
+	await page.waitForFunction(() => Math.abs(window.scrollY) <= 1, { timeout: 3000 });
+	await page.waitForTimeout(150);
+
+	const visible = await page.locator(selector).first().evaluate((element) => {
+		const style = window.getComputedStyle(element);
+		const rect = element.getBoundingClientRect();
+		return (
+			style.display !== 'none' &&
+			style.visibility !== 'hidden' &&
+			Number.parseFloat(style.opacity || '1') > 0.01 &&
+			rect.width > 0 &&
+			rect.height > 0 &&
+			rect.bottom > 0 &&
+			rect.top < window.innerHeight
+		);
+	}).catch(() => false);
+
+	if (!visible) {
+		throw new Error(
+			`Above-fold selector was not visible after resetting scroll before viewport capture: ${selector}`,
+		);
+	}
 }
 
 /**
@@ -537,7 +781,7 @@ async function validateDistinctReveal(results: CaptureResult[]): Promise<void> {
  *
  * Logs a warning at each fallback.
  */
-export async function captureInvitationOpen(
+async function captureInvitationOpen(
   page: Page,
   outputDir: string,
   viewportName: string,
@@ -701,7 +945,14 @@ export async function captureInvitationScreenshots(
 	// ── STEP 1: Navigate (closed state first) ──────────────────────────────
 	const closedUrl = buildScreenshotUrl(job.url, 'closed');
 	console.log(`  ℹ Navigating (closed): ${closedUrl}`);
-	await navigateTo(page, closedUrl, job.animationHandling);
+	await navigateTo(
+		page,
+		closedUrl,
+		job.mode,
+		job.animationHandling,
+		job.criticalSelectors,
+		job.hideSelectors,
+	);
 
 	// Wait for custom element initialization
 	await page.waitForTimeout(300);
@@ -769,9 +1020,12 @@ export async function captureInvitationScreenshots(
 		revealOpened = await tryOpenReveal(
 			page,
 			job.url,
+			job.mode,
 			job.animationHandling,
 			closedUrl,
 			revealMode,
+			job.criticalSelectors,
+			job.hideSelectors,
 		);
 	}
 
@@ -830,6 +1084,7 @@ export async function captureInvitationScreenshots(
 	// ── Individual sections (full QA) ─────────────────────────────────────
 	const sectionResults = await captureSectionsForJob(page, job, outputDir, viewportName);
 	results.push(...sectionResults);
+	results.push(...(await captureCriticalSelectorSections(page, job, outputDir, viewportName)));
 
 	return results;
 }
@@ -859,12 +1114,19 @@ export async function captureGeneralPageScreenshots(
 
 	// Navigate
 	const pageUrl = buildScreenshotUrl(job.url);
-	await navigateTo(page, pageUrl, job.animationHandling);
-	await scrollForLazyLoad(page);
+	await navigateTo(
+		page,
+		pageUrl,
+		job.mode,
+		job.animationHandling,
+		job.criticalSelectors,
+		job.hideSelectors,
+	);
 
 	// ── 01: Viewport screenshot ────────────────────────────────────────────
 	const viewportPath = await buildScreenshotPath(outputDir, viewportName, '01-viewport', format);
 	try {
+		await resetScrollAndAssertAboveFold(page, getAboveFoldCriticalSelector(job.pageType));
 		const result = await captureViewport(page, viewportPath, format);
 		result.viewportName = viewportName;
 		result.label = 'Viewport';
@@ -948,6 +1210,7 @@ export async function captureGeneralPageScreenshots(
 		const sectionResults = await captureSectionsForJob(page, job, outputDir, viewportName);
 		results.push(...sectionResults);
 	}
+	results.push(...(await captureCriticalSelectorSections(page, job, outputDir, viewportName)));
 
 	return results;
 }
@@ -1062,6 +1325,48 @@ async function captureCustomSections(
 	return results;
 }
 
+async function captureCriticalSelectorSections(
+	page: Page,
+	job: ScreenshotJob,
+	outputDir: string,
+	viewportName: string,
+): Promise<CaptureResult[]> {
+	if (job.mode !== 'audit') return [];
+
+	const results: CaptureResult[] = [];
+	const selectors = job.criticalSelectors.filter((selector) => selector.capture);
+	let index = 20;
+
+	for (const selectorConfig of selectors) {
+		const safeName = (selectorConfig.label ?? selectorConfig.selector)
+			.replace(/[^a-zA-Z0-9_-]/g, '_')
+			.slice(0, 40);
+		const label = `${String(index).padStart(2, '0')}-critical-${safeName}`;
+		const sectionPath = await buildScreenshotPath(
+			outputDir,
+			viewportName,
+			label,
+			job.outputFormat,
+		);
+		const result = await captureElement(
+			page,
+			selectorConfig.selector,
+			sectionPath,
+			job.outputFormat,
+		);
+
+		if (result) {
+			result.viewportName = viewportName;
+			result.label = `Critical: ${selectorConfig.label ?? selectorConfig.selector}`;
+			results.push(result);
+			console.log(`  ✓ Captured: ${label} (${viewportName})`);
+		}
+		index++;
+	}
+
+	return results;
+}
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -1072,9 +1377,24 @@ async function captureCustomSections(
  */
 async function checkRevealIsOpen(page: Page): Promise<boolean> {
 	try {
+		// eslint-disable-next-line complexity -- Supports standard envelope, editorial cover, and legacy reveal states.
 		const result = await page.evaluate(() => {
 			const section = document.querySelector('[data-screenshot="reveal-section"]');
-			if (!section) return false;
+			if (!section) {
+				const openContent = document.querySelector('[data-screenshot="invitation-open-content"]');
+				if (openContent) {
+					const style = window.getComputedStyle(openContent);
+					const box = openContent.getBoundingClientRect();
+					return (
+						style.display !== 'none' &&
+						style.visibility !== 'hidden' &&
+						Number.parseFloat(style.opacity || '1') > 0.01 &&
+						box.width > 0 &&
+						box.height > 0
+					);
+				}
+				return false;
+			}
 
 			// Check data attribute (supports both 'open' and 'preview-opened')
 			const state = section.getAttribute('data-reveal-state') || '';
@@ -1117,5 +1437,5 @@ async function checkRevealIsOpen(page: Page): Promise<boolean> {
  */
 function pathLabel(filepath: string): string {
 	const parts = filepath.replace(/\\/g, '/').split('/');
-	return parts[parts.length - 1] ?? filepath;
+	return parts[parts.length - 1];
 }

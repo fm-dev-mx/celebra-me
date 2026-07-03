@@ -3,6 +3,7 @@
 // =============================================================================
 
 import * as path from 'node:path';
+import * as syncFs from 'node:fs';
 import * as fs from 'node:fs/promises';
 import {
 	type PageType,
@@ -10,6 +11,16 @@ import {
 	type ViewportProfileType,
 	type CliOptions,
 	type OutputFormat,
+	type ScreenshotConfig,
+	type ScreenshotMode,
+	type ScreenshotRunReport,
+	type ScreenshotSelectorConfig,
+	type CaptureResult,
+	type ConsoleErrorReport,
+	type GeneralSet,
+	type InvitationSet,
+	type SectionCapture,
+	type ViewportManifestReport,
 	VIEWPORT_PROFILES,
 	DEFAULT_BASE_URL,
 } from './types.js';
@@ -96,6 +107,11 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		'--pageType': () => {
 			options.pageType = value as PageType;
 		},
+		'--mode': () => {
+			if (isScreenshotMode(value)) {
+				options.mode = value;
+			}
+		},
 		'--viewport': () => {
 			options.viewport = (options.viewport ?? []).concat(
 				value.split(',').map((v) => v.trim()),
@@ -120,16 +136,35 @@ function setOption(options: CliOptions, key: string, value: string): void {
 			setInvitationSet(options, value);
 		},
 		'--general-set': () => {
-			options.generalSet = value as any;
+			if (value === 'basic' || value === 'full-qa') {
+				options.generalSet = value;
+			}
 		},
 		'--generalSet': () => {
-			options.generalSet = value as any;
+			if (value === 'basic' || value === 'full-qa') {
+				options.generalSet = value;
+			}
 		},
 		'--reveal': () => {
-			options.reveal = value as any;
+			if (
+				value === 'auto' ||
+				value === 'force-open' ||
+				value === 'closed-only' ||
+				value === 'open-only' ||
+				value === 'skip'
+			) {
+				options.reveal = value;
+			}
 		},
 		'--animation': () => {
-			options.animation = value as any;
+			if (
+				value === 'disable' ||
+				value === 'wait' ||
+				value === 'query-param' ||
+				value === 'custom'
+			) {
+				options.animation = value;
+			}
 		},
 		'--sections': () => {
 			options.sections = value;
@@ -141,19 +176,42 @@ function setOption(options: CliOptions, key: string, value: string): void {
 			options.sectionSelectors = value;
 		},
 		'--auth': () => {
-			options.auth = value as any;
+			if (
+				value === 'none' ||
+				value === 'existing-session' ||
+				value === 'storage-state' ||
+				value === 'manual-login'
+			) {
+				options.auth = value;
+			}
 		},
 		'--format': () => {
-			options.format = value as any;
+			if (value === 'png' || value === 'jpeg' || value === 'webp' || value === 'pdf') {
+				options.format = value;
+			}
 		},
 		'--output': () => {
 			options.output = value;
 		},
 		'--output-style': () => {
-			options.outputStyle = value as any;
+			if (
+				value === 'default' ||
+				value === 'timestamped' ||
+				value === 'custom' ||
+				value === 'overwrite'
+			) {
+				options.outputStyle = value;
+			}
 		},
 		'--outputStyle': () => {
-			options.outputStyle = value as any;
+			if (
+				value === 'default' ||
+				value === 'timestamped' ||
+				value === 'custom' ||
+				value === 'overwrite'
+			) {
+				options.outputStyle = value;
+			}
 		},
 		'--config': () => {
 			options.config = value;
@@ -175,7 +233,18 @@ function setInvitationSet(options: CliOptions, value: string): void {
 			: value === 'full-qa-invitation'
 				? 'full-qa'
 				: value;
-	options.invitationSet = mapped as any;
+	if (
+		mapped === 'essential' ||
+		mapped === 'full-qa' ||
+		mapped === 'reveal-only' ||
+		mapped === 'full-page'
+	) {
+		options.invitationSet = mapped;
+	}
+}
+
+function isScreenshotMode(value: string): value is ScreenshotMode {
+	return value === 'audit' || value === 'raw';
 }
 
 function setShortOption(options: CliOptions, key: string, value: string): void {
@@ -280,13 +349,19 @@ export function getViewportsForProfile(profile: ViewportProfileType): Viewport[]
 	return [...VIEWPORT_PROFILES.site.viewports];
 }
 
+export function getViewportProfileSummary(profile: ViewportProfileType): string {
+	const viewports = getViewportsForProfile(profile);
+	return viewports.map((viewport) => viewport.name).join(', ');
+}
+
 /**
  * Look up a single named viewport from any profile.
  * Returns undefined if not found.
  */
 export function findViewportByName(name: string): Viewport | undefined {
+	const canonicalName = name === 'mobile-small' ? 'mobile-narrow' : name;
 	for (const profile of Object.values(VIEWPORT_PROFILES)) {
-		const found = profile.viewports.find((v) => v.name === name);
+		const found = profile.viewports.find((v) => v.name === canonicalName);
 		if (found) return { ...found };
 	}
 	return undefined;
@@ -307,7 +382,7 @@ export function resolveViewports(
 				viewports.push(found);
 			} else {
 				console.warn(
-					`  ⚠ Unknown viewport "${name}" — skipping. Known names: mobile-small, mobile-standard, mobile-large, tablet, desktop`,
+					`  ⚠ Unknown viewport "${name}" — skipping. Known names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop`,
 				);
 			}
 		}
@@ -318,6 +393,199 @@ export function resolveViewports(
 		return viewports;
 	}
 	return getViewportsForProfile(profile);
+}
+
+export function getDefaultCriticalSelectors(pageType: PageType): ScreenshotSelectorConfig[] {
+	if (pageType === 'invitation') {
+		return [
+			{ selector: '[data-screenshot="invitation-root"]', required: true },
+			{ selector: '[data-screenshot="invitation-open-content"]', required: true, capture: true },
+			{ selector: '[data-screenshot="invitation-open-hero"], #inicio', required: true },
+			{ selector: '[data-screenshot-section="gallery"], #galeria', required: false, capture: true },
+			{ selector: '[data-screenshot-section="rsvp"], #rsvp', required: false, capture: true },
+		];
+	}
+
+	if (pageType === 'landing') {
+		return [
+			{ selector: 'main', required: true, capture: true },
+			/* Required: hero, pricing, FAQ, contact */
+			{ selector: '[data-screenshot="landing-hero"], #inicio', required: true, capture: true, label: 'hero' },
+			{
+				selector: '[data-screenshot="landing-pricing"], #pricing',
+				required: true,
+				capture: true,
+				label: 'pricing',
+			},
+			{
+				selector: '[data-screenshot="landing-faq"], #faq-section',
+				required: true,
+				capture: true,
+				label: 'faq',
+			},
+			{
+				selector: '[data-screenshot="landing-contact"], #contacto',
+				required: true,
+				capture: true,
+				label: 'contact',
+			},
+			/* Optional / warning-only landing sections */
+			{ selector: '[data-screenshot="landing-event-types"], #tipo-evento', required: false },
+			{ selector: '[data-screenshot="landing-includes"], #servicios', required: false },
+			{ selector: '[data-screenshot="landing-essence"], #nosotros', required: false },
+			{
+				selector: '[data-screenshot="landing-testimonials"], #testimonios',
+				required: false,
+				capture: true,
+				label: 'testimonials',
+			},
+			{ selector: '[data-screenshot="landing-process"], #como-funciona', required: false },
+			{ selector: '[data-screenshot="landing-footer"], footer', required: false },
+		];
+	}
+
+	return [{ selector: 'main, [data-screenshot="main"]', required: false, capture: true }];
+}
+
+export function getAboveFoldCriticalSelector(pageType: PageType): string {
+	if (pageType === 'invitation') {
+		return '[data-screenshot="invitation-open-hero"], #inicio, [data-screenshot="invitation-root"]';
+	}
+
+	if (pageType === 'landing') {
+		return '[data-screenshot="landing-hero"], #inicio, main section:first-of-type, main';
+	}
+
+	return 'main, [data-screenshot="main"], body';
+}
+
+export function getDefaultHideSelectors(): string[] {
+	return [
+		'[data-consent-banner]',
+		'[data-cookie-banner]',
+		'#cookie-banner',
+		'#consent-banner',
+		'.cookie-banner',
+		'.consent-banner',
+		'[aria-label*="cookie" i]',
+		'[aria-label*="cookies" i]',
+		'[aria-label*="consent" i]',
+	];
+}
+
+export function getExpectedCaptureCount(input: {
+	pageType: PageType;
+	mode: ScreenshotMode;
+	invitationSet?: InvitationSet;
+	generalSet?: GeneralSet;
+	sectionCapture?: SectionCapture;
+	criticalSelectors?: ScreenshotSelectorConfig[];
+	sectionSelectors?: string[];
+}): number {
+	const criticalCaptures =
+		input.mode === 'audit'
+			? (input.criticalSelectors ?? []).filter((selector) => selector.capture).length
+			: 0;
+
+	if (input.pageType === 'invitation') {
+		const base =
+			input.invitationSet === 'full-page'
+				? 1
+				: input.invitationSet === 'reveal-only'
+					? 1
+					: input.invitationSet === 'full-qa'
+						? 7
+						: 5;
+		const optionalSections =
+			input.sectionCapture === 'custom' ? (input.sectionSelectors ?? []).length : 0;
+		return base + optionalSections + criticalCaptures;
+	}
+
+	const base = input.generalSet === 'full-qa' ? 5 : 2;
+	const optionalSections =
+		input.sectionCapture === 'custom' ? (input.sectionSelectors ?? []).length : 0;
+
+	return base + optionalSections + criticalCaptures;
+}
+
+export function buildCurrentRunManifest(input: {
+	viewports: Viewport[];
+	captures: CaptureResult[];
+	expectedPerViewport: number;
+}): ViewportManifestReport[] {
+	return input.viewports
+		.map((viewport) => {
+			const files = input.captures.filter(
+				(capture) => capture.success && capture.viewportName === viewport.name,
+			).length;
+			return {
+				name: viewport.name,
+				files,
+				expected: input.expectedPerViewport,
+				status:
+					files >= input.expectedPerViewport
+						? 'passed'
+						: files > 0
+							? 'warning'
+							: 'failed',
+			} satisfies ViewportManifestReport;
+		})
+		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function classifyConsoleError(message: string): ConsoleErrorReport {
+	if (message.includes('__name is not defined')) {
+		return {
+			message,
+			severity: 'warning',
+			source: 'vite-dev-runtime',
+			environment: 'development',
+			productionRisk: 'unknown',
+			affectsScreenshotReliability: false,
+			note:
+				'Known Vite/dev transform error observed during local screenshot runs; retained as a technical warning and not treated as screenshot-blocking unless visual validation fails.',
+		};
+	}
+
+	return {
+		message,
+		severity: 'critical',
+		source: message.startsWith('pageerror:') ? 'page-script' : 'browser',
+		environment: 'unknown',
+		productionRisk: 'unknown',
+		affectsScreenshotReliability: true,
+		note:
+			'Unhandled browser/page error during capture; treat as screenshot-reliability risk until investigated.',
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Config and report files
+// ---------------------------------------------------------------------------
+
+export function loadScreenshotConfig(configPath: string): ScreenshotConfig {
+	const raw = syncFs.readFileSync(configPath, 'utf8');
+	const parsed = JSON.parse(raw) as unknown;
+
+	if (!isRecord(parsed)) {
+		throw new Error(`Screenshot config must be a JSON object: ${configPath}`);
+	}
+
+	return parsed as ScreenshotConfig;
+}
+
+export async function writeScreenshotReport(
+	outputDir: string,
+	report: ScreenshotRunReport,
+): Promise<string> {
+	await ensureDir(outputDir);
+	const reportPath = path.join(outputDir, 'report.json');
+	await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+	return reportPath;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // ---------------------------------------------------------------------------
