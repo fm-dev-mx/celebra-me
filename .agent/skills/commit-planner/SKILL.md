@@ -28,10 +28,17 @@ scopes, and generic subjects.
 
 ## Inspect First
 
-1. Run `git status --short`.
-2. Run `git diff --stat`, `git diff`, and `git diff --cached`.
-3. Distinguish unstaged, staged, and untracked work before proposing commit boundaries.
-4. If the diff is large, inspect likely boundaries by path or hunk before suggesting commit groups.
+1. Re-read [`docs/core/git-governance.md`](../../../docs/core/git-governance.md) and check
+   [`commitlint.config.cjs`](../../../commitlint.config.cjs) for current enforced rules
+   (types, scopes, header-max-length, forbidden vocabulary).
+2. Run `git status --short`.
+3. Run `git diff --stat`, `git diff`, and `git diff --cached`.
+4. Distinguish unstaged, staged, and untracked work before proposing commit boundaries.
+5. If the diff is large, inspect likely boundaries by path or hunk before suggesting commit groups.
+6. If required governance files such as `AGENTS.md`, `.agent/rules/gatekeeper.md`,
+   `docs/core/git-governance.md`, or `commitlint.config.cjs` are missing or unreadable, stop before
+   providing a final commit message. Report what could not be read and provide only a provisional
+   plan.
 
 ## Partition by Behavioral Intent
 
@@ -39,8 +46,9 @@ scopes, and generic subjects.
 - Keep feature code with directly supporting tests and docs when they are required for the same
   shipped behavior.
 - Split unrelated refactors away from feature or bug-fix work.
-- Split formatting-only, rename-only, or mechanical cleanup edits away from logic changes unless the
-  mechanical change is inseparable from the behavior change.
+- Split formatting-only, rename-only, whitespace-only, line-ending normalization, comment-only
+  edits, or other mechanical cleanup away from logic changes unless the mechanical change is
+  inseparable from the behavior change.
 - Split broad cross-area changes when `src/`, `docs/`, `tests/`, `supabase/`, or root config files
   changed for different reasons.
 - Treat a commit touching `10+` files or multiple top-level areas as suspect until the single intent
@@ -48,6 +56,10 @@ scopes, and generic subjects.
 - Prefer practical coupling judgment over rigid heuristics: keep changes together only when
   reverting one without the other would leave the repository broken, misleading, or partially
   shipped.
+- For landing or content-heavy changes, treat instrumentation markers, copy/content edits,
+  interface/type visibility changes, tests, comment-only fixes, and line-ending normalization as
+  separate intents unless the diff proves they are inseparable. In particular, do not bundle
+  `data-*` screenshot/audit markers with copy refreshes, refactors, or test rewrites by default.
 
 ## Call Out What Should Not Ship Together
 
@@ -57,13 +69,23 @@ For every proposed commit:
 - list the excluded files or hunks that belong elsewhere,
 - explain the split boundary in one sentence.
 
+Never answer `Keep out of this commit` with only `Nothing`, `N/A`, or an equivalent blanket
+statement when multiple commits are proposed. For each proposed commit, list the major staged paths
+or hunks that must stay out of that commit and explain why they belong to another commit. If all
+files are assigned across the full plan, say that at the plan level only after per-commit exclusions
+are listed.
+
 Treat these as commit-hygiene red flags:
 
 - mixing feature work with unrelated refactors,
 - mixing formatting-only edits with logic changes,
+- mixing line-ending normalization, whitespace-only, or comment-only edits with logic changes,
 - bundling docs, config, schema, or app changes that are not required for the same intent,
 - "while I was here" edits,
-- vague or process-oriented commit language.
+- vague or process-oriented commit language,
+- mixing unrelated concerns in a single file (e.g. data attributes + copy refresh + export changes
+  + test rewrite + comment fixes + line endings) — these must be split per hunk with `git add -p`,
+- bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
 Treat audit-only warnings as review prompts, not hard gates: `3+` files with no body, non-bulleted
 bodies on multi-file commits, commits spanning multiple top-level areas, and very broad `10+` file
@@ -78,13 +100,19 @@ Use `type(scope): specific subject`.
 - Require a concrete `scope` in `kebab-case`.
 - Make the subject describe the result, not the process.
 - Name the most relevant changed thing concretely.
+- Keep the full header (type + scope + subject) under the project's `header-max-length` limit.
+  Check `commitlint.config.cjs` for the current value (as of writing: **130** characters). If
+  the subject exceeds this, trim it or choose a shorter scope.
 - Avoid vague language such as `misc`, `wip`, `fix stuff`, `quick fix`, `tweaks`, `improvements`,
   `changes`, `stuff`, or `things`.
 - Avoid process language such as `apply changes`, `record`, or `process`.
 
 ## Apply the Body Policy
 
-- `1-2` changed files: omit the body when the header already makes the intent clear.
+- `1-2` changed files: omit the body when the header already makes the intent clear. Exception:
+  always include a body when the change touches critical infrastructure (auth, security, payments,
+  data migrations, database schemas, deployment config, or git hooks), even if only 1–2 files
+  changed. This ensures reviewers have context about risk without digging through the diff.
 - `3-5` changed files: prefer one bullet per file.
 - `6+` changed files: use bullets per coherent module or change group.
 - Keep bullets concrete and path-led: `- src/path: explain the actual change`.
@@ -95,11 +123,24 @@ When helping with commit planning, answer in this order:
 
 1. `Atomicity verdict`: atomic, should split, or ambiguous.
 2. `Proposed commit plan`: one entry per commit with included paths or hunk-level boundaries.
-3. `Keep out of this commit`: explicit exclusions and why they belong elsewhere.
+3. `Keep out of this commit` (per commit entry): list excluded files, hunks, or patterns for
+   each commit in the plan, with a one-sentence rationale per exclusion. If a proposed commit
+   has zero exclusions, state "No exclusions for this commit" only after confirming the entire
+   diff was partitioned across the plan's commits. Never answer with a bare "Nothing" — every
+   commit boundary implies something was left behind; name it.
 4. `Suggested messages`: header, optional body, and a brief rationale for the chosen type, scope,
    and subject.
-5. `Staging guidance`: suggest partial staging or sequencing only; do not run `git commit` unless
-   the user explicitly asks for commit creation.
+5. `Staging guidance`: suggest exact file paths (e.g. `git add src/lib/auth.ts src/pages/login.tsx`),
+   never directory-level globs like `git add src/data/ tests/unit/`. If staging spans multiple files,
+   list each path explicitly. Where hunks within a single file belong to different commits, suggest
+   `git add -p path/to/file.ts` with hunk-by-hunk guidance. Do not run `git commit` unless the user
+   explicitly asks for commit creation.
+
+   When proposing staged sequencing after `git reset HEAD`, show a complete stage → inspect →
+   commit → verify boundary for each commit. Do not list several `git add` groups in a row without
+   the intervening commit commands or explicit user-confirmation checkpoints. Prefer exact file
+   paths over broad directory adds. Use `git add -p` when a file contains hunks for more than one
+   commit.
 
 ## Optional: Commit Execution (plan → commit)
 
@@ -129,7 +170,18 @@ Only when the user explicitly asks to commit. Never auto-commit.
    git log --oneline -3
    ```
 
+6. **Repeat for multi-commit plans** — after verifying commit N, stage the next commit's files with
+   exact paths, show the user the new staged state (`git diff --cached --stat`), propose the next
+   message, and obtain explicit confirmation before proceeding. Do not chain multiple commits
+   without a confirmation checkpoint between each one.
+
 ## Common Recovery Workflows
+
+### Before destructive commands
+
+Before suggesting or executing destructive commands such as `git reset --hard`, verify the current
+branch, pushed/unpushed state, working tree status, staged changes, and whether a backup branch or
+stash is needed. Never execute destructive recovery commands without explicit user confirmation.
 
 ### Bad message or non-atomic commit
 
@@ -139,6 +191,16 @@ git reset --soft HEAD~1
 ```
 
 ### Commit on wrong branch
+
+**Pre-checks (run these before suggesting any destructive command):**
+
+- Verify the wrong-branch commits have not been pushed: `git log --oneline origin/<branch>..<branch>`.
+  If this returns any output, the commits have already been pushed — **do not use `git reset --hard`**.
+  Use `git revert` instead.
+- Confirm the working tree is clean: `git status --short` must show nothing.
+- Confirm no unpushed commits on other branches would be orphaned.
+
+Only when all pre-checks pass:
 
 ```sh
 git checkout <correct-branch>
@@ -207,9 +269,12 @@ Verify with `git diff --cached` before committing.
 - **`git add -p` for shared files**: when a single file contains changes belonging to different
   commits, stage hunks separately with `git add -p` rather than staging the whole file.
 - **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to
-  `develop` and other branches pass through to commitlint + lint-staged normally. For approved
-  exceptions to `main`, use `SKIP_BRANCH_PROTECTION=true git commit`. The pre-push hook also
-  rejects pushes to `main` (override: `ALLOW_MAIN_PUSH=true git push origin main`).
+  `develop` and other branches pass through to commitlint + lint-staged normally. The override
+  variables `SKIP_BRANCH_PROTECTION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches
+  — never present them as a routine staging or planning option in the commit plan. Only mention
+  them when the user explicitly asks how to bypass protection or when documenting an already-approved
+  exception. Every use must be flagged with a caution: "This bypasses branch protection — confirm
+  with the team before running."
 - **Stash-pop merge conflicts**: when stashing from one branch and popping onto another that
   modified the same files, `git stash pop` reports merge conflicts (`UU` in `git status`).
   Resolve with `git checkout --theirs <file>` (stash version) or `git checkout --ours <file>`
