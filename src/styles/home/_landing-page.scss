@@ -6,7 +6,6 @@ html {
 .landing-sections-wrapper {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-section-gap);
 }
 
 :global(.landing-sections-wrapper) section,

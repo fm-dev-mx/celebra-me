@@ -16,7 +16,6 @@ const baseLaunchValue = 899;
 const cleanPriceAmount = (amountStr: string): number => {
 	return Number(amountStr.replace(/,/g, ''));
 };
-// Future: numbered promo folios require reliable persistence; frontend-only counters are not acceptable.
 ---
 
 <section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing">
@@ -34,18 +33,18 @@ const cleanPriceAmount = (amountStr: string): number => {
 		<div class="package-recommender">
 			<button class="recommender-toggle-btn" id="recommender-toggle">
 				<span class="recommender-toggle-icon">✨</span>
-				¿No estás seguro de cuál elegir? Encuentra tu paquete ideal aquí
+				¿No está seguro de cuál elegir? Encuentre su paquete ideal aquí
 			</button>
 
 			<div class="recommender-card" id="recommender-card">
 				<div class="recommender-header">
-					<h3>Quiz: Tu Paquete Ideal</h3>
+					<h3>Calculadora de paquete ideal</h3>
 					<button class="recommender-close" id="recommender-close-btn">&times;</button>
 				</div>
 
 				<!-- Step 1 -->
 				<div class="recommender-step active" data-step="1">
-					<p class="recommender-question">1. ¿Qué tipo de evento estás preparando?</p>
+					<p class="recommender-question">1. ¿Qué tipo de evento está preparando?</p>
 					<div class="recommender-options">
 						<button class="recommender-opt-btn" data-key="event" data-val="xv">XV Años</button>
 						<button class="recommender-opt-btn" data-key="event" data-val="wedding">Boda</button>
@@ -57,7 +56,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 
 				<!-- Step 2 -->
 				<div class="recommender-step" data-step="2">
-					<p class="recommender-question">2. ¿Necesitas confirmación de asistencia (RSVP) automatizada?</p>
+					<p class="recommender-question">2. ¿Necesita confirmación de asistencia (RSVP) automatizada?</p>
 					<div class="recommender-options">
 						<button class="recommender-opt-btn" data-key="rsvp" data-val="yes">Sí, confirmaciones directas</button>
 						<button class="recommender-opt-btn" data-key="rsvp" data-val="no">No, solo la información básica</button>
@@ -66,7 +65,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 
 				<!-- Step 3 -->
 				<div class="recommender-step" data-step="3">
-					<p class="recommender-question">3. ¿Quieres limitar la cantidad de pases / acompañantes por familia?</p>
+					<p class="recommender-question">3. ¿Desea limitar la cantidad de pases o acompañantes por familia?</p>
 					<div class="recommender-options">
 						<button class="recommender-opt-btn" data-key="passes" data-val="yes">Sí, control estricto de pases</button>
 						<button class="recommender-opt-btn" data-key="passes" data-val="no">No es necesario</button>
@@ -75,7 +74,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 
 				<!-- Step 4 -->
 				<div class="recommender-step" data-step="4">
-					<p class="recommender-question">4. ¿Cuántos invitados estimas aproximadamente?</p>
+					<p class="recommender-question">4. ¿Cuántos invitados estima aproximadamente?</p>
 					<div class="recommender-options">
 						<button class="recommender-opt-btn" data-key="guests" data-val="small">Menos de 100</button>
 						<button class="recommender-opt-btn" data-key="guests" data-val="medium">100 a 300</button>
@@ -89,7 +88,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 						<span class="recommender-result-badge">Recomendación</span>
 						<h4 class="recommender-result-title" id="recommender-result-title">Premium</h4>
 						<p class="recommender-result-price" id="recommender-result-price">$1,499 MXN</p>
-						<p class="recommender-result-reason" id="recommender-result-reason">Ideal para tu evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.</p>
+						<p class="recommender-result-reason" id="recommender-result-reason">Ideal para su evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.</p>
 					</div>
 					<div class="recommender-result-actions">
 						<WhatsAppButton
@@ -106,7 +105,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 							promoCode="LANZAMIENTO-1499"
 							ariaLabel="Cotizar por WhatsApp"
 						/>
-						<button class="recommender-restart-btn" id="recommender-restart">Reiniciar Quiz</button>
+						<button class="recommender-restart-btn" id="recommender-restart">Reiniciar cálculo</button>
 					</div>
 				</div>
 			</div>
@@ -281,7 +280,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 		const resultReason = document.getElementById('recommender-result-reason');
 		if (resultTitle) resultTitle.textContent = 'Premium';
 		if (resultPrice) resultPrice.textContent = '$1,499 MXN';
-		if (resultReason) resultReason.textContent = 'Ideal para tu evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.';
+		if (resultReason) resultReason.textContent = 'Ideal para su evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.';
 		goToStep(1);
 	}
 
@@ -297,7 +296,7 @@ const cleanPriceAmount = (amountStr: string): number => {
 			price = '$899 MXN';
 			value = 899;
 			promoCode = 'LANZAMIENTO-899';
-			reason = 'La mejor opción para tu evento. Diseños listos de alta gama con todos los datos clave de tu celebración sin complicaciones.';
+			reason = 'La mejor opción para su evento. Diseños listos de alta gama con todos los datos clave de su celebración sin complicaciones.';
 		} else if (answers.guests === 'large' && answers.passes === 'yes') {
 			recommendedPackage = 'Exclusivo';
 			price = '$2,299 MXN';
@@ -329,13 +328,13 @@ const cleanPriceAmount = (amountStr: string): number => {
 
 		if (whatsappCta) {
 			const phone = whatsappCta.getAttribute('data-phone') || '521000000000';
-const baseMsg = `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${recommendedPackage}.\n\nCupón: ${promoCode}`;
+			const baseMsg = `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${recommendedPackage}.\n\nCupón: ${promoCode}`;
 			whatsappCta.href = `https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`;
 			whatsappCta.setAttribute('data-promo-code', promoCode);
 			whatsappCta.setAttribute('data-track-value', String(value));
 			whatsappCta.setAttribute('data-package-interest', recommendedPackage.toLowerCase());
 			whatsappCta.setAttribute('data-package-name', recommendedPackage);
-			
+
 			const iconHtml = whatsappCta.querySelector('svg')?.outerHTML || '';
 			whatsappCta.innerHTML = `${iconHtml} Cotizar paquete ${recommendedPackage}`;
 		}

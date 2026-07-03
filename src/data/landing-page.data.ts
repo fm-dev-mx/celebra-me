@@ -107,9 +107,9 @@ export const landingData: LandingPageData = {
 		],
 	},
 	pricing: {
-		eyebrow: 'Inversión para tu celebración',
+		eyebrow: 'Inversión para su celebración',
 		title: 'Paquetes claros',
-		intro: 'Ahorre hoy con la promoción de lanzamiento. Precios transparentes y sin sorpresas.',
+		intro: 'Tres niveles con promoción de lanzamiento, pensados para elegir rápido y sin letra pequeña.',
 		note: 'Promo base: $899 MXN. Precio regular base: $1,299 MXN.',
 		tiers: [
 			{
@@ -131,7 +131,7 @@ export const landingData: LandingPageData = {
 					},
 				],
 				footnote: '*Tiempo estimado una vez recibido el contenido completo del evento.',
-				cta: 'Quiero este paquete',
+				cta: 'Elegir este paquete',
 				ctaMessage:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Colección.\n\nCupón: LANZAMIENTO-899',
 				href: '#',
@@ -155,7 +155,7 @@ export const landingData: LandingPageData = {
 						],
 					},
 				],
-				cta: 'Quiero este paquete',
+				cta: 'Elegir este paquete',
 				ctaMessage:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nCupón: LANZAMIENTO-1499',
 				href: '#',
@@ -177,7 +177,7 @@ export const landingData: LandingPageData = {
 						],
 					},
 				],
-				cta: 'Quiero este paquete',
+				cta: 'Elegir este paquete',
 				ctaMessage:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Exclusivo.\n\nCupón: LANZAMIENTO-2299',
 				href: '#',

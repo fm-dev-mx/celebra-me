@@ -1,9 +1,10 @@
 .pricing-section {
 	position: relative;
-	padding: var(--spacing-xl) 0;
+	padding: clamp(3rem, 7vw, 5rem) 0;
+
 	// Fallback ensures a transparent background if a future preset doesn't declare --pricing-section-bg.
 	background-color: var(--pricing-section-bg, var(--color-surface-primary));
-	margin-bottom: var(--spacing-xl);
+	margin-bottom: 0;
 
 	.pricing-noise {
 		position: absolute;
@@ -28,7 +29,7 @@
 
 .pricing-header {
 	text-align: center;
-	margin-bottom: var(--spacing-xl);
+	margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 
 	.pricing-eyebrow {
 		display: block;
@@ -41,7 +42,7 @@
 	}
 
 	.pricing-title {
-		font-size: clamp(2.5rem, 5vw, 3.5rem);
+		font-size: clamp(2.2rem, 5vw, 3.35rem);
 		color: var(--color-text-primary);
 		margin-bottom: var(--spacing-md);
 		font-family: var(--font-display);
@@ -49,7 +50,7 @@
 
 	.pricing-intro {
 		font-family: var(--font-body);
-		font-size: 1.1rem;
+		font-size: clamp(1rem, 2vw, 1.08rem);
 		color: var(--color-text-primary);
 		max-width: 640px;
 		margin: 0 auto var(--spacing-md);
@@ -71,7 +72,7 @@
 .pricing-grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: var(--spacing-lg);
+	gap: clamp(1rem, 2.6vw, 1.5rem);
 	align-items: stretch;
 
 	@media (width >= 992px) {
@@ -245,7 +246,7 @@
 
 	.tier-name {
 		font-family: var(--font-display);
-		font-size: 1.5rem;
+		font-size: 1.45rem;
 		margin-bottom: var(--spacing-xs);
 		color: var(--pricing-tier-name-color);
 		line-height: 1.3;
@@ -273,7 +274,7 @@
 
 		.amount {
 			font-family: var(--font-display);
-			font-size: 2.5rem;
+			font-size: clamp(2.1rem, 4vw, 2.45rem);
 			font-weight: 700;
 			color: var(--pricing-tier-price-color);
 			line-height: 1.1;
@@ -419,7 +420,7 @@
 }
 
 .package-recommender {
-	max-width: 600px;
+	max-width: 640px;
 	margin: 0 auto clamp(2rem, 5vw, 3.5rem);
 	font-family: var(--font-body);
 
@@ -429,10 +430,14 @@
 		justify-content: center;
 		gap: 0.5rem;
 		width: 100%;
-		padding: 0.85rem 1.25rem;
-		background: rgb(var(--color-action-accent-rgb) / 8%);
-		border: 1px dashed rgb(var(--color-action-accent-rgb) / 30%);
-		border-radius: 0.5rem;
+		padding: 0.95rem 1.25rem;
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-action-accent-rgb) / 8%),
+			rgb(var(--color-overlay-light-rgb) / 58%)
+		);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+		border-radius: 0.8rem;
 		color: var(--color-action-accent);
 		font-size: 0.95rem;
 		font-weight: 700;
@@ -449,11 +454,15 @@
 	.recommender-card {
 		display: none;
 		margin-top: 1rem;
-		background: rgb(var(--color-overlay-light-rgb) / 60%);
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-overlay-light-rgb) / 64%),
+			rgb(var(--color-surface-primary-rgb) / 82%)
+		);
 		backdrop-filter: blur(8px);
-		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-		border-radius: 0.75rem;
-		padding: 1.5rem;
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
+		border-radius: 1rem;
+		padding: 1.35rem;
 		box-shadow: 0 20px 40px -15px rgb(0 0 0 / 25%);
 		animation: slideDown 0.3s ease forwards;
 	}
@@ -468,7 +477,7 @@
 
 		h3 {
 			font-family: var(--font-display);
-			font-size: 1.25rem;
+			font-size: 1.2rem;
 			color: var(--color-text-primary);
 			margin: 0;
 		}
@@ -491,10 +500,11 @@
 	.recommender-step {
 		display: none;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 0.95rem;
+
 		// Match keyframe 0% so the first frame after `display: flex` doesn't
 		// flash at opacity 1 / scale 1 before the animation kicks in.
-		opacity: 0;
+		opacity: 0%;
 		transform: scale(0.98);
 
 		&.active {
@@ -539,8 +549,8 @@
 	.recommender-result-box {
 		background: rgb(var(--color-action-accent-rgb) / 5%);
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
-		border-radius: 0.5rem;
-		padding: 1.25rem;
+		border-radius: 0.85rem;
+		padding: 1.2rem;
 		text-align: center;
 		display: flex;
 		flex-direction: column;
@@ -561,7 +571,7 @@
 
 	.recommender-result-title {
 		font-family: var(--font-display);
-		font-size: 1.75rem;
+		font-size: clamp(1.6rem, 3vw, 1.8rem);
 		color: var(--color-text-primary);
 		margin: 0.25rem 0 0;
 	}
@@ -614,22 +624,60 @@
 
 @keyframes slideDown {
 	from {
-		opacity: 0;
+		opacity: 0%;
 		transform: translateY(-10px);
 	}
+
 	to {
-		opacity: 1;
+		opacity: 100%;
 		transform: translateY(0);
 	}
 }
 
 @keyframes fadeInRecommender {
 	from {
-		opacity: 0;
+		opacity: 0%;
 		transform: scale(0.98);
 	}
+
 	to {
-		opacity: 1;
+		opacity: 100%;
 		transform: scale(1);
+	}
+}
+
+@media (width <= 767px) {
+	.pricing-section {
+		padding-block: clamp(2.5rem, 8vw, 4rem);
+	}
+
+	.pricing-card {
+		padding: var(--spacing-md);
+
+		.tier-name {
+			font-size: 1.25rem;
+		}
+
+		.tier-price .amount {
+			font-size: 2.1rem;
+		}
+
+		.cta-button {
+			font-size: 0.76rem;
+			letter-spacing: 0.04em;
+		}
+	}
+
+	.package-recommender {
+		margin-bottom: clamp(1.5rem, 5vw, 2.5rem);
+
+		.recommender-card {
+			padding: 1rem;
+		}
+
+		.recommender-toggle-btn {
+			text-align: left;
+			justify-content: flex-start;
+		}
 	}
 }
