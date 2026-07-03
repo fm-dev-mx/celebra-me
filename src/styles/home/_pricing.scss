@@ -1,7 +1,8 @@
 .pricing-section {
 	position: relative;
 	padding: var(--spacing-xl) 0;
-	background-color: var(--pricing-section-bg);
+	// Fallback ensures a transparent background if a future preset doesn't declare --pricing-section-bg.
+	background-color: var(--pricing-section-bg, var(--color-surface-primary));
 	margin-bottom: var(--spacing-xl);
 
 	.pricing-noise {
@@ -414,5 +415,221 @@
 
 	.pricing-card.is-primary {
 		transform: none;
+	}
+}
+
+.package-recommender {
+	max-width: 600px;
+	margin: 0 auto clamp(2rem, 5vw, 3.5rem);
+	font-family: var(--font-body);
+
+	.recommender-toggle-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.85rem 1.25rem;
+		background: rgb(var(--color-action-accent-rgb) / 8%);
+		border: 1px dashed rgb(var(--color-action-accent-rgb) / 30%);
+		border-radius: 0.5rem;
+		color: var(--color-action-accent);
+		font-size: 0.95rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: rgb(var(--color-action-accent-rgb) / 12%);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 4px 15px rgb(var(--color-action-accent-rgb) / 8%);
+		}
+	}
+
+	.recommender-card {
+		display: none;
+		margin-top: 1rem;
+		background: rgb(var(--color-overlay-light-rgb) / 60%);
+		backdrop-filter: blur(8px);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+		border-radius: 0.75rem;
+		padding: 1.5rem;
+		box-shadow: 0 20px 40px -15px rgb(0 0 0 / 25%);
+		animation: slideDown 0.3s ease forwards;
+	}
+
+	.recommender-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+		padding-bottom: 0.75rem;
+		margin-bottom: 1.25rem;
+
+		h3 {
+			font-family: var(--font-display);
+			font-size: 1.25rem;
+			color: var(--color-text-primary);
+			margin: 0;
+		}
+	}
+
+	.recommender-close {
+		background: transparent;
+		border: none;
+		color: var(--color-text-secondary);
+		font-size: 1.5rem;
+		cursor: pointer;
+		line-height: 1;
+		transition: color 0.2s ease;
+
+		&:hover {
+			color: var(--color-action-accent);
+		}
+	}
+
+	.recommender-step {
+		display: none;
+		flex-direction: column;
+		gap: 1rem;
+		// Match keyframe 0% so the first frame after `display: flex` doesn't
+		// flash at opacity 1 / scale 1 before the animation kicks in.
+		opacity: 0;
+		transform: scale(0.98);
+
+		&.active {
+			display: flex;
+			animation: fadeInRecommender 0.3s ease forwards;
+		}
+	}
+
+	.recommender-question {
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	.recommender-options {
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+	}
+
+	.recommender-opt-btn {
+		width: 100%;
+		padding: 0.75rem 1rem;
+		text-align: left;
+		background: rgb(var(--color-surface-primary-rgb) / 60%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+		border-radius: 0.38rem;
+		color: var(--color-text-primary);
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.18s ease;
+
+		&:hover {
+			background: rgb(var(--color-action-accent-rgb) / 6%);
+			border-color: rgb(var(--color-action-accent-rgb) / 40%);
+			transform: translateX(3px);
+		}
+	}
+
+	.recommender-result-box {
+		background: rgb(var(--color-action-accent-rgb) / 5%);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+		border-radius: 0.5rem;
+		padding: 1.25rem;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.recommender-result-badge {
+		font-size: 0.65rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-action-accent);
+		background: rgb(var(--color-action-accent-rgb) / 10%);
+		padding: 0.15rem 0.5rem;
+		border-radius: 0.25rem;
+	}
+
+	.recommender-result-title {
+		font-family: var(--font-display);
+		font-size: 1.75rem;
+		color: var(--color-text-primary);
+		margin: 0.25rem 0 0;
+	}
+
+	.recommender-result-price {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--color-action-accent);
+		margin: 0;
+	}
+
+	.recommender-result-reason {
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-secondary);
+		margin: 0.5rem 0 0;
+		max-width: 440px;
+	}
+
+	.recommender-result-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1rem;
+		align-items: center;
+		width: 100%;
+
+		.recommender-cta-btn {
+			width: 100%;
+			justify-content: center;
+			padding: 0.85rem;
+			font-weight: 700;
+		}
+	}
+
+	.recommender-restart-btn {
+		background: transparent;
+		border: none;
+		color: var(--color-text-secondary);
+		font-size: 0.8rem;
+		text-decoration: underline;
+		cursor: pointer;
+		transition: color 0.2s ease;
+
+		&:hover {
+			color: var(--color-action-accent);
+		}
+	}
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeInRecommender {
+	from {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
 	}
 }
