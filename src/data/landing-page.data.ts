@@ -2,23 +2,22 @@ import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.inte
 
 export const landingData: LandingPageData = {
 	hero: {
-		title: 'Momentos que se quedan en el corazón',
-		subtitle:
-			'Crea invitaciones digitales elegantes y personalizadas para tus eventos más especiales.',
+		title: 'El primer recuerdo de su gran día',
+		subtitle: 'Invitaciones digitales diseñadas para compartir su historia con cada invitado.',
 		backgroundImage: {
 			desktopUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			mobileUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
 		},
-		primaryCtaLabel: 'Solicitar asesoría',
+		primaryCtaLabel: 'Agendar asesoría',
 		primaryCtaUrl: '#contacto',
 		secondaryCtaLabel: 'Ver demos',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
-			'¡Hola! Me gustaría crear una invitación digital premium para mi próximo evento. ¿Podrían asesorarme?',
-		socialProofText: 'Más de 500 eventos inolvidables',
+			'¡Hola! Quisiera información sobre sus invitaciones digitales para celebrar mi evento. ¿Podrían asesorarme?',
+		socialProofText: 'Más de 500 familias confían en nosotros',
 	},
 	services: {
 		title: 'Qué incluye tu invitación digital',
