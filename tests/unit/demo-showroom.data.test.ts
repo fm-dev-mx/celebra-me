@@ -43,7 +43,7 @@ describe('demo showroom public metadata', () => {
 
 		expect(getDemoShowroomByPublicSlug('cumpleanos')).toMatchObject({
 			eventType: 'cumple',
-			label: 'Cumpleaños',
+			label: 'Cumpleaños y eventos',
 			showroomHref: '/demos/cumpleanos',
 		});
 	});

@@ -2,8 +2,19 @@
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import Icon from '@components/common/icons/Icon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+import { Image } from 'astro:assets';
+import { getContactPhone } from '@/utils/whatsapp';
 
+import type { ImageMetadata } from 'astro';
 import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
+import type { EventType } from '@/lib/theme/theme-contract';
+
+import mockupXv from '@/assets/images/hero/mockup_xv.png';
+import mockupWedding from '@/assets/images/hero/mockup_wedding.png';
+import mockupBabyshower from '@/assets/images/hero/mockup_babyshower.png';
+import mockupBaptism from '@/assets/images/hero/mockup_baptism.png';
+import mockupBirthday from '@/assets/images/hero/mockup_birthday.png';
 
 import '@/styles/home/_event-selector.scss';
 
@@ -12,6 +23,17 @@ interface Props {
 }
 
 const { events } = Astro.props;
+const phone = getContactPhone();
+
+// Claves alineadas con EventType (theme-contract.ts). Partial porque
+// 'primera-comunion' no tiene mockup dedicado y cae al fallback mockupXv.
+const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
+	xv: mockupXv,
+	boda: mockupWedding,
+	bautizo: mockupBaptism,
+	cumple: mockupBirthday,
+	'baby-shower': mockupBabyshower,
+};
 ---
 
 <Section
@@ -25,44 +47,119 @@ const { events } = Astro.props;
 		<header class="event-selector__header">
 			<p class="event-selector__eyebrow">Demos por tipo de evento</p>
 			<h2 id="event-selector-title" class="event-selector__title">
-				¿Qué tipo de evento está preparando?
+				¿Qué tipo de evento estás preparando?
 			</h2>
 			<p class="event-selector__subtitle">
-				Elija una categoría para ver demos y opciones pensadas para su celebración.
+				Explora nuestros diseños reales y cotiza el estilo perfecto para tu celebración.
 			</p>
 		</header>
 
-		<div class="event-selector__grid" aria-label="Tipos de evento disponibles">
-			{
-				events.map((event) => (
-					<a
-						class="event-selector__card"
-						href={event.showroomHref}
-						data-track-event="cta_clicked"
-						data-track-section="event-types"
-						data-track-cta={`event_types_${event.eventType}`}
-						data-track-label={event.ctaLabel}
-						data-track-intent="demo_showroom"
-						data-track-destination="event-types"
-						data-campaign-code="DEMO-LANZAMIENTO-899"
-						data-promo-code="LANZAMIENTO-899"
-						data-track-value="899"
-						data-track-currency="MXN"
+		<div class="event-showroom">
+			<!-- 1. Chips/Tabs Selector -->
+			<div class="event-showroom__tabs" role="tablist">
+				{events.map((event, index) => (
+					<button
+						class:list={["event-showroom__tab-btn", { active: index === 0 }]}
+						role="tab"
+						aria-selected={index === 0 ? "true" : "false"}
+						aria-controls={`panel-${event.eventType}`}
+						id={`tab-${event.eventType}`}
+						data-tab-event={event.eventType}
 					>
-						<span class="event-selector__icon" aria-hidden="true">
-							<Icon name={event.icon} />
-						</span>
-						<span class="event-selector__content">
-							<span class="event-selector__label">{event.label}</span>
-							<span class="event-selector__description">{event.description}</span>
-							<span class="event-selector__cta">
-								{event.ctaLabel}
-								<Icon name="ArrowRight" class="event-selector__cta-icon" />
-							</span>
-						</span>
-					</a>
-				))
-			}
+						<Icon name={event.icon} size={18} />
+						{event.label}
+					</button>
+				))}
+			</div>
+
+			<!-- 2. Panels container -->
+			<div class="event-showroom__panels">
+				{events.map((event, index) => (
+					<div
+						class:list={["event-showroom__panel-item", { active: index === 0 }]}
+						id={`panel-${event.eventType}`}
+						role="tabpanel"
+						aria-labelledby={`tab-${event.eventType}`}
+						data-panel-event={event.eventType}
+					>
+						<div class="event-showroom__panel-content">
+							<div class="event-showroom__mockup-side">
+								<div class="event-showroom__phone-frame">
+									<Image
+										src={mockupImages[event.eventType] || mockupXv}
+										alt={`Demo de ${event.label}`}
+										class="event-showroom__mockup-img"
+										width={260}
+										height={520}
+										quality={80}
+										loading={index === 0 ? "eager" : "lazy"}
+									/>
+								</div>
+							</div>
+							<div class="event-showroom__info-side">
+								<h3 class="event-showroom__info-title">Invitación digital para {event.label}</h3>
+								<p class="event-showroom__info-text">{event.description}</p>
+								<div class="event-showroom__actions">
+									<a
+										href={event.showroomHref}
+										class="action-btn action-btn--secondary"
+										data-track-event="cta_clicked"
+										data-track-section="event-types"
+										data-track-cta={`showroom_view_demo_${event.eventType}`}
+										data-track-label="Ver demo"
+										data-track-intent="demo_showroom"
+										data-track-destination="demo-showroom"
+									>
+										Ver demo
+										<Icon name="ArrowRight" size={16} />
+									</a>
+									<WhatsAppButton
+										className="action-btn action-btn--primary"
+										phone={phone}
+										message={`Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: ${event.label}\n\nCupón: LANZAMIENTO-899`}
+										label="Cotizar este estilo"
+										trackSection="event-types"
+										trackCta={`showroom_quote_${event.eventType}`}
+										trackCampaign="DEMO-LANZAMIENTO-899"
+										trackValue={899}
+										trackCurrency="MXN"
+										promoCode="LANZAMIENTO-899"
+										ariaLabel={`Cotizar estilo ${event.label}`}
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+				))}
+			</div>
 		</div>
 	</Container>
 </Section>
+
+<script>
+	const tabs = document.querySelectorAll('.event-showroom__tab-btn');
+	const panels = document.querySelectorAll('.event-showroom__panel-item');
+
+	tabs.forEach((tab) => {
+		tab.addEventListener('click', () => {
+			const targetEvent = tab.getAttribute('data-tab-event');
+
+			// Update active tabs
+			tabs.forEach((t) => {
+				t.classList.remove('active');
+				t.setAttribute('aria-selected', 'false');
+			});
+			tab.classList.add('active');
+			tab.setAttribute('aria-selected', 'true');
+
+			// Update active panels
+			panels.forEach((panel) => {
+				if (panel.getAttribute('data-panel-event') === targetEvent) {
+					panel.classList.add('active');
+				} else {
+					panel.classList.remove('active');
+				}
+			});
+		});
+	});
+</script>
