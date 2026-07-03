@@ -44,8 +44,16 @@ const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
-const PROMO_CODE = 'LANZAMIENTO-899';
 const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+// Default promo/price/campaign when no data-promo-code is set on the anchor.
+// Centralized so a campaign change touches one line, not four.
+const DEFAULT_PROMO_CODE = 'LANZAMIENTO-899';
+const DEFAULT_PROMO_PRICE = '899';
+const DEFAULT_PROMO_CAMPAIGN = 'FINAL-LANZAMIENTO-899';
+
+// Match the folio format embedded in WhatsApp messages (see updateWhatsAppUrl).
+const FOLIO_PATTERN = /CM-\d+-[A-Z0-9]{4}/i;
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -61,7 +69,7 @@ function fallbackUuid(): string {
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-function createPromoFolio(): string {
+function createPromoFolio(priceSuffix: string): string {
 	const values = new Uint8Array(4);
 	if (crypto.getRandomValues) {
 		crypto.getRandomValues(values);
@@ -74,7 +82,7 @@ function createPromoFolio(): string {
 	const suffix = [...values]
 		.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
 		.join('');
-	return `CM-899-${suffix}`;
+	return `CM-${priceSuffix}-${suffix}`;
 }
 
 function getVisitorId(): string {
@@ -252,15 +260,15 @@ function bindScrollDepth(): void {
 	handleScroll();
 }
 
-function updateWhatsAppUrl(anchor: HTMLAnchorElement, folio: string): void {
+function updateWhatsAppUrl(anchor: HTMLAnchorElement, folio: string, promoCode: string): void {
 	const url = new URL(anchor.href);
 	const baseMessage =
 		url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
 	const messageParts = [baseMessage.trim()];
-	if (!baseMessage.includes(`Cupón: ${PROMO_CODE}`)) {
-		messageParts.push(`Cupón: ${PROMO_CODE}`);
+	if (!baseMessage.includes(`Cupón: ${promoCode}`)) {
+		messageParts.push(`Cupón: ${promoCode}`);
 	}
-	if (!/Folio:\s*CM-899-[A-Z0-9]{4}/i.test(baseMessage)) {
+	if (!FOLIO_PATTERN.test(baseMessage)) {
 		messageParts.push(`Folio: ${folio}`);
 	}
 	const message = messageParts.join('\n\n');
@@ -273,13 +281,18 @@ function getTrackedClickProperties(
 	leadCode: string,
 	folio: string,
 ): TrackingPayload['eventProperties'] {
+	// event_type se lee del propio anchor; cae a 'general' cuando el CTA
+	// no pertenece a un selector de evento (Pricing, ProductProof, etc.).
+	const eventType = target.dataset.eventType ?? 'general';
 	return {
 		cta_id: target.dataset.trackCta ?? '',
 		cta_label: target.dataset.trackLabel ?? target.textContent?.trim().slice(0, 120) ?? '',
 		cta_location: target.dataset.trackSection ?? '',
 		destination: target.dataset.trackDestination ?? target.dataset.trackIntent ?? '',
 		destination_type: target.dataset.trackIntent ?? '',
+		event_type: eventType,
 		package_id: target.dataset.packageInterest ?? '',
+		package_name: target.dataset.packageName ?? '',
 		promo_code: target.dataset.promoCode ?? '',
 		campaign_code: target.dataset.campaignCode ?? '',
 		value: Number(target.dataset.trackValue ?? 0) || 0,
@@ -301,16 +314,36 @@ function bindClicks(): void {
 
 		const isWhatsAppClick = eventName === 'whatsapp_contact_clicked';
 		const leadCode = isWhatsAppClick ? createLeadCode() : '';
-		const folio = isWhatsAppClick ? createPromoFolio() : '';
+		
+		let folio = '';
+		let targetPromoCode = '';
+		if (isWhatsAppClick && target instanceof HTMLAnchorElement) {
+			// Reuse folio across repeated clicks on the same CTA so the same
+			// WhatsApp thread is reachable from a single lead_code.
+			if (target.dataset.trackedFolio) {
+				folio = target.dataset.trackedFolio;
+			} else {
+				targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
+				const match = targetPromoCode.match(/(\d+)$/);
+				const priceSuffix = match ? match[1] : DEFAULT_PROMO_PRICE;
+				folio = createPromoFolio(priceSuffix);
+				target.dataset.trackedFolio = folio;
+			}
+		}
+
 		if (leadCode) {
 			setContactHiddenFields(leadCode);
-			if (target instanceof HTMLAnchorElement) updateWhatsAppUrl(target, folio);
+			if (target instanceof HTMLAnchorElement) {
+				if (!targetPromoCode) {
+					targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
+				}
+				updateWhatsAppUrl(target, folio, targetPromoCode);
+			}
 		}
 
 		void trackEvent(eventName, getTrackedClickProperties(target, leadCode, folio));
 	});
 }
-
 function bindForms(): void {
 	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
 		if (!(form instanceof HTMLFormElement)) return;
@@ -332,9 +365,9 @@ function bindForms(): void {
 			void trackEvent('form_submitted', {
 				form_id: 'contact',
 				lead_code: currentLeadCode,
-				promo_code: 'LANZAMIENTO-899',
-				campaign_code: 'FINAL-LANZAMIENTO-899',
-				value: 899,
+				promo_code: DEFAULT_PROMO_CODE,
+				campaign_code: DEFAULT_PROMO_CAMPAIGN,
+				value: Number(DEFAULT_PROMO_PRICE),
 				currency: 'MXN',
 			});
 		});

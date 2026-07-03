@@ -12,6 +12,7 @@ interface Props {
 	trackIntent?: string;
 	trackCampaign?: string;
 	trackPackage?: string;
+	packageName?: string;
 	trackValue?: number;
 	trackCurrency?: string;
 	trackDestination?: string;
@@ -29,6 +30,7 @@ const {
 	trackIntent = 'whatsapp',
 	trackCampaign,
 	trackPackage,
+	packageName,
 	trackValue,
 	trackCurrency,
 	trackDestination = 'whatsapp',
@@ -58,9 +60,11 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 	data-track-destination={trackDestination}
 	data-campaign-code={trackCampaign}
 	data-package-interest={trackPackage}
+	data-package-name={packageName}
 	data-promo-code={promoCode}
 	data-track-value={trackValue}
 	data-track-currency={trackCurrency}
+	data-phone={phone}
 >
 	<Icon name="WhatsApp" size={20} />
 	{label}
@@ -68,17 +72,23 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 )}
 
 <script>
-	const PROMO_CODE = 'LANZAMIENTO-899';
 	const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-	const FOLIO_PATTERN = /Folio:\s*CM-899-[A-Z0-9]{4}/i;
+	const FOLIO_PATTERN = /Folio:\s*CM-\d+-[A-Z0-9]{4}/i;
 
-	const createPromoFolio = () => {
+	const getPromoCodeAndPrice = (anchor: HTMLAnchorElement) => {
+		const promoCode = anchor.getAttribute('data-promo-code') || 'LANZAMIENTO-899';
+		const match = promoCode.match(/(\d+)$/);
+		const price = match ? match[1] : '899';
+		return { promoCode, price };
+	};
+
+	const createPromoFolio = (price: string) => {
 		const values = new Uint8Array(4);
 		crypto.getRandomValues(values);
 		const suffix = [...values]
 			.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
 			.join('');
-		return `CM-899-${suffix}`;
+		return `CM-${price}-${suffix}`;
 	};
 
 	const ensureWhatsAppPromoFolio = (anchor: HTMLAnchorElement) => {
@@ -87,11 +97,23 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 			url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
 		if (FOLIO_PATTERN.test(baseMessage)) return;
 
-		const messageParts = [baseMessage.trim()];
-		if (!baseMessage.includes(`Cupón: ${PROMO_CODE}`)) {
-			messageParts.push(`Cupón: ${PROMO_CODE}`);
-		}
-		messageParts.push(`Folio: ${createPromoFolio()}`);
+		// 1. Get promo code and price
+		const { promoCode, price } = getPromoCodeAndPrice(anchor);
+
+		// 2. Format the message dynamically based on context
+		const isPackage = anchor.getAttribute('data-package-interest');
+		const packageName = anchor.getAttribute('data-package-name') || '';
+
+		const messageHeader = (isPackage && packageName)
+			? `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${packageName}.`
+			: `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.`;
+
+		const messageParts = [
+			messageHeader,
+			`Cupón: ${promoCode}`,
+			`Folio: ${createPromoFolio(price)}`
+		];
+
 		url.searchParams.set('text', messageParts.join('\n\n'));
 		anchor.href = url.toString();
 	};
