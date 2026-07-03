@@ -53,73 +53,73 @@ try {
 	if (!resolution) {
 		Astro.response.status = 404;
 		Astro.response.headers.set('Cache-Control', 'no-store');
-		return;
-	}
+	} else {
+		viewModel = resolution.viewModel;
+		const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
 
-	viewModel = resolution.viewModel;
-	const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
+		let eventEntry: Awaited<ReturnType<typeof getRoutableEventEntry>> = null;
+		let routeEventType: string = eventType;
+		let routeIsDemo: boolean = false;
 
-	let eventEntry: Awaited<ReturnType<typeof getRoutableEventEntry>> = null;
-	let routeEventType: string = eventType;
-	let routeIsDemo: boolean = false;
-
-	if (resolution.source === 'static') {
-		eventEntry = await getRoutableEventEntry(slug, eventType);
-		if (!eventEntry) {
-			Astro.response.status = 404;
-			Astro.response.headers.set('Cache-Control', 'no-store');
-			return;
-		}
-		if (eventType !== eventEntry.data.eventType) {
-			const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
-			if (inviteId) {
-				canonicalUrl.searchParams.set('invite', inviteId);
+		if (resolution.source === 'static') {
+			eventEntry = await getRoutableEventEntry(slug, eventType);
+			if (!eventEntry) {
+				Astro.response.status = 404;
+				Astro.response.headers.set('Cache-Control', 'no-store');
+			} else {
+				if (eventType !== eventEntry.data.eventType) {
+					const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
+					if (inviteId) {
+						canonicalUrl.searchParams.set('invite', inviteId);
+					}
+					return Astro.redirect(canonicalUrl.href, 301);
+				}
+				routeEventType = eventEntry.data.eventType;
+				routeIsDemo = Boolean(eventEntry.data.isDemo);
 			}
-			return Astro.redirect(canonicalUrl.href, 301);
+		} else {
+			routeEventType = (resolution.rawContent?.eventType as string | undefined) ?? eventType;
 		}
-		routeEventType = eventEntry.data.eventType;
-		routeIsDemo = Boolean(eventEntry.data.isDemo);
-	} else {
-		routeEventType =
-			(resolution.rawContent?.eventType as string | undefined) ?? eventType;
-	}
 
-	if (inviteId) {
-		const personalizationStart = performance.now();
-		const personalization = await resolveRoutePersonalization({
-			inviteId,
-			currentPathWithQuery,
-			routeEventType,
-			routeSlug: slug,
-			routeIsDemo,
-		});
-		routePersonalizationDur = performance.now() - personalizationStart;
-		if (personalization.redirectPath) {
-			return Astro.redirect(personalization.redirectPath, 302);
+		if (resolution.source !== 'static' || eventEntry) {
+			if (inviteId) {
+				const personalizationStart = performance.now();
+				const personalization = await resolveRoutePersonalization({
+					inviteId,
+					currentPathWithQuery,
+					routeEventType,
+					routeSlug: slug,
+					routeIsDemo,
+				});
+				routePersonalizationDur = performance.now() - personalizationStart;
+				if (personalization.redirectPath) {
+					return Astro.redirect(personalization.redirectPath, 302);
+				}
+				guestContext = personalization.guestContext;
+			}
+
+			if (resolution.source === 'static') {
+				const prepareStart = performance.now();
+				page = prepareInvitationPageContext({
+					eventEntry: eventEntry!,
+					slug,
+					guestContext,
+				});
+				pagePrepareDur = performance.now() - prepareStart;
+			} else {
+				const prepareStart = performance.now();
+				page = buildPageContextFromViewModel({
+					viewModel,
+					slug,
+					guestContext,
+					eventType: routeEventType,
+					sectionStyles: resolution.rawContent?.sectionStyles as
+						| { footer?: { variant?: ThemePreset } }
+						| undefined,
+				});
+				pagePrepareDur = performance.now() - prepareStart;
+			}
 		}
-		guestContext = personalization.guestContext;
-	}
-
-	if (resolution.source === 'static') {
-		const prepareStart = performance.now();
-		page = prepareInvitationPageContext({
-			eventEntry: eventEntry!,
-			slug,
-			guestContext,
-		});
-		pagePrepareDur = performance.now() - prepareStart;
-	} else {
-		const prepareStart = performance.now();
-		page = buildPageContextFromViewModel({
-			viewModel,
-			slug,
-			guestContext,
-			eventType: routeEventType,
-			sectionStyles: resolution.rawContent?.sectionStyles as
-				| { footer?: { variant?: ThemePreset } }
-				| undefined,
-		});
-		pagePrepareDur = performance.now() - prepareStart;
 	}
 } catch (error) {
 	console.error(
