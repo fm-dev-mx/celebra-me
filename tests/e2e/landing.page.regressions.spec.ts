@@ -218,18 +218,18 @@ test.describe('Landing page regressions', () => {
 		expect(clickedMessage).toMatch(/Folio: CM-899-[A-Z0-9]{4}/);
 	});
 
-	test('shows product proof before event categories', async ({ page }) => {
+	test('shows event categories before product proof', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/', { waitUntil: 'load' });
 
-		const proofTop = await page.locator('#prueba-producto').evaluate((element) => {
-			return element.getBoundingClientRect().top + window.scrollY;
-		});
-		const eventSelectorTop = await page.locator('#tipo-evento').evaluate((element) => {
-			return element.getBoundingClientRect().top + window.scrollY;
-		});
+		// Single evaluate reads both positions atomically so a layout shift
+		// between the two lookups can't make the comparison racy.
+		const { proofTop, eventSelectorTop } = await page.evaluate(() => ({
+			proofTop: document.getElementById('prueba-producto')!.getBoundingClientRect().top + window.scrollY,
+			eventSelectorTop: document.getElementById('tipo-evento')!.getBoundingClientRect().top + window.scrollY,
+		}));
 
-		expect(proofTop).toBeLessThan(eventSelectorTop);
+		expect(eventSelectorTop).toBeLessThan(proofTop);
 		await expect(page.locator('#product-proof-title')).toContainText(
 			'Más que una invitación bonita',
 		);
