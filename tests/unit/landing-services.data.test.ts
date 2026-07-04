@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
 /**
  * Load the real landingData from the source file.
@@ -8,7 +9,7 @@ import { join } from 'node:path';
  * Only import.meta.env.* is replaced; the actual data object is the real
  * source content, not a mock.
  */
-function loadLandingData() {
+function loadLandingData(): LandingPageData {
 	const source = readFileSync(join(process.cwd(), 'src/data/landing-page.data.ts'), 'utf8');
 
 	// Strip import.meta.env expressions — only whatsappPhone uses it,
@@ -27,7 +28,7 @@ function loadLandingData() {
 
 	// Evaluate the extracted object literal via new Function.
 	// Same approach as before — runs in the Node global scope, not a sandbox.
-	return new Function('return ' + match[1])();
+	return new Function('return ' + match[1])() as LandingPageData;
 }
 
 describe('landing services product value data', () => {
@@ -56,16 +57,34 @@ describe('landing services product value data', () => {
 		expect(services.cta.href).toBe('#contacto');
 	});
 
-	it('publishes the launch promo price and compact high-intent FAQ', () => {
+	it('publishes the editorial pricing ladder and compact high-intent FAQ', () => {
 		const landingData = loadLandingData();
 
-		expect(landingData.pricing.title).toBe('Paquetes claros');
-		expect(landingData.pricing.note).toContain('Promo base: $899 MXN');
+		expect(landingData.pricing.eyebrow).toBe('INVERSIÓN PARA SU CELEBRACIÓN');
+		expect(landingData.pricing.title).toBe(
+			'Elija el nivel de experiencia que quiere para su invitación',
+		);
+		expect(landingData.pricing.note).toBe(
+			'Promoción de lanzamiento desde $899 MXN. Pago único.',
+		);
+		expect(landingData.pricing.recommendation.title).toBe(
+			'La mayoría de nuestros clientes elige Signature',
+		);
+		expect(landingData.pricing.tiers.map((tier) => tier.title)).toEqual([
+			'Colección',
+			'Signature',
+			'Atelier',
+		]);
 		expect(landingData.pricing.tiers[0].price.amount).toBe('899');
-		expect(landingData.pricing.tiers[1].price.amount).toBe('1,499');
-		expect(landingData.pricing.tiers[2].price.amount).toBe('2,299');
+		expect(landingData.pricing.tiers[1].price.amount).toBe('1,699');
+		expect(landingData.pricing.tiers[2].price.amount).toBe('2,899');
 		expect(landingData.pricing.tiers[0].regularPrice).toBe('Precio regular: $1,299 MXN');
-		expect(landingData.pricing.tiers[0].ctaMessage).toContain('Cupón: LANZAMIENTO-899');
+		expect(landingData.pricing.tiers[1].regularPrice).toBe('Precio regular: $2,299 MXN');
+		expect(landingData.pricing.tiers[2].regularPrice).toBe('Precio regular: $3,899 MXN');
+		expect(landingData.pricing.tiers[1].ctaMessage).toContain(
+			'paquete Signature de $1,699 MXN',
+		);
+		expect(landingData.pricing.decisionGuide.rows).toHaveLength(3);
 		expect(landingData.faq.faqs).toHaveLength(6);
 		expect(landingData.howItWorks.steps).toHaveLength(3);
 	});

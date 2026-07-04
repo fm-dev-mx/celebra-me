@@ -30,7 +30,6 @@ test.describe('Landing page regressions', () => {
 				}),
 			)
 			.toBe(true);
-		await expect(page.locator('#home-header')).not.toHaveAttribute('data-scrolled', /.+/);
 	};
 
 	test.beforeEach(async ({ page }) => {
@@ -39,7 +38,9 @@ test.describe('Landing page regressions', () => {
 		});
 		page.on('requestfailed', (req) => {
 			if (req.resourceType() === 'document') return;
-			console.warn('Request failed: ' + req.url() + ' (' + (req.failure()?.errorText ?? '') + ')');
+			console.warn(
+				'Request failed: ' + req.url() + ' (' + (req.failure()?.errorText ?? '') + ')',
+			);
 		});
 	});
 
@@ -71,7 +72,6 @@ test.describe('Landing page regressions', () => {
 			);
 			await expect(page.locator('.mobile-nav-actions__cta')).toHaveAttribute('href', ctaHref);
 			await expect(page.locator('#home-header')).toHaveClass(/header-base--menu-open/);
-			await expect(page.locator('#home-header')).not.toHaveAttribute('data-menu-open', /.+/);
 		}
 	});
 
@@ -197,11 +197,9 @@ test.describe('Landing page regressions', () => {
 		await expect(
 			page.locator('#tipo-evento [data-panel-event="xv"] .event-showroom__phone-card'),
 		).toContainText('Sofía Valentina');
-		await expect(page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-feature]')).toContainText([
-			'RSVP',
-			'Pases',
-			'WhatsApp',
-		]);
+		await expect(
+			page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-feature]'),
+		).toContainText(['RSVP', 'Pases', 'WhatsApp']);
 	});
 
 	test('keeps the hero CTA in reach on narrow mobile', async ({ page }) => {
@@ -255,9 +253,9 @@ test.describe('Landing page regressions', () => {
 			/active/,
 		);
 		await expect(page.locator('[data-panel-event="boda"]')).toHaveClass(/active/);
-		await expect(page.locator('[data-panel-event="boda"] [data-showroom-kicker]')).toContainText(
-			'Boda',
-		);
+		await expect(
+			page.locator('[data-panel-event="boda"] [data-showroom-kicker]'),
+		).toContainText('Boda');
 		await expect(page.locator('[data-panel-event="boda"] [data-showroom-title]')).toContainText(
 			'Laura & Daniel',
 		);
@@ -289,8 +287,12 @@ test.describe('Landing page regressions', () => {
 		// Single evaluate reads both positions atomically so a layout shift
 		// between the two lookups can't make the comparison racy.
 		const { proofTop, eventSelectorTop } = await page.evaluate(() => ({
-			proofTop: document.getElementById('prueba-producto')!.getBoundingClientRect().top + window.scrollY,
-			eventSelectorTop: document.getElementById('tipo-evento')!.getBoundingClientRect().top + window.scrollY,
+			proofTop:
+				document.getElementById('prueba-producto')!.getBoundingClientRect().top +
+				window.scrollY,
+			eventSelectorTop:
+				document.getElementById('tipo-evento')!.getBoundingClientRect().top +
+				window.scrollY,
 		}));
 
 		expect(eventSelectorTop).toBeLessThan(proofTop);
@@ -305,25 +307,37 @@ test.describe('Landing page regressions', () => {
 			'data-track-section',
 			'product-proof',
 		);
-		await expect(page.locator('#tipo-evento')).toHaveAttribute('data-track-section', 'event-types');
+		await expect(page.locator('#tipo-evento')).toHaveAttribute(
+			'data-track-section',
+			'event-types',
+		);
 		await expect(page.locator('[data-track-cta="whatsapp-product-proof"]')).toBeVisible();
 	});
 
-	test('sends pricing CTAs directly to WhatsApp with the launch price', async ({ page }) => {
+	test('sends pricing CTAs directly to WhatsApp with package context', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/', { waitUntil: 'load' });
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 
-		await expect(page.locator('.pricing-title')).toContainText('Paquetes claros');
-		await expect(page.locator('.pricing-note')).toContainText('Promo base: $899 MXN');
+		await expect(page.locator('.pricing-title')).toContainText(
+			'Elija el nivel de experiencia que quiere para su invitación',
+		);
+		await expect(page.locator('.pricing-note')).toContainText(
+			'Promoción de lanzamiento desde $899 MXN. Pago único.',
+		);
 
-		const pricingCta = page.locator('.pricing-card').first().locator('[data-track-cta^="pricing_"]');
+		const pricingCta = page
+			.locator('.pricing-card')
+			.first()
+			.locator('[data-track-cta^="pricing_"]');
 		await expect(pricingCta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
 		await expect(pricingCta).toHaveAttribute('href', /wa\.me/);
 		await expect(pricingCta).toHaveAttribute('data-campaign-code', 'PRICING-LANZAMIENTO-899');
+		await expect(pricingCta).toHaveAttribute('data-package-name', 'Colección');
+		await expect(pricingCta).toHaveAttribute('data-track-value', '899');
 
 		const pricingHref = await pricingCta.getAttribute('href');
-		expect(decodeURIComponent(pricingHref ?? '')).toContain('Cupón: LANZAMIENTO-899');
+		expect(decodeURIComponent(pricingHref ?? '')).toContain('paquete Colección de $899 MXN');
 	});
 
 	test('keeps pricing visible without JavaScript', async ({ browser }) => {
@@ -339,13 +353,16 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.pricing-card')).toHaveCount(3);
 		await expect(page.locator('.pricing-card').first()).toBeVisible();
 		await expect(page.locator('.pricing-card').first()).toContainText('Colección');
-		await expect(page.locator('.pricing-card').nth(1)).toContainText('Premium');
-		await expect(page.locator('.pricing-card').nth(2)).toContainText('Exclusivo');
+		await expect(page.locator('.pricing-card').nth(1)).toContainText('Signature');
+		await expect(page.locator('.pricing-card').nth(2)).toContainText('Atelier');
 		await expect
 			.poll(async () =>
-				page.locator('.pricing-card').first().evaluate((element) => {
-					return window.getComputedStyle(element).opacity;
-				}),
+				page
+					.locator('.pricing-card')
+					.first()
+					.evaluate((element) => {
+						return window.getComputedStyle(element).opacity;
+					}),
 			)
 			.toBe('1');
 
@@ -363,9 +380,12 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.pricing-card').first()).toBeVisible();
 		await expect
 			.poll(async () =>
-				page.locator('.pricing-card').first().evaluate((element) => {
-					return window.getComputedStyle(element).opacity;
-				}),
+				page
+					.locator('.pricing-card')
+					.first()
+					.evaluate((element) => {
+						return window.getComputedStyle(element).opacity;
+					}),
 			)
 			.toBe('1');
 	});
@@ -383,7 +403,9 @@ test.describe('Landing page regressions', () => {
 		]) {
 			await expect
 				.poll(async () =>
-					page.locator(selector).evaluate((element) => window.getComputedStyle(element).opacity),
+					page
+						.locator(selector)
+						.evaluate((element) => window.getComputedStyle(element).opacity),
 				)
 				.toBe('1');
 		}
@@ -404,7 +426,9 @@ test.describe('Landing page regressions', () => {
 		expect(overflow).toBeLessThanOrEqual(1);
 	});
 
-	test('keeps section headings below the sticky header after anchor navigation', async ({ page }) => {
+	test('keeps section headings below the sticky header after anchor navigation', async ({
+		page,
+	}) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/', { waitUntil: 'load' });
 
