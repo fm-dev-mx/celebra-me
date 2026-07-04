@@ -208,11 +208,11 @@
 	// FAQ Section
 	--faq-section-bg: var(--color-faq-bg);
 	--faq-section-color: var(--color-text-on-dark-slate);
-	--faq-noise-opacity: 0.1;
+	--faq-noise-opacity: 0.02;
 	--faq-item-bg: rgb(var(--color-overlay-light-rgb) / 3%);
 	--faq-item-backdrop-blur: 10px;
 	--faq-item-border: rgb(var(--color-overlay-light-rgb) / 5%);
-	--faq-item-border-radius: 2px;
+	--faq-item-border-radius: 8px;
 	--faq-item-hover-bg: rgb(var(--color-overlay-light-rgb) / 5%);
 	--faq-item-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
 	--faq-item-open-bg: rgb(var(--color-overlay-light-rgb) / 7%);

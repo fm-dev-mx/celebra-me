@@ -16,9 +16,10 @@ interface Props {
 // Destructure the data prop
 const { data } = Astro.props;
 
-const isPlaceholder = isPlaceholderContactPhone(getContactPhone());
+const contactPhone = getContactPhone();
+const isPlaceholder = isPlaceholderContactPhone(contactPhone);
 const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
-const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : getContactPhone();
+const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : contactPhone;
 const whatsappMessage =
 	'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
 const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
@@ -30,18 +31,18 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 
 	<div class="container">
 		<header class="contact-header">
-			<span class="contact-pretitle reveal-fade-up stagger-1">Asesoría personalizada</span>
 			<h2 class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
+			<p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
 			<div class="contact-divider"></div>
 		</header>
 
 		<div class="contact-grid">
 			<!-- Contact Information -->
-			<div class="contact-info reveal-fade-up stagger-3">
+			<div class="contact-info reveal-fade-up stagger-4">
 				<div class="contact-info__content">
-					<h3 class="contact-info__title">Atención personalizada</h3>
+					<h3 class="contact-info__title">Cotizar por WhatsApp</h3>
 					<p class="contact-info__description">
-						Cuéntenos qué está organizando y le ayudamos a elegir el paquete adecuado para su celebración.
+						Reciba una recomendación directa según tipo de evento, número de invitados y estilo visual.
 					</p>
 
 					<div class="contact-channels">
@@ -65,7 +66,7 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 									<Icon name="WhatsApp" size={24} />
 								</div>
 								<div class="channel-text">
-									<span class="channel-label">Asesoría Inmediata</span>
+									<span class="channel-label">Principal</span>
 									<span class="channel-value">Cotizar por WhatsApp</span>
 								</div>
 							</a>
@@ -84,20 +85,16 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 								<Icon name="Message" size={24} />
 							</div>
 							<div class="channel-text">
-								<span class="channel-label">Vía Correo</span>
+								<span class="channel-label">Secundario</span>
 								<span class="channel-value">Escribir por correo</span>
 							</div>
 						</a>
 					</div>
 				</div>
-
-				<div class="contact-info__footer">
-					<p>Atención personalizada en cada detalle • Celebra-me © 2026</p>
-				</div>
 			</div>
 
-			<!-- Contact Form Component -->
 			<div class="contact-form-wrapper reveal-fade-up stagger-4">
+				<p class="contact-form-wrapper__intro">O deje sus datos y le contactamos.</p>
 				<ContactForm />
 			</div>
 		</div>

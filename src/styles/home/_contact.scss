@@ -3,7 +3,7 @@
 
 .contact-section {
 	position: relative;
-	padding: var(--section-padding-y-compact) 0;
+	padding: clamp(3rem, 6vw, 4.8rem) 0;
 	background: var(--color-surface-primary);
 	overflow: hidden;
 	color: var(--contact-section-color);
@@ -28,24 +28,24 @@
 
 .contact-header {
 	text-align: center;
-	margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-
-	.contact-pretitle {
-		display: block;
-		font-family: var(--font-body);
-		text-transform: uppercase;
-		letter-spacing: 0.3em;
-		font-size: 0.75rem;
-		color: var(--contact-pretitle-color);
-		margin-bottom: var(--spacing-sm);
-	}
+	max-width: 720px;
+	margin: 0 auto clamp(1.4rem, 4vw, 2.4rem);
 
 	.contact-title {
 		font-family: var(--font-display);
-		font-size: clamp(2.2rem, 5vw, 3.35rem);
+		font-size: clamp(2rem, 4.6vw, 3.1rem);
 		color: var(--contact-title-color);
-		margin-bottom: var(--spacing-md);
+		margin-bottom: 0.7rem;
 		font-weight: 500;
+	}
+
+	.contact-subtitle {
+		max-width: 39rem;
+		margin: 0 auto 1rem;
+		color: var(--contact-info-description-color);
+		font-family: var(--font-body);
+		font-size: clamp(0.98rem, 1.8vw, 1.08rem);
+		line-height: 1.65;
 	}
 
 	.contact-divider {
@@ -59,29 +59,31 @@
 .contact-grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: clamp(2rem, 5vw, 4rem);
-	align-items: center;
+	gap: clamp(1.5rem, 4vw, 3rem);
+	align-items: start;
 
 	@include mixins.respond-to('lg') {
-		grid-template-columns: 0.8fr 1.2fr;
-		gap: 8rem;
+		grid-template-columns: 0.94fr 1.06fr;
+		gap: clamp(3rem, 7vw, 5.5rem);
 	}
 }
 
 .contact-info {
+	padding-top: clamp(0.4rem, 2vw, 1rem);
+
 	&__title {
 		font-family: var(--font-display);
-		font-size: clamp(1.7rem, 3vw, 2rem);
+		font-size: clamp(1.65rem, 3vw, 2rem);
 		color: var(--contact-info-title-color);
-		margin-bottom: 1.25rem;
+		margin-bottom: 0.85rem;
 	}
 
 	&__description {
 		font-family: var(--font-body);
 		font-size: clamp(1rem, 1.8vw, 1.08rem);
 		color: var(--contact-info-description-color);
-		line-height: 1.8;
-		margin-bottom: 2rem;
+		line-height: 1.68;
+		margin-bottom: 1.35rem;
 	}
 
 	&__footer {
@@ -104,7 +106,7 @@
 	display: flex;
 	align-items: center;
 	gap: 1.25rem;
-	padding: 1.1rem 1.15rem;
+	padding: 1rem 1.08rem;
 	border-radius: 9999px;
 	text-decoration: none;
 	transition:
@@ -142,12 +144,15 @@
 	}
 
 	&--whatsapp {
-		background: linear-gradient(135deg, var(--color-champagne), var(--color-border-gold));
+		background:
+			linear-gradient(180deg, rgb(255 255 255 / 26%), transparent 42%),
+			linear-gradient(135deg, #f3d88f, var(--color-champagne) 45%, var(--color-border-gold));
 		border: 1px solid var(--color-border-gold);
 		color: var(--color-ink);
 		box-shadow:
-			0 8px 20px rgb(217 169 58 / 18%),
-			0 2px 6px rgb(17 13 9 / 10%);
+			inset 0 1px 0 rgb(255 255 255 / 45%),
+			0 14px 32px rgb(217 169 58 / 22%),
+			0 4px 12px rgb(17 13 9 / 12%);
 
 		.channel-text {
 			.channel-label {
@@ -204,11 +209,12 @@
 
 .contact-form-wrapper {
 	background: var(--contact-form-bg);
-	padding: var(--contact-form-padding, clamp(1.35rem, 4vw, 3.25rem));
-	border-radius: var(--contact-form-border-radius, 0.9rem);
+	padding: clamp(1.1rem, 3vw, 1.65rem);
+	border-radius: 8px;
 	box-shadow: var(--contact-form-shadow);
 	border: 1px solid var(--contact-form-border);
 	position: relative;
+	opacity: 92%;
 
 	&::after {
 		content: '';
@@ -221,7 +227,14 @@
 	}
 }
 
-/* OPTIMIZED CONTACT CARD (Removed !important) */
+.contact-form-wrapper__intro {
+	margin: 0 0 1.15rem;
+	color: var(--contact-info-title-color);
+	font-family: var(--font-display);
+	font-size: clamp(1.18rem, 2.5vw, 1.45rem);
+	line-height: 1.2;
+}
+
 .contact-card {
 	background: var(--contact-bg-override, transparent);
 	padding: var(--contact-padding-override, 0);
@@ -237,7 +250,7 @@
 .contact-form {
 	display: flex;
 	flex-direction: column;
-	gap: 1.25rem;
+	gap: 1rem;
 }
 
 .input-group {
@@ -245,13 +258,13 @@
 
 	&__input {
 		width: 100%;
-		padding: 0.75rem 0;
+		padding: 0.62rem 0;
 		background: transparent;
 		border: none;
 		border-bottom: 1px solid var(--contact-input-border);
 		color: var(--contact-input-color);
 		font-family: var(--font-body);
-		font-size: 1.02rem;
+		font-size: 0.98rem;
 		transition: border-color 0.4s ease;
 
 		&:focus {
@@ -264,7 +277,7 @@
 		}
 
 		&--textarea {
-			min-height: 70px;
+			min-height: 56px;
 			resize: none;
 		}
 
@@ -276,11 +289,11 @@
 
 	&__label {
 		position: absolute;
-		top: 0.75rem;
+		top: 0.62rem;
 		left: 0;
 		color: var(--contact-label-color);
 		font-family: var(--font-body);
-		font-size: 0.88rem;
+		font-size: 0.78rem;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		pointer-events: none;
@@ -306,8 +319,8 @@
 	gap: 0.7rem;
 	color: var(--contact-info-description-color);
 	font-family: var(--font-body);
-	font-size: 0.86rem;
-	line-height: 1.5;
+	font-size: 0.78rem;
+	line-height: 1.4;
 
 	input {
 		margin-top: 0.2rem;
@@ -319,12 +332,12 @@
 	background: var(--color-ink);
 	color: var(--color-ivory);
 	border: 1px solid var(--color-ink);
-	padding: 0.8rem 2.2rem;
+	padding: 0.72rem 1.7rem;
 	font-family: var(--font-body);
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
-	font-size: 0.82rem;
+	font-size: 0.78rem;
 	cursor: pointer;
 	border-radius: 9999px;
 	transition:
@@ -340,7 +353,7 @@
 }
 
 .contact-footer {
-	margin-top: 4rem;
+	margin-top: 2.5rem;
 	display: flex;
 	justify-content: center;
 }

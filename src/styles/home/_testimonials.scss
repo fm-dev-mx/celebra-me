@@ -7,7 +7,9 @@
 
 .testimonials-section {
 	position: relative;
-	background: var(--color-ink);
+	background:
+		linear-gradient(180deg, var(--color-ink) 0%, rgb(24 16 13) 100%),
+		var(--color-ink);
 
 	// Gold hairline top separator (matches other editorial bands)
 	&::before {
@@ -38,11 +40,11 @@
 	width: 100%;
 	max-width: min(1080px, calc(100% - 2rem));
 	margin-inline: auto;
-	padding-block: var(--section-padding-y-compact);
+	padding-block: clamp(3rem, 7vw, 5rem) clamp(2.1rem, 5vw, 3rem);
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
 	gap: clamp(2rem, 4vw, 3.5rem);
-	align-items: start;
+	align-items: center;
 
 	// Subtle warm radial glow behind the card
 	&::after {
@@ -89,9 +91,9 @@
 	@include mixins.typography(display-2);
 
 	margin: 0;
-	max-width: 22rem;
+	max-width: 25rem;
 	color: var(--testimonials-title-color, rgb(247 241 230 / 96%));
-	font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+	font-size: clamp(1.75rem, 3.6vw, 2.85rem);
 	line-height: 1.1;
 	letter-spacing: -0.02em;
 
@@ -115,7 +117,7 @@
 	max-width: 26rem;
 	color: rgb(247 241 230 / 60%);
 	font-family: var(--font-body);
-	font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+	font-size: clamp(0.9rem, 1.15vw, 1rem);
 	line-height: 1.65;
 }
 
@@ -161,10 +163,11 @@
 		opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
 		visibility 0s 0.5s;
 	pointer-events: none;
-	background: rgb(var(--color-overlay-light-rgb) / 3%);
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
-	border-radius: 2px;
-	padding: clamp(1.1rem, 1.6vw, 1.5rem) clamp(1.25rem, 1.8vw, 1.75rem);
+	background: rgb(255 250 240 / 7%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
+	border-radius: 8px;
+	padding: clamp(1.35rem, 2.8vw, 2.4rem);
+	box-shadow: 0 24px 60px rgb(0 0 0 / 24%);
 	display: flex;
 	flex-direction: column;
 
@@ -201,9 +204,9 @@
 .testimonials__text {
 	margin: 0;
 	font-family: var(--testimonials-text-font, var(--font-display, serif));
-	font-size: clamp(0.9rem, 1.2vw, 1.05rem);
-	line-height: 1.7;
-	color: rgb(247 241 230 / 80%);
+	font-size: clamp(1.18rem, 2.25vw, 1.75rem);
+	line-height: 1.45;
+	color: rgb(247 241 230 / 88%);
 	font-style: italic;
 	flex: 1;
 }
@@ -214,15 +217,15 @@
 	flex-wrap: wrap;
 	align-items: baseline;
 	gap: 0.35rem 0.7rem;
-	margin-top: clamp(0.65rem, 1vw, 0.9rem);
-	padding-top: clamp(0.65rem, 1vw, 0.9rem);
+	margin-top: clamp(1rem, 2vw, 1.4rem);
+	padding-top: clamp(0.8rem, 1.5vw, 1.05rem);
 	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
 }
 
 .testimonials__name {
 	font-family: var(--font-body);
 	font-weight: 600;
-	font-size: clamp(0.75rem, 0.9vw, 0.85rem);
+	font-size: clamp(0.76rem, 0.9vw, 0.86rem);
 	letter-spacing: 0.06em;
 	color: var(--color-champagne);
 	text-transform: uppercase;
@@ -295,11 +298,11 @@
 @include mixins.respond-below(lg) {
 	.testimonials {
 		gap: 2rem;
-		padding-block: 2.4rem 2.2rem;
+		padding-block: 3rem 2.4rem;
 
 		&__title {
 			max-width: 20rem;
-			font-size: 1.6rem;
+			font-size: 1.8rem;
 		}
 	}
 }
@@ -311,7 +314,7 @@
 	.testimonials {
 		grid-template-columns: 1fr;
 		gap: 1.25rem;
-		padding-block: clamp(1.6rem, 5vw, 2.2rem) clamp(1.4rem, 4vw, 1.8rem);
+		padding-block: clamp(2.5rem, 7vw, 3.25rem) clamp(1.4rem, 4vw, 1.8rem);
 		max-width: calc(100% - 1.25rem);
 
 		&::after {
@@ -333,7 +336,7 @@
 		}
 
 		&__title {
-			font-size: 1.35rem;
+			font-size: 1.5rem;
 			max-width: 100%;
 
 			&::after {
@@ -355,12 +358,12 @@
 
 		// Right column — card
 		&__card {
-			padding: 1rem 1.15rem;
+			padding: 1.1rem 1.15rem;
 		}
 
 		&__text {
-			font-size: 0.9rem;
-			line-height: 1.6;
+			font-size: 1.02rem;
+			line-height: 1.55;
 		}
 
 		&__footer {

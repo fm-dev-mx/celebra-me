@@ -141,6 +141,9 @@
 	--header-nav-cta-shadow: var(--landing-header-nav-cta-shadow);
 	--nav-menu-open-container-bg: var(--landing-header-menu-open-bg);
 	--nav-menu-open-container-border: var(--landing-header-menu-open-border);
+	--hamburger-width: 26px;
+	--hamburger-height: 16px;
+	--hamburger-line-height: 1px;
 }
 
 #home-header.header-base--transparent {
@@ -182,4 +185,21 @@
 // Hide HeaderBase logo when mobile menu is open — NavBarMobile supplies its own logo slot
 #home-header.header-base--menu-open .header-base__logo {
 	display: none;
+}
+
+#home-header .header-base__mobile-toggle {
+	width: 2.75rem;
+	height: 2.75rem;
+	display: grid;
+	place-items: center;
+	border: 1px solid rgb(255 255 255 / 22%);
+	border-radius: 9999px;
+	background: rgb(17 13 9 / 18%);
+	backdrop-filter: blur(10px);
+}
+
+#home-header.header-base--scrolled .header-base__mobile-toggle,
+#home-header.header-base--menu-open .header-base__mobile-toggle {
+	border-color: rgb(var(--color-action-accent-rgb) / 32%);
+	background: rgb(255 250 240 / 72%);
 }

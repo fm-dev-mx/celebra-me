@@ -13,6 +13,7 @@
 		0 2px 6px rgb(17 13 9 / 10%);
 	font-weight: 700;
 	letter-spacing: 0.03em;
+	text-decoration: none;
 	transition:
 		background var(--duration-snappy) var(--ease-premium),
 		border-color var(--duration-snappy) var(--ease-premium),
@@ -33,6 +34,7 @@
 		box-shadow:
 			0 12px 28px rgb(217 169 58 / 26%),
 			0 4px 10px rgb(17 13 9 / 15%);
+		text-decoration: none;
 		transform: translateY(-2px);
 	}
 
