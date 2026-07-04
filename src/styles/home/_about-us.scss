@@ -7,7 +7,7 @@
 .about-us {
 	position: relative;
 	width: 100%;
-	padding-block: clamp(4.5rem, 9vw, 8rem);
+	padding-block: var(--section-padding-y);
 	overflow: hidden;
 
 	// Light editorial warm paper background

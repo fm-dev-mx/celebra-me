@@ -16,7 +16,7 @@ html {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: var(--spacing-xl) 0;
+	padding: var(--section-padding-y, var(--spacing-xl) 0);
 }
 
 footer {
@@ -27,3 +27,44 @@ footer {
 	justify-content: center;
 	padding: var(--spacing-xl) 0;
 }
+
+// ---------------------------------------------------------------------------
+// Typography Normalization (Playfair Display serif + Montserrat sans-serif)
+// ---------------------------------------------------------------------------
+
+// Eyebrows
+.theme-preset--jewelry-box-landing {
+	.hero-prime__eyebrow,
+	.event-selector__eyebrow,
+	.product-proof__eyebrow,
+	.services__eyebrow,
+	.about-us__eyebrow,
+	.how-it-works__eyebrow,
+	.pricing-eyebrow,
+	.testimonials__eyebrow,
+	.faq-pretitle,
+	.contact-pretitle {
+		font-family: var(--font-body);
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		font-size: clamp(0.72rem, 1.5vw, 0.8rem);
+		color: var(--color-champagne);
+		font-weight: 700;
+		margin-bottom: var(--spacing-sm);
+	}
+
+	// Headings
+	.hero-prime__title,
+	.event-selector__title,
+	.product-proof__heading,
+	.services__heading,
+	.about-us__title,
+	.how-it-works__title,
+	.pricing-title,
+	.testimonials__title,
+	.faq-title,
+	.contact-title {
+		font-family: var(--font-display);
+	}
+}
+

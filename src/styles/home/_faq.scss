@@ -1,9 +1,25 @@
 .faq-section {
 	position: relative;
-	padding: clamp(3rem, 7vw, 5rem) 0;
+	padding: var(--section-padding-y-compact) 0;
 	background-color: var(--faq-section-bg);
 	overflow: hidden;
 	color: var(--faq-section-color);
+
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 10%;
+		right: 10%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(217 169 58 / 20%),
+			transparent
+		);
+		pointer-events: none;
+	}
 
 	.faq-noise {
 		position: absolute;
@@ -94,7 +110,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 1.35rem 1.6rem;
+	padding: 1.1rem 1.5rem;
 	background: none;
 	border: none;
 	cursor: pointer;
@@ -147,7 +163,7 @@
 }
 
 .faq-answer-content {
-	padding: 1.3rem 1.6rem 1.7rem;
+	padding: 0 1.5rem 1.25rem;
 	border-top: 1px solid var(--faq-item-border);
 
 	.answer-text {

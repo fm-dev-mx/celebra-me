@@ -2,25 +2,12 @@
 
 .event-selector {
 	position: relative;
-	background:
-		linear-gradient(
-			180deg,
-			rgb(255 251 244 / 98%) 0%,
-			rgb(var(--color-surface-primary-rgb) / 96%) 36%,
-			transparent 72%
-		),
-		var(--color-surface-primary);
-	padding-block: clamp(3rem, 6vw, 5rem) clamp(3.4rem, 7vw, 5.25rem);
+	background: var(--color-surface-primary);
+	border-top: 1px solid rgb(var(--color-border-gold-rgb) / 20%);
+	padding-block: var(--section-padding-y);
 
 	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: clamp(2.4rem, 8vw, 4rem);
-		background: linear-gradient(180deg, rgb(14 10 6 / 9%), rgb(14 10 6 / 0%));
-		pointer-events: none;
+		display: none;
 	}
 
 	&__container {

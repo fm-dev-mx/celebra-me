@@ -3,13 +3,8 @@
 
 .contact-section {
 	position: relative;
-	padding: clamp(3.5rem, 7vw, 5.5rem) 0;
-	background: linear-gradient(
-		to bottom,
-		var(--color-surface-primary) 0%,
-		var(--color-surface-primary) 85%,
-		var(--color-soft-black) 100%
-	);
+	padding: var(--section-padding-y-compact) 0;
+	background: var(--color-surface-primary);
 	overflow: hidden;
 	color: var(--contact-section-color);
 
@@ -110,12 +105,13 @@
 	align-items: center;
 	gap: 1.25rem;
 	padding: 1.1rem 1.15rem;
-	background: var(--contact-channel-bg);
-	border: 1px solid var(--contact-channel-border);
-	border-radius: var(--contact-channel-border-radius, 0.75rem);
+	border-radius: 9999px;
 	text-decoration: none;
-	transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-	box-shadow: var(--contact-channel-shadow);
+	transition:
+		background-color var(--duration-standard) var(--ease-premium),
+		border-color var(--duration-standard) var(--ease-premium),
+		box-shadow var(--duration-standard) var(--ease-premium),
+		transform var(--duration-standard) var(--ease-premium);
 
 	.channel-icon-wrapper {
 		width: 44px;
@@ -123,10 +119,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--contact-channel-icon-bg);
-		color: var(--contact-channel-icon-color);
 		border-radius: 50%;
-		transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+		transition: background-color 0.3s ease, color 0.3s ease;
 		flex-shrink: 0;
 	}
 
@@ -137,26 +131,73 @@
 			font-size: 0.7rem;
 			text-transform: uppercase;
 			letter-spacing: 0.1em;
-			color: var(--contact-channel-label-color);
 			margin-bottom: 0.2rem;
 		}
 
 		.channel-value {
 			font-family: var(--font-display);
 			font-size: 1.02rem;
-			color: var(--contact-channel-value-color);
 			font-weight: 600;
 		}
 	}
 
-	&:hover {
-		border-color: var(--contact-channel-hover-border);
-		transform: var(--contact-channel-hover-transform);
-		box-shadow: var(--contact-channel-hover-shadow);
+	&--whatsapp {
+		background: linear-gradient(135deg, var(--color-champagne), var(--color-border-gold));
+		border: 1px solid var(--color-border-gold);
+		color: var(--color-ink);
+		box-shadow:
+			0 8px 20px rgb(217 169 58 / 18%),
+			0 2px 6px rgb(17 13 9 / 10%);
+
+		.channel-text {
+			.channel-label {
+				color: rgb(17 13 9 / 60%);
+			}
+
+			.channel-value {
+				color: var(--color-ink);
+			}
+		}
 
 		.channel-icon-wrapper {
-			background: var(--contact-channel-icon-hover-bg);
-			color: var(--contact-channel-icon-hover-color, white);
+			background: var(--color-ink);
+			color: var(--color-champagne);
+		}
+
+		&:hover {
+			border-color: #fff;
+			box-shadow:
+				0 12px 28px rgb(217 169 58 / 26%),
+				0 4px 10px rgb(17 13 9 / 15%);
+			transform: translateY(-2px);
+		}
+	}
+
+	&--email {
+		background: transparent;
+		border: 1px solid var(--color-border-subtle);
+		color: var(--color-text-primary);
+		box-shadow: none;
+
+		.channel-text {
+			.channel-label {
+				color: var(--color-text-secondary);
+			}
+
+			.channel-value {
+				color: var(--color-text-primary);
+			}
+		}
+
+		.channel-icon-wrapper {
+			background: var(--color-surface-secondary);
+			color: var(--color-text-primary);
+		}
+
+		&:hover {
+			border-color: var(--color-border-gold);
+			background: rgb(216 183 106 / 6%);
+			transform: translateY(-1px);
 		}
 	}
 }
@@ -196,7 +237,7 @@
 .contact-form {
 	display: flex;
 	flex-direction: column;
-	gap: 2rem;
+	gap: 1.25rem;
 }
 
 .input-group {
@@ -204,13 +245,13 @@
 
 	&__input {
 		width: 100%;
-		padding: 1rem 0;
+		padding: 0.75rem 0;
 		background: transparent;
 		border: none;
 		border-bottom: 1px solid var(--contact-input-border);
 		color: var(--contact-input-color);
 		font-family: var(--font-body);
-		font-size: 1.05rem;
+		font-size: 1.02rem;
 		transition: border-color 0.4s ease;
 
 		&:focus {
@@ -223,7 +264,7 @@
 		}
 
 		&--textarea {
-			min-height: 80px;
+			min-height: 70px;
 			resize: none;
 		}
 
@@ -235,11 +276,11 @@
 
 	&__label {
 		position: absolute;
-		top: 1rem;
+		top: 0.75rem;
 		left: 0;
 		color: var(--contact-label-color);
 		font-family: var(--font-body);
-		font-size: 0.9rem;
+		font-size: 0.88rem;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		pointer-events: none;
@@ -252,8 +293,8 @@
 
 	&__input:focus + &__label,
 	&__input:not(:placeholder-shown) + &__label {
-		top: -1.2rem;
-		font-size: 0.7rem;
+		top: -1rem;
+		font-size: 0.68rem;
 		color: var(--contact-label-focus-color);
 		font-weight: 600;
 	}
@@ -275,23 +316,26 @@
 }
 
 .submit-btn {
-	background: var(--contact-submit-bg);
-	color: var(--contact-submit-color);
-	border: none;
-	padding: 1.1rem 3rem;
-	font-family: var(--font-display);
+	background: var(--color-ink);
+	color: var(--color-ivory);
+	border: 1px solid var(--color-ink);
+	padding: 0.8rem 2.2rem;
+	font-family: var(--font-body);
+	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: 0.2em;
-	font-size: 0.85rem;
+	letter-spacing: 0.12em;
+	font-size: 0.82rem;
 	cursor: pointer;
-	border-radius: 4px;
-	transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+	border-radius: 9999px;
+	transition:
+		background-color var(--duration-snappy) ease,
+		border-color var(--duration-snappy) ease,
+		transform var(--duration-snappy) ease;
 
 	&:hover {
-		background: var(--contact-submit-hover-bg);
-		color: var(--contact-submit-hover-color, white);
-		transform: var(--contact-submit-hover-transform);
-		box-shadow: var(--contact-submit-hover-shadow);
+		background: var(--color-espresso);
+		border-color: var(--color-espresso);
+		transform: translateY(-1px);
 	}
 }
 

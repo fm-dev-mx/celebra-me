@@ -22,7 +22,7 @@
 			inset: 0;
 			display: block;
 			opacity: 0%;
-			transition: opacity 0.55s ease;
+			transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1);
 			z-index: 0;
 		}
 
@@ -47,19 +47,12 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		background:
-			radial-gradient(
-				circle at 50% 50%,
-				rgb(216 167 58 / 12%) 0%,
-				rgb(8 7 6 / 45%) 70%,
-				var(--color-soft-black, #080706) 100%
-			),
-			linear-gradient(
-				to bottom,
-				rgb(8 7 6 / 50%) 0%,
-				transparent 40%,
-				var(--color-soft-black, #080706) 100%
-			);
+		background: linear-gradient(
+			to bottom,
+			rgb(17 13 9 / 60%) 0%,
+			rgb(17 13 9 / 30%) 40%,
+			rgb(17 13 9 / 85%) 100%
+		);
 	}
 
 	&__content {
@@ -119,63 +112,58 @@
 		margin-top: 0.45rem;
 
 		.whatsapp-button {
-			min-width: 210px;
-			padding: 0.78rem 1.45rem;
+			min-width: 240px;
+			padding: 0.85rem 1.8rem;
 			justify-content: center;
 			text-align: center;
 			white-space: nowrap;
-			background: linear-gradient(135deg, var(--color-champagne), var(--color-antique-gold));
-			border: 1px solid rgb(255 255 255 / 20%);
-			color: var(--color-soft-black, #080706);
+			background: linear-gradient(135deg, var(--color-champagne), var(--color-border-gold));
+			border: 1px solid var(--color-border-gold);
+			border-radius: 9999px;
+			color: var(--color-ink);
 			text-decoration: none;
+			font-weight: 700;
+			letter-spacing: 0.03em;
 			box-shadow:
-				0 10px 25px rgb(216 167 58 / 15%),
-				0 4px 12px rgb(0 0 0 / 30%);
+				0 10px 25px rgb(217 169 58 / 20%),
+				0 4px 12px rgb(17 13 9 / 15%);
+			transition:
+				background var(--duration-snappy) ease,
+				border-color var(--duration-snappy) ease,
+				box-shadow var(--duration-snappy) ease,
+				transform var(--duration-snappy) ease;
 
 			svg {
-				color: var(--color-forest-deep, #031F1A);
+				color: var(--color-ink);
 			}
 
 			&:hover {
-				border-color: rgb(255 255 255 / 40%);
-				background: linear-gradient(135deg, var(--color-champagne) 10%, var(--color-antique-gold) 100%);
+				border-color: #fff;
+				background: linear-gradient(135deg, var(--color-champagne) 10%, var(--color-border-gold) 100%);
 				box-shadow:
-					0 12px 30px rgb(216 167 58 / 25%),
-					0 6px 16px rgb(0 0 0 / 40%);
+					0 15px 32px rgb(217 169 58 / 30%),
+					0 6px 16px rgb(17 13 9 / 20%);
 				transform: translateY(-2px);
-			}
-
-			&:focus-visible {
-				outline: 2px solid rgb(var(--color-text-on-dark-rgb) / 92%);
-				outline-offset: 4px;
 			}
 		}
 	}
 
 	&__secondary-action {
-		min-width: 0;
-		padding: 0.35rem 0.1rem;
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-		color: rgb(var(--color-text-on-dark-rgb) / 92%);
-		font-weight: 650;
-		letter-spacing: 0.01em;
-		text-decoration: underline;
-		text-decoration-color: rgb(var(--color-action-accent-rgb) / 54%);
-		text-underline-offset: 0.35rem;
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(255 255 255 / 85%);
+		text-decoration: none;
+		letter-spacing: 0.02em;
+		border-bottom: 1px solid rgb(217 169 58 / 40%);
+		padding-bottom: 2px;
+		transition:
+			color 0.25s ease,
+			border-color 0.25s ease;
 
 		&:hover {
-			background: transparent;
-			color: rgb(var(--color-text-on-dark-rgb));
-			box-shadow: none;
-			text-decoration-color: var(--color-action-accent);
-			transform: none;
-		}
-
-		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
-			outline-offset: 3px;
+			color: var(--color-champagne);
+			border-color: var(--color-champagne);
 		}
 	}
 
@@ -227,15 +215,15 @@
 			background:
 				radial-gradient(
 					circle at 50% 40%,
-					rgb(216 167 58 / 15%) 0%,
-					rgb(8 7 6 / 60%) 65%,
-					var(--color-soft-black, #080706) 100%
+					rgb(217 169 58 / 15%) 0%,
+					rgb(17 13 9 / 60%) 65%,
+					var(--color-ink) 100%
 				),
 				linear-gradient(
 					to bottom,
-					rgb(8 7 6 / 75%) 0%,
+					rgb(17 13 9 / 75%) 0%,
 					transparent 35%,
-					var(--color-soft-black, #080706) 100%
+					var(--color-ink) 100%
 				);
 		}
 

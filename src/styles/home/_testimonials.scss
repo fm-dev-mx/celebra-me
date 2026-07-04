@@ -7,7 +7,7 @@
 
 .testimonials-section {
 	position: relative;
-	background: var(--color-soft-black, #080706);
+	background: var(--color-ink);
 
 	// Gold hairline top separator (matches other editorial bands)
 	&::before {
@@ -38,7 +38,7 @@
 	width: 100%;
 	max-width: min(1080px, calc(100% - 2rem));
 	margin-inline: auto;
-	padding-block: clamp(2.8rem, 5vw, 4.5rem) clamp(2.5rem, 4.5vw, 4rem);
+	padding-block: var(--section-padding-y-compact);
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: clamp(2rem, 4vw, 3.5rem);
@@ -76,7 +76,7 @@
 
 .testimonials__eyebrow {
 	margin: 0 0 0.6rem;
-	color: var(--color-action-accent, #d8a73a);
+	color: var(--color-champagne);
 	font-family: var(--font-body);
 	font-size: clamp(0.62rem, 0.85vw, 0.72rem);
 	font-weight: 700;
@@ -155,7 +155,7 @@
 .testimonials__card {
 	position: absolute;
 	inset: 0;
-	opacity: 0;
+	opacity: 0%;
 	visibility: hidden;
 	transition:
 		opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
@@ -187,7 +187,7 @@
 	}
 
 	&--active {
-		opacity: 1;
+		opacity: 100%;
 		visibility: visible;
 		transition:
 			opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
@@ -224,7 +224,7 @@
 	font-weight: 600;
 	font-size: clamp(0.75rem, 0.9vw, 0.85rem);
 	letter-spacing: 0.06em;
-	color: var(--color-action-accent, #d8a73a);
+	color: var(--color-champagne);
 	text-transform: uppercase;
 }
 

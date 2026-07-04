@@ -13,43 +13,61 @@
 
 .theme-preset--jewelry-box-landing {
 	// Curated restrained visual system
-	--color-ivory: #f7f1e6;
-	--color-warm-paper: #efe4d2;
-	--color-champagne: #d8a73a;
-	--color-antique-gold: #b8862b;
-	--color-espresso: #2b1a10;
-	--color-ink: #15120e;
-	--color-soft-black: #080706;
-	--color-forest: #06362c;
-	--color-forest-deep: #031f1a;
-	--color-stone: #8b7a67;
+	--color-ink: #110D09;
+	--color-ink-rgb: 17, 13, 9;
+	--color-espresso: #21130D;
+	--color-espresso-rgb: 33, 19, 13;
+	--color-ivory: #F7F0E4;
+	--color-ivory-rgb: 247, 240, 228;
+	--color-paper: #FBF6EC;
+	--color-paper-rgb: 251, 246, 236;
+	--color-champagne: #D9A93A;
+	--color-champagne-rgb: 217, 169, 58;
+	--color-border-gold: #D8B76A;
+	--color-border-gold-rgb: 216, 183, 106;
+	--color-text-dark: #2A1A13;
+	--color-text-dark-rgb: 42, 26, 19;
+	--color-text-muted: #8C7D70;
+	--color-text-muted-rgb: 140, 125, 112;
+	--color-text-light: #F7F0E4;
+	--color-text-light-rgb: 247, 240, 228;
+
+	// Core Spacing System Clamps
+	--section-padding-y: clamp(5rem, 10vw, 9rem);
+	--section-padding-y-compact: clamp(3.5rem, 7vw, 6rem);
+	--container-max: 1120px;
+	--container-padding-x: clamp(1.25rem, 5vw, 4rem);
+	--card-radius: 1.25rem;
+
+	// Typography Override
+	--font-display: 'Playfair Display', serif;
 
 	// Redefine standard semantic variables using the new palette
-	--color-text-primary: var(--color-espresso);
-	--color-text-primary-rgb: 43, 26, 16;
-	--color-text-secondary: var(--color-stone);
-	--color-text-secondary-rgb: 139, 122, 103;
-	--color-text-emphasis: var(--color-antique-gold);
-	--color-text-on-dark: var(--color-ivory);
-	--color-text-on-dark-rgb: 247, 241, 230;
+	--color-text-primary: var(--color-text-dark);
+	--color-text-primary-rgb: var(--color-text-dark-rgb);
+	--color-text-secondary: var(--color-text-muted);
+	--color-text-secondary-rgb: var(--color-text-muted-rgb);
+	--color-text-emphasis: var(--color-champagne);
+	--color-text-on-dark: var(--color-text-light);
+	--color-text-on-dark-rgb: var(--color-text-light-rgb);
 	--color-surface-primary: var(--color-ivory);
-	--color-surface-primary-rgb: 247, 241, 230;
-	--color-surface-secondary: var(--color-warm-paper);
-	--color-surface-secondary-rgb: 239, 228, 210;
-	--color-surface-dark: var(--color-soft-black);
-	--color-surface-dark-rgb: 8, 7, 6;
-	--color-action-primary: var(--color-espresso);
-	--color-action-primary-rgb: 43, 26, 16;
+	--color-surface-primary-rgb: var(--color-ivory-rgb);
+	--color-surface-secondary: var(--color-paper);
+	--color-surface-secondary-rgb: var(--color-paper-rgb);
+	--color-surface-dark: var(--color-ink);
+	--color-surface-dark-rgb: var(--color-ink-rgb);
+	--color-action-primary: var(--color-text-dark);
+	--color-action-primary-rgb: var(--color-text-dark-rgb);
 	--color-action-accent: var(--color-champagne);
-	--color-action-accent-rgb: 216, 167, 58;
+	--color-action-accent-rgb: var(--color-champagne-rgb);
 
 	// Specific fixes for Contact Form
-	--color-border-subtle: rgb(43 26 16 / 12%);
+	--color-border-subtle: rgb(42 26 19 / 12%);
 	--color-border-emphasis: var(--color-champagne);
 
 	// Glassmorphism default
-	--color-glass-bg: rgb(247 241 230 / 10%);
-	--color-glass-border: rgb(247 241 230 / 20%);
+	--color-glass-bg: rgb(247 240 228 / 10%);
+	--color-glass-border: rgb(247 240 228 / 20%);
 
 	// Shadows
 	--shadow-subtle: 0 4px 15px rgb(0 0 0 / 10%);
@@ -58,17 +76,17 @@
 	--hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
 
 	// Shared Dark Slate Surface (for FAQ, Footer, Pricing Exclusive)
-	--color-surface-dark-slate: var(--color-soft-black);
-	--color-surface-dark-slate-rgb: 8, 7, 6;
-	--color-text-on-dark-slate: var(--color-ivory);
-	--color-text-on-dark-slate-rgb: 247, 241, 230;
+	--color-surface-dark-slate: var(--color-ink);
+	--color-surface-dark-slate-rgb: var(--color-ink-rgb);
+	--color-text-on-dark-slate: var(--color-text-light);
+	--color-text-on-dark-slate-rgb: var(--color-text-light-rgb);
 
 	// Light overlay for glassmorphism on dark surfaces
 	--color-overlay-light: var(--color-ivory);
-	--color-overlay-light-rgb: 247 241 230;
+	--color-overlay-light-rgb: var(--color-ivory-rgb);
 
-	// FAQ background: soft black
-	--color-faq-bg: var(--color-soft-black);
+	// FAQ background
+	--color-faq-bg: var(--color-ink);
 
 	// ==========================================
 	// Landing Page Section-Specific Tokens
@@ -178,12 +196,6 @@
 	--pricing-primary-shadow: 0 0 30px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
 	--pricing-primary-glow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
 	--pricing-primary-scale: 1.04;
-	--pricing-exclusive-bg: var(--color-surface-dark-slate);
-	--pricing-exclusive-border: var(--color-action-accent);
-	--pricing-exclusive-text: var(--color-text-on-dark-slate);
-	--pricing-exclusive-desc: rgb(var(--color-overlay-light-rgb) / 60%);
-	--pricing-badge-bg: var(--color-action-accent);
-	--pricing-badge-shadow: 0 4px 12px rgb(0 0 0 / 10%);
 	--pricing-tier-name-color: var(--color-surface-dark);
 	--pricing-tier-desc-color: var(--color-text-primary);
 	--pricing-tier-price-color: var(--color-surface-dark);
@@ -250,18 +262,6 @@
 	--contact-info-title-color: var(--color-text-primary);
 	--contact-info-description-color: var(--color-text-secondary);
 	--contact-info-footer-color: var(--color-text-secondary);
-	--contact-channel-bg: var(--color-surface-primary);
-	--contact-channel-border: var(--color-border-subtle);
-	--contact-channel-shadow: var(--shadow-subtle);
-	--contact-channel-icon-bg: var(--color-surface-secondary);
-	--contact-channel-icon-color: var(--color-action-accent);
-	--contact-channel-label-color: var(--color-text-secondary);
-	--contact-channel-value-color: var(--color-text-primary);
-	--contact-channel-hover-border: var(--color-border-emphasis);
-	--contact-channel-hover-transform: translateY(-3px);
-	--contact-channel-hover-shadow: var(--shadow-emphasis);
-	--contact-channel-icon-hover-bg: var(--color-action-accent);
-	--contact-channel-icon-hover-color: var(--color-text-on-dark-slate);
 	--contact-form-bg: rgb(var(--color-surface-primary-rgb) / 70%);
 	--contact-form-backdrop-blur: 20px;
 	--contact-form-border: var(--color-border-subtle);

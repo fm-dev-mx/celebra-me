@@ -2,7 +2,7 @@
 
 .how-it-works {
 	position: relative;
-	padding-block: clamp(2.6rem, 5vw, 4rem) clamp(3rem, 5.5vw, 5rem);
+	padding-block: var(--section-padding-y-compact);
 	overflow: hidden;
 	background:
 		linear-gradient(
