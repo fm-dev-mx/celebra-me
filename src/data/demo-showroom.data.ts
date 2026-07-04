@@ -13,12 +13,36 @@ export const DEMO_SHOWROOM_EVENTS = [
 		description: 'Diseños con galería, música y pases para una noche inolvidable.',
 		icon: 'Crown',
 		showroomHref: '/demos/xv',
-		ctaLabel: 'Ver demos',
 		heroTitle: 'Demos de invitaciones para XV años',
 		heroDescription:
 			'Explore estilos digitales para una celebración de XV años elegante, clara y memorable.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para XV años. Vi sus demos y quiero asesoría para elegir estilo.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'XV AÑOS',
+				title: 'Sofía Valentina',
+				subtitle: 'Una noche para celebrar',
+				date: 'Sábado 28 de septiembre',
+				venue: 'Gran Salón del Triunfo',
+				chips: ['RSVP', 'PASES', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Quinceañera en salón elegante con flores y luz cálida',
+			},
+			showroom: {
+				kicker: 'XV años',
+				title: 'Una entrada luminosa para una noche de XV',
+				description:
+					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música, galería y detalles personalizados para que cada invitado reciba una experiencia clara desde WhatsApp.',
+			},
+			quoteCta: {
+				label: 'Cotizar mis XV',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: XV años\n\nCupón: LANZAMIENTO-899',
+				promoCode: 'LANZAMIENTO-899',
+				trackValue: 899,
+			},
+		},
 		sortOrder: 10,
 	},
 	{
@@ -28,12 +52,38 @@ export const DEMO_SHOWROOM_EVENTS = [
 		description: 'Ceremonia, recepción y confirmaciones en un enlace elegante.',
 		icon: 'Rings',
 		showroomHref: '/demos/boda',
-		ctaLabel: 'Ver demos',
 		heroTitle: 'Demos de invitaciones para boda',
 		heroDescription:
 			'Conozca experiencias digitales pensadas para comunicar ceremonia, recepción y detalles con sobriedad.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para boda. Quiero conocer opciones similares a sus demos.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'BODA',
+				title: 'Mariana & Rodrigo',
+				subtitle: 'Nos casamos',
+				date: 'Sábado 14 de diciembre',
+				venue: 'Hacienda San Miguel',
+				chips: ['RSVP', 'PASES', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Recepción de boda elegante al atardecer con mesa floral y velas',
+			},
+			showroom: {
+				kicker: 'Boda',
+				title: 'Una invitación elegante para guiar a cada invitado',
+				description:
+					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con el estilo de tu boda.',
+			},
+			quoteCta: {
+				label: 'Cotizar mi boda',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499',
+				promoCode: 'LANZAMIENTO-1499',
+				trackValue: 1499,
+				packageName: 'Premium',
+				packageInterest: 'premium',
+			},
+		},
 		sortOrder: 20,
 	},
 	{
@@ -43,12 +93,36 @@ export const DEMO_SHOWROOM_EVENTS = [
 		description: 'Detalles familiares, ubicación y confirmación en una experiencia delicada.',
 		icon: 'Dove',
 		showroomHref: '/demos/bautizo',
-		ctaLabel: 'Ver demos',
 		heroTitle: 'Demos de invitaciones para bautizo',
 		heroDescription:
 			'Vea propuestas digitales delicadas para compartir la celebración con familia y padrinos.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para bautizo. Vi sus demos y quiero asesoría para mi celebración.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'BAUTIZO',
+				title: 'Mateo Alejandro',
+				subtitle: 'Celebración familiar',
+				date: 'Domingo 6 de octubre',
+				venue: 'Parroquia de San Miguel',
+				chips: ['RSVP', 'PASES', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Detalle ceremonial de bautizo con vela, flores blancas y luz de iglesia',
+			},
+			showroom: {
+				kicker: 'Bautizo',
+				title: 'Una celebración familiar comunicada con delicadeza',
+				description:
+					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara, elegante y fácil de compartir.',
+			},
+			quoteCta: {
+				label: 'Cotizar mi bautizo',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Bautizo\n\nCupón: LANZAMIENTO-899',
+				promoCode: 'LANZAMIENTO-899',
+				trackValue: 899,
+			},
+		},
 		sortOrder: 30,
 	},
 	{
@@ -58,12 +132,36 @@ export const DEMO_SHOWROOM_EVENTS = [
 		description: 'Una invitación dulce para compartir ubicación, regalos y asistencia.',
 		icon: 'Sparkles',
 		showroomHref: '/demos/baby-shower',
-		ctaLabel: 'Ver demos',
 		heroTitle: 'Demos de invitaciones para baby shower',
 		heroDescription:
 			'Descubra diseños digitales tiernos y ordenados para anunciar una celebración llena de ilusión.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'BABY SHOWER',
+				title: 'Valentina',
+				subtitle: 'Bienvenida con amor',
+				date: 'Sábado 12 de octubre',
+				venue: 'La Casona del Lago',
+				chips: ['RSVP', 'MESA DE REGALOS', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Mesa de baby shower cálida con flores, regalos y decoración delicada',
+			},
+			showroom: {
+				kicker: 'Baby shower',
+				title: 'Una bienvenida cálida, ordenada y fácil de compartir',
+				description:
+					'Reúne ubicación, mesa de regalos, galería y confirmaciones en una experiencia clara para familiares y amigos.',
+			},
+			quoteCta: {
+				label: 'Cotizar mi baby shower',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Baby shower\n\nCupón: LANZAMIENTO-899',
+				promoCode: 'LANZAMIENTO-899',
+				trackValue: 899,
+			},
+		},
 		sortOrder: 40,
 	},
 	{
@@ -73,12 +171,36 @@ export const DEMO_SHOWROOM_EVENTS = [
 		description: 'Celebraciones sociales con información clara y envío por WhatsApp.',
 		icon: 'Cake',
 		showroomHref: '/demos/cumpleanos',
-		ctaLabel: 'Ver demos',
 		heroTitle: 'Demos de invitaciones para cumpleaños',
 		heroDescription:
 			'Explore una experiencia digital pensada para celebraciones personales, familiares o de aniversario.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'CUMPLEAÑOS',
+				title: 'Regina',
+				subtitle: 'Una noche para brindar',
+				date: 'Viernes 18 de octubre',
+				venue: 'Casa Aurelia',
+				chips: ['RSVP', 'UBICACIÓN', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Pastel de cumpleaños elegante con velas y mesa de cena cálida',
+			},
+			showroom: {
+				kicker: 'Cumpleaños',
+				title: 'Una celebración clara desde el primer mensaje',
+				description:
+					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada y fácil de reenviar.',
+			},
+			quoteCta: {
+				label: 'Cotizar mi evento',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Cumpleaños\n\nCupón: LANZAMIENTO-899',
+				promoCode: 'LANZAMIENTO-899',
+				trackValue: 899,
+			},
+		},
 		sortOrder: 50,
 	},
 ] as const satisfies readonly DemoShowroomEvent[];

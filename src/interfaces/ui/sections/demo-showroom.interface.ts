@@ -12,6 +12,38 @@ export interface DemoShowroomThumbnail {
 	alt: string;
 }
 
+export interface DemoShowroomPhonePreview {
+	eyebrow: string;
+	title: string;
+	subtitle: string;
+	date: string;
+	venue: string;
+	chips: readonly string[];
+	actionLabel: string;
+	imageAlt: string;
+}
+
+export interface DemoShowroomSideCopy {
+	kicker: string;
+	title: string;
+	description: string;
+}
+
+export interface DemoShowroomQuoteCta {
+	label: string;
+	message: string;
+	promoCode: string;
+	trackValue: number;
+	packageName?: string;
+	packageInterest?: string;
+}
+
+export interface DemoShowroomHomeSelector {
+	preview: DemoShowroomPhonePreview;
+	showroom: DemoShowroomSideCopy;
+	quoteCta: DemoShowroomQuoteCta;
+}
+
 export interface DemoShowroomEvent {
 	eventType: EventType;
 	publicSlug: DemoShowroomPublicSlug;
@@ -19,10 +51,10 @@ export interface DemoShowroomEvent {
 	description: string;
 	icon: string;
 	showroomHref: string;
-	ctaLabel: string;
 	heroTitle: string;
 	heroDescription: string;
 	whatsAppMessage: string;
+	homeSelector: DemoShowroomHomeSelector;
 	sortOrder: number;
 }
 

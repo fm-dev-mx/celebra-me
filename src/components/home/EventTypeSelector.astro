@@ -10,11 +10,11 @@ import type { ImageMetadata } from 'astro';
 import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
 
-import mockupXv from '@/assets/images/hero/mockup_xv.png';
-import mockupWedding from '@/assets/images/hero/mockup_wedding.png';
-import mockupBabyshower from '@/assets/images/hero/mockup_babyshower.png';
-import mockupBaptism from '@/assets/images/hero/mockup_baptism.png';
-import mockupBirthday from '@/assets/images/hero/mockup_birthday.png';
+import showroomBabyShowerHero from '@/assets/images/showroom/event-showroom-baby-shower-hero.webp';
+import showroomBautizoHero from '@/assets/images/showroom/event-showroom-bautizo-hero.webp';
+import showroomBodaHero from '@/assets/images/showroom/event-showroom-boda-hero.webp';
+import showroomCumpleanosHero from '@/assets/images/showroom/event-showroom-cumpleanos-hero.webp';
+import showroomXvHero from '@/assets/images/showroom/event-showroom-xv-hero.webp';
 
 import '@/styles/home/_event-selector.scss';
 
@@ -25,151 +25,21 @@ interface Props {
 const { events } = Astro.props;
 const phone = getContactPhone();
 
-// Claves alineadas con EventType (theme-contract.ts). Partial porque
-// 'primera-comunion' no tiene mockup dedicado y cae al fallback mockupXv.
-const mockupImages: Partial<Record<EventType, ImageMetadata>> = {
-	xv: mockupXv,
-	boda: mockupWedding,
-	bautizo: mockupBaptism,
-	cumple: mockupBirthday,
-	'baby-shower': mockupBabyshower,
+const previewImages: Partial<Record<EventType, ImageMetadata>> = {
+	xv: showroomXvHero,
+	boda: showroomBodaHero,
+	bautizo: showroomBautizoHero,
+	cumple: showroomCumpleanosHero,
+	'baby-shower': showroomBabyShowerHero,
 };
 
-interface ShowroomMockupInfo {
-	kicker: string;
-	title: string;
-	subtitle: string;
-	date: string;
-	venue: string;
-	note: string;
-	sectionTitle: string;
-	description: string;
-}
-
-interface ShowroomQuoteInfo {
-	label: string;
-	message: string;
-	promoCode: string;
-	trackValue: number;
-	packageName?: string;
-	packageInterest?: string;
-}
-
-const defaultMockup = {
-	kicker: 'XV años',
-	title: 'Sofía Valentina',
-	subtitle: 'Una noche para celebrar',
-	date: 'Sábado 28 de septiembre',
-	venue: 'Gran Salón del Triunfo',
-	note: 'Control de pases por familia',
-	sectionTitle: 'Una entrada luminosa para una noche de XV',
-	description:
-		'Presenta la celebración con galería, música, RSVP y pases digitales listos para compartir con cada familia.',
-} satisfies ShowroomMockupInfo;
-
-const mockupInfo: Partial<Record<EventType, ShowroomMockupInfo>> = {
-	xv: defaultMockup,
-	boda: {
-		kicker: 'Boda',
-		title: 'Laura & Daniel',
-		subtitle: 'Celebración nupcial',
-		date: 'Sábado 14 de septiembre',
-		venue: 'La Quinta Santa Teresa',
-		note: 'Mesa de regalos e itinerario',
-		sectionTitle: 'Ceremonia, recepción y confirmaciones con sobriedad',
-		description:
-			'Una invitación nupcial con itinerario claro, ubicación, mesa de regalos y contexto Premium para una experiencia más editorial.',
-	},
-	bautizo: {
-		kicker: 'Bautizo',
-		title: 'Mateo Alejandro',
-		subtitle: 'Celebración familiar',
-		date: 'Domingo 6 de octubre',
-		venue: 'Parroquia de San Miguel',
-		note: 'Ceremonia y recepción',
-		sectionTitle: 'Una celebración familiar comunicada con delicadeza',
-		description:
-			'Comparte ceremonia, recepción, padrinos y confirmaciones en una experiencia serena para familia e invitados cercanos.',
-	},
-	'baby-shower': {
-		kicker: 'Baby shower',
-		title: 'Valentina',
-		subtitle: 'Bienvenida con amor',
-		date: 'Sábado 12 de octubre',
-		venue: 'La Casona del Lago',
-		note: 'Mesa de regalos y RSVP',
-		sectionTitle: 'Una bienvenida cálida, ordenada y fácil de compartir',
-		description:
-			'Reúne ubicación, mesa de regalos, galería y confirmaciones en una invitación suave para anunciar la celebración.',
-	},
-	cumple: {
-		kicker: 'Cumpleaños',
-		title: 'Cena de celebración',
-		subtitle: 'Una noche especial',
-		date: 'Viernes 18 de octubre',
-		venue: 'Salón Aurora',
-		note: 'Música, galería y RSVP',
-		sectionTitle: 'Celebraciones sociales con información clara',
-		description:
-			'Ideal para cumpleaños, aniversarios y reuniones especiales que necesitan estilo, ubicación, música y confirmaciones.',
-	},
-};
-
-const defaultQuote: ShowroomQuoteInfo = {
-	label: 'Cotizar este estilo',
-	message:
-		'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
-	promoCode: 'LANZAMIENTO-899',
-	trackValue: 899,
-};
-
-const showroomQuotes: Partial<Record<EventType, ShowroomQuoteInfo>> = {
-	xv: {
-		label: 'Cotizar mis XV',
-		message:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: XV años\n\nCupón: LANZAMIENTO-899',
-		promoCode: 'LANZAMIENTO-899',
-		trackValue: 899,
-	},
-	boda: {
-		label: 'Cotizar mi boda',
-		message:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499',
-		promoCode: 'LANZAMIENTO-1499',
-		trackValue: 1499,
-		packageName: 'Premium',
-		packageInterest: 'premium',
-	},
-	bautizo: {
-		label: 'Cotizar mi bautizo',
-		message:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Bautizo\n\nCupón: LANZAMIENTO-899',
-		promoCode: 'LANZAMIENTO-899',
-		trackValue: 899,
-	},
-	'baby-shower': {
-		label: 'Cotizar mi baby shower',
-		message:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Baby shower\n\nCupón: LANZAMIENTO-899',
-		promoCode: 'LANZAMIENTO-899',
-		trackValue: 899,
-	},
-	cumple: {
-		label: 'Cotizar mi evento',
-		message:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Cumpleaños\n\nCupón: LANZAMIENTO-899',
-		promoCode: 'LANZAMIENTO-899',
-		trackValue: 899,
-	},
-};
-
-const getMockupInfo = (eventType: EventType) => mockupInfo[eventType] || defaultMockup;
-const getQuoteInfo = (eventType: EventType) => showroomQuotes[eventType] || defaultQuote;
+const getPreviewImage = (eventType: EventType) => previewImages[eventType] || showroomXvHero;
 ---
 
 <Section
 	id="tipo-evento"
 	class="event-selector"
+	data-event-showroom
 	data-track-section="event-types"
 	aria-labelledby="event-selector-title"
 	data-screenshot="landing-event-types"
@@ -186,28 +56,32 @@ const getQuoteInfo = (eventType: EventType) => showroomQuotes[eventType] || defa
 		</header>
 
 		<div class="event-showroom">
-			<!-- 1. Chips/Tabs Selector -->
-			<div class="event-showroom__tabs" role="tablist" aria-label="Tipos de evento">
-				{events.map((event, index) => (
-					<button
-						class:list={["event-showroom__tab-btn", { active: index === 0 }]}
-						role="tab"
-						aria-selected={index === 0 ? "true" : "false"}
-						aria-controls={`panel-${event.eventType}`}
-						id={`tab-${event.eventType}`}
-						data-tab-event={event.eventType}
-					>
-						<Icon name={event.icon} size={18} />
-						{event.label}
-					</button>
-				))}
+			<div class="event-showroom__tabs-shell" data-event-tab-shell>
+				<div class="event-showroom__tabs" role="tablist" aria-label="Tipos de evento" data-event-tablist>
+					{events.map((event, index) => (
+						<button
+							class:list={["event-showroom__tab-btn", { active: index === 0 }]}
+							role="tab"
+							aria-selected={index === 0 ? "true" : "false"}
+							aria-controls={`panel-${event.eventType}`}
+							id={`tab-${event.eventType}`}
+							data-tab-event={event.eventType}
+							data-event-tab
+							tabindex={index === 0 ? 0 : -1}
+						>
+							<Icon name={event.icon} size={18} />
+							{event.label}
+						</button>
+					))}
+				</div>
 			</div>
 
-			<!-- 2. Panels container -->
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
-					const mockup = getMockupInfo(event.eventType);
-					const quote = getQuoteInfo(event.eventType);
+					const preview = event.homeSelector.preview;
+					const showroom = event.homeSelector.showroom;
+					const quote = event.homeSelector.quoteCta;
+					const previewImage = getPreviewImage(event.eventType);
 
 					return (
 					<div
@@ -216,42 +90,48 @@ const getQuoteInfo = (eventType: EventType) => showroomQuotes[eventType] || defa
 						role="tabpanel"
 						aria-labelledby={`tab-${event.eventType}`}
 						data-panel-event={event.eventType}
+						data-event-panel
+						aria-hidden={index === 0 ? "false" : "true"}
+						hidden={index !== 0}
 					>
 						<div class="event-showroom__panel-content">
 							<div class="event-showroom__mockup-side">
-								<div class="event-showroom__phone-frame">
-									<Image
-										src={mockupImages[event.eventType] || mockupXv}
-										alt=""
-										class="event-showroom__mockup-texture"
-										width={260}
-										height={520}
-										quality={80}
-										loading={index === 0 ? "eager" : "lazy"}
-										aria-hidden="true"
-									/>
-									<div class="event-showroom__phone-card">
-										<p class="event-showroom__card-kicker" data-showroom-kicker>{mockup.kicker}</p>
-										<p class="event-showroom__card-title" data-showroom-title>{mockup.title}</p>
-										<p class="event-showroom__card-subtitle">{mockup.subtitle}</p>
-										<div class="event-showroom__card-details">
-											<span>{mockup.date}</span>
-											<span>{mockup.venue}</span>
+								<figure class="event-showroom__phone-frame" aria-label={`Vista previa de invitación para ${event.label}`}>
+									<div class="event-showroom__phone-screen">
+										<Image
+											src={previewImage}
+											alt={preview.imageAlt}
+											class="event-showroom__phone-image"
+											width={360}
+											height={640}
+											quality={82}
+											loading={index === 0 ? "eager" : "lazy"}
+											decoding="async"
+										/>
+										<div class="event-showroom__phone-overlay">
+											<div class="event-showroom__phone-copy">
+												<p class="event-showroom__card-kicker" data-showroom-kicker>{preview.eyebrow}</p>
+												<p class="event-showroom__card-title" data-showroom-title>{preview.title}</p>
+												<p class="event-showroom__card-subtitle">{preview.subtitle}</p>
+												<div class="event-showroom__card-details">
+													<span>{preview.date}</span>
+													<span>{preview.venue}</span>
+												</div>
+												<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
+													{preview.chips.map((chip) => (
+														<li data-showroom-feature>{chip}</li>
+													))}
+												</ul>
+												<p class="event-showroom__card-action">{preview.actionLabel}</p>
+											</div>
 										</div>
-										<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
-											<li data-showroom-feature>RSVP</li>
-											<li data-showroom-feature>Pases</li>
-											<li data-showroom-feature>WhatsApp</li>
-										</ul>
-										<p class="event-showroom__card-action">Confirmar asistencia</p>
-										<p class="event-showroom__card-note">{mockup.note}</p>
 									</div>
-								</div>
+								</figure>
 							</div>
 							<div class="event-showroom__info-side">
-								<p class="event-showroom__info-kicker">{event.label}</p>
-								<h3 class="event-showroom__info-title">{mockup.sectionTitle}</h3>
-								<p class="event-showroom__info-text">{mockup.description}</p>
+								<p class="event-showroom__info-kicker">{showroom.kicker}</p>
+								<h3 class="event-showroom__info-title">{showroom.title}</h3>
+								<p class="event-showroom__info-text">{showroom.description}</p>
 								<div class="event-showroom__actions">
 									<a
 										href={event.showroomHref}
@@ -295,45 +175,317 @@ const getQuoteInfo = (eventType: EventType) => showroomQuotes[eventType] || defa
 </Section>
 
 <script>
-	const tabs = document.querySelectorAll('.event-showroom__tab-btn');
-	const panels = document.querySelectorAll('.event-showroom__panel-item');
-	const activeTab = document.querySelector('.event-showroom__tab-btn.active');
+	const root = document.querySelector('[data-event-showroom]');
+	if (root instanceof HTMLElement) {
+		const tabShell = root.querySelector<HTMLElement>('[data-event-tab-shell]');
+		const tabList = root.querySelector<HTMLElement>('[data-event-tablist]');
+		const tabs = Array.from(root.querySelectorAll<HTMLElement>('[data-event-tab]'));
+		const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-event-panel]'));
+		const activeTab = root.querySelector<HTMLElement>('.event-showroom__tab-btn.active');
+		const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const autoplayStartDelayMs = 1000;
+		const autoplayIntervalMs = 3800;
+		const autoplayAdvanceLimit = Math.min(3, Math.max(0, tabs.length - 1));
+		const panelTransitionMs = 420;
+		const hasResizeObserver = 'ResizeObserver' in window;
 
-	if (activeTab instanceof HTMLElement) {
-		document.documentElement.setAttribute(
-			'data-selected-event',
-			activeTab.getAttribute('data-tab-event') || 'xv',
+		let activeIndex = Math.max(
+			0,
+			tabs.findIndex(
+				(tab) => tab instanceof HTMLElement && tab.getAttribute('aria-selected') === 'true',
+			),
 		);
-	}
+		let autoplayStartTimer: number | undefined;
+		let autoplayNextTimer: number | undefined;
+		let panelTransitionTimer: number | undefined;
+		let autoplayArmed = false;
+		let autoplayFinished = false;
+		let userInteracted = false;
+		let sectionVisible = false;
+		let autoplaySteps = 0;
+		let overflowObserver: ResizeObserver | undefined;
 
-	tabs.forEach((tab) => {
-		tab.addEventListener('click', () => {
+		root.style.setProperty('--event-showroom-autoplay-duration', `${autoplayIntervalMs}ms`);
+
+		if (activeTab instanceof HTMLElement) {
+			document.documentElement.setAttribute(
+				'data-selected-event',
+				activeTab.getAttribute('data-tab-event') || 'xv',
+			);
+		}
+
+		const setSectionAutoplaying = (isAutoplaying: boolean) => {
+			if (isAutoplaying) {
+				root.setAttribute('data-autoplaying', 'true');
+			} else {
+				root.removeAttribute('data-autoplaying');
+			}
+		};
+
+		const updateOverflowCue = () => {
+			if (!(tabList instanceof HTMLElement)) return;
+			const hasOverflow = tabList.scrollWidth > tabList.clientWidth + 1;
+			const canScrollLeft = hasOverflow && tabList.scrollLeft > 8;
+			const canScrollRight =
+				hasOverflow &&
+				tabList.scrollLeft + tabList.clientWidth < tabList.scrollWidth - 8;
+
+			tabList.setAttribute('data-overflow', hasOverflow ? 'true' : 'false');
+			tabList.setAttribute('data-can-scroll-left', canScrollLeft ? 'true' : 'false');
+			tabList.setAttribute('data-can-scroll-right', canScrollRight ? 'true' : 'false');
+
+			if (tabShell instanceof HTMLElement) {
+				tabShell.setAttribute('data-overflow', hasOverflow ? 'true' : 'false');
+				tabShell.setAttribute('data-can-scroll-left', canScrollLeft ? 'true' : 'false');
+				tabShell.setAttribute('data-can-scroll-right', canScrollRight ? 'true' : 'false');
+			}
+		};
+
+		const clearAutoplayTimers = () => {
+			if (autoplayStartTimer !== undefined) window.clearTimeout(autoplayStartTimer);
+			if (autoplayNextTimer !== undefined) window.clearTimeout(autoplayNextTimer);
+			autoplayStartTimer = undefined;
+			autoplayNextTimer = undefined;
+			autoplayArmed = false;
+		};
+
+		const clearPanelTransitionTimer = () => {
+			if (panelTransitionTimer !== undefined) window.clearTimeout(panelTransitionTimer);
+			panelTransitionTimer = undefined;
+		};
+
+		const revealTabsAroundActive = (targetTab: HTMLElement) => {
+			if (!(tabList instanceof HTMLElement)) return;
+			if (tabList.scrollWidth <= tabList.clientWidth + 1) return;
+			const behavior = reducedMotionQuery.matches ? 'auto' : 'smooth';
+			targetTab.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
+		};
+
+		const finishAutoplay = (markFinished = true) => {
+			clearAutoplayTimers();
+			clearPanelTransitionTimer();
+			setSectionAutoplaying(false);
+			if (markFinished) autoplayFinished = true;
+		};
+
+		const resetLeavingPanels = () => {
+			panels.forEach((panel) => {
+				if (!(panel instanceof HTMLElement)) return;
+				panel.classList.remove('is-entering', 'is-leaving');
+			});
+		};
+
+		const activateTab = (
+			tab: HTMLElement,
+			options: { source: 'user' | 'autoplay'; focus?: boolean } = { source: 'user', focus: false },
+		) => {
+			if (!(tab instanceof HTMLElement)) return;
 			const targetEvent = tab.getAttribute('data-tab-event');
 			if (!targetEvent) return;
-			document.documentElement.setAttribute('data-selected-event', targetEvent);
+			const targetIndex = tabs.indexOf(tab);
+			if (targetIndex < 0) return;
 
-			// Update active tabs
-			tabs.forEach((t) => {
-				t.classList.remove('active');
-				t.setAttribute('aria-selected', 'false');
-			});
-			tab.classList.add('active');
-			tab.setAttribute('aria-selected', 'true');
-			if (tab instanceof HTMLElement) {
-				const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-					? 'auto'
-					: 'smooth';
-				tab.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
+			if (options.source === 'user') {
+				userInteracted = true;
+				finishAutoplay(true);
 			}
 
-			// Update active panels
-			panels.forEach((panel) => {
-				if (panel.getAttribute('data-panel-event') === targetEvent) {
-					panel.classList.add('active');
-				} else {
-					panel.classList.remove('active');
+			const previousPanel = panels[activeIndex];
+			const nextPanel = panels[targetIndex];
+			const targetIsCurrent = targetIndex === activeIndex;
+
+			if (!(nextPanel instanceof HTMLElement)) return;
+
+			clearPanelTransitionTimer();
+			resetLeavingPanels();
+			document.documentElement.setAttribute('data-selected-event', targetEvent);
+
+			tabs.forEach((currentTab) => {
+				if (!(currentTab instanceof HTMLElement)) return;
+				currentTab.classList.remove('active');
+				currentTab.setAttribute('aria-selected', 'false');
+				currentTab.setAttribute('tabindex', '-1');
+			});
+
+			tab.classList.add('active');
+			tab.setAttribute('aria-selected', 'true');
+			tab.setAttribute('tabindex', '0');
+
+			revealTabsAroundActive(tab);
+
+			if (options.source === 'user' && options.focus) {
+				tab.focus();
+			}
+
+			if (previousPanel instanceof HTMLElement && !targetIsCurrent) {
+				previousPanel.classList.remove('active');
+				previousPanel.classList.add('is-leaving');
+				previousPanel.setAttribute('aria-hidden', 'true');
+				previousPanel.setAttribute('inert', '');
+			}
+
+			nextPanel.hidden = false;
+			nextPanel.classList.add('active');
+			nextPanel.removeAttribute('inert');
+			nextPanel.setAttribute('aria-hidden', 'false');
+			nextPanel.classList.add('is-entering');
+
+			activeIndex = targetIndex;
+
+			panelTransitionTimer = window.setTimeout(() => {
+				if (previousPanel instanceof HTMLElement && previousPanel !== nextPanel) {
+					previousPanel.hidden = true;
+					previousPanel.classList.remove('is-leaving');
 				}
+				nextPanel.classList.remove('is-entering');
+			}, panelTransitionMs);
+		};
+
+		const queueNextGuidedAdvance = () => {
+			if (
+				autoplayFinished ||
+				userInteracted ||
+				reducedMotionQuery.matches ||
+				tabs.length < 2 ||
+				!sectionVisible
+			) {
+				return;
+			}
+
+			const nextIndex = activeIndex + 1;
+			if (nextIndex >= tabs.length || autoplaySteps >= autoplayAdvanceLimit) {
+				finishAutoplay(true);
+				return;
+			}
+
+			setSectionAutoplaying(true);
+			activateTab(tabs[nextIndex], { source: 'autoplay' });
+			autoplaySteps += 1;
+
+			if (autoplaySteps >= autoplayAdvanceLimit || activeIndex >= tabs.length - 1) {
+				finishAutoplay(true);
+				return;
+			}
+
+			autoplayNextTimer = window.setTimeout(queueNextGuidedAdvance, autoplayIntervalMs);
+		};
+
+		const startAutoplay = () => {
+			if (
+				autoplayArmed ||
+				autoplayFinished ||
+				userInteracted ||
+				reducedMotionQuery.matches ||
+				tabs.length < 2 ||
+				!sectionVisible
+			) {
+				return;
+			}
+
+			autoplayArmed = true;
+			clearAutoplayTimers();
+			autoplayStartTimer = window.setTimeout(() => {
+				autoplayArmed = false;
+				if (
+					autoplayFinished ||
+					userInteracted ||
+					reducedMotionQuery.matches ||
+					!sectionVisible
+				) {
+					return;
+				}
+
+				autoplaySteps = 0;
+				setSectionAutoplaying(true);
+				queueNextGuidedAdvance();
+			}, autoplayStartDelayMs);
+		};
+
+		const stopForUserIntent = () => {
+			userInteracted = true;
+			finishAutoplay(true);
+		};
+
+		tabs.forEach((tab) => {
+			if (!(tab instanceof HTMLElement)) return;
+			tab.addEventListener('click', () => {
+				stopForUserIntent();
+				activateTab(tab, { source: 'user' });
 			});
 		});
-	});
+
+		if (tabList instanceof HTMLElement) {
+			tabList.addEventListener('pointerdown', stopForUserIntent, true);
+			tabList.addEventListener('touchstart', stopForUserIntent, { passive: true, capture: true });
+			tabList.addEventListener('keydown', (event) => {
+				if (!(event instanceof KeyboardEvent)) return;
+				const currentIndex = tabs.findIndex(
+					(tab) => tab instanceof HTMLElement && tab.getAttribute('aria-selected') === 'true',
+				);
+				if (currentIndex < 0) return;
+
+				const lastIndex = tabs.length - 1;
+				let nextIndex = currentIndex;
+
+				if (event.key === 'ArrowRight') nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+				if (event.key === 'ArrowLeft') nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+				if (event.key === 'Home') nextIndex = 0;
+				if (event.key === 'End') nextIndex = lastIndex;
+
+				if (nextIndex === currentIndex) return;
+
+				stopForUserIntent();
+				event.preventDefault();
+				activateTab(tabs[nextIndex], { source: 'user', focus: true });
+			});
+
+			const observerCallback = () => updateOverflowCue();
+			if (hasResizeObserver) {
+				overflowObserver = new ResizeObserver(observerCallback);
+				overflowObserver.observe(tabList);
+				window.addEventListener('pagehide', () => overflowObserver?.disconnect(), { once: true });
+			}
+			tabList.addEventListener('scroll', observerCallback, { passive: true });
+			window.addEventListener('resize', observerCallback, { passive: true });
+			window.addEventListener('orientationchange', observerCallback, { passive: true });
+			window.requestAnimationFrame(observerCallback);
+		}
+
+		root.addEventListener('pointerenter', stopForUserIntent, true);
+		root.addEventListener('focusin', stopForUserIntent, true);
+		root.addEventListener(
+			'click',
+			(event) => {
+				const target = event.target;
+				if (!(target instanceof HTMLElement)) return;
+				if (target.closest('a, button, [role="tab"]')) {
+					stopForUserIntent();
+				}
+			},
+			true,
+		);
+
+		if (reducedMotionQuery.matches) {
+			finishAutoplay(false);
+		}
+
+		const visibilityObserver = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.target !== root) return;
+					sectionVisible = entry.isIntersecting;
+					if (sectionVisible) {
+						startAutoplay();
+					} else {
+						finishAutoplay(false);
+					}
+				});
+			},
+			{
+				threshold: 0.35,
+			},
+		);
+
+		visibilityObserver.observe(root);
+	}
 </script>
