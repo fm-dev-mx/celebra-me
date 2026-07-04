@@ -408,7 +408,6 @@ export function getDefaultCriticalSelectors(pageType: PageType): ScreenshotSelec
 
 	if (pageType === 'landing') {
 		return [
-			{ selector: 'main', required: true, capture: true },
 			/* Required: hero, pricing, FAQ, contact */
 			{ selector: '[data-screenshot="landing-hero"], #inicio', required: true, capture: true, label: 'hero' },
 			{

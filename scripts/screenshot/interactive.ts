@@ -43,11 +43,24 @@ async function askViewportProfile(
 		choices: [
 			{
 				name: `Invitation  (${getViewportProfileSummary('invitation')})`,
+				description: 'Mobile-only set: mobile-narrow, mobile-standard, mobile-large. Recommended responsive set for invitation QA.',
 				value: 'invitation',
 			},
-			{ name: `Site        (${getViewportProfileSummary('site')})`, value: 'site' },
-			{ name: `Full        (${getViewportProfileSummary('full')})`, value: 'full' },
-			{ name: 'Single viewport (pick one)', value: 'single' },
+			{
+				name: `Site        (${getViewportProfileSummary('site')})`,
+				description: 'Recommended responsive set for landing / general page QA: mobile-narrow, mobile-standard, tablet, desktop.',
+				value: 'site',
+			},
+			{
+				name: `Full        (${getViewportProfileSummary('full')})`,
+				description: 'All five viewports: mobile-narrow, mobile-standard, mobile-large, tablet, desktop.',
+				value: 'full',
+			},
+			{
+				name: 'Single viewport (pick one)',
+				description: 'Capture only one specific viewport — useful for fast iteration.',
+				value: 'single',
+			},
 		],
 		default: defaultProfile,
 	});
@@ -56,11 +69,31 @@ async function askViewportProfile(
 		const vpName = await select<string>({
 			message: 'Which viewport?',
 			choices: [
-				{ name: 'mobile-narrow   (360×740, @2x)', value: 'mobile-narrow' },
-				{ name: 'mobile-standard (390×844, @2x)', value: 'mobile-standard' },
-				{ name: 'mobile-large    (430×932, @3x)', value: 'mobile-large' },
-				{ name: 'tablet          (768×1024, @2x)', value: 'tablet' },
-				{ name: 'desktop         (1440×1200, @1x)', value: 'desktop' },
+				{
+					name: 'mobile-narrow   (360×740, @2x)',
+					description: 'Smallest common mobile size; stresses typography and CTA legibility.',
+					value: 'mobile-narrow',
+				},
+				{
+					name: 'mobile-standard (390×844, @2x)',
+					description: 'Default iPhone-class viewport. Most common mobile reference.',
+					value: 'mobile-standard',
+				},
+				{
+					name: 'mobile-large    (430×932, @3x)',
+					description: 'Pro Max-class viewport; useful to spot spacing regressions.',
+					value: 'mobile-large',
+				},
+				{
+					name: 'tablet          (768×1024, @2x)',
+					description: 'Portrait tablet; transition layout between mobile and desktop.',
+					value: 'tablet',
+				},
+				{
+					name: 'desktop         (1440×1200, @1x)',
+					description: 'Wide layout capture for desktop review.',
+					value: 'desktop',
+				},
 			],
 			default: defaultProfile === 'invitation' ? 'mobile-standard' : 'desktop',
 		});
@@ -85,14 +118,32 @@ async function askSectionCapture(
 
 	const sectionCapture = await select<SectionCapture>({
 		message:
-			'Capture optional configured sections? Audit mode may still generate critical validation captures automatically.',
+			'Capture optional sections? Audit mode also generates critical section captures (hero, pricing, FAQ, contact, testimonials, etc.) automatically.',
 		choices: [
-			{ name: 'No, skip optional sections', value: 'none' },
-			{ name: 'Yes, auto-detect sections', value: 'auto' },
+			{
+				name: 'No, skip optional sections',
+				description: 'Only the configured critical section captures from audit mode.',
+				value: 'none',
+			},
+			{
+				name: 'Yes, auto-detect sections',
+				description: 'Auto-detect all sections on the page and capture each one.',
+				value: 'auto',
+			},
 			...(pageType === 'invitation'
-				? [{ name: 'Yes, known invitation sections', value: 'known' as SectionCapture }]
+				? [
+						{
+							name: 'Yes, known invitation sections',
+							description: 'Capture the standard invitation sections (quote, family, gallery, countdown, etc.).',
+							value: 'known' as SectionCapture,
+						},
+					]
 				: []),
-			{ name: 'Yes, custom selectors', value: 'custom' },
+			{
+				name: 'Yes, custom selectors',
+				description: 'Capture a specific list of selectors you provide.',
+				value: 'custom',
+			},
 		],
 		default: 'none',
 	});
@@ -197,19 +248,23 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 			message: 'Which screenshot set do you want?',
 			choices: [
 				{
-					name: 'Essential invitation set  (initial page + reveal open/closed + full open)',
+					name: 'Essential invitation set',
+					description: 'Initial page + reveal closed/open + full invitation open. The default for invitation review.',
 					value: 'essential',
 				},
 				{
-					name: 'Full invitation QA       (essential + individual sections)',
+					name: 'Full invitation QA',
+					description: 'Essential captures plus every individual invitation section. Use for full visual QA passes.',
 					value: 'full-qa',
 				},
 				{
-					name: 'Reveal only             (closed + open letter + open section)',
+					name: 'Reveal only',
+					description: 'Closed + open letter + open section. Skips initial and full-page captures.',
 					value: 'reveal-only',
 				},
 				{
 					name: 'Full page only',
+					description: 'Just the full-page capture (closed state).',
 					value: 'full-page',
 				},
 			],
@@ -220,11 +275,13 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 			message: 'Which screenshot set do you want?',
 			choices: [
 				{
-					name: 'Basic page set        (viewport + full-page)',
+					name: 'Basic page set',
+					description: 'Viewport, full-page, header, main, and footer captures. The default for landing / page review.',
 					value: 'basic',
 				},
 				{
-					name: 'Full page QA          (viewport + full-page + header + footer + sections)',
+					name: 'Full page QA',
+					description: 'Everything in basic plus individual section captures. Use for full visual QA passes.',
 					value: 'full-qa',
 				},
 			],
@@ -257,8 +314,16 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 	const mode = await select<ScreenshotMode>({
 		message: 'Screenshot mode?',
 		choices: [
-			{ name: 'Audit (stable visual QA)', value: 'audit' },
-			{ name: 'Raw (minimal intervention)', value: 'raw' },
+			{
+				name: 'Audit',
+				description: 'Stable visual QA: waits for content, reduces motion, and hides screenshot-only noise.',
+				value: 'audit',
+			},
+			{
+				name: 'Raw',
+				description: 'Minimal intervention: captures the page closer to actual runtime behavior for debugging.',
+				value: 'raw',
+			},
 		],
 		default: 'audit',
 	});
