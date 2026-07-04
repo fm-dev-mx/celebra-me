@@ -9,6 +9,9 @@ import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import { Image } from 'astro:assets';
 
 import heroXv from '@/assets/images/hero/xv.png';
+import heroWedding from '@/assets/images/hero/wedding.png';
+import heroBabyshower from '@/assets/images/hero/babyshower.png';
+import heroBaptism from '@/assets/images/hero/baptism.png';
 
 import '@/styles/components/_hero.scss';
 
@@ -21,8 +24,17 @@ const { data } = Astro.props;
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
 	<div class="hero-prime__bg" aria-hidden="true">
-		<picture class="hero-prime__bg-picture hero-prime__bg-picture--active">
+		<picture class="hero-prime__bg-picture hero-prime__bg-picture--active" data-hero-bg="0">
 			<Image src={heroXv} alt=""  width={1920} height={1080} quality={80} loading="eager" decoding="sync" fetchpriority="high" />
+		</picture>
+		<picture class="hero-prime__bg-picture" data-hero-bg="1">
+			<Image src={heroWedding} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
+		</picture>
+		<picture class="hero-prime__bg-picture" data-hero-bg="2">
+			<Image src={heroBabyshower} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
+		</picture>
+		<picture class="hero-prime__bg-picture" data-hero-bg="3">
+			<Image src={heroBaptism} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
 		</picture>
 	</div>
 
@@ -76,3 +88,61 @@ const { data } = Astro.props;
 		</div>
 	</div>
 </section>
+
+<script>
+	/**
+	 * Hero background crossfade — subtle autoplay rotation
+	 * through 4 event photography images.
+	 * Respects prefers-reduced-motion; no user interaction needed.
+	 */
+	const initHeroBgRotation = () => {
+		const hero = document.getElementById('inicio');
+		if (!(hero instanceof HTMLElement)) return;
+
+		const pictures = hero.querySelectorAll<HTMLElement>('.hero-prime__bg-picture[data-hero-bg]');
+		if (pictures.length < 2) return;
+
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+		let intervalId = 0;
+		let currentIndex = 0;
+		const controller = new AbortController();
+
+		const advance = () => {
+			pictures.forEach((pic, i) => {
+				pic.classList.toggle('hero-prime__bg-picture--active', i === currentIndex);
+			});
+			currentIndex = (currentIndex + 1) % pictures.length;
+		};
+
+		const start = () => {
+			stop();
+			if (prefersReducedMotion.matches) {
+				// Show first image only, no rotation
+				pictures.forEach((pic, i) => {
+					pic.classList.toggle('hero-prime__bg-picture--active', i === 0);
+				});
+				currentIndex = 0;
+				return;
+			}
+			// Ensure first frame is visible
+			pictures[0].classList.add('hero-prime__bg-picture--active');
+			currentIndex = 1;
+			intervalId = window.setInterval(advance, 7000);
+		};
+
+		const stop = () => {
+			if (intervalId) {
+				clearInterval(intervalId);
+				intervalId = 0;
+			}
+		};
+
+		prefersReducedMotion.addEventListener('change', start, { signal: controller.signal });
+
+		// Delay start slightly to not compete with initial paint
+		requestAnimationFrame(() => requestAnimationFrame(start));
+	};
+
+	initHeroBgRotation();
+</script>
