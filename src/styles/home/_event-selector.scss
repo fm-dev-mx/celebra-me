@@ -158,10 +158,11 @@
 		&__panels {
 			position: relative;
 			width: 100%;
-			min-height: 456px;
+			min-height: 476px;
 			display: grid;
 			align-items: stretch;
 			overflow: hidden;
+			contain: layout paint;
 		}
 
 		&__panel-item {
@@ -176,9 +177,6 @@
 				transform 0.45s ease,
 				visibility 0s linear 0.35s;
 
-			&[hidden] {
-				display: none;
-			}
 		}
 
 		&__panel-item.active,
@@ -673,7 +671,7 @@
 			}
 
 			&__panels {
-				min-height: clamp(42rem, 140vw, 48rem);
+				min-height: clamp(43rem, 148vw, 49rem);
 			}
 
 			&__phone-frame {

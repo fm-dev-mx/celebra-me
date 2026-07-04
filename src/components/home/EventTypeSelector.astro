@@ -92,7 +92,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 						data-panel-event={event.eventType}
 						data-event-panel
 						aria-hidden={index === 0 ? "false" : "true"}
-						hidden={index !== 0}
+						{...(index === 0 ? {} : { inert: true })}
 					>
 						<div class="event-showroom__panel-content">
 							<div class="event-showroom__mockup-side">
@@ -257,8 +257,14 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 		const revealTabsAroundActive = (targetTab: HTMLElement) => {
 			if (!(tabList instanceof HTMLElement)) return;
 			if (tabList.scrollWidth <= tabList.clientWidth + 1) return;
-			const behavior = reducedMotionQuery.matches ? 'auto' : 'smooth';
-			targetTab.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
+			const targetLeft =
+				targetTab.offsetLeft - (tabList.clientWidth - targetTab.offsetWidth) / 2;
+			const maxScrollLeft = tabList.scrollWidth - tabList.clientWidth;
+
+			tabList.scrollTo({
+				left: Math.max(0, Math.min(targetLeft, maxScrollLeft)),
+				behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
+			});
 		};
 
 		const finishAutoplay = (markFinished = true) => {
@@ -314,7 +320,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			revealTabsAroundActive(tab);
 
 			if (options.source === 'user' && options.focus) {
-				tab.focus();
+				tab.focus({ preventScroll: true });
 			}
 
 			if (previousPanel instanceof HTMLElement && !targetIsCurrent) {
@@ -324,7 +330,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 				previousPanel.setAttribute('inert', '');
 			}
 
-			nextPanel.hidden = false;
 			nextPanel.classList.add('active');
 			nextPanel.removeAttribute('inert');
 			nextPanel.setAttribute('aria-hidden', 'false');
@@ -334,7 +339,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 
 			panelTransitionTimer = window.setTimeout(() => {
 				if (previousPanel instanceof HTMLElement && previousPanel !== nextPanel) {
-					previousPanel.hidden = true;
 					previousPanel.classList.remove('is-leaving');
 				}
 				nextPanel.classList.remove('is-entering');
