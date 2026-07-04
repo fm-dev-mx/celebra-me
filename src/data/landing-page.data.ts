@@ -61,28 +61,29 @@ export const landingData: LandingPageData = {
 		},
 	},
 	about: {
-		title: 'Diseño con intención',
+		eyebrow: 'DIRECCIÓN VISUAL INCLUIDA',
+		title: 'No parece una plantilla. Se siente como su evento.',
 		description:
-			'Diseñamos una experiencia visual coherente con el tono de su celebración: elegante, clara y lista para compartir. No solo se ve bien; guía a sus invitados desde el primer mensaje.',
+			'No entregamos un PDF estático ni una plantilla genérica. Diseñamos una invitación web personalizada, elegante y clara, lista para compartir por WhatsApp.',
 		values: [
 			{
-				name: 'Dirección visual',
+				name: 'Más que un archivo',
 				description:
-					'Paleta, tipografía y ritmo pensados para que la invitación se sienta propia.',
+					'Una experiencia web con secciones claras, ubicación, RSVP y detalles importantes.',
 			},
 			{
-				name: 'Claridad para invitados',
+				name: 'Personalización real',
 				description:
-					'Cada sección orienta sin saturar: ceremonia, recepción, ubicación y confirmación.',
+					'Diseño, contenido y flujo alineados al tono de su celebración; cuando aplica, con nombre, pase o confirmación individual.',
 			},
 			{
-				name: 'Entrega cuidada',
+				name: 'Lista para compartir',
 				description:
-					'Acompañamiento personal para revisar contenido, estilo y publicación.',
+					'Revisamos estructura, presentación y publicación antes de enviarla a sus invitados.',
 			},
 		],
 		cta: {
-			label: 'Solicitar asesoría',
+			label: 'Quiero una invitación a medida',
 			href: '#contacto',
 		},
 	},
@@ -109,79 +110,104 @@ export const landingData: LandingPageData = {
 		],
 	},
 	pricing: {
-		eyebrow: 'Inversión para su celebración',
-		title: 'Paquetes claros',
-		intro: 'Tres niveles con promoción de lanzamiento, pensados para elegir rápido y sin letra pequeña.',
-		note: 'Promo base: $899 MXN. Precio regular base: $1,299 MXN.',
+		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
+		title: 'Elija el nivel de experiencia que quiere para su invitación',
+		intro: 'Desde una invitación elegante lista para personalizar, hasta una experiencia visual diseñada con mayor dirección editorial para su evento.',
+		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
+		recommendation: {
+			title: 'La mayoría de nuestros clientes elige Signature',
+			text: 'Mantiene un precio accesible, pero permite que la invitación se sienta más personalizada, cuidada y coherente con el estilo del evento.',
+			cta: 'Quiero la recomendación por WhatsApp',
+			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
+		},
+		decisionGuide: {
+			title: 'Cómo elegir rápido',
+			rows: [
+				'Colección: quiero algo elegante, rápido y funcional.',
+				'Signature: quiero que se vea más personalizado y cuidado.',
+				'Atelier: quiero una experiencia más completa y con mayor dirección visual.',
+			],
+			cta: 'Ayúdeme a elegir por WhatsApp',
+			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
+		},
 		tiers: [
 			{
 				id: 'coleccion',
 				title: 'Colección',
-				description: 'Diseño premium listo para personalizar.',
-				badge: 'Beneficio de Lanzamiento',
+				description: 'Invitación premium lista para personalizar.',
+				badge: 'ENTRADA PREMIUM',
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $1,299 MXN',
+				idealFor:
+					'Ideal para eventos que necesitan una invitación elegante, clara y funcional sin una dirección visual compleja.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Personalización de diseño seleccionado',
+							'Diseño premium seleccionado',
+							'Personalización de nombres, fecha, textos y datos del evento',
 							'RSVP y control de acompañantes',
-							'Galería, música, ubicación e itinerario',
+							'Ubicación, música, galería e itinerario',
 							'Pases digitales por WhatsApp',
 						],
 					},
 				],
-				footnote: '*Tiempo estimado una vez recibido el contenido completo del evento.',
-				cta: 'Elegir este paquete',
+				cta: 'Elegir Colección',
 				ctaMessage:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Colección.\n\nCupón: LANZAMIENTO-899',
-				href: '#',
+					'Hola, quiero elegir el paquete Colección de $899 MXN para mi invitación digital.',
 			},
 			{
-				id: 'premium',
-				title: 'Premium',
-				description: 'Dirección visual para un evento con estilo propio.',
-				badge: 'El Favorito',
+				id: 'signature',
+				title: 'Signature',
+				description: 'La opción más equilibrada para una invitación con estilo propio.',
+				badge: 'MÁS ELEGIDO',
 				isPrimary: true,
-				price: { amount: '1,499', currency: 'MXN', period: 'pago único' },
+				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
+				regularPrice: 'Precio regular: $2,299 MXN',
+				idealFor:
+					'Ideal para celebraciones donde la invitación debe sentirse más alineada a la paleta, fotografía y tono del evento.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
 							'Todo lo de Colección',
-							'Adaptación editorial de fotografía y paleta',
-							'Mayor curaduría visual',
+							'Adaptación editorial de fotografías y paleta visual',
+							'Mayor curaduría en portada, secciones e interludios',
 							'Revisión prioritaria de contenido',
+							'Mejor acompañamiento durante personalización',
 						],
 					},
 				],
-				cta: 'Elegir este paquete',
+				cta: 'Elegir Signature',
 				ctaMessage:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nCupón: LANZAMIENTO-1499',
-				href: '#',
+					'Hola, quiero elegir el paquete Signature de $1,699 MXN para mi invitación digital.',
 			},
 			{
-				id: 'exclusivo',
-				title: 'Exclusivo',
-				description: 'Experiencia completa con mayor personalización.',
+				id: 'atelier',
+				title: 'Atelier',
+				description: 'Una experiencia digital con mayor dirección visual y acompañamiento.',
+				badge: 'EXPERIENCIA COMPLETA',
 				isExclusive: true,
-				price: { amount: '2,299', currency: 'MXN', period: 'pago único' },
+				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
+				regularPrice: 'Precio regular: $3,899 MXN',
+				idealFor:
+					'Ideal para eventos donde la invitación debe sentirse como una extensión visual de la celebración.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Todo lo de Premium',
+							'Todo lo de Signature',
+							'Dirección visual avanzada',
 							'Estructura extendida de secciones',
-							'Personalización visual avanzada',
+							'Mayor personalización de narrativa visual',
 							'Acompañamiento prioritario',
+							'Revisión final más detallada antes de entrega',
 						],
 					},
 				],
-				cta: 'Elegir este paquete',
+				cta: 'Elegir Atelier',
 				ctaMessage:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Exclusivo.\n\nCupón: LANZAMIENTO-2299',
-				href: '#',
+					'Hola, quiero elegir el paquete Atelier de $2,899 MXN para mi invitación digital.',
 			},
 		],
 	},
@@ -215,27 +241,42 @@ export const landingData: LandingPageData = {
 		],
 	},
 	howItWorks: {
-		title: 'Cómo funciona',
+		eyebrow: 'ASÍ EMPEZAMOS',
+		title: 'Del primer mensaje a una invitación lista para enviar.',
 		subtitle:
-			'Un proceso simple para convertir la información de su evento en una invitación lista para compartir.',
+			'Nos comparte los datos del evento, preparamos la invitación y dejamos configurado el panel para que pueda compartirla con sus invitados.',
+		deliveryDossier: {
+			title: 'Entrega preparada',
+			subtitle: 'Lo que recibe al final del proceso',
+			rows: [
+				{ label: 'Invitación personalizada', status: 'Lista' },
+				{ label: 'Panel de invitados incluido', status: 'Configurado' },
+				{ label: 'Enlace para WhatsApp', status: 'Listo' },
+				{ label: 'Confirmaciones', status: 'Activas' },
+			],
+			footnote: 'Cada elemento revisado antes de la entrega.',
+		},
 		steps: [
 			{
-				icon: 'SparklesIcon',
-				title: 'Definimos la información clave',
-				description: 'Fecha, lugar, fotos, música, itinerario y lista de invitados.',
-			},
-			{
-				icon: 'HeartIcon',
-				title: 'Diseñamos una experiencia personalizada',
-				description: 'Armamos una experiencia clara, elegante y lista para revisar.',
-			},
-			{
-				icon: 'CheckIcon',
-				title: 'Comparte por WhatsApp y recibe confirmaciones',
+				title: 'Nos comparte los datos',
 				description:
-					'Sus invitados confirman asistencia y reciben la información importante.',
+					'Reunimos fecha, ubicación, horarios, fotos y detalles importantes del evento.',
+			},
+			{
+				title: 'Preparamos la experiencia',
+				description:
+					'Diseñamos la invitación, ordenamos la información y configuramos el panel de invitados.',
+			},
+			{
+				title: 'Le entregamos todo listo',
+				description:
+					'Recibe su enlace para compartir y puede consultar respuestas desde el panel.',
 			},
 		],
+		cta: {
+			label: 'Empezar mi invitación',
+			message: 'Hola, quiero empezar mi invitación digital con panel de invitados.',
+		},
 	},
 	contact: {
 		title: 'Cotice su invitación',

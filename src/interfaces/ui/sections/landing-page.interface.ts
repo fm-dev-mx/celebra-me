@@ -24,6 +24,7 @@ export interface ProductProofData {
 }
 
 export interface AboutData {
+	eyebrow?: string;
 	title: string;
 	description: string;
 	values: Array<{
@@ -62,6 +63,7 @@ export interface PricingTier {
 	title: string;
 	description: string;
 	badge?: string;
+	idealFor: string;
 	sections: PricingSection[];
 	price: {
 		amount: string;
@@ -71,10 +73,8 @@ export interface PricingTier {
 	regularPrice?: string;
 	cta: string;
 	ctaMessage?: string;
-	href: string;
 	isPrimary?: boolean;
 	isExclusive?: boolean;
-	footnote?: string;
 }
 
 export interface PricingData {
@@ -82,6 +82,18 @@ export interface PricingData {
 	title: string;
 	intro: string;
 	note: string;
+	recommendation: {
+		title: string;
+		text: string;
+		cta: string;
+		message: string;
+	};
+	decisionGuide: {
+		title: string;
+		rows: string[];
+		cta: string;
+		message: string;
+	};
 	tiers: PricingTier[];
 }
 
@@ -109,13 +121,23 @@ export interface ContactData {
 }
 
 export interface HowItWorksData {
+	eyebrow?: string;
 	title: string;
 	subtitle: string;
+	deliveryDossier?: {
+		title: string;
+		subtitle?: string;
+		rows: Array<{ label: string; status: string }>;
+		footnote?: string;
+	};
 	steps: Array<{
-		icon: string;
 		title: string;
 		description: string;
 	}>;
+	cta?: {
+		label: string;
+		message?: string;
+	};
 }
 
 export interface LandingPageData {

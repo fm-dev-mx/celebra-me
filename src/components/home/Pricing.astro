@@ -10,335 +10,137 @@ interface Props {
 
 const { data } = Astro.props;
 const phone = getContactPhone();
-const basePromoCode = 'LANZAMIENTO-899';
-const baseLaunchValue = 899;
 
-const cleanPriceAmount = (amountStr: string): number => {
-	return Number(amountStr.replace(/,/g, ''));
-};
+const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace(/,/g, ''));
 ---
 
 <section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing">
 	<div class="pricing-noise"></div>
 
 	<div class="container">
-		<header class="pricing-header">
-			<span class="pricing-eyebrow">{data.eyebrow}</span>
-			<h2 class="pricing-title">{data.title}</h2>
-			<p class="pricing-intro">{data.intro}</p>
-			<p class="pricing-note">{data.note}</p>
-		</header>
+		<div class="pricing-panel">
+			<header class="pricing-header">
+				<span class="pricing-eyebrow">{data.eyebrow}</span>
+				<h2 class="pricing-title">{data.title}</h2>
+				<p class="pricing-intro">{data.intro}</p>
+				<p class="pricing-note">{data.note}</p>
+			</header>
 
-		<!-- Package Recommender Widget -->
-		<div class="package-recommender">
-			<button class="recommender-toggle-btn" id="recommender-toggle">
-				<span class="recommender-toggle-icon">✨</span>
-				¿No está seguro de cuál elegir? Encuentre su paquete ideal aquí
-			</button>
-
-			<div class="recommender-card" id="recommender-card">
-				<div class="recommender-header">
-					<h3>Calculadora de paquete ideal</h3>
-					<button class="recommender-close" id="recommender-close-btn">&times;</button>
+			<aside class="pricing-recommendation" aria-labelledby="pricing-recommendation-title">
+				<div class="pricing-recommendation__copy">
+					<h3 id="pricing-recommendation-title">{data.recommendation.title}</h3>
+					<p>{data.recommendation.text}</p>
 				</div>
+				<WhatsAppButton
+					className="pricing-recommendation__cta"
+					phone={phone}
+					message={data.recommendation.message}
+					label={data.recommendation.cta}
+					trackSection="pricing"
+					trackCta="pricing_signature_recommendation"
+					trackIntent="package_help"
+					trackCampaign="PRICING-RECOMMENDATION"
+					trackCurrency="MXN"
+					ariaLabel={data.recommendation.cta}
+					preserveMessage
+				/>
+			</aside>
 
-				<!-- Step 1 -->
-				<div class="recommender-step active" data-step="1">
-					<p class="recommender-question">1. ¿Qué tipo de evento está preparando?</p>
-					<div class="recommender-options">
-						<button class="recommender-opt-btn" data-key="event" data-val="xv">XV Años</button>
-						<button class="recommender-opt-btn" data-key="event" data-val="wedding">Boda</button>
-						<button class="recommender-opt-btn" data-key="event" data-val="babyshower">Baby Shower</button>
-						<button class="recommender-opt-btn" data-key="event" data-val="baptism">Bautizo</button>
-						<button class="recommender-opt-btn" data-key="event" data-val="birthday">Cumpleaños</button>
-					</div>
-				</div>
+			<div class="pricing-grid" aria-label="Niveles de experiencia">
+				{
+					data.tiers.map((tier, index) => {
+						const priceValue = cleanPriceAmount(tier.price.amount);
+						const tierPromoCode = `LANZAMIENTO-${priceValue}`;
+						const tierCampaignCode = `PRICING-LANZAMIENTO-${priceValue}`;
 
-				<!-- Step 2 -->
-				<div class="recommender-step" data-step="2">
-					<p class="recommender-question">2. ¿Necesita confirmación de asistencia (RSVP) automatizada?</p>
-					<div class="recommender-options">
-						<button class="recommender-opt-btn" data-key="rsvp" data-val="yes">Sí, confirmaciones directas</button>
-						<button class="recommender-opt-btn" data-key="rsvp" data-val="no">No, solo la información básica</button>
-					</div>
-				</div>
+						return (
+							<article
+								class:list={[
+									'pricing-card',
+									{ 'is-primary': tier.isPrimary },
+									{ 'is-exclusive': tier.isExclusive },
+								]}
+								data-index={index}
+								data-tier={tier.id}
+							>
+								{tier.badge && <div class="pricing-badge">{tier.badge}</div>}
 
-				<!-- Step 3 -->
-				<div class="recommender-step" data-step="3">
-					<p class="recommender-question">3. ¿Desea limitar la cantidad de pases o acompañantes por familia?</p>
-					<div class="recommender-options">
-						<button class="recommender-opt-btn" data-key="passes" data-val="yes">Sí, control estricto de pases</button>
-						<button class="recommender-opt-btn" data-key="passes" data-val="no">No es necesario</button>
-					</div>
-				</div>
+								<div class="card-content">
+									<header class="tier-header">
+										<h3 class="tier-name">{tier.title}</h3>
+										<p class="tier-desc">{tier.description}</p>
+									</header>
 
-				<!-- Step 4 -->
-				<div class="recommender-step" data-step="4">
-					<p class="recommender-question">4. ¿Cuántos invitados estima aproximadamente?</p>
-					<div class="recommender-options">
-						<button class="recommender-opt-btn" data-key="guests" data-val="small">Menos de 100</button>
-						<button class="recommender-opt-btn" data-key="guests" data-val="medium">100 a 300</button>
-						<button class="recommender-opt-btn" data-key="guests" data-val="large">Más de 300</button>
-					</div>
-				</div>
+									<div class="tier-price" aria-label={`${tier.price.amount} ${tier.price.currency}`}>
+										<span class="currency-symbol">$</span>
+										<span class="amount">{tier.price.amount}</span>
+										<span class="currency-code">{tier.price.currency}</span>
+										{tier.price.period && <span class="period">{tier.price.period}</span>}
+									</div>
 
-				<!-- Result -->
-				<div class="recommender-step recommender-result-step" data-step="result">
-					<div class="recommender-result-box">
-						<span class="recommender-result-badge">Recomendación</span>
-						<h4 class="recommender-result-title" id="recommender-result-title">Premium</h4>
-						<p class="recommender-result-price" id="recommender-result-price">$1,499 MXN</p>
-						<p class="recommender-result-reason" id="recommender-result-reason">Ideal para su evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.</p>
-					</div>
-					<div class="recommender-result-actions">
-						<WhatsAppButton
-							className="recommender-cta-btn recommender-cta-whatsapp"
-							phone={phone}
-							message="Hola, quiero cotizar mi paquete recomendado."
-							label="Cotizar paquete Premium"
-							trackSection="pricing"
-							trackCta="recommender-whatsapp"
-							trackIntent="package_interest"
-							trackCampaign="PRICING-RECOMMENDER"
-							trackValue={1499}
-							trackCurrency="MXN"
-							promoCode="LANZAMIENTO-1499"
-							ariaLabel="Cotizar por WhatsApp"
-						/>
-						<button class="recommender-restart-btn" id="recommender-restart">Reiniciar cálculo</button>
-					</div>
-				</div>
+									{tier.regularPrice && <p class="regular-price">{tier.regularPrice}</p>}
+									<p class="tier-ideal">{tier.idealFor}</p>
+
+									<div class="tier-sections">
+										{tier.sections.map((section) => (
+											<div class="tier-section">
+												<h4 class="section-title">{section.title}</h4>
+												<ul class="section-items">
+													{section.items.map((item) => (
+														<li class="section-item">
+															<CheckIcon />
+															<span>{item}</span>
+														</li>
+													))}
+												</ul>
+											</div>
+										))}
+									</div>
+
+									<WhatsAppButton
+										className="cta-button"
+										phone={phone}
+										message={tier.ctaMessage}
+										label={tier.cta}
+										ariaLabel={`Elegir ${tier.title}`}
+										trackSection="pricing"
+										trackCta={`pricing_${tier.id ?? tier.title.toLowerCase().replaceAll(' ', '_')}`}
+										trackIntent="package_interest"
+										trackCampaign={tierCampaignCode}
+										trackPackage={tier.id ?? tier.title.toLowerCase()}
+										packageName={tier.title}
+										trackValue={priceValue}
+										trackCurrency="MXN"
+										promoCode={tierPromoCode}
+									/>
+								</div>
+							</article>
+						);
+					})
+				}
 			</div>
-		</div>
 
-		<div class="pricing-grid">
-			{
-				data.tiers.map((tier, index) => {
-					const priceValue = cleanPriceAmount(tier.price.amount);
-					const tierPromoCode = `LANZAMIENTO-${priceValue}`;
-					const tierCampaignCode = `PRICING-LANZAMIENTO-${priceValue}`;
-
-					return (
-						<article
-							class:list={[
-								'pricing-card',
-								{ 'is-primary': tier.isPrimary },
-								{ 'is-exclusive': tier.isExclusive },
-							]}
-							data-index={index}
-						>
-							{tier.badge && <div class="pricing-badge">{tier.badge}</div>}
-
-							<div class="card-content">
-								<h3 class="tier-name">{tier.title}</h3>
-								<p class="tier-desc">{tier.description}</p>
-
-								<div class="tier-price">
-									{tier.price.currency ? (
-										<>
-											<span class="currency-symbol">$</span>
-											<span class="amount">{tier.price.amount}</span>
-											<span class="currency-code">{tier.price.currency}</span>
-											{tier.price.period && <span class="period">/ {tier.price.period}</span>}
-										</>
-									) : (
-										<span class="amount amount--text">{tier.price.amount}</span>
-									)}
-								</div>
-
-								{tier.regularPrice && <p class="regular-price">{tier.regularPrice}</p>}
-
-								<div class="tier-sections">
-									{tier.sections.map((section) => (
-										<div class="tier-section">
-											<h4 class="section-title">{section.title}</h4>
-											<ul class="section-items">
-												{section.items.map((item) => (
-													<li class="section-item">
-														<CheckIcon />
-														<span>{item}</span>
-													</li>
-												))}
-											</ul>
-										</div>
-									))}
-								</div>
-
-								{tier.footnote && <p class="tier-footnote">{tier.footnote}</p>}
-
-								<WhatsAppButton
-									className="cta-button"
-									phone={phone}
-									message={tier.ctaMessage}
-									label={tier.cta}
-									ariaLabel={`Elegir plan ${tier.title}`}
-									trackSection="pricing"
-									trackCta={`pricing_${tier.title.toLowerCase().replaceAll(' ', '_')}`}
-									trackIntent="package_interest"
-									trackCampaign={tierCampaignCode}
-									trackPackage={tier.id ?? tier.title.toLowerCase()}
-									packageName={tier.title}
-									trackValue={priceValue}
-									trackCurrency="MXN"
-									promoCode={tierPromoCode}
-								/>
-							</div>
-						</article>
-					);
-				})
-			}
-		</div>
-
-		<div class="pricing-actions">
-			<WhatsAppButton
-				className="pricing-whatsapp"
-				phone={phone}
-				message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899"
-				label="Elegir mi nivel por WhatsApp"
-				trackSection="pricing"
-				trackCta="whatsapp-pricing"
-				trackIntent="package_interest"
-				trackCampaign="PRICING-LANZAMIENTO-899"
-				trackValue={baseLaunchValue}
-				trackCurrency="MXN"
-				promoCode={basePromoCode}
-				ariaLabel="Elegir mi nivel por WhatsApp"
-			/>
+			<aside class="pricing-guide" aria-labelledby="pricing-guide-title">
+				<div>
+					<h3 id="pricing-guide-title">{data.decisionGuide.title}</h3>
+					<ul>
+						{data.decisionGuide.rows.map((row) => <li>{row}</li>)}
+					</ul>
+				</div>
+				<WhatsAppButton
+					className="pricing-guide__cta"
+					phone={phone}
+					message={data.decisionGuide.message}
+					label={data.decisionGuide.cta}
+					trackSection="pricing"
+					trackCta="pricing_decision_help"
+					trackIntent="package_help"
+					trackCampaign="PRICING-DECISION-GUIDE"
+					trackCurrency="MXN"
+					ariaLabel={data.decisionGuide.cta}
+					preserveMessage
+				/>
+			</aside>
 		</div>
 	</div>
 </section>
-
-<script>
-	const toggleBtn = document.getElementById('recommender-toggle');
-	const closeBtn = document.getElementById('recommender-close-btn');
-	const card = document.getElementById('recommender-card');
-	const steps = document.querySelectorAll('.recommender-step');
-	const optBtns = document.querySelectorAll('.recommender-opt-btn');
-	const restartBtn = document.getElementById('recommender-restart');
-
-	const answers: Record<string, string> = {
-		event: '',
-		rsvp: '',
-		passes: '',
-		guests: ''
-	};
-
-	toggleBtn?.addEventListener('click', () => {
-		if (card) {
-			const isHidden = card.style.display === 'none';
-			card.style.display = isHidden ? 'block' : 'none';
-			if (isHidden) {
-				resetQuiz();
-			}
-		}
-	});
-
-	closeBtn?.addEventListener('click', () => {
-		if (card) card.style.display = 'none';
-	});
-
-	optBtns.forEach((btn) => {
-		btn.addEventListener('click', () => {
-			const key = btn.getAttribute('data-key');
-			const val = btn.getAttribute('data-val');
-			if (key) answers[key] = val || '';
-
-			const parentStep = btn.closest('.recommender-step');
-			const currentStepNum = parseInt(parentStep?.getAttribute('data-step') || '1', 10);
-
-			if (currentStepNum < 4) {
-				goToStep(currentStepNum + 1);
-			} else {
-				showResult();
-			}
-		});
-	});
-
-	restartBtn?.addEventListener('click', () => {
-		resetQuiz();
-	});
-
-	function goToStep(stepNum: number | string) {
-		steps.forEach((step) => {
-			if (step.getAttribute('data-step') === String(stepNum)) {
-				step.classList.add('active');
-			} else {
-				step.classList.remove('active');
-			}
-		});
-	}
-
-	function resetQuiz() {
-		answers.event = '';
-		answers.rsvp = '';
-		answers.passes = '';
-		answers.guests = '';
-		// Restore result panel to its SSR default so a previous result
-		// doesn't leak across quiz sessions.
-		const resultTitle = document.getElementById('recommender-result-title');
-		const resultPrice = document.getElementById('recommender-result-price');
-		const resultReason = document.getElementById('recommender-result-reason');
-		if (resultTitle) resultTitle.textContent = 'Premium';
-		if (resultPrice) resultPrice.textContent = '$1,499 MXN';
-		if (resultReason) resultReason.textContent = 'Ideal para su evento: equilibra diseño refinado, confirmaciones automáticas y control de pases por invitado.';
-		goToStep(1);
-	}
-
-	function showResult() {
-		let recommendedPackage: string;
-		let price: string;
-		let value: number;
-		let promoCode: string;
-		let reason: string;
-
-		if (answers.rsvp === 'no' && answers.passes === 'no') {
-			recommendedPackage = 'Colección';
-			price = '$899 MXN';
-			value = 899;
-			promoCode = 'LANZAMIENTO-899';
-			reason = 'La mejor opción para su evento. Diseños listos de alta gama con todos los datos clave de su celebración sin complicaciones.';
-		} else if (answers.guests === 'large' && answers.passes === 'yes') {
-			recommendedPackage = 'Exclusivo';
-			price = '$2,299 MXN';
-			value = 2299;
-			promoCode = 'LANZAMIENTO-2299';
-			reason = 'Diseñado para eventos de gran escala. Brinda soporte premium, personalización completa e itinerarios detallados.';
-		} else if (answers.guests === 'large') {
-			recommendedPackage = 'Exclusivo';
-			price = '$2,299 MXN';
-			value = 2299;
-			promoCode = 'LANZAMIENTO-2299';
-			reason = 'Experiencia VIP de inicio a fin. Incluye maquetación a la medida, confirmaciones completas y asistencia prioritaria para grandes eventos.';
-		} else {
-			recommendedPackage = 'Premium';
-			price = '$1,499 MXN';
-			value = 1499;
-			promoCode = 'LANZAMIENTO-1499';
-			reason = 'El paquete favorito de nuestros clientes. Ofrece confirmaciones en tiempo real (RSVP) y control estricto de pases por familia.';
-		}
-
-		const resultTitle = document.getElementById('recommender-result-title');
-		const resultPrice = document.getElementById('recommender-result-price');
-		const resultReason = document.getElementById('recommender-result-reason');
-		const whatsappCta = document.querySelector('.recommender-cta-whatsapp') as HTMLAnchorElement;
-
-		if (resultTitle) resultTitle.textContent = recommendedPackage;
-		if (resultPrice) resultPrice.textContent = price;
-		if (resultReason) resultReason.textContent = reason;
-
-		if (whatsappCta) {
-			const phone = whatsappCta.getAttribute('data-phone') || '521000000000';
-			const baseMsg = `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${recommendedPackage}.\n\nCupón: ${promoCode}`;
-			whatsappCta.href = `https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`;
-			whatsappCta.setAttribute('data-promo-code', promoCode);
-			whatsappCta.setAttribute('data-track-value', String(value));
-			whatsappCta.setAttribute('data-package-interest', recommendedPackage.toLowerCase());
-			whatsappCta.setAttribute('data-package-name', recommendedPackage);
-
-			const iconHtml = whatsappCta.querySelector('svg')?.outerHTML || '';
-			whatsappCta.innerHTML = `${iconHtml} Cotizar paquete ${recommendedPackage}`;
-		}
-
-		goToStep('result');
-	}
-</script>

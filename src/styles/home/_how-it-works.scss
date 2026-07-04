@@ -2,7 +2,7 @@
 
 .how-it-works {
 	position: relative;
-	padding-block: clamp(2.6rem, 6vw, 4.65rem);
+	padding-block: clamp(2.6rem, 5vw, 4rem) clamp(3rem, 5.5vw, 5rem);
 	overflow: hidden;
 	background:
 		linear-gradient(
@@ -12,88 +12,251 @@
 		),
 		var(--color-surface-primary);
 
+	/* Subtle gold hairline top separator */
+	&__top-separator {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgb(var(--color-action-accent-rgb) / 0%) 0%,
+			rgb(var(--color-action-accent-rgb) / 20%) 20%,
+			rgb(var(--color-action-accent-rgb) / 35%) 50%,
+			rgb(var(--color-action-accent-rgb) / 20%) 80%,
+			rgb(var(--color-action-accent-rgb) / 0%) 100%
+		);
+	}
+
 	&__container {
 		width: min(1120px, calc(100% - 2rem));
 		margin-inline: auto;
 		display: grid;
-		grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-		gap: clamp(1.5rem, 5vw, 3.75rem);
+		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+		gap: clamp(1.75rem, 4.5vw, 4rem);
 		align-items: start;
 	}
 
+	/* === Left column: narrative === */
+	&__narrative {
+		display: contents;
+	}
+
 	&__header {
-		max-width: 25rem;
+		max-width: 26rem;
 		text-align: left;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__eyebrow {
+		display: inline-flex;
+		font-family: var(--font-body);
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		color: var(--color-action-accent);
+		margin: 0 0 0.7rem;
+		text-transform: uppercase;
 	}
 
 	&__title {
 		@include mixins.typography(display-2);
 
 		margin: 0;
-		font-size: clamp(2rem, 4vw, 3rem);
-		line-height: 1.08;
+		font-size: clamp(1.85rem, 4vw, 3rem);
+		line-height: 1.06;
+		letter-spacing: -0.01em;
 		color: var(--color-text-primary);
 	}
 
 	&__subtitle {
-		margin: 0.75rem 0 0;
+		margin: 0.65rem 0 0;
 		color: var(--color-text-secondary);
-		font-size: clamp(1rem, 1.7vw, 1.1rem);
-		line-height: 1.62;
+		font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+		line-height: 1.6;
 	}
 
-	&__steps {
-		display: grid;
-		gap: 0;
-		border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	/* === Right column: visual === */
+	&__visual {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1.25rem, 2.5vw, 1.75rem);
+		min-width: 0;
 	}
 
-	&__step {
+	/* === Delivery dossier — concierge handoff summary === */
+	&__dossier {
 		position: relative;
-		display: grid;
-		grid-template-columns: 5.5rem minmax(0, 1fr);
-		gap: clamp(0.85rem, 2vw, 1.25rem);
-		align-items: start;
-		padding-block: clamp(1.05rem, 2.4vw, 1.45rem);
-		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-		transition:
-			background-color 180ms ease,
-			padding-inline 180ms ease;
+		background: var(--color-surface-dark);
+		color: var(--color-text-on-dark);
+		border-radius: 12px;
+		padding: clamp(1.1rem, 2vw, 1.5rem);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+		box-shadow:
+			0 22px 50px -28px rgb(0 0 0 / 32%),
+			0 3px 10px rgb(0 0 0 / 16%);
+		overflow: hidden;
+	}
 
-		&:hover {
-			padding-inline: 0.65rem;
-			background: rgb(var(--color-overlay-light-rgb) / 50%);
+	&__dossier-head {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding-bottom: 1rem;
+		margin-bottom: 0.6rem;
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
+	}
+
+	&__dossier-eyebrow {
+		font-family: var(--font-body);
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-action-accent-rgb) / 70%);
+		line-height: 1;
+	}
+
+	&__dossier-title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+		font-weight: 600;
+		color: var(--color-text-on-dark);
+		line-height: 1.2;
+		letter-spacing: -0.005em;
+	}
+
+	&__dossier-subtitle {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		font-weight: 400;
+		color: rgb(var(--color-text-on-dark-rgb) / 60%);
+		line-height: 1.4;
+		letter-spacing: 0.01em;
+	}
+
+	&__dossier-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__dossier-row {
+		display: grid;
+		grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.7rem;
+		padding: 0.65rem 0;
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+		font-family: var(--font-body);
+
+		&:last-child {
+			border-bottom: none;
 		}
 	}
 
-	&__step-head {
-		display: grid;
+	&__dossier-check {
+		width: 1.15rem;
+		height: 1.15rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		background: rgb(var(--color-action-accent-rgb) / 14%);
+		color: var(--color-action-accent);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+		flex-shrink: 0;
+
+		svg {
+			width: 11px;
+			height: 11px;
+		}
+	}
+
+	&__dossier-label {
+		font-size: 0.88rem;
+		font-weight: 500;
+		color: var(--color-text-on-dark);
+		letter-spacing: 0.01em;
+		line-height: 1.2;
+		min-width: 0;
+	}
+
+	&__dossier-status {
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: rgb(var(--color-action-accent-rgb) / 80%);
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	&__dossier-foot {
+		display: flex;
+		align-items: center;
 		gap: 0.55rem;
-		justify-items: start;
+		margin: 0.95rem 0 0;
+		padding-top: 0.85rem;
+		border-top: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
+		font-family: var(--font-body);
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		color: rgb(var(--color-text-on-dark-rgb) / 60%);
+		line-height: 1.3;
+	}
+
+	&__dossier-foot-mark {
+		width: 4px;
+		height: 4px;
+		border-radius: 999px;
+		background: rgb(var(--color-text-on-dark-rgb) / 50%);
+		flex-shrink: 0;
+	}
+
+	/* === Steps (compact editorial timeline) === */
+	&__steps {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
+	}
+
+	&__step {
+		display: grid;
+		grid-template-columns: 2.2rem minmax(0, 1fr);
+		gap: 0.85rem;
+		align-items: start;
+		padding-block: 0.75rem;
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
+		transition: padding-inline 180ms ease;
+
+		&:hover {
+			padding-inline: 0.4rem;
+		}
 	}
 
 	&__step-number {
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		color: var(--color-action-accent);
 		font-family: var(--font-body);
 		font-size: 0.78rem;
 		font-weight: 800;
-		letter-spacing: 0.16em;
+		letter-spacing: 0.08em;
+		line-height: 1;
+		padding-top: 0.06rem;
 	}
 
-	&__step-icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.2rem;
-		height: 2.2rem;
-		border-radius: 999px;
-		background: rgb(var(--color-action-accent-rgb) / 8%);
-		color: var(--color-action-accent);
-	}
-
-	&__step-copy {
+	&__step-content {
 		min-width: 0;
 	}
 
@@ -101,18 +264,45 @@
 		@include mixins.typography(h3);
 
 		margin: 0;
-		font-size: clamp(1.08rem, 2vw, 1.28rem);
-		line-height: 1.28;
+		font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+		line-height: 1.25;
 		color: var(--color-text-primary);
 	}
 
 	&__step-description {
 		@include mixins.typography(body-small);
 
-		max-width: 36rem;
-		margin: 0.42rem 0 0;
+		max-width: 30rem;
+		margin: 0.18rem 0 0;
 		color: var(--color-text-secondary);
-		line-height: 1.56;
+		line-height: 1.45;
+		font-size: clamp(0.85rem, 1.2vw, 0.92rem);
+	}
+
+	/* === CTA containers === */
+	&__actions--desktop {
+		display: block;
+		margin-top: auto;
+		padding-top: 1.4rem;
+	}
+
+	&__actions--mobile {
+		display: none;
+	}
+
+	&__cta {
+		&.whatsapp-button {
+			min-width: 0;
+			padding: 0.6rem 1.75rem;
+			box-shadow: 0 6px 20px rgb(0 0 0 / 10%);
+			font-weight: 600;
+			letter-spacing: 0.03em;
+
+			svg {
+				width: 18px;
+				height: 18px;
+			}
+		}
 	}
 }
 
@@ -126,16 +316,24 @@
 	}
 }
 
+/* === Tablet === */
 @include mixins.respond-below(lg) {
 	.how-it-works {
 		&__container {
 			grid-template-columns: 1fr;
+			gap: clamp(1.5rem, 4vw, 2rem);
+		}
+
+		&__narrative {
+			display: flex;
+			justify-content: center;
 		}
 
 		&__header {
 			max-width: 44rem;
 			margin-inline: auto;
 			text-align: center;
+			align-items: center;
 		}
 
 		&__subtitle {
@@ -143,51 +341,155 @@
 			margin-inline: auto;
 		}
 
-		&__steps {
-			max-width: 48rem;
+		&__visual {
+			max-width: 36rem;
 			margin-inline: auto;
+			width: 100%;
+		}
+
+		&__actions--desktop {
+			display: none;
+		}
+
+		&__actions--mobile {
+			display: flex;
+			justify-content: center;
+		}
+
+		&__cta {
+			&.whatsapp-button {
+				min-width: 220px;
+			}
 		}
 	}
 }
 
+/* === Mobile === */
 @include mixins.respond-below(sm) {
 	.how-it-works {
-		padding-block: clamp(2.15rem, 8vw, 3.25rem);
+		padding-block: clamp(2rem, 6.5vw, 2.8rem) clamp(2.4rem, 7vw, 3.4rem);
 
 		&__container {
 			width: min(100% - 1.25rem, 44rem);
-			gap: 1.2rem;
+			gap: 1.4rem;
 		}
 
 		&__header {
 			text-align: left;
+			align-items: flex-start;
+		}
+
+		&__eyebrow {
+			margin-bottom: 0.5rem;
+		}
+
+		&__title {
+			font-size: clamp(1.5rem, 6.5vw, 1.9rem);
+			letter-spacing: -0.01em;
+			line-height: 1.1;
 		}
 
 		&__subtitle {
-			margin-inline: 0;
+			margin-top: 0.5rem;
+			font-size: 0.92rem;
 		}
 
-		&__step {
-			grid-template-columns: 3.15rem minmax(0, 1fr);
-			gap: 0.75rem;
-			padding-block: 0.9rem;
+		&__visual {
+			gap: 1.1rem;
+		}
 
-			&:hover {
-				padding-inline: 0;
-				background: transparent;
+		&__dossier {
+			padding: 1rem;
+			border-radius: 10px;
+		}
+
+		&__dossier-head {
+			padding-bottom: 0.85rem;
+			margin-bottom: 0.5rem;
+		}
+
+		&__dossier-eyebrow {
+			font-size: 0.6rem;
+		}
+
+		&__dossier-title {
+			font-size: 1.1rem;
+		}
+
+		&__dossier-subtitle {
+			font-size: 0.74rem;
+		}
+
+		&__dossier-row {
+			grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+			gap: 0.55rem;
+			padding: 0.55rem 0;
+		}
+
+		&__dossier-check {
+			width: 1.05rem;
+			height: 1.05rem;
+
+			svg {
+				width: 10px;
+				height: 10px;
 			}
 		}
 
-		&__step-icon {
-			display: none;
+		&__dossier-label {
+			font-size: 0.82rem;
+		}
+
+		&__dossier-status {
+			font-size: 0.62rem;
+		}
+
+		&__dossier-foot {
+			margin-top: 0.8rem;
+			padding-top: 0.7rem;
+			font-size: 0.65rem;
+		}
+
+		&__steps {
+			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
+		}
+
+		&__step {
+			grid-template-columns: 1.8rem minmax(0, 1fr);
+			gap: 0.5rem;
+			padding-block: 0.6rem;
+
+			&:hover {
+				padding-inline: 0;
+			}
 		}
 
 		&__step-number {
-			font-size: 0.72rem;
+			font-size: 0.68rem;
+		}
+
+		&__step-title {
+			font-size: 0.92rem;
+			line-height: 1.22;
 		}
 
 		&__step-description {
-			margin-top: 0.34rem;
+			margin-top: 0.12rem;
+			font-size: 0.82rem;
+			line-height: 1.4;
+		}
+
+		&__actions--mobile {
+			margin-top: 0.4rem;
+			justify-content: flex-start;
+		}
+
+		&__cta {
+			&.whatsapp-button {
+				min-width: 0;
+				width: auto;
+				padding: 0.55rem 1.75rem;
+			}
 		}
 	}
 }

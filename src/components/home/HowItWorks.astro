@@ -2,8 +2,10 @@
 // src/components/home/HowItWorks.astro
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import Icon from '@components/common/icons/Icon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+
 import type { HowItWorksData } from '@/interfaces/ui/sections/landing-page.interface';
+import { getContactPhone } from '@/utils/whatsapp';
 
 import '@/styles/home/_how-it-works.scss';
 
@@ -12,31 +14,100 @@ interface Props {
 }
 
 const { data } = Astro.props;
+const phone = getContactPhone();
+const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación digital con panel de invitados.';
 ---
 
 <Section id="como-funciona" class="how-it-works" data-track-section="how-it-works" data-screenshot="landing-process">
-	<Container class="how-it-works__container">
-		<header class="how-it-works__header">
-			<h2 class="how-it-works__title">{data.title}</h2>
-			<p class="how-it-works__subtitle">{data.subtitle}</p>
-		</header>
+	<div class="how-it-works__top-separator" aria-hidden="true"></div>
 
-		<div class="how-it-works__steps">
-			{
-				data.steps.map((step, index) => (
-					<div class="how-it-works__step" data-step={index + 1}>
-						<div class="how-it-works__step-head">
-							<div class="how-it-works__step-number" aria-hidden="true">0{index + 1}</div>
-							<div class="how-it-works__step-icon" aria-hidden="true">
-								<Icon name={step.icon} size={22} />
-							</div>
-						</div>
-						<div class="how-it-works__step-copy">
-							<h3 class="how-it-works__step-title">{step.title}</h3>
-							<p class="how-it-works__step-description">{step.description}</p>
-						</div>
+	<Container class="how-it-works__container">
+		<div class="how-it-works__narrative">
+			<header class="how-it-works__header">
+				{data.eyebrow && <p class="how-it-works__eyebrow">{data.eyebrow}</p>}
+				<h2 class="how-it-works__title">{data.title}</h2>
+				<p class="how-it-works__subtitle">{data.subtitle}</p>
+
+				{data.cta && (
+					<div class="how-it-works__actions how-it-works__actions--desktop">
+						<WhatsAppButton
+							className="how-it-works__cta"
+							phone={phone}
+							message={ctaMessage}
+							label={data.cta.label}
+							trackSection="how-it-works"
+							trackCta="whatsapp-process"
+							ariaLabel="Empezar mi invitación por WhatsApp"
+						/>
 					</div>
-				))
+				)}
+			</header>
+		</div>
+
+		<div class="how-it-works__visual">
+			{
+				data.deliveryDossier && (
+					<article class="how-it-works__dossier" aria-label="Resumen de entrega preparada">
+						<header class="how-it-works__dossier-head">
+							<span class="how-it-works__dossier-eyebrow">Resumen de entrega</span>
+							<h3 class="how-it-works__dossier-title">{data.deliveryDossier.title}</h3>
+							{data.deliveryDossier.subtitle && (
+								<p class="how-it-works__dossier-subtitle">{data.deliveryDossier.subtitle}</p>
+							)}
+						</header>
+
+						<ul class="how-it-works__dossier-list" role="list">
+							{data.deliveryDossier.rows.map((row) => (
+								<li class="how-it-works__dossier-row">
+									<span class="how-it-works__dossier-check" aria-hidden="true">
+										<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M3 8.5L6.5 12L13 4.5" />
+										</svg>
+									</span>
+									<span class="how-it-works__dossier-label">{row.label}</span>
+									<span class="how-it-works__dossier-status">{row.status}</span>
+								</li>
+							))}
+						</ul>
+
+						{data.deliveryDossier.footnote && (
+							<footer class="how-it-works__dossier-foot">
+								<span class="how-it-works__dossier-foot-mark" aria-hidden="true"></span>
+								<span>{data.deliveryDossier.footnote}</span>
+							</footer>
+						)}
+					</article>
+				)
+			}
+
+			<ol class="how-it-works__steps" role="list">
+				{
+					data.steps.map((step, index) => (
+						<li class="how-it-works__step" data-step={index + 1}>
+							<span class="how-it-works__step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+							<div class="how-it-works__step-content">
+								<h3 class="how-it-works__step-title">{step.title}</h3>
+								<p class="how-it-works__step-description">{step.description}</p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+
+			{
+				data.cta && (
+					<div class="how-it-works__actions how-it-works__actions--mobile">
+						<WhatsAppButton
+							className="how-it-works__cta"
+							phone={phone}
+							message={ctaMessage}
+							label={data.cta.label}
+							trackSection="how-it-works"
+							trackCta="whatsapp-process"
+							ariaLabel="Empezar mi invitación por WhatsApp"
+						/>
+					</div>
+				)
 			}
 		</div>
 	</Container>
