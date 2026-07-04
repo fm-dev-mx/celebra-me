@@ -20,6 +20,7 @@ interface Props {
 	eventType?: string;
 	eventLabel?: string;
 	ariaLabel?: string;
+	preserveMessage?: boolean;
 }
 
 const {
@@ -40,6 +41,7 @@ const {
 	eventType,
 	eventLabel,
 	ariaLabel = 'Contactar por WhatsApp',
+	preserveMessage = false,
 } = Astro.props;
 
 // If no phone is explicitly provided, fall back to empty string (caller provides phone).
@@ -71,6 +73,7 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 	data-track-value={trackValue}
 	data-track-currency={trackCurrency}
 	data-phone={phone}
+	data-preserve-message={preserveMessage ? 'true' : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
 	{label}
@@ -98,6 +101,8 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 	};
 
 	const ensureWhatsAppPromoFolio = (anchor: HTMLAnchorElement) => {
+		if (anchor.getAttribute('data-preserve-message') === 'true') return;
+
 		const url = new URL(anchor.href);
 		const baseMessage =
 			url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
@@ -110,9 +115,15 @@ const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
 		const isPackage = anchor.getAttribute('data-package-interest');
 		const packageName = anchor.getAttribute('data-package-name') || '';
 		const eventLabel = anchor.getAttribute('data-event-label') || '';
+		const trackValue = anchor.getAttribute('data-track-value') || '';
+		const trackCurrency = anchor.getAttribute('data-track-currency') || '';
+		const packagePrice =
+			trackValue && trackCurrency
+				? ` de $${Number(trackValue).toLocaleString('es-MX')} ${trackCurrency}`
+				: '';
 
 		const messageHeader = (isPackage && packageName)
-			? `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete ${packageName}.`
+			? `Hola, quiero elegir el paquete ${packageName}${packagePrice} para mi invitación digital.`
 			: `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.`;
 
 		const messageParts = [
