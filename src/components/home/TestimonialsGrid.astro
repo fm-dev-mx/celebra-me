@@ -1,38 +1,195 @@
 ---
-interface Testimonial {
+// src/components/home/TestimonialsGrid.astro
+// Compact editorial quote rotator — one testimonial at a time
+
+interface TestimonialItem {
 	name: string;
 	text: string;
 	role?: string;
+	guests?: string;
 }
 
 interface Props {
+	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
-	testimonials: Testimonial[];
+	testimonials: TestimonialItem[];
+	proofLine?: string;
 }
 
-const { testimonials = [] } = Astro.props;
+const {
+	eyebrow,
+	title,
+	subtitle,
+	testimonials = [],
+	proofLine,
+} = Astro.props;
 
-if (!testimonials.length) {
-	return null;
-}
+const total = testimonials.length;
+if (!total) return null;
 ---
 
-<div class="testimonials">
-	<div class="testimonials__carousel" role="list" aria-label="Opiniones de clientes">
-		{
-			testimonials.map((testimonial) => (
-				<article class="testimonials__card" role="listitem">
-					<span class="testimonials__quote-icon">“</span>
-					<p class="testimonials__text">“{testimonial.text}”</p>
-					<div class="testimonials__footer">
-						<span class="testimonials__name">{testimonial.name}</span>
-						{testimonial.role && (
-							<span class="testimonials__role">{testimonial.role}</span>
-						)}
-					</div>
-				</article>
-			))
-		}
+<div class="testimonials" data-testimonials-rotator>
+	<!-- Left column — editorial copy -->
+	<div class="testimonials__left">
+		{eyebrow && <p class="testimonials__eyebrow">{eyebrow}</p>}
+		{title && <h2 class="testimonials__title">{title}</h2>}
+		{subtitle && <p class="testimonials__desc">{subtitle}</p>}
+		{proofLine && <p class="testimonials__proof-line">{proofLine}</p>}
+	</div>
+
+	<!-- Right column — rotator -->
+	<div class="testimonials__right">
+		<div class="testimonials__rotator">
+			{
+				testimonials.map((t, i) => (
+					<article
+						class:list={['testimonials__card', { 'testimonials__card--active': i === 0 }]}
+						role="group"
+						aria-roledescription="slide"
+						aria-label={`Testimonio ${i + 1} de ${total}`}
+					>
+						<p class="testimonials__text">“{t.text}”</p>
+						<footer class="testimonials__footer">
+							<span class="testimonials__name">{t.name}</span>
+							{t.role && <span class="testimonials__role">{t.role}</span>}
+							{t.guests && <span class="testimonials__guests">{t.guests}</span>}
+						</footer>
+					</article>
+				))
+			}
+		</div>
+
+		<!-- Indicator: counter + dots -->
+		<div class="testimonials__indicator" aria-hidden="true">
+			<span class="testimonials__counter">01 / {String(total).padStart(2, '0')}</span>
+			<span class="testimonials__dots">
+				{
+					Array.from({ length: total }, (_, i) => (
+						<span
+							class:list={['testimonials__dot', { 'testimonials__dot--active': i === 0 }]}
+						></span>
+					))
+				}
+			</span>
+		</div>
 	</div>
 </div>
+
+<script>
+	/**
+	 * Minimal testimonial rotator — one card at a time.
+	 * Autoplay pauses on hover/focus. Respects prefers-reduced-motion.
+	 */
+	const AUTOPLAY_MS = 7500;
+
+	const root: HTMLElement | null = document.querySelector('[data-testimonials-rotator]');
+	if (!root) throw new Error('Missing [data-testimonials-rotator]');
+
+	const cards: HTMLElement[] = Array.from(root.querySelectorAll('.testimonials__card'));
+	const dots: HTMLElement[] = Array.from(root.querySelectorAll('.testimonials__dot'));
+	const counter: HTMLElement | null = root.querySelector('.testimonials__counter');
+	const rotatorEl: HTMLElement | null = root.querySelector('.testimonials__rotator');
+	const totalCards: number = cards.length;
+	let currentIndex = 0;
+	let timer: ReturnType<typeof setInterval> | null = null;
+
+	const shouldReduceMotion = (): boolean =>
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	const update = (index: number): void => {
+		cards.forEach((card, i) => {
+			card.classList.toggle('testimonials__card--active', i === index);
+			card.setAttribute('aria-hidden', String(i !== index));
+		});
+		dots.forEach((dot, i) => {
+			dot.classList.toggle('testimonials__dot--active', i === index);
+		});
+		if (counter) {
+			counter.textContent = `${String(index + 1).padStart(2, '0')} / ${String(totalCards).padStart(2, '0')}`;
+		}
+		currentIndex = index;
+	};
+
+	const advance = (): void => {
+		update((currentIndex + 1) % totalCards);
+	};
+
+	const start = (): void => {
+		stop();
+		if (!shouldReduceMotion()) {
+			timer = setInterval(advance, AUTOPLAY_MS);
+		}
+	};
+
+	const stop = (): void => {
+		if (timer) {
+			clearInterval(timer);
+			timer = null;
+		}
+	};
+
+	// Hover/focus pause
+	rotatorEl?.addEventListener('mouseenter', stop);
+	rotatorEl?.addEventListener('mouseleave', start);
+	rotatorEl?.addEventListener('focusin', stop);
+	rotatorEl?.addEventListener('focusout', start);
+
+	// Reduced motion live switch
+	const motionMq: MediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
+	motionMq.addEventListener('change', (e: MediaQueryListEvent) => {
+		if (e.matches) stop();
+		else start();
+	});
+
+	// Init
+	update(0);
+	start();
+</script>
+
+<style>
+	/* CSS-only reveal on scroll — triggered by section .is-visible from global observer */
+	.testimonials__left {
+		opacity: 0;
+		transform: translateY(12px);
+		transition:
+			opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+		transition-delay: 0.05s;
+	}
+
+	.testimonials__rotator {
+		opacity: 0;
+		transform: translateY(12px);
+		transition:
+			opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+		transition-delay: 0.2s;
+	}
+
+	.testimonials__indicator {
+		opacity: 0;
+		transition: opacity 0.6s ease;
+		transition-delay: 0.35s;
+	}
+
+	:global(.testimonials-section.is-visible) .testimonials__left,
+	:global(#testimonios.is-visible) .testimonials__left,
+	:global(.testimonials-section.is-visible) .testimonials__rotator,
+	:global(#testimonios.is-visible) .testimonials__rotator,
+	:global(.testimonials-section.is-visible) .testimonials__indicator,
+	:global(#testimonios.is-visible) .testimonials__indicator {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.testimonials__left,
+		.testimonials__rotator,
+		.testimonials__indicator {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+</style>

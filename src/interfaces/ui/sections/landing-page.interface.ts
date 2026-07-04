@@ -97,14 +97,19 @@ export interface PricingData {
 	tiers: PricingTier[];
 }
 
+export interface TestimonialItem {
+	name: string;
+	text: string;
+	role?: string;
+	guests?: string;
+}
+
 export interface TestimonialsData {
+	eyebrow?: string;
 	title: string;
 	subtitle?: string;
-	testimonials: Array<{
-		name: string;
-		text: string;
-		role?: string;
-	}>;
+	testimonials: TestimonialItem[];
+	proofLine?: string;
 }
 
 export interface FAQData {

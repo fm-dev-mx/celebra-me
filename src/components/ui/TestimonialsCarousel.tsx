@@ -1,3 +1,8 @@
+/** @deprecated Replaced by TestimonialsGrid.astro (static editorial grid). Kept for reference only — do not use in new code. */
+// The testimonials section now uses a static editorial grid (TestimonialsGrid.astro + _testimonials.scss).
+// No client-side carousel or framer-motion hydration is needed for this section.
+// Revisit only if a concrete UX requirement emerges that justifies React hydration cost.
+
 import React from 'react';
 import { motion } from 'framer-motion';
 

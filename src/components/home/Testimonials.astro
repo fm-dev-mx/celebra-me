@@ -2,31 +2,26 @@
 // src/components/home/Testimonials.astro
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
 import TestimonialsGrid from '@components/home/TestimonialsGrid.astro';
 
 import type { TestimonialsData } from '@/interfaces/ui/sections/landing-page.interface';
 
-// Import stylesheet
 import '@/styles/home/_testimonials.scss';
 
 interface Props {
 	data: TestimonialsData;
 }
 
-// Destructure the data prop
 const { data } = Astro.props;
 ---
 
-<!-- Testimonials section wrapper -->
-<Section id="testimonios" fullHeight={true} fullWidth={true} data-screenshot="landing-testimonials">
-	<!-- Container wrapper -->
+<Section
+	id="testimonios"
+	class="testimonials-section"
+	fullWidth={true}
+	data-screenshot="landing-testimonials"
+>
 	<Container class="w-full">
-		<!-- Section title -->
-		<SectionTitle color="text-secondary-dark" extraClass="testimonials__title-text">
-			{data.title}
-		</SectionTitle>
-		{data.subtitle && <p class="testimonials__subtitle">{data.subtitle}</p>}
 		<TestimonialsGrid {...data} />
 	</Container>
 </Section>

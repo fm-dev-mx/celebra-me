@@ -1,149 +1,392 @@
 @use '../global/mixins' as mixins;
 
-.testimonials {
-	padding: var(--spacing-xl) 0;
+// ---------------------------------------------------------------------------
+// Testimonials — compact editorial quote rotator
+// Warm espresso palette · one card at a time · boutique hotel mood
+// ---------------------------------------------------------------------------
 
-	&__title-text {
-		font-family: var(--testimonials-title-font);
-		font-size: clamp(2.5rem, 5vw, 3.5rem);
-		color: var(--testimonials-title-color);
-		letter-spacing: var(--testimonials-title-letter-spacing);
-		font-weight: var(--testimonials-title-weight);
-		position: relative;
-		padding-bottom: 1.5rem;
-		text-align: center;
+.testimonials-section {
+	position: relative;
+	background: var(--color-soft-black, #080706);
 
-		&::after {
-			content: '';
-			position: absolute;
-			bottom: 0;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 80px;
-			height: 2px;
-			background: var(--testimonials-title-underline-bg);
-		}
-	}
-
-	&__subtitle {
-		max-width: 42rem;
-		margin: 0 auto var(--spacing-xl);
-		color: var(--testimonials-text-color);
-		font-family: var(--font-body);
-		font-size: clamp(1rem, 2vw, 1.12rem);
-		line-height: 1.6;
-		text-align: center;
-	}
-
-	&__carousel {
-		display: flex;
-		gap: var(--spacing-component-gap);
-		margin-inline: calc(var(--spacing-md) * -1);
-		padding: 0 var(--spacing-md) var(--spacing-sm);
-		overflow-x: auto;
-		overscroll-behavior-x: contain;
-		scroll-snap-type: x mandatory;
-		scrollbar-color: var(--testimonials-card-border) transparent;
-
-		@include mixins.respond-to('lg') {
-			margin-inline: 0;
-			padding-inline: 0;
-		}
-	}
-
-	&__card {
-		flex: 0 0 min(86vw, 25rem);
-		background: var(--testimonials-card-bg);
-		backdrop-filter: blur(var(--testimonials-card-backdrop-blur));
-		border: 1px solid var(--testimonials-card-border);
-		border-radius: var(--testimonials-card-border-radius);
-		padding: var(--spacing-12) var(--spacing-10);
-		position: relative;
-		overflow: hidden;
-		box-shadow: var(--testimonials-card-shadow);
-		scroll-snap-align: center;
-		transition: var(--testimonials-card-transition);
-
-		@include mixins.respond-to('md') {
-			flex-basis: min(42vw, 25rem);
-		}
-
-		@include mixins.respond-to('lg') {
-			flex-basis: calc((100% - (var(--spacing-component-gap) * 2)) / 3);
-			scroll-snap-align: start;
-		}
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 3px;
-			background: var(--testimonials-card-accent-bg);
-			opacity: var(--testimonials-card-accent-opacity);
-		}
-
-		&:hover {
-			transform: var(--testimonials-card-hover-transform);
-			background: var(--testimonials-card-hover-bg);
-			border-color: var(--testimonials-card-hover-border);
-			box-shadow: var(--testimonials-card-hover-shadow);
-
-			.testimonials__quote-icon {
-				opacity: var(--testimonials-quote-icon-hover-opacity);
-				transform: var(--testimonials-quote-icon-hover-transform);
-			}
-		}
-	}
-
-	&__quote-icon {
+	// Gold hairline top separator (matches other editorial bands)
+	&::before {
+		content: '';
 		position: absolute;
-		top: 1.5rem;
-		right: 1.5rem;
-		font-size: 5rem;
-		color: var(--testimonials-quote-icon-color);
-		opacity: var(--testimonials-quote-icon-opacity);
-		font-family: serif;
-		line-height: 1;
-		transition:
-			opacity var(--duration-snappy) var(--ease-standard),
-			color var(--duration-snappy) var(--ease-standard);
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgb(var(--color-action-accent-rgb) / 0%) 0%,
+			rgb(var(--color-action-accent-rgb) / 18%) 20%,
+			rgb(var(--color-action-accent-rgb) / 30%) 50%,
+			rgb(var(--color-action-accent-rgb) / 18%) 80%,
+			rgb(var(--color-action-accent-rgb) / 0%) 100%
+		);
+		pointer-events: none;
+	}
+}
+
+// ===========================================================================
+// Main container
+// ===========================================================================
+
+.testimonials {
+	position: relative;
+	width: 100%;
+	max-width: min(1080px, calc(100% - 2rem));
+	margin-inline: auto;
+	padding-block: clamp(2.8rem, 5vw, 4.5rem) clamp(2.5rem, 4.5vw, 4rem);
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: clamp(2rem, 4vw, 3.5rem);
+	align-items: start;
+
+	// Subtle warm radial glow behind the card
+	&::after {
+		content: '';
+		position: absolute;
+		top: 10%;
+		right: 5%;
+		width: min(500px, 50%);
+		height: min(400px, 60%);
+		background: radial-gradient(
+			ellipse at center,
+			rgb(var(--color-action-accent-rgb) / 4%) 0%,
+			transparent 70%
+		);
+		pointer-events: none;
+		z-index: 0;
+	}
+}
+
+// ===========================================================================
+// Left column — editorial copy
+// ===========================================================================
+
+.testimonials__left {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	position: relative;
+	z-index: 1;
+}
+
+.testimonials__eyebrow {
+	margin: 0 0 0.6rem;
+	color: var(--color-action-accent, #d8a73a);
+	font-family: var(--font-body);
+	font-size: clamp(0.62rem, 0.85vw, 0.72rem);
+	font-weight: 700;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	line-height: 1.4;
+}
+
+.testimonials__title {
+	@include mixins.typography(display-2);
+
+	margin: 0;
+	max-width: 22rem;
+	color: var(--testimonials-title-color, rgb(247 241 230 / 96%));
+	font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+
+	// Fine gold underline
+	&::after {
+		content: '';
+		display: block;
+		width: clamp(50px, 6vw, 80px);
+		height: 1px;
+		margin-top: clamp(0.7rem, 1.2vw, 1rem);
+		background: linear-gradient(
+			90deg,
+			rgb(var(--color-action-accent-rgb) / 60%),
+			rgb(var(--color-action-accent-rgb) / 20%)
+		);
+	}
+}
+
+.testimonials__desc {
+	margin: clamp(0.6rem, 1vw, 0.9rem) 0 0;
+	max-width: 26rem;
+	color: rgb(247 241 230 / 60%);
+	font-family: var(--font-body);
+	font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+	line-height: 1.65;
+}
+
+// Proof line — refined dot-separated close
+.testimonials__proof-line {
+	margin-top: auto;
+	padding-top: clamp(1rem, 1.8vw, 1.5rem);
+	color: rgb(247 241 230 / 45%);
+	font-family: var(--font-body);
+	font-size: clamp(0.72rem, 0.9vw, 0.8rem);
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	line-height: 1.5;
+
+	// Style the middle dots with gold
+	:global(·) {
+		color: rgb(var(--color-action-accent-rgb) / 50%);
+	}
+}
+
+// ===========================================================================
+// Right column — rotator
+// ===========================================================================
+
+.testimonials__right {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+// Card stack — only active card is visible
+.testimonials__rotator {
+	position: relative;
+}
+
+.testimonials__card {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+		visibility 0s 0.5s;
+	pointer-events: none;
+	background: rgb(var(--color-overlay-light-rgb) / 3%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
+	border-radius: 2px;
+	padding: clamp(1.1rem, 1.6vw, 1.5rem) clamp(1.25rem, 1.8vw, 1.75rem);
+	display: flex;
+	flex-direction: column;
+
+	// Thin champagne accent line at top
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgb(var(--color-action-accent-rgb) / 0%) 5%,
+			rgb(var(--color-action-accent-rgb) / 30%) 30%,
+			rgb(var(--color-action-accent-rgb) / 20%) 70%,
+			rgb(var(--color-action-accent-rgb) / 0%) 95%
+		);
 		pointer-events: none;
 	}
 
-	&__text {
-		font-family: var(--testimonials-text-font);
-		font-size: var(--testimonials-text-size);
-		line-height: var(--testimonials-text-line-height);
-		color: var(--testimonials-text-color);
-		margin-bottom: var(--spacing-10);
-		font-style: var(--testimonials-text-style);
+	&--active {
+		opacity: 1;
+		visibility: visible;
+		transition:
+			opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+			visibility 0s 0s;
 		position: relative;
-		z-index: 1;
-		letter-spacing: 0.01em;
+		pointer-events: auto;
 	}
+}
 
-	&__footer {
-		display: flex;
-		flex-direction: column;
-		border-top: 1px solid var(--testimonials-footer-border, rgb(var(--color-overlay-light-rgb) / 15%));
-		padding-top: var(--spacing-8);
+// Quote text
+.testimonials__text {
+	margin: 0;
+	font-family: var(--testimonials-text-font, var(--font-display, serif));
+	font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+	line-height: 1.7;
+	color: rgb(247 241 230 / 80%);
+	font-style: italic;
+	flex: 1;
+}
+
+// Footer — name / role / guests
+.testimonials__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.35rem 0.7rem;
+	margin-top: clamp(0.65rem, 1vw, 0.9rem);
+	padding-top: clamp(0.65rem, 1vw, 0.9rem);
+	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+}
+
+.testimonials__name {
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: clamp(0.75rem, 0.9vw, 0.85rem);
+	letter-spacing: 0.06em;
+	color: var(--color-action-accent, #d8a73a);
+	text-transform: uppercase;
+}
+
+.testimonials__role {
+	font-family: var(--font-body);
+	font-size: clamp(0.68rem, 0.8vw, 0.75rem);
+	color: rgb(247 241 230 / 40%);
+	letter-spacing: 0.04em;
+}
+
+.testimonials__guests {
+	font-family: var(--font-body);
+	font-size: clamp(0.65rem, 0.75vw, 0.72rem);
+	color: rgb(var(--color-action-accent-rgb) / 45%);
+	letter-spacing: 0.03em;
+	margin-left: auto;
+
+	&::before {
+		content: '·';
+		margin-right: 0.35rem;
+		color: rgb(var(--color-action-accent-rgb) / 25%);
 	}
+}
 
-	&__name {
-		font-weight: var(--testimonials-author-name-weight);
-		text-transform: var(--testimonials-author-name-transform);
-		letter-spacing: var(--testimonials-author-name-letter-spacing);
-		font-size: var(--testimonials-author-name-size);
-		color: var(--testimonials-author-name-color);
-		margin-bottom: 0.4rem;
+// ===========================================================================
+// Indicator — counter + dots
+// ===========================================================================
+
+.testimonials__indicator {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: clamp(0.75rem, 1.2vw, 1rem);
+	user-select: none;
+}
+
+.testimonials__counter {
+	font-family: var(--font-body);
+	font-size: clamp(0.68rem, 0.8vw, 0.75rem);
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	color: rgb(var(--color-action-accent-rgb) / 55%);
+	line-height: 1;
+}
+
+.testimonials__dots {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.testimonials__dot {
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: rgb(var(--color-action-accent-rgb) / 15%);
+	transition: background 0.4s ease;
+
+	&--active {
+		background: rgb(var(--color-action-accent-rgb) / 60%);
 	}
+}
 
-	&__role {
-		font-size: var(--testimonials-author-role-size);
-		text-transform: var(--testimonials-author-role-transform);
-		letter-spacing: var(--testimonials-author-role-letter-spacing);
-		color: var(--testimonials-author-role-color);
+// ===========================================================================
+// Tablet (md–lg)
+// ===========================================================================
+@include mixins.respond-below(lg) {
+	.testimonials {
+		gap: 2rem;
+		padding-block: 2.4rem 2.2rem;
+
+		&__title {
+			max-width: 20rem;
+			font-size: 1.6rem;
+		}
+	}
+}
+
+// ===========================================================================
+// Mobile (below md)
+// ===========================================================================
+@include mixins.respond-below(md) {
+	.testimonials {
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+		padding-block: clamp(1.6rem, 5vw, 2.2rem) clamp(1.4rem, 4vw, 1.8rem);
+		max-width: calc(100% - 1.25rem);
+
+		&::after {
+			right: auto;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 80%;
+			height: 50%;
+			top: 20%;
+		}
+
+		// Left column
+		&__left {
+			max-width: 100%;
+		}
+
+		&__eyebrow {
+			margin-bottom: 0.4rem;
+		}
+
+		&__title {
+			font-size: 1.35rem;
+			max-width: 100%;
+
+			&::after {
+				width: 50px;
+				margin-top: 0.6rem;
+			}
+		}
+
+		&__desc {
+			font-size: 0.85rem;
+			margin-top: 0.5rem;
+		}
+
+		&__proof-line {
+			margin-top: 0.75rem;
+			padding-top: 0.6rem;
+			font-size: 0.72rem;
+		}
+
+		// Right column — card
+		&__card {
+			padding: 1rem 1.15rem;
+		}
+
+		&__text {
+			font-size: 0.9rem;
+			line-height: 1.6;
+		}
+
+		&__footer {
+			margin-top: 0.65rem;
+			padding-top: 0.65rem;
+		}
+
+		&__indicator {
+			margin-top: 0.65rem;
+		}
+	}
+}
+
+// ===========================================================================
+// Reduced motion
+// ===========================================================================
+@include mixins.reduced-motion {
+	.testimonials__card {
+		transition:
+			opacity 0.3s ease,
+			visibility 0s;
+
+		&--active {
+			transition:
+				opacity 0.3s ease,
+				visibility 0s;
+		}
 	}
 }

@@ -88,26 +88,34 @@ export const landingData: LandingPageData = {
 		},
 	},
 	testimonials: {
-		title: 'Anfitriones que ganaron claridad',
+		eyebrow: 'EXPERIENCIAS QUE SE SIENTEN CUIDADAS',
+		title: 'La invitación también debe dar tranquilidad.',
 		subtitle:
-			'Experiencias reales de anfitriones que compartieron por WhatsApp, confirmaron asistencia y ordenaron mejor su evento.',
+			'Cuando la información está clara, sus invitados confirman mejor, preguntan menos y viven una experiencia más cuidada desde el primer mensaje.',
 		testimonials: [
 			{
-				name: 'Boda',
-				text: 'Pudimos enviar la invitación por WhatsApp y tener las confirmaciones más claras desde el primer día.',
-				role: 'Ceremonia nupcial',
+				name: 'Mariana G.',
+				text: 'Por primera vez no tuvimos que reenviar ubicación, horario ni detalles por separado. Todo estaba claro desde la invitación.',
+				role: 'Boda',
+				guests: '72 invitados',
 			},
 			{
-				name: 'Cliente de XV años',
-				text: 'La invitación se sintió premium y nos ayudó a explicar horarios, ubicación y pases sin repetir mensajes.',
-				role: 'Celebración de XV años',
+				name: 'Laura M.',
+				text: 'Mis invitados confirmaron desde WhatsApp y pudimos saber con tiempo quién realmente asistiría.',
+				role: 'XV años',
 			},
 			{
-				name: 'Baby shower',
-				text: 'El enlace reunió toda la información y fue fácil de compartir con familia e invitados.',
-				role: 'Celebración familiar',
+				name: 'Fernanda C.',
+				text: 'Se veía elegante, pero lo mejor fue lo práctica que resultó antes del evento.',
+				role: 'Boda civil',
+			},
+			{
+				name: 'Andrea R.',
+				text: 'Nos ayudó a ordenar la lista sin estar preguntando uno por uno.',
+				role: 'Bautizo',
 			},
 		],
+		proofLine: 'RSVP claro · Menos dudas · Información en un solo enlace',
 	},
 	pricing: {
 		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
