@@ -99,7 +99,7 @@
 		text-align: center;
 	}
 
-	@media (min-width: 48rem) {
+	@media (width >= 48rem) {
 		.gift-card__inner {
 			grid-template-columns: auto minmax(0, 1fr);
 			text-align: left;
