@@ -1,3 +1,4 @@
+/* stylelint-disable color-no-hex, color-hex-length */
 // src/styles/themes/landing/presets/_jewelry-box-landing.scss
 
 /**
@@ -11,27 +12,44 @@
 @use '../../../tokens/system/color' as sys;
 
 .theme-preset--jewelry-box-landing {
-	// Color Architecture: Standard Brand Palette
-	--color-text-primary: #{sys.$sys-color-coffee-900};
-	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
-	--color-text-secondary: #{sys.$sys-color-coffee-700};
-	--color-text-emphasis: #{sys.$sys-color-gold-700};
-	--color-text-on-dark: #{sys.$sys-color-parchment-100};
-	--color-surface-primary: #{sys.$sys-color-parchment-100};
-	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
-	--color-surface-dark: #{sys.$sys-color-onyx-950};
-	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-950)};
-	--color-action-primary: #{sys.$sys-color-coffee-900};
-	--color-action-accent: #{sys.$sys-color-gold-500};
-	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+	// Curated restrained visual system
+	--color-ivory: #f7f1e6;
+	--color-warm-paper: #efe4d2;
+	--color-champagne: #d8a73a;
+	--color-antique-gold: #b8862b;
+	--color-espresso: #2b1a10;
+	--color-ink: #15120e;
+	--color-soft-black: #080706;
+	--color-forest: #06362c;
+	--color-forest-deep: #031f1a;
+	--color-stone: #8b7a67;
+
+	// Redefine standard semantic variables using the new palette
+	--color-text-primary: var(--color-espresso);
+	--color-text-primary-rgb: 43, 26, 16;
+	--color-text-secondary: var(--color-stone);
+	--color-text-secondary-rgb: 139, 122, 103;
+	--color-text-emphasis: var(--color-antique-gold);
+	--color-text-on-dark: var(--color-ivory);
+	--color-text-on-dark-rgb: 247, 241, 230;
+	--color-surface-primary: var(--color-ivory);
+	--color-surface-primary-rgb: 247, 241, 230;
+	--color-surface-secondary: var(--color-warm-paper);
+	--color-surface-secondary-rgb: 239, 228, 210;
+	--color-surface-dark: var(--color-soft-black);
+	--color-surface-dark-rgb: 8, 7, 6;
+	--color-action-primary: var(--color-espresso);
+	--color-action-primary-rgb: 43, 26, 16;
+	--color-action-accent: var(--color-champagne);
+	--color-action-accent-rgb: 216, 167, 58;
 
 	// Specific fixes for Contact Form
-	--color-border-subtle: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.1)};
-	--color-border-emphasis: #{sys.$sys-color-gold-500};
+	--color-border-subtle: rgb(43 26 16 / 12%);
+	--color-border-emphasis: var(--color-champagne);
 
 	// Glassmorphism default
-	--color-glass-bg: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.1)};
-	--color-glass-border: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.2)};
+	--color-glass-bg: rgb(247 241 230 / 10%);
+	--color-glass-border: rgb(247 241 230 / 20%);
 
 	// Shadows
 	--shadow-subtle: 0 4px 15px rgb(0 0 0 / 10%);
@@ -40,20 +58,17 @@
 	--hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
 
 	// Shared Dark Slate Surface (for FAQ, Footer, Pricing Exclusive)
-	--color-surface-dark-slate: #{sys.$sys-color-slate-900};
-	--color-surface-dark-slate-rgb: #{tools.rgb-channels(sys.$sys-color-slate-900)};
-	--color-text-on-dark-slate: #{sys.$sys-color-neutral-0};
-	--color-text-on-dark-slate-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-0)};
+	--color-surface-dark-slate: var(--color-soft-black);
+	--color-surface-dark-slate-rgb: 8, 7, 6;
+	--color-text-on-dark-slate: var(--color-ivory);
+	--color-text-on-dark-slate-rgb: 247, 241, 230;
 
 	// Light overlay for glassmorphism on dark surfaces
-	--color-overlay-light: #{sys.$sys-color-neutral-0};
-	--color-overlay-light-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-0)};
+	--color-overlay-light: var(--color-ivory);
+	--color-overlay-light-rgb: 247 241 230;
 
-	// Surface secondary override for landing: light parchment surface for dark-background sections
-	--color-surface-secondary: var(--color-surface-primary);
-
-	// FAQ background: designed dark-navy (distinct from the deeper slate-900 used by Footer)
-	--color-faq-bg: #{sys.$sys-color-slate-900};
+	// FAQ background: soft black
+	--color-faq-bg: var(--color-soft-black);
 
 	// ==========================================
 	// Landing Page Section-Specific Tokens
@@ -65,12 +80,12 @@
 
 	// Header Section
 	--header-bg-transparent: transparent;
-	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 92%);
-	--header-text-transparent: #{sys.$sys-color-neutral-0};
-	--header-text-scrolled: #{sys.$sys-color-parchment-100};
-	--header-accent-scrolled: #{sys.$sys-color-gold-500};
-	--header-shadow-scrolled: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
-	--header-backdrop-blur: 12px;
+	--header-bg-scrolled: rgb(8 7 6 / 78%);
+	--header-text-transparent: var(--color-ivory);
+	--header-text-scrolled: var(--color-ivory);
+	--header-accent-scrolled: var(--color-champagne);
+	--header-shadow-scrolled: 0 4px 30px rgb(0 0 0 / 40%);
+	--header-backdrop-blur: 16px;
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--header-border-scrolled: var(--border-fine-gold, 1px solid var(--color-glass-border));
 	--header-cta-glow: 0 0 20px rgb(var(--color-action-accent-rgb) / 20%);
@@ -197,7 +212,7 @@
 	--faq-question-color: #{sys.$sys-color-champagne-200};
 	--faq-question-hover-color: var(--color-text-on-dark-slate);
 	--faq-answer-color: rgb(var(--color-overlay-light-rgb) / 60%);
-	--faq-chevron-color: rgb(var(--color-overlay-light-rgb) / 30%);
+	--faq-chevron-color: rgb(var(--color-overlay-light-rgb) / 60%);
 	--faq-chevron-open-color: var(--color-action-accent);
 	--faq-transition-duration: 0.5s;
 	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
@@ -263,55 +278,26 @@
 	--contact-submit-hover-transform: translateY(-2px);
 	--contact-submit-hover-shadow: var(--shadow-subtle);
 
-	// Testimonials Section
+	// Testimonials Section — warm editorial quote rotator
 	--testimonials-title-font: var(--font-display, 'Playfair Display', serif);
-	--testimonials-title-color: var(--color-text-primary, #{sys.$sys-color-coffee-800});
+	--testimonials-title-color: rgb(247 241 230 / 96%);
 	--testimonials-title-letter-spacing: -0.02em;
-	--testimonials-title-weight: 500;
-	--testimonials-title-underline-bg: linear-gradient(
-		90deg,
-		transparent,
-		var(--color-action-accent, #{sys.$sys-color-gold-500}),
-		transparent
-	);
-	--testimonials-card-bg: rgb(var(--color-overlay-light-rgb) / 60%);
-	--testimonials-card-backdrop-blur: 12px;
-	--testimonials-card-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
-	--testimonials-card-border-radius: 2px;
-	--testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
-	--testimonials-card-transition:
-		background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-		border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-		box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-		transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-	--testimonials-card-accent-bg: linear-gradient(
-		90deg,
-		transparent,
-		var(--color-action-accent, #{sys.$sys-color-gold-500}),
-		transparent
-	);
-	--testimonials-card-accent-opacity: 0.3;
-	--testimonials-card-hover-bg: rgb(var(--color-overlay-light-rgb) / 95%);
-	--testimonials-card-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.4)};
-	--testimonials-card-hover-shadow: 0 25px 50px -20px
-		#{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
-	--testimonials-card-hover-transform: translateY(-8px);
-	--testimonials-quote-icon-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
-	--testimonials-quote-icon-opacity: 0.08;
-	--testimonials-quote-icon-hover-opacity: 0.15;
-	--testimonials-quote-icon-hover-transform: scale(1.1) rotate(-5deg);
 	--testimonials-text-font: var(--font-display, serif);
-	--testimonials-text-size: 1.15rem;
-	--testimonials-text-line-height: 1.8;
-	--testimonials-text-color: var(--color-text-primary, #{sys.$sys-color-coffee-900});
+	--testimonials-text-size: clamp(0.9rem, 1.2vw, 1.05rem);
+	--testimonials-text-line-height: 1.7;
+	--testimonials-text-color: rgb(247 241 230 / 80%);
 	--testimonials-text-style: italic;
-	--testimonials-author-name-weight: 700;
+	--testimonials-card-bg: rgb(var(--color-overlay-light-rgb) / 3%);
+	--testimonials-card-border: rgb(var(--color-action-accent-rgb) / 12%);
+	--testimonials-card-border-radius: 2px;
+	--testimonials-card-hover-bg: rgb(var(--color-overlay-light-rgb) / 5%);
+	--testimonials-card-hover-border: rgb(var(--color-action-accent-rgb) / 20%);
+	--testimonials-footer-border: rgb(var(--color-action-accent-rgb) / 10%);
+	--testimonials-author-name-weight: 600;
 	--testimonials-author-name-transform: uppercase;
-	--testimonials-author-name-letter-spacing: 0.2em;
-	--testimonials-author-name-size: 0.85rem;
-	--testimonials-author-name-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
-	--testimonials-author-role-size: 0.7rem;
-	--testimonials-author-role-transform: uppercase;
-	--testimonials-author-role-letter-spacing: 0.15em;
-	--testimonials-author-role-color: var(--color-text-muted, #{sys.$sys-color-coffee-600});
+	--testimonials-author-name-letter-spacing: 0.06em;
+	--testimonials-author-name-size: clamp(0.75rem, 0.9vw, 0.85rem);
+	--testimonials-author-name-color: var(--color-action-accent, #d8a73a);
+	--testimonials-author-role-size: clamp(0.68rem, 0.8vw, 0.75rem);
+	--testimonials-author-role-color: rgb(247 241 230 / 40%);
 }

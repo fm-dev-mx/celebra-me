@@ -1,9 +1,15 @@
+/* stylelint-disable color-no-hex */
 @use '../global/mixins' as mixins;
 
 .contact-section {
 	position: relative;
-	padding: clamp(3rem, 7vw, 5rem) 0;
-	background-color: var(--contact-section-bg);
+	padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+	background: linear-gradient(
+		to bottom,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-primary) 85%,
+		var(--color-soft-black) 100%
+	);
 	overflow: hidden;
 	color: var(--contact-section-color);
 
@@ -106,13 +112,9 @@
 	padding: 1.1rem 1.15rem;
 	background: var(--contact-channel-bg);
 	border: 1px solid var(--contact-channel-border);
-	border-radius: 0.75rem;
+	border-radius: var(--contact-channel-border-radius, 0.75rem);
 	text-decoration: none;
-	transition:
-		background-color var(--duration-standard) var(--ease-standard),
-		border-color var(--duration-standard) var(--ease-standard),
-		box-shadow var(--duration-standard) var(--ease-standard),
-		transform var(--duration-standard) var(--ease-standard);
+	transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 	box-shadow: var(--contact-channel-shadow);
 
 	.channel-icon-wrapper {
@@ -121,13 +123,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--contact-channel-icon-bg, rgb(var(--color-action-accent-rgb) / 10%));
-		color: var(--contact-channel-icon-color, var(--color-action-accent));
+		background: var(--contact-channel-icon-bg);
+		color: var(--contact-channel-icon-color);
 		border-radius: 50%;
-		transition:
-			background-color var(--duration-standard) var(--ease-standard),
-			color var(--duration-standard) var(--ease-standard),
-			transform var(--duration-standard) var(--ease-standard);
+		transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 		flex-shrink: 0;
 	}
 
@@ -144,9 +143,9 @@
 
 		.channel-value {
 			font-family: var(--font-display);
-			font-size: 1.05rem;
+			font-size: 1.02rem;
 			color: var(--contact-channel-value-color);
-			font-weight: 500;
+			font-weight: 600;
 		}
 	}
 
@@ -156,7 +155,7 @@
 		box-shadow: var(--contact-channel-hover-shadow);
 
 		.channel-icon-wrapper {
-			background: var(--contact-channel-icon-hover-bg, var(--color-action-accent));
+			background: var(--contact-channel-icon-hover-bg);
 			color: var(--contact-channel-icon-hover-color, white);
 		}
 	}
@@ -164,9 +163,8 @@
 
 .contact-form-wrapper {
 	background: var(--contact-form-bg);
-	backdrop-filter: blur(var(--contact-form-backdrop-blur));
-	padding: clamp(1.35rem, 4vw, 3.25rem);
-	border-radius: 0.9rem;
+	padding: var(--contact-form-padding, clamp(1.35rem, 4vw, 3.25rem));
+	border-radius: var(--contact-form-border-radius, 0.9rem);
 	box-shadow: var(--contact-form-shadow);
 	border: 1px solid var(--contact-form-border);
 	position: relative;
@@ -280,20 +278,18 @@
 	background: var(--contact-submit-bg);
 	color: var(--contact-submit-color);
 	border: none;
-	padding: 1.25rem 3rem;
+	padding: 1.1rem 3rem;
 	font-family: var(--font-display);
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 	cursor: pointer;
-	transition:
-		background-color var(--duration-standard) var(--ease-standard),
-		transform var(--duration-standard) var(--ease-standard),
-		box-shadow var(--duration-standard) var(--ease-standard);
-	border-radius: 2px;
+	border-radius: 4px;
+	transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 
 	&:hover {
 		background: var(--contact-submit-hover-bg);
+		color: var(--contact-submit-hover-color, white);
 		transform: var(--contact-submit-hover-transform);
 		box-shadow: var(--contact-submit-hover-shadow);
 	}

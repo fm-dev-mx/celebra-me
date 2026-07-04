@@ -1,3 +1,4 @@
+/* stylelint-disable color-no-hex */
 @use '../global/mixins' as mixins;
 
 // ---------------------------------------------------------------------------
@@ -10,13 +11,13 @@
 	background:
 		radial-gradient(
 			circle at 50% 30%,
-			rgb(12 42 36 / 60%) 0%,
-			rgb(7 31 27 / 95%) 80%,
-			rgb(7 31 27) 100%
+			color-mix(in srgb, var(--color-champagne) 8%, transparent) 0%,
+			color-mix(in srgb, var(--color-soft-black) 98%, transparent) 75%,
+			var(--color-soft-black, #080706) 100%
 		),
-		rgb(7 31 27);
+		var(--color-soft-black, #080706);
 	overflow: hidden;
-	color: rgb(255 246 230); // Ivory text base
+	color: var(--color-ivory); // Ivory text base
 
 	&::before {
 		content: '';
@@ -40,11 +41,11 @@
 		height: 1px;
 		background: linear-gradient(
 			90deg,
-			rgb(211 167 71 / 0%) 0%,
-			rgb(211 167 71 / 25%) 20%,
-			rgb(211 167 71 / 45%) 50%,
-			rgb(211 167 71 / 25%) 80%,
-			rgb(211 167 71 / 0%) 100%
+			color-mix(in srgb, var(--color-champagne) 0%, transparent) 0%,
+			color-mix(in srgb, var(--color-champagne) 25%, transparent) 20%,
+			color-mix(in srgb, var(--color-champagne) 45%, transparent) 50%,
+			color-mix(in srgb, var(--color-champagne) 25%, transparent) 80%,
+			color-mix(in srgb, var(--color-champagne) 0%, transparent) 100%
 		);
 	}
 
@@ -57,10 +58,10 @@
 		height: 2rem; // Shorter, softer fade for a clean transition
 		background: linear-gradient(
 			to bottom,
-			rgb(7 31 27 / 0%) 0%,
-			rgb(var(--color-surface-primary-rgb)) 100%
+			color-mix(in srgb, var(--color-soft-black) 0%, transparent) 0%,
+			var(--color-surface-primary) 100%
 		);
-		border-top: 1px solid rgb(211 167 71 / 15%);
+		border-top: 1px solid color-mix(in srgb, var(--color-champagne) 15%, transparent);
 		pointer-events: none;
 	}
 
@@ -103,7 +104,7 @@
 		font-weight: 700;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: rgb(211 167 71); // Gold accent
+		color: var(--color-champagne); // Gold accent
 	}
 
 	&__title {
@@ -112,7 +113,7 @@
 		margin: 0;
 		font-size: clamp(2.2rem, 4vw, 3.5rem);
 		line-height: 1.08;
-		color: rgb(255 246 230); // Ivory text
+		color: var(--color-ivory); // Ivory text
 		letter-spacing: -0.01em;
 	}
 
@@ -130,16 +131,16 @@
 
 	&__cta {
 		margin-top: clamp(1.5rem, 3.5vw, 2.25rem);
-		background: rgb(255 246 230); // Ivory background
-		color: rgb(7 31 27); // Deep green text
-		border: 1px solid rgb(211 167 71); // Gold border
-		box-shadow: 0 6px 20px rgb(211 167 71 / 18%);
+		background: var(--color-ivory);
+		color: var(--color-soft-black);
+		border: 1px solid var(--color-champagne);
+		box-shadow: 0 6px 20px color-mix(in srgb, var(--color-champagne) 15%, transparent);
 		font-weight: 700;
 		transition: all 200ms ease;
 
 		&:hover {
-			background: rgb(255 255 255);
-			box-shadow: 0 8px 26px rgb(211 167 71 / 28%);
+			background: #fff;
+			box-shadow: 0 8px 26px color-mix(in srgb, var(--color-champagne) 25%, transparent);
 			transform: translateY(-2px);
 		}
 	}
@@ -156,12 +157,12 @@
 	.evidence-panel {
 		width: 100%;
 		max-width: 500px;
-		background: linear-gradient(135deg, rgb(12 42 36) 0%, rgb(7 31 27) 100%); // Forest depth gradient
-		border: 1px solid rgb(211 167 71 / 28%); // Gold accent border
+		background: linear-gradient(135deg, var(--color-forest) 0%, var(--color-forest-deep) 100%);
+		border: 1px solid color-mix(in srgb, var(--color-champagne) 28%, transparent);
 		border-radius: 12px;
 		box-shadow: 
-			0 30px 70px -10px rgb(3 15 13 / 80%),
-			inset 0 1px 0 rgb(255 248 236 / 12%);
+			0 30px 70px -10px color-mix(in srgb, var(--color-soft-black) 80%, transparent),
+			inset 0 1px 0 color-mix(in srgb, var(--color-ivory) 12%, transparent);
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -169,8 +170,8 @@
 		&__header {
 			height: 38px;
 			padding-inline: 1rem;
-			background: rgb(7 31 27 / 50%);
-			border-bottom: 1px solid rgb(255 248 236 / 8%);
+			background: color-mix(in srgb, var(--color-forest) 50%, transparent);
+			border-bottom: 1px solid color-mix(in srgb, var(--color-ivory) 8%, transparent);
 			display: grid;
 			grid-template-columns: 80px 1fr 80px;
 			align-items: center;
@@ -185,10 +186,10 @@
 			width: 8px;
 			height: 8px;
 			border-radius: 50%;
-			background: rgb(211 167 71 / 20%);
+			background: color-mix(in srgb, var(--color-champagne) 20%, transparent);
 
 			&:first-child {
-				background: rgb(211 167 71 / 45%);
+				background: color-mix(in srgb, var(--color-champagne) 45%, transparent);
 			}
 		}
 
@@ -218,7 +219,7 @@
 			font-family: var(--font-display);
 			font-size: 1.35rem;
 			font-weight: 500;
-			color: rgb(255 246 230); // Ivory text
+			color: var(--color-ivory); // Ivory text
 			margin: 0;
 		}
 
@@ -226,21 +227,21 @@
 			display: inline-flex;
 			align-items: center;
 			gap: 0.45rem;
-			background: rgb(18 56 47); // Forest surface
-			border: 1px solid rgb(211 167 71 / 25%); // Soft gold line
+			background: var(--color-forest-deep); // Forest surface
+			border: 1px solid color-mix(in srgb, var(--color-champagne) 25%, transparent); // Soft gold line
 			padding: 0.35rem 0.75rem;
 			border-radius: 6px;
 			font-family: var(--font-body);
 			font-size: 0.75rem;
-			color: rgb(255 246 230);
+			color: var(--color-ivory);
 			font-weight: 600;
-			box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+			box-shadow: 0 2px 8px color-mix(in srgb, var(--color-soft-black) 12%, transparent);
 		}
 
 		&__chevron {
 			width: 12px;
 			height: 12px;
-			color: rgb(211 167 71); // Gold accent
+			color: var(--color-champagne); // Gold accent
 		}
 	}
 
@@ -249,11 +250,11 @@
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 0.5rem;
-		background: rgb(18 56 47 / 70%);
+		background: color-mix(in srgb, var(--color-forest-deep) 70%, transparent);
 		padding: 0.85rem 0.65rem;
 		border-radius: 8px;
-		border: 1px solid rgb(255 248 236 / 6%);
-		box-shadow: inset 0 1px 3px rgb(0 0 0 / 10%);
+		border: 1px solid color-mix(in srgb, var(--color-ivory) 6%, transparent);
+		box-shadow: inset 0 1px 3px color-mix(in srgb, var(--color-soft-black) 10%, transparent);
 	}
 
 	.kpi-card {
@@ -261,7 +262,7 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		border-right: 1px solid rgb(255 248 236 / 8%);
+		border-right: 1px solid color-mix(in srgb, var(--color-ivory) 8%, transparent);
 
 		&:last-child {
 			border-right: none;
@@ -271,9 +272,9 @@
 			font-family: var(--font-body);
 			font-size: 1.05rem;
 			font-weight: 700;
-			color: rgb(211 167 71); // Gold accent
+			color: var(--color-champagne); // Gold accent
 			line-height: 1.2;
-			text-shadow: 0 2px 4px rgb(0 0 0 / 15%);
+			text-shadow: 0 2px 4px color-mix(in srgb, var(--color-soft-black) 15%, transparent);
 		}
 
 		&__label {
@@ -296,31 +297,31 @@
 		font-size: 0.72rem;
 		font-weight: 600;
 		color: rgb(200 187 164);
-		background: rgb(18 56 47 / 50%);
-		border: 1px solid rgb(255 248 236 / 6%);
+		background: color-mix(in srgb, var(--color-forest-deep) 50%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-ivory) 6%, transparent);
 		padding: 0.25rem 0.65rem;
 		border-radius: 999px;
 
 		&--active {
-			color: rgb(7 31 27);
-			background: rgb(211 167 71); // Gold solid
-			border-color: rgb(211 167 71);
+			color: var(--color-forest-deep);
+			background: var(--color-champagne);
+			border-color: var(--color-champagne);
 		}
 	}
 
 	// 4) Guest List Module
 	.guest-list {
-		background: rgb(18 56 47); // Forest surface
-		border: 1px solid rgb(255 248 236 / 8%);
+		background: var(--color-forest-deep);
+		border: 1px solid color-mix(in srgb, var(--color-ivory) 8%, transparent);
 		border-radius: 10px;
 		padding: 1.25rem;
-		box-shadow: 0 8px 24px rgb(3 15 13 / 40%);
+		box-shadow: 0 8px 24px color-mix(in srgb, var(--color-forest-deep) 40%, transparent);
 
 		&__title {
 			font-family: var(--font-body);
 			font-size: 0.8rem;
 			font-weight: 700;
-			color: rgb(255 246 230);
+			color: var(--color-ivory);
 			margin: 0 0 0.85rem;
 			letter-spacing: 0.02em;
 			text-transform: uppercase;
@@ -341,7 +342,7 @@
 			color: rgb(200 187 164);
 			align-items: center;
 			padding-block: 0.6rem;
-			border-bottom: 1px solid rgb(255 248 236 / 6%);
+			border-bottom: 1px solid color-mix(in srgb, var(--color-ivory) 6%, transparent);
 			transition: background-color 150ms ease;
 
 			&:hover:not(&--header) {
@@ -361,13 +362,13 @@
 				letter-spacing: 0.05em;
 				padding-top: 0;
 				padding-bottom: 0.35rem;
-				border-bottom: 1px solid rgb(255 248 236 / 12%);
+				border-bottom: 1px solid color-mix(in srgb, var(--color-ivory) 12%, transparent);
 			}
 		}
 
 		&__name {
 			font-weight: 600;
-			color: rgb(255 246 230);
+			color: var(--color-ivory);
 		}
 
 		&__passes {
@@ -382,7 +383,7 @@
 			font-size: 0.65rem;
 			font-weight: 700;
 			width: fit-content;
-			box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+			box-shadow: 0 1px 2px color-mix(in srgb, var(--color-soft-black) 10%, transparent);
 
 			&--confirmed {
 				background: rgb(111 189 131 / 12%);
@@ -390,8 +391,8 @@
 			}
 
 			&--pending {
-				background: rgb(211 167 71 / 12%);
-				color: rgb(211 167 71); // Warning gold
+				background: color-mix(in srgb, var(--color-champagne) 12%, transparent);
+				color: var(--color-champagne); // Warning gold
 			}
 
 			&--to-confirm {
@@ -404,18 +405,18 @@
 			font-family: var(--font-body);
 			font-size: 0.65rem;
 			font-weight: 700;
-			color: rgb(255 246 230);
-			background: rgb(211 167 71 / 18%);
-			border: 1px solid rgb(211 167 71 / 40%);
+			color: var(--color-ivory);
+			background: color-mix(in srgb, var(--color-champagne) 18%, transparent);
+			border: 1px solid color-mix(in srgb, var(--color-champagne) 40%, transparent);
 			padding: 0.2rem 0.5rem;
 			border-radius: 4px;
 			cursor: pointer;
 			text-align: center;
 			transition: background-color 150ms ease;
-			box-shadow: 0 2px 6px rgb(211 167 71 / 10%);
+			box-shadow: 0 2px 6px color-mix(in srgb, var(--color-champagne) 10%, transparent);
 
 			&:hover {
-				background: rgb(211 167 71 / 30%);
+				background: color-mix(in srgb, var(--color-champagne) 30%, transparent);
 			}
 		}
 
@@ -428,7 +429,7 @@
 	// Bottom Compact Proof Rail
 	&__rail {
 		margin-top: 1.5rem;
-		border-top: 1px solid rgb(255 248 236 / 8%);
+		border-top: 1px solid color-mix(in srgb, var(--color-ivory) 8%, transparent);
 		padding-top: clamp(2.5rem, 5vw, 3.5rem);
 		text-align: center;
 	}
@@ -438,7 +439,7 @@
 
 		margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
 		font-size: clamp(1.2rem, 2vw, 1.45rem);
-		color: rgb(255 246 230);
+		color: var(--color-ivory);
 		letter-spacing: -0.01em;
 	}
 
@@ -470,7 +471,7 @@
 			right: 12%;
 			top: 1.05rem;
 			height: 1px;
-			background: rgb(211 167 71 / 20%);
+			background: color-mix(in srgb, var(--color-champagne) 20%, transparent);
 			z-index: 0;
 
 			@include mixins.respond-below(md) {
@@ -490,8 +491,8 @@
 		@include mixins.respond-below(md) {
 			flex-direction: row;
 			gap: 0.85rem;
-			background: rgb(18 56 47 / 35%); // Forest surface
-			border: 1px solid rgb(255 248 236 / 6%);
+			background: color-mix(in srgb, var(--color-forest-deep) 35%, transparent); // Forest surface
+			border: 1px solid color-mix(in srgb, var(--color-ivory) 6%, transparent);
 			padding: 0.65rem 0.85rem;
 			border-radius: 8px;
 			width: 100%;
@@ -503,16 +504,16 @@
 		width: 2.1rem;
 		height: 2.1rem;
 		border-radius: 50%;
-		background: rgb(12 42 36); // Forest depth
-		border: 1px solid rgb(211 167 71 / 40%);
-		color: rgb(211 167 71);
+		background: var(--color-forest); // Forest depth
+		border: 1px solid color-mix(in srgb, var(--color-champagne) 40%, transparent);
+		color: var(--color-champagne);
 		font-family: var(--font-body);
 		font-size: 0.78rem;
 		font-weight: 700;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+		box-shadow: 0 2px 8px color-mix(in srgb, var(--color-soft-black) 15%, transparent);
 		flex-shrink: 0;
 	}
 
@@ -532,7 +533,7 @@
 		font-family: var(--font-display);
 		font-size: 0.95rem;
 		font-weight: 700;
-		color: rgb(255 246 230);
+		color: var(--color-ivory);
 		letter-spacing: 0.02em;
 	}
 

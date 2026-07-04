@@ -66,14 +66,11 @@
 
 .faq-item {
 	background: var(--faq-item-bg);
-	backdrop-filter: blur(var(--faq-item-backdrop-blur));
+	backdrop-filter: blur(12px);
 	border: 1px solid var(--faq-item-border);
 	border-radius: var(--faq-item-border-radius);
 	overflow: hidden;
-	transition:
-		background-color var(--faq-transition-duration) var(--faq-transition-easing),
-		border-color var(--faq-transition-duration) var(--faq-transition-easing),
-		box-shadow var(--faq-transition-duration) var(--faq-transition-easing);
+	transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
 	&:hover {
 		border-color: var(--faq-item-hover-border);
@@ -156,7 +153,7 @@
 	.answer-text {
 		color: var(--faq-answer-color);
 		line-height: 1.8;
-		font-size: 1.05rem;
+		font-size: 1.02rem;
 		font-family: var(--font-body);
 		max-width: 95%;
 	}
@@ -171,19 +168,22 @@
 .faq-cta {
 	max-width: 760px;
 	margin: clamp(1.5rem, 4vw, 2.5rem) auto 0;
-	padding: clamp(1.25rem, 3vw, 2rem);
+	padding: clamp(1.5rem, 3vw, 2.5rem);
 	text-align: center;
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 28%);
-	border-radius: 0.9rem;
-	background: rgb(255 255 255 / 4%);
-	box-shadow: 0 24px 58px -48px rgb(0 0 0 / 70%);
+	border: 1px solid rgb(216 167 58 / 20%);
+	border-radius: 8px;
+	background: var(--faq-item-bg);
+	backdrop-filter: blur(12px);
+	box-shadow: 
+		0 20px 50px rgb(0 0 0 / 40%),
+		inset 0 1px 0 rgb(255 255 255 / 5%);
 
 	&__eyebrow {
 		margin: 0 0 0.5rem;
 		font-family: var(--font-body);
 		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.22em;
+		font-weight: 700;
+		letter-spacing: 0.25em;
 		text-transform: uppercase;
 		color: var(--faq-pretitle-color);
 	}
@@ -197,7 +197,7 @@
 
 	&__text {
 		max-width: 34rem;
-		margin: 0.7rem auto 1.15rem;
+		margin: 0.7rem auto 1.5rem;
 		color: var(--faq-subtitle-color);
 		font-family: var(--font-body);
 		line-height: 1.65;
