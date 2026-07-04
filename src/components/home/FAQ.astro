@@ -21,14 +21,16 @@ const phone = getContactPhone();
 
 	<div class="container">
 		<header class="faq-header">
-			<span class="faq-pretitle">Claridad en cada detalle</span>
-			<h2 class="faq-title">{data.title}</h2>
-			<p class="faq-subtitle">
-				Le ayudamos a cotizar con claridad antes de pasar a WhatsApp o al formulario de contacto.
+			<span class="faq-pretitle reveal-fade-up stagger-1">Asesoría e información</span>
+			<h2 class="faq-title reveal-fade-up stagger-2">{data.title}</h2>
+			<p class="faq-subtitle reveal-fade-up stagger-3">
+				Todo lo que necesita saber sobre el funcionamiento de nuestras invitaciones, RSVP y pases digitales.
 			</p>
 		</header>
 
-		<FAQList faqs={data.faqs} />
+		<div class="reveal-fade-up stagger-4">
+			<FAQList faqs={data.faqs} />
+		</div>
 
 		<div class="faq-cta">
 			<p class="faq-cta__eyebrow">Asesoría directa</p>
@@ -40,14 +42,14 @@ const phone = getContactPhone();
 				className="faq-cta__button"
 				phone={phone}
 				message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899"
-				label="Hablar por WhatsApp"
+				label="Hablar con un asesor"
 				trackSection="faq"
 				trackCta="whatsapp-faq"
 				trackCampaign="FINAL-LANZAMIENTO-899"
 				trackValue={899}
 				trackCurrency="MXN"
 				promoCode="LANZAMIENTO-899"
-				ariaLabel="Hablar por WhatsApp"
+				ariaLabel="Hablar con un asesor"
 			/>
 		</div>
 

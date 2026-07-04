@@ -45,7 +45,7 @@ import '@/styles/landing.scss';
 		rootMargin: '0px 0px -10% 0px',
 	};
 
-	createIntersectionObserver('section:not(#nosotros):not(#servicios):not(#pricing), .hero-prime, .services, .about-us', (target) => {
+	createIntersectionObserver('section, .hero-prime, .photo-interlude', (target) => {
 		target.classList.add('is-visible');
 	}, observerOptions);
 

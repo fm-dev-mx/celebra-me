@@ -5,8 +5,8 @@ export const landingData: LandingPageData = {
 		title: 'Invitaciones digitales elegantes para confirmar y guiar a tus invitados',
 		subtitle:
 			'RSVP, pases digitales, ubicación, música y galería en una experiencia personalizada para compartir por WhatsApp.',
-		primaryCtaLabel: 'Cotizar por WhatsApp',
-		secondaryCtaLabel: 'Ver demos reales',
+		primaryCtaLabel: 'Quiero cotizar por WhatsApp',
+		secondaryCtaLabel: 'Ver demos de invitaciones',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
@@ -24,7 +24,7 @@ export const landingData: LandingPageData = {
 		description:
 			'Celebra-me reúne invitación digital, confirmaciones, pases y seguimiento de invitados en una experiencia clara para compartir por WhatsApp.',
 		cta: {
-			label: 'Quiero una invitación con RSVP',
+			label: 'Recibir asesoría por WhatsApp',
 			href: '#contacto',
 			message:
 				'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
@@ -56,7 +56,7 @@ export const landingData: LandingPageData = {
 			},
 		],
 		cta: {
-			label: 'Cotizar invitación con control de invitados',
+			label: 'Quiero cotizar por WhatsApp',
 			href: '#contacto',
 		},
 	},
@@ -83,7 +83,7 @@ export const landingData: LandingPageData = {
 			},
 		],
 		cta: {
-			label: 'Quiero una invitación a medida',
+			label: 'Recibir asesoría por WhatsApp',
 			href: '#contacto',
 		},
 	},
@@ -122,12 +122,6 @@ export const landingData: LandingPageData = {
 		title: 'Elija el nivel de experiencia que quiere para su invitación',
 		intro: 'Desde una invitación elegante lista para personalizar, hasta una experiencia visual diseñada con mayor dirección editorial para su evento.',
 		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
-		recommendation: {
-			title: 'La mayoría de nuestros clientes elige Signature',
-			text: 'Mantiene un precio accesible, pero permite que la invitación se sienta más personalizada, cuidada y coherente con el estilo del evento.',
-			cta: 'Quiero la recomendación por WhatsApp',
-			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
-		},
 		decisionGuide: {
 			title: 'Cómo elegir rápido',
 			rows: [
@@ -135,7 +129,7 @@ export const landingData: LandingPageData = {
 				'Signature: quiero que se vea más personalizado y cuidado.',
 				'Atelier: quiero una experiencia más completa y con mayor dirección visual.',
 			],
-			cta: 'Ayúdeme a elegir por WhatsApp',
+			cta: 'Ayúdeme a elegir',
 			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
 		},
 		tiers: [
@@ -143,7 +137,6 @@ export const landingData: LandingPageData = {
 				id: 'coleccion',
 				title: 'Colección',
 				description: 'Invitación premium lista para personalizar.',
-				badge: 'ENTRADA PREMIUM',
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $1,299 MXN',
 				idealFor:
@@ -194,7 +187,6 @@ export const landingData: LandingPageData = {
 				id: 'atelier',
 				title: 'Atelier',
 				description: 'Una experiencia digital con mayor dirección visual y acompañamiento.',
-				badge: 'EXPERIENCIA COMPLETA',
 				isExclusive: true,
 				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $3,899 MXN',
@@ -282,7 +274,7 @@ export const landingData: LandingPageData = {
 			},
 		],
 		cta: {
-			label: 'Empezar mi invitación',
+			label: 'Quiero cotizar por WhatsApp',
 			message: 'Hola, quiero empezar mi invitación digital con panel de invitados.',
 		},
 	},

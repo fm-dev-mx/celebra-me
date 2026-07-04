@@ -4,7 +4,7 @@ import ContactForm from '@components/ui/ContactForm.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getWhatsAppLink, getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 // Import stylesheet
 import '@/styles/home/_contact.scss';
@@ -16,9 +16,12 @@ interface Props {
 // Destructure the data prop
 const { data } = Astro.props;
 
-const hasValidWhatsApp = !isPlaceholderContactPhone(getContactPhone());
+const isPlaceholder = isPlaceholderContactPhone(getContactPhone());
+const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
+const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : getContactPhone();
 const whatsappMessage =
 	'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
+const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
 <!-- Contact Section -->
@@ -44,13 +47,13 @@ const whatsappMessage =
 					<div class="contact-channels">
 						{hasValidWhatsApp && (
 							<a
-								href={getWhatsAppLink(whatsappMessage)}
+								href={whatsappUrl}
 								target="_blank"
-								class="channel-link"
+								class="channel-link channel-link--whatsapp"
 								data-track-event="whatsapp_contact_clicked"
 								data-track-section="contact"
 								data-track-cta="contact_whatsapp"
-								data-track-label="Contáctanos por WhatsApp"
+								data-track-label="Cotizar por WhatsApp"
 								data-track-intent="whatsapp"
 								data-track-destination="whatsapp"
 								data-campaign-code="FINAL-LANZAMIENTO-899"
@@ -63,7 +66,7 @@ const whatsappMessage =
 								</div>
 								<div class="channel-text">
 									<span class="channel-label">Asesoría Inmediata</span>
-									<span class="channel-value">Contáctanos por WhatsApp</span>
+									<span class="channel-value">Cotizar por WhatsApp</span>
 								</div>
 							</a>
 						)}
@@ -71,7 +74,7 @@ const whatsappMessage =
 						<a
 							href="mailto:contacto@celebra-me.com"
 							target="_blank"
-							class="channel-link"
+							class="channel-link channel-link--email"
 							data-track-event="cta_clicked"
 							data-track-section="contact"
 							data-track-cta="contact_email"
@@ -82,7 +85,7 @@ const whatsappMessage =
 							</div>
 							<div class="channel-text">
 								<span class="channel-label">Vía Correo</span>
-								<span class="channel-value">contacto@celebra-me.com</span>
+								<span class="channel-value">Escribir por correo</span>
 							</div>
 						</a>
 					</div>

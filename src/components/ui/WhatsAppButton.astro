@@ -1,6 +1,6 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
-import { getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	className?: string;
@@ -48,10 +48,12 @@ const {
 // If the phone is a placeholder, hide the CTA to avoid broken links.
 const phone = explicitPhone || '';
 const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
-const whatsappUrl = isPlaceholder ? '' : getWhatsAppLink(message);
+const shouldRender = !isPlaceholder || import.meta.env.DEV;
+const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : phone;
+const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?text=${encodeURIComponent(message)}` : ''}` : '';
 ---
 
-{!isPlaceholder && (
+{shouldRender && (
 <a
 	href={whatsappUrl}
 	target="_blank"
