@@ -17,42 +17,69 @@ const phone = getContactPhone();
 ---
 
 <Section id="servicios" class="services section-padding" data-track-section="services" data-screenshot="landing-includes">
-	<Container class="services__container">
-		<header class="services__header">
-			<h2 class="services__heading">{data.title}</h2>
-			<p class="services__subtitle">{data.subtitle}</p>
-		</header>
+	<!-- Subtle top gold hairline separator -->
+	<div class="services__top-separator" aria-hidden="true"></div>
 
-		<div class="services__spec-list" role="list">
-			{
-				data.items.map((item) => {
-					return (
-						<div class="services__spec-row" role="listitem">
-							<span class="services__spec-accent" aria-hidden="true"></span>
-							<div class="services__spec-content">
-								<h3 class="services__spec-title">{item.title}</h3>
-								<p class="services__spec-detail">{item.description}</p>
-							</div>
-						</div>
-					);
-				})
-			}
+	<Container class="services__container">
+		<!-- Column 1: Narrative Block -->
+		<div class="services__narrative">
+			<p class="services__eyebrow">{data.eyebrow || 'INCLUIDO EN CADA EXPERIENCIA'}</p>
+			<h2 class="services__heading">{data.title}</h2>
+			<p class="services__description">{data.subtitle}</p>
 		</div>
 
-		<div class="services__actions">
-			<WhatsAppButton
-				className="services__cta"
-				phone={phone}
-				message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899"
-				label={data.cta.label}
-				trackSection="services"
-				trackCta="whatsapp-includes"
-				trackCampaign="DEMO-LANZAMIENTO-899"
-				trackValue={899}
-				trackCurrency="MXN"
-				promoCode="LANZAMIENTO-899"
-				ariaLabel="Cotizar una invitación con estas funciones por WhatsApp"
-			/>
+		<!-- Column 2: Premium Dossier Panel -->
+		<div class="services__dossier" aria-label="Dossier de operaciones del evento">
+			<div class="dossier-panel">
+				<!-- Dossier Header -->
+				<header class="dossier-panel__header">
+					<div class="dossier-panel__header-anchor">
+						<span class="dossier-panel__giant-num">4</span>
+						<div class="dossier-panel__header-meta">
+							<span class="dossier-panel__tag">MOMENTOS CRÍTICOS</span>
+							<p class="dossier-panel__subtext">{data.dossierSubtext || 'Resueltos desde un solo enlace.'}</p>
+						</div>
+					</div>
+				</header>
+
+				<!-- Dossier Modules -->
+				<div class="dossier-panel__modules" role="list">
+					{
+						data.items.map((item, idx) => {
+							const num = String(idx + 1).padStart(2, '0');
+							return (
+								<div class="dossier-panel__module" role="listitem">
+									<span class="dossier-panel__num">{num}</span>
+									<div class="dossier-panel__module-content">
+										<h3 class="dossier-panel__module-title">{item.title}</h3>
+										<p class="dossier-panel__module-body">{item.description}</p>
+									</div>
+								</div>
+							);
+						})
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- Narrative Footer: Closing Statement + CTA -->
+		<div class="services__footer">
+			<p class="services__closing">{data.closingStatement || 'Menos mensajes sueltos. Más claridad para usted y sus invitados.'}</p>
+			<div class="services__actions">
+				<WhatsAppButton
+					className="services__cta"
+					phone={phone}
+					message="Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899"
+					label={data.cta.label}
+					trackSection="services"
+					trackCta="whatsapp-includes"
+					trackCampaign="DEMO-LANZAMIENTO-899"
+					trackValue={899}
+					trackCurrency="MXN"
+					promoCode="LANZAMIENTO-899"
+					ariaLabel="Cotizar una invitación con estas funciones por WhatsApp"
+				/>
+			</div>
 		</div>
 	</Container>
 </Section>

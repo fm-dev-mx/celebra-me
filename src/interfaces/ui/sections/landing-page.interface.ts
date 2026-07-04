@@ -39,6 +39,9 @@ export interface AboutData {
 export interface ServicesData {
 	title: string;
 	subtitle: string;
+	eyebrow?: string;
+	dossierSubtext?: string;
+	closingStatement?: string;
 	items: Array<{
 		title: string;
 		description: string;

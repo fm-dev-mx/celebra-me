@@ -31,33 +31,32 @@ export const landingData: LandingPageData = {
 		},
 	},
 	services: {
-		title: 'Incluido en su invitación',
+		eyebrow: 'INCLUIDO EN CADA EXPERIENCIA',
+		title: 'Todo claro para sus invitados, todo bajo control para usted',
 		subtitle:
-			'Funciones concretas para compartir, confirmar y ordenar la celebración sin fricción.',
+			'Confirmaciones, pases, ubicación y detalles reunidos en una experiencia elegante para compartir por WhatsApp.',
+		dossierSubtext: 'Resueltos desde un solo enlace.',
+		closingStatement: 'Menos dudas · Menos mensajes · Más control',
 		items: [
 			{
-				title: 'Confirmaciones sin perseguir invitados',
-				description:
-					'Cada invitado confirma asistencia desde el enlace y la información queda organizada.',
+				title: 'Confirmaciones',
+				description: 'RSVP sin perseguir mensajes.',
 			},
 			{
-				title: 'Pases personalizados listos para compartir',
-				description:
-					'Pases digitales claros para familias, acompañantes o invitados principales.',
+				title: 'Accesos digitales',
+				description: 'Pases claros para invitados y acompañantes.',
 			},
 			{
-				title: 'Detalles importantes en un solo enlace',
-				description:
-					'Ubicación, itinerario, música y mesa de regalos siempre a la mano.',
+				title: 'Información del evento',
+				description: 'Ubicación, horario, itinerario y detalles.',
 			},
 			{
-				title: 'Control claro de invitados y acompañantes',
-				description:
-					'Revise confirmaciones y acompañantes con una lista fácil de consultar.',
+				title: 'Visibilidad para usted',
+				description: 'Respuestas y acompañantes organizados.',
 			},
 		],
 		cta: {
-			label: 'Quiero una invitación con RSVP',
+			label: 'Cotizar invitación con control de invitados',
 			href: '#contacto',
 		},
 	},
@@ -68,15 +67,18 @@ export const landingData: LandingPageData = {
 		values: [
 			{
 				name: 'Dirección visual',
-				description: 'Paleta, tipografía y ritmo pensados para que la invitación se sienta propia.',
+				description:
+					'Paleta, tipografía y ritmo pensados para que la invitación se sienta propia.',
 			},
 			{
 				name: 'Claridad para invitados',
-				description: 'Cada sección orienta sin saturar: ceremonia, recepción, ubicación y confirmación.',
+				description:
+					'Cada sección orienta sin saturar: ceremonia, recepción, ubicación y confirmación.',
 			},
 			{
 				name: 'Entrega cuidada',
-				description: 'Acompañamiento personal para revisar contenido, estilo y publicación.',
+				description:
+					'Acompañamiento personal para revisar contenido, estilo y publicación.',
 			},
 		],
 		cta: {
@@ -139,8 +141,7 @@ export const landingData: LandingPageData = {
 			{
 				id: 'premium',
 				title: 'Premium',
-				description:
-					'Dirección visual para un evento con estilo propio.',
+				description: 'Dirección visual para un evento con estilo propio.',
 				badge: 'El Favorito',
 				isPrimary: true,
 				price: { amount: '1,499', currency: 'MXN', period: 'pago único' },
@@ -215,7 +216,8 @@ export const landingData: LandingPageData = {
 	},
 	howItWorks: {
 		title: 'Cómo funciona',
-		subtitle: 'Un proceso simple para convertir la información de su evento en una invitación lista para compartir.',
+		subtitle:
+			'Un proceso simple para convertir la información de su evento en una invitación lista para compartir.',
 		steps: [
 			{
 				icon: 'SparklesIcon',
@@ -230,7 +232,8 @@ export const landingData: LandingPageData = {
 			{
 				icon: 'CheckIcon',
 				title: 'Comparte por WhatsApp y recibe confirmaciones',
-				description: 'Sus invitados confirman asistencia y reciben la información importante.',
+				description:
+					'Sus invitados confirman asistencia y reciben la información importante.',
 			},
 		],
 	},

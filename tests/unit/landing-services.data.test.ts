@@ -50,9 +50,9 @@ describe('landing services product value data', () => {
 		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
 
 		// Services block assertions
-		expect(services.title).toBe('Incluido en su invitación');
+		expect(services.title).toBe('Todo claro para sus invitados, todo bajo control para usted');
 		expect(services.items).toHaveLength(4);
-		expect(services.cta.label).toBe('Quiero una invitación con RSVP');
+		expect(services.cta.label).toBe('Cotizar invitación con control de invitados');
 		expect(services.cta.href).toBe('#contacto');
 	});
 
