@@ -24,12 +24,12 @@ const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación dig
 	<Container class="how-it-works__container">
 		<div class="how-it-works__narrative">
 			<header class="how-it-works__header">
-				{data.eyebrow && <p class="how-it-works__eyebrow">{data.eyebrow}</p>}
-				<h2 class="how-it-works__title">{data.title}</h2>
-				<p class="how-it-works__subtitle">{data.subtitle}</p>
+				{data.eyebrow && <p class="how-it-works__eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
+				<h2 class="how-it-works__title reveal-fade-up stagger-2">{data.title}</h2>
+				<p class="how-it-works__subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
 
 				{data.cta && (
-					<div class="how-it-works__actions how-it-works__actions--desktop">
+					<div class="how-it-works__actions how-it-works__actions--desktop reveal-fade-up stagger-4">
 						<WhatsAppButton
 							className="how-it-works__cta"
 							phone={phone}
@@ -44,7 +44,7 @@ const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación dig
 			</header>
 		</div>
 
-		<div class="how-it-works__visual">
+		<div class="how-it-works__visual reveal-fade-up stagger-5">
 			{
 				data.deliveryDossier && (
 					<article class="how-it-works__dossier" aria-label="Resumen de entrega preparada">

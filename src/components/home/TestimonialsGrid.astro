@@ -32,14 +32,14 @@ if (!total) return null;
 <div class="testimonials" data-testimonials-rotator>
 	<!-- Left column — editorial copy -->
 	<div class="testimonials__left">
-		{eyebrow && <p class="testimonials__eyebrow">{eyebrow}</p>}
-		{title && <h2 class="testimonials__title">{title}</h2>}
-		{subtitle && <p class="testimonials__desc">{subtitle}</p>}
-		{proofLine && <p class="testimonials__proof-line">{proofLine}</p>}
+		{eyebrow && <p class="testimonials__eyebrow reveal-fade-up stagger-1">{eyebrow}</p>}
+		{title && <h2 class="testimonials__title reveal-fade-up stagger-2">{title}</h2>}
+		{subtitle && <p class="testimonials__desc reveal-fade-up stagger-3">{subtitle}</p>}
+		{proofLine && <p class="testimonials__proof-line reveal-fade-up stagger-4">{proofLine}</p>}
 	</div>
 
 	<!-- Right column — rotator -->
-	<div class="testimonials__right">
+	<div class="testimonials__right reveal-fade-up stagger-5">
 		<div class="testimonials__rotator">
 			{
 				testimonials.map((t, i) => (

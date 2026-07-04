@@ -28,12 +28,12 @@ const phone = getContactPhone();
 		<div class="product-proof__layout">
 			<!-- Left side: Editorial copy -->
 			<div class="product-proof__narrative">
-				<p class="product-proof__eyebrow">MENOS MENSAJES. MÁS CLARIDAD.</p>
-				<h2 id="product-proof-title" class="product-proof__title">{data.title}</h2>
-				<p class="product-proof__description">{data.description}</p>
+				<p class="product-proof__eyebrow reveal-fade-up stagger-1">MENOS MENSAJES. MÁS CLARIDAD.</p>
+				<h2 id="product-proof-title" class="product-proof__title reveal-fade-up stagger-2">{data.title}</h2>
+				<p class="product-proof__description reveal-fade-up stagger-3">{data.description}</p>
 				
 				<WhatsAppButton
-					className="product-proof__cta"
+					className="product-proof__cta reveal-fade-up stagger-4"
 					phone={phone}
 					message={data.cta.message}
 					label={data.cta.label}
@@ -48,7 +48,7 @@ const phone = getContactPhone();
 			</div>
 
 			<!-- Right side: Premium mock dashboard panel (curated version) -->
-			<div class="product-proof__system-preview" aria-label="Visualización del panel de invitados de Celebra-me">
+			<div class="product-proof__system-preview reveal-fade-up stagger-5" aria-label="Visualización del panel de invitados de Celebra-me">
 				<div class="evidence-panel">
 					<!-- Panel Header -->
 					<div class="evidence-panel__header">

@@ -46,16 +46,16 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 >
 	<Container class="event-selector__container">
 		<header class="event-selector__header">
-			<p class="event-selector__eyebrow">Demos por tipo de evento</p>
-			<h2 id="event-selector-title" class="event-selector__title">
+			<p class="event-selector__eyebrow reveal-fade-up stagger-1">Demos por tipo de evento</p>
+			<h2 id="event-selector-title" class="event-selector__title reveal-fade-up stagger-2">
 				Explora una experiencia diseñada para cada celebración
 			</h2>
-			<p class="event-selector__subtitle">
+			<p class="event-selector__subtitle reveal-fade-up stagger-3">
 				Elige tu tipo de evento y mira cómo se adaptan la invitación, el RSVP, los pases y la cotización.
 			</p>
 		</header>
 
-		<div class="event-showroom">
+		<div class="event-showroom reveal-fade-up stagger-4">
 			<div class="event-showroom__tabs-shell" data-event-tab-shell>
 				<div class="event-showroom__tabs" role="tablist" aria-label="Tipos de evento" data-event-tablist>
 					{events.map((event, index) => (
