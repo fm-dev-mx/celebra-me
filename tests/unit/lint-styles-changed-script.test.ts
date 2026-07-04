@@ -32,9 +32,10 @@ function createRepoFixture() {
 function cleanupRepoFixture(repoRoot: string) {
 	try {
 		rmSync(join(repoRoot, 'node_modules'), { recursive: true, force: true });
-	} catch {
-		// Best-effort cleanup for Windows junctions.
-	}
+	} catch (e) {
+			// Best-effort cleanup for Windows junctions.
+			console.warn('Failed to remove node_modules junction:', e);
+		}
 
 	cleanupFixture(repoRoot);
 }
@@ -56,6 +57,7 @@ describe('lint-styles-changed script', () => {
 			const result = runCommand('node', [SCRIPT_PATH], {
 				cwd: repoRoot,
 				allowFailure: true,
+				env: { ...process.env, CI: 'true' },
 			});
 
 			expect(result.status).toBe(0);
@@ -86,6 +88,7 @@ describe('lint-styles-changed script', () => {
 			const result = runCommand('node', [SCRIPT_PATH], {
 				cwd: repoRoot,
 				allowFailure: true,
+				env: { ...process.env, CI: 'true' },
 			});
 
 			expect(result.status).not.toBe(0);
@@ -138,6 +141,7 @@ describe('lint-styles-changed script', () => {
 				allowFailure: true,
 				env: {
 					...process.env,
+					CI: 'true',
 					VALIDATION_BASE_SHA: baseSha,
 					VALIDATION_HEAD_SHA: headSha,
 				},
