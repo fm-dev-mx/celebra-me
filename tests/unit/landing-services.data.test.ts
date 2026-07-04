@@ -39,21 +39,20 @@ describe('landing services product value data', () => {
 
 		// Hero fields (changed in this changeset)
 		expect(hero.title).toBe(
-			'Invitaciones digitales elegantes para confirmar y guiar a tus invitados',
+			'Experiencias de invitación personalizadas para guiar a sus invitados',
 		);
 		expect(hero.subtitle).toBe(
-			'RSVP, pases digitales, ubicación, música y galería en una experiencia personalizada para compartir por WhatsApp.',
+			'RSVP, pases digitales, ubicación, música y galería en una experiencia premium para compartir por WhatsApp.',
 		);
 		expect(hero.primaryCtaLabel).toBe('Cotizar por WhatsApp');
 		expect(hero.whatsappMessage).toContain('Cupón: LANZAMIENTO-899');
-		expect(hero.socialProofText).toBe('Acompañamiento personalizado para eventos especiales');
-		expect(hero.secondaryCtaLabel).toBe('Ver demos reales');
+		expect(hero.secondaryCtaLabel).toBe('Ver demos de invitaciones');
 		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
 
 		// Services block assertions
 		expect(services.title).toBe('Todo claro para sus invitados, todo bajo control para usted');
 		expect(services.items).toHaveLength(4);
-		expect(services.cta.label).toBe('Cotizar invitación con control de invitados');
+		expect(services.cta.label).toBe('Quiero cotizar por WhatsApp');
 		expect(services.cta.href).toBe('#contacto');
 	});
 
@@ -62,27 +61,27 @@ describe('landing services product value data', () => {
 
 		expect(landingData.pricing.eyebrow).toBe('INVERSIÓN PARA SU CELEBRACIÓN');
 		expect(landingData.pricing.title).toBe(
-			'Elija el nivel de experiencia que quiere para su invitación',
+			'Elija con una recomendación clara',
 		);
 		expect(landingData.pricing.note).toBe(
 			'Promoción de lanzamiento desde $899 MXN. Pago único.',
 		);
 		expect(landingData.pricing.tiers.map((tier) => tier.title)).toEqual([
-			'Colección',
 			'Signature',
+			'Colección',
 			'Atelier',
 		]);
-		expect(landingData.pricing.tiers[0].price.amount).toBe('899');
-		expect(landingData.pricing.tiers[1].price.amount).toBe('1,699');
+		expect(landingData.pricing.tiers[0].price.amount).toBe('1,699');
+		expect(landingData.pricing.tiers[1].price.amount).toBe('899');
 		expect(landingData.pricing.tiers[2].price.amount).toBe('2,899');
-		expect(landingData.pricing.tiers[0].regularPrice).toBe('Precio regular: $1,299 MXN');
-		expect(landingData.pricing.tiers[1].regularPrice).toBe('Precio regular: $2,299 MXN');
+		expect(landingData.pricing.tiers[0].regularPrice).toBe('Precio regular: $2,299 MXN');
+		expect(landingData.pricing.tiers[1].regularPrice).toBe('Precio regular: $1,299 MXN');
 		expect(landingData.pricing.tiers[2].regularPrice).toBe('Precio regular: $3,899 MXN');
 		expect(landingData.pricing.tiers[1].ctaMessage).toContain(
-			'paquete Signature de $1,699 MXN',
+			'paquete Colección de $899 MXN',
 		);
-		expect(landingData.pricing.decisionGuide.rows).toHaveLength(3);
+		expect(landingData.pricing.decisionGuide.rows).toHaveLength(1);
 		expect(landingData.faq.faqs).toHaveLength(6);
-		expect(landingData.howItWorks.steps).toHaveLength(3);
+		expect(landingData.howItWorks.steps).toHaveLength(4);
 	});
 });

@@ -6,11 +6,6 @@ export interface HeroData {
 	secondaryCtaUrl: string;
 	whatsappPhone?: string;
 	whatsappMessage?: string;
-	socialProofText?: string;
-	highlights?: Array<{
-		label: string;
-		icon?: string;
-	}>;
 }
 
 export interface ProductProofData {
@@ -18,7 +13,6 @@ export interface ProductProofData {
 	description: string;
 	cta: {
 		label: string;
-		href: string;
 		message?: string;
 	};
 }
@@ -53,12 +47,12 @@ export interface ServicesData {
 	};
 }
 
-export interface PricingSection {
+interface PricingSection {
 	title: string;
 	items: string[];
 }
 
-export interface PricingTier {
+interface PricingTier {
 	id?: string;
 	title: string;
 	description: string;
