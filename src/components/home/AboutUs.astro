@@ -2,11 +2,10 @@
 // src/components/home/AboutUs.astro
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import OptimizedImage from '@components/common/OptimizedImage.astro';
+import AboutUsAccessGallery from '@/components/home/AboutUsAccessGallery.astro';
 import ActionBase from '@components/common/actions/ActionBase.astro';
 
 import Icon from '@components/common/icons/Icon.astro';
-import { getCommonAsset } from '@/lib/assets/asset-registry';
 
 import type { AboutData } from '@/interfaces/ui/sections/landing-page.interface';
 
@@ -18,7 +17,6 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const aboutToast = getCommonAsset('aboutToast');
 
 // Render title with intentional line break after first sentence
 const titleHtml = data.title.replace('. ', '.<br>');
@@ -48,25 +46,15 @@ const titleHtml = data.title.replace('. ', '.<br>');
 				{data.description}
 			</p>
 
-			{/* Visual — editorial image with caption */}
+			{/* Visual — editorial access card gallery */}
 			<div
 				class="about-us__visual animate-on-scroll"
 				data-delay="360ms"
 			>
-				<div class="about-us__image-wrapper">
-					<div class="about-us__image-frame"></div>
-					<OptimizedImage
-						imagePath={aboutToast}
-						alt="Celebración elegante con brindis"
-						width={800}
-						height={1000}
-						class="about-us__image"
-						quality={80}
-						widths={[320, 480, 640]}
-						sizes="(max-width: 767px) 334px, 44vw"
-					/>
-					<div class="about-us__image-glow"></div>
-					<div class="about-us__image-decoration"></div>
+				<div class="about-us__card-wrapper">
+					<div class="about-us__card-frame"></div>
+					<AboutUsAccessGallery />
+					<div class="about-us__card-glow"></div>
 				</div>
 				<p class="about-us__image-caption">Una primera impresión digital, diseñada para sentirse cuidada.</p>
 			</div>
