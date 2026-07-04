@@ -6,6 +6,7 @@ import Hero from '@/components/home/Hero.astro';
 import ProductProof from '@/components/home/ProductProof.astro';
 import EventTypeSelector from '@/components/home/EventTypeSelector.astro';
 import Services from '@/components/home/Services.astro';
+import PhotographicInterlude from '@/components/home/PhotographicInterlude.astro';
 import AboutUs from '@/components/home/AboutUs.astro';
 import Testimonials from '@/components/home/Testimonials.astro';
 import Pricing from '@/components/home/Pricing.astro';
@@ -26,6 +27,7 @@ import '@/styles/landing.scss';
 		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} />
 		<ProductProof data={landingData.productProof} />
 		<Services data={landingData.services} />
+		<PhotographicInterlude />
 		<AboutUs data={landingData.about} />
 		<HowItWorks data={landingData.howItWorks} />
 		<Pricing data={landingData.pricing} />

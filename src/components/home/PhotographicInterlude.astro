@@ -1,0 +1,82 @@
+---
+// src/components/home/PhotographicInterlude.astro
+import { Image } from 'astro:assets';
+import partyToast from '@/assets/images/about/party-toast-premium.png';
+---
+
+<div class="photo-interlude" data-track-section="photographic-interlude" data-screenshot="landing-interlude">
+	<div class="photo-interlude__bg" aria-hidden="true">
+		<Image src={partyToast} alt="" width={1600} height={600} quality={80} loading="lazy" decoding="async" class="photo-interlude__image" />
+	</div>
+	<div class="photo-interlude__overlay" aria-hidden="true"></div>
+	<div class="photo-interlude__content">
+		<blockquote class="photo-interlude__quote">
+			“Diseñamos cada invitación como una experiencia, no como una plantilla.”
+		</blockquote>
+	</div>
+</div>
+
+<style lang="scss">
+	@use '../../styles/global/mixins' as mixins;
+
+	.photo-interlude {
+		position: relative;
+		width: 100%;
+		height: 380px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		border-block: 1px solid rgb(216 167 58 / 20%);
+
+		@include mixins.respond-to(md) {
+			height: 480px;
+		}
+
+		&__bg {
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+		}
+
+		&__image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: center 45%;
+			filter: saturate(0.6) brightness(0.85);
+		}
+
+		&__overlay {
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background: linear-gradient(
+				to bottom,
+				rgb(8 7 6 / 80%) 0%,
+				rgb(8 7 6 / 40%) 50%,
+				rgb(8 7 6 / 80%) 100%
+			);
+		}
+
+		&__content {
+			position: relative;
+			z-index: 2;
+			max-width: 800px;
+			padding-inline: 2rem;
+			text-align: center;
+		}
+
+		&__quote {
+			margin: 0;
+			font-family: var(--font-display), serif;
+			font-size: clamp(1.45rem, 4vw, 2.5rem);
+			font-style: italic;
+			font-weight: 300;
+			line-height: 1.4;
+			color: var(--color-ivory, #F7F1E6);
+			text-shadow: 0 4px 15px rgb(0 0 0 / 60%);
+			letter-spacing: -0.01em;
+		}
+	}
+</style>
