@@ -1,6 +1,8 @@
 export interface HeroData {
 	title: string;
 	subtitle: string;
+	mobileTitle?: string;
+	mobileSubtitle?: string;
 	primaryCtaLabel: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;

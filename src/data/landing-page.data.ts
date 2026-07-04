@@ -5,6 +5,9 @@ export const landingData: LandingPageData = {
 		title: 'Experiencias de invitación personalizadas para guiar a sus invitados',
 		subtitle:
 			'RSVP, pases digitales, ubicación, música y galería en una experiencia premium para compartir por WhatsApp.',
+		mobileTitle: 'Invitaciones que organizan su evento',
+		mobileSubtitle:
+			'Cada invitado recibe por WhatsApp su invitación con confirmación, pase digital, ubicación y detalles importantes.',
 		primaryCtaLabel: 'Cotizar por WhatsApp',
 		secondaryCtaLabel: 'Ver demos de invitaciones',
 		secondaryCtaUrl: '#tipo-evento',
@@ -126,12 +129,14 @@ export const landingData: LandingPageData = {
 			{
 				id: 'signature',
 				title: 'Signature',
-				description: 'La experiencia recomendada: personalizada, cuidada y lista para coordinar invitados.',
+				description:
+					'La experiencia recomendada: personalizada, cuidada y lista para coordinar invitados.',
 				badge: 'RECOMENDADO',
 				isPrimary: true,
 				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $2,299 MXN',
-				idealFor: 'Ideal para eventos que deben sentirse personalizados sin complicar el proceso.',
+				idealFor:
+					'Ideal para eventos que deben sentirse personalizados sin complicar el proceso.',
 				sections: [
 					{
 						title: 'Incluye',
@@ -151,7 +156,8 @@ export const landingData: LandingPageData = {
 			{
 				id: 'coleccion',
 				title: 'Colección',
-				description: 'Invitación premium lista para personalizar con lo esencial para compartir.',
+				description:
+					'Invitación premium lista para personalizar con lo esencial para compartir.',
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $1,299 MXN',
 				idealFor: 'Para una invitación elegante, clara y rápida de personalizar.',
@@ -174,7 +180,8 @@ export const landingData: LandingPageData = {
 			{
 				id: 'atelier',
 				title: 'Atelier',
-				description: 'Dirección visual más profunda para eventos que necesitan una experiencia distintiva.',
+				description:
+					'Dirección visual más profunda para eventos que necesitan una experiencia distintiva.',
 				isExclusive: true,
 				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $3,899 MXN',
@@ -249,7 +256,8 @@ export const landingData: LandingPageData = {
 			},
 			{
 				title: 'Personalizamos la invitación',
-				description: 'Organizamos textos, fotos, horarios, ubicación y detalles importantes.',
+				description:
+					'Organizamos textos, fotos, horarios, ubicación y detalles importantes.',
 			},
 			{
 				title: 'Activamos RSVP y pases',
@@ -267,6 +275,7 @@ export const landingData: LandingPageData = {
 	},
 	contact: {
 		title: 'Le ayudamos a elegir la invitación ideal',
-		subtitle: 'Cuéntenos qué está organizando y le recomendamos la experiencia adecuada para su evento.',
+		subtitle:
+			'Cuéntenos qué está organizando y le recomendamos la experiencia adecuada para su evento.',
 	},
 };

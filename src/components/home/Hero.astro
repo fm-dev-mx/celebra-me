@@ -62,11 +62,13 @@ const heroImages = [
 			<p class="hero-prime__eyebrow stagger-1">Invitaciones digitales premium</p>
 
 			<h1 class="hero-prime__title stagger-2" id="hero-title">
-				{data.title}
+				<span class="hero-prime__copy-desktop">{data.title}</span>
+				<span class="hero-prime__copy-mobile">{data.mobileTitle ?? data.title}</span>
 			</h1>
 
 			<p class="hero-prime__subtitle stagger-3">
-				{data.subtitle}
+				<span class="hero-prime__copy-desktop">{data.subtitle}</span>
+				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>
 			</p>
 
 			<div class="hero-prime__actions stagger-4">
