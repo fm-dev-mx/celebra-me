@@ -1,8 +1,8 @@
 /* stylelint-disable color-no-hex */
 .pricing-section {
 	position: relative;
-	padding: clamp(3.5rem, 8vw, 6rem) 0;
-	background: var(--color-surface-primary);
+	padding: var(--section-padding-y) 0;
+	background: var(--pricing-section-bg);
 	margin-bottom: 0;
 	overflow: hidden;
 
@@ -89,21 +89,21 @@
 	}
 }
 
-.pricing-recommendation,
 .pricing-guide {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
 	gap: clamp(1rem, 3vw, 1.5rem);
 	align-items: center;
-	border: 1px solid rgb(216 167 58 / 24%);
+	border: 1px solid var(--color-border-gold);
 	background: #fff;
-	box-shadow: 0 10px 24px rgb(43 26 16 / 3%);
-	padding: clamp(1rem, 3vw, 1.35rem);
+	border-radius: var(--card-radius);
+	box-shadow: 0 10px 24px rgb(17 13 9 / 3%);
+	padding: clamp(1.2rem, 3vw, 1.6rem);
 	margin-bottom: clamp(1.35rem, 3vw, 2rem);
 
 	h3 {
 		font-family: var(--font-display);
-		color: var(--color-surface-dark);
+		color: var(--color-text-dark);
 		font-size: clamp(1.35rem, 3vw, 1.7rem);
 		line-height: 1.15;
 		margin: 0 0 0.35rem;
@@ -111,13 +111,11 @@
 
 	p {
 		margin: 0;
-		color: var(--color-text-primary);
+		color: var(--color-text-secondary);
 		line-height: 1.65;
-		opacity: 84%;
 	}
 }
 
-.pricing-recommendation__cta,
 .pricing-guide__cta {
 	justify-content: center;
 	white-space: normal;
@@ -144,11 +142,12 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 100%;
-	padding: clamp(1.1rem, 3vw, 1.45rem);
-	background: var(--pricing-card-bg);
+	padding: clamp(1.5rem, 3.5vw, 2.25rem);
+	background: #fff;
 	color: var(--color-text-primary);
-	border: 1px solid var(--pricing-card-border);
-	box-shadow: var(--pricing-card-shadow);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: var(--card-radius);
+	box-shadow: 0 10px 30px rgb(17 13 9 / 3%);
 	transition:
 		transform var(--duration-standard) var(--ease-premium),
 		box-shadow var(--duration-standard) var(--ease-premium),
@@ -156,46 +155,92 @@
 	opacity: 100%;
 
 	&:hover {
-		border-color: var(--pricing-card-hover-border);
-		box-shadow: var(--pricing-card-hover-shadow);
+		border-color: var(--color-border-gold);
+		box-shadow: 0 20px 40px rgb(17 13 9 / 6%);
+		transform: translateY(-2px);
 	}
 
 	&.is-primary {
 		order: 1;
-		background: var(--pricing-card-bg);
+		background: #fff;
 		border: 2px solid var(--color-champagne);
-		box-shadow: 0 20px 48px rgb(43 26 16 / 8%);
+		box-shadow: 0 20px 48px rgb(17 13 9 / 10%);
 		z-index: 2;
 
 		.pricing-badge {
-			background: var(--pricing-badge-bg, var(--color-forest));
-			color: var(--pricing-badge-color, var(--color-ivory));
-			border-color: var(--color-forest);
+			background: var(--color-champagne);
+			color: var(--color-ink);
+			border: none;
 			transform: translateY(-1px);
+			font-weight: 800;
 		}
 
 		.cta-button {
-			background: var(--pricing-cta-bg, var(--color-champagne));
-			color: var(--pricing-cta-color, var(--color-espresso));
-			border-color: var(--pricing-cta-border, var(--color-champagne));
+			background: linear-gradient(135deg, var(--color-champagne), var(--color-border-gold));
+			color: var(--color-ink);
+			border: 1px solid var(--color-border-gold);
+			box-shadow:
+				0 8px 20px rgb(217 169 58 / 18%),
+				0 2px 6px rgb(17 13 9 / 10%);
 
 			&:hover {
-				background: var(--pricing-cta-hover-bg, var(--color-espresso));
-				border-color: var(--pricing-cta-hover-border, var(--color-espresso));
-				color: #fff;
+				background: linear-gradient(135deg, var(--color-champagne) 10%, var(--color-border-gold) 100%);
+				border-color: #fff;
+				box-shadow:
+					0 12px 28px rgb(217 169 58 / 26%),
+					0 4px 10px rgb(17 13 9 / 15%);
+				color: var(--color-ink);
+				transform: translateY(-2px);
 			}
 		}
 
 		@media (width >= 992px) {
-			min-height: calc(100% + 1.4rem);
-			transform: translateY(-0.45rem);
+			min-height: calc(100% + 1.8rem);
+			transform: translateY(-0.9rem);
+			padding: clamp(2rem, 5vw, 2.75rem) clamp(1.8rem, 4.5vw, 2.5rem);
+
+			&:hover {
+				transform: translateY(-1.1rem);
+				box-shadow: 0 30px 60px rgb(17 13 9 / 14%);
+			}
+		}
+	}
+
+	.cta-button {
+		display: flex;
+		width: 100%;
+		justify-content: center;
+		box-sizing: border-box;
+		margin-top: auto;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-size: 0.8rem;
+		background: transparent;
+		color: var(--color-text-primary);
+		border: 1px solid var(--color-border-gold);
+		border-radius: 9999px;
+		box-shadow: none;
+		font-weight: 700;
+		white-space: normal;
+		padding: 0.78rem 1rem;
+		transition:
+			background-color var(--duration-snappy) ease,
+			border-color var(--duration-snappy) ease,
+			box-shadow var(--duration-snappy) ease,
+			transform var(--duration-snappy) ease;
+
+		&:hover {
+			background: rgb(216 183 106 / 8%);
+			color: var(--color-text-primary);
+			border-color: var(--color-border-gold);
+			transform: translateY(-1px);
 		}
 	}
 
 	&.is-exclusive {
-		padding-top: clamp(1.1rem, 3vw, 1.45rem);
-		background: var(--pricing-card-bg);
-		border: 1px solid var(--pricing-card-border);
+		padding-top: clamp(1.5rem, 3.5vw, 2.25rem);
+		background: #fff;
+		border: 1px solid var(--color-border-subtle);
 
 		.tier-header {
 			margin: 0 0 var(--spacing-md);
@@ -354,33 +399,6 @@
 		}
 	}
 
-	.cta-button {
-		display: flex;
-		width: 100%;
-		justify-content: center;
-		box-sizing: border-box;
-		padding: 0.88rem 1rem;
-		text-align: center;
-		text-decoration: none;
-		font-weight: 800;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		font-size: 0.8rem;
-		border: 1px solid var(--color-champagne);
-		color: var(--color-espresso);
-		background: transparent;
-		border-radius: 4px;
-		transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-		margin-top: auto;
-		white-space: normal;
-
-		&:hover {
-			background: var(--color-champagne);
-			color: #fff;
-			transform: translateY(-1px);
-			box-shadow: 0 4px 12px rgb(216 167 58 / 20%);
-		}
-	}
 }
 
 .pricing-guide {
@@ -422,13 +440,11 @@
 }
 
 @media (width <= 900px) {
-	.pricing-recommendation,
 	.pricing-guide {
 		grid-template-columns: 1fr;
 		align-items: start;
 	}
 
-	.pricing-recommendation__cta,
 	.pricing-guide__cta {
 		width: 100%;
 	}

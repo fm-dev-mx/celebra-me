@@ -20,33 +20,13 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 	<div class="container">
 		<div class="pricing-panel">
 			<header class="pricing-header">
-				<span class="pricing-eyebrow">{data.eyebrow}</span>
-				<h2 class="pricing-title">{data.title}</h2>
-				<p class="pricing-intro">{data.intro}</p>
-				<p class="pricing-note">{data.note}</p>
+				<span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>
+				<h2 class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
+				<p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>
+				<p class="pricing-note reveal-fade-up stagger-4">{data.note}</p>
 			</header>
 
-			<aside class="pricing-recommendation" aria-labelledby="pricing-recommendation-title">
-				<div class="pricing-recommendation__copy">
-					<h3 id="pricing-recommendation-title">{data.recommendation.title}</h3>
-					<p>{data.recommendation.text}</p>
-				</div>
-				<WhatsAppButton
-					className="pricing-recommendation__cta"
-					phone={phone}
-					message={data.recommendation.message}
-					label={data.recommendation.cta}
-					trackSection="pricing"
-					trackCta="pricing_signature_recommendation"
-					trackIntent="package_help"
-					trackCampaign="PRICING-RECOMMENDATION"
-					trackCurrency="MXN"
-					ariaLabel={data.recommendation.cta}
-					preserveMessage
-				/>
-			</aside>
-
-			<div class="pricing-grid" aria-label="Niveles de experiencia">
+			<div class="pricing-grid reveal-fade-up stagger-5" aria-label="Niveles de experiencia">
 				{
 					data.tiers.map((tier, index) => {
 						const priceValue = cleanPriceAmount(tier.price.amount);
@@ -63,7 +43,7 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 								data-index={index}
 								data-tier={tier.id}
 							>
-								{tier.badge && <div class="pricing-badge">{tier.badge}</div>}
+								{tier.isPrimary && tier.badge && <div class="pricing-badge">{tier.badge}</div>}
 
 								<div class="card-content">
 									<header class="tier-header">
@@ -101,7 +81,7 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 										className="cta-button"
 										phone={phone}
 										message={tier.ctaMessage}
-										label={tier.cta}
+										label={`Elegir ${tier.title}`}
 										ariaLabel={`Elegir ${tier.title}`}
 										trackSection="pricing"
 										trackCta={`pricing_${tier.id ?? tier.title.toLowerCase().replaceAll(' ', '_')}`}
@@ -120,7 +100,7 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 				}
 			</div>
 
-			<aside class="pricing-guide" aria-labelledby="pricing-guide-title">
+			<aside class="pricing-guide reveal-fade-up stagger-5" aria-labelledby="pricing-guide-title">
 				<div>
 					<h3 id="pricing-guide-title">{data.decisionGuide.title}</h3>
 					<ul>

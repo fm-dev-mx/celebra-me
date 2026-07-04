@@ -67,9 +67,6 @@ describe('landing services product value data', () => {
 		expect(landingData.pricing.note).toBe(
 			'Promoción de lanzamiento desde $899 MXN. Pago único.',
 		);
-		expect(landingData.pricing.recommendation.title).toBe(
-			'La mayoría de nuestros clientes elige Signature',
-		);
 		expect(landingData.pricing.tiers.map((tier) => tier.title)).toEqual([
 			'Colección',
 			'Signature',

@@ -82,12 +82,6 @@ export interface PricingData {
 	title: string;
 	intro: string;
 	note: string;
-	recommendation: {
-		title: string;
-		text: string;
-		cta: string;
-		message: string;
-	};
 	decisionGuide: {
 		title: string;
 		rows: string[];
