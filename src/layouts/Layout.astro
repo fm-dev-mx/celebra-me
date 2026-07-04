@@ -23,7 +23,14 @@ interface Props {
 	className?: string;
 	isDemo?: boolean;
 	themeMode?: 'light' | 'dark';
-	headLinks?: Array<{ rel: 'stylesheet'; href: string }>;
+	headLinks?: Array<{
+		rel: 'preload' | 'stylesheet';
+		href: string;
+		as?: 'image' | 'style';
+		media?: string;
+		type?: string;
+		fetchpriority?: 'high' | 'low' | 'auto';
+	}>;
 }
 
 const {
@@ -35,7 +42,7 @@ const {
 	isDemo = false,
 	themeMode = 'dark',
 	headLinks = [],
-} = Astro.props;
+} = Astro.props as Props;
 
 const isVercelProduction = process.env.VERCEL_ENV === 'production';
 
@@ -84,7 +91,11 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
 
-		{headLinks.map(l => <link rel={l.rel} href={l.href} />)}
+		{
+			headLinks.map((l) => (
+				<link rel={l.rel} href={l.href} as={l.as} media={l.media} type={l.type} fetchpriority={l.fetchpriority} />
+			))
+		}
 
 		<SvgFilters />
 	</head>

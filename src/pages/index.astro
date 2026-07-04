@@ -17,11 +17,34 @@ import Footer from '@/components/home/Footer.astro';
 import { DEMO_SHOWROOM_EVENTS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
+import heroBrideDesktop from '@/assets/images/hero/hero-bride-desktop.webp';
+import heroBrideMobile from '@/assets/images/hero/hero-bride-mobile.webp';
 import '@/styles/landing.scss';
 
 ---
 
-<Layout title="Celebra.me | Invitaciones Digitales Premium" className="theme-preset--jewelry-box-landing">
+<Layout
+	title="Celebra.me | Invitaciones Digitales Premium"
+	className="theme-preset--jewelry-box-landing"
+	headLinks={[
+		{
+			rel: 'preload',
+			as: 'image',
+			href: heroBrideMobile.src,
+			type: 'image/webp',
+			media: '(max-width: 767px)',
+			fetchpriority: 'high',
+		},
+		{
+			rel: 'preload',
+			as: 'image',
+			href: heroBrideDesktop.src,
+			type: 'image/webp',
+			media: '(min-width: 768px)',
+			fetchpriority: 'high',
+		},
+	]}
+>
 	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} />
 		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} />

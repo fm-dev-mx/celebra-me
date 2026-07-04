@@ -6,12 +6,15 @@
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
-import { Image } from 'astro:assets';
 
-import heroXv from '@/assets/images/hero/xv.png';
-import heroWedding from '@/assets/images/hero/wedding.png';
-import heroBabyshower from '@/assets/images/hero/babyshower.png';
-import heroBaptism from '@/assets/images/hero/baptism.png';
+import heroBrideDesktop from '@/assets/images/hero/hero-bride-desktop.webp';
+import heroBrideMobile from '@/assets/images/hero/hero-bride-mobile.webp';
+import heroQuinceaneraDesktop from '@/assets/images/hero/hero-quinceanera-desktop.webp';
+import heroQuinceaneraMobile from '@/assets/images/hero/hero-quinceanera-mobile.webp';
+import heroDetailDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
+import heroDetailMobile from '@/assets/images/hero/hero-detail-mobile.webp';
+import heroFamilyDesktop from '@/assets/images/hero/hero-family-desktop.webp';
+import heroFamilyMobile from '@/assets/images/hero/hero-family-mobile.webp';
 
 import '@/styles/components/_hero.scss';
 
@@ -20,22 +23,36 @@ interface Props {
 }
 
 const { data } = Astro.props;
+
+const heroImages = [
+	{ desktop: heroBrideDesktop, mobile: heroBrideMobile },
+	{ desktop: heroQuinceaneraDesktop, mobile: heroQuinceaneraMobile },
+	{ desktop: heroDetailDesktop, mobile: heroDetailMobile },
+	{ desktop: heroFamilyDesktop, mobile: heroFamilyMobile },
+];
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
 	<div class="hero-prime__bg" aria-hidden="true">
-		<picture class="hero-prime__bg-picture hero-prime__bg-picture--active" data-hero-bg="0">
-			<Image src={heroXv} alt=""  width={1920} height={1080} quality={80} loading="eager" decoding="sync" fetchpriority="high" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-hero-bg="1">
-			<Image src={heroWedding} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-hero-bg="2">
-			<Image src={heroBabyshower} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
-		<picture class="hero-prime__bg-picture" data-hero-bg="3">
-			<Image src={heroBaptism} alt="" width={1920} height={1080} quality={80} loading="lazy" decoding="async" />
-		</picture>
+		{
+			heroImages.map((image, index) => (
+				<picture
+					class={`hero-prime__bg-picture${index === 0 ? ' hero-prime__bg-picture--active' : ''}`}
+					data-hero-bg={index}
+				>
+					<source media="(min-width: 768px)" srcset={image.desktop.src} width={image.desktop.width} height={image.desktop.height} />
+					<img
+						src={image.mobile.src}
+						alt=""
+						width={image.mobile.width}
+						height={image.mobile.height}
+						loading={index === 0 ? 'eager' : 'lazy'}
+						decoding={index === 0 ? 'sync' : 'async'}
+						fetchpriority={index === 0 ? 'high' : 'auto'}
+					/>
+				</picture>
+			))
+		}
 	</div>
 
 	<div class="hero-prime__overlay" aria-hidden="true"></div>
@@ -85,6 +102,8 @@ const { data } = Astro.props;
 					{data.secondaryCtaLabel}
 				</ActionBase>
 			</div>
+
+			<p class="hero-prime__proof-line stagger-5">RSVP · pases digitales · invitados organizados</p>
 		</div>
 	</div>
 </section>
@@ -92,7 +111,7 @@ const { data } = Astro.props;
 <script>
 	/**
 	 * Hero background crossfade — subtle autoplay rotation
-	 * through 4 event photography images.
+	 * through event photography images.
 	 * Respects prefers-reduced-motion; no user interaction needed.
 	 */
 	const initHeroBgRotation = () => {
@@ -125,10 +144,10 @@ const { data } = Astro.props;
 				currentIndex = 0;
 				return;
 			}
-			// Ensure first frame is visible
+			// Ensure first frame is visible.
 			pictures[0].classList.add('hero-prime__bg-picture--active');
 			currentIndex = 1;
-			intervalId = window.setInterval(advance, 7000);
+			intervalId = window.setInterval(advance, 8000);
 		};
 
 		const stop = () => {
