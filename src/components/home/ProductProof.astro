@@ -27,23 +27,25 @@ const phone = getContactPhone();
 	<Container class="product-proof__container">
 		<div class="product-proof__layout">
 			<div class="product-proof__narrative">
-				<p class="product-proof__eyebrow reveal-fade-up stagger-1">UNA EXPERIENCIA, NO UN ARCHIVO</p>
+				<p class="product-proof__eyebrow reveal-fade-up stagger-1">INVITACIÓN + CONFIRMACIÓN</p>
 				<h2 id="product-proof-title" class="product-proof__title reveal-fade-up stagger-2">{data.title}</h2>
 				<p class="product-proof__description reveal-fade-up stagger-3">{data.description}</p>
 				
-				<WhatsAppButton
-					className="product-proof__cta reveal-fade-up stagger-4"
-					phone={phone}
-					message={data.cta.message}
-					label={data.cta.label}
-					trackSection="product-proof"
-					trackCta="whatsapp-product-proof"
-					trackCampaign="DEMO-LANZAMIENTO-899"
-					trackValue={899}
-					trackCurrency="MXN"
-					promoCode="LANZAMIENTO-899"
-					ariaLabel="Solicitar asesoría por WhatsApp"
-				/>
+				<div class="product-proof__cta-desktop">
+					<WhatsAppButton
+						className="product-proof__cta reveal-fade-up stagger-4"
+						phone={phone}
+						message={data.cta.message}
+						label={data.cta.label}
+						trackSection="product-proof"
+						trackCta="whatsapp-product-proof"
+						trackCampaign="DEMO-LANZAMIENTO-899"
+						trackValue={899}
+						trackCurrency="MXN"
+						promoCode="LANZAMIENTO-899"
+						ariaLabel="Solicitar asesoría por WhatsApp"
+					/>
+				</div>
 			</div>
 
 			<div class="product-proof__showcase reveal-fade-up stagger-5" aria-label="Invitación personalizada con funciones integradas">
@@ -52,12 +54,30 @@ const phone = getContactPhone();
 						<p class="invitation-object__label">Celebra-me Signature</p>
 						<p class="invitation-object__date">Sábado · 15 de marzo</p>
 						<h3 class="invitation-object__names">Mariana<br />&amp; Diego</h3>
-						<p class="invitation-object__copy">Ceremonia nupcial · RSVP personalizado · pases por familia</p>
+						<p class="invitation-object__copy">Boda · RSVP personalizado · pase familiar</p>
 						<div class="invitation-object__actions" aria-hidden="true">
 							<span>Confirmar asistencia</span>
 							<span>Ver pase</span>
 						</div>
 					</div>
+
+					<div class="invitation-object__control-panel" aria-hidden="true">
+						<div class="control-panel__row">
+							<span class="control-panel__label">ASISTENCIA</span>
+							<span class="control-panel__value control-panel__value--confirmed">
+								<span class="control-panel__dot"></span>Confirmada
+							</span>
+						</div>
+						<div class="control-panel__row">
+							<span class="control-panel__label">PASE FAMILIAR</span>
+							<span class="control-panel__value">2 invitados</span>
+						</div>
+						<div class="control-panel__row">
+							<span class="control-panel__label">UBICACIÓN</span>
+							<span class="control-panel__value">Enviada</span>
+						</div>
+					</div>
+
 					<div class="invitation-object__phone" aria-hidden="true">
 						<span class="invitation-object__phone-status">Confirmada</span>
 						<span class="invitation-object__phone-pass">Pase 2 / 2</span>
@@ -72,12 +92,12 @@ const phone = getContactPhone();
 					</div>
 					<div class="product-callout product-callout--right" role="listitem">
 						<span class="product-callout__status"></span>
-						<strong>Pase digital</strong>
+						<strong>Pase 2/2</strong>
 						<small>Acceso claro para cada familia</small>
 					</div>
 					<div class="product-callout product-callout--bottom" role="listitem">
 						<span class="product-callout__status"></span>
-						<strong>Ubicación y horario</strong>
+						<strong>Ubicación lista</strong>
 						<small>Datos listos antes del evento</small>
 					</div>
 					<div class="product-callout product-callout--left" role="listitem">
@@ -87,6 +107,23 @@ const phone = getContactPhone();
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<div class="product-proof__mobile-footer">
+			<p class="product-proof__proof-line">Menos dudas para sus invitados. Menos mensajes para usted.</p>
+			<WhatsAppButton
+				className="product-proof__cta"
+				phone={phone}
+				message={data.cta.message}
+				label={data.cta.label}
+				trackSection="product-proof"
+				trackCta="whatsapp-product-proof"
+				trackCampaign="DEMO-LANZAMIENTO-899"
+				trackValue={899}
+				trackCurrency="MXN"
+				promoCode="LANZAMIENTO-899"
+				ariaLabel="Solicitar asesoría por WhatsApp"
+			/>
 		</div>
 
 		<div class="product-proof__rail" aria-labelledby="proof-rail-heading">

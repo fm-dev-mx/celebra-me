@@ -16,11 +16,11 @@ export const landingData: LandingPageData = {
 			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\\n\\nCupón: LANZAMIENTO-899',
 	},
 	productProof: {
-		title: 'Una invitación elegante que también organiza a sus invitados.',
+		title: 'Una invitación elegante que también pone orden.',
 		description:
-			'Confirmaciones, pases, ubicación, música y detalles del evento organizados en una invitación personalizada.',
+			'Cada invitado recibe una experiencia personalizada con confirmación, pase y datos clave del evento.',
 		cta: {
-			label: 'Cotizar mi invitación por WhatsApp',
+			label: 'Cotizar por WhatsApp',
 			message:
 				'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
 		},

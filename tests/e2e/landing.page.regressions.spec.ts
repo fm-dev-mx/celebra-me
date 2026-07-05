@@ -297,7 +297,7 @@ test.describe('Landing page regressions', () => {
 
 		expect(eventSelectorTop).toBeLessThan(proofTop);
 		await expect(page.locator('#product-proof-title')).toContainText(
-			'Una invitación elegante con control de invitados',
+			'Una invitación elegante que también pone orden.',
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
