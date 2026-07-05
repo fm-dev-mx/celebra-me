@@ -167,16 +167,6 @@
 			gap: 1.25rem;
 		}
 
-		&__giant-num {
-			font-family: var(--font-display);
-			font-size: clamp(3.2rem, 6.5vw, 4.2rem);
-			font-weight: 500;
-			line-height: 0.8;
-			color: var(--color-text-emphasis);
-			flex-shrink: 0;
-			font-feature-settings: 'tnum';
-		}
-
 		&__header-meta {
 			display: flex;
 			flex-direction: column;
