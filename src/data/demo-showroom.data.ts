@@ -10,12 +10,12 @@ export const DEMO_SHOWROOM_EVENTS = [
 		eventType: 'xv',
 		publicSlug: 'xv',
 		label: 'XV años',
-		description: 'Diseños con galería, música y pases para una noche inolvidable.',
+		description: 'Diseños con galería, música y pases para una celebración ordenada.',
 		icon: 'Crown',
 		showroomHref: '/demos/xv',
 		heroTitle: 'Demos de invitaciones para XV años',
 		heroDescription:
-			'Explore estilos digitales para una celebración de XV años elegante, clara y memorable.',
+			'Explora estilos digitales para una celebración de XV años con RSVP, pases y galería.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para XV años. Vi sus demos y quiero asesoría para elegir estilo.',
 		homeSelector: {
@@ -33,7 +33,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 				kicker: 'XV años',
 				title: 'Una entrada luminosa para una noche de XV',
 				description:
-					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música, galería y detalles personalizados para que cada invitado reciba una experiencia clara desde WhatsApp.',
+					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música y galería para que cada invitado reciba una experiencia clara.',
 			},
 			quoteCta: {
 				label: 'Cotizar mis XV',
@@ -49,12 +49,12 @@ export const DEMO_SHOWROOM_EVENTS = [
 		eventType: 'boda',
 		publicSlug: 'boda',
 		label: 'Boda',
-		description: 'Ceremonia, recepción y confirmaciones en un enlace elegante.',
+		description: 'Ceremonia, recepción y confirmaciones en una invitación digital.',
 		icon: 'Rings',
 		showroomHref: '/demos/boda',
 		heroTitle: 'Demos de invitaciones para boda',
 		heroDescription:
-			'Conozca experiencias digitales pensadas para comunicar ceremonia, recepción y detalles con sobriedad.',
+			'Conoce experiencias digitales para comunicar ceremonia, recepción y detalles de la boda.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para boda. Quiero conocer opciones similares a sus demos.',
 		homeSelector: {
@@ -72,7 +72,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 				kicker: 'Boda',
 				title: 'Una invitación elegante para guiar a cada invitado',
 				description:
-					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con el estilo de tu boda.',
+					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con tu estilo.',
 			},
 			quoteCta: {
 				label: 'Cotizar mi boda',
@@ -90,12 +90,12 @@ export const DEMO_SHOWROOM_EVENTS = [
 		eventType: 'bautizo',
 		publicSlug: 'bautizo',
 		label: 'Bautizo',
-		description: 'Detalles familiares, ubicación y confirmación en una experiencia delicada.',
+		description: 'Detalles familiares, ubicación y confirmación en una invitación clara.',
 		icon: 'Dove',
 		showroomHref: '/demos/bautizo',
 		heroTitle: 'Demos de invitaciones para bautizo',
 		heroDescription:
-			'Vea propuestas digitales delicadas para compartir la celebración con familia y padrinos.',
+			'Mira propuestas digitales para compartir la celebración con familia y padrinos.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para bautizo. Vi sus demos y quiero asesoría para mi celebración.',
 		homeSelector: {
@@ -111,9 +111,9 @@ export const DEMO_SHOWROOM_EVENTS = [
 			},
 			showroom: {
 				kicker: 'Bautizo',
-				title: 'Una celebración familiar comunicada con delicadeza',
+				title: 'Una celebración familiar comunicada con claridad',
 				description:
-					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara, elegante y fácil de compartir.',
+					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara y fácil de compartir.',
 			},
 			quoteCta: {
 				label: 'Cotizar mi bautizo',
@@ -129,12 +129,12 @@ export const DEMO_SHOWROOM_EVENTS = [
 		eventType: 'baby-shower',
 		publicSlug: 'baby-shower',
 		label: 'Baby shower',
-		description: 'Una invitación dulce para compartir ubicación, regalos y asistencia.',
+		description: 'Ubicación, regalos y confirmación en una invitación clara.',
 		icon: 'Sparkles',
 		showroomHref: '/demos/baby-shower',
 		heroTitle: 'Demos de invitaciones para baby shower',
 		heroDescription:
-			'Descubra diseños digitales tiernos y ordenados para anunciar una celebración llena de ilusión.',
+			'Descubre diseños digitales para anunciar una celebración con detalles claros.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
 		homeSelector: {
@@ -150,7 +150,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 			},
 			showroom: {
 				kicker: 'Baby shower',
-				title: 'Una bienvenida cálida, ordenada y fácil de compartir',
+				title: 'Una bienvenida clara y fácil de compartir',
 				description:
 					'Reúne ubicación, mesa de regalos, galería y confirmaciones en una experiencia clara para familiares y amigos.',
 			},
@@ -168,12 +168,12 @@ export const DEMO_SHOWROOM_EVENTS = [
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
 		label: 'Cumpleaños y eventos',
-		description: 'Celebraciones sociales con información clara y envío por WhatsApp.',
+		description: 'Celebraciones sociales con invitación digital y confirmación.',
 		icon: 'Cake',
 		showroomHref: '/demos/cumpleanos',
 		heroTitle: 'Demos de invitaciones para cumpleaños',
 		heroDescription:
-			'Explore una experiencia digital pensada para celebraciones personales, familiares o de aniversario.',
+			'Explora una invitación digital para celebraciones personales, familiares o de aniversario.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
 		homeSelector: {
@@ -191,7 +191,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 				kicker: 'Cumpleaños',
 				title: 'Una celebración clara desde el primer mensaje',
 				description:
-					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada y fácil de reenviar.',
+					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada.',
 			},
 			quoteCta: {
 				label: 'Cotizar mi evento',

@@ -2,52 +2,93 @@ import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.inte
 
 export const landingData: LandingPageData = {
 	hero: {
-		title: 'Experiencias de invitación personalizadas para guiar a sus invitados',
-		subtitle:
-			'RSVP, pases digitales, ubicación, música y galería en una experiencia premium para compartir por WhatsApp.',
-		mobileTitle: 'Invitaciones que organizan su evento',
-		mobileSubtitle:
-			'Cada invitado recibe por WhatsApp su invitación con confirmación, pase digital, ubicación y detalles importantes.',
-		primaryCtaLabel: 'Cotizar por WhatsApp',
-		secondaryCtaLabel: 'Ver demos de invitaciones',
+		eyebrow: 'INVITACIONES DIGITALES',
+		title: 'Con pases y confirmación, personalizada para cada invitado',
+		subtitle: 'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
+		primaryCtaLabel: 'Cotizar mi invitación',
+		secondaryCtaLabel: 'Ver demos',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
-			'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\\n\\nCupón: LANZAMIENTO-899',
+			'Hola, quiero cotizar una invitación digital personalizada con panel de invitados.',
+		proofLine: 'Lista de invitados · Pases · Confirmaciones',
+	},
+	eventSelector: {
+		eyebrow: 'DEMOS POR EVENTO',
+		title: 'Revisa cómo puede verse tu invitación',
+		description:
+			'Explora demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de tu celebración.',
+		cta: 'Ver demo',
 	},
 	productProof: {
-		title: 'Una invitación elegante que también pone orden.',
+		eyebrow: 'NO ES UN PDF, TAMPOCO ES UN ENLACE IGUAL PARA TODOS',
+		title: 'La invitación también organiza tu evento',
 		description:
-			'Cada invitado recibe una experiencia personalizada con confirmación, pase y datos clave del evento.',
+			'Puedes agregar invitados, asignar pases y enviar una invitación personal para cada persona o familia.',
+		items: [
+			{
+				title: 'Lista de invitados',
+				description: 'Organiza personas, familias o grupos desde un solo lugar.',
+			},
+			{
+				title: 'Pases claros',
+				description: 'Define cuántos accesos tiene cada invitado.',
+			},
+			{
+				title: 'Invitación personal',
+				description:
+					'Cada invitado recibe su una invitación con su nombre o el de su familia.',
+			},
+			{
+				title: 'Confirmaciones ordenadas',
+				description: 'Revisa quién confirmó sin perderte entre mensajes.',
+			},
+		],
 		cta: {
-			label: 'Cotizar por WhatsApp',
+			label: 'Quiero una invitación con control',
 			message:
-				'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899',
+				'Hola, quiero una invitación digital con panel de invitados para organizar invitados, pases y confirmaciones.',
 		},
 	},
 	services: {
-		eyebrow: 'INCLUIDO EN CADA EXPERIENCIA',
-		title: 'Todo claro para sus invitados, todo bajo control para usted',
-		subtitle:
-			'Confirmaciones, pases, ubicación y detalles reunidos en una experiencia elegante para compartir por WhatsApp.',
-		dossierSubtext: 'Resueltos desde un solo enlace.',
-		closingStatement: 'Menos dudas · Menos mensajes · Más control',
+		eyebrow: 'LO QUE PUEDE INCLUIR',
+		title: 'Todo lo necesario para guiar a tus invitados',
+		subtitle: 'Presenta cada detalle de forma clara.',
+		dossierSubtext: 'Activamos solo lo que tu evento necesita.',
+		dossierTag: 'SECCIONES A MEDIDA',
+		closingStatement: '',
 		items: [
 			{
-				title: 'Confirmaciones',
-				description: 'RSVP sin perseguir mensajes.',
+				title: 'Confirmación RSVP',
+				description: 'Cada invitado puede confirmar asistencia desde su invitación.',
 			},
 			{
-				title: 'Accesos digitales',
-				description: 'Pases claros para invitados y acompañantes.',
+				title: 'Pases digitales',
+				description: 'Define cuántos lugares tiene cada invitado o familia.',
 			},
 			{
-				title: 'Información del evento',
-				description: 'Ubicación, horario, itinerario y detalles.',
+				title: 'Ubicación',
+				description: 'Incluye dirección y acceso directo a Google Maps o Waze.',
 			},
 			{
-				title: 'Visibilidad para usted',
-				description: 'Respuestas y acompañantes organizados.',
+				title: 'Itinerario',
+				description: 'Muestra horarios y momentos importantes.',
+			},
+			{
+				title: 'Música',
+				description: 'Agrega tu canción favorita.',
+			},
+			{
+				title: 'Galería',
+				description: 'Incluye tu sesión de fotos, recuerdos o momentos especiales.',
+			},
+			{
+				title: 'Mesa de regalos',
+				description: 'Incluye enlaces o datos de regalo de forma discreta.',
+			},
+			{
+				title: 'Código de vestimenta',
+				description: 'Indica el estilo sugerido de forma clara.',
 			},
 		],
 		cta: {
@@ -56,54 +97,56 @@ export const landingData: LandingPageData = {
 		},
 	},
 	guestExperience: {
-		eyebrow: 'INVITACIONES PERSONALIZADAS',
-		title: 'Invitaciones que reconocen a cada invitado',
+		eyebrow: 'PARA TUS INVITADOS',
+		title: 'Una invitación clara desde el primer mensaje',
 		description:
-			'Cada pase puede mostrar el nombre del invitado y sus lugares reservados, para que la experiencia se sienta personal desde el primer mensaje.',
+			'Al abrirla, cada invitado puede ver sus pases, consultar los detalles del evento y confirmar asistencia.',
 		values: [
 			{
-				name: 'Nombre visible',
-				description:
-					'Incluye el nombre de la persona, familia o grupo invitado.',
+				name: 'Su nombre',
+				description: 'Cada invitación muestra el nombre del invitado o familia.',
 			},
 			{
-				name: 'Lugares reservados',
-				description:
-					'Indica cuántos accesos corresponden a cada invitación.',
+				name: 'Sus pases',
+				description: 'El invitado sabe cuántos lugares tiene asignados.',
 			},
 			{
-				name: 'Lista para enviar',
+				name: 'Detalles del evento',
 				description:
-					'Preparada para compartirse por WhatsApp.',
+					'Fecha, ubicación, itinerario, música, galería o información especial.',
+			},
+			{
+				name: 'Confirmación fácil',
+				description: 'Responden desde la misma invitación.',
 			},
 		],
-		closingLine: 'Pequeños detalles que elevan la primera impresión.',
+		closingLine: '',
 		cta: {
 			label: 'Solicitar invitaciones personalizadas',
 			message: 'Hola, quiero solicitar invitaciones personalizadas para mi evento.',
 		},
 	},
 	testimonials: {
-		eyebrow: 'EXPERIENCIAS QUE SE SIENTEN CUIDADAS',
-		title: 'La invitación también debe dar tranquilidad.',
+		eyebrow: 'RESULTADOS REALES',
+		title: 'Más claridad antes del evento',
 		subtitle:
-			'Cuando la información está clara, sus invitados confirman mejor, preguntan menos y viven una experiencia más cuidada desde el primer mensaje.',
+			'Nuestros clientes no solo buscan una invitación bonita. También valoran saber quién confirmó, cuántos pases tiene cada invitado y qué información recibió cada persona.',
 		testimonials: [
 			{
 				name: 'Mariana G.',
-				text: 'Por primera vez no tuvimos que reenviar ubicación, horario ni detalles por separado. Todo estaba claro desde la invitación.',
+				text: 'Nos ayudó mucho tener los pases claros por familia. La invitación se veía formal y las confirmaciones quedaron más ordenadas.',
 				role: 'Boda',
 				guests: '72 invitados',
 			},
 			{
 				name: 'Laura M.',
-				text: 'Mis invitados confirmaron desde WhatsApp y pudimos saber con tiempo quién realmente asistiría.',
+				text: 'Cada invitado recibió su invitación y ya no tuvimos que explicar ubicación, horarios y accesos por separado.',
 				role: 'XV años',
 			},
 			{
 				name: 'Fernanda C.',
-				text: 'Se veía elegante, pero lo mejor fue lo práctica que resultó antes del evento.',
-				role: 'Boda civil',
+				text: 'Fue mucho más fácil enviar todo y saber quién ya había confirmado.',
+				role: 'Cumpleaños',
 			},
 			{
 				name: 'Andrea R.',
@@ -111,162 +154,173 @@ export const landingData: LandingPageData = {
 				role: 'Bautizo',
 			},
 		],
-		proofLine: 'RSVP claro · Menos dudas · Información en un solo enlace',
+		proofLine: '',
 	},
 	pricing: {
-		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
-		title: 'Elija con una recomendación clara',
-		intro: 'Signature es nuestra sugerencia para la mayoría de eventos; Colección y Atelier ajustan el nivel de personalización.',
-		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
+		eyebrow: 'PAQUETES',
+		title: 'Elige la invitación que necesita tu evento',
+		intro: 'Todos los paquetes incluyen una invitación digital personalizada. Los planes superiores agregan más control de invitados, pases y personalización.',
+		note: 'Pago único. Precios en MXN.',
 		decisionGuide: {
-			title: '¿No sabe cuál elegir?',
+			title: '¿No sabes cuál elegir?',
 			rows: [
-				'Le recomendamos el paquete ideal por WhatsApp según evento, invitados y estilo.',
+				'Te recomendamos el paquete ideal por WhatsApp según tu evento, invitados y estilo.',
 			],
 			cta: 'Recibir recomendación personalizada',
 			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
 		},
 		tiers: [
 			{
+				id: 'essential',
+				title: 'Essential',
+				description: 'Para una invitación digital clara y elegante.',
+				price: { amount: '899', currency: 'MXN', period: 'pago único' },
+				regularPrice: 'Precio regular: $1,299 MXN',
+				idealFor: 'Para una invitación digital clara y elegante.',
+				sections: [
+					{
+						title: 'Incluye',
+						items: [
+							'Diseño personalizado',
+							'Información del evento',
+							'Ubicación',
+							'Botón de confirmación',
+							'Entrega lista para usar',
+						],
+					},
+				],
+		cta: 'Elegir Essential',
+				ctaMessage:
+					'Hola, quiero elegir el paquete Essential de $899 MXN para mi invitación digital.',
+			},
+			{
 				id: 'signature',
 				title: 'Signature',
-				description:
-					'La experiencia recomendada: personalizada, cuidada y lista para coordinar invitados.',
-				badge: 'RECOMENDADO',
+				description: 'Para organizar invitados, pases y confirmaciones.',
+				badge: 'MÁS RECOMENDADO',
 				isPrimary: true,
 				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $2,299 MXN',
 				idealFor:
-					'Ideal para eventos que deben sentirse personalizados sin complicar el proceso.',
+					'Ideal para eventos que necesitan control de invitados, pases y confirmaciones.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Diseño personalizado con paleta y portada cuidada',
-							'RSVP, acompañantes y pases digitales',
-							'Ubicación, horario, música y galería',
-							'Revisión prioritaria antes de publicar',
-							'Acompañamiento durante la personalización',
+							'Todo lo de Essential',
+							'Panel de invitados',
+							'Invitaciones personales',
+							'Pases por invitado',
+							'Confirmaciones ordenadas',
 						],
 					},
 				],
-				cta: 'Elegir Signature',
+		cta: 'Elegir Signature',
 				ctaMessage:
-					'Hola, quiero elegir el paquete Signature de $1,699 MXN para mi invitación digital.',
-			},
-			{
-				id: 'coleccion',
-				title: 'Colección',
-				description:
-					'Invitación premium lista para personalizar con lo esencial para compartir.',
-				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $1,299 MXN',
-				idealFor: 'Para una invitación elegante, clara y rápida de personalizar.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Diseño premium seleccionado',
-							'Personalización de datos del evento',
-							'RSVP y control de acompañantes',
-							'Ubicación, música e itinerario',
-							'Pases digitales por WhatsApp',
-						],
-					},
-				],
-				cta: 'Elegir Colección',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Colección de $899 MXN para mi invitación digital.',
+					'Hola, quiero elegir el paquete Signature de $1,699 MXN con panel de invitados.',
 			},
 			{
 				id: 'atelier',
 				title: 'Atelier',
-				description:
-					'Dirección visual más profunda para eventos que necesitan una experiencia distintiva.',
+				description: 'Para una experiencia más cuidada y personalizada.',
 				isExclusive: true,
 				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $3,899 MXN',
-				idealFor: 'Para una experiencia más dirigida, narrativa y visualmente distintiva.',
+				idealFor: 'Para eventos que requieren mayor detalle editorial y acompañamiento.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
 							'Todo lo de Signature',
 							'Dirección visual avanzada',
-							'Estructura extendida de secciones',
-							'Mayor personalización de narrativa visual',
+							'Más secciones personalizadas',
+							'Mayor detalle editorial',
 							'Acompañamiento prioritario',
 						],
 					},
 				],
-				cta: 'Elegir Atelier',
+		cta: 'Elegir Atelier',
 				ctaMessage:
-					'Hola, quiero elegir el paquete Atelier de $2,899 MXN para mi invitación digital.',
+					'Hola, quiero elegir el paquete Atelier de $2,899 MXN con dirección visual avanzada.',
 			},
 		],
 	},
 	faq: {
+		pretitle: 'Claridad antes de cotizar',
 		title: 'Preguntas frecuentes',
+		subtitle:
+			'Las dudas más importantes sobre entrega, invitaciones personalizadas, pases y confirmaciones.',
+		divider: 'Dudas antes de cotizar',
 		faqs: [
 			{
-				question: '¿Qué incluye la invitación digital premium?',
-				answer: 'Diseño personalizado, RSVP, pases digitales por WhatsApp, mapa, música, itinerario y mesa de regalos.',
+				question: '¿La invitación se envía por WhatsApp?',
+				answer: 'Sí. Desde tu panel puedes enviar las invitaciones a tus invitados. Cada persona recibe su propia invitación, no un enlace genérico para todos.',
 			},
 			{
-				question: '¿Cómo funciona el RSVP?',
-				answer: 'Ingresan al enlace, seleccionan sus nombres y confirman asistencia y acompañantes al instante.',
+				question: '¿Cada invitado recibe una invitación diferente?',
+				answer: 'Sí. Cada invitado puede recibir una invitación personal con su nombre, sus pases y su opción para confirmar asistencia.',
 			},
 			{
-				question: '¿Puedo controlar acompañantes?',
-				answer: 'Sí, puede asignar un número exacto de pases para cada familia o invitado principal.',
+				question: '¿Qué es el panel de invitados?',
+				answer: 'Es el espacio donde puedes organizar tu lista, asignar pases, enviar invitaciones y revisar confirmaciones.',
 			},
 			{
-				question: '¿Cuánto tarda la entrega?',
-				answer: 'De 24 a 72 horas hábiles una vez que nos comparte los datos de su evento.',
+				question: '¿Es una plantilla, PDF o imagen?',
+				answer: 'No. Es una invitación digital personalizada. Según el paquete, también puede incluir panel de invitados, pases y confirmaciones.',
 			},
 			{
-				question: '¿Cómo se comparte por WhatsApp?',
-				answer: 'Le entregamos un enlace y pases listos para compartir fácilmente por WhatsApp.',
+				question: '¿Puedo asignar pases por familia?',
+				answer: 'Sí. Puedes asignar pases por persona, pareja, familia o grupo.',
 			},
 			{
-				question: '¿Cómo empiezo el diseño?',
-				answer: 'Elija su paquete, realice el pago y le guiaremos para recopilar su información.',
+				question: '¿Cómo veo quién confirmó?',
+				answer: 'Las respuestas quedan ordenadas para que puedas revisar quién confirmó y quién sigue pendiente.',
 			},
 		],
+		helpSection: {
+			title: '¿Prefieres resolverlo directamente?',
+			description:
+				'Te ayudamos por WhatsApp a elegir el nivel adecuado según tu evento, cantidad de invitados y estilo.',
+			cta: 'Hablar con un asesor',
+			message: 'Hola, quiero asesoría para elegir el paquete ideal de invitación digital.',
+		},
 	},
 	howItWorks: {
-		eyebrow: 'ASÍ EMPEZAMOS',
-		title: 'Un proceso guiado hasta la entrega.',
+		eyebrow: 'PROCESO SIMPLE',
+		title: 'Nosotros la diseñamos. Tú la envías desde tu panel.',
 		subtitle:
-			'Le acompañamos como un concierge: definimos el estilo, ordenamos la información y dejamos todo listo para compartir.',
+			'Te entregamos una invitación lista para usar, con una forma clara de organizar invitados, pases y confirmaciones.',
 		deliveryDossier: {
 			title: 'Entrega preparada',
-			subtitle: 'Lo que recibe al final del proceso',
+			subtitle: 'Lo que recibes al final del proceso',
 			rows: [
 				{ label: 'Invitación personalizada', status: 'Lista' },
-				{ label: 'RSVP y pases digitales', status: 'Activos' },
-				{ label: 'Enlace para WhatsApp', status: 'Listo' },
+				{ label: 'Panel de invitados', status: 'Activo' },
+				{ label: 'Invitaciones listas para enviar', status: 'Listas' },
 				{ label: 'Revisión final', status: 'Incluida' },
 			],
 			footnote: 'Cada elemento revisado antes de la entrega.',
 		},
 		steps: [
 			{
-				title: 'Definimos el estilo',
-				description: 'Aterrizamos tono, evento, paleta y referencias visuales principales.',
+				title: 'Nos compartes los datos',
+				description: 'Fecha, lugar, nombres, fotos y detalles del evento.',
 			},
 			{
-				title: 'Personalizamos la invitación',
-				description:
-					'Organizamos textos, fotos, horarios, ubicación y detalles importantes.',
+				title: 'Diseñamos tu invitación',
+				description: 'Adaptamos el estilo y las secciones según tu celebración.',
 			},
 			{
-				title: 'Activamos RSVP y pases',
-				description: 'Configuramos confirmaciones y pases digitales para sus invitados.',
+				title: 'Agregas tus invitados',
+				description: 'Puedes organizar personas, familias o grupos.',
 			},
 			{
-				title: 'Le entregamos el enlace listo para compartir',
-				description: 'Recibe la invitación revisada y preparada para enviar por WhatsApp.',
+				title: 'Envías las invitaciones',
+				description: 'Cada invitado recibe su propia invitación.',
+			},
+			{
+				title: 'Revisas confirmaciones',
+				description: 'Puedes ver quién ya respondió y quién sigue pendiente.',
 			},
 		],
 		cta: {
@@ -275,8 +329,24 @@ export const landingData: LandingPageData = {
 		},
 	},
 	contact: {
-		title: 'Le ayudamos a elegir la invitación ideal',
+		eyebrow: 'COTIZA TU INVITACIÓN',
+		title: 'Cuéntanos qué evento estás preparando',
 		subtitle:
-			'Cuéntenos qué está organizando y le recomendamos la experiencia adecuada para su evento.',
+			'Te ayudamos a elegir el paquete adecuado según tu tipo de evento, número de invitados y nivel de control que necesitas.',
+		cta: {
+			label: 'Cotizar por WhatsApp',
+			message: 'Hola, quiero cotizar una invitación digital para mi evento.',
+		},
+		microcopy:
+			'Te diremos si necesitas una invitación sencilla o una experiencia con invitados, pases y confirmaciones.',
+		formIntro: 'O déjanos tus datos y te contactamos.',
+		channelPrimary: {
+			label: 'Principal',
+			value: 'Cotizar por WhatsApp',
+		},
+		channelSecondary: {
+			label: 'Secundario',
+			value: 'Escribir por correo',
+		},
 	},
 };
