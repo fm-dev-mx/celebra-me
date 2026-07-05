@@ -142,38 +142,67 @@ When helping with commit planning, answer in this order:
    paths over broad directory adds. Use `git add -p` when a file contains hunks for more than one
    commit.
 
-## Optional: Commit Execution (plan → commit)
+## Commit Execution (plan → commit)
 
-Only when the user explicitly asks to commit. Never auto-commit.
+Execute multi-commit plans silently once the user approves the plan. Do NOT ask for
+confirmation between commits — the plan IS the approval.
 
-1. **Check staged state**
+### Preconditions
+
+- The user has explicitly approved the commit plan (said "si", "yes", "adelante", "do it").
+- The working tree has all changes unstaged (`git reset HEAD` first if everything was staged).
+
+### Batch Execution Procedure
+
+1. **Reset staging** — unstage everything so each commit stages only its own files:
 
    ```sh
-   git diff --staged --stat
+   git reset HEAD
    ```
 
-   If nothing staged, tell the user and stop.
-
-2. **Summarise and propose** — show a summary and propose a full message (subject + body bullets).
-   Use multiple `-m` arguments to avoid shell quoting issues:
+2. **Step through each commit** — for each commit in the plan, in order:
 
    ```sh
-   git commit -m "type(scope): subject" -m "- path/file.ts: change" -m "- path/other.ts: other"
+   # Stage only the files belonging to this commit
+   git add <file1> <file2> ...
+   # If line-ending normalization is needed first:
+   git add --renormalize <file-with-crlf>
+   git add <file-with-crlf>
+   # Commit with the pre-approved message
+   git commit --no-verify -m "type(scope): subject" \
+     -m "- path/file: change" \
+     -m "- path/other: other"
    ```
 
-3. **Ask the user** to confirm or edit the proposed message.
+   - Use `--no-verify` when the pre-commit hook has a known infrastructure failure
+     (e.g. pnpm path crash on git-bash). On healthy hook environments, omit it.
+   - Do NOT ask the user to confirm each commit — the plan was already approved.
+   - Do NOT stop between commits unless a commit fails (build error, hook rejection,
+     merge conflict). In that case, report the failure and stop.
 
-4. **Execute the commit** with the final message. One `-m` per bullet line.
+3. **Use exact file paths** — never directory globs:
 
-5. **Verify**
+   ```
+   ✅ git add src/components/home/Hero.astro src/components/home/Contact.astro
+   ❌ git add src/components/home/
+   ```
+
+4. **Line-ending normalization** — when a file has CRLF mixed with content changes:
+
    ```sh
-   git log --oneline -3
+   git add --renormalize <file>  # applies .gitattributes clean filter
+   git add <file>               # stage the now-normalized file
    ```
 
-6. **Repeat for multi-commit plans** — after verifying commit N, stage the next commit's files with
-   exact paths, show the user the new staged state (`git diff --cached --stat`), propose the next
-   message, and obtain explicit confirmation before proceeding. Do not chain multiple commits
-   without a confirmation checkpoint between each one.
+   This prevents the full-file CRLF noise from appearing in the diff.
+
+5. **Final verification** — after the last commit:
+
+   ```sh
+   git log --oneline -<N+1>   # show all commits plus the previous tip
+   git status --short          # confirm clean working tree
+   pnpm run build              # or equivalent — confirm build passes
+   ```
 
 ## Common Recovery Workflows
 
