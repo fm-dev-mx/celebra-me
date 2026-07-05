@@ -55,7 +55,7 @@ test.describe('Landing page regressions', () => {
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
 			await expect(page.locator('.services__spec-row').first()).toBeVisible();
-			await expect(page.locator('#nosotros .about-us__content')).toBeVisible();
+			await expect(page.locator('#experiencia-invitados')).toBeVisible();
 
 			await page.locator('[data-nav-mobile-toggle]').click();
 			await expect(page.locator('[data-nav-mobile-menu]')).toBeVisible();

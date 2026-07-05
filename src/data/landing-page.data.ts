@@ -55,31 +55,32 @@ export const landingData: LandingPageData = {
 			href: '#contacto',
 		},
 	},
-	about: {
-		eyebrow: 'DIRECCIÓN VISUAL INCLUIDA',
-		title: 'No parece una plantilla. Se siente como su evento.',
+	guestExperience: {
+		eyebrow: 'INVITACIONES PERSONALIZADAS',
+		title: 'Invitaciones que reconocen a cada invitado',
 		description:
-			'No entregamos un PDF estático ni una plantilla genérica. Diseñamos una invitación web personalizada, elegante y clara, lista para compartir por WhatsApp.',
+			'Cada pase puede mostrar el nombre del invitado y sus lugares reservados, para que la experiencia se sienta personal desde el primer mensaje.',
 		values: [
 			{
-				name: 'Más que un archivo',
+				name: 'Nombre visible',
 				description:
-					'Una experiencia web con secciones claras, ubicación, RSVP y detalles importantes.',
+					'Incluye el nombre de la persona, familia o grupo invitado.',
 			},
 			{
-				name: 'Personalización real',
+				name: 'Lugares reservados',
 				description:
-					'Diseño, contenido y flujo alineados al tono de su celebración; cuando aplica, con nombre, pase o confirmación individual.',
+					'Indica cuántos accesos corresponden a cada invitación.',
 			},
 			{
-				name: 'Lista para compartir',
+				name: 'Lista para enviar',
 				description:
-					'Revisamos estructura, presentación y publicación antes de enviarla a sus invitados.',
+					'Preparada para compartirse por WhatsApp.',
 			},
 		],
+		closingLine: 'Pequeños detalles que elevan la primera impresión.',
 		cta: {
-			label: 'Recibir asesoría por WhatsApp',
-			href: '#contacto',
+			label: 'Solicitar invitaciones personalizadas',
+			message: 'Hola, quiero solicitar invitaciones personalizadas para mi evento.',
 		},
 	},
 	testimonials: {

@@ -72,7 +72,7 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 		selector: '[data-screenshot="landing-interlude"], .photo-interlude',
 		keepHeader: false,
 	},
-	{ id: 'about', selector: '[data-screenshot="landing-essence"], #nosotros', keepHeader: false },
+	{ id: 'guest-experience', selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados', keepHeader: false },
 	{
 		id: 'how-it-works',
 		selector: '[data-screenshot="landing-process"], #como-funciona',

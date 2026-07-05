@@ -200,6 +200,7 @@
 
 #home-header.header-base--scrolled .header-base__mobile-toggle,
 #home-header.header-base--menu-open .header-base__mobile-toggle {
+	border: 1px solid;
 	border-color: rgb(var(--color-action-accent-rgb) / 32%);
-	background: rgb(255 250 240 / 72%);
+	background: rgb(var(--color-action-accent-rgb) / 18%);
 }

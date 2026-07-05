@@ -46,7 +46,7 @@
                 { "selector": "[data-screenshot=\"landing-contact\"], #contacto", "required": true, "capture": true, "label": "contact" },
                 { "selector": "[data-screenshot=\"landing-event-types\"], #tipo-evento", "required": false },
                 { "selector": "[data-screenshot=\"landing-includes\"], #servicios", "required": false },
-                { "selector": "[data-screenshot=\"landing-essence\"], #nosotros", "required": false },
+                { "selector": "[data-screenshot=\"landing-guest-experience\"], #experiencia-invitados", "required": false },
                 { "selector": "[data-screenshot=\"landing-testimonials\"], #testimonios", "required": false, "capture": true, "label": "testimonials" },
                 { "selector": "[data-screenshot=\"landing-process\"], #como-funciona", "required": false },
                 { "selector": "[data-screenshot=\"landing-footer\"], footer", "required": false }

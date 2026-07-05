@@ -431,7 +431,7 @@ export function getDefaultCriticalSelectors(pageType: PageType): ScreenshotSelec
 			/* Optional / warning-only landing sections */
 			{ selector: '[data-screenshot="landing-event-types"], #tipo-evento', required: false },
 			{ selector: '[data-screenshot="landing-includes"], #servicios', required: false },
-			{ selector: '[data-screenshot="landing-essence"], #nosotros', required: false },
+			{ selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados', required: false },
 			{
 				selector: '[data-screenshot="landing-testimonials"], #testimonios',
 				required: false,

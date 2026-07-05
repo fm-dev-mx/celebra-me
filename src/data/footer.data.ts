@@ -6,7 +6,7 @@ export const footerData = {
 		{
 			title: 'Compañía',
 			links: [
-				{ label: 'Sobre Nosotros', href: '/#nosotros' },
+				{ label: 'Sobre Nosotros', href: '/#experiencia-invitados' },
 				{ label: 'Demos', href: '/#tipo-evento' },
 				{ label: 'Planes', href: '/#pricing' },
 			],

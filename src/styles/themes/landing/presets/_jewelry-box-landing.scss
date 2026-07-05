@@ -13,24 +13,24 @@
 
 .theme-preset--jewelry-box-landing {
 	// Curated restrained visual system
-	--color-ink: #110D09;
-	--color-ink-rgb: 17, 13, 9;
-	--color-espresso: #21130D;
-	--color-espresso-rgb: 33, 19, 13;
-	--color-ivory: #F7F0E4;
-	--color-ivory-rgb: 247, 240, 228;
-	--color-paper: #FBF6EC;
-	--color-paper-rgb: 251, 246, 236;
-	--color-champagne: #D9A93A;
-	--color-champagne-rgb: 217, 169, 58;
-	--color-border-gold: #D8B76A;
-	--color-border-gold-rgb: 216, 183, 106;
-	--color-text-dark: #2A1A13;
-	--color-text-dark-rgb: 42, 26, 19;
-	--color-text-muted: #8C7D70;
-	--color-text-muted-rgb: 140, 125, 112;
-	--color-text-light: #F7F0E4;
-	--color-text-light-rgb: 247, 240, 228;
+	--color-ink: #110d09;
+	--color-ink-rgb: 17 13 9;
+	--color-espresso: #21130d;
+	--color-espresso-rgb: 33 19 13;
+	--color-ivory: #f7f0e4;
+	--color-ivory-rgb: 247 240 228;
+	--color-paper: #fbf6ec;
+	--color-paper-rgb: 251 246 236;
+	--color-champagne: #d9a93a;
+	--color-champagne-rgb: 217 169 58;
+	--color-border-gold: #d8b76a;
+	--color-border-gold-rgb: 216 183 106;
+	--color-text-dark: #2a1a13;
+	--color-text-dark-rgb: 42 26 19;
+	--color-text-muted: #8c7d70;
+	--color-text-muted-rgb: 140 125 112;
+	--color-text-light: #f7f0e4;
+	--color-text-light-rgb: 247 240 228;
 
 	// Core Spacing System Clamps
 	--section-padding-y: clamp(5rem, 10vw, 9rem);
@@ -155,34 +155,9 @@
 	--mobile-drawer-footer-copy: rgb(248 244 236 / 50%);
 	--mobile-signature-color: rgb(248 244 236 / 65%);
 
-	// About Us Section
-	--about-noise-opacity: 0.04;
-	--about-bg-gradient-1: #{color.change(sys.$sys-color-gold-400, $alpha: 0.14)};
-	--about-bg-gradient-2: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.08)};
-	--about-underline-gradient: linear-gradient(
-		90deg,
-		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)},
-		#{color.change(sys.$sys-color-gold-500, $alpha: 0.95)},
-		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)}
-	);
-	--about-image-wrapper-bg: linear-gradient(
-		135deg,
-		rgb(var(--color-overlay-light-rgb) / 40%) 0%,
-		rgb(var(--color-overlay-light-rgb) / 5%) 50%,
-		rgb(var(--color-overlay-light-rgb) / 2%) 100%
-	);
-	--about-image-frame-bg: linear-gradient(
-		180deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.16)},
-		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.04)}
-	);
-	--about-image-wrapper-shadow:
-		0 40px 80px -20px rgb(0 0 0 / 20%),
-		0 15px 40px -15px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
-	--about-image-frame-border: rgb(var(--color-overlay-light-rgb) / 35%);
-	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
-	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
-	--about-animation-duration: 10s;
+	// Guest Experience Section
+	--ge-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+	--ge-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
 
 	// Pricing Section
 	--pricing-section-bg: var(--color-surface-primary);

@@ -19,7 +19,7 @@ export interface ProductProofData {
 	};
 }
 
-export interface AboutData {
+export interface GuestExperienceData {
 	eyebrow?: string;
 	title: string;
 	description: string;
@@ -27,9 +27,10 @@ export interface AboutData {
 		name: string;
 		description: string;
 	}>;
+	closingLine?: string;
 	cta: {
 		label: string;
-		href: string;
+		message?: string;
 	};
 }
 
@@ -138,7 +139,7 @@ export interface HowItWorksData {
 export interface LandingPageData {
 	hero: HeroData;
 	productProof: ProductProofData;
-	about: AboutData;
+	guestExperience: GuestExperienceData;
 	services: ServicesData;
 	pricing: PricingData;
 	testimonials: TestimonialsData;
