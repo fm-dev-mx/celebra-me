@@ -1,4 +1,5 @@
 export interface HeroData {
+	eyebrow?: string;
 	title: string;
 	subtitle: string;
 	mobileTitle?: string;
@@ -8,11 +9,23 @@ export interface HeroData {
 	secondaryCtaUrl: string;
 	whatsappPhone?: string;
 	whatsappMessage?: string;
+	proofLine?: string;
 }
 
 export interface ProductProofData {
+	eyebrow?: string;
 	title: string;
 	description: string;
+	items?: Array<{
+		title: string;
+		description: string;
+	}>;
+	railTitle?: string;
+	railItems?: Array<{
+		title: string;
+		text: string;
+	}>;
+	proofLine?: string;
 	cta: {
 		label: string;
 		message?: string;
@@ -39,6 +52,7 @@ export interface ServicesData {
 	subtitle: string;
 	eyebrow?: string;
 	dossierSubtext?: string;
+	dossierTag?: string;
 	closingStatement?: string;
 	items: Array<{
 		title: string;
@@ -104,16 +118,40 @@ export interface TestimonialsData {
 }
 
 export interface FAQData {
+	pretitle?: string;
 	title: string;
+	subtitle?: string;
+	divider?: string;
 	faqs: Array<{
 		question: string;
 		answer: string;
 	}>;
+	helpSection?: {
+		title: string;
+		description: string;
+		cta: string;
+		message: string;
+	};
 }
 
 export interface ContactData {
+	eyebrow?: string;
 	title: string;
 	subtitle: string;
+	cta?: {
+		label: string;
+		message?: string;
+	};
+	microcopy?: string;
+	formIntro?: string;
+	channelPrimary?: {
+		label: string;
+		value: string;
+	};
+	channelSecondary?: {
+		label: string;
+		value: string;
+	};
 }
 
 export interface HowItWorksData {
@@ -138,6 +176,12 @@ export interface HowItWorksData {
 
 export interface LandingPageData {
 	hero: HeroData;
+	eventSelector?: {
+		eyebrow: string;
+		title: string;
+		description: string;
+		cta: string;
+	};
 	productProof: ProductProofData;
 	guestExperience: GuestExperienceData;
 	services: ServicesData;
