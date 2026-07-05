@@ -59,7 +59,7 @@ const heroImages = [
 
 	<div class="hero-prime__content">
 		<div class="hero-prime__left">
-			<p class="hero-prime__eyebrow stagger-1">Invitaciones digitales premium</p>
+			<p class="hero-prime__eyebrow stagger-1">{data.eyebrow || 'INVITACIONES DIGITALES PERSONALIZADAS'}</p>
 
 			<h1 class="hero-prime__title stagger-2" id="hero-title">
 				<span class="hero-prime__copy-desktop">{data.title}</span>
@@ -105,7 +105,7 @@ const heroImages = [
 				</ActionBase>
 			</div>
 
-			<p class="hero-prime__proof-line stagger-5">RSVP · pases digitales · invitados organizados</p>
+			<p class="hero-prime__proof-line stagger-5">{data.proofLine || 'Lista de invitados · Pases · Confirmaciones'}</p>
 		</div>
 	</div>
 </section>

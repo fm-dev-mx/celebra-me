@@ -9,6 +9,7 @@ import { getContactPhone } from '@/utils/whatsapp';
 import type { ImageMetadata } from 'astro';
 import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
+import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
 import showroomBabyShowerHero from '@/assets/images/showroom/event-showroom-baby-shower-hero.webp';
 import showroomBautizoHero from '@/assets/images/showroom/event-showroom-bautizo-hero.webp';
@@ -20,10 +21,12 @@ import '@/styles/home/_event-selector.scss';
 
 interface Props {
 	events: readonly DemoShowroomEvent[];
+	landingData?: LandingPageData;
 }
 
-const { events } = Astro.props;
+const { events, landingData } = Astro.props;
 const phone = getContactPhone();
+const es = landingData?.eventSelector;
 
 const previewImages: Partial<Record<EventType, ImageMetadata>> = {
 	xv: showroomXvHero,
@@ -46,12 +49,12 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 >
 	<Container class="event-selector__container">
 		<header class="event-selector__header">
-			<p class="event-selector__eyebrow reveal-fade-up stagger-1">Demos por tipo de evento</p>
+			<p class="event-selector__eyebrow reveal-fade-up stagger-1">{es?.eyebrow || 'Demos por tipo de evento'}</p>
 			<h2 id="event-selector-title" class="event-selector__title reveal-fade-up stagger-2">
-				Explora una experiencia diseñada para cada celebración
+				{es?.title || 'Explora una experiencia diseñada para cada celebración'}
 			</h2>
 			<p class="event-selector__subtitle reveal-fade-up stagger-3">
-				Elige tu tipo de evento y mira cómo se adaptan la invitación, el RSVP, los pases y la cotización.
+				{es?.description || 'Elige tu tipo de evento y mira cómo se adaptan la invitación, el RSVP, los pases y la cotización.'}
 			</p>
 		</header>
 
@@ -143,7 +146,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 										data-track-intent="demo_showroom"
 										data-track-destination="demo-showroom"
 									>
-										Ver demo
+										{es?.cta || 'Ver demo'}
 										<Icon name="ArrowRight" size={16} />
 									</a>
 									<WhatsAppButton

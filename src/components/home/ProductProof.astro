@@ -27,7 +27,7 @@ const phone = getContactPhone();
 	<Container class="product-proof__container">
 		<div class="product-proof__layout">
 			<div class="product-proof__narrative">
-				<p class="product-proof__eyebrow reveal-fade-up stagger-1">INVITACIÓN + CONFIRMACIÓN</p>
+				<p class="product-proof__eyebrow reveal-fade-up stagger-1">{data.eyebrow || 'INVITACIÓN + CONFIRMACIÓN'}</p>
 				<h2 id="product-proof-title" class="product-proof__title reveal-fade-up stagger-2">{data.title}</h2>
 				<p class="product-proof__description reveal-fade-up stagger-3">{data.description}</p>
 				
@@ -85,32 +85,49 @@ const phone = getContactPhone();
 				</div>
 
 				<div class="product-callouts" role="list">
-					<div class="product-callout product-callout--top" role="listitem">
-						<span class="product-callout__status"></span>
-						<strong>RSVP confirmado</strong>
-						<small>Respuesta registrada al instante</small>
-					</div>
-					<div class="product-callout product-callout--right" role="listitem">
-						<span class="product-callout__status"></span>
-						<strong>Pase 2/2</strong>
-						<small>Acceso claro para cada familia</small>
-					</div>
-					<div class="product-callout product-callout--bottom" role="listitem">
-						<span class="product-callout__status"></span>
-						<strong>Ubicación lista</strong>
-						<small>Datos listos antes del evento</small>
-					</div>
-					<div class="product-callout product-callout--left" role="listitem">
-						<span class="product-callout__status"></span>
-						<strong>Galería y música</strong>
-						<small>Detalles que elevan la experiencia</small>
-					</div>
+					{
+						data.items && data.items.length > 0 ? (
+							data.items.map((item, idx) => (
+								<div
+									class={`product-callout product-callout--${['top', 'right', 'bottom', 'left'][idx] || 'top'}`}
+									role="listitem"
+								>
+									<span class="product-callout__status"></span>
+									<strong>{item.title}</strong>
+									<small>{item.description}</small>
+								</div>
+							))
+						) : (
+							<>
+								<div class="product-callout product-callout--top" role="listitem">
+									<span class="product-callout__status"></span>
+									<strong>RSVP confirmado</strong>
+									<small>Respuesta registrada al instante</small>
+								</div>
+								<div class="product-callout product-callout--right" role="listitem">
+									<span class="product-callout__status"></span>
+									<strong>Pase 2/2</strong>
+									<small>Acceso claro para cada familia</small>
+								</div>
+								<div class="product-callout product-callout--bottom" role="listitem">
+									<span class="product-callout__status"></span>
+									<strong>Ubicación lista</strong>
+									<small>Datos listos antes del evento</small>
+								</div>
+								<div class="product-callout product-callout--left" role="listitem">
+									<span class="product-callout__status"></span>
+									<strong>Galería y música</strong>
+									<small>Detalles que elevan la experiencia</small>
+								</div>
+							</>
+						)
+					}
 				</div>
 			</div>
 		</div>
 
 		<div class="product-proof__mobile-footer">
-			<p class="product-proof__proof-line">Menos dudas para sus invitados. Menos mensajes para usted.</p>
+			<p class="product-proof__proof-line">{data.proofLine || 'Invita, organiza y confirma desde un solo lugar.'}</p>
 			<WhatsAppButton
 				className="product-proof__cta"
 				phone={phone}
@@ -127,37 +144,53 @@ const phone = getContactPhone();
 		</div>
 
 		<div class="product-proof__rail" aria-labelledby="proof-rail-heading">
-			<h3 id="proof-rail-heading" class="product-proof__rail-title">Una invitación diseñada para coordinar sin perseguir mensajes</h3>
+			<h3 id="proof-rail-heading" class="product-proof__rail-title">{data.railTitle || 'Una invitación diseñada para organizar invitados'}</h3>
 			
 			<div class="proof-rail-flow" role="list">
-				<div class="proof-rail-flow__item" role="listitem">
-					<span class="proof-rail-flow__num">01</span>
-					<div class="proof-rail-flow__content">
-						<strong class="proof-rail-flow__label">Recibidas</strong>
-						<span class="proof-rail-flow__text">Quién recibió la invitación</span>
-					</div>
-				</div>
-				<div class="proof-rail-flow__item" role="listitem">
-					<span class="proof-rail-flow__num">02</span>
-					<div class="proof-rail-flow__content">
-						<strong class="proof-rail-flow__label">Confirmadas</strong>
-						<span class="proof-rail-flow__text">Quién confirmó asistencia</span>
-					</div>
-				</div>
-				<div class="proof-rail-flow__item" role="listitem">
-					<span class="proof-rail-flow__num">03</span>
-					<div class="proof-rail-flow__content">
-						<strong class="proof-rail-flow__label">Pases</strong>
-						<span class="proof-rail-flow__text">Cuántos pases están registrados</span>
-					</div>
-				</div>
-				<div class="proof-rail-flow__item" role="listitem">
-					<span class="proof-rail-flow__num">04</span>
-					<div class="proof-rail-flow__content">
-						<strong class="proof-rail-flow__label">Recordatorios</strong>
-						<span class="proof-rail-flow__text">A quién falta recordar</span>
-					</div>
-				</div>
+				{
+					data.railItems && data.railItems.length > 0 ? (
+						data.railItems.map((item, idx) => (
+							<div class="proof-rail-flow__item" role="listitem">
+								<span class="proof-rail-flow__num">{String(idx + 1).padStart(2, '0')}</span>
+								<div class="proof-rail-flow__content">
+									<strong class="proof-rail-flow__label">{item.title}</strong>
+									<span class="proof-rail-flow__text">{item.text}</span>
+								</div>
+							</div>
+						))
+					) : (
+						<>
+							<div class="proof-rail-flow__item" role="listitem">
+								<span class="proof-rail-flow__num">01</span>
+								<div class="proof-rail-flow__content">
+									<strong class="proof-rail-flow__label">Recibidas</strong>
+									<span class="proof-rail-flow__text">Quién recibió la invitación</span>
+								</div>
+							</div>
+							<div class="proof-rail-flow__item" role="listitem">
+								<span class="proof-rail-flow__num">02</span>
+								<div class="proof-rail-flow__content">
+									<strong class="proof-rail-flow__label">Confirmadas</strong>
+									<span class="proof-rail-flow__text">Quién confirmó asistencia</span>
+								</div>
+							</div>
+							<div class="proof-rail-flow__item" role="listitem">
+								<span class="proof-rail-flow__num">03</span>
+								<div class="proof-rail-flow__content">
+									<strong class="proof-rail-flow__label">Pases</strong>
+									<span class="proof-rail-flow__text">Cuántos pases están registrados</span>
+								</div>
+							</div>
+							<div class="proof-rail-flow__item" role="listitem">
+								<span class="proof-rail-flow__num">04</span>
+								<div class="proof-rail-flow__content">
+									<strong class="proof-rail-flow__label">Recordatorios</strong>
+									<span class="proof-rail-flow__text">A quién falta recordar</span>
+								</div>
+							</div>
+						</>
+					)
+				}
 			</div>
 		</div>
 	</Container>

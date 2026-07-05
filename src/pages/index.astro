@@ -47,7 +47,7 @@ import '@/styles/landing.scss';
 >
 	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} />
-		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} />
+		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} landingData={landingData} />
 		<ProductProof data={landingData.productProof} />
 		<Services data={landingData.services} />
 		<PhotographicInterlude />

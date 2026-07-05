@@ -20,8 +20,7 @@ const contactPhone = getContactPhone();
 const isPlaceholder = isPlaceholderContactPhone(contactPhone);
 const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
 const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : contactPhone;
-const whatsappMessage =
-	'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
+const whatsappMessage = data.cta?.message || 'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
 const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
@@ -31,8 +30,9 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 
 	<div class="container">
 		<header class="contact-header">
-			<h2 class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
-			<p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
+				{data.eyebrow && <p class="contact-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
+				<h2 class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
+				<p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
 			<div class="contact-divider"></div>
 		</header>
 
@@ -40,9 +40,9 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 			<!-- Contact Information -->
 			<div class="contact-info reveal-fade-up stagger-4">
 				<div class="contact-info__content">
-					<h3 class="contact-info__title">Cotizar por WhatsApp</h3>
+					<h3 class="contact-info__title">{data.cta?.label || 'Cotizar por WhatsApp'}</h3>
 					<p class="contact-info__description">
-						Reciba una recomendación directa según tipo de evento, número de invitados y estilo visual.
+						{data.subtitle}
 					</p>
 
 					<div class="contact-channels">
@@ -66,8 +66,8 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 									<Icon name="WhatsApp" size={24} />
 								</div>
 								<div class="channel-text">
-									<span class="channel-label">Principal</span>
-									<span class="channel-value">Cotizar por WhatsApp</span>
+									<span class="channel-label">{data.channelPrimary?.label || 'Principal'}</span>
+									<span class="channel-value">{data.channelPrimary?.value || 'Cotizar por WhatsApp'}</span>
 								</div>
 							</a>
 						)}
@@ -85,8 +85,8 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 								<Icon name="Message" size={24} />
 							</div>
 							<div class="channel-text">
-								<span class="channel-label">Secundario</span>
-								<span class="channel-value">Escribir por correo</span>
+								<span class="channel-label">{data.channelSecondary?.label || 'Secundario'}</span>
+								<span class="channel-value">{data.channelSecondary?.value || 'Escribir por correo'}</span>
 							</div>
 						</a>
 					</div>
@@ -94,8 +94,9 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 			</div>
 
 			<div class="contact-form-wrapper reveal-fade-up stagger-4">
-				<p class="contact-form-wrapper__intro">O deje sus datos y le contactamos.</p>
+				<p class="contact-form-wrapper__intro">{data.formIntro || 'O deja tus datos y le contactamos.'}</p>
 				<ContactForm />
+				{data.microcopy && <p class="contact-microcopy">{data.microcopy}</p>}
 			</div>
 		</div>
 
