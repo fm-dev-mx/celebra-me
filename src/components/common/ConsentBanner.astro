@@ -3,17 +3,195 @@
  * src/components/common/ConsentBanner.astro
  *
  * Consent banner and preferences modal.
- * Renders only on commercial and demo routes (where third-party tracking may apply).
+ * Server-rendered with vanilla client-side JS — no framework island.
  * Route classification happens at the server so the banner never renders
  * on non-tracking routes.
  */
-import ConsentBanner from './ConsentBanner';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 const routePolicy = classifyTrackingRoute(Astro.url);
 const showBanner = !Astro.url.searchParams.has('screenshot') && (routePolicy.routeClass === 'commercial' || routePolicy.routeClass === 'demo');
 ---
 
-{showBanner && (
-  <ConsentBanner client:load />
-)}
+{
+  showBanner && (
+    <div id="consent-banner-root">
+      {/* Banner bar — hidden until JS decides to show it */}
+      <div id="consent-banner-bar" class="consent-banner-bar">
+        <div class="consent-banner-inner">
+          <p class="consent-banner-text">
+            Utilizamos cookies propias y de terceros para mejorar su experiencia,
+            analizar el tráfico y mostrar contenido personalizado. <button type="button" id="consent-open-preferences" class="consent-link-btn">Configurar</button>
+          </p>
+          <div class="consent-banner-btn-group">
+            <button type="button" id="consent-reject" class="consent-btn-outline">Rechazar opcionales</button>
+            <button type="button" id="consent-accept" class="consent-btn-primary">Aceptar todas</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Preferences modal — hidden until user clicks Configurar */}
+      <div id="consent-preferences-modal" class="consent-modal-overlay">
+        <div class="consent-modal-card">
+          <h2 class="consent-modal-title">Preferencias de cookies</h2>
+
+          {/* Necessary — always enabled */}
+          <div class="consent-pref-row">
+            <div>
+              <strong class="consent-pref-label">Necesarias</strong>
+              <span class="consent-pref-desc">Seguridad, sesión y funcionamiento del sitio.</span>
+            </div>
+            <span class="consent-badge">Siempre activas</span>
+          </div>
+
+          {/* Analytics toggle */}
+          <div class="consent-pref-row">
+            <div>
+              <strong class="consent-pref-label">Analíticas</strong>
+              <span class="consent-pref-desc">Google Analytics 4 — comportamiento de navegación.</span>
+            </div>
+            <label class="consent-toggle">
+              <input type="checkbox" id="consent-pref-analytics" class="consent-toggle-input" />
+              <span id="consent-analytics-track" class="consent-toggle-track">
+                <span id="consent-analytics-thumb" class="consent-toggle-thumb" />
+              </span>
+            </label>
+          </div>
+
+          {/* Marketing toggle */}
+          <div class="consent-pref-row">
+            <div>
+              <strong class="consent-pref-label">Marketing</strong>
+              <span class="consent-pref-desc">Meta Pixel — personalización de anuncios y medición.</span>
+            </div>
+            <label class="consent-toggle">
+              <input type="checkbox" id="consent-pref-marketing" class="consent-toggle-input" />
+              <span id="consent-marketing-track" class="consent-toggle-track">
+                <span id="consent-marketing-thumb" class="consent-toggle-thumb" />
+              </span>
+            </label>
+          </div>
+
+          {/* Modal buttons */}
+          <div class="consent-modal-actions">
+            <button type="button" id="consent-modal-cancel" class="consent-btn-outline">Cancelar</button>
+            <button type="button" id="consent-modal-save" class="consent-btn-primary">Guardar preferencias</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<script>
+import { readConsent, saveConsent, hasConsentDecision } from '@/lib/tracking/consent-client';
+
+function initConsentBanner(): void {
+  const bar = document.getElementById('consent-banner-bar');
+  const modal = document.getElementById('consent-preferences-modal');
+  if (!bar || !modal) return;
+
+  const analyticsCheckbox = document.getElementById('consent-pref-analytics') as HTMLInputElement | null;
+  const marketingCheckbox = document.getElementById('consent-pref-marketing') as HTMLInputElement | null;
+  const analyticsTrack = document.getElementById('consent-analytics-track');
+  const analyticsThumb = document.getElementById('consent-analytics-thumb');
+  const marketingTrack = document.getElementById('consent-marketing-track');
+  const marketingThumb = document.getElementById('consent-marketing-thumb');
+  const acceptBtn = document.getElementById('consent-accept');
+  const rejectBtn = document.getElementById('consent-reject');
+  const openPrefBtn = document.getElementById('consent-open-preferences');
+  const saveBtn = document.getElementById('consent-modal-save');
+  const cancelBtn = document.getElementById('consent-modal-cancel');
+
+  if (!acceptBtn || !rejectBtn || !openPrefBtn || !saveBtn || !cancelBtn) return;
+
+  function setCheckboxUI(checked: boolean, checkbox: HTMLInputElement | null, track: HTMLElement | null, thumb: HTMLElement | null): void {
+    if (!checkbox || !track || !thumb) return;
+    checkbox.checked = checked;
+    track.style.background = checked ? '#c9a84c' : '#555';
+    thumb.style.left = checked ? '22px' : '2px';
+  }
+
+  function showBannerBar(): void {
+    bar!.style.display = 'block';
+  }
+
+  function hideBannerBar(): void {
+    bar!.style.display = 'none';
+  }
+
+  function showModal(): void {
+    const current = readConsent();
+    setCheckboxUI(current.analytics, analyticsCheckbox, analyticsTrack, analyticsThumb);
+    setCheckboxUI(current.marketing, marketingCheckbox, marketingTrack, marketingThumb);
+    modal!.style.display = 'flex';
+  }
+
+  function hideModal(): void {
+    modal!.style.display = 'none';
+  }
+
+  // --- Event handlers ---
+
+  acceptBtn.addEventListener('click', () => {
+    saveConsent(true, true);
+    hideBannerBar();
+  });
+
+  rejectBtn.addEventListener('click', () => {
+    saveConsent(false, false);
+    hideBannerBar();
+  });
+
+  openPrefBtn.addEventListener('click', () => {
+    showModal();
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const analytics = analyticsCheckbox?.checked ?? false;
+    const marketing = marketingCheckbox?.checked ?? false;
+    saveConsent(analytics, marketing);
+    hideModal();
+    hideBannerBar();
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    hideModal();
+  });
+
+  // Listen for "Configurar cookies" footer link
+  const externalTrigger = document.querySelector('[data-open-consent-preferences]');
+  if (externalTrigger) {
+    externalTrigger.addEventListener('click', () => {
+      showModal();
+    });
+  }
+  document.addEventListener('open-consent-preferences', () => {
+    showModal();
+  });
+
+  // Toggle live UI updates
+  [analyticsCheckbox, marketingCheckbox].forEach((cb) => {
+    if (!cb) return;
+    cb.addEventListener('change', () => {
+      const isAnalytics = cb.id === 'consent-pref-analytics';
+      const track = isAnalytics ? analyticsTrack : marketingTrack;
+      const thumb = isAnalytics ? analyticsThumb : marketingThumb;
+      setCheckboxUI(cb.checked, cb, track, thumb);
+    });
+  });
+
+  // Show banner after a short delay if no consent decision exists
+  setTimeout(() => {
+    if (!hasConsentDecision()) {
+      showBannerBar();
+    }
+  }, 500);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initConsentBanner);
+} else {
+  initConsentBanner();
+}
+</script>
