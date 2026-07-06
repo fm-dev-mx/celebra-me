@@ -15,7 +15,7 @@ import {
 	type CaptureResult,
 	type ScreenshotMode,
 	type ScreenshotSelectorConfig,
-	KNOWN_INVITATION_SECTIONS,
+	KNOWN_SECTIONS,
 	REVEAL_TRIGGER_TEXTS,
 	DEFAULT_NAVIGATION_TIMEOUT,
 	DEFAULT_NETWORK_IDLE_TIMEOUT,
@@ -25,9 +25,287 @@ import {
 } from './types.js';
 import {
 	buildScreenshotPath,
+	formatDuration,
 	getAboveFoldCriticalSelector,
 	getDefaultHideSelectors,
 } from './utils.js';
+
+export interface CaptureTask {
+	id: string;
+	label: string;
+	type:
+		| 'viewport'
+		| 'full-page'
+		| 'header'
+		| 'main'
+		| 'footer'
+		| 'critical'
+		| 'section'
+		| 'invitation-step';
+	selector?: string;
+	fallbackSelectors?: string[];
+	invitationStep?:
+		| 'initial-full-page'
+		| 'reveal-closed'
+		| 'reveal-letter-open'
+		| 'reveal-open'
+		| 'full-open';
+}
+
+export function getPlannedCaptureLabel(id: string): string {
+	return id.replace(/^\d+-/, '');
+}
+
+// eslint-disable-next-line complexity
+export async function resolveCapturePlan(
+	page: Page,
+	job: ScreenshotJob,
+): Promise<CaptureTask[]> {
+	const tasks: CaptureTask[] = [];
+
+	if (job.pageType === 'invitation') {
+		const hasReveal = (await findRevealSection(page)) !== null;
+
+		if (job.target === 'full-page') {
+			tasks.push({
+				id: '01-initial-full-page',
+				label: 'Initial full page (closed)',
+				type: 'invitation-step',
+				invitationStep: 'initial-full-page',
+			});
+			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && hasReveal) {
+				tasks.push({
+					id: '05-invitation-full-open',
+					label: 'Full invitation (open)',
+					type: 'invitation-step',
+					invitationStep: 'full-open',
+				});
+			}
+		} else if (job.target === 'critical-qa') {
+			tasks.push({
+				id: '01-initial-full-page',
+				label: 'Initial full page (closed)',
+				type: 'invitation-step',
+				invitationStep: 'initial-full-page',
+			});
+			if (job.revealHandling !== 'open-only' && hasReveal) {
+				tasks.push({
+					id: '02-reveal-section-closed',
+					label: 'Reveal section (closed)',
+					type: 'invitation-step',
+					invitationStep: 'reveal-closed',
+				});
+			}
+			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && hasReveal) {
+				tasks.push({
+					id: '03-reveal-letter-open',
+					label: 'Reveal letter (open)',
+					type: 'invitation-step',
+					invitationStep: 'reveal-letter-open',
+				});
+				tasks.push({
+					id: '04-reveal-section-open',
+					label: 'Reveal section (open)',
+					type: 'invitation-step',
+					invitationStep: 'reveal-open',
+				});
+				tasks.push({
+					id: '05-invitation-full-open',
+					label: 'Full invitation (open)',
+					type: 'invitation-step',
+					invitationStep: 'full-open',
+				});
+			}
+
+			// Predefined critical sections
+			if (job.mode === 'audit') {
+				const critical = job.criticalSelectors.filter((s) => s.capture);
+				let cIndex = 20;
+				for (const c of critical) {
+					const exists = (await page.locator(c.selector).count()) > 0;
+					if (exists || c.required) {
+						tasks.push({
+							id: `${cIndex}-critical-${c.label || 'elem'}`,
+							label: `Critical: ${c.label || c.selector}`,
+							type: 'critical',
+							selector: c.selector,
+						});
+						cIndex++;
+					}
+				}
+			}
+		} else if (job.target === 'all-sections') {
+			const sections = KNOWN_SECTIONS.filter((s) => s.pageType === 'invitation');
+			let sIndex = 6;
+			for (const s of sections) {
+				let selector = s.selector;
+				let found = (await page.locator(selector).count()) > 0;
+				if (!found && s.fallbackSelectors) {
+					for (const fb of s.fallbackSelectors) {
+						if ((await page.locator(fb).count()) > 0) {
+							selector = fb;
+							found = true;
+							break;
+						}
+					}
+				}
+				if (found) {
+					// Check visibility before planning — skip hidden sections
+					const isVis = await page.locator(selector).first().isVisible().catch(() => false);
+					if (isVis) {
+						tasks.push({
+							id: `${String(sIndex).padStart(2, '0')}-section-${s.outputSlug}`,
+							label: `Section: ${s.label}`,
+							type: 'section',
+							selector,
+						});
+						sIndex++;
+					}
+				}
+			}
+		} else if (job.target === 'single-section' && job.selectedSection) {
+			const s = KNOWN_SECTIONS.find((x) => x.id === job.selectedSection);
+			if (s) {
+				let selector = s.selector;
+				const found = (await page.locator(selector).count()) > 0;
+				if (!found && s.fallbackSelectors) {
+					for (const fb of s.fallbackSelectors) {
+						if ((await page.locator(fb).count()) > 0) {
+							selector = fb;
+							break;
+						}
+					}
+				}
+				tasks.push({
+					id: '06-section-' + s.outputSlug,
+					label: `Section: ${s.label}`,
+					type: 'section',
+					selector,
+				});
+			}
+		}
+	} else {
+		// General Page type
+		if (job.includeLayout) {
+			tasks.push({ id: '01-viewport', label: 'Viewport', type: 'viewport' });
+		}
+
+		if (job.target === 'full-page' || job.target === 'critical-qa') {
+			tasks.push({ id: '02-full-page', label: 'Full page', type: 'full-page' });
+		}
+
+		if (job.target === 'critical-qa') {
+			if (job.includeLayout) {
+				const hasHeader = (await page.locator('.header-base, header, .header').count()) > 0;
+				if (hasHeader) {
+					await page.evaluate(() => window.scrollTo(0, 0));
+					await page.waitForTimeout(50);
+					const isHeaderVisible = await page
+						.locator('.header-base, header, .header')
+						.first()
+						.isVisible();
+					if (isHeaderVisible) {
+						tasks.push({
+							id: '03-header',
+							label: 'Header',
+							type: 'header',
+							selector: '.header-base, header, .header',
+						});
+					} else {
+						console.log('  ℹ Header is hidden — skipping header capture.');
+					}
+				}
+
+				const hasMain =
+					(await page.locator('[data-screenshot="main"], main, .main-content').count()) > 0;
+				if (hasMain) {
+					tasks.push({
+						id: '04-main',
+						label: 'Main',
+						type: 'main',
+						selector: '[data-screenshot="main"], main, .main-content',
+					});
+				}
+
+				const hasFooter =
+					(await page.locator('[data-screenshot="footer"], footer, .footer').count()) > 0;
+				if (hasFooter) {
+					tasks.push({
+						id: '05-footer',
+						label: 'Footer',
+						type: 'footer',
+						selector: '[data-screenshot="footer"], footer, .footer',
+					});
+				}
+			}
+
+			// Predefined critical sections
+			if (job.mode === 'audit') {
+				const critical = job.criticalSelectors.filter((s) => s.capture);
+				let cIndex = 20;
+				for (const c of critical) {
+					const exists = (await page.locator(c.selector).count()) > 0;
+					if (exists || c.required) {
+						tasks.push({
+							id: `${cIndex}-critical-${c.label || 'elem'}`,
+							label: `Critical: ${c.label || c.selector}`,
+							type: 'critical',
+							selector: c.selector,
+						});
+						cIndex++;
+					}
+				}
+			}
+		} else if (job.target === 'all-sections') {
+			const sections = KNOWN_SECTIONS.filter((s) => s.pageType === job.pageType);
+			let sIndex = 6;
+			for (const s of sections) {
+				let selector = s.selector;
+				let found = (await page.locator(selector).count()) > 0;
+				if (!found && s.fallbackSelectors) {
+					for (const fb of s.fallbackSelectors) {
+						if ((await page.locator(fb).count()) > 0) {
+							selector = fb;
+							found = true;
+							break;
+						}
+					}
+				}
+				if (found) {
+					tasks.push({
+						id: `${String(sIndex).padStart(2, '0')}-section-${s.outputSlug}`,
+						label: `Section: ${s.label}`,
+						type: 'section',
+						selector,
+					});
+					sIndex++;
+				}
+			}
+		} else if (job.target === 'single-section' && job.selectedSection) {
+			const s = KNOWN_SECTIONS.find((x) => x.id === job.selectedSection);
+			if (s) {
+				let selector = s.selector;
+				const found = (await page.locator(selector).count()) > 0;
+				if (!found && s.fallbackSelectors) {
+					for (const fb of s.fallbackSelectors) {
+						if ((await page.locator(fb).count()) > 0) {
+							selector = fb;
+							break;
+						}
+					}
+				}
+				tasks.push({
+					id: '06-section-' + s.outputSlug,
+					label: `Section: ${s.label}`,
+					type: 'section',
+					selector,
+				});
+			}
+		}
+	}
+
+	return tasks;
+}
 
 // =============================================================================
 // Browser Management
@@ -53,8 +331,8 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 		keepHeader: true,
 	},
 	{
-		id: 'event-types',
-		selector: '[data-screenshot="landing-event-types"], #tipo-evento',
+		id: 'event-selector',
+		selector: '[data-screenshot="landing-event-selector"], #tipo-evento',
 		keepHeader: false,
 	},
 	{
@@ -72,19 +350,31 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 		selector: '[data-screenshot="landing-interlude"], .photo-interlude',
 		keepHeader: false,
 	},
-	{ id: 'guest-experience', selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados', keepHeader: false },
+	{
+		id: 'guest-experience',
+		selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados',
+		keepHeader: false,
+	},
 	{
 		id: 'how-it-works',
 		selector: '[data-screenshot="landing-process"], #como-funciona',
 		keepHeader: false,
 	},
-	{ id: 'pricing', selector: '[data-screenshot="landing-pricing"], #pricing', keepHeader: false },
 	{
 		id: 'testimonials',
 		selector: '[data-screenshot="landing-testimonials"], #testimonios',
 		keepHeader: false,
 	},
-	{ id: 'faq', selector: '[data-screenshot="landing-faq"], #faq-section', keepHeader: false },
+	{
+		id: 'pricing',
+		selector: '[data-screenshot="landing-pricing"], #pricing',
+		keepHeader: false,
+	},
+	{
+		id: 'faq',
+		selector: '[data-screenshot="landing-faq"], #faq-section',
+		keepHeader: false,
+	},
 	{
 		id: 'contact',
 		selector: '[data-screenshot="landing-contact"], #contacto',
@@ -92,6 +382,19 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 	},
 	{ id: 'footer', selector: '[data-screenshot="landing-footer"], footer', keepHeader: false },
 ];
+
+function describeStitchFailure(error: unknown): string {
+	const message = error instanceof Error ? error.message : String(error);
+	if (
+		message.includes('Timeout') ||
+		message.includes('stable') ||
+		message.includes('bounding box') ||
+		message.includes('visible')
+	) {
+		return 'unstable element';
+	}
+	return message;
+}
 
 /**
  * Launch a headless Chromium browser instance.
@@ -197,21 +500,21 @@ export async function scrollForLazyLoad(page: Page): Promise<void> {
 		await page.evaluate(async () => {
 			let previousHeight = 0;
 
-			for (let pass = 0; pass < 3; pass++) {
+			for (let pass = 0; pass < 2; pass++) {
 				const scrollHeight = Math.max(
 					document.body.scrollHeight,
 					document.documentElement.scrollHeight,
 				);
 				const viewportHeight = window.innerHeight;
-				const stepSize = Math.max(250, Math.floor(viewportHeight * 0.75));
+				const stepSize = Math.max(300, Math.floor(viewportHeight * 0.85));
 
 				for (let y = 0; y <= scrollHeight; y += stepSize) {
 					window.scrollTo(0, y);
-					await new Promise((r) => setTimeout(r, 180));
+					await new Promise((r) => setTimeout(r, 120));
 				}
 
 				window.scrollTo(0, scrollHeight);
-				await new Promise((r) => setTimeout(r, 250));
+				await new Promise((r) => setTimeout(r, 150));
 
 				const nextHeight = Math.max(
 					document.body.scrollHeight,
@@ -237,13 +540,13 @@ export async function waitForLayoutHeightStable(page: Page): Promise<void> {
 				const readHeight = () =>
 					Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
 				const first = readHeight();
-				await new Promise((resolve) => setTimeout(resolve, 250));
+				await new Promise((resolve) => setTimeout(resolve, 150));
 				const second = readHeight();
-				await new Promise((resolve) => setTimeout(resolve, 250));
+				await new Promise((resolve) => setTimeout(resolve, 150));
 				const third = readHeight();
 				return Math.abs(first - second) < 2 && Math.abs(second - third) < 2;
 			},
-			{ timeout: 5000 },
+			{ timeout: 3000 },
 		);
 	} catch {
 		// Reported later as document height metadata; do not block capture forever.
@@ -260,12 +563,13 @@ export async function waitForLayoutHeightStable(page: Page): Promise<void> {
 export async function disableAnimations(page: Page): Promise<void> {
 	await page.addStyleTag({
 		content: `
-      *, *::before, *::after {
+      html, body, *, *::before, *::after {
         animation-duration: 0s !important;
         animation-delay: 0s !important;
         transition-duration: 0s !important;
         transition-delay: 0s !important;
         scroll-behavior: auto !important;
+        scroll-snap-type: none !important;
       }
     `,
 	});
@@ -285,11 +589,11 @@ export async function prepareAuditPage(
 	});
 	await waitForPageStability(page);
 	await scrollForLazyLoad(page);
-	await waitForLayoutHeightStable(page);
 	await storePreNormalizationSelectorState(page, criticalSelectors);
 	await normalizeForAudit(page);
 	await normalizeOperationalOverlaysForAudit(page, hideSelectors);
 	await disableAnimations(page);
+	await waitForLayoutHeightStable(page);
 	await page.waitForTimeout(100);
 }
 
@@ -349,6 +653,25 @@ async function normalizeForAudit(page: Page): Promise<void> {
       html[data-screenshot='audit'] .stagger-container > * {
         transition-delay: 0s !important;
         animation-delay: 0s !important;
+      }
+
+      /* Remove reveal/cover from layout when in open/preview-opened state */
+      html[data-screenshot='audit'] [data-screenshot='reveal-section'][data-preview-state='opened'],
+      html[data-screenshot='audit'] ds-editorial-cover[data-preview-state='opened'] {
+        display: none !important;
+      }
+
+      /* Force the invitation-open-content to be the first real child in layout */
+      html[data-screenshot='audit'] [data-screenshot='invitation-open-content'] {
+        min-height: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+
+      /* Neutralise envelope-open class impact on scroll layout */
+      html[data-screenshot='audit'].envelope-open {
+        scroll-behavior: auto !important;
+        overflow: auto !important;
       }
     `,
 	});
@@ -436,6 +759,15 @@ export async function navigateTo(
 	criticalSelectors: ScreenshotSelectorConfig[] = [],
 	hideSelectors: string[] = [],
 ): Promise<void> {
+	// Inject esbuild __name helper globally to prevent "ReferenceError: __name is not defined"
+	// when transpiled evaluate/waitForFunction callbacks are executed in the browser context.
+	await page.addInitScript(() => {
+		if (typeof window !== 'undefined' && !('__name' in window)) {
+			(window as any).__name = (target: any, value: any) =>
+				Object.defineProperty(target, 'name', { value, configurable: true });
+		}
+	});
+
 	if (mode === 'audit') {
 		await page.addInitScript(() => {
 			if (document.documentElement) {
@@ -619,8 +951,6 @@ async function tryOpenReveal(
 	const openUrl = buildScreenshotUrl(url, 'open');
 	console.log(`  ℹ Navigating (open via query param): ${openUrl}`);
 	await navigateTo(page, openUrl, mode, animationHandling, criticalSelectors, hideSelectors);
-	await page.waitForTimeout(500);
-	await scrollForLazyLoad(page);
 
 	const isOpen = await checkRevealIsOpen(page);
 	if (isOpen) {
@@ -639,7 +969,6 @@ async function tryOpenReveal(
 			hideSelectors,
 		);
 		await page.waitForTimeout(300);
-		await scrollForLazyLoad(page);
 		const clicked = await openRevealSection(page);
 		if (!clicked) {
 			const triggerFound = await findRevealTrigger(page);
@@ -687,12 +1016,12 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 	if (!alreadyInjected) {
 		await page.addStyleTag({
 			content: `
-      html .header-base,
-      html [data-back-to-top],
-      html .back-to-top,
-      html .scroll-to-top,
-      html .action-icon--scroll,
-      html .action-icon--fixed-bottom-right {
+      html.screenshot-hide-overlays .header-base,
+      html.screenshot-hide-overlays [data-back-to-top],
+      html.screenshot-hide-overlays .back-to-top,
+      html.screenshot-hide-overlays .scroll-to-top,
+      html.screenshot-hide-overlays .action-icon--scroll,
+      html.screenshot-hide-overlays .action-icon--fixed-bottom-right {
         visibility: hidden !important;
         pointer-events: none !important;
       }
@@ -702,13 +1031,19 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 			document.documentElement.setAttribute('data-screenshot-overlay-hidden', '1');
 		});
 	}
-	// Wait for any in-flight smooth scroll to settle so addStyleTag (or any
-	// later evaluate) does not race the navigation event.
+
+	// Add the class to enable the stylesheet rule
+	await page.evaluate(() => {
+		document.documentElement.classList.add('screenshot-hide-overlays');
+	});
+
+	// Wait for any in-flight smooth scroll to settle
 	await page.waitForTimeout(50);
 	return async () => {
-		// No per-call state to roll back. The overlay style stays in place for
-		// the rest of the page session; it is intentionally not removed so we
-		// do not have to re-inject on every capture.
+		// Remove the class to restore overlays
+		await page.evaluate(() => {
+			document.documentElement.classList.remove('screenshot-hide-overlays');
+		});
 	};
 }
 
@@ -775,6 +1110,8 @@ export async function captureLandingStitchedFullPage(
 
 	const capturedSections: Array<{ id: string; file: string; width: number; height: number }> = [];
 	const skipped: string[] = [];
+	const failedSections: string[] = [];
+	const stitchTimeoutMs = 2_000;
 
 	for (const section of LANDING_FULLPAGE_SECTIONS) {
 		const loc = page.locator(section.selector).first();
@@ -784,31 +1121,84 @@ export async function captureLandingStitchedFullPage(
 			continue;
 		}
 
-		const visible = await loc
-			.evaluate((el) => {
-				const r = (el as HTMLElement).getBoundingClientRect();
-				return r.width > 0 && r.height > 0;
-			})
-			.catch(() => false);
-		if (!visible) {
-			skipped.push(section.id);
-			continue;
-		}
-
 		const file = path.join(tmpDir, `${section.id}.png`);
 		try {
-			await loc.scrollIntoViewIfNeeded();
+			await loc.waitFor({ state: 'visible', timeout: stitchTimeoutMs });
+			await loc.evaluate((element) => {
+				element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+			});
 			await page.waitForTimeout(150);
+			const clip = await loc.evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				return {
+					x: Math.max(0, window.scrollX + rect.left),
+					y: Math.max(0, window.scrollY + rect.top),
+					width: Math.max(0, rect.width),
+					height: Math.max(0, rect.height),
+					docWidth: Math.max(
+						document.documentElement.scrollWidth,
+						document.body.scrollWidth,
+					),
+					docHeight: Math.max(
+						document.documentElement.scrollHeight,
+						document.body.scrollHeight,
+					),
+				};
+			});
+			if (!clip || clip.width <= 0 || clip.height <= 0) {
+				// Clip unavailable — fall back to locator.screenshot
+				await loc.screenshot({
+					path: file,
+					animations: 'disabled',
+					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+					...(format === 'webp' ? { type: 'png' } : {}),
+				});
+				const meta = await sharp(file).metadata();
+				if (!meta.width || !meta.height) {
+					throw new Error('unstable element');
+				}
+				capturedSections.push({
+					id: section.id,
+					file,
+					width: meta.width,
+					height: meta.height,
+				});
+				continue;
+			}
+			const boundedClip = {
+				x: Math.min(clip.x, Math.max(0, clip.docWidth - 1)),
+				y: Math.min(clip.y, Math.max(0, clip.docHeight - 1)),
+				width: Math.min(clip.width, Math.max(1, clip.docWidth - clip.x)),
+				height: Math.min(clip.height, Math.max(1, clip.docHeight - clip.y)),
+			};
+			if (boundedClip.width <= 0 || boundedClip.height <= 0) {
+				throw new Error('clip outside page bounds');
+			}
 
 			const restoreOverlays = section.keepHeader
 				? null
 				: await hideFixedOverlaysForCapture(page);
 			try {
-				await loc.screenshot({
-					path: file,
-					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-					...(format === 'webp' ? { type: 'png' } : {}),
-				});
+				try {
+					await page.screenshot({
+						path: file,
+						clip: boundedClip,
+						...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+						...(format === 'webp' ? { type: 'png' } : {}),
+					});
+				} catch (screenshotErr) {
+					const msg = screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
+					if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
+						throw screenshotErr;
+					}
+					// Clip failed (2x DPR / complex CSS issue) — fall back to locator.screenshot with animations disabled
+					await loc.screenshot({
+						path: file,
+						animations: 'disabled',
+						...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+						...(format === 'webp' ? { type: 'png' } : {}),
+					});
+				}
 			} finally {
 				if (restoreOverlays) await restoreOverlays();
 			}
@@ -825,8 +1215,11 @@ export async function captureLandingStitchedFullPage(
 				height: meta.height,
 			});
 		} catch (err) {
-			console.warn(`  ⚠ Stitch: section "${section.id}" failed: ${err}`);
-			skipped.push(`${section.id} (error)`);
+			const reason = describeStitchFailure(err);
+			console.warn(
+				`  ⚠ Stitch: section "${section.id}" failed after ${formatDuration(stitchTimeoutMs)} — ${reason}`,
+			);
+			failedSections.push(`${section.id}: ${reason}`);
 		}
 	}
 
@@ -834,12 +1227,28 @@ export async function captureLandingStitchedFullPage(
 		console.warn(`  ⚠ Stitch: skipped sections: ${skipped.join(', ')}`);
 	}
 
+	if (failedSections.length > 0) {
+		console.warn(
+			`  ⚠ Stitch failed for ${failedSections.length} section(s). Falling back to native fullPage screenshot.`,
+		);
+		const fallback = await captureFullPage(page, outputPath, format);
+		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+		return {
+			...fallback,
+			fallback: 'native-full-page',
+			stitchFailures: failedSections,
+		};
+	}
+
 	if (capturedSections.length === 0) {
 		// Nothing captured — let Playwright try native fullPage as a last resort.
 		console.warn('  ⚠ Stitch: no sections captured, falling back to native fullPage.');
 		const fallback = await captureFullPage(page, outputPath, format);
 		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-		return fallback;
+		return {
+			...fallback,
+			fallback: 'native-full-page',
+		};
 	}
 
 	// All section captures share the viewport width (Playwright element
@@ -972,16 +1381,39 @@ export async function captureElement(
 		}
 
 		await locator.waitFor({ state: 'visible', timeout: DEFAULT_ELEMENT_TIMEOUT });
-		await locator.scrollIntoViewIfNeeded();
+		await locator.evaluate((element) => {
+			element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+		});
 		await page.waitForTimeout(200);
 
 		const restoreOverlays = hideOverlays ? await hideFixedOverlaysForCapture(page) : null;
 		try {
-			await locator.screenshot({
-				path: outputPath,
-				...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-				...(format === 'webp' ? { type: 'png' } : {}),
-			});
+			// Use clip-based screenshot to avoid locator.screenshot() blanking
+			// at 2x DPR with complex CSS gradients (known Playwright rendering quirk).
+			const box = await locator.boundingBox();
+			if (!box) {
+				console.warn(`  ⚠ Could not get bounding box for element: "${selector}"`);
+				return null;
+			}
+			try {
+				await page.screenshot({
+					path: outputPath,
+					clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+					...(format === 'webp' ? { type: 'png' } : {}),
+				});
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				if (!message.includes('Clipped area is either empty or outside the resulting image')) {
+					throw error;
+				}
+				await locator.screenshot({
+					path: outputPath,
+					animations: 'disabled',
+					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+					...(format === 'webp' ? { type: 'png' } : {}),
+				});
+			}
 		} finally {
 			if (restoreOverlays) await restoreOverlays();
 		}
@@ -1237,161 +1669,194 @@ async function captureInvitationOpen(
  *   05-invitation-full-open
  *   (06-section-{name} for full QA)
  */
+// eslint-disable-next-line complexity -- Screenshot orchestration is intentionally centralized for CLI maintainability.
 export async function captureInvitationScreenshots(
 	page: Page,
 	job: ScreenshotJob,
 	outputDir: string,
 	viewportName: string,
-): Promise<CaptureResult[]> {
+): Promise<{ results: CaptureResult[]; plannedCount: number }> {
 	const results: CaptureResult[] = [];
 	const format = job.outputFormat;
-	const revealMode = job.revealHandling ?? 'auto';
+	const timings: Array<{ phase: string; ms: number }> = [];
+	const mark = (phase: string) => {
+		const elapsed = Date.now();
+		return () => {
+			timings.push({ phase, ms: Date.now() - elapsed });
+		};
+	};
 
-	// ── STEP 1: Navigate (closed state first) ──────────────────────────────
-	const closedUrl = buildScreenshotUrl(job.url, 'closed');
-	console.log(`  ℹ Navigating (closed): ${closedUrl}`);
-	await navigateTo(
-		page,
-		closedUrl,
-		job.mode,
-		job.animationHandling,
-		job.criticalSelectors,
-		job.hideSelectors,
-	);
-
-	// Wait for custom element initialization
-	await page.waitForTimeout(300);
-	await scrollForLazyLoad(page);
-
-	// Check if reveal section exists in the DOM
-	const hasRevealSection = await findRevealSection(page);
-	if (!hasRevealSection) {
-		console.warn(
-			'  ⚠ [skip 02/04] [data-screenshot="reveal-section"] not found — page has no envelope reveal',
-		);
-	}
-
-	// 01 — Initial full page (closed state)
-	const initialPath = await buildScreenshotPath(
-		outputDir,
-		viewportName,
-		'01-initial-full-page',
-		format,
-	);
-	try {
-		const result = await captureFullPage(page, initialPath, format);
-		result.viewportName = viewportName;
-		result.label = 'Initial full page';
-		results.push(result);
-		console.log(`  ✓ Captured: 01-initial-full-page (${viewportName})`);
-	} catch (err) {
-		console.warn(`  ⚠ Failed to capture initial full page: ${err}`);
-		results.push({
-			path: initialPath,
-			viewportName,
-			label: 'Initial full page',
-			success: false,
-			error: String(err),
-		});
-	}
-
-	// ── STEP 2: Closed reveal section ──────────────────────────────────────
-	if (revealMode !== 'open-only') {
-		const revealSelector = await findRevealSection(page);
-		if (revealSelector) {
-			const revealClosedPath = await buildScreenshotPath(
-				outputDir,
-				viewportName,
-				'02-reveal-section-closed',
-				format,
-			);
-			const result = await captureElement(page, revealSelector, revealClosedPath, format);
-			if (result) {
-				result.viewportName = viewportName;
-				result.label = 'Reveal section (closed)';
-				results.push(result);
-				console.log(`  ✓ Captured: 02-reveal-section-closed (${viewportName})`);
-			}
-		} else {
-			console.warn(
-				'  ⚠ [skip 02] Reveal section not found — missing [data-screenshot="reveal-section"] attribute',
-			);
-		}
-	}
-
-	// ── STEP 3: Open the reveal ────────────────────────────────────────────
+	// 3. Keep track of reveal status
 	let revealOpened = false;
-	if (revealMode === 'auto' || revealMode === 'force-open' || revealMode === 'open-only') {
+
+	// Helper to ensure closed state is loaded
+	const ensureClosedState = async () => {
+		const t = mark('ensureClosedState');
+		const closedUrl = buildScreenshotUrl(job.url, 'closed');
+		await navigateTo(
+			page,
+			closedUrl,
+			job.mode,
+			job.animationHandling,
+			job.criticalSelectors,
+			job.hideSelectors,
+		);
+		t();
+	};
+
+	// Navigate to initial closed state
+	await ensureClosedState();
+
+	// 1. Resolve capture plan
+	const tasks = await resolveCapturePlan(page, job);
+	const plannedCount = tasks.length;
+
+	// 2. Print capture plan to console
+	console.log('  Planned captures:');
+	for (const t of tasks) {
+		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}`);
+	}
+
+	// Helper to ensure open state is loaded
+	const ensureOpenState = async () => {
+		if (revealOpened) return;
+		const t = mark('open reveal');
+		const closedUrl = buildScreenshotUrl(job.url, 'closed');
 		revealOpened = await tryOpenReveal(
 			page,
 			job.url,
 			job.mode,
 			job.animationHandling,
 			closedUrl,
-			revealMode,
+			job.revealHandling,
 			job.criticalSelectors,
 			job.hideSelectors,
 		);
+		t();
+	};
+
+	for (const t of tasks) {
+		const taskPath = await buildScreenshotPath(outputDir, viewportName, t.id, format);
+		const tMark = mark(getPlannedCaptureLabel(t.id));
+
+		if (t.type === 'invitation-step') {
+			if (t.invitationStep === 'initial-full-page') {
+				// Already in closed state from initial navigation — skip redundant
+				try {
+					const result = await captureFullPage(page, taskPath, format);
+					result.viewportName = viewportName;
+					result.label = t.label;
+					results.push(result);
+					console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+				} catch (err) {
+					results.push({
+						path: taskPath,
+						viewportName,
+						label: t.label,
+						success: false,
+						error: String(err),
+					});
+				}
+			} else if (t.invitationStep === 'reveal-closed') {
+				// Already in closed state from initial navigation
+				const revealSelector = await findRevealSection(page);
+				if (revealSelector) {
+					const result = await captureElement(page, revealSelector, taskPath, format);
+					if (result) {
+						result.viewportName = viewportName;
+						result.label = t.label;
+						results.push(result);
+						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+					}
+				}
+			} else if (t.invitationStep === 'reveal-letter-open') {
+				await ensureOpenState();
+				const letterSelector = await findRevealLetter(page);
+				if (letterSelector) {
+					const result = await captureElement(page, letterSelector, taskPath, format);
+					if (result) {
+						result.viewportName = viewportName;
+						result.label = t.label;
+						results.push(result);
+						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+					}
+				}
+			} else if (t.invitationStep === 'reveal-open') {
+				await ensureOpenState();
+				const revealSelector = await findRevealSection(page);
+				if (revealSelector) {
+					const result = await captureElement(page, revealSelector, taskPath, format);
+					if (result) {
+						result.viewportName = viewportName;
+						result.label = t.label;
+						results.push(result);
+						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+					}
+				}
+			} else if (t.invitationStep === 'full-open') {
+				await ensureOpenState();
+				const fullOpenResult = await captureInvitationOpen(page, outputDir, viewportName, format);
+				for (const r of fullOpenResult) {
+					r.viewportName = viewportName;
+					results.push(r);
+				}
+			}
+		} else if (t.type === 'section' || t.type === 'critical') {
+			await ensureOpenState();
+			const captured = await captureSectionElement(page, t, taskPath, viewportName, format);
+			if (captured) {
+				results.push(captured);
+				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+			} else {
+				const isVisible = await page.locator(t.selector!).first().isVisible().catch(() => false);
+				const failMsg = isVisible
+					? `Element "${t.selector}" could not be captured.`
+					: 'Element is hidden — skipped.';
+				console.log(`  ℹ ${t.id} — ${isVisible ? 'failed' : 'hidden'}`);
+				results.push({ path: taskPath, viewportName, label: t.label, success: false, error: failMsg });
+			}
+		}
+		tMark();
 	}
 
-	// ── STEP 4: Open letter/card ───────────────────────────────────────────
-	if (revealOpened) {
-		const letterSelector = await findRevealLetter(page);
-		if (letterSelector) {
-			const letterPath = await buildScreenshotPath(
-				outputDir,
-				viewportName,
-				'03-reveal-letter-open',
-				format,
-			);
-			const result = await captureElement(page, letterSelector, letterPath, format);
-			if (result) {
-				result.viewportName = viewportName;
-				result.label = 'Reveal letter (open)';
-				results.push(result);
-				console.log(`  ✓ Captured: 03-reveal-letter-open (${viewportName})`);
-			}
-		} else {
-			console.warn(
-				'  ⚠ [skip 03] No reveal letter element found — missing [data-screenshot="reveal-letter"] attribute',
-			);
+	await validateDistinctReveal(results);
+
+
+// =============================================================================
+// Section Capture — extracted for complexity reduction
+// =============================================================================
+
+/**
+ * Capture a section/critical element with fast visibility check.
+ * Returns CaptureResult on success, null if hidden or errored.
+ */
+async function captureSectionElement(
+	page: Page,
+	task: CaptureTask,
+	outputPath: string,
+	viewportName: string,
+	format: OutputFormat,
+): Promise<CaptureResult | null> {
+	const isVisible = await page.locator(task.selector!).first().isVisible().catch(() => false);
+	if (!isVisible) return null;
+
+	const result = await captureElement(page, task.selector!, outputPath, format);
+	if (!result) return null;
+
+	result.viewportName = viewportName;
+	result.label = task.label;
+	return result;
+}
+
+	// Print timing summary
+	if (timings.length > 0) {
+		console.log('  ⏱ Timing:');
+		for (const t of timings) {
+			console.log(`    ${t.phase}: ${(t.ms / 1000).toFixed(1)}s`);
 		}
-
-		// ── STEP 5: Open reveal section ──────────────────────────────────────
-		const revealSelector = await findRevealSection(page);
-		if (revealSelector) {
-			const revealOpenPath = await buildScreenshotPath(
-				outputDir,
-				viewportName,
-				'04-reveal-section-open',
-				format,
-			);
-			const result = await captureElement(page, revealSelector, revealOpenPath, format);
-			if (result) {
-				result.viewportName = viewportName;
-				result.label = 'Reveal section (open)';
-				results.push(result);
-				console.log(`  ✓ Captured: 04-reveal-section-open (${viewportName})`);
-			}
-		}
-
-		validateDistinctReveal(results);
-
-		// ── STEP 6: Full page after reveal ───────────────────────────────────
-		// Prefer invitation-content (excludes the reveal section) via element capture
-		// Fallback: use full-page screenshot (may include reveal section)
-		const fullOpenResult = await captureInvitationOpen(page, outputDir, viewportName, format);
-		results.push(...fullOpenResult);
-	} else if (revealMode !== 'closed-only' && revealMode !== 'skip') {
-		console.log('  ℹ [skip 03/04/05] Reveal was not opened — skipping open-state screenshots');
 	}
 
-	// ── Individual sections (full QA) ─────────────────────────────────────
-	const sectionResults = await captureSectionsForJob(page, job, outputDir, viewportName);
-	results.push(...sectionResults);
-	results.push(...(await captureCriticalSelectorSections(page, job, outputDir, viewportName)));
-
-	return results;
+	return { results, plannedCount };
 }
 
 // =============================================================================
@@ -1412,10 +1877,9 @@ export async function captureGeneralPageScreenshots(
 	job: ScreenshotJob,
 	outputDir: string,
 	viewportName: string,
-): Promise<CaptureResult[]> {
+): Promise<{ results: CaptureResult[]; plannedCount: number }> {
 	const results: CaptureResult[] = [];
 	const format = job.outputFormat;
-	const screenshotSet = job.generalSet ?? 'basic';
 
 	// Navigate
 	const pageUrl = buildScreenshotUrl(job.url);
@@ -1428,263 +1892,99 @@ export async function captureGeneralPageScreenshots(
 		job.hideSelectors,
 	);
 
-	// ── 01: Viewport screenshot ────────────────────────────────────────────
-	const viewportPath = await buildScreenshotPath(outputDir, viewportName, '01-viewport', format);
-	try {
-		await resetScrollAndAssertAboveFold(page, getAboveFoldCriticalSelector(job.pageType));
-		const result = await captureViewport(page, viewportPath, format);
-		result.viewportName = viewportName;
-		result.label = 'Viewport';
-		results.push(result);
-		console.log(`  ✓ Captured: 01-viewport (${viewportName})`);
-	} catch (err) {
-		console.warn(`  ⚠ Failed to capture viewport: ${err}`);
-		results.push({
-			path: viewportPath,
-			viewportName,
-			label: 'Viewport',
-			success: false,
-			error: String(err),
-		});
+	// Resolve capture plan
+	const tasks = await resolveCapturePlan(page, job);
+	const plannedCount = tasks.length;
+
+	// Print capture plan to console
+	console.log('  Planned captures:');
+	for (const t of tasks) {
+		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}`);
 	}
 
-	// ── 02: Full page screenshot ───────────────────────────────────────────
-	const fullPath = await buildScreenshotPath(outputDir, viewportName, '02-full-page', format);
-	try {
-		// Landing mobile/tablet stitching: native fullPage mis-stitches when
-		// <body> is the scroll container (landing sets `body { overflow-y: auto }`),
-		// producing a large blank white tail. For the landing page on any
-		// viewport narrower than desktop, compose 02-full-page from per-section
-		// element captures instead. Desktop keeps the native fullPage path
-		// because it is the one viewport where it still works reliably.
-		const pageViewport = page.viewportSize();
-		const isLanding = job.pageType === 'landing';
-		const isDesktop = pageViewport ? pageViewport.width >= 1280 : false;
-		const useStitch = isLanding && !isDesktop;
+	for (const t of tasks) {
+		const taskPath = await buildScreenshotPath(outputDir, viewportName, t.id, format);
+		if (t.type === 'viewport') {
+			try {
+				await resetScrollAndAssertAboveFold(page, getAboveFoldCriticalSelector(job.pageType));
+				const result = await captureViewport(page, taskPath, format);
+				result.viewportName = viewportName;
+				result.label = t.label;
+				results.push(result);
+				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+			} catch (err) {
+				console.warn(`  ✕ Failed to capture viewport: ${err}`);
+				results.push({
+					path: taskPath,
+					viewportName,
+					label: t.label,
+					success: false,
+					error: String(err),
+				});
+			}
+		} else if (t.type === 'full-page') {
+			try {
+				const pageViewport = page.viewportSize();
+				const isLanding = job.pageType === 'landing';
+				const isDesktop = pageViewport ? pageViewport.width >= 1280 : false;
+				const useStitch = isLanding && !isDesktop;
 
-		const result = useStitch
-			? await captureLandingStitchedFullPage(page, fullPath, format)
-			: await captureFullPage(page, fullPath, format);
-		result.viewportName = viewportName;
-		result.label = 'Full page';
-		results.push(result);
-		console.log(`  ✓ Captured: 02-full-page (${viewportName})`);
-	} catch (err) {
-		console.warn(`  ⚠ Failed to capture full page: ${err}`);
-		results.push({
-			path: fullPath,
-			viewportName,
-			label: 'Full page',
-			success: false,
-			error: String(err),
-		});
+				const result = useStitch
+					? await captureLandingStitchedFullPage(page, taskPath, format)
+					: await captureFullPage(page, taskPath, format);
+				result.viewportName = viewportName;
+				result.label = t.label;
+				results.push(result);
+				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+			} catch (err) {
+				console.warn(`  ✕ Failed to capture full page: ${err}`);
+				results.push({
+					path: taskPath,
+					viewportName,
+					label: t.label,
+					success: false,
+					error: String(err),
+				});
+			}
+		} else {
+			// Element captures (header, main, footer, critical, section)
+			if (t.type === 'header') {
+				await page.evaluate(() => window.scrollTo(0, 0));
+				await page.waitForTimeout(100);
+			}
+
+			const result = await captureElement(page, t.selector!, taskPath, format, {
+				hideOverlays: t.type !== 'header',
+			});
+
+			if (result) {
+				result.viewportName = viewportName;
+				result.label = t.label;
+				results.push(result);
+				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+			} else {
+				console.warn(`  ✕ Failed to capture element: ${t.id} (${t.selector})`);
+				results.push({
+					path: taskPath,
+					viewportName,
+					label: t.label,
+					success: false,
+					error: `Element "${t.selector}" could not be captured.`,
+				});
+			}
+		}
 	}
 
-	// ── Full QA: Header, Main, Footer ──────────────────────────────────────
-	if (screenshotSet === 'full-qa') {
-		// Header — keep the header visible in this dedicated capture.
-		const headerPath = await buildScreenshotPath(outputDir, viewportName, '03-header', format);
-		const headerResult = await captureElement(
-			page,
-			'[data-screenshot="header"], header, .header',
-			headerPath,
-			format,
-			{ hideOverlays: false },
-		);
-		if (headerResult) {
-			headerResult.viewportName = viewportName;
-			headerResult.label = 'Header';
-			results.push(headerResult);
-		}
-
-		// Main content
-		const mainPath = await buildScreenshotPath(outputDir, viewportName, '04-main', format);
-		const mainResult = await captureElement(
-			page,
-			'[data-screenshot="main"], main, .main-content',
-			mainPath,
-			format,
-		);
-		if (mainResult) {
-			mainResult.viewportName = viewportName;
-			mainResult.label = 'Main';
-			results.push(mainResult);
-		}
-
-		// Footer
-		const footerPath = await buildScreenshotPath(outputDir, viewportName, '05-footer', format);
-		const footerResult = await captureElement(
-			page,
-			'[data-screenshot="footer"], footer, .footer',
-			footerPath,
-			format,
-		);
-		if (footerResult) {
-			footerResult.viewportName = viewportName;
-			footerResult.label = 'Footer';
-			results.push(footerResult);
-		}
-
-		// Sections (known or auto)
-		const sectionResults = await captureSectionsForJob(page, job, outputDir, viewportName);
-		results.push(...sectionResults);
-	}
-	results.push(...(await captureCriticalSelectorSections(page, job, outputDir, viewportName)));
-
-	return results;
+	return { results, plannedCount };
 }
 
 // =============================================================================
 // Section Capture
 // =============================================================================
 
-/**
- * Capture known invitation sections from the KNOWN_INVITATION_SECTIONS list.
- */
-async function captureKnownSections(
-	page: Page,
-	job: ScreenshotJob,
-	outputDir: string,
-	viewportName: string,
-): Promise<CaptureResult[]> {
-	const results: CaptureResult[] = [];
-	let index = 6; // Start after standard screenshots
 
-	for (const section of KNOWN_INVITATION_SECTIONS) {
-		// Try the data attribute selector first
-		let selector = section.selector;
-		let found = await page.locator(selector).count();
 
-		// Try fallback selectors
-		if (found === 0) {
-			for (const fallback of section.fallbackSelectors) {
-				const count = await page.locator(fallback).count();
-				if (count > 0) {
-					selector = fallback;
-					found = count;
-					break;
-				}
-			}
-		}
 
-		if (found === 0) continue; // Skip missing sections
-
-		const label = `${String(index).padStart(2, '0')}-section-${section.id}`;
-		const sectionPath = await buildScreenshotPath(
-			outputDir,
-			viewportName,
-			label,
-			job.outputFormat,
-		);
-		const result = await captureElement(page, selector, sectionPath, job.outputFormat);
-
-		if (result) {
-			result.viewportName = viewportName;
-			result.label = `Section: ${section.label}`;
-			results.push(result);
-			console.log(`  ✓ Captured: ${label} (${viewportName})`);
-		}
-		index++;
-	}
-
-	return results;
-}
-
-/**
- * Dispatch section capture based on the job's sectionCapture mode.
- */
-async function captureSectionsForJob(
-	page: Page,
-	job: ScreenshotJob,
-	outputDir: string,
-	viewportName: string,
-): Promise<CaptureResult[]> {
-	if (job.sectionCapture === 'known' || job.sectionCapture === 'auto') {
-		return captureKnownSections(page, job, outputDir, viewportName);
-	}
-	if (job.sectionCapture === 'custom' && job.sectionSelectors) {
-		return captureCustomSections(page, job.sectionSelectors, job, outputDir, viewportName);
-	}
-	return [];
-}
-
-/**
- * Capture sections using custom CSS selectors.
- */
-async function captureCustomSections(
-	page: Page,
-	selectors: string[],
-	job: ScreenshotJob,
-	outputDir: string,
-	viewportName: string,
-): Promise<CaptureResult[]> {
-	const results: CaptureResult[] = [];
-	let index = 6;
-
-	for (const selector of selectors) {
-		const safeName = selector.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
-		const label = `${String(index).padStart(2, '0')}-section-${safeName}`;
-		const sectionPath = await buildScreenshotPath(
-			outputDir,
-			viewportName,
-			label,
-			job.outputFormat,
-		);
-		const result = await captureElement(page, selector, sectionPath, job.outputFormat);
-
-		if (result) {
-			result.viewportName = viewportName;
-			result.label = `Section: ${selector}`;
-			results.push(result);
-			console.log(`  ✓ Captured: ${label} (${viewportName})`);
-		}
-		index++;
-	}
-
-	return results;
-}
-
-async function captureCriticalSelectorSections(
-	page: Page,
-	job: ScreenshotJob,
-	outputDir: string,
-	viewportName: string,
-): Promise<CaptureResult[]> {
-	if (job.mode !== 'audit') return [];
-
-	const results: CaptureResult[] = [];
-	const selectors = job.criticalSelectors.filter((selector) => selector.capture);
-	let index = 20;
-
-	for (const selectorConfig of selectors) {
-		const safeName = (selectorConfig.label ?? selectorConfig.selector)
-			.replace(/[^a-zA-Z0-9_-]/g, '_')
-			.slice(0, 40);
-		const label = `${String(index).padStart(2, '0')}-critical-${safeName}`;
-		const sectionPath = await buildScreenshotPath(
-			outputDir,
-			viewportName,
-			label,
-			job.outputFormat,
-		);
-		const result = await captureElement(
-			page,
-			selectorConfig.selector,
-			sectionPath,
-			job.outputFormat,
-		);
-
-		if (result) {
-			result.viewportName = viewportName;
-			result.label = `Critical: ${selectorConfig.label ?? selectorConfig.selector}`;
-			results.push(result);
-			console.log(`  ✓ Captured: ${label} (${viewportName})`);
-		}
-		index++;
-	}
-
-	return results;
-}
 
 // =============================================================================
 // Helpers

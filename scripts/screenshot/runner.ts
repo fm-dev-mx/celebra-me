@@ -12,6 +12,8 @@ import {
 	type ViewportRunReport,
 	type RequestFailureReport,
 	type SelectorValidationReport,
+	type ScreenshotWarning,
+	type BlankBottomValidation,
 } from './types.js';
 import {
 	createPageSlug,
@@ -22,7 +24,7 @@ import {
 	writeScreenshotReport,
 	buildCurrentRunManifest,
 	classifyConsoleError,
-	getExpectedCaptureCount,
+	validateBlankBottom,
 } from './utils.js';
 import {
 	launchBrowser,
@@ -35,7 +37,91 @@ import {
 // Main Runner
 // =============================================================================
 
+interface SingleViewportCaptureResult {
+	captures: CaptureResult[];
+	plannedCaptures: number;
+	report: ViewportRunReport;
+}
+
 /**
+ * Capture a single viewport: create a page context, run captures, build report.
+ */
+async function captureSingleViewport(
+	browser: import('playwright').Browser,
+	job: ScreenshotJob,
+	outputDir: string,
+	viewport: ScreenshotJob['viewports'][number],
+): Promise<SingleViewportCaptureResult> {
+	const context = await createContext(browser, viewport);
+	const page = await context.newPage();
+	const consoleErrors: string[] = [];
+	const requestFailures: RequestFailureReport[] = [];
+
+	page.on('console', (message) => {
+		if (message.type() === 'error') {
+			consoleErrors.push(message.text());
+		}
+	});
+	page.on('pageerror', (error) => {
+		consoleErrors.push(`pageerror: ${error.stack || error.message}`);
+	});
+	page.on('requestfailed', (request) => {
+		requestFailures.push(classifyRequestFailure(request));
+	});
+
+		try {
+			const { results, plannedCount } = await (job.pageType === 'invitation'
+				? captureInvitationScreenshots(page, job, outputDir, viewport.name)
+				: captureGeneralPageScreenshots(page, job, outputDir, viewport.name));
+
+			const viewportReport = await buildViewportReport({
+				page,
+				job,
+				viewport,
+				results,
+				consoleErrors,
+				requestFailures,
+			});
+
+			// Log summary for this viewport
+			const succeeded = results.filter((r) => r.success).length;
+			const failed = viewportReport.failures.length;
+			const warningsCount = viewportReport.warnings.length + (viewportReport.detailedWarnings?.length ?? 0);
+			const noticesCount = viewportReport.notices?.length ?? 0;
+			const blockingErrorsCount = viewportReport.failures.filter((f) => f.includes('blocking') || f.includes('Critical')).length;
+			let summaryParts = `Done: ${succeeded} captured`;
+			if (failed > 0) summaryParts += `, ${failed} failed`;
+			if (warningsCount > 0) summaryParts += `, ${warningsCount} warning(s)`;
+			if (noticesCount > 0) summaryParts += `, ${noticesCount} notice(s)`;
+			if (blockingErrorsCount > 0) summaryParts += `, ${blockingErrorsCount} blocking error(s)`;
+			console.log(`  ─── ${summaryParts} ───`);
+
+			return { captures: results, plannedCaptures: plannedCount, report: viewportReport };
+		} catch (err) {
+			console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
+			return {
+				captures: [],
+				plannedCaptures: 0,
+				report: {
+					name: viewport.name,
+					width: viewport.width,
+					height: viewport.height,
+					deviceScaleFactor: viewport.deviceScaleFactor,
+					documentHeight: 0,
+					outputFiles: [],
+					criticalSelectors: [],
+					warnings: [],
+					failures: [String(err)],
+					consoleErrors: consoleErrors.map(classifyConsoleError),
+					requestFailures,
+				},
+			};
+		} finally {
+			await context.close();
+		}
+	}
+
+	/**
  * Execute a complete screenshot job across all configured viewports.
  *
  * This is the top-level orchestrator:
@@ -81,7 +167,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		return {
 			total: 0,
 			succeeded: 0,
-			failed: 0,
+			failed: 1, // blocking runtime error
 			captures: [],
 			outputDir,
 			durationMs: Date.now() - startTime,
@@ -89,6 +175,8 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	}
 
 	// ── 3. Capture each viewport ──────────────────────────────────────────
+	const perViewportPlanned: Record<string, number> = {};
+
 	try {
 		for (let i = 0; i < job.viewports.length; i++) {
 			const viewport = job.viewports[i];
@@ -96,116 +184,64 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 				`\n  ─── [${i + 1}/${job.viewports.length}] ${formatViewport(viewport)} ───`,
 			);
 
-			const context = await createContext(browser, viewport);
-			const page = await context.newPage();
-			const consoleErrors: string[] = [];
-			const requestFailures: RequestFailureReport[] = [];
-
-			page.on('console', (message) => {
-				if (message.type() === 'error') {
-					consoleErrors.push(message.text());
-				}
-			});
-			page.on('pageerror', (error) => {
-				consoleErrors.push(`pageerror: ${error.message}`);
-			});
-			page.on('requestfailed', (request) => {
-				requestFailures.push(classifyRequestFailure(request));
-			});
-
-			try {
-				let results: CaptureResult[] = [];
-
-				if (job.pageType === 'invitation') {
-					results = await captureInvitationScreenshots(
-						page,
-						job,
-						outputDir,
-						viewport.name,
-					);
-				} else {
-					results = await captureGeneralPageScreenshots(
-						page,
-						job,
-						outputDir,
-						viewport.name,
-					);
-				}
-
-				allCaptures.push(...results);
-				const viewportReport = await buildViewportReport({
-					page,
-					job,
-					viewport,
-					results,
-					consoleErrors,
-					requestFailures,
-				});
-				viewportReports.push(viewportReport);
-
-				// Log summary for this viewport
-				const succeeded = results.filter((r) => r.success).length;
-				const failed = results.filter((r) => !r.success).length + viewportReport.failures.length;
-				console.log(
-					`  ─── Done: ${succeeded} captured, ${failed} failed, ${viewportReport.warnings.length} warning(s) ───`,
-				);
-			} catch (err) {
-				console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
-				viewportReports.push({
-					name: viewport.name,
-					width: viewport.width,
-					height: viewport.height,
-					deviceScaleFactor: viewport.deviceScaleFactor,
-					documentHeight: 0,
-					outputFiles: [],
-					criticalSelectors: [],
-					warnings: [],
-					failures: [String(err)],
-					consoleErrors: consoleErrors.map(classifyConsoleError),
-					requestFailures,
-				});
-			} finally {
-				await context.close();
-			}
+			const result = await captureSingleViewport(browser, job, outputDir, viewport);
+			allCaptures.push(...result.captures);
+			viewportReports.push(result.report);
+			perViewportPlanned[viewport.name] = result.plannedCaptures;
 		}
 	} finally {
 		await browser.close();
 	}
 
 	// ── 4. Current-run manifest ──────────────────────────────────────────
-	const expectedPerViewport = getExpectedCaptureCount({
-		pageType: job.pageType,
-		mode: job.mode,
-		invitationSet: job.invitationSet,
-		generalSet: job.generalSet,
-		sectionCapture: job.sectionCapture,
-		sectionSelectors: job.sectionSelectors,
-		criticalSelectors: job.criticalSelectors,
-	});
 	const manifest = buildCurrentRunManifest({
 		viewports: job.viewports,
 		captures: allCaptures,
-		expectedPerViewport,
+		perViewportPlanned,
+		target: job.target,
 	});
 	const manifestFiles = manifest.reduce((sum, vp) => sum + vp.files, 0);
 
 	// ── 5. Compile results ────────────────────────────────────────────────
 	const durationMs = Date.now() - startTime;
 	const succeeded = allCaptures.filter((r) => r.success).length;
-	const validationFailures = viewportReports.reduce((sum, report) => sum + report.failures.length, 0);
-	const failed = allCaptures.filter((r) => !r.success).length + validationFailures;
+	const captureFailed = allCaptures.filter((r) => !r.success).length;
 	const warnings = viewportReports.flatMap((report) => report.warnings);
+	const detailedWarnings = viewportReports.flatMap((report) => report.detailedWarnings ?? []);
+	const notices = viewportReports.flatMap((report) => report.notices ?? []);
+	const blankBottomValidations = viewportReports.flatMap((report) => report.blankBottomValidations ?? []);
 	const failures = viewportReports.flatMap((report) => report.failures);
+	const fallbacks = viewportReports.flatMap((report) => report.fallback ? [report.fallback] : []);
+	const stitchFailures = viewportReports.flatMap((report) => report.stitchFailures ?? []);
+	const manifestFailures = manifest
+		.filter((viewportManifest) => viewportManifest.status === 'failed')
+		.map(
+			(viewportManifest) =>
+				`Manifest failed for ${viewportManifest.name}: generated ${viewportManifest.files} of expected ${viewportManifest.expected} capture(s).`,
+		);
+	const failed = failures.length + manifestFailures.length;
+	const blockingErrors = Math.max(0, failures.length - captureFailed) + manifestFailures.length;
+
+	const reportStatus: ScreenshotRunReport['status'] = failed > 0
+		? 'failed'
+		: warnings.length > 0
+			? 'warning'
+			: 'passed';
+
 	const report: ScreenshotRunReport = {
 		route: job.url,
 		mode: job.mode,
 		startedAt,
 		durationMs,
-		status: failed > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'passed',
+		status: reportStatus,
 		viewports: viewportReports,
 		manifest,
 		warnings,
-		failures,
+		detailedWarnings,
+		notices,
+		blankBottomValidations,
+		failures: [...failures, ...manifestFailures],
+		...(fallbacks.length > 0 ? { fallback: fallbacks[0], stitchFailures } : {}),
 	};
 	const reportPath = await writeScreenshotReport(outputDir, report);
 
@@ -217,10 +253,35 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log(`  Total captures:  ${allCaptures.length}`);
 	console.log(`  Successful:      ${succeeded}`);
 	console.log(`  Failed:          ${failed}`);
+	console.log(`  Warnings:        ${warnings.length}`);
+	console.log(`  Notices:         ${notices.length}`);
+	console.log(`  Blocking errors: ${blockingErrors}`);
 	console.log(`  Duration:        ${formatDuration(durationMs)}`);
 	console.log(`  Output:          ${outputDir}/`);
 	console.log(`  Report:          ${reportPath}`);
 	console.log('');
+
+	if (notices.length > 0) {
+		console.log('═'.repeat(56));
+		console.log('ℹ️  INFO / NOTICES');
+		console.log('═'.repeat(56));
+		for (const n of notices) {
+			console.log(`  ℹ  ${n}`);
+		}
+		console.log('');
+	}
+
+	if (detailedWarnings.length > 0) {
+		console.log('═'.repeat(56));
+		console.log('⚠️  WARNINGS');
+		console.log('═'.repeat(56));
+		for (const w of detailedWarnings) {
+			const typeStr = w.expected ? 'Expected' : 'UNEXPECTED';
+			const vpStr = w.viewport ? ` [${w.viewport}]` : '';
+			console.log(`  ⚠ [${typeStr}]${vpStr}: ${w.message}`);
+		}
+		console.log('');
+	}
 
 	// Current-run manifest
 	if (manifest.length > 0) {
@@ -228,7 +289,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		for (const vp of manifest) {
 			const status = vp.status !== 'passed' ? ' ⚠' : '';
 			console.log(
-				`    ${vp.name}/  (${vp.files} files${vp.expected > 0 ? `, expected ~${vp.expected}` : ''})${status}`,
+				`    ${vp.name}/  (${vp.files} files, expected ${vp.expected})${status}`,
 			);
 		}
 		console.log(`    Total generated this run: ${manifestFiles} files`);
@@ -246,6 +307,10 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	};
 }
 
+// =============================================================================
+// Viewport Report Builder
+// =============================================================================
+
 async function buildViewportReport({
 	page,
 	job,
@@ -262,13 +327,17 @@ async function buildViewportReport({
 	requestFailures: RequestFailureReport[];
 }): Promise<ViewportRunReport> {
 	const warnings: string[] = [];
-	const failures: string[] = [];
+	const notices: string[] = [];
+	const captureFailures: string[] = [];
 	const documentHeight = await getDocumentHeight(page);
+	const fallback = results.find((result) => result.fallback)?.fallback;
+	const stitchFailures = results.flatMap((result) => result.stitchFailures ?? []);
 	const outputFiles = await Promise.all(
 		results
 			.filter((result) => result.success)
 			.map(async (result) => {
 				const metadata = await readImageMetadata(result.path);
+
 				return {
 					path: result.path,
 					label: result.label,
@@ -277,51 +346,39 @@ async function buildViewportReport({
 				};
 			}),
 	);
-	const criticalSelectors = await validateCriticalSelectors(page, job.criticalSelectors);
-	const criticalFailures = criticalSelectors.flatMap((selector) => selector.failures ?? []);
-	const criticalWarnings = criticalSelectors.flatMap((selector) => selector.warnings ?? []);
-	const criticalRequestFailures = requestFailures
-		.filter((failure) => failure.severity === 'critical')
-		.map((failure) => `Critical request failed: ${failure.method} ${failure.url} :: ${failure.errorText}`);
-	const warningRequestFailures = requestFailures
-		.filter((failure) => failure.severity === 'warning')
-		.map((failure) => `Non-critical request failed: ${failure.method} ${failure.url} :: ${failure.errorText}`);
+	const detailedWarnings: ScreenshotWarning[] = [];
+	const blankBottomValidations: BlankBottomValidation[] = [];
 
-	const classifiedConsoleErrors = consoleErrors.map(classifyConsoleError);
-	const fatalConsoleErrors = classifiedConsoleErrors.filter((error) => error.severity === 'critical');
-	const warningConsoleErrors = classifiedConsoleErrors.filter(
-		(error) => error.severity === 'warning',
-	);
-	const auditNormalizations = await readAuditNormalizations(page);
-
-	failures.push(...criticalFailures, ...criticalRequestFailures);
-	warnings.push(...criticalWarnings, ...warningRequestFailures);
-	failures.push(
-		...fatalConsoleErrors.map(
-			(error) => `Console error (${error.source}, affects screenshots): ${error.message}`,
-		),
-	);
-	warnings.push(
-		...warningConsoleErrors.map(
-			(error) =>
-				`Console warning (${error.source}; production risk ${error.productionRisk}; screenshot reliability ${error.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${error.message}`,
-		),
-	);
-	warnings.push(...auditNormalizations.map((message) => `Audit normalization: ${message}`));
-
+	// Track capture failures (not validation issues)
 	for (const result of results) {
 		if (!result.success) {
-			failures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
+			captureFailures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
 		}
 	}
 
+	await validateFullPageBlanks(outputFiles, blankBottomValidations, detailedWarnings, warnings, job.url, viewport.name);
+	const { criticalSelectors, blockingErrors } = await collectSelectorAndRequestWarnings(
+		page, job, requestFailures, consoleErrors, detailedWarnings, warnings, notices, viewport.name,
+	);
+	captureFailures.push(...blockingErrors);
+	const classifiedConsoleErrors = consoleErrors.map(classifyConsoleError);
+
+	const auditNormalizations = await readAuditNormalizations(page);
+	for (const norm of auditNormalizations) {
+		const msg = `Audit normalization: ${norm}`;
+		notices.push(msg);
+	}
+
+	appendExpectedOutputFailures(captureFailures, job, results, outputFiles);
+
+	// Dimension check on full-page captures — warning only, not a failure
 	for (const file of outputFiles.filter((outputFile) => isViewportSizedCapture(outputFile.label))) {
 		if (!file.width || !file.height) {
-			failures.push(`Could not read dimensions for ${file.path}`);
+			warnings.push(`Could not read dimensions for ${file.path}`);
 			continue;
 		}
 		if (file.width < viewport.width || file.height < viewport.height) {
-			failures.push(
+			warnings.push(
 				`${file.path} dimensions ${file.width}x${file.height} are smaller than viewport ${viewport.width}x${viewport.height}`,
 			);
 		}
@@ -342,14 +399,198 @@ async function buildViewportReport({
 		outputFiles,
 		criticalSelectors,
 		warnings,
-		failures,
+		detailedWarnings,
+		notices,
+		...(fallback ? { fallback } : {}),
+		...(stitchFailures.length > 0 ? { stitchFailures } : {}),
+		blankBottomValidations,
+		failures: captureFailures,
 		consoleErrors: classifiedConsoleErrors,
 		requestFailures,
 	};
 }
 
+// =============================================================================
+// Helper Functions — Extracted to Reduce Cognitive Complexity
+// =============================================================================
+
+/**
+ * Validate blank bottom on full-page captures.
+ * Results go to blankBottomValidations, detailedWarnings, and warnings arrays.
+ */
+function appendExpectedOutputFailures(
+	captureFailures: string[],
+	job: ScreenshotJob,
+	results: CaptureResult[],
+	outputFiles: Array<{ label: string }>,
+): void {
+	const successfulOutputCount = outputFiles.length;
+	const successfulFullPageCount = outputFiles.filter((outputFile) =>
+		isFullPageCaptureLabel(outputFile.label),
+	).length;
+
+	if (job.target === 'all-sections' && results.length === 0) {
+		captureFailures.push(`No capturable sections resolved for ${job.pageType} route ${job.url}.`);
+	}
+
+	if (job.target === 'single-section' && results.length === 0) {
+		captureFailures.push(
+			`Selected section "${job.selectedSection ?? 'unknown'}" could not be resolved for ${job.pageType} route ${job.url}.`,
+		);
+	}
+
+	if (job.target === 'full-page' && successfulFullPageCount == 0) {
+		captureFailures.push(
+			`Full-page target produced no successful full-page capture for ${job.pageType} route ${job.url}.`,
+		);
+	}
+
+	if (expectsScreenshotOutput(job.target) && successfulOutputCount === 0) {
+		captureFailures.push(
+			`Screenshot target "${job.target}" produced zero output files for ${job.pageType} route ${job.url}.`,
+		);
+	}
+}
+
+async function validateFullPageBlanks(
+	outputFiles: Array<{ path: string }>,
+	blankBottomValidations: BlankBottomValidation[],
+	detailedWarnings: ScreenshotWarning[],
+	warnings: string[],
+	targetUrl: string,
+	viewportName: string,
+): Promise<void> {
+	for (const file of outputFiles) {
+		const isFullPage =
+			file.path.includes('02-full-page') ||
+			file.path.includes('01-initial-full-page') ||
+			file.path.includes('05-invitation-full-open');
+		if (!isFullPage) continue;
+
+		const check = await validateBlankBottom(file.path);
+		blankBottomValidations.push(check);
+		if (check.trailingBlankSpaceDetected) {
+			detailedWarnings.push({
+				message: `Trailing blank space detected in full page: ${check.note}`,
+				target: targetUrl,
+				viewport: viewportName,
+				expected: false,
+			});
+			warnings.push(`Trailing blank space detected in full page: ${check.note}`);
+		}
+	}
+}
+
+/**
+ * Collect selector, request, and console warnings.
+ * Returns the critical selectors validation report array.
+ * Critical/page errors that are NOT dev-transpiler issues are returned so
+ * the caller can promote them to failures that affect exit code.
+ */
+async function collectSelectorAndRequestWarnings(
+	page: Page,
+	job: ScreenshotJob,
+	requestFailures: RequestFailureReport[],
+	consoleErrors: string[],
+	detailedWarnings: ScreenshotWarning[],
+	warnings: string[],
+	notices: string[],
+	viewportName: string,
+): Promise<{ criticalSelectors: SelectorValidationReport[]; blockingErrors: string[] }> {
+	const blockingErrors: string[] = [];
+
+	// Critical selectors — reclassify "Optional selector not found" as notices
+	const criticalSelectors = await validateCriticalSelectors(page, job.criticalSelectors);
+	
+	for (const selector of criticalSelectors) {
+		for (const w of selector.warnings ?? []) {
+			if (w.startsWith('Optional selector not found:') || w.startsWith('Optional selector is not visibly ready:')) {
+				notices.push(w);
+			} else {
+				detailedWarnings.push({
+					message: w,
+					target: job.url,
+					viewport: viewportName,
+					expected: true,
+				});
+				warnings.push(w);
+			}
+		}
+
+		for (const failure of selector.failures ?? []) {
+			detailedWarnings.push({
+				message: failure,
+				target: job.url,
+				viewport: viewportName,
+				expected: true,
+			});
+			blockingErrors.push(failure);
+		}
+	}
+
+	// Request failures — all go to warnings
+	for (const failure of requestFailures) {
+		const msg = `${failure.severity === 'critical' ? 'Critical' : 'Non-critical'} request failed: ${failure.method} ${failure.url} :: ${failure.errorText}`;
+		detailedWarnings.push({
+			message: msg,
+			target: job.url,
+			viewport: viewportName,
+			expected: false,
+		});
+		warnings.push(msg);
+	}
+
+	// Console errors — deduplicate by message, then classify
+	const seenConsoleMessages = new Set<string>();
+	for (const raw of consoleErrors) {
+		// Deduplicate: normalize by stripping stack lines and extra whitespace
+		const normalized = raw
+			.split('\n')
+			.map((l) => l.trim())
+			.filter((l) => l.length > 0 && !l.startsWith('at '))
+			.join(' | ');
+		if (seenConsoleMessages.has(normalized)) continue;
+		seenConsoleMessages.add(normalized);
+
+		const classified = classifyConsoleError(raw);
+		const msg = `Console ${classified.severity} (${classified.source}; production risk ${classified.productionRisk}; screenshot reliability ${classified.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${classified.message}`;
+		detailedWarnings.push({
+			message: msg,
+			target: job.url,
+			viewport: viewportName,
+			expected: classified.source === 'test-runner-transpiler',
+		});
+		warnings.push(msg);
+
+		// Critical console errors from app code (not dev-transpiler) are blocking
+		if (classified.severity === 'critical' && classified.source !== 'test-runner-transpiler') {
+			blockingErrors.push(msg);
+		}
+	}
+
+	return { criticalSelectors, blockingErrors };
+}
+
 function isViewportSizedCapture(label: string): boolean {
 	return label === 'Viewport' || label === 'Full page' || label === 'Initial full page';
+}
+
+function isFullPageCaptureLabel(label: string): boolean {
+	return (
+		label === 'Full page' ||
+		label === 'Initial full page' ||
+		label === 'Initial full page (closed)' ||
+		label === 'Full invitation (open)'
+	);
+}
+
+function expectsScreenshotOutput(target: ScreenshotJob['target']): boolean {
+	return (
+		target === 'critical-qa' ||
+		target === 'full-page' ||
+		target === 'all-sections' ||
+		target === 'single-section'
+	);
 }
 
 async function readImageMetadata(filePath: string): Promise<{ width?: number; height?: number }> {

@@ -6,8 +6,6 @@ import { input, select } from '@inquirer/prompts';
 import {
 	type PageType,
 	type ViewportProfileType,
-	type InvitationSet,
-	type GeneralSet,
 	type RevealHandling,
 	type SectionCapture,
 	type AuthMethod,
@@ -16,7 +14,9 @@ import {
 	type ScreenshotJob,
 	type Viewport,
 	type ScreenshotMode,
+	type CaptureTarget,
 	DEFAULT_BASE_URL,
+	KNOWN_SECTIONS,
 } from './types.js';
 import {
 	resolveUrl,
@@ -26,6 +26,8 @@ import {
 	formatViewport,
 	getDefaultCriticalSelectors,
 	getViewportProfileSummary,
+	getAvailableDemos,
+	getAvailableTemplates,
 } from './utils.js';
 
 // =============================================================================
@@ -106,70 +108,14 @@ async function askViewportProfile(
 	};
 }
 
-/**
- * Ask the user about individual section capture.
- */
-async function askSectionCapture(
-	pageType: PageType,
-): Promise<{ sectionCapture: SectionCapture; sectionSelectors?: string[] }> {
-	if (pageType !== 'invitation' && pageType !== 'landing' && pageType !== 'custom') {
-		return { sectionCapture: 'none' };
-	}
 
-	const sectionCapture = await select<SectionCapture>({
-		message:
-			'Capture optional sections? Audit mode also generates critical section captures (hero, pricing, FAQ, contact, testimonials, etc.) automatically.',
-		choices: [
-			{
-				name: 'No, skip optional sections',
-				description: 'Only the configured critical section captures from audit mode.',
-				value: 'none',
-			},
-			{
-				name: 'Yes, auto-detect sections',
-				description: 'Auto-detect all sections on the page and capture each one.',
-				value: 'auto',
-			},
-			...(pageType === 'invitation'
-				? [
-						{
-							name: 'Yes, known invitation sections',
-							description: 'Capture the standard invitation sections (quote, family, gallery, countdown, etc.).',
-							value: 'known' as SectionCapture,
-						},
-					]
-				: []),
-			{
-				name: 'Yes, custom selectors',
-				description: 'Capture a specific list of selectors you provide.',
-				value: 'custom',
-			},
-		],
-		default: 'none',
-	});
-
-	if (sectionCapture === 'custom') {
-		const raw = await input({
-			message: 'Enter CSS selectors (comma-separated):',
-			default: '[data-screenshot-section="gallery"], #countdown, #rsvp',
-		});
-		return {
-			sectionCapture,
-			sectionSelectors: raw
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean),
-		};
-	}
-
-	return { sectionCapture };
-}
 
 /**
  * Run the interactive CLI flow: ask questions, show summary, confirm.
- * Returns a ScreenshotJob configuration, or null if the user cancels.
+ * Returns a ScreenshotJob config or an array of configs, or null if cancelled.
  */
-export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
+// eslint-disable-next-line complexity -- Sequential prompt sequence for interactive wizard
+export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJob[] | null> {
 	console.log('\n📸  Celebra-me Screenshot Tool\n');
 
 	// ── 1. Page Type ───────────────────────────────────────────────────────
@@ -177,7 +123,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		message: 'What do you want to screenshot?',
 		choices: [
 			{
-				name: 'Invitation page   (e.g. /boda/demo-boda-jewelry-box-wedding)',
+				name: 'Invitation page / Event Demo   (e.g. /boda/demo-boda-jewelry-box-wedding)',
 				value: 'invitation',
 			},
 			{
@@ -200,7 +146,8 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		default: 'invitation',
 	});
 
-	// ── 2. URL / Route ─────────────────────────────────────────────────────
+	// ── 2. Route selection ──────────────────────────────────────────────────
+	let resolvedUrls: { name: string; url: string }[];
 	const defaultRoute =
 		pageType === 'invitation'
 			? '/boda/demo-boda-jewelry-box-wedding'
@@ -212,88 +159,160 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 						? '/login'
 						: '/pricing';
 
-	const urlInput = await input({
-		message: 'URL or route to capture:',
-		default: defaultRoute,
-		validate: (value) => (value.trim().length > 0 ? true : 'Route cannot be empty'),
-	});
+	if (pageType === 'invitation') {
+		const selectionMode = await select<string>({
+			message: 'Select the invitation or demo to capture:',
+			choices: [
+				{ name: 'Select from Event Demos...', value: 'select-demo' },
+				{ name: 'Select from Invitation Templates...', value: 'select-template' },
+				{ name: 'Capture ALL Event Demos', value: 'all-demos' },
+				{ name: 'Capture ALL Templates', value: 'all-templates' },
+				{ name: 'Enter route/URL manually', value: 'manual' },
+			],
+			default: 'select-demo',
+		});
 
-	// Check if full URL or local route
-	const isFullUrl = /^https?:\/\//i.test(urlInput.trim());
+		if (selectionMode === 'select-demo') {
+			const demos = getAvailableDemos();
+			if (demos.length === 0) {
+				console.warn('  ⚠ No event demos found in src/content/event-demos.');
+				return null;
+			}
+			const chosenRoute = await select<string>({
+				message: 'Which event demo?',
+				choices: demos.map((d) => ({ name: d.name, value: d.route })),
+			});
+			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
+		} else if (selectionMode === 'select-template') {
+			const templates = getAvailableTemplates();
+			if (templates.length === 0) {
+				console.warn('  ⚠ No templates found in src/content/event-templates.');
+				return null;
+			}
+			const chosenRoute = await select<string>({
+				message: 'Which invitation template?',
+				choices: templates.map((t) => ({ name: t.name, value: t.route })),
+			});
+			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
+		} else if (selectionMode === 'all-demos') {
+			const demos = getAvailableDemos();
+			if (demos.length === 0) {
+				console.warn('  ⚠ No event demos found in src/content/event-demos.');
+				return null;
+			}
+			resolvedUrls = demos.map((d) => ({ name: d.slug, url: d.route }));
+		} else if (selectionMode === 'all-templates') {
+			const templates = getAvailableTemplates();
+			if (templates.length === 0) {
+				console.warn('  ⚠ No templates found in src/content/event-templates.');
+				return null;
+			}
+			resolvedUrls = templates.map((t) => ({ name: t.slug, url: t.route }));
+		} else {
+			const urlInput = await input({
+				message: 'URL or route to capture:',
+				default: defaultRoute,
+				validate: (value) => (value.trim().length > 0 ? true : 'Route cannot be empty'),
+			});
+			resolvedUrls = [{ name: createPageSlug(urlInput), url: urlInput }];
+		}
+	} else {
+		const urlInput = await input({
+			message: 'URL or route to capture:',
+			default: defaultRoute,
+			validate: (value) => (value.trim().length > 0 ? true : 'Route cannot be empty'),
+		});
+		resolvedUrls = [{ name: createPageSlug(urlInput), url: urlInput }];
+	}
+
+	// Base URL resolution
 	let baseUrl = DEFAULT_BASE_URL;
-
-	if (!isFullUrl) {
+	const hasRelativeRoute = resolvedUrls.some((item) => !/^https?:\/\//i.test(item.url.trim()));
+	if (hasRelativeRoute) {
 		baseUrl = await input({
 			message: 'Base URL:',
 			default: DEFAULT_BASE_URL,
 		});
-	} else {
-		// Extract base URL from the entered full URL
-		try {
-			const parsed = new URL(urlInput.trim());
-			baseUrl = `${parsed.protocol}//${parsed.host}`;
-		} catch {
-			/* keep default */
+	}
+
+	const resolvedJobsUrls = resolvedUrls.map((item) => ({
+		name: item.name,
+		url: resolveUrl(item.url, baseUrl),
+	}));
+
+	// ── 3. Target Capture Mode ─────────────────────────────────────────────
+	const target = await select<CaptureTarget>({
+		message: 'What is the target of this screenshot run?',
+		choices: [
+			{
+				name: 'Full page         (full-page captures only)',
+				description:
+					pageType === 'invitation'
+						? 'Captures initial (closed) and opened full-page states for the invitation. For landing pages: one full-page screenshot.'
+						: 'Captures only full-page screenshots for the selected viewport(s).',
+				value: 'full-page',
+			},
+			{
+				name: 'Critical QA set   (full-page + predefined critical sections)',
+				description: 'Captures the full page plus predefined critical sections (e.g. hero, pricing, faq, contact).',
+				value: 'critical-qa',
+			},
+			{
+				name: 'All sections      (one screenshot per registered section)',
+				description:
+					pageType === 'invitation'
+						? 'Captures each visible opened invitation section individually. No full-page baseline. For full-page initial/opened states use Critical QA or Full Page target.'
+						: 'Captures one screenshot per registered section, skipping full-page unless layout is explicitly included.',
+				value: 'all-sections',
+			},
+			{
+				name: 'Single section    (only the selected section)',
+				description: 'Captures exactly one selected section, skipping all page-level and other section screenshots.',
+				value: 'single-section',
+			},
+		],
+		default: 'critical-qa',
+	});
+
+	let includeLayout = false;
+	if (target === 'critical-qa') {
+		if (pageType !== 'invitation') {
+			includeLayout = await select<boolean>({
+				message: 'Do you want to include standard layout captures (viewport, header, main, footer)?',
+				choices: [
+					{ name: 'Yes, include standard layout captures', value: true },
+					{ name: 'No, only capture critical sections and full page', value: false },
+				],
+				default: true,
+			});
 		}
+		// For invitations, includeLayout is always false — layout captures
+		// (viewport, header, main, footer) are not relevant for invitation pages.
 	}
 
-	const resolvedUrl = resolveUrl(urlInput, baseUrl);
-
-	// ── 3. Screenshot Set ──────────────────────────────────────────────────
-	let invitationSet: InvitationSet | undefined;
-	let generalSet: GeneralSet | undefined;
-
-	if (pageType === 'invitation') {
-		invitationSet = await select<InvitationSet>({
-			message: 'Which screenshot set do you want?',
-			choices: [
-				{
-					name: 'Essential invitation set',
-					description: 'Initial page + reveal closed/open + full invitation open. The default for invitation review.',
-					value: 'essential',
-				},
-				{
-					name: 'Full invitation QA',
-					description: 'Essential captures plus every individual invitation section. Use for full visual QA passes.',
-					value: 'full-qa',
-				},
-				{
-					name: 'Reveal only',
-					description: 'Closed + open letter + open section. Skips initial and full-page captures.',
-					value: 'reveal-only',
-				},
-				{
-					name: 'Full page only',
-					description: 'Just the full-page capture (closed state).',
-					value: 'full-page',
-				},
-			],
-			default: 'essential',
+	// ── 4. Single Section Selection ─────────────────────────────────────────
+	let selectedSection: string | undefined;
+	let sectionCapture: SectionCapture = 'none';
+	if (target === 'single-section') {
+		const availableSections = KNOWN_SECTIONS.filter((s) => s.pageType === pageType);
+		if (availableSections.length === 0) {
+			console.warn('  ⚠ No known sections registered for page type:', pageType);
+			return null;
+		}
+		selectedSection = await select<string>({
+			message: 'Which section do you want to capture?',
+			choices: availableSections.map((s) => ({ name: s.label, value: s.id })),
 		});
-	} else {
-		generalSet = await select<GeneralSet>({
-			message: 'Which screenshot set do you want?',
-			choices: [
-				{
-					name: 'Basic page set',
-					description: 'Viewport, full-page, header, main, and footer captures. The default for landing / page review.',
-					value: 'basic',
-				},
-				{
-					name: 'Full page QA',
-					description: 'Everything in basic plus individual section captures. Use for full visual QA passes.',
-					value: 'full-qa',
-				},
-			],
-			default: 'basic',
-		});
+		sectionCapture = 'single';
+	} else if (target === 'all-sections') {
+		sectionCapture = 'known';
 	}
 
-	// ── 4. Viewport Profile ────────────────────────────────────────────────
+	// ── 5. Viewport Profile ────────────────────────────────────────────────
 	const defaultProfile = getDefaultProfile(pageType);
 	const { viewportProfile, viewports } = await askViewportProfile(defaultProfile);
 
-	// ── 5. Reveal Handling (invitation only) ───────────────────────────────
+	// ── 6. Reveal Handling (invitation only) ───────────────────────────────
 	let revealHandling: RevealHandling = 'auto';
 
 	if (pageType === 'invitation') {
@@ -310,13 +329,13 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		});
 	}
 
-	// ── 6. Screenshot Mode ─────────────────────────────────────────────────
+	// ── 7. Screenshot Mode ─────────────────────────────────────────────────
 	const mode = await select<ScreenshotMode>({
 		message: 'Screenshot mode?',
 		choices: [
 			{
 				name: 'Audit',
-				description: 'Stable visual QA: waits for content, reduces motion, and hides screenshot-only noise.',
+				description: 'Stable visual QA: waits for content, reduces motion, and disables scroll snapping.',
 				value: 'audit',
 			},
 			{
@@ -327,9 +346,6 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		],
 		default: 'audit',
 	});
-
-	// ── 7. Section Capture ─────────────────────────────────────────────────
-	const { sectionCapture, sectionSelectors } = await askSectionCapture(pageType);
 
 	// ── 8. Authentication ─────────────────────────────────────────────────
 	let authMethod: AuthMethod = 'none';
@@ -388,21 +404,21 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		});
 	}
 
-	// ── Assemble Job ───────────────────────────────────────────────────────
-
-	const job: ScreenshotJob = {
+	// ── Assemble Job(s) ───────────────────────────────────────────────────────
+	const jobs: ScreenshotJob[] = resolvedJobsUrls.map((item) => ({
 		pageType,
 		mode,
-		url: resolvedUrl,
+		url: item.url,
 		baseUrl,
 		viewportProfile,
 		viewports,
-		invitationSet,
-		generalSet,
+		target,
+		includeLayout,
 		revealHandling,
 		animationHandling: mode === 'audit' ? 'disable' : 'wait',
 		sectionCapture,
-		sectionSelectors,
+		selectedSection,
+		sectionSelectors: undefined,
 		criticalSelectors: getDefaultCriticalSelectors(pageType),
 		waitSelectors: [],
 		hideSelectors: [],
@@ -410,45 +426,59 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | null> {
 		outputFormat,
 		outputFolderStyle: outputStyle,
 		outputFolder: customOutput,
-	};
+	}));
 
-	// ── Summary & Confirm ──────────────────────────────────────────────────
-	return confirmJob(job);
+	return confirmJobs(jobs);
 }
 
 // =============================================================================
 // Summary & Confirmation
 // =============================================================================
 
-async function confirmJob(job: ScreenshotJob): Promise<ScreenshotJob | null> {
-	const pageSlug = createPageSlug(job.url);
+async function confirmJobs(jobs: ScreenshotJob[]): Promise<ScreenshotJob[] | ScreenshotJob | null> {
+	const isBatch = jobs.length > 1;
 
 	console.log('\n' + '─'.repeat(56));
-	console.log('📋  SCREENSHOT JOB SUMMARY');
+	console.log(`📋  SCREENSHOT JOB SUMMARY${isBatch ? ' (BATCH RUN)' : ''}`);
 	console.log('─'.repeat(56));
-	console.log(`  Page type:     ${job.pageType}`);
-	console.log(`  URL:           ${job.url}`);
-	console.log(`  Page slug:     ${pageSlug}`);
-	console.log(`  Profile:       ${job.viewportProfile}`);
-	console.log(`  Viewports:     ${job.viewports.length}`);
-	for (const vp of job.viewports) {
+	if (isBatch) {
+		console.log(`  Pages to capture (${jobs.length}):`);
+		for (const j of jobs) {
+			console.log(`                   - ${j.url}`);
+		}
+	} else {
+		console.log(`  Page type:     ${jobs[0].pageType}`);
+		console.log(`  URL:           ${jobs[0].url}`);
+		console.log(`  Page slug:     ${createPageSlug(jobs[0].url)}`);
+	}
+	console.log(`  Profile:       ${jobs[0].viewportProfile}`);
+	console.log(`  Viewports:     ${jobs[0].viewports.length}`);
+	for (const vp of jobs[0].viewports) {
 		console.log(`                   ${formatViewport(vp)}`);
 	}
-	if (job.pageType === 'invitation') {
-		console.log(`  Invitation set: ${job.invitationSet}`);
-		console.log(`  Reveal mode:    ${job.revealHandling}`);
-	} else {
-		console.log(`  Page set:       ${job.generalSet}`);
+	if (jobs[0].pageType === 'invitation') {
+		console.log(`  Reveal mode:    ${jobs[0].revealHandling}`);
 	}
-	console.log(`  Mode:          ${job.mode}`);
-	console.log(`  Sections:      ${job.sectionCapture}`);
-	if (job.sectionSelectors?.length) {
-		console.log(`  Selectors:     ${job.sectionSelectors.join(', ')}`);
+	console.log(`  Target:        ${jobs[0].target}`);
+	if (jobs[0].pageType === 'invitation' && jobs[0].target === 'full-page') {
+		console.log('  Captures:      Full page states — initial (closed) + opened invitation');
 	}
-	console.log(`  Auth:          ${job.authMethod}`);
-	console.log(`  Format:        ${job.outputFormat}`);
-	console.log(`  Output style:  ${job.outputFolderStyle}`);
-	console.log(`  Output dir:    screenshots/${pageSlug}/`);
+	if (jobs[0].pageType !== 'invitation' && jobs[0].includeLayout) {
+		console.log(`  Incl. Layout:  Yes`);
+	}
+	console.log(`  Mode:          ${jobs[0].mode}`);
+	if (jobs[0].selectedSection) {
+		console.log(`  Sel. Section:  ${jobs[0].selectedSection}`);
+	}
+	if (jobs[0].sectionSelectors?.length) {
+		console.log(`  Selectors:     ${jobs[0].sectionSelectors.join(', ')}`);
+	}
+	console.log(`  Auth:          ${jobs[0].authMethod}`);
+	console.log(`  Format:        ${jobs[0].outputFormat}`);
+	console.log(`  Output style:  ${jobs[0].outputFolderStyle}`);
+	if (!isBatch) {
+		console.log(`  Output dir:    screenshots/${createPageSlug(jobs[0].url)}/`);
+	}
 	console.log('─'.repeat(56));
 	console.log('');
 
@@ -462,7 +492,9 @@ async function confirmJob(job: ScreenshotJob): Promise<ScreenshotJob | null> {
 		default: 'run',
 	});
 
-	if (action === 'run') return job;
+	if (action === 'run') {
+		return isBatch ? jobs : jobs[0];
+	}
 	if (action === 'cancel') {
 		console.log('\n✕  Cancelled by user.\n');
 		return null;
@@ -472,3 +504,4 @@ async function confirmJob(job: ScreenshotJob): Promise<ScreenshotJob | null> {
 	console.log('\nRestarting interactive flow...\n');
 	return runInteractiveFlow();
 }
+

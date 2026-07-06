@@ -1,0 +1,31 @@
+{
+  "baseUrl": "http://localhost:4321",
+  "defaultMode": "audit",
+  "defaultViewportProfile": "full",
+  "defaultOutputFormat": "png",
+  "defaultOutputFolderStyle": "default",
+  "pages": [
+    {
+      "name": "Landing critical-qa",
+      "pageType": "landing",
+      "route": "/",
+      "target": "critical-qa",
+      "includeLayout": true,
+      "viewports": ["mobile-narrow", "mobile-standard", "mobile-large", "tablet", "desktop"]
+    },
+    {
+      "name": "Xareni critical-qa",
+      "pageType": "invitation",
+      "route": "/xv/demo-xv-xareni-profile",
+      "target": "critical-qa",
+      "viewports": ["mobile-narrow", "mobile-standard", "mobile-large", "tablet", "desktop"]
+    },
+    {
+      "name": "Valentina critical-qa",
+      "pageType": "invitation",
+      "route": "/xv/demo-xv-valentina-profile",
+      "target": "critical-qa",
+      "viewports": ["mobile-narrow", "mobile-standard", "mobile-large", "tablet", "desktop"]
+    }
+  ]
+}

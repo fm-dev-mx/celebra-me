@@ -24,7 +24,7 @@ export type RevealHandling = 'auto' | 'force-open' | 'closed-only' | 'open-only'
 export type AnimationHandling = 'disable' | 'wait' | 'query-param' | 'custom';
 
 /** Whether and how to capture individual sections */
-export type SectionCapture = 'none' | 'auto' | 'known' | 'custom';
+export type SectionCapture = 'none' | 'auto' | 'known' | 'custom' | 'single';
 
 /** Authentication method */
 export type AuthMethod = 'none' | 'existing-session' | 'storage-state' | 'manual-login';
@@ -47,6 +47,25 @@ export interface Viewport {
 	name: string;
 }
 
+export type CaptureTarget = 'full-page' | 'critical-qa' | 'all-sections' | 'single-section';
+
+export interface ScreenshotWarning {
+	message: string;
+	target?: string;
+	selector?: string;
+	viewport?: string;
+	expected: boolean;
+}
+
+export interface BlankBottomValidation {
+	path: string;
+	width: number;
+	height: number;
+	trailingBlankSpaceDetected: boolean;
+	stitchedNecessary: boolean;
+	note: string;
+}
+
 export interface ScreenshotJob {
 	pageType: PageType;
 	mode: ScreenshotMode;
@@ -57,11 +76,14 @@ export interface ScreenshotJob {
 	viewportProfile: ViewportProfileType;
 	/** Resolved list of viewport configurations to capture */
 	viewports: Viewport[];
+	target: CaptureTarget;
+	includeLayout?: boolean;
 	invitationSet?: InvitationSet;
 	generalSet?: GeneralSet;
 	revealHandling: RevealHandling;
 	animationHandling: AnimationHandling;
 	sectionCapture: SectionCapture;
+	selectedSection?: string;
 	sectionSelectors?: string[];
 	criticalSelectors: ScreenshotSelectorConfig[];
 	waitSelectors: string[];
@@ -84,6 +106,8 @@ export interface CliOptions {
 	/** Viewport names to capture, e.g. ['mobile-standard', 'desktop'] */
 	viewport?: string[];
 	profile?: ViewportProfileType;
+	target?: CaptureTarget;
+	includeLayout?: boolean;
 	invitationSet?: InvitationSet;
 	generalSet?: GeneralSet;
 	reveal?: RevealHandling;
@@ -123,6 +147,8 @@ export interface ScreenshotConfigPage {
 	mode?: ScreenshotMode;
 	viewports?: string[];
 	profile?: ViewportProfileType;
+	target?: CaptureTarget;
+	includeLayout?: boolean;
 	invitationSet?: InvitationSet;
 	generalSet?: GeneralSet;
 	revealHandling?: RevealHandling;
@@ -150,6 +176,8 @@ export interface CaptureResult {
 	label: string;
 	success: boolean;
 	error?: string;
+	fallback?: 'native-full-page';
+	stitchFailures?: string[];
 }
 
 export type ValidationStatus = 'passed' | 'warning' | 'failed';
@@ -184,9 +212,9 @@ export interface RequestFailureReport {
 export interface ConsoleErrorReport {
 	message: string;
 	severity: RequestFailureSeverity;
-	source: 'vite-dev-runtime' | 'page-script' | 'browser';
+	source: 'page-script' | 'browser' | 'test-runner-transpiler';
 	environment: 'development' | 'unknown';
-	productionRisk: 'unlikely' | 'unknown';
+	productionRisk: 'unlikely' | 'unknown' | 'none';
 	affectsScreenshotReliability: boolean;
 	note: string;
 }
@@ -207,6 +235,11 @@ export interface ViewportRunReport {
 	outputFiles: ScreenshotOutputFileReport[];
 	criticalSelectors: SelectorValidationReport[];
 	warnings: string[];
+	detailedWarnings?: ScreenshotWarning[];
+	notices?: string[];
+	fallback?: 'native-full-page';
+	stitchFailures?: string[];
+	blankBottomValidations?: BlankBottomValidation[];
 	failures: string[];
 	consoleErrors: ConsoleErrorReport[];
 	requestFailures: RequestFailureReport[];
@@ -221,6 +254,9 @@ export interface ScreenshotRunReport {
 	viewports: ViewportRunReport[];
 	manifest: ViewportManifestReport[];
 	warnings: string[];
+	detailedWarnings?: ScreenshotWarning[];
+	notices?: string[];
+	blankBottomValidations?: BlankBottomValidation[];
 	failures: string[];
 }
 
@@ -276,74 +312,194 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 };
 
 // ---------------------------------------------------------------------------
-// Known invitation sections
+// Known sections registry
 // ---------------------------------------------------------------------------
 
-export const KNOWN_INVITATION_SECTIONS: {
+export interface KnownSection {
 	id: string;
 	label: string;
+	pageType: PageType;
 	selector: string;
-	fallbackSelectors: string[];
-}[] = [
+	fallbackSelectors?: string[];
+	outputSlug: string;
+}
+
+export const KNOWN_SECTIONS: KnownSection[] = [
+	// Landing Sections
+	{
+		id: 'hero',
+		label: 'Hero',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-hero"]',
+		fallbackSelectors: ['#inicio', '.hero-prime'],
+		outputSlug: 'hero',
+	},
+	{
+		id: 'event-selector',
+		label: 'Event Selector',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-event-selector"]',
+		fallbackSelectors: ['#tipo-evento'],
+		outputSlug: 'event-selector',
+	},
+	{
+		id: 'product-proof',
+		label: 'Product Proof',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-product-proof"]',
+		fallbackSelectors: ['#prueba-producto'],
+		outputSlug: 'product-proof',
+	},
+	{
+		id: 'services',
+		label: 'Services',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-includes"]',
+		fallbackSelectors: ['#servicios'],
+		outputSlug: 'services',
+	},
+	{
+		id: 'guest-experience',
+		label: 'Guest Experience',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-guest-experience"]',
+		fallbackSelectors: ['#experiencia-invitados'],
+		outputSlug: 'guest-experience',
+	},
+	{
+		id: 'about-us',
+		label: 'About Us',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-about"]',
+		fallbackSelectors: ['#sobre-nosotros'],
+		outputSlug: 'about-us',
+	},
+	{
+		id: 'how-it-works',
+		label: 'How It Works',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-process"]',
+		fallbackSelectors: ['#como-funciona'],
+		outputSlug: 'how-it-works',
+	},
+	{
+		id: 'testimonials',
+		label: 'Testimonials',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-testimonials"]',
+		fallbackSelectors: ['#testimonios'],
+		outputSlug: 'testimonials',
+	},
+	{
+		id: 'pricing',
+		label: 'Pricing',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-pricing"]',
+		fallbackSelectors: ['#pricing'],
+		outputSlug: 'pricing',
+	},
+	{
+		id: 'faq',
+		label: 'FAQ',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-faq"]',
+		fallbackSelectors: ['#faq-section'],
+		outputSlug: 'faq',
+	},
+	{
+		id: 'contact',
+		label: 'Contact',
+		pageType: 'landing',
+		selector: '[data-screenshot="landing-contact"]',
+		fallbackSelectors: ['#contacto'],
+		outputSlug: 'contact',
+	},
+
+	// Invitation Sections
+	{
+		id: 'hero',
+		label: 'Hero',
+		pageType: 'invitation',
+		selector: '[data-screenshot-section="hero"]',
+		fallbackSelectors: ['[data-screenshot="invitation-open-hero"]', '#inicio'],
+		outputSlug: 'hero',
+	},
 	{
 		id: 'quote',
 		label: 'Quote',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="quote"]',
-		fallbackSelectors: [],
+		outputSlug: 'quote',
 	},
 	{
 		id: 'family',
 		label: 'Family',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="family"]',
-		fallbackSelectors: [],
+		outputSlug: 'family',
 	},
 	{
 		id: 'gallery',
 		label: 'Gallery',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="gallery"]',
 		fallbackSelectors: ['#galeria'],
+		outputSlug: 'gallery',
 	},
 	{
 		id: 'countdown',
 		label: 'Countdown',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="countdown"]',
 		fallbackSelectors: ['#countdown'],
+		outputSlug: 'countdown',
 	},
 	{
 		id: 'location',
 		label: 'Location',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="location"]',
 		fallbackSelectors: ['#event-location'],
+		outputSlug: 'location',
 	},
 	{
 		id: 'itinerary',
 		label: 'Itinerary',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="itinerary"]',
 		fallbackSelectors: ['#itinerary'],
+		outputSlug: 'itinerary',
 	},
 	{
 		id: 'rsvp',
 		label: 'RSVP',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="rsvp"]',
 		fallbackSelectors: ['#rsvp'],
+		outputSlug: 'rsvp',
 	},
 	{
 		id: 'gifts',
 		label: 'Gifts',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="gifts"]',
 		fallbackSelectors: ['#regalos'],
+		outputSlug: 'gifts',
 	},
 	{
 		id: 'thankYou',
 		label: 'Thank You',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="thankYou"]',
 		fallbackSelectors: ['#thank-you-section'],
+		outputSlug: 'thankYou',
 	},
 	{
 		id: 'personalized-access',
 		label: 'Personalized Access',
+		pageType: 'invitation',
 		selector: '[data-screenshot-section="personalized-access"]',
-		fallbackSelectors: [],
+		outputSlug: 'personalized-access',
 	},
 ];
 
@@ -370,9 +526,9 @@ export const REVEAL_TRIGGER_TEXTS: string[] = [
 
 export const DEFAULT_BASE_URL = 'http://localhost:4321';
 export const DEFAULT_STORAGE_STATE_PATH = 'playwright/.auth/user.json';
-export const DEFAULT_NAVIGATION_TIMEOUT = 30_000;
-export const DEFAULT_NETWORK_IDLE_TIMEOUT = 10_000;
-export const DEFAULT_ELEMENT_TIMEOUT = 5_000;
-export const DEFAULT_FONT_TIMEOUT = 10_000;
-export const DEFAULT_IMAGE_TIMEOUT = 10_000;
-export const DEFAULT_STABILITY_DELAY = 500;
+export const DEFAULT_NAVIGATION_TIMEOUT = 15_000;
+export const DEFAULT_NETWORK_IDLE_TIMEOUT = 5_000;
+export const DEFAULT_ELEMENT_TIMEOUT = 2_000;
+export const DEFAULT_FONT_TIMEOUT = 3_000;
+export const DEFAULT_IMAGE_TIMEOUT = 2_000;
+export const DEFAULT_STABILITY_DELAY = 300;

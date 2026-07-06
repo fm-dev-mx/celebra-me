@@ -16,6 +16,7 @@ import {
 	type CliOptions,
 	type ScreenshotJob,
 	type PageType,
+	type CaptureTarget,
 	DEFAULT_BASE_URL,
 	DEFAULT_STORAGE_STATE_PATH,
 } from './types.js';
@@ -46,28 +47,34 @@ async function main() {
 		return;
 	}
 
-	const job = isInteractive ? await runInteractiveFlow() : buildJobFromCli(cliOptions);
+	const jobOrJobs = isInteractive ? await runInteractiveFlow() : buildJobFromCli(cliOptions);
 
-	if (!job) {
+	if (!jobOrJobs) {
 		process.exit(0);
 	}
 
-	// ── Clean output directory ──────────────────────────────────────────
-	if (cliOptions.clean) {
-		const cleanDir = resolveOutputDir(
-			createPageSlug(job.url),
-			job.outputFolderStyle,
-			job.outputFolder,
-		);
-		fs.rmSync(cleanDir, { recursive: true, force: true });
-		console.log(`  🧹 Cleaned output: ${cleanDir}/`);
+	const jobs = Array.isArray(jobOrJobs) ? jobOrJobs : [jobOrJobs];
+	let failed = 0;
+
+	for (const job of jobs) {
+		// ── Clean output directory ──────────────────────────────────────────
+		if (cliOptions.clean) {
+			const cleanDir = resolveOutputDir(
+				createPageSlug(job.url),
+				job.outputFolderStyle,
+				job.outputFolder,
+			);
+			fs.rmSync(cleanDir, { recursive: true, force: true });
+			console.log(`  🧹 Cleaned output: ${cleanDir}/`);
+		}
+
+		// ── Execute ────────────────────────────────────────────────────────────
+		const result = await runScreenshotJob(job);
+		failed += result.failed;
 	}
 
-	// ── Execute ────────────────────────────────────────────────────────────
-	const result = await runScreenshotJob(job);
-
 	// Exit with non-zero if any failures
-	if (result.failed > 0) {
+	if (failed > 0) {
 		process.exit(1);
 	}
 }
@@ -80,6 +87,9 @@ function shouldRunInteractive(options: CliOptions): boolean {
 
 	// Explicit --no-interactive (from a preset command)
 	if (options.interactive === false) return false;
+
+	// Config-driven runs are always non-interactive.
+	if (options.config) return false;
 
 	// If URL is provided, run direct
 	if (options.url) return false;
@@ -108,6 +118,7 @@ function validateCliOptions(options: CliOptions): void {
 	}
 }
 
+// eslint-disable-next-line complexity
 function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 	const url = options.url;
 	if (!url) {
@@ -141,20 +152,33 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 	const profile = options.profile ?? getDefaultProfile(pageType);
 	const viewports = resolveViewports(profile, options.viewport);
 
-	// Section capture
-	let sectionCapture: 'none' | 'auto' | 'known' | 'custom' = 'none';
+	// Target resolution
+	let target: CaptureTarget = options.target ?? 'critical-qa';
+	let includeLayout = options.includeLayout;
+	let sectionCapture: 'none' | 'auto' | 'known' | 'custom' | 'single' = 'none';
+	let selectedSection: string | undefined;
 	let sectionSelectors: string[] | undefined;
 
-	if (options.sections === 'known') {
-		sectionCapture = 'known';
-	} else if (options.sections === 'auto') {
-		sectionCapture = 'auto';
+	if (options.sections) {
+		if (options.sections === 'known' || options.sections === 'auto') {
+			target = 'all-sections';
+			sectionCapture = options.sections;
+		} else {
+			target = 'single-section';
+			sectionCapture = 'single';
+			selectedSection = options.sections;
+		}
 	} else if (options.sectionSelectors) {
+		target = 'all-sections';
 		sectionCapture = 'custom';
 		sectionSelectors = options.sectionSelectors
 			.split(',')
 			.map((s) => s.trim())
 			.filter(Boolean);
+	}
+
+	if (includeLayout === undefined) {
+		includeLayout = target === 'critical-qa' && pageType !== 'invitation';
 	}
 
 	const outputFolderStyle = options.outputStyle ?? 'default';
@@ -166,11 +190,14 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 		baseUrl,
 		viewportProfile: profile,
 		viewports,
-		invitationSet: options.invitationSet ?? 'essential',
-		generalSet: options.generalSet ?? 'basic',
+		target,
+		includeLayout,
+		invitationSet: options.invitationSet,
+		generalSet: options.generalSet,
 		revealHandling: options.reveal ?? 'auto',
 		animationHandling: options.animation ?? 'disable',
 		sectionCapture,
+		selectedSection,
 		sectionSelectors,
 		criticalSelectors: getDefaultCriticalSelectors(pageType),
 		waitSelectors: [],
@@ -202,10 +229,17 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 		const profile = page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
 		const viewports = resolveViewports(profile, page.viewports);
 		const route = page.route;
-		const outputFolderStyle = page.outputFormat ? (options.outputStyle ?? 'default') : (options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default');
+		const outputFolderStyle = options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default';
 		const outputFolder =
 			options.output ??
 			(config.outputDir ? path.join(config.outputDir, page.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) : undefined);
+
+		const target = page.target ?? (
+			(page.invitationSet === 'full-page') ? 'full-page' : 'critical-qa'
+		);
+		const includeLayout = page.includeLayout ?? (
+			(target === 'critical-qa' && page.pageType !== 'invitation')
+		);
 
 		const job: ScreenshotJob = {
 			pageType: page.pageType,
@@ -214,6 +248,8 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 			baseUrl,
 			viewportProfile: profile,
 			viewports,
+			target,
+			includeLayout,
 			invitationSet: page.invitationSet ?? 'essential',
 			generalSet: page.generalSet ?? 'basic',
 			revealHandling: page.revealHandling ?? 'auto',

@@ -44,26 +44,29 @@ describe('screenshot CLI utilities', () => {
 			getExpectedCaptureCount({
 				pageType: 'landing',
 				mode: 'audit',
-				generalSet: 'basic',
+				target: 'critical-qa',
+				includeLayout: true,
 				criticalSelectors: getDefaultCriticalSelectors('landing'),
 			}),
-		).toBe(8);
+		).toBe(10);
 
 		expect(
 			getExpectedCaptureCount({
 				pageType: 'landing',
 				mode: 'raw',
-				generalSet: 'basic',
+				target: 'critical-qa',
+				includeLayout: true,
 				criticalSelectors: getDefaultCriticalSelectors('landing'),
 			}),
-		).toBe(2);
+		).toBe(5);
 	});
 
 	it('builds current-run manifests without counting stale output files', () => {
 		const [mobileNarrow, desktop] = resolveViewports('site', ['mobile-narrow', 'desktop']);
 		const manifest = buildCurrentRunManifest({
 			viewports: [mobileNarrow, desktop],
-			expectedPerViewport: 3,
+			perViewportPlanned: { 'mobile-narrow': 3, 'desktop': 3 },
+			target: 'critical-qa',
 			captures: [
 				{
 					path: 'temp/screenshots/home/mobile-narrow/01-viewport.png',
@@ -103,7 +106,7 @@ describe('screenshot CLI utilities', () => {
 
 		expect(classified).toMatchObject({
 			severity: 'warning',
-			source: 'vite-dev-runtime',
+			source: 'test-runner-transpiler',
 			environment: 'development',
 			affectsScreenshotReliability: false,
 		});
