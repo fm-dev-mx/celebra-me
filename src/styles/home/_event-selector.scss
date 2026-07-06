@@ -473,6 +473,7 @@
 				outline-offset: 3px;
 			}
 		}
+
 		&__stable-cta {
 			display: flex;
 			align-items: center;
@@ -490,6 +491,15 @@
 					width: 100%;
 					justify-content: center;
 				}
+			}
+		}
+
+		&__demo-link {
+			min-width: 275px;
+			justify-content: center;
+
+			@media (width <= 480px) {
+				min-width: 0;
 			}
 		}
 

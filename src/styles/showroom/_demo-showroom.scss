@@ -29,7 +29,7 @@
 	&__intro {
 		display: grid;
 		gap: clamp(0.75rem, 2vw, 1rem);
-		padding-block: clamp(4.35rem, 7vw, 5.65rem) clamp(1.15rem, 2.8vw, 1.8rem);
+		padding-block: clamp(6.25rem, 8vw, 7.5rem) clamp(1.5rem, 3vw, 2.5rem);
 	}
 
 	&__intro-copy {
@@ -46,6 +46,7 @@
 		font-weight: 850;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
+		margin-bottom: 0.85rem;
 
 		&:hover {
 			color: var(--color-action-primary);
@@ -59,10 +60,10 @@
 
 	&__eyebrow {
 		margin: 0;
-		color: var(--showroom-accent);
-		font-size: 0.68rem;
-		font-weight: 880;
-		letter-spacing: 0.18em;
+		color: var(--color-text-secondary);
+		font-size: 0.72rem;
+		font-weight: 800;
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
 	}
 
@@ -73,7 +74,7 @@
 		margin: 0;
 		color: var(--showroom-ink);
 		font-size: clamp(2.2rem, 4.9vw, 4.25rem);
-		line-height: 0.96;
+		line-height: 1.15;
 	}
 
 	&__description {
@@ -264,14 +265,14 @@
 		}
 
 		&--secondary {
-			border: 1px solid rgb(var(--color-action-primary-rgb) / 22%);
-			background: rgb(var(--showroom-porcelain-rgb) / 44%);
+			border: 1px solid rgb(var(--color-action-primary-rgb) / 45%);
+			background: rgb(var(--showroom-porcelain-rgb) / 60%);
 			color: var(--color-action-primary);
 
 			&:hover {
 				transform: translateY(-2px);
-				border-color: rgb(var(--color-action-primary-rgb) / 45%);
-				background: rgb(var(--color-action-primary-rgb) / 8%);
+				border-color: rgb(var(--color-action-primary-rgb) / 75%);
+				background: rgb(var(--color-action-primary-rgb) / 12%);
 			}
 		}
 	}
@@ -402,7 +403,7 @@
 		list-style: none;
 
 		li {
-			padding: 0.38rem 0.52rem;
+			padding: 0.38rem 0.65rem;
 			border: 1px solid rgb(var(--showroom-accent-rgb) / 20%);
 			border-radius: 0.34rem;
 			background: rgb(var(--showroom-accent-rgb) / 8%);
@@ -527,38 +528,64 @@
 		&__intro,
 		&__featured,
 		&__adaptation {
-			width: min(100% - 1.1rem, 1160px);
+			width: min(100% - 2rem, 1160px);
 		}
 
 		&__intro {
-			padding-block: 4.05rem 0.85rem;
+			padding-block: 7.5rem 1.75rem;
+		}
+
+		&__intro-copy {
+			gap: 0.85rem;
+		}
+
+		&__breadcrumb {
+			display: inline-block;
+			margin-bottom: 0.85rem;
 		}
 
 		&__title {
 			font-size: clamp(2rem, 9.2vw, 2.55rem);
-			line-height: 1;
 		}
 
 		&__description {
-			font-size: 0.94rem;
-			line-height: 1.45;
+			font-size: 0.96rem;
+			line-height: 1.55;
+			margin-top: 0.5rem;
 		}
 
 		&__featured {
-			gap: 0.9rem;
-			padding-bottom: 2rem;
+			gap: 2.2rem;
+			padding-bottom: 3.5rem;
+		}
+
+		&__selector {
+			gap: 1.5rem;
+			margin-top: 1.5rem;
 		}
 
 		&__section-title {
-			font-size: clamp(1.24rem, 5.6vw, 1.55rem);
+			font-size: clamp(1.35rem, 5.6vw, 1.65rem);
+			line-height: 1.25;
 		}
 
 		&__strip {
-			padding: 0.68rem 0;
+			padding: 1.25rem 0;
+			border-inline: 0;
+			justify-content: center;
+			text-align: center;
+			flex-direction: column;
+			gap: 0.65rem;
+		}
+
+		&__strip-list {
+			justify-content: center;
 		}
 
 		&__adaptation {
-			padding-top: 1.05rem;
+			padding-top: 2rem;
+			margin-block: 0 clamp(3.5rem, 8vw, 5.5rem);
+			gap: 1.5rem;
 		}
 
 		&__button {
@@ -567,7 +594,7 @@
 	}
 
 	.demo-lookbook {
-		gap: 0.86rem;
+		gap: 1.75rem;
 
 		&__tablet {
 			padding: 0.42rem;
@@ -578,18 +605,28 @@
 			aspect-ratio: 1.45 / 1;
 		}
 
+		&__copy {
+			gap: 0.95rem;
+		}
+
 		&__title {
 			font-size: clamp(1.75rem, 7.8vw, 2.12rem);
+			line-height: 1.15;
 		}
 
 		&__description {
-			font-size: 0.94rem;
-			line-height: 1.44;
+			font-size: 0.96rem;
+			line-height: 1.5;
 		}
 
 		&__actions {
 			flex-direction: column;
 			align-items: stretch;
+			gap: 0.75rem;
+			
+			.demo-showroom__button {
+				width: 100%;
+			}
 		}
 	}
 
