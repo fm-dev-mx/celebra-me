@@ -1,5 +1,10 @@
 ---
+import OptimizedImage from '@components/common/OptimizedImage.astro';
+import Icon from '@components/common/icons/Icon.astro';
 import DemoCard from '@/components/showroom/DemoCard.astro';
+
+import { getEventAsset } from '@/lib/assets/asset-registry';
+import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 import type {
 	DemoShowroomEvent,
@@ -12,27 +17,127 @@ interface Props {
 }
 
 const { showroom, items } = Astro.props;
+const featuredItem = items[0];
+const featuredThumbnail = featuredItem
+	? getEventAsset(featuredItem.thumbnail.assetSlug, featuredItem.thumbnail.key)
+	: undefined;
+const hasStyleSelector = items.length > 1;
+const phone = getContactPhone();
+const showWhatsAppCta = featuredItem && !isPlaceholderContactPhone(phone);
+const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(featuredItem.ctaMessage) : '';
+const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Música', 'Galería'];
 ---
 
 <section
-	class="demo-showroom__gallery"
-	aria-labelledby="demo-showroom-gallery-title"
-	data-track-section="demo_showroom_gallery"
+	class="demo-showroom__featured"
+	aria-labelledby="demo-showroom-featured-title"
+	data-track-section="demo_showroom_featured"
 >
-	<div class="demo-showroom__gallery-header">
-		<p class="demo-showroom__eyebrow">Demos disponibles</p>
-		<h2 id="demo-showroom-gallery-title" class="demo-showroom__section-title">
-			Elija el estilo que más se acerca a su celebración
-		</h2>
-	</div>
-
 	{
-		items.length > 0 ? (
-			<div class="demo-showroom__grid">
-				{items.map((item) => (
-					<DemoCard item={item} />
-				))}
-			</div>
+		featuredItem && featuredThumbnail ? (
+			<>
+				<article class="demo-lookbook" data-demo-rank="1" data-demo-slug={featuredItem.slug}>
+					<div class="demo-lookbook__preview">
+						<div class="demo-lookbook__tablet">
+							<a
+								class="demo-lookbook__image-link"
+								href={featuredItem.href}
+								aria-label={`Ver demo: ${featuredItem.title}`}
+								data-track-event="cta_clicked"
+								data-track-section="demo_showroom_featured"
+								data-track-cta="demo_hero_image"
+								data-track-intent="demo"
+								data-demo-slug={featuredItem.slug}
+							>
+								<OptimizedImage
+									imagePath={featuredThumbnail}
+									alt={featuredItem.thumbnail.alt}
+									width={1160}
+									height={820}
+									class="demo-lookbook__image"
+									loading="eager"
+									decoding="async"
+									fetchpriority="high"
+									quality={88}
+									widths={[360, 540, 720, 980, 1280]}
+									sizes="(max-width: 767px) 94vw, (max-width: 1199px) 54vw, 640px"
+								/>
+							</a>
+						</div>
+					</div>
+
+					<div class="demo-lookbook__copy">
+						<p class="demo-showroom__eyebrow">Estilo destacado</p>
+						<h2 id="demo-showroom-featured-title" class="demo-lookbook__title">
+							{featuredItem.title}
+						</h2>
+						<p class="demo-lookbook__description">{featuredItem.description}</p>
+						<ul class="demo-lookbook__tags" aria-label="Estilo del demo destacado">
+							{featuredItem.styleTags.slice(0, 2).map((tag) => (
+								<li>{tag}</li>
+							))}
+						</ul>
+
+						<div class="demo-lookbook__actions">
+							<a
+								class="demo-showroom__button demo-showroom__button--primary"
+								href={featuredItem.href}
+								data-track-event="cta_clicked"
+								data-track-section="demo_showroom_featured"
+								data-track-cta="demo_hero_open"
+								data-track-intent="demo"
+								data-demo-slug={featuredItem.slug}
+							>
+								Ver demo
+								<Icon name="ArrowRight" class="demo-showroom__button-icon" />
+							</a>
+
+							{showWhatsAppCta && (
+								<a
+									class="demo-showroom__button demo-showroom__button--secondary"
+									href={whatsAppHref}
+									target="_blank"
+									rel="noopener noreferrer"
+									data-track-event="whatsapp_contact_clicked"
+									data-track-section="demo_showroom_featured"
+									data-track-cta="demo_hero_whatsapp"
+									data-track-intent="whatsapp"
+									data-demo-slug={featuredItem.slug}
+								>
+									Cotizar este estilo
+								</a>
+							)}
+						</div>
+					</div>
+				</article>
+
+				{hasStyleSelector && (
+					<section class="demo-showroom__selector" aria-labelledby="demo-showroom-selector-title">
+						<div class="demo-showroom__selector-heading">
+							<p class="demo-showroom__eyebrow">Referencias visuales</p>
+							<h2 id="demo-showroom-selector-title" class="demo-showroom__section-title">
+								Elige un estilo para abrir la demo
+							</h2>
+						</div>
+						<div class="demo-showroom__style-list">
+							{items.map((item, index) => (
+								<DemoCard item={item} isActive={index === 0} position={index + 1} />
+							))}
+						</div>
+					</section>
+				)}
+
+				<section class="demo-showroom__strip" aria-labelledby="demo-showroom-strip-title">
+					<h2 id="demo-showroom-strip-title" class="demo-showroom__strip-title">
+						Todas las demos incluyen:
+					</h2>
+					<ul class="demo-showroom__strip-list" aria-label="Funciones incluidas">
+						{demoChecks.map((feature) => (
+							<li>{feature}</li>
+						))}
+					</ul>
+				</section>
+			</>
 		) : (
 			<div class="demo-showroom__empty">
 				<h2 class="demo-showroom__empty-title">Estamos preparando más ejemplos</h2>

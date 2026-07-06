@@ -5,9 +5,9 @@ import Layout from '@/layouts/Layout.astro';
 import DemoShowroomGrid from '@/components/showroom/DemoShowroomGrid.astro';
 
 import {
-	DEMO_SHOWROOM_EVENTS,
 	getDemoShowroomByPublicSlug,
 	getFeaturedDemoShowroomItems,
+	getShowroomPublicSlugs,
 } from '@/data/demo-showroom.data';
 import { getEventAsset } from '@/lib/assets/asset-registry';
 import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
@@ -15,9 +15,9 @@ import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/u
 import '@/styles/showroom/_demo-showroom.scss';
 
 export function getStaticPaths() {
-	return DEMO_SHOWROOM_EVENTS.map((showroom) => ({
-		params: { eventType: showroom.publicSlug },
-		props: { publicSlug: showroom.publicSlug },
+	return getShowroomPublicSlugs().map((publicSlug) => ({
+		params: { eventType: publicSlug },
+		props: { publicSlug },
 	}));
 }
 
@@ -38,44 +38,36 @@ const featuredItems = getFeaturedDemoShowroomItems(showroom.eventType).filter((i
 const phone = getContactPhone();
 const showWhatsAppCta = !isPlaceholderContactPhone(phone);
 const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '';
-const pageTitle = `${showroom.heroTitle} | Celebra.me`;
-const pageDescription = showroom.heroDescription;
+
+const eventDisplayNameBySlug: Record<string, string> = {
+	xv: 'XV años',
+	boda: 'boda',
+	bautizo: 'bautizo',
+	bautismo: 'bautizo',
+	'baby-shower': 'baby shower',
+	cumpleanos: 'cumpleaños',
+	'primera-comunion': 'primera comunión',
+};
+
+const eventDisplayName = eventDisplayNameBySlug[publicSlug] ?? showroom.label.toLowerCase();
+const adaptationTarget = publicSlug === 'xv' ? 'tus XV años' : `tu ${eventDisplayName}`;
+const lookbookLabel = eventDisplayName.toUpperCase();
+const introTitle = 'Elige una referencia visual para tu invitación';
+const introDescription =
+	'Cada demo puede adaptarse con tus nombres, colores, música, pases, ubicación y detalles del evento.';
+const pageTitle = `Lookbook ${eventDisplayName} | Celebra.me`;
+const pageDescription = introDescription;
+const quoteHref = showWhatsAppCta ? whatsAppHref : '/#contact';
 ---
 
 <Layout title={pageTitle} description={pageDescription} className="theme-preset--jewelry-box-landing">
 	<div class="demo-showroom">
-		<header class="demo-showroom__hero" data-track-section="demo_showroom_hero">
+		<header class="demo-showroom__intro" data-track-section="demo_showroom_intro">
 			<a class="demo-showroom__breadcrumb" href="/#tipo-evento">← Ver tipos de evento</a>
-			<p class="demo-showroom__eyebrow">Showroom Celebra.me</p>
-			<h1 class="demo-showroom__title">{showroom.heroTitle}</h1>
-			<p class="demo-showroom__description">{showroom.heroDescription}</p>
-			<div class="demo-showroom__hero-actions">
-				<a
-					class="demo-showroom__button demo-showroom__button--primary"
-					href="#demos"
-					data-track-event="cta_clicked"
-					data-track-section="demo_showroom_hero"
-					data-track-cta={`showroom_view_demos_${showroom.eventType}`}
-					data-track-intent="anchor"
-				>
-					Ver demos
-				</a>
-				{
-					showWhatsAppCta && (
-						<a
-							class="demo-showroom__button demo-showroom__button--secondary"
-							href={whatsAppHref}
-							target="_blank"
-							rel="noopener noreferrer"
-							data-track-event="whatsapp_contact_clicked"
-							data-track-section="demo_showroom_hero"
-							data-track-cta={`showroom_whatsapp_${showroom.eventType}`}
-							data-track-intent="whatsapp"
-						>
-							Solicitar asesoría
-						</a>
-					)
-				}
+			<div class="demo-showroom__intro-copy">
+				<p class="demo-showroom__eyebrow">LOOKBOOK {lookbookLabel}</p>
+				<h1 class="demo-showroom__title">{introTitle}</h1>
+				<p class="demo-showroom__description">{introDescription}</p>
 			</div>
 		</header>
 
@@ -83,42 +75,59 @@ const pageDescription = showroom.heroDescription;
 			<DemoShowroomGrid showroom={showroom} items={featuredItems} />
 		</div>
 
-		<section class="demo-showroom__final" data-track-section="demo_showroom_final">
-			<p class="demo-showroom__eyebrow">Siguiente paso</p>
-			<h2 class="demo-showroom__final-title">
-				Podemos adaptar un estilo similar para su celebración
-			</h2>
-			<p class="demo-showroom__final-copy">
-				Comparta el tipo de evento y el estilo que más le gustó. Le orientamos sobre paquete,
-				contenido y tiempos de entrega.
-			</p>
+		<section
+			class="demo-showroom__adaptation"
+			aria-labelledby="demo-showroom-adaptation-title"
+			data-track-section="demo_showroom_adaptation"
+		>
+			<div class="demo-showroom__adaptation-copy">
+				<p class="demo-showroom__eyebrow">¿Te gustó un estilo?</p>
+				<h2 id="demo-showroom-adaptation-title" class="demo-showroom__final-title">
+					Lo adaptamos a {adaptationTarget}
+				</h2>
+				<p class="demo-showroom__final-copy">
+					Usamos la demo como referencia y personalizamos nombres, colores, música, pases,
+					ubicación y detalles.
+				</p>
+			</div>
 			<div class="demo-showroom__final-actions">
-				<a
-					class="demo-showroom__button demo-showroom__button--secondary"
-					href="/#pricing"
-					data-track-event="cta_clicked"
-					data-track-section="demo_showroom_final"
-					data-track-cta={`showroom_pricing_${showroom.eventType}`}
-					data-track-intent="pricing"
-				>
-					Ver paquetes
-				</a>
 				{
-					showWhatsAppCta && (
+					showWhatsAppCta ? (
 						<a
 							class="demo-showroom__button demo-showroom__button--primary"
-							href={whatsAppHref}
+							href={quoteHref}
 							target="_blank"
 							rel="noopener noreferrer"
 							data-track-event="whatsapp_contact_clicked"
-							data-track-section="demo_showroom_final"
+							data-track-section="demo_showroom_adaptation"
 							data-track-cta={`showroom_final_whatsapp_${showroom.eventType}`}
 							data-track-intent="whatsapp"
 						>
 							Cotizar mi invitación
 						</a>
+					) : (
+						<a
+							class="demo-showroom__button demo-showroom__button--primary"
+							href={quoteHref}
+							data-track-event="cta_clicked"
+							data-track-section="demo_showroom_adaptation"
+							data-track-cta={`showroom_final_contact_${showroom.eventType}`}
+							data-track-intent="contact"
+						>
+							Cotizar mi invitación
+						</a>
 					)
 				}
+				<a
+					class="demo-showroom__button demo-showroom__button--secondary"
+					href="/#pricing"
+					data-track-event="cta_clicked"
+					data-track-section="demo_showroom_adaptation"
+					data-track-cta={`showroom_pricing_${showroom.eventType}`}
+					data-track-intent="pricing"
+				>
+					Ver paquetes
+				</a>
 			</div>
 		</section>
 	</div>
