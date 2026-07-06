@@ -15,6 +15,7 @@ import showroomBautizoHero from '@/assets/images/showroom/event-showroom-bautizo
 import showroomBodaHero from '@/assets/images/showroom/event-showroom-boda-hero.webp';
 import showroomCumpleanosHero from '@/assets/images/showroom/event-showroom-cumpleanos-hero.webp';
 import showroomXvHero from '@/assets/images/showroom/event-showroom-xv-hero.webp';
+import showroomPrimeraComunionHero from '@/assets/images/showroom/event-showroom-primera-comunion-hero.png';
 
 import '@/styles/home/_event-selector.scss';
 
@@ -26,7 +27,16 @@ interface Props {
 const { events, landingData } = Astro.props;
 const phone = getContactPhone();
 const es = landingData?.eventSelector;
-const demoCtaLabel = es?.cta || 'Abrir demo completa';
+
+const getCtaLabel = (eventType: string, label: string) => {
+	if (eventType === 'xv') return 'Ver demo de XV años';
+	if (eventType === 'boda') return 'Ver demo de boda';
+	if (eventType === 'bautizo') return 'Ver demo de bautizo';
+	if (eventType === 'primera-comunion') return 'Ver demo de primera comunión';
+	if (eventType === 'baby-shower') return 'Ver demo de baby shower';
+	if (eventType === 'cumple') return 'Ver demo de cumpleaños';
+	return `Ver demo de ${label}`;
+};
 
 const previewImages: Partial<Record<EventType, ImageMetadata>> = {
 	xv: showroomXvHero,
@@ -34,6 +44,7 @@ const previewImages: Partial<Record<EventType, ImageMetadata>> = {
 	bautizo: showroomBautizoHero,
 	cumple: showroomCumpleanosHero,
 	'baby-shower': showroomBabyShowerHero,
+	'primera-comunion': showroomPrimeraComunionHero,
 };
 
 const getPreviewImage = (eventType: EventType) => previewImages[eventType] || showroomXvHero;
@@ -167,7 +178,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 					data-track-intent="demo_showroom"
 					data-track-destination="demo-showroom"
 				>
-					{demoCtaLabel}
+					<span data-cta-label>{getCtaLabel(events[0].eventType, events[0].label)}</span>
 					<Icon name="ArrowRight" size={16} />
 				</a>
 				<WhatsAppButton
@@ -305,6 +316,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 
 			const href = panel.getAttribute("data-showroom-href") || "";
 			const label = panel.getAttribute("data-event-label") || "";
+			const eventType = panel.getAttribute("data-panel-event") || "";
 			const message = panel.getAttribute("data-quote-message") || "";
 			const promo = panel.getAttribute("data-quote-promo") || "";
 			const value = panel.getAttribute("data-quote-value") || "";
@@ -314,7 +326,20 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			if (demoLink) {
 				demoLink.href = href;
 				demoLink.setAttribute("aria-label", `Abrir demo completa de ${label}`);
-				demoLink.setAttribute("data-track-cta", `showroom_view_demo_${panel.getAttribute("data-panel-event")}`);
+				demoLink.setAttribute("data-track-cta", `showroom_view_demo_${eventType}`);
+
+				const labelSpan = demoLink.querySelector('[data-cta-label]');
+				if (labelSpan) {
+					const labelMap: Record<string, string> = {
+						xv: "Ver demo de XV años",
+						boda: "Ver demo de boda",
+						bautizo: "Ver demo de bautizo",
+						'primera-comunion': "Ver demo de primera comunión",
+						'baby-shower': "Ver demo de baby shower",
+						cumple: "Ver demo de cumpleaños",
+					};
+					labelSpan.textContent = labelMap[eventType] || `Ver demo de ${label}`;
+				}
 			}
 
 			if (quoteLink) {
