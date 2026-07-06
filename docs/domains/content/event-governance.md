@@ -1,6 +1,6 @@
 # Event Content Governance
 
-**Last Updated:** 2026-06-19
+**Last Updated:** 2026-07-06
 
 This document defines how invitation content is organized across live events, demos, and internal
 templates.
@@ -132,6 +132,14 @@ source of truth.
 - [ ] Add `sharing.whatsappTemplate` with real slug and name
 - [ ] Create `src/assets/images/events/<asset-slug>/` folder
 - [ ] Copy or create event-specific images (hero, ceremony, reception, family, gallery, interludes)
+- [ ] Preserve client photo intake notes outside public UI; map selected filenames to asset keys in
+      a local payload/spec/report before publishing
+- [ ] Verify exact filename casing for Vercel/Linux, especially original client filenames and
+      generated derivative names
+- [ ] Run mobile crop QA for hero, portrait, family, gallery, access pass, location, gifts, RSVP,
+      and thank-you sections
+- [ ] Prefer manual derivatives for gallery images that need breakpoint-specific composition until
+      public gallery CSS consumes all responsive focal-point variables
 - [ ] Export all images from `src/assets/images/events/<asset-slug>/index.ts` — no demo imports
 - [ ] Set `_assetSlug` to `<asset-slug>` and keep it distinct from demo `previewSlug`
 - [ ] Verify section contract for each section in the invitation (see
@@ -154,6 +162,8 @@ Current presets:
 - `luxury-hacienda`
 - `premiere-floral`
 - `editorial`
+- `editorial-magazine`
+- `editorial-rose`
 - `angelic-presence`
 
 Do not introduce ad-hoc preset names or section-variant literals directly in content files.
