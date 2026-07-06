@@ -302,9 +302,10 @@ const RSVP: React.FC<RSVPProps> = ({
 		restoreInitialResponse();
 	}, [restoreInitialResponse]);
 
-	return (
-		<RsvpContext.Provider value={{ eventType }}>
-			<AnimatePresence mode="wait">
+		return (
+			<section data-screenshot-section="rsvp" className="rsvp-section">
+				<RsvpContext.Provider value={{ eventType }}>
+					<AnimatePresence mode="wait">
 				{submitted ? (
 					<motion.div
 						key="rsvp-success"
@@ -410,9 +411,10 @@ const RSVP: React.FC<RSVPProps> = ({
 						/>
 					</motion.div>
 				)}
-			</AnimatePresence>
-		</RsvpContext.Provider>
-	);
+					</AnimatePresence>
+				</RsvpContext.Provider>
+			</section>
+		);
 };
 
 export default RSVP;

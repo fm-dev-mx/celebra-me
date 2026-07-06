@@ -30,7 +30,7 @@ const isEditorialMagazine = variant === 'editorial-magazine';
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={variant} {...(presentation && { 'data-presentation': presentation })}>
+<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}

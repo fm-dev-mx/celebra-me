@@ -106,14 +106,15 @@ const fpDesktop = focalPointDesktop || fpDefault;
 
 {
 	isEditorialMagazine ? (
-		<EditorialMagazineHero {...Astro.props} data-screenshot="invitation-open-hero" />
+	<EditorialMagazineHero {...Astro.props} data-screenshot="invitation-open-hero" data-screenshot-section="hero" />
 	) : (
-		<section
-			id="inicio"
-			class="invitation-hero"
-			data-variant={variant}
-			data-screenshot="invitation-open-hero"
-		>
+	<section
+		id="inicio"
+		class="invitation-hero"
+		data-variant={variant}
+		data-screenshot="invitation-open-hero"
+		data-screenshot-section="hero"
+	>
 			<div class="invitation-hero__background">
 				<picture>
 					{optimizedMobileBg && (
