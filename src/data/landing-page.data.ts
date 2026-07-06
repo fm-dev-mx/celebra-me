@@ -10,7 +10,7 @@ export const landingData: LandingPageData = {
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
-			'Hola, quiero cotizar una invitación digital personalizada con panel de invitados.',
+			'Hola, quiero más información sobre las invitaciones digitales con pases y confirmación de asistencia.',
 		proofLine: 'Lista de invitados · Pases · Confirmaciones',
 	},
 	eventSelector: {
@@ -18,7 +18,6 @@ export const landingData: LandingPageData = {
 		title: 'Revisa cómo puede verse tu invitación',
 		description:
 			'Explora demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de tu celebración.',
-		cta: 'Ver demo',
 	},
 	productProof: {
 		eyebrow: 'NO ES UN PDF, TAMPOCO ES UN ENLACE IGUAL PARA TODOS',
@@ -45,9 +44,8 @@ export const landingData: LandingPageData = {
 			},
 		],
 		cta: {
-			label: 'Quiero una invitación con control',
-			message:
-				'Hola, quiero una invitación digital con panel de invitados para organizar invitados, pases y confirmaciones.',
+			label: 'Iniciar mi invitación',
+			message: 'Hola, quiero empezar mi invitación digital premium.',
 		},
 	},
 	services: {
@@ -159,7 +157,7 @@ export const landingData: LandingPageData = {
 	pricing: {
 		eyebrow: 'PAQUETES',
 		title: 'Elige la invitación que necesita tu evento',
-		intro: 'Todos los paquetes incluyen una invitación digital personalizada. Los planes superiores agregan más control de invitados, pases y personalización.',
+		intro: 'Elige el nivel de diseño que necesita tu evento. Todas las invitaciones pueden integrar confirmación, pases, ubicación, música, galería y detalles importantes; los paquetes superiores elevan la dirección visual, el grado de personalización y el acompañamiento.',
 		note: 'Pago único. Precios en MXN.',
 		decisionGuide: {
 			title: '¿No sabes cuál elegir?',
@@ -173,73 +171,75 @@ export const landingData: LandingPageData = {
 			{
 				id: 'essential',
 				title: 'Essential',
-				description: 'Para una invitación digital clara y elegante.',
+				description:
+					'Diseño esencial sobre plantilla preestablecida con toda la funcionalidad activa.',
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $1,299 MXN',
-				idealFor: 'Para una invitación digital clara y elegante.',
+				idealFor: 'Para eventos que buscan una invitación impecable, clara y funcional.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Diseño personalizado',
-							'Información del evento',
-							'Ubicación',
-							'Botón de confirmación',
-							'Entrega lista para usar',
+							'Invitación con diseño de catálogo',
+							'Confirmación RSVP & Pases digitales',
+							'Detalles de recepción y ceremonia',
+							'Ubicaciones y mesa de regalos',
+							'Galería de fotos y música de fondo',
 						],
 					},
 				],
-		cta: 'Elegir Essential',
+				cta: 'Elegir Essential',
 				ctaMessage:
 					'Hola, quiero elegir el paquete Essential de $899 MXN para mi invitación digital.',
 			},
 			{
 				id: 'signature',
 				title: 'Signature',
-				description: 'Para organizar invitados, pases y confirmaciones.',
+				description: 'Diseño con personalización editorial media y refinamiento estético.',
 				badge: 'MÁS RECOMENDADO',
 				isPrimary: true,
 				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $2,299 MXN',
 				idealFor:
-					'Ideal para eventos que necesitan control de invitados, pases y confirmaciones.',
+					'Para quienes buscan un diseño más personalizado y adaptado a su paleta de colores.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Todo lo de Essential',
-							'Panel de invitados',
-							'Invitaciones personales',
-							'Pases por invitado',
-							'Confirmaciones ordenadas',
+							'Personalización editorial del diseño',
+							'Confirmación RSVP & Pases digitales',
+							'Secciones con estructura flexible',
+							'Adaptación de paleta de colores',
+							'Soporte para detalles especiales',
 						],
 					},
 				],
-		cta: 'Elegir Signature',
+				cta: 'Elegir Signature',
 				ctaMessage:
-					'Hola, quiero elegir el paquete Signature de $1,699 MXN con panel de invitados.',
+					'Hola, quiero elegir el paquete Signature de $1,699 MXN con personalización editorial.',
 			},
 			{
 				id: 'atelier',
 				title: 'Atelier',
-				description: 'Para una experiencia más cuidada y personalizada.',
+				description: 'Diseño a la medida con dirección visual avanzada y acompañamiento.',
 				isExclusive: true,
 				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
 				regularPrice: 'Precio regular: $3,899 MXN',
-				idealFor: 'Para eventos que requieren mayor detalle editorial y acompañamiento.',
+				idealFor:
+					'Para eventos premium que exigen una identidad visual única y dirección editorial experta.',
 				sections: [
 					{
 						title: 'Incluye',
 						items: [
-							'Todo lo de Signature',
-							'Dirección visual avanzada',
-							'Más secciones personalizadas',
-							'Mayor detalle editorial',
-							'Acompañamiento prioritario',
+							'Dirección visual avanzada a la medida',
+							'Confirmación RSVP & Pases digitales',
+							'Mayor detalle editorial y narrativa',
+							'Animaciones y tipografía curada',
+							'Acompañamiento y asesoría prioritaria',
 						],
 					},
 				],
-		cta: 'Elegir Atelier',
+				cta: 'Elegir Atelier',
 				ctaMessage:
 					'Hola, quiero elegir el paquete Atelier de $2,899 MXN con dirección visual avanzada.',
 			},
@@ -266,7 +266,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Es una plantilla, PDF o imagen?',
-				answer: 'No. Es una invitación digital personalizada. Según el paquete, también puede incluir panel de invitados, pases y confirmaciones.',
+				answer: 'No. Es una invitación digital interactiva. Todos los paquetes incluyen la capacidad de organizar invitados, pases digitales y confirmaciones en tiempo real; los paquetes superiores elevan el diseño y la dirección visual.',
 			},
 			{
 				question: '¿Puedo asignar pases por familia?',
@@ -325,20 +325,20 @@ export const landingData: LandingPageData = {
 		],
 		cta: {
 			label: 'Quiero iniciar mi invitación',
-			message: 'Hola, quiero empezar mi invitación digital con panel de invitados.',
+			message: 'Hola, quiero empezar mi invitación digital premium.',
 		},
 	},
 	contact: {
 		eyebrow: 'COTIZA TU INVITACIÓN',
 		title: 'Cuéntanos qué evento estás preparando',
 		subtitle:
-			'Te ayudamos a elegir el paquete adecuado según tu tipo de evento, número de invitados y nivel de control que necesitas.',
+			'Te ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita tu evento.',
 		cta: {
 			label: 'Cotizar por WhatsApp',
 			message: 'Hola, quiero cotizar una invitación digital para mi evento.',
 		},
 		microcopy:
-			'Te diremos si necesitas una invitación sencilla o una experiencia con invitados, pases y confirmaciones.',
+			'Te asesoraremos para elegir la estructura y el nivel de diseño ideal para tu celebración.',
 		formIntro: 'O déjanos tus datos y te contactamos.',
 		channelPrimary: {
 			label: 'Principal',

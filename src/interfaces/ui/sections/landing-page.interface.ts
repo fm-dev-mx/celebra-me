@@ -180,7 +180,7 @@ export interface LandingPageData {
 		eyebrow: string;
 		title: string;
 		description: string;
-		cta: string;
+		cta?: string;
 	};
 	productProof: ProductProofData;
 	guestExperience: GuestExperienceData;
