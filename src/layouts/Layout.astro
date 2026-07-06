@@ -23,6 +23,7 @@ interface Props {
 	className?: string;
 	isDemo?: boolean;
 	themeMode?: 'light' | 'dark';
+	transparentHeader?: boolean;
 	headLinks?: Array<{
 		rel: 'preload' | 'stylesheet';
 		href: string;
@@ -41,6 +42,7 @@ const {
 	className,
 	isDemo = false,
 	themeMode = 'dark',
+	transparentHeader = true,
 	headLinks = [],
 } = Astro.props as Props;
 
@@ -104,7 +106,7 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 		data-theme-mode={themeMode}
 		data-tracking-route-class={loadCommercialTracking ? routePolicy.routeClass : undefined}
 	>
-		{!hideHeader && <Header />}
+		{!hideHeader && <Header transparentOnHero={transparentHeader} />}
 
 		<main>
 			<slot />

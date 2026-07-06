@@ -79,7 +79,7 @@ const {
 			const isTransparentConfigured = header.dataset.transparent === 'true';
 			const isMenuOpen = header.classList.contains('header-base--menu-open');
 
-			header.classList.toggle('header-base--scrolled', hasScrolled);
+			header.classList.toggle('header-base--scrolled', hasScrolled || !isTransparentConfigured);
 
 			if (isTransparentConfigured && !isMenuOpen) {
 				header.classList.toggle('header-base--transparent', !hasScrolled);
