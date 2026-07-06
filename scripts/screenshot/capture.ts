@@ -1082,6 +1082,132 @@ export async function captureFullPage(
 		success: true,
 	};
 }
+/**
+ * Capture a single landing-page section for the stitched full-page screenshot.
+ * Pushes results, warnings, and failures into the caller-supplied arrays.
+ * Called once per section by {@link captureLandingStitchedFullPage}.
+ */
+/**
+ * Capture a single landing-page section for the stitched full-page screenshot.
+ * Pushes results, warnings, and failures into the caller-supplied arrays.
+ * Called once per section by {@link captureLandingStitchedFullPage}.
+ */
+async function captureSingleSectionForStitch(
+	page: Page,
+	section: { id: string; selector: string; keepHeader: boolean },
+	tmpDir: string,
+	format: OutputFormat,
+	stitchTimeoutMs: number,
+	capturedSections: { id: string; file: string; width: number; height: number }[],
+	skipped: string[],
+	failedSections: string[],
+): Promise<void> {
+	const loc = page.locator(section.selector).first();
+	const count = await loc.count().catch(() => 0);
+	if (count === 0) {
+	skipped.push(section.id);
+	return;
+	}
+
+	const file = path.join(tmpDir, `${section.id}.png`);
+	try {
+	await loc.waitFor({ state: 'visible', timeout: stitchTimeoutMs });
+	await loc.evaluate((element) => {
+		element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+	});
+	await page.waitForTimeout(150);
+	const clip = await loc.evaluate((element) => {
+		const rect = element.getBoundingClientRect();
+		return {
+			x: Math.max(0, window.scrollX + rect.left),
+			y: Math.max(0, window.scrollY + rect.top),
+			width: Math.max(0, rect.width),
+			height: Math.max(0, rect.height),
+			docWidth: Math.max(
+				document.documentElement.scrollWidth,
+				document.body.scrollWidth,
+			),
+			docHeight: Math.max(
+				document.documentElement.scrollHeight,
+				document.body.scrollHeight,
+			),
+		};
+	});
+	if (!clip || clip.width <= 0 || clip.height <= 0) {
+		// Clip unavailable — fall back to locator.screenshot
+		await loc.screenshot({
+			path: file,
+			animations: 'disabled',
+			...playwrightFormatOptions(format),
+		});
+		const meta = await sharp(file).metadata();
+		if (!meta.width || !meta.height) {
+			throw new Error('unstable element');
+		}
+		capturedSections.push({
+			id: section.id,
+			file,
+			width: meta.width,
+			height: meta.height,
+		});
+		return;
+	}
+	const boundedClip = {
+		x: Math.min(clip.x, Math.max(0, clip.docWidth - 1)),
+		y: Math.min(clip.y, Math.max(0, clip.docHeight - 1)),
+		width: Math.min(clip.width, Math.max(1, clip.docWidth - clip.x)),
+		height: Math.min(clip.height, Math.max(1, clip.docHeight - clip.y)),
+	};
+	if (boundedClip.width <= 0 || boundedClip.height <= 0) {
+		throw new Error('clip outside page bounds');
+	}
+
+	const restoreOverlays = section.keepHeader
+		? null
+		: await hideFixedOverlaysForCapture(page);
+	try {
+		try {
+			await page.screenshot({
+				path: file,
+				clip: boundedClip,
+				...playwrightFormatOptions(format),
+			});
+			} catch (screenshotErr) {
+			const msg = screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
+			if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
+				throw screenshotErr;
+			}
+			// Clip failed (2x DPR / complex CSS issue) — fall back to locator.screenshot with animations disabled
+			await loc.screenshot({
+				path: file,
+				animations: 'disabled',
+				...playwrightFormatOptions(format),
+			});
+			}
+	} finally {
+		if (restoreOverlays) await restoreOverlays();
+	}
+
+	const meta = await sharp(file).metadata();
+	if (!meta.width || !meta.height) {
+		skipped.push(`${section.id} (empty)`);
+		return;
+	}
+	capturedSections.push({
+		id: section.id,
+		file,
+		width: meta.width,
+		height: meta.height,
+	});
+	} catch (err) {
+	const reason = describeStitchFailure(err);
+	console.warn(
+		`  ⚠ Stitch: section "${section.id}" failed after ${formatDuration(stitchTimeoutMs)} — ${reason}`,
+	);
+	failedSections.push(`${section.id}: ${reason}`);
+	}
+}
+
 
 /**
  * Stitch a landing `02-full-page` capture from per-section element screenshots.
@@ -1114,110 +1240,16 @@ export async function captureLandingStitchedFullPage(
 	const stitchTimeoutMs = 2_000;
 
 	for (const section of LANDING_FULLPAGE_SECTIONS) {
-		const loc = page.locator(section.selector).first();
-		const count = await loc.count().catch(() => 0);
-		if (count === 0) {
-			skipped.push(section.id);
-			continue;
-		}
-
-		const file = path.join(tmpDir, `${section.id}.png`);
-		try {
-			await loc.waitFor({ state: 'visible', timeout: stitchTimeoutMs });
-			await loc.evaluate((element) => {
-				element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
-			});
-			await page.waitForTimeout(150);
-			const clip = await loc.evaluate((element) => {
-				const rect = element.getBoundingClientRect();
-				return {
-					x: Math.max(0, window.scrollX + rect.left),
-					y: Math.max(0, window.scrollY + rect.top),
-					width: Math.max(0, rect.width),
-					height: Math.max(0, rect.height),
-					docWidth: Math.max(
-						document.documentElement.scrollWidth,
-						document.body.scrollWidth,
-					),
-					docHeight: Math.max(
-						document.documentElement.scrollHeight,
-						document.body.scrollHeight,
-					),
-				};
-			});
-			if (!clip || clip.width <= 0 || clip.height <= 0) {
-				// Clip unavailable — fall back to locator.screenshot
-				await loc.screenshot({
-					path: file,
-					animations: 'disabled',
-					...playwrightFormatOptions(format),
-				});
-				const meta = await sharp(file).metadata();
-				if (!meta.width || !meta.height) {
-					throw new Error('unstable element');
-				}
-				capturedSections.push({
-					id: section.id,
-					file,
-					width: meta.width,
-					height: meta.height,
-				});
-				continue;
-			}
-			const boundedClip = {
-				x: Math.min(clip.x, Math.max(0, clip.docWidth - 1)),
-				y: Math.min(clip.y, Math.max(0, clip.docHeight - 1)),
-				width: Math.min(clip.width, Math.max(1, clip.docWidth - clip.x)),
-				height: Math.min(clip.height, Math.max(1, clip.docHeight - clip.y)),
-			};
-			if (boundedClip.width <= 0 || boundedClip.height <= 0) {
-				throw new Error('clip outside page bounds');
-			}
-
-			const restoreOverlays = section.keepHeader
-				? null
-				: await hideFixedOverlaysForCapture(page);
-			try {
-				try {
-					await page.screenshot({
-						path: file,
-						clip: boundedClip,
-						...playwrightFormatOptions(format),
-					});
-					} catch (screenshotErr) {
-					const msg = screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
-					if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
-						throw screenshotErr;
-					}
-					// Clip failed (2x DPR / complex CSS issue) — fall back to locator.screenshot with animations disabled
-					await loc.screenshot({
-						path: file,
-						animations: 'disabled',
-						...playwrightFormatOptions(format),
-					});
-					}
-			} finally {
-				if (restoreOverlays) await restoreOverlays();
-			}
-
-			const meta = await sharp(file).metadata();
-			if (!meta.width || !meta.height) {
-				skipped.push(`${section.id} (empty)`);
-				continue;
-			}
-			capturedSections.push({
-				id: section.id,
-				file,
-				width: meta.width,
-				height: meta.height,
-			});
-		} catch (err) {
-			const reason = describeStitchFailure(err);
-			console.warn(
-				`  ⚠ Stitch: section "${section.id}" failed after ${formatDuration(stitchTimeoutMs)} — ${reason}`,
-			);
-			failedSections.push(`${section.id}: ${reason}`);
-		}
+		await captureSingleSectionForStitch(
+			page,
+			section,
+			tmpDir,
+			format,
+			stitchTimeoutMs,
+			capturedSections,
+			skipped,
+			failedSections,
+		);
 	}
 
 	if (skipped.length > 0) {
