@@ -84,7 +84,9 @@ export function parseCliArgs(argv: string[]): CliOptions {
 }
 
 function setOption(options: CliOptions, key: string, value: string): void {
-	// Object map: each flag key → handler
+	// Single source of truth for CLI flag → option mapping. Flag names follow
+	// kebab-case (matches README). CamelCase aliases were removed in favor of
+	// a canonical, documented surface.
 	const handlers: Record<string, () => void> = {
 		'--interactive': () => {
 			options.interactive = value === 'true';
@@ -95,16 +97,7 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		'--base-url': () => {
 			options.baseUrl = value;
 		},
-		'--baseUrl': () => {
-			options.baseUrl = value;
-		},
 		'--type': () => {
-			options.pageType = value as PageType;
-		},
-		'--page-type': () => {
-			options.pageType = value as PageType;
-		},
-		'--pageType': () => {
 			options.pageType = value as PageType;
 		},
 		'--mode': () => {
@@ -133,30 +126,10 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		'--include-layout': () => {
 			options.includeLayout = value === 'true';
 		},
-		'--includeLayout': () => {
-			options.includeLayout = value === 'true';
-		},
 		'--set': () => {
 			setInvitationSet(options, value);
 		},
-		'--screenshot-set': () => {
-			setInvitationSet(options, value);
-		},
-		'--screenshotSet': () => {
-			setInvitationSet(options, value);
-		},
-		'--invitation-set': () => {
-			setInvitationSet(options, value);
-		},
-		'--invitationSet': () => {
-			setInvitationSet(options, value);
-		},
 		'--general-set': () => {
-			if (value === 'basic' || value === 'full-qa') {
-				options.generalSet = value;
-			}
-		},
-		'--generalSet': () => {
 			if (value === 'basic' || value === 'full-qa') {
 				options.generalSet = value;
 			}
@@ -188,9 +161,6 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		'--section-selectors': () => {
 			options.sectionSelectors = value;
 		},
-		'--sectionSelectors': () => {
-			options.sectionSelectors = value;
-		},
 		'--auth': () => {
 			if (
 				value === 'none' ||
@@ -210,16 +180,6 @@ function setOption(options: CliOptions, key: string, value: string): void {
 			options.output = value;
 		},
 		'--output-style': () => {
-			if (
-				value === 'default' ||
-				value === 'timestamped' ||
-				value === 'custom' ||
-				value === 'overwrite'
-			) {
-				options.outputStyle = value;
-			}
-		},
-		'--outputStyle': () => {
 			if (
 				value === 'default' ||
 				value === 'timestamped' ||
@@ -712,6 +672,26 @@ export function formatExtension(format: OutputFormat): string {
 		default:
 			return format; // png, webp
 	}
+}
+
+/**
+ * Build the Playwright `screenshot()`/`locator.screenshot()` option overrides
+ * for a given output format. Centralized here so adding a new format is a
+ * one-line change.
+ *
+ * Notes:
+ *   - pdf is handled by Playwright's `fullPage` mode, not via type/quality.
+ *   - webp is rendered as PNG (Playwright's native screenshot does not emit
+ *     webp directly); the extension is converted separately by `formatExtension`.
+ *   - jpeg quality is fixed at 90 — exposed as a single tuning point.
+ */
+export function playwrightFormatOptions(format: OutputFormat): {
+	type?: 'jpeg' | 'png';
+	quality?: number;
+} {
+	if (format === 'jpeg') return { type: 'jpeg', quality: 90 };
+	if (format === 'webp') return { type: 'png' };
+	return {};
 }
 
 /**

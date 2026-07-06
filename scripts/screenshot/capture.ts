@@ -28,6 +28,7 @@ import {
 	formatDuration,
 	getAboveFoldCriticalSelector,
 	getDefaultHideSelectors,
+	playwrightFormatOptions,
 } from './utils.js';
 
 export interface CaptureTask {
@@ -1068,8 +1069,7 @@ export async function captureFullPage(
 		await page.screenshot({
 			path: outputPath,
 			fullPage: fullPage,
-			...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-			...(format === 'webp' ? { type: 'png' } : {}), // webp via fullPage PNG
+			...playwrightFormatOptions(format),
 		});
 	} finally {
 		await restoreOverlays();
@@ -1150,8 +1150,7 @@ export async function captureLandingStitchedFullPage(
 				await loc.screenshot({
 					path: file,
 					animations: 'disabled',
-					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-					...(format === 'webp' ? { type: 'png' } : {}),
+					...playwrightFormatOptions(format),
 				});
 				const meta = await sharp(file).metadata();
 				if (!meta.width || !meta.height) {
@@ -1183,10 +1182,9 @@ export async function captureLandingStitchedFullPage(
 					await page.screenshot({
 						path: file,
 						clip: boundedClip,
-						...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-						...(format === 'webp' ? { type: 'png' } : {}),
+						...playwrightFormatOptions(format),
 					});
-				} catch (screenshotErr) {
+					} catch (screenshotErr) {
 					const msg = screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
 					if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
 						throw screenshotErr;
@@ -1195,10 +1193,9 @@ export async function captureLandingStitchedFullPage(
 					await loc.screenshot({
 						path: file,
 						animations: 'disabled',
-						...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-						...(format === 'webp' ? { type: 'png' } : {}),
+						...playwrightFormatOptions(format),
 					});
-				}
+					}
 			} finally {
 				if (restoreOverlays) await restoreOverlays();
 			}
@@ -1309,8 +1306,7 @@ export async function captureViewport(
 	await page.screenshot({
 		path: outputPath,
 		fullPage: false,
-		...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-		...(format === 'webp' ? { type: 'png' } : {}),
+		...playwrightFormatOptions(format),
 	});
 
 	return {
@@ -1399,8 +1395,7 @@ export async function captureElement(
 				await page.screenshot({
 					path: outputPath,
 					clip: { x: box.x, y: box.y, width: box.width, height: box.height },
-					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-					...(format === 'webp' ? { type: 'png' } : {}),
+					...playwrightFormatOptions(format),
 				});
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
@@ -1410,8 +1405,7 @@ export async function captureElement(
 				await locator.screenshot({
 					path: outputPath,
 					animations: 'disabled',
-					...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
-					...(format === 'webp' ? { type: 'png' } : {}),
+					...playwrightFormatOptions(format),
 				});
 			}
 		} finally {
@@ -1618,7 +1612,7 @@ async function captureInvitationOpen(
 			await page.screenshot({
 				path: fullOpenPath,
 				...(startsAtDocumentTop ? { fullPage: true } : { clip: captureBounds }),
-				...(format === 'jpeg' ? { type: 'jpeg', quality: 90 } : {}),
+				...playwrightFormatOptions(format),
 			});
 		} finally {
 			if (restoreReveal) {

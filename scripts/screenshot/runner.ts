@@ -553,7 +553,7 @@ async function collectSelectorAndRequestWarnings(
 		seenConsoleMessages.add(normalized);
 
 		const classified = classifyConsoleError(raw);
-		const msg = `Console ${classified.severity} (${classified.source}; production risk ${classified.productionRisk}; screenshot reliability ${classified.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${classified.message}`;
+		const msg = `Console ${classified.severity} (${classified.source}; production risk ${classified.productionRisk}; screenshot reliability ${classified.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${classified.message} — ${classified.note}`;
 		detailedWarnings.push({
 			message: msg,
 			target: job.url,
