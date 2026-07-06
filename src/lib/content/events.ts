@@ -5,7 +5,10 @@ export type EventContentEntry =
 	| CollectionEntry<'event-demos'>
 	| CollectionEntry<'event-templates'>;
 
-export type RoutableEventEntry = CollectionEntry<'events'> | CollectionEntry<'event-demos'>;
+export type RoutableEventEntry =
+	| CollectionEntry<'events'>
+	| CollectionEntry<'event-demos'>
+	| CollectionEntry<'event-templates'>;
 
 export function getContentEntrySlug(id: string): string {
 	const segments = id.split('/');
@@ -30,20 +33,15 @@ export async function getRoutableEventEntry(
 	}
 
 	const demoEntries = (await getCollection('event-demos')) ?? [];
-	return (
-		demoEntries.find((entry: CollectionEntry<'event-demos'>) => {
-			return (
-				getContentEntrySlug(entry.id) === slug &&
-				(!expectedEventType || entry.data.eventType === expectedEventType)
-			);
-		}) ?? null
-	);
-}
+	const demoEntry = demoEntries.find((entry: CollectionEntry<'event-demos'>) => {
+		return (
+			getContentEntrySlug(entry.id) === slug &&
+			(!expectedEventType || entry.data.eventType === expectedEventType)
+		);
+	});
 
-export async function getEventTemplateEntry(
-	slug: string,
-	expectedEventType?: string,
-): Promise<CollectionEntry<'event-templates'> | null> {
+	if (demoEntry) return demoEntry;
+
 	const templateEntries = (await getCollection('event-templates')) ?? [];
 	return (
 		templateEntries.find((entry: CollectionEntry<'event-templates'>) => {
@@ -54,3 +52,5 @@ export async function getEventTemplateEntry(
 		}) ?? null
 	);
 }
+
+

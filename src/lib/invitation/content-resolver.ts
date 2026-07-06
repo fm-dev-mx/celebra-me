@@ -9,10 +9,36 @@ export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
 	| { source: 'published'; viewModel: InvitationViewModel; rawContent: Record<string, unknown> };
 
+function isDevTemplateEntry(collection?: string): boolean {
+	return collection === 'event-templates' && import.meta.env.DEV;
+}
+
+function isStaticDemoEntry(entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null): boolean {
+	if (!entry?.data) return false;
+	return ('isDemo' in entry.data && entry.data.isDemo === true) || isDevTemplateEntry(entry.collection);
+}
+
+function toStaticResolution(
+	entry: NonNullable<Awaited<ReturnType<typeof getRoutableEventEntry>>>,
+): ContentResolution {
+	return { source: 'static', viewModel: adaptEvent(entry) };
+}
+
+function isMissingInvitationsTableError(error: unknown): boolean {
+	return error instanceof Error && error.message.includes("Could not find the table 'public.invitations'");
+}
+
 export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
 ): Promise<ContentResolution | null> {
+	const staticEntry = await getRoutableEventEntry(slug, eventType);
+	const isStaticDemoOrDevTemplate = isStaticDemoEntry(staticEntry);
+
+	if (staticEntry?.data && isStaticDemoOrDevTemplate) {
+		return toStaticResolution(staticEntry);
+	}
+
 	// DB-published content first — this is the source of truth for real invitations.
 	// Skip DB for demos: static JSON files are the canonical source for demo content.
 	if (eventType) {
@@ -34,22 +60,15 @@ export async function resolveInvitationContent(
 		if (invitation?.archivedAt) return null;
 	} catch (error) {
 		// Keep static demos routable during the short app-before-migration rollout window.
-		if (
-			!(
-				error instanceof Error &&
-				error.message.includes("Could not find the table 'public.invitations'")
-			)
-		) {
+		if (!isMissingInvitationsTableError(error)) {
 			throw error;
 		}
 	}
 
-	// Static fallback — only for demos and legacy entries (must have isDemo: true)
-	const staticEntry = await getRoutableEventEntry(slug, eventType);
-	if (staticEntry?.data && 'isDemo' in staticEntry.data) {
-		if (staticEntry.data.isDemo === true) {
-			const viewModel = adaptEvent(staticEntry);
-			return { source: 'static', viewModel };
+	// Static fallback — only for demos and templates
+	if (staticEntry?.data) {
+		if (isStaticDemoEntry(staticEntry)) {
+			return toStaticResolution(staticEntry);
 		}
 		// Non-demo static entries are blocked — real client data must come from DB
 		return null;
