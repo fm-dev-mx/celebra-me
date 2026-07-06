@@ -1,0 +1,225 @@
+.event--america-bautista.theme-preset--editorial-magazine {
+	--america-ink-rgb: 24 25 22;
+	--america-red-rgb: 132 21 30;
+	--america-ivory-rgb: 255 250 242;
+	--america-green-rgb: 33 62 45;
+	--america-champagne-rgb: 219 187 126;
+	--america-white-rgb: 255 255 255;
+	--america-ink: rgb(var(--america-ink-rgb));
+	--america-red: rgb(var(--america-red-rgb));
+	--america-ivory: rgb(var(--america-ivory-rgb));
+	--america-green: rgb(var(--america-green-rgb));
+	--america-champagne: rgb(var(--america-champagne-rgb));
+	--america-white: rgb(var(--america-white-rgb));
+	--editorial-magazine-ink: var(--america-ink);
+	--editorial-magazine-ink-rgb: var(--america-ink-rgb);
+	--editorial-magazine-paper: var(--america-ivory);
+	--editorial-magazine-paper-rgb: var(--america-ivory-rgb);
+	--editorial-magazine-white: var(--america-white);
+	--editorial-magazine-white-rgb: var(--america-white-rgb);
+	--editorial-magazine-red: var(--america-red);
+	--editorial-magazine-red-rgb: var(--america-red-rgb);
+	--editorial-magazine-muted: rgb(var(--america-green-rgb) / 72%);
+	--color-surface-primary: var(--america-ivory);
+	--color-surface-primary-rgb: var(--america-ivory-rgb);
+	--color-surface-secondary: var(--america-white);
+	--color-surface-secondary-rgb: var(--america-white-rgb);
+	--color-surface-dark: var(--america-green);
+	--color-surface-dark-rgb: var(--america-green-rgb);
+	--color-action-primary: var(--america-red);
+	--color-action-primary-rgb: var(--america-red-rgb);
+	--color-action-accent: var(--america-champagne);
+	--color-action-accent-rgb: var(--america-champagne-rgb);
+	--color-text-primary: var(--america-ink);
+	--color-text-primary-rgb: var(--america-ink-rgb);
+	--color-text-secondary: rgb(var(--america-green-rgb) / 78%);
+	--color-text-muted: rgb(var(--america-green-rgb) / 64%);
+	--color-border-light: rgb(var(--america-green-rgb) / 14%);
+	--color-border-medium: rgb(var(--america-green-rgb) / 32%);
+	--hero-overlay: linear-gradient(
+		90deg,
+		rgb(var(--america-green-rgb) / 72%) 0%,
+		rgb(var(--america-green-rgb) / 34%) 48%,
+		rgb(var(--america-red-rgb) / 16%) 100%
+	);
+	--editorial-image-filter: none;
+	--hero-image-filter: none;
+	--hero-portrait-filter: none;
+	--family-image-filter: none;
+	--location-image-filter: none;
+	--gallery-image-filter: none;
+	--hero-label-color: var(--america-champagne);
+	--quote-bg: var(--america-green);
+	--quote-author-color: var(--america-champagne);
+	--quote-accent-color: var(--america-red);
+	--family-bg: var(--america-ivory);
+	--family-accent: var(--america-red);
+	--location-bg: var(--america-ivory);
+	--location-card-bg: rgb(var(--america-white-rgb) / 94%);
+	--rsvp-bg: var(--america-green);
+	--rsvp-radio-label-color: rgb(var(--america-white-rgb) / 76%);
+	--rsvp-radio-label-color-selected: var(--america-white);
+	--rsvp-radio-selected-bg: rgb(var(--america-white-rgb) / 8%);
+	--rsvp-radio-selected-border: rgb(var(--america-champagne-rgb) / 84%);
+	--gifts-bg: var(--america-ivory);
+	--gallery-section-bg: linear-gradient(
+		180deg,
+		var(--america-ivory),
+		rgb(var(--america-green-rgb) / 10%)
+	);
+	--music-player-button-bg: var(--america-red);
+	--music-player-ring-color: rgb(var(--america-red-rgb) / 34%);
+
+	background:
+		radial-gradient(
+			circle at top left,
+			rgb(var(--america-champagne-rgb) / 24%),
+			transparent 32rem
+		),
+		linear-gradient(180deg, var(--america-ivory), rgb(var(--america-green-rgb) / 9%));
+	color: var(--america-ink);
+
+	.invitation-hero,
+	.hero,
+	[data-section='hero'] {
+		background-color: var(--america-green);
+	}
+
+	.invitation-hero[data-variant='editorial-magazine'] {
+		.invitation-hero__background {
+			opacity: 34%;
+			filter: saturate(0.86) brightness(0.54);
+		}
+
+		.invitation-hero__background::after {
+			background:
+				linear-gradient(180deg, transparent 0 44%, rgb(var(--america-green-rgb) / 82%) 70%),
+				linear-gradient(90deg, rgb(var(--america-green-rgb) / 62%), transparent 46%);
+		}
+	}
+
+	.itinerary[data-variant='editorial-magazine'] {
+		--itinerary-bg: var(--america-ivory);
+		--itinerary-item-desc-color: rgb(var(--america-green-rgb) / 72%);
+
+		.itinerary__item-description {
+			color: rgb(var(--america-green-rgb) / 72%);
+			text-shadow: none;
+		}
+	}
+
+	.event-location[data-variant='editorial-magazine'] {
+		--location-card-bg:
+			linear-gradient(180deg, rgb(var(--america-white-rgb) / 96%), rgb(var(--america-ivory-rgb) / 92%));
+		--location-card-border: 1px solid rgb(var(--america-champagne-rgb) / 54%);
+		--location-card-radius: 0;
+		--location-card-shadow: 0 28px 72px rgb(var(--america-green-rgb) / 14%);
+
+		.event-location__card {
+			position: relative;
+			border-inline: 0;
+		}
+
+		.event-location__card::before {
+			position: absolute;
+			inset: 0.75rem;
+			border: 1px solid rgb(var(--america-green-rgb) / 14%);
+			background: none;
+			pointer-events: none;
+			content: '';
+		}
+
+		.event-location__card-title,
+		.event-location__access-label {
+			color: var(--america-red);
+		}
+
+		.event-location__card-content-place {
+			color: var(--america-ink);
+		}
+
+		.event-location__card-content-address {
+			color: rgb(var(--america-green-rgb) / 76%);
+		}
+	}
+
+	.rsvp[data-variant='editorial-magazine'] {
+		.rsvp__response-heading {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.35rem 1rem;
+		}
+
+		.rsvp__response-heading span {
+			display: inline-block;
+		}
+
+		.rsvp__radio-card,
+		.rsvp__radio-label {
+			color: rgb(var(--america-white-rgb) / 88%);
+		}
+
+		.rsvp__radio-card {
+			background: rgb(var(--america-white-rgb) / 4%);
+		}
+
+		.rsvp__radio-card:has(input:checked) .rsvp__radio-label,
+		.rsvp__radio-card input:checked + .rsvp__radio-indicator + .rsvp__radio-label {
+			color: var(--america-white);
+		}
+
+		.rsvp__radio-indicator {
+			border-color: rgb(var(--america-champagne-rgb) / 72%);
+		}
+	}
+
+	.button,
+	.btn,
+	button[type='submit'],
+	.rsvp-submit,
+	.rsvp-option.is-selected,
+	[aria-pressed='true'],
+	[data-active='true'] {
+		background: var(--america-red);
+		border-color: var(--america-red);
+		color: var(--america-white);
+	}
+
+	.card,
+	.location-card,
+	.gift-card,
+	.family-card,
+	.rsvp-card,
+	.personalized-access,
+	.thank-you-card {
+		background: rgb(var(--america-white-rgb) / 94%);
+		border-color: rgb(var(--america-champagne-rgb) / 34%);
+		box-shadow: 0 24px 72px rgb(var(--america-green-rgb) / 12%);
+		color: var(--america-ink);
+	}
+
+	a,
+	.section-kicker,
+	.kicker,
+	.location-time,
+	.gift-title,
+	.family-role,
+	.rsvp-title,
+	.thank-you-title {
+		color: var(--america-red);
+	}
+
+	.thank-you,
+	[data-section='thank-you'] {
+		background:
+			radial-gradient(
+				circle at 20% 10%,
+				rgb(var(--america-champagne-rgb) / 24%),
+				transparent 34%
+			),
+			linear-gradient(150deg, var(--america-green), rgb(var(--america-red-rgb) / 88%));
+		color: var(--america-white);
+	}
+}

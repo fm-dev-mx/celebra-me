@@ -23,6 +23,7 @@ type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
+	eventYear?: string;
 	isDemoPreview?: boolean;
 	variant?: ThemePreset;
 };
@@ -123,6 +124,9 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 
 	const guestContext = pageContext.guestContext;
 	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
+	const eventYear = pageContext.viewModel.hero.date
+		? new Date(pageContext.viewModel.hero.date).getUTCFullYear().toString()
+		: undefined;
 
 	return {
 		component: 'personalized-access' as const,
@@ -132,6 +136,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				guestContext?.guest.maxAllowedAttendees ??
 				pageContext.viewModel.sections.rsvp?.guestCap ??
 				DEFAULT_DEMO_GUEST_CAP,
+			eventYear,
 			isDemoPreview,
 			variant,
 		},
