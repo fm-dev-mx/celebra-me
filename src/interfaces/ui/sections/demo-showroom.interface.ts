@@ -1,7 +1,14 @@
 import type { EventType } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-registry';
 
-export type DemoShowroomPublicSlug = 'xv' | 'boda' | 'bautizo' | 'baby-shower' | 'cumpleanos';
+export type DemoShowroomPublicSlug =
+	| 'xv'
+	| 'boda'
+	| 'bautizo'
+	| 'bautismo'
+	| 'baby-shower'
+	| 'cumpleanos'
+	| 'primera-comunion';
 
 export type DemoShowroomVisibility = 'featured' | 'hidden';
 export type DemoShowroomReviewStatus = 'approved' | 'needs-review';
@@ -10,6 +17,7 @@ export interface DemoShowroomThumbnail {
 	assetSlug: string;
 	key: EventAssetKey;
 	alt: string;
+	objectPosition?: string;
 }
 
 export interface DemoShowroomPhonePreview {
@@ -47,6 +55,7 @@ export interface DemoShowroomHomeSelector {
 export interface DemoShowroomEvent {
 	eventType: EventType;
 	publicSlug: DemoShowroomPublicSlug;
+	alternatePublicSlugs?: readonly DemoShowroomPublicSlug[];
 	label: string;
 	description: string;
 	icon: string;
@@ -66,11 +75,13 @@ export interface DemoShowroomItem {
 	title: string;
 	description: string;
 	styleTags: readonly string[];
+	views?: number;
 	visibility: DemoShowroomVisibility;
 	reviewStatus: DemoShowroomReviewStatus;
 	featured: boolean;
 	sortOrder: number;
 	ctaMessage: string;
 	thumbnail: DemoShowroomThumbnail;
+	selectorThumbnail?: DemoShowroomThumbnail;
 	exclusionReason?: string;
 }

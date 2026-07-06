@@ -5,7 +5,7 @@ import type {
 } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
 
-export const DEMO_SHOWROOM_EVENTS = [
+export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 	{
 		eventType: 'xv',
 		publicSlug: 'xv',
@@ -36,7 +36,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música y galería para que cada invitado reciba una experiencia clara.',
 			},
 			quoteCta: {
-				label: 'Cotizar mis XV',
+				label: 'Cotizar esta invitación',
 				message:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: XV años\n\nCupón: LANZAMIENTO-899',
 				promoCode: 'LANZAMIENTO-899',
@@ -75,7 +75,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con tu estilo.',
 			},
 			quoteCta: {
-				label: 'Cotizar mi boda',
+				label: 'Cotizar esta invitación',
 				message:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499',
 				promoCode: 'LANZAMIENTO-1499',
@@ -89,6 +89,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 	{
 		eventType: 'bautizo',
 		publicSlug: 'bautizo',
+		alternatePublicSlugs: ['bautismo'],
 		label: 'Bautizo',
 		description: 'Detalles familiares, ubicación y confirmación en una invitación clara.',
 		icon: 'Dove',
@@ -116,7 +117,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara y fácil de compartir.',
 			},
 			quoteCta: {
-				label: 'Cotizar mi bautizo',
+				label: 'Cotizar esta invitación',
 				message:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Bautizo\n\nCupón: LANZAMIENTO-899',
 				promoCode: 'LANZAMIENTO-899',
@@ -124,6 +125,45 @@ export const DEMO_SHOWROOM_EVENTS = [
 			},
 		},
 		sortOrder: 30,
+	},
+	{
+		eventType: 'primera-comunion',
+		publicSlug: 'primera-comunion',
+		label: 'Primera comunión',
+		description: 'Ceremonia, ubicación y confirmación en una invitación familiar.',
+		icon: 'Dove',
+		showroomHref: '/demos/primera-comunion',
+		heroTitle: 'Demos de invitaciones para primera comunión',
+		heroDescription:
+			'Mira una referencia digital para comunicar ceremonia, reunión familiar y confirmaciones.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para primera comunión. Vi sus demos y quiero asesoría para mi celebración.',
+		homeSelector: {
+			preview: {
+				eyebrow: 'PRIMERA COMUNIÓN',
+				title: 'Luna Estrella',
+				subtitle: 'Celebración familiar',
+				date: 'Sábado 12 de septiembre',
+				venue: 'Parroquia de la Sagrada Familia',
+				chips: ['RSVP', 'PASES', 'WHATSAPP'],
+				actionLabel: 'Confirmar asistencia',
+				imageAlt: 'Celebración de primera comunión con flores blancas e ilustración delicada',
+			},
+			showroom: {
+				kicker: 'Primera comunión',
+				title: 'Una invitación clara para una ceremonia familiar',
+				description:
+					'Comparte ceremonia, recepción, ubicación y confirmaciones en una experiencia digital delicada y fácil de enviar.',
+			},
+			quoteCta: {
+				label: 'Cotizar esta invitación',
+				message:
+					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Primera comunión\n\nCupón: LANZAMIENTO-899',
+				promoCode: 'LANZAMIENTO-899',
+				trackValue: 899,
+			},
+		},
+		sortOrder: 35,
 	},
 	{
 		eventType: 'baby-shower',
@@ -155,7 +195,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 					'Reúne ubicación, mesa de regalos, galería y confirmaciones en una experiencia clara para familiares y amigos.',
 			},
 			quoteCta: {
-				label: 'Cotizar mi baby shower',
+				label: 'Cotizar esta invitación',
 				message:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Baby shower\n\nCupón: LANZAMIENTO-899',
 				promoCode: 'LANZAMIENTO-899',
@@ -194,7 +234,7 @@ export const DEMO_SHOWROOM_EVENTS = [
 					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada.',
 			},
 			quoteCta: {
-				label: 'Cotizar mi evento',
+				label: 'Cotizar esta invitación',
 				message:
 					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Cumpleaños\n\nCupón: LANZAMIENTO-899',
 				promoCode: 'LANZAMIENTO-899',
@@ -203,22 +243,21 @@ export const DEMO_SHOWROOM_EVENTS = [
 		},
 		sortOrder: 50,
 	},
-] as const satisfies readonly DemoShowroomEvent[];
+] as const;
 
-export const DEMO_SHOWROOM_ITEMS = [
+export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 	{
 		eventType: 'xv',
 		publicSlug: 'xv',
 		slug: 'demo-xv-jewelry-box',
 		href: '/xv/demo-xv-jewelry-box',
-		title: 'XV años estilo Jewelry Box',
-		description:
-			'Una experiencia elegante con acentos luminosos, galería amplia y tono premium.',
-		styleTags: ['elegante', 'fotográfica', 'premium'],
-		visibility: 'featured',
+		title: 'Jewelry Box',
+		description: 'Floral, luminosa y clásica.',
+		styleTags: ['floral', 'jardín'],
+		visibility: 'hidden',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 10,
+		featured: false,
+		sortOrder: 80,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Jewelry Box.',
 		thumbnail: {
@@ -232,20 +271,55 @@ export const DEMO_SHOWROOM_ITEMS = [
 		publicSlug: 'xv',
 		slug: 'demo-xv-celestial-blue',
 		href: '/xv/demo-xv-celestial-blue',
-		title: 'XV años estilo Celestial Blue',
-		description:
-			'Una propuesta luminosa y editorial con paleta azul suave y presencia fotográfica.',
-		styleTags: ['celestial', 'azul', 'editorial'],
+		title: 'XV Celestial Blue',
+		description: 'Azul, luminosa y ceremonial.',
+		styleTags: ['Ceremonial', 'Azul'],
+		views: 40,
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
-		sortOrder: 20,
+		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Celestial Blue.',
 		thumbnail: {
 			assetSlug: 'demo-xv-celestial-blue',
 			key: 'hero',
 			alt: 'Vista principal del demo de XV años estilo Celestial Blue',
+			objectPosition: '50% 26%',
+		},
+		selectorThumbnail: {
+			assetSlug: 'demo-xv-celestial-blue',
+			key: 'portrait',
+			alt: 'Retrato del demo de XV años estilo Celestial Blue',
+			objectPosition: '50% 20%',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-enchanted-rose',
+		href: '/xv/demo-xv-enchanted-rose',
+		title: 'Enchanted Rose',
+		description: 'Floral y romántica.',
+		styleTags: ['Floral', 'Romántica'],
+		views: 26,
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 20,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Enchanted Rose.',
+		thumbnail: {
+			assetSlug: 'demo-xv-enchanted-rose',
+			key: 'hero',
+			alt: 'Vista principal del demo de XV años estilo Enchanted Rose',
+			objectPosition: '50% 24%',
+		},
+		selectorThumbnail: {
+			assetSlug: 'demo-xv-enchanted-rose',
+			key: 'portrait',
+			alt: 'Retrato del demo de XV años estilo Enchanted Rose',
+			objectPosition: '50% 18%',
 		},
 	},
 	{
@@ -253,9 +327,10 @@ export const DEMO_SHOWROOM_ITEMS = [
 		publicSlug: 'xv',
 		slug: 'demo-xv-editorial',
 		href: '/xv/demo-xv-editorial',
-		title: 'XV años estilo Editorial',
-		description: 'Un diseño sobrio y visual, ideal para una presentación moderna y refinada.',
-		styleTags: ['editorial', 'moderna', 'sobria'],
+		title: 'Editorial',
+		description: 'Moderna, limpia y editorial.',
+		styleTags: ['Moderna', 'Limpia'],
+		views: 22,
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
@@ -266,6 +341,41 @@ export const DEMO_SHOWROOM_ITEMS = [
 			assetSlug: 'demo-xv-editorial',
 			key: 'hero',
 			alt: 'Vista principal del demo de XV años estilo Editorial',
+			objectPosition: '50% 24%',
+		},
+		selectorThumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'hero',
+			alt: 'Vista principal del demo de XV años estilo Editorial',
+			objectPosition: '50% 24%',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
+		slug: 'demo-xv-editorial-magazine',
+		href: '/xv/demo-xv-editorial-magazine',
+		title: 'Editorial Magazine',
+		description: 'Editorial, sofisticada y visual.',
+		styleTags: ['Sofisticada', 'Visual'],
+		views: 13,
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 40,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial Magazine.',
+		thumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'portrait',
+			alt: 'Vista principal del demo de XV años estilo Editorial Magazine',
+			objectPosition: '50% 18%',
+		},
+		selectorThumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'portrait',
+			alt: 'Retrato del demo de XV años estilo Editorial Magazine',
+			objectPosition: '50% 18%',
 		},
 	},
 	{
@@ -274,9 +384,9 @@ export const DEMO_SHOWROOM_ITEMS = [
 		slug: 'demo-boda-jewelry-box-wedding',
 		href: '/boda/demo-boda-jewelry-box-wedding',
 		title: 'Boda estilo Jewelry Box',
-		description:
-			'Una invitación refinada para ceremonia y recepción con estética clásica y luminosa.',
-		styleTags: ['romántica', 'clásica', 'refinada'],
+		description: 'Clásica, cálida y elegante.',
+		styleTags: ['clásica', 'elegante'],
+		views: 11,
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
@@ -295,9 +405,9 @@ export const DEMO_SHOWROOM_ITEMS = [
 		slug: 'demo-bautismo-angelic-presence',
 		href: '/bautizo/demo-bautismo-angelic-presence',
 		title: 'Bautizo estilo Angelical',
-		description:
-			'Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción.',
-		styleTags: ['delicada', 'familiar', 'angelical'],
+		description: 'Delicada, familiar y luminosa.',
+		styleTags: ['delicada', 'familiar'],
+		views: 4,
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
@@ -316,9 +426,8 @@ export const DEMO_SHOWROOM_ITEMS = [
 		slug: 'demo-baby-shower-celestial',
 		href: '/baby-shower/demo-baby-shower-celestial',
 		title: 'Baby shower estilo Celestial',
-		description:
-			'Un diseño suave y emotivo para anunciar una bienvenida con detalles memorables.',
-		styleTags: ['celestial', 'suave', 'emotiva'],
+		description: 'Suave, celestial y emotiva.',
+		styleTags: ['celestial', 'suave'],
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
@@ -337,9 +446,9 @@ export const DEMO_SHOWROOM_ITEMS = [
 		slug: 'demo-cumple-luxury-hacienda',
 		href: '/cumple/demo-cumple-luxury-hacienda',
 		title: 'Cumpleaños estilo Hacienda',
-		description:
-			'Una experiencia con carácter para celebrar una fecha especial con familia e invitados.',
-		styleTags: ['hacienda', 'cálida', 'con carácter'],
+		description: 'Cálida, hacienda y con carácter.',
+		styleTags: ['hacienda', 'cálida'],
+		views: 2,
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
@@ -350,6 +459,27 @@ export const DEMO_SHOWROOM_ITEMS = [
 			assetSlug: 'demo-cumple-luxury-hacienda',
 			key: 'hero',
 			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',
+		},
+	},
+	{
+		eventType: 'primera-comunion',
+		publicSlug: 'primera-comunion',
+		slug: 'demo-primera-comunion-illustrated',
+		href: '/primera-comunion/demo-primera-comunion-illustrated',
+		title: 'Primera Comunión Illustrated',
+		description: 'Ilustrada, floral y familiar.',
+		styleTags: ['ilustrada', 'familiar'],
+		views: 7,
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		featured: true,
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para primera comunión similar al demo Illustrated.',
+		thumbnail: {
+			assetSlug: 'demo-primera-comunion-illustrated',
+			key: 'hero',
+			alt: 'Vista principal del demo de primera comunión Illustrated',
 		},
 	},
 	{
@@ -396,44 +526,25 @@ export const DEMO_SHOWROOM_ITEMS = [
 		},
 		exclusionReason: 'Perfil/client-like demo pendiente de revisión manual.',
 	},
-	{
-		eventType: 'primera-comunion',
-		publicSlug: 'bautizo',
-		slug: 'demo-primera-comunion-illustrated',
-		href: '/primera-comunion/demo-primera-comunion-illustrated',
-		title: 'Primera comunión ilustrada',
-		description: 'Demo relacionado, no incluido en el alcance público inicial de showrooms.',
-		styleTags: ['familiar', 'ilustrada'],
-		visibility: 'hidden',
-		reviewStatus: 'needs-review',
-		featured: false,
-		sortOrder: 920,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para primera comunión. Quiero conocer opciones.',
-		thumbnail: {
-			assetSlug: 'demo-primera-comunion-illustrated',
-			key: 'hero',
-			alt: 'Vista principal del demo de primera comunión ilustrada',
-		},
-		exclusionReason: 'Tipo de evento diferido fuera del alcance Phase 1/2.',
-	},
-] as const satisfies readonly DemoShowroomItem[];
+] as const;
 
-export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
-	return DEMO_SHOWROOM_EVENTS.find((event) => event.publicSlug === publicSlug);
-}
-
-export function getDemoShowroomByEventType(eventType: EventType): DemoShowroomEvent | undefined {
-	return DEMO_SHOWROOM_EVENTS.find((event) => event.eventType === eventType);
+	export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
+	return DEMO_SHOWROOM_EVENTS.find(
+		(event) =>
+			event.publicSlug === publicSlug || event.alternatePublicSlugs?.includes(publicSlug as DemoShowroomPublicSlug),
+	);
 }
 
 export function getFeaturedDemoShowroomItems(eventType?: EventType): DemoShowroomItem[] {
 	return DEMO_SHOWROOM_ITEMS.filter((item) => {
+
 		if (eventType && item.eventType !== eventType) return false;
 		return item.visibility === 'featured' && item.reviewStatus === 'approved' && item.featured;
-	}).sort((a, b) => a.sortOrder - b.sortOrder);
+	}).sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || a.sortOrder - b.sortOrder);
 }
-
 export function getShowroomPublicSlugs(): DemoShowroomPublicSlug[] {
-	return DEMO_SHOWROOM_EVENTS.map((event) => event.publicSlug);
+	return DEMO_SHOWROOM_EVENTS.flatMap((event) => [
+		event.publicSlug,
+		...(event.alternatePublicSlugs ?? []),
+	]);
 }
