@@ -6,10 +6,6 @@
 	border-top: 1px solid rgb(var(--color-border-gold-rgb) / 20%);
 	padding-block: var(--section-padding-y);
 
-	&::before {
-		display: none;
-	}
-
 	&__container {
 		position: relative;
 		width: min(1120px, calc(100% - 2rem));
@@ -176,7 +172,6 @@
 				opacity 0.35s ease,
 				transform 0.45s ease,
 				visibility 0s linear 0.35s;
-
 		}
 
 		&__panel-item.active,
@@ -195,30 +190,6 @@
 				transform: translateY(0);
 				transition-delay: 0.06s;
 			}
-
-			.event-showroom__info-kicker {
-				opacity: 100%;
-				transform: translateY(0);
-				transition-delay: 0.1s;
-			}
-
-			.event-showroom__info-title {
-				opacity: 100%;
-				transform: translateY(0);
-				transition-delay: 0.14s;
-			}
-
-			.event-showroom__info-text {
-				opacity: 100%;
-				transform: translateY(0);
-				transition-delay: 0.18s;
-			}
-
-			.event-showroom__actions {
-				opacity: 100%;
-				transform: translateY(0);
-				transition-delay: 0.22s;
-			}
 		}
 
 		&__panel-item.is-leaving {
@@ -231,11 +202,7 @@
 				transform 0.4s ease,
 				visibility 0s;
 
-			.event-showroom__phone-copy,
-			.event-showroom__info-kicker,
-			.event-showroom__info-title,
-			.event-showroom__info-text,
-			.event-showroom__actions {
+			.event-showroom__phone-copy {
 				opacity: 0%;
 				transform: translateY(-8px);
 				transition-delay: 0s;
@@ -275,7 +242,7 @@
 					rgb(255 255 255 / 68%),
 					rgb(170 149 116 / 42%) 18%,
 					rgb(57 54 50) 48%,
-					rgb(233 217 186 / 5400%) 100%
+					rgb(233 217 186 / 54%) 100%
 				),
 				rgb(92 86 78);
 			box-shadow:
@@ -362,6 +329,8 @@
 			flex-direction: column;
 			align-items: center;
 			gap: 0.58rem;
+			opacity: 0%;
+			transform: translateY(12px);
 			text-shadow: 0 0.18rem 0.75rem rgb(0 0 0 / 56%);
 			transition:
 				opacity 0.35s ease,
@@ -454,75 +423,6 @@
 			box-shadow: 0 0.75rem 1.4rem rgb(0 0 0 / 24%);
 		}
 
-		&__info-side {
-			max-width: 460px;
-			display: flex;
-			flex-direction: column;
-			gap: 0.85rem;
-			transition:
-				opacity 0.35s ease,
-				transform 0.45s ease;
-
-			@media (width <= 767px) {
-				align-items: center;
-			}
-		}
-
-		&__info-kicker {
-			margin: 0;
-			color: rgb(var(--color-action-accent-rgb) / 92%);
-			font-size: 0.72rem;
-			font-weight: 750;
-			letter-spacing: 0.16em;
-			text-transform: uppercase;
-		}
-
-		&__info-title {
-			font-family: var(--font-display, serif);
-			font-size: clamp(1.55rem, 3vw, 2rem);
-			line-height: 1.05;
-			color: var(--color-text-primary);
-			margin: 0;
-		}
-
-		&__info-text {
-			font-size: clamp(0.95rem, 1.8vw, 1.05rem);
-			line-height: 1.55;
-			color: var(--color-text-secondary);
-			margin: 0;
-		}
-
-		&__actions {
-			display: flex;
-			align-items: center;
-			gap: 0.85rem;
-			margin-top: 0.5rem;
-
-			@media (width <= 480px) {
-				flex-direction: column;
-				width: 100%;
-				gap: 0.65rem;
-
-				.action-btn,
-				:global(.whatsapp-button) {
-					width: 100%;
-					justify-content: center;
-				}
-			}
-		}
-
-		&__phone-copy,
-		&__info-kicker,
-		&__info-title,
-		&__info-text,
-		&__actions {
-			opacity: 0%;
-			transform: translateY(12px);
-			transition:
-				opacity 0.38s ease,
-				transform 0.5s ease;
-		}
-
 		.action-btn {
 			display: inline-flex;
 			align-items: center;
@@ -573,6 +473,26 @@
 				outline-offset: 3px;
 			}
 		}
+		&__stable-cta {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.85rem;
+			margin-top: 0.25rem;
+		
+			@media (width <= 480px) {
+				flex-direction: column;
+				width: 100%;
+				gap: 0.65rem;
+			
+				.action-btn,
+				:global(.whatsapp-button) {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+		}
+
 	}
 }
 
@@ -671,7 +591,7 @@
 			}
 
 			&__panels {
-				min-height: clamp(43rem, 148vw, 49rem);
+				min-height: clamp(23rem, 100vw, 29rem);
 			}
 
 			&__phone-frame {
@@ -725,8 +645,7 @@
 				font-size: 0.58rem;
 			}
 
-			&__mockup-side,
-			&__info-side {
+			&__mockup-side {
 				opacity: 100%;
 				transform: none;
 			}
@@ -739,7 +658,6 @@
 		.event-showroom {
 			&__panel-item,
 			&__mockup-side,
-			&__info-side,
 			&__phone-image,
 			&__phone-copy,
 			&__tab-btn,

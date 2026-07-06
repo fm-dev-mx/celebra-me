@@ -1,6 +1,5 @@
 ---
 import Container from '@components/layout/Container.astro';
-import Section from '@components/layout/Section.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import { Image } from 'astro:assets';
@@ -27,6 +26,7 @@ interface Props {
 const { events, landingData } = Astro.props;
 const phone = getContactPhone();
 const es = landingData?.eventSelector;
+const demoCtaLabel = es?.cta || 'Abrir demo completa';
 
 const previewImages: Partial<Record<EventType, ImageMetadata>> = {
 	xv: showroomXvHero,
@@ -39,7 +39,7 @@ const previewImages: Partial<Record<EventType, ImageMetadata>> = {
 const getPreviewImage = (eventType: EventType) => previewImages[eventType] || showroomXvHero;
 ---
 
-<Section
+<section
 	id="tipo-evento"
 	class="event-selector"
 	data-event-showroom
@@ -82,7 +82,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
 					const preview = event.homeSelector.preview;
-					const showroom = event.homeSelector.showroom;
 					const quote = event.homeSelector.quoteCta;
 					const previewImage = getPreviewImage(event.eventType);
 
@@ -94,88 +93,104 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 						aria-labelledby={`tab-${event.eventType}`}
 						data-panel-event={event.eventType}
 						data-event-panel
+						data-showroom-href={event.showroomHref}
+						data-event-label={event.label}
+						data-quote-message={quote.message}
+						data-quote-promo={quote.promoCode}
+						data-quote-value={quote.trackValue}
+						data-quote-package={quote.packageInterest || ""}
+						data-quote-package-name={quote.packageName || ""}
 						aria-hidden={index === 0 ? "false" : "true"}
 						{...(index === 0 ? {} : { inert: true })}
 					>
 						<div class="event-showroom__panel-content">
 							<div class="event-showroom__mockup-side">
-								<figure class="event-showroom__phone-frame" aria-label={`Vista previa de invitación para ${event.label}`}>
-									<div class="event-showroom__phone-screen">
-										<Image
-											src={previewImage}
-											alt={preview.imageAlt}
-											class="event-showroom__phone-image"
-											width={360}
-											height={640}
-											quality={82}
-											loading={index === 0 ? "eager" : "lazy"}
-											decoding="async"
-										/>
-										<div class="event-showroom__phone-overlay">
-											<div class="event-showroom__phone-copy">
-												<p class="event-showroom__card-kicker" data-showroom-kicker>{preview.eyebrow}</p>
-												<p class="event-showroom__card-title" data-showroom-title>{preview.title}</p>
-												<p class="event-showroom__card-subtitle">{preview.subtitle}</p>
-												<div class="event-showroom__card-details">
-													<span>{preview.date}</span>
-													<span>{preview.venue}</span>
+								<a
+									href={event.showroomHref}
+									class="event-showroom__phone-link"
+									aria-label={`Abrir demo completa de ${event.label}`}
+									data-track-event="cta_clicked"
+									data-track-section="event-types"
+									data-track-cta={`showroom_preview_${event.eventType}`}
+									data-track-label="Vista previa interactiva"
+									data-track-intent="demo_showroom"
+									data-track-destination="demo-showroom"
+								>
+									<figure class="event-showroom__phone-frame">
+										<div class="event-showroom__phone-screen">
+											<Image
+												src={previewImage}
+												alt={preview.imageAlt}
+												class="event-showroom__phone-image"
+												width={360}
+												height={640}
+												quality={82}
+												loading={index === 0 ? "eager" : "lazy"}
+												decoding="async"
+											/>
+											<div class="event-showroom__phone-overlay">
+												<div class="event-showroom__phone-copy">
+													<p class="event-showroom__card-kicker" data-showroom-kicker>{preview.eyebrow}</p>
+													<p class="event-showroom__card-title" data-showroom-title>{preview.title}</p>
+													<p class="event-showroom__card-subtitle">{preview.subtitle}</p>
+													<div class="event-showroom__card-details">
+														<span>{preview.date}</span>
+														<span>{preview.venue}</span>
+													</div>
+													<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
+														{preview.chips.map((chip) => (
+															<li data-showroom-feature>{chip}</li>
+														))}
+													</ul>
+													<p class="event-showroom__card-action">{preview.actionLabel}</p>
 												</div>
-												<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
-													{preview.chips.map((chip) => (
-														<li data-showroom-feature>{chip}</li>
-													))}
-												</ul>
-												<p class="event-showroom__card-action">{preview.actionLabel}</p>
 											</div>
 										</div>
-									</div>
-								</figure>
-							</div>
-							<div class="event-showroom__info-side">
-								<p class="event-showroom__info-kicker">{showroom.kicker}</p>
-								<h3 class="event-showroom__info-title">{showroom.title}</h3>
-								<p class="event-showroom__info-text">{showroom.description}</p>
-								<div class="event-showroom__actions">
-									<a
-										href={event.showroomHref}
-										class="action-btn action-btn--secondary"
-										data-track-event="cta_clicked"
-										data-track-section="event-types"
-										data-track-cta={`showroom_view_demo_${event.eventType}`}
-										data-track-label="Ver demo"
-										data-track-intent="demo_showroom"
-										data-track-destination="demo-showroom"
-									>
-										{es?.cta || 'Ver demo'}
-										<Icon name="ArrowRight" size={16} />
-									</a>
-									<WhatsAppButton
-										className="action-btn action-btn--primary"
-										phone={phone}
-										message={quote.message}
-										label={quote.label}
-										trackSection="event-types"
-										trackCta={`showroom_quote_${event.eventType}`}
-										trackCampaign="DEMO-LANZAMIENTO-899"
-										trackValue={quote.trackValue}
-										trackCurrency="MXN"
-										promoCode={quote.promoCode}
-										trackPackage={quote.packageInterest}
-										packageName={quote.packageName}
-										eventType={event.eventType}
-										eventLabel={event.label}
-										ariaLabel={`Cotizar estilo ${event.label}`}
-									/>
-								</div>
-							</div>
+									</figure>
+								</a>
+						</div>
 						</div>
 					</div>
 					);
 				})}
 			</div>
+			<div class="event-showroom__stable-cta" data-stable-cta>
+				<a
+					href={events[0].showroomHref}
+					class="action-btn action-btn--secondary event-showroom__demo-link"
+					data-cta-demo
+					aria-label={`Abrir demo completa de ${events[0].label}`}
+					data-track-event="cta_clicked"
+					data-track-section="event-types"
+					data-track-cta={`showroom_view_demo_${events[0].eventType}`}
+					data-track-label="Abrir demo completa"
+					data-track-intent="demo_showroom"
+					data-track-destination="demo-showroom"
+				>
+					{demoCtaLabel}
+					<Icon name="ArrowRight" size={16} />
+				</a>
+				<WhatsAppButton
+					className="action-btn action-btn--primary event-showroom__quote-link"
+					phone={phone}
+					message={events[0].homeSelector.quoteCta.message}
+					label={events[0].homeSelector.quoteCta.label}
+					trackSection="event-types"
+					trackCta={`showroom_quote_${events[0].eventType}`}
+					trackCampaign="DEMO-LANZAMIENTO-899"
+					trackValue={events[0].homeSelector.quoteCta.trackValue}
+					trackCurrency="MXN"
+					promoCode={events[0].homeSelector.quoteCta.promoCode}
+					trackPackage={events[0].homeSelector.quoteCta.packageInterest}
+					packageName={events[0].homeSelector.quoteCta.packageName}
+					eventType={events[0].eventType}
+					eventLabel={events[0].label}
+					ariaLabel="Cotizar esta invitación"
+				/>
+			</div>
 		</div>
 	</Container>
-</Section>
+</section>
 
 <script>
 	const root = document.querySelector('[data-event-showroom]');
@@ -284,6 +299,42 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			});
 		};
 
+		const updateStableCta = (panel: HTMLElement) => {
+			const demoLink = root.querySelector<HTMLAnchorElement>("[data-cta-demo]");
+			const quoteLink = root.querySelector<HTMLAnchorElement>("[data-track-event=\"whatsapp_contact_clicked\"]");
+
+			const href = panel.getAttribute("data-showroom-href") || "";
+			const label = panel.getAttribute("data-event-label") || "";
+			const message = panel.getAttribute("data-quote-message") || "";
+			const promo = panel.getAttribute("data-quote-promo") || "";
+			const value = panel.getAttribute("data-quote-value") || "";
+			const pkg = panel.getAttribute("data-quote-package") || "";
+			const pkgName = panel.getAttribute("data-quote-package-name") || "";
+
+			if (demoLink) {
+				demoLink.href = href;
+				demoLink.setAttribute("aria-label", `Abrir demo completa de ${label}`);
+				demoLink.setAttribute("data-track-cta", `showroom_view_demo_${panel.getAttribute("data-panel-event")}`);
+			}
+
+			if (quoteLink) {
+				const url = new URL(quoteLink.href);
+				url.searchParams.set("text", message);
+				quoteLink.href = url.toString();
+				quoteLink.setAttribute("data-track-cta", `showroom_quote_${panel.getAttribute("data-panel-event")}`);
+				quoteLink.setAttribute("data-promo-code", promo);
+				quoteLink.setAttribute("data-track-value", value);
+				quoteLink.setAttribute("data-event-type", panel.getAttribute("data-panel-event") || "");
+				quoteLink.setAttribute("data-event-label", label);
+				if (pkg) quoteLink.setAttribute("data-package-interest", pkg);
+				else quoteLink.removeAttribute("data-package-interest");
+				if (pkgName) quoteLink.setAttribute("data-package-name", pkgName);
+				else quoteLink.removeAttribute("data-package-name");
+				quoteLink.setAttribute("aria-label", "Cotizar esta invitación");
+			}
+
+		};
+
 		const activateTab = (
 			tab: HTMLElement,
 			options: { source: 'user' | 'autoplay'; focus?: boolean } = { source: 'user', focus: false },
@@ -339,6 +390,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			nextPanel.classList.add('is-entering');
 
 			activeIndex = targetIndex;
+			updateStableCta(nextPanel);
 
 			panelTransitionTimer = window.setTimeout(() => {
 				if (previousPanel instanceof HTMLElement && previousPanel !== nextPanel) {
