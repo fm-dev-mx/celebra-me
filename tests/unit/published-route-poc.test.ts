@@ -65,6 +65,10 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	})),
 }));
 
+jest.mock('@/lib/environment', () => ({
+	isDevEnvironment: () => false,
+}));
+
 import {
 	resolveInvitationContent,
 	type ContentResolution,

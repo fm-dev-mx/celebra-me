@@ -17,6 +17,7 @@
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
         "type-check": "astro check",
         "ci": "pnpm type-check && pnpm lint && pnpm lint:styles:changed && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm test && pnpm test:e2e",
+        "ci:diagnose": "node scripts/ci-diagnose.mjs",
         "lint": "eslint .",
         "lint:styles": "stylelint \"src/**/*.scss\"",
         "lint:styles:changed": "node scripts/lint-styles-changed.mjs",

@@ -44,6 +44,10 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 	})),
 }));
 
+jest.mock('@/lib/environment', () => ({
+	isDevEnvironment: () => false,
+}));
+
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';

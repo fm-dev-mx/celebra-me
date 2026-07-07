@@ -6,12 +6,12 @@ export const landingData: LandingPageData = {
 		title: 'Con pases y confirmación, personalizada para cada invitado',
 		subtitle: 'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
 		primaryCtaLabel: 'Cotizar mi invitación',
-		secondaryCtaLabel: 'Ver demos',
+		secondaryCtaLabel: 'Ver demos de invitaciones',
 		secondaryCtaUrl: '#tipo-evento',
 		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
 		whatsappMessage:
-			'Hola, quiero más información sobre las invitaciones digitales con pases y confirmación de asistencia.',
-		proofLine: 'Lista de invitados · Pases · Confirmaciones',
+			'Hola, quiero hacer válido el cupón: LANZAMIENTO-899 para mi invitación digital.',
+		proofLine: 'RSVP · Pases digitales · Galería',
 	},
 	eventSelector: {
 		eyebrow: 'DEMOS POR EVENTO',
@@ -50,7 +50,7 @@ export const landingData: LandingPageData = {
 	},
 	services: {
 		eyebrow: 'LO QUE PUEDE INCLUIR',
-		title: 'Todo lo necesario para guiar a tus invitados',
+		title: 'Todo claro para sus invitados, todo bajo control para usted',
 		subtitle: 'Presenta cada detalle de forma clara.',
 		dossierSubtext: 'Activamos solo lo que tu evento necesita.',
 		dossierTag: 'SECCIONES A MEDIDA',
@@ -65,28 +65,13 @@ export const landingData: LandingPageData = {
 				description: 'Define cuántos lugares tiene cada invitado o familia.',
 			},
 			{
-				title: 'Ubicación',
-				description: 'Incluye dirección y acceso directo a Google Maps o Waze.',
+				title: 'Ubicación y mesa de regalos',
+				description: 'Incluye dirección con Maps, mesa de regalos y código de vestimenta.',
 			},
 			{
-				title: 'Itinerario',
-				description: 'Muestra horarios y momentos importantes.',
-			},
-			{
-				title: 'Música',
-				description: 'Agrega tu canción favorita.',
-			},
-			{
-				title: 'Galería',
-				description: 'Incluye tu sesión de fotos, recuerdos o momentos especiales.',
-			},
-			{
-				title: 'Mesa de regalos',
-				description: 'Incluye enlaces o datos de regalo de forma discreta.',
-			},
-			{
-				title: 'Código de vestimenta',
-				description: 'Indica el estilo sugerido de forma clara.',
+				title: 'Itinerario, música y galería',
+				description:
+					'Muestra horarios, agrega tu canción favorita e incluye tu sesión de fotos.',
 			},
 		],
 		cta: {
@@ -155,10 +140,10 @@ export const landingData: LandingPageData = {
 		proofLine: '',
 	},
 	pricing: {
-		eyebrow: 'PAQUETES',
-		title: 'Elige la invitación que necesita tu evento',
+		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
+		title: 'Elija con una recomendación clara',
 		intro: 'Elige el nivel de diseño que necesita tu evento. Todas las invitaciones pueden integrar confirmación, pases, ubicación, música, galería y detalles importantes; los paquetes superiores elevan la dirección visual, el grado de personalización y el acompañamiento.',
-		note: 'Pago único. Precios en MXN.',
+		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
 		decisionGuide: {
 			title: '¿No sabes cuál elegir?',
 			rows: [
@@ -168,30 +153,6 @@ export const landingData: LandingPageData = {
 			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
 		},
 		tiers: [
-			{
-				id: 'essential',
-				title: 'Essential',
-				description:
-					'Diseño esencial sobre plantilla preestablecida con toda la funcionalidad activa.',
-				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $1,299 MXN',
-				idealFor: 'Para eventos que buscan una invitación impecable, clara y funcional.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Invitación con diseño de catálogo',
-							'Confirmación RSVP & Pases digitales',
-							'Detalles de recepción y ceremonia',
-							'Ubicaciones y mesa de regalos',
-							'Galería de fotos y música de fondo',
-						],
-					},
-				],
-				cta: 'Elegir Essential',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Essential de $899 MXN para mi invitación digital.',
-			},
 			{
 				id: 'signature',
 				title: 'Signature',
@@ -217,6 +178,30 @@ export const landingData: LandingPageData = {
 				cta: 'Elegir Signature',
 				ctaMessage:
 					'Hola, quiero elegir el paquete Signature de $1,699 MXN con personalización editorial.',
+			},
+			{
+				id: 'coleccion',
+				title: 'Colección',
+				description:
+					'Diseño esencial sobre plantilla preestablecida con toda la funcionalidad activa.',
+				price: { amount: '899', currency: 'MXN', period: 'pago único' },
+				regularPrice: 'Precio regular: $1,299 MXN',
+				idealFor: 'Para eventos que buscan una invitación impecable, clara y funcional.',
+				sections: [
+					{
+						title: 'Incluye',
+						items: [
+							'Invitación con diseño de catálogo',
+							'Confirmación RSVP & Pases digitales',
+							'Detalles de recepción y ceremonia',
+							'Ubicaciones y mesa de regalos',
+							'Galería de fotos y música de fondo',
+						],
+					},
+				],
+				cta: 'Elegir Colección',
+				ctaMessage:
+					'Hola, quiero elegir el paquete Colección de $899 MXN para mi invitación digital.',
 			},
 			{
 				id: 'atelier',
@@ -315,12 +300,9 @@ export const landingData: LandingPageData = {
 				description: 'Puedes organizar personas, familias o grupos.',
 			},
 			{
-				title: 'Envías las invitaciones',
-				description: 'Cada invitado recibe su propia invitación.',
-			},
-			{
-				title: 'Revisas confirmaciones',
-				description: 'Puedes ver quién ya respondió y quién sigue pendiente.',
+				title: 'Envías y revisas confirmaciones',
+				description:
+					'Cada invitado recibe su propia invitación y puedes ver quién ya respondió.',
 			},
 		],
 		cta: {

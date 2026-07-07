@@ -4,13 +4,14 @@ import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repos
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
+import { isDevEnvironment } from '@/lib/environment';
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
 	| { source: 'published'; viewModel: InvitationViewModel; rawContent: Record<string, unknown> };
 
 function isDevTemplateEntry(collection?: string): boolean {
-	return collection === 'event-templates' && import.meta.env.DEV;
+	return collection === 'event-templates' && isDevEnvironment();
 }
 
 function isStaticDemoEntry(entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null): boolean {
@@ -33,14 +34,10 @@ export async function resolveInvitationContent(
 	eventType?: string,
 ): Promise<ContentResolution | null> {
 	const staticEntry = await getRoutableEventEntry(slug, eventType);
-	const isStaticDemoOrDevTemplate = isStaticDemoEntry(staticEntry);
-
-	if (staticEntry?.data && isStaticDemoOrDevTemplate) {
-		return toStaticResolution(staticEntry);
-	}
 
 	// DB-published content first — this is the source of truth for real invitations.
-	// Skip DB for demos: static JSON files are the canonical source for demo content.
+	// Static demos are the canonical source for demo content, but published content
+	// always takes precedence when both exist.
 	if (eventType) {
 		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 		if (publishedEntry && publishedEntry.isDemo !== true) {

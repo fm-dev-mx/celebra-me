@@ -127,45 +127,6 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		sortOrder: 30,
 	},
 	{
-		eventType: 'primera-comunion',
-		publicSlug: 'primera-comunion',
-		label: 'Primera comunión',
-		description: 'Ceremonia, ubicación y confirmación en una invitación familiar.',
-		icon: 'Dove',
-		showroomHref: '/demos/primera-comunion',
-		heroTitle: 'Demos de invitaciones para primera comunión',
-		heroDescription:
-			'Mira una referencia digital para comunicar ceremonia, reunión familiar y confirmaciones.',
-		whatsAppMessage:
-			'Hola, me gustaría una invitación digital para primera comunión. Vi sus demos y quiero asesoría para mi celebración.',
-		homeSelector: {
-			preview: {
-				eyebrow: 'PRIMERA COMUNIÓN',
-				title: 'Luna Estrella',
-				subtitle: 'Celebración familiar',
-				date: 'Sábado 12 de septiembre',
-				venue: 'Parroquia de la Sagrada Familia',
-				chips: ['RSVP', 'PASES', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Celebración de primera comunión con flores blancas e ilustración delicada',
-			},
-			showroom: {
-				kicker: 'Primera comunión',
-				title: 'Una invitación clara para una ceremonia familiar',
-				description:
-					'Comparte ceremonia, recepción, ubicación y confirmaciones en una experiencia digital delicada y fácil de enviar.',
-			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Primera comunión\n\nCupón: LANZAMIENTO-899',
-				promoCode: 'LANZAMIENTO-899',
-				trackValue: 899,
-			},
-		},
-		sortOrder: 35,
-	},
-	{
 		eventType: 'baby-shower',
 		publicSlug: 'baby-shower',
 		label: 'Baby shower',
@@ -254,10 +215,11 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Jewelry Box',
 		description: 'Floral, luminosa y clásica.',
 		styleTags: ['floral', 'jardín'],
-		visibility: 'hidden',
+		views: 45,
+		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: false,
-		sortOrder: 80,
+		featured: true,
+		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Jewelry Box.',
 		thumbnail: {
@@ -278,7 +240,7 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		featured: true,
-		sortOrder: 10,
+		sortOrder: 20,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Celestial Blue.',
 		thumbnail: {
@@ -302,11 +264,10 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Enchanted Rose',
 		description: 'Floral y romántica.',
 		styleTags: ['Floral', 'Romántica'],
-		views: 26,
-		visibility: 'featured',
+		visibility: 'hidden',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 20,
+		featured: false,
+		sortOrder: 80,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Enchanted Rose.',
 		thumbnail: {
@@ -358,11 +319,10 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Editorial Magazine',
 		description: 'Editorial, sofisticada y visual.',
 		styleTags: ['Sofisticada', 'Visual'],
-		views: 13,
-		visibility: 'featured',
+		visibility: 'hidden',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 40,
+		featured: false,
+		sortOrder: 90,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial Magazine.',
 		thumbnail: {
@@ -469,11 +429,10 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Primera Comunión Illustrated',
 		description: 'Ilustrada, floral y familiar.',
 		styleTags: ['ilustrada', 'familiar'],
-		views: 7,
-		visibility: 'featured',
+		visibility: 'hidden',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 10,
+		featured: false,
+		sortOrder: 900,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para primera comunión similar al demo Illustrated.',
 		thumbnail: {

@@ -764,7 +764,7 @@ export async function navigateTo(
 	// when transpiled evaluate/waitForFunction callbacks are executed in the browser context.
 	await page.addInitScript(() => {
 		if (typeof window !== 'undefined' && !('__name' in window)) {
-			(window as any).__name = (target: any, value: any) =>
+			(window as unknown as Record<string, unknown>).__name = (target: object, value: string) =>
 				Object.defineProperty(target, 'name', { value, configurable: true });
 		}
 	});
