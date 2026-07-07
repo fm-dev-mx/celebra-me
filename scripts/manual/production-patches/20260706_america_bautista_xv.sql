@@ -203,7 +203,7 @@ BEGIN
       '{
         "id": "demo-xv-celestial-blue",
         "eventType": "xv",
-        "displayName": "XV Años - América Bautista",
+        "displayName": "XV Años • América Bautista",
         "themeId": "celestial-blue",
         "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
         "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
@@ -292,324 +292,324 @@ BEGIN
     "description": "XV años de América Bautista, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
     "_assetSlug": "xv-america-bautista",
     "theme": {
-        "fontFamily": "serif",
-        "preset": "celestial-blue"
+      "fontFamily": "serif",
+      "preset": "celestial-blue"
     },
     "eventTiming": {
-        "localDateTime": "2026-08-29T17:30",
-        "timeZone": "America/Mexico_City",
-        "startsAtUtc": "2026-08-29T23:30:00.000Z"
+      "localDateTime": "2026-08-29T17:30",
+      "timeZone": "America/Mexico_City",
+      "startsAtUtc": "2026-08-29T23:30:00.000Z"
     },
     "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
+      "location": {
+        "showFlourishes": true
+      },
+      "rsvp": {}
     },
     "hero": {
-        "name": "América",
-        "label": "AMÉRICA · XV AÑOS",
-        "date": "2026-08-29T23:30:00.000Z",
-        "backgroundImage": "hero",
-        "backgroundImageDesktop": "heroDesktop",
-        "backgroundImageMobile": "hero",
-        "portrait": "portrait",
-        "focalPoint": "52% 45%",
-        "focalPointMobile": "52% 38%",
-        "focalPointDesktop": "52% 42%"
+      "name": "América",
+      "label": "AMÉRICA · XV AÑOS",
+      "date": "2026-08-29T23:30:00.000Z",
+      "backgroundImage": "hero",
+      "backgroundImageDesktop": "heroDesktop",
+      "backgroundImageMobile": "hero",
+      "portrait": "portrait",
+      "focalPoint": "52% 45%",
+      "focalPointMobile": "52% 38%",
+      "focalPointDesktop": "52% 42%"
     },
     "quote": {
-        "text": "Hay días que se guardan para siempre. Este será uno de ellos.",
-        "author": "América Bautista"
+      "text": "Hay días que se guardan para siempre. Este será uno de ellos.",
+      "author": "América Bautista"
     },
     "family": {
-        "featuredImage": "family",
-        "presentation": "with-photo",
-        "labels": {
-            "sectionTitle": "Con todo mi amor",
-            "sectionSubtitle": "Mi familia",
-            "parentsTitle": "Con todo mi amor",
-            "godparentsTitle": "Acompañada por sus padrinos",
-            "sectionMessage": "Con el corazón lleno de gratitud, comparto esta noche con mi familia y con quienes han acompañado mi historia."
-        },
-        "groups": [
+      "featuredImage": "family",
+      "presentation": "with-photo",
+      "labels": {
+        "sectionTitle": "Con todo mi amor",
+        "sectionSubtitle": "Mi familia",
+        "parentsTitle": "Con todo mi amor",
+        "godparentsTitle": "Acompañada por sus padrinos",
+        "sectionMessage": "Con el corazón lleno de gratitud, comparto esta noche con mi familia y con quienes han acompañado mi historia."
+      },
+      "groups": [
+        {
+          "title": "Con todo mi amor",
+          "items": [
             {
-                "title": "Con todo mi amor",
-                "items": [
-                    {
-                        "name": "Gloria Paulina Soto Pérez",
-                        "role": "Mamá"
-                    },
-                    {
-                        "name": "Luz María Pérez Cardoso",
-                        "role": "Abuelita"
-                    }
-                ]
-            }
-        ],
-        "godparents": [
-            {
-                "name": "Mónica Mayela Alcantar Molinar",
-                "role": "Madrina"
+              "name": "Gloria Paulina Soto Pérez",
+              "role": "Mamá"
             },
             {
-                "name": "Rafael Luque Altamirano",
-                "role": "Padrino"
+              "name": "Luz María Pérez Cardoso",
+              "role": "Abuelita"
             }
-        ],
-        "focalPoint": "50% 36%"
+          ]
+        }
+      ],
+      "godparents": [
+        {
+          "name": "Mónica Mayela Alcantar Molinar",
+          "role": "Madrina"
+        },
+        {
+          "name": "Rafael Luque Altamirano",
+          "role": "Padrino"
+        }
+      ],
+      "focalPoint": "50% 36%"
     },
     "countdown": {
-        "title": "La celebración comienza en",
-        "footerText": "Ciudad de México"
+      "title": "La celebración comienza en",
+      "footerText": "Ciudad de México"
     },
     "itinerary": {
-        "title": "Programa",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Ceremonia",
-                "time": "17:30",
-                "description": "Misa de acción de gracias en la Rectoría San Antonio de Padua."
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "20:00",
-                "description": "Recepción y celebración en Gran Salón Del Prado."
-            },
-            {
-                "iconName": "Waltz",
-                "label": "Vals",
-                "time": "21:00",
-                "description": "Un momento especial para celebrar mis XV años."
-            },
-            {
-                "iconName": "Party",
-                "label": "Celebración",
-                "time": "21:30",
-                "description": "Baile y convivencia con familia y amigos."
-            }
-        ]
+      "title": "Programa",
+      "items": [
+        {
+          "iconName": "Church",
+          "label": "Ceremonia",
+          "time": "17:30",
+          "description": "Misa de acción de gracias en la Rectoría San Antonio de Padua."
+        },
+        {
+          "iconName": "Reception",
+          "label": "Recepción",
+          "time": "20:00",
+          "description": "Recepción y celebración en Gran Salón Del Prado."
+        },
+        {
+          "iconName": "Waltz",
+          "label": "Vals",
+          "time": "21:00",
+          "description": "Un momento especial para celebrar mis XV años."
+        },
+        {
+          "iconName": "Party",
+          "label": "Celebración",
+          "time": "21:30",
+          "description": "Baile y convivencia con familia y amigos."
+        }
+      ]
     },
     "location": {
-        "introEyebrow": "Nos vemos en Ciudad de México",
-        "introHeading": "Sábado, 29 de agosto de 2026",
-        "introLede": "Será una alegría compartir contigo esta celebración.",
-        "indicationsHeading": "Detalles para mis invitados",
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Rectoría San Antonio de Padua",
-            "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán",
-            "city": "Ciudad de México",
-            "date": "29 de agosto de 2026",
-            "time": "5:30 p.m.",
-            "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
-            "coordinates": {
-                "lat": 19.3278767,
-                "lng": -99.1468354
-            }
+      "introEyebrow": "Nos vemos en Ciudad de México",
+      "introHeading": "Sábado, 29 de agosto de 2026",
+      "introLede": "Será una alegría compartir contigo esta celebración.",
+      "indicationsHeading": "Detalles para mis invitados",
+      "ceremony": {
+        "venueEvent": "Ceremonia",
+        "venueName": "Rectoría San Antonio de Padua",
+        "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán",
+        "city": "Ciudad de México",
+        "date": "29 de agosto de 2026",
+        "time": "5:30 p.m.",
+        "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
+        "coordinates": {
+          "lat": 19.3278767,
+          "lng": -99.1468354
+        }
+      },
+      "reception": {
+        "venueEvent": "Recepción",
+        "venueName": "Gran Salón Del Prado",
+        "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan",
+        "city": "Ciudad de México",
+        "date": "29 de agosto de 2026",
+        "time": "8:00 p.m.",
+        "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9",
+        "coordinates": {
+          "lat": 19.291035,
+          "lng": -99.1314772
+        }
+      },
+      "indications": [
+        {
+          "iconName": "DressCode",
+          "styleVariant": "reserved",
+          "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
         },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Gran Salón Del Prado",
-            "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan",
-            "city": "Ciudad de México",
-            "date": "29 de agosto de 2026",
-            "time": "8:00 p.m.",
-            "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9",
-            "coordinates": {
-                "lat": 19.291035,
-                "lng": -99.1314772
-            }
+        {
+          "iconName": "CheckSeal",
+          "styleVariant": "default",
+          "text": "Acceso únicamente con pase. Aplica para adultos y niños."
         },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
-            },
-            {
-                "iconName": "CheckSeal",
-                "styleVariant": "default",
-                "text": "Acceso únicamente con pase. Aplica para adultos y niños."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "text": "Confirma tu asistencia con anticipación para ayudarnos a preparar cada detalle."
-            },
-            {
-                "iconName": "Gift",
-                "styleVariant": "default",
-                "text": "Si deseas tener un detalle conmigo, puedes consultar mis mesas de regalos."
-            }
-        ]
+        {
+          "iconName": "Calendar",
+          "styleVariant": "default",
+          "text": "Confirma tu asistencia con anticipación para ayudarnos a preparar cada detalle."
+        },
+        {
+          "iconName": "Gift",
+          "styleVariant": "default",
+          "text": "Si deseas tener un detalle conmigo, puedes consultar mis mesas de regalos."
+        }
+      ]
     },
     "gallery": {
-        "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
-        "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
-        "subtitle": "Junto a las personas que más quiero.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "La actitud de un espíritu joven.",
-                "focalPoint": "50% 36%"
-            },
-            {
-                "image": "gallery02",
-                "caption": "Entre verde, rojo y luz.",
-                "focalPoint": "50% 35%"
-            },
-            {
-                "image": "gallery04",
-                "caption": "Celebrar rodeada de amigas.",
-                "focalPoint": "50% 42%"
-            },
-            {
-                "image": "gallery05",
-                "caption": "La alegría de compartir.",
-                "focalPoint": "50% 44%"
-            },
-            {
-                "image": "gallery06",
-                "caption": "Con mi familia.",
-                "focalPoint": "50% 36%"
-            },
-            {
-                "image": "gallery07",
-                "caption": "Un recuerdo con quienes me acompañan.",
-                "focalPoint": "52% 48%"
-            },
-            {
-                "image": "gallery08",
-                "caption": "Cariño que se queda.",
-                "focalPoint": "50% 42%"
-            },
-            {
-                "image": "gallery09",
-                "caption": "Amigos y familia en el jardín.",
-                "focalPoint": "50% 48%"
-            },
-            {
-                "image": "gallery10",
-                "caption": "La emoción antes de la gran noche.",
-                "focalPoint": "50% 46%"
-            }
-        ]
+      "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
+      "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
+      "subtitle": "Junto a las personas que más quiero.",
+      "items": [
+        {
+          "image": "gallery01",
+          "caption": "La actitud de un espíritu joven.",
+          "focalPoint": "50% 36%"
+        },
+        {
+          "image": "gallery02",
+          "caption": "Entre verde, rojo y luz.",
+          "focalPoint": "50% 35%"
+        },
+        {
+          "image": "gallery04",
+          "caption": "Celebrar rodeada de amigas.",
+          "focalPoint": "50% 42%"
+        },
+        {
+          "image": "gallery05",
+          "caption": "La alegría de compartir.",
+          "focalPoint": "50% 44%"
+        },
+        {
+          "image": "gallery06",
+          "caption": "Con mi familia.",
+          "focalPoint": "50% 36%"
+        },
+        {
+          "image": "gallery07",
+          "caption": "Un recuerdo con quienes me acompañan.",
+          "focalPoint": "52% 48%"
+        },
+        {
+          "image": "gallery08",
+          "caption": "Cariño que se queda.",
+          "focalPoint": "50% 42%"
+        },
+        {
+          "image": "gallery09",
+          "caption": "Amigos y familia en el jardín.",
+          "focalPoint": "50% 48%"
+        },
+        {
+          "image": "gallery10",
+          "caption": "La emoción antes de la gran noche.",
+          "focalPoint": "50% 46%"
+        }
+      ]
     },
     "gifts": {
-        "title": "Mesa de regalos",
-        "variant": "celestial-blue",
-        "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones.",
-        "items": [
+      "title": "Mesa de regalos",
+      "variant": "celestial-blue",
+      "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones.",
+      "items": [
+        {
+          "type": "store",
+          "title": "Mesa de regalos",
+          "description": "Puedes consultar mis listas en Sears y Liverpool.",
+          "links": [
             {
-                "type": "store",
-                "title": "Mesa de regalos",
-                "description": "Puedes consultar mis listas en Sears y Liverpool.",
-                "links": [
-                    {
-                        "label": "Sears",
-                        "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
-                    },
-                    {
-                        "label": "Liverpool",
-                        "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
-                    }
-                ]
+              "label": "Sears",
+              "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
             },
             {
-                "type": "cash",
-                "title": "Lluvia de sobres",
-                "text": "También contaremos con un espacio especial durante la recepción."
+              "label": "Liverpool",
+              "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
             }
-        ]
+          ]
+        },
+        {
+          "type": "cash",
+          "title": "Lluvia de sobres",
+          "text": "También contaremos con un espacio especial durante la recepción."
+        }
+      ]
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
-        "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
-        "guestCap": 6,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "title": "Pase de acceso",
-            "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
-            "footerText": "Aplica para adultos y niños. Preséntalo al llegar."
-        }
+      "title": "Confirma tu asistencia",
+      "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
+      "guestCap": 6,
+      "accessMode": "hybrid",
+      "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+      "confirmationMode": "api",
+      "personalizedAccess": {
+        "title": "Pase de acceso",
+        "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
+        "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar."
+      }
     },
     "thankYou": {
-        "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
-        "closingName": "América Bautista",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 34%"
+      "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
+      "closingName": "América Bautista",
+      "image": "thankYouPortrait",
+      "focalPoint": "50% 34%"
     },
     "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "location",
-            "alt": "América con globos dorados en el jardín",
-            "height": "screen",
-            "focalPoint": "50% 42%",
-            "lightX": "52%",
-            "lightY": "34%"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "family",
-            "alt": "América de espalda con vestido rojo y globos de XV",
-            "height": "screen",
-            "focalPoint": "50% 42%",
-            "lightX": "48%",
-            "lightY": "38%"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "itinerary",
-            "alt": "América en el jardín",
-            "height": "medium",
-            "focalPoint": "50% 50%",
-            "lightX": "50%",
-            "lightY": "44%"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "América con vestido blanco y acentos color rojo",
-            "height": "screen",
-            "focalPoint": "50% 34%",
-            "lightX": "46%",
-            "lightY": "38%"
-        }
+      {
+        "image": "interlude01",
+        "afterSection": "location",
+        "alt": "América con globos dorados en el jardín",
+        "height": "screen",
+        "focalPoint": "50% 42%",
+        "lightX": "52%",
+        "lightY": "34%"
+      },
+      {
+        "image": "interlude02",
+        "afterSection": "family",
+        "alt": "América de espalda con vestido rojo y globos de XV",
+        "height": "screen",
+        "focalPoint": "50% 42%",
+        "lightX": "48%",
+        "lightY": "38%"
+      },
+      {
+        "image": "interlude03",
+        "afterSection": "itinerary",
+        "alt": "América en el jardín",
+        "height": "medium",
+        "focalPoint": "50% 50%",
+        "lightX": "50%",
+        "lightY": "44%"
+      },
+      {
+        "image": "interlude04",
+        "afterSection": "rsvp",
+        "alt": "América con vestido blanco y acentos color rojo",
+        "height": "screen",
+        "focalPoint": "50% 34%",
+        "lightX": "46%",
+        "lightY": "38%"
+      }
     ],
     "envelope": {
-        "disabled": false,
-        "revealVariant": "celestial-blue",
-        "coverEdition": "XV",
-        "coverVolume": "1",
-        "coverIssue": "2026",
-        "sealStyle": "wax",
-        "sealIcon": "flower",
-        "sealInitials": "A·B",
-        "sealVariant": "premium-rose",
-        "microcopy": "Abrir invitación",
-        "documentLabel": "XV años • América Bautista",
-        "cardLabel": "XV años • América Bautista",
-        "cardTagline": "América Bautista",
-        "stampText": "América",
-        "stampYear": "2026",
-        "closedPalette": {
-            "primary": "surfaceDark",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
+      "disabled": false,
+      "revealVariant": "celestial-blue",
+      "coverEdition": "XV",
+      "coverVolume": "1",
+      "coverIssue": "2026",
+      "sealStyle": "wax",
+      "sealIcon": "flower",
+      "sealInitials": "A·B",
+      "sealVariant": "premium-rose",
+      "microcopy": "Abrir invitación",
+      "documentLabel": "XV AÑOS · 2026",
+      "cardLabel": "XV AÑOS · 2026",
+      "cardTagline": "Una noche para recordar",
+      "stampText": "América Baustista",
+      "stampYear": "2026",
+      "closedPalette": {
+        "primary": "surfaceDark",
+        "accent": "actionAccent",
+        "background": "surfaceDark"
+      }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
-        "ogImage": "portrait",
-        "ogDescription": "Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Ciudad de México."
+      "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Bautista\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!",
+      "ogImage": "portrait",
+      "ogDescription": "XV años • América Bautista"
     }
-}'::jsonb;
+  }'::jsonb;
 
   IF v_pub_id IS NOT NULL THEN
     SELECT

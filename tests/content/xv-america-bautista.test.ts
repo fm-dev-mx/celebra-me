@@ -24,7 +24,7 @@ type PersonalizedAccessDescriptor = Extract<
 const expectedPersonalizedAccess = {
 	title: 'Pase de acceso',
 	subtitle: 'Este pase muestra los accesos asignados para ingresar al evento.',
-	footerText: 'Aplica para adultos y niños. Preséntalo al llegar.',
+	footerText: 'Acceso válido para adultos y niños. Preséntalo al llegar.',
 };
 
 const expectedAssets = [
