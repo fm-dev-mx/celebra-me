@@ -7,7 +7,6 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
-import { applyAmericaBautistaHeroOverrides } from '@/lib/invitation/america-bautista-hero-overrides';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
@@ -154,9 +153,6 @@ const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
 	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
 ];
-applyAmericaBautistaHeroOverrides(pageCtx, {
-	routeSlug: invitationRecord?.slug ?? undefined,
-});
 ---
 
 {
