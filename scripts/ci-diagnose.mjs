@@ -19,7 +19,7 @@ const STAGES = [
   { name: 'validate:event-parity', cmd: 'pnpm validate:event-parity' },
   { name: 'validate:no-pii', cmd: 'pnpm validate:no-pii' },
   { name: 'unit tests', cmd: 'pnpm test' },
-  { name: 'e2e tests', cmd: 'pnpm test:e2e' },
+  { name: 'e2e:ci (DB-free)', cmd: 'pnpm test:e2e:ci' },
 ];
 
 const skipGates = process.argv.includes('--skip-gate');
