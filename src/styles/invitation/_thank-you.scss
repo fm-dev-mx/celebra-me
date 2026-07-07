@@ -135,6 +135,20 @@
 	box-shadow: var(--shadow-subtle);
 	overflow: hidden;
 
+	// Scroll reveal setup
+	.thank-you-section.has-motion & {
+		opacity: 0%;
+		transform: scale(0.95);
+		transition:
+			opacity var(--duration-premium, 1s) var(--ease-premium),
+			transform var(--duration-premium, 1s) var(--ease-premium);
+	}
+
+	.thank-you-section.is-visible & {
+		opacity: 100%;
+		transform: scale(1);
+	}
+
 	@include mixins.respond-to(sm) {
 		width: 280px;
 		height: 280px;
@@ -158,6 +172,21 @@
 .message-container {
 	max-width: 550px;
 	perspective: 1000px;
+
+	// Scroll reveal setup
+	.thank-you-section.has-motion & {
+		opacity: 0%;
+		transform: translateY(15px);
+		transition:
+			opacity var(--duration-premium, 1s) var(--ease-premium),
+			transform var(--duration-premium, 1s) var(--ease-premium);
+		transition-delay: 0.15s;
+	}
+
+	.thank-you-section.is-visible & {
+		opacity: 100%;
+		transform: translateY(0);
+	}
 }
 
 .thank-you-message {
@@ -180,8 +209,20 @@
 }
 
 .signature-block {
-	transform: translateY(0);
-	animation: signatureReveal var(--duration-reveal, 1.5s) var(--ease-out) 0.5s both;
+	// Scroll reveal setup
+	.thank-you-section.has-motion & {
+		opacity: 0%;
+		transform: translateY(12px) scale(0.98);
+		transition:
+			opacity var(--duration-premium, 1s) var(--ease-premium),
+			transform var(--duration-premium, 1s) var(--ease-premium);
+		transition-delay: 0.3s;
+	}
+
+	.thank-you-section.is-visible & {
+		opacity: 100%;
+		transform: translateY(0) scale(1);
+	}
 }
 
 .closing-name {
@@ -210,18 +251,38 @@
 	font-size: 0.75rem;
 	letter-spacing: 0.15em;
 	text-transform: uppercase;
-}
 
-@keyframes signatureReveal {
-	from {
+	// Scroll reveal setup
+	.thank-you-section.has-motion & {
 		opacity: 0%;
-		transform: translateY(10px);
-		filter: blur(5px);
+		transition: opacity var(--duration-premium, 1s) var(--ease-premium);
+		transition-delay: 0.5s;
 	}
 
-	to {
-		opacity: 100%;
-		transform: translateY(0);
-		filter: blur(0);
+	.thank-you-section.is-visible & {
+		opacity: 40%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.thank-you-section {
+		.photo-frame,
+		.message-container,
+		.signature-block,
+		.thank-you-footer {
+			/* stylelint-disable-next-line declaration-no-important */
+			opacity: 100% !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			transform: none !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			transition: none !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+		}
+
+		.thank-you-footer {
+			/* stylelint-disable-next-line declaration-no-important */
+			opacity: 40% !important;
+		}
 	}
 }

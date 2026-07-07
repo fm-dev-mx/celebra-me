@@ -27,3 +27,16 @@
 
 	scroll-padding-top: var(--invitation-header-offset);
 }
+
+// Collapse top padding when immediately following an interlude to prevent raw background bands
+[data-after-interlude] {
+	> .family,
+	> .gallery-section,
+	> .itinerary,
+	> .rsvp-section,
+	> .gifts-section {
+		/* stylelint-disable-next-line declaration-no-important */
+		padding-top: 0 !important;
+	}
+}
+

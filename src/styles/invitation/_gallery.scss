@@ -193,10 +193,22 @@
 		background: var(--gallery-item-bg);
 		box-shadow: var(--gallery-item-shadow);
 		backdrop-filter: var(--gallery-item-backdrop-filter);
-		transform: var(--gallery-item-transform);
+
+		// Entrance reveal setup
+		opacity: 0%;
+		transform: translateY(18px) var(--gallery-item-transform, none);
 		transition:
+			opacity var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+			transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 			border-color var(--gallery-item-transition-duration) ease,
 			box-shadow var(--gallery-item-transition-duration) ease;
+
+		// Staggered delay for scroll entry
+		@for $i from 1 through 12 {
+			&:nth-child(#{$i}) {
+				transition-delay: #{($i - 1) * 0.08s};
+			}
+		}
 
 		img {
 			width: 100%;
@@ -210,13 +222,15 @@
 			mix-blend-mode: var(--gallery-item-image-base-blend);
 			transition:
 				filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+				transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 				mix-blend-mode var(--gallery-item-transition-duration) ease;
 		}
 
 		&.is-in-view,
 		&[data-in-view='true'],
 		&:focus-visible {
-			transform: var(--gallery-item-emphasis-transform);
+			opacity: 100%;
+			transform: translateY(0) var(--gallery-item-emphasis-transform, none);
 			border-color: var(--gallery-item-emphasis-border-color);
 			box-shadow: var(--gallery-item-emphasis-shadow);
 
@@ -230,15 +244,20 @@
 		&:focus-visible {
 			outline: var(--gallery-item-focus-outline);
 			outline-offset: var(--gallery-item-focus-outline-offset);
+			transition-delay: 0s;
 		}
 
 		@media (hover: hover) and (pointer: fine) {
 			&:hover {
+				/* stylelint-disable-next-line declaration-no-important */
+				transition-delay: 0s !important; // override entrance stagger delay immediately on hover!
 				transform: var(--gallery-item-hover-transform);
 				border-color: var(--gallery-item-hover-border-color);
 				box-shadow: var(--gallery-item-hover-shadow);
 
 				img {
+					/* stylelint-disable-next-line declaration-no-important */
+					transition-delay: 0s !important;
 					filter: var(--gallery-item-image-filter-hover);
 					transform: scale(var(--gallery-item-image-scale-hover));
 					mix-blend-mode: var(--gallery-item-image-hover-blend);

@@ -196,10 +196,17 @@
 		opacity: 0%;
 		transform: translateY(10px);
 		filter: blur(5px);
+		transition:
+			opacity var(--duration-premium, 1s) var(--ease-premium),
+			transform var(--duration-premium, 1s) var(--ease-premium),
+			filter var(--duration-premium, 1s) var(--ease-premium);
+		transition-delay: 0.35s;
 	}
 
 	&.has-motion.is-visible .signature-block {
-		animation: signatureReveal var(--duration-reveal, 1.5s) var(--ease-out) 0.35s both;
+		opacity: 100%;
+		transform: translateY(0);
+		filter: blur(0);
 	}
 
 	.closing-name {

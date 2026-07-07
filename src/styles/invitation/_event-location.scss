@@ -526,7 +526,9 @@
 	}
 
 	&.has-motion &__card {
-		will-change: transform, box-shadow;
+		opacity: 0%;
+		transform: translateY(12px);
+		will-change: transform, box-shadow, opacity;
 	}
 
 	&.has-motion.is-visible &__card--ceremony {
@@ -1072,7 +1074,7 @@
 
 @keyframes invitation-location-fade-in-up-soft {
 	from {
-		opacity: 85%;
+		opacity: 0%;
 		transform: translateY(12px);
 	}
 
