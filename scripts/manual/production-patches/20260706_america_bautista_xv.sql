@@ -66,9 +66,28 @@ DECLARE
   v_event_count integer;
   v_owner_exists integer;
   v_owner_id uuid;
+  v_owner_setting text;
   v_event_id uuid;
   v_membership_count integer;
 BEGIN
+  v_owner_setting := current_setting('app.owner_user_id', true);
+
+  IF v_owner_setting IS NULL
+    OR v_owner_setting = ''
+    OR v_owner_setting = '__OWNER_USER_ID__'
+  THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: Replace __OWNER_USER_ID__ with the actual admin UUID before running this patch.';
+  END IF;
+
+  BEGIN
+    v_owner_id := v_owner_setting::uuid;
+  EXCEPTION WHEN invalid_text_representation THEN
+    RAISE EXCEPTION
+      'PREFLIGHT_ABORT: app.owner_user_id value "%" is not a valid UUID.',
+      v_owner_setting;
+  END;
+
   SELECT count(*) INTO v_invitation_count
   FROM public.invitations
   WHERE slug = 'america-bautista'
@@ -100,8 +119,6 @@ BEGIN
       'PREFLIGHT_ABORT: Found % events row(s) for slug america-bautista. Expected 0 or 1.',
       v_event_count;
   END IF;
-
-  v_owner_id := current_setting('app.owner_user_id')::uuid;
 
   SELECT count(*) INTO v_owner_exists
   FROM auth.users
@@ -787,6 +804,7 @@ BEGIN
   ELSE
     UPDATE public.event_memberships
     SET
+      membership_role = 'owner',
       deleted_at = NULL,
       updated_at = now()
     WHERE id = v_membership_id;
@@ -834,6 +852,9 @@ SELECT
   pc.content -> 'music' ->> 'src' AS music_src,
   pc.content -> 'hero' ->> 'name' AS hero_name,
   pc.content -> 'hero' ->> 'label' AS hero_label,
+  pc.content -> 'envelope' ->> 'documentLabel' AS envelope_document_label,
+  pc.content -> 'envelope' ->> 'cardLabel' AS envelope_card_label,
+  pc.content -> 'envelope' ->> 'cardTagline' AS envelope_card_tagline,
   pc.content -> 'gifts' ->> 'title' AS gifts_title,
   pc.version,
   pc.published_at,
