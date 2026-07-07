@@ -181,18 +181,18 @@ BEGIN
       'XV América Bautista',
       'xv',
       'published',
-      'demo-xv-editorial-magazine',
-      'editorial-magazine',
+      'demo-xv-celestial-blue',
+      'celestial-blue',
       '{
-        "id": "demo-xv-editorial-magazine",
+        "id": "demo-xv-celestial-blue",
         "eventType": "xv",
-        "displayName": "XV Años — Revista Editorial",
-        "themeId": "editorial-magazine",
+        "displayName": "XV Años - América Bautista",
+        "themeId": "celestial-blue",
         "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
         "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
         "recommendedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
         "requiredAssets": ["hero", "portrait", "family", "gallery01", "gallery02", "gallery03"],
-        "previewSlug": "demo-xv-editorial-magazine"
+        "previewSlug": "demo-xv-celestial-blue"
       }'::jsonb,
       'Paulina Soto / América Bautista',
       '',
@@ -214,18 +214,18 @@ BEGIN
       title = 'XV América Bautista',
       event_type = 'xv',
       status = 'published',
-      base_demo_id = 'demo-xv-editorial-magazine',
-      theme_id = 'editorial-magazine',
+      base_demo_id = 'demo-xv-celestial-blue',
+      theme_id = 'celestial-blue',
       snapshot = '{
-        "id": "demo-xv-editorial-magazine",
+        "id": "demo-xv-celestial-blue",
         "eventType": "xv",
-        "displayName": "XV Años — Revista Editorial",
-        "themeId": "editorial-magazine",
+        "displayName": "XV Años • América Bautista",
+        "themeId": "celestial-blue",
         "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
         "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
         "recommendedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
         "requiredAssets": ["hero", "portrait", "family", "gallery01", "gallery02", "gallery03"],
-        "previewSlug": "demo-xv-editorial-magazine"
+        "previewSlug": "demo-xv-celestial-blue"
       }'::jsonb,
       client_name = 'Paulina Soto / América Bautista',
       client_email = '',
@@ -269,76 +269,36 @@ BEGIN
   v_new_content := '{
     "eventType": "xv",
     "isDemo": false,
-    "templateId": "xv-editorial-magazine",
+    "templateId": "xv-celestial-blue",
     "visualProfileId": "america-bautista",
     "title": "XV América Bautista",
-    "description": "Invitación editorial de jardín para los XV años de América Bautista, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
+    "description": "XV años de América Bautista, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
     "_assetSlug": "xv-america-bautista",
     "theme": {
         "fontFamily": "serif",
-        "preset": "editorial-magazine"
+        "preset": "celestial-blue"
     },
     "eventTiming": {
         "localDateTime": "2026-08-29T17:30",
         "timeZone": "America/Mexico_City",
         "startsAtUtc": "2026-08-29T23:30:00.000Z"
     },
-    "sectionOrder": [
-        "quote",
-        "family",
-        "countdown",
-        "itinerary",
-        "location",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
-    ],
     "sectionStyles": {
-        "quote": {
-            "variant": "editorial-magazine"
-        },
-        "countdown": {
-            "variant": "editorial-magazine"
-        },
-        "family": {
-            "variant": "editorial-magazine"
-        },
         "location": {
-            "variant": "editorial-magazine",
-            "showFlourishes": false
+            "showFlourishes": true
         },
-        "gallery": {
-            "variant": "editorial-magazine"
-        },
-        "gifts": {
-            "variant": "editorial-magazine"
-        },
-        "rsvp": {
-            "variant": "editorial-magazine",
-            "labels": {
-                "name": "Tu nombre",
-                "guestCount": "Personas que asistirán",
-                "attendance": "¿Nos acompañas?",
-                "confirmButton": "Confirmar asistencia"
-            }
-        },
-        "thankYou": {
-            "variant": "editorial-magazine"
-        }
+        "rsvp": {}
     },
     "hero": {
         "name": "América",
-        "label": "XV Jardín Editorial",
+        "label": "AMÉRICA · XV AÑOS",
         "date": "2026-08-29T23:30:00.000Z",
         "backgroundImage": "hero",
         "backgroundImageDesktop": "heroDesktop",
         "backgroundImageMobile": "hero",
         "portrait": "portrait",
-        "variant": "editorial-magazine",
-        "focalPoint": "52% 34%",
-        "focalPointMobile": "52% 28%",
+        "focalPoint": "52% 45%",
+        "focalPointMobile": "52% 38%",
         "focalPointDesktop": "52% 42%"
     },
     "quote": {
@@ -349,15 +309,15 @@ BEGIN
         "featuredImage": "family",
         "presentation": "with-photo",
         "labels": {
-            "sectionTitle": "Con mucho cariño",
+            "sectionTitle": "Con todo mi amor",
             "sectionSubtitle": "Mi familia",
-            "parentsTitle": "Con mucho cariño",
+            "parentsTitle": "Con todo mi amor",
             "godparentsTitle": "Acompañada por sus padrinos",
             "sectionMessage": "Con el corazón lleno de gratitud, comparto esta noche con mi familia y con quienes han acompañado mi historia."
         },
         "groups": [
             {
-                "title": "Con mucho cariño",
+                "title": "Con todo mi amor",
                 "items": [
                     {
                         "name": "Gloria Paulina Soto Pérez",
@@ -384,7 +344,7 @@ BEGIN
     },
     "countdown": {
         "title": "La celebración comienza en",
-        "footerText": "29 de agosto de 2026, Ciudad de México"
+        "footerText": "Ciudad de México"
     },
     "itinerary": {
         "title": "Programa",
@@ -464,11 +424,11 @@ BEGIN
     "gallery": {
         "eyebrow": "Galería",
         "title": "Un jardín para recordar mis XV.",
-        "subtitle": "Retratos con familia, amigos y momentos de la sesión que acompañan esta edición especial.",
+        "subtitle": "Retratos con familia y amigos.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "La actitud de una edición especial.",
+                "caption": "La actitud de un espíritu joven.",
                 "focalPoint": "50% 36%"
             },
             {
@@ -520,6 +480,7 @@ BEGIN
     },
     "gifts": {
         "title": "Mesa de regalos",
+        "variant": "celestial-blue",
         "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones.",
         "items": [
             {
@@ -550,7 +511,12 @@ BEGIN
         "guestCap": 6,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": {
+            "title": "Pase de acceso",
+            "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
+            "footerText": "Aplica para adultos y niños. Preséntalo al llegar."
+        }
     },
     "thankYou": {
         "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
@@ -562,7 +528,7 @@ BEGIN
         {
             "image": "interlude01",
             "afterSection": "location",
-            "alt": "Detalle editorial de América con globos dorados en el jardín",
+            "alt": "América con globos dorados en el jardín",
             "height": "screen",
             "focalPoint": "50% 42%",
             "lightX": "52%",
@@ -571,7 +537,7 @@ BEGIN
         {
             "image": "interlude02",
             "afterSection": "family",
-            "alt": "Retrato editorial de espalda con vestido rojo y globos de XV",
+            "alt": "América de espalda con vestido rojo y globos de XV",
             "height": "screen",
             "focalPoint": "50% 42%",
             "lightX": "48%",
@@ -580,7 +546,7 @@ BEGIN
         {
             "image": "interlude03",
             "afterSection": "itinerary",
-            "alt": "Retrato editorial de América en el jardín",
+            "alt": "América en el jardín",
             "height": "medium",
             "focalPoint": "50% 50%",
             "lightX": "50%",
@@ -589,7 +555,7 @@ BEGIN
         {
             "image": "interlude04",
             "afterSection": "rsvp",
-            "alt": "Retrato de cierre con vestido blanco y acento editorial",
+            "alt": "América con vestido blanco y acentos color rojo",
             "height": "screen",
             "focalPoint": "50% 34%",
             "lightX": "46%",
@@ -598,7 +564,7 @@ BEGIN
     ],
     "envelope": {
         "disabled": false,
-        "revealVariant": "editorial-cover",
+        "revealVariant": "celestial-blue",
         "coverEdition": "XV",
         "coverVolume": "1",
         "coverIssue": "2026",
@@ -606,9 +572,9 @@ BEGIN
         "sealIcon": "flower",
         "sealInitials": "A·B",
         "sealVariant": "premium-rose",
-        "microcopy": "Abrir edición XV",
-        "documentLabel": "Edición XV",
-        "cardLabel": "XV Jardín Editorial",
+        "microcopy": "Abrir invitación",
+        "documentLabel": "XV años • América Bautista",
+        "cardLabel": "XV años • América Bautista",
         "cardTagline": "América Bautista",
         "stampText": "América",
         "stampYear": "2026",

@@ -1,10 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
-const payloadPath = path.join(
-	process.cwd(),
-	'.agent/plans/active/xv-valentina-hernandez-db-payload.json',
-);
 const sqlPatchPath = path.join(
 	process.cwd(),
 	'scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql',
@@ -12,10 +9,6 @@ const sqlPatchPath = path.join(
 
 const PLACEHOLDER_PATTERN =
 	/PENDIENTE|\[confirmar|Confirmar ubicación|definir fecha límite|confirmar número de registro|Solicitar enlace de Google Maps|^Por confirmar$|Pendiente de confirmar/i;
-
-function readCanonicalPayload(): unknown {
-	return JSON.parse(fs.readFileSync(payloadPath, 'utf8'));
-}
 
 function readSqlEmbeddedPayload(): unknown {
 	const sql = fs.readFileSync(sqlPatchPath, 'utf8');
@@ -50,12 +43,15 @@ function collectPlaceholderStrings(value: unknown, pathSegments: string[] = []):
 }
 
 describe('Valentina Hernández DB payload', () => {
-	it('keeps the SQL embedded content synchronized with the canonical payload', () => {
-		expect(readSqlEmbeddedPayload()).toEqual(readCanonicalPayload());
+	it('produces valid content from the SQL-embedded payload', () => {
+		const payload = readSqlEmbeddedPayload();
+		const result = eventContentSchema.safeParse(payload);
+		expect(result.success).toBe(true);
 	});
 
 	it('does not expose placeholder or admin copy in production-bound content', () => {
-		const placeholders = collectPlaceholderStrings(readCanonicalPayload());
+		const payload = readSqlEmbeddedPayload();
+		const placeholders = collectPlaceholderStrings(payload);
 
 		expect(placeholders).toEqual([]);
 	});

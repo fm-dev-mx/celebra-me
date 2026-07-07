@@ -14,9 +14,14 @@ function isDevTemplateEntry(collection?: string): boolean {
 	return collection === 'event-templates' && isDevEnvironment();
 }
 
-function isStaticDemoEntry(entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null): boolean {
+function isStaticDemoEntry(
+	entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null,
+): boolean {
 	if (!entry?.data) return false;
-	return ('isDemo' in entry.data && entry.data.isDemo === true) || isDevTemplateEntry(entry.collection);
+	return (
+		('isDemo' in entry.data && entry.data.isDemo === true) ||
+		isDevTemplateEntry(entry.collection)
+	);
 }
 
 function toStaticResolution(
@@ -26,7 +31,10 @@ function toStaticResolution(
 }
 
 function isMissingInvitationsTableError(error: unknown): boolean {
-	return error instanceof Error && error.message.includes("Could not find the table 'public.invitations'");
+	return (
+		error instanceof Error &&
+		error.message.includes("Could not find the table 'public.invitations'")
+	);
 }
 
 /**
