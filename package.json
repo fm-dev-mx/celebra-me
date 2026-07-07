@@ -13,6 +13,8 @@
         "preview": "astro preview",
         "astro": "astro",
         "test": "jest",
+        "test:changed": "node scripts/run-related-tests.mjs",
+        "test:coverage": "jest --coverage",
         "test:e2e": "playwright test",
         "test:e2e:ci": "playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts",
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
@@ -20,7 +22,10 @@
         "test:e2e:visual": "echo 'Reserved for screenshot/audit e2e (valentina-face, ximena, xv-demo) — requires SUPABASE env'",
         "type-check": "astro check",
         "ci": "pnpm type-check && pnpm lint && pnpm lint:styles:changed && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm test && pnpm test:e2e:ci",
+        "ci:quick": "node scripts/ci-quick.mjs",
         "ci:diagnose": "node scripts/ci-diagnose.mjs",
+        "validate:staged": "node scripts/validate-staged.mjs",
+        "validate:changed": "node scripts/validate-changed.mjs",
         "lint": "eslint .",
         "lint:styles": "stylelint \"src/**/*.scss\"",
         "lint:styles:changed": "node scripts/lint-styles-changed.mjs",
@@ -121,7 +126,7 @@
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
         "*.astro": ["eslint --fix --cache", "prettier --write"],
-        "*.{scss,css}": ["stylelint --fix", "prettier --write"],
+        "*.{scss,css}": ["stylelint --fix --cache", "prettier --write"],
         "*.{json,md,yml,yaml}": ["prettier --write"]
     }
 }

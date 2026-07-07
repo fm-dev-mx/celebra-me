@@ -12,12 +12,12 @@ if (stylesheetFiles.length === 0) {
 
 console.log(`Linting changed stylesheet files:\n- ${stylesheetFiles.join('\n- ')}`);
 
-const result = spawnSync('pnpm', ['exec', 'stylelint', ...stylesheetFiles], {
-    cwd: process.cwd(),
-    stdio: 'inherit',
-    env: process.env,
-    shell: process.platform === 'win32',
-    maxBuffer: 10 * 1024 * 1024,
+const result = spawnSync('pnpm', ['exec', 'stylelint', '--cache', ...stylesheetFiles], {
+	cwd: process.cwd(),
+	stdio: 'inherit',
+	env: process.env,
+	shell: process.platform === 'win32',
+	maxBuffer: 10 * 1024 * 1024,
 });
 
 if (result.error) throw result.error;

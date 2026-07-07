@@ -217,6 +217,12 @@ export default [
 
 			// Test files may be long (comprehensive data-driven scenarios)
 			'max-lines': 'off',
+
+			// Integration tests legitimately branch across many cases
+			// (render descriptors, schema validation, fallback paths). 30 is
+			// generous enough for comprehensive integration tests but still
+			// catches obvious refactor candidates.
+			complexity: ['error', 30],
 		},
 	},
 	// ------------------------------------------------------------

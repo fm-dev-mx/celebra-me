@@ -142,7 +142,24 @@ When loading an agent role, read in this order:
 ## Validation Selection
 
 Detect available scripts from `package.json` before running validation. Prefer the narrowest command
-that proves the change:
+that proves the change. Use the tiered workflow documented in `.agent/rules/gatekeeper.md`
+section 5.2:
+
+- **A (small, localized, pre-commit):** `pnpm validate:staged` (staged files only) then
+  `pnpm agent:git-safety:check`.
+- **B (shared components, schema, adapter, render-data, routing, Supabase, content-resolution):**
+  `pnpm validate:changed` + `pnpm type-check` + `pnpm test:changed` +
+  `pnpm validate:event-parity` (when applicable) + `pnpm agent:git-safety:check`.
+- **C (pre-push / pre-deploy confidence):** `pnpm type-check` + `pnpm lint` + `pnpm lint:styles` +
+  `pnpm test` + `pnpm test:e2e:ci` + `pnpm build` + `pnpm agent:git-safety:check`. The full pipeline
+  is also available as `pnpm run ci`.
+
+`pnpm ci:quick` is a CI-safe fast feedback command. It does not depend on local Git staging
+state, so it is safe to call from a CI runner, and provides faster local iteration than the
+full pipeline. It **must not** replace tier C for production-sensitive changes. The pre-push
+hook intentionally remains lean; do not move tests or type-checks into pre-push.
+
+Tier-specific narrow targets still apply:
 
 - Documentation-only changes: `pnpm ops check-links`
 - Type or Astro boundary changes: `pnpm type-check`
@@ -168,6 +185,11 @@ operation.
 | `pnpm test -- --coverage`              | Jest with coverage                                                                  |
 | `pnpm test:e2e`                        | Playwright E2E suite                                                                |
 | `pnpm run ci`                          | full pre-PR gate (type-check → lint → stylelint → governance → parity → unit → e2e) |
+| `pnpm run ci:quick`                    | fast CI-safe feedback (astro check + scoped ESLint). Uses VALIDATION_BASE/HEAD_SHA in CI, working tree locally. Not a substitute for `pnpm run ci`. |
+| `pnpm validate:staged`                 | ESLint + Stylelint + Prettier + related Jest on **staged** files only. Prettier is **advisory** (intentional transition step for legacy formatting debt); ESLint, Stylelint, and related Jest are hard gates. New or modified files must still be formatted. Safe no-op when nothing is staged. Use before commit. |
+| `pnpm validate:changed`                | Same as `validate:staged` but on **working-tree** files. Use for broader local feedback before staging. |
+| `pnpm test:changed`                    | Jest `--findRelatedTests` for **staged** source/test files. |
+| `pnpm test:coverage`                   | Jest with coverage explicitly enabled. |
 | `pnpm ops <command>`                   | repo ops dispatcher (`check-links`, `validate-schema`, etc.)                        |
 
 `pnpm db:push` is intentionally blocked. See README.md and `docs/database-workflow.md` for DB

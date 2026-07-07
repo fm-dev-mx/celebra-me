@@ -228,20 +228,59 @@ The agent must switch to **Large Change Mode** when any of the following apply:
 
 ### 5.2 Execution Order
 
-Run the closest available match:
+Run the closest available match, **scaled to the change scope**:
 
-1. Type checking (`type-check`, `check`, `astro check`, `tsc --noEmit`)
-2. Linting (`lint`)
-3. Tests (`test`), if present
+**A) Small localized style/copy/asset changes — fast pre-commit confidence:**
 
-If a command fails due to agent changes:
+```sh
+pnpm validate:staged       # ESLint + Stylelint + Prettier + related Jest on STAGED files only
+pnpm agent:git-safety:check
+```
 
-- Fix the issue.
-- Re-run the command.
+`pnpm validate:staged` is **strictly staged** (the Git index). It does not
+look at unstaged working-tree edits and does not auto-format anything. It
+no-ops successfully when there are no staged matching files.
 
-If unrelated:
+Prettier is intentionally **advisory** here: the repo carries pre-existing
+formatting debt in staged files that is not part of the workflow change.
+Blocking on that debt would conflate scope. ESLint, Stylelint, and related
+Jest are hard gates. New or modified files in the workflow commit must
+still be formatted — advisory is not a license to commit unformatted code.
 
-- Report the command and a minimal relevant error excerpt.
+**B) Shared component, schema, adapter, render-data, routing, Supabase, or
+content-resolution changes — broader local feedback:**
+
+```sh
+pnpm validate:changed      # ESLint + Stylelint + Prettier + related Jest on WORKING-TREE files
+pnpm type-check            # astro check (whole repo)
+pnpm test:changed          # Jest for staged source files via --findRelatedTests
+pnpm validate:event-parity # when event/content parity can be affected
+pnpm agent:git-safety:check
+```
+
+Use `pnpm validate:changed` when you have unstaged edits you want feedback
+on before staging. Use `pnpm test:changed` to run only the tests that
+cover the files you have staged.
+
+**C) Final pre-push / pre-deploy confidence (full validation, do not skip):**
+
+```sh
+pnpm type-check
+pnpm lint
+pnpm lint:styles
+pnpm test
+pnpm test:e2e:ci
+pnpm build
+pnpm agent:git-safety:check
+```
+
+`pnpm ci` is the canonical full-pipeline equivalent of tier C. `pnpm ci:quick`
+runs `astro check` plus a scoped ESLint pass and is for fast feedback only;
+it is **safe in CI** (it does not depend on local Git staging state) but
+**must not** replace tier C for production-sensitive changes.
+
+The pre-push hook intentionally remains lean (commit-message validation only);
+do not move tests or type-checks into pre-push.
 
 ---
 
