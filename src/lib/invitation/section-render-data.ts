@@ -26,6 +26,9 @@ type PersonalizedAccessProps = {
 	eventYear?: string;
 	isDemoPreview?: boolean;
 	variant?: ThemePreset;
+	title?: string;
+	subtitle?: string;
+	footerText?: string;
 };
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
@@ -128,17 +131,22 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 		? new Date(pageContext.viewModel.hero.date).getUTCFullYear().toString()
 		: undefined;
 
+	const rsvpSection = pageContext.viewModel.sections.rsvp;
+
 	return {
 		component: 'personalized-access' as const,
 		props: {
 			guestName: guestContext?.guest.fullName ?? DEMO_GUEST_NAME,
 			maxAllowedAttendees:
 				guestContext?.guest.maxAllowedAttendees ??
-				pageContext.viewModel.sections.rsvp?.guestCap ??
+				rsvpSection?.guestCap ??
 				DEFAULT_DEMO_GUEST_CAP,
 			eventYear,
 			isDemoPreview,
 			variant,
+			title: rsvpSection?.personalizedAccess?.title,
+			subtitle: rsvpSection?.personalizedAccess?.subtitle,
+			footerText: rsvpSection?.personalizedAccess?.footerText,
 		},
 	};
 }

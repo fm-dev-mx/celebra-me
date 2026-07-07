@@ -6,6 +6,9 @@ interface Props {
 	eventYear?: string;
 	isDemoPreview?: boolean;
 	variant?: string;
+	title?: string;
+	subtitle?: string;
+	footerText?: string;
 }
 
 const {
@@ -13,7 +16,10 @@ const {
 	guestName,
 	eventYear,
 	isDemoPreview,
-	variant = 'standard'
+	variant = 'standard',
+	title = 'Pase de acceso',
+	subtitle = 'Este pase te identifica como invitado y muestra el número de lugares reservados.',
+	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.'
 } = Astro.props;
 
 const seatsLabel =
@@ -80,11 +86,10 @@ const showOrnaments = variant !== 'standard';
 					</svg>
 				</div>
 				<h3 id="personalized-access-title" class="access-card__title">
-					Pase de acceso
+					{title}
 				</h3>
 				<p class="access-card__subtitle">
-					Este pase te identifica como invitado y muestra el número de lugares
-					reservados.
+					{subtitle}
 				</p>
 			</header>
 
@@ -115,8 +120,7 @@ const showOrnaments = variant !== 'standard';
 
 			<footer class="access-card__footer">
 				<p>
-					Confirma tu asistencia en la sección de RSVP al final de la
-					invitación.
+					{footerText}
 				</p>
 			</footer>
 		</article>

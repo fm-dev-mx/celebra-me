@@ -308,6 +308,11 @@ export interface InvitationViewModel {
 				attendance?: string;
 				confirmButton?: string;
 			};
+			personalizedAccess?: {
+				title?: string;
+				subtitle?: string;
+				footerText?: string;
+			};
 		};
 		gifts?: {
 			title?: string;

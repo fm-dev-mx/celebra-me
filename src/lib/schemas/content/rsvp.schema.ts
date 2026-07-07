@@ -41,6 +41,14 @@ export const rsvpSchema = z
 			})
 			.strict()
 			.optional(),
+		personalizedAccess: z
+			.object({
+				title: z.string().optional(),
+				subtitle: z.string().optional(),
+				footerText: z.string().optional(),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict()
 	.optional();
