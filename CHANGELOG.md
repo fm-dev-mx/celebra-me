@@ -5,6 +5,116 @@ Todos los cambios notables en el proyecto Celebra-me serán documentados en este
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este
 proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+### Added (pending)
+
+<!-- Items for the next release go here -->
+
+## [0.11.0-beta.1] - 2026-07-07
+
+### Added
+
+- **América Bautista XV client invitation**: full client invitation with celestial-blue preset,
+  venue coordinates, gallery images, production SQL patches, PREFLIGHT safety checks, hero
+  layout migration, and comprehensive test coverage
+- **Primera Comunión event type**: new event type with showroom hero image, per-event CTA labels,
+  alternate slugs, and demo items
+- **Complete open graph landing page redesign**: new hero with crossfade and event photography,
+  responsive hero backgrounds, event-type selector with tabbed showroom and phone mockups,
+  Guest Experience section replacing About Us, ProductProof with comparison cards (antes/durante/
+  resultado), PhotographicInterlude, HowItWorks section, Services as operations dossier panel,
+  Pricing with package recommender quiz and tier-dynamic promo codes, testimonials as editorial
+  quote rotator, phone-first contact form
+- **Commercial analytics MVP**: GA4 forwarder, Meta Pixel, consent banner with vanilla client JS,
+  route-policy-gated tracking, event ingestion service, lead auto-creation and repository,
+  commercial dashboard page with attribution data, internal exclusion, event contract
+- **Demo counterpart architecture**: `templateId` and `visualProfileId` in demo content,
+  demo counterpart audit, demo showroom pages with lookbook layout and style selector
+- **Screenshot QA tool**: full Playwright-based capture engine with plan resolution, per-section
+  capture, audit mode with validation reports, section data attributes, landing full-page
+  stitching, and interactive capture mode
+- **RSVP personalized access copy**: customizable `personalizedAccess` copy per invitation
+  content, editable from editor controls
+- **Scroll-reveal entrance animations**: scroll-reveal CSS animations added across invitation
+  sections
+- **WhatsApp CTA preserveMessage opt-in**: `preserveMessage` flag to keep curated CTA text
+- **Role-based agent architecture**: `.agent/agents/` role contracts for builder, copywriter,
+  QA, and visual-director roles; routing rules and delegation patterns
+
+### Changed
+
+- **Landing page restructure**: reordered sections — showroom before proof, pricing before
+  testimonials; data-driven section rendering from new content model
+- **CI pipeline improvements**: E2E split into DB-free required suite (ci) and infra/visual
+  reserved scripts; ci:quick fast feedback script; ci:diagnose debugging script; staged and
+  working-tree validation scripts
+- **Pricing restructure**: removal of recommendation CTA, restructured price card CTAs, package
+  recommender quiz interface
+- **Hero landing SCSS**: landing hero style overhaul with flexible layout, responsive padding,
+  background image handling, and event-type selector integration
+- **Consent banner**: React island replaced with vanilla client JavaScript
+- **Contact form**: phone-first funnel restructure with WhatsApp CTA guard for placeholder phones
+- **Section CSS resolver enhancement**: `resolveInvitationCssUrls` with footer variant resolution
+  added to existing resolver
+- **Dependencies**: added `@inquirer/prompts` for interactive CLI; stylelint with `--cache`
+  in lint-staged
+- **Git configuration**: `.hermes` added to gitignore, `.gitignore` extended for screenshot
+  tooling, agent plans, and temporary work files
+
+### Fixed
+
+- América Bautista mobile hero layout migrated to flexbox
+- América Bautista copy and envelope metadata updated to match client source of truth
+- América Bautista code-side hero overrides replaced with data patch
+- Valentina Hernández schema-invalid `sectionStyles.hero` variant removed
+- Content-resolver catches missing Supabase credentials so static demos still render
+- Valentina Hernández production patch updated with `templateId` and hero sectionStyles removal
+- DB owner claim query guards against already-owned invitations
+- API returns 404 with no-store headers for invalid shortId routes (Cache-Control: no-store)
+- Event-selector `hidden` attribute replaced with `inert` for correct accessibility
+- RSVP default attendee count to `maxAllowedAttendees` for unresponded guests
+- Contact form WhatsApp CTAs hidden when phone is a placeholder
+- WebP assets reoptimized for smaller file sizes
+- Envelope reveal accessibility: card made visible to assistive technology after opening
+
+### Database / Migrations
+
+- 1 Supabase migration for commercial analytics MVP (20260628000000)
+- 2 production patches for América Bautista XV: invitation payload (20260706),
+  hero fix (20260707)
+- 1 existing production patch updated: Valentina Hernández XV (20260626)
+
+### Tests / Validation
+
+- **New test suites** (14): América Bautista content, demo counterpart audit, commercial
+  dashboard service, dashboard guest metrics, demo showroom data, landing services data,
+  premium-demo quality gate, tracking events API, tracking ingestion service, tracking lead
+  service, tracking policy, tracking route policy, Meta Pixel, screenshot utils
+- **Updated suites**: DraftReview, RSVP, Valentina payload, Xareni Iyarit content, landing
+  regressions e2e, RSVP Supabase tests, draft-content-mapper, event adapter, intake request
+  service, invitation presenter, section-css-resolver-map, content-resolver,
+  invitation-repository, lint-styles-changed, published route, event counter audit
+
+### Deployment Notes
+
+- Apply both América Bautista production patches in dependency order (payload → hero fix)
+- Re-apply Valentina Hernández patch for templateId and sectionStyles fix
+- Run commercial analytics Supabase migration (20260628000000)
+- Validate consent banner rendering and analytics opt-in/opt-out behavior
+- Verify GA4 and Meta Pixel event delivery in production
+- Confirm demo counterpart routing for all event types
+
+### Known Caveats
+
+- Windows-specific test (`dashboard.guests.happy`) remains skipped with `test.skip` due to a
+  platform limitation in `spawn` — unchanged from `v0.10.0-beta.1`.
+- Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
+- Production patches are additive and backward-compatible.
+- Meta Pixel and GA4 tracking require environment variables: `PUBLIC_GA4_MEASUREMENT_ID`,
+  `PUBLIC_META_PIXEL_ID`.
+- Consent banner requires `PUBLIC_CONSENT_API_URL` for persistence.
+
 ## [0.10.0-beta.1] - 2026-06-28
 
 ### Added
@@ -131,12 +241,6 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
   platform limitation in `spawn` — unchanged from `v0.9.0-beta.1`.
 - Tests that depend on `git` may fail if `git` is not in `PATH` (CI environments without git).
 - Production patches are additive and backward-compatible.
-
-## [Unreleased]
-
-### Added (pending)
-
-<!-- Items for the next release go here -->
 
 ## [0.9.0-beta.1] - 2026-06-19
 
