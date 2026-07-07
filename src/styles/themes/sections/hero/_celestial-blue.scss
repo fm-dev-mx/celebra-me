@@ -38,7 +38,15 @@
 
 		img {
 			filter: var(--theme-image-filter-hero, saturate(1.02) contrast(1.02));
-			object-position: center 30%;
+			object-position: var(--hero-focal-point-default, center 30%);
+
+			@media (width <= 991px) {
+				object-position: var(--hero-focal-point-mobile, var(--hero-focal-point-default, center 30%));
+			}
+
+			@media (width >= 992px) {
+				object-position: var(--hero-focal-point-desktop, var(--hero-focal-point-default, center 30%));
+			}
 		}
 	}
 

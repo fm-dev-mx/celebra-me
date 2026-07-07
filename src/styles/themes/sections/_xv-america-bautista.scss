@@ -1,225 +1,379 @@
-.event--america-bautista.theme-preset--editorial-magazine {
+@use '../../global/mixins' as mixins;
+
+.event--america-bautista.theme-preset--celestial-blue {
+	// ==========================================================================
+	// AMÉRICA BAUTISTA — CUSTOM PALETTE
+	// ==========================================================================
+
 	--america-ink-rgb: 24 25 22;
 	--america-red-rgb: 132 21 30;
 	--america-ivory-rgb: 255 250 242;
 	--america-green-rgb: 33 62 45;
-	--america-champagne-rgb: 219 187 126;
+	--america-silver-rgb: 212 212 212;
 	--america-white-rgb: 255 255 255;
+	--america-rose: rgb(180 60 72);
+	--america-gold: rgb(231 214 179);
+	--america-gold-rgb: 231 214 179;
 	--america-ink: rgb(var(--america-ink-rgb));
 	--america-red: rgb(var(--america-red-rgb));
 	--america-ivory: rgb(var(--america-ivory-rgb));
 	--america-green: rgb(var(--america-green-rgb));
-	--america-champagne: rgb(var(--america-champagne-rgb));
-	--america-white: rgb(var(--america-white-rgb));
-	--editorial-magazine-ink: var(--america-ink);
-	--editorial-magazine-ink-rgb: var(--america-ink-rgb);
-	--editorial-magazine-paper: var(--america-ivory);
-	--editorial-magazine-paper-rgb: var(--america-ivory-rgb);
-	--editorial-magazine-white: var(--america-white);
-	--editorial-magazine-white-rgb: var(--america-white-rgb);
-	--editorial-magazine-red: var(--america-red);
-	--editorial-magazine-red-rgb: var(--america-red-rgb);
-	--editorial-magazine-muted: rgb(var(--america-green-rgb) / 72%);
-	--color-surface-primary: var(--america-ivory);
-	--color-surface-primary-rgb: var(--america-ivory-rgb);
-	--color-surface-secondary: var(--america-white);
-	--color-surface-secondary-rgb: var(--america-white-rgb);
-	--color-surface-dark: var(--america-green);
-	--color-surface-dark-rgb: var(--america-green-rgb);
-	--color-action-primary: var(--america-red);
-	--color-action-primary-rgb: var(--america-red-rgb);
-	--color-action-accent: var(--america-champagne);
-	--color-action-accent-rgb: var(--america-champagne-rgb);
-	--color-text-primary: var(--america-ink);
-	--color-text-primary-rgb: var(--america-ink-rgb);
-	--color-text-secondary: rgb(var(--america-green-rgb) / 78%);
-	--color-text-muted: rgb(var(--america-green-rgb) / 64%);
-	--color-border-light: rgb(var(--america-green-rgb) / 14%);
-	--color-border-medium: rgb(var(--america-green-rgb) / 32%);
-	--hero-overlay: linear-gradient(
-		90deg,
-		rgb(var(--america-green-rgb) / 72%) 0%,
-		rgb(var(--america-green-rgb) / 34%) 48%,
-		rgb(var(--america-red-rgb) / 16%) 100%
-	);
-	--editorial-image-filter: none;
-	--hero-image-filter: none;
-	--hero-portrait-filter: none;
-	--family-image-filter: none;
-	--location-image-filter: none;
-	--gallery-image-filter: none;
-	--hero-label-color: var(--america-champagne);
-	--quote-bg: var(--america-green);
-	--quote-author-color: var(--america-champagne);
-	--quote-accent-color: var(--america-red);
-	--family-bg: var(--america-ivory);
-	--family-accent: var(--america-red);
-	--location-bg: var(--america-ivory);
-	--location-card-bg: rgb(var(--america-white-rgb) / 94%);
-	--rsvp-bg: var(--america-green);
-	--rsvp-radio-label-color: rgb(var(--america-white-rgb) / 76%);
-	--rsvp-radio-label-color-selected: var(--america-white);
-	--rsvp-radio-selected-bg: rgb(var(--america-white-rgb) / 8%);
-	--rsvp-radio-selected-border: rgb(var(--america-champagne-rgb) / 84%);
-	--gifts-bg: var(--america-ivory);
-	--gallery-section-bg: linear-gradient(
-		180deg,
-		var(--america-ivory),
-		rgb(var(--america-green-rgb) / 10%)
-	);
+	--america-silver: rgb(var(--america-silver-rgb));
+
+	// Palette remap
+	--color-satin-blue: var(--america-red);
+	--color-satin-blue-rgb: var(--america-red-rgb);
+	--color-ice-blue: rgb(240 235 228);
+	--color-ice-blue-rgb: 240 235 228;
+	--color-pearl-gray: rgb(244 242 238);
+	--color-pearl-gray-rgb: 244 242 238;
+	--color-cool-ivory: var(--america-ivory);
+	--color-cool-ivory-rgb: var(--america-ivory-rgb);
+	--color-cold-silver: var(--america-silver);
+	--color-cold-silver-rgb: var(--america-silver-rgb);
+	--color-deep-blue-graphite: var(--america-green);
+	--color-deep-blue-graphite-rgb: var(--america-green-rgb);
+	--color-soft-graphite: var(--america-ink);
+	--color-soft-graphite-rgb: var(--america-ink-rgb);
+	--color-action-accent: var(--america-red);
+	--color-action-accent-rgb: var(--america-red-rgb);
+	--env-seal-icon-override: rgb(var(--america-red-rgb) / 44%);
+	--hero-title-color-start: var(--america-red);
+	--hero-title-color-mid: var(--america-gold);
+	--hero-title-color-end: var(--america-silver);
 	--music-player-button-bg: var(--america-red);
 	--music-player-ring-color: rgb(var(--america-red-rgb) / 34%);
 
-	background:
-		radial-gradient(
-			circle at top left,
-			rgb(var(--america-champagne-rgb) / 24%),
-			transparent 32rem
-		),
-		linear-gradient(180deg, var(--america-ivory), rgb(var(--america-green-rgb) / 9%));
-	color: var(--america-ink);
-
-	.invitation-hero,
-	.hero,
-	[data-section='hero'] {
-		background-color: var(--america-green);
+	.event-location__access-label {
+		// stylelint-disable-next-line declaration-no-important
+		margin-top: 1.75rem !important;
 	}
 
-	.invitation-hero[data-variant='editorial-magazine'] {
-		.invitation-hero__background {
-			opacity: 34%;
-			filter: saturate(0.86) brightness(0.54);
-		}
+	.access-card {
+		box-shadow: 0 15px 35px rgb(0 0 0 / 6%);
+		border: 1px solid rgb(0 0 0 / 8%);
+	}
+
+	// ==========================================================================
+	// HERO — EDITORIAL COVER
+	// ==========================================================================
+
+	.invitation-hero {
+		--hero-focal-point-default: 52% 45%;
+		--hero-focal-point-mobile: 52% 38%;
+		--hero-focal-point-tablet: 52% 42%;
+		--hero-focal-point-desktop: 52% 42%;
+	}
+
+	.invitation-hero[data-variant='celestial-blue'] {
+		// --- Responsive layout design tokens (CSS custom properties) ---
+		--hero-title-scale: clamp(2.6rem, 6.5vw, 4.4rem);
+		--hero-details-scale: clamp(0.58rem, 1.2vw, 0.7rem);
+		--hero-label-scale: clamp(0.58rem, 1.6vw, 0.74rem);
+		--hero-title-font-weight: 300;
+		--hero-title-line-height: 0.9;
+		--hero-details-line-height: 1.5;
+		--hero-details-letter-spacing: 0.16em;
+		--hero-details-opacity: 65%;
+		--hero-label-letter-spacing: 0.38em;
+		--hero-label-opacity: 58%;
+
+		// Overlay wash default variables
+		--hero-overlay-opacity-top: 42%;
+		--hero-overlay-opacity-mid: 18%;
+		--hero-overlay-opacity-bottom: 24%;
 
 		.invitation-hero__background::after {
 			background:
-				linear-gradient(180deg, transparent 0 44%, rgb(var(--america-green-rgb) / 82%) 70%),
-				linear-gradient(90deg, rgb(var(--america-green-rgb) / 62%), transparent 46%);
-		}
-	}
-
-	.itinerary[data-variant='editorial-magazine'] {
-		--itinerary-bg: var(--america-ivory);
-		--itinerary-item-desc-color: rgb(var(--america-green-rgb) / 72%);
-
-		.itinerary__item-description {
-			color: rgb(var(--america-green-rgb) / 72%);
-			text-shadow: none;
-		}
-	}
-
-	.event-location[data-variant='editorial-magazine'] {
-		--location-card-bg:
-			linear-gradient(180deg, rgb(var(--america-white-rgb) / 96%), rgb(var(--america-ivory-rgb) / 92%));
-		--location-card-border: 1px solid rgb(var(--america-champagne-rgb) / 54%);
-		--location-card-radius: 0;
-		--location-card-shadow: 0 28px 72px rgb(var(--america-green-rgb) / 14%);
-
-		.event-location__card {
-			position: relative;
-			border-inline: 0;
+				linear-gradient(
+					180deg,
+					rgb(var(--america-ink-rgb) / var(--hero-overlay-opacity-top)) 0%,
+					rgb(var(--america-ink-rgb) / calc(var(--hero-overlay-opacity-top) - 14%)) 10%,
+					rgb(var(--america-ink-rgb) / calc(var(--hero-overlay-opacity-top) - 34%)) 20%,
+					transparent 28%
+				),
+				linear-gradient(
+					180deg,
+					transparent 15%,
+					rgb(var(--america-green-rgb) / var(--hero-overlay-opacity-mid)) 28%,
+					rgb(var(--america-ink-rgb) / calc(var(--hero-overlay-opacity-mid) - 2%)) 42%,
+					rgb(var(--america-ink-rgb) / calc(var(--hero-overlay-opacity-mid) - 10%)) 52%,
+					transparent 60%
+				),
+				linear-gradient(
+					180deg,
+					transparent 55%,
+					rgb(var(--america-ink-rgb) / 4%) 68%,
+					rgb(var(--america-ink-rgb) / 12%) 82%,
+					rgb(var(--america-ink-rgb) / var(--hero-overlay-opacity-bottom)) 100%
+				);
 		}
 
-		.event-location__card::before {
-			position: absolute;
-			inset: 0.75rem;
-			border: 1px solid rgb(var(--america-green-rgb) / 14%);
+		.invitation-hero__title {
 			background: none;
-			pointer-events: none;
-			content: '';
+			background-clip: unset;
+			-webkit-text-fill-color: var(--america-gold);
+			color: var(--america-gold);
+			text-shadow: 0 4px 18px rgb(var(--america-ink-rgb) / 80%);
+			font-family: 'Cormorant Garamond', serif;
+			font-weight: var(--hero-title-font-weight);
+			font-size: var(--hero-title-scale);
+			line-height: var(--hero-title-line-height);
+			letter-spacing: 0.02em;
+			margin: 0;
+			text-align: center;
 		}
 
-		.event-location__card-title,
-		.event-location__access-label {
-			color: var(--america-red);
+		.invitation-hero__label {
+			font-family: var(--font-ui);
+			font-size: var(--hero-label-scale);
+			font-weight: 500;
+			letter-spacing: var(--hero-label-letter-spacing);
+			color: rgb(var(--america-gold-rgb) / var(--hero-label-opacity));
+			text-shadow: 0 1px 6px rgb(var(--america-ink-rgb) / 40%);
+			margin: 0;
+			text-align: center;
 		}
 
-		.event-location__card-content-place {
-			color: var(--america-ink);
+		.invitation-hero__divider {
+			width: clamp(2.5rem, 6vw, 4rem);
+			height: 1px;
+			margin: 0.8rem 0;
+			background: rgb(var(--america-gold-rgb) / 40%);
+			opacity: 60%;
 		}
 
-		.event-location__card-content-address {
-			color: rgb(var(--america-green-rgb) / 76%);
+		.invitation-hero__date,
+		.invitation-hero__time,
+		.invitation-hero__venue {
+			font-family: var(--font-ui);
+			font-weight: 500;
+			letter-spacing: var(--hero-details-letter-spacing);
+			text-transform: uppercase;
+			color: rgb(var(--america-ivory-rgb) / var(--hero-details-opacity));
+			text-shadow: 0 2px 10px rgb(var(--america-ink-rgb) / 70%);
+			font-size: var(--hero-details-scale);
+			line-height: var(--hero-details-line-height);
+			text-align: center;
+		}
+
+		.calligraphy-accent {
+			font-family: var(--font-display);
+			font-style: italic;
+			color: var(--america-rose);
+		}
+
+		.invitation-hero__scroll-indicator {
+			bottom: 1.25rem;
+			color: rgb(var(--america-gold-rgb) / 20%);
+			animation: america-scroll-fade 1.5s var(--ease-out) 2.5s forwards;
+		}
+
+		.invitation-hero__scroll-text {
+			letter-spacing: 0.24em;
+		}
+
+		@keyframes america-scroll-fade {
+			from {
+				opacity: 0%;
+			}
+
+			to {
+				opacity: 22%;
+			}
+		}
+
+		// ── RESPONSIVE COMPOSITION: ABSOLUTE GRID OVERRIDES FOR MOBILE/TABLET ──
+		@include mixins.respond-below(lg) {
+			// Mobile/Tablet Design System tokens
+			--hero-title-scale: clamp(3.4rem, 15vw, 4.9rem);
+			--hero-details-scale: clamp(0.68rem, 3vw, 0.8rem);
+			--hero-label-scale: clamp(0.68rem, 2.5vw, 0.78rem);
+			--hero-title-font-weight: 300;
+			--hero-title-line-height: 0.88;
+			--hero-details-line-height: 1.55;
+			--hero-details-letter-spacing: 0.13em;
+			--hero-details-opacity: 85%;
+			--hero-details-top: 27.5svh;
+			--hero-label-letter-spacing: 0.38em;
+			--hero-label-opacity: 78%;
+
+			.invitation-hero__background::after {
+				background:
+					// Soft editorial readability veil behind the upper/mid text area (10% - 42% range)
+					linear-gradient(
+						180deg,
+						rgb(var(--america-ink-rgb) / 60%) 0%,
+						rgb(var(--america-ink-rgb) / 48%) 18%,
+						rgb(var(--america-ink-rgb) / 42%) 32%,
+						rgb(var(--america-ink-rgb) / 22%) 45%,
+						transparent 55%
+					),
+					// Subtle bottom anchor to ground the subject
+					linear-gradient(
+						180deg,
+						transparent 75%,
+						rgb(var(--america-ink-rgb) / 25%) 100%
+					);
+			}
+
+			.invitation-hero__content {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100svh;
+				display: block;
+				box-sizing: border-box;
+				padding: 0;
+			}
+
+			.invitation-hero__label {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 15svh; // 15% of viewport height
+				margin: 0 auto;
+			}
+
+			.invitation-hero__title-wrapper {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 19svh; // 19% of viewport height
+				margin: 0 auto;
+				display: flex;
+				justify-content: center;
+			}
+
+			.invitation-hero__divider {
+				display: none; // Remove divider on mobile
+			}
+
+			.invitation-hero__details {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: var(--hero-details-top);
+				margin: 0 auto;
+				max-width: min(92vw, 28rem);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 0.4rem;
+			}
+
+			.invitation-hero__scroll-indicator {
+				display: none; // Hide scroll indicator on mobile/tablet viewports
+			}
+		}
+
+		// ── DESKTOP ADJUSTMENTS ─────────────────────────────────────────────
+		@include mixins.respond-to(lg) {
+			--hero-title-scale: clamp(2.6rem, 6.5vw, 4.4rem);
+			--hero-details-scale: clamp(0.58rem, 1.2vw, 0.7rem);
+			--hero-label-scale: clamp(0.58rem, 1.6vw, 0.74rem);
+			--hero-title-line-height: 0.9;
+			--hero-details-line-height: 1.5;
+			--hero-details-letter-spacing: 0.16em;
+			--hero-details-opacity: 65%;
+			--hero-label-letter-spacing: 0.38em;
+			--hero-label-opacity: 58%;
+
+			.invitation-hero__background::after {
+				background:
+					linear-gradient(
+						90deg,
+						rgb(var(--america-ink-rgb) / 50%) 0%,
+						rgb(var(--america-ink-rgb) / 35%) 30%,
+						rgb(var(--america-ink-rgb) / 10%) 50%,
+						transparent 70%
+					),
+					linear-gradient(
+						180deg,
+						rgb(var(--america-ink-rgb) / 35%) 0%,
+						transparent 25%,
+						transparent 75%,
+						rgb(var(--america-ink-rgb) / 30%) 100%
+					);
+			}
+
+			.invitation-hero__content {
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+				align-items: flex-start;
+				min-height: 100svh;
+				box-sizing: border-box;
+				padding: clamp(5rem, 12svh, 8rem) clamp(2rem, 8vw, 6rem) clamp(6rem, 14svh, 9rem);
+			}
+
+			.invitation-hero__title {
+				text-align: left;
+			}
+
+			.invitation-hero__label {
+				text-align: left;
+			}
 		}
 	}
 
-	.rsvp[data-variant='editorial-magazine'] {
-		.rsvp__response-heading {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: space-between;
-			gap: 0.35rem 1rem;
+	// ==========================================================================
+	// TOP CHROME
+	// ==========================================================================
+
+	.header-base[data-variant='celestial-blue'] {
+		.event-header__title-initials {
+			font-family: var(--font-display);
+			font-weight: 400;
+			letter-spacing: 0.12em;
+			font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+			color: rgb(var(--america-ivory-rgb) / 92%);
+			text-shadow: 0 1px 8px rgb(var(--america-ink-rgb) / 36%);
 		}
 
-		.rsvp__response-heading span {
-			display: inline-block;
+		.hamburger__line {
+			height: 1px;
 		}
 
-		.rsvp__radio-card,
-		.rsvp__radio-label {
-			color: rgb(var(--america-white-rgb) / 88%);
+		--hamburger-color: rgb(var(--america-ivory-rgb) / 82%);
+
+		&.header-base--scrolled {
+			--header-bg-scrolled: rgb(var(--america-ivory-rgb) / 88%);
+			--header-nav-title-color: var(--america-ink);
+			--header-nav-color: var(--america-ink);
+			--header-nav-hover-color: var(--america-red);
+			--header-nav-shadow-transparent: none;
+			--header-nav-filter-transparent: none;
+			--hamburger-color: var(--america-ink);
+			--header-nav-cta-bg: rgb(var(--america-ink-rgb) / 6%);
+			--header-nav-cta-color: var(--america-ink);
+			--header-nav-cta-border: rgb(var(--america-ink-rgb) / 22%);
+			--header-nav-cta-shadow: none;
+			--header-nav-cta-hover-bg: var(--america-red);
+			--header-nav-cta-hover-color: var(--america-ivory);
+			--header-nav-cta-hover-border: var(--america-red);
+			--header-nav-cta-hover-shadow: 0 4px 14px rgb(var(--america-red-rgb) / 18%);
 		}
 
-		.rsvp__radio-card {
-			background: rgb(var(--america-white-rgb) / 4%);
+		&.header-base--transparent {
+			backdrop-filter: blur(3px);
 		}
 
-		.rsvp__radio-card:has(input:checked) .rsvp__radio-label,
-		.rsvp__radio-card input:checked + .rsvp__radio-indicator + .rsvp__radio-label {
-			color: var(--america-white);
-		}
-
-		.rsvp__radio-indicator {
-			border-color: rgb(var(--america-champagne-rgb) / 72%);
-		}
-	}
-
-	.button,
-	.btn,
-	button[type='submit'],
-	.rsvp-submit,
-	.rsvp-option.is-selected,
-	[aria-pressed='true'],
-	[data-active='true'] {
-		background: var(--america-red);
-		border-color: var(--america-red);
-		color: var(--america-white);
-	}
-
-	.card,
-	.location-card,
-	.gift-card,
-	.family-card,
-	.rsvp-card,
-	.personalized-access,
-	.thank-you-card {
-		background: rgb(var(--america-white-rgb) / 94%);
-		border-color: rgb(var(--america-champagne-rgb) / 34%);
-		box-shadow: 0 24px 72px rgb(var(--america-green-rgb) / 12%);
-		color: var(--america-ink);
-	}
-
-	a,
-	.section-kicker,
-	.kicker,
-	.location-time,
-	.gift-title,
-	.family-role,
-	.rsvp-title,
-	.thank-you-title {
-		color: var(--america-red);
-	}
-
-	.thank-you,
-	[data-section='thank-you'] {
-		background:
-			radial-gradient(
-				circle at 20% 10%,
-				rgb(var(--america-champagne-rgb) / 24%),
-				transparent 34%
-			),
-			linear-gradient(150deg, var(--america-green), rgb(var(--america-red-rgb) / 88%));
-		color: var(--america-white);
+		--mobile-drawer-bg: rgb(var(--america-green-rgb) / 96%);
+		--mobile-drawer-border: rgb(var(--america-silver-rgb) / 14%);
+		--mobile-drawer-link-color: var(--america-ivory);
+		--mobile-drawer-link-hover: var(--america-rose);
+		--mobile-drawer-login-color: rgb(var(--america-ivory-rgb) / 72%);
+		--mobile-drawer-login-hover-color: var(--america-ivory);
+		--mobile-drawer-cta-bg: var(--america-ivory);
+		--mobile-drawer-cta-color: var(--america-green);
+		--mobile-drawer-cta-border: 1px solid var(--america-ivory);
+		--mobile-drawer-cta-shadow: 0 12px 30px rgb(var(--america-red-rgb) / 18%);
+		--mobile-drawer-cta-hover-bg: var(--america-red);
+		--mobile-drawer-cta-hover-color: var(--america-ivory);
+		--mobile-drawer-cta-hover-border: 1px solid var(--america-red);
+		--mobile-drawer-footer-copy: rgb(var(--america-ivory-rgb) / 58%);
+		--mobile-drawer-shadow: -20px 0 80px rgb(var(--america-ink-rgb) / 62%);
+		--mobile-signature-color: rgb(var(--america-ivory-rgb) / 76%);
 	}
 }

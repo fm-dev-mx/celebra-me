@@ -29,7 +29,7 @@ export const envelopeSchema = z
 				background: ColorTokenSchema.optional(),
 			})
 			.optional(),
-		revealVariant: z.enum(['editorial-cover']).optional(),
+		revealVariant: z.enum(['celestial-blue', 'editorial-cover']).optional(),
 		coverEdition: z.string().optional(),
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),

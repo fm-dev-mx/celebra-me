@@ -3,6 +3,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
+import { applyAmericaBautistaHeroOverrides } from '@/lib/invitation/america-bautista-hero-overrides';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
@@ -177,6 +178,7 @@ const headLinks = [
 ];
 
 // page.heroVenueName intentionally overrides viewModel.hero.venueName
+applyAmericaBautistaHeroOverrides(page, { routeSlug: slug });
 
 ---
 
