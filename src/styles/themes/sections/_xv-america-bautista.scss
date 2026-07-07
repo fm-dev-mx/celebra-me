@@ -194,53 +194,46 @@
 			--hero-details-line-height: 1.55;
 			--hero-details-letter-spacing: 0.13em;
 			--hero-details-opacity: 85%;
-			--hero-details-top: 27.5svh;
 			--hero-label-letter-spacing: 0.38em;
 			--hero-label-opacity: 78%;
 
 			.invitation-hero__background::after {
 				background:
-					// Soft editorial readability veil behind the upper/mid text area (10% - 42% range)
+					// Top header veil for logo/hamburger menu readability
 					linear-gradient(
 						180deg,
-						rgb(var(--america-ink-rgb) / 60%) 0%,
-						rgb(var(--america-ink-rgb) / 48%) 18%,
-						rgb(var(--america-ink-rgb) / 42%) 32%,
-						rgb(var(--america-ink-rgb) / 22%) 45%,
-						transparent 55%
+						rgb(var(--america-ink-rgb) / 45%) 0%,
+						rgb(var(--america-ink-rgb) / 20%) 8%,
+						transparent 18%
 					),
-					// Subtle bottom anchor to ground the subject
+					// Bottom veil for title/details readability over the dress
 					linear-gradient(
 						180deg,
-						transparent 75%,
-						rgb(var(--america-ink-rgb) / 25%) 100%
+						transparent 45%,
+						rgb(var(--america-ink-rgb) / 30%) 60%,
+						rgb(var(--america-ink-rgb) / 75%) 85%,
+						rgb(var(--america-ink-rgb) / 92%) 100%
 					);
 			}
 
 			.invitation-hero__content {
-				position: absolute;
-				inset: 0;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-end;
+				align-items: center;
 				width: 100%;
-				height: 100svh;
-				display: block;
+				min-height: 100svh;
 				box-sizing: border-box;
-				padding: 0;
+				padding: clamp(4rem, 10svh, 6rem) clamp(1.25rem, 4vw, 2rem) clamp(3.5rem, 8svh, 5rem);
+				text-align: center;
 			}
 
 			.invitation-hero__label {
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: 15svh; // 15% of viewport height
-				margin: 0 auto;
+				margin: 0 0 0.8rem;
 			}
 
 			.invitation-hero__title-wrapper {
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: 19svh; // 19% of viewport height
-				margin: 0 auto;
+				margin: 0 0 1.2rem;
 				display: flex;
 				justify-content: center;
 			}
@@ -250,11 +243,6 @@
 			}
 
 			.invitation-hero__details {
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: var(--hero-details-top);
-				margin: 0 auto;
 				max-width: min(92vw, 28rem);
 				display: flex;
 				flex-direction: column;
