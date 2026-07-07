@@ -29,6 +29,23 @@ function isMissingInvitationsTableError(error: unknown): boolean {
 	return error instanceof Error && error.message.includes("Could not find the table 'public.invitations'");
 }
 
+/**
+ * Check whether the error indicates that Supabase credentials are missing
+ * from the environment (e.g. SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY).
+ * In that case we should skip DB queries and fall back to static content
+ * rather than crashing the request.
+ */
+const CREDENTIAL_ERROR_PREFIXES = [
+	'SUPABASE_URL no configurada',
+	'SUPABASE_ANON_KEY no configurada',
+	'SUPABASE_SERVICE_ROLE_KEY no configurada',
+];
+
+function isMissingSupabaseCredentialsError(error: unknown): boolean {
+	if (!(error instanceof Error)) return false;
+	return CREDENTIAL_ERROR_PREFIXES.some((prefix) => error.message.startsWith(prefix));
+}
+
 export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
@@ -36,19 +53,28 @@ export async function resolveInvitationContent(
 	const staticEntry = await getRoutableEventEntry(slug, eventType);
 
 	// DB-published content first — this is the source of truth for real invitations.
-	// Static demos are the canonical source for demo content, but published content
-	// always takes precedence when both exist.
+	// If Supabase credentials are not configured (CI, local without .env), skip DB
+	// and fall through to the static fallback so demos and templates still render.
 	if (eventType) {
-		const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
-		if (publishedEntry && publishedEntry.isDemo !== true) {
-			const rawContent = publishedEntry.content;
-			const viewModel = adaptDbEvent({
-				slug,
-				eventType: publishedEntry.eventType,
-				isDemo: publishedEntry.isDemo,
-				content: rawContent,
-			});
-			return { source: 'published', viewModel, rawContent };
+		try {
+			const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
+			if (publishedEntry && publishedEntry.isDemo !== true) {
+				const rawContent = publishedEntry.content;
+				const viewModel = adaptDbEvent({
+					slug,
+					eventType: publishedEntry.eventType,
+					isDemo: publishedEntry.isDemo,
+					content: rawContent,
+				});
+				return { source: 'published', viewModel, rawContent };
+			}
+		} catch (error) {
+			if (isMissingSupabaseCredentialsError(error)) {
+				// Credentials not configured — static fallback will handle this.
+				// Do not swallow other DB errors.
+			} else {
+				throw error;
+			}
 		}
 	}
 
@@ -56,8 +82,9 @@ export async function resolveInvitationContent(
 		const invitation = await findInvitationBySlug(slug, true);
 		if (invitation?.archivedAt) return null;
 	} catch (error) {
-		// Keep static demos routable during the short app-before-migration rollout window.
-		if (!isMissingInvitationsTableError(error)) {
+		if (isMissingSupabaseCredentialsError(error)) {
+			// Credentials not configured — proceed to static fallback.
+		} else if (!isMissingInvitationsTableError(error)) {
 			throw error;
 		}
 	}

@@ -91,6 +91,58 @@ describe('resolveInvitationContent', () => {
 		expect(mockAdaptEvent).not.toHaveBeenCalled();
 	});
 
+	it('resolves static demo when Supabase credentials are missing', async () => {
+		mockFindPublishedBySlugAndEventType.mockRejectedValue(
+			new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.'),
+		);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
+
+		expect(result).not.toBeNull();
+		expect(result!.source).toBe('static');
+		expect(mockAdaptEvent).toHaveBeenCalled();
+	});
+
+	it('resolves static demo when all Supabase calls fail with credential errors', async () => {
+		const credError = new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.');
+		mockFindPublishedBySlugAndEventType.mockRejectedValue(credError);
+		mockFindInvitationBySlug.mockRejectedValue(credError);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+
+		const result = await resolveInvitationContent('demo-xv', 'xv');
+
+		expect(result).not.toBeNull();
+		expect(result!.source).toBe('static');
+	});
+
+	it('returns null when credentials are missing and no static fallback exists', async () => {
+		mockFindPublishedBySlugAndEventType.mockRejectedValue(
+			new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.'),
+		);
+		mockGetRoutable.mockResolvedValue(null);
+
+		const result = await resolveInvitationContent('non-existent', 'xv');
+
+		expect(result).toBeNull();
+	});
+
+	it('still throws on non-credential DB errors', async () => {
+		mockFindPublishedBySlugAndEventType.mockRejectedValue(
+			new Error('connection refused'),
+		);
+
+		await expect(
+			resolveInvitationContent('my-invitation', 'xv'),
+		).rejects.toThrow('connection refused');
+	});
+
 	it('resolves static demo content when no DB content exists', async () => {
 		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
 		mockGetRoutable.mockResolvedValue({
