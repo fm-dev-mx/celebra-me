@@ -383,20 +383,28 @@ BEGIN
         "ceremony": {
             "venueEvent": "Ceremonia",
             "venueName": "Rectoría San Antonio de Padua",
-            "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán, 04610 Ciudad de México, CDMX",
+            "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán",
             "city": "Ciudad de México",
             "date": "29 de agosto de 2026",
             "time": "5:30 p.m.",
-            "googleMapsUrl": "https://share.google/WWzG4I0TOHD4sHGDs"
+            "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
+            "coordinates": {
+                "lat": 19.3278767,
+                "lng": -99.1468354
+            }
         },
         "reception": {
             "venueEvent": "Recepción",
             "venueName": "Gran Salón Del Prado",
-            "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan, 14350 CDMX",
+            "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan",
             "city": "Ciudad de México",
             "date": "29 de agosto de 2026",
             "time": "8:00 p.m.",
-            "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9"
+            "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9",
+            "coordinates": {
+                "lat": 19.291035,
+                "lng": -99.1314772
+            }
         },
         "indications": [
             {
@@ -422,9 +430,9 @@ BEGIN
         ]
     },
     "gallery": {
-        "eyebrow": "Galería",
-        "title": "Un jardín para recordar mis XV.",
-        "subtitle": "Retratos con familia y amigos.",
+        "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
+        "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
+        "subtitle": "Junto a las personas que más quiero.",
         "items": [
             {
                 "image": "gallery01",
@@ -435,11 +443,6 @@ BEGIN
                 "image": "gallery02",
                 "caption": "Entre verde, rojo y luz.",
                 "focalPoint": "50% 35%"
-            },
-            {
-                "image": "gallery03",
-                "caption": "Una tarde con historia.",
-                "focalPoint": "50% 50%"
             },
             {
                 "image": "gallery04",

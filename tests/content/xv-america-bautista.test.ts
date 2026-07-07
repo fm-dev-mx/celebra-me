@@ -105,11 +105,19 @@ describe('XV America Bautista client invitation preparation', () => {
 		expect(result.data.rsvp?.subcopy).toContain('Preséntalo al ingresar al evento.');
 		expect(result.data.rsvp?.personalizedAccess).toEqual(expectedPersonalizedAccess);
 		expect(result.data.location?.ceremony?.googleMapsUrl).toBe(
-			'https://share.google/WWzG4I0TOHD4sHGDs',
+			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
 		);
+		expect(result.data.location?.ceremony?.coordinates).toEqual({
+			lat: 19.3278767,
+			lng: -99.1468354,
+		});
 		expect(result.data.location?.reception?.googleMapsUrl).toBe(
 			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',
 		);
+		expect(result.data.location?.reception?.coordinates).toEqual({
+			lat: 19.291035,
+			lng: -99.1314772,
+		});
 		expect(result.data.location?.indications?.map((item) => item.text).join(' ')).toContain(
 			'El color rojo está reservado para la quinceañera.',
 		);

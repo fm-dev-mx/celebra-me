@@ -15,9 +15,9 @@
 | `heroDesktop`      | `hero-desktop.webp`       | `DSC04224.JPG` | Wide statement crop for desktop hero overlay.                                                                |
 | `portrait`         | `portrait.webp`           | `DSC03417.JPG` | Secondary editorial statement on the bridge.                                                                 |
 | `family`           | `family.webp`             | `DSC03619.JPG` | Family/emotional portrait crop.                                                                              |
-| `gallery01`        | `gallery-01.webp`         | `DSC03417.JPG` | Statement portrait.                                                                                          |
-| `gallery02`        | `gallery-02.webp`         | `DSC04224.JPG` | Alternate 15-balloon crop.                                                                                   |
-| `gallery03`        | `gallery-03.webp`         | `DSC03698.JPG` | Editorial garden/session image.                                                                              |
+| `gallery01`        | `gallery-01.webp`         | `DSC03559.JPG` | Statement portrait using previously unused photo.                                                            |
+| `gallery02`        | `gallery-02.webp`         | `DSC03775.JPG` | Alternate crop using previously unused client photo.                                                         |
+| `gallery03`        | `gallery-03.webp`         | `DSC03698.JPG` | [UNUSED] Removed from gallery payload to resolve duplicate photo usage with `interlude03`.                   |
 | `gallery04`        | `gallery-04.webp`         | `DSC01278.JPG` | Friends/session energy.                                                                                      |
 | `gallery05`        | `gallery-05.webp`         | `DSC03740.JPG` | Friends/family story.                                                                                        |
 | `gallery06`        | `gallery-06.webp`         | `DSC03619.JPG` | Family close-up.                                                                                             |
