@@ -46,7 +46,17 @@ describe('Valentina Hernández DB payload', () => {
 	it('produces valid content from the SQL-embedded payload', () => {
 		const payload = readSqlEmbeddedPayload();
 		const result = eventContentSchema.safeParse(payload);
-		expect(result.success).toBe(true);
+		if (!result.success) {
+			console.warn(
+				'Zod validation errors:',
+				JSON.stringify(result.error.issues, null, 2),
+			);
+		}
+		// Log for CI — only shows issues when test fails
+		expect({
+			success: result.success,
+			...(result.success ? {} : { issues: result.error.issues }),
+		}).toStrictEqual({ success: true });
 	});
 
 	it('does not expose placeholder or admin copy in production-bound content', () => {

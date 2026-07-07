@@ -342,9 +342,6 @@ BEGIN
         "thankYou"
     ],
     "sectionStyles": {
-        "hero": {
-            "variant": "editorial-magazine"
-        },
         "quote": {
             "variant": "editorial-magazine"
         },
