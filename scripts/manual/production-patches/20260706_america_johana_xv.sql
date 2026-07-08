@@ -1,5 +1,5 @@
 -- ============================================================================
--- Continuation-safe patch: América Bautista — XV invitation
+-- Continuation-safe patch: América Johana — XV invitation
 --
 -- Sets up the full invitation data pipeline with state-aware logic:
 --   1. invitations  — explicit UPDATE or INSERT (no ON CONFLICT)
@@ -18,25 +18,25 @@
 --   1. Replace the __OWNER_USER_ID__ placeholder in the set_config block
 --      with the actual admin UUID from auth.users.
 --   2. Verify the content payload below matches
---      .agent/plans/active/xv-america-bautista-db-payload.json
+--      .agent/plans/active/xv-america-johana-db-payload.json
 --   3. Take and verify a production DB backup
 --   4. Validate on local/staging environment first
 --   5. Obtain explicit operator approval before execution
 -- ============================================================================
 
--- @script-id: 20260706_america_bautista_xv
--- @purpose: Create or update América Bautista's XV invitation and linked RSVP records from the approved DB payload
+-- @script-id: 20260706_america_johana_xv
+-- @purpose: Create or update América Johana's XV invitation and linked RSVP records from the approved DB payload
 -- @env: production
--- @ticket: operator note 2026-07-06 plus .agent/plans/active/xv-america-bautista-db-payload.json
+-- @ticket: operator note 2026-07-06 plus .agent/plans/active/xv-america-johana-db-payload.json
 -- @tables: public.invitations, public.published_invitation_content, public.events, public.event_memberships
 -- @operation: update
 -- @expected-rows-min: 0
 -- @expected-rows-max: 4
 -- @requires-backup: true
--- @dry-run-query: SELECT id, kind, slug, event_type, status, base_demo_id, theme_id, archived_at FROM public.invitations WHERE slug = 'america-bautista' AND event_type = 'xv'; SELECT id, slug, event_type, version, published_at, deleted_at FROM public.published_invitation_content WHERE slug = 'america-bautista' AND event_type = 'xv'; SELECT id, slug, event_type, status, invitation_project_id, deleted_at FROM public.events WHERE slug = 'america-bautista'; SELECT m.id, m.event_id, m.user_id, m.membership_role, m.deleted_at FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'america-bautista';
--- @rollback: See rollback section at bottom. Restore from verified production backup or run the targeted delete sequence only after confirming that all América Bautista rows must be removed.
+-- @dry-run-query: SELECT id, kind, slug, event_type, status, base_demo_id, theme_id, archived_at FROM public.invitations WHERE slug = 'america-johana' AND event_type = 'xv'; SELECT id, slug, event_type, version, published_at, deleted_at FROM public.published_invitation_content WHERE slug = 'america-johana' AND event_type = 'xv'; SELECT id, slug, event_type, status, invitation_project_id, deleted_at FROM public.events WHERE slug = 'america-johana'; SELECT m.id, m.event_id, m.user_id, m.membership_role, m.deleted_at FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'america-johana';
+-- @rollback: See rollback section at bottom. Restore from verified production backup or run the targeted delete sequence only after confirming that all América Johana rows must be removed.
 -- NOTE: The content payload below is DUPLICATED from
---       .agent/plans/active/xv-america-bautista-db-payload.json.
+--       .agent/plans/active/xv-america-johana-db-payload.json.
 --       Keep both in sync when either is updated.
 --
 -- MUSIC PRESERVATION:
@@ -90,33 +90,33 @@ BEGIN
 
   SELECT count(*) INTO v_invitation_count
   FROM public.invitations
-  WHERE slug = 'america-bautista'
+  WHERE slug = 'america-johana'
     AND event_type = 'xv';
 
   IF v_invitation_count > 1 THEN
     RAISE EXCEPTION
-      'PREFLIGHT_ABORT: Found % invitations row(s) for slug america-bautista event_type xv. Expected 0 or 1.',
+      'PREFLIGHT_ABORT: Found % invitations row(s) for slug america-johana event_type xv. Expected 0 or 1.',
       v_invitation_count;
   END IF;
 
   SELECT count(*) INTO v_pub_count
   FROM public.published_invitation_content
-  WHERE slug = 'america-bautista'
+  WHERE slug = 'america-johana'
     AND event_type = 'xv';
 
   IF v_pub_count > 1 THEN
     RAISE EXCEPTION
-      'PREFLIGHT_ABORT: Found % published_invitation_content row(s) for slug america-bautista event_type xv. Expected 0 or 1.',
+      'PREFLIGHT_ABORT: Found % published_invitation_content row(s) for slug america-johana event_type xv. Expected 0 or 1.',
       v_pub_count;
   END IF;
 
   SELECT count(*) INTO v_event_count
   FROM public.events
-  WHERE slug = 'america-bautista';
+  WHERE slug = 'america-johana';
 
   IF v_event_count > 1 THEN
     RAISE EXCEPTION
-      'PREFLIGHT_ABORT: Found % events row(s) for slug america-bautista. Expected 0 or 1.',
+      'PREFLIGHT_ABORT: Found % events row(s) for slug america-johana. Expected 0 or 1.',
       v_event_count;
   END IF;
 
@@ -132,7 +132,7 @@ BEGIN
 
   SELECT e.id INTO v_event_id
   FROM public.events e
-  WHERE e.slug = 'america-bautista'
+  WHERE e.slug = 'america-johana'
   LIMIT 1;
 
   IF v_event_id IS NOT NULL THEN
@@ -168,7 +168,7 @@ BEGIN
 
   SELECT id, archived_at INTO v_invitation_id, v_archived_at
   FROM public.invitations
-  WHERE slug = 'america-bautista'
+  WHERE slug = 'america-johana'
     AND event_type = 'xv'
   LIMIT 1;
 
@@ -194,8 +194,8 @@ BEGIN
     ) VALUES (
       'client',
       NULL,
-      'america-bautista',
-      'XV América Bautista',
+      'america-johana',
+      'XV América Johana',
       'xv',
       'published',
       'demo-xv-celestial-blue',
@@ -203,7 +203,7 @@ BEGIN
       '{
         "id": "demo-xv-celestial-blue",
         "eventType": "xv",
-        "displayName": "XV Años • América Bautista",
+        "displayName": "XV Años • América Johana",
         "themeId": "celestial-blue",
         "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
         "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
@@ -211,7 +211,7 @@ BEGIN
         "requiredAssets": ["hero", "portrait", "family", "gallery01", "gallery02", "gallery03"],
         "previewSlug": "demo-xv-celestial-blue"
       }'::jsonb,
-      'Paulina Soto / América Bautista',
+      'Paulina Soto / América Johana',
       '',
       '',
       true,
@@ -222,13 +222,13 @@ BEGIN
     )
     RETURNING id INTO v_invitation_id;
 
-    RAISE NOTICE 'INSERTED invitations: id=% slug=america-bautista', v_invitation_id;
+    RAISE NOTICE 'INSERTED invitations: id=% slug=america-johana', v_invitation_id;
   ELSE
     UPDATE public.invitations
     SET
       kind = 'client',
-      slug = 'america-bautista',
-      title = 'XV América Bautista',
+      slug = 'america-johana',
+      title = 'XV América Johana',
       event_type = 'xv',
       status = 'published',
       base_demo_id = 'demo-xv-celestial-blue',
@@ -236,7 +236,7 @@ BEGIN
       snapshot = '{
         "id": "demo-xv-celestial-blue",
         "eventType": "xv",
-        "displayName": "XV Años • América Bautista",
+        "displayName": "XV Años • América Johana",
         "themeId": "celestial-blue",
         "defaultSections": ["quote", "family", "gallery", "countdown", "location", "itinerary", "rsvp", "gifts", "thankYou"],
         "supportedBlocks": ["event-details", "main-people", "date-locations", "photos", "rsvp-config", "music", "gifts", "special-messages"],
@@ -244,7 +244,7 @@ BEGIN
         "requiredAssets": ["hero", "portrait", "family", "gallery01", "gallery02", "gallery03"],
         "previewSlug": "demo-xv-celestial-blue"
       }'::jsonb,
-      client_name = 'Paulina Soto / América Bautista',
+      client_name = 'Paulina Soto / América Johana',
       client_email = '',
       client_whatsapp = '',
       photos_received = true,
@@ -254,9 +254,9 @@ BEGIN
     WHERE id = v_invitation_id;
 
     IF v_archived_at IS NULL THEN
-      RAISE NOTICE 'UPDATED invitations: id=% slug=america-bautista', v_invitation_id;
+      RAISE NOTICE 'UPDATED invitations: id=% slug=america-johana', v_invitation_id;
     ELSE
-      RAISE NOTICE 'RESURRECTED invitations: id=% slug=america-bautista', v_invitation_id;
+      RAISE NOTICE 'RESURRECTED invitations: id=% slug=america-johana', v_invitation_id;
     END IF;
   END IF;
 
@@ -279,7 +279,7 @@ BEGIN
 
   SELECT id, deleted_at INTO v_pub_id, v_pub_deleted_at
   FROM public.published_invitation_content
-  WHERE slug = 'america-bautista'
+  WHERE slug = 'america-johana'
     AND event_type = 'xv'
   LIMIT 1;
 
@@ -287,10 +287,10 @@ BEGIN
     "eventType": "xv",
     "isDemo": false,
     "templateId": "xv-celestial-blue",
-    "visualProfileId": "america-bautista",
-    "title": "XV América Bautista",
-    "description": "XV años de América Bautista, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
-    "_assetSlug": "xv-america-bautista",
+    "visualProfileId": "america-johana",
+    "title": "XV América Johana",
+    "description": "XV años de América Johana, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
+    "_assetSlug": "xv-america-johana",
     "theme": {
       "fontFamily": "serif",
       "preset": "celestial-blue"
@@ -320,7 +320,7 @@ BEGIN
     },
     "quote": {
       "text": "Hay días que se guardan para siempre. Este será uno de ellos.",
-      "author": "América Bautista"
+      "author": "América Johana"
     },
     "family": {
       "featuredImage": "family",
@@ -437,12 +437,7 @@ BEGIN
         {
           "iconName": "Calendar",
           "styleVariant": "default",
-          "text": "Confirma tu asistencia con anticipación para ayudarnos a preparar cada detalle."
-        },
-        {
-          "iconName": "Gift",
-          "styleVariant": "default",
-          "text": "Si deseas tener un detalle conmigo, puedes consultar mis mesas de regalos."
+          "text": "Agradecemos confirmar tu asistencia antes del 1 de agosto de 2026."
         }
       ]
     },
@@ -540,7 +535,7 @@ BEGIN
     },
     "thankYou": {
       "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
-      "closingName": "América Bautista",
+      "closingName": "América Johana",
       "image": "thankYouPortrait",
       "focalPoint": "50% 34%"
     },
@@ -590,13 +585,13 @@ BEGIN
       "coverIssue": "2026",
       "sealStyle": "wax",
       "sealIcon": "flower",
-      "sealInitials": "A·B",
+      "sealInitials": "A·J",
       "sealVariant": "premium-rose",
       "microcopy": "Abrir invitación",
       "documentLabel": "XV AÑOS · 2026",
       "cardLabel": "XV AÑOS · 2026",
       "cardTagline": "Una noche para recordar",
-      "stampText": "América Baustista",
+      "stampText": "América Johana",
       "stampYear": "2026",
       "closedPalette": {
         "primary": "surfaceDark",
@@ -605,9 +600,9 @@ BEGIN
       }
     },
     "sharing": {
-      "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Bautista\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!",
+      "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Johana\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!",
       "ogImage": "portrait",
-      "ogDescription": "XV años • América Bautista"
+      "ogDescription": "XV años • América Johana"
     }
   }'::jsonb;
 
@@ -643,7 +638,7 @@ BEGIN
       deleted_at
     ) VALUES (
       v_invitation_id,
-      'america-bautista',
+      'america-johana',
       'xv',
       false,
       v_new_content,
@@ -654,7 +649,7 @@ BEGIN
       NULL
     );
 
-    RAISE NOTICE 'INSERTED published_invitation_content: slug=america-bautista event_type=xv';
+    RAISE NOTICE 'INSERTED published_invitation_content: slug=america-johana event_type=xv';
   ELSIF v_pub_deleted_at IS NULL THEN
     UPDATE public.published_invitation_content
     SET
@@ -700,7 +695,7 @@ BEGIN
 
   SELECT id, deleted_at INTO v_event_id, v_event_deleted_at
   FROM public.events
-  WHERE slug = 'america-bautista'
+  WHERE slug = 'america-johana'
   LIMIT 1;
 
   IF v_event_id IS NULL THEN
@@ -717,9 +712,9 @@ BEGIN
       invitation_project_id
     ) VALUES (
       v_owner_id,
-      'america-bautista',
+      'america-johana',
       'xv',
-      'XV América Bautista',
+      'XV América Johana',
       'published',
       now(),
       now(),
@@ -729,26 +724,26 @@ BEGIN
     )
     RETURNING id INTO v_event_id;
 
-    RAISE NOTICE 'INSERTED events: id=% slug=america-bautista', v_event_id;
+    RAISE NOTICE 'INSERTED events: id=% slug=america-johana', v_event_id;
   ELSIF v_event_deleted_at IS NULL THEN
     UPDATE public.events
     SET
       owner_user_id = v_owner_id,
       event_type = 'xv',
-      title = 'XV América Bautista',
+      title = 'XV América Johana',
       status = 'published',
       invitation_project_id = v_invitation_id,
       published_at = COALESCE(published_at, now()),
       updated_at = now()
     WHERE id = v_event_id;
 
-    RAISE NOTICE 'UPDATED events: id=% slug=america-bautista', v_event_id;
+    RAISE NOTICE 'UPDATED events: id=% slug=america-johana', v_event_id;
   ELSE
     UPDATE public.events
     SET
       owner_user_id = v_owner_id,
       event_type = 'xv',
-      title = 'XV América Bautista',
+      title = 'XV América Johana',
       status = 'published',
       invitation_project_id = v_invitation_id,
       published_at = COALESCE(published_at, now()),
@@ -836,7 +831,7 @@ SELECT
   created_at,
   updated_at
 FROM public.invitations
-WHERE slug = 'america-bautista'
+WHERE slug = 'america-johana'
   AND event_type = 'xv';
 
 SELECT
@@ -861,7 +856,7 @@ SELECT
   pc.updated_at,
   pc.deleted_at
 FROM public.published_invitation_content pc
-WHERE pc.slug = 'america-bautista'
+WHERE pc.slug = 'america-johana'
   AND pc.event_type = 'xv';
 
 SELECT
@@ -877,7 +872,7 @@ SELECT
   e.updated_at,
   e.deleted_at
 FROM public.events e
-WHERE e.slug = 'america-bautista';
+WHERE e.slug = 'america-johana';
 
 SELECT
   m.id::text AS membership_id,
@@ -889,20 +884,20 @@ SELECT
   m.deleted_at
 FROM public.event_memberships m
 JOIN public.events e ON e.id = m.event_id
-WHERE e.slug = 'america-bautista';
+WHERE e.slug = 'america-johana';
 
 SELECT
-  (SELECT count(*) FROM public.invitations WHERE slug = 'america-bautista' AND event_type = 'xv' AND archived_at IS NULL) AS invitations,
-  (SELECT count(*) FROM public.published_invitation_content WHERE slug = 'america-bautista' AND event_type = 'xv' AND deleted_at IS NULL) AS published_content,
-  (SELECT count(*) FROM public.events WHERE slug = 'america-bautista' AND deleted_at IS NULL) AS events,
-  (SELECT count(*) FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'america-bautista' AND m.deleted_at IS NULL) AS memberships;
+  (SELECT count(*) FROM public.invitations WHERE slug = 'america-johana' AND event_type = 'xv' AND archived_at IS NULL) AS invitations,
+  (SELECT count(*) FROM public.published_invitation_content WHERE slug = 'america-johana' AND event_type = 'xv' AND deleted_at IS NULL) AS published_content,
+  (SELECT count(*) FROM public.events WHERE slug = 'america-johana' AND deleted_at IS NULL) AS events,
+  (SELECT count(*) FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'america-johana' AND m.deleted_at IS NULL) AS memberships;
 
 COMMIT;
 
 -- ============================================================================
 -- ROLLBACK
 -- ============================================================================
--- WARNING: This rollback DESTROYS all América Bautista invitation setup data
+-- WARNING: This rollback DESTROYS all América Johana invitation setup data
 -- created or repaired by this patch. If guests, claim codes, or other
 -- operational records were added after publish, they must be reviewed before
 -- deletion.
@@ -914,18 +909,18 @@ COMMIT;
 -- DELETE FROM public.event_memberships
 -- WHERE event_id IN (
 --   SELECT id FROM public.events
---   WHERE slug = 'america-bautista'
+--   WHERE slug = 'america-johana'
 -- );
 --
 -- DELETE FROM public.events
--- WHERE slug = 'america-bautista';
+-- WHERE slug = 'america-johana';
 --
 -- DELETE FROM public.published_invitation_content
--- WHERE slug = 'america-bautista'
+-- WHERE slug = 'america-johana'
 --   AND event_type = 'xv';
 --
 -- DELETE FROM public.invitations
--- WHERE slug = 'america-bautista'
+-- WHERE slug = 'america-johana'
 --   AND event_type = 'xv';
 --
 -- COMMIT;

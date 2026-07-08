@@ -3,8 +3,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const baseUrl = process.env.BASE_URL ?? 'http://127.0.0.1:4321';
-const targetPath = '/xv/america-bautista?screenshot=1&reveal=open&skipEnvelope=true&animations=off';
-const outputDir = path.resolve('screenshots/america-bautista-hero');
+const targetPath = '/xv/america-johana?screenshot=1&reveal=open&skipEnvelope=true&animations=off';
+const outputDir = path.resolve('screenshots/america-johana-hero');
 
 const viewports = [
 	{ name: 'mobile-narrow', width: 360, height: 640 },
@@ -49,7 +49,9 @@ async function captureViewport(browser: Browser, viewport: (typeof viewports)[nu
 
 	const titleBox = await page.locator('.invitation-hero__title').boundingBox();
 	const detailsBox = await page.locator('.invitation-hero__details').boundingBox();
-	const scrollIndicatorCount = await page.locator('.invitation-hero__scroll-indicator:visible').count();
+	const scrollIndicatorCount = await page
+		.locator('.invitation-hero__scroll-indicator:visible')
+		.count();
 	const dividerCount = await page.locator('.invitation-hero__divider:visible').count();
 
 	await page.close();

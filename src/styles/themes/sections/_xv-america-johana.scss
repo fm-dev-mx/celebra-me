@@ -1,8 +1,8 @@
 @use '../../global/mixins' as mixins;
 
-.event--america-bautista.theme-preset--celestial-blue {
+.event--america-johana.theme-preset--celestial-blue {
 	// ==========================================================================
-	// AMÉRICA BAUTISTA — CUSTOM PALETTE
+	// AMÉRICA JOHANA — CUSTOM PALETTE
 	// ==========================================================================
 
 	--america-ink-rgb: 24 25 22;
@@ -278,12 +278,12 @@
 					),
 					// Bottom veil for title/details readability over the dress
 					linear-gradient(
-						180deg,
-						transparent 45%,
-						rgb(var(--america-ink-rgb) / 30%) 60%,
-						rgb(var(--america-ink-rgb) / 75%) 85%,
-						rgb(var(--america-ink-rgb) / 92%) 100%
-					);
+							180deg,
+							transparent 45%,
+							rgb(var(--america-ink-rgb) / 30%) 60%,
+							rgb(var(--america-ink-rgb) / 75%) 85%,
+							rgb(var(--america-ink-rgb) / 92%) 100%
+						);
 			}
 
 			.invitation-hero__content {
@@ -294,7 +294,8 @@
 				width: 100%;
 				min-height: 100svh;
 				box-sizing: border-box;
-				padding: clamp(4rem, 10svh, 6rem) clamp(1.25rem, 4vw, 2rem) clamp(3.5rem, 8svh, 5rem);
+				padding: clamp(4rem, 10svh, 6rem) clamp(1.25rem, 4vw, 2rem)
+					clamp(3.5rem, 8svh, 5rem);
 				text-align: center;
 			}
 
@@ -460,8 +461,7 @@
 		#28060e 100%
 	);
 	--pa-card-border: 1px solid rgb(var(--pa-champagne-rgb) / 25%);
-	--pa-card-shadow:
-		0 20px 50px var(--pa-deep-shadow), inset 0 0 40px rgb(74 21 31 / 60%);
+	--pa-card-shadow: 0 20px 50px var(--pa-deep-shadow), inset 0 0 40px rgb(74 21 31 / 60%);
 	--pa-card-inner-border: 1px solid rgb(var(--pa-blush-rgb) / 15%);
 	--pa-card-inner-radius: 0.5rem;
 	--pa-card-glow: radial-gradient(
@@ -495,8 +495,7 @@
 		rgb(var(--pa-wine-rgb) / 45%) 0%,
 		rgb(var(--pa-rosewood-rgb) / 30%) 100%
 	);
-	--pa-count-frame-shadow:
-		inset 0 0 12px rgb(40 6 14 / 60%), 0 8px 24px rgb(40 6 14 / 25%);
+	--pa-count-frame-shadow: inset 0 0 12px rgb(40 6 14 / 60%), 0 8px 24px rgb(40 6 14 / 25%);
 	--pa-count-frame-inner-display: none;
 	--pa-count-color: var(--pa-champagne);
 	--pa-count-shadow: 0 2px 4px rgb(40 6 14 / 30%);
@@ -506,6 +505,4 @@
 	--pa-label-color: var(--pa-muted-blush);
 	--pa-label-opacity: 75%;
 	/* stylelint-enable color-no-hex */
-
-
 }

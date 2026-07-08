@@ -8,12 +8,12 @@ import type { InvitationSectionRenderDescriptor } from '@/lib/invitation/section
 import type { EventContentEntry } from '@/lib/content/events';
 
 const projectRoot = process.cwd();
-const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-america-bautista');
+const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-america-johana');
 const sqlPath = path.join(
 	projectRoot,
-	'scripts/manual/production-patches/20260706_america_bautista_xv.sql',
+	'scripts/manual/production-patches/20260706_america_johana_xv.sql',
 );
-const stylePath = path.join(projectRoot, 'src/styles/themes/sections/_xv-america-bautista.scss');
+const stylePath = path.join(projectRoot, 'src/styles/themes/sections/_xv-america-johana.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
 
 type PersonalizedAccessDescriptor = Extract<
@@ -49,7 +49,7 @@ const expectedAssets = [
 	'thank-you-portrait.webp',
 ] as const;
 
-describe('XV America Bautista client invitation preparation', () => {
+describe('XV America Johana client invitation preparation', () => {
 	it('exports the client asset namespace with original-photo derivatives', () => {
 		for (const filename of expectedAssets) {
 			expect(fs.existsSync(path.join(assetDir, filename))).toBe(true);
@@ -60,8 +60,8 @@ describe('XV America Bautista client invitation preparation', () => {
 		const sectionIndex = fs.readFileSync(sectionsIndexPath, 'utf8');
 		const styles = fs.readFileSync(stylePath, 'utf8');
 
-		expect(sectionIndex).toContain("@forward 'xv-america-bautista';");
-		expect(styles).toContain('.event--america-bautista.theme-preset--celestial-blue');
+		expect(sectionIndex).toContain("@forward 'xv-america-johana';");
+		expect(styles).toContain('.event--america-johana.theme-preset--celestial-blue');
 		expect(styles).toContain('--america-red-rgb: 132 21 30;');
 		expect(styles).toContain('--america-ivory-rgb: 255 250 242;');
 		expect(styles).toContain('--america-green-rgb: 33 62 45;');
@@ -77,21 +77,21 @@ describe('XV America Bautista client invitation preparation', () => {
 		// update both the regex pattern and this comment.
 		const match = sqlContent.match(/v_new_content\s*:=\s*'(?<json>[\s\S]*?)'\s*::jsonb;/);
 		if (!match?.groups?.json) {
-			throw new Error('Could not find v_content JSON payload in America Bautista SQL patch.');
+			throw new Error('Could not find v_content JSON payload in America Johana SQL patch.');
 		}
 		const payload = JSON.parse(match.groups.json);
 		const result = eventContentSchema.safeParse(payload);
 
 		if (!result.success) {
 			throw new Error(
-				`America Bautista DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
+				`America Johana DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
 			);
 		}
 
 		expect(result.data.eventType).toBe('xv');
 		expect(result.data.isDemo).toBe(false);
-		expect(result.data.visualProfileId).toBe('america-bautista');
-		expect(result.data._assetSlug).toBe('xv-america-bautista');
+		expect(result.data.visualProfileId).toBe('america-johana');
+		expect(result.data._assetSlug).toBe('xv-america-johana');
 		expect(result.data.theme.preset).toBe('celestial-blue');
 		expect(result.data.templateId).toBe('xv-celestial-blue');
 		expect(result.data.hero.name).toBe('América');
@@ -139,9 +139,9 @@ describe('XV America Bautista client invitation preparation', () => {
 
 		const mockGuestContext = {
 			inviteId: 'mock-invite-id',
-			eventSlug: 'america-bautista',
+			eventSlug: 'america-johana',
 			eventType: 'xv' as const,
-			eventTitle: 'XV América Bautista',
+			eventTitle: 'XV América Johana',
 			guest: {
 				fullName: 'María Fernanda Solís',
 				maxAllowedAttendees: 4,
@@ -153,12 +153,12 @@ describe('XV America Bautista client invitation preparation', () => {
 		};
 
 		const viewModel = adaptEvent({
-			id: 'event-published/xv/america-bautista',
+			id: 'event-published/xv/america-johana',
 			data: result.data,
 		} as EventContentEntry);
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'america-bautista',
+			slug: 'america-johana',
 			eventType: 'xv',
 			guestContext: mockGuestContext,
 		});
@@ -166,14 +166,16 @@ describe('XV America Bautista client invitation preparation', () => {
 		expect(pageContext.wrapper.className.split(' ')).toEqual(
 			expect.arrayContaining([
 				'event-theme-wrapper',
-				'event--america-bautista',
+				'event--america-johana',
 				'theme-preset--celestial-blue',
 			]),
 		);
 
 		// Verify pass appears early (prioritizePersonalizedAccess places it early in default order)
 		const activeDescriptors = buildInvitationSectionRenderDescriptors(pageContext);
-		const passDescriptor = activeDescriptors.find(d => d.component === 'personalized-access') as PersonalizedAccessDescriptor;
+		const passDescriptor = activeDescriptors.find(
+			(d) => d.component === 'personalized-access',
+		) as PersonalizedAccessDescriptor;
 		expect(passDescriptor?.component).toBe('personalized-access');
 		expect(passDescriptor?.props.title).toBe(expectedPersonalizedAccess.title);
 		expect(passDescriptor?.props.subtitle).toBe(expectedPersonalizedAccess.subtitle);
@@ -188,17 +190,19 @@ describe('XV America Bautista client invitation preparation', () => {
 			},
 		};
 		const viewModelNoCustom = adaptEvent({
-			id: 'event-published/xv/america-bautista',
+			id: 'event-published/xv/america-johana',
 			data: mockDataNoCustomCopy,
 		} as EventContentEntry);
 		const pageContextNoCustom = buildPageContextFromViewModel({
 			viewModel: viewModelNoCustom,
-			slug: 'america-bautista',
+			slug: 'america-johana',
 			eventType: 'xv',
 			guestContext: mockGuestContext,
 		});
 		const descriptorsNoCustom = buildInvitationSectionRenderDescriptors(pageContextNoCustom);
-		const passDescriptorNoCustom = descriptorsNoCustom.find(d => d.component === 'personalized-access') as PersonalizedAccessDescriptor;
+		const passDescriptorNoCustom = descriptorsNoCustom.find(
+			(d) => d.component === 'personalized-access',
+		) as PersonalizedAccessDescriptor;
 		expect(passDescriptorNoCustom).toBeDefined();
 		expect(passDescriptorNoCustom?.props.title).toBeUndefined();
 		expect(passDescriptorNoCustom?.props.subtitle).toBeUndefined();

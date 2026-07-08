@@ -1,11 +1,11 @@
-# XV América Bautista Asset Report
+# XV América Johana Asset Report
 
 ## Source
 
 - Client folder:
-  `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\XV America Bautista\Fotos`
-- Asset namespace: `src/assets/images/events/xv-america-bautista/`
-- Payload: `.agent/plans/active/xv-america-bautista-db-payload.json`
+  `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\XV America Johana\Fotos`
+- Asset namespace: `src/assets/images/events/xv-america-johana/`
+- Payload: `.agent/plans/active/xv-america-johana-db-payload.json`
 
 ## Mapping
 

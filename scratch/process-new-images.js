@@ -1,11 +1,12 @@
 import sharp from 'sharp';
 import path from 'path';
 
-const ORIGINALS_DIR = 'C:/Users/fmdevmx/OneDrive/Documentos/Projects/celebra-me/Clientes/XV America Bautista/Fotos';
-const TARGET_DIR = 'src/assets/images/events/xv-america-bautista';
+const ORIGINALS_DIR =
+	'C:/Users/fmdevmx/OneDrive/Documentos/Projects/celebra-me/Clientes/XV America Johana/Fotos';
+const TARGET_DIR = 'src/assets/images/events/xv-america-johana';
 
 async function processImages() {
-	console.log('Processing America Bautista new photos...');
+	console.log('Processing America Johana new photos...');
 
 	const tasks = [
 		{
