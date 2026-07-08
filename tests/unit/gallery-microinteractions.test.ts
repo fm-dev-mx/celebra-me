@@ -21,36 +21,7 @@ function getRunnableGalleryScript(): string {
 		.replaceAll(': KeyboardEvent', '');
 }
 
-class MockIntersectionObserver {
-	static instances: MockIntersectionObserver[] = [];
-
-	readonly observed = new Set<Element>();
-	private readonly callback: IntersectionObserverCallback;
-
-	constructor(callback: IntersectionObserverCallback) {
-		this.callback = callback;
-		MockIntersectionObserver.instances.push(this);
-	}
-
-	observe = (element: Element) => {
-		this.observed.add(element);
-	};
-
-	unobserve = (element: Element) => {
-		this.observed.delete(element);
-	};
-
-	disconnect = () => {
-		this.observed.clear();
-	};
-
-	trigger(element: Element) {
-		this.callback(
-			[{ target: element, isIntersecting: true } as IntersectionObserverEntry],
-			this as unknown as IntersectionObserver,
-		);
-	}
-}
+import { MockIntersectionObserver } from '../helpers/intersection-observer';
 
 function renderGallery() {
 	document.body.innerHTML = `
