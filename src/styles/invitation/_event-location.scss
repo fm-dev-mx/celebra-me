@@ -497,15 +497,11 @@
 		}
 
 		&--ceremony {
-			animation-delay: 0.1s;
-
 			--image-focus-x: var(--location-ceremony-image-focus-x);
 			--image-focus-y: var(--location-ceremony-image-focus-y);
 		}
 
 		&--reception {
-			animation-delay: 0.25s;
-
 			--image-focus-x: var(--location-reception-image-focus-x);
 			--image-focus-y: var(--location-reception-image-focus-y);
 		}
@@ -531,12 +527,11 @@
 		will-change: transform, box-shadow, opacity;
 	}
 
-	&.has-motion.is-visible &__card--ceremony {
+	&.has-motion.is-visible &__card {
 		animation: invitation-location-fade-in-up-soft var(--duration-premium) var(--ease-out) both;
 	}
 
-	&.has-motion.is-visible &__card--reception {
-		animation: invitation-location-fade-in-up-soft var(--duration-premium) var(--ease-out) both;
+	&.has-motion.is-visible &__card-wrapper + &__card-wrapper &__card {
 		animation-delay: 0.1s;
 	}
 
