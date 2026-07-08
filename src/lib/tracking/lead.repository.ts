@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 
 export type LeadChannel = 'contact_form' | 'whatsapp' | 'manual';
 export type LeadStatus =
@@ -20,12 +21,16 @@ export interface LeadInput {
 	name?: string;
 	email?: string;
 	phone?: string;
+	phoneCountryCode?: string;
+	phoneNational?: string;
+	phoneE164?: string;
 	eventType?: string;
 	packageInterest?: string;
 	messageSummary?: string;
 	utmSource?: string;
 	utmMedium?: string;
 	utmCampaign?: string;
+	metaAttribution?: MetaAttribution;
 	consentContact: boolean;
 	consentMarketing: boolean;
 }
@@ -70,12 +75,18 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			name: emptyToUndefined(input.name),
 			email: emptyToUndefined(input.email),
 			phone: emptyToUndefined(input.phone),
+			phone_country_code: emptyToUndefined(input.phoneCountryCode),
+			phone_national: emptyToUndefined(input.phoneNational),
+			phone_e164: emptyToUndefined(input.phoneE164),
 			event_type: emptyToUndefined(input.eventType),
 			package_interest: emptyToUndefined(input.packageInterest),
 			message_summary: emptyToUndefined(input.messageSummary),
 			utm_source: emptyToUndefined(input.utmSource),
 			utm_medium: emptyToUndefined(input.utmMedium),
 			utm_campaign: emptyToUndefined(input.utmCampaign),
+			fbp: emptyToUndefined(input.metaAttribution?.fbp),
+			fbc: emptyToUndefined(input.metaAttribution?.fbc),
+			fbclid: emptyToUndefined(input.metaAttribution?.fbclid),
 			consent_contact: input.consentContact,
 			consent_marketing: input.consentMarketing,
 		},

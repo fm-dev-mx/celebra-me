@@ -52,6 +52,17 @@ describe('tracking route policy', () => {
 		expect(shouldLoadGoogleAnalytics('/api/contact', env)).toBe(false);
 	});
 
+	it('allows Meta attribution capture only on commercial acquisition routes', () => {
+		expect(classifyTrackingRoute('/').metaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/demos/cumpleanos').metaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/xv/demo-xv-editorial').metaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/xv/valentina-hernandez').metaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/xv/valentina-hernandez?invite=abc').metaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/api/invitacion/abc/rsvp').metaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/dashboard/commercial').metaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/api/contact').metaAllowed).toBe(false);
+	});
+
 	it('does not allow GA in preview, local development, or without a measurement id', () => {
 		expect(shouldLoadGoogleAnalytics('/', { vercelEnv: 'preview', gaId: 'G-TEST' })).toBe(
 			false,

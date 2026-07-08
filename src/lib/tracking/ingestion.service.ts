@@ -4,7 +4,7 @@ import {
 	hasUnsafeEventProperties,
 	sanitizeEventProperties,
 	TrackingEventSchema,
-	type TrackingEventInput,
+	type TrackingEvent,
 } from '@/lib/tracking/event-contract';
 import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
@@ -21,7 +21,7 @@ export type IngestTrackingEventResult =
 	| { accepted: true; eventId: string }
 	| { accepted: false; reason: string };
 
-function parseTrackingPayload(payload: unknown): TrackingEventInput {
+function parseTrackingPayload(payload: unknown): TrackingEvent {
 	const result = TrackingEventSchema.safeParse(payload);
 	if (!result.success) {
 		throw new ApiError(400, 'bad_request', 'Tracking event payload is invalid.', {
@@ -70,6 +70,7 @@ export async function ingestTrackingEvent(
 		routeClass: routePolicy.routeClass,
 		isInternal: false,
 		consentSnapshot,
+		metaAttribution: payload.metaAttribution,
 	});
 
 	const event = await insertTrackingEvent({
@@ -107,6 +108,7 @@ export async function ingestTrackingEvent(
 					utmSource: payload.source,
 					utmMedium: payload.medium,
 					utmCampaign: payload.campaign,
+					metaAttribution: payload.metaAttribution,
 				});
 			} catch (leadError) {
 				console.error('[tracking] Failed to auto-create WhatsApp lead:', leadError);

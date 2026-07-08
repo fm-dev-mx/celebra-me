@@ -5,6 +5,7 @@ jest.mock('@/lib/tracking/lead.repository', () => ({
 
 jest.mock('@/lib/tracking/repository', () => ({
 	insertTrackingEvent: jest.fn(),
+	findVisitorSessionMetaAttribution: jest.fn(),
 }));
 
 import { createLeadCode } from '@/lib/tracking/lead-code';
@@ -13,13 +14,17 @@ import {
 	createLeadFromTrackingEvent,
 } from '@/lib/tracking/lead.service';
 import { upsertLead, findLeadByCode } from '@/lib/tracking/lead.repository';
-import { insertTrackingEvent } from '@/lib/tracking/repository';
+import { findVisitorSessionMetaAttribution, insertTrackingEvent } from '@/lib/tracking/repository';
 
 const mockUpsertLead = upsertLead as jest.MockedFunction<typeof upsertLead>;
 const mockFindLeadByCode = findLeadByCode as jest.MockedFunction<typeof findLeadByCode>;
 const mockInsertTrackingEvent = insertTrackingEvent as jest.MockedFunction<
 	typeof insertTrackingEvent
 >;
+const mockFindVisitorSessionMetaAttribution =
+	findVisitorSessionMetaAttribution as jest.MockedFunction<
+		typeof findVisitorSessionMetaAttribution
+	>;
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -33,6 +38,7 @@ beforeEach(() => {
 		id: 'lead-created-event-id',
 		eventName: 'lead_created',
 	});
+	mockFindVisitorSessionMetaAttribution.mockResolvedValue(null);
 });
 
 describe('createLeadCode', () => {
@@ -81,6 +87,38 @@ describe('createLeadFromContactSubmission', () => {
 					lead_code: 'CM-ABC123',
 					lead_channel: 'contact_form',
 				}),
+			}),
+		);
+	});
+
+	it('copies session Meta attribution into contact-form leads when the form omits it', async () => {
+		mockFindVisitorSessionMetaAttribution.mockResolvedValue({
+			fbp: 'fb.1.1710000000000.1234567890',
+			fbc: 'fb.1.1710000000000.Click-123',
+			fbclid: 'Click-123',
+		});
+
+		await createLeadFromContactSubmission({
+			name: 'Valentina Hernandez',
+			email: 'client@example.com',
+			phone: '+52 614 123 4567',
+			leadCode: 'CM-ABC123',
+			sessionId: '11111111-1111-4111-8111-111111111111',
+			visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
+			consentContact: true,
+			consentMarketing: false,
+		});
+
+		expect(mockFindVisitorSessionMetaAttribution).toHaveBeenCalledWith(
+			'11111111-1111-4111-8111-111111111111',
+		);
+		expect(mockUpsertLead).toHaveBeenCalledWith(
+			expect.objectContaining({
+				metaAttribution: {
+					fbp: 'fb.1.1710000000000.1234567890',
+					fbc: 'fb.1.1710000000000.Click-123',
+					fbclid: 'Click-123',
+				},
 			}),
 		);
 	});
@@ -174,5 +212,34 @@ describe('createLeadFromTrackingEvent', () => {
 
 		expect(result.status).toBe('new');
 		expect(mockUpsertLead).toHaveBeenCalledWith(expect.objectContaining({ status: 'new' }));
+	});
+
+	it('copies session Meta attribution into WhatsApp leads when the tracking payload omits it', async () => {
+		mockFindVisitorSessionMetaAttribution.mockResolvedValue({
+			fbp: 'fb.1.1710000000000.9876543210',
+			fbc: 'fb.1.1710000000000.Click-987',
+			fbclid: 'Click-987',
+		});
+
+		await createLeadFromTrackingEvent({
+			leadCode: 'CM-WHFALLB',
+			sessionId: '12121212-1212-4212-8212-121212121212',
+			sourceEventId: '34343434-3434-4343-8343-343434343434',
+			channel: 'whatsapp',
+			visitorId: 'visitor_56565656-5656-4565-8565-565656565656',
+		});
+
+		expect(mockFindVisitorSessionMetaAttribution).toHaveBeenCalledWith(
+			'12121212-1212-4212-8212-121212121212',
+		);
+		expect(mockUpsertLead).toHaveBeenCalledWith(
+			expect.objectContaining({
+				metaAttribution: {
+					fbp: 'fb.1.1710000000000.9876543210',
+					fbc: 'fb.1.1710000000000.Click-987',
+					fbclid: 'Click-987',
+				},
+			}),
+		);
 	});
 });

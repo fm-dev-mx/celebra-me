@@ -2,6 +2,11 @@ import { createLeadCode } from '@/lib/tracking/lead-code';
 import { readConsent } from '@/lib/tracking/consent-client';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
+import {
+	createMetaAttributionSnapshot,
+	metaAttributionOrUndefined,
+	type MetaAttribution,
+} from '@/lib/tracking/meta-attribution';
 
 type TrackingEventName =
 	| 'page_viewed'
@@ -29,6 +34,7 @@ type TrackingPayload = {
 	source?: string;
 	medium?: string;
 	campaign?: string;
+	metaAttribution?: MetaAttribution;
 	eventProperties: Record<string, string | number | boolean>;
 	consentSnapshot: ConsentSnapshot;
 };
@@ -131,6 +137,13 @@ function getUtmSnapshot(): Record<string, string> {
 	}
 }
 
+function getMetaAttributionSnapshot(): MetaAttribution {
+	return createMetaAttributionSnapshot({
+		url: new URL(window.location.href),
+		cookie: document.cookie,
+	});
+}
+
 function shouldIgnoreTracking(): boolean {
 	return document.cookie.split(';').some((cookie) => cookie.trim() === IGNORE_COOKIE);
 }
@@ -156,6 +169,7 @@ async function trackEvent(
 	if (!routeClass) return;
 
 	const utm = getUtmSnapshot();
+	const metaAttribution = metaAttributionOrUndefined(getMetaAttributionSnapshot());
 	const payload: TrackingPayload = {
 		sessionId: getSessionId(),
 		visitorId: getVisitorId(),
@@ -165,6 +179,7 @@ async function trackEvent(
 		source: utm.source,
 		medium: utm.medium,
 		campaign: utm.campaign,
+		metaAttribution,
 		eventProperties,
 		consentSnapshot: getConsentSnapshot(),
 	};
@@ -189,6 +204,7 @@ async function trackEvent(
 
 function setContactHiddenFields(leadCode: string): void {
 	const utm = getUtmSnapshot();
+	const metaAttribution = getMetaAttributionSnapshot();
 	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
 		if (!(form instanceof HTMLFormElement)) return;
 		const values: Record<string, string> = {
@@ -198,6 +214,9 @@ function setContactHiddenFields(leadCode: string): void {
 			utmSource: utm.source ?? '',
 			utmMedium: utm.medium ?? '',
 			utmCampaign: utm.campaign ?? '',
+			fbp: metaAttribution.fbp ?? '',
+			fbc: metaAttribution.fbc ?? '',
+			fbclid: metaAttribution.fbclid ?? '',
 		};
 		Object.entries(values).forEach(([name, value]) => {
 			const field = form.elements.namedItem(name);
@@ -348,7 +367,7 @@ function bindClicks(): void {
 
 		const isWhatsAppClick = eventName === 'whatsapp_contact_clicked';
 		const leadCode = isWhatsAppClick ? createLeadCode() : '';
-		
+
 		let folio = '';
 		let targetPromoCode = '';
 		if (isWhatsAppClick && target instanceof HTMLAnchorElement) {
@@ -398,7 +417,8 @@ function bindForms(): void {
 			const currentLeadCode = getOrCreateFormLeadCode(form, leadCode);
 			const eventTypeField = form.elements.namedItem('eventType');
 			const eventType =
-				eventTypeField instanceof HTMLInputElement || eventTypeField instanceof HTMLSelectElement
+				eventTypeField instanceof HTMLInputElement ||
+				eventTypeField instanceof HTMLSelectElement
 					? eventTypeField.value.trim()
 					: '';
 			void trackEvent('form_submitted', {

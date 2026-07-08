@@ -23,6 +23,9 @@ const contactSchema = z.object({
 	utmSource: z.string().trim().optional(),
 	utmMedium: z.string().trim().optional(),
 	utmCampaign: z.string().trim().optional(),
+	fbp: z.string().trim().optional(),
+	fbc: z.string().trim().optional(),
+	fbclid: z.string().trim().optional(),
 });
 
 export const POST: APIRoute = async ({ request }) => {

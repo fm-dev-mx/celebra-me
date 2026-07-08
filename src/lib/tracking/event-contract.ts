@@ -1,5 +1,10 @@
 import { z } from 'zod';
 import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
+import {
+	metaAttributionOrUndefined,
+	sanitizeMetaAttribution,
+	type MetaAttribution,
+} from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
 export const TRACKING_EVENT_NAMES = [
@@ -115,6 +120,13 @@ const ConsentSnapshotSchema = z
 	})
 	.transform(normalizeConsentSnapshot);
 
+const MetaAttributionSchema = z
+	.unknown()
+	.optional()
+	.transform((value): MetaAttribution | undefined =>
+		metaAttributionOrUndefined(sanitizeMetaAttribution(value)),
+	);
+
 export const TrackingEventSchema = z.object({
 	sessionId: z.uuid(),
 	visitorId: z.string().trim().min(6).max(120),
@@ -125,6 +137,7 @@ export const TrackingEventSchema = z.object({
 	source: z.string().trim().max(120).optional(),
 	medium: z.string().trim().max(120).optional(),
 	campaign: z.string().trim().max(180).optional(),
+	metaAttribution: MetaAttributionSchema,
 	eventProperties: z.record(z.string(), z.unknown()).default({}),
 	consentSnapshot: ConsentSnapshotSchema.optional().transform(normalizeConsentSnapshot),
 	isInternal: z.boolean().optional().default(false),

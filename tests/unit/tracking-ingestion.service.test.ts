@@ -79,6 +79,44 @@ describe('ingestTrackingEvent', () => {
 		);
 	});
 
+	it('persists Meta attribution on commercial sessions without copying it into event properties', async () => {
+		const result = await ingestTrackingEvent({
+			request: makeRequest(),
+			vercelEnv: 'production',
+			payload: {
+				sessionId: '77777777-7777-4777-8777-777777777777',
+				visitorId: 'visitor_meta_user',
+				eventName: 'page_viewed',
+				routePath: '/',
+				routeClass: 'commercial',
+				metaAttribution: {
+					fbp: 'fb.1.1710000000000.1234567890',
+					fbc: 'fb.1.1710000000000.Click-123',
+					fbclid: 'Click-123',
+				},
+				eventProperties: { page_type: 'commercial' },
+				consentSnapshot: { necessary: true, analytics: true, marketing: true },
+			},
+		});
+
+		expect(result).toEqual({ accepted: true, eventId: 'event-id' });
+		expect(mockUpsertVisitorSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				sessionId: '77777777-7777-4777-8777-777777777777',
+				metaAttribution: {
+					fbp: 'fb.1.1710000000000.1234567890',
+					fbc: 'fb.1.1710000000000.Click-123',
+					fbclid: 'Click-123',
+				},
+			}),
+		);
+		expect(mockInsertTrackingEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				eventProperties: { page_type: 'commercial' },
+			}),
+		);
+	});
+
 	it('ignores events on excluded real invitation routes', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),
@@ -206,6 +244,46 @@ describe('ingestTrackingEvent', () => {
 			});
 
 			expect(mockCreateLeadFromTrackingEvent).not.toHaveBeenCalled();
+		});
+
+		it('copies sanitized Meta attribution into auto-created WhatsApp leads', async () => {
+			mockInsertTrackingEvent.mockResolvedValue({
+				id: 'whatsapp-event-id',
+				eventName: 'whatsapp_contact_clicked',
+			});
+
+			await ingestTrackingEvent({
+				request: makeRequest(),
+				vercelEnv: 'production',
+				payload: {
+					sessionId: '99999999-9999-4999-8999-999999999999',
+					visitorId: 'visitor_wa_meta_user',
+					eventName: 'whatsapp_contact_clicked',
+					routePath: '/',
+					routeClass: 'commercial',
+					metaAttribution: {
+						fbp: 'fb.1.1710000000000.1234567890',
+						fbc: 'fb.1.1710000000000.Click-123',
+						fbclid: 'Click-123',
+					},
+					eventProperties: {
+						cta_id: 'contact_whatsapp',
+						lead_code: 'CM-WHMETA1',
+					},
+					consentSnapshot: { necessary: true, analytics: true, marketing: true },
+				},
+			});
+
+			expect(mockCreateLeadFromTrackingEvent).toHaveBeenCalledWith(
+				expect.objectContaining({
+					leadCode: 'CM-WHMETA1',
+					metaAttribution: {
+						fbp: 'fb.1.1710000000000.1234567890',
+						fbc: 'fb.1.1710000000000.Click-123',
+						fbclid: 'Click-123',
+					},
+				}),
+			);
 		});
 	});
 });

@@ -1,6 +1,7 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import type { TrackingEventName } from '@/lib/tracking/event-contract';
+import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
 export interface VisitorSessionInput {
@@ -17,6 +18,7 @@ export interface VisitorSessionInput {
 	routeClass: TrackingRouteClass;
 	isInternal: boolean;
 	consentSnapshot: ConsentSnapshot;
+	metaAttribution?: MetaAttribution;
 }
 
 export interface TrackingEventRepositoryInput {
@@ -37,6 +39,12 @@ export interface TrackingEventRepositoryInput {
 export interface InsertedTrackingEvent {
 	id: string;
 	eventName: TrackingEventName;
+}
+
+interface VisitorSessionMetaAttributionRow {
+	fbp?: string | null;
+	fbc?: string | null;
+	fbclid?: string | null;
 }
 
 function emptyToUndefined(value: string | undefined): string | undefined {
@@ -65,6 +73,9 @@ export async function upsertVisitorSession(input: VisitorSessionInput): Promise<
 			route_class: input.routeClass,
 			is_internal: input.isInternal,
 			consent_snapshot: input.consentSnapshot,
+			fbp: emptyToUndefined(input.metaAttribution?.fbp),
+			fbc: emptyToUndefined(input.metaAttribution?.fbc),
+			fbclid: emptyToUndefined(input.metaAttribution?.fbclid),
 		},
 	});
 }
@@ -102,4 +113,24 @@ export async function insertTrackingEvent(
 		id: row.id,
 		eventName: row.event_name,
 	};
+}
+
+export async function findVisitorSessionMetaAttribution(
+	sessionId: string,
+): Promise<MetaAttribution | null> {
+	const rows = await supabaseRestRequest<VisitorSessionMetaAttributionRow[]>({
+		pathWithQuery: `visitor_sessions?id=eq.${encodeURIComponent(sessionId)}&select=fbp,fbc,fbclid&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+
+	const row = rows[0];
+	if (!row) return null;
+
+	const metaAttribution: MetaAttribution = {};
+	if (row.fbp) metaAttribution.fbp = row.fbp;
+	if (row.fbc) metaAttribution.fbc = row.fbc;
+	if (row.fbclid) metaAttribution.fbclid = row.fbclid;
+
+	return Object.keys(metaAttribution).length > 0 ? metaAttribution : null;
 }

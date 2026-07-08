@@ -1,12 +1,18 @@
 import { z } from 'zod';
+import { normalizeCommercialEmail, normalizeCommercialPhone } from '@/lib/commercial/phone';
 import { createLeadCode } from '@/lib/tracking/lead-code';
+import {
+	metaAttributionOrUndefined,
+	sanitizeMetaAttribution,
+	type MetaAttribution,
+} from '@/lib/tracking/meta-attribution';
 import {
 	upsertLead,
 	findLeadByCode,
 	type StoredLead,
 	type LeadChannel,
 } from '@/lib/tracking/lead.repository';
-import { insertTrackingEvent } from '@/lib/tracking/repository';
+import { findVisitorSessionMetaAttribution, insertTrackingEvent } from '@/lib/tracking/repository';
 
 const LeadCodeSchema = z
 	.string()
@@ -32,6 +38,9 @@ export const ContactLeadSubmissionSchema = z.object({
 	utmSource: z.string().trim().max(120).optional().or(z.literal('')),
 	utmMedium: z.string().trim().max(120).optional().or(z.literal('')),
 	utmCampaign: z.string().trim().max(180).optional().or(z.literal('')),
+	fbp: z.string().trim().max(180).optional().or(z.literal('')),
+	fbc: z.string().trim().max(300).optional().or(z.literal('')),
+	fbclid: z.string().trim().max(300).optional().or(z.literal('')),
 });
 
 export type ContactLeadSubmission = z.input<typeof ContactLeadSubmissionSchema>;
@@ -47,12 +56,36 @@ function summarizeMessage(message: string | undefined): string {
 		.slice(0, 500);
 }
 
+async function resolveLeadMetaAttribution(params: {
+	sessionId?: string;
+	metaAttribution?: MetaAttribution;
+}): Promise<MetaAttribution | undefined> {
+	const explicitMeta = metaAttributionOrUndefined(
+		sanitizeMetaAttribution(params.metaAttribution),
+	);
+	if (explicitMeta) return explicitMeta;
+
+	const sessionId = blankToUndefined(params.sessionId);
+	if (!sessionId) return undefined;
+
+	try {
+		return metaAttributionOrUndefined(
+			sanitizeMetaAttribution(await findVisitorSessionMetaAttribution(sessionId)),
+		);
+	} catch {
+		return undefined;
+	}
+}
+
 export async function createLeadFromContactSubmission(
 	submission: ContactLeadSubmission,
 ): Promise<StoredLead> {
 	const parsed = ContactLeadSubmissionSchema.parse(submission);
 
 	const leadCode = blankToUndefined(parsed.leadCode) ?? createLeadCode();
+	const sessionId = blankToUndefined(parsed.sessionId);
+	const normalizedPhone = normalizeCommercialPhone(parsed.phone);
+	const normalizedEmail = normalizeCommercialEmail(parsed.email);
 	// knownNew: true = confirmed new, false = confirmed existing, undefined = lookup failed
 	let knownNew: boolean | undefined;
 	if (blankToUndefined(parsed.leadCode)) {
@@ -67,25 +100,35 @@ export async function createLeadFromContactSubmission(
 
 	const lead = await upsertLead({
 		leadCode,
-		sessionId: blankToUndefined(parsed.sessionId),
+		sessionId,
 		sourceEventId: blankToUndefined(parsed.sourceEventId),
 		channel: 'contact_form',
 		name: parsed.name,
-		email: blankToUndefined(parsed.email),
+		email: normalizedEmail,
 		phone: blankToUndefined(parsed.phone),
+		phoneCountryCode: normalizedPhone?.countryCode,
+		phoneNational: normalizedPhone?.national,
+		phoneE164: normalizedPhone?.e164,
 		eventType: blankToUndefined(parsed.eventType),
 		packageInterest: blankToUndefined(parsed.packageInterest),
 		messageSummary: summarizeMessage(parsed.message),
 		utmSource: blankToUndefined(parsed.utmSource),
 		utmMedium: blankToUndefined(parsed.utmMedium),
 		utmCampaign: blankToUndefined(parsed.utmCampaign),
+		metaAttribution: await resolveLeadMetaAttribution({
+			sessionId,
+			metaAttribution: {
+				fbp: parsed.fbp,
+				fbc: parsed.fbc,
+				fbclid: parsed.fbclid,
+			},
+		}),
 		consentContact: parsed.consentContact,
 		consentMarketing: parsed.consentMarketing,
 	});
 
 	// Fire lead_created event server-side — only for new leads.
 	const visitorId = blankToUndefined(parsed.visitorId);
-	const sessionId = blankToUndefined(parsed.sessionId);
 	if (knownNew && visitorId && sessionId) {
 		void insertTrackingEvent({
 			sessionId,
@@ -116,6 +159,7 @@ export async function createLeadFromTrackingEvent(params: {
 	utmSource?: string;
 	utmMedium?: string;
 	utmCampaign?: string;
+	metaAttribution?: MetaAttribution;
 }): Promise<StoredLead> {
 	const {
 		leadCode,
@@ -126,6 +170,7 @@ export async function createLeadFromTrackingEvent(params: {
 		utmSource,
 		utmMedium,
 		utmCampaign,
+		metaAttribution,
 	} = params;
 
 	// Check whether a lead already exists for this lead_code.
@@ -152,6 +197,7 @@ export async function createLeadFromTrackingEvent(params: {
 		utmSource: blankToUndefined(utmSource),
 		utmMedium: blankToUndefined(utmMedium),
 		utmCampaign: blankToUndefined(utmCampaign),
+		metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
 	});
 
 	// Fire lead_created event — only for confirmed-new leads (existing === null).

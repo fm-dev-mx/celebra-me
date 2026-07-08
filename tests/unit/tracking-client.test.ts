@@ -39,6 +39,7 @@ describe('initCommercialTracking package views', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		MockIntersectionObserver.instances = [];
+		window.history.replaceState({}, '', '/?fbclid=Click-123');
 		document.body.innerHTML = `
 			<section data-track-section="pricing">
 				<article
@@ -59,6 +60,33 @@ describe('initCommercialTracking package views', () => {
 		Reflect.set(globalThis, 'fetch', fetchMock);
 		window.localStorage.clear();
 		window.sessionStorage.clear();
+	});
+
+	it('sends Meta attribution as top-level payload data on commercial routes', async () => {
+		Object.defineProperty(document, 'cookie', {
+			configurable: true,
+			value: '_fbp=fb.1.1710000000000.1234567890; _fbc=fb.1.1710000000000.Click-123',
+		});
+
+		initCommercialTracking();
+		await flushPromises();
+
+		const pageView = getTrackedPayloads(fetchMock).find(
+			(payload) => payload.eventName === 'page_viewed',
+		);
+		expect(pageView).toEqual(
+			expect.objectContaining({
+				metaAttribution: {
+					fbp: 'fb.1.1710000000000.1234567890',
+					fbc: 'fb.1.1710000000000.Click-123',
+					fbclid: 'Click-123',
+				},
+				eventProperties: { page_type: 'commercial' },
+			}),
+		);
+		expect(pageView?.eventProperties).not.toHaveProperty('fbp');
+		expect(pageView?.eventProperties).not.toHaveProperty('fbc');
+		expect(pageView?.eventProperties).not.toHaveProperty('fbclid');
 	});
 
 	it('tracks package_viewed once with pricing metadata when a package card enters view', async () => {
@@ -104,8 +132,9 @@ describe('initCommercialTracking package views', () => {
 		packageObserver?.trigger(packageCard, 0.8);
 		await flushPromises();
 
-		const packageEvents = getTrackedPayloads(fetchMock)
-			.filter((payload) => payload.eventName === 'package_viewed');
+		const packageEvents = getTrackedPayloads(fetchMock).filter(
+			(payload) => payload.eventName === 'package_viewed',
+		);
 
 		expect(packageEvents).toHaveLength(1);
 	});
