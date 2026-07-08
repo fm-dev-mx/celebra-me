@@ -42,8 +42,8 @@
 -- MUSIC PRESERVATION:
 --   If published_invitation_content already has content.music, this patch
 --   preserves that existing music config instead of overwriting/removing it.
---   The current approved payload intentionally ships without music until a
---   direct playable audio URL is available.
+--   The payload below ships with the Coldplay Viva la Vida MP3 URL on
+--   Cloudinary as the default music track.
 
 BEGIN;
 
@@ -598,6 +598,12 @@ BEGIN
         "accent": "actionAccent",
         "background": "surfaceDark"
       }
+    },
+    "music": {
+      "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3",
+      "autoPlay": false,
+      "title": "Viva la Vida — Coldplay",
+      "revealMode": "envelope"
     },
     "sharing": {
       "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Johana\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!",
