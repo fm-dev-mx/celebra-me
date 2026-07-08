@@ -8,6 +8,7 @@ type TrackingEventName =
 	| 'section_seen'
 	| 'scroll_depth_reached'
 	| 'cta_clicked'
+	| 'package_viewed'
 	| 'demo_viewed'
 	| 'form_started'
 	| 'form_submitted'
@@ -293,6 +294,7 @@ function getTrackedClickProperties(
 		event_type: eventType,
 		package_id: target.dataset.packageInterest ?? '',
 		package_name: target.dataset.packageName ?? '',
+		source_area: target.dataset.trackSection ?? '',
 		promo_code: target.dataset.promoCode ?? '',
 		campaign_code: target.dataset.campaignCode ?? '',
 		value: Number(target.dataset.trackValue ?? 0) || 0,
@@ -301,6 +303,38 @@ function getTrackedClickProperties(
 		lead_code: leadCode,
 		folio,
 	};
+}
+
+function bindPackageViews(): void {
+	if (!('IntersectionObserver' in window)) return;
+
+	const seen = new Set<string>();
+	const observer = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (!entry.isIntersecting || entry.intersectionRatio < 0.4) return;
+				if (!(entry.target instanceof HTMLElement)) return;
+
+				const packageId = entry.target.dataset.packageId ?? '';
+				const packageName = entry.target.dataset.packageName ?? packageId;
+				if (!packageId || seen.has(packageId)) return;
+
+				seen.add(packageId);
+				void trackEvent('package_viewed', {
+					package_id: packageId,
+					package_name: packageName,
+					content_name: packageName,
+					content_category: 'package',
+					source_area: entry.target.dataset.sourceArea ?? 'pricing',
+				});
+			});
+		},
+		{ threshold: [0.4, 0.6] },
+	);
+
+	document
+		.querySelectorAll<HTMLElement>('[data-track-package-view]')
+		.forEach((element) => observer.observe(element));
 }
 
 function bindClicks(): void {
@@ -362,9 +396,17 @@ function bindForms(): void {
 		);
 		form.addEventListener('commercial-contact-submitted', () => {
 			const currentLeadCode = getOrCreateFormLeadCode(form, leadCode);
+			const eventTypeField = form.elements.namedItem('eventType');
+			const eventType =
+				eventTypeField instanceof HTMLInputElement || eventTypeField instanceof HTMLSelectElement
+					? eventTypeField.value.trim()
+					: '';
 			void trackEvent('form_submitted', {
 				form_id: 'contact',
 				lead_code: currentLeadCode,
+				event_id: currentLeadCode,
+				event_type: eventType,
+				source_area: 'contact',
 				promo_code: DEFAULT_PROMO_CODE,
 				campaign_code: DEFAULT_PROMO_CAMPAIGN,
 				value: Number(DEFAULT_PROMO_PRICE),
@@ -393,9 +435,13 @@ export function initCommercialTracking(): void {
 		void trackEvent('demo_viewed', {
 			demo_slug: demoSlug,
 			event_type: eventType,
+			content_name: demoSlug,
+			content_category: 'demo',
+			source_area: 'demo_page',
 		});
 	}
 	bindSectionVisibility();
+	bindPackageViews();
 	bindScrollDepth();
 	bindClicks();
 	bindForms();

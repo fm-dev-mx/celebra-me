@@ -106,6 +106,83 @@ The following are explicitly excluded from commercial attribution:
 Route exclusion is enforced by `route-policy.ts`. See `docs/domains/rsvp/architecture.md` for the
 separate guest tracking mechanism.
 
+## Meta Event Architecture
+
+Meta Pixel remains a downstream consumer of the first-party tracking contract. The browser-safe
+configuration lives behind `PUBLIC_META_PIXEL_ID` and `PUBLIC_META_PIXEL_ENABLED`; no server-only
+secrets are exposed client-side.
+
+### Browser-side event map
+
+| First-party event            | Meta event    | When it fires                                                  | Metadata sent                                                   | Dedup key |
+| ---------------------------- | ------------- | -------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
+| `page_viewed`                | `PageView`    | Commercial/demo page load after marketing consent              | `content_category=page`, optional `content_name`, `source_area` | —         |
+| `demo_viewed`                | `ViewContent` | Demo page load on real showroom/demo routes                    | `content_name`, `content_category=demo`, `event_type`, `source_area` | —     |
+| `package_viewed`             | `ViewContent` | Pricing/package card becomes visible on the landing page       | `content_name`, `content_category=package`, `source_area`       | —         |
+| `whatsapp_contact_clicked`   | `Contact`     | Commercial WhatsApp CTA click                                  | `content_name`, `content_category`, optional `event_type`, `source_area` | `lead_code` when present |
+| `form_submitted`             | `Lead`        | Contact form submission succeeds (`POST /api/contact` returns OK) | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | `lead_code` |
+
+Notes:
+
+- Meta payloads intentionally exclude guest identity, RSVP data, names, email, phone, free-text
+  messages, invite tokens, and claim codes.
+- `lead_code` is used as the browser-side `eventID` when a contact/lead event already has a stable
+  non-PII identifier.
+- Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
+  and `meta-pixel.ts`.
+
+### Guest-route isolation
+
+Commercial Meta events do **not** run on:
+
+- real invitation routes such as `/xv/<slug>` when the slug is a real invitation,
+- personalized invitation links such as `/i/<token>` or `?invite=...`,
+- RSVP guest APIs,
+- dashboard/auth routes,
+- generic API routes,
+- preview/local environments.
+
+This isolation is enforced by `classifyTrackingRoute()` and prevents ordinary invitation-guest
+activity from contaminating acquisition data.
+
+## Conversions API Readiness
+
+The repository is **not** yet wired to a real confirmed-sale path for Meta Conversions API.
+
+What exists today:
+
+- `tracking_events` already reserves lifecycle names such as `quote_sent`, `production_authorized`,
+  `payment_pending`, and `payment_received`.
+- `leads.status` already supports later commercial states including `production_authorized` and
+  `paid`.
+
+What is still missing:
+
+- no server endpoint currently sends Meta Conversions API requests,
+- no confirmed production path was found that emits `payment_received`,
+- no order/payment service was found that can act as the source of truth for `Purchase`.
+
+### Future CAPI contract
+
+When a real paid flow exists, the future server-only integration should:
+
+- run only from a confirmed-sale path that is authoritative for paid status,
+- use server-only env vars `META_CAPI_ACCESS_TOKEN` and `META_PIXEL_ID`,
+- send `Purchase` only after a real `payment_received` or equivalent paid confirmation,
+- reuse a stable `event_id` between browser/server when the same conversion is reported twice,
+- log failures without breaking the user-facing sales flow.
+
+Recommended future payload:
+
+| Field           | Expected value |
+| --------------- | -------------- |
+| `event_name`    | `Purchase`     |
+| `event_time`    | Unix timestamp at confirmed payment |
+| `event_id`      | Stable non-PII identifier from the paid transaction |
+| `action_source` | `website`      |
+| `value`         | Confirmed paid amount |
+| `currency`      | `MXN`          |
+
 ## Future Work
 
 - Lead Management MVP: `new → contacted → quoted → won/lost` lifecycle

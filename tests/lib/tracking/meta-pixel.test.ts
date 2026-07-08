@@ -98,38 +98,76 @@ describe('forwardToMetaPixel', () => {
 
 	it('forwards page_viewed as fbq("track", "PageView", ...)', () => {
 		forwardToMetaPixel('page_viewed', { page_type: 'commercial' });
-		expect(fbq()).toHaveBeenCalledWith('track', 'PageView', {});
+		expect(fbq()).toHaveBeenCalledWith('track', 'PageView', {
+			content_category: 'page',
+			content_name: 'commercial',
+			source_area: 'commercial',
+		});
 	});
 
 	it('forwards demo_viewed as fbq("track", "ViewContent", ...)', () => {
 		forwardToMetaPixel('demo_viewed', {
 			demo_slug: 'celestial-blue',
 			event_type: 'xv',
+			source_area: 'demo_showroom_featured',
 		});
-		expect(fbq()).toHaveBeenCalledWith('track', 'ViewContent', {});
+		expect(fbq()).toHaveBeenCalledWith('track', 'ViewContent', {
+			content_category: 'demo',
+			content_name: 'celestial-blue',
+			event_type: 'xv',
+			source_area: 'demo_showroom_featured',
+		});
 	});
 
 	it('forwards package_viewed as fbq("track", "ViewContent", ...)', () => {
 		forwardToMetaPixel('package_viewed', {
 			package_id: 'premium',
-			package_tier: 'gold',
+			package_name: 'Premium',
+			source_area: 'pricing',
 		});
-		expect(fbq()).toHaveBeenCalledWith('track', 'ViewContent', {});
+		expect(fbq()).toHaveBeenCalledWith('track', 'ViewContent', {
+			content_category: 'package',
+			content_name: 'Premium',
+			source_area: 'pricing',
+		});
 	});
 
 	it('forwards whatsapp_contact_clicked as fbq("track", "Contact", ...)', () => {
 		forwardToMetaPixel('whatsapp_contact_clicked', {
-			cta_id: 'whatsapp-hero',
+			lead_code: 'CM-ABC123',
+			package_name: 'Premium',
+			source_area: 'pricing',
 		});
-		expect(fbq()).toHaveBeenCalledWith('track', 'Contact', {});
+		expect(fbq()).toHaveBeenCalledWith(
+			'track',
+			'Contact',
+			{
+				content_category: 'package',
+				content_name: 'Premium',
+				source_area: 'pricing',
+			},
+			{ eventID: 'CM-ABC123' },
+		);
 	});
 
 	it('forwards successful form_submitted as fbq("track", "Lead", ...)', () => {
 		forwardToMetaPixel('form_submitted', {
 			form_id: 'contact',
-			promo_code: 'LANZAMIENTO-899',
+			lead_code: 'CM-LEAD42',
+			event_type: 'xv',
+			source_area: 'contact',
 		});
-		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {});
+		expect(fbq()).toHaveBeenCalledWith(
+			'track',
+			'Lead',
+			{
+				content_category: 'lead_form',
+				content_name: 'contact',
+				event_type: 'xv',
+				source_area: 'contact',
+			},
+			{ eventID: 'CM-LEAD42' },
+		);
 	});
 
 	it('forwards lead_created as fbq("track", "Lead", ...) — future standard event', () => {
@@ -137,7 +175,10 @@ describe('forwardToMetaPixel', () => {
 			lead_channel: 'web',
 			lead_source: 'organic',
 		});
-		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {});
+		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {
+			content_category: 'lead_form',
+			content_name: 'contact',
+		});
 	});
 
 	/* ---- Non-mapped events are silently dropped ---- */
@@ -161,7 +202,9 @@ describe('forwardToMetaPixel', () => {
 	it('emits PageView exactly once per page_viewed call', () => {
 		forwardToMetaPixel('page_viewed', {});
 		expect(fbq()).toHaveBeenCalledTimes(1);
-		expect(fbq()).toHaveBeenCalledWith('track', 'PageView', {});
+		expect(fbq()).toHaveBeenCalledWith('track', 'PageView', {
+			content_category: 'page',
+		});
 	});
 
 	it('has no duplicate PageView emission path — two page_viewed calls → two PageView calls', () => {

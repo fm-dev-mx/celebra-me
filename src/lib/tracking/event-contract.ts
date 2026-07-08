@@ -50,6 +50,7 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'destination',
 	'destination_type',
 	'package_id',
+	'package_name',
 	'package_tier',
 	'promo_code',
 	'campaign_code',
@@ -63,7 +64,11 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'lead_channel',
 	'lead_source',
 	'lead_code',
+	'event_id',
 	'folio',
+	'content_name',
+	'content_category',
+	'source_area',
 ]);
 
 const UNSAFE_KEY_PATTERN =

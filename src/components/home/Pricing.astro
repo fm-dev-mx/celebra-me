@@ -42,6 +42,10 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 								]}
 								data-index={index}
 								data-tier={tier.id}
+								data-track-package-view
+								data-package-id={tier.id ?? tier.title.toLowerCase()}
+								data-package-name={tier.title}
+								data-source-area="pricing"
 							>
 								{tier.isPrimary && tier.badge && <div class="pricing-badge">{tier.badge}</div>}
 

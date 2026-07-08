@@ -154,14 +154,17 @@ export function initMetaPixel(): void {
 function trackMetaEvent(
 	eventName: string,
 	parameters?: Record<string, string | number | boolean>,
+	options?: { eventID?: string },
 ): void {
 	if (!pixelLoaded) return;
 	const consent = readConsent();
 	if (!consent.marketing) return;
 
-	// No eventID is sent in this phase. Contact and Lead are different
-	// funnel stages and are not deduplicated against each other.
 	const method = STANDARD_META_EVENTS.has(eventName) ? 'track' : 'trackCustom';
+	if (options?.eventID) {
+		window.fbq?.(method, eventName, parameters ?? {}, options);
+		return;
+	}
 	window.fbq?.(method, eventName, parameters ?? {});
 }
 
@@ -176,8 +179,8 @@ export function forwardToMetaPixel(
 	const metaEvent = mapToMetaEvent(eventName);
 	if (!metaEvent) return;
 
-	const params = sanitizeForMeta(eventProperties);
-	trackMetaEvent(metaEvent, params);
+	const payload = buildMetaPayload(eventName, eventProperties);
+	trackMetaEvent(metaEvent, payload.parameters, payload.options);
 }
 
 /**
@@ -205,7 +208,7 @@ function mapToMetaEvent(firstPartyName: string): string | undefined {
 
 // Only non-PII, low-cardinality identifiers. No names, emails, phones,
 // message text, guest data, invite IDs, tokens, or claim codes.
-const SAFE_META_KEYS = new Set(['content_name', 'content_type', 'content_category']);
+const SAFE_META_KEYS = new Set(['content_name', 'content_category', 'event_type', 'source_area']);
 
 function sanitizeForMeta(
 	properties: Record<string, string | number | boolean>,
@@ -222,4 +225,122 @@ function sanitizeForMeta(
 		}
 	}
 	return result;
+}
+
+function pickNonEmptyString(
+	...values: Array<string | number | boolean | undefined>
+): string | undefined {
+	for (const value of values) {
+		if (typeof value !== 'string') continue;
+		const trimmed = value.trim();
+		if (trimmed) return trimmed;
+	}
+	return undefined;
+}
+
+function buildPageViewPayload(properties: Record<string, string | number | boolean>) {
+	const parameters: Record<string, string | number | boolean> = {
+		content_category: 'page',
+	};
+	const pageType = pickNonEmptyString(properties.page_type);
+	if (pageType) {
+		parameters.content_name = pageType;
+		parameters.source_area = pageType;
+	}
+	return parameters;
+}
+
+function buildDemoViewPayload(properties: Record<string, string | number | boolean>) {
+	const parameters: Record<string, string | number | boolean> = {
+		content_category: 'demo',
+	};
+	const demoSlug = pickNonEmptyString(properties.content_name, properties.demo_slug);
+	const eventType = pickNonEmptyString(properties.event_type);
+	const sourceArea = pickNonEmptyString(properties.source_area);
+	if (demoSlug) parameters.content_name = demoSlug;
+	if (eventType) parameters.event_type = eventType;
+	if (sourceArea) parameters.source_area = sourceArea;
+	return parameters;
+}
+
+function buildPackageViewPayload(properties: Record<string, string | number | boolean>) {
+	const parameters: Record<string, string | number | boolean> = {
+		content_category: 'package',
+	};
+	const packageName = pickNonEmptyString(
+		properties.content_name,
+		properties.package_name,
+		properties.package_id,
+	);
+	const sourceArea = pickNonEmptyString(properties.source_area);
+	if (packageName) parameters.content_name = packageName;
+	if (sourceArea) parameters.source_area = sourceArea;
+	return parameters;
+}
+
+function buildContactPayload(properties: Record<string, string | number | boolean>) {
+	const parameters: Record<string, string | number | boolean> = {
+		content_category: 'contact',
+	};
+	const packageName = pickNonEmptyString(properties.package_name, properties.package_id);
+	const demoSlug = pickNonEmptyString(properties.demo_slug);
+	const eventType = pickNonEmptyString(properties.event_type);
+	const sourceArea = pickNonEmptyString(properties.source_area);
+	if (packageName) {
+		parameters.content_category = 'package';
+		parameters.content_name = packageName;
+	} else if (demoSlug) {
+		parameters.content_category = 'demo';
+		parameters.content_name = demoSlug;
+	}
+	if (eventType) parameters.event_type = eventType;
+	if (sourceArea) parameters.source_area = sourceArea;
+	return parameters;
+}
+
+function buildLeadPayload(properties: Record<string, string | number | boolean>) {
+	const parameters: Record<string, string | number | boolean> = {
+		content_category: 'lead_form',
+		content_name: pickNonEmptyString(properties.form_id) ?? 'contact',
+	};
+	const eventType = pickNonEmptyString(properties.event_type);
+	const sourceArea = pickNonEmptyString(properties.source_area);
+	if (eventType) parameters.event_type = eventType;
+	if (sourceArea) parameters.source_area = sourceArea;
+	return parameters;
+}
+
+function buildMetaPayload(
+	eventName: string,
+	properties: Record<string, string | number | boolean>,
+): {
+	parameters: Record<string, string | number | boolean>;
+	options?: { eventID?: string };
+} {
+	const eventId = pickNonEmptyString(properties.event_id, properties.lead_code);
+	let base: Record<string, string | number | boolean> = {};
+
+	switch (eventName) {
+		case 'page_viewed':
+			base = buildPageViewPayload(properties);
+			break;
+		case 'demo_viewed':
+			base = buildDemoViewPayload(properties);
+			break;
+		case 'package_viewed':
+			base = buildPackageViewPayload(properties);
+			break;
+		case 'whatsapp_contact_clicked':
+			base = buildContactPayload(properties);
+			break;
+		case 'form_submitted':
+		case 'lead_created':
+			base = buildLeadPayload(properties);
+			break;
+		default:
+			break;
+	}
+
+	const parameters = sanitizeForMeta(base);
+	return eventId ? { parameters, options: { eventID: eventId } } : { parameters };
 }
