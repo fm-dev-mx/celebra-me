@@ -14,7 +14,6 @@ export interface SalesOrder {
 	amountPaid: number;
 	depositPaidAt?: string | null;
 	paidAt?: string | null;
-	created_at?: string;
 }
 
 interface CustomerOrdersBoxProps {
