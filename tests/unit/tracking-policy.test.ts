@@ -83,6 +83,16 @@ describe('tracking event contract', () => {
 		expect(hasUnsafeEventProperties({ cta_id: 'pricing_collection' })).toBe(false);
 	});
 
+	it('allows explicitly safe content metadata keys used by demo tracking', () => {
+		expect(
+			hasUnsafeEventProperties({
+				content_name: 'demo-xv-jewelry-box',
+				content_category: 'demo',
+				source_area: 'demo_page',
+			}),
+		).toBe(false);
+	});
+
 	it('validates first-party tracking event payloads', () => {
 		const result = TrackingEventSchema.safeParse({
 			sessionId: '11111111-1111-4111-8111-111111111111',

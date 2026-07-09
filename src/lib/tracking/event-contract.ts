@@ -85,7 +85,8 @@ const LONG_PHONE_PATTERN = /(?:\+?\d[\s().-]*){10,}/;
 
 export function hasUnsafeEventProperties(properties: Record<string, unknown>): boolean {
 	return Object.entries(properties).some(([key, value]) => {
-		if (UNSAFE_KEY_PATTERN.test(key)) return true;
+		// Safe-property keys never trigger the unsafe-name check, even if their name matches the pattern.
+		if (!SAFE_EVENT_PROPERTY_KEYS.has(key) && UNSAFE_KEY_PATTERN.test(key)) return true;
 		if (typeof value !== 'string') return false;
 		return EMAIL_PATTERN.test(value) || LONG_PHONE_PATTERN.test(value);
 	});

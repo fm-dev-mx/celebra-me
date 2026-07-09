@@ -1,12 +1,16 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import {
+	buildCommercialDashboardViewModel,
 	labelLeadChannel,
 	labelLeadStatus,
 	loadCommercialDashboardData,
 	type CommercialDashboardSummary,
 	type CountItem,
+	formatCount,
+	formatDateTime,
 } from '@/lib/tracking/commercial-dashboard';
+import { getEnv } from '@/lib/server/env';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
@@ -30,43 +34,13 @@ try {
 	loadError = true;
 }
 
-const formatCount = (value: number) => new Intl.NumberFormat('es-MX').format(value);
 const formatCurrency = (value: number) =>
 	new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
-
-const metricCards = dashboardData
-	? [
-			{ label: 'Sesiones', value: dashboardData.totals.sessions },
-			{ label: 'Clics CTA', value: dashboardData.totals.ctaClicks },
-			{ label: 'Intenciones WhatsApp', value: dashboardData.totals.whatsappClicks },
-			{ label: 'Formularios enviados', value: dashboardData.totals.formSubmissions },
-			{ label: 'Demos vistas', value: dashboardData.totals.demoViews },
-			{ label: 'Leads confirmados', value: dashboardData.totals.leads },
-		]
-	: [];
-
-const salesCards = dashboardData
-	? [
-			{ label: 'Órdenes totales', value: formatCount(dashboardData.sales.orders), muted: false },
-			{ label: 'Anticipos pagados', value: formatCount(dashboardData.sales.depositsPaid), muted: false },
-			{ label: 'Ingresos por anticipos', value: formatCurrency(dashboardData.sales.totalRevenue), muted: false },
-			{ label: 'Ticket promedio', value: formatCurrency(dashboardData.sales.averageTicket), muted: true },
-			{ label: 'Conversión Lead → Orden', value: `${dashboardData.sales.conversionLeadToOrder}%`, muted: true },
-		]
-	: [];
-
-const trackingQualityCards = dashboardData
-	? [
-			{ label: 'Eventos con consentimiento analítico', value: formatCount(dashboardData.trackingQuality.analyticsConsented), muted: false },
-			{ label: 'Eventos sin consentimiento analítico', value: formatCount(dashboardData.trackingQuality.analyticsBlocked), muted: true },
-			{ label: 'Eventos con consentimiento marketing', value: formatCount(dashboardData.trackingQuality.marketingConsented), muted: false },
-			{ label: 'Eventos sin consentimiento marketing', value: formatCount(dashboardData.trackingQuality.marketingBlocked), muted: true },
-			{ label: 'Total de eventos de seguimiento', value: formatCount(dashboardData.trackingQuality.totalEvents), muted: false },
-			{ label: 'Último evento', value: dashboardData.trackingQuality.lastEventAt
-				? new Intl.DateTimeFormat('es-MX', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(dashboardData.trackingQuality.lastEventAt))
-				: 'Sin datos', muted: true },
-		]
-	: [];
+const viewModel = dashboardData
+	? buildCommercialDashboardViewModel(dashboardData, {
+			capiDeliveryMode: getEnv('META_CAPI_DELIVERY_MODE'),
+		})
+	: null;
 
 const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 'Sin datos suficientes todavía', count: 0 }];
 
@@ -80,13 +54,21 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
 	lost: 'Perdido',
 };
 const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
+
+const HEALTH_STATUS_LABELS: Record<string, string> = {
+	correct: 'Correcto',
+	attention: 'Atención',
+	error: 'Error',
+	'safe-disabled': 'Desactivado de forma segura',
+};
+const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || status;
 ---
 
 <DashboardLayout title="Dashboard comercial">
 	<section class="commercial-dashboard">
 		<header class="commercial-dashboard__header">
 			<div>
-				<p class="commercial-dashboard__eyebrow">Atribución first-party</p>
+				<p class="commercial-dashboard__eyebrow">Atribución propia</p>
 				<h2>Comercial</h2>
 			</div>
 			<p>
@@ -99,10 +81,115 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 			<div class="dashboard-card commercial-dashboard__notice">
 				<h3>Datos no disponibles</h3>
 				<p>
-					El dashboard está listo, pero las tablas comerciales aún no respondieron en esta
+					El dashboard está listo, pero las tablas comerciales aún no respondieron en este
 					ambiente. Aplica la migración MVP antes de usarlo en producción.
 				</p>
 			</div>
+		)}
+
+		{dashboardData && viewModel && (
+			<>
+				<section class="dashboard-card commercial-dashboard__context">
+					<header>
+						<h3>Contexto de datos</h3>
+						<p>{dashboardData.dataContext.limitNotice}</p>
+					</header>
+					<dl class="commercial-dashboard__context-grid">
+						<div>
+							<dt>Periodo mostrado</dt>
+							<dd>{dashboardData.dataContext.periodLabel}</dd>
+						</div>
+						<div>
+							<dt>Alcance de datos</dt>
+							<dd>{dashboardData.dataContext.scopeLabel}</dd>
+						</div>
+						<div>
+							<dt>Última actividad registrada</dt>
+							<dd>{formatDateTime(dashboardData.dataContext.lastActivityAt)}</dd>
+						</div>
+						<div>
+							<dt>Último evento de tracking</dt>
+							<dd>{formatDateTime(dashboardData.dataContext.lastTrackingEventAt)}</dd>
+						</div>
+						<div>
+							<dt>Última actualización comercial</dt>
+							<dd>{formatDateTime(dashboardData.dataContext.lastCommercialUpdateAt)}</dd>
+						</div>
+					</dl>
+				</section>
+
+				<section class="commercial-dashboard__health">
+					<header class="commercial-dashboard__quality-header">
+						<h3>Salud del sistema</h3>
+						<p>Diagnóstico resumido de tracking, CAPI y datos comerciales.</p>
+					</header>
+					<div class="commercial-dashboard__health-grid">
+						<article class="dashboard-card commercial-dashboard__health-card">
+							<div class="commercial-dashboard__health-heading">
+								<h4>{viewModel.health.tracking.label}</h4>
+								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.tracking.status}`]}>
+									{labelHealthStatus(viewModel.health.tracking.status)}
+								</span>
+							</div>
+							<p>{viewModel.health.tracking.message}</p>
+							<ul class="commercial-dashboard__health-list">
+								{viewModel.health.tracking.checks.map((check) => (
+									<li>
+										<span>{check.label}</span>
+										<strong>{check.value}</strong>
+										<small>{check.helper}</small>
+									</li>
+								))}
+							</ul>
+						</article>
+
+						<article class="dashboard-card commercial-dashboard__health-card">
+							<div class="commercial-dashboard__health-heading">
+								<h4>{viewModel.health.capi.label}</h4>
+								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.capi.status}`]}>
+									{labelHealthStatus(viewModel.health.capi.status)}
+								</span>
+							</div>
+							<p>{viewModel.health.capi.message}</p>
+							<ul class="commercial-dashboard__health-list commercial-dashboard__health-list--compact">
+								{viewModel.health.capi.checks.map((check) => (
+									<li>
+										<span>{check.label}</span>
+										<strong>{check.value}</strong>
+									</li>
+								))}
+							</ul>
+						</article>
+
+						<article class="dashboard-card commercial-dashboard__health-card">
+							<div class="commercial-dashboard__health-heading">
+								<h4>{viewModel.health.commercial.label}</h4>
+								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.commercial.status}`]}>
+									{labelHealthStatus(viewModel.health.commercial.status)}
+								</span>
+							</div>
+							<p>{viewModel.health.commercial.message}</p>
+							<ul class="commercial-dashboard__health-list">
+								{viewModel.health.commercial.warnings.length === 0 ? (
+									<li>
+										<span>Alertas accionables</span>
+										<strong>0</strong>
+										<small>Sin alertas básicas en los registros cargados.</small>
+									</li>
+								) : (
+									viewModel.health.commercial.warnings.map((warning) => (
+										<li>
+											<span>{warning.label}</span>
+											<strong>{formatCount(warning.count)}</strong>
+											<small>{warning.helper}</small>
+										</li>
+									))
+								)}
+							</ul>
+						</article>
+					</div>
+				</section>
+			</>
 		)}
 
 		<div class="commercial-tabs">
@@ -111,13 +198,14 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 		</div>
 
 		<div class="tab-content active" id="tab-metrics">
-			{dashboardData && (
+			{dashboardData && viewModel && (
 				<>
 					<div class="commercial-dashboard__metrics">
-						{metricCards.map((card) => (
+						{viewModel.trafficCards.map((card) => (
 							<article class="commercial-dashboard__metric">
 								<span>{card.label}</span>
-								<strong>{formatCount(card.value)}</strong>
+								<strong>{card.value}</strong>
+								{card.helper && <small>{card.helper}</small>}
 							</article>
 						))}
 						<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
@@ -132,10 +220,11 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 							<p>Distribución de consentimiento entre eventos persistidos.</p>
 						</header>
 						<div class="commercial-dashboard__metrics">
-							{trackingQualityCards.map((card) => (
+							{viewModel.trackingQualityCards.map((card) => (
 								<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
 									<span>{card.label}</span>
 									<strong>{card.value}</strong>
+									{card.helper && <small>{card.helper}</small>}
 								</article>
 							))}
 						</div>
@@ -147,10 +236,11 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 							<p>Resumen de órdenes, ingresos y conversión.</p>
 						</header>
 						<div class="commercial-dashboard__metrics">
-							{salesCards.map((card) => (
+							{viewModel.salesCards.map((card) => (
 								<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
 									<span>{card.label}</span>
 									<strong>{card.value}</strong>
+									{card.helper && <small>{card.helper}</small>}
 								</article>
 							))}
 						</div>
@@ -167,7 +257,7 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 						</section>
 
 						<section class="dashboard-card">
-							<h3>Engagement</h3>
+							<h3>Interacción</h3>
 							<ul class="commercial-dashboard__list">
 								{renderList(dashboardData.sections).map((item) => (
 									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
@@ -176,7 +266,7 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 						</section>
 
 						<section class="dashboard-card">
-							<h3>Scroll</h3>
+							<h3>Desplazamiento</h3>
 							<ul class="commercial-dashboard__list">
 								{renderList(dashboardData.scrollDepth).map((item) => (
 									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
@@ -221,7 +311,10 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 						</section>
 
 						<section class="dashboard-card">
-							<h3>Ingresos por tipo de evento</h3>
+							<h3>Ingresos por paquete o tipo de evento</h3>
+							<p class="commercial-dashboard__card-help">
+								Agrupa por paquete cuando existe; si no, usa el tipo de evento.
+							</p>
 							<ul class="commercial-dashboard__list">
 								{renderList(dashboardData.topRevenueByEventType).map((item) => (
 									<li><span>{item.label}</span><strong>{formatCurrency(item.count)}</strong></li>
@@ -337,6 +430,14 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 				font-size: 2rem;
 				color: var(--color-action-primary);
 			}
+
+			small {
+				display: block;
+				margin-top: 0.45rem;
+				color: var(--color-text-muted);
+				font-size: 0.78rem;
+				line-height: 1.4;
+			}
 		}
 
 		.commercial-dashboard__metric--muted strong {
@@ -362,6 +463,170 @@ const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 			strong {
 				color: var(--color-text-primary);
 			}
+		}
+
+		.commercial-dashboard__card-help {
+			margin: 0.35rem 0 0;
+			color: var(--color-text-muted);
+			font-size: 0.82rem;
+			line-height: 1.45;
+		}
+
+		.commercial-dashboard__context {
+			display: grid;
+			gap: 1rem;
+
+			header {
+				display: grid;
+				gap: 0.25rem;
+			}
+
+			h3,
+			p {
+				margin: 0;
+			}
+
+			h3 {
+				color: var(--color-text-primary);
+				font-size: 1rem;
+			}
+
+			p {
+				color: var(--color-text-muted);
+				font-size: 0.82rem;
+				line-height: 1.5;
+			}
+		}
+
+		.commercial-dashboard__context-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+			gap: 0.85rem;
+			margin: 0;
+
+			div {
+				display: grid;
+				gap: 0.2rem;
+			}
+
+			dt {
+				color: var(--color-text-muted);
+				font-size: 0.72rem;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+
+			dd {
+				margin: 0;
+				color: var(--color-text-primary);
+				font-size: 0.9rem;
+			}
+		}
+
+		.commercial-dashboard__health {
+			display: grid;
+			gap: 0.75rem;
+		}
+
+		.commercial-dashboard__health-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 1rem;
+		}
+
+		.commercial-dashboard__health-card {
+			display: grid;
+			align-content: start;
+			gap: 0.8rem;
+
+			p {
+				margin: 0;
+				color: var(--color-text-secondary);
+				font-size: 0.86rem;
+				line-height: 1.5;
+			}
+		}
+
+		.commercial-dashboard__health-heading {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.75rem;
+
+			h4 {
+				margin: 0;
+				color: var(--color-text-primary);
+				font-size: 0.95rem;
+			}
+		}
+
+		.commercial-dashboard__status {
+			display: inline-flex;
+			align-items: center;
+			border-radius: 999px;
+			padding: 0.2rem 0.55rem;
+			border: 1px solid var(--dashboard-card-border);
+			color: var(--color-text-secondary);
+			font-size: 0.72rem;
+			font-weight: 700;
+			white-space: nowrap;
+		}
+
+		.commercial-dashboard__status--correct {
+			border-color: rgba(34, 197, 94, 0.45);
+			color: #22c55e;
+		}
+
+		.commercial-dashboard__status--attention {
+			border-color: rgba(245, 158, 11, 0.45);
+			color: #f59e0b;
+		}
+
+		.commercial-dashboard__status--error {
+			border-color: rgba(239, 68, 68, 0.45);
+			color: #ef4444;
+		}
+
+		.commercial-dashboard__status--safe-disabled {
+			border-color: rgba(107, 114, 128, 0.45);
+			color: var(--color-text-secondary);
+		}
+
+		.commercial-dashboard__health-list {
+			display: grid;
+			gap: 0.6rem;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+
+			li {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 0.15rem 0.75rem;
+				padding-top: 0.6rem;
+				border-top: 1px solid var(--dashboard-card-border);
+			}
+
+			span {
+				color: var(--color-text-secondary);
+				font-size: 0.86rem;
+			}
+
+			strong {
+				color: var(--color-text-primary);
+				font-size: 0.9rem;
+			}
+
+			small {
+				grid-column: 1 / -1;
+				color: var(--color-text-muted);
+				font-size: 0.76rem;
+				line-height: 1.35;
+			}
+		}
+
+		.commercial-dashboard__health-list--compact li {
+			grid-template-columns: 1fr auto;
 		}
 
 		.commercial-dashboard__table-wrap {

@@ -1,4 +1,7 @@
-import { summarizeCommercialAnalytics } from '@/lib/tracking/commercial-dashboard';
+import {
+	buildCommercialDashboardViewModel,
+	summarizeCommercialAnalytics,
+} from '@/lib/tracking/commercial-dashboard';
 
 describe('summarizeCommercialAnalytics', () => {
 	it('summarizes sessions, engagement, CTAs, demos, campaigns, and leads', () => {
@@ -111,5 +114,250 @@ describe('summarizeCommercialAnalytics', () => {
 		expect(summary.sales.conversionLeadToOrder).toBe(0);
 		expect(summary.ordersByStatus).toEqual([]);
 		expect(summary.topRevenueByEventType).toEqual([]);
+	});
+
+	it('builds honest sales labels and helper text for weak attribution metrics', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [],
+			events: [],
+			leads: [
+				{
+					status: 'new',
+					channel: 'contact_form',
+				},
+				{
+					status: 'new',
+					channel: 'whatsapp',
+				},
+			],
+			orders: [
+				{
+					id: 'order-1',
+					status: 'deposit_paid',
+					total_amount: 1800,
+					amount_paid: 899,
+					event_type: 'xv',
+					package_name: 'Premium',
+					created_at: '2026-07-09T10:00:00.000Z',
+					deposit_paid_at: '2026-07-09T11:00:00.000Z',
+				},
+			],
+		});
+
+		const viewModel = buildCommercialDashboardViewModel(summary, {
+			capiDeliveryMode: 'disabled',
+		});
+
+		expect(viewModel.salesCards).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'depositOrders', label: 'Órdenes con anticipo' }),
+				expect.objectContaining({ id: 'depositRevenue', label: 'Ingresos por anticipos' }),
+				expect.objectContaining({
+					id: 'averageDeposit',
+					label: 'Anticipo promedio',
+					helper: 'Calculado sobre órdenes con monto pagado mayor a cero.',
+				}),
+				expect.objectContaining({
+					id: 'leadOrderRatio',
+					label: 'Relación general Lead → Orden',
+					helper: 'Calculada con totales generales; todavía no es una atribución uno-a-uno.',
+				}),
+			]),
+		);
+	});
+
+	it('surfaces data scope, freshness, and query-limit transparency', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [
+				{
+					id: 'session-1',
+					route_class: 'commercial',
+					is_internal: false,
+					source: 'qa',
+					medium: 'manual',
+					campaign: 'health',
+					last_seen_at: '2026-07-09T12:00:00.000Z',
+				},
+			],
+			events: [
+				{
+					event_name: 'page_viewed',
+					event_properties: {},
+					occurred_at: '2026-07-09T12:01:00.000Z',
+				},
+			],
+			leads: [
+				{
+					status: 'new',
+					channel: 'contact_form',
+					created_at: '2026-07-09T12:02:00.000Z',
+				},
+			],
+			orders: [
+				{
+					id: 'order-1',
+					status: 'confirmed',
+					total_amount: 1800,
+					amount_paid: 0,
+					created_at: '2026-07-09T12:03:00.000Z',
+				},
+			],
+			conversions: [
+				{
+					id: 'conversion-1',
+					order_id: 'order-1',
+					status: 'pending',
+					created_at: '2026-07-09T12:04:00.000Z',
+					updated_at: '2026-07-09T12:05:00.000Z',
+				},
+			],
+		});
+
+		expect(summary.dataContext.periodLabel).toBe('Mostrando datos históricos disponibles');
+		expect(summary.dataContext.scopeLabel).toBe('Sin filtro de fechas activo');
+		expect(summary.dataContext.lastTrackingEventAt).toBe('2026-07-09T12:01:00.000Z');
+		expect(summary.dataContext.lastCommercialUpdateAt).toBe('2026-07-09T12:05:00.000Z');
+		expect(summary.dataContext.limitNotice).toContain('últimos registros cargados');
+	});
+
+	it('summarizes tracking, disabled CAPI, and commercial data warnings', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [],
+			events: [
+				{
+					event_name: 'page_viewed',
+					event_properties: {},
+					occurred_at: '2026-07-09T12:01:00.000Z',
+				},
+				{
+					event_name: 'cta_clicked',
+					event_properties: { cta_id: 'hero' },
+					occurred_at: '2026-07-09T12:02:00.000Z',
+				},
+			],
+			leads: [],
+			orders: [
+				{
+					id: 'order-without-capi',
+					status: 'deposit_paid',
+					total_amount: 1800,
+					amount_paid: 899,
+					created_at: '2026-07-09T12:03:00.000Z',
+					deposit_paid_at: '2026-07-09T12:04:00.000Z',
+				},
+				{
+					id: 'order-overpaid',
+					status: 'deposit_paid',
+					total_amount: 500,
+					amount_paid: 700,
+					created_at: '2026-07-09T12:03:00.000Z',
+				},
+			],
+			conversions: [
+				{
+					id: 'conversion-1',
+					order_id: 'different-order',
+					status: 'skipped',
+					created_at: '2026-07-09T12:05:00.000Z',
+					updated_at: '2026-07-09T12:06:00.000Z',
+				},
+			],
+		});
+
+		const viewModel = buildCommercialDashboardViewModel(summary, {
+			capiDeliveryMode: 'disabled',
+		});
+
+		expect(viewModel.health.tracking.status).toBe('attention');
+		expect(viewModel.health.tracking.checks).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ label: 'WhatsApp', status: 'attention' }),
+				expect.objectContaining({ label: 'Demos', status: 'attention' }),
+			]),
+		);
+		expect(viewModel.health.capi.status).toBe('safe-disabled');
+		expect(viewModel.health.capi.message).toBe(
+			'CAPI desactivado de forma segura: no se envían eventos reales a Meta.',
+		);
+		expect(summary.lastConversionAttemptAt).toBe('2026-07-09T12:06:00.000Z');
+		expect(viewModel.health.capi.checks).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					label: 'Último intento',
+					status: 'safe-disabled',
+				}),
+			]),
+		);
+		expect(viewModel.health.commercial.warnings).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					label: 'Órdenes con anticipo sin evento CAPI',
+					count: 2,
+				}),
+				expect.objectContaining({
+					label: 'Órdenes con valores inconsistentes',
+					count: 1,
+				}),
+			]),
+		);
+	});
+
+	it('uses key tracking events instead of session count for tracking health checks', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [
+				{
+					id: 'session-without-page-event',
+					route_class: 'commercial',
+					is_internal: false,
+				},
+			],
+			events: [
+				{
+					event_name: 'cta_clicked',
+					event_properties: { cta_id: 'hero' },
+				},
+			],
+			leads: [],
+		});
+
+		const viewModel = buildCommercialDashboardViewModel(summary);
+
+		expect(viewModel.health.tracking.checks).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					label: 'Página inicial',
+					status: 'attention',
+					value: '0',
+				}),
+				expect.objectContaining({
+					label: 'CTAs',
+					status: 'correct',
+					value: '1',
+				}),
+			]),
+		);
+	});
+
+	it('keeps tracking health helper text operator-friendly', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [],
+			events: [
+				{
+					event_name: 'page_viewed',
+					event_properties: {},
+				},
+			],
+			leads: [],
+		});
+
+		const viewModel = buildCommercialDashboardViewModel(summary);
+		const helperText = viewModel.health.tracking.checks
+			.map((check) => check.helper ?? '')
+			.join(' ');
+
+		expect(helperText).not.toContain('page_viewed');
+		expect(helperText).not.toContain('demo_viewed');
+		expect(helperText).not.toContain('cta_clicked');
+		expect(helperText).toContain('Se registraron vistas de la página inicial.');
 	});
 });
