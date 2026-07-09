@@ -8,11 +8,13 @@ import {
 	type CommercialDashboardSummary,
 	type CountItem,
 	formatCount,
+	formatCurrency,
 	formatDateTime,
 } from '@/lib/tracking/commercial-dashboard';
 import { getEnv } from '@/lib/server/env';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
+import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 
 if (!Astro.locals.session?.isSuperAdmin) {
@@ -25,17 +27,19 @@ let initialConversions: ConversionEvent[] = [];
 
 try {
 	dashboardData = await loadCommercialDashboardData();
+} catch (error) {
+	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
+	loadError = true;
+}
+try {
 	initialConversions = await supabaseRestRequest<ConversionEvent[]>({
 		pathWithQuery: 'meta_conversion_events?select=id,event_name,event_id,value,currency,status,attempt_count,last_error_message,created_at&order=created_at.desc&limit=50',
 		useServiceRole: true,
 	});
 } catch (error) {
-	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
-	loadError = true;
+	console.error('[commercial-dashboard] Error loading outbox data (non-critical):', error);
 }
 
-const formatCurrency = (value: number) =>
-	new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
 const viewModel = dashboardData
 	? buildCommercialDashboardViewModel(dashboardData, {
 			capiDeliveryMode: getEnv('META_CAPI_DELIVERY_MODE'),
@@ -68,12 +72,11 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 	<section class="commercial-dashboard">
 		<header class="commercial-dashboard__header">
 			<div>
-				<p class="commercial-dashboard__eyebrow">Atribución propia</p>
+				<p class="commercial-dashboard__eyebrow">Panel de control</p>
 				<h2>Comercial</h2>
 			</div>
 			<p>
-				Mide sesiones, intención por WhatsApp, formularios y leads confirmados sin mezclar
-				RSVP, invitados ni enlaces personalizados.
+				Resumen ejecutivo de ventas, atribución de marketing y salud del sistema.
 			</p>
 		</header>
 
@@ -365,7 +368,8 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 		</div>
 
 		<div class="tab-content" id="tab-sales">
-			<SalesWorkspace client:load initialConversions={initialConversions} />
+			<SalesWorkspace client:load />
+			<CapiOutboxPanel client:load initialConversions={initialConversions} />
 		</div>
 	</section>
 

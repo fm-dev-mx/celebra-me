@@ -268,6 +268,16 @@ describe('summarizeCommercialAnalytics', () => {
 			capiDeliveryMode: 'disabled',
 		});
 
+		// Executive metrics for Resumen tab
+		expect(viewModel.executiveMetrics).toHaveLength(6);
+		expect(viewModel.executiveMetrics).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'sessions', label: 'Sesiones externas' }),
+				expect.objectContaining({ id: 'commercialAlerts', label: 'Alertas comerciales' }),
+			]),
+		);
+		expect(viewModel.activeAlerts).toBeGreaterThan(0);
+
 		expect(viewModel.health.tracking.status).toBe('attention');
 		expect(viewModel.health.tracking.checks).toEqual(
 			expect.arrayContaining([

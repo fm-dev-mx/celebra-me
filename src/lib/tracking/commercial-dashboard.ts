@@ -123,15 +123,13 @@ export interface CommercialDashboardSummary {
 	lastConversionAttemptAt: string | null;
 	dataContext: DataContextSummary;
 	/** Tracking quality — consent distribution */
-	trackingQuality: {
-		totalEvents: number;
-		analyticsConsented: number;
-		analyticsBlocked: number;
-		marketingConsented: number;
-		marketingBlocked: number;
-		/** @deprecated Use dataContext.lastTrackingEventAt instead */
-		lastEventAt: string | null;
-	};
+		trackingQuality: {
+			totalEvents: number;
+			analyticsConsented: number;
+			analyticsBlocked: number;
+			marketingConsented: number;
+			marketingBlocked: number;
+		};
 }
 
 export type HealthSeverity = 'correct' | 'attention' | 'error' | 'safe-disabled';
@@ -162,6 +160,8 @@ export interface CommercialDashboardViewModel {
 	trafficCards: CommercialMetricCard[];
 	salesCards: CommercialMetricCard[];
 	trackingQualityCards: CommercialMetricCard[];
+	executiveMetrics: CommercialMetricCard[];
+	activeAlerts: number;
 	health: {
 		tracking: {
 			status: HealthSeverity;
@@ -247,16 +247,26 @@ const EMPTY_CONVERSION_COUNTS: Record<ConversionSummaryRow['status'], number> = 
 	skipped: 0,
 };
 
+const TRACKING_EVENT = {
+	PAGE_VIEWED: 'page_viewed',
+	DEMO_VIEWED: 'demo_viewed',
+	CTA_CLICKED: 'cta_clicked',
+	WHATSAPP_CONTACT_CLICKED: 'whatsapp_contact_clicked',
+	FORM_SUBMITTED: 'form_submitted',
+	SCROLL_DEPTH_REACHED: 'scroll_depth_reached',
+	SECTION_SEEN: 'section_seen',
+} as const;
+
 export function formatCount(value: number): string {
 	return new Intl.NumberFormat('es-MX').format(value);
 }
 
-function formatCurrency(value: number): string {
+export function formatCurrency(value: number, fractionDigits: number = 2): string {
 	return new Intl.NumberFormat('es-MX', {
 		style: 'currency',
 		currency: 'MXN',
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
+		minimumFractionDigits: fractionDigits,
+		maximumFractionDigits: Math.max(fractionDigits, 2),
 	}).format(value);
 }
 
@@ -285,48 +295,42 @@ function countConversionsByStatus(
 	return counts;
 }
 
-function countEvents(events: CommercialEventRow[], eventName: string): number {
-	return events.filter((event) => event.event_name === eventName).length;
-}
-
-/** @internal Not part of public API — only used by loadCommercialDashboardData and tests */
-export function summarizeCommercialAnalytics(
-	rows: CommercialDashboardRows,
-): CommercialDashboardSummary {
-	const externalSessions = rows.sessions.filter((session) => !session.is_internal);
-	const internalSessions = rows.sessions.filter((session) => session.is_internal);
-	const externalEvents = rows.events.filter((event) => event.is_internal !== true);
+/**
+ * Build single-pass event metrics: histograms, consent distribution, event counts, latest timestamp.
+ * Replaces repeated filter()+length calls with one O(n) pass.
+ */
+function summarizeEventMetrics(externalEvents: CommercialEventRow[]) {
 	const topCtas = new Map<string, number>();
 	const topDemos = new Map<string, number>();
 	const scrollDepth = new Map<string, number>();
 	const sections = new Map<string, number>();
-	const campaigns = new Map<string, number>();
-	const leadsByStatus = new Map<string, number>();
-	const leadsByChannel = new Map<string, number>();
+	const campaignMap = new Map<string, number>();
+	const eventCounts: Record<string, number> = {};
 
-	// Tracking quality consent distribution.
 	let analyticsConsented = 0;
 	let analyticsBlocked = 0;
 	let marketingConsented = 0;
 	let marketingBlocked = 0;
+	let lastEventAt: string | null = null;
 
-	externalSessions.forEach((session) => {
-		increment(campaigns, campaignLabel(session.source, session.medium, session.campaign));
-	});
+	for (const event of externalEvents) {
+		eventCounts[event.event_name] = (eventCounts[event.event_name] ?? 0) + 1;
+		increment(campaignMap, campaignLabel(event.source, event.medium, event.campaign));
 
-	externalEvents.forEach((event) => {
-		increment(campaigns, campaignLabel(event.source, event.medium, event.campaign));
-		if (event.event_name === 'cta_clicked' || event.event_name === 'whatsapp_contact_clicked') {
+		if (
+			event.event_name === TRACKING_EVENT.CTA_CLICKED ||
+			event.event_name === TRACKING_EVENT.WHATSAPP_CONTACT_CLICKED
+		) {
 			increment(topCtas, propertyAsString(event.event_properties, 'cta_id'));
 		}
-		if (event.event_name === 'demo_viewed') {
+		if (event.event_name === TRACKING_EVENT.DEMO_VIEWED) {
 			increment(topDemos, propertyAsString(event.event_properties, 'demo_slug'));
 		}
-		if (event.event_name === 'scroll_depth_reached') {
+		if (event.event_name === TRACKING_EVENT.SCROLL_DEPTH_REACHED) {
 			const bucket = propertyAsString(event.event_properties, 'depth_bucket');
 			increment(scrollDepth, bucket ? `${bucket}%` : undefined);
 		}
-		if (event.event_name === 'section_seen') {
+		if (event.event_name === TRACKING_EVENT.SECTION_SEEN) {
 			increment(sections, propertyAsString(event.event_properties, 'section_id'));
 		}
 
@@ -342,34 +346,37 @@ export function summarizeCommercialAnalytics(
 		} else {
 			marketingBlocked += 1;
 		}
-	});
 
-	// Last event timestamp.
-	const timestamps = externalEvents
-		.map((e) => e.occurred_at)
-		.filter((t): t is string => typeof t === 'string')
-		.sort()
-		.reverse();
-	const lastEventAt = timestamps.length > 0 ? timestamps[0] : null;
+		// Latest event timestamp (single-pass, no sort needed).
+		if (event.occurred_at && (!lastEventAt || event.occurred_at > lastEventAt)) {
+			lastEventAt = event.occurred_at;
+		}
+	}
 
-	rows.leads.forEach((lead) => {
-		increment(leadsByStatus, labelLeadStatus(lead.status));
-		increment(leadsByChannel, labelLeadChannel(lead.channel));
-		increment(campaigns, campaignLabel(lead.utm_source, lead.utm_medium, lead.utm_campaign));
-	});
+	return {
+		topCtas,
+		topDemos,
+		scrollDepth,
+		sections,
+		campaignMap,
+		analyticsConsented,
+		analyticsBlocked,
+		marketingConsented,
+		marketingBlocked,
+		lastEventAt,
+		eventCounts,
+	};
+}
 
-	// Sales summary
-	const orders = rows.orders ?? [];
-	const conversions = rows.conversions ?? [];
+function processOrderMetrics(orders: SalesOrderSummaryRow[], conversions: ConversionSummaryRow[]) {
 	const ordersByStatus = new Map<string, number>();
-	const demosByRevenue = new Map<string, number>();
+	const revenueByEventType = new Map<string, number>();
 	const conversionOrderIds = new Set(
 		conversions
-			.map((conversion) => conversion.order_id)
-			.filter(
-				(orderId): orderId is string => typeof orderId === 'string' && orderId.length > 0,
-			),
+			.map((c) => c.order_id)
+			.filter((id): id is string => typeof id === 'string' && id.length > 0),
 	);
+
 	let totalRevenue = 0;
 	let depositsPaid = 0;
 	let ordersWithPendingBalance = 0;
@@ -381,12 +388,8 @@ export function summarizeCommercialAnalytics(
 
 		const paid = Number(order.amount_paid) || 0;
 		const total = Number(order.total_amount) || 0;
-		if (total > paid) {
-			ordersWithPendingBalance++;
-		}
-		if (paid > total) {
-			ordersWithInconsistentValues++;
-		}
+		if (total > paid) ordersWithPendingBalance++;
+		if (paid > total) ordersWithInconsistentValues++;
 		if (paid > 0) {
 			totalRevenue += paid;
 			depositsPaid++;
@@ -394,89 +397,159 @@ export function summarizeCommercialAnalytics(
 		if (paid > 0 && !conversionOrderIds.has(order.id)) {
 			ordersWithDepositMissingCapi++;
 		}
-
 		if (order.event_type && paid > 0) {
 			const label = `${order.package_name || order.event_type}`;
-			const existing = demosByRevenue.get(label) || 0;
-			demosByRevenue.set(label, existing + paid);
+			revenueByEventType.set(label, (revenueByEventType.get(label) ?? 0) + paid);
 		}
 	}
 
-	const leadsCount = rows.leads.length;
+	const conversionStatusCounts = countConversionsByStatus(conversions);
+	const lastConversionAttemptAt = latestDate(
+		conversions.map((c) => c.updated_at ?? c.created_at),
+	);
+
+	return {
+		ordersByStatus,
+		revenueByEventType,
+		totalRevenue,
+		depositsPaid,
+		ordersWithPendingBalance,
+		ordersWithDepositMissingCapi,
+		ordersWithInconsistentValues,
+		conversionStatusCounts,
+		lastConversionAttemptAt,
+	};
+}
+
+function computeDataContext(
+	externalSessions: CommercialSessionRow[],
+	externalEvents: CommercialEventRow[],
+	leads: CommercialLeadRow[],
+	orders: SalesOrderSummaryRow[],
+	lastConversionAttemptAt: string | null,
+	lastEventAt: string | null,
+): DataContextSummary {
+	return {
+		periodLabel: 'Mostrando datos históricos disponibles',
+		scopeLabel: 'Sin filtro de fechas activo',
+		limitNotice: QUERY_LIMIT_NOTICE,
+		lastTrackingEventAt: lastEventAt,
+		lastCommercialUpdateAt: latestDate([
+			...leads.map((l) => l.created_at),
+			...orders.map((o) => o.deposit_paid_at ?? o.created_at),
+			lastConversionAttemptAt,
+		]),
+		lastActivityAt: latestDate([
+			...externalSessions.map((s) => s.last_seen_at),
+			...externalEvents.map((e) => e.occurred_at),
+			...leads.map((l) => l.created_at),
+			...orders.map((o) => o.deposit_paid_at ?? o.created_at),
+			lastConversionAttemptAt,
+		]),
+	};
+}
+
+/** @internal Not part of public API — only used by loadCommercialDashboardData and tests */
+export function summarizeCommercialAnalytics(
+	rows: CommercialDashboardRows,
+): CommercialDashboardSummary {
+	const externalSessions = rows.sessions.filter((session) => !session.is_internal);
+	const internalSessions = rows.sessions.filter((session) => session.is_internal);
+	const externalEvents = rows.events.filter((event) => event.is_internal !== true);
+	const leads = rows.leads;
+	const orders = rows.orders ?? [];
+	const conversions = rows.conversions ?? [];
+
+	// Campaigns from sessions.
+	const campaignMap = new Map<string, number>();
+	externalSessions.forEach((session) => {
+		increment(campaignMap, campaignLabel(session.source, session.medium, session.campaign));
+	});
+
+	// Events: everything in one pass.
+	const eventMetrics = summarizeEventMetrics(externalEvents);
+	// Merge session-based campaigns with event-derived ones.
+	for (const [label, count] of eventMetrics.campaignMap) {
+		campaignMap.set(label, (campaignMap.get(label) ?? 0) + count);
+	}
+
+	// Leads.
+	const leadsByStatus = new Map<string, number>();
+	const leadsByChannel = new Map<string, number>();
+	leads.forEach((lead) => {
+		increment(leadsByStatus, labelLeadStatus(lead.status));
+		increment(leadsByChannel, labelLeadChannel(lead.channel));
+		increment(campaignMap, campaignLabel(lead.utm_source, lead.utm_medium, lead.utm_campaign));
+	});
+
+	// Orders & conversions.
+	const salesMetrics = processOrderMetrics(orders, conversions);
+
+	const leadsCount = leads.length;
 	const conversionLeadToOrder =
 		leadsCount > 0 ? Math.round((orders.length / leadsCount) * 100) : 0;
-	const lastConversionAttemptAt = latestDate(
-		conversions.map((conversion) => conversion.updated_at ?? conversion.created_at),
-	);
+
+	const keyTrackingEventCounts: KeyTrackingEventCounts = {
+		pageViewed: eventMetrics.eventCounts[TRACKING_EVENT.PAGE_VIEWED] ?? 0,
+		demoViewed: eventMetrics.eventCounts[TRACKING_EVENT.DEMO_VIEWED] ?? 0,
+		ctaClicked: eventMetrics.eventCounts[TRACKING_EVENT.CTA_CLICKED] ?? 0,
+		whatsappClicked: eventMetrics.eventCounts[TRACKING_EVENT.WHATSAPP_CONTACT_CLICKED] ?? 0,
+	};
 
 	return {
 		totals: {
 			sessions: externalSessions.length,
 			internalSessions: internalSessions.length,
-			ctaClicks: countEvents(externalEvents, 'cta_clicked'),
-			whatsappClicks: countEvents(externalEvents, 'whatsapp_contact_clicked'),
-			formSubmissions: countEvents(externalEvents, 'form_submitted'),
-			demoViews: countEvents(externalEvents, 'demo_viewed'),
+			ctaClicks: eventMetrics.eventCounts[TRACKING_EVENT.CTA_CLICKED] ?? 0,
+			whatsappClicks: eventMetrics.eventCounts[TRACKING_EVENT.WHATSAPP_CONTACT_CLICKED] ?? 0,
+			formSubmissions: eventMetrics.eventCounts[TRACKING_EVENT.FORM_SUBMITTED] ?? 0,
+			demoViews: eventMetrics.eventCounts[TRACKING_EVENT.DEMO_VIEWED] ?? 0,
 			leads: leadsCount,
 		},
 		sales: {
 			orders: orders.length,
-			depositsPaid,
-			totalRevenue,
-			averageTicket: depositsPaid > 0 ? Math.round(totalRevenue / depositsPaid) : 0,
+			depositsPaid: salesMetrics.depositsPaid,
+			totalRevenue: salesMetrics.totalRevenue,
+			averageTicket: salesMetrics.depositsPaid > 0
+				? Math.round(salesMetrics.totalRevenue / salesMetrics.depositsPaid)
+				: 0,
 			conversionLeadToOrder,
 		},
-		ordersByStatus: toCountItems(ordersByStatus),
-		topRevenueByEventType: toCountItems(demosByRevenue).slice(0, 8),
-		topCtas: toCountItems(topCtas).slice(0, 8),
-		topDemos: toCountItems(topDemos).slice(0, 8),
-		scrollDepth: toCountItems(scrollDepth),
-		sections: toCountItems(sections).slice(0, 10),
-		campaigns: toCountItems(campaigns).slice(0, 10),
+		ordersByStatus: toCountItems(salesMetrics.ordersByStatus),
+		topRevenueByEventType: toCountItems(salesMetrics.revenueByEventType).slice(0, 8),
+		topCtas: toCountItems(eventMetrics.topCtas).slice(0, 8),
+		topDemos: toCountItems(eventMetrics.topDemos).slice(0, 8),
+		scrollDepth: toCountItems(eventMetrics.scrollDepth),
+		sections: toCountItems(eventMetrics.sections).slice(0, 10),
+		campaigns: toCountItems(campaignMap).slice(0, 10),
 		leadsByStatus: toCountItems(leadsByStatus),
 		leadsByChannel: toCountItems(leadsByChannel),
-		recentLeads: rows.leads.slice(0, 10),
-		conversionStatusCounts: countConversionsByStatus(conversions),
-		ordersWithPendingBalance,
-		ordersWithDepositMissingCapi,
-		ordersWithInconsistentValues,
-		keyTrackingEventCounts: {
-			pageViewed: countEvents(externalEvents, 'page_viewed'),
-			demoViewed: countEvents(externalEvents, 'demo_viewed'),
-			ctaClicked: countEvents(externalEvents, 'cta_clicked'),
-			whatsappClicked: countEvents(externalEvents, 'whatsapp_contact_clicked'),
-		},
-		lastConversionAttemptAt,
-		dataContext: {
-			periodLabel: 'Mostrando datos históricos disponibles',
-			scopeLabel: 'Sin filtro de fechas activo',
-			limitNotice: QUERY_LIMIT_NOTICE,
-			lastTrackingEventAt: lastEventAt,
-			lastCommercialUpdateAt: latestDate([
-				...rows.leads.map((lead) => lead.created_at),
-				...orders.map((order) => order.deposit_paid_at ?? order.created_at),
-				lastConversionAttemptAt,
-			]),
-			lastActivityAt: latestDate([
-				...externalSessions.map((session) => session.last_seen_at),
-				...externalEvents.map((event) => event.occurred_at),
-				...rows.leads.map((lead) => lead.created_at),
-				...orders.map((order) => order.deposit_paid_at ?? order.created_at),
-				lastConversionAttemptAt,
-			]),
-		},
+		recentLeads: leads.slice(0, 10),
+		conversionStatusCounts: salesMetrics.conversionStatusCounts,
+		ordersWithPendingBalance: salesMetrics.ordersWithPendingBalance,
+		ordersWithDepositMissingCapi: salesMetrics.ordersWithDepositMissingCapi,
+		ordersWithInconsistentValues: salesMetrics.ordersWithInconsistentValues,
+		keyTrackingEventCounts,
+		lastConversionAttemptAt: salesMetrics.lastConversionAttemptAt,
+		dataContext: computeDataContext(
+			externalSessions,
+			externalEvents,
+			leads,
+			orders,
+			salesMetrics.lastConversionAttemptAt,
+			eventMetrics.lastEventAt,
+		),
 		trackingQuality: {
 			totalEvents: externalEvents.length,
-			analyticsConsented,
-			analyticsBlocked,
-			marketingConsented,
-			marketingBlocked,
-			lastEventAt,
+			analyticsConsented: eventMetrics.analyticsConsented,
+			analyticsBlocked: eventMetrics.analyticsBlocked,
+			marketingConsented: eventMetrics.marketingConsented,
+			marketingBlocked: eventMetrics.marketingBlocked,
 		},
 	};
 }
 
-export function normalizeCapiDeliveryMode(
+function normalizeCapiDeliveryMode(
 	mode: string | undefined | null,
 ): 'disabled' | 'test' | 'production' {
 	const normalized = mode?.trim().toLowerCase();
@@ -658,10 +731,49 @@ export function buildCommercialDashboardViewModel(
 	const commercialWarnings = buildCommercialWarnings(summary);
 	const commercialStatus = resolveCommercialStatus(commercialWarnings);
 
+	const trafficCards = buildTrafficCards(summary);
+	const salesCards = buildSalesCards(summary);
+
+	const executiveMetrics: CommercialMetricCard[] = [
+		{
+			id: 'sessions',
+			label: 'Sesiones externas',
+			value: formatCount(summary.totals.sessions),
+		},
+		{
+			id: 'whatsappIntent',
+			label: 'Intenciones WhatsApp',
+			value: formatCount(summary.totals.whatsappClicks),
+		},
+		{
+			id: 'leads',
+			label: 'Leads registrados',
+			value: formatCount(summary.totals.leads),
+		},
+		{
+			id: 'depositOrders',
+			label: 'Órdenes con anticipo',
+			value: formatCount(summary.sales.depositsPaid),
+		},
+		{
+			id: 'depositRevenue',
+			label: 'Ingresos por anticipos',
+			value: formatCurrency(summary.sales.totalRevenue),
+		},
+		{
+			id: 'commercialAlerts',
+			label: 'Alertas comerciales',
+			value: formatCount(commercialWarnings.length),
+			helper: commercialWarnings.length > 0 ? 'Revisa la pestaña Salud del sistema para más detalles.' : undefined,
+		},
+	];
+
 	return {
-		trafficCards: buildTrafficCards(summary),
-		salesCards: buildSalesCards(summary),
+		trafficCards,
+		salesCards,
 		trackingQualityCards: buildTrackingQualityCards(summary),
+		executiveMetrics,
+		activeAlerts: commercialWarnings.length,
 		health: {
 			tracking: {
 				status: trackingStatus,

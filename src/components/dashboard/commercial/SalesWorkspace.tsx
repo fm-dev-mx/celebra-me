@@ -2,25 +2,15 @@ import React, { useState } from 'react';
 import { dashboardApi } from '@/lib/dashboard/api-client';
 import LeadCandidatesList, { type LeadCandidate, type Customer } from '@/components/dashboard/commercial/LeadCandidatesList';
 import CustomerOrdersBox, { type SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
-import OutboxLogList, { type ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
+import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
 import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
-
-interface SalesWorkspaceProps {
-	initialConversions: ConversionEvent[];
-}
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
 	byPhone: LeadCandidate[];
 	byEmail: LeadCandidate[];
 	recentContext: LeadCandidate[];
-}
-
-interface ProcessResult {
-	processed: number;
-	failed: number;
-	skipped: number;
 }
 
 const EVENT_TYPE_OPTIONS = [
@@ -32,7 +22,7 @@ const EVENT_TYPE_OPTIONS = [
 	{ value: 'primera-comunion', label: 'Primera comunión' },
 ];
 
-export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversions }) => {
+export const SalesWorkspace: React.FC = () => {
 	// Search states
 	const [searchLeadCode, setSearchLeadCode] = useState('');
 	const [searchPhone, setSearchPhone] = useState('');
@@ -61,10 +51,6 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 	// Form states - Mark Deposit Paid (active order ID -> amount)
 	const [depositAmounts, setDepositAmounts] = useState<Record<string, string>>({});
 	const [markingDepositPaid, setMarkingDepositPaid] = useState<Record<string, boolean>>({});
-
-	// Outbox & logs
-	const [conversions, setConversions] = useState<ConversionEvent[]>(initialConversions);
-	const [processingConversions, setProcessingConversions] = useState(false);
 
 	// General feedback
 	const [errorMessage, setErrorMessage] = useState('');
@@ -286,7 +272,6 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
 				}
-				void refreshConversions();
 			} else {
 				setErrorMessage(res.message || 'Error al registrar el pago.');
 			}
@@ -295,77 +280,6 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 			setErrorMessage(errMsg);
 		} finally {
 			setMarkingDepositPaid((prev) => ({ ...prev, [orderId]: false }));
-		}
-	};
-
-	// Manually process conversions outbox
-	const handleProcessConversions = async () => {
-		setProcessingConversions(true);
-		setErrorMessage('');
-		setSuccessMessage('');
-
-		try {
-			const res = await dashboardApi.post<{ data: ProcessResult }>(
-				'/api/dashboard/commercial/meta-conversions/process'
-			);
-
-			if (res.ok) {
-				const { processed, failed, skipped } = res.data.data;
-				setSuccessMessage(
-					`Procesamiento completado. Enviados: ${processed}, Fallidos: ${failed}, Ignorados (skipped): ${skipped}.`
-				);
-				void refreshConversions();
-			} else {
-				setErrorMessage(res.message || 'Error al procesar las conversiones.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error de red al procesar conversiones.';
-			setErrorMessage(errMsg);
-		} finally {
-			setProcessingConversions(false);
-		}
-	};
-
-	// Manually requeue and retry a specific skipped/failed conversion
-	const handleRequeueEvent = async (eventId: string) => {
-		setProcessingConversions(true);
-		setErrorMessage('');
-		setSuccessMessage('');
-
-		try {
-			const res = await dashboardApi.post<{ data: { eventId: string; status: string } }>(
-				'/api/dashboard/commercial/meta-conversions/process',
-				{
-					action: 'requeue',
-					eventId,
-				}
-			);
-
-			if (res.ok) {
-				setSuccessMessage(`Evento ${res.data.data.eventId} reencolado con éxito. Estado: ${res.data.data.status}`);
-				void refreshConversions();
-			} else {
-				setErrorMessage(res.message || 'Error al reencolar el evento.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error de red al reencolar el evento.';
-			setErrorMessage(errMsg);
-		} finally {
-			setProcessingConversions(false);
-		}
-	};
-
-	// Helper to load outbox conversions log
-	const refreshConversions = async () => {
-		try {
-			const res = await dashboardApi.get<{ data: ConversionEvent[] }>(
-				'/api/dashboard/commercial/meta-conversions/process'
-			);
-			if (res.ok) {
-				setConversions(res.data.data);
-			}
-		} catch (err) {
-			console.error('Error refreshing conversions outbox:', err);
 		}
 	};
 
@@ -383,7 +297,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 			<div className="sales-workspace-col">
 				{/* 1. Search Box */}
 				<div className="dashboard-card">
-					<h3>1. Buscar Prospecto o Cliente</h3>
+					<h3>Buscar cliente</h3>
 					<form className="dashboard-form-grid" onSubmit={handleSearch}>
 						<div className="dashboard-form-field">
 							<label htmlFor="search-code">Código de Lead (CM-XXXXXX)</label>
@@ -576,17 +490,9 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 						</>
 					)}
 				</div>
+				</div>
 
-				{/* 4. Meta conversions Outbox Logs */}
-				<OutboxLogList
-					conversions={conversions}
-					processingConversions={processingConversions}
-					onProcessConversions={handleProcessConversions}
-					onRequeueEvent={handleRequeueEvent}
-				/>
-			</div>
-
-			{/* CSS styling for layout inside this React island */}
+				{/* CSS styling for layout inside this React island */}
 			<style>{`
 				.sales-workspace-grid {
 					display: grid;
@@ -776,84 +682,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 					background: #047857;
 					color: #fff;
 				}
-				.status-pending {
-					background: rgba(245, 158, 11, 0.2);
-					color: #f59e0b;
-					border: 1px solid #f59e0b;
-				}
-				.status-sending {
-					background: rgba(59, 130, 246, 0.2);
-					color: #3b82f6;
-					border: 1px solid #3b82f6;
-				}
-				.status-sent {
-					background: rgba(16, 185, 129, 0.2);
-					color: #10b981;
-					border: 1px solid #10b981;
-				}
-				.status-failed {
-					background: rgba(239, 68, 68, 0.2);
-					color: #ef4444;
-					border: 1px solid #ef4444;
-				}
-				.status-skipped {
-					background: rgba(107, 114, 128, 0.2);
-					color: #6b7280;
-					border: 1px solid #6b7280;
-				}
-				.outbox-header {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					margin-bottom: 0.5rem;
-				}
-				.btn-small {
-					font-size: 0.8rem;
-					padding: 0.25rem 0.5rem;
-				}
-				.outbox-list {
-					max-height: 350px;
-					overflow-y: auto;
-					display: grid;
-					gap: 0.75rem;
-				}
-				.outbox-item {
-					background: rgba(255,255,255,0.01);
-					border: 1px solid var(--dashboard-card-border);
-					padding: 0.75rem;
-					border-radius: 0.5rem;
-				}
-				.outbox-item-row {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-				}
-				.outbox-item-meta {
-					font-size: 0.8rem;
-					color: var(--color-text-secondary);
-					margin: 0.15rem 0 0;
-				}
-				.outbox-item-error {
-					font-size: 0.8rem;
-					color: #ef4444;
-					margin: 0.35rem 0 0;
-					background: rgba(239, 68, 68, 0.05);
-					padding: 0.35rem;
-					border-radius: 0.25rem;
-				}
-				.outbox-item-actions {
-					margin-top: 0.5rem;
-					display: flex;
-					justify-content: flex-end;
-				}
-				.btn-requeue {
-					background: var(--color-action-primary) !important;
-					color: #fff !important;
-					border: none !important;
-				}
-				.btn-requeue:hover {
-					opacity: 0.9;
-				}
+
 			`}</style>
 		</div>
 	);
