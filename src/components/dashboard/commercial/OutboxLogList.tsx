@@ -27,9 +27,9 @@ interface OutboxLogListProps {
 const STATUS_LABELS: Record<string, string> = {
 	pending: 'Pendiente',
 	sending: 'Enviando...',
-	sent: 'Enviado (CAPI)',
-	failed: 'Error de Envío',
-	skipped: 'Ignorado (CAPI Desactivado)',
+	sent: 'Enviado',
+	failed: 'Error de envío',
+	skipped: 'Ignorado por configuración segura',
 };
 
 const STATUS_ERROR_LABELS: Record<string, string> = {
@@ -46,18 +46,18 @@ export const OutboxLogList: React.FC<OutboxLogListProps> = ({
 	return (
 		<div className="dashboard-card">
 			<div className="outbox-header">
-				<h3>Cola de Conversiones CAPI (Outbox)</h3>
+				<h3>Cola de Conversiones CAPI</h3>
 				<button
 					type="button"
 					className="btn-secondary btn-small"
 					disabled={processingConversions}
 					onClick={onProcessConversions}
 				>
-					{processingConversions ? 'Procesando...' : 'Procesar Cola CAPI'}
+					{processingConversions ? 'Procesando...' : 'Procesar Cola'}
 				</button>
 			</div>
-			<p className="dashboard-form-help sales-mb-4">
-				Aquí se registran los eventos de conversión de compras. Se envían al Conversions API en segundo plano.
+			<p className="dashboard-form-help">
+				Eventos de conversión de compras encolados para el API de Conversiones de Meta.
 			</p>
 
 			<div className="outbox-list">

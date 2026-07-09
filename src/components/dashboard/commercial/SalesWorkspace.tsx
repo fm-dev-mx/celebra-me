@@ -346,7 +346,7 @@ export const SalesWorkspace: React.FC = () => {
 
 				{/* 2. Customer Creation / Reconciliation Form */}
 				<div className="dashboard-card" id="customer-form-section">
-					<h3>2. Crear o Reconciliar Cliente</h3>
+					<h3>Crear o reconciliar cliente</h3>
 					{selectedLead && (
 						<div className="linked-lead-badge">
 							<span>Vinculando al lead <strong>{selectedLead.leadCode}</strong> ({selectedLead.name || 'Sin nombre'})</span>
@@ -398,14 +398,14 @@ export const SalesWorkspace: React.FC = () => {
 			<div className="sales-workspace-col">
 				{/* 3. Selected Customer & Create Order */}
 				<div className="dashboard-card">
-					<h3>3. Cliente Seleccionado y Órdenes</h3>
+					<h3>Cliente seleccionado</h3>
 					{activeCustomer ? (
 						<div className="active-customer-info">
 							<div className="customer-details">
 								<p><strong>Titular:</strong> {activeCustomer.displayName}</p>
 								<p><strong>Email:</strong> {activeCustomer.email || 'Sin registrar'}</p>
 								<p><strong>Teléfono:</strong> {activeCustomer.phoneE164 || 'Sin registrar'}</p>
-								<button type="button" className="btn-secondary sales-mt-2" onClick={() => { setActiveCustomer(null); setCustomerOrders([]); }}>
+								<button type="button" className="btn-secondary" onClick={() => { setActiveCustomer(null); setCustomerOrders([]); }}>
 									Cambiar Cliente
 								</button>
 							</div>
@@ -478,7 +478,7 @@ export const SalesWorkspace: React.FC = () => {
 							/>
 						</div>
 					) : (
-						<p className="dashboard-form-help">Selecciona o crea un cliente para gestionar sus órdenes.</p>
+						<p className="dashboard-form-help">Selecciona o crea un cliente para gestionar sus órdenes, anticipos y actividad comercial.</p>
 					)}
 
 					{/* CRM Timeline */}
