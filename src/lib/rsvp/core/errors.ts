@@ -1,6 +1,7 @@
 export type ApiErrorCode =
 	| 'bad_request'
 	| 'unauthorized'
+	| 'validation_error'
 	| 'forbidden'
 	| 'not_found'
 	| 'conflict'

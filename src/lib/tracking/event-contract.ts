@@ -20,6 +20,8 @@ export const TRACKING_EVENT_NAMES = [
 	'form_started',
 	'form_submitted',
 	'lead_created',
+	'order_created',
+	'deposit_paid',
 	'quote_sent',
 	'production_authorized',
 	'production_started',

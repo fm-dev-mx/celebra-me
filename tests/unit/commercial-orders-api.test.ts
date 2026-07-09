@@ -8,6 +8,10 @@ jest.mock('@/lib/commercial/orders.service', () => ({
 	markCommercialOrderDepositPaid: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/commercial-tracking', () => ({
+	emitCommercialTrackingEvent: jest.fn(),
+}));
+
 jest.mock('@/lib/commercial/orders.repository', () => ({
 	findSalesOrdersByCustomerId: jest.fn(),
 }));

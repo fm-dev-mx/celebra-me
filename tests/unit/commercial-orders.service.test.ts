@@ -10,6 +10,10 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 	deliverMetaConversionEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/commercial-tracking', () => ({
+	emitCommercialTrackingEvent: jest.fn(),
+}));
+
 import {
 	createSalesOrder,
 	findMetaConversionEventByEventId,
