@@ -40,6 +40,19 @@ export interface CommercialDashboardRows {
 	sessions: CommercialSessionRow[];
 	events: CommercialEventRow[];
 	leads: CommercialLeadRow[];
+	orders?: SalesOrderSummaryRow[];
+}
+
+export interface SalesOrderSummaryRow {
+	id: string;
+	status: string;
+	total_amount: number | string;
+	amount_paid: number | string;
+	deposit_amount?: number | string | null;
+	event_type?: string | null;
+	package_name?: string | null;
+	created_at?: string;
+	deposit_paid_at?: string | null;
 }
 
 export interface CountItem {
@@ -57,6 +70,15 @@ export interface CommercialDashboardSummary {
 		demoViews: number;
 		leads: number;
 	};
+	sales: {
+		orders: number;
+		depositsPaid: number;
+		totalRevenue: number;
+		averageTicket: number;
+		conversionLeadToOrder: number;
+	};
+	ordersByStatus: CountItem[];
+	topRevenueByEventType: CountItem[];
 	topCtas: CountItem[];
 	topDemos: CountItem[];
 	scrollDepth: CountItem[];
@@ -195,6 +217,34 @@ export function summarizeCommercialAnalytics(
 		increment(campaigns, campaignLabel(lead.utm_source, lead.utm_medium, lead.utm_campaign));
 	});
 
+	// Sales summary
+	const orders = rows.orders ?? [];
+	const ordersByStatus = new Map<string, number>();
+	const demosByRevenue = new Map<string, number>();
+	let totalRevenue = 0;
+	let depositsPaid = 0;
+
+	for (const order of orders) {
+		increment(ordersByStatus, order.status);
+
+		const paid = Number(order.amount_paid) || 0;
+		if (paid > 0) {
+			totalRevenue += paid;
+			depositsPaid++;
+		}
+
+		if (order.event_type && paid > 0) {
+			const label = `${order.package_name || order.event_type}`;
+			const existing = demosByRevenue.get(label) || 0;
+			demosByRevenue.set(label, existing + paid);
+		}
+	}
+
+	const leadsCount = rows.leads.length;
+	const conversionLeadToOrder = leadsCount > 0
+		? Math.round((orders.length / leadsCount) * 100)
+		: 0;
+
 	return {
 		totals: {
 			sessions: externalSessions.length,
@@ -206,8 +256,17 @@ export function summarizeCommercialAnalytics(
 			formSubmissions: rows.events.filter((event) => event.event_name === 'form_submitted')
 				.length,
 			demoViews: rows.events.filter((event) => event.event_name === 'demo_viewed').length,
-			leads: rows.leads.length,
+			leads: leadsCount,
 		},
+		sales: {
+			orders: orders.length,
+			depositsPaid,
+			totalRevenue,
+			averageTicket: depositsPaid > 0 ? Math.round(totalRevenue / depositsPaid) : 0,
+			conversionLeadToOrder,
+		},
+		ordersByStatus: toCountItems(ordersByStatus),
+		topRevenueByEventType: toCountItems(demosByRevenue).slice(0, 8),
 		topCtas: toCountItems(topCtas).slice(0, 8),
 		topDemos: toCountItems(topDemos).slice(0, 8),
 		scrollDepth: toCountItems(scrollDepth),
@@ -228,7 +287,7 @@ export function summarizeCommercialAnalytics(
 }
 
 export async function loadCommercialDashboardData(): Promise<CommercialDashboardSummary> {
-	const [sessions, events, leads] = await Promise.all([
+	const [sessions, events, leads, orders] = await Promise.all([
 		supabaseRestRequest<CommercialSessionRow[]>({
 			pathWithQuery:
 				'visitor_sessions?select=id,route_class,is_internal,source:utm_source,medium:utm_medium,campaign:utm_campaign&order=last_seen_at.desc&limit=1000',
@@ -244,7 +303,12 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 				'leads?select=lead_code,name,email,phone,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at&order=created_at.desc&limit=200',
 			useServiceRole: true,
 		}),
+		supabaseRestRequest<SalesOrderSummaryRow[]>({
+			pathWithQuery:
+				'sales_orders?select=id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at&order=created_at.desc&limit=500',
+			useServiceRole: true,
+		}),
 	]);
 
-	return summarizeCommercialAnalytics({ sessions, events, leads });
+	return summarizeCommercialAnalytics({ sessions, events, leads, orders });
 }

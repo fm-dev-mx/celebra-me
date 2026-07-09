@@ -31,6 +31,8 @@ try {
 }
 
 const formatCount = (value: number) => new Intl.NumberFormat('es-MX').format(value);
+const formatCurrency = (value: number) =>
+	new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
 
 const metricCards = dashboardData
 	? [
@@ -40,6 +42,16 @@ const metricCards = dashboardData
 			{ label: 'Formularios enviados', value: dashboardData.totals.formSubmissions },
 			{ label: 'Demos vistas', value: dashboardData.totals.demoViews },
 			{ label: 'Leads confirmados', value: dashboardData.totals.leads },
+		]
+	: [];
+
+const salesCards = dashboardData
+	? [
+			{ label: 'Órdenes totales', value: formatCount(dashboardData.sales.orders), muted: false },
+			{ label: 'Anticipos pagados', value: formatCount(dashboardData.sales.depositsPaid), muted: false },
+			{ label: 'Ingresos por anticipos', value: formatCurrency(dashboardData.sales.totalRevenue), muted: false },
+			{ label: 'Ticket promedio', value: formatCurrency(dashboardData.sales.averageTicket), muted: true },
+			{ label: 'Conversión Lead → Orden', value: `${dashboardData.sales.conversionLeadToOrder}%`, muted: true },
 		]
 	: [];
 
@@ -57,6 +69,17 @@ const trackingQualityCards = dashboardData
 	: [];
 
 const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 'Sin datos suficientes todavía', count: 0 }];
+
+const ORDER_STATUS_LABELS: Record<string, string> = {
+	draft: 'Borrador',
+	quoted: 'Cotizado',
+	confirmed: 'Confirmado',
+	deposit_paid: 'Anticipo pagado',
+	paid: 'Pagado',
+	cancelled: 'Cancelado',
+	lost: 'Perdido',
+};
+const labelOrderStatus = (s: string) => ORDER_STATUS_LABELS[s] || s;
 ---
 
 <DashboardLayout title="Dashboard comercial">
@@ -118,6 +141,21 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 						</div>
 					</section>
 
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Ventas</h3>
+							<p>Resumen de órdenes, ingresos y conversión.</p>
+						</header>
+						<div class="commercial-dashboard__metrics">
+							{salesCards.map((card) => (
+								<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
+									<span>{card.label}</span>
+									<strong>{card.value}</strong>
+								</article>
+							))}
+						</div>
+					</section>
+
 					<div class="commercial-dashboard__grid">
 						<section class="dashboard-card">
 							<h3>Tráfico</h3>
@@ -169,6 +207,24 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 							<ul class="commercial-dashboard__list">
 								{renderList(dashboardData.leadsByStatus).map((item) => (
 									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
+
+						<section class="dashboard-card">
+							<h3>Órdenes por estado</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.ordersByStatus.map((o) => ({ label: labelOrderStatus(o.label), count: o.count }))).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
+
+						<section class="dashboard-card">
+							<h3>Ingresos por tipo de evento</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.topRevenueByEventType).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCurrency(item.count)}</strong></li>
 								))}
 							</ul>
 						</section>

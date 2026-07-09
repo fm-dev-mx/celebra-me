@@ -75,6 +75,7 @@ describe('summarizeCommercialAnalytics', () => {
 					utm_campaign: 'summer',
 				},
 			],
+			orders: [],
 		});
 
 		expect(summary.totals.sessions).toBe(2);
@@ -93,5 +94,22 @@ describe('summarizeCommercialAnalytics', () => {
 		});
 		expect(summary.leadsByStatus[0]).toEqual({ label: 'Nuevo', count: 1 });
 		expect(summary.leadsByChannel[0]).toEqual({ label: 'Formulario', count: 1 });
+	});
+
+	it('returns zero-based sales summary when no orders exist', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [],
+			events: [],
+			leads: [],
+			orders: [],
+		});
+
+		expect(summary.sales.orders).toBe(0);
+		expect(summary.sales.depositsPaid).toBe(0);
+		expect(summary.sales.totalRevenue).toBe(0);
+		expect(summary.sales.averageTicket).toBe(0);
+		expect(summary.sales.conversionLeadToOrder).toBe(0);
+		expect(summary.ordersByStatus).toEqual([]);
+		expect(summary.topRevenueByEventType).toEqual([]);
 	});
 });
