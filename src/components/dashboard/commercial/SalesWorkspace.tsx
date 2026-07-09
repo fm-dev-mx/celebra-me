@@ -3,6 +3,8 @@ import { dashboardApi } from '@/lib/dashboard/api-client';
 import LeadCandidatesList, { type LeadCandidate, type Customer } from '@/components/dashboard/commercial/LeadCandidatesList';
 import CustomerOrdersBox, { type SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
 import OutboxLogList, { type ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
+import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 
 interface SalesWorkspaceProps {
 	initialConversions: ConversionEvent[];
@@ -68,6 +70,10 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
 
+	// CRM Timeline
+	const [timelineEntries, setTimelineEntries] = useState<CrmTimelineEntry[]>([]);
+	const [loadingTimeline, setLoadingTimeline] = useState(false);
+
 	// Fetch active customer's orders
 	const fetchCustomerOrders = async (customerId: string) => {
 		try {
@@ -79,6 +85,24 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 			}
 		} catch (err) {
 			console.error('Error fetching orders:', err);
+		}
+	};
+
+	// Fetch CRM timeline for a customer
+	const fetchTimeline = async (customerId: string) => {
+		setLoadingTimeline(true);
+		try {
+			const res = await dashboardApi.get<{ data: CrmTimelineEntry[] }>(
+				`/api/dashboard/commercial/timeline?customerId=${encodeURIComponent(customerId)}`
+			);
+			if (res.ok) {
+				setTimelineEntries(res.data.data);
+			}
+		} catch (err) {
+			console.error('Error fetching timeline:', err);
+			setTimelineEntries([]);
+		} finally {
+			setLoadingTimeline(false);
 		}
 	};
 
@@ -127,6 +151,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 			setSelectedLead(associatedLead);
 		}
 		void fetchCustomerOrders(customer.id);
+		void fetchTimeline(customer.id);
 	};
 
 	// Create a new customer record from a lead (Reconcile)
@@ -216,6 +241,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 				const order: SalesOrder = res.data.data;
 				setSuccessMessage(`Orden "${order.orderNumber}" registrada con éxito.`);
 				void fetchCustomerOrders(activeCustomer.id);
+				void fetchTimeline(activeCustomer.id);
 				setOrderPackageName('');
 				setOrderTotalAmount('');
 				setOrderDepositAmount('');
@@ -258,6 +284,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 				setSuccessMessage(`Orden registrada como pagada (Anticipo). Se encoló conversión CAPI.`);
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
+					void fetchTimeline(activeCustomer.id);
 				}
 				void refreshConversions();
 			} else {
@@ -539,6 +566,15 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 					) : (
 						<p className="dashboard-form-help">Selecciona o crea un cliente para gestionar sus órdenes.</p>
 					)}
+
+					{/* CRM Timeline */}
+					{activeCustomer && (
+						<>
+							<hr className="sales-divider" />
+							<h4>Línea de Tiempo</h4>
+							<CrmTimeline entries={timelineEntries} loading={loadingTimeline} />
+						</>
+					)}
 				</div>
 
 				{/* 4. Meta conversions Outbox Logs */}
@@ -575,41 +611,13 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 					border-color: #22c55e !important;
 					color: #22c55e !important;
 				}
-				.sales-mt-2 {
-					margin-top: 0.5rem;
-				}
-				.sales-mb-4 {
-					margin-bottom: 1rem;
-				}
 				.sales-divider {
-					margin: 1.25rem 0;
-					border: 0;
-					border-top: 1px solid var(--dashboard-card-border);
-				}
-				.linked-lead-badge {
-					background: var(--dashboard-card-border);
-					padding: 0.5rem 0.75rem;
-					border-radius: 0.5rem;
-					font-size: 0.86rem;
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					margin-bottom: 1rem;
-					color: var(--color-text-primary);
-				}
-				.btn-text-clear {
-					background: none;
-					border: none;
-					color: var(--color-text-muted);
-					cursor: pointer;
-					text-decoration: underline;
-					font-size: 0.8rem;
-				}
-				.btn-text-clear:hover {
-					color: #ef4444;
-				}
-				.candidates-list {
-					display: grid;
+						margin: 1.25rem 0;
+						border: 0;
+						border-top: 1px solid var(--dashboard-card-border);
+					}
+					.candidates-list {
+						display: grid;
 					gap: 1rem;
 				}
 				.candidate-group {
