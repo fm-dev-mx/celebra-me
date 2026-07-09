@@ -224,4 +224,58 @@ describe('markCommercialOrderDepositPaid', () => {
 		expect(mockUpdateSalesOrderDepositPaid).not.toHaveBeenCalled();
 		expect(mockUpsertMetaConversionEvent).not.toHaveBeenCalled();
 	});
+
+	it('throws when the sales order is not found', async () => {
+		mockFindSalesOrderById.mockResolvedValue(null);
+
+		await expect(
+			markCommercialOrderDepositPaid({
+				orderId: 'nonexistent-order',
+				amountPaid: 899,
+				paidAt: '2026-07-08T14:00:00.000Z',
+			}),
+		).rejects.toThrow('Sales order was not found.');
+
+		expect(mockUpdateSalesOrderDepositPaid).not.toHaveBeenCalled();
+		expect(mockUpsertMetaConversionEvent).not.toHaveBeenCalled();
+	});
+
+	it('returns the Purchase event with value matching the paid deposit amount', async () => {
+		const result = await markCommercialOrderDepositPaid({
+			orderId: 'order-id',
+			amountPaid: 899,
+			paidAt: '2026-07-08T14:00:00.000Z',
+		});
+
+		expect(result.conversionEvent?.value).toBe(899);
+		expect(mockUpsertMetaConversionEvent).toHaveBeenCalledWith(
+			expect.objectContaining({ value: 899 }),
+		);
+	});
+
+	it('returns the Purchase event with currency MXN', async () => {
+		const result = await markCommercialOrderDepositPaid({
+			orderId: 'order-id',
+			amountPaid: 899,
+			paidAt: '2026-07-08T14:00:00.000Z',
+		});
+
+		expect(result.conversionEvent?.currency).toBe('MXN');
+		expect(mockUpsertMetaConversionEvent).toHaveBeenCalledWith(
+			expect.objectContaining({ currency: 'MXN' }),
+		);
+	});
+
+	it('returns the Purchase event with event_id format purchase:{orderId}:deposit_paid', async () => {
+		const result = await markCommercialOrderDepositPaid({
+			orderId: 'order-id',
+			amountPaid: 899,
+			paidAt: '2026-07-08T14:00:00.000Z',
+		});
+
+		expect(result.conversionEvent?.eventId).toBe('purchase:order-id:deposit_paid');
+		expect(mockUpsertMetaConversionEvent).toHaveBeenCalledWith(
+			expect.objectContaining({ eventId: 'purchase:order-id:deposit_paid' }),
+		);
+	});
 });

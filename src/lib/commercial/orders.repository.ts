@@ -175,6 +175,15 @@ export async function createSalesOrder(input: SalesOrderInput): Promise<SalesOrd
 	return toSalesOrder(row);
 }
 
+export async function findSalesOrdersByCustomerId(customerId: string): Promise<SalesOrder[]> {
+	const rows = await supabaseRestRequest<SalesOrderRow[]>({
+		pathWithQuery: `sales_orders?customer_id=eq.${encodeURIComponent(customerId)}&select=${ORDER_SELECT}&order=created_at.desc`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows.map(toSalesOrder);
+}
+
 export async function findSalesOrderById(orderId: string): Promise<SalesOrder | null> {
 	const rows = await supabaseRestRequest<SalesOrderRow[]>({
 		pathWithQuery: `sales_orders?id=eq.${encodeURIComponent(orderId)}&select=${ORDER_SELECT}&limit=1`,

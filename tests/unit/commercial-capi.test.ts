@@ -76,6 +76,8 @@ describe('deliverMetaConversionEvent', () => {
 		const status = await deliverMetaConversionEvent('outbox-id');
 
 		expect(status).toBe('skipped');
+		// No Meta CAPI fetch request should be made when delivery mode is disabled
+		expect(mockFetch).not.toHaveBeenCalled();
 		expect(mockRestRequest).toHaveBeenCalledWith(
 			expect.objectContaining({
 				method: 'PATCH',

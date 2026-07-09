@@ -1,11 +1,10 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialSalesOrder } from '@/lib/commercial/orders.service';
+import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository';
 import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { SalesOrder } from '@/lib/commercial/orders.repository';
 
 
 const CreateCommercialOrderSchema = z.object({
@@ -62,11 +61,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 			return badRequest('Customer ID is required.');
 		}
 
-		const rows = await supabaseRestRequest<SalesOrder[]>({
-			pathWithQuery: `sales_orders?customer_id=eq.${encodeURIComponent(customerId)}&select=*&order=created_at.desc`,
-			method: 'GET',
-			useServiceRole: true,
-		});
+		const rows = await findSalesOrdersByCustomerId(customerId);
 
 		return successResponse(rows);
 	} catch (error) {

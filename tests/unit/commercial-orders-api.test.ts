@@ -1,5 +1,6 @@
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
+	requireAdminStrongSession: jest.fn(),
 }));
 
 jest.mock('@/lib/commercial/orders.service', () => ({
@@ -7,22 +8,33 @@ jest.mock('@/lib/commercial/orders.service', () => ({
 	markCommercialOrderDepositPaid: jest.fn(),
 }));
 
-import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+jest.mock('@/lib/commercial/orders.repository', () => ({
+	findSalesOrdersByCustomerId: jest.fn(),
+}));
+
+import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
 } from '@/lib/commercial/orders.service';
-import { POST as createOrder } from '@/pages/api/dashboard/commercial/orders';
+import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository';
+import { POST as createOrder, GET as listOrders } from '@/pages/api/dashboard/commercial/orders';
 import { POST as markDepositPaid } from '@/pages/api/dashboard/commercial/orders/[orderId]/deposit-paid';
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
+>;
+const mockRequireAdminStrongSession = requireAdminStrongSession as jest.MockedFunction<
+	typeof requireAdminStrongSession
 >;
 const mockCreateCommercialSalesOrder = createCommercialSalesOrder as jest.MockedFunction<
 	typeof createCommercialSalesOrder
 >;
 const mockMarkCommercialOrderDepositPaid = markCommercialOrderDepositPaid as jest.MockedFunction<
 	typeof markCommercialOrderDepositPaid
+>;
+const mockFindSalesOrdersByCustomerId = findSalesOrdersByCustomerId as jest.MockedFunction<
+	typeof findSalesOrdersByCustomerId
 >;
 
 function createContext(request: Request, params: Record<string, string | undefined> = {}) {
@@ -47,6 +59,10 @@ beforeEach(() => {
 		userId: 'admin-user-id',
 		isSuperAdmin: true,
 	} as never);
+	mockRequireAdminStrongSession.mockResolvedValue({
+		userId: 'admin-user-id',
+		isSuperAdmin: true,
+	} as never);
 	mockCreateCommercialSalesOrder.mockResolvedValue({
 		id: 'order-id',
 		orderNumber: 'CMO-20260708-ABC123',
@@ -65,6 +81,26 @@ beforeEach(() => {
 		depositPaidAt: null,
 		paidAt: null,
 	});
+	mockFindSalesOrdersByCustomerId.mockResolvedValue([
+		{
+			id: 'order-id',
+			orderNumber: 'CMO-20260708-ABC123',
+			customerId: 'customer-id',
+			leadId: 'lead-id',
+			sessionId: null,
+			sourceEventId: null,
+			status: 'confirmed',
+			eventType: 'wedding',
+			packageId: null,
+			packageName: 'Premium',
+			currency: 'MXN',
+			totalAmount: 1699,
+			depositAmount: 899,
+			amountPaid: 0,
+			depositPaidAt: null,
+			paidAt: null,
+		},
+	]);
 	mockMarkCommercialOrderDepositPaid.mockResolvedValue({
 		order: {
 			id: 'order-id',
@@ -184,5 +220,57 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 			paidAt: '2026-07-08T12:30:00.000Z',
 		});
 		expect(body.data.conversionEvent.eventId).toBe('purchase:order-id:deposit_paid');
+	});
+});
+
+describe('/api/dashboard/commercial/orders — GET', () => {
+	it('returns camelCase-mapped orders for a valid customerId with admin session', async () => {
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/orders?customerId=customer-id',
+			{ method: 'GET' },
+		);
+
+		const response = await listOrders(createContext(request) as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(mockRequireAdminStrongSession).toHaveBeenCalledWith(request);
+		expect(mockFindSalesOrdersByCustomerId).toHaveBeenCalledWith('customer-id');
+		// Verify camelCase mapping — raw Supabase returns snake_case
+		expect(body.data[0].eventType).toBe('wedding');
+		expect(body.data[0].totalAmount).toBe(1699);
+		expect(body.data[0].amountPaid).toBe(0);
+		expect(body.data[0].currency).toBe('MXN');
+		expect(body.data[0].orderNumber).toBe('CMO-20260708-ABC123');
+		expect(body.data[0].status).toBe('confirmed');
+	});
+
+	it('returns 400 when customerId is missing on GET', async () => {
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/orders',
+			{ method: 'GET' },
+		);
+
+		const response = await listOrders(createContext(request) as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(mockFindSalesOrdersByCustomerId).not.toHaveBeenCalled();
+		expect(body.error.code).toBe('bad_request');
+	});
+
+	it('returns empty array when no orders exist for the given customerId', async () => {
+		mockFindSalesOrdersByCustomerId.mockResolvedValue([]);
+
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/orders?customerId=unknown-customer',
+			{ method: 'GET' },
+		);
+
+		const response = await listOrders(createContext(request) as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.data).toEqual([]);
 	});
 });
