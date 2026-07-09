@@ -232,10 +232,13 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 
 	// Transition order to deposit_paid
 	const handleMarkDepositPaid = async (orderId: string) => {
-		const rawAmount = depositAmounts[orderId];
+		const order = customerOrders.find((o) => o.id === orderId);
+		// If the operator hasn't typed in the input, use the order's
+		// suggested deposit amount as the default effective value.
+		const rawAmount = depositAmounts[orderId] ?? (order?.depositAmount ? String(order.depositAmount) : '');
 		const amount = parseFloat(rawAmount);
 		if (isNaN(amount) || amount <= 0) {
-			setErrorMessage('El monto pagado debe ser mayor a cero.');
+			setErrorMessage('El monto del anticipo debe ser un número válido mayor a cero.');
 			return;
 		}
 
@@ -505,7 +508,7 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 									/>
 								</div>
 								<div className="dashboard-form-field">
-									<label htmlFor="order-deposit">Monto Sugerido Anticipo ($ MXN)</label>
+									<label htmlFor="order-deposit">Anticipo Sugerido (opcional, $ MXN)</label>
 									<input
 										id="order-deposit"
 										type="number"
@@ -684,6 +687,44 @@ export const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialConversio
 					font-size: 0.86rem;
 					color: var(--color-text-primary);
 					margin: 0.25rem 0;
+				}
+				.order-price-row {
+					display: flex;
+					gap: 1.25rem;
+					flex-wrap: wrap;
+					margin: 0.35rem 0;
+					font-size: 0.86rem;
+					color: var(--color-text-primary);
+				}
+				.order-amount {
+					display: flex;
+					gap: 0.35rem;
+					align-items: baseline;
+				}
+				.order-amount-label {
+					color: var(--color-text-secondary);
+					font-size: 0.82rem;
+				}
+				.order-balance-due {
+					color: #f59e0b;
+				}
+				.order-balance-zero {
+					color: #22c55e;
+				}
+				.order-meta {
+					font-size: 0.78rem;
+					color: var(--color-text-secondary);
+					margin: 0.2rem 0 0;
+				}
+				.order-payment-input-wrap {
+					flex: 1;
+					display: flex;
+					flex-direction: column;
+					gap: 0.2rem;
+				}
+				.order-payment-label {
+					font-size: 0.78rem;
+					color: var(--color-text-secondary);
 				}
 				.order-payment-trigger {
 					display: flex;

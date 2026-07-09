@@ -62,7 +62,6 @@ beforeEach(() => {
 		failed: 1,
 		skipped: 0,
 	});
-	mockDeliverMetaConversionEvent.mockResolvedValue('sent');
 	mockRestRequest.mockResolvedValue([
 		{
 			id: 'conv-id-1',
@@ -98,6 +97,7 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 		});
 
 		it('manually requeues and retries a specific conversion event when action is requeue', async () => {
+			mockDeliverMetaConversionEvent.mockResolvedValue('sent');
 			const request = new Request(
 				'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/process',
 				{
@@ -149,6 +149,40 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				}),
 			);
 			expect(body.data[0].id).toBe('conv-id-1');
+		});
+
+		it('returns response with camelCase fields (eventName, eventId, etc.)', async () => {
+			mockRestRequest.mockResolvedValue([
+				{
+					id: 'conv-id-2',
+					event_name: 'Purchase',
+					event_id: 'purchase:order-2:deposit_paid',
+					value: 1299,
+					currency: 'MXN',
+					status: 'pending',
+					attempt_count: 0,
+					last_error_message: null,
+					created_at: '2026-07-08T12:00:00.000Z',
+				},
+			]);
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/process',
+				{ method: 'GET' },
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBe(200);
+			// Should have camelCase fields
+			expect(body.data[0].eventName).toBe('Purchase');
+			expect(body.data[0].eventId).toBe('purchase:order-2:deposit_paid');
+			expect(body.data[0].attemptCount).toBe(0);
+			expect(body.data[0].createdAt).toBe('2026-07-08T12:00:00.000Z');
+			// Should also retain snake_case for backward compatibility
+			expect(body.data[0].event_name).toBe('Purchase');
+			expect(body.data[0].event_id).toBe('purchase:order-2:deposit_paid');
 		});
 	});
 });

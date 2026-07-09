@@ -237,7 +237,6 @@ describe('deliverMetaConversionEvent', () => {
 	});
 
 	it('fails with CONFIG_ERROR when META_CAPI_DELIVERY_MODE is test but META_TEST_EVENT_CODE is missing', async () => {
-		mockDeliveryMode = 'test';
 		mockTestEventCode = '';
 
 		mockRestRequest
@@ -297,5 +296,21 @@ describe('processPendingMetaConversionEvents', () => {
 				pathWithQuery: expect.stringContaining('meta_conversion_events?status=in.(pending,failed)'),
 			}),
 		);
+	});
+
+	it('skips all pending events when delivery mode is disabled', async () => {
+		mockDeliveryMode = 'disabled';
+
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'id-1' }, { id: 'id-2' }]) // GET pending list
+			.mockResolvedValue([
+				{ id: 'mock-id', attempt_count: 0 },
+			]); // PATCH status inside deliverMetaConversionEvent
+
+		const result = await processPendingMetaConversionEvents();
+
+		expect(result).toEqual({ processed: 0, failed: 0, skipped: 2 });
+		// No Meta CAPI fetch request should be made when delivery mode is disabled
+		expect(mockFetch).not.toHaveBeenCalled();
 	});
 });

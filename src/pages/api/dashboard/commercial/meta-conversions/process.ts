@@ -80,7 +80,25 @@ export const GET: APIRoute = async ({ request }) => {
 			useServiceRole: true,
 		});
 
-		return successResponse(rows);
+		// Map to camelCase DTOs for consistency with other commercial APIs.
+		const data = rows.map((r) => ({
+			id: r.id,
+			event_name: r.event_name,
+			event_id: r.event_id,
+			eventName: r.event_name,
+			eventId: r.event_id,
+			value: r.value,
+			currency: r.currency,
+			status: r.status,
+			attempt_count: r.attempt_count,
+			attemptCount: r.attempt_count,
+			last_error_message: r.last_error_message,
+			lastErrorMessage: r.last_error_message,
+			created_at: r.created_at,
+			createdAt: r.created_at,
+		}));
+
+		return successResponse(data);
 	} catch (error) {
 		return errorResponse(error);
 	}

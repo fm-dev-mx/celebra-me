@@ -99,14 +99,26 @@ export async function createCommercialSalesOrder(
 export async function markCommercialOrderDepositPaid(
 	input: MarkCommercialOrderDepositPaidInput,
 ): Promise<DepositPaidResult> {
-	assertPositiveAmount(input.amountPaid, 'Deposit payment amount must be greater than zero.');
+	assertPositiveAmount(input.amountPaid, 'El monto del anticipo debe ser mayor a cero.');
 
 	const eventId = createPurchaseDepositEventId(input.orderId);
 	const existingOrder = await findSalesOrderById(input.orderId);
 	if (!existingOrder) {
-		throw new Error('Sales order was not found.');
+		throw new Error('No se encontró la orden de venta.');
 	}
 
+	// Invalid transitions: orders that are cancelled, lost, or draft
+	// cannot be moved to deposit_paid.
+	if (existingOrder.status === 'cancelled' || existingOrder.status === 'lost' || existingOrder.status === 'draft') {
+		throw new Error(`No se puede registrar un anticipo en una orden con estado "${existingOrder.status}".`);
+	}
+
+	// A deposit cannot exceed the order total.
+	if (input.amountPaid > existingOrder.totalAmount) {
+		throw new Error('El anticipo no puede ser mayor que el monto total de la orden.');
+	}
+
+	// Idempotent: already deposit_paid or paid — return existing state.
 	if (existingOrder.status === 'deposit_paid' || existingOrder.status === 'paid') {
 		return {
 			order: existingOrder,

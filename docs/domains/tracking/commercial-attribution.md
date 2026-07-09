@@ -184,11 +184,53 @@ Meta Graph API events must never leak guest identity or invitation routes. The d
 ### Sales Workspace Administration
 
 Super admins can access the Workspace at `/dashboard/commercial` using the tab switcher. The workspace enables:
+
 1. **Search**: Find leads by code (`CM-XXXXXX`), phone, or email.
 2. **Reconciliation**: Convert leads into `customers` with E.164 normalized details.
-3. **Sales Orders**: Register quoted or confirmed orders.
-4. **Deposit Paid Transition**: Mark deposit paid to trigger CAPI outbox delivery.
-5. **CAPI Queue Control**: View CAPI outbox ledger logs (including attempts and errors) and manually trigger batch processing / retries.
+3. **Order Creation**: Register quoted or confirmed orders with event type, package, total amount (MXN), and optional suggested deposit amount.
+4. **Order Display**: Each order card shows:
+   - Order number (`CMO-YYYYMMDD-XXXXXX`)
+   - Event type (human-readable label, e.g., "XV años")
+   - Package name (when available)
+   - Total amount, amount paid, and outstanding balance
+   - Status badge (Confirmado, Cotizado, Anticipo Pagado, Totalmente Pagado, Cancelado, Perdido)
+   - Deposit paid or fully paid timestamp when available
+5. **Deposit Paid Transition**: Mark a confirmed/quoted order as `deposit_paid`. This is the only trigger for CAPI `Purchase` outbox events.
+6. **CAPI Queue Control**: View CAPI outbox ledger logs (status, value, attempts, errors) and manually trigger batch processing or retry individual skipped/failed events.
+
+### Order Status Semantics
+
+| Status | Meaning | CAPI Purchase Triggered |
+|---|---|---|
+| `draft` | Preliminary order, not yet quoted | No |
+| `quoted` | Quote sent to customer | No |
+| `confirmed` | Customer confirmed verbally or by WhatsApp | No |
+| `deposit_paid` | First real deposit/anticipo payment received | **Yes** — exactly one `Purchase` on first transition |
+| `paid` | Order fully paid | No (second Purchase is not created) |
+| `cancelled` | Order cancelled by admin | No (deposit_paid is rejected) |
+| `lost` | Deal lost to competitor or abandoned | No (deposit_paid is rejected) |
+
+**Invalid transitions**: `cancelled`, `lost`, and `draft` orders cannot be moved to `deposit_paid`. If attempted, the service returns a controlled Spanish error message.
+
+### Payment Semantics and CAPI Purchase Value
+
+The `Purchase` value sent to Meta is always the **actual amount registered as paid** at the moment `deposit_paid` is marked. It is:
+
+- **Not** the order's `totalAmount` (which represents the full contract value).
+- **Not** the `depositAmount` / "Anticipo Sugerido" (which is a suggested reference value stored at order creation).
+- **Always** the explicit numeric value entered by the operator in the deposit payment field.
+
+The operator enters the actual payment amount per-order at the time of marking `deposit_paid`. This ensures the Meta Purchase event reflects real money received.
+
+### CAPI Purchase Trigger Rules
+
+1. **Only on `deposit_paid`**: The first real payment transition creates a `Purchase` outbox row.
+2. **Idempotent**: Repeated `deposit_paid` calls for the same order return the existing outbox row without duplicating it.
+3. **`paid` does not trigger Purchase**: Moving an order to fully paid status does not create a second `Purchase` event. The CAPI event is emitted only once on the first deposit payment.
+4. **Event ID format**: `purchase:{orderId}:deposit_paid` — stable, deterministic, and used as the unique constraint key for idempotency.
+5. **Currency**: Always `MXN`.
+6. **Event Name**: Always `Purchase`.
+7. **Disabled mode**: When `META_CAPI_DELIVERY_MODE=disabled`, no Meta network request is made. The outbox status is set to `skipped` with a descriptive reason.
 
 ### Outbox Status Semantics
 
@@ -203,8 +245,14 @@ Each row in `meta_conversion_events` follows a strict lifecycle:
 If an event is `failed` or `skipped`, administrators can click **"Reintentar Envío"** in the Conversions table. This:
 1. Updates the event state to `pending`.
 2. Resets `attempt_count` to `0`.
-3. Clears prior errors.
-4. Dispatches the delivery synchronously in the background.
+3. Clears prior errors and `next_attempt_at`.
+4. Dispatches the delivery synchronously (fire-and-forget).
+
+Re-queuing a `skipped` event when `META_CAPI_DELIVERY_MODE=disabled` will reset it to `pending`, then immediately mark it as `skipped` again. This is harmless — no duplicate rows are created.
+
+#### Batch Processing
+
+The **"Procesar Cola CAPI"** button queries all `pending` or `failed` events whose `next_attempt_at` is `null` or in the past (up to 20 per batch), then attempts delivery for each. When `META_CAPI_DELIVERY_MODE=disabled`, all events are marked as `skipped` without making Meta network requests.
 
 ---
 

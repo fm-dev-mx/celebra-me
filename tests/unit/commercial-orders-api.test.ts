@@ -63,24 +63,6 @@ beforeEach(() => {
 		userId: 'admin-user-id',
 		isSuperAdmin: true,
 	} as never);
-	mockCreateCommercialSalesOrder.mockResolvedValue({
-		id: 'order-id',
-		orderNumber: 'CMO-20260708-ABC123',
-		status: 'confirmed',
-		customerId: 'customer-id',
-		leadId: 'lead-id',
-		sessionId: null,
-		sourceEventId: null,
-		eventType: 'wedding',
-		packageId: null,
-		packageName: 'Premium',
-		currency: 'MXN',
-		totalAmount: 1699,
-		depositAmount: 899,
-		amountPaid: 0,
-		depositPaidAt: null,
-		paidAt: null,
-	});
 	mockFindSalesOrdersByCustomerId.mockResolvedValue([
 		{
 			id: 'order-id',
@@ -101,11 +83,15 @@ beforeEach(() => {
 			paidAt: null,
 		},
 	]);
-	mockMarkCommercialOrderDepositPaid.mockResolvedValue({
-		order: {
+
+});
+
+describe('/api/dashboard/commercial/orders', () => {
+	beforeEach(() => {
+		mockCreateCommercialSalesOrder.mockResolvedValue({
 			id: 'order-id',
 			orderNumber: 'CMO-20260708-ABC123',
-			status: 'deposit_paid',
+			status: 'confirmed',
 			customerId: 'customer-id',
 			leadId: 'lead-id',
 			sessionId: null,
@@ -116,23 +102,12 @@ beforeEach(() => {
 			currency: 'MXN',
 			totalAmount: 1699,
 			depositAmount: 899,
-			amountPaid: 899,
-			depositPaidAt: '2026-07-08T12:30:00.000Z',
+			amountPaid: 0,
+			depositPaidAt: null,
 			paidAt: null,
-		},
-		conversionEvent: {
-			id: 'conversion-id',
-			orderId: 'order-id',
-			eventName: 'Purchase',
-			eventId: 'purchase:order-id:deposit_paid',
-			value: 899,
-			currency: 'MXN',
-			status: 'pending',
-		},
+		});
 	});
-});
 
-describe('/api/dashboard/commercial/orders', () => {
 	it('creates a commercial sales order as an admin mutation', async () => {
 		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
 			method: 'POST',
@@ -190,6 +165,38 @@ describe('/api/dashboard/commercial/orders', () => {
 });
 
 describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
+	beforeEach(() => {
+		mockMarkCommercialOrderDepositPaid.mockResolvedValue({
+			order: {
+				id: 'order-id',
+				orderNumber: 'CMO-20260708-ABC123',
+				status: 'deposit_paid',
+				customerId: 'customer-id',
+				leadId: 'lead-id',
+				sessionId: null,
+				sourceEventId: null,
+				eventType: 'wedding',
+				packageId: null,
+				packageName: 'Premium',
+				currency: 'MXN',
+				totalAmount: 1699,
+				depositAmount: 899,
+				amountPaid: 899,
+				depositPaidAt: '2026-07-08T12:30:00.000Z',
+				paidAt: null,
+			},
+			conversionEvent: {
+				id: 'conversion-id',
+				orderId: 'order-id',
+				eventName: 'Purchase',
+				eventId: 'purchase:order-id:deposit_paid',
+				value: 899,
+				currency: 'MXN',
+				status: 'pending',
+			},
+		});
+	});
+
 	it('marks the first deposit as paid and returns the pending Purchase outbox event', async () => {
 		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
@@ -220,6 +227,33 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 			paidAt: '2026-07-08T12:30:00.000Z',
 		});
 		expect(body.data.conversionEvent.eventId).toBe('purchase:order-id:deposit_paid');
+	});
+
+	it('rejects deposit paid when amount exceeds order total with controlled Spanish error', async () => {
+		mockMarkCommercialOrderDepositPaid.mockRejectedValue(
+			new Error('El anticipo no puede ser mayor que el monto total de la orden.'),
+		);
+
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
+			{
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					amountPaid: 2000,
+					paidAt: '2026-07-08T12:30:00.000Z',
+				}),
+			},
+		);
+
+		const response = await markDepositPaid(
+			createContext(request, { orderId: 'order-id' }) as never,
+		);
+		const body = await response.json();
+
+		expect(body.success).toBe(false);
+		expect(body.error.message).toContain('El anticipo no puede ser mayor que el monto total de la orden.');
+		expect(body.data).toBeUndefined();
 	});
 });
 
