@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 
@@ -28,6 +29,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 		return successResponse(customer, 201);
 	} catch (error) {
-		return errorResponse(error);
+		if (error instanceof ApiError) {
+			return errorResponse(error);
+		}
+
+		const message = error instanceof Error ? error.message : '';
+		// Catch raw Supabase constraint violations so they are never
+		// exposed to the operator.
+		if (/duplicate key|unique constraint/i.test(message)) {
+			return errorResponse(
+				new ApiError(
+					409,
+					'conflict',
+					'Ya existe un cliente registrado con ese correo electrónico o teléfono. Se seleccionó el cliente existente.',
+				),
+			);
+		}
+
+		return errorResponse(
+			new ApiError(500, 'internal_error', 'Error al crear el cliente. Intenta de nuevo.'),
+		);
 	}
 };

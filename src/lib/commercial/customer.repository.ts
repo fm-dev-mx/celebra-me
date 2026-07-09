@@ -68,7 +68,7 @@ interface CommercialCustomerRow {
 const LEAD_SELECT =
 	'id,lead_code,channel,status,customer_id,name,email,phone,phone_e164,event_type,package_interest,utm_source,utm_medium,utm_campaign,created_at';
 
-function emptyToUndefined(value: string | undefined): string | undefined {
+export function emptyToUndefined(value: string | undefined): string | undefined {
 	const trimmed = value?.trim();
 	return trimmed ? trimmed : undefined;
 }
@@ -149,7 +149,7 @@ export async function upsertCommercialCustomer(
 	input: CommercialCustomerInput,
 ): Promise<CommercialCustomer> {
 	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
-		pathWithQuery: 'customers?select=id,display_name,email,phone_e164',
+		pathWithQuery: `customers?select=${CUSTOMER_SELECT}`,
 		method: 'POST',
 		useServiceRole: true,
 		prefer: 'return=representation',
@@ -185,4 +185,37 @@ export async function linkCommercialLeadToCustomer(
 			customer_id: input.customerId,
 		},
 	});
+}
+
+const CUSTOMER_SELECT = 'id,display_name,email,phone_e164';
+
+function toCustomer(row: CommercialCustomerRow): CommercialCustomer {
+	return {
+		id: row.id,
+		displayName: row.display_name,
+		email: row.email,
+		phoneE164: row.phone_e164,
+	};
+}
+
+export async function findCommercialCustomerByEmail(
+	normalizedEmail: string,
+): Promise<CommercialCustomer | null> {
+	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
+		pathWithQuery: `customers?normalized_email=eq.${encodeURIComponent(normalizedEmail)}&select=${CUSTOMER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toCustomer(rows[0]) : null;
+}
+
+export async function findCommercialCustomerByPhone(
+	phoneE164: string,
+): Promise<CommercialCustomer | null> {
+	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
+		pathWithQuery: `customers?phone_e164=eq.${encodeURIComponent(phoneE164)}&select=${CUSTOMER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toCustomer(rows[0]) : null;
 }

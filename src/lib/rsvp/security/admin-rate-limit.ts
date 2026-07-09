@@ -51,6 +51,15 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'admin:content-drift-demo': { maxHits: 60, windowSec: 60 },
 	'admin:demo-publish-dry-run': { maxHits: 30, windowSec: 60 },
 	'admin:demo-publish-confirm': { maxHits: 5, windowSec: 60 },
+
+	// Commercial / Sales Workspace
+	'commercial:customers:create': { maxHits: 20, windowSec: 60 }, // 20 req/min
+	'commercial:customers:search': { maxHits: 60, windowSec: 60 }, // 60 req/min
+	'commercial:reconciliation:search': { maxHits: 60, windowSec: 60 }, // 60 req/min
+	'commercial:orders:create': { maxHits: 20, windowSec: 60 }, // 20 req/min
+	'commercial:orders:deposit-paid': { maxHits: 30, windowSec: 60 }, // 30 req/min
+	'commercial:meta-conversions:process': { maxHits: 20, windowSec: 60 }, // 20 req/min
+	'commercial:meta-conversions:requeue': { maxHits: 10, windowSec: 60 }, // 10 req/min
 };
 
 /**

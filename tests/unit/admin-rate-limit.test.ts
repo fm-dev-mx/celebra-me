@@ -47,4 +47,43 @@ describe('requireAdminRateLimit', () => {
 			requireAdminRateLimit(request, 'admin:demo-publish-confirm'),
 		).resolves.not.toThrow();
 	});
+
+	it('registers all commercial Sales Workspace operation keys and allows them', async () => {
+		const request = new Request(
+			'https://example.com/api/dashboard/commercial',
+			{ headers: { 'x-forwarded-for': '10.0.0.1' } },
+		);
+
+		await expect(
+			requireAdminRateLimit(request, 'commercial:customers:create'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:customers:search'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:reconciliation:search'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:orders:create'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:orders:deposit-paid'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:meta-conversions:process'),
+		).resolves.not.toThrow();
+		await expect(
+			requireAdminRateLimit(request, 'commercial:meta-conversions:requeue'),
+		).resolves.not.toThrow();
+	});
+
+	it('throws for unregistered operation keys', async () => {
+		const request = new Request('https://example.com/api/dashboard', {
+			headers: { 'x-forwarded-for': '10.0.0.1' },
+		});
+
+		await expect(
+			requireAdminRateLimit(request, 'commercial:unknown' as never),
+		).rejects.toThrow('Missing rate-limit configuration for operation: commercial:unknown');
+	});
 });

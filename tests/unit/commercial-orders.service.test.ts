@@ -6,6 +6,10 @@ jest.mock('@/lib/commercial/orders.repository', () => ({
 	upsertMetaConversionEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/meta-capi/service', () => ({
+	deliverMetaConversionEvent: jest.fn(),
+}));
+
 import {
 	createSalesOrder,
 	findMetaConversionEventByEventId,
@@ -13,6 +17,7 @@ import {
 	updateSalesOrderDepositPaid,
 	upsertMetaConversionEvent,
 } from '@/lib/commercial/orders.repository';
+import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -30,9 +35,14 @@ const mockFindMetaConversionEventByEventId =
 const mockUpsertMetaConversionEvent = upsertMetaConversionEvent as jest.MockedFunction<
 	typeof upsertMetaConversionEvent
 >;
+const mockDeliverMetaConversionEvent = deliverMetaConversionEvent as jest.MockedFunction<
+	typeof deliverMetaConversionEvent
+>;
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockDeliverMetaConversionEvent.mockResolvedValue('sent');
+
 	mockCreateSalesOrder.mockResolvedValue({
 		id: 'order-id',
 		orderNumber: 'CMO-20260708-ABC123',
@@ -139,6 +149,7 @@ describe('markCommercialOrderDepositPaid', () => {
 			value: 899,
 			currency: 'MXN',
 		});
+		expect(mockDeliverMetaConversionEvent).toHaveBeenCalledWith('conversion-id');
 		expect(result.conversionEvent?.eventId).toBe('purchase:order-id:deposit_paid');
 	});
 

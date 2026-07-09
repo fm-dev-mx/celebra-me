@@ -7,6 +7,9 @@ import {
 	type CommercialDashboardSummary,
 	type CountItem,
 } from '@/lib/tracking/commercial-dashboard';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
+import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
@@ -14,9 +17,14 @@ if (!Astro.locals.session?.isSuperAdmin) {
 
 let dashboardData: CommercialDashboardSummary | null = null;
 let loadError = false;
+let initialConversions: ConversionEvent[] = [];
 
 try {
 	dashboardData = await loadCommercialDashboardData();
+	initialConversions = await supabaseRestRequest<ConversionEvent[]>({
+		pathWithQuery: 'meta_conversion_events?select=id,event_name,event_id,value,currency,status,attempt_count,last_error_message,created_at&order=created_at.desc&limit=50',
+		useServiceRole: true,
+	});
 } catch (error) {
 	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
 	loadError = true;
@@ -74,132 +82,144 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 			</div>
 		)}
 
-		{dashboardData && (
-			<>
-				<div class="commercial-dashboard__metrics">
-					{metricCards.map((card) => (
-						<article class="commercial-dashboard__metric">
-							<span>{card.label}</span>
-							<strong>{formatCount(card.value)}</strong>
-						</article>
-					))}
-					<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
-						<span>Sesiones internas excluidas</span>
-						<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
-					</article>
-				</div>
+		<div class="commercial-tabs">
+			<button class="tab-btn active" data-tab="metrics">Métricas de Tráfico</button>
+			<button class="tab-btn" data-tab="sales">Espacio de Ventas (CAPI)</button>
+		</div>
 
-				<section class="commercial-dashboard__quality">
-					<header class="commercial-dashboard__quality-header">
-						<h3>Calidad del seguimiento</h3>
-						<p>Distribución de consentimiento entre eventos persistidos.</p>
-					</header>
+		<div class="tab-content active" id="tab-metrics">
+			{dashboardData && (
+				<>
 					<div class="commercial-dashboard__metrics">
-						{trackingQualityCards.map((card) => (
-							<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
+						{metricCards.map((card) => (
+							<article class="commercial-dashboard__metric">
 								<span>{card.label}</span>
-								<strong>{card.value}</strong>
+								<strong>{formatCount(card.value)}</strong>
 							</article>
 						))}
+						<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
+							<span>Sesiones internas excluidas</span>
+							<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
+						</article>
 					</div>
-				</section>
 
-				<div class="commercial-dashboard__grid">
-					<section class="dashboard-card">
-						<h3>Tráfico</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.campaigns).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Calidad del seguimiento</h3>
+							<p>Distribución de consentimiento entre eventos persistidos.</p>
+						</header>
+						<div class="commercial-dashboard__metrics">
+							{trackingQualityCards.map((card) => (
+								<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
+									<span>{card.label}</span>
+									<strong>{card.value}</strong>
+								</article>
 							))}
-						</ul>
+						</div>
 					</section>
 
-					<section class="dashboard-card">
-						<h3>Engagement</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.sections).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-							))}
-						</ul>
-					</section>
+					<div class="commercial-dashboard__grid">
+						<section class="dashboard-card">
+							<h3>Tráfico</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.campaigns).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
 
-					<section class="dashboard-card">
-						<h3>Scroll</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.scrollDepth).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-							))}
-						</ul>
-					</section>
+						<section class="dashboard-card">
+							<h3>Engagement</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.sections).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
 
-					<section class="dashboard-card">
-						<h3>CTAs</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.topCtas).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-							))}
-						</ul>
-					</section>
+						<section class="dashboard-card">
+							<h3>Scroll</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.scrollDepth).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
 
-					<section class="dashboard-card">
-						<h3>Demos</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.topDemos).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-							))}
-						</ul>
-					</section>
+						<section class="dashboard-card">
+							<h3>CTAs</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.topCtas).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
 
-					<section class="dashboard-card">
-						<h3>Leads por estado</h3>
-						<ul class="commercial-dashboard__list">
-							{renderList(dashboardData.leadsByStatus).map((item) => (
-								<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-							))}
-						</ul>
-					</section>
-				</div>
+						<section class="dashboard-card">
+							<h3>Demos</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.topDemos).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
 
-				<section class="dashboard-card commercial-dashboard__table-card">
-					<h3>Leads recientes</h3>
-					<div class="commercial-dashboard__table-wrap">
-						<table class="commercial-dashboard__table">
-							<thead>
-								<tr>
-									<th>Código</th>
-									<th>Nombre</th>
-									<th>Contacto</th>
-									<th>Evento</th>
-									<th>Paquete</th>
-									<th>Estado</th>
-									<th>Canal</th>
-								</tr>
-							</thead>
-							<tbody>
-								{dashboardData.recentLeads.length === 0 ? (
+						<section class="dashboard-card">
+							<h3>Leads por estado</h3>
+							<ul class="commercial-dashboard__list">
+								{renderList(dashboardData.leadsByStatus).map((item) => (
+									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+								))}
+							</ul>
+						</section>
+					</div>
+
+					<section class="dashboard-card commercial-dashboard__table-card">
+						<h3>Leads recientes</h3>
+						<div class="commercial-dashboard__table-wrap">
+							<table class="commercial-dashboard__table">
+								<thead>
 									<tr>
-										<td colspan="7">Sin leads registrados todavía.</td>
+										<th>Código</th>
+										<th>Nombre</th>
+										<th>Contacto</th>
+										<th>Evento</th>
+										<th>Paquete</th>
+										<th>Estado</th>
+										<th>Canal</th>
 									</tr>
-								) : (
-									dashboardData.recentLeads.map((lead) => (
+								</thead>
+								<tbody>
+									{dashboardData.recentLeads.length === 0 ? (
 										<tr>
-											<td>{lead.lead_code}</td>
-											<td>{lead.name || 'Sin nombre'}</td>
-											<td>{lead.email || lead.phone || 'Sin contacto'}</td>
-											<td>{lead.event_type || 'Sin clasificar'}</td>
-											<td>{lead.package_interest || 'Sin clasificar'}</td>
-											<td>{labelLeadStatus(lead.status)}</td>
-											<td>{labelLeadChannel(lead.channel)}</td>
+											<td colspan="7">Sin leads registrados todavía.</td>
 										</tr>
-									))
-								)}
-							</tbody>
-						</table>
-					</div>
-				</section>
-			</>
-		)}
+									) : (
+										dashboardData.recentLeads.map((lead) => (
+											<tr>
+												<td>{lead.lead_code}</td>
+												<td>{lead.name || 'Sin nombre'}</td>
+												<td>{lead.email || lead.phone || 'Sin contacto'}</td>
+												<td>{lead.event_type || 'Sin clasificar'}</td>
+												<td>{lead.package_interest || 'Sin clasificar'}</td>
+												<td>{labelLeadStatus(lead.status)}</td>
+												<td>{labelLeadChannel(lead.channel)}</td>
+											</tr>
+										))
+									)}
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</>
+			)}
+		</div>
+
+		<div class="tab-content" id="tab-sales">
+			<SalesWorkspace client:load initialConversions={initialConversions} />
+		</div>
 	</section>
+
 
 	<style lang="scss">
 		.commercial-dashboard {
@@ -339,5 +359,66 @@ const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 
 			font-size: 0.82rem;
 			color: var(--color-text-muted);
 		}
+
+		.commercial-tabs {
+			display: flex;
+			gap: 1rem;
+			border-bottom: 1px solid var(--dashboard-card-border);
+			padding-bottom: 0.5rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.tab-btn {
+			background: none;
+			border: none;
+			padding: 0.5rem 1rem;
+			color: var(--color-text-secondary);
+			font-size: 0.9rem;
+			font-weight: 500;
+			cursor: pointer;
+			border-radius: 0.375rem;
+			transition: all 0.2s ease;
+			
+			&:hover {
+				color: var(--color-text-primary);
+				background: rgba(255, 255, 255, 0.05);
+			}
+			
+			&.active {
+				color: var(--color-action-primary);
+				background: rgba(59, 130, 246, 0.1);
+				font-weight: bold;
+			}
+		}
+
+		.tab-content {
+			display: none;
+			
+			&.active {
+				display: block;
+			}
+		}
 	</style>
+
+	<script>
+		const tabButtons = document.querySelectorAll('.tab-btn');
+		const tabContents = document.querySelectorAll('.tab-content');
+
+		tabButtons.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const tabName = btn.getAttribute('data-tab');
+				if (!tabName) return;
+				
+				tabButtons.forEach((b) => b.classList.remove('active'));
+				tabContents.forEach((c) => c.classList.remove('active'));
+				
+				btn.classList.add('active');
+				const targetContent = document.getElementById(`tab-${tabName}`);
+				if (targetContent) {
+					targetContent.classList.add('active');
+				}
+			});
+		});
+	</script>
 </DashboardLayout>
+

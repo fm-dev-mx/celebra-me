@@ -8,8 +8,10 @@ import {
 	type SalesOrder,
 	type SalesOrderStatus,
 } from '@/lib/commercial/orders.repository';
+import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 
 const COMMERCIAL_ORDER_CURRENCY = 'MXN';
+
 
 export interface CreateCommercialSalesOrderInput {
 	customerId: string;
@@ -59,18 +61,14 @@ function assertMxnCurrency(currency: string | undefined): void {
 	}
 }
 
-function randomOrderSuffix(): string {
-	return Math.random().toString(36).slice(2, 8).toUpperCase();
-}
-
-export function createPurchaseDepositEventId(orderId: string): string {
+function createPurchaseDepositEventId(orderId: string): string {
 	return `purchase:${orderId}:deposit_paid`;
 }
 
 export function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): string {
 	const now = input.now ?? new Date();
 	const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
-	const suffix = input.randomSuffix?.trim().toUpperCase() || randomOrderSuffix();
+	const suffix = input.randomSuffix?.trim().toUpperCase() || Math.random().toString(36).slice(2, 8).toUpperCase();
 	return `CMO-${stamp}-${suffix}`;
 }
 
@@ -132,6 +130,12 @@ export async function markCommercialOrderDepositPaid(
 		value: input.amountPaid,
 		currency: COMMERCIAL_ORDER_CURRENCY,
 	});
+
+	if (conversionEvent) {
+		void deliverMetaConversionEvent(conversionEvent.id).catch((err) => {
+			console.error(`[orders-service] Failed to deliver CAPI event ${conversionEvent.id} synchronously:`, err);
+		});
+	}
 
 	return { order, conversionEvent };
 }

@@ -1,9 +1,12 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialSalesOrder } from '@/lib/commercial/orders.service';
-import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
-import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
+import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { SalesOrder } from '@/lib/commercial/orders.repository';
+
 
 const CreateCommercialOrderSchema = z.object({
 	customerId: z.string().trim().min(1).max(80),
@@ -50,3 +53,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		return errorResponse(error);
 	}
 };
+
+export const GET: APIRoute = async ({ request, url }) => {
+	try {
+		await requireAdminStrongSession(request);
+		const customerId = url.searchParams.get('customerId')?.trim();
+		if (!customerId) {
+			return badRequest('Customer ID is required.');
+		}
+
+		const rows = await supabaseRestRequest<SalesOrder[]>({
+			pathWithQuery: `sales_orders?customer_id=eq.${encodeURIComponent(customerId)}&select=*&order=created_at.desc`,
+			method: 'GET',
+			useServiceRole: true,
+		});
+
+		return successResponse(rows);
+	} catch (error) {
+		return errorResponse(error);
+	}
+};
+

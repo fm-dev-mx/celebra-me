@@ -145,43 +145,112 @@ Commercial Meta events do **not** run on:
 This isolation is enforced by `classifyTrackingRoute()` and prevents ordinary invitation-guest
 activity from contaminating acquisition data.
 
-## Conversions API Readiness
+## Conversions API (CAPI) and Sales Workspace
 
-The repository is **not** yet wired to a real confirmed-sale path for Meta Conversions API.
+The Conversions API (CAPI) is fully implemented server-side to report confirmed `Purchase` events. It is supported by an interactive administration workspace under `/dashboard/commercial` (under the "Espacio de Ventas" tab) for super admins.
 
-What exists today:
+### Architecture Flow
 
-- `tracking_events` already reserves lifecycle names such as `quote_sent`, `production_authorized`,
-  `payment_pending`, and `payment_received`.
-- `leads.status` already supports later commercial states including `production_authorized` and
-  `paid`.
+```
+1. Admin marks Order Deposit Paid
+   → calls markCommercialOrderDepositPaid() in orders.service.ts
+2. Ledger Row Inserted
+   → upsertMetaConversionEvent() creates a 'pending' Purchase row in meta_conversion_events
+3. Asynchronous Dispatch
+   → deliverMetaConversionEvent() is fired in the background with a timeout
+4. Meta Graph API Delivery
+   → Hashes email/phone (digits-only E.164 without leading '+') via SHA-256
+   → Enforces route safety on event_source_url (fallback to homepage if guest path)
+   → Dispatches POST to Facebook Graph API
+5. Status Update
+   → Updates ledger status: 'pending' → 'sending' → 'sent' or 'failed' / 'skipped'
+```
 
-What is still missing:
+### Environment Variables
 
-- no server endpoint currently sends Meta Conversions API requests,
-- no confirmed production path was found that emits `payment_received`,
-- no order/payment service was found that can act as the source of truth for `Purchase`.
+| Variable | Values / Purpose |
+| --- | --- |
+| `META_CAPI_DELIVERY_MODE` | `disabled` (default), `test` (sends test payload), or `production` (live Graph API calls) |
+| `META_CAPI_ACCESS_TOKEN` | Meta Graph API access token |
+| `META_PIXEL_ID` | Meta Pixel Identifier (fallback to `PUBLIC_META_PIXEL_ID`) |
+| `META_TEST_EVENT_CODE` | Required in `test` mode to register events in Meta Events Manager |
 
-### Future CAPI contract
+### Route Privacy Policy
 
-When a real paid flow exists, the future server-only integration should:
+Meta Graph API events must never leak guest identity or invitation routes. The delivery service parses the session's `landing_path` and verifies it using `classifyTrackingRoute()`:
+- If the route has `metaAllowed: true` (e.g., `/`, `/privacidad`, `/demos/xv`), the CAPI payload sets `event_source_url` to the actual landing URL.
+- Otherwise, it falls back to `https://www.celebra-me.com/` to protect guest anonymity.
 
-- run only from a confirmed-sale path that is authoritative for paid status,
-- use server-only env vars `META_CAPI_ACCESS_TOKEN` and `META_PIXEL_ID`,
-- send `Purchase` only after a real `payment_received` or equivalent paid confirmation,
-- reuse a stable `event_id` between browser/server when the same conversion is reported twice,
-- log failures without breaking the user-facing sales flow.
+### Sales Workspace Administration
 
-Recommended future payload:
+Super admins can access the Workspace at `/dashboard/commercial` using the tab switcher. The workspace enables:
+1. **Search**: Find leads by code (`CM-XXXXXX`), phone, or email.
+2. **Reconciliation**: Convert leads into `customers` with E.164 normalized details.
+3. **Sales Orders**: Register quoted or confirmed orders.
+4. **Deposit Paid Transition**: Mark deposit paid to trigger CAPI outbox delivery.
+5. **CAPI Queue Control**: View CAPI outbox ledger logs (including attempts and errors) and manually trigger batch processing / retries.
 
-| Field           | Expected value |
-| --------------- | -------------- |
-| `event_name`    | `Purchase`     |
-| `event_time`    | Unix timestamp at confirmed payment |
-| `event_id`      | Stable non-PII identifier from the paid transaction |
-| `action_source` | `website`      |
-| `value`         | Confirmed paid amount |
-| `currency`      | `MXN`          |
+### Outbox Status Semantics
+
+Each row in `meta_conversion_events` follows a strict lifecycle:
+- **`pending` (Pendiente)**: The event is enqueued and waiting for background delivery or queue processing.
+- **`sending` (Enviando...)**: Delivery is currently in progress.
+- **`sent` (Enviado (CAPI))**: Delivery was successfully received by Meta Graph API.
+- **`failed` (Error de Envío)**: Graph API rejected the event or a network error occurred. Employs exponential backoff before auto-retrying.
+- **`skipped` (Ignorado (CAPI Desactivado))**: The event was skipped because `META_CAPI_DELIVERY_MODE` is set to `disabled`. The reason is preserved in `last_error_message`.
+
+#### Manual Re-queuing / Retries
+If an event is `failed` or `skipped`, administrators can click **"Reintentar Envío"** in the Conversions table. This:
+1. Updates the event state to `pending`.
+2. Resets `attempt_count` to `0`.
+3. Clears prior errors.
+4. Dispatches the delivery synchronously in the background.
+
+---
+
+### Meta Events Manager Test-Mode Validation
+
+To validate that your local/staging setup is correctly delivering conversion events without contaminating production acquisition data:
+
+1. **Obtain Test Event Code**: Log in to Meta Events Manager $\rightarrow$ Select your Pixel $\rightarrow$ Navigate to **Test Events** tab $\rightarrow$ Note the code displayed (e.g. `TEST12345`).
+2. **Configure Environment Variables**:
+   ```env
+   META_CAPI_DELIVERY_MODE=test
+   META_CAPI_ACCESS_TOKEN=<your_graph_api_token>
+   META_PIXEL_ID=<your_pixel_id>
+   META_TEST_EVENT_CODE=<test_event_code_from_step_1>
+   ```
+3. **Trigger Event**: In the Sales Workspace, register a sales order and mark its deposit paid.
+4. **Verify in Events Manager**: Look at the **Test Events** dashboard in Meta Events Manager. You should see a `Purchase` event show up immediately with:
+   - Event Source: `Server`
+   - Event ID matching: `purchase:{orderId}:deposit_paid`
+   - Custom Data: Value (anticipo amount) and Currency (`MXN`)
+   - Hashed parameters corresponding to customer identity.
+
+---
+
+### Production Deployment Gate Checklist
+
+Before enabling live production delivery, verify:
+- [ ] `META_CAPI_DELIVERY_MODE` is explicitly set to `production` in Vercel.
+- [ ] `META_CAPI_ACCESS_TOKEN` is configured securely as a serverless secret.
+- [ ] `META_PIXEL_ID` matches your production pixel.
+- [ ] `META_TEST_EVENT_CODE` is deleted/unset.
+- [ ] Test mode has been validated without errors in Events Manager.
+
+---
+
+### Privacy & Data Restrictions (Never Send to Meta)
+
+To maintain absolute guest privacy, the server-side payload client strictly isolates acquisition data. The following data **must never** be passed to Meta under any circumstances:
+- RSVP details, dietary preferences, or attendance responses.
+- Personalized guest URLs, short tokens, or claim codes.
+- Invitation guest names, email, phone numbers, or free-text messages.
+- Dashboard admin auth sessions.
+
+Only the first-party commercial customer's normalized, SHA-256 hashed identity is ever sent for deduplication.
+
+---
 
 ## Future Work
 
@@ -189,3 +258,4 @@ Recommended future payload:
 - Purchase/revenue attribution: `lead_id → order_id → revenue`
 - Optional GA4 Measurement Protocol for server-side `generate_lead`
 - Optional transactional lead creation if concurrency becomes relevant
+

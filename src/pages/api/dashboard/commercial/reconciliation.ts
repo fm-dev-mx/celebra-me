@@ -17,7 +17,7 @@ const CommercialReconciliationQuerySchema = z.object({
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		await requireAdminRateLimit(request, 'commercial:reconciliation');
+		await requireAdminRateLimit(request, 'commercial:reconciliation:search');
 		await requireAdminStrongSession(request);
 
 		const parsed = validateQueryOrRespond(

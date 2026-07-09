@@ -66,7 +66,7 @@ describe('/api/dashboard/commercial/reconciliation', () => {
 		expect(response.status).toBe(200);
 		expect(mockRequireAdminRateLimit).toHaveBeenCalledWith(
 			request,
-			'commercial:reconciliation',
+			'commercial:reconciliation:search',
 		);
 		expect(mockRequireAdminStrongSession).toHaveBeenCalledWith(request);
 		expect(mockFindCandidates).toHaveBeenCalledWith({

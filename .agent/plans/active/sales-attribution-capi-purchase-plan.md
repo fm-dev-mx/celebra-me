@@ -1,6 +1,6 @@
 ---
 title: Sales Attribution CAPI Purchase Plan
-status: draft
+status: completed
 type: documentation
 created: 2026-07-08
 updated: 2026-07-08

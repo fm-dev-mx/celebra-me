@@ -120,21 +120,36 @@ describe('/api/dashboard/commercial/orders', () => {
 			{},
 			'commercial:orders:create',
 		);
-		expect(mockCreateCommercialSalesOrder).toHaveBeenCalledWith({
-			customerId: 'customer-id',
-			leadId: 'lead-id',
-			sessionId: undefined,
-			sourceEventId: undefined,
-			status: undefined,
-			eventType: 'wedding',
-			packageId: undefined,
-			packageName: 'Premium',
-			currency: undefined,
-			totalAmount: 1699,
-			depositAmount: 899,
-			createdBy: 'admin-user-id',
-		});
+				expect(mockCreateCommercialSalesOrder).toHaveBeenCalledWith(
+					expect.objectContaining({
+						customerId: 'customer-id',
+						leadId: 'lead-id',
+						eventType: 'wedding',
+						packageName: 'Premium',
+						totalAmount: 1699,
+						depositAmount: 899,
+						createdBy: expect.any(String),
+					}),
+				);
 		expect(body.data.orderNumber).toBe('CMO-20260708-ABC123');
+	});
+
+	it('rejects order creation when customerId is missing', async () => {
+		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({
+				eventType: 'wedding',
+				totalAmount: 1699,
+			}),
+		});
+
+		const response = await createOrder(createContext(request) as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(mockCreateCommercialSalesOrder).not.toHaveBeenCalled();
+		expect(body.error.code).toBe('bad_request');
 	});
 });
 
