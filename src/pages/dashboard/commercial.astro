@@ -84,7 +84,7 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			<div class="dashboard-card commercial-dashboard__notice">
 				<h3>Datos no disponibles</h3>
 				<p>
-					El dashboard está listo, pero las tablas comerciales aún no respondieron en este
+					El panel está listo, pero las tablas comerciales aún no respondieron en este
 					ambiente. Aplica la migración MVP antes de usarlo en producción.
 				</p>
 			</div>
@@ -92,130 +92,258 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 
 		{dashboardData && viewModel && (
 			<>
-				<section class="dashboard-card commercial-dashboard__context">
-					<header>
-						<h3>Contexto de datos</h3>
-						<p>{dashboardData.dataContext.limitNotice}</p>
-					</header>
-					<dl class="commercial-dashboard__context-grid">
-						<div>
-							<dt>Periodo mostrado</dt>
-							<dd>{dashboardData.dataContext.periodLabel}</dd>
-						</div>
-						<div>
-							<dt>Alcance de datos</dt>
-							<dd>{dashboardData.dataContext.scopeLabel}</dd>
-						</div>
-						<div>
-							<dt>Última actividad registrada</dt>
-							<dd>{formatDateTime(dashboardData.dataContext.lastActivityAt)}</dd>
-						</div>
-						<div>
-							<dt>Último evento de tracking</dt>
-							<dd>{formatDateTime(dashboardData.dataContext.lastTrackingEventAt)}</dd>
-						</div>
-						<div>
-							<dt>Última actualización comercial</dt>
-							<dd>{formatDateTime(dashboardData.dataContext.lastCommercialUpdateAt)}</dd>
-						</div>
-					</dl>
-				</section>
+				<div class="commercial-context-strip">
+					<span class="context-dot">Datos históricos disponibles · Sin filtro activo</span>
+					<span class="context-sep"></span>
+					<span>Última actividad: {formatDateTime(dashboardData.dataContext.lastActivityAt)}</span>
+					<span class="context-sep"></span>
+					<span>Último tracking: {formatDateTime(dashboardData.dataContext.lastTrackingEventAt)}</span>
+					<span class="context-sep"></span>
+					<span>Última actualización: {formatDateTime(dashboardData.dataContext.lastCommercialUpdateAt)}</span>
+					<span class="context-note">{dashboardData.dataContext.limitNotice}</span>
+				</div>
 
-				<section class="commercial-dashboard__health">
-					<header class="commercial-dashboard__quality-header">
-						<h3>Salud del sistema</h3>
-						<p>Diagnóstico resumido de tracking, CAPI y datos comerciales.</p>
-					</header>
-					<div class="commercial-dashboard__health-grid">
-						<article class="dashboard-card commercial-dashboard__health-card">
-							<div class="commercial-dashboard__health-heading">
-								<h4>{viewModel.health.tracking.label}</h4>
-								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.tracking.status}`]}>
-									{labelHealthStatus(viewModel.health.tracking.status)}
-								</span>
-							</div>
-							<p>{viewModel.health.tracking.message}</p>
-							<ul class="commercial-dashboard__health-list">
-								{viewModel.health.tracking.checks.map((check) => (
-									<li>
-										<span>{check.label}</span>
-										<strong>{check.value}</strong>
-										<small>{check.helper}</small>
-									</li>
-								))}
-							</ul>
-						</article>
+				<div class="commercial-dashboard__health-bar">
+					<span>Tracking:</span>
+					<span class:list={['health-badge', `health-badge--${viewModel.health.tracking.status}`]}>{labelHealthStatus(viewModel.health.tracking.status)}</span>
+					<span class="health-bar-sep"></span>
+					<span>CAPI:</span>
+					<span class:list={['health-badge', `health-badge--${viewModel.health.capi.status}`]}>{labelHealthStatus(viewModel.health.capi.status)}</span>
+					<span class="health-bar-sep"></span>
+					<span>Datos comerciales:</span>
+					<span class:list={['health-badge', `health-badge--${viewModel.health.commercial.status}`]}>{labelHealthStatus(viewModel.health.commercial.status)}</span>
+				</div>
 
-						<article class="dashboard-card commercial-dashboard__health-card">
-							<div class="commercial-dashboard__health-heading">
-								<h4>{viewModel.health.capi.label}</h4>
-								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.capi.status}`]}>
-									{labelHealthStatus(viewModel.health.capi.status)}
-								</span>
-							</div>
-							<p>{viewModel.health.capi.message}</p>
-							<ul class="commercial-dashboard__health-list commercial-dashboard__health-list--compact">
-								{viewModel.health.capi.checks.map((check) => (
-									<li>
-										<span>{check.label}</span>
-										<strong>{check.value}</strong>
-									</li>
-								))}
-							</ul>
-						</article>
+				<div class="commercial-tabs">
+					<button class="tab-btn active" data-tab="resumen">Resumen</button>
+					<button class="tab-btn" data-tab="ventas">Ventas</button>
+					<button class="tab-btn" data-tab="atribucion">Atribución</button>
+					<button class="tab-btn" data-tab="salud">Salud del sistema</button>
+				</div>
 
-						<article class="dashboard-card commercial-dashboard__health-card">
-							<div class="commercial-dashboard__health-heading">
-								<h4>{viewModel.health.commercial.label}</h4>
-								<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.commercial.status}`]}>
-									{labelHealthStatus(viewModel.health.commercial.status)}
-								</span>
-							</div>
-							<p>{viewModel.health.commercial.message}</p>
-							<ul class="commercial-dashboard__health-list">
-								{viewModel.health.commercial.warnings.length === 0 ? (
-									<li>
-										<span>Alertas accionables</span>
-										<strong>0</strong>
-										<small>Sin alertas básicas en los registros cargados.</small>
-									</li>
-								) : (
-									viewModel.health.commercial.warnings.map((warning) => (
-										<li>
-											<span>{warning.label}</span>
-											<strong>{formatCount(warning.count)}</strong>
-											<small>{warning.helper}</small>
-										</li>
-									))
-								)}
-							</ul>
-						</article>
-					</div>
-				</section>
-			</>
-		)}
-
-		<div class="commercial-tabs">
-			<button class="tab-btn active" data-tab="metrics">Métricas de Tráfico</button>
-			<button class="tab-btn" data-tab="sales">Espacio de Ventas (CAPI)</button>
-		</div>
-
-		<div class="tab-content active" id="tab-metrics">
-			{dashboardData && viewModel && (
-				<>
-					<div class="commercial-dashboard__metrics">
-						{viewModel.trafficCards.map((card) => (
-							<article class="commercial-dashboard__metric">
+				<div class="tab-content active" id="tab-resumen">
+					<div class="commercial-dashboard__metrics commercial-dashboard__metrics--executive">
+						{viewModel.executiveMetrics.map((card) => (
+							<article class:list={['commercial-dashboard__metric', card.id === 'commercialAlerts' && viewModel.activeAlerts > 0 ? 'commercial-dashboard__metric--alert' : '']}>
 								<span>{card.label}</span>
 								<strong>{card.value}</strong>
 								{card.helper && <small>{card.helper}</small>}
 							</article>
 						))}
-						<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
-							<span>Sesiones internas excluidas</span>
-							<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
-						</article>
 					</div>
+
+					<section class="dashboard-card">
+						<h3>Leads recientes</h3>
+						<div class="commercial-dashboard__table-wrap">
+							<table class="commercial-dashboard__table">
+								<thead>
+									<tr>
+										<th>Código</th>
+										<th>Nombre</th>
+										<th>Contacto</th>
+										<th>Evento</th>
+										<th>Estado</th>
+										<th>Canal</th>
+									</tr>
+								</thead>
+								<tbody>
+									{dashboardData.recentLeads.length === 0 ? (
+										<tr>
+											<td colspan="6">Sin leads registrados todavía.</td>
+										</tr>
+									) : (
+										dashboardData.recentLeads.map((lead) => (
+											<tr>
+												<td>{lead.lead_code}</td>
+												<td>{lead.name || 'Sin nombre'}</td>
+												<td>{lead.email || lead.phone || 'Sin contacto'}</td>
+												<td>{lead.event_type || 'Sin clasificar'}</td>
+												<td>{labelLeadStatus(lead.status)}</td>
+												<td>{labelLeadChannel(lead.channel)}</td>
+											</tr>
+										))
+									)}
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</div>
+
+				<div class="tab-content" id="tab-ventas">
+					<SalesWorkspace client:load />
+				</div>
+
+				<div class="tab-content" id="tab-atribucion">
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Tráfico e interacción</h3>
+							<p>Canales de tráfico, contenido interactivo y rendimiento de demos.</p>
+						</header>
+						<div class="commercial-dashboard__grid">
+							<section class="dashboard-card">
+								<h3>Tráfico</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.campaigns).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Interacción</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.sections).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>CTAs</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.topCtas).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Demos</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.topDemos).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Desplazamiento</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.scrollDepth).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+						</div>
+					</section>
+
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Leads e ingresos</h3>
+							<p>Distribución de leads por estado, canal y rendimiento por paquete.</p>
+						</header>
+						<div class="commercial-dashboard__grid">
+							<section class="dashboard-card">
+								<h3>Leads por estado</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.leadsByStatus).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Leads por canal</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.leadsByChannel).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Ingresos por paquete / tipo</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.topRevenueByEventType).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCurrency(item.count, 0)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Órdenes por estado</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.ordersByStatus.map((o) => ({ label: labelOrderStatus(o.label), count: o.count }))).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+						</div>
+					</section>
+				</div>
+
+				<div class="tab-content" id="tab-salud">
+					<section class="commercial-dashboard__health">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Diagnóstico del sistema</h3>
+							<p>Estado detallado de tracking, CAPI y datos comerciales.</p>
+						</header>
+						<div class="commercial-dashboard__health-grid">
+							<article class="dashboard-card commercial-dashboard__health-card">
+								<div class="commercial-dashboard__health-heading">
+									<h4>{viewModel.health.tracking.label}</h4>
+									<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.tracking.status}`]}>
+										{labelHealthStatus(viewModel.health.tracking.status)}
+									</span>
+								</div>
+								<p>{viewModel.health.tracking.message}</p>
+								<ul class="commercial-dashboard__health-list">
+									{viewModel.health.tracking.checks.map((check) => (
+										<li>
+											<span>{check.label}</span>
+											<strong>{check.value}</strong>
+											<small>{check.helper}</small>
+										</li>
+									))}
+								</ul>
+							</article>
+
+							<article class="dashboard-card commercial-dashboard__health-card">
+								<div class="commercial-dashboard__health-heading">
+									<h4>{viewModel.health.capi.label}</h4>
+									<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.capi.status}`]}>
+										{labelHealthStatus(viewModel.health.capi.status)}
+									</span>
+								</div>
+								<p>{viewModel.health.capi.message}</p>
+								<ul class="commercial-dashboard__health-list commercial-dashboard__health-list--compact">
+									{viewModel.health.capi.checks.map((check) => (
+										<li>
+											<span>{check.label}</span>
+											<strong>{check.value}</strong>
+										</li>
+									))}
+								</ul>
+							</article>
+
+							<article class="dashboard-card commercial-dashboard__health-card">
+								<div class="commercial-dashboard__health-heading">
+									<h4>{viewModel.health.commercial.label}</h4>
+									<span class:list={['commercial-dashboard__status', `commercial-dashboard__status--${viewModel.health.commercial.status}`]}>
+										{labelHealthStatus(viewModel.health.commercial.status)}
+									</span>
+								</div>
+								<p>{viewModel.health.commercial.message}</p>
+								<ul class="commercial-dashboard__health-list">
+									{viewModel.health.commercial.warnings.length === 0 ? (
+										<li>
+											<span>Alertas accionables</span>
+											<strong>0</strong>
+											<small>Sin alertas en los registros cargados.</small>
+										</li>
+									) : (
+										viewModel.health.commercial.warnings.map((warning) => (
+											<li>
+												<span>{warning.label}</span>
+												<strong>{formatCount(warning.count)}</strong>
+												<small>{warning.helper}</small>
+											</li>
+										))
+									)}
+								</ul>
+							</article>
+						</div>
+					</section>
 
 					<section class="commercial-dashboard__quality">
 						<header class="commercial-dashboard__quality-header">
@@ -230,147 +358,17 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 									{card.helper && <small>{card.helper}</small>}
 								</article>
 							))}
+							<article class="commercial-dashboard__metric commercial-dashboard__metric--muted">
+								<span>Sesiones internas excluidas</span>
+								<strong>{formatCount(dashboardData.totals.internalSessions)}</strong>
+							</article>
 						</div>
 					</section>
 
-					<section class="commercial-dashboard__quality">
-						<header class="commercial-dashboard__quality-header">
-							<h3>Ventas</h3>
-							<p>Resumen de órdenes, ingresos y conversión.</p>
-						</header>
-						<div class="commercial-dashboard__metrics">
-							{viewModel.salesCards.map((card) => (
-								<article class:list={['commercial-dashboard__metric', card.muted ? 'commercial-dashboard__metric--muted' : '']}>
-									<span>{card.label}</span>
-									<strong>{card.value}</strong>
-									{card.helper && <small>{card.helper}</small>}
-								</article>
-							))}
-						</div>
-					</section>
-
-					<div class="commercial-dashboard__grid">
-						<section class="dashboard-card">
-							<h3>Tráfico</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.campaigns).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Interacción</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.sections).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Desplazamiento</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.scrollDepth).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>CTAs</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.topCtas).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Demos</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.topDemos).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Leads por estado</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.leadsByStatus).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Órdenes por estado</h3>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.ordersByStatus.map((o) => ({ label: labelOrderStatus(o.label), count: o.count }))).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-
-						<section class="dashboard-card">
-							<h3>Ingresos por paquete o tipo de evento</h3>
-							<p class="commercial-dashboard__card-help">
-								Agrupa por paquete cuando existe; si no, usa el tipo de evento.
-							</p>
-							<ul class="commercial-dashboard__list">
-								{renderList(dashboardData.topRevenueByEventType).map((item) => (
-									<li><span>{item.label}</span><strong>{formatCurrency(item.count)}</strong></li>
-								))}
-							</ul>
-						</section>
-					</div>
-
-					<section class="dashboard-card commercial-dashboard__table-card">
-						<h3>Leads recientes</h3>
-						<div class="commercial-dashboard__table-wrap">
-							<table class="commercial-dashboard__table">
-								<thead>
-									<tr>
-										<th>Código</th>
-										<th>Nombre</th>
-										<th>Contacto</th>
-										<th>Evento</th>
-										<th>Paquete</th>
-										<th>Estado</th>
-										<th>Canal</th>
-									</tr>
-								</thead>
-								<tbody>
-									{dashboardData.recentLeads.length === 0 ? (
-										<tr>
-											<td colspan="7">Sin leads registrados todavía.</td>
-										</tr>
-									) : (
-										dashboardData.recentLeads.map((lead) => (
-											<tr>
-												<td>{lead.lead_code}</td>
-												<td>{lead.name || 'Sin nombre'}</td>
-												<td>{lead.email || lead.phone || 'Sin contacto'}</td>
-												<td>{lead.event_type || 'Sin clasificar'}</td>
-												<td>{lead.package_interest || 'Sin clasificar'}</td>
-												<td>{labelLeadStatus(lead.status)}</td>
-												<td>{labelLeadChannel(lead.channel)}</td>
-											</tr>
-										))
-									)}
-								</tbody>
-							</table>
-						</div>
-					</section>
-				</>
-			)}
-		</div>
-
-		<div class="tab-content" id="tab-sales">
-			<SalesWorkspace client:load />
-			<CapiOutboxPanel client:load initialConversions={initialConversions} />
-		</div>
+					<CapiOutboxPanel client:load initialConversions={initialConversions} />
+				</div>
+			</>
+		)}
 	</section>
 
 
@@ -415,6 +413,10 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			gap: 1rem;
 		}
 
+		.commercial-dashboard__metrics--executive {
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		}
+
 		.commercial-dashboard__metric {
 			padding: 1.25rem;
 			border: 1px solid var(--dashboard-card-border);
@@ -448,6 +450,10 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			color: var(--color-text-secondary);
 		}
 
+		.commercial-dashboard__metric--alert strong {
+			color: #f59e0b;
+		}
+
 		.commercial-dashboard__list {
 			display: grid;
 			gap: 0.7rem;
@@ -476,57 +482,96 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			line-height: 1.45;
 		}
 
-		.commercial-dashboard__context {
-			display: grid;
-			gap: 1rem;
-
-			header {
-				display: grid;
-				gap: 0.25rem;
-			}
-
-			h3,
-			p {
-				margin: 0;
-			}
-
-			h3 {
-				color: var(--color-text-primary);
-				font-size: 1rem;
-			}
-
-			p {
-				color: var(--color-text-muted);
-				font-size: 0.82rem;
-				line-height: 1.5;
-			}
+		/* Compact data context strip */
+		.commercial-context-strip {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.6rem 1rem;
+			border: 1px solid var(--dashboard-card-border);
+			border-radius: 0.5rem;
+			background: var(--dashboard-card-bg);
+			font-size: 0.8rem;
+			color: var(--color-text-secondary);
+			line-height: 1.4;
 		}
 
-		.commercial-dashboard__context-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-			gap: 0.85rem;
-			margin: 0;
-
-			div {
-				display: grid;
-				gap: 0.2rem;
-			}
-
-			dt {
-				color: var(--color-text-muted);
-				font-size: 0.72rem;
-				text-transform: uppercase;
-				letter-spacing: 0.08em;
-			}
-
-			dd {
-				margin: 0;
-				color: var(--color-text-primary);
-				font-size: 0.9rem;
-			}
+		.commercial-context-strip .context-dot {
+			font-weight: 600;
+			color: var(--color-text-primary);
 		}
 
+		.commercial-context-strip .context-sep {
+			width: 1px;
+			height: 1em;
+			background: var(--dashboard-card-border);
+			opacity: 0.5;
+			flex-shrink: 0;
+		}
+
+		.commercial-context-strip .context-note {
+			width: 100%;
+			color: var(--color-text-muted);
+			font-size: 0.75rem;
+			margin-top: 0.15rem;
+		}
+
+		/* Compact health bar */
+		.commercial-dashboard__health-bar {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.6rem 1rem;
+			border: 1px solid var(--dashboard-card-border);
+			border-radius: 0.5rem;
+			background: var(--dashboard-card-bg);
+			font-size: 0.86rem;
+			color: var(--color-text-secondary);
+		}
+
+		.health-bar-sep {
+			width: 1px;
+			height: 1.2em;
+			background: var(--dashboard-card-border);
+			opacity: 0.4;
+			flex-shrink: 0;
+		}
+
+		.health-badge {
+			display: inline-flex;
+			align-items: center;
+			border-radius: 999px;
+			padding: 0.15rem 0.5rem;
+			border: 1px solid var(--dashboard-card-border);
+			color: var(--color-text-secondary);
+			font-size: 0.75rem;
+			font-weight: 700;
+			white-space: nowrap;
+		}
+
+		.health-badge--correct {
+			border-color: rgba(34, 197, 94, 0.45);
+			color: #22c55e;
+		}
+
+		.health-badge--attention {
+			border-color: rgba(245, 158, 11, 0.45);
+			color: #f59e0b;
+		}
+
+		.health-badge--error {
+			border-color: rgba(239, 68, 68, 0.45);
+			color: #ef4444;
+		}
+
+		.health-badge--safe-disabled {
+			border-color: rgba(107, 114, 128, 0.45);
+			color: var(--color-text-secondary);
+		}
+
+		/* Detailed health cards (Salud tab) */
 		.commercial-dashboard__health {
 			display: grid;
 			gap: 0.75rem;
@@ -639,7 +684,7 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 
 		.commercial-dashboard__table {
 			width: 100%;
-			min-width: 760px;
+			min-width: 640px;
 			border-collapse: collapse;
 
 			th,
@@ -685,9 +730,10 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			color: var(--color-text-muted);
 		}
 
+		/* Tab bar */
 		.commercial-tabs {
 			display: flex;
-			gap: 1rem;
+			gap: 0.5rem;
 			border-bottom: 1px solid var(--dashboard-card-border);
 			padding-bottom: 0.5rem;
 			margin-bottom: 1.5rem;
@@ -703,12 +749,12 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			cursor: pointer;
 			border-radius: 0.375rem;
 			transition: all 0.2s ease;
-			
+
 			&:hover {
 				color: var(--color-text-primary);
 				background: rgba(255, 255, 255, 0.05);
 			}
-			
+
 			&.active {
 				color: var(--color-action-primary);
 				background: rgba(59, 130, 246, 0.1);
@@ -718,7 +764,7 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 
 		.tab-content {
 			display: none;
-			
+
 			&.active {
 				display: block;
 			}
@@ -733,10 +779,10 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 			btn.addEventListener('click', () => {
 				const tabName = btn.getAttribute('data-tab');
 				if (!tabName) return;
-				
+
 				tabButtons.forEach((b) => b.classList.remove('active'));
 				tabContents.forEach((c) => c.classList.remove('active'));
-				
+
 				btn.classList.add('active');
 				const targetContent = document.getElementById(`tab-${tabName}`);
 				if (targetContent) {
@@ -746,4 +792,3 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 		});
 	</script>
 </DashboardLayout>
-
