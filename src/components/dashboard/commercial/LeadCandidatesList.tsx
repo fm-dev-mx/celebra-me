@@ -56,18 +56,23 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 		candidates.recentContext.length > 0;
 
 	return (
-		<div className="dashboard-card">
-			<h3>Resultados de Búsqueda</h3>
+		<div className="crm-search-results">
+			<h3>Resultados de búsqueda</h3>
 			<div className="candidates-list">
 				{/* Direct Match by Lead Code */}
 				{candidates.byLeadCode && (
 					<div className="candidate-group">
-						<h4>Coincidencia por Código de Lead</h4>
+						<h4>Coincidencia por código</h4>
 						<div className="candidate-item">
-							<p><strong>{candidates.byLeadCode.leadCode}</strong> — {candidates.byLeadCode.name || 'Sin nombre'}</p>
+							<p>
+								<strong>{candidates.byLeadCode.leadCode}</strong> —{' '}
+								{candidates.byLeadCode.name || 'Sin nombre'}
+							</p>
 							<p className="candidate-meta">
-								{candidates.byLeadCode.phone && `Tel: ${candidates.byLeadCode.phone} | `}
-								{candidates.byLeadCode.email && `Email: ${candidates.byLeadCode.email} | `}
+								{candidates.byLeadCode.phone &&
+									`Tel: ${candidates.byLeadCode.phone} | `}
+								{candidates.byLeadCode.email &&
+									`Email: ${candidates.byLeadCode.email} | `}
 								Canal: {displayChannel(candidates.byLeadCode.channel)}
 							</p>
 							<div className="candidate-actions">
@@ -75,17 +80,20 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 									<button
 										type="button"
 										className="btn-secondary"
-										onClick={() => onSelectCustomer(
-											{
-												id: candidates.byLeadCode!.customerId!,
-												displayName: candidates.byLeadCode!.name || 'Cliente',
-												email: candidates.byLeadCode!.email,
-												phoneE164: candidates.byLeadCode!.phoneE164,
-											},
-											candidates.byLeadCode!
-										)}
+										onClick={() =>
+											onSelectCustomer(
+												{
+													id: candidates.byLeadCode!.customerId!,
+													displayName:
+														candidates.byLeadCode!.name || 'Cliente',
+													email: candidates.byLeadCode!.email,
+													phoneE164: candidates.byLeadCode!.phoneE164,
+												},
+												candidates.byLeadCode!,
+											)
+										}
 									>
-										Seleccionar Cliente
+										Seleccionar cliente
 									</button>
 								) : (
 									<button
@@ -93,7 +101,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 										className="btn-primary"
 										onClick={() => onReconcileLead(candidates.byLeadCode!)}
 									>
-										Reconciliar y Crear Cliente
+										Crear ficha de cliente
 									</button>
 								)}
 							</div>
@@ -104,27 +112,33 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 				{/* Matches by Phone */}
 				{candidates.byPhone.length > 0 && (
 					<div className="candidate-group">
-						<h4>Coincidencias por Teléfono</h4>
+						<h4>Coincidencias por teléfono</h4>
 						{candidates.byPhone.map((lead) => (
 							<div key={lead.id} className="candidate-item">
-								<p><strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}</p>
-								<p className="candidate-meta">{lead.phone} | {displayChannel(lead.channel)}</p>
+								<p>
+									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
+								</p>
+								<p className="candidate-meta">
+									{lead.phone} | {displayChannel(lead.channel)}
+								</p>
 								<div className="candidate-actions">
 									{lead.customerId ? (
 										<button
 											type="button"
 											className="btn-secondary"
-											onClick={() => onSelectCustomer(
-												{
-													id: lead.customerId!,
-													displayName: lead.name || 'Cliente',
-													email: lead.email,
-													phoneE164: lead.phoneE164,
-												},
-												lead
-											)}
+											onClick={() =>
+												onSelectCustomer(
+													{
+														id: lead.customerId!,
+														displayName: lead.name || 'Cliente',
+														email: lead.email,
+														phoneE164: lead.phoneE164,
+													},
+													lead,
+												)
+											}
 										>
-											Seleccionar Cliente
+											Seleccionar cliente
 										</button>
 									) : (
 										<button
@@ -132,7 +146,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Reconciliar y Crear Cliente
+											Crear ficha de cliente
 										</button>
 									)}
 								</div>
@@ -144,27 +158,33 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 				{/* Matches by Email */}
 				{candidates.byEmail.length > 0 && (
 					<div className="candidate-group">
-						<h4>Coincidencias por Email</h4>
+						<h4>Coincidencias por correo</h4>
 						{candidates.byEmail.map((lead) => (
 							<div key={lead.id} className="candidate-item">
-								<p><strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}</p>
-								<p className="candidate-meta">{lead.email} | {displayChannel(lead.channel)}</p>
+								<p>
+									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
+								</p>
+								<p className="candidate-meta">
+									{lead.email} | {displayChannel(lead.channel)}
+								</p>
 								<div className="candidate-actions">
 									{lead.customerId ? (
 										<button
 											type="button"
 											className="btn-secondary"
-											onClick={() => onSelectCustomer(
-												{
-													id: lead.customerId!,
-													displayName: lead.name || 'Cliente',
-													email: lead.email,
-													phoneE164: lead.phoneE164,
-												},
-												lead
-											)}
+											onClick={() =>
+												onSelectCustomer(
+													{
+														id: lead.customerId!,
+														displayName: lead.name || 'Cliente',
+														email: lead.email,
+														phoneE164: lead.phoneE164,
+													},
+													lead,
+												)
+											}
 										>
-											Seleccionar Cliente
+											Seleccionar cliente
 										</button>
 									) : (
 										<button
@@ -172,7 +192,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Reconciliar y Crear Cliente
+											Crear ficha de cliente
 										</button>
 									)}
 								</div>
@@ -184,10 +204,12 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 				{/* Recent context Proposals */}
 				{candidates.recentContext.length > 0 && (
 					<div className="candidate-group">
-						<h4>Propuestas de Contexto Reciente</h4>
+						<h4>Contexto reciente</h4>
 						{candidates.recentContext.map((lead) => (
 							<div key={lead.id} className="candidate-item">
-								<p><strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}</p>
+								<p>
+									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
+								</p>
 								<p className="candidate-meta">
 									{lead.eventType && `Evento: ${lead.eventType} | `}
 									{lead.packageInterest && `Paquete: ${lead.packageInterest} | `}
@@ -198,17 +220,19 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 										<button
 											type="button"
 											className="btn-secondary"
-											onClick={() => onSelectCustomer(
-												{
-													id: lead.customerId!,
-													displayName: lead.name || 'Cliente',
-													email: lead.email,
-													phoneE164: lead.phoneE164,
-												},
-												lead
-											)}
+											onClick={() =>
+												onSelectCustomer(
+													{
+														id: lead.customerId!,
+														displayName: lead.name || 'Cliente',
+														email: lead.email,
+														phoneE164: lead.phoneE164,
+													},
+													lead,
+												)
+											}
 										>
-											Seleccionar Cliente
+											Seleccionar cliente
 										</button>
 									) : (
 										<button
@@ -216,7 +240,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Reconciliar y Crear Cliente
+											Crear ficha de cliente
 										</button>
 									)}
 								</div>
@@ -227,7 +251,9 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 
 				{/* Empty state */}
 				{!hasAnyCandidates && (
-					<p className="dashboard-form-help">No se encontraron prospectos coincidentes.</p>
+					<p className="dashboard-form-help">
+						No se encontraron prospectos coincidentes.
+					</p>
 				)}
 			</div>
 		</div>

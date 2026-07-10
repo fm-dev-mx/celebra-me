@@ -80,3 +80,16 @@
 		0 0 0 3px var(--dashboard-focus-ring),
 		0 0 12px var(--dashboard-focus-glow);
 }
+
+@mixin flex-row($gap: 1rem, $align: center) {
+	display: flex;
+	align-items: $align;
+	justify-content: space-between;
+	gap: $gap;
+}
+
+@mixin status-badge($state) {
+	background: var(--color-state-#{$state}-bg);
+	color: var(--color-state-#{$state}-text);
+	border: 1px solid var(--color-state-#{$state}-border);
+}

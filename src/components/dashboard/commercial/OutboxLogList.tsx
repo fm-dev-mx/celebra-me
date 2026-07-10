@@ -30,7 +30,7 @@ const STATUS_LABELS: Record<string, string> = {
 	sending: 'Enviando...',
 	sent: 'Enviado',
 	failed: 'Error de envío',
-	skipped: 'Ignorado por configuración segura',
+	skipped: 'Omitido · entrega desactivada',
 };
 
 const STATUS_ERROR_LABELS: Record<string, string> = {
@@ -46,11 +46,11 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 	onRequeueEvent,
 }) => {
 	return (
-		<div className="dashboard-card outbox-console">
+		<div className="outbox-console">
 			<div className="outbox-header">
 				<div>
-					<p className="sales-workspace__eyebrow">Consola técnica</p>
-					<h3>Cola de conversiones CAPI</h3>
+					<p className="sales-workspace__eyebrow">Diagnóstico</p>
+					<h3>Registro técnico de conversiones</h3>
 				</div>
 				{!deliveryDisabled && (
 					<button
@@ -59,14 +59,14 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 						disabled={processingConversions}
 						onClick={onProcessConversions}
 					>
-						{processingConversions ? 'Procesando...' : 'Procesar Cola'}
+						{processingConversions ? 'Procesando...' : 'Procesar cola'}
 					</button>
 				)}
 			</div>
 			{deliveryDisabled ? (
 				<div className="outbox-safe-notice" role="status">
 					<strong>CAPI está desactivado; no se envían eventos reales a Meta.</strong>
-					<span>No enviado por configuración segura.</span>
+					<span>Estos registros son solo diagnósticos y no requieren una acción.</span>
 				</div>
 			) : (
 				<p className="dashboard-form-help">
@@ -120,7 +120,7 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 												disabled={processingConversions}
 												onClick={() => onRequeueEvent(conv.id)}
 											>
-												Reintentar Envío
+												Reintentar envío
 											</button>
 										</div>
 									)}
