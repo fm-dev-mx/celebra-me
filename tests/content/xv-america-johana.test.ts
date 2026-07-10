@@ -98,7 +98,11 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(result.data.hero.backgroundImage).toMatchObject({ key: 'hero' });
 		expect(result.data.hero.backgroundImageDesktop).toMatchObject({ key: 'heroDesktop' });
 		expect(result.data.hero.portrait).toMatchObject({ key: 'portrait' });
-		expect(Object.hasOwn(result.data, 'music')).toBe(false);
+		expect(result.data.music).toMatchObject({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3',
+			autoPlay: false,
+			title: 'Viva la Vida — Coldplay',
+		});
 		expect(result.data.rsvp?.accessMode).toBe('hybrid');
 		expect(result.data.rsvp?.confirmationMode).toBe('api');
 		expect(result.data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
