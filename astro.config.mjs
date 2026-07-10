@@ -9,6 +9,16 @@ import { fileURLToPath } from 'url';
 import { loadEnv } from 'vite';
 
 const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
+
+// Propagate .env vars to process.env so server-only code (env.ts, auth-api)
+// can read them without a filesystem fallback. Vite 7+ does not do this
+// automatically for non-prefixed vars. Only vars not already set are applied.
+for (const [key, value] of Object.entries(env)) {
+  if (process.env[key] === undefined) {
+    process.env[key] = value;
+  }
+}
+
 const supabasePublicUrl = process.env.PUBLIC_SUPABASE_URL ?? env.PUBLIC_SUPABASE_URL;
 const supabaseStoragePathname = '/storage/v1/object/public/invitation-assets/**';
 const supabaseStorageRemotePattern = supabasePublicUrl
