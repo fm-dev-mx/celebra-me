@@ -22,7 +22,7 @@ const EVENT_TYPE_OPTIONS = [
 	{ value: 'primera-comunion', label: 'Primera comunión' },
 ];
 
-export const SalesWorkspace: React.FC = () => {
+const SalesWorkspace: React.FC = () => {
 	// Search states
 	const [searchLeadCode, setSearchLeadCode] = useState('');
 	const [searchPhone, setSearchPhone] = useState('');
@@ -93,7 +93,7 @@ export const SalesWorkspace: React.FC = () => {
 	};
 
 	// Perform lead/identity lookup
-	const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSearch: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
 		e.preventDefault();
 		setSearching(true);
 		setErrorMessage('');
@@ -141,7 +141,7 @@ export const SalesWorkspace: React.FC = () => {
 	};
 
 	// Create a new customer record from a lead (Reconcile)
-	const handleCreateCustomer = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleCreateCustomer: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
 		e.preventDefault();
 		if (!custName.trim()) {
 			setErrorMessage('El nombre del cliente es obligatorio.');
@@ -191,7 +191,7 @@ export const SalesWorkspace: React.FC = () => {
 	};
 
 	// Create Sales Order for selected customer
-	const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleCreateOrder: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
 		e.preventDefault();
 		if (!activeCustomer || !activeCustomer.id) {
 			setErrorMessage('Selecciona un cliente válido con un ID registrado antes de crear una orden.');
