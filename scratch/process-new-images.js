@@ -6,7 +6,7 @@ const ORIGINALS_DIR =
 const TARGET_DIR = 'src/assets/images/events/xv-america-johana';
 
 async function processImages() {
-	console.log('Processing America Johana new photos...');
+	console.info('Processing America Johana new photos...');
 
 	const tasks = [
 		{
@@ -23,7 +23,7 @@ async function processImages() {
 		const srcPath = path.join(ORIGINALS_DIR, task.src);
 		const destPath = path.join(TARGET_DIR, task.dest);
 
-		console.log(`Processing: ${srcPath} -> ${destPath}`);
+		console.info(`Processing: ${srcPath} -> ${destPath}`);
 		await sharp(srcPath)
 			.rotate() // Auto-rotates using EXIF orientation tag
 			.resize(1400, 1750, {
@@ -32,10 +32,10 @@ async function processImages() {
 			})
 			.webp({ quality: 80 })
 			.toFile(destPath);
-		console.log(`Saved ${task.dest}`);
+		console.info(`Saved ${task.dest}`);
 	}
 
-	console.log('Done processing!');
+	console.info('Done processing!');
 }
 
 processImages().catch(console.error);
