@@ -198,7 +198,7 @@ const LEAD_STATUS_LABELS: Record<string, string> = {
 
 const LEAD_CHANNEL_LABELS: Record<string, string> = {
 	contact_form: 'Formulario',
-	whatsapp: 'WhatsApp manual',
+	whatsapp: 'WhatsApp',
 	manual: 'Manual',
 };
 
