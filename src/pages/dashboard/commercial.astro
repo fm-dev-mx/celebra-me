@@ -14,6 +14,7 @@ import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import { getEnv } from '@/lib/server/env';
+import type { LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
@@ -62,6 +63,51 @@ const HEALTH_STATUS_LABELS: Record<string, string> = {
 	'safe-disabled': 'Desactivado de forma segura',
 };
 const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || status;
+
+const initialSalesLeads: LeadCandidate[] = dashboardData?.recentLeads.map((lead, index) => ({
+	id: lead.id || lead.lead_code || `recent-lead-${index}`,
+	leadCode: lead.lead_code || 'Sin código',
+	channel: lead.channel,
+	status: lead.status,
+	customerId: lead.customer_id,
+	name: lead.name,
+	email: lead.email,
+	phone: lead.phone,
+	phoneE164: lead.phone_e164,
+	eventType: lead.event_type,
+	packageInterest: lead.package_interest,
+	utmSource: lead.utm_source,
+	utmMedium: lead.utm_medium,
+	utmCampaign: lead.utm_campaign,
+	createdAt: lead.created_at,
+})) || [];
+
+const TECHNICAL_ATTRIBUTION = /(debug_|commercial_dashboard_health|localhost|127[.]0[.]0[.]1|[/]api[/]|[/]dashboard[/]|qa|test\d*|health)/i;
+const BUSINESS_TERMS: Record<string, string> = {
+	hero: 'Portada',
+	pricing: 'Precios',
+	whatsapp: 'WhatsApp',
+	contact: 'Contacto',
+	demo: 'Demo',
+	xv: 'XV años',
+	paid: 'Publicidad pagada',
+	organic: 'Orgánico',
+};
+const humanizeAttributionLabel = (label: string) => label
+	.split(/[/_-]+/)
+	.filter(Boolean)
+	.map((part) => BUSINESS_TERMS[part.toLowerCase()] || `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+	.join(' · ');
+const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico interno / técnico'): CountItem[] => {
+	const grouped = new Map<string, number>();
+	for (const item of items) {
+		const label = TECHNICAL_ATTRIBUTION.test(item.label)
+			? technicalLabel
+			: humanizeAttributionLabel(item.label);
+		grouped.set(label, (grouped.get(label) || 0) + item.count);
+	}
+	return [...grouped].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
+};
 ---
 
 <DashboardLayout title="Dashboard comercial">
@@ -72,7 +118,7 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 				<h2>Comercial</h2>
 			</div>
 			<p>
-				Resumen ejecutivo de ventas, atribución de marketing y salud del sistema.
+				Un espacio para priorizar seguimientos, gestionar órdenes y consultar el rendimiento comercial.
 			</p>
 		</header>
 
@@ -88,38 +134,52 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 
 		{dashboardData && viewModel && (
 			<>
-				<div class="commercial-context-strip">
-					<span class="context-dot">Datos históricos disponibles · Sin filtro activo</span>
-					<span class="context-sep"></span>
-					<span>Última actividad: {formatDateTime(dashboardData.dataContext.lastActivityAt)}</span>
-					<span class="context-sep"></span>
-					<span>Último tracking: {formatDateTime(dashboardData.dataContext.lastTrackingEventAt)}</span>
-					<span class="context-sep"></span>
-					<span>Última actualización: {formatDateTime(dashboardData.dataContext.lastCommercialUpdateAt)}</span>
-					<span class="context-note">{dashboardData.dataContext.limitNotice}</span>
+				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">
+					<button class="tab-btn active" id="commercial-tab-ventas" role="tab" data-tab="ventas" aria-controls="tab-ventas" aria-selected="true">Ventas</button>
+					<button class="tab-btn" id="commercial-tab-resumen" role="tab" data-tab="resumen" aria-controls="tab-resumen" aria-selected="false" tabindex="-1">Resumen</button>
+					<button class="tab-btn" id="commercial-tab-atribucion" role="tab" data-tab="atribucion" aria-controls="tab-atribucion" aria-selected="false" tabindex="-1">Atribución</button>
+					<button class="tab-btn" id="commercial-tab-salud" role="tab" data-tab="salud" aria-controls="tab-salud" aria-selected="false" tabindex="-1">Salud</button>
 				</div>
 
-				<div class="commercial-dashboard__health-bar">
-					<span>Tracking:</span>
-					<span class:list={['health-badge', `health-badge--${viewModel.health.tracking.status}`]}>{labelHealthStatus(viewModel.health.tracking.status)}</span>
-					<span class="health-bar-sep"></span>
-					<span>CAPI:</span>
-					<span class:list={['health-badge', `health-badge--${viewModel.health.capi.status}`]}>{labelHealthStatus(viewModel.health.capi.status)}</span>
-					<span class="health-bar-sep"></span>
-					<span>Datos comerciales:</span>
-					<span class:list={['health-badge', `health-badge--${viewModel.health.commercial.status}`]}>{labelHealthStatus(viewModel.health.commercial.status)}</span>
-				</div>
+				<div class="tab-content" id="tab-resumen" role="tabpanel" aria-labelledby="commercial-tab-resumen" tabindex="0" hidden>
+					<section class="commercial-dashboard__priority">
+						<header class="commercial-dashboard__quality-header">
+							<p class="commercial-dashboard__eyebrow">Hoy</p>
+							<h3>Prioridades comerciales</h3>
+							<p>Empieza por los seguimientos y cobros que pueden mover una venta.</p>
+						</header>
+						<div class="commercial-dashboard__priority-list">
+							<article class="commercial-dashboard__priority-item">
+								<span>Leads por revisar</span>
+								<strong>{formatCount(dashboardData.recentLeads.length)}</strong>
+								<small>Abre Ventas para buscar un prospecto y continuar el seguimiento.</small>
+							</article>
+							<article class="commercial-dashboard__priority-item">
+								<span>Órdenes con saldo pendiente</span>
+								<strong>{formatCount(dashboardData.ordersWithPendingBalance)}</strong>
+								<small>Consulta cada cliente para registrar anticipos o confirmar su cobro.</small>
+							</article>
+							<article class="commercial-dashboard__priority-item">
+								<span>Anticipos registrados</span>
+								<strong>{formatCount(dashboardData.sales.depositsPaid)}</strong>
+								<small>{formatCurrency(dashboardData.sales.totalRevenue, 0)} registrados en órdenes con anticipo.</small>
+							</article>
+							<article class:list={['commercial-dashboard__priority-item', viewModel.activeAlerts > 0 ? 'commercial-dashboard__priority-item--alert' : '']}>
+								<span>Alertas comerciales</span>
+								<strong>{formatCount(viewModel.activeAlerts)}</strong>
+								<small>{viewModel.activeAlerts > 0 ? 'Revisa los pendientes antes de iniciar nuevas gestiones.' : 'No hay alertas comerciales en los datos cargados.'}</small>
+							</article>
+						</div>
+						<button type="button" class="btn-primary commercial-dashboard__sales-cta" data-open-tab="ventas">Abrir espacio de ventas</button>
+					</section>
 
-				<div class="commercial-tabs">
-					<button class="tab-btn active" data-tab="resumen">Resumen</button>
-					<button class="tab-btn" data-tab="ventas">Ventas</button>
-					<button class="tab-btn" data-tab="atribucion">Atribución</button>
-					<button class="tab-btn" data-tab="salud">Salud del sistema</button>
-				</div>
-
-				<div class="tab-content active" id="tab-resumen">
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Indicadores del periodo</h3>
+							<p>Contexto de ventas e ingresos para acompañar las prioridades.</p>
+						</header>
 					<div class="commercial-dashboard__metrics commercial-dashboard__metrics--executive">
-						{viewModel.executiveMetrics.map((card) => (
+							{viewModel.executiveMetrics.filter((card) => card.id !== 'commercialAlerts').map((card) => (
 							<article class:list={['commercial-dashboard__metric', card.id === 'commercialAlerts' && viewModel.activeAlerts > 0 ? 'commercial-dashboard__metric--alert' : '']}>
 								<span>{card.label}</span>
 								<strong>{card.value}</strong>
@@ -127,9 +187,11 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 							</article>
 						))}
 					</div>
+					</section>
 
 					<section class="dashboard-card">
 						<h3>Leads recientes</h3>
+						<p class="commercial-dashboard__card-help">Consulta los contactos más recientes y continúa su seguimiento desde Ventas.</p>
 						<div class="commercial-dashboard__table-wrap">
 							<table class="commercial-dashboard__table">
 								<thead>
@@ -165,83 +227,22 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 					</section>
 				</div>
 
-				<div class="tab-content" id="tab-ventas">
-					<SalesWorkspace client:load />
+				<div class="tab-content active" id="tab-ventas" role="tabpanel" aria-labelledby="commercial-tab-ventas" tabindex="0">
+					<SalesWorkspace client:load initialLeads={initialSalesLeads} />
 				</div>
 
-				<div class="tab-content" id="tab-atribucion">
+				<div class="tab-content" id="tab-atribucion" role="tabpanel" aria-labelledby="commercial-tab-atribucion" tabindex="0" hidden>
 					<section class="commercial-dashboard__quality">
 						<header class="commercial-dashboard__quality-header">
-							<h3>Tráfico e interacción</h3>
-							<p>Canales de tráfico, contenido interactivo y rendimiento de demos.</p>
+							<p class="commercial-dashboard__eyebrow">Decisión comercial</p>
+							<h3>De dónde llegan los leads y qué se está vendiendo</h3>
+							<p>Usa esta lectura para enfocar campañas, paquetes y seguimiento.</p>
 						</header>
 						<div class="commercial-dashboard__grid">
-							<section class="dashboard-card">
-								<h3>Tráfico</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.campaigns).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-
-							<section class="dashboard-card">
-								<h3>Interacción</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.sections).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-
-							<section class="dashboard-card">
-								<h3>CTAs</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.topCtas).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-
-							<section class="dashboard-card">
-								<h3>Demos</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.topDemos).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-
-							<section class="dashboard-card">
-								<h3>Desplazamiento</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.scrollDepth).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-						</div>
-					</section>
-
-					<section class="commercial-dashboard__quality">
-						<header class="commercial-dashboard__quality-header">
-							<h3>Leads e ingresos</h3>
-							<p>Distribución de leads por estado, canal y rendimiento por paquete.</p>
-						</header>
-						<div class="commercial-dashboard__grid">
-							<section class="dashboard-card">
-								<h3>Leads por estado</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.leadsByStatus).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
-							</section>
-
 							<section class="dashboard-card">
 								<h3>Leads por canal</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.leadsByChannel).map((item) => (
+									{renderList(presentAttribution(dashboardData.leadsByChannel, 'Canal interno / técnico')).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -250,7 +251,7 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 							<section class="dashboard-card">
 								<h3>Ingresos por paquete / tipo</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(dashboardData.topRevenueByEventType).map((item) => (
+									{renderList(presentAttribution(dashboardData.topRevenueByEventType, 'Ventas internas / técnicas')).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCurrency(item.count, 0)}</strong></li>
 									))}
 								</ul>
@@ -264,11 +265,82 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 									))}
 								</ul>
 							</section>
+
+							<section class="dashboard-card">
+								<h3>Leads por estado</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.leadsByStatus).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
 						</div>
 					</section>
+
+					<details class="commercial-dashboard__details">
+						<summary>Ver detalle de intención e interacción</summary>
+					<section class="commercial-dashboard__quality">
+						<header class="commercial-dashboard__quality-header">
+							<h3>Señales de interés</h3>
+							<p>Detalle de tráfico, navegación y contenido que ayuda a explicar la intención.</p>
+						</header>
+						<div class="commercial-dashboard__grid">
+							<section class="dashboard-card">
+								<h3>Tráfico</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(presentAttribution(dashboardData.campaigns)).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Interacción</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(presentAttribution(dashboardData.sections, 'Interacción interna / técnica')).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>CTAs</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(presentAttribution(dashboardData.topCtas, 'Acción interna / técnica')).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+
+							<section class="dashboard-card">
+								<h3>Demos</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(presentAttribution(dashboardData.topDemos, 'Demo interna / técnica')).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+							<section class="dashboard-card">
+								<h3>Desplazamiento</h3>
+								<ul class="commercial-dashboard__list">
+									{renderList(dashboardData.scrollDepth).map((item) => (
+										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
+									))}
+								</ul>
+							</section>
+						</div>
+					</section>
+					</details>
 				</div>
 
-				<div class="tab-content" id="tab-salud">
+				<div class="tab-content" id="tab-salud" role="tabpanel" aria-labelledby="commercial-tab-salud" tabindex="0" hidden>
+					<div class="commercial-context-strip">
+						<span class="context-dot">Datos históricos disponibles · Sin filtro activo</span>
+						<span>Última actividad: {formatDateTime(dashboardData.dataContext.lastActivityAt)}</span>
+						<span>Último tracking: {formatDateTime(dashboardData.dataContext.lastTrackingEventAt)}</span>
+						<span>Última actualización: {formatDateTime(dashboardData.dataContext.lastCommercialUpdateAt)}</span>
+						<span class="context-note">{dashboardData.dataContext.limitNotice}</span>
+					</div>
 					<section class="commercial-dashboard__health">
 						<header class="commercial-dashboard__quality-header">
 							<h3>Diagnóstico del sistema</h3>
@@ -341,6 +413,8 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 						</div>
 					</section>
 
+					<details class="commercial-dashboard__details">
+						<summary>Ver detalle técnico de tracking y cola CAPI</summary>
 					<section class="commercial-dashboard__quality">
 						<header class="commercial-dashboard__quality-header">
 							<h3>Calidad del seguimiento</h3>
@@ -361,428 +435,65 @@ const labelHealthStatus = (status: string) => HEALTH_STATUS_LABELS[status] || st
 						</div>
 					</section>
 
-					<CapiOutboxPanel client:load initialConversions={initialConversions} />
+					<CapiOutboxPanel client:load initialConversions={initialConversions} deliveryDisabled={viewModel.health.capi.status === 'safe-disabled'} />
+					</details>
 				</div>
 			</>
 		)}
 	</section>
 
 
-	<style lang="scss">
-		.commercial-dashboard {
-			display: grid;
-			gap: 1.5rem;
-		}
-
-		.commercial-dashboard__header {
-			display: flex;
-			justify-content: space-between;
-			gap: 1.5rem;
-			align-items: end;
-
-			h2 {
-				margin: 0;
-				font-size: clamp(1.9rem, 3vw, 2.7rem);
-				color: var(--color-text-primary);
-			}
-
-			p {
-				max-width: 46rem;
-				margin: 0;
-				color: var(--color-text-secondary);
-				line-height: 1.6;
-			}
-		}
-
-		.commercial-dashboard__eyebrow {
-			margin: 0 0 0.35rem;
-			color: var(--color-text-muted);
-			text-transform: uppercase;
-			font-size: 0.72rem;
-			letter-spacing: 0.14em;
-		}
-
-		.commercial-dashboard__metrics,
-		.commercial-dashboard__grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-			gap: 1rem;
-		}
-
-		.commercial-dashboard__metrics--executive {
-			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		}
-
-		.commercial-dashboard__metric {
-			padding: 1.25rem;
-			border: 1px solid var(--dashboard-card-border);
-			border-radius: 0.75rem;
-			background: var(--dashboard-card-bg);
-			box-shadow: var(--shadow-subtle);
-
-			span {
-				display: block;
-				color: var(--color-text-secondary);
-				font-size: 0.86rem;
-			}
-
-			strong {
-				display: block;
-				margin-top: 0.45rem;
-				font-size: 2rem;
-				color: var(--color-action-primary);
-			}
-
-			small {
-				display: block;
-				margin-top: 0.45rem;
-				color: var(--color-text-muted);
-				font-size: 0.78rem;
-				line-height: 1.4;
-			}
-		}
-
-		.commercial-dashboard__metric--muted strong {
-			color: var(--color-text-secondary);
-		}
-
-		.commercial-dashboard__metric--alert strong {
-			color: #f59e0b;
-		}
-
-		.commercial-dashboard__list {
-			display: grid;
-			gap: 0.7rem;
-			padding: 0;
-			margin: 1rem 0 0;
-			list-style: none;
-
-			li {
-				display: flex;
-				justify-content: space-between;
-				gap: 1rem;
-				padding-bottom: 0.7rem;
-				border-bottom: 1px solid var(--dashboard-card-border);
-				color: var(--color-text-secondary);
-			}
-
-			strong {
-				color: var(--color-text-primary);
-			}
-		}
-
-		.commercial-dashboard__card-help {
-			margin: 0.35rem 0 0;
-			color: var(--color-text-muted);
-			font-size: 0.82rem;
-			line-height: 1.45;
-		}
-
-		/* Compact data context strip */
-		.commercial-context-strip {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 0.5rem;
-			padding: 0.6rem 1rem;
-			border: 1px solid var(--dashboard-card-border);
-			border-radius: 0.5rem;
-			background: var(--dashboard-card-bg);
-			font-size: 0.8rem;
-			color: var(--color-text-secondary);
-			line-height: 1.4;
-		}
-
-		.commercial-context-strip .context-dot {
-			font-weight: 600;
-			color: var(--color-text-primary);
-		}
-
-		.commercial-context-strip .context-sep {
-			width: 1px;
-			height: 1em;
-			background: var(--dashboard-card-border);
-			opacity: 0.5;
-			flex-shrink: 0;
-		}
-
-		.commercial-context-strip .context-note {
-			width: 100%;
-			color: var(--color-text-muted);
-			font-size: 0.75rem;
-			margin-top: 0.15rem;
-		}
-
-		/* Compact health bar */
-		.commercial-dashboard__health-bar {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 0.5rem;
-			padding: 0.6rem 1rem;
-			border: 1px solid var(--dashboard-card-border);
-			border-radius: 0.5rem;
-			background: var(--dashboard-card-bg);
-			font-size: 0.86rem;
-			color: var(--color-text-secondary);
-		}
-
-		.health-bar-sep {
-			width: 1px;
-			height: 1.2em;
-			background: var(--dashboard-card-border);
-			opacity: 0.4;
-			flex-shrink: 0;
-		}
-
-		.health-badge {
-			display: inline-flex;
-			align-items: center;
-			border-radius: 999px;
-			padding: 0.15rem 0.5rem;
-			border: 1px solid var(--dashboard-card-border);
-			color: var(--color-text-secondary);
-			font-size: 0.75rem;
-			font-weight: 700;
-			white-space: nowrap;
-		}
-
-		.health-badge--correct {
-			border-color: rgba(34, 197, 94, 0.45);
-			color: #22c55e;
-		}
-
-		.health-badge--attention {
-			border-color: rgba(245, 158, 11, 0.45);
-			color: #f59e0b;
-		}
-
-		.health-badge--error {
-			border-color: rgba(239, 68, 68, 0.45);
-			color: #ef4444;
-		}
-
-		.health-badge--safe-disabled {
-			border-color: rgba(107, 114, 128, 0.45);
-			color: var(--color-text-secondary);
-		}
-
-		/* Detailed health cards (Salud tab) */
-		.commercial-dashboard__health {
-			display: grid;
-			gap: 0.75rem;
-		}
-
-		.commercial-dashboard__health-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-			gap: 1rem;
-		}
-
-		.commercial-dashboard__health-card {
-			display: grid;
-			align-content: start;
-			gap: 0.8rem;
-
-			p {
-				margin: 0;
-				color: var(--color-text-secondary);
-				font-size: 0.86rem;
-				line-height: 1.5;
-			}
-		}
-
-		.commercial-dashboard__health-heading {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: 0.75rem;
-
-			h4 {
-				margin: 0;
-				color: var(--color-text-primary);
-				font-size: 0.95rem;
-			}
-		}
-
-		.commercial-dashboard__status {
-			display: inline-flex;
-			align-items: center;
-			border-radius: 999px;
-			padding: 0.2rem 0.55rem;
-			border: 1px solid var(--dashboard-card-border);
-			color: var(--color-text-secondary);
-			font-size: 0.72rem;
-			font-weight: 700;
-			white-space: nowrap;
-		}
-
-		.commercial-dashboard__status--correct {
-			border-color: rgba(34, 197, 94, 0.45);
-			color: #22c55e;
-		}
-
-		.commercial-dashboard__status--attention {
-			border-color: rgba(245, 158, 11, 0.45);
-			color: #f59e0b;
-		}
-
-		.commercial-dashboard__status--error {
-			border-color: rgba(239, 68, 68, 0.45);
-			color: #ef4444;
-		}
-
-		.commercial-dashboard__status--safe-disabled {
-			border-color: rgba(107, 114, 128, 0.45);
-			color: var(--color-text-secondary);
-		}
-
-		.commercial-dashboard__health-list {
-			display: grid;
-			gap: 0.6rem;
-			margin: 0;
-			padding: 0;
-			list-style: none;
-
-			li {
-				display: grid;
-				grid-template-columns: 1fr auto;
-				gap: 0.15rem 0.75rem;
-				padding-top: 0.6rem;
-				border-top: 1px solid var(--dashboard-card-border);
-			}
-
-			span {
-				color: var(--color-text-secondary);
-				font-size: 0.86rem;
-			}
-
-			strong {
-				color: var(--color-text-primary);
-				font-size: 0.9rem;
-			}
-
-			small {
-				grid-column: 1 / -1;
-				color: var(--color-text-muted);
-				font-size: 0.76rem;
-				line-height: 1.35;
-			}
-		}
-
-		.commercial-dashboard__health-list--compact li {
-			grid-template-columns: 1fr auto;
-		}
-
-		.commercial-dashboard__table-wrap {
-			overflow-x: auto;
-		}
-
-		.commercial-dashboard__table {
-			width: 100%;
-			min-width: 640px;
-			border-collapse: collapse;
-
-			th,
-			td {
-				padding: 0.85rem 0.75rem;
-				text-align: left;
-				border-bottom: 1px solid var(--dashboard-card-border);
-				color: var(--color-text-secondary);
-			}
-
-			th {
-				color: var(--color-text-muted);
-				font-size: 0.72rem;
-				text-transform: uppercase;
-				letter-spacing: 0.08em;
-			}
-		}
-
-		@media (max-width: 760px) {
-			.commercial-dashboard__header {
-				display: grid;
-				align-items: start;
-			}
-		}
-
-		.commercial-dashboard__quality {
-			margin-top: 1rem;
-		}
-
-		.commercial-dashboard__quality-header {
-			margin-bottom: 0.75rem;
-		}
-
-		.commercial-dashboard__quality-header h3 {
-			margin: 0 0 0.25rem;
-			font-size: 0.95rem;
-			color: var(--color-text-primary);
-		}
-
-		.commercial-dashboard__quality-header p {
-			margin: 0;
-			font-size: 0.82rem;
-			color: var(--color-text-muted);
-		}
-
-		/* Tab bar */
-		.commercial-tabs {
-			display: flex;
-			gap: 0.5rem;
-			border-bottom: 1px solid var(--dashboard-card-border);
-			padding-bottom: 0.5rem;
-			margin-bottom: 1.5rem;
-		}
-
-		.tab-btn {
-			background: none;
-			border: none;
-			padding: 0.5rem 1rem;
-			color: var(--color-text-secondary);
-			font-size: 0.9rem;
-			font-weight: 500;
-			cursor: pointer;
-			border-radius: 0.375rem;
-			transition: all 0.2s ease;
-
-			&:hover {
-				color: var(--color-text-primary);
-				background: rgba(255, 255, 255, 0.05);
-			}
-
-			&.active {
-				color: var(--color-action-primary);
-				background: rgba(59, 130, 246, 0.1);
-				font-weight: bold;
-			}
-		}
-
-		.tab-content {
-			display: none;
-
-			&.active {
-				display: block;
-			}
-		}
-	</style>
 
 	<script>
-		const tabButtons = document.querySelectorAll('.tab-btn');
+		const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
 		const tabContents = document.querySelectorAll('.tab-content');
+		const tabs = Array.from(tabButtons);
+
+		const activateTab = (button: HTMLButtonElement) => {
+			const tabName = button.getAttribute('data-tab');
+			if (!tabName) return;
+
+			tabButtons.forEach((tabButton) => {
+				const isActive = tabButton === button;
+				tabButton.classList.toggle('active', isActive);
+				tabButton.setAttribute('aria-selected', String(isActive));
+				tabButton.setAttribute('tabindex', isActive ? '0' : '-1');
+			});
+
+			tabContents.forEach((content) => {
+				const isActive = content.id === `tab-${tabName}`;
+				content.classList.toggle('active', isActive);
+				content.toggleAttribute('hidden', !isActive);
+			});
+		};
 
 		tabButtons.forEach((btn) => {
 			btn.addEventListener('click', () => {
-				const tabName = btn.getAttribute('data-tab');
-				if (!tabName) return;
+				activateTab(btn);
+			});
 
-				tabButtons.forEach((b) => b.classList.remove('active'));
-				tabContents.forEach((c) => c.classList.remove('active'));
+			btn.addEventListener('keydown', (event: KeyboardEvent) => {
+				if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+				event.preventDefault();
+				const currentIndex = tabs.indexOf(btn);
+				const nextIndex = event.key === 'Home'
+					? 0
+					: event.key === 'End'
+						? tabs.length - 1
+						: (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+				const nextTab = tabs[nextIndex];
+				activateTab(nextTab);
+				nextTab.focus();
+			});
+		});
 
-				btn.classList.add('active');
-				const targetContent = document.getElementById(`tab-${tabName}`);
-				if (targetContent) {
-					targetContent.classList.add('active');
+		document.querySelectorAll<HTMLButtonElement>('[data-open-tab]').forEach((trigger) => {
+			trigger.addEventListener('click', () => {
+				const target = trigger.dataset.openTab;
+				const targetButton = tabs.find((tab) => tab.dataset.tab === target);
+				if (targetButton) {
+					activateTab(targetButton);
+					targetButton.focus();
 				}
 			});
 		});

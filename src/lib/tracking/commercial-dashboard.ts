@@ -22,8 +22,10 @@ export interface CommercialEventRow {
 }
 
 export interface CommercialLeadRow {
+	id?: string;
 	status: string;
 	channel: string;
+	customer_id?: string | null;
 	utm_source?: string | null;
 	utm_medium?: string | null;
 	utm_campaign?: string | null;
@@ -31,6 +33,7 @@ export interface CommercialLeadRow {
 	name?: string;
 	email?: string | null;
 	phone?: string | null;
+	phone_e164?: string | null;
 	event_type?: string | null;
 	package_interest?: string | null;
 	created_at?: string;
@@ -121,13 +124,13 @@ export interface CommercialDashboardSummary {
 	lastConversionAttemptAt: string | null;
 	dataContext: DataContextSummary;
 	/** Tracking quality — consent distribution */
-		trackingQuality: {
-			totalEvents: number;
-			analyticsConsented: number;
-			analyticsBlocked: number;
-			marketingConsented: number;
-			marketingBlocked: number;
-		};
+	trackingQuality: {
+		totalEvents: number;
+		analyticsConsented: number;
+		analyticsBlocked: number;
+		marketingConsented: number;
+		marketingBlocked: number;
+	};
 }
 
 export type HealthSeverity = 'correct' | 'attention' | 'error' | 'safe-disabled';
@@ -508,9 +511,10 @@ export function summarizeCommercialAnalytics(
 			orders: orders.length,
 			depositsPaid: salesMetrics.depositsPaid,
 			totalRevenue: salesMetrics.totalRevenue,
-			averageTicket: salesMetrics.depositsPaid > 0
-				? Math.round(salesMetrics.totalRevenue / salesMetrics.depositsPaid)
-				: 0,
+			averageTicket:
+				salesMetrics.depositsPaid > 0
+					? Math.round(salesMetrics.totalRevenue / salesMetrics.depositsPaid)
+					: 0,
 			conversionLeadToOrder,
 		},
 		ordersByStatus: toCountItems(salesMetrics.ordersByStatus),
@@ -603,14 +607,6 @@ function buildCommercialWarnings(summary: CommercialDashboardSummary): Commercia
 			count: summary.ordersWithPendingBalance,
 			severity: 'attention',
 			helper: 'Revisa seguimiento comercial o pago final cuando aplique.',
-		});
-	}
-	if (summary.ordersWithDepositMissingCapi > 0) {
-		warnings.push({
-			label: 'Órdenes con anticipo sin evento CAPI',
-			count: summary.ordersWithDepositMissingCapi,
-			severity: 'attention',
-			helper: 'Hay dinero registrado sin una fila de conversión asociada.',
 		});
 	}
 	if (summary.ordersWithInconsistentValues > 0) {
@@ -762,7 +758,10 @@ export function buildCommercialDashboardViewModel(
 			id: 'commercialAlerts',
 			label: 'Alertas comerciales',
 			value: formatCount(commercialWarnings.length),
-			helper: commercialWarnings.length > 0 ? 'Revisa la pestaña Salud del sistema para más detalles.' : undefined,
+			helper:
+				commercialWarnings.length > 0
+					? 'Revisa la pestaña Salud del sistema para más detalles.'
+					: undefined,
 		},
 	];
 
@@ -819,6 +818,12 @@ export function buildCommercialDashboardViewModel(
 						value: formatCount(conversionCounts.failed),
 					},
 					{
+						label: 'Órdenes sin fila de conversión',
+						status: summary.ordersWithDepositMissingCapi > 0 ? 'attention' : 'correct',
+						value: formatCount(summary.ordersWithDepositMissingCapi),
+						helper: 'Diagnóstico técnico; no forma parte de las alertas comerciales.',
+					},
+					{
 						label: 'Enviados',
 						status: 'correct',
 						value: formatCount(conversionCounts.sent),
@@ -845,4 +850,3 @@ export function buildCommercialDashboardViewModel(
 		},
 	};
 }
-

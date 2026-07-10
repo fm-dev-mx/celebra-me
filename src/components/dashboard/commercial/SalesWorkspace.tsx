@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
-import { dashboardApi } from '@/lib/dashboard/api-client';
-import LeadCandidatesList, { type LeadCandidate, type Customer } from '@/components/dashboard/commercial/LeadCandidatesList';
-import CustomerOrdersBox, { type SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
-import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
+
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import CustomerOrdersBox, {
+	type SalesOrder,
+} from '@/components/dashboard/commercial/CustomerOrdersBox';
+import LeadCandidatesList, {
+	type Customer,
+	type LeadCandidate,
+} from '@/components/dashboard/commercial/LeadCandidatesList';
+import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
+import { dashboardApi } from '@/lib/dashboard/api-client';
+import {
+	labelLeadChannel,
+	labelLeadStatus,
+} from '@/lib/tracking/commercial-dashboard';
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
 	byPhone: LeadCandidate[];
 	byEmail: LeadCandidate[];
 	recentContext: LeadCandidate[];
+}
+
+interface SalesWorkspaceProps {
+	initialLeads: LeadCandidate[];
 }
 
 const EVENT_TYPE_OPTIONS = [
@@ -22,196 +36,189 @@ const EVENT_TYPE_OPTIONS = [
 	{ value: 'primera-comunion', label: 'Primera comunión' },
 ];
 
-const SalesWorkspace: React.FC = () => {
-	// Search states
+
+
+function getSuggestedAction(lead: LeadCandidate): string {
+	if (!lead.customerId) return 'Crear ficha de cliente';
+	if (lead.status === 'new') return 'Contactar y calificar';
+	if (lead.status === 'contacted') return 'Preparar cotización';
+	if (lead.status === 'quoted') return 'Dar seguimiento a cotización';
+	return 'Revisar historial comercial';
+}
+
+const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const [searchLeadCode, setSearchLeadCode] = useState('');
 	const [searchPhone, setSearchPhone] = useState('');
 	const [searchEmail, setSearchEmail] = useState('');
 	const [searching, setSearching] = useState(false);
 	const [candidates, setCandidates] = useState<ReconciliationResult | null>(null);
-
-	// Selection states
 	const [selectedLead, setSelectedLead] = useState<LeadCandidate | null>(null);
 	const [activeCustomer, setActiveCustomer] = useState<Customer | null>(null);
 	const [customerOrders, setCustomerOrders] = useState<SalesOrder[]>([]);
-
-	// Form states - Create Customer
 	const [custName, setCustName] = useState('');
 	const [custEmail, setCustEmail] = useState('');
 	const [custPhone, setCustPhone] = useState('');
 	const [creatingCustomer, setCreatingCustomer] = useState(false);
-
-	// Form states - Create Order
+	const [customerToolOpen, setCustomerToolOpen] = useState(false);
 	const [orderEventType, setOrderEventType] = useState('xv');
 	const [orderPackageName, setOrderPackageName] = useState('');
 	const [orderTotalAmount, setOrderTotalAmount] = useState('');
 	const [orderDepositAmount, setOrderDepositAmount] = useState('');
 	const [creatingOrder, setCreatingOrder] = useState(false);
-
-	// Form states - Mark Deposit Paid (active order ID -> amount)
 	const [depositAmounts, setDepositAmounts] = useState<Record<string, string>>({});
 	const [markingDepositPaid, setMarkingDepositPaid] = useState<Record<string, boolean>>({});
-
-	// General feedback
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
-
-	// CRM Timeline
 	const [timelineEntries, setTimelineEntries] = useState<CrmTimelineEntry[]>([]);
 	const [loadingTimeline, setLoadingTimeline] = useState(false);
 
-	// Fetch active customer's orders
 	const fetchCustomerOrders = async (customerId: string) => {
 		try {
-			const res = await dashboardApi.get<{ data: SalesOrder[] }>(
-				`/api/dashboard/commercial/orders?customerId=${encodeURIComponent(customerId)}`
+			const response = await dashboardApi.get<{ data: SalesOrder[] }>(
+				`/api/dashboard/commercial/orders?customerId=${encodeURIComponent(customerId)}`,
 			);
-			if (res.ok) {
-				setCustomerOrders(res.data.data);
-			}
-		} catch (err) {
-			console.error('Error fetching orders:', err);
+			if (response.ok) setCustomerOrders(response.data.data);
+		} catch (error) {
+			console.error('Error fetching orders:', error);
 		}
 	};
 
-	// Fetch CRM timeline for a customer
 	const fetchTimeline = async (customerId: string) => {
 		setLoadingTimeline(true);
 		try {
-			const res = await dashboardApi.get<{ data: CrmTimelineEntry[] }>(
-				`/api/dashboard/commercial/timeline?customerId=${encodeURIComponent(customerId)}`
+			const response = await dashboardApi.get<{ data: CrmTimelineEntry[] }>(
+				`/api/dashboard/commercial/timeline?customerId=${encodeURIComponent(customerId)}`,
 			);
-			if (res.ok) {
-				setTimelineEntries(res.data.data);
-			}
-		} catch (err) {
-			console.error('Error fetching timeline:', err);
+			setTimelineEntries(response.ok ? response.data.data : []);
+		} catch (error) {
+			console.error('Error fetching timeline:', error);
 			setTimelineEntries([]);
 		} finally {
 			setLoadingTimeline(false);
 		}
 	};
 
-	// Perform lead/identity lookup
-	const handleSearch: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
-		e.preventDefault();
+	const handleSelectCustomer = (customer: Customer, associatedLead?: LeadCandidate) => {
+		setActiveCustomer(customer);
+		setErrorMessage('');
+		setSuccessMessage('');
+		if (associatedLead) setSelectedLead(associatedLead);
+		void fetchCustomerOrders(customer.id);
+		void fetchTimeline(customer.id);
+	};
+
+	const handleReconcileLead = (lead: LeadCandidate) => {
+		setActiveCustomer(null);
+		setSelectedLead(lead);
+		setCustName(lead.name || '');
+		setCustEmail(lead.email || '');
+		setCustPhone(lead.phone || '');
+		setCustomerToolOpen(true);
+	};
+
+	const handleQueueSelect = (lead: LeadCandidate) => {
+		setSelectedLead(lead);
+		setErrorMessage('');
+		setSuccessMessage('');
+		if (lead.customerId) {
+			handleSelectCustomer(
+				{
+					id: lead.customerId,
+					displayName: lead.name || 'Cliente sin nombre',
+					email: lead.email,
+					phoneE164: lead.phoneE164,
+				},
+				lead,
+			);
+		} else {
+			handleReconcileLead(lead);
+		}
+	};
+
+	const handleSearch: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
+		event.preventDefault();
+		const queryParts: string[] = [];
+		if (searchLeadCode.trim())
+			queryParts.push(`leadCode=${encodeURIComponent(searchLeadCode.trim())}`);
+		if (searchPhone.trim()) queryParts.push(`phone=${encodeURIComponent(searchPhone.trim())}`);
+		if (searchEmail.trim()) queryParts.push(`email=${encodeURIComponent(searchEmail.trim())}`);
+		if (queryParts.length === 0) {
+			setErrorMessage('Especifica al menos un código, teléfono o correo.');
+			return;
+		}
 		setSearching(true);
 		setErrorMessage('');
 		setSuccessMessage('');
 		setCandidates(null);
-
-		const queryParts: string[] = [];
-		if (searchLeadCode.trim()) queryParts.push(`leadCode=${encodeURIComponent(searchLeadCode.trim())}`);
-		if (searchPhone.trim()) queryParts.push(`phone=${encodeURIComponent(searchPhone.trim())}`);
-		if (searchEmail.trim()) queryParts.push(`email=${encodeURIComponent(searchEmail.trim())}`);
-
-		if (queryParts.length === 0) {
-			setErrorMessage('Especifica al menos un criterio de búsqueda (código de lead, teléfono o email).');
-			setSearching(false);
-			return;
-		}
-
 		try {
-			const res = await dashboardApi.get<{ data: ReconciliationResult }>(
-				`/api/dashboard/commercial/reconciliation?${queryParts.join('&')}`
+			const response = await dashboardApi.get<{ data: ReconciliationResult }>(
+				`/api/dashboard/commercial/reconciliation?${queryParts.join('&')}`,
 			);
-			if (res.ok) {
-				setCandidates(res.data.data);
-			} else {
-				setErrorMessage(res.message || 'Error al buscar prospectos.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error en la conexión al buscar.';
-			setErrorMessage(errMsg);
+			if (response.ok) setCandidates(response.data.data);
+			else setErrorMessage(response.message || 'Error al buscar prospectos.');
+		} catch (error) {
+			setErrorMessage(
+				error instanceof Error ? error.message : 'Error en la conexión al buscar.',
+			);
 		} finally {
 			setSearching(false);
 		}
 	};
 
-	// Select customer and fetch their orders
-	const handleSelectCustomer = (customer: Customer, associatedLead?: LeadCandidate) => {
-		setActiveCustomer(customer);
-		setErrorMessage('');
-		setSuccessMessage('');
-		if (associatedLead) {
-			setSelectedLead(associatedLead);
-		}
-		void fetchCustomerOrders(customer.id);
-		void fetchTimeline(customer.id);
-	};
-
-	// Create a new customer record from a lead (Reconcile)
-	const handleCreateCustomer: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
-		e.preventDefault();
+	const handleCreateCustomer: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
+		event.preventDefault();
 		if (!custName.trim()) {
 			setErrorMessage('El nombre del cliente es obligatorio.');
 			return;
 		}
-
 		setCreatingCustomer(true);
 		setErrorMessage('');
 		setSuccessMessage('');
-
 		try {
-			const res = await dashboardApi.post<{ data: Customer }>(
+			const response = await dashboardApi.post<{ data: Customer }>(
 				'/api/dashboard/commercial/customers',
 				{
 					displayName: custName.trim(),
 					email: custEmail.trim() || undefined,
 					phone: custPhone.trim() || undefined,
 					createdFromLeadId: selectedLead?.id || undefined,
-				}
+				},
 			);
-
-			if (res.ok) {
-				const customer: Customer = res.data.data;
-				setSuccessMessage(`Cliente "${customer.displayName}" creado y reconciliado con éxito.`);
-				handleSelectCustomer(customer);
+			if (response.ok) {
+				const customer = response.data.data;
+				setSuccessMessage(`Cliente "${customer.displayName}" creado con éxito.`);
+				handleSelectCustomer(customer, selectedLead || undefined);
+				setCustomerToolOpen(false);
 				setCustName('');
 				setCustEmail('');
 				setCustPhone('');
-			} else {
-				setErrorMessage(res.message || 'Error al crear cliente.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error en la conexión al crear cliente.';
-			setErrorMessage(errMsg);
+			} else setErrorMessage(response.message || 'Error al crear cliente.');
+		} catch (error) {
+			setErrorMessage(
+				error instanceof Error ? error.message : 'Error en la conexión al crear cliente.',
+			);
 		} finally {
 			setCreatingCustomer(false);
 		}
 	};
 
-	// Pre-fill customer form from a candidate lead
-	const handleReconcileLead = (lead: LeadCandidate) => {
-		setSelectedLead(lead);
-		setCustName(lead.name || '');
-		setCustEmail(lead.email || '');
-		setCustPhone(lead.phone || '');
-		document.getElementById('customer-form-section')?.scrollIntoView({ behavior: 'smooth' });
-	};
-
-	// Create Sales Order for selected customer
-	const handleCreateOrder: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
-		e.preventDefault();
-		if (!activeCustomer || !activeCustomer.id) {
-			setErrorMessage('Selecciona un cliente válido con un ID registrado antes de crear una orden.');
+	const handleCreateOrder: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
+		event.preventDefault();
+		if (!activeCustomer?.id) {
+			setErrorMessage('Selecciona un cliente antes de crear una orden.');
 			return;
 		}
-
-		const total = parseFloat(orderTotalAmount);
-		if (isNaN(total) || total <= 0) {
+		const total = Number.parseFloat(orderTotalAmount);
+		if (!Number.isFinite(total) || total <= 0) {
 			setErrorMessage('El monto total debe ser un número positivo.');
 			return;
 		}
-
+		const deposit = Number.parseFloat(orderDepositAmount);
 		setCreatingOrder(true);
 		setErrorMessage('');
 		setSuccessMessage('');
-
-		const deposit = parseFloat(orderDepositAmount);
-
 		try {
-			const res = await dashboardApi.post<{ data: SalesOrder }>(
+			const response = await dashboardApi.post<{ data: SalesOrder }>(
 				'/api/dashboard/commercial/orders',
 				{
 					customerId: activeCustomer.id,
@@ -219,472 +226,438 @@ const SalesWorkspace: React.FC = () => {
 					eventType: orderEventType,
 					packageName: orderPackageName.trim() || undefined,
 					totalAmount: total,
-					depositAmount: !isNaN(deposit) && deposit >= 0 ? deposit : undefined,
-				}
+					depositAmount: Number.isFinite(deposit) && deposit >= 0 ? deposit : undefined,
+				},
 			);
-
-			if (res.ok) {
-				const order: SalesOrder = res.data.data;
-				setSuccessMessage(`Orden "${order.orderNumber}" registrada con éxito.`);
+			if (response.ok) {
+				setSuccessMessage(
+					`Orden "${response.data.data.orderNumber}" registrada con éxito.`,
+				);
 				void fetchCustomerOrders(activeCustomer.id);
 				void fetchTimeline(activeCustomer.id);
 				setOrderPackageName('');
 				setOrderTotalAmount('');
 				setOrderDepositAmount('');
-			} else {
-				setErrorMessage(res.message || 'Error al crear la orden.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error de red al crear la orden.';
-			setErrorMessage(errMsg);
+			} else setErrorMessage(response.message || 'Error al crear la orden.');
+		} catch (error) {
+			setErrorMessage(
+				error instanceof Error ? error.message : 'Error de red al crear la orden.',
+			);
 		} finally {
 			setCreatingOrder(false);
 		}
 	};
 
-	// Transition order to deposit_paid
 	const handleMarkDepositPaid = async (orderId: string) => {
-		const order = customerOrders.find((o) => o.id === orderId);
-		// If the operator hasn't typed in the input, use the order's
-		// suggested deposit amount as the default effective value.
-		const rawAmount = depositAmounts[orderId] ?? (order?.depositAmount ? String(order.depositAmount) : '');
-		const amount = parseFloat(rawAmount);
-		if (isNaN(amount) || amount <= 0) {
-			setErrorMessage('El monto del anticipo debe ser un número válido mayor a cero.');
+		const order = customerOrders.find((item) => item.id === orderId);
+		const rawAmount =
+			depositAmounts[orderId] ?? (order?.depositAmount ? String(order.depositAmount) : '');
+		const amount = Number.parseFloat(rawAmount);
+		if (!Number.isFinite(amount) || amount <= 0) {
+			setErrorMessage('El monto del anticipo debe ser mayor a cero.');
 			return;
 		}
-
-		setMarkingDepositPaid((prev) => ({ ...prev, [orderId]: true }));
+		setMarkingDepositPaid((current) => ({ ...current, [orderId]: true }));
 		setErrorMessage('');
 		setSuccessMessage('');
-
 		try {
-			const res = await dashboardApi.post<{ data: { order: SalesOrder; conversionEvent: ConversionEvent } }>(
-				`/api/dashboard/commercial/orders/${orderId}/deposit-paid`,
-				{
-					amountPaid: amount,
-				}
-			);
-
-			if (res.ok) {
-				setSuccessMessage(`Orden registrada como pagada (Anticipo). Se encoló conversión CAPI.`);
+			const response = await dashboardApi.post<{
+				data: { order: SalesOrder; conversionEvent: ConversionEvent };
+			}>(`/api/dashboard/commercial/orders/${orderId}/deposit-paid`, { amountPaid: amount });
+			if (response.ok) {
+				setSuccessMessage('Anticipo registrado. La actividad comercial se actualizó.');
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
 				}
-			} else {
-				setErrorMessage(res.message || 'Error al registrar el pago.');
-			}
-		} catch (err: unknown) {
-			const errMsg = err instanceof Error ? err.message : 'Error de red al registrar el pago.';
-			setErrorMessage(errMsg);
+			} else setErrorMessage(response.message || 'Error al registrar el pago.');
+		} catch (error) {
+			setErrorMessage(
+				error instanceof Error ? error.message : 'Error de red al registrar el pago.',
+			);
 		} finally {
-			setMarkingDepositPaid((prev) => ({ ...prev, [orderId]: false }));
+			setMarkingDepositPaid((current) => ({ ...current, [orderId]: false }));
 		}
 	};
 
-	const handleDepositAmountChange = (orderId: string, val: string) => {
-		setDepositAmounts((prev) => ({ ...prev, [orderId]: val }));
-	};
+	const commercialTimeline = timelineEntries.filter(
+		(entry) => !entry.eventType.startsWith('capi_'),
+	);
 
 	return (
-		<div className="sales-workspace-grid">
-			{/* Notifications */}
-			{errorMessage && <div className="dashboard-error sales-full-width">{errorMessage}</div>}
-			{successMessage && <div className="dashboard-status sales-success-full">{successMessage}</div>}
-
-			{/* Left Column: Search and Forms */}
-			<div className="sales-workspace-col">
-				{/* 1. Search Box */}
-				<div className="dashboard-card">
-					<h3>Buscar cliente</h3>
-					<form className="dashboard-form-grid" onSubmit={handleSearch}>
-						<div className="dashboard-form-field">
-							<label htmlFor="search-code">Código de Lead (CM-XXXXXX)</label>
-							<input
-								id="search-code"
-								type="text"
-								placeholder="CM-ABC123"
-								value={searchLeadCode}
-								onChange={(e) => setSearchLeadCode(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-form-field">
-							<label htmlFor="search-phone">Teléfono (WhatsApp)</label>
-							<input
-								id="search-phone"
-								type="text"
-								placeholder="6141234567"
-								value={searchPhone}
-								onChange={(e) => setSearchPhone(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-form-field">
-							<label htmlFor="search-email">Email</label>
-							<input
-								id="search-email"
-								type="text"
-								placeholder="cliente@ejemplo.com"
-								value={searchEmail}
-								onChange={(e) => setSearchEmail(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-actions dashboard-actions--full">
-							<button type="submit" className="btn-primary" disabled={searching}>
-								{searching ? 'Buscando...' : 'Buscar'}
-							</button>
-						</div>
-					</form>
+		<div className="sales-workspace">
+			<header className="sales-workspace__intro">
+				<div>
+					<p className="sales-workspace__eyebrow">CRM comercial</p>
+					<h3>Personas y oportunidades que necesitan atención</h3>
+					<p>
+						Elige un registro para revisar su contexto, dinero pendiente y siguiente
+						acción.
+					</p>
 				</div>
+				<span className="sales-workspace__step">
+					{initialLeads.length} registros recientes
+				</span>
+			</header>
 
-				{/* Search Results / Candidates */}
-				<LeadCandidatesList
-					candidates={candidates}
-					onSelectCustomer={handleSelectCustomer}
-					onReconcileLead={handleReconcileLead}
-				/>
-
-				{/* 2. Customer Creation / Reconciliation Form */}
-				<div className="dashboard-card" id="customer-form-section">
-					<h3>Crear o reconciliar cliente</h3>
-					{selectedLead && (
-						<div className="linked-lead-badge">
-							<span>Vinculando al lead <strong>{selectedLead.leadCode}</strong> ({selectedLead.name || 'Sin nombre'})</span>
-							<button type="button" className="btn-text-clear" onClick={() => setSelectedLead(null)}>Desvincular</button>
-						</div>
-					)}
-					<form className="dashboard-form-grid" onSubmit={handleCreateCustomer}>
-						<div className="dashboard-form-field">
-							<label htmlFor="cust-name">Nombre completo del cliente *</label>
-							<input
-								id="cust-name"
-								type="text"
-								required
-								placeholder="Nombre del titular"
-								value={custName}
-								onChange={(e) => setCustName(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-form-field">
-							<label htmlFor="cust-email">Email</label>
-							<input
-								id="cust-email"
-								type="email"
-								placeholder="correo@ejemplo.com"
-								value={custEmail}
-								onChange={(e) => setCustEmail(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-form-field">
-							<label htmlFor="cust-phone">Teléfono (WhatsApp)</label>
-							<input
-								id="cust-phone"
-								type="text"
-								placeholder="6141234567"
-								value={custPhone}
-								onChange={(e) => setCustPhone(e.target.value)}
-							/>
-						</div>
-						<div className="dashboard-actions dashboard-actions--full">
-							<button type="submit" className="btn-primary" disabled={creatingCustomer}>
-								{creatingCustomer ? 'Guardando...' : 'Crear y Guardar Cliente'}
-							</button>
-						</div>
-					</form>
+			{errorMessage && (
+				<div className="dashboard-error" role="alert">
+					{errorMessage}
 				</div>
-			</div>
+			)}
+			{successMessage && (
+				<div className="dashboard-status sales-success-full" role="status">
+					{successMessage}
+				</div>
+			)}
 
-			{/* Right Column: Active State, Orders, and conversions */}
-			<div className="sales-workspace-col">
-				{/* 3. Selected Customer & Create Order */}
-				<div className="dashboard-card">
-					<h3>Cliente seleccionado</h3>
-					{activeCustomer ? (
-						<div className="active-customer-info">
-							<div className="customer-details">
-								<p><strong>Titular:</strong> {activeCustomer.displayName}</p>
-								<p><strong>Email:</strong> {activeCustomer.email || 'Sin registrar'}</p>
-								<p><strong>Teléfono:</strong> {activeCustomer.phoneE164 || 'Sin registrar'}</p>
-								<button type="button" className="btn-secondary" onClick={() => { setActiveCustomer(null); setCustomerOrders([]); }}>
-									Cambiar Cliente
+			<div className="sales-workspace-grid">
+				<aside className="crm-work-queue" aria-labelledby="crm-queue-title">
+					<header className="crm-work-queue__header">
+						<div>
+							<p className="sales-workspace__eyebrow">Cola de trabajo</p>
+							<h4 id="crm-queue-title">Seguimientos recientes</h4>
+						</div>
+						<span>{initialLeads.length}</span>
+					</header>
+					<div className="crm-record-list">
+						{initialLeads.length === 0 ? (
+							<div className="sales-empty-state">
+								<strong>No hay leads recientes</strong>
+								<p>
+									Usa la búsqueda para localizar un cliente o crear una nueva
+									ficha.
+								</p>
+							</div>
+						) : (
+							initialLeads.map((lead) => (
+								<button
+									key={lead.id}
+									type="button"
+									className="crm-record"
+									aria-pressed={selectedLead?.id === lead.id}
+									onClick={() => handleQueueSelect(lead)}
+								>
+									<span className="crm-record__topline">
+										<strong>{lead.name || 'Prospecto sin nombre'}</strong>
+										<small>{labelLeadStatus(lead.status)}</small>
+									</span>
+									<span className="crm-record__context">
+										{lead.eventType || 'Evento por definir'}
+										{lead.packageInterest ? ` · ${lead.packageInterest}` : ''}
+									</span>
+									<span className="crm-record__contact">
+										{lead.phone || lead.email || 'Sin contacto disponible'} ·{' '}
+										{labelLeadChannel(lead.channel)}
+									</span>
+									<span className="crm-record__action">
+										Siguiente: {getSuggestedAction(lead)}
+									</span>
+								</button>
+							))
+						)}
+					</div>
+
+					<details className="crm-supporting-tool">
+						<summary>Buscar otro cliente o prospecto</summary>
+						<form
+							className="dashboard-form-grid crm-search-form"
+							onSubmit={handleSearch}
+						>
+							<div className="dashboard-form-field">
+								<label htmlFor="search-code">Código de lead</label>
+								<input
+									id="search-code"
+									value={searchLeadCode}
+									onChange={(event) => setSearchLeadCode(event.target.value)}
+									placeholder="CM-ABC123"
+								/>
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="search-phone">Teléfono</label>
+								<input
+									id="search-phone"
+									value={searchPhone}
+									onChange={(event) => setSearchPhone(event.target.value)}
+									placeholder="6141234567"
+								/>
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="search-email">Correo</label>
+								<input
+									id="search-email"
+									type="email"
+									value={searchEmail}
+									onChange={(event) => setSearchEmail(event.target.value)}
+									placeholder="cliente@ejemplo.com"
+								/>
+							</div>
+							<div className="dashboard-actions dashboard-actions--full">
+								<button type="submit" className="btn-primary" disabled={searching}>
+									{searching ? 'Buscando...' : 'Buscar cliente'}
 								</button>
 							</div>
+						</form>
+					</details>
 
-							<hr className="sales-divider" />
+					<LeadCandidatesList
+						candidates={candidates}
+						onSelectCustomer={handleSelectCustomer}
+						onReconcileLead={handleReconcileLead}
+					/>
 
-							<h4>Nueva Orden para Cliente</h4>
-							<form className="dashboard-form-grid" onSubmit={handleCreateOrder}>
-								<div className="dashboard-form-field">
-									<label htmlFor="order-event">Tipo de evento</label>
-									<select
-										id="order-event"
-										value={orderEventType}
-										onChange={(e) => setOrderEventType(e.target.value)}
+					<details
+						className="crm-supporting-tool"
+						id="customer-form-section"
+						open={customerToolOpen}
+						onToggle={(event) => setCustomerToolOpen(event.currentTarget.open)}
+					>
+						<summary>Crear o reconciliar cliente</summary>
+						{selectedLead && (
+							<div className="linked-lead-badge">
+								<span>
+									Vinculando a{' '}
+									<strong>{selectedLead.name || selectedLead.leadCode}</strong>
+								</span>
+								<button
+									type="button"
+									className="btn-text-clear"
+									onClick={() => setSelectedLead(null)}
+								>
+									Desvincular
+								</button>
+							</div>
+						)}
+						<form className="dashboard-form-grid" onSubmit={handleCreateCustomer}>
+							<div className="dashboard-form-field">
+								<label htmlFor="cust-name">Nombre completo *</label>
+								<input
+									id="cust-name"
+									required
+									value={custName}
+									onChange={(event) => setCustName(event.target.value)}
+								/>
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="cust-email">Correo</label>
+								<input
+									id="cust-email"
+									type="email"
+									value={custEmail}
+									onChange={(event) => setCustEmail(event.target.value)}
+								/>
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="cust-phone">Teléfono</label>
+								<input
+									id="cust-phone"
+									value={custPhone}
+									onChange={(event) => setCustPhone(event.target.value)}
+								/>
+							</div>
+							<div className="dashboard-actions dashboard-actions--full">
+								<button
+									type="submit"
+									className="btn-primary"
+									disabled={creatingCustomer}
+								>
+									{creatingCustomer ? 'Guardando...' : 'Crear y guardar cliente'}
+								</button>
+							</div>
+						</form>
+					</details>
+				</aside>
+
+				<section className="crm-detail" aria-live="polite">
+					{activeCustomer ? (
+						<div>
+							<p className="sales-workspace__eyebrow">Cliente seleccionado</p>
+							<div className="customer-details sales-customer-header">
+								<div>
+									<h3>{activeCustomer.displayName}</h3>
+									<p>
+										{activeCustomer.email || 'Sin correo registrado'} ·{' '}
+										{activeCustomer.phoneE164 || 'Sin teléfono registrado'}
+									</p>
+								</div>
+								<div className="sales-customer-actions">
+									{activeCustomer.phoneE164 && (
+										<a
+											className="btn-secondary"
+											href={`https://wa.me/${activeCustomer.phoneE164.replace(/\D/g, '')}`}
+											target="_blank"
+											rel="noreferrer"
+										>
+											Abrir WhatsApp
+										</a>
+									)}
+									<button
+										type="button"
+										className="btn-ghost"
+										onClick={() => {
+											setActiveCustomer(null);
+											setCustomerOrders([]);
+											setTimelineEntries([]);
+										}}
 									>
-										{EVENT_TYPE_OPTIONS.map((opt) => (
-											<option key={opt.value} value={opt.value}>{opt.label}</option>
-										))}
-									</select>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor="order-package">Nombre del paquete</label>
-									<input
-										id="order-package"
-										type="text"
-										placeholder="Premium"
-										value={orderPackageName}
-										onChange={(e) => setOrderPackageName(e.target.value)}
-									/>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor="order-total">Monto Total ($ MXN) *</label>
-									<input
-										id="order-total"
-										type="number"
-										required
-										min="1"
-										placeholder="1699"
-										value={orderTotalAmount}
-										onChange={(e) => setOrderTotalAmount(e.target.value)}
-									/>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor="order-deposit">Anticipo Sugerido (opcional, $ MXN)</label>
-									<input
-										id="order-deposit"
-										type="number"
-										min="0"
-										placeholder="899"
-										value={orderDepositAmount}
-										onChange={(e) => setOrderDepositAmount(e.target.value)}
-									/>
-								</div>
-								<div className="dashboard-actions dashboard-actions--full">
-									<button type="submit" className="btn-primary" disabled={creatingOrder || !activeCustomer?.id}>
-										{creatingOrder ? 'Creando Orden...' : 'Crear Orden'}
+										Cambiar
 									</button>
 								</div>
-							</form>
+							</div>
 
-							<hr className="sales-divider" />
+							<section
+								className="crm-detail__section"
+								aria-labelledby="customer-orders-title"
+							>
+								<div className="crm-detail__section-heading">
+									<div>
+										<p className="sales-workspace__eyebrow">Dinero y avance</p>
+										<h4 id="customer-orders-title">Órdenes y cobros</h4>
+									</div>
+									<span>{customerOrders.length} órdenes</span>
+								</div>
+								<CustomerOrdersBox
+									customerOrders={customerOrders}
+									depositAmounts={depositAmounts}
+									onAmountChange={(orderId, value) =>
+										setDepositAmounts((current) => ({
+											...current,
+											[orderId]: value,
+										}))
+									}
+									markingDepositPaid={markingDepositPaid}
+									onMarkDepositPaid={handleMarkDepositPaid}
+								/>
+							</section>
 
-							<h4>Órdenes Existentes</h4>
-							<CustomerOrdersBox
-								customerOrders={customerOrders}
-								depositAmounts={depositAmounts}
-								onAmountChange={handleDepositAmountChange}
-								markingDepositPaid={markingDepositPaid}
-								onMarkDepositPaid={handleMarkDepositPaid}
-							/>
+							<details className="crm-supporting-tool">
+								<summary>Crear una nueva orden</summary>
+								<form className="dashboard-form-grid" onSubmit={handleCreateOrder}>
+									<div className="dashboard-form-field">
+										<label htmlFor="order-event">Tipo de evento</label>
+										<select
+											id="order-event"
+											value={orderEventType}
+											onChange={(event) =>
+												setOrderEventType(event.target.value)
+											}
+										>
+											{EVENT_TYPE_OPTIONS.map((option) => (
+												<option key={option.value} value={option.value}>
+													{option.label}
+												</option>
+											))}
+										</select>
+									</div>
+									<div className="dashboard-form-field">
+										<label htmlFor="order-package">Paquete</label>
+										<input
+											id="order-package"
+											value={orderPackageName}
+											onChange={(event) =>
+												setOrderPackageName(event.target.value)
+											}
+										/>
+									</div>
+									<div className="dashboard-form-field">
+										<label htmlFor="order-total">Monto total ($ MXN) *</label>
+										<input
+											id="order-total"
+											type="number"
+											required
+											min="1"
+											value={orderTotalAmount}
+											onChange={(event) =>
+												setOrderTotalAmount(event.target.value)
+											}
+										/>
+									</div>
+									<div className="dashboard-form-field">
+										<label htmlFor="order-deposit">
+											Anticipo sugerido ($ MXN)
+										</label>
+										<input
+											id="order-deposit"
+											type="number"
+											min="0"
+											value={orderDepositAmount}
+											onChange={(event) =>
+												setOrderDepositAmount(event.target.value)
+											}
+										/>
+									</div>
+									<div className="dashboard-actions dashboard-actions--full">
+										<button
+											type="submit"
+											className="btn-primary"
+											disabled={creatingOrder}
+										>
+											{creatingOrder ? 'Creando orden...' : 'Crear orden'}
+										</button>
+									</div>
+								</form>
+							</details>
+
+							<section
+								className="crm-detail__section"
+								aria-labelledby="customer-activity-title"
+							>
+								<p className="sales-workspace__eyebrow">Historial</p>
+								<h4 id="customer-activity-title">Actividad comercial</h4>
+								<CrmTimeline
+									entries={commercialTimeline}
+									loading={loadingTimeline}
+								/>
+							</section>
+						</div>
+					) : selectedLead ? (
+						<div className="crm-prospect-detail">
+							<p className="sales-workspace__eyebrow">Prospecto seleccionado</p>
+							<h3>{selectedLead.name || 'Prospecto sin nombre'}</h3>
+							<p>
+								{selectedLead.phone ||
+									selectedLead.email ||
+									'Sin contacto disponible'}
+							</p>
+							<dl>
+								<div>
+									<dt>Estado</dt>
+									<dd>{labelLeadStatus(selectedLead.status)}</dd>
+								</div>
+								<div>
+									<dt>Evento</dt>
+									<dd>{selectedLead.eventType || 'Por definir'}</dd>
+								</div>
+								<div>
+									<dt>Canal</dt>
+									<dd>{labelLeadChannel(selectedLead.channel)}</dd>
+								</div>
+							</dl>
+							<div className="crm-next-action">
+								<span>Siguiente acción</span>
+								<strong>{getSuggestedAction(selectedLead)}</strong>
+								<button
+									type="button"
+									className="btn-primary"
+									onClick={() => setCustomerToolOpen(true)}
+								>
+									Crear ficha de cliente
+								</button>
+							</div>
 						</div>
 					) : (
-						<p className="dashboard-form-help">Selecciona o crea un cliente para gestionar sus órdenes, anticipos y actividad comercial.</p>
+						<div className="sales-empty-state sales-empty-state--detail">
+							<strong>Selecciona una persona u oportunidad</strong>
+							<p>
+								Aquí verás su estado, órdenes, saldo, actividad y la acción
+								recomendada.
+							</p>
+						</div>
 					)}
-
-					{/* CRM Timeline */}
-					{activeCustomer && (
-						<>
-							<hr className="sales-divider" />
-							<h4>Línea de Tiempo</h4>
-							<CrmTimeline entries={timelineEntries} loading={loadingTimeline} />
-						</>
-					)}
-				</div>
-				</div>
-
-				{/* CSS styling for layout inside this React island */}
-			<style>{`
-				.sales-workspace-grid {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 1.5rem;
-					align-items: start;
-				}
-				@media (max-width: 992px) {
-					.sales-workspace-grid {
-						grid-template-columns: 1fr;
-					}
-				}
-				.sales-workspace-col {
-					display: grid;
-					gap: 1.5rem;
-				}
-				.sales-full-width {
-					grid-column: span 2;
-				}
-				.sales-success-full {
-					grid-column: span 2;
-					border-color: #22c55e !important;
-					color: #22c55e !important;
-				}
-				.sales-divider {
-						margin: 1.25rem 0;
-						border: 0;
-						border-top: 1px solid var(--dashboard-card-border);
-					}
-					.candidates-list {
-						display: grid;
-					gap: 1rem;
-				}
-				.candidate-group {
-					border-bottom: 1px solid var(--dashboard-card-border);
-					padding-bottom: 1rem;
-				}
-				.candidate-group:last-child {
-					border-bottom: none;
-					padding-bottom: 0;
-				}
-				.candidate-group h4 {
-					margin: 0 0 0.5rem;
-					font-size: 0.9rem;
-					color: var(--color-text-muted);
-					text-transform: uppercase;
-					letter-spacing: 0.05em;
-				}
-				.candidate-item {
-					background: rgba(255, 255, 255, 0.02);
-					border: 1px solid var(--dashboard-card-border);
-					padding: 0.75rem;
-					border-radius: 0.5rem;
-					margin-bottom: 0.5rem;
-				}
-				.candidate-meta {
-					font-size: 0.82rem;
-					color: var(--color-text-secondary);
-					margin: 0.25rem 0;
-				}
-				.candidate-actions {
-					margin-top: 0.5rem;
-					display: flex;
-					gap: 0.5rem;
-				}
-				.candidate-actions button {
-					padding: 0.35rem 0.65rem;
-					font-size: 0.8rem;
-					border-radius: 0.25rem;
-				}
-				.active-customer-info {
-					display: grid;
-					gap: 1rem;
-				}
-				.customer-details p {
-					margin: 0.25rem 0;
-					color: var(--color-text-secondary);
-				}
-				.orders-list {
-					display: grid;
-					gap: 0.75rem;
-				}
-				.order-item-box {
-					border: 1px solid var(--dashboard-card-border);
-					border-radius: 0.5rem;
-					padding: 0.75rem;
-					background: rgba(255, 255, 255, 0.01);
-				}
-				.order-item-header {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					margin-bottom: 0.35rem;
-				}
-				.order-number {
-					font-family: monospace;
-					font-weight: bold;
-					color: var(--color-text-primary);
-				}
-				.order-desc {
-					font-size: 0.82rem;
-					color: var(--color-text-secondary);
-					margin: 0.25rem 0;
-				}
-				.order-price {
-					font-size: 0.86rem;
-					color: var(--color-text-primary);
-					margin: 0.25rem 0;
-				}
-				.order-price-row {
-					display: flex;
-					gap: 1.25rem;
-					flex-wrap: wrap;
-					margin: 0.35rem 0;
-					font-size: 0.86rem;
-					color: var(--color-text-primary);
-				}
-				.order-amount {
-					display: flex;
-					gap: 0.35rem;
-					align-items: baseline;
-				}
-				.order-amount-label {
-					color: var(--color-text-secondary);
-					font-size: 0.82rem;
-				}
-				.order-balance-due {
-					color: #f59e0b;
-				}
-				.order-balance-zero {
-					color: #22c55e;
-				}
-				.order-meta {
-					font-size: 0.78rem;
-					color: var(--color-text-secondary);
-					margin: 0.2rem 0 0;
-				}
-				.order-payment-input-wrap {
-					flex: 1;
-					display: flex;
-					flex-direction: column;
-					gap: 0.2rem;
-				}
-				.order-payment-label {
-					font-size: 0.78rem;
-					color: var(--color-text-secondary);
-				}
-				.order-payment-trigger {
-					display: flex;
-					gap: 0.5rem;
-					margin-top: 0.75rem;
-				}
-				.order-payment-trigger input {
-					flex: 1;
-					padding: 0.35rem;
-					background: var(--dashboard-input-bg, rgba(0,0,0,0.2));
-					border: 1px solid var(--dashboard-card-border);
-					color: var(--color-text-primary);
-					border-radius: 0.25rem;
-					font-size: 0.86rem;
-				}
-				.order-payment-trigger button {
-					padding: 0.35rem 0.75rem;
-					font-size: 0.86rem;
-					border-radius: 0.25rem;
-				}
-				.status-badge-custom {
-					padding: 0.15rem 0.45rem;
-					border-radius: 0.25rem;
-					font-size: 0.75rem;
-					text-transform: uppercase;
-					font-weight: bold;
-				}
-				.status-quoted {
-					background: #f59e0b;
-					color: #fff;
-				}
-				.status-confirmed {
-					background: #3b82f6;
-					color: #fff;
-				}
-				.status-deposit_paid {
-					background: #10b981;
-					color: #fff;
-				}
-				.status-paid {
-					background: #047857;
-					color: #fff;
-				}
-
-			`}</style>
+				</section>
+			</div>
 		</div>
 	);
 };
+
 export default SalesWorkspace;

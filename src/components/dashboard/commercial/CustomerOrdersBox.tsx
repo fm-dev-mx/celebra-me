@@ -56,7 +56,7 @@ function formatCurrency(amount: number): string {
 	}).format(amount);
 }
 
-export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
+const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	customerOrders,
 	depositAmounts,
 	onAmountChange,
@@ -64,7 +64,9 @@ export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	onMarkDepositPaid,
 }) => {
 	if (customerOrders.length === 0) {
-		return <p className="dashboard-form-help">Este cliente aún no tiene órdenes registradas.</p>;
+		return (
+			<p className="dashboard-form-help">Este cliente aún no tiene órdenes registradas.</p>
+		);
 	}
 
 	return (
@@ -75,7 +77,9 @@ export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 					<div key={ord.id} className="order-item-box">
 						<div className="order-item-header">
 							<span className="order-number">{ord.orderNumber}</span>
-							<span className={`status-badge-custom status-${ord.status}`}>
+							<span
+								className={`status-badge-custom status-${ord.status.replace('_', '-')}`}
+							>
 								{STATUS_LABELS[ord.status] || ord.status}
 							</span>
 						</div>
@@ -94,12 +98,19 @@ export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 							</div>
 							<div className="order-amount">
 								<span className="order-amount-label">Saldo:</span>
-								<strong className={balanceDue > 0 ? 'order-balance-due' : 'order-balance-zero'}>{formatCurrency(balanceDue)}</strong>
+								<strong
+									className={
+										balanceDue > 0 ? 'order-balance-due' : 'order-balance-zero'
+									}
+								>
+									{formatCurrency(balanceDue)}
+								</strong>
 							</div>
 						</div>
 						{ord.status === 'deposit_paid' && ord.depositPaidAt && (
 							<p className="order-meta">
-								Anticipo pagado el: {new Date(ord.depositPaidAt).toLocaleString('es-MX')}
+								Anticipo pagado el:{' '}
+								{new Date(ord.depositPaidAt).toLocaleString('es-MX')}
 							</p>
 						)}
 						{ord.status === 'paid' && ord.paidAt && (
@@ -112,7 +123,9 @@ export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 						{(ord.status === 'confirmed' || ord.status === 'quoted') && (
 							<div className="order-payment-trigger">
 								<div className="order-payment-input-wrap">
-									<label className="order-payment-label">Anticipo recibido ($ MXN)</label>
+									<label className="order-payment-label">
+										Anticipo recibido ($ MXN)
+									</label>
 									<input
 										type="number"
 										min="1"
@@ -127,14 +140,18 @@ export const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 									disabled={
 										markingDepositPaid[ord.id] ||
 										(() => {
-											const raw = depositAmounts[ord.id] ?? ord.depositAmount ?? '';
-											const num = typeof raw === 'string' ? parseFloat(raw) : raw;
+											const raw =
+												depositAmounts[ord.id] ?? ord.depositAmount ?? '';
+											const num =
+												typeof raw === 'string' ? parseFloat(raw) : raw;
 											return !(Number.isFinite(num) && num > 0);
 										})()
 									}
 									onClick={() => onMarkDepositPaid(ord.id)}
 								>
-									{markingDepositPaid[ord.id] ? 'Registrando...' : 'Registrar Anticipo'}
+									{markingDepositPaid[ord.id]
+										? 'Registrando...'
+										: 'Registrar Anticipo'}
 								</button>
 							</div>
 						)}

@@ -17,13 +17,17 @@ const TIMELINE_ICONS: Record<string, string> = {
 	customer_created: '👤',
 };
 
-export const CrmTimeline: React.FC<CrmTimelineProps> = ({ entries, loading }) => {
+const CrmTimeline: React.FC<CrmTimelineProps> = ({ entries, loading }) => {
 	if (loading) {
 		return <p className="dashboard-form-help">Cargando línea de tiempo...</p>;
 	}
 
 	if (entries.length === 0) {
-		return <p className="dashboard-form-help">Sin actividad registrada para este cliente todavía.</p>;
+		return (
+			<p className="dashboard-form-help">
+				Sin actividad registrada para este cliente todavía.
+			</p>
+		);
 	}
 
 	return (
@@ -48,53 +52,6 @@ export const CrmTimeline: React.FC<CrmTimelineProps> = ({ entries, loading }) =>
 					</div>
 				);
 			})}
-			<style>{`
-				.crm-timeline {
-					display: grid;
-					gap: 0.75rem;
-					max-height: 400px;
-					overflow-y: auto;
-					padding: 0.25rem 0;
-				}
-				.crm-timeline__item {
-					display: flex;
-					gap: 0.75rem;
-					padding: 0.5rem 0.75rem;
-					background: rgba(255,255,255,0.01);
-					border: 1px solid var(--dashboard-card-border);
-					border-radius: 0.5rem;
-				}
-				.crm-timeline__dot {
-					flex-shrink: 0;
-					font-size: 1.2rem;
-					line-height: 1.5;
-				}
-				.crm-timeline__content {
-					flex: 1;
-					min-width: 0;
-				}
-				.crm-timeline__header {
-					display: flex;
-					justify-content: space-between;
-					align-items: baseline;
-					gap: 0.75rem;
-				}
-				.crm-timeline__label {
-					color: var(--color-text-primary);
-					font-size: 0.9rem;
-				}
-				.crm-timeline__time {
-					color: var(--color-text-muted);
-					font-size: 0.75rem;
-					flex-shrink: 0;
-				}
-				.crm-timeline__desc {
-					margin: 0.25rem 0 0;
-					color: var(--color-text-secondary);
-					font-size: 0.82rem;
-					line-height: 1.4;
-				}
-			`}</style>
 		</div>
 	);
 };

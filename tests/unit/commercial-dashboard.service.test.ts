@@ -301,12 +301,21 @@ describe('summarizeCommercialAnalytics', () => {
 		expect(viewModel.health.commercial.warnings).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					label: 'Órdenes con anticipo sin evento CAPI',
-					count: 2,
-				}),
-				expect.objectContaining({
 					label: 'Órdenes con valores inconsistentes',
 					count: 1,
+				}),
+			]),
+		);
+		expect(viewModel.health.commercial.warnings).not.toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ label: expect.stringContaining('CAPI') }),
+			]),
+		);
+		expect(viewModel.health.capi.checks).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					label: 'Órdenes sin fila de conversión',
+					value: '2',
 				}),
 			]),
 		);

@@ -1,0 +1,403 @@
+// Commercial dashboard page styles
+// Extracted from commercial.astro scoped <style> block (Jul 2026 refactor)
+// Dead CSS removed: .health-bar, .health-bar-sep, .health-badge family,
+// .commercial-dashboard__metrics--priority, .commercial-dashboard__metric--priority
+// Redundant &[hidden] rule removed (browser-native)
+
+.commercial-dashboard {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.commercial-dashboard__header {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.5rem;
+	align-items: end;
+
+	h2 {
+		margin: 0;
+		font-size: clamp(1.9rem, 3vw, 2.7rem);
+		color: var(--color-text-primary);
+	}
+
+	p {
+		max-width: 46rem;
+		margin: 0;
+		color: var(--color-text-secondary);
+		line-height: 1.6;
+	}
+}
+
+.commercial-dashboard__eyebrow {
+	margin: 0 0 0.35rem;
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	font-size: 0.72rem;
+	letter-spacing: 0.14em;
+}
+
+.commercial-dashboard__metrics,
+.commercial-dashboard__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1rem;
+}
+
+.commercial-dashboard__metrics--executive {
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.commercial-dashboard__metric {
+	padding: 1.25rem;
+	border: 1px solid var(--dashboard-card-border);
+	border-radius: 0.75rem;
+	background: var(--dashboard-card-bg);
+	box-shadow: var(--shadow-subtle);
+
+	span {
+		display: block;
+		color: var(--color-text-secondary);
+		font-size: 0.86rem;
+	}
+
+	strong {
+		display: block;
+		margin-top: 0.45rem;
+		font-size: 2rem;
+		color: var(--color-action-primary);
+	}
+
+	small {
+		display: block;
+		margin-top: 0.45rem;
+		color: var(--color-text-muted);
+		font-size: 0.78rem;
+		line-height: 1.4;
+	}
+}
+
+.commercial-dashboard__metric--muted strong {
+	color: var(--color-text-secondary);
+}
+
+.commercial-dashboard__metric--alert strong {
+	color: var(--color-state-warning-text);
+}
+
+.commercial-dashboard__priority-list {
+	display: grid;
+	border-block: 1px solid var(--dashboard-card-border);
+}
+
+.commercial-dashboard__priority-item {
+	display: grid;
+	grid-template-columns: minmax(10rem, 0.8fr) auto minmax(16rem, 1.4fr);
+	align-items: center;
+	gap: 1rem;
+	padding: 0.9rem 0;
+	border-bottom: 1px solid var(--dashboard-card-border);
+
+	&:last-child {
+		border-bottom: 0;
+	}
+
+	span,
+	small {
+		color: var(--color-text-secondary);
+	}
+
+	strong {
+		color: var(--color-text-primary);
+		font-size: 1.35rem;
+	}
+}
+
+.commercial-dashboard__priority-item--alert strong {
+	color: var(--color-state-warning-text);
+}
+
+.commercial-dashboard__sales-cta {
+	margin-top: 1rem;
+}
+
+.commercial-dashboard__list {
+	display: grid;
+	gap: 0.7rem;
+	padding: 0;
+	margin: 1rem 0 0;
+	list-style: none;
+
+	li {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-bottom: 0.7rem;
+		border-bottom: 1px solid var(--dashboard-card-border);
+		color: var(--color-text-secondary);
+	}
+
+	strong {
+		color: var(--color-text-primary);
+	}
+}
+
+.commercial-dashboard__card-help {
+	margin: 0.35rem 0 0;
+	color: var(--color-text-muted);
+	font-size: 0.82rem;
+	line-height: 1.45;
+}
+
+/* Compact data context strip */
+.commercial-context-strip {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.6rem 1rem;
+	border: 1px solid var(--dashboard-card-border);
+	border-radius: 0.5rem;
+	background: var(--dashboard-card-bg);
+	font-size: 0.8rem;
+	color: var(--color-text-secondary);
+	line-height: 1.4;
+}
+
+.commercial-context-strip .context-dot {
+	font-weight: 600;
+	color: var(--color-text-primary);
+}
+
+.commercial-context-strip .context-note {
+	width: 100%;
+	color: var(--color-text-muted);
+	font-size: 0.75rem;
+	margin-top: 0.15rem;
+}
+
+/* Compact health bar */
+
+/* Detailed health cards (Salud tab) */
+.commercial-dashboard__health {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.commercial-dashboard__health-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 1rem;
+}
+
+.commercial-dashboard__health-card {
+	display: grid;
+	align-content: start;
+	gap: 0.8rem;
+
+	p {
+		margin: 0;
+		color: var(--color-text-secondary);
+		font-size: 0.86rem;
+		line-height: 1.5;
+	}
+}
+
+.commercial-dashboard__health-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+
+	h4 {
+		margin: 0;
+		color: var(--color-text-primary);
+		font-size: 0.95rem;
+	}
+}
+
+.commercial-dashboard__status {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 999px;
+	padding: 0.2rem 0.55rem;
+	border: 1px solid var(--dashboard-card-border);
+	color: var(--color-text-secondary);
+	font-size: 0.72rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.commercial-dashboard__status--correct {
+	border-color: rgb(34 197 94 / 45%);
+	color: var(--color-state-success-text);
+}
+
+.commercial-dashboard__status--attention {
+	border-color: rgb(245 158 11 / 45%);
+	color: var(--color-state-warning-text);
+}
+
+.commercial-dashboard__status--error {
+	border-color: rgb(239 68 68 / 45%);
+	color: var(--color-state-danger-text);
+}
+
+.commercial-dashboard__status--safe-disabled {
+	border-color: rgb(107 114 128 / 45%);
+	color: var(--color-text-secondary);
+}
+
+.commercial-dashboard__health-list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.15rem 0.75rem;
+		padding-top: 0.6rem;
+		border-top: 1px solid var(--dashboard-card-border);
+	}
+
+	span {
+		color: var(--color-text-secondary);
+		font-size: 0.86rem;
+	}
+
+	strong {
+		color: var(--color-text-primary);
+		font-size: 0.9rem;
+	}
+
+	small {
+		grid-column: 1 / -1;
+		color: var(--color-text-muted);
+		font-size: 0.76rem;
+		line-height: 1.35;
+	}
+}
+
+.commercial-dashboard__health-list--compact li {
+	grid-template-columns: 1fr auto;
+}
+
+.commercial-dashboard__table-wrap {
+	overflow-x: auto;
+}
+
+.commercial-dashboard__table {
+	width: 100%;
+	min-width: 640px;
+	border-collapse: collapse;
+
+	th,
+	td {
+		padding: 0.85rem 0.75rem;
+		text-align: left;
+		border-bottom: 1px solid var(--dashboard-card-border);
+		color: var(--color-text-secondary);
+	}
+
+	th {
+		color: var(--color-text-muted);
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+	}
+}
+
+@media (width <= 760px) {
+	.commercial-dashboard__header {
+		display: grid;
+		align-items: start;
+	}
+}
+
+.commercial-dashboard__quality {
+	margin-top: 1rem;
+}
+
+.commercial-dashboard__priority {
+	margin-bottom: 1.5rem;
+}
+
+.commercial-dashboard__details {
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--dashboard-card-border);
+
+	summary {
+		cursor: pointer;
+		color: var(--color-text-secondary);
+		font-weight: 700;
+	}
+
+	.commercial-dashboard__priority-item {
+		grid-template-columns: 1fr auto;
+
+		small {
+			grid-column: 1 / -1;
+		}
+	}
+}
+
+.commercial-dashboard__quality-header {
+	margin-bottom: 0.75rem;
+}
+
+.commercial-dashboard__quality-header h3 {
+	margin: 0 0 0.25rem;
+	font-size: 0.95rem;
+	color: var(--color-text-primary);
+}
+
+.commercial-dashboard__quality-header p {
+	margin: 0;
+	font-size: 0.82rem;
+	color: var(--color-text-muted);
+}
+
+/* Tab bar */
+.commercial-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	border-bottom: 1px solid var(--dashboard-card-border);
+	padding-bottom: 0.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+	background: none;
+	border: none;
+	padding: 0.5rem 1rem;
+	color: var(--color-text-secondary);
+	font-size: 0.9rem;
+	font-weight: 500;
+	cursor: pointer;
+	border-radius: 0.375rem;
+	transition: all 0.2s ease;
+
+	&:hover {
+		color: var(--color-text-primary);
+		background: rgb(255 255 255 / 5%);
+	}
+
+	&.active {
+		color: var(--color-action-primary);
+		background: rgb(59 130 246 / 10%);
+		font-weight: bold;
+	}
+}
+
+.tab-content {
+	display: none;
+
+	&.active {
+		display: block;
+	}
+}

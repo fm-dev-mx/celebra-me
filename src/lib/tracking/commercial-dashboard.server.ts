@@ -35,7 +35,7 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 		}),
 		supabaseRestRequest<CommercialLeadRow[]>({
 			pathWithQuery:
-				'leads?select=lead_code,name,email,phone,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at&order=created_at.desc&limit=200',
+				'leads?select=id,lead_code,customer_id,name,email,phone,phone_e164,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at&order=created_at.desc&limit=200',
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<SalesOrderSummaryRow[]>({

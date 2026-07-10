@@ -19,6 +19,7 @@ export interface ConversionEvent {
 
 interface OutboxLogListProps {
 	conversions: ConversionEvent[];
+	deliveryDisabled: boolean;
 	processingConversions: boolean;
 	onProcessConversions: () => void;
 	onRequeueEvent: (eventId: string) => void;
@@ -37,28 +38,41 @@ const STATUS_ERROR_LABELS: Record<string, string> = {
 	skipped: 'Detalle:',
 };
 
-export const OutboxLogList: React.FC<OutboxLogListProps> = ({
+const OutboxLogList: React.FC<OutboxLogListProps> = ({
 	conversions,
+	deliveryDisabled,
 	processingConversions,
 	onProcessConversions,
 	onRequeueEvent,
 }) => {
 	return (
-		<div className="dashboard-card">
+		<div className="dashboard-card outbox-console">
 			<div className="outbox-header">
-				<h3>Cola de Conversiones CAPI</h3>
-				<button
-					type="button"
-					className="btn-secondary btn-small"
-					disabled={processingConversions}
-					onClick={onProcessConversions}
-				>
-					{processingConversions ? 'Procesando...' : 'Procesar Cola'}
-				</button>
+				<div>
+					<p className="sales-workspace__eyebrow">Consola técnica</p>
+					<h3>Cola de conversiones CAPI</h3>
+				</div>
+				{!deliveryDisabled && (
+					<button
+						type="button"
+						className="btn-secondary btn-small"
+						disabled={processingConversions}
+						onClick={onProcessConversions}
+					>
+						{processingConversions ? 'Procesando...' : 'Procesar Cola'}
+					</button>
+				)}
 			</div>
-			<p className="dashboard-form-help">
-				Eventos de conversión de compras encolados para el API de Conversiones de Meta.
-			</p>
+			{deliveryDisabled ? (
+				<div className="outbox-safe-notice" role="status">
+					<strong>CAPI está desactivado; no se envían eventos reales a Meta.</strong>
+					<span>No enviado por configuración segura.</span>
+				</div>
+			) : (
+				<p className="dashboard-form-help">
+					Eventos de conversión de compras encolados para revisión técnica.
+				</p>
+			)}
 
 			<div className="outbox-list">
 				{conversions.length === 0 ? (
@@ -67,7 +81,8 @@ export const OutboxLogList: React.FC<OutboxLogListProps> = ({
 					conversions.map((conv) => {
 						const eventLabel = conv.event_name || conv.eventName || 'Purchase';
 						const eventKey = conv.event_id || conv.eventId || '';
-						const errMsg = conv.last_error_message || conv.lastErrorMessage || undefined;
+						const errMsg =
+							conv.last_error_message || conv.lastErrorMessage || undefined;
 						const created = conv.created_at || conv.createdAt || '';
 						return (
 							<div key={conv.id} className="outbox-item">
@@ -78,28 +93,37 @@ export const OutboxLogList: React.FC<OutboxLogListProps> = ({
 									</span>
 								</div>
 								<p className="outbox-item-meta">
-									ID: {eventKey} | Valor: ${conv.value} {conv.currency}
+									{created
+										? new Date(created).toLocaleString('es-MX')
+										: 'Sin fecha'}{' '}
+									· ${conv.value} {conv.currency}
 								</p>
-								<p className="outbox-item-meta">
-									Fecha: {created ? new Date(created).toLocaleString('es-MX') : '—'} | Intentos: {conv.attempt_count || conv.attemptCount || 0}
-								</p>
-								{errMsg && (
-									<p className="outbox-item-error">
-										<strong>{STATUS_ERROR_LABELS[conv.status] || 'Detalle:'}</strong> {errMsg}
-									</p>
-								)}
-								{(conv.status === 'failed' || conv.status === 'skipped') && (
-									<div className="outbox-item-actions">
-										<button
-											type="button"
-											className="btn-secondary btn-small btn-requeue"
-											disabled={processingConversions}
-											onClick={() => onRequeueEvent(conv.id)}
-										>
-											Reintentar Envío
-										</button>
-									</div>
-								)}
+								<details className="outbox-item-details">
+									<summary>Ver detalle técnico</summary>
+									<p>ID: {eventKey || 'Sin identificador'}</p>
+									<p>Intentos: {conv.attempt_count || conv.attemptCount || 0}</p>
+									{errMsg && (
+										<p className="outbox-item-error">
+											<strong>
+												{STATUS_ERROR_LABELS[conv.status] || 'Detalle:'}
+											</strong>{' '}
+											{errMsg}
+										</p>
+									)}
+								</details>
+								{!deliveryDisabled &&
+									(conv.status === 'failed' || conv.status === 'skipped') && (
+										<div className="outbox-item-actions">
+											<button
+												type="button"
+												className="btn-secondary btn-small btn-requeue"
+												disabled={processingConversions}
+												onClick={() => onRequeueEvent(conv.id)}
+											>
+												Reintentar Envío
+											</button>
+										</div>
+									)}
 							</div>
 						);
 					})
