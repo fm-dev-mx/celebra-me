@@ -10,6 +10,10 @@ import {
 	formatCurrency,
 	formatDateTime,
 } from '@/lib/tracking/commercial-dashboard';
+import {
+	labelCommercialEventType,
+	presentCommercialAttribution,
+} from '@/lib/tracking/commercial-presentation';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
@@ -43,7 +47,8 @@ const viewModel = dashboardData
 		})
 	: null;
 
-const renderList = (items: CountItem[]) => items.length > 0 ? items : [{ label: 'Sin datos suficientes todavía', count: 0 }];
+const renderList = (items: CountItem[], emptyLabel = 'Sin datos suficientes todavía') =>
+	items.length > 0 ? items : [{ label: emptyLabel, count: 0 }];
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
 	draft: 'Borrador',
@@ -82,32 +87,12 @@ const initialSalesLeads: LeadCandidate[] = dashboardData?.recentLeads.map((lead,
 	createdAt: lead.created_at,
 })) || [];
 
-const TECHNICAL_ATTRIBUTION = /(debug_|commercial_dashboard_health|localhost|127[.]0[.]0[.]1|[/]api[/]|[/]dashboard[/]|qa|test\d*|health)/i;
-const BUSINESS_TERMS: Record<string, string> = {
-	hero: 'Portada',
-	pricing: 'Precios',
-	whatsapp: 'WhatsApp',
-	contact: 'Contacto',
-	demo: 'Demo',
-	xv: 'XV años',
-	paid: 'Publicidad pagada',
-	organic: 'Orgánico',
-};
-const humanizeAttributionLabel = (label: string) => label
-	.split(/[/_-]+/)
-	.filter(Boolean)
-	.map((part) => BUSINESS_TERMS[part.toLowerCase()] || `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-	.join(' · ');
-const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico interno / técnico'): CountItem[] => {
-	const grouped = new Map<string, number>();
-	for (const item of items) {
-		const label = TECHNICAL_ATTRIBUTION.test(item.label)
-			? technicalLabel
-			: humanizeAttributionLabel(item.label);
-		grouped.set(label, (grouped.get(label) || 0) + item.count);
-	}
-	return [...grouped].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
-};
+const leadChannelAttribution = dashboardData
+	? presentCommercialAttribution(dashboardData.leadsByChannel, 'Canales internos / QA')
+	: null;
+const revenueAttribution = dashboardData
+	? presentCommercialAttribution(dashboardData.topRevenueByEventType, 'Ingresos internos / QA')
+	: null;
 ---
 
 <DashboardLayout title="Dashboard comercial">
@@ -143,10 +128,13 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 
 				<div class="tab-content" id="tab-resumen" role="tabpanel" aria-labelledby="commercial-tab-resumen" tabindex="0" hidden>
 					<section class="commercial-dashboard__priority">
-						<header class="commercial-dashboard__quality-header">
-							<p class="commercial-dashboard__eyebrow">Hoy</p>
-							<h3>Prioridades comerciales</h3>
-							<p>Empieza por los seguimientos y cobros que pueden mover una venta.</p>
+						<header class="commercial-dashboard__command-header">
+							<div class="commercial-dashboard__quality-header">
+								<p class="commercial-dashboard__eyebrow">Hoy</p>
+								<h3>Prioridades comerciales</h3>
+								<p>Empieza por los seguimientos y cobros que pueden mover una venta.</p>
+							</div>
+							<button type="button" class="btn-primary commercial-dashboard__sales-cta" data-open-tab="ventas">Abrir espacio de ventas</button>
 						</header>
 						<div class="commercial-dashboard__priority-list">
 							<article class="commercial-dashboard__priority-item">
@@ -170,7 +158,6 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 								<small>{viewModel.activeAlerts > 0 ? 'Revisa los pendientes antes de iniciar nuevas gestiones.' : 'No hay alertas comerciales en los datos cargados.'}</small>
 							</article>
 						</div>
-						<button type="button" class="btn-primary commercial-dashboard__sales-cta" data-open-tab="ventas">Abrir espacio de ventas</button>
 					</section>
 
 					<section class="commercial-dashboard__quality">
@@ -215,7 +202,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 												<td>{lead.lead_code}</td>
 												<td>{lead.name || 'Sin nombre'}</td>
 												<td>{lead.email || lead.phone || 'Sin contacto'}</td>
-												<td>{lead.event_type || 'Sin clasificar'}</td>
+											<td>{lead.event_type ? labelCommercialEventType(lead.event_type) : 'Sin clasificar'}</td>
 												<td>{labelLeadStatus(lead.status)}</td>
 												<td>{labelLeadChannel(lead.channel)}</td>
 											</tr>
@@ -238,11 +225,11 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<h3>De dónde llegan los leads y qué se está vendiendo</h3>
 							<p>Usa esta lectura para enfocar campañas, paquetes y seguimiento.</p>
 						</header>
-						<div class="commercial-dashboard__grid">
+						<div class="commercial-dashboard__grid commercial-dashboard__grid--compact">
 							<section class="dashboard-card">
 								<h3>Leads por canal</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.leadsByChannel, 'Canal interno / técnico')).map((item) => (
+									{renderList(leadChannelAttribution?.commercial || [], 'Sin canales comerciales confirmados').map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -251,7 +238,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<section class="dashboard-card">
 								<h3>Ingresos por paquete / tipo</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.topRevenueByEventType, 'Ventas internas / técnicas')).map((item) => (
+									{renderList(revenueAttribution?.commercial || [], 'Sin ingresos comerciales confirmados').map((item) => (
 										<li><span>{item.label}</span><strong>{formatCurrency(item.count, 0)}</strong></li>
 									))}
 								</ul>
@@ -288,7 +275,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<section class="dashboard-card">
 								<h3>Tráfico</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.campaigns)).map((item) => (
+									{renderList([...presentCommercialAttribution(dashboardData.campaigns).commercial, ...presentCommercialAttribution(dashboardData.campaigns).technical]).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -297,7 +284,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<section class="dashboard-card">
 								<h3>Interacción</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.sections, 'Interacción interna / técnica')).map((item) => (
+									{renderList([...presentCommercialAttribution(dashboardData.sections, 'Interacción interna / QA').commercial, ...presentCommercialAttribution(dashboardData.sections, 'Interacción interna / QA').technical]).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -306,7 +293,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<section class="dashboard-card">
 								<h3>CTAs</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.topCtas, 'Acción interna / técnica')).map((item) => (
+									{renderList([...presentCommercialAttribution(dashboardData.topCtas, 'Acciones internas / QA').commercial, ...presentCommercialAttribution(dashboardData.topCtas, 'Acciones internas / QA').technical]).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -315,7 +302,7 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							<section class="dashboard-card">
 								<h3>Demos</h3>
 								<ul class="commercial-dashboard__list">
-									{renderList(presentAttribution(dashboardData.topDemos, 'Demo interna / técnica')).map((item) => (
+									{renderList([...presentCommercialAttribution(dashboardData.topDemos, 'Demos internas / QA').commercial, ...presentCommercialAttribution(dashboardData.topDemos, 'Demos internas / QA').technical]).map((item) => (
 										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
 									))}
 								</ul>
@@ -330,6 +317,18 @@ const presentAttribution = (items: CountItem[], technicalLabel = 'Tráfico inter
 							</section>
 						</div>
 					</section>
+					{((leadChannelAttribution?.technical.length || 0) > 0 || (revenueAttribution?.technical.length || 0) > 0) && (
+						<section class="commercial-dashboard__diagnostic-note" aria-labelledby="internal-attribution-title">
+							<div>
+								<h3 id="internal-attribution-title">Datos internos / QA</h3>
+								<p>Se excluyen de la lectura comercial principal y permanecen disponibles solo para diagnóstico.</p>
+							</div>
+							<div class="commercial-dashboard__diagnostic-values">
+								{leadChannelAttribution?.technical.map((item) => <span>{item.label}: {formatCount(item.count)}</span>)}
+								{revenueAttribution?.technical.map((item) => <span>{item.label}: {formatCurrency(item.count, 0)}</span>)}
+							</div>
+						</section>
+					)}
 					</details>
 				</div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
 
 export interface SalesOrder {
 	id: string;
@@ -24,28 +25,15 @@ interface CustomerOrdersBoxProps {
 	onMarkDepositPaid: (orderId: string) => void;
 }
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-	xv: 'XV años',
-	boda: 'Boda',
-	bautizo: 'Bautizo',
-	cumple: 'Cumpleaños',
-	'baby-shower': 'Baby shower',
-	'primera-comunion': 'Primera comunión',
-};
-
 const STATUS_LABELS: Record<string, string> = {
 	confirmed: 'Confirmado',
 	quoted: 'Cotizado',
-	deposit_paid: 'Anticipo Pagado',
-	paid: 'Totalmente Pagado',
+	deposit_paid: 'Anticipo pagado',
+	paid: 'Totalmente pagado',
 	draft: 'Borrador',
 	cancelled: 'Cancelado',
 	lost: 'Perdido',
 };
-
-function formatEventType(slug: string): string {
-	return EVENT_TYPE_LABELS[slug] || slug;
-}
 
 function formatCurrency(amount: number): string {
 	return new Intl.NumberFormat('es-MX', {
@@ -72,9 +60,14 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	return (
 		<div className="orders-list">
 			{customerOrders.map((ord) => {
-				const balanceDue = Math.max(0, ord.totalAmount - ord.amountPaid);
+				const rawBalance = ord.totalAmount - ord.amountPaid;
+				const balanceDue = Math.max(0, rawBalance);
+				const hasInconsistentAmounts = rawBalance < 0;
 				return (
-					<div key={ord.id} className="order-item-box">
+					<div
+						key={ord.id}
+						className={`order-item-box${hasInconsistentAmounts ? ' order-item-box--inconsistent' : ''}`}
+					>
 						<div className="order-item-header">
 							<span className="order-number">{ord.orderNumber}</span>
 							<span
@@ -84,7 +77,7 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 							</span>
 						</div>
 						<p className="order-desc">
-							Evento: {formatEventType(ord.eventType)}
+							Evento: {labelCommercialEventType(ord.eventType)}
 							{ord.packageName ? ` | Paquete: ${ord.packageName}` : ''}
 						</p>
 						<div className="order-price-row">
@@ -100,13 +93,25 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 								<span className="order-amount-label">Saldo:</span>
 								<strong
 									className={
-										balanceDue > 0 ? 'order-balance-due' : 'order-balance-zero'
+										hasInconsistentAmounts
+											? 'order-balance-inconsistent'
+											: balanceDue > 0
+												? 'order-balance-due'
+												: 'order-balance-zero'
 									}
 								>
-									{formatCurrency(balanceDue)}
+									{hasInconsistentAmounts
+										? 'Por conciliar'
+										: formatCurrency(balanceDue)}
 								</strong>
 							</div>
 						</div>
+						{hasInconsistentAmounts && (
+							<p className="order-inconsistency" role="alert">
+								Revisar montos: el pagado supera el total por{' '}
+								<strong>{formatCurrency(Math.abs(rawBalance))}</strong>.
+							</p>
+						)}
 						{ord.status === 'deposit_paid' && ord.depositPaidAt && (
 							<p className="order-meta">
 								Anticipo pagado el:{' '}
@@ -151,7 +156,7 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 								>
 									{markingDepositPaid[ord.id]
 										? 'Registrando...'
-										: 'Registrar Anticipo'}
+										: 'Registrar anticipo'}
 								</button>
 							</div>
 						)}

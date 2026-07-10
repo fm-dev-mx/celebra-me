@@ -9,12 +9,15 @@ import LeadCandidatesList, {
 	type LeadCandidate,
 } from '@/components/dashboard/commercial/LeadCandidatesList';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
+import {
+	CustomerCommercialSummary,
+	EmptyCommercialDetail,
+	ProspectCommercialDetail,
+} from '@/components/dashboard/commercial/SalesWorkspaceDetails';
 import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 import { dashboardApi } from '@/lib/dashboard/api-client';
-import {
-	labelLeadChannel,
-	labelLeadStatus,
-} from '@/lib/tracking/commercial-dashboard';
+import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
+import { labelCommercialEventType, EVENT_TYPE_LABELS } from '@/lib/tracking/commercial-presentation';
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
@@ -27,16 +30,10 @@ interface SalesWorkspaceProps {
 	initialLeads: LeadCandidate[];
 }
 
-const EVENT_TYPE_OPTIONS = [
-	{ value: 'xv', label: 'XV años' },
-	{ value: 'boda', label: 'Boda' },
-	{ value: 'bautizo', label: 'Bautizo' },
-	{ value: 'cumple', label: 'Cumpleaños' },
-	{ value: 'baby-shower', label: 'Baby shower' },
-	{ value: 'primera-comunion', label: 'Primera comunión' },
-];
-
-
+const EVENT_TYPE_OPTIONS = Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => ({
+	value,
+	label,
+}));
 
 function getSuggestedAction(lead: LeadCandidate): string {
 	if (!lead.customerId) return 'Crear ficha de cliente';
@@ -44,6 +41,17 @@ function getSuggestedAction(lead: LeadCandidate): string {
 	if (lead.status === 'contacted') return 'Preparar cotización';
 	if (lead.status === 'quoted') return 'Dar seguimiento a cotización';
 	return 'Revisar historial comercial';
+}
+
+function getCustomerSuggestedAction(orders: SalesOrder[]): string {
+	if (orders.length === 0) return 'Crear la primera orden';
+	if (orders.some((order) => order.status === 'quoted' || order.status === 'confirmed')) {
+		return 'Registrar anticipo o actualizar la cotización';
+	}
+	if (orders.some((order) => order.totalAmount > order.amountPaid)) {
+		return 'Dar seguimiento al saldo pendiente';
+	}
+	return 'Revisar la actividad comercial';
 }
 
 const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
@@ -60,6 +68,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const [custPhone, setCustPhone] = useState('');
 	const [creatingCustomer, setCreatingCustomer] = useState(false);
 	const [customerToolOpen, setCustomerToolOpen] = useState(false);
+	const [orderToolOpen, setOrderToolOpen] = useState(false);
 	const [orderEventType, setOrderEventType] = useState('xv');
 	const [orderPackageName, setOrderPackageName] = useState('');
 	const [orderTotalAmount, setOrderTotalAmount] = useState('');
@@ -71,15 +80,27 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const [successMessage, setSuccessMessage] = useState('');
 	const [timelineEntries, setTimelineEntries] = useState<CrmTimelineEntry[]>([]);
 	const [loadingTimeline, setLoadingTimeline] = useState(false);
+	const [loadingOrders, setLoadingOrders] = useState(false);
+	const [ordersError, setOrdersError] = useState('');
 
 	const fetchCustomerOrders = async (customerId: string) => {
+		setLoadingOrders(true);
+		setOrdersError('');
 		try {
 			const response = await dashboardApi.get<{ data: SalesOrder[] }>(
 				`/api/dashboard/commercial/orders?customerId=${encodeURIComponent(customerId)}`,
 			);
 			if (response.ok) setCustomerOrders(response.data.data);
+			else {
+				setCustomerOrders([]);
+				setOrdersError(response.message || 'No se pudieron cargar las órdenes.');
+			}
 		} catch (error) {
 			console.error('Error fetching orders:', error);
+			setCustomerOrders([]);
+			setOrdersError('No se pudieron cargar las órdenes. Intenta de nuevo.');
+		} finally {
+			setLoadingOrders(false);
 		}
 	};
 
@@ -100,6 +121,9 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 
 	const handleSelectCustomer = (customer: Customer, associatedLead?: LeadCandidate) => {
 		setActiveCustomer(customer);
+		setCustomerOrders([]);
+		setTimelineEntries([]);
+		setOrderToolOpen(false);
 		setErrorMessage('');
 		setSuccessMessage('');
 		if (associatedLead) setSelectedLead(associatedLead);
@@ -283,6 +307,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const commercialTimeline = timelineEntries.filter(
 		(entry) => !entry.eventType.startsWith('capi_'),
 	);
+	const totalPaid = customerOrders.reduce((sum, order) => sum + order.amountPaid, 0);
+	const pendingBalance = customerOrders.reduce(
+		(sum, order) => sum + Math.max(0, order.totalAmount - order.amountPaid),
+		0,
+	);
 
 	return (
 		<div className="sales-workspace">
@@ -339,11 +368,18 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 									onClick={() => handleQueueSelect(lead)}
 								>
 									<span className="crm-record__topline">
-										<strong>{lead.name || 'Prospecto sin nombre'}</strong>
-										<small>{labelLeadStatus(lead.status)}</small>
+										<span className="crm-record__identity">
+											<strong>{lead.name || 'Prospecto sin nombre'}</strong>
+											<small>{lead.leadCode}</small>
+										</span>
+										<small className="crm-record__status">
+											{labelLeadStatus(lead.status)}
+										</small>
 									</span>
 									<span className="crm-record__context">
-										{lead.eventType || 'Evento por definir'}
+										{lead.eventType
+											? labelCommercialEventType(lead.eventType)
+											: 'Evento por definir'}
 										{lead.packageInterest ? ` · ${lead.packageInterest}` : ''}
 									</span>
 									<span className="crm-record__contact">
@@ -471,39 +507,20 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 				<section className="crm-detail" aria-live="polite">
 					{activeCustomer ? (
 						<div>
-							<p className="sales-workspace__eyebrow">Cliente seleccionado</p>
-							<div className="customer-details sales-customer-header">
-								<div>
-									<h3>{activeCustomer.displayName}</h3>
-									<p>
-										{activeCustomer.email || 'Sin correo registrado'} ·{' '}
-										{activeCustomer.phoneE164 || 'Sin teléfono registrado'}
-									</p>
-								</div>
-								<div className="sales-customer-actions">
-									{activeCustomer.phoneE164 && (
-										<a
-											className="btn-secondary"
-											href={`https://wa.me/${activeCustomer.phoneE164.replace(/\D/g, '')}`}
-											target="_blank"
-											rel="noreferrer"
-										>
-											Abrir WhatsApp
-										</a>
-									)}
-									<button
-										type="button"
-										className="btn-ghost"
-										onClick={() => {
-											setActiveCustomer(null);
-											setCustomerOrders([]);
-											setTimelineEntries([]);
-										}}
-									>
-										Cambiar
-									</button>
-								</div>
-							</div>
+							<CustomerCommercialSummary
+								customer={activeCustomer}
+								lead={selectedLead}
+								orders={customerOrders}
+								totalPaid={totalPaid}
+								pendingBalance={pendingBalance}
+								suggestedAction={getCustomerSuggestedAction(customerOrders)}
+								onClear={() => {
+									setActiveCustomer(null);
+									setCustomerOrders([]);
+									setTimelineEntries([]);
+								}}
+								onOpenOrderTool={() => setOrderToolOpen(true)}
+							/>
 
 							<section
 								className="crm-detail__section"
@@ -514,23 +531,41 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 										<p className="sales-workspace__eyebrow">Dinero y avance</p>
 										<h4 id="customer-orders-title">Órdenes y cobros</h4>
 									</div>
-									<span>{customerOrders.length} órdenes</span>
+									<span>
+										{customerOrders.length}{' '}
+										{customerOrders.length === 1 ? 'orden' : 'órdenes'}
+									</span>
 								</div>
-								<CustomerOrdersBox
-									customerOrders={customerOrders}
-									depositAmounts={depositAmounts}
-									onAmountChange={(orderId, value) =>
-										setDepositAmounts((current) => ({
-											...current,
-											[orderId]: value,
-										}))
-									}
-									markingDepositPaid={markingDepositPaid}
-									onMarkDepositPaid={handleMarkDepositPaid}
-								/>
+								{ordersError && (
+									<p className="crm-inline-error" role="alert">
+										{ordersError}
+									</p>
+								)}
+								{loadingOrders ? (
+									<p className="dashboard-form-help" role="status">
+										Cargando órdenes...
+									</p>
+								) : (
+									<CustomerOrdersBox
+										customerOrders={customerOrders}
+										depositAmounts={depositAmounts}
+										onAmountChange={(orderId, value) =>
+											setDepositAmounts((current) => ({
+												...current,
+												[orderId]: value,
+											}))
+										}
+										markingDepositPaid={markingDepositPaid}
+										onMarkDepositPaid={handleMarkDepositPaid}
+									/>
+								)}
 							</section>
 
-							<details className="crm-supporting-tool">
+							<details
+								className="crm-supporting-tool"
+								open={orderToolOpen}
+								onToggle={(event) => setOrderToolOpen(event.currentTarget.open)}
+							>
 								<summary>Crear una nueva orden</summary>
 								<form className="dashboard-form-grid" onSubmit={handleCreateOrder}>
 									<div className="dashboard-form-field">
@@ -611,48 +646,13 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 							</section>
 						</div>
 					) : selectedLead ? (
-						<div className="crm-prospect-detail">
-							<p className="sales-workspace__eyebrow">Prospecto seleccionado</p>
-							<h3>{selectedLead.name || 'Prospecto sin nombre'}</h3>
-							<p>
-								{selectedLead.phone ||
-									selectedLead.email ||
-									'Sin contacto disponible'}
-							</p>
-							<dl>
-								<div>
-									<dt>Estado</dt>
-									<dd>{labelLeadStatus(selectedLead.status)}</dd>
-								</div>
-								<div>
-									<dt>Evento</dt>
-									<dd>{selectedLead.eventType || 'Por definir'}</dd>
-								</div>
-								<div>
-									<dt>Canal</dt>
-									<dd>{labelLeadChannel(selectedLead.channel)}</dd>
-								</div>
-							</dl>
-							<div className="crm-next-action">
-								<span>Siguiente acción</span>
-								<strong>{getSuggestedAction(selectedLead)}</strong>
-								<button
-									type="button"
-									className="btn-primary"
-									onClick={() => setCustomerToolOpen(true)}
-								>
-									Crear ficha de cliente
-								</button>
-							</div>
-						</div>
+						<ProspectCommercialDetail
+							lead={selectedLead}
+							suggestedAction={getSuggestedAction(selectedLead)}
+							onOpenCustomerTool={() => setCustomerToolOpen(true)}
+						/>
 					) : (
-						<div className="sales-empty-state sales-empty-state--detail">
-							<strong>Selecciona una persona u oportunidad</strong>
-							<p>
-								Aquí verás su estado, órdenes, saldo, actividad y la acción
-								recomendada.
-							</p>
-						</div>
+						<EmptyCommercialDetail />
 					)}
 				</section>
 			</div>

@@ -29,9 +29,11 @@ describe('OutboxLogList', () => {
 		expect(
 			screen.getByText('CAPI está desactivado; no se envían eventos reales a Meta.'),
 		).toBeInTheDocument();
-		expect(screen.getByText('No enviado por configuración segura.')).toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: 'Procesar Cola' })).not.toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: 'Reintentar Envío' })).not.toBeInTheDocument();
+		expect(
+			screen.getByText('Estos registros son solo diagnósticos y no requieren una acción.'),
+		).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Procesar cola' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Reintentar envío' })).not.toBeInTheDocument();
 		expect(screen.getByText('Ver detalle técnico')).toBeInTheDocument();
 		expect(screen.getByText(/technical-event-id/)).not.toBeVisible();
 	});

@@ -2,8 +2,35 @@ import {
 	buildCommercialDashboardViewModel,
 	summarizeCommercialAnalytics,
 } from '@/lib/tracking/commercial-dashboard';
+import { presentCommercialAttribution } from '@/lib/tracking/commercial-presentation';
 
 describe('summarizeCommercialAnalytics', () => {
+	it('separates technical attribution and translates raw commercial labels', () => {
+		const presentation = presentCommercialAttribution([
+			{ label: 'hero_secondary', count: 4 },
+			{ label: 'event-types', count: 3 },
+			{ label: 'instagram / paid_social / xv-primavera', count: 2 },
+			{ label: 'qa_internal / debug / commercial_dashboard_health', count: 2 },
+			{ label: 'QA test data', count: 899 },
+		]);
+
+		expect(presentation.commercial).toEqual([
+			{ label: 'Portada · Acción secundaria', count: 4 },
+			{ label: 'Tipos de evento', count: 3 },
+			{
+				label: 'Instagram · Publicidad pagada · Redes sociales · XV años · Primavera',
+				count: 2,
+			},
+		]);
+		expect(presentation.technical).toEqual([
+			{ label: 'Datos internos / QA (no comerciales)', count: 901 },
+		]);
+		expect(presentation.commercial).not.toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ label: expect.stringContaining('QA') }),
+			]),
+		);
+	});
 	it('summarizes sessions, engagement, CTAs, demos, campaigns, and leads', () => {
 		const summary = summarizeCommercialAnalytics({
 			sessions: [
