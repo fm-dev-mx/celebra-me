@@ -53,28 +53,92 @@ describe('SalesWorkspace', () => {
 		).toBeInTheDocument();
 	});
 
-	it('offers WhatsApp from a prospect when phone data exists', () => {
+	it('shows WhatsApp CTA for a prospect with a valid E.164 phoneE164', () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
 					{
-						id: 'lead-whatsapp',
-						leadCode: 'CM-WHATSAPP',
+						id: 'lead-valid',
+						leadCode: 'CM-VALID',
 						channel: 'whatsapp',
 						status: 'contacted',
-						name: 'Sofía Ejemplo',
-						phone: '55 0000 0103',
-						phoneE164: '+525500000103',
+						name: 'Ana Ejemplo',
+						phone: '55 1234 5678',
+						phoneE164: '+525512345678',
 					},
 				]}
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: /Sofía Ejemplo/ }));
+		fireEvent.click(screen.getByRole('button', { name: /Ana Ejemplo/ }));
 
 		expect(screen.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute(
 			'href',
-			'https://wa.me/525500000103',
+			'https://wa.me/525512345678',
 		);
+	});
+
+	it('hides WhatsApp CTA for a prospect with a local / incomplete phone (no country code)', () => {
+		render(
+			<SalesWorkspace
+				initialLeads={[
+					{
+						id: 'lead-local',
+						leadCode: 'CM-LOCAL',
+						channel: 'manual',
+						status: 'new',
+						name: 'Luis Incompleto',
+						phone: '6141234567',
+					},
+				]}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /Luis Incompleto/ }));
+
+		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
+	});
+
+	it('hides WhatsApp CTA for a prospect with a masked phoneE164', () => {
+		render(
+			<SalesWorkspace
+				initialLeads={[
+					{
+						id: 'lead-masked',
+						leadCode: 'CM-MASKED',
+						channel: 'whatsapp',
+						status: 'contacted',
+						name: 'Sofía Masked',
+						phone: '55 0000 0103',
+						phoneE164: '+525****0103',
+					},
+				]}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /Sofía Masked/ }));
+
+		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
+	});
+
+	it('hides WhatsApp CTA for a prospect with no phone data', () => {
+		render(
+			<SalesWorkspace
+				initialLeads={[
+					{
+						id: 'lead-nophone',
+						leadCode: 'CM-NOPHONE',
+						channel: 'email',
+						status: 'new',
+						name: 'Claudia SinTeléfono',
+						email: 'claudia@ejemplo.com',
+					},
+				]}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /Claudia SinTeléfono/ }));
+
+		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
 	});
 });

@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
+import { getUsableWhatsAppE164 } from '@/lib/commercial/phone';
 import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
 import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
 
@@ -33,8 +34,10 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 	suggestedAction,
 	onClear,
 	onOpenOrderTool,
-}) => (
-	<>
+}) => {
+	const whatsappDigits = getUsableWhatsAppE164(customer.phoneE164);
+	return (
+		<>
 		<div className="customer-details sales-customer-header">
 			<div>
 				<p className="sales-workspace__eyebrow">Ficha comercial</p>
@@ -42,16 +45,16 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 				<p>{customer.email || 'Sin correo registrado'}</p>
 			</div>
 			<div className="sales-customer-actions">
-				{customer.phoneE164 && (
-					<a
-						className="btn-secondary"
-						href={`https://wa.me/${customer.phoneE164.replace(/\D/g, '')}`}
-						target="_blank"
-						rel="noreferrer"
-					>
-						Abrir WhatsApp
-					</a>
-				)}
+					{whatsappDigits && (
+						<a
+							className="btn-secondary"
+							href={`https://wa.me/${whatsappDigits}`}
+							target="_blank"
+							rel="noreferrer"
+						>
+							Abrir WhatsApp
+						</a>
+					)}
 				<button type="button" className="btn-ghost" onClick={onClear}>
 					Cambiar
 				</button>
@@ -99,7 +102,8 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 			</div>
 		</div>
 	</>
-);
+	);
+};
 
 interface ProspectCommercialDetailProps {
 	lead: LeadCandidate;
@@ -113,7 +117,7 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 	onOpenCustomerTool,
 }) => {
 	const contact = lead.phone || lead.email;
-	const whatsappPhone = lead.phoneE164 || lead.phone;
+	const whatsappDigits = getUsableWhatsAppE164(lead.phoneE164, lead.phone);
 
 	return (
 		<div className="crm-prospect-detail">
@@ -130,10 +134,10 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 					<span>Contacto disponible</span>
 					<strong>{contact || 'Sin contacto registrado'}</strong>
 				</div>
-				{whatsappPhone && (
+				{whatsappDigits && (
 					<a
 						className="btn-secondary"
-						href={`https://wa.me/${whatsappPhone.replace(/\D/g, '')}`}
+						href={`https://wa.me/${whatsappDigits}`}
 						target="_blank"
 						rel="noreferrer"
 					>

@@ -46,3 +46,28 @@ export function normalizeCommercialEmail(email: string | undefined): string | un
 	const normalized = email?.trim().toLowerCase();
 	return normalized && normalized.includes('@') ? normalized : undefined;
 }
+
+/**
+ * Returns a usable E.164 digits-only string suitable for wa.me links,
+ * or undefined when the phone cannot be validated as a usable WhatsApp target.
+ *
+ * Does NOT silently infer missing country codes — only accepts
+ * phoneE164 (pre‑normalized) or a raw phone that already carries an
+ * explicit '+' prefix followed by a recognizable country code.
+ */
+export function getUsableWhatsAppE164(
+	phoneE164: string | null | undefined,
+	rawPhone?: string | null,
+): string | undefined {
+	// Try the pre‑normalized E.164 first (most reliable when present)
+	if (phoneE164) {
+		const normalized = normalizeCommercialPhone(phoneE164);
+		if (normalized) return normalized.e164.replace(/\D/g, '');
+	}
+	// Fall back to the raw phone ONLY when it already has a country code
+	if (rawPhone?.startsWith('+')) {
+		const normalized = normalizeCommercialPhone(rawPhone);
+		if (normalized) return normalized.e164.replace(/\D/g, '');
+	}
+	return undefined;
+}
