@@ -51,6 +51,8 @@ _tmp_*
 # --- CACHE & TOOLING ----------------------------------------------------------
 # Framework and library caches
 .playwright-mcp/
+.playwright-cli/
+output/playwright/
 .cache/
 .jest/
 .npm/
