@@ -32,7 +32,7 @@ describe('getEnv', () => {
 		expect(getEnv('CELEBRA_TEST_ENV_USER')).toBe('from-process');
 	});
 
-	it('loads value from .env.local when process.env is missing', () => {
+	it('returns an empty value when process.env is missing', () => {
 		process.env.NODE_ENV = 'development';
 		process.chdir(tempRoot);
 		writeFileSync(
@@ -41,7 +41,7 @@ describe('getEnv', () => {
 			'utf8',
 		);
 
-		expect(getEnv('CELEBRA_TEST_ENV_PASSWORD')).toBe('from-local');
+		expect(getEnv('CELEBRA_TEST_ENV_PASSWORD')).toBe('');
 	});
 
 	it('does not read files in test mode', () => {

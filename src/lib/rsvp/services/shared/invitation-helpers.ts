@@ -1,7 +1,6 @@
 import type { AttendanceStatus, EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { buildWhatsAppNumber } from '@/lib/phone/validation';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { resolveSiteOrigin } from '@/lib/shared/origin';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
@@ -16,6 +15,8 @@ import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/publi
 import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
 export type ShareMessageType = 'invitation' | 'reminder';
+
+const PUBLIC_SITE_FALLBACK = 'https://www.celebra-me.com';
 
 export interface BuildShareMessageInput {
 	origin: string;
@@ -45,7 +46,7 @@ export function resolveOrigin(providedOrigin?: string): string {
 		}
 	}
 
-	return resolveSiteOrigin();
+	return PUBLIC_SITE_FALLBACK;
 }
 
 function resolveTemplate(input: BuildShareMessageInput): string {

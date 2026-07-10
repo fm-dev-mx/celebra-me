@@ -4,18 +4,16 @@ import {
 	buildCommercialDashboardViewModel,
 	labelLeadChannel,
 	labelLeadStatus,
-	loadCommercialDashboardData,
 	type CommercialDashboardSummary,
 	type CountItem,
 	formatCount,
 	formatCurrency,
 	formatDateTime,
 } from '@/lib/tracking/commercial-dashboard';
-import { getEnv } from '@/lib/server/env';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
+import { getEnv } from '@/lib/server/env';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
@@ -24,18 +22,16 @@ if (!Astro.locals.session?.isSuperAdmin) {
 let dashboardData: CommercialDashboardSummary | null = null;
 let loadError = false;
 let initialConversions: ConversionEvent[] = [];
+const dashboardServer = await import('@/lib/tracking/commercial-dashboard.server');
 
 try {
-	dashboardData = await loadCommercialDashboardData();
+	dashboardData = await dashboardServer.loadCommercialDashboardData();
 } catch (error) {
 	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
 	loadError = true;
 }
 try {
-	initialConversions = await supabaseRestRequest<ConversionEvent[]>({
-		pathWithQuery: 'meta_conversion_events?select=id,event_name,event_id,value,currency,status,attempt_count,last_error_message,created_at&order=created_at.desc&limit=50',
-		useServiceRole: true,
-	});
+	initialConversions = await dashboardServer.loadCommercialDashboardOutbox();
 } catch (error) {
 	console.error('[commercial-dashboard] Error loading outbox data (non-critical):', error);
 }

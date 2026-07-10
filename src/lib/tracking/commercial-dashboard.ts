@@ -1,5 +1,3 @@
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-
 type EventProperties = Record<string, unknown>;
 
 export interface CommercialSessionRow {
@@ -38,7 +36,7 @@ export interface CommercialLeadRow {
 	created_at?: string;
 }
 
-interface CommercialDashboardRows {
+export interface CommercialDashboardRows {
 	sessions: CommercialSessionRow[];
 	events: CommercialEventRow[];
 	leads: CommercialLeadRow[];
@@ -46,7 +44,7 @@ interface CommercialDashboardRows {
 	conversions?: ConversionSummaryRow[];
 }
 
-interface SalesOrderSummaryRow {
+export interface SalesOrderSummaryRow {
 	id: string;
 	status: string;
 	total_amount: number | string;
@@ -58,7 +56,7 @@ interface SalesOrderSummaryRow {
 	deposit_paid_at?: string | null;
 }
 
-interface ConversionSummaryRow {
+export interface ConversionSummaryRow {
 	id: string;
 	order_id?: string | null;
 	status: 'pending' | 'sending' | 'sent' | 'failed' | 'skipped';
@@ -848,34 +846,3 @@ export function buildCommercialDashboardViewModel(
 	};
 }
 
-export async function loadCommercialDashboardData(): Promise<CommercialDashboardSummary> {
-	const [sessions, events, leads, orders, conversions] = await Promise.all([
-		supabaseRestRequest<CommercialSessionRow[]>({
-			pathWithQuery:
-				'visitor_sessions?select=id,route_class,is_internal,source:utm_source,medium:utm_medium,campaign:utm_campaign,last_seen_at&order=last_seen_at.desc&limit=1000',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<CommercialEventRow[]>({
-			pathWithQuery:
-				'tracking_events?select=event_name,event_properties,source,medium,campaign,consent_snapshot,occurred_at,is_internal&order=occurred_at.desc&limit=2000',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<CommercialLeadRow[]>({
-			pathWithQuery:
-				'leads?select=lead_code,name,email,phone,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at&order=created_at.desc&limit=200',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<SalesOrderSummaryRow[]>({
-			pathWithQuery:
-				'sales_orders?select=id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at&order=created_at.desc&limit=500',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<ConversionSummaryRow[]>({
-			pathWithQuery:
-				'meta_conversion_events?select=id,order_id,status,created_at,updated_at,last_error_message&order=created_at.desc&limit=500',
-			useServiceRole: true,
-		}).catch(() => []),
-	]);
-
-	return summarizeCommercialAnalytics({ sessions, events, leads, orders, conversions });
-}

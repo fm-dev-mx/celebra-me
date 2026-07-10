@@ -1,14 +1,25 @@
-import { resolveSiteOrigin, normalizeOrigin, isLocalOrigin } from '@/lib/shared/origin';
-
 const PUBLIC_SITE_FALLBACK = 'https://www.celebra-me.com';
 const DEFAULT_IMAGE_WIDTH = 1200;
 const DEFAULT_IMAGE_HEIGHT = 630;
+
+function normalizeOrigin(value: string): string {
+	return value.replace(/\/+$/, '');
+}
+
+function isLocalOrigin(origin: string): boolean {
+	try {
+		const { hostname } = new URL(origin);
+		return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+	} catch {
+		return true;
+	}
+}
 
 export function resolvePublicSiteOrigin(options?: {
 	configuredOrigin?: string;
 	fallbackOrigin?: string;
 }): string {
-	const configuredOrigin = options?.configuredOrigin ?? resolveSiteOrigin();
+	const configuredOrigin = options?.configuredOrigin ?? '';
 	const fallbackOrigin = options?.fallbackOrigin ?? PUBLIC_SITE_FALLBACK;
 
 	if (configuredOrigin && !isLocalOrigin(configuredOrigin)) {
