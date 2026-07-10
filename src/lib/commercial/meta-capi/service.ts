@@ -17,7 +17,12 @@ interface OutboxDetail {
 	currency: string;
 	customers: { email?: string | null; phone_e164?: string | null } | null;
 	sales_orders: { session_id?: string | null; deposit_paid_at?: string | null; created_at?: string | null } | null;
-	leads: { fbp?: string | null; fbc?: string | null; fbclid?: string | null } | null;
+	leads: {
+		consent_marketing?: boolean | null;
+		fbp?: string | null;
+		fbc?: string | null;
+		fbclid?: string | null;
+	} | null;
 }
 
 interface SessionDetail {
@@ -59,11 +64,12 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 	for (const row of rows) {
 		try {
 			const status = await deliverMetaConversionEvent(row.id);
+			// 'not_claimed' intentionally not counted — another worker already claimed the event.
 			if (status === 'sent') {
 				result.processed++;
 			} else if (status === 'skipped') {
 				result.skipped++;
-			} else {
+			} else if (status === 'failed') {
 				result.failed++;
 			}
 		} catch (error) {
@@ -77,7 +83,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -212,30 +218,38 @@ function resolveMetaCredentials(): MetaCredentials | null {
 	return { accessToken, pixelId };
 }
 
+function resolveDeliveryMode(): 'disabled' | 'test' | 'production' {
+	const mode = getEnv('META_CAPI_DELIVERY_MODE')?.trim().toLowerCase();
+	return mode === 'test' || mode === 'production' ? mode : 'disabled';
+}
+
+function resolveTestEventCode(mode: 'disabled' | 'test' | 'production'): string | null {
+	const code = getEnv('META_TEST_EVENT_CODE')?.trim();
+	return mode === 'test' && !code ? null : code || null;
+}
+
 export async function deliverMetaConversionEvent(
 	outboxId: string,
-): Promise<'sent' | 'failed' | 'skipped'> {
+): Promise<'sent' | 'failed' | 'skipped' | 'not_claimed'> {
+	const now = new Date().toISOString();
 	const initialUpdate = await supabaseRestRequest<Array<{ id: string; attempt_count: number }>>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,attempt_count`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(now)})&select=id,attempt_count`,
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body: {
 			status: 'sending',
-			updated_at: new Date().toISOString(),
+			updated_at: now,
 		},
 	});
 
 	const outboxRow = initialUpdate[0];
 	if (!outboxRow) {
-		throw new Error(`Outbox event ${outboxId} not found.`);
+		return 'not_claimed';
 	}
 
 	const attemptCount = (outboxRow.attempt_count || 0) + 1;
-	let deliveryMode = getEnv('META_CAPI_DELIVERY_MODE')?.trim().toLowerCase() || 'disabled';
-	if (deliveryMode !== 'test' && deliveryMode !== 'production') {
-		deliveryMode = 'disabled';
-	}
+	const deliveryMode = resolveDeliveryMode();
 
 	if (deliveryMode === 'disabled') {
 		await updateStatus(
@@ -254,6 +268,17 @@ export async function deliverMetaConversionEvent(
 		return 'failed';
 	}
 
+	if (detail.leads?.consent_marketing !== true) {
+		await updateStatus(
+			outboxId,
+			'skipped',
+			attemptCount,
+			'CONSENT_REQUIRED',
+			'Marketing consent is required before preparing Meta user data.',
+		);
+		return 'skipped';
+	}
+
 	const credentials = resolveMetaCredentials();
 	if (!credentials) {
 		await updateStatus(outboxId, 'failed', attemptCount, 'CONFIG_ERROR', 'Missing environment configuration (META_CAPI_ACCESS_TOKEN or META_PIXEL_ID).');
@@ -264,7 +289,7 @@ export async function deliverMetaConversionEvent(
 	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
 	const { eventData, payloadHash } = buildEventPayload(detail, session);
 
-	const testEventCode = getEnv('META_TEST_EVENT_CODE')?.trim();
+	const testEventCode = resolveTestEventCode(deliveryMode);
 	if (deliveryMode === 'test' && !testEventCode) {
 		await updateStatus(outboxId, 'failed', attemptCount, 'CONFIG_ERROR', 'Missing META_TEST_EVENT_CODE in test mode.');
 		return 'failed';

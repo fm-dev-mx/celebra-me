@@ -88,6 +88,54 @@ describe('deliverMetaConversionEvent', () => {
 		);
 	});
 
+	it.each([
+		['missing', null],
+		['rejected', false],
+	])('skips %s marketing consent before preparing Meta user data', async (_label, consentMarketing) => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 0 }])
+			.mockResolvedValueOnce([{
+				id: 'outbox-id',
+				event_name: 'Purchase',
+				event_id: 'purchase:order-id:deposit_paid',
+				value: 899,
+				currency: 'MXN',
+				customers: { email: 'client@example.com', phone_e164: '+526141234567' },
+				sales_orders: null,
+				leads: consentMarketing === null ? null : { consent_marketing: consentMarketing },
+			}])
+			.mockResolvedValueOnce([]);
+
+		const status = await deliverMetaConversionEvent('outbox-id');
+
+		expect(status).toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({
+					status: 'skipped',
+					last_error_code: 'CONSENT_REQUIRED',
+				}),
+			}),
+		);
+	});
+
+	it('does not deliver an event that another worker already claimed', async () => {
+		mockRestRequest.mockResolvedValueOnce([]);
+
+		const status = await deliverMetaConversionEvent('outbox-id');
+
+		expect(status).toBe('not_claimed');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				method: 'PATCH',
+				pathWithQuery: expect.stringContaining('status=in.(pending,failed)'),
+				body: expect.objectContaining({ status: 'sending' }),
+			}),
+		);
+	});
+
 	it('formats the payload with hashed values and sends it to Meta in test mode', async () => {
 		mockRestRequest
 			.mockResolvedValueOnce([
@@ -105,7 +153,7 @@ describe('deliverMetaConversionEvent', () => {
 						session_id: 'session-id',
 						deposit_paid_at: '2026-07-08T12:00:00.000Z',
 					},
-					leads: null,
+					leads: { consent_marketing: true },
 				},
 			]) // GET details
 			.mockResolvedValueOnce([
@@ -165,7 +213,7 @@ describe('deliverMetaConversionEvent', () => {
 						session_id: 'session-id',
 						deposit_paid_at: '2026-07-08T12:00:00.000Z',
 					},
-					leads: null,
+					leads: { consent_marketing: true },
 				},
 			]) // GET details
 			.mockResolvedValueOnce([
@@ -206,7 +254,7 @@ describe('deliverMetaConversionEvent', () => {
 					currency: 'MXN',
 					customers: { email: 'client@example.com' },
 					sales_orders: null,
-					leads: null,
+					leads: { consent_marketing: true },
 				},
 			]) // GET details
 			.mockResolvedValueOnce([]); // PATCH status = failed
@@ -252,7 +300,7 @@ describe('deliverMetaConversionEvent', () => {
 					currency: 'MXN',
 					customers: { email: 'client@example.com' },
 					sales_orders: null,
-					leads: null,
+					leads: { consent_marketing: true },
 				},
 			]) // GET details
 			.mockResolvedValueOnce([]); // PATCH status = failed
@@ -279,8 +327,18 @@ describe('processPendingMetaConversionEvents', () => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'id-1' }, { id: 'id-2' }]) // GET pending list
 			.mockResolvedValue([
-				{ id: 'mock-id', attempt_count: 0 },
-			]); // PATCH status inside deliverMetaConversionEvent
+				{
+					id: 'mock-id',
+					attempt_count: 0,
+					event_name: 'Purchase',
+					event_id: 'purchase:order-id:deposit_paid',
+					value: 899,
+					currency: 'MXN',
+					customers: null,
+					sales_orders: null,
+					leads: { consent_marketing: true },
+				},
+			]); // claim, detail, and final status updates
 
 		mockFetch.mockResolvedValue({
 			ok: true,
