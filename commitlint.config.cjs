@@ -2,7 +2,7 @@ const FORBIDDEN_VOCABULARY =
 	/\b(wip|fix stuff|misc|various|tmp|temp|quick fix|minor changes|small fix|tweaks|improvements|adjustments|stuff|things)\b/i;
 
 const SUBJECT_PROCESS_LANGUAGE =
-	/\b(record|scope|apply changes|process|misc|tmp|temp|things|stuff)\b/i;
+	/\b(?:record|scope|apply changes|process(?!\.)|misc|tmp|temp|things|stuff)\b/i;
 
 const GENERIC_TARGETS = new Set([
 	'change',

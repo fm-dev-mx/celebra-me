@@ -2,7 +2,7 @@
 name: commit-planner
 description: Full commit lifecycle: plan atomic commits, then optionally execute them. Use when preparing commits, splitting a large diff, reviewing atomicity, grouping staged/unstaged changes into commit units, drafting messages, committing staged changes, or recovering from common git accidents. Inspect `git status`, `git diff`, and `git diff --cached`, then propose commit boundaries, excluded changes, and Conventional Commit messages matching `docs/core/git-governance.md` and `commitlint.config.cjs`. Can also execute the commit after user confirmation.
 domain: meta
-version: 2.1.0
+version: 2.2.0
 absorbed_skills: [commit-staged]
 when_to_use:
   - Preparing commits or evaluating atomicity
@@ -106,6 +106,9 @@ Use `type(scope): specific subject`.
 - Avoid vague language such as `misc`, `wip`, `fix stuff`, `quick fix`, `tweaks`, `improvements`,
   `changes`, `stuff`, or `things`.
 - Avoid process language such as `apply changes`, `record`, or `process`.
+  ✅ The commitlint regex was patched to allow `process.` (as in `process.env`), so
+  Node.js runtime references no longer trigger false positives. Still avoid bare
+  `process` as a verb (e.g. `process the data`).
 
 ## Apply the Body Policy
 
@@ -116,6 +119,22 @@ Use `type(scope): specific subject`.
 - `3-5` changed files: prefer one bullet per file.
 - `6+` changed files: use bullets per coherent module or change group.
 - Keep bullets concrete and path-led: `- src/path: explain the actual change`.
+- **Wrap each body line at the project's `body-max-line-length` limit** (currently **140
+  characters**). Break long bullets into continuation lines indented with 2 spaces. Example:
+
+  ```
+  - src/lib/tracking/commercial-presentation.ts:
+    extract label maps, humanize functions,
+    and technical/commercial split logic
+  - src/pages/dashboard/commercial.astro:
+    use shared attribution module
+    with technical/commercial separation
+  ```
+
+  The commitlint rule `body-max-line-length: [2, 'always', 140]` is a **hard error** (severity 2).
+  It is enforced at push time even in audit mode. Use `wc -c` or your editor's column ruler to
+  check before committing. Each `-m` argument passed to `git commit` is a separate paragraph;
+  lines within it must individually stay under the limit.
 
 ## Structure the Response
 
@@ -168,6 +187,10 @@ confirmation between commits — the plan IS the approval.
    # If line-ending normalization is needed first:
    git add --renormalize <file-with-crlf>
    git add <file-with-crlf>
+   # Pre-validate the message with commitlint (especially when using
+   # --no-verify, which skips the commit-msg hook):
+   echo "type(scope): subject" | pnpm exec commitlint --verbose 2>/dev/null \
+     || { echo "❌ Commit message fails commitlint — fix before retrying"; exit 1; }
    # Commit with the pre-approved message
    git commit --no-verify -m "type(scope): subject" \
      -m "- path/file: change" \
@@ -314,6 +337,17 @@ Verify with `git diff --cached` before committing.
   after stash-pop with `git branch --show-current`. If `develop` was advanced accidentally, use
   `git reflog show develop` to find its prior position, then reset with
   `git checkout develop && git reset --hard <prior-commit>`.
+- **`body-max-line-length` (hard error with `--no-verify`)**: commitlint enforces
+  `body-max-line-length: [2, 'always', 140]`. The `--no-verify` flag bypasses the commit-msg hook
+  that normally catches this at commit time, so the error only surfaces during pre-push validation.
+  Always pre-validate the message with `echo <message> | pnpm exec commitlint` when using
+  `--no-verify`. Split any body line that exceeds 140 characters into continuation lines (see
+  "Apply the Body Policy" above).
+- **`process.env` false positive in `no-process-language`**: the subject rule previously flagged
+  `process` in `process.env` because the regex `\bprocess\b` matched any standalone occurrence. The
+  regex was patched in `commitlint.config.cjs` to exclude `process.` with a negative lookahead
+  `(?!\.)`. Avoid re-introducing this issue — if a new subject uses `process` as a verb, it's still
+  correctly flagged.
 - **SCSS pre-commit hooks (stylelint)**: lint-staged runs stylelint on staged SCSS files. Common
   rejections and fixes:
 
