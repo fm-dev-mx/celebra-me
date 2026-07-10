@@ -15,6 +15,13 @@ const allowedHydratedComponents = new Set([
 	'CreateInvitationFlow',
 	'InvitationEditor',
 	'ContentSyncPanel',
+	// Commercial CRM islands — SalesWorkspace drives lead reconciliation, order creation,
+	// and deposit tracking; CapiOutboxPanel provides CAPI outbox monitoring and manual
+	// retry. Both only import the browser-safe @/lib/dashboard/api-client (fetch via
+	// @/lib/api-client-shared + csrf) and child components — no server-only modules,
+	// service-role helpers, Meta tokens, or node:* dependencies.
+	'SalesWorkspace',
+	'CapiOutboxPanel',
 	// Small behavior islands and public interactive surfaces.
 	'DashboardUserMenu',
 	'MfaSetupBehavior',
