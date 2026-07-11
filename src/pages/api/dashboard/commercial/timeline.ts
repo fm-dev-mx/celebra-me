@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { loadCrmTimeline } from '@/lib/commercial/crm-timeline.service';
@@ -9,7 +10,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 		const customerId = url.searchParams.get('customerId')?.trim();
 		if (!customerId) {
-			return errorResponse({ success: false, error: { code: 'bad_request', message: 'customerId is required.' } });
+			return errorResponse(new ApiError(400, 'bad_request', 'customerId is required.'));
 		}
 
 		const entries = await loadCrmTimeline(customerId);
