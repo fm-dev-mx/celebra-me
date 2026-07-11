@@ -5,6 +5,8 @@ import {
 import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
 import {
 	TrackingEventSchema,
+	PublicTrackingEventSchema,
+	INTERNAL_TRACKING_EVENT_NAMES,
 	hasUnsafeEventProperties,
 	sanitizeEventProperties,
 } from '@/lib/tracking/event-contract';
@@ -102,6 +104,34 @@ describe('tracking event contract', () => {
 			routeClass: 'commercial',
 			eventProperties: { cta_id: 'hero_whatsapp' },
 			consentSnapshot: { necessary: true, analytics: true, marketing: false },
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it.each(INTERNAL_TRACKING_EVENT_NAMES)("rejects the server-owned %s event from the public contract", (eventName) => {
+	const result = PublicTrackingEventSchema.safeParse({
+		sessionId: '11111111-1111-4111-8111-111111111111',
+			visitorId: 'visitor_123456',
+			eventName,
+			routePath: '/',
+			routeClass: 'commercial',
+			eventProperties: {},
+			consentSnapshot: { necessary: true, analytics: true, marketing: false },
+			});
+
+		expect(result.success).toBe(false);
+		});
+
+	it('keeps server-owned lifecycle events available to trusted contracts', () => {
+		const result = TrackingEventSchema.safeParse({
+			sessionId: '11111111-1111-4111-8111-111111111111',
+			visitorId: 'server_workflow',
+			eventName: 'order_created',
+			routePath: '/dashboard/commercial',
+			routeClass: 'dashboard_admin_auth',
+			eventProperties: {},
+			consentSnapshot: { necessary: true, analytics: false, marketing: false },
 		});
 
 		expect(result.success).toBe(true);

@@ -8,6 +8,7 @@ jest.mock('@/lib/tracking/lead.service', () => ({
 }));
 
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
+import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-contract';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 
@@ -157,6 +158,30 @@ describe('ingestTrackingEvent', () => {
 		expect(mockInsertTrackingEvent).not.toHaveBeenCalled();
 		expect(mockCreateLeadFromTrackingEvent).not.toHaveBeenCalled();
 	});
+
+	it.each(INTERNAL_TRACKING_EVENT_NAMES)(
+		'rejects the server-owned %s event before persistence',
+		async (eventName) => {
+			await expect(
+				ingestTrackingEvent({
+					request: makeRequest(),
+					vercelEnv: 'production',
+					payload: {
+						sessionId: '11111111-1111-4111-8111-111111111111',
+						visitorId: 'visitor_123456',
+						eventName,
+						routePath: '/',
+						routeClass: 'commercial',
+						eventProperties: {},
+						consentSnapshot: { necessary: true, analytics: true, marketing: false },
+					},
+				}),
+			).rejects.toThrow('Tracking event payload is invalid.');
+
+			expect(mockUpsertVisitorSession).not.toHaveBeenCalled();
+			expect(mockInsertTrackingEvent).not.toHaveBeenCalled();
+		},
+	);
 
 	describe('WhatsApp lead auto-creation', () => {
 		it('auto-creates a lead when whatsapp_contact_clicked carries a lead_code', async () => {

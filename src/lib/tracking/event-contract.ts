@@ -7,10 +7,8 @@ import {
 } from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
-export const TRACKING_EVENT_NAMES = [
+export const PUBLIC_TRACKING_EVENT_NAMES = [
 	'page_viewed',
-	'session_started',
-	'session_ended',
 	'section_seen',
 	'scroll_depth_reached',
 	'cta_clicked',
@@ -19,6 +17,11 @@ export const TRACKING_EVENT_NAMES = [
 	'whatsapp_contact_clicked',
 	'form_started',
 	'form_submitted',
+] as const;
+
+export const INTERNAL_TRACKING_EVENT_NAMES = [
+	'session_started',
+	'session_ended',
 	'lead_created',
 	'order_created',
 	'deposit_paid',
@@ -33,7 +36,13 @@ export const TRACKING_EVENT_NAMES = [
 	'lost',
 ] as const;
 
+export const TRACKING_EVENT_NAMES = [
+	...PUBLIC_TRACKING_EVENT_NAMES,
+	...INTERNAL_TRACKING_EVENT_NAMES,
+] as const;
+
 export type TrackingEventName = (typeof TRACKING_EVENT_NAMES)[number];
+export type PublicTrackingEventName = (typeof PUBLIC_TRACKING_EVENT_NAMES)[number];
 
 export const TRACKING_ROUTE_CLASSES: TrackingRouteClass[] = [
 	'commercial',
@@ -146,5 +155,10 @@ export const TrackingEventSchema = z.object({
 	isInternal: z.boolean().optional().default(false),
 });
 
+export const PublicTrackingEventSchema = TrackingEventSchema.extend({
+	eventName: z.enum(PUBLIC_TRACKING_EVENT_NAMES),
+});
+
 export type TrackingEventInput = z.input<typeof TrackingEventSchema>;
 export type TrackingEvent = z.output<typeof TrackingEventSchema>;
+export type PublicTrackingEvent = z.output<typeof PublicTrackingEventSchema>;

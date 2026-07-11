@@ -9,6 +9,7 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { POST } from '@/pages/api/tracking/events';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 const mockIngestTrackingEvent = ingestTrackingEvent as jest.MockedFunction<
@@ -108,5 +109,25 @@ describe('/api/tracking/events', () => {
 		expect(response.status).toBe(429);
 		expect(body.success).toBe(false);
 		expect(mockIngestTrackingEvent).not.toHaveBeenCalled();
+	});
+
+	it('returns the structured validation error for a server-owned event name', async () => {
+		mockIngestTrackingEvent.mockRejectedValue(
+			new ApiError(400, 'bad_request', 'Tracking event payload is invalid.'),
+		);
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ ...payload, eventName: 'order_created' }),
+		});
+
+		const response = await POST(createContext(request) as never);
+
+		expect(response.status).toBe(400);
+		expect(response.headers.get('content-type')).toContain('application/json');
+		expect(await response.json()).toEqual({
+			success: false,
+			error: { code: 'bad_request', message: 'Tracking event payload is invalid.' },
+		});
 	});
 });

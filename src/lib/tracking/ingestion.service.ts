@@ -2,9 +2,9 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
 import {
 	hasUnsafeEventProperties,
+	PublicTrackingEventSchema,
 	sanitizeEventProperties,
-	TrackingEventSchema,
-	type TrackingEvent,
+	type PublicTrackingEvent,
 } from '@/lib/tracking/event-contract';
 import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
@@ -21,8 +21,8 @@ export type IngestTrackingEventResult =
 	| { accepted: true; eventId: string }
 	| { accepted: false; reason: string };
 
-function parseTrackingPayload(payload: unknown): TrackingEvent {
-	const result = TrackingEventSchema.safeParse(payload);
+function parseTrackingPayload(payload: unknown): PublicTrackingEvent {
+	const result = PublicTrackingEventSchema.safeParse(payload);
 	if (!result.success) {
 		throw new ApiError(400, 'bad_request', 'Tracking event payload is invalid.', {
 			issues: result.error.issues,

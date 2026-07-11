@@ -7,17 +7,7 @@ import {
 	metaAttributionOrUndefined,
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
-
-type TrackingEventName =
-	| 'page_viewed'
-	| 'section_seen'
-	| 'scroll_depth_reached'
-	| 'cta_clicked'
-	| 'package_viewed'
-	| 'demo_viewed'
-	| 'form_started'
-	| 'form_submitted'
-	| 'whatsapp_contact_clicked';
+import type { PublicTrackingEventName } from '@/lib/tracking/event-contract';
 
 type ConsentSnapshot = {
 	necessary: true;
@@ -28,7 +18,7 @@ type ConsentSnapshot = {
 type TrackingPayload = {
 	sessionId: string;
 	visitorId: string;
-	eventName: TrackingEventName;
+	eventName: PublicTrackingEventName;
 	routePath: string;
 	routeClass: string;
 	source?: string;
@@ -149,7 +139,7 @@ function shouldIgnoreTracking(): boolean {
 }
 
 function pushDataLayer(
-	eventName: TrackingEventName,
+	eventName: PublicTrackingEventName,
 	properties: TrackingPayload['eventProperties'],
 ): void {
 	window.dataLayer = window.dataLayer ?? [];
@@ -160,7 +150,7 @@ function pushDataLayer(
 }
 
 async function trackEvent(
-	eventName: TrackingEventName,
+	eventName: PublicTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
 ): Promise<void> {
 	if (shouldIgnoreTracking()) return;
@@ -362,7 +352,7 @@ function bindClicks(): void {
 			event.target instanceof Element ? event.target.closest('[data-track-event]') : null;
 		if (!(target instanceof HTMLElement)) return;
 
-		const eventName = target.dataset.trackEvent as TrackingEventName | undefined;
+		const eventName = target.dataset.trackEvent as PublicTrackingEventName | undefined;
 		if (!eventName) return;
 
 		const isWhatsAppClick = eventName === 'whatsapp_contact_clicked';
