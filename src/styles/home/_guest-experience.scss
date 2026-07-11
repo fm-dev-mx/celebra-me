@@ -184,7 +184,6 @@
 	}
 
 	// --------------- Visual Side — Premium Product Scene ---------------
-	//
 	// Layered composition with three tiers of depth:
 	//   1. WhatsApp bubble — small contextual cue (top, z-index 3)
 	//   2. Invitation card — supporting layer behind the pass (z-index 1)
@@ -239,10 +238,9 @@
 		margin-bottom: -0.75rem;
 		align-self: flex-start;
 		margin-left: clamp(0.5rem, 3vw, 1.5rem);
-
 		background: rgb(255 255 255 / 94%);
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 13%);
-		border-radius: 0 0.85rem 0.85rem 0.85rem;
+		border-radius: 0 0.85rem 0.85rem;
 		box-shadow:
 			0 3px 10px rgb(0 0 0 / 5%),
 			0 1px 2px rgb(0 0 0 / 3%);
@@ -258,7 +256,7 @@
 			background: rgb(255 255 255 / 94%);
 			border-left: 1px solid rgb(var(--color-action-accent-rgb) / 13%);
 			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 13%);
-			border-radius: 0.15rem 0 0 0;
+			border-radius: 0.15rem 0 0;
 			clip-path: polygon(0 0, 100% 0, 0 100%);
 		}
 	}
@@ -287,7 +285,6 @@
 		width: min(80%, 360px);
 		margin-bottom: -1.25rem;
 		align-self: center;
-
 		background: linear-gradient(
 			165deg,
 			rgb(253 250 245 / 100%) 0%,
@@ -299,7 +296,6 @@
 		box-shadow:
 			0 6px 20px -8px rgb(0 0 0 / 10%),
 			0 1px 4px rgb(0 0 0 / 4%);
-
 		padding: 1rem 1.25rem 0.75rem;
 		text-align: center;
 
@@ -343,7 +339,6 @@
 		position: relative;
 		z-index: 2;
 		width: min(90%, 420px);
-
 		background: linear-gradient(
 			165deg,
 			rgb(254 252 248 / 100%) 0%,
@@ -656,8 +651,7 @@
 			padding: 0.5rem 0.75rem;
 			margin-bottom: -0.5rem;
 			margin-left: 0.35rem;
-
-			border-radius: 0 0.75rem 0.75rem 0.75rem;
+			border-radius: 0 0.75rem 0.75rem;
 
 			&::before {
 				width: 0.5rem;

@@ -96,14 +96,6 @@
 		margin-bottom: 1.35rem;
 	}
 
-	&__footer {
-		margin-top: 3rem;
-		font-family: var(--font-body);
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--contact-info-footer-color);
-	}
 }
 
 .contact-channels {
@@ -251,7 +243,7 @@
 	font-family: var(--font-body);
 	font-size: clamp(0.82rem, 1.5vw, 0.9rem);
 	line-height: 1.5;
-	opacity: 0.75;
+	opacity: 75%;
 }
 
 .contact-card {
