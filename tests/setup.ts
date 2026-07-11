@@ -82,6 +82,8 @@ Object.defineProperty(global, 'import', {
 			env: {
 				EMAIL_TO: 'test@example.com',
 				EMAIL_FROM: 'noreply@test.com',
+				PUBLIC_GA_MEASUREMENT_ID: process.env.PUBLIC_GA_MEASUREMENT_ID || 'G-TEST',
+				PUBLIC_GOOGLE_ANALYTICS_ID: '',
 				...process.env,
 			},
 		},

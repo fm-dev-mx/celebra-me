@@ -11,6 +11,18 @@
  *
  * Once loaded, it forwards mapped first-party events as PII-safe GA4 events.
  * Uses the existing SAFE_EVENT_PROPERTY_KEYS allowlist for parameter safety.
+ *
+ * An internal event queue buffers events that arrive during the brief window
+ * between gtag.js starting to load and finishing. The queue is flushed after
+ * the script loads, so consented events are never silently dropped because
+ * gtag.js was still bootstrapping.
+ *
+ * Error recovery: if gtag.js fails to load, gaLoaded stays false and the
+ * pending queue is discarded. A later re-initialization (e.g. on the next
+ * page navigation, which triggers a fresh initGA4 call, or if consent is
+ * withdrawn and re-granted) will attempt to load the script again. There is
+ * no automatic retry during the same page lifecycle — the assumption is that
+ * a script-load failure is transient and will resolve on the next navigation.
  */
 
 import {
@@ -30,6 +42,19 @@ declare global {
 let gaLoaded = false;
 let gaLoading = false;
 let measurementId = '';
+
+// Bounded event queue — absorbs events that arrive while gtag.js is loading
+// but before it finishes. Flushed once the script becomes available.
+const pendingEvents: Array<{
+	eventName: string;
+	eventProperties: Record<string, string | number | boolean>;
+}> = [];
+const MAX_PENDING_EVENTS = 30;
+
+// Tracks whether a page_view has been forwarded to GA4 in the current page
+// lifecycle. Prevents duplicate page_views when the deferred flush and the
+// synchronous trackEvent path both attempt to forward one.
+let pageViewForwarded = false;
 
 /**
  * Resolve the GA4 measurement ID, preferring PUBLIC_GA_MEASUREMENT_ID
@@ -60,10 +85,12 @@ function shouldLoad(): boolean {
 function loadGtagScript(): Promise<void> {
 	if (gaLoaded) return Promise.resolve();
 	if (gaLoading) {
-		// Return a promise that resolves when the script loads.
+		// Return a promise that resolves when the script loads OR when
+		// loading is abandoned (error / cancellation). In the error case
+		// the caller's .then(flushPendingEvents) is guarded by gaLoaded.
 		return new Promise((resolve) => {
 			const checkLoaded = () => {
-				if (gaLoaded) resolve();
+				if (gaLoaded || !gaLoading) resolve();
 				else setTimeout(checkLoaded, 100);
 			};
 			checkLoaded();
@@ -99,13 +126,49 @@ function loadGtagScript(): Promise<void> {
 			resolve();
 		};
 		script.onerror = () => {
-			// Loading failed silently — do not break the page.
-			gaLoaded = true;
+			// Loading failed — do NOT set gaLoaded to true. Keep gaLoaded
+			// false so that:
+			//   1. flushPendingEvents (guarded by gaLoaded) is a no-op.
+			//   2. queued events are discarded (they cannot be forwarded).
+			//   3. a later initialization attempt can retry.
 			gaLoading = false;
+			pendingEvents.splice(0);
 			resolve();
 		};
 		document.head.appendChild(script);
 	});
+}
+
+/**
+ * Replay any events that were queued while gtag.js was loading, then send a
+ * deferred page_view if one was never forwarded (the initial page_viewed ran
+ * before gtag.js was available).
+ *
+ * Safe to call multiple times — the second call is a no-op.
+ */
+function flushPendingEvents(): void {
+	// Guard: if gtag.js never loaded (script.onerror), gaLoaded is false
+	// and no events can be forwarded. The queue was already cleared by
+	// the error handler.
+	if (!gaLoaded) {
+		pageViewForwarded = false;
+		return;
+	}
+
+	// Replay queued events in FIFO order.
+	const events = pendingEvents.splice(0);
+	for (const { eventName, eventProperties } of events) {
+		forwardToGA4(eventName, eventProperties);
+	}
+
+	// If the initial page_view was never forwarded (first visit where consent
+	// was granted after page load, or gtag loaded synchronously before
+	// trackEvent completed), forward it now.
+	if (!pageViewForwarded) {
+		forwardToGA4('page_viewed', {
+			page_type: document.body.dataset.trackingRouteClass ?? '',
+		});
+	}
 }
 
 /**
@@ -118,13 +181,17 @@ export function initGA4(): void {
 
 	const consent = readConsent();
 	if (consent.analytics) {
-		void loadGtagScript();
+		void loadGtagScript().then(() => {
+			flushPendingEvents();
+		});
 	}
 
 	// React to consent changes: load if newly granted.
 	subscribeConsentChange((state: ConsentState) => {
 		if (state.analytics && !gaLoaded && !gaLoading) {
-			void loadGtagScript();
+			void loadGtagScript().then(() => {
+				flushPendingEvents();
+			});
 		}
 		// If consent is withdrawn, we can stop forwarding custom events
 		// but cannot unload the already-loaded script. Basic Consent Mode
@@ -136,12 +203,25 @@ export function initGA4(): void {
 /**
  * Forward a first-party event to GA4 as a custom event.
  * Called only after analytics consent is verified externally.
+ *
+ * When gtag.js is still loading, the event is enqueued for replay after
+ * the script finishes. Events arriving before gtag.js has started loading
+ * (pre-consent) are silently dropped — they represent interactions that
+ * happened before analytics consent was granted.
  */
 export function forwardToGA4(
 	eventName: string,
 	eventProperties: Record<string, string | number | boolean>,
 ): void {
-	if (!gaLoaded) return;
+	if (!gaLoaded) {
+		// Only queue events during the active-loading window.
+		// Pre-consent events (gaLoading = false) are never buffered.
+		if (gaLoading && pendingEvents.length < MAX_PENDING_EVENTS) {
+			pendingEvents.push({ eventName, eventProperties });
+		}
+		return;
+	}
+
 	const consent = readConsent();
 	if (!consent.analytics) return;
 
@@ -152,9 +232,17 @@ export function forwardToGA4(
 	const ga4EventName = mapEventName(eventName);
 	if (!ga4EventName) return;
 
+	// Prevent duplicate page_view when the deferred flush runs before the
+	// trackEvent path had a chance to forward the initial page_viewed.
+	if (ga4EventName === 'page_view' && pageViewForwarded) return;
+
 	// Strip any properties not in the safe allowlist.
 	const safeParams = sanitizeForGA4(eventProperties);
 	gtag('event', ga4EventName, safeParams);
+
+	if (ga4EventName === 'page_view') {
+		pageViewForwarded = true;
+	}
 }
 
 const GA4_EVENT_MAP: Record<string, string> = {
