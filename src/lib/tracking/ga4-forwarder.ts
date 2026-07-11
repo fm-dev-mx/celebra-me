@@ -30,6 +30,7 @@ import {
 	subscribeConsentChange,
 	type ConsentState,
 } from '@/lib/tracking/consent-client';
+import { createGa4EventQueue } from '@/lib/tracking/ga4-queue';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 declare global {
@@ -43,18 +44,8 @@ let gaLoaded = false;
 let gaLoading = false;
 let measurementId = '';
 
-// Bounded event queue — absorbs events that arrive while gtag.js is loading
-// but before it finishes. Flushed once the script becomes available.
-const pendingEvents: Array<{
-	eventName: string;
-	eventProperties: Record<string, string | number | boolean>;
-}> = [];
 const MAX_PENDING_EVENTS = 30;
-
-// Tracks whether a page_view has been forwarded to GA4 in the current page
-// lifecycle. Prevents duplicate page_views when the deferred flush and the
-// synchronous trackEvent path both attempt to forward one.
-let pageViewForwarded = false;
+const queue = createGa4EventQueue(MAX_PENDING_EVENTS);
 
 /**
  * Resolve the GA4 measurement ID, preferring PUBLIC_GA_MEASUREMENT_ID
@@ -132,7 +123,7 @@ function loadGtagScript(): Promise<void> {
 			//   2. queued events are discarded (they cannot be forwarded).
 			//   3. a later initialization attempt can retry.
 			gaLoading = false;
-			pendingEvents.splice(0);
+			queue.clear();
 			resolve();
 		};
 		document.head.appendChild(script);
@@ -151,24 +142,20 @@ function flushPendingEvents(): void {
 	// and no events can be forwarded. The queue was already cleared by
 	// the error handler.
 	if (!gaLoaded) {
-		pageViewForwarded = false;
+		queue.resetPageViewForwarded();
 		return;
 	}
 
-	// Replay queued events in FIFO order.
-	const events = pendingEvents.splice(0);
-	for (const { eventName, eventProperties } of events) {
-		forwardToGA4(eventName, eventProperties);
-	}
-
-	// If the initial page_view was never forwarded (first visit where consent
-	// was granted after page load, or gtag loaded synchronously before
-	// trackEvent completed), forward it now.
-	if (!pageViewForwarded) {
-		forwardToGA4('page_viewed', {
-			page_type: document.body.dataset.trackingRouteClass ?? '',
-		});
-	}
+	queue.flush(
+		(eventName, eventProperties) => {
+			forwardToGA4(eventName, eventProperties);
+		},
+		() => {
+			forwardToGA4('page_viewed', {
+				page_type: document.body.dataset.trackingRouteClass ?? '',
+			});
+		},
+	);
 }
 
 /**
@@ -216,9 +203,7 @@ export function forwardToGA4(
 	if (!gaLoaded) {
 		// Only queue events during the active-loading window.
 		// Pre-consent events (gaLoading = false) are never buffered.
-		if (gaLoading && pendingEvents.length < MAX_PENDING_EVENTS) {
-			pendingEvents.push({ eventName, eventProperties });
-		}
+		if (gaLoading) queue.enqueue(eventName, eventProperties);
 		return;
 	}
 
@@ -234,15 +219,13 @@ export function forwardToGA4(
 
 	// Prevent duplicate page_view when the deferred flush runs before the
 	// trackEvent path had a chance to forward the initial page_viewed.
-	if (ga4EventName === 'page_view' && pageViewForwarded) return;
+	if (ga4EventName === 'page_view' && !queue.shouldForwardPageView()) return;
 
 	// Strip any properties not in the safe allowlist.
 	const safeParams = sanitizeForGA4(eventProperties);
 	gtag('event', ga4EventName, safeParams);
 
-	if (ga4EventName === 'page_view') {
-		pageViewForwarded = true;
-	}
+	if (ga4EventName === 'page_view') queue.markPageViewForwarded();
 }
 
 const GA4_EVENT_MAP: Record<string, string> = {
