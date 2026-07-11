@@ -8,6 +8,7 @@ import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
+import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
@@ -16,7 +17,6 @@ import type {
 	IndicationStyleVariant,
 	LocationVariant,
 } from '@/lib/theme/theme-contract';
-import type { LocationVisibility } from '@/lib/adapters/types';
 import type { LocationPresentation } from '@/lib/invitation/presentation-options';
 
 interface VenueData {
@@ -54,7 +54,6 @@ interface VenueEntry extends VenueData {
 }
 
 interface Props {
-	visibility?: LocationVisibility;
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;
@@ -182,7 +181,10 @@ const isSingleVenue = displayVenues.length === 1;
 										<span>{editorialNoteTitle}</span>
 									</p>
 								)}
-								<p class="event-location__indication-text" set:html={indication.text} />
+								<p
+									class="event-location__indication-text"
+									set:html={sanitizeIndicationHtml(indication.text)}
+								/>
 							</div>
 						</div>
 					);
