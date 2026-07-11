@@ -7,6 +7,8 @@ import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { errorResponse } from '@/lib/rsvp/core/http';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 
 interface CookieStore {
@@ -296,7 +298,7 @@ async function handleProtectedAuthRequest(
 	redirect: (path: string) => Response,
 	request: Request,
 	next: () => Promise<Response>,
-	locals: { session?: SessionContext; hasAdminStrongAuth?: boolean },
+	locals: { session?: SessionContext; hasAdminStrongAuth?: boolean; csrfToken?: string },
 ) {
 	const now = Math.floor(Date.now() / 1000);
 	const isApiRoute = url.pathname.startsWith('/api/dashboard');
@@ -347,6 +349,9 @@ async function handleProtectedAuthRequest(
 
 	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
 	locals.hasAdminStrongAuth = effectiveAdminStrongAuth;
+	if (!isApiRoute && !isPreviewRoute(url.pathname)) {
+		locals.csrfToken = setCsrfToken(cookies);
+	}
 
 	return next();
 }
@@ -356,10 +361,6 @@ export const onRequest = defineMiddleware(
 		if (!shouldHandleAuth(url.pathname)) {
 			const response = await next();
 			return applyShortId404Headers(url.pathname, response);
-		}
-
-		if (!url.pathname.startsWith('/api/') && !isPreviewRoute(url.pathname)) {
-			locals.csrfToken = setCsrfToken(cookies);
 		}
 
 		try {
@@ -374,6 +375,11 @@ export const onRequest = defineMiddleware(
 			return applyShortId404Headers(url.pathname, response);
 		} catch (error) {
 			console.error('[Middleware] Auth error:', error);
+			if (url.pathname.startsWith('/api/dashboard')) {
+				return errorResponse(
+					new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
+				);
+			}
 			return applyShortId404Headers(url.pathname, redirect('/login'));
 		}
 	},

@@ -21,10 +21,10 @@ export async function requireEditorMutationAccess(
 	cookies: AstroCookies,
 ): Promise<void> {
 	await requireAdminRateLimit(request, 'intake:draft');
+	await requireAdminStrongSession(request);
 	if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
 		validateCsrfToken(request, cookies);
 	}
-	await requireAdminStrongSession(request);
 }
 
 export async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {

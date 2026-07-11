@@ -85,6 +85,48 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(context.locals.session).toBeUndefined();
 	});
 
+	it('passes an unauthenticated dashboard API request through to its route guard', async () => {
+		const context = createContext('/api/dashboard/commercial/timeline');
+		mockCookies.get.mockReturnValue(null);
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
+
+	it('redirects dashboard pages when the auth provider fails unexpectedly', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
+		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+		consoleErrorSpy.mockRestore();
+	});
+
+	it('returns structured JSON for dashboard API auth-provider failures', async () => {
+		const context = createContext('/api/dashboard/commercial/timeline');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
+		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
+		expect(response.status).toBe(500);
+		expect(response.headers.get('content-type')).toContain('application/json');
+		expect(await response.json()).toEqual({
+			success: false,
+			error: { code: 'internal_error', message: 'No fue posible validar la sesión.' },
+		});
+		expect(mockRedirect).not.toHaveBeenCalled();
+		consoleErrorSpy.mockRestore();
+	});
+
 	it.each([
 		'/dashboard/invitaciones/proj-1/preview',
 		'/dashboard/invitaciones/proj-1/preview?embed=1',
@@ -201,10 +243,6 @@ describe('Middleware: Authentication & Authorization', () => {
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockNext).toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
-	});
-
-	it.skip('allows superadmin with aal2 claim in token even when amr is empty', async () => {
-		// Requires more complex mocking for JWT validation
 	});
 
 	it('redirects host_client from admin-only path to /dashboard/invitados', async () => {

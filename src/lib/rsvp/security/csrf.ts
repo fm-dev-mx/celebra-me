@@ -2,18 +2,34 @@
  * CSRF (Cross-Site Request Forgery) Protection
  *
  * Synchronizer token pattern implementation.
- * - The server generates a CSRF token and stores a hash in a cookie.
- * - The client sends the raw token in the X-CSRF-Token header.
- * - The server validates that both tokens match.
+ * - The server stores the raw token in an HttpOnly cookie.
+ * - Authenticated dashboard pages receive the same token in metadata.
+ * - The client sends that token in the X-CSRF-Token header.
+ * - The server validates that both values match.
  */
 
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AstroCookies } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 const TOKEN_LENGTH = 32;
+
+interface CsrfTokenCookieStore {
+	get(name: string): { value: string } | undefined;
+	set(
+		name: string,
+		value: string,
+		options: {
+			httpOnly: boolean;
+			secure: boolean;
+			sameSite: 'strict';
+			path: string;
+			maxAge: number;
+		},
+	): void;
+}
 
 /**
  * Generates a cryptographically secure CSRF token.
@@ -23,23 +39,19 @@ export function generateCsrfToken(): string {
 }
 
 /**
- * Hashes a CSRF token before storing it.
+ * Returns the existing session token or creates one when the dashboard first
+ * needs it. Reusing the token keeps independently open dashboard tabs valid.
  */
-function hashToken(token: string): string {
-	return createHash('sha256').update(token).digest('base64url');
-}
+export function setCsrfToken(cookies: CsrfTokenCookieStore): string {
+	const existingToken = cookies.get(CSRF_COOKIE_NAME)?.value;
+	if (existingToken) return existingToken;
 
-/**
- * Creates and stores a fresh CSRF token in cookies.
- */
-export function setCsrfToken(cookies: AstroCookies): string {
 	const token = generateCsrfToken();
-	const hashedToken = hashToken(token);
 
 	// Restrict cookie transport in production.
 	const isProduction = process.env.NODE_ENV === 'production';
 
-	cookies.set(CSRF_COOKIE_NAME, hashedToken, {
+	cookies.set(CSRF_COOKIE_NAME, token, {
 		httpOnly: true,
 		secure: isProduction,
 		sameSite: 'strict',
@@ -51,9 +63,9 @@ export function setCsrfToken(cookies: AstroCookies): string {
 }
 
 /**
- * Reads the hashed CSRF token from cookies.
+ * Reads the raw CSRF token from the HttpOnly cookie.
  */
-export function getCsrfTokenFromCookies(cookies: AstroCookies): string | undefined {
+export function getCsrfTokenFromCookies(cookies: Pick<CsrfTokenCookieStore, 'get'>): string | undefined {
 	return cookies.get(CSRF_COOKIE_NAME)?.value;
 }
 
@@ -74,37 +86,29 @@ export function validateCsrfToken(request: Request, cookies: AstroCookies): void
 		return; // GET, HEAD, and OPTIONS do not mutate state.
 	}
 
-	// Development keeps a looser policy to simplify local testing.
-	const isProduction = process.env.NODE_ENV === 'production';
-
 	const cookieToken = getCsrfTokenFromCookies(cookies);
 	const headerToken = getCsrfTokenFromHeader(request);
 
-	// No cookie token usually means there is no authenticated session yet.
 	if (!cookieToken) {
-		return;
+		throw new ApiError(
+			403,
+			'forbidden',
+			'Token CSRF faltante. Por favor recarga la página e intenta de nuevo.',
+		);
 	}
 
-	// A missing header token while a cookie token exists is suspicious.
 	if (!headerToken) {
-		if (isProduction) {
-			throw new ApiError(
-				403,
-				'forbidden',
-				'Token CSRF faltante. Por favor recarga la página e intenta de nuevo.',
-			);
-		}
-		console.warn('Missing CSRF token in development mode');
-		return;
+		throw new ApiError(
+			403,
+			'forbidden',
+			'Token CSRF faltante. Por favor recarga la página e intenta de nuevo.',
+		);
 	}
-
-	// Compare the hashed request token with the stored cookie hash.
-	const hashedHeaderToken = hashToken(headerToken);
 
 	// Use constant-time comparison to reduce timing side channels.
 	if (
-		cookieToken.length !== hashedHeaderToken.length ||
-		!timingSafeEqual(Buffer.from(cookieToken), Buffer.from(hashedHeaderToken))
+		cookieToken.length !== headerToken.length ||
+		!timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))
 	) {
 		throw new ApiError(
 			403,

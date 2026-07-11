@@ -100,10 +100,11 @@ export async function requireAdminMutationAccess(
 	rateLimitKey: string,
 ): Promise<SessionContext> {
 	await requireAdminRateLimit(request, rateLimitKey);
+	const session = await requireAdminStrongSession(request);
 	if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
 		validateCsrfToken(request, cookies);
 	}
-	return requireAdminStrongSession(request);
+	return session;
 }
 
 // ---------------------------------------------------------------------------
