@@ -27,6 +27,12 @@ const expectedPersonalizedAccess = {
 	footerText: 'Acceso válido para adultos y niños. Preséntalo al llegar.',
 };
 
+const expectedMusic = {
+	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3',
+	autoPlay: false,
+	title: 'Viva la Vida — Coldplay',
+};
+
 const expectedAssets = [
 	'hero.webp',
 	'hero-desktop.webp',
@@ -98,11 +104,7 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(result.data.hero.backgroundImage).toMatchObject({ key: 'hero' });
 		expect(result.data.hero.backgroundImageDesktop).toMatchObject({ key: 'heroDesktop' });
 		expect(result.data.hero.portrait).toMatchObject({ key: 'portrait' });
-		expect(result.data.music).toMatchObject({
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3',
-			autoPlay: false,
-			title: 'Viva la Vida — Coldplay',
-		});
+		expect(result.data.music).toMatchObject(expectedMusic);
 		expect(result.data.rsvp?.accessMode).toBe('hybrid');
 		expect(result.data.rsvp?.confirmationMode).toBe('api');
 		expect(result.data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
@@ -174,6 +176,11 @@ describe('XV America Johana client invitation preparation', () => {
 				'theme-preset--celestial-blue',
 			]),
 		);
+
+		expect(pageContext.viewModel.music).toMatchObject({
+			...expectedMusic,
+			revealMode: 'envelope',
+		});
 
 		// Verify pass appears early (prioritizePersonalizedAccess places it early in default order)
 		const activeDescriptors = buildInvitationSectionRenderDescriptors(pageContext);
