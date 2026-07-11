@@ -252,7 +252,11 @@ Re-queuing a `skipped` event when `META_CAPI_DELIVERY_MODE=disabled` will reset 
 
 #### Batch Processing
 
-The **"Procesar Cola CAPI"** button queries all `pending` or `failed` events whose `next_attempt_at` is `null` or in the past (up to 20 per batch), then attempts delivery for each. When `META_CAPI_DELIVERY_MODE=disabled`, all events are marked as `skipped` without making Meta network requests.
+The **"Procesar Cola CAPI"** button queries all `pending` or `failed` events whose `next_attempt_at` is `null` or in the past (up to 20 per batch), then attempts delivery for each. Before sending, each candidate is claimed with an atomic filtered `PATCH` that repeats both the status and retry-time eligibility checks. An empty claim response means another worker already claimed the row, so no Meta request is made.
+
+The claim projection includes `next_attempt_at` as a compatibility workaround for the PostgREST mutation-with-`or` column-resolution bug affecting versions before 14.4. Keep the projection while supported projects are upgraded; removing the retry predicate would weaken concurrency safety. Retries always reuse the existing outbox row and its stable `event_id`—they must not create a replacement conversion.
+
+When `META_CAPI_DELIVERY_MODE=disabled`, all claimed events are marked as `skipped` without making Meta network requests.
 
 ---
 
@@ -306,4 +310,3 @@ Only the first-party commercial customer's normalized, SHA-256 hashed identity i
 - Purchase/revenue attribution: `lead_id → order_id → revenue`
 - Optional GA4 Measurement Protocol for server-side `generate_lead`
 - Optional transactional lead creation if concurrency becomes relevant
-

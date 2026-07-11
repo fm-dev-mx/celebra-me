@@ -233,7 +233,7 @@ export async function deliverMetaConversionEvent(
 ): Promise<'sent' | 'failed' | 'skipped' | 'not_claimed'> {
 	const now = new Date().toISOString();
 	const initialUpdate = await supabaseRestRequest<Array<{ id: string; attempt_count: number }>>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(now)})&select=id,attempt_count`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(now)})&select=id,attempt_count,next_attempt_at`,
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',
@@ -376,3 +376,4 @@ async function updateStatus(
 		body,
 	});
 }
+
