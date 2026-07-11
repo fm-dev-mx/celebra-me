@@ -108,8 +108,8 @@ function initConsentBanner(): void {
   function setCheckboxUI(checked: boolean, checkbox: HTMLInputElement | null, track: HTMLElement | null, thumb: HTMLElement | null): void {
     if (!checkbox || !track || !thumb) return;
     checkbox.checked = checked;
-    track.style.background = checked ? '#c9a84c' : '#555';
-    thumb.style.left = checked ? '22px' : '2px';
+    track.classList.toggle('consent-toggle-track--checked', checked);
+    thumb.classList.toggle('consent-toggle-thumb--checked', checked);
   }
 
   function showBannerBar(): void {
