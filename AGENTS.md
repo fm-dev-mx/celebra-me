@@ -151,8 +151,10 @@ section 5.2:
   `pnpm validate:changed` + `pnpm type-check` + `pnpm test:changed` +
   `pnpm validate:event-parity` (when applicable) + `pnpm agent:git-safety:check`.
 - **C (pre-push / pre-deploy confidence):** `pnpm type-check` + `pnpm lint` + `pnpm lint:styles` +
-  `pnpm test` + `pnpm test:e2e:ci` + `pnpm build` + `pnpm agent:git-safety:check`. The full pipeline
-  is also available as `pnpm run ci`.
+  `pnpm validate:ui-governance` + `pnpm validate:event-parity` + `pnpm validate:no-pii` +
+  `pnpm test` + `pnpm test:e2e:ci` + `pnpm build` + `pnpm agent:git-safety:check`.
+  `pnpm run ci` is the canonical equivalent; it runs `pnpm build:app` (`astro build`) directly after its earlier
+  type-check to avoid checking the same tree twice.
 
 `pnpm ci:quick` is a CI-safe fast feedback command. It does not depend on local Git staging
 state, so it is safe to call from a CI runner, and provides faster local iteration than the
@@ -177,14 +179,14 @@ operation.
 | Command                                | Purpose                                                                             |
 | -------------------------------------- | ----------------------------------------------------------------------------------- |
 | `pnpm dev`                             | start Astro dev server                                                              |
-| `pnpm build`                           | `astro check && astro build` — type-check then build                                |
+| `pnpm build`                           | type-check, then run the production Astro/Vercel build                              |
 | `pnpm type-check`                      | `astro check`                                                                       |
 | `pnpm lint`                            | ESLint across the repo                                                              |
 | `pnpm test`                            | Jest suite                                                                          |
 | `pnpm test -- tests/path/file.test.ts` | single Jest test file                                                               |
 | `pnpm test -- --coverage`              | Jest with coverage                                                                  |
 | `pnpm test:e2e`                        | Playwright E2E suite                                                                |
-| `pnpm run ci`                          | full pre-PR gate (type-check → lint → stylelint → governance → parity → unit → e2e) |
+| `pnpm run ci`                          | canonical Tier C gate (type-check → lint → full stylelint → governance → parity → PII → unit → e2e → production build → Git safety) |
 | `pnpm run ci:quick`                    | fast CI-safe feedback (astro check + scoped ESLint). Uses VALIDATION_BASE/HEAD_SHA in CI, working tree locally. Not a substitute for `pnpm run ci`. |
 | `pnpm validate:staged`                 | ESLint + Stylelint + Prettier + related Jest on **staged** files only. Prettier is **advisory** (intentional transition step for legacy formatting debt); ESLint, Stylelint, and related Jest are hard gates. New or modified files must still be formatted. Safe no-op when nothing is staged. Use before commit. |
 | `pnpm validate:changed`                | Same as `validate:staged` but on **working-tree** files. Use for broader local feedback before staging. |

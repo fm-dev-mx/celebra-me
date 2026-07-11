@@ -14,12 +14,14 @@ import { execSync } from 'node:child_process';
 const STAGES = [
   { name: 'type-check', cmd: 'pnpm type-check' },
   { name: 'lint', cmd: 'pnpm lint' },
-  { name: 'lint:styles', cmd: 'pnpm lint:styles:changed' },
+  { name: 'lint:styles', cmd: 'pnpm lint:styles' },
   { name: 'validate:ui-governance', cmd: 'pnpm validate:ui-governance' },
   { name: 'validate:event-parity', cmd: 'pnpm validate:event-parity' },
   { name: 'validate:no-pii', cmd: 'pnpm validate:no-pii' },
   { name: 'unit tests', cmd: 'pnpm test' },
   { name: 'e2e:ci (DB-free)', cmd: 'pnpm test:e2e:ci' },
+  { name: 'production build', cmd: 'pnpm build:app' },
+  { name: 'git safety', cmd: 'pnpm agent:git-safety:check' },
 ];
 
 const skipGates = process.argv.includes('--skip-gate');
@@ -29,7 +31,7 @@ const results = [];
 
 for (const stage of STAGES) {
   // Gate C — skip expensive stages in quick mode
-  if (skipGates && (stage.name === 'unit tests' || stage.name === 'e2e tests')) {
+  if (skipGates && (stage.name === 'unit tests' || stage.name === 'e2e:ci (DB-free)' || stage.name === 'production build')) {
     console.log(`⏭  ${stage.name} — skipped (--skip-gate)`);
     continue;
   }

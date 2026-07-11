@@ -268,13 +268,17 @@ cover the files you have staged.
 pnpm type-check
 pnpm lint
 pnpm lint:styles
+pnpm validate:ui-governance
+pnpm validate:event-parity
+pnpm validate:no-pii
 pnpm test
 pnpm test:e2e:ci
 pnpm build
 pnpm agent:git-safety:check
 ```
 
-`pnpm ci` is the canonical full-pipeline equivalent of tier C. `pnpm ci:quick`
+`pnpm ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app` (`astro build`)
+after its earlier type-check to avoid duplicating the check. `pnpm ci:quick`
 runs `astro check` plus a scoped ESLint pass and is for fast feedback only;
 it is **safe in CI** (it does not depend on local Git staging state) but
 **must not** replace tier C for production-sensitive changes.
