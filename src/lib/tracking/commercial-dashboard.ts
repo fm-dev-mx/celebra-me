@@ -1,3 +1,5 @@
+import { buildCapiHealthChecks } from '@/lib/tracking/commercial-capi-health';
+
 type EventProperties = Record<string, unknown>;
 
 export interface CommercialSessionRow {
@@ -49,6 +51,9 @@ export interface CommercialDashboardRows {
 
 export interface SalesOrderSummaryRow {
 	id: string;
+	order_number?: string | null;
+	customer_id?: string | null;
+	lead_id?: string | null;
 	status: string;
 	total_amount: number | string;
 	amount_paid: number | string;
@@ -62,10 +67,16 @@ export interface SalesOrderSummaryRow {
 export interface ConversionSummaryRow {
 	id: string;
 	order_id?: string | null;
-	status: 'pending' | 'sending' | 'sent' | 'failed' | 'skipped';
+	lead_id?: string | null;
+	event_id?: string | null;
+	status: 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' | 'ambiguous';
+	customer_id?: string | null;
 	created_at?: string | null;
 	updated_at?: string | null;
 	last_error_message?: string | null;
+	next_attempt_at?: string | null;
+	claim_expires_at?: string | null;
+	claimed_at?: string | null;
 }
 
 export interface CountItem {
@@ -120,6 +131,11 @@ export interface CommercialDashboardSummary {
 	ordersWithPendingBalance: number;
 	ordersWithDepositMissingCapi: number;
 	ordersWithInconsistentValues: number;
+	outboxRowsMissingOrder: number;
+	staleSendingEvents: number;
+	futureRetryEvents: number;
+	terminalEventsWithActiveDeliveryState: number;
+	historicalPaidOrdersWithoutPurchase?: HistoricalPaidOrderDiagnostic[];
 	keyTrackingEventCounts: KeyTrackingEventCounts;
 	lastConversionAttemptAt: string | null;
 	dataContext: DataContextSummary;
@@ -133,9 +149,18 @@ export interface CommercialDashboardSummary {
 	};
 }
 
+export interface HistoricalPaidOrderDiagnostic {
+	orderId: string;
+	orderNumber: string | null;
+	customerId: string | null;
+	leadId: string | null;
+	status: 'deposit_paid' | 'paid';
+	depositPaidAt: string | null;
+}
+
 export type HealthSeverity = 'correct' | 'attention' | 'error' | 'safe-disabled';
 
-export interface CommercialMetricCard {
+interface CommercialMetricCard {
 	id: string;
 	label: string;
 	value: string;
@@ -150,7 +175,7 @@ export interface CommercialHealthCheck {
 	helper?: string;
 }
 
-export interface CommercialHealthWarning {
+interface CommercialHealthWarning {
 	label: string;
 	count: number;
 	severity: Extract<HealthSeverity, 'attention' | 'error'>;
@@ -246,6 +271,7 @@ const EMPTY_CONVERSION_COUNTS: Record<ConversionSummaryRow['status'], number> = 
 	sent: 0,
 	failed: 0,
 	skipped: 0,
+	ambiguous: 0,
 };
 
 const TRACKING_EVENT = {
@@ -383,6 +409,30 @@ function processOrderMetrics(orders: SalesOrderSummaryRow[], conversions: Conver
 	let ordersWithPendingBalance = 0;
 	let ordersWithDepositMissingCapi = 0;
 	let ordersWithInconsistentValues = 0;
+	const orderIds = new Set(orders.map((order) => order.id));
+	const now = Date.now();
+	const outboxRowsMissingOrder = conversions.filter(
+		(conversion) => !conversion.order_id || !orderIds.has(conversion.order_id),
+	).length;
+	const staleSendingEvents = conversions.filter(
+		(conversion) =>
+			conversion.status === 'sending' &&
+			Boolean(conversion.claim_expires_at) &&
+			new Date(conversion.claim_expires_at!).getTime() <= now,
+	).length;
+	const futureRetryEvents = conversions.filter(
+		(conversion) =>
+			conversion.status === 'failed' &&
+			Boolean(conversion.next_attempt_at) &&
+			new Date(conversion.next_attempt_at!).getTime() > now,
+	).length;
+	const terminalEventsWithActiveDeliveryState = conversions.filter(
+		(conversion) =>
+			conversion.status === 'sent' &&
+			Boolean(
+				conversion.next_attempt_at || conversion.claimed_at || conversion.claim_expires_at,
+			),
+	).length;
 
 	for (const order of orders) {
 		increment(ordersByStatus, order.status);
@@ -417,6 +467,10 @@ function processOrderMetrics(orders: SalesOrderSummaryRow[], conversions: Conver
 		ordersWithPendingBalance,
 		ordersWithDepositMissingCapi,
 		ordersWithInconsistentValues,
+		outboxRowsMissingOrder,
+		staleSendingEvents,
+		futureRetryEvents,
+		terminalEventsWithActiveDeliveryState,
 		conversionStatusCounts,
 		lastConversionAttemptAt,
 	};
@@ -531,6 +585,10 @@ export function summarizeCommercialAnalytics(
 		ordersWithPendingBalance: salesMetrics.ordersWithPendingBalance,
 		ordersWithDepositMissingCapi: salesMetrics.ordersWithDepositMissingCapi,
 		ordersWithInconsistentValues: salesMetrics.ordersWithInconsistentValues,
+		outboxRowsMissingOrder: salesMetrics.outboxRowsMissingOrder,
+		staleSendingEvents: salesMetrics.staleSendingEvents,
+		futureRetryEvents: salesMetrics.futureRetryEvents,
+		terminalEventsWithActiveDeliveryState: salesMetrics.terminalEventsWithActiveDeliveryState,
 		keyTrackingEventCounts,
 		lastConversionAttemptAt: salesMetrics.lastConversionAttemptAt,
 		dataContext: computeDataContext(
@@ -593,7 +651,7 @@ function resolveCapiStatus(
 	conversionCounts: Record<ConversionSummaryRow['status'], number>,
 ): HealthSeverity {
 	if (capiMode === 'disabled') return 'safe-disabled';
-	if (conversionCounts.failed > 0) return 'error';
+	if (conversionCounts.failed + conversionCounts.ambiguous > 0) return 'error';
 	if (conversionCounts.pending + conversionCounts.sending > 0) return 'attention';
 	return 'correct';
 }
@@ -800,40 +858,7 @@ export function buildCommercialDashboardViewModel(
 						: capiMode === 'test'
 							? 'CAPI está en modo prueba; usa eventos de test de Meta.'
 							: 'CAPI está configurado en modo producción.',
-				checks: [
-					{ label: 'Modo actual', status: capiStatus, value: capiModeLabel },
-					{
-						label: 'Pendientes',
-						status: conversionCounts.pending === 0 ? 'correct' : 'attention',
-						value: formatCount(conversionCounts.pending),
-					},
-					{
-						label: 'Ignorados',
-						status: 'safe-disabled',
-						value: formatCount(conversionCounts.skipped),
-					},
-					{
-						label: 'Fallidos',
-						status: conversionCounts.failed > 0 ? 'error' : 'correct',
-						value: formatCount(conversionCounts.failed),
-					},
-					{
-						label: 'Órdenes sin fila de conversión',
-						status: summary.ordersWithDepositMissingCapi > 0 ? 'attention' : 'correct',
-						value: formatCount(summary.ordersWithDepositMissingCapi),
-						helper: 'Diagnóstico técnico; no forma parte de las alertas comerciales.',
-					},
-					{
-						label: 'Enviados',
-						status: 'correct',
-						value: formatCount(conversionCounts.sent),
-					},
-					{
-						label: 'Último intento',
-						status: capiStatus,
-						value: formatDateTime(summary.lastConversionAttemptAt),
-					},
-				],
+				checks: buildCapiHealthChecks(summary, capiStatus, capiModeLabel),
 			},
 			commercial: {
 				status: commercialStatus,

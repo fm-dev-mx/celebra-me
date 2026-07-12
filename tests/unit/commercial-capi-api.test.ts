@@ -12,8 +12,14 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
 }));
 
-import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { processPendingMetaConversionEvents, deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
+import {
+	processPendingMetaConversionEvents,
+	deliverMetaConversionEvent,
+} from '@/lib/commercial/meta-capi/service';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { POST, GET } from '@/pages/api/dashboard/commercial/meta-conversions/process';
 
@@ -61,6 +67,7 @@ beforeEach(() => {
 		processed: 5,
 		failed: 1,
 		skipped: 0,
+		ambiguous: 0,
 	});
 	mockRestRequest.mockResolvedValue([
 		{
@@ -93,16 +100,21 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				'commercial:meta-conversions:process',
 			);
 			expect(mockProcessPending).toHaveBeenCalledTimes(1);
-			expect(body.data).toEqual({ processed: 5, failed: 1, skipped: 0 });
+			expect(body.data).toEqual({ processed: 5, failed: 1, skipped: 0, ambiguous: 0 });
 		});
 
 		it('manually requeues and retries a specific conversion event when action is requeue', async () => {
 			mockDeliverMetaConversionEvent.mockResolvedValue('sent');
+			mockRestRequest.mockResolvedValueOnce([{ id: 'target-event-id', status: 'pending' }]);
 			const request = new Request(
 				'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/process',
 				{
 					method: 'POST',
-					body: JSON.stringify({ action: 'requeue', eventId: 'target-event-id' }),
+					body: JSON.stringify({
+						action: 'requeue',
+						eventId: 'target-event-id',
+						reason: 'Revisión operativa aprobada',
+					}),
 				},
 			);
 
@@ -117,16 +129,16 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 			);
 			expect(mockRestRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
-					method: 'PATCH',
-					pathWithQuery: 'meta_conversion_events?id=eq.target-event-id',
+					method: 'POST',
+					pathWithQuery: 'rpc/recover_meta_conversion_event',
 					body: expect.objectContaining({
-						status: 'pending',
-						attempt_count: 0,
+						p_event_id: 'target-event-id',
+						p_reason: 'Revisión operativa aprobada',
 					}),
 				}),
 			);
-			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledWith('target-event-id');
-			expect(body.data).toEqual({ eventId: 'target-event-id', status: 'sent' });
+			expect(mockDeliverMetaConversionEvent).not.toHaveBeenCalled();
+			expect(body.data).toEqual({ eventId: 'target-event-id', status: 'pending' });
 		});
 	});
 
@@ -144,7 +156,6 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 			expect(mockRequireAdminStrongSession).toHaveBeenCalledWith(request);
 			expect(mockRestRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
-					method: 'GET',
 					pathWithQuery: expect.stringContaining('meta_conversion_events'),
 				}),
 			);

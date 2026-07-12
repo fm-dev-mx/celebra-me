@@ -2,6 +2,7 @@ import {
 	buildCommercialDashboardViewModel,
 	summarizeCommercialAnalytics,
 } from '@/lib/tracking/commercial-dashboard';
+import { excludeClassifiedTestRecords } from '@/lib/tracking/commercial-classification';
 import { presentCommercialAttribution } from '@/lib/tracking/commercial-presentation';
 
 describe('summarizeCommercialAnalytics', () => {
@@ -405,5 +406,125 @@ describe('summarizeCommercialAnalytics', () => {
 		expect(helperText).not.toContain('demo_viewed');
 		expect(helperText).not.toContain('cta_clicked');
 		expect(helperText).toContain('Se registraron vistas de la página inicial.');
+	});
+});
+
+describe('excludeClassifiedTestRecords', () => {
+	const linkedRows = {
+		leads: [
+			{ id: 'lead-test', customer_id: 'customer-test', status: 'new', channel: 'manual' },
+			{ id: 'lead-real', customer_id: 'customer-real', status: 'new', channel: 'manual' },
+		],
+		orders: [
+			{
+				id: 'order-test',
+				customer_id: 'customer-test',
+				lead_id: 'lead-test',
+				status: 'deposit_paid',
+				total_amount: 100,
+				amount_paid: 100,
+			},
+			{
+				id: 'order-real',
+				customer_id: 'customer-real',
+				lead_id: 'lead-real',
+				status: 'deposit_paid',
+				total_amount: 100,
+				amount_paid: 100,
+			},
+		],
+		conversions: [
+			{
+				id: 'conversion-test',
+				order_id: 'order-test',
+				lead_id: 'lead-test',
+				customer_id: 'customer-test',
+				status: 'sent' as const,
+			},
+			{
+				id: 'conversion-real',
+				order_id: 'order-real',
+				lead_id: 'lead-real',
+				customer_id: 'customer-real',
+				status: 'sent' as const,
+			},
+		],
+	};
+
+	it.each([
+		['lead', 'lead-test'],
+		['customer', 'customer-test'],
+		['sales_order', 'order-test'],
+		['meta_conversion_event', 'conversion-test'],
+	] as const)(
+		'excludes the linked test conversion for %s classification',
+		(record_type, record_id) => {
+			const result = excludeClassifiedTestRecords(linkedRows, [{ record_type, record_id }]);
+			expect(result.conversions.map((row) => row.id)).toEqual(['conversion-real']);
+		},
+	);
+
+	it('includes real records again after classification reversal removes the active record', () => {
+		const result = excludeClassifiedTestRecords(linkedRows, []);
+		expect(result.conversions.map((row) => row.id)).toEqual([
+			'conversion-test',
+			'conversion-real',
+		]);
+	});
+
+	it('removes classified commercial records while leaving unclassified records unchanged', () => {
+		const result = excludeClassifiedTestRecords(
+			{
+				leads: [
+					{
+						id: 'lead-test',
+						customer_id: 'customer-test',
+						status: 'new',
+						channel: 'manual',
+					},
+					{
+						id: 'lead-real',
+						customer_id: 'customer-real',
+						status: 'new',
+						channel: 'contact_form',
+					},
+				],
+				orders: [
+					{
+						id: 'order-test',
+						customer_id: 'customer-test',
+						status: 'deposit_paid',
+						total_amount: 899,
+						amount_paid: 899,
+					},
+					{
+						id: 'order-real',
+						customer_id: 'customer-real',
+						status: 'deposit_paid',
+						total_amount: 1699,
+						amount_paid: 899,
+					},
+				],
+				conversions: [
+					{
+						id: 'conversion-test',
+						order_id: 'order-test',
+						customer_id: 'customer-test',
+						status: 'sent',
+					},
+					{
+						id: 'conversion-real',
+						order_id: 'order-real',
+						customer_id: 'customer-real',
+						status: 'sent',
+					},
+				],
+			},
+			[{ record_type: 'customer', record_id: 'customer-test' }],
+		);
+
+		expect(result.leads.map((row) => row.id)).toEqual(['lead-real']);
+		expect(result.orders.map((row) => row.id)).toEqual(['order-real']);
+		expect(result.conversions.map((row) => row.id)).toEqual(['conversion-real']);
 	});
 });

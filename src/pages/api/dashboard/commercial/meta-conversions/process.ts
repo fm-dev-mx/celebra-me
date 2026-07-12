@@ -1,24 +1,18 @@
 import type { APIRoute } from 'astro';
-import { processPendingMetaConversionEvents, deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
-import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { processPendingMetaConversionEvents } from '@/lib/commercial/meta-capi/service';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { loadCommercialDashboardOutbox } from '@/lib/tracking/commercial-dashboard.server';
 
 interface RequeueRequestBody {
 	action?: string;
 	eventId?: string;
-}
-
-interface ConversionEventRow {
-	id: string;
-	event_name: string;
-	event_id: string;
-	value: number;
-	currency: string;
-	status: 'pending' | 'sending' | 'sent' | 'failed' | 'skipped';
-	attempt_count: number;
-	last_error_message: string | null;
-	created_at: string;
+	reason?: string;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -26,14 +20,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		let body: RequeueRequestBody | null = null;
 		try {
 			const req = typeof request.clone === 'function' ? request.clone() : request;
-			body = await req.json() as RequeueRequestBody;
+			body = (await req.json()) as RequeueRequestBody;
 		} catch {
 			// No body or parsing failed
 		}
 
 		const isRequeue = body?.action === 'requeue' && body?.eventId;
 
-		await requireAdminMutationAccess(
+		const session = await requireAdminMutationAccess(
 			request,
 			cookies,
 			isRequeue
@@ -43,23 +37,40 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 		if (isRequeue) {
 			const eventId = body!.eventId!;
-			await supabaseRestRequest<unknown>({
-				pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(eventId)}`,
-				method: 'PATCH',
-				useServiceRole: true,
-				prefer: 'return=minimal',
-				body: {
-					status: 'pending',
-					attempt_count: 0,
-					last_error_code: null,
-					last_error_message: null,
-					next_attempt_at: null,
-					updated_at: new Date().toISOString(),
-				},
-			});
-
-			const status = await deliverMetaConversionEvent(eventId);
-			return successResponse({ eventId, status });
+			const reason = body?.reason?.trim();
+			if (!reason || reason.length < 3 || reason.length > 500) {
+				throw new ApiError(
+					400,
+					'validation_error',
+					'La razón de recuperación es obligatoria.',
+				);
+			}
+			let rows: Array<{ id: string; status: string }>;
+			try {
+				rows = await supabaseRestRequest<Array<{ id: string; status: string }>>({
+					pathWithQuery: 'rpc/recover_meta_conversion_event',
+					method: 'POST',
+					useServiceRole: true,
+					body: {
+						p_event_id: eventId,
+						p_actor_id: session.userId,
+						p_reason: reason,
+						p_now: new Date().toISOString(),
+					},
+				});
+			} catch (recoveryError) {
+				const message =
+					recoveryError instanceof Error ? recoveryError.message : String(recoveryError);
+				if (message.includes('no se puede recuperar')) {
+					throw new ApiError(
+						409,
+						'conflict',
+						'El estado actual del evento no permite recuperación.',
+					);
+				}
+				throw recoveryError;
+			}
+			return successResponse({ eventId, status: rows[0]?.status ?? 'pending' });
 		}
 
 		const result = await processPendingMetaConversionEvents();
@@ -74,11 +85,7 @@ export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminStrongSession(request);
 
-		const rows = await supabaseRestRequest<ConversionEventRow[]>({
-			pathWithQuery: `meta_conversion_events?select=id,event_name,event_id,value,currency,status,attempt_count,last_error_message,created_at&order=created_at.desc&limit=50`,
-			method: 'GET',
-			useServiceRole: true,
-		});
+		const rows = await loadCommercialDashboardOutbox();
 
 		// Map to camelCase DTOs for consistency with other commercial APIs.
 		const data = rows.map((r) => ({
@@ -96,6 +103,15 @@ export const GET: APIRoute = async ({ request }) => {
 			lastErrorMessage: r.last_error_message,
 			created_at: r.created_at,
 			createdAt: r.created_at,
+			next_attempt_at: r.next_attempt_at,
+			claimed_at: r.claimed_at,
+			claim_expires_at: r.claim_expires_at,
+			sent_at: r.sent_at,
+			last_error_code: r.last_error_code,
+			provider_events_received: r.provider_events_received,
+			provider_trace_id: r.provider_trace_id,
+			attempt_history: r.attempt_history,
+			recovery_history: r.recovery_history,
 		}));
 
 		return successResponse(data);

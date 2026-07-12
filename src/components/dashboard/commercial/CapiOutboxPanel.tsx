@@ -13,6 +13,7 @@ interface ProcessResult {
 	processed: number;
 	failed: number;
 	skipped: number;
+	ambiguous: number;
 }
 
 const CapiOutboxPanel: React.FC<CapiOutboxPanelProps> = ({
@@ -48,9 +49,9 @@ const CapiOutboxPanel: React.FC<CapiOutboxPanelProps> = ({
 			);
 
 			if (res.ok) {
-				const { processed, failed, skipped } = res.data.data;
+				const { processed, failed, skipped, ambiguous } = res.data.data;
 				setSuccessMessage(
-					`Procesamiento completado. Enviados: ${processed}, Fallidos: ${failed}, Ignorados: ${skipped}.`,
+					`Procesamiento completado. Enviados: ${processed}, Fallidos: ${failed}, Ignorados: ${skipped}, Por confirmar: ${ambiguous}.`,
 				);
 				void refreshConversions();
 			} else {
@@ -65,7 +66,7 @@ const CapiOutboxPanel: React.FC<CapiOutboxPanelProps> = ({
 		}
 	};
 
-	const handleRequeueEvent = async (eventId: string) => {
+	const handleRequeueEvent = async (eventId: string, reason: string) => {
 		setProcessingConversions(true);
 		setErrorMessage('');
 		setSuccessMessage('');
@@ -76,12 +77,13 @@ const CapiOutboxPanel: React.FC<CapiOutboxPanelProps> = ({
 				{
 					action: 'requeue',
 					eventId,
+					reason,
 				},
 			);
 
 			if (res.ok) {
 				setSuccessMessage(
-					`Evento ${res.data.data.eventId} reencolado con éxito. Estado: ${res.data.data.status}`,
+					`Evento recuperado con auditoría. Estado: ${res.data.data.status}`,
 				);
 				void refreshConversions();
 			} else {

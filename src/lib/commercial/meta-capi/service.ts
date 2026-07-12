@@ -1,12 +1,13 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { getEnv } from '@/lib/server/env';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 interface ProcessResult {
 	processed: number;
 	failed: number;
 	skipped: number;
+	ambiguous: number;
 }
 
 interface OutboxDetail {
@@ -16,13 +17,51 @@ interface OutboxDetail {
 	value: number;
 	currency: string;
 	customers: { email?: string | null; phone_e164?: string | null } | null;
-	sales_orders: { session_id?: string | null; deposit_paid_at?: string | null; created_at?: string | null } | null;
+	sales_orders: {
+		session_id?: string | null;
+		deposit_paid_at?: string | null;
+		created_at?: string | null;
+	} | null;
 	leads: {
 		consent_marketing?: boolean | null;
 		fbp?: string | null;
 		fbc?: string | null;
 		fbclid?: string | null;
 	} | null;
+}
+
+interface ClaimedOutboxRow {
+	id: string;
+	attempt_count: number;
+	claim_id: string;
+}
+
+interface ProviderResult {
+	ok: boolean;
+	errorCode?: string;
+	errorMessage?: string;
+	eventsReceived?: number;
+	traceId?: string;
+	message?: string;
+}
+
+interface FinalizedOutboxRow {
+	id: string;
+}
+
+const PROVIDER_ERROR_MAX_LENGTH = 300;
+const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe provider message.';
+
+export function sanitizeProviderError(value: unknown): string {
+	const raw = value instanceof Error ? value.message : typeof value === 'string' ? value : '';
+	const sanitized = raw
+		.replace(/https?:\/\/[^\s]+/gi, '[redacted URL]')
+		.replace(/\b(?:access_)?token\s*[=:]\s*[^\s,;&]+/gi, '[redacted token]')
+		.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted email]')
+		.replace(/\+?\d[\d\s().-]{6,}\d/g, '[redacted phone]')
+		.replace(/\s+/g, ' ')
+		.trim();
+	return (sanitized || SAFE_PROVIDER_ERROR_FALLBACK).slice(0, PROVIDER_ERROR_MAX_LENGTH);
 }
 
 interface SessionDetail {
@@ -59,7 +98,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 		useServiceRole: true,
 	});
 
-	const result: ProcessResult = { processed: 0, failed: 0, skipped: 0 };
+	const result: ProcessResult = { processed: 0, failed: 0, skipped: 0, ambiguous: 0 };
 
 	for (const row of rows) {
 		try {
@@ -71,6 +110,8 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 				result.skipped++;
 			} else if (status === 'failed') {
 				result.failed++;
+			} else if (status === 'ambiguous') {
+				result.ambiguous++;
 			}
 		} catch (error) {
 			console.error(`[meta-capi] Error processing outbox event ${row.id}:`, error);
@@ -99,7 +140,10 @@ async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | n
 	return sessionRows[0] || null;
 }
 
-function buildUserData(detail: OutboxDetail, session: SessionDetail | null): Record<string, string | string[]> {
+function buildUserData(
+	detail: OutboxDetail,
+	session: SessionDetail | null,
+): Record<string, string | string[]> {
 	const userData: Record<string, string | string[]> = {};
 
 	const emailHash = normalizeAndHashEmail(detail.customers?.email);
@@ -149,7 +193,10 @@ function buildEventPayload(
 	const userData = buildUserData(detail, session);
 	const eventSourceUrl = resolveEventSourceUrl(session);
 
-	const paymentTime = detail.sales_orders?.deposit_paid_at || detail.sales_orders?.created_at || new Date().toISOString();
+	const paymentTime =
+		detail.sales_orders?.deposit_paid_at ||
+		detail.sales_orders?.created_at ||
+		new Date().toISOString();
 	const eventTimeUnix = Math.floor(new Date(paymentTime).getTime() / 1000);
 
 	const eventData = {
@@ -174,7 +221,7 @@ async function dispatchCapiPayload(
 	pixelId: string,
 	accessToken: string,
 	requestBody: Record<string, unknown>,
-): Promise<{ ok: boolean; errorCode?: string; errorMessage?: string }> {
+): Promise<ProviderResult> {
 	const metaUrl = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
 	const response = await fetch(metaUrl, {
 		method: 'POST',
@@ -183,10 +230,6 @@ async function dispatchCapiPayload(
 		},
 		body: JSON.stringify(requestBody),
 	});
-
-	if (response.ok) {
-		return { ok: true };
-	}
 
 	let responseJson: Record<string, unknown> = {};
 	try {
@@ -197,10 +240,29 @@ async function dispatchCapiPayload(
 	} catch {
 		// Ignore
 	}
+	if (response.ok) {
+		return {
+			ok: true,
+			eventsReceived:
+				typeof responseJson.events_received === 'number'
+					? responseJson.events_received
+					: undefined,
+			traceId:
+				typeof responseJson.fbtrace_id === 'string'
+					? responseJson.fbtrace_id.slice(0, 200)
+					: undefined,
+			message:
+				typeof responseJson.message === 'string'
+					? responseJson.message.slice(0, 500)
+					: undefined,
+		};
+	}
 
 	const errorInfo = (responseJson.error as Record<string, unknown>) || {};
 	const errorCode = String(errorInfo.code || response.status);
-	const errorMessage = String(errorInfo.message || 'Meta CAPI request failed.');
+	const errorMessage = sanitizeProviderError(
+		typeof errorInfo.message === 'string' ? errorInfo.message : 'Meta CAPI request failed.',
+	);
 	return { ok: false, errorCode, errorMessage };
 }
 
@@ -230,16 +292,18 @@ function resolveTestEventCode(mode: 'disabled' | 'test' | 'production'): string 
 
 export async function deliverMetaConversionEvent(
 	outboxId: string,
-): Promise<'sent' | 'failed' | 'skipped' | 'not_claimed'> {
+): Promise<'sent' | 'failed' | 'skipped' | 'ambiguous' | 'not_claimed' | 'lost_claim'> {
 	const now = new Date().toISOString();
-	const initialUpdate = await supabaseRestRequest<Array<{ id: string; attempt_count: number }>>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(now)})&select=id,attempt_count,next_attempt_at`,
-		method: 'PATCH',
+	const claimId = randomUUID();
+	const initialUpdate = await supabaseRestRequest<ClaimedOutboxRow[]>({
+		pathWithQuery: 'rpc/claim_meta_conversion_event',
+		method: 'POST',
 		useServiceRole: true,
-		prefer: 'return=representation',
 		body: {
-			status: 'sending',
-			updated_at: now,
+			p_event_id: outboxId,
+			p_claim_id: claimId,
+			p_now: now,
+			p_lease_seconds: 120,
 		},
 	});
 
@@ -248,41 +312,57 @@ export async function deliverMetaConversionEvent(
 		return 'not_claimed';
 	}
 
-	const attemptCount = (outboxRow.attempt_count || 0) + 1;
+	const attemptCount = outboxRow.attempt_count;
 	const deliveryMode = resolveDeliveryMode();
 
 	if (deliveryMode === 'disabled') {
-		await updateStatus(
+		return finalizeClaim(
 			outboxId,
 			'skipped',
 			attemptCount,
 			'DELIVERY_DISABLED',
 			'La entrega CAPI está desactivada en la configuración del entorno (META_CAPI_DELIVERY_MODE).',
+			undefined,
+			claimId,
 		);
-		return 'skipped';
 	}
 
 	const detail = await fetchEventDetails(outboxId);
 	if (!detail) {
-		await updateStatus(outboxId, 'failed', attemptCount, 'DATA_ERROR', 'Failed to retrieve event details.');
-		return 'failed';
+		return finalizeClaim(
+			outboxId,
+			'failed',
+			attemptCount,
+			'DATA_ERROR',
+			'Failed to retrieve event details.',
+			undefined,
+			claimId,
+		);
 	}
 
 	if (detail.leads?.consent_marketing !== true) {
-		await updateStatus(
+		return finalizeClaim(
 			outboxId,
 			'skipped',
 			attemptCount,
 			'CONSENT_REQUIRED',
 			'Marketing consent is required before preparing Meta user data.',
+			undefined,
+			claimId,
 		);
-		return 'skipped';
 	}
 
 	const credentials = resolveMetaCredentials();
 	if (!credentials) {
-		await updateStatus(outboxId, 'failed', attemptCount, 'CONFIG_ERROR', 'Missing environment configuration (META_CAPI_ACCESS_TOKEN or META_PIXEL_ID).');
-		return 'failed';
+		return finalizeClaim(
+			outboxId,
+			'failed',
+			attemptCount,
+			'CONFIG_ERROR',
+			'Missing environment configuration (META_CAPI_ACCESS_TOKEN or META_PIXEL_ID).',
+			undefined,
+			claimId,
+		);
 	}
 
 	const sessionId = detail.sales_orders?.session_id;
@@ -291,8 +371,15 @@ export async function deliverMetaConversionEvent(
 
 	const testEventCode = resolveTestEventCode(deliveryMode);
 	if (deliveryMode === 'test' && !testEventCode) {
-		await updateStatus(outboxId, 'failed', attemptCount, 'CONFIG_ERROR', 'Missing META_TEST_EVENT_CODE in test mode.');
-		return 'failed';
+		return finalizeClaim(
+			outboxId,
+			'failed',
+			attemptCount,
+			'CONFIG_ERROR',
+			'Missing META_TEST_EVENT_CODE in test mode.',
+			undefined,
+			claimId,
+		);
 	}
 
 	const requestBody: Record<string, unknown> = {
@@ -303,77 +390,106 @@ export async function deliverMetaConversionEvent(
 		requestBody.test_event_code = testEventCode;
 	}
 
+	let providerAccepted = false;
 	try {
-		const result = await dispatchCapiPayload(credentials.pixelId, credentials.accessToken, requestBody);
+		const result = await dispatchCapiPayload(
+			credentials.pixelId,
+			credentials.accessToken,
+			requestBody,
+		);
 		if (result.ok) {
-			await supabaseRestRequest<unknown>({
-				pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}`,
-				method: 'PATCH',
-				useServiceRole: true,
-				prefer: 'return=minimal',
-				body: {
-					status: 'sent',
-					attempt_count: attemptCount,
-					sent_at: new Date().toISOString(),
-					payload_hash: payloadHash,
-					last_error_code: null,
-					last_error_message: null,
-					next_attempt_at: null,
-					updated_at: new Date().toISOString(),
-				},
-			});
-			return 'sent';
+			providerAccepted = true;
+			try {
+				return await finalizeClaim(
+					outboxId,
+					'sent',
+					attemptCount,
+					undefined,
+					undefined,
+					payloadHash,
+					claimId,
+					result,
+				);
+			} catch (persistenceError) {
+				return finalizeClaim(
+					outboxId,
+					'ambiguous',
+					attemptCount,
+					'PERSISTENCE_AFTER_ACCEPTANCE_FAILED',
+					sanitizeProviderError(persistenceError),
+					payloadHash,
+					claimId,
+					result,
+				);
+			}
 		} else {
-			await updateStatus(outboxId, 'failed', attemptCount, result.errorCode, result.errorMessage, payloadHash);
-			return 'failed';
+			return finalizeClaim(
+				outboxId,
+				'failed',
+				attemptCount,
+				result.errorCode,
+				result.errorMessage,
+				payloadHash,
+				claimId,
+			);
 		}
 	} catch (err) {
-		const errMsg = err instanceof Error ? err.message : String(err);
-		await updateStatus(outboxId, 'failed', attemptCount, 'NETWORK_ERROR', errMsg, payloadHash);
-		return 'failed';
+		if (providerAccepted) {
+			return 'lost_claim';
+		}
+		const errMsg = sanitizeProviderError(err);
+		return finalizeClaim(
+			outboxId,
+			'failed',
+			attemptCount,
+			'NETWORK_ERROR',
+			errMsg,
+			payloadHash,
+			claimId,
+		);
 	}
 }
 
-async function updateStatus(
+async function finalizeClaim(
 	id: string,
-	status: 'failed' | 'skipped',
+	status: 'sent' | 'failed' | 'skipped' | 'ambiguous',
 	attemptCount: number,
 	errorCode?: string,
 	errorMessage?: string,
 	payloadHash?: string,
-): Promise<void> {
-	const body: Record<string, unknown> = {
-		status,
-		attempt_count: attemptCount,
-		updated_at: new Date().toISOString(),
-	};
-
-	if (payloadHash) {
-		body.payload_hash = payloadHash;
-	}
-
-	if (status === 'failed') {
-		body.last_error_code = errorCode || null;
-		body.last_error_message = errorMessage || null;
-
-		const backoffMinutes = Math.min(240, Math.pow(2, attemptCount) * 5);
-		body.next_attempt_at = new Date(Date.now() + backoffMinutes * 60 * 1000).toISOString();
-	} else if (status === 'skipped') {
-		body.last_error_code = errorCode || null;
-		body.last_error_message = errorMessage || null;
-		body.next_attempt_at = null;
-	} else {
-		body.last_error_code = null;
-		body.last_error_message = null;
-		body.next_attempt_at = null;
-	}
-
-	await supabaseRestRequest<unknown>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(id)}`,
-		method: 'PATCH',
+	claimId?: string,
+	providerResult: ProviderResult = { ok: false },
+): Promise<'sent' | 'failed' | 'skipped' | 'ambiguous' | 'lost_claim'> {
+	if (!claimId) throw new Error('CAPI completion requires an active claim id.');
+	const nextAttemptAt =
+		status === 'failed'
+			? new Date(
+					Date.now() + Math.min(240, Math.pow(2, attemptCount) * 5) * 60 * 1000,
+				).toISOString()
+			: null;
+	const rows = await supabaseRestRequest<FinalizedOutboxRow[]>({
+		pathWithQuery: 'rpc/finalize_meta_conversion_event',
+		method: 'POST',
 		useServiceRole: true,
-		prefer: 'return=minimal',
-		body,
+		body: {
+			p_event_id: id,
+			p_claim_id: claimId,
+			p_status: status,
+			p_now: new Date().toISOString(),
+			p_payload_hash: payloadHash ?? null,
+			p_error_code: errorCode?.slice(0, 120) ?? null,
+			p_error_message: errorMessage ? sanitizeProviderError(errorMessage) : null,
+			p_next_attempt_at: nextAttemptAt,
+			p_provider_events_received: providerResult.eventsReceived ?? null,
+			p_provider_trace_id: providerResult.traceId?.slice(0, 200) ?? null,
+			p_provider_message: providerResult.message
+				? sanitizeProviderError(providerResult.message)
+				: null,
+		},
 	});
+	if (!rows[0]) {
+		console.warn(`[meta-capi] Lost claim while finalizing event ${id}.`);
+		return 'lost_claim';
+	}
+	return status;
 }
-

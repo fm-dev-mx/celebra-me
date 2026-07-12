@@ -433,6 +433,23 @@ const revenueAttribution = dashboardData
 							</article>
 						</div>
 					</section>
+					{dashboardData.historicalPaidOrdersWithoutPurchase && dashboardData.historicalPaidOrdersWithoutPurchase.length > 0 && (
+						<section class="commercial-dashboard__quality">
+							<header class="commercial-dashboard__quality-header">
+								<h3>Pagos históricos sin Purchase</h3>
+								<p>Requieren revisión del propietario. Esta vista no repara, encola ni reenvía conversiones.</p>
+							</header>
+							<ul class="commercial-dashboard__health-list">
+								{dashboardData.historicalPaidOrdersWithoutPurchase.map((order) => (
+									<li>
+										<span>{order.orderNumber ?? order.orderId}</span>
+										<strong>{order.status === 'paid' ? 'Pagada' : 'Anticipo pagado'}</strong>
+										<small>Orden: {order.orderId} · Lead: {order.leadId ?? 'Sin vínculo'} · Cliente: {order.customerId ?? 'Sin vínculo'}</small>
+									</li>
+								))}
+							</ul>
+						</section>
+					)}
 
 					<CapiOutboxPanel client:load initialConversions={initialConversions} deliveryDisabled={viewModel.health.capi.status === 'safe-disabled'} />
 					</details>

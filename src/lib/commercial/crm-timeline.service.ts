@@ -18,22 +18,6 @@ export type CrmTimelineEventType =
 	| 'capi_event_failed'
 	| 'order_status_changed'
 	| 'customer_created';
-
-const TIMELINE_EVENT_LABELS: Record<CrmTimelineEventType, string> = {
-	lead_created: 'Lead creado',
-	order_created: 'Orden creada',
-	deposit_paid: 'Anticipo pagado',
-	capi_event_created: 'Evento CAPI creado',
-	capi_event_sent: 'Evento CAPI enviado',
-	capi_event_failed: 'Evento CAPI fallido',
-	order_status_changed: 'Estado de orden cambiado',
-	customer_created: 'Cliente creado',
-};
-
-export function labelCrmTimelineEventType(type: CrmTimelineEventType): string {
-	return TIMELINE_EVENT_LABELS[type] ?? type;
-}
-
 interface SalesOrderRow {
 	id: string;
 	order_number: string;
@@ -55,6 +39,10 @@ interface MetaConversionRow {
 	currency: string;
 	created_at: string;
 	last_error_message: string | null;
+	updated_at: string;
+	sent_at: string | null;
+	claimed_at: string | null;
+	delivery_ambiguous_at: string | null;
 }
 
 /**
@@ -111,7 +99,7 @@ export async function loadCrmTimeline(
 	const orderIds = orders.map((o) => o.id);
 	if (orderIds.length > 0) {
 		const conversions = await supabaseRestRequest<MetaConversionRow[]>({
-			pathWithQuery: `meta_conversion_events?order_id=in.(${orderIds.map((id) => encodeURIComponent(id)).join(',')})&select=id,event_id,event_name,status,value,currency,created_at,last_error_message&order=created_at.desc`,
+			pathWithQuery: `meta_conversion_events?order_id=in.(${orderIds.map((id) => encodeURIComponent(id)).join(',')})&select=id,event_id,event_name,status,value,currency,created_at,updated_at,sent_at,claimed_at,delivery_ambiguous_at,last_error_message&order=created_at.desc`,
 			method: 'GET',
 			useServiceRole: true,
 		});
@@ -132,7 +120,7 @@ export async function loadCrmTimeline(
 					eventType: 'capi_event_sent',
 					label: 'Evento CAPI enviado',
 					description: `Enviado a Meta: ${conv.event_name} — $${Number(conv.value).toLocaleString('es-MX')}`,
-					occurredAt: conv.created_at,
+					occurredAt: conv.sent_at || conv.updated_at,
 					metadata: { eventId: conv.event_id },
 				});
 			}
@@ -143,17 +131,28 @@ export async function loadCrmTimeline(
 					eventType: 'capi_event_failed',
 					label: 'Evento CAPI fallido',
 					description: `Error: ${conv.last_error_message}`,
-					occurredAt: conv.created_at,
+					occurredAt: conv.updated_at,
 					metadata: { eventId: conv.event_id, error: conv.last_error_message },
+				});
+			}
+
+			if (conv.status === 'ambiguous') {
+				entries.push({
+					id: `capi-ambiguous:${conv.id}`,
+					eventType: 'capi_event_failed',
+					label: 'Entrega CAPI por confirmar',
+					description:
+						conv.last_error_message ||
+						'Meta pudo aceptar el evento; requiere revisión técnica.',
+					occurredAt: conv.delivery_ambiguous_at || conv.updated_at,
+					metadata: { eventId: conv.event_id, status: conv.status },
 				});
 			}
 		}
 	}
 
 	// Sort by occurred_at descending (newest first)
-	entries.sort(
-		(a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
-	);
+	entries.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
 
 	return entries.slice(0, limit);
 }
