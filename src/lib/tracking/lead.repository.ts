@@ -59,13 +59,13 @@ export async function findLeadByCode(leadCode: string): Promise<StoredLead | nul
 }
 
 export async function upsertLead(input: LeadInput): Promise<StoredLead> {
-	const rows = await supabaseRestRequest<
+	let rows = await supabaseRestRequest<
 		Array<{ id: string; lead_code: string; status: LeadStatus }>
 	>({
 		pathWithQuery: 'leads?on_conflict=lead_code&select=id,lead_code,status',
 		method: 'POST',
 		useServiceRole: true,
-		prefer: 'resolution=merge-duplicates,return=representation',
+		prefer: 'resolution=ignore-duplicates,return=representation',
 		body: {
 			lead_code: input.leadCode,
 			session_id: emptyToUndefined(input.sessionId),
@@ -91,6 +91,43 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			consent_marketing: input.consentMarketing,
 		},
 	});
+	if (rows.length === 0) {
+		const updates: Record<string, unknown> = {
+			consent_contact: input.consentContact,
+			consent_marketing: input.consentMarketing,
+		};
+		const optionalFields: Array<[string, string | undefined]> = [
+			['session_id', emptyToUndefined(input.sessionId)],
+			['source_event_id', emptyToUndefined(input.sourceEventId)],
+			['name', emptyToUndefined(input.name)],
+			['email', emptyToUndefined(input.email)],
+			['phone', emptyToUndefined(input.phone)],
+			['phone_country_code', emptyToUndefined(input.phoneCountryCode)],
+			['phone_national', emptyToUndefined(input.phoneNational)],
+			['phone_e164', emptyToUndefined(input.phoneE164)],
+			['event_type', emptyToUndefined(input.eventType)],
+			['package_interest', emptyToUndefined(input.packageInterest)],
+			['message_summary', emptyToUndefined(input.messageSummary)],
+			['utm_source', emptyToUndefined(input.utmSource)],
+			['utm_medium', emptyToUndefined(input.utmMedium)],
+			['utm_campaign', emptyToUndefined(input.utmCampaign)],
+			['fbp', emptyToUndefined(input.metaAttribution?.fbp)],
+			['fbc', emptyToUndefined(input.metaAttribution?.fbc)],
+			['fbclid', emptyToUndefined(input.metaAttribution?.fbclid)],
+		];
+		for (const [key, value] of optionalFields) {
+			if (value !== undefined) updates[key] = value;
+		}
+		rows = await supabaseRestRequest<
+			Array<{ id: string; lead_code: string; status: LeadStatus }>
+		>({
+			pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(input.leadCode)}&select=id,lead_code,status`,
+			method: 'PATCH',
+			useServiceRole: true,
+			prefer: 'return=representation',
+			body: updates,
+		});
+	}
 
 	const row = rows[0];
 	if (!row) {

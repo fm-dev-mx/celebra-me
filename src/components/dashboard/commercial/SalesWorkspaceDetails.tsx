@@ -38,13 +38,13 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 	const whatsappDigits = getUsableWhatsAppE164(customer.phoneE164);
 	return (
 		<>
-		<div className="customer-details sales-customer-header">
-			<div>
-				<p className="sales-workspace__eyebrow">Ficha comercial</p>
-				<h3>{customer.displayName}</h3>
-				<p>{customer.email || 'Sin correo registrado'}</p>
-			</div>
-			<div className="sales-customer-actions">
+			<div className="customer-details sales-customer-header">
+				<div>
+					<p className="sales-workspace__eyebrow">Ficha comercial</p>
+					<h3>{customer.displayName}</h3>
+					<p>{customer.email || 'Sin correo registrado'}</p>
+				</div>
+				<div className="sales-customer-actions">
 					{whatsappDigits && (
 						<a
 							className="btn-secondary"
@@ -55,53 +55,53 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 							Abrir WhatsApp
 						</a>
 					)}
-				<button type="button" className="btn-ghost" onClick={onClear}>
-					Cambiar
-				</button>
-			</div>
-		</div>
-
-		<div className="sales-customer-summary" aria-label="Contexto comercial del cliente">
-			<div>
-				<span>Estado</span>
-				<strong>{labelLeadStatus(lead?.status)}</strong>
-			</div>
-			<div>
-				<span>Contacto</span>
-				<strong>{customer.phoneE164 || 'Sin teléfono'}</strong>
-			</div>
-			<div>
-				<span>Evento</span>
-				<strong>{labelCommercialEventType(lead?.eventType)}</strong>
-			</div>
-			<div>
-				<span>Canal</span>
-				<strong>{labelLeadChannel(lead?.channel)}</strong>
-			</div>
-		</div>
-
-		<div className="crm-customer-money">
-			<div>
-				<span>Pagado</span>
-				<strong>{formatMoney(totalPaid)}</strong>
-			</div>
-			<div>
-				<span>Saldo pendiente</span>
-				<strong className={pendingBalance > 0 ? 'has-balance' : ''}>
-					{formatMoney(pendingBalance)}
-				</strong>
-			</div>
-			<div className="crm-customer-next-action">
-				<span>Siguiente acción</span>
-				<strong>{suggestedAction}</strong>
-				{orders.length === 0 && (
-					<button type="button" className="btn-primary" onClick={onOpenOrderTool}>
-						Crear orden
+					<button type="button" className="btn-ghost" onClick={onClear}>
+						Cambiar
 					</button>
-				)}
+				</div>
 			</div>
-		</div>
-	</>
+
+			<div className="sales-customer-summary" aria-label="Contexto comercial del cliente">
+				<div>
+					<span>Estado</span>
+					<strong>{labelLeadStatus(lead?.status)}</strong>
+				</div>
+				<div>
+					<span>Contacto</span>
+					<strong>{customer.phoneE164 || 'Sin teléfono'}</strong>
+				</div>
+				<div>
+					<span>Evento</span>
+					<strong>{labelCommercialEventType(lead?.eventType)}</strong>
+				</div>
+				<div>
+					<span>Canal</span>
+					<strong>{labelLeadChannel(lead?.channel)}</strong>
+				</div>
+			</div>
+
+			<div className="crm-customer-money">
+				<div>
+					<span>Pagado</span>
+					<strong>{formatMoney(totalPaid)}</strong>
+				</div>
+				<div>
+					<span>Saldo pendiente</span>
+					<strong className={pendingBalance > 0 ? 'has-balance' : ''}>
+						{formatMoney(pendingBalance)}
+					</strong>
+				</div>
+				<div className="crm-customer-next-action">
+					<span>Siguiente acción</span>
+					<strong>{suggestedAction}</strong>
+					{orders.length === 0 && (
+						<button type="button" className="btn-primary" onClick={onOpenOrderTool}>
+							Crear orden
+						</button>
+					)}
+				</div>
+			</div>
+		</>
 	);
 };
 
@@ -167,7 +167,7 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 				<span>Siguiente acción</span>
 				<strong>{suggestedAction}</strong>
 				<button type="button" className="btn-primary" onClick={onOpenCustomerTool}>
-					Crear ficha de cliente
+					Vincular o crear cliente
 				</button>
 				<small>La ficha habilita órdenes, cobros e historial comercial.</small>
 			</div>

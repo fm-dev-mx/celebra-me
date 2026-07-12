@@ -3,6 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 
 describe('SalesWorkspace', () => {
+	beforeAll(() => {
+		HTMLElement.prototype.scrollIntoView = jest.fn();
+	});
 	it('starts with a commercial work queue instead of an open form', () => {
 		render(
 			<SalesWorkspace
@@ -22,11 +25,37 @@ describe('SalesWorkspace', () => {
 
 		expect(screen.getByRole('heading', { name: 'Seguimientos recientes' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /María Ejemplo/ })).toHaveTextContent(
-			'Siguiente: Crear ficha de cliente',
+			'Siguiente: Vincular o crear cliente',
 		);
 		expect(screen.getByText('Selecciona una persona u oportunidad')).toBeInTheDocument();
-		expect(screen.getByText('Buscar otro cliente o prospecto')).toBeInTheDocument();
+		expect(screen.getAllByText('Buscar prospecto o cliente')).toHaveLength(2);
 		expect(screen.queryByLabelText('Código de lead')).not.toBeVisible();
+	});
+
+	it('moves focus to identity resolution when the operator chooses the next action', () => {
+		render(
+			<SalesWorkspace
+				initialLeads={[
+					{
+						id: 'lead-focus',
+						leadCode: 'CM-FOCUS',
+						channel: 'contact_form',
+						status: 'new',
+						name: 'Persona Enfoque',
+					},
+				]}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /Persona Enfoque/ }));
+		const nextAction = screen
+			.getAllByRole('button', { name: 'Vincular o crear cliente' })
+			.find((button) => button.getAttribute('type') === 'button');
+		expect(nextAction).toBeDefined();
+		fireEvent.click(nextAction!);
+
+		expect(screen.getByLabelText('Nombre completo *')).toHaveFocus();
+		expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
 	});
 
 	it('presents an incomplete prospect as an intentional commercial record', () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
 import CustomerOrdersBox, {
@@ -17,7 +17,10 @@ import {
 import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 import { dashboardApi } from '@/lib/dashboard/api-client';
 import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
-import { labelCommercialEventType, EVENT_TYPE_LABELS } from '@/lib/tracking/commercial-presentation';
+import {
+	labelCommercialEventType,
+	EVENT_TYPE_LABELS,
+} from '@/lib/tracking/commercial-presentation';
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
@@ -36,7 +39,7 @@ const EVENT_TYPE_OPTIONS = Object.entries(EVENT_TYPE_LABELS).map(([value, label]
 }));
 
 function getSuggestedAction(lead: LeadCandidate): string {
-	if (!lead.customerId) return 'Crear ficha de cliente';
+	if (!lead.customerId) return 'Vincular o crear cliente';
 	if (lead.status === 'new') return 'Contactar y calificar';
 	if (lead.status === 'contacted') return 'Preparar cotización';
 	if (lead.status === 'quoted') return 'Dar seguimiento a cotización';
@@ -82,6 +85,30 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const [loadingTimeline, setLoadingTimeline] = useState(false);
 	const [loadingOrders, setLoadingOrders] = useState(false);
 	const [ordersError, setOrdersError] = useState('');
+	const [orderIdempotencyKey, setOrderIdempotencyKey] = useState(() => crypto.randomUUID());
+	const [depositIdempotencyKeys, setDepositIdempotencyKeys] = useState<Record<string, string>>(
+		{},
+	);
+	const customerToolRef = useRef<HTMLDetailsElement>(null);
+	const orderToolRef = useRef<HTMLDetailsElement>(null);
+	const feedbackRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (!customerToolOpen) return;
+		customerToolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		customerToolRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+	}, [customerToolOpen]);
+
+	useEffect(() => {
+		if (!orderToolOpen) return;
+		orderToolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		orderToolRef.current?.querySelector<HTMLSelectElement>('select')?.focus();
+	}, [orderToolOpen]);
+
+	useEffect(() => {
+		if (!errorMessage && !successMessage) return;
+		feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	}, [errorMessage, successMessage]);
 
 	const fetchCustomerOrders = async (customerId: string) => {
 		setLoadingOrders(true);
@@ -199,18 +226,30 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		setErrorMessage('');
 		setSuccessMessage('');
 		try {
-			const response = await dashboardApi.post<{ data: Customer }>(
-				'/api/dashboard/commercial/customers',
-				{
-					displayName: custName.trim(),
-					email: custEmail.trim() || undefined,
-					phone: custPhone.trim() || undefined,
-					createdFromLeadId: selectedLead?.id || undefined,
-				},
-			);
+			const response = await dashboardApi.post<{
+				data:
+					| { outcome: 'created' | 'matched'; customer: Customer }
+					| { outcome: 'conflict'; matches: Customer[] };
+			}>('/api/dashboard/commercial/customers', {
+				displayName: custName.trim(),
+				email: custEmail.trim() || undefined,
+				phone: custPhone.trim() || undefined,
+				createdFromLeadId: selectedLead?.id || undefined,
+			});
 			if (response.ok) {
-				const customer = response.data.data;
-				setSuccessMessage(`Cliente "${customer.displayName}" creado con éxito.`);
+				const result = response.data.data;
+				if (result.outcome === 'conflict') {
+					setErrorMessage(
+						'La identidad coincide con clientes diferentes. Revisa correo y teléfono antes de continuar.',
+					);
+					return;
+				}
+				const customer = result.customer;
+				setSuccessMessage(
+					result.outcome === 'created'
+						? `Cliente "${customer.displayName}" creado con éxito.`
+						: `Cliente existente "${customer.displayName}" vinculado con éxito.`,
+				);
 				handleSelectCustomer(customer, selectedLead || undefined);
 				setCustomerToolOpen(false);
 				setCustName('');
@@ -251,6 +290,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 					packageName: orderPackageName.trim() || undefined,
 					totalAmount: total,
 					depositAmount: Number.isFinite(deposit) && deposit >= 0 ? deposit : undefined,
+					idempotencyKey: orderIdempotencyKey,
 				},
 			);
 			if (response.ok) {
@@ -262,6 +302,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 				setOrderPackageName('');
 				setOrderTotalAmount('');
 				setOrderDepositAmount('');
+				setOrderIdempotencyKey(crypto.randomUUID());
 			} else setErrorMessage(response.message || 'Error al crear la orden.');
 		} catch (error) {
 			setErrorMessage(
@@ -282,14 +323,34 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 			return;
 		}
 		setMarkingDepositPaid((current) => ({ ...current, [orderId]: true }));
+		const idempotencyKey = depositIdempotencyKeys[orderId] ?? crypto.randomUUID();
+		if (!depositIdempotencyKeys[orderId]) {
+			setDepositIdempotencyKeys((current) => ({ ...current, [orderId]: idempotencyKey }));
+		}
 		setErrorMessage('');
 		setSuccessMessage('');
 		try {
 			const response = await dashboardApi.post<{
 				data: { order: SalesOrder; conversionEvent: ConversionEvent };
-			}>(`/api/dashboard/commercial/orders/${orderId}/deposit-paid`, { amountPaid: amount });
+			}>(`/api/dashboard/commercial/orders/${orderId}/deposit-paid`, {
+				amountPaid: amount,
+				idempotencyKey,
+			});
 			if (response.ok) {
-				setSuccessMessage('Anticipo registrado. La actividad comercial se actualizó.');
+				setDepositIdempotencyKeys((current) => ({
+					...current,
+					[orderId]: crypto.randomUUID(),
+				}));
+				const capiStatus = response.data.data.conversionEvent.status;
+				const conversionMessage =
+					capiStatus === 'sent'
+						? 'Conversión enviada.'
+						: capiStatus === 'failed' ||
+							  capiStatus === 'skipped' ||
+							  capiStatus === 'ambiguous'
+							? 'Conversión requiere atención.'
+							: 'Conversión pendiente.';
+				setSuccessMessage(`Anticipo registrado. ${conversionMessage}`);
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
@@ -329,16 +390,18 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 				</span>
 			</header>
 
-			{errorMessage && (
-				<div className="dashboard-error" role="alert">
-					{errorMessage}
-				</div>
-			)}
-			{successMessage && (
-				<div className="dashboard-status sales-success-full" role="status">
-					{successMessage}
-				</div>
-			)}
+			<div ref={feedbackRef}>
+				{errorMessage && (
+					<div className="dashboard-error" role="alert">
+						{errorMessage}
+					</div>
+				)}
+				{successMessage && (
+					<div className="dashboard-status sales-success-full" role="status">
+						{successMessage}
+					</div>
+				)}
+			</div>
 
 			<div className="sales-workspace-grid">
 				<aside className="crm-work-queue" aria-labelledby="crm-queue-title">
@@ -395,7 +458,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 					</div>
 
 					<details className="crm-supporting-tool">
-						<summary>Buscar otro cliente o prospecto</summary>
+						<summary>Buscar prospecto o cliente</summary>
 						<form
 							className="dashboard-form-grid crm-search-form"
 							onSubmit={handleSearch}
@@ -430,7 +493,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 							</div>
 							<div className="dashboard-actions dashboard-actions--full">
 								<button type="submit" className="btn-primary" disabled={searching}>
-									{searching ? 'Buscando...' : 'Buscar cliente'}
+									{searching ? 'Buscando...' : 'Buscar prospecto o cliente'}
 								</button>
 							</div>
 						</form>
@@ -443,12 +506,13 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 					/>
 
 					<details
+						ref={customerToolRef}
 						className="crm-supporting-tool"
 						id="customer-form-section"
 						open={customerToolOpen}
 						onToggle={(event) => setCustomerToolOpen(event.currentTarget.open)}
 					>
-						<summary>Crear o reconciliar cliente</summary>
+						<summary>Vincular o crear cliente</summary>
 						{selectedLead && (
 							<div className="linked-lead-badge">
 								<span>
@@ -497,7 +561,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 									className="btn-primary"
 									disabled={creatingCustomer}
 								>
-									{creatingCustomer ? 'Guardando...' : 'Crear y guardar cliente'}
+									{creatingCustomer ? 'Guardando...' : 'Vincular o crear cliente'}
 								</button>
 							</div>
 						</form>
@@ -562,6 +626,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 							</section>
 
 							<details
+								ref={orderToolRef}
 								className="crm-supporting-tool"
 								open={orderToolOpen}
 								onToggle={(event) => setOrderToolOpen(event.currentTarget.open)}

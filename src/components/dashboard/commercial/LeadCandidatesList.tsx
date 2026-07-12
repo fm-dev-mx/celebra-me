@@ -101,7 +101,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 										className="btn-primary"
 										onClick={() => onReconcileLead(candidates.byLeadCode!)}
 									>
-										Crear ficha de cliente
+										Vincular o crear cliente
 									</button>
 								)}
 							</div>
@@ -146,7 +146,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Crear ficha de cliente
+											Vincular o crear cliente
 										</button>
 									)}
 								</div>
@@ -192,7 +192,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Crear ficha de cliente
+											Vincular o crear cliente
 										</button>
 									)}
 								</div>
@@ -240,7 +240,7 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-primary"
 											onClick={() => onReconcileLead(lead)}
 										>
-											Crear ficha de cliente
+											Vincular o crear cliente
 										</button>
 									)}
 								</div>
