@@ -4,7 +4,9 @@ import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
 import CustomerOrdersBox, {
 	type SalesOrder,
 } from '@/components/dashboard/commercial/CustomerOrdersBox';
-import LeadCandidatesList, {
+import {
+	LeadCandidatesList,
+	buildSyntheticCustomer,
 	type Customer,
 	type LeadCandidate,
 } from '@/components/dashboard/commercial/LeadCandidatesList';
@@ -81,6 +83,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const [markingDepositPaid, setMarkingDepositPaid] = useState<Record<string, boolean>>({});
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
+	const [customerLookupError, setCustomerLookupError] = useState('');
 	const [timelineEntries, setTimelineEntries] = useState<CrmTimelineEntry[]>([]);
 	const [loadingTimeline, setLoadingTimeline] = useState(false);
 	const [loadingOrders, setLoadingOrders] = useState(false);
@@ -92,6 +95,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 	const customerToolRef = useRef<HTMLDetailsElement>(null);
 	const orderToolRef = useRef<HTMLDetailsElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
+	const pollGenerationRef = useRef(0);
 
 	useEffect(() => {
 		if (!customerToolOpen) return;
@@ -109,6 +113,13 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		if (!errorMessage && !successMessage) return;
 		feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 	}, [errorMessage, successMessage]);
+
+	// Cleanup polling on unmount
+	useEffect(() => {
+		return () => {
+			pollGenerationRef.current = -1;
+		};
+	}, []);
 
 	const fetchCustomerOrders = async (customerId: string) => {
 		setLoadingOrders(true);
@@ -146,6 +157,62 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		}
 	};
 
+	const fetchRealCustomer = async (customerId: string) => {
+		try {
+			const response = await dashboardApi.get<{ data: Customer }>(
+				`/api/dashboard/commercial/customers?id=${encodeURIComponent(customerId)}`,
+			);
+			if (response.ok) {
+				setActiveCustomer(response.data.data);
+				setCustomerLookupError('');
+			} else {
+				// Clear the synthetic customer — do not display lead data as authoritative
+				setActiveCustomer(null);
+				setCustomerLookupError(
+					'No se pudo cargar la ficha del cliente. Los datos mostrados pueden estar incompletos.',
+				);
+			}
+		} catch {
+			setActiveCustomer(null);
+			setCustomerLookupError(
+				'No se pudo cargar la ficha del cliente. Los datos mostrados pueden estar incompletos.',
+			);
+		}
+	};
+
+	const pollConversionStatus = async (
+		conversionEventId: string,
+		formatConversion: (status: string) => string,
+	) => {
+		const generation = pollGenerationRef.current;
+		const maxAttempts = 5;
+		const intervalMs = 1000;
+		for (let attempt = 0; attempt < maxAttempts; attempt++) {
+			await new Promise((resolve) => setTimeout(resolve, intervalMs));
+			// Abort if unmounted or a newer poll started
+			if (pollGenerationRef.current !== generation) return;
+			try {
+				const response = await dashboardApi.get<{
+					data: { status: string };
+				}>(
+					`/api/dashboard/commercial/meta-conversions/status?id=${encodeURIComponent(conversionEventId)}`,
+				);
+				// Re-check after await
+				if (pollGenerationRef.current !== generation) return;
+				if (response.ok) {
+					const latestStatus = response.data.data.status;
+					if (latestStatus !== 'pending') {
+						setSuccessMessage(`Anticipo registrado. ${formatConversion(latestStatus)}`);
+						return;
+					}
+				}
+			} catch {
+				// Silently continue polling on transient network errors.
+			}
+		}
+		// All attempts exhausted — keep the original pending message.
+	};
+
 	const handleSelectCustomer = (customer: Customer, associatedLead?: LeadCandidate) => {
 		setActiveCustomer(customer);
 		setCustomerOrders([]);
@@ -153,9 +220,13 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		setOrderToolOpen(false);
 		setErrorMessage('');
 		setSuccessMessage('');
+		setCustomerLookupError('');
 		if (associatedLead) setSelectedLead(associatedLead);
 		void fetchCustomerOrders(customer.id);
 		void fetchTimeline(customer.id);
+		// When the customer was constructed from lead data, fetch the real
+		// record so the workspace shows authoritative email / phone values.
+		void fetchRealCustomer(customer.id);
 	};
 
 	const handleReconcileLead = (lead: LeadCandidate) => {
@@ -173,12 +244,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		setSuccessMessage('');
 		if (lead.customerId) {
 			handleSelectCustomer(
-				{
-					id: lead.customerId,
-					displayName: lead.name || 'Cliente sin nombre',
-					email: lead.email,
-					phoneE164: lead.phoneE164,
-				},
+				buildSyntheticCustomer(lead),
 				lead,
 			);
 		} else {
@@ -341,19 +407,23 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 					...current,
 					[orderId]: crypto.randomUUID(),
 				}));
-				const capiStatus = response.data.data.conversionEvent.status;
-				const conversionMessage =
-					capiStatus === 'sent'
+				const conversionEvent = response.data.data.conversionEvent;
+				const formatConversion = (status: string) =>
+					status === 'sent'
 						? 'Conversión enviada.'
-						: capiStatus === 'failed' ||
-							  capiStatus === 'skipped' ||
-							  capiStatus === 'ambiguous'
+						: status === 'failed' || status === 'skipped' || status === 'ambiguous'
 							? 'Conversión requiere atención.'
 							: 'Conversión pendiente.';
-				setSuccessMessage(`Anticipo registrado. ${conversionMessage}`);
+				setSuccessMessage(`Anticipo registrado. ${formatConversion(conversionEvent.status)}`);
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
+				}
+				// Poll the conversion status for a short bounded period so the UI
+				// can truthfully reflect the async delivery outcome.
+				if (conversionEvent.status === 'pending' && conversionEvent.id) {
+					pollGenerationRef.current += 1;
+					void pollConversionStatus(conversionEvent.id, formatConversion);
 				}
 			} else setErrorMessage(response.message || 'Error al registrar el pago.');
 		} catch (error) {
@@ -394,6 +464,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 				{errorMessage && (
 					<div className="dashboard-error" role="alert">
 						{errorMessage}
+					</div>
+				)}
+				{customerLookupError && (
+					<div className="dashboard-error" role="alert">
+						{customerLookupError}
 					</div>
 				)}
 				{successMessage && (
@@ -485,8 +560,8 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 								<label htmlFor="search-email">Correo</label>
 								<input
 									id="search-email"
-									type="email"
 									value={searchEmail}
+									type="email"
 									onChange={(event) => setSearchEmail(event.target.value)}
 									placeholder="cliente@ejemplo.com"
 								/>
@@ -724,5 +799,4 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		</div>
 	);
 };
-
 export default SalesWorkspace;

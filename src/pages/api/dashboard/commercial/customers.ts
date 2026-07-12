@@ -1,10 +1,14 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
-import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
-import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { validateBodyOrRespond, validateQueryOrRespond } from '@/lib/rsvp/core/validation';
 
 const CreateCommercialCustomerSchema = z.object({
 	displayName: z.string().trim().min(1).max(160),
@@ -48,6 +52,33 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 		return errorResponse(
 			new ApiError(500, 'internal_error', 'Error al crear el cliente. Intenta de nuevo.'),
+		);
+	}
+};
+
+const GetCustomerQuerySchema = z.object({
+	id: z.string().trim().min(1).max(80),
+});
+
+export const GET: APIRoute = async ({ request, url }) => {
+	try {
+		await requireAdminStrongSession(request);
+
+		const parsed = validateQueryOrRespond(url.searchParams, GetCustomerQuerySchema);
+		if (parsed instanceof Response) return parsed;
+
+		const customer = await findCommercialCustomerById(parsed.id);
+		if (!customer) {
+			return errorResponse(new ApiError(404, 'not_found', 'Cliente no encontrado.'));
+		}
+
+		return successResponse(customer);
+	} catch (error) {
+		if (error instanceof ApiError) {
+			return errorResponse(error);
+		}
+		return errorResponse(
+			new ApiError(500, 'internal_error', 'Error al obtener el cliente.'),
 		);
 	}
 };

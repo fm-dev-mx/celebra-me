@@ -219,3 +219,14 @@ export async function findCommercialCustomerByPhone(
 	});
 	return rows[0] ? toCustomer(rows[0]) : null;
 }
+
+export async function findCommercialCustomerById(
+	id: string,
+): Promise<CommercialCustomer | null> {
+	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
+		pathWithQuery: `customers?id=eq.${encodeURIComponent(id)}&select=${CUSTOMER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toCustomer(rows[0]) : null;
+}

@@ -42,6 +42,15 @@ const displayChannel = (channel: string) => {
 	return 'Manual';
 };
 
+export function buildSyntheticCustomer(lead: LeadCandidate): Customer {
+	return {
+		id: lead.customerId!,
+		displayName: lead.name || 'Cliente',
+		email: lead.email,
+		phoneE164: lead.phoneE164,
+	};
+}
+
 export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 	candidates,
 	onSelectCustomer,
@@ -82,15 +91,9 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 										className="btn-secondary"
 										onClick={() =>
 											onSelectCustomer(
-												{
-													id: candidates.byLeadCode!.customerId!,
-													displayName:
-														candidates.byLeadCode!.name || 'Cliente',
-													email: candidates.byLeadCode!.email,
-													phoneE164: candidates.byLeadCode!.phoneE164,
-												},
-												candidates.byLeadCode!,
-											)
+																buildSyntheticCustomer(candidates.byLeadCode!),
+																candidates.byLeadCode!,
+															)
 										}
 									>
 										Seleccionar cliente
@@ -128,14 +131,9 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-secondary"
 											onClick={() =>
 												onSelectCustomer(
-													{
-														id: lead.customerId!,
-														displayName: lead.name || 'Cliente',
-														email: lead.email,
-														phoneE164: lead.phoneE164,
-													},
-													lead,
-												)
+																		buildSyntheticCustomer(lead),
+																		lead,
+																	)
 											}
 										>
 											Seleccionar cliente
@@ -174,14 +172,9 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-secondary"
 											onClick={() =>
 												onSelectCustomer(
-													{
-														id: lead.customerId!,
-														displayName: lead.name || 'Cliente',
-														email: lead.email,
-														phoneE164: lead.phoneE164,
-													},
-													lead,
-												)
+																		buildSyntheticCustomer(lead),
+																		lead,
+																	)
 											}
 										>
 											Seleccionar cliente
@@ -222,14 +215,9 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 											className="btn-secondary"
 											onClick={() =>
 												onSelectCustomer(
-													{
-														id: lead.customerId!,
-														displayName: lead.name || 'Cliente',
-														email: lead.email,
-														phoneE164: lead.phoneE164,
-													},
-													lead,
-												)
+																		buildSyntheticCustomer(lead),
+																		lead,
+																	)
 											}
 										>
 											Seleccionar cliente
@@ -259,4 +247,3 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 		</div>
 	);
 };
-export default LeadCandidatesList;

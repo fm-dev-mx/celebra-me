@@ -1,20 +1,33 @@
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
+	requireAdminStrongSession: jest.fn(),
 }));
 
 jest.mock('@/lib/commercial/customer.service', () => ({
 	createCommercialCustomer: jest.fn(),
 }));
 
-import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+jest.mock('@/lib/commercial/customer.repository', () => ({
+	findCommercialCustomerById: jest.fn(),
+}));
+
+import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
-import { POST } from '@/pages/api/dashboard/commercial/customers';
+import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { GET, POST } from '@/pages/api/dashboard/commercial/customers';
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
 >;
+const mockRequireAdminStrongSession = requireAdminStrongSession as jest.MockedFunction<
+	typeof requireAdminStrongSession
+>;
 const mockCreateCustomer = createCommercialCustomer as jest.MockedFunction<
 	typeof createCommercialCustomer
+>;
+const mockFindCommercialCustomerById = findCommercialCustomerById as jest.MockedFunction<
+	typeof findCommercialCustomerById
 >;
 
 function createContext(request: Request) {
@@ -39,6 +52,7 @@ beforeEach(() => {
 		userId: 'admin-user-id',
 		isSuperAdmin: true,
 	} as never);
+	mockRequireAdminStrongSession.mockResolvedValue({ isSuperAdmin: true } as never);
 	mockCreateCustomer.mockResolvedValue({
 		outcome: 'created',
 		customer: {
@@ -48,6 +62,7 @@ beforeEach(() => {
 			phoneE164: '+526****4567',
 		},
 	});
+	mockFindCommercialCustomerById.mockResolvedValue(null);
 });
 
 describe('/api/dashboard/commercial/customers', () => {
@@ -115,5 +130,110 @@ describe('/api/dashboard/commercial/customers', () => {
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('conflict');
 		expect(body.error.message).toMatch(/ya existe un cliente/i);
+	});
+
+	describe('GET — customer by ID', () => {
+		it('returns customer by ID', async () => {
+			mockFindCommercialCustomerById.mockResolvedValue({
+				id: 'cust-123',
+				displayName: 'Test Customer',
+				email: 'test@example.com',
+				phoneE164: '+521234567890',
+			});
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=cust-123',
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBe(200);
+			expect(body.data.id).toBe('cust-123');
+			expect(mockFindCommercialCustomerById).toHaveBeenCalledWith('cust-123');
+		});
+
+		it('returns 404 when customer not found', async () => {
+			mockFindCommercialCustomerById.mockResolvedValue(null);
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=nonexistent',
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBe(404);
+			expect(body.success).toBe(false);
+			expect(body.error.code).toBe('not_found');
+		});
+
+		it('rejects without id param', async () => {
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers',
+			);
+
+			const response = await GET(createContext(request) as never);
+
+			expect(response.status).toBe(400);
+			expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
+		});
+
+		it('authorization: unauthenticated *** 401/403', async () => {
+			mockRequireAdminStrongSession.mockRejectedValueOnce(
+				new ApiError(401, 'unauthorized', 'Unauthorized.'),
+			);
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=some-uuid',
+				{ method: 'GET' },
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBeGreaterThanOrEqual(401);
+			expect(response.status).toBeLessThanOrEqual(403);
+			expect(body.success).toBe(false);
+			expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
+		});
+
+		it('authorization: insufficient *** → 403', async () => {
+			mockRequireAdminStrongSession.mockRejectedValueOnce(
+				new ApiError(403, 'forbidden', 'Not authorized for strong admin access.'),
+			);
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=some-uuid',
+				{ method: 'GET' },
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBe(403);
+			expect(body.success).toBe(false);
+			expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
+		});
+
+		it('authorization: valid *** → 200', async () => {
+			mockFindCommercialCustomerById.mockResolvedValue({
+				id: 'admin-verified-customer',
+				displayName: 'Admin Verified',
+				email: 'admin@verified.com',
+				phoneE164: '+529876543210',
+			});
+
+			const request = new Request(
+				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=admin-verified-customer',
+			);
+
+			const response = await GET(createContext(request) as never);
+			const body = await response.json();
+
+			expect(response.status).toBe(200);
+			expect(body.data.id).toBe('admin-verified-customer');
+			expect(mockFindCommercialCustomerById).toHaveBeenCalledWith('admin-verified-customer');
+		});
 	});
 });
