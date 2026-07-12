@@ -16,7 +16,10 @@ jest.mock('@/lib/commercial/orders.repository', () => ({
 	findSalesOrdersByCustomerId: jest.fn(),
 }));
 
-import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -87,7 +90,6 @@ beforeEach(() => {
 			paidAt: null,
 		},
 	]);
-
 });
 
 describe('/api/dashboard/commercial/orders', () => {
@@ -123,6 +125,7 @@ describe('/api/dashboard/commercial/orders', () => {
 				packageName: 'Premium',
 				totalAmount: 1699,
 				depositAmount: 899,
+				idempotencyKey: '11111111-1111-4111-8111-111111111111',
 			}),
 		});
 
@@ -135,17 +138,17 @@ describe('/api/dashboard/commercial/orders', () => {
 			{},
 			'commercial:orders:create',
 		);
-				expect(mockCreateCommercialSalesOrder).toHaveBeenCalledWith(
-					expect.objectContaining({
-						customerId: 'customer-id',
-						leadId: 'lead-id',
-						eventType: 'wedding',
-						packageName: 'Premium',
-						totalAmount: 1699,
-						depositAmount: 899,
-						createdBy: expect.any(String),
-					}),
-				);
+		expect(mockCreateCommercialSalesOrder).toHaveBeenCalledWith(
+			expect.objectContaining({
+				customerId: 'customer-id',
+				leadId: 'lead-id',
+				eventType: 'wedding',
+				packageName: 'Premium',
+				totalAmount: 1699,
+				depositAmount: 899,
+				createdBy: expect.any(String),
+			}),
+		);
 		expect(body.data.orderNumber).toBe('CMO-20260708-ABC123');
 	});
 
@@ -210,6 +213,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 				body: JSON.stringify({
 					amountPaid: 899,
 					paidAt: '2026-07-08T12:30:00.000Z',
+					idempotencyKey: '22222222-2222-4222-8222-222222222222',
 				}),
 			},
 		);
@@ -225,11 +229,14 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 			{},
 			'commercial:orders:deposit-paid',
 		);
-		expect(mockMarkCommercialOrderDepositPaid).toHaveBeenCalledWith({
-			orderId: 'order-id',
-			amountPaid: 899,
-			paidAt: '2026-07-08T12:30:00.000Z',
-		});
+		expect(mockMarkCommercialOrderDepositPaid).toHaveBeenCalledWith(
+			expect.objectContaining({
+				orderId: 'order-id',
+				amountPaid: 899,
+				paidAt: '2026-07-08T12:30:00.000Z',
+				idempotencyKey: '22222222-2222-4222-8222-222222222222',
+			}),
+		);
 		expect(body.data.conversionEvent.eventId).toBe('purchase:order-id:deposit_paid');
 	});
 
@@ -246,6 +253,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 				body: JSON.stringify({
 					amountPaid: 2000,
 					paidAt: '2026-07-08T12:30:00.000Z',
+					idempotencyKey: '22222222-2222-4222-8222-222222222222',
 				}),
 			},
 		);
@@ -256,7 +264,9 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 		const body = await response.json();
 
 		expect(body.success).toBe(false);
-		expect(body.error.message).toContain('El anticipo no puede ser mayor que el monto total de la orden.');
+		expect(body.error.message).toContain(
+			'El anticipo no puede ser mayor que el monto total de la orden.',
+		);
 		expect(body.data).toBeUndefined();
 	});
 });
@@ -284,10 +294,9 @@ describe('/api/dashboard/commercial/orders — GET', () => {
 	});
 
 	it('returns 400 when customerId is missing on GET', async () => {
-		const request = new Request(
-			'https://www.celebra-me.com/api/dashboard/commercial/orders',
-			{ method: 'GET' },
-		);
+		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+			method: 'GET',
+		});
 
 		const response = await listOrders(createContext(request) as never);
 		const body = await response.json();

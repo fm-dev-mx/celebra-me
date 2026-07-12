@@ -8,11 +8,16 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 const MarkDepositPaidSchema = z.object({
 	amountPaid: z.number().positive(),
 	paidAt: z.iso.datetime().optional(),
+	idempotencyKey: z.uuid(),
 });
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'commercial:orders:deposit-paid');
+		const session = await requireAdminMutationAccess(
+			request,
+			cookies,
+			'commercial:orders:deposit-paid',
+		);
 
 		const orderId = params.orderId?.trim();
 		if (!orderId) {
@@ -26,6 +31,8 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 			orderId,
 			amountPaid: parsed.amountPaid,
 			paidAt: parsed.paidAt,
+			actorId: session.userId,
+			idempotencyKey: parsed.idempotencyKey,
 		});
 
 		return successResponse(result);

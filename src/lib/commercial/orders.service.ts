@@ -1,19 +1,16 @@
 import {
 	createSalesOrder,
-	findMetaConversionEventByEventId,
-	findSalesOrderById,
-	updateSalesOrderDepositPaid,
-	upsertMetaConversionEvent,
+	registerSalesOrderDepositPurchase,
 	type MetaConversionEvent,
 	type SalesOrder,
 	type SalesOrderStatus,
 } from '@/lib/commercial/orders.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 
 const COMMERCIAL_ORDER_CURRENCY = 'MXN';
-
 
 export interface CreateCommercialSalesOrderInput {
 	customerId: string;
@@ -30,12 +27,15 @@ export interface CreateCommercialSalesOrderInput {
 	createdBy?: string;
 	now?: Date;
 	randomSuffix?: string;
+	idempotencyKey?: string;
 }
 
 export interface MarkCommercialOrderDepositPaidInput {
 	orderId: string;
 	amountPaid: number;
 	paidAt?: string;
+	actorId?: string;
+	idempotencyKey?: string;
 }
 
 export interface DepositPaidResult {
@@ -59,18 +59,20 @@ function assertNonNegativeAmount(value: number | undefined, message: string): vo
 function assertMxnCurrency(currency: string | undefined): void {
 	if (currency === undefined) return;
 	if (currency.trim().toUpperCase() !== COMMERCIAL_ORDER_CURRENCY) {
-		throw new ApiError(400, 'validation_error', 'Commercial sales orders must use MXN currency.');
+		throw new ApiError(
+			400,
+			'validation_error',
+			'Commercial sales orders must use MXN currency.',
+		);
 	}
-}
-
-function createPurchaseDepositEventId(orderId: string): string {
-	return `purchase:${orderId}:deposit_paid`;
 }
 
 export function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): string {
 	const now = input.now ?? new Date();
 	const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
-	const suffix = input.randomSuffix?.trim().toUpperCase() || Math.random().toString(36).slice(2, 8).toUpperCase();
+	const suffix =
+		input.randomSuffix?.trim().toUpperCase() ||
+		Math.random().toString(36).slice(2, 8).toUpperCase();
 	return `CMO-${stamp}-${suffix}`;
 }
 
@@ -82,6 +84,7 @@ export async function createCommercialSalesOrder(
 	assertMxnCurrency(input.currency);
 
 	return createSalesOrder({
+		idempotencyKey: input.idempotencyKey ?? randomUUID(),
 		orderNumber: createOrderNumber({ now: input.now, randomSuffix: input.randomSuffix }),
 		customerId: input.customerId,
 		leadId: input.leadId,
@@ -95,17 +98,52 @@ export async function createCommercialSalesOrder(
 		totalAmount: input.totalAmount,
 		depositAmount: input.depositAmount,
 		createdBy: input.createdBy,
-	}).then((order) => {
-		// Fire-and-forget: emit internal order_created tracking event.
-		void emitCommercialTrackingEvent({
-			eventName: 'order_created',
-			customerId: order.customerId,
-			orderId: order.id,
-			sessionId: order.sessionId,
-			totalAmount: order.totalAmount,
+	})
+		.catch((error: unknown) => {
+			if (error instanceof Error && error.message.includes('ORDER_IDEMPOTENCY_CONFLICT')) {
+				throw new ApiError(
+					409,
+					'conflict',
+					'La solicitud ya se usó para crear una orden con datos diferentes.',
+				);
+			}
+			throw error;
+		})
+		.then((order) => {
+			// Fire-and-forget: emit internal order_created tracking event.
+			if (order.wasCreated !== false)
+				void emitCommercialTrackingEvent({
+					eventName: 'order_created',
+					customerId: order.customerId,
+					orderId: order.id,
+					sessionId: order.sessionId,
+					totalAmount: order.totalAmount,
+				});
+			return order;
 		});
-		return order;
-	});
+}
+
+function mapDepositTransitionError(error: unknown): never {
+	const message = error instanceof Error ? error.message : String(error);
+	const databaseMessage = message.match(/"message"\s*:\s*"([^"]+)"/i)?.[1] ?? message;
+	if (message.includes('No se encontró la orden de venta')) {
+		throw new ApiError(404, 'not_found', 'No se encontró la orden de venta.');
+	}
+	if (
+		message.includes('datos diferentes') ||
+		message.includes('no coincide con el anticipo') ||
+		message.includes('no tiene su evento Purchase')
+	) {
+		throw new ApiError(409, 'conflict', databaseMessage);
+	}
+	if (
+		message.includes('No se puede registrar un anticipo') ||
+		message.includes('El anticipo no puede ser mayor') ||
+		message.includes('clave de idempotencia')
+	) {
+		throw new ApiError(400, 'validation_error', databaseMessage);
+	}
+	throw error;
 }
 
 export async function markCommercialOrderDepositPaid(
@@ -113,63 +151,41 @@ export async function markCommercialOrderDepositPaid(
 ): Promise<DepositPaidResult> {
 	assertPositiveAmount(input.amountPaid, 'El monto del anticipo debe ser mayor a cero.');
 
-	const eventId = createPurchaseDepositEventId(input.orderId);
-	const existingOrder = await findSalesOrderById(input.orderId);
-	if (!existingOrder) {
-		throw new ApiError(404, 'not_found', 'No se encontró la orden de venta.');
-	}
-
-	// Invalid transitions: orders that are cancelled, lost, or draft
-	// cannot be moved to deposit_paid.
-	if (existingOrder.status === 'cancelled' || existingOrder.status === 'lost' || existingOrder.status === 'draft') {
-		throw new ApiError(400, 'validation_error', `No se puede registrar un anticipo en una orden con estado "${existingOrder.status}".`);
-	}
-
-	// A deposit cannot exceed the order total.
-	if (input.amountPaid > existingOrder.totalAmount) {
-		throw new ApiError(400, 'validation_error', 'El anticipo no puede ser mayor que el monto total de la orden.');
-	}
-
-	// Idempotent: already deposit_paid or paid — return existing state.
-	if (existingOrder.status === 'deposit_paid' || existingOrder.status === 'paid') {
-		return {
-			order: existingOrder,
-			conversionEvent: await findMetaConversionEventByEventId(eventId),
-		};
-	}
-
 	const paidAt = input.paidAt ?? new Date().toISOString();
-	const order = await updateSalesOrderDepositPaid({
-		orderId: input.orderId,
-		amountPaid: input.amountPaid,
-		paidAt,
-	});
-	const conversionEvent = await upsertMetaConversionEvent({
-		orderId: order.id,
-		leadId: order.leadId,
-		customerId: order.customerId,
-		eventName: 'Purchase',
-		eventId,
-		triggerStatus: 'deposit_paid',
-		value: input.amountPaid,
-		currency: COMMERCIAL_ORDER_CURRENCY,
-	});
+	let result: Awaited<ReturnType<typeof registerSalesOrderDepositPurchase>>;
+	try {
+		result = await registerSalesOrderDepositPurchase({
+			orderId: input.orderId,
+			amountPaid: input.amountPaid,
+			paidAt,
+			actorId: input.actorId ?? randomUUID(),
+			idempotencyKey: input.idempotencyKey ?? randomUUID(),
+		});
+	} catch (error) {
+		mapDepositTransitionError(error);
+	}
+	const { order, conversionEvent } = result;
 
-	if (conversionEvent) {
+	if (!result.idempotent) {
 		void deliverMetaConversionEvent(conversionEvent.id).catch((err) => {
-			console.error(`[orders-service] Failed to deliver CAPI event ${conversionEvent.id} synchronously:`, err);
+			console.error(
+				`[orders-service] Failed to deliver CAPI event ${conversionEvent.id} synchronously:`,
+				err,
+			);
 		});
 	}
 
-	// Fire-and-forget: emit internal deposit_paid tracking event.
-	void emitCommercialTrackingEvent({
-		eventName: 'deposit_paid',
-		customerId: order.customerId,
-		orderId: order.id,
-		sessionId: order.sessionId,
-		totalAmount: order.totalAmount,
-		amountPaid: input.amountPaid,
-	});
+	// Fire-and-forget: emit internal deposit_paid tracking event (skip on idempotent re-process).
+	if (!result.idempotent) {
+		void emitCommercialTrackingEvent({
+			eventName: 'deposit_paid',
+			customerId: order.customerId,
+			orderId: order.id,
+			sessionId: order.sessionId,
+			totalAmount: order.totalAmount,
+			amountPaid: input.amountPaid,
+		});
+	}
 
 	return { order, conversionEvent };
 }

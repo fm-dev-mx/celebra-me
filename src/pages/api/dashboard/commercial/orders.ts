@@ -2,10 +2,12 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialSalesOrder } from '@/lib/commercial/orders.service';
 import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository';
-import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
-
 
 const CreateCommercialOrderSchema = z.object({
 	customerId: z.string().trim().min(1).max(80),
@@ -19,6 +21,7 @@ const CreateCommercialOrderSchema = z.object({
 	currency: z.literal('MXN').optional(),
 	totalAmount: z.number().positive(),
 	depositAmount: z.number().nonnegative().optional(),
+	idempotencyKey: z.uuid(),
 });
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -45,6 +48,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			totalAmount: parsed.totalAmount,
 			depositAmount: parsed.depositAmount,
 			createdBy: session.userId,
+			idempotencyKey: parsed.idempotencyKey,
 		});
 
 		return successResponse(order, 201);
@@ -68,4 +72,3 @@ export const GET: APIRoute = async ({ request, url }) => {
 		return errorResponse(error);
 	}
 };
-
