@@ -40,10 +40,13 @@ beforeEach(() => {
 		isSuperAdmin: true,
 	} as never);
 	mockCreateCustomer.mockResolvedValue({
-		id: 'customer-id',
-		displayName: 'Valentina Hernandez',
-		email: 'client@example.com',
-		phoneE164: '+526****4567',
+		outcome: 'created',
+		customer: {
+			id: 'customer-id',
+			displayName: 'Valentina Hernandez',
+			email: 'client@example.com',
+			phoneE164: '+526****4567',
+		},
 	});
 });
 
@@ -78,12 +81,19 @@ describe('/api/dashboard/commercial/customers', () => {
 			phone: '+52 614 123 4567',
 			createdFromLeadId: 'lead-id',
 		});
-		expect(body.data.id).toBe('customer-id');
+		expect(body.data).toEqual(
+			expect.objectContaining({
+				outcome: 'created',
+				customer: expect.objectContaining({ id: 'customer-id' }),
+			}),
+		);
 	});
 
 	it('returns 409 with friendly message instead of exposing raw duplicate-key errors', async () => {
 		mockCreateCustomer.mockRejectedValue(
-			new Error('duplicate key value violates unique constraint "idx_customers_normalized_email_unique"'),
+			new Error(
+				'duplicate key value violates unique constraint "idx_customers_normalized_email_unique"',
+			),
 		);
 
 		const request = new Request(

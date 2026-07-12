@@ -20,14 +20,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		const parsed = await validateBodyOrRespond(request, CreateCommercialCustomerSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const customer = await createCommercialCustomer({
+		const result = await createCommercialCustomer({
 			displayName: parsed.displayName,
 			email: parsed.email,
 			phone: parsed.phone,
 			createdFromLeadId: parsed.createdFromLeadId,
 		});
 
-		return successResponse(customer, 201);
+		return successResponse(result, result.outcome === 'created' ? 201 : 200);
 	} catch (error) {
 		if (error instanceof ApiError) {
 			return errorResponse(error);

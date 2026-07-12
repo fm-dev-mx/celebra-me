@@ -56,15 +56,14 @@ describe('createCommercialCustomer', () => {
 	it('returns existing customer when normalized email already exists', async () => {
 		mockFindByEmail.mockResolvedValue(existingCustomer);
 
-		const customer = await createCommercialCustomer({
+		const result = await createCommercialCustomer({
 			displayName: 'Valentina Hernandez',
 			email: 'Client@Example.COM',
 			phone: '+52 614 123 4567',
 			createdFromLeadId: 'lead-id',
 		});
 
-		expect(customer.id).toBe('existing-customer-id');
-		expect(customer.displayName).toBe('Valentina Hernandez');
+		expect(result).toEqual({ outcome: 'matched', customer: existingCustomer });
 		// Should not have attempted an insert.
 		expect(mockUpsertCustomer).not.toHaveBeenCalled();
 		// Should still link the lead even when returning existing customer.
@@ -78,14 +77,14 @@ describe('createCommercialCustomer', () => {
 		mockFindByEmail.mockResolvedValue(null);
 		mockFindByPhone.mockResolvedValue(existingCustomer);
 
-		const customer = await createCommercialCustomer({
+		const result = await createCommercialCustomer({
 			displayName: 'Nuevo Nombre', // Different name
 			email: 'other@example.com',
 			phone: '+52 614 123 4567',
 			createdFromLeadId: 'lead-id',
 		});
 
-		expect(customer.id).toBe('existing-customer-id');
+		expect(result).toEqual({ outcome: 'matched', customer: existingCustomer });
 		expect(mockUpsertCustomer).not.toHaveBeenCalled();
 		expect(mockLinkLeadToCustomer).toHaveBeenCalledWith({
 			leadId: 'lead-id',
@@ -94,14 +93,14 @@ describe('createCommercialCustomer', () => {
 	});
 
 	it('creates a new customer when no existing match is found', async () => {
-		const customer = await createCommercialCustomer({
+		const result = await createCommercialCustomer({
 			displayName: ' Valentina Hernandez ',
 			email: ' Client@Example.COM ',
 			phone: '+52 614 123 4567',
 			createdFromLeadId: 'lead-id',
 		});
 
-		expect(customer.id).toBe('customer-id');
+		expect(result).toEqual({ outcome: 'created', customer: newCustomer });
 		expect(mockFindByEmail).toHaveBeenCalledWith('client@example.com');
 		expect(mockFindByPhone).toHaveBeenCalledWith('+526141234567');
 		expect(mockUpsertCustomer).toHaveBeenCalledWith({
@@ -122,23 +121,36 @@ describe('createCommercialCustomer', () => {
 	it('recovers from a unique-constraint race by looking up the existing customer', async () => {
 		// Insert fails with a generic error (simulating a constraint violation).
 		mockUpsertCustomer.mockRejectedValueOnce(
-			new Error('duplicate key value violates unique constraint "idx_customers_normalized_email_unique"'),
+			new Error(
+				'duplicate key value violates unique constraint "idx_customers_normalized_email_unique"',
+			),
 		);
 		// Second lookup (race recovery) finds the record.
 		mockFindByEmail.mockResolvedValueOnce(null); // First call (before insert)
 		mockFindByEmail.mockResolvedValueOnce(existingCustomer); // Second call (after insert failure)
 
-		const customer = await createCommercialCustomer({
+		const result = await createCommercialCustomer({
 			displayName: 'Valentina Hernandez',
 			email: 'client@example.com',
 			createdFromLeadId: 'lead-id',
 		});
 
-		expect(customer.id).toBe('existing-customer-id');
-		expect(mockLinkLeadToCustomer).toHaveBeenCalledWith({
-			leadId: 'lead-id',
-			customerId: 'existing-customer-id',
+		expect(result).toEqual({ outcome: 'matched', customer: existingCustomer });
+	});
+
+	it('returns conflict when email and phone match different customers', async () => {
+		const phoneCustomer = { ...existingCustomer, id: 'phone-customer-id' };
+		mockFindByEmail.mockResolvedValue(existingCustomer);
+		mockFindByPhone.mockResolvedValue(phoneCustomer);
+
+		const result = await createCommercialCustomer({
+			displayName: 'Valentina Hernandez',
+			email: 'client@example.com',
+			phone: '+52 614 123 4567',
 		});
+
+		expect(result).toEqual({ outcome: 'conflict', matches: [existingCustomer, phoneCustomer] });
+		expect(mockLinkLeadToCustomer).not.toHaveBeenCalled();
 	});
 
 	it('rejects customer creation without a display name', async () => {

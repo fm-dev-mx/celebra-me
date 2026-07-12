@@ -15,6 +15,17 @@ export interface CreateCommercialCustomerInput {
 	createdFromLeadId?: string;
 }
 
+export type CommercialCustomerReconciliationResult =
+	| { outcome: 'created' | 'matched'; customer: CommercialCustomer }
+	| { outcome: 'conflict'; matches: CommercialCustomer[] };
+
+function hasIdentityConflict(
+	byEmail: CommercialCustomer | null,
+	byPhone: CommercialCustomer | null,
+): byEmail is CommercialCustomer {
+	return Boolean(byEmail && byPhone && byEmail.id !== byPhone.id);
+}
+
 /**
  * Creates a commercial customer AFTER checking whether one already exists
  * by normalized email or normalized phone. If an existing match is found the
@@ -29,7 +40,7 @@ export interface CreateCommercialCustomerInput {
  */
 export async function createCommercialCustomer(
 	input: CreateCommercialCustomerInput,
-): Promise<CommercialCustomer> {
+): Promise<CommercialCustomerReconciliationResult> {
 	const displayName = emptyToUndefined(input.displayName);
 	if (!displayName) {
 		throw new Error('Customer display name is required.');
@@ -40,13 +51,15 @@ export async function createCommercialCustomer(
 	const createdFromLeadId = emptyToUndefined(input.createdFromLeadId);
 
 	// --- Search for an existing customer before inserting ---
-	const existingByEmail =
-		normalizedEmail ? await findCommercialCustomerByEmail(normalizedEmail) : null;
-
-	const existingByPhone =
-		!existingByEmail && normalizedPhone
-			? await findCommercialCustomerByPhone(normalizedPhone.e164)
-			: null;
+	const [existingByEmail, existingByPhone] = await Promise.all([
+		normalizedEmail ? findCommercialCustomerByEmail(normalizedEmail) : Promise.resolve(null),
+		normalizedPhone
+			? findCommercialCustomerByPhone(normalizedPhone.e164)
+			: Promise.resolve(null),
+	]);
+	if (hasIdentityConflict(existingByEmail, existingByPhone)) {
+		return { outcome: 'conflict', matches: [existingByEmail, existingByPhone!] };
+	}
 
 	const existing = existingByEmail ?? existingByPhone;
 
@@ -58,7 +71,7 @@ export async function createCommercialCustomer(
 				customerId: existing.id,
 			});
 		}
-		return existing;
+		return { outcome: 'matched', customer: existing };
 	}
 
 	// --- No existing customer found — insert a new one. ---
@@ -80,13 +93,14 @@ export async function createCommercialCustomer(
 			});
 		}
 
-		return customer;
+		return { outcome: 'created', customer };
 	} catch (error) {
 		// Handle unique-constraint race: another process inserted the same
 		// normalized email / phone between our check and our insert.  Fall
 		// back to a final lookup.
-		const racedByEmail =
-			normalizedEmail ? await findCommercialCustomerByEmail(normalizedEmail) : null;
+		const racedByEmail = normalizedEmail
+			? await findCommercialCustomerByEmail(normalizedEmail)
+			: null;
 
 		const racedByPhone =
 			!racedByEmail && normalizedPhone
@@ -102,7 +116,7 @@ export async function createCommercialCustomer(
 					customerId: raced.id,
 				});
 			}
-			return raced;
+			return { outcome: 'matched', customer: raced };
 		}
 
 		// Not a race condition — rethrow the original error.
