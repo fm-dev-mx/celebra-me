@@ -24,6 +24,12 @@ type TrackingPayload = {
 	source?: string;
 	medium?: string;
 	campaign?: string;
+	// Captured from URL params; schema columns already exist in visitor_sessions.
+	utmContent?: string;
+	utmTerm?: string;
+	// Original browser document.referrer — sent only on the first event of the session.
+	// Never populated from HTTP request headers, which reflect the API call itself.
+	referrer?: string;
 	metaAttribution?: MetaAttribution;
 	eventProperties: Record<string, string | number | boolean>;
 	consentSnapshot: ConsentSnapshot;
@@ -42,6 +48,13 @@ const UTM_KEY = 'cm_utm_snapshot';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+/**
+ * sessionStorage key set after the first tracking event of a session.
+ * Ensures first-touch attribution values (landing_path, referrer) are sent exactly once
+ * per session and not overwritten by subsequent events.
+ */
+const SESSION_INIT_KEY = 'cm_session_initialized';
 
 // Default promo/price/campaign when no data-promo-code is set on the anchor.
 // Centralized so a campaign change touches one line, not four.
@@ -113,9 +126,11 @@ function getUtmSnapshot(): Record<string, string> {
 		source: params.get('utm_source') ?? '',
 		medium: params.get('utm_medium') ?? '',
 		campaign: params.get('utm_campaign') ?? '',
+		content: params.get('utm_content') ?? '',
+		term: params.get('utm_term') ?? '',
 	};
 
-	if (current.source || current.medium || current.campaign) {
+	if (current.source || current.medium || current.campaign || current.content || current.term) {
 		sessionStorage.setItem(UTM_KEY, JSON.stringify(current));
 		return current;
 	}
@@ -149,16 +164,53 @@ function pushDataLayer(
 	});
 }
 
-async function trackEvent(
+
+/**
+ * Returns the original browser referrer for first-touch attribution, or undefined on
+ * subsequent events within the same session.
+ *
+ * The browser's document.referrer is only meaningful on the initial page load: it reflects
+ * the external site from which the visitor arrived. On subsequent pages within the same
+ * session, document.referrer is the previous internal page, which would overwrite the
+ * first-touch external referrer stored in visitor_sessions.
+ *
+ * We use SESSION_INIT_KEY in sessionStorage as the guard. On the first event the key is
+ * absent and we capture document.referrer; after that we return undefined so the server
+ * does not receive a value to overwrite.
+ */
+function getFirstTouchReferrer(): string | undefined {
+	try {
+		const alreadyInitialized = sessionStorage.getItem(SESSION_INIT_KEY) !== null;
+		if (alreadyInitialized) return undefined;
+		// Capture the referrer before setting the flag, so callers see the value.
+		const referrer = document.referrer || undefined;
+		return referrer;
+	} catch {
+		return undefined;
+	}
+}
+
+/** Mark the session as initialized so first-touch data is not re-sent on subsequent events. */
+function markSessionInitialized(): void {
+	try {
+		sessionStorage.setItem(SESSION_INIT_KEY, '1');
+	} catch {
+		// sessionStorage unavailable — degrade gracefully.
+	}
+}
+
+function trackEvent(
 	eventName: PublicTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
-): Promise<void> {
+): void {
 	if (shouldIgnoreTracking()) return;
 
 	const routeClass = document.body.dataset.trackingRouteClass;
 	if (!routeClass) return;
 
 	const utm = getUtmSnapshot();
+	const firstTouchReferrer = getFirstTouchReferrer();
+
 	const metaAttribution = metaAttributionOrUndefined(getMetaAttributionSnapshot());
 	const payload: TrackingPayload = {
 		sessionId: getSessionId(),
@@ -169,6 +221,9 @@ async function trackEvent(
 		source: utm.source,
 		medium: utm.medium,
 		campaign: utm.campaign,
+		utmContent: utm.content || undefined,
+		utmTerm: utm.term || undefined,
+		referrer: firstTouchReferrer,
 		metaAttribution,
 		eventProperties,
 		consentSnapshot: getConsentSnapshot(),
@@ -176,21 +231,35 @@ async function trackEvent(
 
 	pushDataLayer(eventName, eventProperties);
 
+	// Synchronously forward to GA4 and Meta Pixel BEFORE any async network operations.
+	// This guarantees that outbound navigation events (like WhatsApp clicks) are tracked
+	// immediately without being suspended or cancelled by microtask delays.
+	forwardToGA4(eventName, eventProperties);
+	forwardToMetaPixel(eventName, eventProperties);
+
 	try {
-		await fetch('/api/tracking/events', {
+		void fetch('/api/tracking/events', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
 			keepalive: true,
-		});
+		})
+			.then((response) => {
+				// Mark the session as initialized only on successful delivery.
+				// If the first request fails, subsequent events will retry sending
+				// first-touch attribution parameters.
+				if (response.ok) {
+					markSessionInitialized();
+				}
+			})
+			.catch(() => {
+				// Tracking failures must never break the page experience.
+			})
+		;
 	} catch {
 		// Tracking must never break the page experience.
 	}
 
-	// Forward to consent-gated third-party integrations.
-	forwardToGA4(eventName, eventProperties);
-	forwardToMetaPixel(eventName, eventProperties);
-}
 
 function setContactHiddenFields(leadCode: string): void {
 	const utm = getUtmSnapshot();

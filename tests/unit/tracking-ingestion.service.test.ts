@@ -312,3 +312,104 @@ describe('ingestTrackingEvent', () => {
 		});
 	});
 });
+
+/* ================================================================
+ * Attribution referrer [T3, T4b]
+ *
+ * - [T3] The landing_path/referrer sent to upsertVisitorSession comes from
+ *        the payload (client-sent document.referrer), not from the HTTP
+ *        request Referer header on the API call.
+ * - [T4b] request.headers.get("referer") is NOT used as the referrer.
+ * ================================================================ */
+
+describe('Attribution referrer from payload, not request Referer header [T3, T4b]', () => {
+	function makeRequestWithReferer(referer: string, path = '/'): Request {
+		return new Request(`https://www.celebra-me.com${path}`, {
+			headers: { cookie: '', referer },
+		});
+	}
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockUpsertVisitorSession.mockResolvedValue(undefined);
+		mockInsertTrackingEvent.mockResolvedValue({
+			id: 'event-id',
+			eventName: 'page_viewed',
+		});
+	});
+
+	it('[T3] referrer from payload is passed to upsertVisitorSession', async () => {
+		await ingestTrackingEvent({
+			request: makeRequestWithReferer('https://api-call-self-ref.celebra-me.com/api/tracking/events'),
+			vercelEnv: 'production',
+			payload: {
+				sessionId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+				visitorId: 'visitor_ref_test',
+				eventName: 'page_viewed',
+				routePath: '/',
+				routeClass: 'commercial',
+				// Browser-captured document.referrer: the real external source.
+				referrer: 'https://www.facebook.com/',
+				eventProperties: {},
+				consentSnapshot: { necessary: true, analytics: true, marketing: false },
+			},
+		});
+
+		expect(mockUpsertVisitorSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				referrer: 'https://www.facebook.com/',
+			}),
+		);
+	});
+
+	it('[T4b] request HTTP Referer header is NOT used as the referrer', async () => {
+		await ingestTrackingEvent({
+			// The HTTP Referer on the POST is typically the page itself, not the external source.
+			request: makeRequestWithReferer('https://www.celebra-me.com/'),
+			vercelEnv: 'production',
+			payload: {
+				sessionId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+				visitorId: 'visitor_noref_test',
+				eventName: 'page_viewed',
+				routePath: '/',
+				routeClass: 'commercial',
+				// No referrer in payload (second+ event in session).
+				eventProperties: {},
+				consentSnapshot: { necessary: true, analytics: true, marketing: false },
+			},
+		});
+
+		// The session upsert should receive undefined for referrer,
+		// NOT the HTTP Referer header value 'https://www.celebra-me.com/'.
+		expect(mockUpsertVisitorSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				referrer: undefined,
+			}),
+		);
+	});
+
+	it('[T3b] utmContent and utmTerm from payload are forwarded to upsertVisitorSession', async () => {
+		await ingestTrackingEvent({
+			request: makeRequestWithReferer(''),
+			vercelEnv: 'production',
+			payload: {
+				sessionId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+				visitorId: 'visitor_utm_ext',
+				eventName: 'page_viewed',
+				routePath: '/',
+				routeClass: 'commercial',
+				utmContent: 'banner-hero',
+				utmTerm: 'invitacion digital',
+				eventProperties: {},
+				consentSnapshot: { necessary: true, analytics: true, marketing: false },
+			},
+		});
+
+		expect(mockUpsertVisitorSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				utmContent: 'banner-hero',
+				utmTerm: 'invitacion digital',
+			}),
+		);
+	});
+});

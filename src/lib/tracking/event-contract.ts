@@ -149,6 +149,13 @@ export const TrackingEventSchema = z.object({
 	source: z.string().trim().max(120).optional(),
 	medium: z.string().trim().max(120).optional(),
 	campaign: z.string().trim().max(180).optional(),
+	// Original browser document.referrer — sent only on the first event of the session.
+	// Must NOT be populated from request.headers.get('referer'), which reflects the API
+	// call itself rather than the visitor's external acquisition source.
+	referrer: z.string().trim().max(500).optional(),
+	// Extended UTM parameters — already present in visitor_sessions schema.
+	utmContent: z.string().trim().max(180).optional(),
+	utmTerm: z.string().trim().max(180).optional(),
 	metaAttribution: MetaAttributionSchema,
 	eventProperties: z.record(z.string(), z.unknown()).default({}),
 	consentSnapshot: ConsentSnapshotSchema.optional().transform(normalizeConsentSnapshot),

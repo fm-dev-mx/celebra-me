@@ -1,5 +1,4 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
 import {
 	hasUnsafeEventProperties,
 	PublicTrackingEventSchema,
@@ -56,17 +55,21 @@ export async function ingestTrackingEvent(
 		return { accepted: false, reason: exclusion.reason ?? 'internal_traffic' };
 	}
 
-	const consentSnapshot = normalizeConsentSnapshot(payload.consentSnapshot);
+	const consentSnapshot = payload.consentSnapshot;
 	const eventProperties = sanitizeEventProperties(rawEventProperties);
 
 	await upsertVisitorSession({
 		sessionId: payload.sessionId,
 		visitorId: payload.visitorId,
 		landingPath: payload.routePath,
-		referrer: input.request.headers.get('referer') ?? undefined,
+		// Use the browser-sent document.referrer — NOT the HTTP Referer header on this
+		// API request, which always reflects the page itself rather than the external source.
+		referrer: payload.referrer,
 		utmSource: payload.source,
 		utmMedium: payload.medium,
 		utmCampaign: payload.campaign,
+		utmContent: payload.utmContent,
+		utmTerm: payload.utmTerm,
 		routeClass: routePolicy.routeClass,
 		isInternal: false,
 		consentSnapshot,

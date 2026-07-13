@@ -139,3 +139,94 @@ describe('initCommercialTracking package views', () => {
 		expect(packageEvents).toHaveLength(1);
 	});
 });
+
+/* ================================================================
+ * Navigation-safe Meta Pixel dispatch [T10]
+ *
+ * Verifies:
+ * - forwardToMetaPixel is called before fetch resolves for
+ *   WhatsApp clicks.
+ * - Invalid cached lead codes are discarded and replaced.
+ * - The first-party fetch is NOT awaited, completing synchronously.
+ * ================================================================ */
+
+describe('navigation-safe Meta Pixel dispatch [T10]', () => {
+	const forwardToMetaPixelMock = jest.requireMock('@/lib/tracking/meta-pixel') as {
+		forwardToMetaPixel: jest.Mock;
+	};
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		MockIntersectionObserver.instances = [];
+		window.history.replaceState({}, '', '/');
+		document.body.innerHTML = `
+			<a
+				href="https://wa.me/521234567890?text=Hola"
+				data-track-event="whatsapp_contact_clicked"
+				data-track-cta="hero_whatsapp"
+			>WhatsApp</a>
+		`;
+		document.body.dataset.trackingRouteClass = 'commercial';
+		Object.defineProperty(document, 'readyState', {
+			configurable: true,
+			value: 'complete',
+		});
+		Reflect.set(window, 'IntersectionObserver', MockIntersectionObserver);
+		Reflect.set(globalThis, 'IntersectionObserver', MockIntersectionObserver);
+		window.localStorage.clear();
+		window.sessionStorage.clear();
+	});
+
+	it('[T10] forwardToMetaPixel is called before fetch resolves for WhatsApp clicks', () => {
+		// Fetch never resolves to simulate outbound navigation abandonment.
+		const neverResolvingFetch = jest.fn(() => new Promise<Response>(() => {}));
+		Reflect.set(globalThis, 'fetch', neverResolvingFetch);
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		// Prevent jsdom navigation.
+		anchor.addEventListener('click', (e) => e.preventDefault(), { once: true });
+		anchor.click();
+		// Synchronous check: no await needed - forwardToMetaPixel must already be called.
+		expect(forwardToMetaPixelMock.forwardToMetaPixel).toHaveBeenCalledWith(
+			'whatsapp_contact_clicked',
+			expect.objectContaining({ cta_id: 'hero_whatsapp' }),
+		);
+		expect(neverResolvingFetch).toHaveBeenCalled();
+	});
+
+	it('discards invalid or stale cached lead codes from sessionStorage', async () => {
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		anchor.addEventListener('click', (e) => e.preventDefault());
+
+		// Put an invalid format code in sessionStorage.
+		window.sessionStorage.setItem('cm_whatsapp_lead_code', 'CM-INVALID-123456');
+
+		anchor.click();
+		await flushPromises();
+
+		// The sessionStorage value must be replaced by a valid canonical code.
+		const code = window.sessionStorage.getItem('cm_whatsapp_lead_code');
+		expect(code).toMatch(/^CM-[A-Z0-9]{6}$/i);
+		expect(code).not.toBe('CM-INVALID-123456');
+	});
+
+	it('does not await the first-party fetch response, completing execution synchronously', async () => {
+		// Mock fetch to never resolve.
+		const neverResolvingFetch = jest.fn(() => new Promise<Response>(() => {}));
+		Reflect.set(globalThis, 'fetch', neverResolvingFetch);
+
+		initCommercialTracking();
+
+		// Firing page_viewed (triggered by initCommercialTracking) will call trackEvent.
+		// Since trackEvent is synchronous, the fetch call is initiated immediately.
+		expect(neverResolvingFetch).toHaveBeenCalled();
+
+		// Since fetch is never resolved, the sessionInitialized flag must NOT be set yet.
+		expect(window.sessionStorage.getItem('cm_session_initialized')).toBeNull();
+	});
+});
