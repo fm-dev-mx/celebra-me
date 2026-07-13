@@ -105,7 +105,7 @@
         "eslint": "^10.5.0",
         "eslint-import-resolver-typescript": "^4.4.5",
         "eslint-plugin-astro": "^2.0.0",
-        "eslint-plugin-boundaries": "^6.0.2",
+        "eslint-plugin-boundaries": "^7.0.2",
         "eslint-plugin-import": "2.32.0",
         "globals": "^17.6.0",
         "husky": "^9.1.7",
