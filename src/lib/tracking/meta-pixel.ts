@@ -10,18 +10,31 @@
  *   5. internal exclusion does not apply
  *
  * Only client-side events are implemented in this phase:
- *   - PageView  (from first-party page_viewed forwarding)
+ *   - PageView  (from first-party page_viewed forwarding, or late-consent catch-up)
  *   - ViewContent
  *   - Contact
+ *   - Lead
  *
  * Lead, Purchase, and CAPI are reserved for future phases.
  *
  * Automatic Advanced Matching / auto-config is explicitly disabled
  * so the Pixel never auto-collects form fields or PII from the page.
  *
- * PageView is NOT fired on init — it is sent once via the
- * first-party page_viewed event forwarding, guaranteeing exactly
- * one PageView per eligible page load after marketing consent.
+ * Pending-event queue:
+ *   Events generated after marketing consent but before fbevents.js finishes loading are
+ *   held in `pendingEvents`. They flush exactly once after a successful `onload`, in order.
+ *   On script failure, the queue is discarded and the Pixel is marked unavailable.
+ *
+ * Late-consent PageView:
+ *   When consent is granted after page load, exactly one PageView is fired for the current
+ *   pathname after the Pixel initializes. A guard prevents duplicate PageViews if consent
+ *   fires or initMetaPixel() is called more than once.
+ *
+ * Error and retry:
+ *   `onerror` sets pixelFailed = true (NOT pixelLoaded). Subsequent trackMetaEvent calls
+ *   are silently dropped until a successful retry. A later initMetaPixel() call can retry
+ *   loading because pixelLoaded remains false. Duplicate script injection is prevented by
+ *   checking for an existing fbevents.js <script> before appending a new one.
  */
 
 import {
@@ -45,17 +58,26 @@ declare global {
 	}
 }
 
+type PendingMetaEvent = {
+	metaEvent: string;
+	parameters: Record<string, string | number | boolean>;
+	options: { eventID?: string } | undefined;
+};
+
 let pixelLoaded = false;
 let pixelLoading = false;
+let pixelFailed = false;
 let pixelId = '';
 
-function getPixelId(): string {
-	return getPixelIdFromEnv();
-}
+/** Events queued while the script is loading. Flushed exactly once on successful load. */
+const pendingEvents: PendingMetaEvent[] = [];
 
-function isPixelEnabled(): boolean {
-	return isPixelEnabledInEnv();
-}
+/**
+ * Path for which a late-consent PageView has already been sent.
+ * Empty string means no late-consent PageView has been sent yet.
+ * Prevents duplicate PageViews when consent fires more than once.
+ */
+let pageViewSentForPath = '';
 
 function routeAllowsMeta(): boolean {
 	return classifyTrackingRoute(window.location.pathname).metaAllowed;
@@ -65,27 +87,68 @@ function shouldLoad(): boolean {
 	if (!document.body.dataset.trackingRouteClass) return false;
 	if (!routeAllowsMeta()) return false;
 	if (!pixelId) return false;
-	if (!isPixelEnabled()) return false;
+	if (!isPixelEnabledInEnv()) return false;
 	return true;
+}
+
+/** Flush the pending-event queue. Called once after successful onload. */
+function flushPendingEvents(): void {
+	const toFlush = pendingEvents.splice(0);
+	for (const entry of toFlush) {
+		const method = STANDARD_META_EVENTS.has(entry.metaEvent) ? 'track' : 'trackCustom';
+		if (entry.options?.eventID) {
+			window.fbq?.(method, entry.metaEvent, entry.parameters, entry.options);
+		} else {
+			window.fbq?.(method, entry.metaEvent, entry.parameters);
+		}
+	}
 }
 
 /**
  * Dynamically load the Meta Pixel script. Safe to call multiple times.
+ *
+ * State machine:
+ *   - pixelLoaded=false, pixelLoading=false, pixelFailed=false → start loading
+ *   - pixelLoaded=false, pixelLoading=true                     → return a waiter promise
+ *   - pixelLoaded=true                                         → already loaded, resolve
+ *   - pixelFailed=true (implies !pixelLoaded)                  → reset failed flag, retry
+ *
+ * Duplicate script injection is prevented by checking for an existing fbevents.js <script>
+ * before appending a new one. This protects against concurrent calls that both pass the
+ * pixelLoading guard before either sets pixelLoading = true.
  */
 function loadPixelScript(): Promise<void> {
 	if (pixelLoaded) return Promise.resolve();
+
 	if (pixelLoading) {
-		return new Promise((resolve) => {
-			const checkLoaded = () => {
-				if (pixelLoaded) resolve();
-				else setTimeout(checkLoaded, 100);
+		// Another call is already in flight. Return a promise that resolves (or rejects)
+		// when the loading state changes. We poll at 50 ms to stay bounded.
+		return new Promise<void>((resolve, reject) => {
+			const check = () => {
+				if (pixelLoaded) return resolve();
+				if (pixelFailed) return reject(new Error('Meta Pixel script failed to load'));
+				if (!pixelLoading) return resolve(); // Should not happen but safe fallback
+				setTimeout(check, 50);
 			};
-			checkLoaded();
+			check();
 		});
 	}
 
+	// If a previous load attempt failed, clean up the dead script element from the DOM
+	// so that we can create a fresh one to trigger a real browser retry.
+	if (pixelFailed) {
+		pixelFailed = false;
+		const existingScript = document.querySelector(
+			'script[src*="connect.facebook.net"][src*="fbevents.js"]',
+		);
+		if (existingScript) {
+			existingScript.remove();
+		}
+	}
+
 	pixelLoading = true;
-	return new Promise((resolve) => {
+
+	return new Promise<void>((resolve, reject) => {
 		const id = pixelId;
 
 		// Create fbq function stub that queues calls until the real script loads.
@@ -98,55 +161,107 @@ function loadPixelScript(): Promise<void> {
 		window.fbq.loaded = true;
 		window.fbq.version = '2.0';
 
-		// Load the script
-		const script = document.createElement('script');
-		script.async = true;
-		script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+		// Prevent duplicate script injection if a previous attempt already appended the tag.
+		const existingScript = document.querySelector(
+			'script[src*="connect.facebook.net"][src*="fbevents.js"]',
+		);
+
+		const script =
+			existingScript instanceof HTMLScriptElement
+				? existingScript
+				: (() => {
+						const el = document.createElement('script');
+						el.async = true;
+						el.src = 'https://connect.facebook.net/en_US/fbevents.js';
+						return el;
+					})();
+
 		script.onload = () => {
 			// Disable automatic advanced matching — prevents auto-collection
 			// of form fields and PII from the page.
 			window.fbq?.('set', 'autoConfig', false, id);
-			// Initialize the pixel. PageView is NOT fired here; it is sent
-			// via first-party page_viewed forwarding for exactly one event.
+			// Initialize the pixel.
 			window.fbq?.('init', id);
 			pixelLoaded = true;
 			pixelLoading = false;
+			pixelFailed = false;
+			// Flush queued events before resolving so callers see the pixel as ready.
+			flushPendingEvents();
 			resolve();
 		};
+
 		script.onerror = () => {
-			pixelLoaded = true;
+			// Mark the pixel as unavailable, NOT as loaded. Setting pixelLoaded = true here
+			// was the original bug: it allowed subsequent event calls to invoke the broken
+			// fbq stub and blocked retry by making initMetaPixel() think it was done.
+			pixelLoaded = false;
 			pixelLoading = false;
-			resolve();
+			pixelFailed = true;
+			// Discard queued events — they cannot be delivered after a terminal failure.
+			pendingEvents.splice(0);
+			reject(new Error('Meta Pixel script failed to load'));
 		};
-		document.head.appendChild(script);
-	});
-}
 
-/**
- * Initialize Meta Pixel: check gates and load script.
- * PageView is not fired here — it comes from first-party page_viewed
- * forwarding to guarantee exactly one PageView per page load.
- */
-export function initMetaPixel(): void {
-	pixelId = getPixelId();
-	if (!pixelId) return;
-	if (!shouldLoad()) return;
-
-	const consent = readConsent();
-	if (consent.marketing) {
-		void loadPixelScript();
-	}
-
-	// React to consent changes: load if newly granted.
-	subscribeConsentChange((state: ConsentState) => {
-		if (state.marketing && !pixelLoaded && !pixelLoading) {
-			void loadPixelScript();
+		if (!existingScript) {
+			document.head.appendChild(script);
 		}
 	});
 }
 
 /**
+ * Initialize Meta Pixel: check gates and load script.
+ *
+ * On initial page load with marketing consent, triggers script loading.
+ * On late consent (granted after page load), loads the script and fires one PageView
+ * for the current page — the only safe recovery for events that occurred before consent.
+ * Pre-consent interactions (scroll, section views, etc.) are NOT replayed.
+ */
+export function initMetaPixel(): void {
+	pixelId = getPixelIdFromEnv();
+	if (!pixelId) return;
+	if (!shouldLoad()) return;
+
+	const consent = readConsent();
+	if (consent.marketing && !pixelLoaded && !pixelLoading) {
+		void loadPixelScript().catch(() => {
+			// Failure recorded in pixelFailed; callers check that flag.
+		});
+	}
+
+	// React to consent changes: load the Pixel if newly granted,
+	// then fire exactly one PageView for the current page.
+	subscribeConsentChange((state: ConsentState) => {
+		if (!state.marketing) return; // Consent rejected or withdrawn — no action.
+		if (!shouldLoad()) return; // Route check or configuration check failed.
+		if (pixelLoaded || pixelLoading) return; // Already in flight or done.
+
+		const currentPath = window.location.pathname;
+
+		void loadPixelScript()
+			.then(() => {
+				// Send a late-consent PageView for the current page.
+				// This is the only pre-consent interaction we replay: the page itself.
+				// Scroll events, section views, and click interactions are NOT replayed.
+				if (pageViewSentForPath !== currentPath) {
+					pageViewSentForPath = currentPath;
+					const method = 'track';
+					window.fbq?.(method, 'PageView', { content_category: 'page' });
+				}
+			})
+			.catch(() => {
+				// Script load failed; the error is already recorded in pixelFailed.
+			});
+	});
+}
+
+/**
  * Track a Meta Pixel event. Called only after marketing consent is verified.
+ *
+ * If the Pixel is still loading, the event is held in the pending queue and will be
+ * flushed exactly once after the script loads successfully.
+ *
+ * If the Pixel has permanently failed (pixelFailed), the event is dropped silently.
+ *
  * Standard Meta events (PageView, ViewContent, Lead, Contact) are sent via
  * fbq('track', ...). Any other mapped event is sent via fbq('trackCustom', ...)
  * and appears as a custom event in Events Manager.
@@ -156,9 +271,30 @@ function trackMetaEvent(
 	parameters?: Record<string, string | number | boolean>,
 	options?: { eventID?: string },
 ): void {
-	if (!pixelLoaded) return;
 	const consent = readConsent();
 	if (!consent.marketing) return;
+	if (!routeAllowsMeta()) return; // Respect route boundaries and do not track on disallowed pages.
+
+	if (pixelFailed) {
+		// Terminal failure path — drop silently. No marketing events after failure.
+		return;
+	}
+
+	if (pixelLoading) {
+		// Enforce a maximum queue size to prevent uncontrolled memory growth if loading hangs.
+		if (pendingEvents.length >= 100) {
+			pendingEvents.shift(); // Drop the oldest event to make room
+		}
+		// Script is in flight — queue the event for flush after onload.
+		pendingEvents.push({
+			metaEvent: eventName,
+			parameters: parameters ?? {},
+			options,
+		});
+		return;
+	}
+
+	if (!pixelLoaded) return;
 
 	const method = STANDARD_META_EVENTS.has(eventName) ? 'track' : 'trackCustom';
 	if (options?.eventID) {
