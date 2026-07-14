@@ -44,7 +44,7 @@ export const TRACKING_EVENT_NAMES = [
 export type TrackingEventName = (typeof TRACKING_EVENT_NAMES)[number];
 export type PublicTrackingEventName = (typeof PUBLIC_TRACKING_EVENT_NAMES)[number];
 
-export const TRACKING_ROUTE_CLASSES: TrackingRouteClass[] = [
+const TRACKING_ROUTE_CLASSES: TrackingRouteClass[] = [
 	'commercial',
 	'demo',
 	'real_invitation',
@@ -67,7 +67,6 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'destination_type',
 	'package_id',
 	'package_name',
-	'package_tier',
 	'promo_code',
 	'campaign_code',
 	'value',
@@ -165,6 +164,5 @@ export const PublicTrackingEventSchema = TrackingEventSchema.extend({
 	eventName: z.enum(PUBLIC_TRACKING_EVENT_NAMES),
 });
 
-export type TrackingEventInput = z.input<typeof TrackingEventSchema>;
 export type TrackingEvent = z.output<typeof TrackingEventSchema>;
 export type PublicTrackingEvent = z.output<typeof PublicTrackingEventSchema>;

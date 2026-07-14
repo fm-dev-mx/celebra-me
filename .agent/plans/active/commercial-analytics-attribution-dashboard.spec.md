@@ -177,7 +177,7 @@ Recommended mappings:
 | `section_seen`             | `section_view`                           | `section_id`, `page_type`, `visibility_bucket`                   |
 | `scroll_depth_reached`     | `scroll_depth`                           | `depth_bucket`, `page_type`                                      |
 | `cta_clicked`              | `select_content` or `cta_click`          | `cta_id`, `cta_location`, `destination_type`                     |
-| `package_viewed`           | `view_item`                              | `package_id`, `package_tier`                                     |
+| `package_viewed`           | `view_item`                              | `package_id`                                     |
 | `demo_viewed`              | `view_item` or `view_content` equivalent | `demo_slug`, `event_type`, `is_demo=true`                        |
 | `whatsapp_contact_clicked` | `generate_lead` or `contact`             | `lead_channel=whatsapp`, `cta_id`                                |
 | `form_started`             | `form_start`                             | `form_id`                                                        |
@@ -360,7 +360,7 @@ No migrations are created in this pass.
 - Status: MVP, can start minimal once lead lifecycle requires it.
 - Purpose: commercial lifecycle record connecting lead, invitation production, authorization, and
   payment.
-- Minimal fields: `id`, `lead_id`, `invitation_id`, `status`, `package_tier`,
+- Minimal fields: `id`, `lead_id`, `invitation_id`, `status`,
   `production_authorized_at`, `production_started_at`, `preview_delivered_at`, `payment_pending_at`,
   `payment_received_at`, `amount`, `currency`, `created_at`, `updated_at`.
 - Privacy/PII: payment and order data require restricted access and clear retention.

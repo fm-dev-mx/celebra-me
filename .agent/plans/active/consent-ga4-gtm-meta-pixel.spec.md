@@ -405,7 +405,7 @@ Create a new client-side module `src/lib/tracking/ga4-forwarder.ts` that:
 | `section_seen`             | `section_view`  | `section_id`, `page_type`                    | Bucketed via IntersectionObserver                                         |
 | `scroll_depth_reached`     | `scroll`        | `depth_bucket`, `page_type`                  | Fires once per bucket (25, 50, 75, 90, 100)                               |
 | `cta_clicked`              | `cta_click`     | `cta_id`, `cta_location`, `destination_type` | From `data-track-*` attributes                                            |
-| `package_viewed`           | `view_item`     | `package_id`, `package_tier`                 | Tier name, not price                                                      |
+| `package_viewed`           | `view_item`     | `package_id`                                     | Tier name, not price                                                      |
 | `demo_viewed`              | `view_item`     | `demo_slug`, `event_type`, `is_demo=true`    |                                                                           |
 | `whatsapp_contact_clicked` | `contact`       | `lead_channel=whatsapp`, `cta_id`            |                                                                           |
 | `form_started`             | `form_start`    | `form_id`                                    |                                                                           |
