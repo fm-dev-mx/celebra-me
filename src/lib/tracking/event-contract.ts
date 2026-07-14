@@ -81,7 +81,6 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'lead_source',
 	'lead_code',
 	'event_id',
-	'folio',
 	'content_name',
 	'content_category',
 	'source_area',

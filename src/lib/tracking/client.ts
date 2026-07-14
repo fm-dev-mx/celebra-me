@@ -47,7 +47,13 @@ const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
-const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+/**
+ * sessionStorage key for the canonical WhatsApp lead code.
+ * Scoped to the tab (sessionStorage lifetime) so repeated WhatsApp clicks within the same
+ * tab reuse the same lead_code, preventing duplicate lead creation on the server.
+ */
+const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
 
 /**
  * sessionStorage key set after the first tracking event of a session.
@@ -62,9 +68,6 @@ const DEFAULT_PROMO_CODE = 'LANZAMIENTO-899';
 const DEFAULT_PROMO_PRICE = '899';
 const DEFAULT_PROMO_CAMPAIGN = 'FINAL-LANZAMIENTO-899';
 
-// Match the folio format embedded in WhatsApp messages (see updateWhatsAppUrl).
-const FOLIO_PATTERN = /CM-\d+-[A-Z0-9]{4}/i;
-
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
 	return `${prefix}_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
@@ -77,22 +80,6 @@ function fallbackUuid(): string {
 	values[8] = (values[8] & 0x3f) | 0x80;
 	const hex = [...values].map((value) => value.toString(16).padStart(2, '0')).join('');
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
-
-function createPromoFolio(priceSuffix: string): string {
-	const values = new Uint8Array(4);
-	if (crypto.getRandomValues) {
-		crypto.getRandomValues(values);
-	} else {
-		values.forEach((_, index) => {
-			values[index] = Math.floor(Math.random() * 256);
-		});
-	}
-
-	const suffix = [...values]
-		.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
-		.join('');
-	return `CM-${priceSuffix}-${suffix}`;
 }
 
 function getVisitorId(): string {
@@ -120,6 +107,11 @@ function getConsentSnapshot(): ConsentSnapshot {
 	};
 }
 
+/**
+ * Read UTM parameters from the URL, then fall back to the session snapshot.
+ * Also captures utm_content and utm_term which are stored in visitor_sessions
+ * schema columns but were previously not captured client-side.
+ */
 function getUtmSnapshot(): Record<string, string> {
 	const params = new URLSearchParams(window.location.search);
 	const current = {
@@ -163,7 +155,6 @@ function pushDataLayer(
 		...properties,
 	});
 }
-
 
 /**
  * Returns the original browser referrer for first-touch attribution, or undefined on
@@ -209,9 +200,9 @@ function trackEvent(
 	if (!routeClass) return;
 
 	const utm = getUtmSnapshot();
+	const metaAttribution = metaAttributionOrUndefined(getMetaAttributionSnapshot());
 	const firstTouchReferrer = getFirstTouchReferrer();
 
-	const metaAttribution = metaAttributionOrUndefined(getMetaAttributionSnapshot());
 	const payload: TrackingPayload = {
 		sessionId: getSessionId(),
 		visitorId: getVisitorId(),
@@ -238,6 +229,9 @@ function trackEvent(
 	forwardToMetaPixel(eventName, eventProperties);
 
 	try {
+		// Use keepalive: true to ensure the request is completed in the background
+		// by the browser after page unload. We do not await this fetch so that
+		// subsequent page navigation is never blocked or delayed.
 		void fetch('/api/tracking/events', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -254,12 +248,11 @@ function trackEvent(
 			})
 			.catch(() => {
 				// Tracking failures must never break the page experience.
-			})
-		;
+			});
 	} catch {
-		// Tracking must never break the page experience.
+		// Degrade gracefully if keepalive fetch is not supported/throws.
 	}
-
+}
 
 function setContactHiddenFields(leadCode: string): void {
 	const utm = getUtmSnapshot();
@@ -339,7 +332,15 @@ function bindScrollDepth(): void {
 	handleScroll();
 }
 
-function updateWhatsAppUrl(anchor: HTMLAnchorElement, folio: string, promoCode: string): void {
+/**
+ * Rewrite the WhatsApp URL to include the canonical lead_code in the message text.
+ *
+ * The canonical CM-XXXXXX lead_code is embedded directly in the WhatsApp message so
+ * customers can quote it when contacting the host, and operators can search it in the CRM.
+ * Previously a separate folio format (CM-899-XXXX) was used, which could not be resolved
+ * back to the lead stored under the canonical code.
+ */
+function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string, promoCode: string): void {
 	const url = new URL(anchor.href);
 	const baseMessage =
 		url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
@@ -347,18 +348,47 @@ function updateWhatsAppUrl(anchor: HTMLAnchorElement, folio: string, promoCode: 
 	if (!baseMessage.includes(`Cupón: ${promoCode}`)) {
 		messageParts.push(`Cupón: ${promoCode}`);
 	}
-	if (!FOLIO_PATTERN.test(baseMessage)) {
-		messageParts.push(`Folio: ${folio}`);
+	// Embed the canonical lead_code so the customer's WhatsApp message and the CRM record
+	// share the same identifier. Pattern: CM-XXXXXX (6 alphanumeric chars, no price suffix).
+	const CANONICAL_LEAD_CODE_PATTERN = /CM-[A-Z0-9]{6}(?!\d)/i;
+	if (!CANONICAL_LEAD_CODE_PATTERN.test(baseMessage)) {
+		messageParts.push(`Folio: ${leadCode}`);
 	}
 	const message = messageParts.join('\n\n');
 	url.searchParams.set('text', message);
 	anchor.href = url.toString();
 }
 
+/**
+ * Get or create the session-scoped WhatsApp lead code.
+ *
+ * On the first WhatsApp click within the session, a new CM-XXXXXX code is created,
+ * stored in sessionStorage, and returned. Subsequent clicks within the same tab reuse
+ * the stored code, preventing duplicate lead creation on the server.
+ *
+ * Storage lifetime: tab (sessionStorage). Clearing storage or opening a new tab
+ * starts a fresh lead code on the next WhatsApp click.
+ */
+const CANONICAL_LEAD_CODE_EXACT = /^CM-[A-Z0-9]{6}$/i;
+
+function getOrCreateWhatsAppLeadCode(): string {
+	try {
+		const existing = sessionStorage.getItem(WHATSAPP_LEAD_KEY);
+		if (existing && CANONICAL_LEAD_CODE_EXACT.test(existing)) {
+			return existing.toUpperCase();
+		}
+		const code = createLeadCode();
+		sessionStorage.setItem(WHATSAPP_LEAD_KEY, code);
+		return code;
+	} catch {
+		// sessionStorage unavailable — generate a code for this click only (no persistence).
+		return createLeadCode();
+	}
+}
+
 function getTrackedClickProperties(
 	target: HTMLElement,
 	leadCode: string,
-	folio: string,
 ): TrackingPayload['eventProperties'] {
 	// event_type se lee del propio anchor; cae a 'general' cuando el CTA
 	// no pertenece a un selector de evento (Pricing, ProductProof, etc.).
@@ -379,7 +409,6 @@ function getTrackedClickProperties(
 		currency: target.dataset.trackCurrency ?? '',
 		demo_slug: target.dataset.demoSlug ?? '',
 		lead_code: leadCode,
-		folio,
 	};
 }
 
@@ -425,37 +454,24 @@ function bindClicks(): void {
 		if (!eventName) return;
 
 		const isWhatsAppClick = eventName === 'whatsapp_contact_clicked';
-		const leadCode = isWhatsAppClick ? createLeadCode() : '';
 
-		let folio = '';
-		let targetPromoCode = '';
-		if (isWhatsAppClick && target instanceof HTMLAnchorElement) {
-			// Reuse folio across repeated clicks on the same CTA so the same
-			// WhatsApp thread is reachable from a single lead_code.
-			if (target.dataset.trackedFolio) {
-				folio = target.dataset.trackedFolio;
-			} else {
-				targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
-				const match = targetPromoCode.match(/(\d+)$/);
-				const priceSuffix = match ? match[1] : DEFAULT_PROMO_PRICE;
-				folio = createPromoFolio(priceSuffix);
-				target.dataset.trackedFolio = folio;
-			}
-		}
+		// For WhatsApp clicks, resolve the session-scoped lead code. All repeated clicks
+		// within the same tab reuse the same code, preventing duplicate lead creation.
+		// Non-WhatsApp clicks do not generate a lead code here.
+		const leadCode = isWhatsAppClick ? getOrCreateWhatsAppLeadCode() : '';
 
-		if (leadCode) {
+		if (isWhatsAppClick && target instanceof HTMLAnchorElement && leadCode) {
+			const targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
+			// Update the WhatsApp message to include the canonical lead_code so the customer
+			// can quote it and the operator can search it directly in the CRM.
+			updateWhatsAppUrl(target, leadCode, targetPromoCode);
 			setContactHiddenFields(leadCode);
-			if (target instanceof HTMLAnchorElement) {
-				if (!targetPromoCode) {
-					targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
-				}
-				updateWhatsAppUrl(target, folio, targetPromoCode);
-			}
 		}
 
-		void trackEvent(eventName, getTrackedClickProperties(target, leadCode, folio));
+		void trackEvent(eventName, getTrackedClickProperties(target, leadCode));
 	});
 }
+
 function bindForms(): void {
 	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
 		if (!(form instanceof HTMLFormElement)) return;

@@ -140,6 +140,109 @@ describe('initCommercialTracking package views', () => {
 	});
 });
 
+
+
+/* ================================================================
+ * WhatsApp lead identity [T1, T2]
+ *
+ * - [T1] Canonical CM-XXXXXX lead_code is embedded in the WhatsApp URL.
+ *        A separate price-suffix folio (CM-NNN-XXXX) must NOT appear.
+ * - [T2] Repeated clicks within the same session reuse the same lead_code
+ *        from sessionStorage - no new code per click.
+ * ================================================================ */
+
+describe('WhatsApp lead identity [T1, T2]', () => {
+	const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		MockIntersectionObserver.instances = [];
+		window.history.replaceState({}, '', '/');
+		document.body.innerHTML = `
+			<a
+				href="https://wa.me/521234567890?text=Hola"
+				data-track-event="whatsapp_contact_clicked"
+				data-track-cta="hero_whatsapp"
+				data-promo-code="LANZAMIENTO-899"
+			>WhatsApp</a>
+		`;
+		document.body.dataset.trackingRouteClass = 'commercial';
+		Object.defineProperty(document, 'readyState', {
+			configurable: true,
+			value: 'complete',
+		});
+		Reflect.set(window, 'IntersectionObserver', MockIntersectionObserver);
+		Reflect.set(globalThis, 'IntersectionObserver', MockIntersectionObserver);
+		Reflect.set(globalThis, 'fetch', fetchMock);
+		window.localStorage.clear();
+		window.sessionStorage.clear();
+	});
+
+	it('[T1] WhatsApp URL contains canonical CM-XXXXXX lead_code (not a price-suffix folio)', async () => {
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		expect(anchor).not.toBeNull();
+		// Prevent jsdom from attempting external URL navigation (not supported).
+		anchor.addEventListener('click', (e) => e.preventDefault(), { once: true });
+		anchor.click();
+		await flushPromises();
+		// CM-XXXXXX: 6 alphanumeric chars after the dash.
+		const canonicalCodePattern = /CM-[A-Z0-9]{6}(?!\w)/i;
+		expect(anchor.href).toMatch(canonicalCodePattern);
+		// Price-suffix folio (CM-NNN-XXXX) must NOT appear.
+		const priceSuffixFolioPattern = /CM-\d{3}-[A-Z0-9]+/i;
+		expect(anchor.href).not.toMatch(priceSuffixFolioPattern);
+	});
+
+	it('[T2] repeated WhatsApp clicks within the same session reuse the same lead_code', async () => {
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		const extractLeadCode = (href: string): string | null => {
+			const url = new URL(href);
+			const text = url.searchParams.get('text') ?? '';
+			const match = /CM-[A-Z0-9]{6}(?!\w)/i.exec(text);
+			return match ? match[0].toUpperCase() : null;
+		};
+		// Prevent jsdom navigation on each click.
+		anchor.addEventListener('click', (e) => e.preventDefault());
+		anchor.click();
+		await flushPromises();
+		const firstLeadCode = extractLeadCode(anchor.href);
+		expect(firstLeadCode).not.toBeNull();
+		anchor.click();
+		await flushPromises();
+		const secondLeadCode = extractLeadCode(anchor.href);
+		expect(secondLeadCode).toBe(firstLeadCode);
+	});
+
+	it('[T2b] clearing sessionStorage generates a fresh lead_code for the next click', async () => {
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		// Prevent jsdom navigation.
+		anchor.addEventListener('click', (e) => e.preventDefault());
+		// First click stores the lead code in sessionStorage.
+		anchor.click();
+		await flushPromises();
+		const firstCode = window.sessionStorage.getItem('cm_whatsapp_lead_code');
+		expect(firstCode).toMatch(/CM-[A-Z0-9]{6}/i);
+		// Simulate new session by clearing storage.
+		window.sessionStorage.clear();
+		// Second click generates and stores a new code.
+		anchor.click();
+		await flushPromises();
+		const secondCode = window.sessionStorage.getItem('cm_whatsapp_lead_code');
+		expect(secondCode).toMatch(/CM-[A-Z0-9]{6}/i);
+		// New session generates a different code (probabilistically guaranteed by randomness).
+		expect(secondCode).not.toBe(firstCode);
+	});
+});
+
 /* ================================================================
  * Navigation-safe Meta Pixel dispatch [T10]
  *
