@@ -83,7 +83,12 @@ function routeAllowsMeta(): boolean {
 	return classifyTrackingRoute(window.location.pathname).metaAllowed;
 }
 
+function environmentAllowsMeta(): boolean {
+	return document.body.dataset.metaDeliveryBlocked !== 'true';
+}
+
 function shouldLoad(): boolean {
+	if (!environmentAllowsMeta()) return false;
 	if (!document.body.dataset.trackingRouteClass) return false;
 	if (!routeAllowsMeta()) return false;
 	if (!pixelId) return false;
@@ -273,6 +278,7 @@ function trackMetaEvent(
 ): void {
 	const consent = readConsent();
 	if (!consent.marketing) return;
+	if (!environmentAllowsMeta()) return;
 	if (!routeAllowsMeta()) return; // Respect route boundaries and do not track on disallowed pages.
 
 	if (pixelFailed) {

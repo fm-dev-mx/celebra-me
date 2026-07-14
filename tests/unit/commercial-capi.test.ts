@@ -1,5 +1,6 @@
 let mockDeliveryMode = 'test';
 let mockTestEventCode = 'TEST12345';
+let mockVercelEnvironment: string | undefined = '';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
@@ -27,6 +28,7 @@ jest.mock('@/lib/server/env', () => ({
 	getEnv: (key: string) => {
 		if (key === 'META_CAPI_DELIVERY_MODE') return mockDeliveryMode;
 		if (key === 'META_TEST_EVENT_CODE') return mockTestEventCode;
+		if (key === 'VERCEL_ENV') return mockVercelEnvironment;
 		const mockEnv: Record<string, string> = {
 			META_CAPI_ACCESS_TOKEN: 'mock-access-token',
 			META_PIXEL_ID: 'mock-pixel-id',
@@ -42,12 +44,32 @@ beforeEach(() => {
 	global.fetch = mockFetch;
 	mockDeliveryMode = 'test'; // Reset default
 	mockTestEventCode = 'TEST12345';
+	mockVercelEnvironment = '';
 });
 
 afterEach(() => {
 	jest.useRealTimers();
+	jest.restoreAllMocks();
 	global.fetch = originalFetch;
 });
+
+function enqueueDeliverableEvent(eventId = 'purchase:order-id:deposit_paid'): void {
+	mockRestRequest
+		.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+		.mockResolvedValueOnce([
+			{
+				id: 'outbox-id',
+				event_name: 'Purchase',
+				event_id: eventId,
+				value: 899,
+				currency: 'MXN',
+				customers: { email: 'client@example.com' },
+				sales_orders: null,
+				leads: { consent_marketing: true },
+			},
+		])
+		.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+}
 
 describe('Meta CAPI service helpers', () => {
 	it('hashes strings using SHA-256 in lowercase', () => {
@@ -83,6 +105,57 @@ describe('Meta CAPI service helpers', () => {
 });
 
 describe('deliverMetaConversionEvent', () => {
+	it('allows production mode only when VERCEL_ENV is production', async () => {
+		mockDeliveryMode = 'production';
+		mockVercelEnvironment = 'production';
+		enqueueDeliverableEvent();
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ events_received: 1 }),
+		});
+
+		const status = await deliverMetaConversionEvent('outbox-id');
+
+		expect(status).toBe('sent');
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+		expect(requestBody.test_event_code).toBeUndefined();
+	});
+
+	it.each([
+		['preview', 'preview'],
+		['development', 'development'],
+		['uppercase production', 'PRODUCTION'],
+		['production with leading whitespace', ' production'],
+		['production with trailing whitespace', 'production '],
+		['an empty VERCEL_ENV', ''],
+		['a missing VERCEL_ENV', undefined],
+		['an arbitrary environment', 'staging'],
+	] as Array<[string, string | undefined]>)(
+		'blocks production mode in %s',
+		async (_label, vercelEnvironment) => {
+			mockDeliveryMode = 'production';
+			mockVercelEnvironment = vercelEnvironment;
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+				.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+			const status = await deliverMetaConversionEvent('outbox-id');
+
+			expect(status).toBe('skipped');
+			expect(mockFetch).not.toHaveBeenCalled();
+			expect(mockRestRequest).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					body: expect.objectContaining({
+						p_status: 'skipped',
+						p_error_code: 'DELIVERY_DISABLED',
+						p_next_attempt_at: null,
+					}),
+				}),
+			);
+		},
+	);
+
 	it('skips delivery and marks status as skipped when META_CAPI_DELIVERY_MODE is disabled', async () => {
 		mockDeliveryMode = 'disabled';
 
@@ -407,6 +480,57 @@ describe('deliverMetaConversionEvent', () => {
 			}),
 		);
 	});
+
+	it.each(['TimeoutError', 'AbortError'])(
+		'classifies %s from the Meta request timeout as ambiguous',
+		async (errorName) => {
+			const stableEventId = 'purchase:order-id:deposit_paid';
+			const timeoutSignal = new AbortController().signal;
+			const timeoutSpy = jest.spyOn(AbortSignal, 'timeout').mockReturnValue(timeoutSignal);
+			enqueueDeliverableEvent(stableEventId);
+			const timeoutError = new Error('The operation was aborted due to timeout');
+			timeoutError.name = errorName;
+			mockFetch.mockRejectedValueOnce(timeoutError);
+
+			const status = await deliverMetaConversionEvent('outbox-id');
+
+			expect(status).toBe('ambiguous');
+			expect(timeoutSpy).toHaveBeenCalledWith(10_000);
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.objectContaining({ signal: timeoutSignal }),
+			);
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+			expect(requestBody.data[0].event_id).toBe(stableEventId);
+			expect(mockRestRequest).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					pathWithQuery: 'rpc/finalize_meta_conversion_event',
+					body: expect.objectContaining({
+						p_status: 'ambiguous',
+						p_error_code: 'META_REQUEST_TIMEOUT',
+						p_next_attempt_at: null,
+					}),
+				}),
+			);
+		},
+	);
+
+	it('preserves the stable event_id across an approved retry', async () => {
+		const stableEventId = 'purchase:order-id:deposit_paid';
+		enqueueDeliverableEvent(stableEventId);
+		enqueueDeliverableEvent(stableEventId);
+		mockFetch.mockResolvedValue({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		await deliverMetaConversionEvent('outbox-id');
+		await deliverMetaConversionEvent('outbox-id');
+
+		const eventIds = mockFetch.mock.calls.map(([, requestInit]) => {
+			const requestBody = JSON.parse(requestInit.body);
+			return requestBody.data[0].event_id;
+		});
+		expect(eventIds).toEqual([stableEventId, stableEventId]);
+	});
+
 	it('fails with CONFIG_ERROR when META_CAPI_DELIVERY_MODE is test but META_TEST_EVENT_CODE is missing', async () => {
 		mockTestEventCode = '';
 

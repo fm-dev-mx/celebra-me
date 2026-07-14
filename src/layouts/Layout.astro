@@ -46,7 +46,9 @@ const {
 	headLinks = [],
 } = Astro.props as Props;
 
-const isVercelProduction = process.env.VERCEL_ENV === 'production';
+const vercelEnvironment = process.env.VERCEL_ENV;
+const isVercelProduction = vercelEnvironment === 'production';
+const isMetaDeliveryBlocked = Boolean(vercelEnvironment && vercelEnvironment !== 'production');
 
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 
@@ -105,6 +107,7 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 		class:list={[className, { 'is-demo': isDemo }]}
 		data-theme-mode={themeMode}
 		data-tracking-route-class={loadCommercialTracking ? routePolicy.routeClass : undefined}
+		data-meta-delivery-blocked={isMetaDeliveryBlocked ? 'true' : undefined}
 	>
 		{!hideHeader && <Header transparentOnHero={transparentHeader} />}
 

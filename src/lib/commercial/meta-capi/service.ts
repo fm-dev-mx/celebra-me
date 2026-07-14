@@ -51,6 +51,8 @@ interface FinalizedOutboxRow {
 
 const PROVIDER_ERROR_MAX_LENGTH = 300;
 const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe provider message.';
+// Ten seconds stays well inside the 120-second claim lease while allowing normal Graph API latency.
+const META_CAPI_REQUEST_TIMEOUT_MS = 10_000;
 
 export function sanitizeProviderError(value: unknown): string {
 	const raw = value instanceof Error ? value.message : typeof value === 'string' ? value : '';
@@ -229,6 +231,7 @@ async function dispatchCapiPayload(
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify(requestBody),
+		signal: AbortSignal.timeout(META_CAPI_REQUEST_TIMEOUT_MS),
 	});
 
 	let responseJson: Record<string, unknown> = {};
@@ -280,9 +283,21 @@ function resolveMetaCredentials(): MetaCredentials | null {
 	return { accessToken, pixelId };
 }
 
-function resolveDeliveryMode(): 'disabled' | 'test' | 'production' {
+interface MetaDeliveryConfiguration {
+	mode: 'disabled' | 'test' | 'production';
+	productionBlocked: boolean;
+}
+
+function resolveDeliveryConfiguration(): MetaDeliveryConfiguration {
 	const mode = getEnv('META_CAPI_DELIVERY_MODE')?.trim().toLowerCase();
-	return mode === 'test' || mode === 'production' ? mode : 'disabled';
+	if (mode === 'test') return { mode: 'test', productionBlocked: false };
+	if (mode === 'production') {
+		const vercelEnvironment = getEnv('VERCEL_ENV');
+		return vercelEnvironment === 'production'
+			? { mode: 'production', productionBlocked: false }
+			: { mode: 'disabled', productionBlocked: true };
+	}
+	return { mode: 'disabled', productionBlocked: false };
 }
 
 function resolveTestEventCode(mode: 'disabled' | 'test' | 'production'): string | null {
@@ -313,15 +328,20 @@ export async function deliverMetaConversionEvent(
 	}
 
 	const attemptCount = outboxRow.attempt_count;
-	const deliveryMode = resolveDeliveryMode();
+	const deliveryConfiguration = resolveDeliveryConfiguration();
+	const deliveryMode = deliveryConfiguration.mode;
 
 	if (deliveryMode === 'disabled') {
+		const errorCode = 'DELIVERY_DISABLED';
+		const errorMessage = deliveryConfiguration.productionBlocked
+			? 'Meta CAPI production delivery requires VERCEL_ENV=production.'
+			: 'La entrega CAPI está desactivada en la configuración del entorno (META_CAPI_DELIVERY_MODE).';
 		return finalizeClaim(
 			outboxId,
 			'skipped',
 			attemptCount,
-			'DELIVERY_DISABLED',
-			'La entrega CAPI está desactivada en la configuración del entorno (META_CAPI_DELIVERY_MODE).',
+			errorCode,
+			errorMessage,
 			undefined,
 			claimId,
 		);
@@ -437,17 +457,39 @@ export async function deliverMetaConversionEvent(
 		if (providerAccepted) {
 			return 'lost_claim';
 		}
-		const errMsg = sanitizeProviderError(err);
+		return finalizeDispatchFailure(outboxId, attemptCount, err, payloadHash, claimId);
+	}
+}
+
+async function finalizeDispatchFailure(
+	outboxId: string,
+	attemptCount: number,
+	error: unknown,
+	payloadHash: string,
+	claimId: string,
+): Promise<'sent' | 'failed' | 'skipped' | 'ambiguous' | 'lost_claim'> {
+	const errorName =
+		typeof error === 'object' && error !== null && 'name' in error ? error.name : undefined;
+	if (errorName === 'TimeoutError' || errorName === 'AbortError') {
 		return finalizeClaim(
 			outboxId,
-			'failed',
+			'ambiguous',
 			attemptCount,
-			'NETWORK_ERROR',
-			errMsg,
+			'META_REQUEST_TIMEOUT',
+			`Meta CAPI request timed out after ${META_CAPI_REQUEST_TIMEOUT_MS} ms; delivery outcome is unknown.`,
 			payloadHash,
 			claimId,
 		);
 	}
+	return finalizeClaim(
+		outboxId,
+		'failed',
+		attemptCount,
+		'NETWORK_ERROR',
+		sanitizeProviderError(error),
+		payloadHash,
+		claimId,
+	);
 }
 
 async function finalizeClaim(

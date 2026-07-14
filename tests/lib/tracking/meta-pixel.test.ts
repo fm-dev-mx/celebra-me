@@ -756,6 +756,36 @@ describe('no duplicate script injection [T11]', () => {
 describe('route boundaries for Meta Pixel', () => {
 	beforeEach(() => {
 		document.querySelectorAll('script[src*="fbevents.js"]').forEach((s) => s.remove());
+		delete document.body.dataset.metaDeliveryBlocked;
+	});
+
+	afterEach(() => {
+		delete document.body.dataset.metaDeliveryBlocked;
+	});
+
+	it('does not initialize or forward events when the server marks Meta delivery blocked', () => {
+		type PixelMod = {
+			initMetaPixel: () => void;
+			forwardToMetaPixel: (
+				name: string,
+				props: Record<string, string | number | boolean>,
+			) => void;
+		};
+		let freshPixel: PixelMod | undefined;
+
+		jest.isolateModules(() => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			freshPixel = require('@/lib/tracking/meta-pixel') as PixelMod;
+		});
+
+		document.body.dataset.trackingRouteClass = 'commercial';
+		document.body.dataset.metaDeliveryBlocked = 'true';
+		freshPixel?.initMetaPixel();
+
+		expect(document.querySelector('script[src*="fbevents.js"]')).toBeNull();
+		const fbqMock = setFbqMock();
+		freshPixel?.forwardToMetaPixel('page_viewed', { page_type: 'commercial' });
+		expect(fbqMock).not.toHaveBeenCalled();
 	});
 
 	it('does not forward or queue events on ineligible routes', async () => {
