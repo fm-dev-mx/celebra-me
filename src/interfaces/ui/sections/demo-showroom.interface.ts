@@ -78,10 +78,8 @@ export interface DemoShowroomItem {
 	views?: number;
 	visibility: DemoShowroomVisibility;
 	reviewStatus: DemoShowroomReviewStatus;
-	featured: boolean;
 	sortOrder: number;
 	ctaMessage: string;
 	thumbnail: DemoShowroomThumbnail;
 	selectorThumbnail?: DemoShowroomThumbnail;
-	exclusionReason?: string;
 }

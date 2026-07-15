@@ -14,123 +14,154 @@ import type {
 interface Props {
 	showroom: DemoShowroomEvent;
 	items: readonly DemoShowroomItem[];
+	activeSlug?: string;
 }
 
-const { showroom, items } = Astro.props;
-const featuredItem = items[0];
+const { showroom, items, activeSlug } = Astro.props;
+// activeSlug is already validated at the page level; fall back to first item as safety net.
+const featuredItem = items.find((item) => item.slug === activeSlug) ?? items[0];
 const featuredThumbnail = featuredItem
 	? getEventAsset(featuredItem.thumbnail.assetSlug, featuredItem.thumbnail.key)
 	: undefined;
 const hasStyleSelector = items.length > 1;
 const phone = getContactPhone();
-const showWhatsAppCta = featuredItem && !isPlaceholderContactPhone(phone);
-const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(featuredItem.ctaMessage) : '';
+const isRealPhone = !isPlaceholderContactPhone(phone);
+const showWhatsAppCta = Boolean(featuredItem && isRealPhone);
+const isSingleDemo = items.length === 1;
+const featuredEyebrow = isSingleDemo ? 'Estilo disponible' : 'Estilo destacado';
 const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Música', 'Galería'];
+
+const selectorItems = items.filter((item) => item.slug !== featuredItem?.slug);
+
+// Pre-compute per-item data for rendering and templates.
+const itemsWithAssets = items.map((item) => {
+	const thumbnail = getEventAsset(item.thumbnail.assetSlug, item.thumbnail.key);
+	const waHref = isRealPhone ? getWhatsAppLink(item.ctaMessage) : '';
+	return { item, thumbnail, waHref };
+});
 ---
 
 <section
 	class="demo-showroom__featured"
 	aria-labelledby="demo-showroom-featured-title"
 	data-track-section="demo_showroom_featured"
+	data-showroom-root
+	data-active-slug={featuredItem?.slug}
 >
 	{
 		featuredItem && featuredThumbnail ? (
 			<>
-				<article class="demo-lookbook" data-demo-rank="1" data-demo-slug={featuredItem.slug}>
-					<div class="demo-lookbook__preview">
-						<div class="demo-lookbook__tablet">
-							<a
-								class="demo-lookbook__image-link"
-								href={featuredItem.href}
-								aria-label={`Ver demo: ${featuredItem.title}`}
-								data-track-event="cta_clicked"
-								data-track-section="demo_showroom_featured"
-								data-track-cta="demo_hero_image"
-								data-track-intent="demo"
-								data-demo-slug={featuredItem.slug}
-							>
-								<OptimizedImage
-									imagePath={featuredThumbnail}
-									alt={featuredItem.thumbnail.alt}
-									width={1160}
-									height={820}
-									class="demo-lookbook__image"
-									loading="eager"
-									decoding="async"
-									fetchpriority="high"
-									quality={88}
-									widths={[360, 540, 720, 980, 1280]}
-									sizes="(max-width: 767px) 94vw, (max-width: 1199px) 54vw, 640px"
-								/>
-							</a>
-						</div>
-					</div>
-
-					<div class="demo-lookbook__copy">
-						<p class="demo-showroom__eyebrow">Estilo destacado</p>
-						<h2 id="demo-showroom-featured-title" class="demo-lookbook__title">
-							{featuredItem.title}
-						</h2>
-						<p class="demo-lookbook__description">{featuredItem.description}</p>
-						<ul class="demo-lookbook__tags" aria-label="Estilo del demo destacado">
-							{featuredItem.styleTags.slice(0, 2).map((tag) => (
-								<li>{tag}</li>
-							))}
-						</ul>
-
-						<div class="demo-lookbook__actions">
-							<a
-								class="demo-showroom__button demo-showroom__button--primary"
-								href={featuredItem.href}
-								data-track-event="cta_clicked"
-								data-track-section="demo_showroom_featured"
-								data-track-cta="demo_hero_open"
-								data-track-intent="demo"
-								data-demo-slug={featuredItem.slug}
-							>
-								Ver demo
-								<Icon name="ArrowRight" class="demo-showroom__button-icon" />
-							</a>
-
-							{showWhatsAppCta && (
+				<div id="demo-lookbook-container">
+					<article class="demo-lookbook" data-demo-rank="1" data-demo-slug={featuredItem.slug}>
+						<div class="demo-lookbook__preview">
+							<div class="demo-lookbook__tablet">
 								<a
-									class="demo-showroom__button demo-showroom__button--secondary"
-									href={whatsAppHref}
-									target="_blank"
-									rel="noopener noreferrer"
-									data-track-event="whatsapp_contact_clicked"
+									class="demo-lookbook__image-link"
+									href={featuredItem.href}
+									aria-label={`Ver demo: ${featuredItem.title}`}
+									data-track-event="cta_clicked"
 									data-track-section="demo_showroom_featured"
-									data-track-cta="demo_hero_whatsapp"
-									data-track-intent="whatsapp"
+									data-track-cta="demo_hero_image"
+									data-track-intent="demo"
 									data-demo-slug={featuredItem.slug}
-									data-event-type={showroom.eventType}
 								>
-									Cotizar este estilo
+									<OptimizedImage
+										imagePath={featuredThumbnail}
+										alt={featuredItem.thumbnail.alt}
+										width={1160}
+										height={820}
+										class="demo-lookbook__image"
+										loading="eager"
+										decoding="async"
+										fetchpriority="high"
+										quality={88}
+										widths={[360, 540, 720, 980, 1280]}
+										sizes="(max-width: 767px) 94vw, (max-width: 1199px) 54vw, 640px"
+									/>
 								</a>
-							)}
+							</div>
 						</div>
-					</div>
-				</article>
+
+						<div class="demo-lookbook__copy">
+							<p class="demo-showroom__eyebrow">{featuredEyebrow}</p>
+							<h2 id="demo-showroom-featured-title" class="demo-lookbook__title" tabindex="-1">
+								{featuredItem.title}
+							</h2>
+							<p class="demo-lookbook__description">{featuredItem.description}</p>
+							<ul class="demo-lookbook__tags" aria-label="Estilo del demo destacado">
+								{featuredItem.styleTags.slice(0, 2).map((tag) => (
+									<li>{tag}</li>
+								))}
+							</ul>
+
+							<div class="demo-lookbook__actions">
+								<a
+									class="demo-showroom__button demo-showroom__button--primary"
+									href={featuredItem.href}
+									data-track-event="cta_clicked"
+									data-track-section="demo_showroom_featured"
+									data-track-cta="demo_hero_open"
+									data-track-intent="demo"
+									data-demo-slug={featuredItem.slug}
+								>
+									Ver demo
+									<Icon name="ArrowRight" class="demo-showroom__button-icon" />
+								</a>
+
+								{showWhatsAppCta && (
+									<a
+										class="demo-showroom__button demo-showroom__button--secondary"
+										href={getWhatsAppLink(featuredItem.ctaMessage)}
+										target="_blank"
+										rel="noopener noreferrer"
+										data-track-event="whatsapp_contact_clicked"
+										data-track-section="demo_showroom_featured"
+										data-track-cta="demo_hero_whatsapp"
+										data-track-intent="whatsapp"
+										data-demo-slug={featuredItem.slug}
+										data-event-type={showroom.eventType}
+									>
+										Cotizar este estilo
+									</a>
+								)}
+							</div>
+						</div>
+					</article>
+				</div>
 
 				{hasStyleSelector && (
-					<section class="demo-showroom__selector" aria-labelledby="demo-showroom-selector-title">
+					<section
+						class="demo-showroom__selector"
+						aria-labelledby="demo-showroom-selector-title"
+						data-showroom-selector
+					>
 						<div class="demo-showroom__selector-heading">
-							<p class="demo-showroom__eyebrow">Referencias visuales</p>
+							<p class="demo-showroom__eyebrow">Otras referencias visuales</p>
 							<h2 id="demo-showroom-selector-title" class="demo-showroom__section-title">
-								Elige un estilo para abrir la demo
+								Explora otros estilos
 							</h2>
 						</div>
-						<div class="demo-showroom__style-list">
-							{items.map((item, index) => (
-								<DemoCard item={item} isActive={index === 0} position={index + 1} />
-							))}
+						<div class="demo-showroom__style-list" data-showroom-card-list>
+							{selectorItems.map((item) => {
+								const canonicalIndex = items.findIndex((i) => i.slug === item.slug);
+								return (
+									<DemoCard
+										item={{
+											...item,
+											href: `?demo=${item.slug}`,
+										}}
+										isActive={false}
+										position={canonicalIndex + 1}
+									/>
+								);
+							})}
 						</div>
 					</section>
 				)}
 
 				<section class="demo-showroom__strip" aria-labelledby="demo-showroom-strip-title">
 					<h2 id="demo-showroom-strip-title" class="demo-showroom__strip-title">
-						Todas las demos incluyen:
+						Nuestras invitaciones incluyen:
 					</h2>
 					<ul class="demo-showroom__strip-list" aria-label="Funciones incluidas">
 						{demoChecks.map((feature) => (
@@ -138,6 +169,112 @@ const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Música', 'Galería'];
 						))}
 					</ul>
 				</section>
+
+				{/*
+				  Hidden <template> elements containing the entire featured panel layout for each demo.
+				  Replacing the complete pre-rendered DOM unit is safer, simpler, and immune to structural desynchronization.
+				*/}
+				{hasStyleSelector &&
+					itemsWithAssets.map(({ item, thumbnail, waHref }) => {
+						if (!thumbnail) return null;
+						return (
+							<template data-demo-featured-tpl={item.slug}>
+								<article class="demo-lookbook" data-demo-rank="1" data-demo-slug={item.slug}>
+									<div class="demo-lookbook__preview">
+										<div class="demo-lookbook__tablet">
+											<a
+												class="demo-lookbook__image-link"
+												href={item.href}
+												aria-label={`Ver demo: ${item.title}`}
+												data-track-event="cta_clicked"
+												data-track-section="demo_showroom_featured"
+												data-track-cta="demo_hero_image"
+												data-track-intent="demo"
+												data-demo-slug={item.slug}
+											>
+												<OptimizedImage
+													imagePath={thumbnail}
+													alt={item.thumbnail.alt}
+													width={1160}
+													height={820}
+													class="demo-lookbook__image"
+													loading="lazy"
+													decoding="async"
+													fetchpriority="auto"
+													quality={88}
+													widths={[360, 540, 720, 980, 1280]}
+													sizes="(max-width: 767px) 94vw, (max-width: 1199px) 54vw, 640px"
+												/>
+											</a>
+										</div>
+									</div>
+
+									<div class="demo-lookbook__copy">
+										<p class="demo-showroom__eyebrow">{featuredEyebrow}</p>
+										<h2 id="demo-showroom-featured-title" class="demo-lookbook__title" tabindex="-1">
+											{item.title}
+										</h2>
+										<p class="demo-lookbook__description">{item.description}</p>
+										<ul class="demo-lookbook__tags" aria-label="Estilo del demo destacado">
+											{item.styleTags.slice(0, 2).map((tag) => (
+												<li>{tag}</li>
+											))}
+										</ul>
+
+										<div class="demo-lookbook__actions">
+											<a
+												class="demo-showroom__button demo-showroom__button--primary"
+												href={item.href}
+												data-track-event="cta_clicked"
+												data-track-section="demo_showroom_featured"
+												data-track-cta="demo_hero_open"
+												data-track-intent="demo"
+												data-demo-slug={item.slug}
+											>
+												Ver demo
+												<Icon name="ArrowRight" class="demo-showroom__button-icon" />
+											</a>
+
+											{waHref && (
+												<a
+													class="demo-showroom__button demo-showroom__button--secondary"
+													href={waHref}
+													target="_blank"
+													rel="noopener noreferrer"
+													data-track-event="whatsapp_contact_clicked"
+													data-track-section="demo_showroom_featured"
+													data-track-cta="demo_hero_whatsapp"
+													data-track-intent="whatsapp"
+													data-demo-slug={item.slug}
+													data-event-type={showroom.eventType}
+												>
+													Cotizar este estilo
+												</a>
+											)}
+										</div>
+									</div>
+								</article>
+							</template>
+						);
+					})}
+
+				{/*
+				  Hidden <template> elements for each demo's selector card.
+				  Used to re-insert the previously-featured demo back into the selector.
+				*/}
+				{hasStyleSelector &&
+					itemsWithAssets.map(({ item }, canonicalIndex) => (
+						<template data-demo-card-tpl={item.slug}>
+							<DemoCard
+								item={{
+									...item,
+									href: `?demo=${item.slug}`,
+								}}
+								isActive={false}
+								position={canonicalIndex + 1}
+							/>
+						</template>
+					))}
 			</>
 		) : (
 			<div class="demo-showroom__empty">
@@ -150,3 +287,126 @@ const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Música', 'Galería'];
 		)
 	}
 </section>
+
+{
+	hasStyleSelector && (
+		<script>
+			(function () {
+				'use strict';
+
+				const root = document.querySelector('[data-showroom-root]');
+				if (!root) return;
+
+				const container = root.querySelector('#demo-lookbook-container');
+				const cardList = root.querySelector('[data-showroom-card-list]');
+				if (!container || !cardList) return;
+
+				// Canonical slug order preserved from SSR data attributes on card templates.
+				const cardTemplates = Array.from(
+					root.querySelectorAll<HTMLTemplateElement>('[data-demo-card-tpl]'),
+				);
+				const canonicalSlugs: string[] = cardTemplates
+					.map((t) => t.dataset.demoCardTpl ?? '')
+					.filter(Boolean);
+
+				function getActiveSlug(): string {
+					return (root as HTMLElement).dataset.activeSlug ?? '';
+				}
+
+				function setActiveSlug(slug: string): void {
+					(root as HTMLElement).dataset.activeSlug = slug;
+				}
+
+				function getFeaturedTemplate(slug: string): HTMLTemplateElement | null {
+					return root!.querySelector<HTMLTemplateElement>(
+						`[data-demo-featured-tpl="${CSS.escape(slug)}"]`,
+					);
+				}
+
+				function getCardTemplate(slug: string): HTMLTemplateElement | null {
+					return root!.querySelector<HTMLTemplateElement>(
+						`[data-demo-card-tpl="${CSS.escape(slug)}"]`,
+					);
+				}
+
+				function swapFeaturedPanel(newSlug: string): void {
+					const tpl = getFeaturedTemplate(newSlug);
+					if (!tpl) return;
+
+					const content = tpl.content;
+					const newArticle = content.querySelector('.demo-lookbook');
+					if (!newArticle) return;
+
+					const currentArticle = container!.querySelector('.demo-lookbook');
+					if (currentArticle) {
+						currentArticle.replaceWith(newArticle.cloneNode(true));
+					}
+				}
+
+				function rebuildSelector(newActiveSlug: string): void {
+					// Collect current card slugs in canonical order, excluding the new active
+					const remaining = canonicalSlugs.filter((s) => s !== newActiveSlug);
+
+					// Remove currently existing cards
+					cardList!.innerHTML = '';
+
+					// Re-insert in canonical order
+					for (const slug of remaining) {
+						const tpl = getCardTemplate(slug);
+						if (!tpl) continue;
+						const clone = tpl.content.cloneNode(true);
+						cardList!.appendChild(clone);
+					}
+				}
+
+				function activateDemo(newSlug: string, options: { pushState?: boolean } = {}): void {
+					const currentSlug = getActiveSlug();
+					if (newSlug === currentSlug) return;
+
+					swapFeaturedPanel(newSlug);
+					rebuildSelector(newSlug);
+					setActiveSlug(newSlug);
+
+					if (options.pushState !== false) {
+						// Update URL without navigation, preserving other query parameters
+						const url = new URL(window.location.href);
+						url.searchParams.set('demo', newSlug);
+						history.pushState({ demoSlug: newSlug }, '', url.toString());
+					}
+
+					// Accessibility: Move focus to the newly featured title
+					const newTitle = container!.querySelector('#demo-showroom-featured-title');
+					if (newTitle) {
+						(newTitle as HTMLElement).focus();
+					}
+				}
+
+				// Handle popstate (browser back/forward)
+				window.addEventListener('popstate', (event) => {
+					const urlParams = new URLSearchParams(window.location.search);
+					const slug =
+						(event.state as { demoSlug?: string } | null)?.demoSlug ??
+						urlParams.get('demo') ??
+						canonicalSlugs[0] ??
+						'';
+					if (slug) {
+						activateDemo(slug, { pushState: false });
+					}
+				});
+
+				// Intercept selector card clicks
+				cardList.addEventListener('click', (event) => {
+					const anchor = (event.target as Element).closest<HTMLAnchorElement>('a.demo-style');
+					if (!anchor) return;
+
+					const slug = anchor.dataset.demoSlug ?? '';
+					if (!slug) return;
+
+					// Prevent default navigation
+					event.preventDefault();
+					activateDemo(slug);
+				});
+			})();
+		</script>
+	)
+}

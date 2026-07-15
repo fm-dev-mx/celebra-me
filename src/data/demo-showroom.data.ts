@@ -215,11 +215,10 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Jewelry Box',
 		description: 'Floral, luminosa y clásica.',
 		styleTags: ['floral', 'jardín'],
-		views: 45,
-		visibility: 'featured',
+		views: 0,
+		visibility: 'hidden',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 10,
+		sortOrder: 100,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Jewelry Box.',
 		thumbnail: {
@@ -234,13 +233,12 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		slug: 'demo-xv-celestial-blue',
 		href: '/xv/demo-xv-celestial-blue',
 		title: 'XV Celestial Blue',
-		description: 'Azul, luminosa y ceremonial.',
-		styleTags: ['Ceremonial', 'Azul'],
+		description: 'Luminosa, elegante y ceremonial.',
+		styleTags: ['Elegante', 'Luminosa'],
 		views: 40,
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 20,
+		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Celestial Blue.',
 		thumbnail: {
@@ -259,15 +257,42 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 	{
 		eventType: 'xv',
 		publicSlug: 'xv',
+		slug: 'demo-xv-editorial-magazine',
+		href: '/xv/demo-xv-editorial-magazine',
+		title: 'Editorial Magazine',
+		description: 'Editorial, sofisticada y visual.',
+		styleTags: ['Sofisticada', 'Visual'],
+		views: 30,
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		sortOrder: 20,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial Magazine.',
+		thumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'portrait',
+			alt: 'Vista principal del demo de XV años estilo Editorial Magazine',
+			objectPosition: '50% 18%',
+		},
+		selectorThumbnail: {
+			assetSlug: 'demo-xv-editorial',
+			key: 'portrait',
+			alt: 'Retrato del demo de XV años estilo Editorial Magazine',
+			objectPosition: '50% 18%',
+		},
+	},
+	{
+		eventType: 'xv',
+		publicSlug: 'xv',
 		slug: 'demo-xv-enchanted-rose',
 		href: '/xv/demo-xv-enchanted-rose',
 		title: 'Enchanted Rose',
 		description: 'Floral y romántica.',
 		styleTags: ['Floral', 'Romántica'],
-		visibility: 'hidden',
+		views: 20,
+		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: false,
-		sortOrder: 80,
+		sortOrder: 30,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Enchanted Rose.',
 		thumbnail: {
@@ -291,11 +316,10 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		title: 'Editorial',
 		description: 'Moderna, limpia y editorial.',
 		styleTags: ['Moderna', 'Limpia'],
-		views: 22,
+		views: 10,
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
-		sortOrder: 30,
+		sortOrder: 40,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial.',
 		thumbnail: {
@@ -312,33 +336,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		},
 	},
 	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-editorial-magazine',
-		href: '/xv/demo-xv-editorial-magazine',
-		title: 'Editorial Magazine',
-		description: 'Editorial, sofisticada y visual.',
-		styleTags: ['Sofisticada', 'Visual'],
-		visibility: 'hidden',
-		reviewStatus: 'approved',
-		featured: false,
-		sortOrder: 90,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial Magazine.',
-		thumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'portrait',
-			alt: 'Vista principal del demo de XV años estilo Editorial Magazine',
-			objectPosition: '50% 18%',
-		},
-		selectorThumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'portrait',
-			alt: 'Retrato del demo de XV años estilo Editorial Magazine',
-			objectPosition: '50% 18%',
-		},
-	},
-	{
 		eventType: 'boda',
 		publicSlug: 'boda',
 		slug: 'demo-boda-jewelry-box-wedding',
@@ -349,7 +346,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		views: 11,
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
 		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para boda similar al demo Jewelry Box.',
@@ -370,7 +366,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		views: 4,
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
 		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para bautizo similar al demo Angelic Presence.',
@@ -390,7 +385,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		styleTags: ['celestial', 'suave'],
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
 		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para baby shower similar al demo Celestial.',
@@ -411,7 +405,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		views: 2,
 		visibility: 'featured',
 		reviewStatus: 'approved',
-		featured: true,
 		sortOrder: 10,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para cumpleaños similar al demo Luxury Hacienda.',
@@ -419,26 +412,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			assetSlug: 'demo-cumple-luxury-hacienda',
 			key: 'hero',
 			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',
-		},
-	},
-	{
-		eventType: 'primera-comunion',
-		publicSlug: 'primera-comunion',
-		slug: 'demo-primera-comunion-illustrated',
-		href: '/primera-comunion/demo-primera-comunion-illustrated',
-		title: 'Primera Comunión Illustrated',
-		description: 'Ilustrada, floral y familiar.',
-		styleTags: ['ilustrada', 'familiar'],
-		visibility: 'hidden',
-		reviewStatus: 'approved',
-		featured: false,
-		sortOrder: 900,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para primera comunión similar al demo Illustrated.',
-		thumbnail: {
-			assetSlug: 'demo-primera-comunion-illustrated',
-			key: 'hero',
-			alt: 'Vista principal del demo de primera comunión Illustrated',
 		},
 	},
 	{
@@ -452,7 +425,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		styleTags: ['perfil', 'editorial'],
 		visibility: 'hidden',
 		reviewStatus: 'needs-review',
-		featured: false,
 		sortOrder: 900,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones editoriales.',
@@ -461,7 +433,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			key: 'hero',
 			alt: 'Vista principal de variante editorial de XV años',
 		},
-		exclusionReason: 'Perfil/client-like demo pendiente de revisión manual.',
 	},
 	{
 		eventType: 'xv',
@@ -474,7 +445,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		styleTags: ['perfil', 'celestial'],
 		visibility: 'hidden',
 		reviewStatus: 'needs-review',
-		featured: false,
 		sortOrder: 910,
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones celestiales.',
@@ -483,27 +453,20 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			key: 'hero',
 			alt: 'Vista principal de variante celestial de XV años',
 		},
-		exclusionReason: 'Perfil/client-like demo pendiente de revisión manual.',
 	},
 ] as const;
 
-	export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
+export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
 	return DEMO_SHOWROOM_EVENTS.find(
 		(event) =>
-			event.publicSlug === publicSlug || event.alternatePublicSlugs?.includes(publicSlug as DemoShowroomPublicSlug),
+			event.publicSlug === publicSlug ||
+			event.alternatePublicSlugs?.includes(publicSlug as DemoShowroomPublicSlug),
 	);
 }
 
 export function getFeaturedDemoShowroomItems(eventType?: EventType): DemoShowroomItem[] {
 	return DEMO_SHOWROOM_ITEMS.filter((item) => {
-
 		if (eventType && item.eventType !== eventType) return false;
-		return item.visibility === 'featured' && item.reviewStatus === 'approved' && item.featured;
+		return item.visibility === 'featured' && item.reviewStatus === 'approved';
 	}).sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || a.sortOrder - b.sortOrder);
-}
-export function getShowroomPublicSlugs(): DemoShowroomPublicSlug[] {
-	return DEMO_SHOWROOM_EVENTS.flatMap((event) => [
-		event.publicSlug,
-		...(event.alternatePublicSlugs ?? []),
-	]);
 }

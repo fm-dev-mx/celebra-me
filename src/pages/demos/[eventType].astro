@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import Layout from '@/layouts/Layout.astro';
 import DemoShowroomGrid from '@/components/showroom/DemoShowroomGrid.astro';
@@ -7,25 +7,14 @@ import DemoShowroomGrid from '@/components/showroom/DemoShowroomGrid.astro';
 import {
 	getDemoShowroomByPublicSlug,
 	getFeaturedDemoShowroomItems,
-	getShowroomPublicSlugs,
 } from '@/data/demo-showroom.data';
 import { getEventAsset } from '@/lib/assets/asset-registry';
 import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 import '@/styles/showroom/_demo-showroom.scss';
 
-export function getStaticPaths() {
-	return getShowroomPublicSlugs().map((publicSlug) => ({
-		params: { eventType: publicSlug },
-		props: { publicSlug },
-	}));
-}
-
-interface Props {
-	publicSlug: string;
-}
-
-const { publicSlug } = Astro.props;
+const { eventType } = Astro.params;
+const publicSlug = eventType!;
 const showroom = getDemoShowroomByPublicSlug(publicSlug);
 
 if (!showroom) {
@@ -37,7 +26,6 @@ const featuredItems = getFeaturedDemoShowroomItems(showroom.eventType).filter((i
 );
 const phone = getContactPhone();
 const showWhatsAppCta = !isPlaceholderContactPhone(phone);
-const whatsAppHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '';
 
 const eventDisplayNameBySlug: Record<string, string> = {
 	xv: 'XV años',
@@ -52,12 +40,23 @@ const eventDisplayNameBySlug: Record<string, string> = {
 const eventDisplayName = eventDisplayNameBySlug[publicSlug] ?? showroom.label.toLowerCase();
 const adaptationTarget = publicSlug === 'xv' ? 'tus XV años' : `tu ${eventDisplayName}`;
 const lookbookLabel = eventDisplayName.toUpperCase();
-const introTitle = 'Elige una referencia visual para tu invitación';
+
+const rawDemoParam = Astro.url.searchParams.get('demo') ?? '';
+const activeSlug =
+	featuredItems.find((item) => item.slug === rawDemoParam)?.slug ?? featuredItems[0]?.slug;
+
+const demoCount = featuredItems.length;
+const introTitle =
+	demoCount > 1
+		? 'Elige una referencia visual para tu invitación'
+		: 'Referencia visual para tu invitación';
 const introDescription =
-	'Cada demo puede adaptarse con tus nombres, colores, música, pases, ubicación y detalles del evento.';
+	demoCount > 1
+		? 'Cada propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.'
+		: 'Esta propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.';
 const pageTitle = `Lookbook ${eventDisplayName} | Celebra.me`;
 const pageDescription = introDescription;
-const quoteHref = showWhatsAppCta ? whatsAppHref : '/#contact';
+const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '/#contact';
 ---
 
 <Layout title={pageTitle} description={pageDescription} className="theme-preset--jewelry-box-landing" transparentHeader={false}>
@@ -72,7 +71,7 @@ const quoteHref = showWhatsAppCta ? whatsAppHref : '/#contact';
 		</header>
 
 		<div id="demos">
-			<DemoShowroomGrid showroom={showroom} items={featuredItems} />
+			<DemoShowroomGrid showroom={showroom} items={featuredItems} activeSlug={activeSlug} />
 		</div>
 
 		<section
