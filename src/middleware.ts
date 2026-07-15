@@ -356,8 +356,31 @@ async function handleProtectedAuthRequest(
 	return next();
 }
 
+const BLOCKED_SCANNER_SEGMENTS = new Set([
+	'wp-admin',
+	'wp-content',
+	'wp-includes',
+	'cgi-bin',
+]);
+
+function isScannerRequest(pathname: string): boolean {
+	const lowercasePath = pathname.toLowerCase();
+	const segments = lowercasePath.split('/').filter(Boolean);
+	if (segments.some((seg) => BLOCKED_SCANNER_SEGMENTS.has(seg))) {
+		return true;
+	}
+	if (lowercasePath.endsWith('.php') || lowercasePath.includes('.php/')) {
+		return true;
+	}
+	return false;
+}
+
 export const onRequest = defineMiddleware(
 	async ({ url, cookies, redirect, request, locals }, next) => {
+		if (isScannerRequest(url.pathname)) {
+			return new Response(null, { status: 404 });
+		}
+
 		if (!shouldHandleAuth(url.pathname)) {
 			const response = await next();
 			return applyShortId404Headers(url.pathname, response);
