@@ -18,6 +18,7 @@
         "test:e2e": "playwright test",
         "test:e2e:ci": "playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts",
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
+        "test:e2e:ga4": "playwright test --config=playwright.ga4.config.ts",
         "test:e2e:infra": "echo 'Reserved for DB-backed e2e (RSVP, social preview, real invitations) — requires SUPABASE env'",
         "test:e2e:visual": "echo 'Reserved for screenshot/audit e2e (valentina-face, ximena, xv-demo) — requires SUPABASE env'",
         "type-check": "astro check",

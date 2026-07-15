@@ -35,13 +35,6 @@ type TrackingPayload = {
 	consentSnapshot: ConsentSnapshot;
 };
 
-declare global {
-	interface Window {
-		dataLayer?: Array<Record<string, unknown>>;
-		gtag?: (...args: unknown[]) => void;
-	}
-}
-
 const VISITOR_KEY = 'cm_visitor_id';
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';

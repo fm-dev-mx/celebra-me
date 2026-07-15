@@ -33,12 +33,7 @@ import {
 import { createGa4EventQueue } from '@/lib/tracking/ga4-queue';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
-declare global {
-	interface Window {
-		dataLayer?: Array<Record<string, unknown>>;
-		gtag?: (...args: unknown[]) => void;
-	}
-}
+import { getGaMeasurementId, getLegacyAnalyticsId } from '@/lib/tracking/ga4-env';
 
 let gaLoaded = false;
 let gaLoading = false;
@@ -52,9 +47,9 @@ const queue = createGa4EventQueue(MAX_PENDING_EVENTS);
  * with fallback to PUBLIC_GOOGLE_ANALYTICS_ID.
  */
 function resolveMeasurementId(): string {
-	const ga4Id = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim();
+	const ga4Id = getGaMeasurementId().trim();
 	if (ga4Id) return ga4Id;
-	const legacyId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID?.trim();
+	const legacyId = getLegacyAnalyticsId().trim();
 	return legacyId || '';
 }
 
@@ -100,10 +95,12 @@ function loadGtagScript(): Promise<void> {
 
 		// Initialize dataLayer
 		window.dataLayer = window.dataLayer ?? [];
-		function gtag(...args: unknown[]) {
-			window.dataLayer?.push(args as unknown as Record<string, unknown>);
-		}
-		window.gtag = gtag as (...args: unknown[]) => void;
+		const gtag = function () {
+			// Google tag initialization requires native Arguments entries.
+			// eslint-disable-next-line prefer-rest-params
+			window.dataLayer?.push(arguments);
+		} as (...args: unknown[]) => void;
+		window.gtag = gtag;
 		gtag('js', new Date());
 		gtag('config', id, { send_page_view: false });
 
