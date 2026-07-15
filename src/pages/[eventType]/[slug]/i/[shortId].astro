@@ -5,9 +5,14 @@ export const prerender = false;
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 import { resolveShortIdPage } from '@/lib/invitation/short-id-resolver';
 import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
+import { isEventType } from '@/lib/theme/theme-contract';
 
 const SITE_ORIGIN = resolvePublicSiteOrigin();
-const { shortId } = Astro.params;
+const { eventType, shortId } = Astro.params;
+
+if (eventType && !isEventType(eventType)) {
+  return new Response(null, { status: 404 });
+}
 
 // These headers ONLY apply on the 200 (OG shell) path.
 // For 404 responses, the middleware (applyShortId404Headers) sets no-store + Vary.
