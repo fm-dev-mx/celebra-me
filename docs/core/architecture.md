@@ -170,7 +170,6 @@ Astro content collections (`src/content/**`) are used for:
 
 ### Active Collection Layout
 
-- `src/content/events/*.json` for legacy/static fallback entries
 - `src/content/event-demos/**.json` for showcase demos
 - `src/content/event-templates/**.json` for internal master templates
 
@@ -179,8 +178,7 @@ Astro content collections (`src/content/**`) are used for:
 - Content remains logic-free.
 - Validation and typing are defined through `src/content.config.ts`.
 - Runtime behavior must not depend on undocumented ad-hoc content fields.
-- Real/client invitations must be DB-published content resolved from `published_invitation_content`,
-  not new files under `src/content/events`.
+- Real/client invitations must be DB-published content resolved from `published_invitation_content`.
 
 ---
 

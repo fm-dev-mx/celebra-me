@@ -32,7 +32,7 @@ directa o indirectamente a un cliente real:
 
 ### Nombres
 
-- En archivos de contenido (`src/content/events/`) para eventos **no reales**, usar placeholders
+- En archivos de contenido (`src/content/event-demos/` y `src/content/event-templates/`) para eventos **no reales**, usar placeholders
   como `Juan Pérez`, `María García`, `Ciudad de Prueba`.
 - En contenido de eventos reales en producción, los datos de clientes deben manejarse a través del
   módulo intake, no hardcodearse en archivos JSON.
@@ -76,9 +76,9 @@ revisar manualmente si contienen datos sensibles antes de eliminarlos.
 - `src/env.d.ts` tipa las variables de entorno disponibles.
 - Nunca committear `.env.local` con valores reales.
 
-## Archivos de contenido (`src/content/events/`)
+## Archivos de contenido (`src/content/event-demos/` y `src/content/event-templates/`)
 
-Los archivos JSON en `src/content/events/` son parte del repositorio público. Por lo tanto:
+Los archivos JSON en `src/content/event-demos/` y `src/content/event-templates/` son parte del repositorio público. Por lo tanto:
 
 - Los eventos de demostración (`isDemo: true`) deben usar datos placeholder.
 - Los eventos reales (`isDemo: false`) deben contener solo la información mínima necesaria para el

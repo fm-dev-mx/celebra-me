@@ -4,7 +4,7 @@
 
 - Real/client invitations are DB-published content resolved from `published_invitation_content`.
 - Static content is reserved for demos, templates, and explicitly supported fallback windows.
-- Do not create client invitations by adding JSON files under `src/content/events`.
+- Do not create or restore `src/content/events` for client invitation content.
 
 ## Effective Content Flow
 

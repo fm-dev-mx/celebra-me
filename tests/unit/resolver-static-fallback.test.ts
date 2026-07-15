@@ -23,23 +23,11 @@ jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 }));
 
 describe('resolveInvitationContent Integration Fallback tests', () => {
-	let originalEnv: string | undefined;
-
 	beforeEach(() => {
-		originalEnv = process.env.ENABLE_STATIC_EVENTS;
 		jest.clearAllMocks();
 	});
 
-	afterEach(() => {
-		if (originalEnv === undefined) {
-			delete process.env.ENABLE_STATIC_EVENTS;
-		} else {
-			process.env.ENABLE_STATIC_EVENTS = originalEnv;
-		}
-	});
-
-	it('missing invitation returns null without calling getCollection("events")', async () => {
-		delete process.env.ENABLE_STATIC_EVENTS;
+	it('missing invitation returns null', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
 		const mockFindInv = findInvitationBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
@@ -51,11 +39,11 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 		const result = await resolveInvitationContent('missing-invitation', 'boda');
 
 		expect(result).toBeNull();
-		expect(mockGetCollection).not.toHaveBeenCalledWith('events');
+		expect(mockGetCollection).toHaveBeenCalledWith('event-demos');
+		expect(mockGetCollection).toHaveBeenCalledWith('event-templates');
 	});
 
-	it('Supabase lookup failure does not activate static fallback when ENABLE_STATIC_EVENTS is disabled', async () => {
-		delete process.env.ENABLE_STATIC_EVENTS;
+	it('Supabase credentials missing falls back to search static demos/templates and returns null if not found', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
 		const mockFindInv = findInvitationBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
@@ -67,17 +55,17 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 		const result = await resolveInvitationContent('some-slug', 'boda');
 
 		expect(result).toBeNull();
-		expect(mockGetCollection).not.toHaveBeenCalledWith('events');
+		expect(mockGetCollection).toHaveBeenCalledWith('event-demos');
+		expect(mockGetCollection).toHaveBeenCalledWith('event-templates');
 	});
 
-	it('valid static entry resolves correctly when ENABLE_STATIC_EVENTS=true', async () => {
-		process.env.ENABLE_STATIC_EVENTS = 'true';
+	it('valid static demo entry resolves correctly when Supabase credentials are missing', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
 		const mockFindInv = findInvitationBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
-		mockFindPublished.mockResolvedValue(null);
-		mockFindInv.mockResolvedValue(null);
+		mockFindPublished.mockRejectedValue(new Error('SUPABASE_SERVICE_ROLE_KEY no configurada'));
+		mockFindInv.mockRejectedValue(new Error('SUPABASE_SERVICE_ROLE_KEY no configurada'));
 
 		const mockDemoEntry = {
 			id: 'event-demos/boda/demo-boda',

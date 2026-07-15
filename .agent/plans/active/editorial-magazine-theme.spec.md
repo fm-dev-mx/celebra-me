@@ -79,7 +79,7 @@ Reusable:
 
 Do not touch:
 
-- Production content in `src/content/events`.
+- Production client invitations (which are Supabase-backed database records, not static filesystem content). Demos and templates in `src/content/event-demos` and `src/content/event-templates` remain under filesystem control.
 - Database schema, migrations, Supabase repositories, or production SQL.
 - Invitation route architecture or duplicated page renderers.
 - Existing demos except regression-safe catalog and validation references.

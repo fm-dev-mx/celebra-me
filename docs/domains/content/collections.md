@@ -18,15 +18,13 @@ internal templates. Real/client invitations are DB-published content; see
 
 | Collection        | Path                             | Purpose                                       |
 | ----------------- | -------------------------------- | --------------------------------------------- |
-| `events`          | `src/content/events/**`          | legacy/static fallback; no new client content |
 | `event-demos`     | `src/content/event-demos/**`     | public showcase demos                         |
 | `event-templates` | `src/content/event-templates/**` | internal templates; verify runtime use        |
 
-Only `events` and `event-demos` are routable through the public invitation routes. DB-published
+Only `event-demos` is routable through the public invitation routes. DB-published
 client content from `published_invitation_content` is resolved before static fallback content.
-`src/content/events` should not receive new client invitation content by default. `event-templates`
-exists for internal masters, but its runtime use is limited and should be verified before relying on
-it for a creation workflow.
+`event-templates` exists for internal masters, but its runtime use is limited and should be verified
+before relying on it for a creation workflow.
 
 ## Event Type Contract
 
@@ -71,7 +69,7 @@ Public invitation routes resolve as:
 
 Event-specific source assets live under `src/assets/images/events/<asset-slug>/`.
 
-Static routable slugs must remain globally unique across `events` and `event-demos`. Real/client
+Static routable slugs must remain globally unique across `event-demos`. Real/client
 route slugs live in DB publication rows and must stay distinct from demo/template slugs.
 
 When a route depends on local event assets, keep the asset exports in

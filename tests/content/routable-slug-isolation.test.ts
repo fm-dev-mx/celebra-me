@@ -3,7 +3,6 @@ import path from 'node:path';
 
 const projectRoot = process.cwd();
 const routableDirs = [
-	path.join(projectRoot, 'src/content/events'),
 	path.join(projectRoot, 'src/content/event-demos'),
 ];
 

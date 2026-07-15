@@ -8,7 +8,6 @@ templates.
 ## Collection Roles
 
 - `published_invitation_content`: public source of truth for real/client invitations
-- `src/content/events/`: reserved legacy/static collection; do not add real client invitations here
 - `src/content/event-demos/`: public showcase demos grouped by `eventType`
 - `src/content/event-templates/`: internal templates and reusable masters; runtime use is limited
   and should be verified before treating a template as an active creation input
@@ -26,8 +25,7 @@ templates.
 ## Creating Real Invitations From Demos
 
 Use demos as production references, not as runtime dependencies for a real event. Real/client
-invitations are DB-published content and must not be created as static JSON under
-`src/content/events`.
+invitations are DB-published content.
 
 1. Pick a globally unique, client-specific route slug for the DB publication row.
 2. Use the dashboard flow or a reviewed manifest-bearing SQL patch to create/update client
@@ -56,7 +54,7 @@ or mappers when the existing contracts cannot represent the required behavior.
 
 - Create or update the client invitation through the dashboard/editor flow documented in
   [`../intake/production-flow.md`](../intake/production-flow.md) or through a reviewed
-  manifest-bearing SQL patch. Do not add a real client JSON file under `src/content/events`.
+  manifest-bearing SQL patch.
 - Use the selected demo as editorial and visual reference only. Replace all visible copy, event
   details, RSVP settings, family data, navigation labels, sharing copy, and section media.
 - Keep slug roles separate: the route slug is stored in DB publication rows, `_assetSlug` points to

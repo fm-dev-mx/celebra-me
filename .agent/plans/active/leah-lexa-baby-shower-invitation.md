@@ -26,8 +26,7 @@ superseded_by: []
 
 Continue Leah Lexa as a real/client Baby Shower invitation published from DB content at
 `/baby-shower/leah-lexa`. Do not create
-`src/content/event-demos/baby-shower/leah-lexa-baby-shower.json`, do not add real client content to
-`src/content/events`, and do not point Leah asset resolution at the generic Baby Shower demo.
+`src/content/event-demos/baby-shower/leah-lexa-baby-shower.json`, do not create or restore `src/content/events` for client invitation content, and do not point Leah asset resolution at the generic Baby Shower demo.
 
 The generic static demo remains `demo-baby-shower-celestial` and must stay fictitious.
 

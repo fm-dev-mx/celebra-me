@@ -1,18 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { z } from 'zod';
-import { collections } from '@/content.config';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
 import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
-
-const rawSchema = collections.events.schema;
-if (!rawSchema) {
-	throw new Error('events schema is not defined');
-}
-const eventSchema =
-	typeof rawSchema === 'function' ? rawSchema({ image: () => z.string() } as never) : rawSchema;
+import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-event.schema';
 
 const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
 const babyShowerDemoRoot = path.resolve(process.cwd(), 'src/content/event-demos/baby-shower');

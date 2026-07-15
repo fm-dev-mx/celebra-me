@@ -61,8 +61,7 @@ Recommended evaluation slug and asset namespace: `xv-xareni-iyarit`.
   must be case-safe for Vercel/Linux: `xv-xareni-iyarit`.
 - Existing precedent: event-scoped section overrides refine shared presets without duplicating full
   themes.
-- Real/client invitations should be DB-published payloads, not new checked-in `src/content/events`
-  JSON.
+- Real/client invitations should be DB-published payloads. Do not create or restore `src/content/events` for client invitation content.
 
 ## Proposed Implementation Approach
 

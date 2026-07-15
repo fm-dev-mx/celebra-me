@@ -370,15 +370,6 @@ Sin sesión administrativa, la ruta redirige correctamente a:
 El worktree aislado no contiene secretos locales ni credenciales del dashboard. Por esa razón no se
 ejecutó una prueba visual autenticada contra los datos reales de Ayrin Samantha.
 
-El repositorio requiere que exista el directorio vacío:
-
-```text
-src/content/events
-```
-
-Git no conserva directorios vacíos, por lo que se creó localmente dentro del worktree antes de
-ejecutar `pnpm build`.
-
 El comando global:
 
 ```bash

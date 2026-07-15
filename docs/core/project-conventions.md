@@ -176,7 +176,7 @@ Not all situations fit the conventions. If a change requires deviating:
 
 ## 12) Adding Real or Client Invitations
 
-Real/client invitations are DB-published content, not new JSON files under `src/content/events`. Use
+Real/client invitations are DB-published content. Use
 `docs/domains/content/event-governance.md` as the source of truth for real invitation governance.
 
 When a real invitation uses local routed media:
@@ -189,7 +189,6 @@ When a real invitation uses local routed media:
 4. **Verify the content and theme contract** with the narrow relevant commands from
    `docs/domains/content/event-governance.md`.
 
-Static content under `src/content/events` is legacy/static fallback content only. Demos and
-templates remain under `src/content/event-demos` and `src/content/event-templates`.
+Demos and templates remain under `src/content/event-demos` and `src/content/event-templates`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

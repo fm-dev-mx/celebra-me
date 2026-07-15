@@ -1,6 +1,6 @@
 ---
 title: Invitation Workflow Flow Analysis and Implementation Plan
-status: active
+status: archived
 created: unknown
 updated: 2026-05-31
 ---
