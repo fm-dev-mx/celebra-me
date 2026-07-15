@@ -90,17 +90,14 @@ export default [
 				{
 					type: 'domain',
 					pattern: 'src/lib/rsvp/services/*',
-					mode: 'folder',
 				},
 				{
 					type: 'adapter',
 					pattern: 'src/lib/adapters/*',
-					mode: 'folder',
 				},
 				{
 					type: 'page',
 					pattern: 'src/pages/*',
-					mode: 'folder',
 				},
 			],
 		},
@@ -115,14 +112,14 @@ export default [
 				'error',
 				{
 					default: 'allow',
-					rules: [
+					policies: [
 						{
-							from: { type: 'domain' },
-							disallow: [{ to: { type: 'page' } }],
+							from: { element: { type: 'domain' } },
+							disallow: [{ to: { element: { type: 'page' } } }],
 						},
 						{
-							from: { type: 'adapter' },
-							disallow: [{ to: { type: 'page' } }],
+							from: { element: { type: 'adapter' } },
+							disallow: [{ to: { element: { type: 'page' } } }],
 						},
 					],
 				},
