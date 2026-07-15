@@ -89,6 +89,7 @@ describe('resolveInvitationContent', () => {
 		expect(result!.source).toBe('published');
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 		expect(mockAdaptEvent).not.toHaveBeenCalled();
+		expect(mockGetRoutable).not.toHaveBeenCalled();
 	});
 
 	it('resolves static demo when Supabase credentials are missing', async () => {
@@ -183,6 +184,7 @@ describe('resolveInvitationContent', () => {
 		expect(result!.source).toBe('published');
 		expect(result!.viewModel.title).toBe('Published Event');
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
+		expect(mockGetRoutable).not.toHaveBeenCalled();
 	});
 
 	it('returns null when eventType is not provided (published skip)', async () => {

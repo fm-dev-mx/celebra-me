@@ -4,7 +4,7 @@ import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-messa
 import * as publishedRepo from '@/lib/intake/repositories/published-invitation-content.repository';
 import type { PublishedInvitationContent } from '@/lib/intake/repositories/published-invitation-content.repository';
 import * as eventsContent from '@/lib/content/events';
-import type { RoutableEventEntry } from '@/lib/content/events';
+import type { EventContentEntry } from '@/lib/content/events';
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository');
 jest.mock('@/lib/content/events');
@@ -214,7 +214,7 @@ describe('getSharingConfigForSlug', () => {
 							'Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}',
 					},
 				},
-			} as unknown as RoutableEventEntry);
+			} as unknown as EventContentEntry);
 
 			const result = await getSharingConfigForSlug('demo-xv-enchanted-rose', 'xv');
 

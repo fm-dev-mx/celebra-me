@@ -1,11 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { getEnv } from '@/lib/server/env';
 
 export type EventContentEntry =
-	| CollectionEntry<'events'>
-	| CollectionEntry<'event-demos'>
-	| CollectionEntry<'event-templates'>;
-
-export type RoutableEventEntry =
 	| CollectionEntry<'events'>
 	| CollectionEntry<'event-demos'>
 	| CollectionEntry<'event-templates'>;
@@ -19,17 +15,21 @@ export function getContentEntrySlug(id: string): string {
 export async function getRoutableEventEntry(
 	slug: string,
 	expectedEventType?: string,
-): Promise<RoutableEventEntry | null> {
-	const liveEntries = (await getCollection('events')) ?? [];
-	const liveEntry = liveEntries.find((entry: CollectionEntry<'events'>) => {
-		return (
-			getContentEntrySlug(entry.id) === slug &&
-			(!expectedEventType || entry.data.eventType === expectedEventType)
-		);
-	});
+): Promise<EventContentEntry | null> {
+	const enableStaticEvents = getEnv('ENABLE_STATIC_EVENTS') === 'true';
 
-	if (liveEntry && (!expectedEventType || liveEntry.data.eventType === expectedEventType)) {
-		return liveEntry;
+	if (enableStaticEvents) {
+		const liveEntries = (await getCollection('events')) ?? [];
+		const liveEntry = liveEntries.find((entry: CollectionEntry<'events'>) => {
+			return (
+				getContentEntrySlug(entry.id) === slug &&
+				(!expectedEventType || entry.data.eventType === expectedEventType)
+			);
+		});
+
+		if (liveEntry && (!expectedEventType || liveEntry.data.eventType === expectedEventType)) {
+			return liveEntry;
+		}
 	}
 
 	const demoEntries = (await getCollection('event-demos')) ?? [];

@@ -58,8 +58,6 @@ export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
 ): Promise<ContentResolution | null> {
-	const staticEntry = await getRoutableEventEntry(slug, eventType);
-
 	// DB-published content first — this is the source of truth for real invitations.
 	// If Supabase credentials are not configured (CI, local without .env), skip DB
 	// and fall through to the static fallback so demos and templates still render.
@@ -98,6 +96,7 @@ export async function resolveInvitationContent(
 	}
 
 	// Static fallback — only for demos and templates
+	const staticEntry = await getRoutableEventEntry(slug, eventType);
 	if (staticEntry?.data) {
 		if (isStaticDemoEntry(staticEntry)) {
 			return toStaticResolution(staticEntry);
