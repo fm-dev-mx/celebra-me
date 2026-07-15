@@ -54,6 +54,22 @@ function isMissingSupabaseCredentialsError(error: unknown): boolean {
 	return CREDENTIAL_ERROR_PREFIXES.some((prefix) => error.message.startsWith(prefix));
 }
 
+/**
+ * Check whether the error is a network-level failure when trying to reach
+ * the Supabase REST API (connection refused, DNS failure, timeout, etc.).
+ * When Supabase is configured but unreachable we should fall through to
+ * the static fallback so demos and templates still render.
+ */
+function isSupabaseNetworkError(error: unknown): boolean {
+	if (!(error instanceof Error)) return false;
+	// fetch() rejects with TypeError on connection/DNS failures
+	if (error instanceof TypeError && error.message === 'fetch failed') return true;
+	// AbortSignal.timeout() rejects with AbortError / DOMException
+	if (error.name === 'AbortError') return true;
+	if (error.message === 'The operation was aborted') return true;
+	return false;
+}
+
 export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
@@ -78,6 +94,9 @@ export async function resolveInvitationContent(
 			if (isMissingSupabaseCredentialsError(error)) {
 				// Credentials not configured — static fallback will handle this.
 				// Do not swallow other DB errors.
+			} else if (isSupabaseNetworkError(error)) {
+				// Supabase is configured but unreachable — fall back to static
+				// content so demos and templates still render.
 			} else {
 				throw error;
 			}
@@ -90,6 +109,9 @@ export async function resolveInvitationContent(
 	} catch (error) {
 		if (isMissingSupabaseCredentialsError(error)) {
 			// Credentials not configured — proceed to static fallback.
+		} else if (isSupabaseNetworkError(error)) {
+			// Supabase is configured but unreachable — fall through to
+			// static fallback so demos and templates still render.
 		} else if (!isMissingInvitationsTableError(error)) {
 			throw error;
 		}
