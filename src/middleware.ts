@@ -297,9 +297,8 @@ async function handleProtectedAuthRequest(
 	cookies: CookieStore,
 	redirect: (path: string) => Response,
 	request: Request,
-	next: () => Promise<Response>,
 	locals: { session?: SessionContext; hasAdminStrongAuth?: boolean; csrfToken?: string },
-) {
+): Promise<Response | null> {
 	const now = Math.floor(Date.now() / 1000);
 	const isApiRoute = url.pathname.startsWith('/api/dashboard');
 
@@ -308,7 +307,7 @@ async function handleProtectedAuthRequest(
 		!cookies.get('sb-access-token') &&
 		!cookies.get('sb-refresh-token')
 	) {
-		return next();
+		return null;
 	}
 
 	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
@@ -318,14 +317,14 @@ async function handleProtectedAuthRequest(
 
 	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
-		if (isApiRoute) return next();
-		return url.pathname === '/login' ? next() : redirect('/login');
+		if (isApiRoute) return null;
+		return url.pathname === '/login' ? null : redirect('/login');
 	}
 
 	const authContext = resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
-		if (isApiRoute) return next();
+		if (isApiRoute) return null;
 		return redirect('/login');
 	}
 
@@ -353,7 +352,7 @@ async function handleProtectedAuthRequest(
 		locals.csrfToken = setCsrfToken(cookies);
 	}
 
-	return next();
+	return null;
 }
 
 const BLOCKED_SCANNER_SEGMENTS = new Set([
@@ -386,16 +385,15 @@ export const onRequest = defineMiddleware(
 			return applyShortId404Headers(url.pathname, response);
 		}
 
+		let authRedirect: Response | null;
 		try {
-			const response = await handleProtectedAuthRequest(
+			authRedirect = await handleProtectedAuthRequest(
 				url,
 				cookies,
 				redirect,
 				request,
-				next as () => Promise<Response>,
 				locals,
 			);
-			return applyShortId404Headers(url.pathname, response);
 		} catch (error) {
 			console.error('[Middleware] Auth error:', error);
 			if (url.pathname.startsWith('/api/dashboard')) {
@@ -405,5 +403,12 @@ export const onRequest = defineMiddleware(
 			}
 			return applyShortId404Headers(url.pathname, redirect('/login'));
 		}
+
+		if (authRedirect) {
+			return applyShortId404Headers(url.pathname, authRedirect);
+		}
+
+		const response = await next();
+		return applyShortId404Headers(url.pathname, response);
 	},
 );

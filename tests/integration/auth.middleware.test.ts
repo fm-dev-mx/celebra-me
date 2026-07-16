@@ -392,4 +392,24 @@ describe('Middleware: Authentication & Authorization', () => {
 			expect(mockRedirect).toHaveBeenCalledWith('/login');
 		});
 	});
+
+	it('does not catch or convert downstream page rendering errors from next()', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client' },
+			amr: [{ method: 'password' }],
+		});
+
+		const renderError = new Error('Page rendering error');
+		mockNext.mockRejectedValue(renderError);
+
+		await expect(
+			middleware(context as unknown as APIContext, mockNext)
+		).rejects.toThrow('Page rendering error');
+
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
 });

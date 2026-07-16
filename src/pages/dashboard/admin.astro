@@ -2,7 +2,35 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { prepareDashboardAdminPageData } from '@/lib/dashboard/admin-page-data';
 
-const pageData = await prepareDashboardAdminPageData();
+let pageData = null;
+let errorMsg = null;
+
+try {
+	pageData = await prepareDashboardAdminPageData();
+} catch (error) {
+	console.error('[Admin Dashboard] Failed to load admin page data:', error instanceof Error ? error.message : String(error));
+	
+	const isDbOrAuthError = error instanceof Error && (
+		error.message.includes('Supabase') ||
+		error.message.includes('auth') ||
+		error.message.includes('fetch') ||
+		error.message.includes('Fetch') ||
+		error.message.includes('connect') ||
+		error.message.includes('database') ||
+		error.message.includes('relation') ||
+		error.message.includes('column') ||
+		'status' in error ||
+		'code' in error
+	);
+
+	if (!isDbOrAuthError) {
+		throw error;
+	}
+
+	errorMsg = 'No se pudo cargar la información del panel debido a un error en el servicio de base de datos.';
+	Astro.response.status = 503;
+	Astro.response.statusText = 'Service Unavailable';
+}
 ---
 
 <DashboardLayout
@@ -15,24 +43,30 @@ const pageData = await prepareDashboardAdminPageData();
 		</p>
 	</section>
 
-	<div class="dashboard-stats-grid">
-		<div class="dashboard-stat-card">
-			<h3>Invitaciones</h3>
-			<p class="dashboard-stat-number">{pageData.stats.invitations}</p>
-			<a href="/dashboard/invitaciones" class="dashboard-stat-link">Ver eventos →</a>
+	{errorMsg ? (
+		<div class="dashboard-error">
+			<strong>Error al cargar datos:</strong> {errorMsg}
 		</div>
-		<div class="dashboard-stat-card">
-			<h3>Usuarios</h3>
-			<p class="dashboard-stat-number">{pageData.stats.users}</p>
-			<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
+	) : pageData ? (
+		<div class="dashboard-stats-grid">
+			<div class="dashboard-stat-card">
+				<h3>Invitaciones</h3>
+				<p class="dashboard-stat-number">{pageData.stats.invitations}</p>
+				<a href="/dashboard/invitaciones" class="dashboard-stat-link">Ver eventos →</a>
+			</div>
+			<div class="dashboard-stat-card">
+				<h3>Usuarios</h3>
+				<p class="dashboard-stat-number">{pageData.stats.users}</p>
+				<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
+			</div>
+			<div class="dashboard-stat-card">
+				<h3>Códigos de acceso</h3>
+				<p class="dashboard-stat-number">{pageData.stats.claimCodes}</p>
+				<p class="dashboard-stat-subtext">{pageData.stats.activeClaimCodes} activos</p>
+				<a href="/dashboard/claimcodes" class="dashboard-stat-link">Gestionar →</a>
+			</div>
 		</div>
-		<div class="dashboard-stat-card">
-			<h3>Códigos de acceso</h3>
-			<p class="dashboard-stat-number">{pageData.stats.claimCodes}</p>
-			<p class="dashboard-stat-subtext">{pageData.stats.activeClaimCodes} activos</p>
-			<a href="/dashboard/claimcodes" class="dashboard-stat-link">Gestionar →</a>
-		</div>
-	</div>
+	) : null}
 
 	<style lang="scss">
 		.dashboard-stats-grid {
