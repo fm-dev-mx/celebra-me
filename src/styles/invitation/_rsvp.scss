@@ -7,7 +7,7 @@
 // The `#rsvp` hash targets this element.
 // ------------------------------------------------------------------
 .rsvp-section {
-	--rsvp-header-offset: var(--nav-current-height, var(--invitation-header-height, 70px));
+	--rsvp-header-offset: var(--invitation-header-height, 70px);
 	--rsvp-player-clearance: 0;
 	--rsvp-safe-area-bottom: env(safe-area-inset-bottom, 0);
 	--rsvp-section-padding-inline: clamp(0.875rem, 4vw, 2rem);
