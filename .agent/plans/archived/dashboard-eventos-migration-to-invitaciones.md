@@ -1,6 +1,6 @@
 ---
 title: Dashboard: Migrate /dashboard/eventos into /dashboard/invitaciones
-status: active
+status: superseded
 created: unknown
 updated: 2026-05-31
 ---

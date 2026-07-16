@@ -1,6 +1,6 @@
 ---
 title: Valentina Hernández XV — Source-of-Truth Audit & Corrections
-status: in-progress
+status: active
 created: 2026-06-27
 updated: 2026-06-27
 supersedes:

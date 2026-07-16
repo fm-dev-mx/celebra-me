@@ -1,6 +1,6 @@
 ---
 title: Sales Attribution CAPI Purchase Plan
-status: completed
+status: archived
 type: documentation
 created: 2026-07-08
 updated: 2026-07-08
@@ -25,7 +25,9 @@ creates `visitor_id` in `localStorage`, `session_id` in `sessionStorage`, captur
 
 `lead_code` exists today. `src/lib/tracking/lead-code.ts` generates short `CM-XXXXXX` codes, while
 `src/lib/tracking/client.ts` assigns them to WhatsApp clicks and hidden contact-form fields.
-WhatsApp CTAs are rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) directly in the message text. The tracking event carries the same `lead_code`; a separate folio is no longer used.
+WhatsApp CTAs are rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) directly in
+the message text. The tracking event carries the same `lead_code`; a separate folio is no longer
+used.
 
 The current Meta Pixel map is browser-only and consent-gated:
 

@@ -1,3 +1,11 @@
+---
+title: Valentina RSVP Interaction Hierarchy Fix
+status: active
+type: implementation
+autonomy: level-2
+updated: 2026-07-16
+---
+
 # Spec: Valentina — RSVP interaction hierarchy & progressive disclosure
 
 ## Problem

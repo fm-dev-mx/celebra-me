@@ -1,6 +1,6 @@
 ---
 title: Client Intake Flow — Phased Implementation Plan
-status: active
+status: superseded
 created: unknown
 updated: 2026-05-31
 ---

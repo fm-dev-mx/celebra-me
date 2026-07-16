@@ -1,5 +1,7 @@
 # Asset Mapping Report — Valentina Hernández Almaguer XV
 
+Archived from the active-plan directory on 2026-07-16; this is evidence, not actionable work.
+
 Generated: 2026-06-26 Source:
 `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\xv revista\WhatsApp Chat`
 

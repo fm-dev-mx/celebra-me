@@ -1,3 +1,11 @@
+---
+title: Valentina RSVP and Hero Final Blockers
+status: active
+type: implementation
+autonomy: level-2
+updated: 2026-07-16
+---
+
 # Spec: Valentina — RSVP mobile crowding & Hero intermediate breakpoints
 
 ## Current visual problems

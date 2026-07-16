@@ -1,3 +1,11 @@
+---
+title: Valentina Mobile Hero and Gallery Upgrade
+status: active
+type: implementation
+autonomy: level-2
+updated: 2026-07-16
+---
+
 # Valentina Mobile Hero & Gallery Upgrade — Spec
 
 **Spec ID:** `valentina-mobile-hero-gallery-upgrade` **Status:** Draft **Scope:** CSS-only polish

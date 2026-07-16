@@ -1,3 +1,11 @@
+---
+title: Valentina RSVP Final UX Cleanup
+status: active
+type: implementation
+autonomy: level-2
+updated: 2026-07-16
+---
+
 # SDD: Valentina RSVP — Final UX Cleanup Pass
 
 **Agent**: hermes **Date**: 2026-06-28 **Asset**: `/xv/valentina-hernandez` **Theme**:

@@ -76,9 +76,10 @@ Plans should be written as executable loops, not static documents.
 
 ### Current Public Invitation Performance State
 
-As of 2026-06-23, the active public invitation performance work is tracked in
-`.agent/plans/active/public-invitation-performance.md` and
-`.agent/plans/active/public-invitation-section-architecture.md`.
+Current public invitation performance work must be represented by an existing file under
+`.agent/plans/active/`. The accepted section-architecture plan is archived at
+`.agent/plans/archived/public-invitation-section-architecture.md`; its measurements are historical,
+not the current payload baseline.
 
 - Production is not assumed to match the current branch. Validate production headers and CSS chunks
   before drawing conclusions from branch-local plans.

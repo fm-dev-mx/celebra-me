@@ -1,5 +1,7 @@
 # XV América Johana Asset Report
 
+Archived from the active-plan directory on 2026-07-16; this is evidence, not actionable work.
+
 ## Source
 
 - Client folder:

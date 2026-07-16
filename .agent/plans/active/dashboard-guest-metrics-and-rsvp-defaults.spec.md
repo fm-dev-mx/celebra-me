@@ -1,3 +1,11 @@
+---
+title: Dashboard Guest Metrics and RSVP Defaults
+status: active
+type: implementation
+autonomy: level-2
+updated: 2026-07-16
+---
+
 # SDD: Dashboard Guest Metrics & RSVP Default Attendee Quantity
 
 ## Current Problems Observed

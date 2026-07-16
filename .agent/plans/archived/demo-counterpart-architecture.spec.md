@@ -1,6 +1,6 @@
 ---
 title: Demo Counterpart Architecture
-status: active
+status: superseded
 created: 2026-06-29
 updated: 2026-06-29
 type: implementation
