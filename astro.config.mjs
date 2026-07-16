@@ -32,9 +32,12 @@ const supabaseStorageRemotePattern = supabasePublicUrl
 			};
 		})()
 	: null;
+const PROD_SUPABASE_HOST = process.env.PROD_SUPABASE_HOST ?? 'ineitkdkyrxqyressllp.supabase.co';
+
 const externalImageDomains = [
 	'images.unsplash.com',
 	'res.cloudinary.com',
+	PROD_SUPABASE_HOST,
 	...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern.hostname] : []),
 ];
 
@@ -55,6 +58,11 @@ export default defineConfig({
 			{
 				protocol: 'https',
 				hostname: 'images.unsplash.com',
+			},
+			{
+				protocol: 'https',
+				hostname: PROD_SUPABASE_HOST,
+				pathname: supabaseStoragePathname,
 			},
 			...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern] : []),
 		],
