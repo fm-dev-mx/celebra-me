@@ -165,6 +165,9 @@ export interface InvitationAsset {
 	width?: number;
 	height?: number;
 	fileSize?: number;
+	validationVersion?: number;
+	originalMimeType?: string;
+	originalFileSize?: number;
 	createdAt: string;
 	updatedAt: string;
 	deletedAt?: string;

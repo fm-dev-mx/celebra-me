@@ -12,6 +12,9 @@ interface AssetRow {
 	width: number | null;
 	height: number | null;
 	file_size: number | null;
+	validation_version: number;
+	original_mime_type: string | null;
+	original_file_size: number | null;
 	created_at: string;
 	updated_at: string;
 	deleted_at: string | null;
@@ -29,13 +32,17 @@ function toInvitationAsset(row: AssetRow): InvitationAsset {
 		width: row.width ?? undefined,
 		height: row.height ?? undefined,
 		fileSize: row.file_size ?? undefined,
+		validationVersion: row.validation_version,
+		originalMimeType: row.original_mime_type ?? undefined,
+		originalFileSize: row.original_file_size ?? undefined,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
+		deletedAt: row.deleted_at ?? undefined,
 	};
 }
 
 const SELECT_COLUMNS =
-	'id,invitation_id,display_name,default_alt_text,bucket,storage_path,mime_type,width,height,file_size,created_at,updated_at,deleted_at';
+	'id,invitation_id,display_name,default_alt_text,bucket,storage_path,mime_type,width,height,file_size,validation_version,original_mime_type,original_file_size,created_at,updated_at,deleted_at';
 
 export async function createAsset(input: {
 	invitationId: string;
@@ -47,6 +54,9 @@ export async function createAsset(input: {
 	width?: number;
 	height?: number;
 	fileSize?: number;
+	validationVersion?: number;
+	originalMimeType?: string;
+	originalFileSize?: number;
 }): Promise<InvitationAsset> {
 	const body: Record<string, unknown> = {
 		invitation_id: input.invitationId,
@@ -60,6 +70,9 @@ export async function createAsset(input: {
 	if (input.width !== undefined) body.width = input.width;
 	if (input.height !== undefined) body.height = input.height;
 	if (input.fileSize !== undefined) body.file_size = input.fileSize;
+	if (input.validationVersion !== undefined) body.validation_version = input.validationVersion;
+	if (input.originalMimeType !== undefined) body.original_mime_type = input.originalMimeType;
+	if (input.originalFileSize !== undefined) body.original_file_size = input.originalFileSize;
 
 	const rows = await supabaseRestRequest<AssetRow[]>({
 		pathWithQuery: `invitation_assets?select=${SELECT_COLUMNS}`,

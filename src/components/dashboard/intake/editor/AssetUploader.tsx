@@ -37,7 +37,7 @@ export default function AssetUploader({ invitationId, onUploaded }: Props) {
 			return 'Solo se permiten imágenes JPG, PNG o WebP.';
 		}
 		if (file.size > MAX_FILE_SIZE) {
-			return 'La imagen supera el límite de 10 MB.';
+			return `La imagen supera el límite de ${formatMaxSize()}.`;
 		}
 		return null;
 	}

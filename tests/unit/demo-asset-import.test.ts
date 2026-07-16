@@ -35,6 +35,19 @@ jest.mock('@/lib/intake/repositories/asset.repository', () => ({
 	createAsset: mockCreateAsset,
 }));
 
+jest.mock('@/lib/intake/services/asset-policy', () => ({
+	normalizeInvitationImage: jest.fn().mockResolvedValue({
+		blob: new Blob(['optimized'], { type: 'image/webp' }),
+		width: 1080,
+		height: 1920,
+		fileSize: 9,
+		mimeType: 'image/webp',
+		originalMimeType: 'image/webp',
+		originalFileSize: 4,
+		validationVersion: 1,
+	}),
+}));
+
 import { importDemoAsset } from '@/lib/intake/services/asset.service';
 
 const INVITATION_ID = 'inv-1';
@@ -44,6 +57,7 @@ function mockFetch() {
 	globalThis.fetch = jest.fn().mockResolvedValue({
 		ok: true,
 		blob: jest.fn().mockResolvedValue(new Blob(['fake'], { type: 'image/webp' })),
+		headers: { get: jest.fn().mockReturnValue('image/webp') },
 	} as unknown as Response);
 }
 
@@ -53,7 +67,7 @@ function createMockAssetResult(overrides: Record<string, unknown> = {}) {
 		invitationId: INVITATION_ID,
 		displayName: 'hero',
 		bucket: 'invitation-assets',
-		storagePath: `invitations/${INVITATION_ID}/original/new-asset-id.webp`,
+		storagePath: `invitations/${INVITATION_ID}/optimized/new-asset-id.webp`,
 		mimeType: 'image/webp',
 		width: 1080,
 		height: 1920,

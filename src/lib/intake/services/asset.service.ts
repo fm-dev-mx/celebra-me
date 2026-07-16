@@ -19,17 +19,8 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { isEventAssetKey, getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
 import type { InvitationAsset } from '@/lib/intake/types';
-
-function getExtension(mimeType: string): string {
-	const map: Record<string, string> = {
-		'image/webp': 'webp',
-		'image/jpeg': 'jpg',
-		'image/png': 'png',
-	};
-	return map[mimeType];
-}
+import { normalizeInvitationImage } from '@/lib/intake/services/asset-policy';
 
 export interface UploadAssetResult {
 	asset: InvitationAsset;
@@ -43,23 +34,11 @@ export async function uploadAsset(
 	displayName?: string,
 	defaultAltText?: string,
 ): Promise<UploadAssetResult> {
-	if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-		throw new ApiError(
-			400,
-			'bad_request',
-			'Tipo de archivo no soportado. Solo se aceptan imágenes WebP, JPEG y PNG.',
-		);
-	}
-
-	if (file.size > MAX_FILE_SIZE) {
-		throw new ApiError(400, 'bad_request', 'El archivo excede el tamaño máximo de 10 MB.');
-	}
-
+	const normalized = await normalizeInvitationImage(file, mimeType);
 	const assetId = randomUUID();
-	const ext = getExtension(mimeType);
-	const storagePath = `invitations/${invitationId}/original/${assetId}.${ext}`;
+	const storagePath = `invitations/${invitationId}/optimized/${assetId}.webp`;
 
-	await uploadToStorage(DEFAULT_BUCKET, storagePath, file, mimeType);
+	await uploadToStorage(DEFAULT_BUCKET, storagePath, normalized.blob, normalized.mimeType);
 
 	const asset = await createAsset({
 		invitationId,
@@ -67,8 +46,13 @@ export async function uploadAsset(
 		defaultAltText,
 		bucket: DEFAULT_BUCKET,
 		storagePath,
-		mimeType,
-		fileSize: file.size,
+		mimeType: normalized.mimeType,
+		width: normalized.width,
+		height: normalized.height,
+		fileSize: normalized.fileSize,
+		validationVersion: normalized.validationVersion,
+		originalMimeType: normalized.originalMimeType,
+		originalFileSize: normalized.originalFileSize,
 	});
 
 	const src = getPublicUrl(DEFAULT_BUCKET, storagePath);
@@ -276,9 +260,8 @@ export async function importDemoAsset(
 		);
 	}
 
-	const ext = metadata.format ?? 'webp';
 	const assetId = randomUUID();
-	const storagePath = `invitations/${invitationId}/original/${assetId}.${ext}`;
+	const storagePath = `invitations/${invitationId}/optimized/${assetId}.webp`;
 
 	let imageSrc = metadata.src;
 	if (typeof imageSrc === 'string' && imageSrc.startsWith('/') && requestUrl) {
@@ -295,18 +278,25 @@ export async function importDemoAsset(
 	}
 
 	const blob = await response.blob();
+	const normalized = await normalizeInvitationImage(
+		blob,
+		response.headers.get('content-type') || blob.type || `image/${metadata.format ?? 'webp'}`,
+	);
 
-	await uploadToStorage(DEFAULT_BUCKET, storagePath, blob, `image/${ext}`);
+	await uploadToStorage(DEFAULT_BUCKET, storagePath, normalized.blob, normalized.mimeType);
 
 	const asset = await createAsset({
 		invitationId,
 		displayName: demoKey,
 		bucket: DEFAULT_BUCKET,
 		storagePath,
-		mimeType: `image/${ext}`,
-		width: metadata.width,
-		height: metadata.height,
-		fileSize: blob.size,
+		mimeType: normalized.mimeType,
+		width: normalized.width,
+		height: normalized.height,
+		fileSize: normalized.fileSize,
+		validationVersion: normalized.validationVersion,
+		originalMimeType: normalized.originalMimeType,
+		originalFileSize: normalized.originalFileSize,
 	});
 
 	const src = getPublicUrl(DEFAULT_BUCKET, storagePath);

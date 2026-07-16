@@ -54,7 +54,7 @@ describe('AssetUploader', () => {
 		fireEvent.change(input!);
 
 		await waitFor(() => {
-			expect(screen.getByText('La imagen supera el límite de 10 MB.')).toBeInTheDocument();
+			expect(screen.getByText('La imagen supera el límite de 8 MB.')).toBeInTheDocument();
 		});
 	});
 
