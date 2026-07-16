@@ -32,6 +32,7 @@ if (!isEventType(eventType)) {
 }
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');
+const skipEnvelope = Astro.url.searchParams.get('skipEnvelope') === 'true';
 
 // ── Screenshot mode ───────────────────────────────────────────────────
 const screenshotMode = Astro.url.searchParams.has('screenshot');
@@ -159,8 +160,8 @@ if (page && viewModel) {
 		}
 		entries.push(`total;dur=${(performance.now() - renderStart).toFixed(2)}`);
 		Astro.response.headers.set('X-Render-Timing-Detail', entries.join(', '));
-	} catch {
-		// Timing header is diagnostic-only; never break the page
+	} catch (e) {
+		console.warn('[slug] Failed to set timing header:', e);
 	}
 }
 
@@ -180,6 +181,13 @@ const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
 	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
 ];
+
+const wrapperDataAttributes = page
+	? {
+			...page.wrapper.dataAttributes,
+			...(skipEnvelope ? { 'data-reveal-state': 'revealed' } : {}),
+		}
+	: {};
 
 ---
 
@@ -211,9 +219,9 @@ const headLinks = [
 					</style>
 				)
 			}
-			<main class={page.wrapper.className} {...page.wrapper.dataAttributes} data-screenshot="invitation-root">
+			<main class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
 				{
-					page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
+					!skipEnvelope && page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>
 							(function() {
 								try {
@@ -241,7 +249,7 @@ const headLinks = [
 				}
 
 				{
-							page.envelope?.revealVariant === 'editorial-cover' ? (
+							skipEnvelope ? null : page.envelope?.revealVariant === 'editorial-cover' ? (
 								<EditorialCoverReveal
 									coverEdition={page.envelope.coverEdition}
 									coverVolume={page.envelope.coverVolume}
@@ -298,7 +306,7 @@ const headLinks = [
 								{...page.viewModel.hero}
 								venueName={page.heroVenueName}
 								time={page.heroTime}
-								highPriority={!page.wrapper.showEnvelope}
+								highPriority={skipEnvelope || !page.wrapper.showEnvelope}
 							/>
 
 							<InvitationSections pageContext={page} />

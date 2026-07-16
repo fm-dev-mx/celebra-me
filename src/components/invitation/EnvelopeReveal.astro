@@ -51,6 +51,9 @@ const sealImageSrc = sealImage
 	? (typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src)
 	: undefined;
 const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
+const skipParams = new URLSearchParams(Astro.url.search);
+skipParams.set('skipEnvelope', 'true');
+const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 ---
 
 <ds-envelope-reveal
@@ -146,6 +149,9 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 			</div>
 		)
 	}
+	<noscript>
+		<a class="envelope-no-js-fallback" href={skipUrl}>Continuar a la invitación</a>
+	</noscript>
 </ds-envelope-reveal>
 
 <script>
@@ -273,5 +279,18 @@ const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
 <style define:vars={{ sealImageUrl }}>
 	.envelope-wrapper {
 		--env-seal-image: var(--sealImageUrl);
+	}
+
+	.envelope-no-js-fallback {
+		position: absolute;
+		z-index: 20;
+		inset-inline: 1.5rem;
+		bottom: 2rem;
+		display: block;
+		padding: 0.9rem 1.2rem;
+		border: 1px solid currentcolor;
+		text-align: center;
+		color: inherit;
+		background: rgb(255 255 255 / 88%);
 	}
 </style>
