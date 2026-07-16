@@ -146,8 +146,33 @@ export async function createInvitation(input: {
 	createdBy?: string | null;
 }): Promise<Invitation> {
 	const preset = findDemoPreset(input.baseDemoId);
-	if (!preset) {
-		throw new Error(`Demo preset not found: ${input.baseDemoId}`);
+	if (
+		!preset ||
+		typeof preset.eventType !== 'string' ||
+		preset.eventType.length === 0 ||
+		typeof preset.themeId !== 'string' ||
+		preset.themeId.length === 0
+	) {
+		throw new ApiError(
+			422,
+			'validation_error',
+			'El demo base seleccionado no existe o tiene una configuración inválida.',
+			{ reason: 'invalid_base_demo', baseDemoId: input.baseDemoId },
+		);
+	}
+
+	if (preset.eventType !== input.eventType) {
+		throw new ApiError(
+			422,
+			'validation_error',
+			'El demo base seleccionado no corresponde al tipo de evento.',
+			{
+				reason: 'base_demo_event_type_mismatch',
+				baseDemoId: input.baseDemoId,
+				expectedEventType: preset.eventType,
+				submittedEventType: input.eventType,
+			},
+		);
 	}
 
 	return createInvitationRecord({
