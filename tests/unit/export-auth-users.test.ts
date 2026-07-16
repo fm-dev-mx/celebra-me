@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { generateAuthDump, type AuthUser } from '../../scripts/db/export-auth-users';
 
 function applyDump(dumpSql: string, dbUrl: string): void {
 	const tmpFile = join(mkdtempSync(join(tmpdir(), 'authtest-')), 'dump.sql');
@@ -28,9 +29,9 @@ describe('export-auth-users SQL format', () => {
 
 	// Sample user data that simulates what the production export would produce
 	const SAMPLE_USER_SQL = `
-INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_super_admin, phone, phone_confirmed_at, banned_until, is_sso_user, is_anonymous, created_at, updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000000'::uuid, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'authenticated', 'authenticated', 'test@celebra-me.test', 'local-only-no-production-hash', '2026-01-01T00:00:00+00:00'::timestamptz, '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false, null, null, null, false, false, '2026-01-01T00:00:00+00:00'::timestamptz, '2026-01-01T00:00:00+00:00'::timestamptz),
-  ('00000000-0000-0000-0000-000000000000'::uuid, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid, 'authenticated', 'authenticated', 'test2@celebra-me.test', 'local-only-no-production-hash', '2026-01-02T00:00:00+00:00'::timestamptz, '{}'::jsonb, '{}'::jsonb, true, null, null, null, false, false, '2026-01-02T00:00:00+00:00'::timestamptz, '2026-01-02T00:00:00+00:00'::timestamptz)
+INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_super_admin, phone, phone_confirmed_at, banned_until, is_sso_user, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change) VALUES
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'authenticated', 'authenticated', 'test@celebra-me.test', 'local-only-no-production-hash', '2026-01-01T00:00:00+00:00'::timestamptz, '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false, null, null, null, false, false, '2026-01-01T00:00:00+00:00'::timestamptz, '2026-01-01T00:00:00+00:00'::timestamptz, '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid, 'authenticated', 'authenticated', 'test2@celebra-me.test', 'local-only-no-production-hash', '2026-01-02T00:00:00+00:00'::timestamptz, '{}'::jsonb, '{}'::jsonb, true, null, null, null, false, false, '2026-01-02T00:00:00+00:00'::timestamptz, '2026-01-02T00:00:00+00:00'::timestamptz, '', '', '', '')
 ON CONFLICT (id) DO NOTHING;
 `;
 
@@ -108,5 +109,34 @@ ON CONFLICT (id) DO NOTHING;
 	it('is idempotent (ON CONFLICT DO NOTHING)', () => {
 		applyDump(SAMPLE_USER_SQL, DB_URL);
 		expect(() => applyDump(SAMPLE_USER_SQL, DB_URL)).not.toThrow();
+	});
+
+	it('emits non-null empty strings for tokens to avoid GoTrue database scan errors', () => {
+		const sampleUser: AuthUser = {
+			id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+			aud: 'authenticated',
+			role: 'authenticated',
+			email: 'test3@celebra-me.test',
+			email_confirmed_at: '2026-01-01T00:00:00Z',
+			raw_app_meta_data: {},
+			raw_user_meta_data: {},
+			is_super_admin: false,
+			phone: null,
+			phone_confirmed_at: null,
+			banned_until: null,
+			deleted_at: null,
+			is_sso_user: false,
+			is_anonymous: false,
+			created_at: '2026-01-01T00:00:00Z',
+			updated_at: '2026-01-01T00:00:00Z',
+		};
+
+		const sql = generateAuthDump([sampleUser], []);
+
+		expect(sql).toContain('confirmation_token');
+		expect(sql).toContain('recovery_token');
+		expect(sql).toContain('email_change_token_new');
+		expect(sql).toContain('email_change');
+		expect(sql).toContain(`'', '', '', ''`);
 	});
 });
