@@ -138,26 +138,23 @@ pnpm dev
 pnpm db:local:validate
 ```
 
-### Refresh local from production
+### Refresh local from production (BLOCKED — use restore-from-dump)
+
+`pnpm db:local:refresh-from-prod` is blocked — it calls `supabase db reset` which destroys the
+persistent-local database. Use the following two-step workflow instead:
 
 ```bash
-pnpm db:start
-PROD_DB_URL=... pnpm db:local:refresh-from-prod
+PROD_DB_URL=... pnpm db:prod:backup
+pnpm db:local:restore-from-dump --dump <path-to-dump>
 pnpm db:local:validate
 ```
 
-Production is read-only through `PROD_DB_URL`. `db:local:refresh-from-prod` owns the destructive
-reset/import/bootstrap sequence: it resets local Supabase, imports production data through a staging
-schema, copies into the current local `public` schema, recreates local auth users, and bootstraps
-the local super admin. Do not run `db:local:reset` before it during the normal refresh workflow.
+`pnpm db:prod:backup` reads production `public` data and writes a timestamped dump under
+`.backups/prod/`. It does not mutate production. `pnpm db:local:restore-from-dump` imports the
+dump into the persistent-local database using a staging schema, with `INSERT...WHERE NOT EXISTS`
+semantics — existing local data is preserved, not overwritten.
 
-Production public data is preserved where possible, and local auth UUIDs are preserved by creating
-local placeholder users for production references. Any mapping or diagnostic report must be written
-under `.tmp/db/`. `app_user_roles` may have exactly one extra local row for the local super admin.
-`invitation_assets` metadata can refresh from production, but actual Storage objects are not copied,
-so local metadata may point at missing local files.
-
-If schema drift is detected during staging import or copy, the script stops and reports the failure.
+If schema drift is detected during staging import, the script stops and reports the failure.
 Do not patch around drift manually; add or apply the missing migration locally.
 
 ### Refresh local while preserving local-only data
@@ -188,35 +185,37 @@ This backup is manual, partial, and intended for recovery reference only. It inc
 public tables such as drafts, intake rows, invitations, and `invitation_assets` metadata. It does
 not include Supabase Storage binaries or a full auth snapshot.
 
-### Reset local only
+### Reset local only (BLOCKED — use disposable-test)
+
+The persistent local database (`celebra-me-rsvp`) is protected state. It must never be reset
+by project workflows or automated agents.
 
 ```bash
-pnpm db:local:reset
+pnpm db:local:reset              # BLOCKED — echoes message and exits 1
+pnpm db:local:reset:force        # REMOVED — does not exist
 ```
 
-Use this only when manually resetting local Supabase without importing production data. It is a
-lower-level command, not a step in the normal production refresh workflow. It does not create the
-local admin user.
-
-### Reset and recreate local admin
+To perform destructive database testing (migration tests, schema drops, truncate, rollback),
+use the isolated disposable test environment:
 
 ```bash
-pnpm db:local:reset-ready
+pnpm db:disposable:reset         # Reset the disposable database (destructive)
+pnpm db:disposable:cleanup       # Full cleanup (remove container + data)
 ```
 
-Use this when you want a local reset without importing production data, but still need the local
-super admin to log in afterward. It runs `pnpm db:local:reset` and then
-`pnpm db:local:bootstrap-admin`.
+The disposable environment runs on port 54332 with a separate Docker container and
+synthetic test data only. It cannot affect the persistent local database.
 
-To bootstrap or repair the local admin without resetting:
+### Bootstrap or repair the local admin
 
 ```bash
 pnpm db:local:bootstrap-admin
 ```
 
-The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`. The password must be set in
-`LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode real passwords in source
-code.
+To bootstrap or repair the local admin without resetting the persistent database, run the
+command above. The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`.
+The password must be set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`.
+Do not hardcode real passwords in source code.
 
 ### Backup production
 
@@ -260,8 +259,11 @@ blocked.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
 - Do not run `pnpm db:push`; it is blocked because raw Supabase push can target a linked remote.
-- Do not run `pnpm db:local:reset` before `pnpm db:local:refresh-from-prod`; refresh already resets
-  local Supabase.
+- Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive tests.
+- Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` — these are blocked because they call `supabase db reset`. Use `pnpm db:prod:backup` + `pnpm db:local:restore-from-dump` instead.
+- Do not run `supabase db reset --local --yes` directly — this destroys the persistent local database.
+- Do not delete persistent Docker volumes (`supabase_db_celebra-me-rsvp`).
+- Do not run `docker compose down -v` for the persistent Supabase project.
 - Do not run `pnpm ops adopt-legacy-events`; it is disabled because it can create invitations and
   patch events with the service role.
 - Do not run ad-hoc `supabase db push --linked` outside the approved migration workflow.
@@ -274,9 +276,8 @@ blocked.
   data without it.
 - Login fails locally: run `pnpm db:local:validate`; then verify `SUPER_ADMIN_EMAILS` and
   `RSVP_ADMIN_PASSWORD` or `LOCAL_SUPER_ADMIN_PASSWORD` are local values.
-- `PGRST205` table-not-found errors: run `pnpm db:local:refresh-from-prod` for a production-shaped
-  local dataset, or `pnpm db:local:reset` for schema-only local reset. If it persists, confirm the
-  table exists in `supabase/migrations`.
+- `PGRST205` table-not-found errors: run `pnpm db:local:restore-from-dump --dump <path>` using
+  a valid production dump, or use the disposable environment for schema testing.
 - Local schema drift: refresh stops during staging import/copy. Apply missing local migrations or
   add a reviewed migration; do not hand-edit production dumps.
 - Missing `PROD_DB_URL`: export it in the shell or place it in a gitignored secret file. Never store
@@ -285,4 +286,4 @@ blocked.
   Storage objects are not copied by the DB dump. Re-upload or sync Storage separately through a
   reviewed, read-only-first process.
 - Restore/import failures: keep the dump under `.tmp/db/`, read the first SQL error, fix the schema
-  mismatch through migrations, and rerun the refresh.
+  mismatch through migrations, and rerun the restore.

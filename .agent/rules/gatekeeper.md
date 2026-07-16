@@ -170,6 +170,44 @@ Large Change Mode note:
 
 ---
 
+### 2.9 Database Safety (Agent Command Blocking)
+
+The persistent local database (`celebra-me-rsvp`) is protected state. Agents must never execute
+any of the following commands, whether through pnpm wrappers or directly in the shell:
+
+**Blocked commands (all targets):**
+- `supabase db reset --local --yes` — destroys persistent local DB
+- `supabase db reset --linked` — destroys linked remote/production DB
+- `supabase db push --local` — overwrites local schema (use disposable)
+- `supabase db push --linked` — mutates production schema (use `pnpm db:prod:migrate`)
+- `docker volume rm supabase_db_celebra-me-rsvp` — deletes persistent Docker volume
+- `docker compose down -v` with the persistent Supabase project — deletes volumes
+
+**Blocked commands (production only):**
+- `supabase db push --db-url <prod_url>` — mutates production
+- `supabase migration up --db-url <prod_url>` — mutates production
+- Any `psql` or SQL mutation against a production host (`*.supabase.co`, `*.supabase.com`)
+
+**Allowed commands (disposable-test only):**
+- `supabase db reset --workdir <disposable_dir>` — resets disposable test env
+- `docker stop` / `docker rm` `celebra-me-test-db` — manages disposable container
+
+**Enforcement limitation:**
+This repository has no shell-level or process-level interceptor that can block raw commands
+outside the `pnpm` wrapper system. The Supabase CLI, Docker CLI, and psql are on PATH and
+can be invoked directly by a developer or agent bypassing all guards. The blocks above are
+enforced through:
+1. **Executable guard**: `pnpm db:*` commands run through `scripts/db/db-guard.ts`
+2. **Agent policy**: this document — agents must self-enforce these blocks
+3. **Code protection**: `pnpm db:local:reset` is blocked, `pnpm db:local:refresh-from-prod`
+   and `pnpm db:local:refresh-from-prod-preserve-local` are blocked, and all `supabase db reset
+   --local --yes` calls have been removed from project scripts
+
+If an agent is asked to run any blocked command, it must refuse and explain the safe
+alternative. Unknown or ambiguous database targets must cause an immediate abort.
+
+---
+
 ## 3) Allowed Actions
 
 ### 3.1 Auto-Fixes

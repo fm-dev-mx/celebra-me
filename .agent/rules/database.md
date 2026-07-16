@@ -24,9 +24,23 @@ when they are part of the shipped application and protected by the normal auth, 
 code-review boundaries. Do not treat those runtime writes as operational DB work unless the task
 asks you to change, backfill, replay, or manually invoke them.
 
+## Database Environment Architecture
+
+Three distinct database targets exist:
+
+| Target | Identification | Usage | Destructive ops allowed? |
+|--------|---------------|-------|--------------------------|
+| **production** | Supabase cloud host (`*.supabase.co`, `*.supabase.com`) | Read-only inspection and export | NEVER |
+| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, project `celebra-me-rsvp` | Normal development | NO — protected state |
+| **disposable-test** | `127.0.0.1:54332` or `localhost:54332`, project `celebra-me-test` | Migration/pgTAP/seed/destructive tests | YES — created on demand |
+
+Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
+boundaries through classification, identity verification, and per-target policy checks.
+
 ## Current Contract
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
+- `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:prod:migrate` is the only implemented production mutation workflow.
 - `pnpm db:prod:patch -- --file <path>` is dry-run lint only. It never connects to the database and
   never executes SQL.
@@ -37,31 +51,114 @@ asks you to change, backfill, replay, or manually invoke them.
 
 ## Decision Tree
 
-- Need local development data? Use local Supabase commands from the runbook. Production may only be
-  read for approved refreshes/backups.
-- Need a schema change? Create a migration, test it locally, and use `pnpm db:prod:migrate` for the
+- Need local development data? Use `pnpm db:prod:backup` + `pnpm db:local:restore-from-dump`
+  (see `docs/database-workflow.md`). Production may only be read for approved
+  refreshes/backups. `pnpm db:local:refresh-from-prod` and
+  `pnpm db:local:refresh-from-prod-preserve-local` are blocked — they run `supabase db reset`
+  which destroys the persistent-local database.
+- Need a schema change? Create a migration, test it on the disposable environment
+  (`tsx scripts/db/disposable-test-env.ts run-tests`), and use `pnpm db:prod:migrate` for the
   reviewed production path.
 - Need a production backup? Use `PROD_DB_URL=... pnpm db:prod:backup`; keep output gitignored.
+  The guard verifies the target is a Supabase cloud host before proceeding.
+- Need to reset a database for tests? Use `tsx scripts/db/disposable-test-env.ts reset`. The guard
+  allows all operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
   then stop at `pnpm db:prod:patch -- --file <path>`. That command is lint-only.
-- Asked to run `pnpm db:push`, raw `supabase db push --linked`, or `pnpm ops adopt-legacy-events`?
-  Do not run it. Report that the path is blocked.
-- Unsure whether a command could touch production? Fail closed and ask for a narrower, explicit
-  operation.
+- Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or
+  `pnpm ops adopt-legacy-events`? Do not run it. Report that the path is blocked.
+- Unsure whether a command could touch production or destroy persistent local? Run the guard check:
+  `tsx scripts/db/db-guard.ts check --target <target> --operation "<op>"`. Fail closed and ask
+  for a narrower, explicit operation.
+
+## Executable Guard
+
+The database guard implements central safety policy. It is invoked automatically by all
+`pnpm db:*` commands. Direct invocation:
+
+```bash
+tsx scripts/db/db-guard.ts check --target <production|persistent-local|disposable-test> --operation "<op>"
+tsx scripts/db/db-guard.ts classify --db-url <connection-string>      # Classify a DB URL
+tsx scripts/db/db-guard.ts redact --text "<text>"                     # Redact credentials
+tsx scripts/db/sentinel-check.ts <insert|check|remove>                # Sentinel management
+```
+
+Key behaviours:
+- **Production**: blocks all write, DDL, reset, push, drop, truncate operations.
+- **Persistent-local**: blocks `supabase db reset`, `docker volume rm`, `docker compose down -v`,
+  `DROP ... CASCADE`, `TRUNCATE ... CASCADE`, `db push`.
+- **Disposable-test**: permits all operations (warning issued).
+- **Unknown**: blocks all operations with classification error.
+- **Credentials**: automatically redacted from all logs and error messages.
+- **Local identity**: verified by checking port (54322), host (127.0.0.1), and project ID
+  (`celebra-me-rsvp` in `supabase/config.toml`).
+
+## Disposable Test Environment
+
+The disposable environment uses separate Docker containers, ports, and volumes:
+
+```bash
+tsx scripts/db/disposable-test-env.ts start       # Create and start the test environment
+tsx scripts/db/disposable-test-env.ts reset       # Reset the test database (destructive) + seed data
+tsx scripts/db/disposable-test-env.ts run-tests   # Run pgTAP and migration tests
+tsx scripts/db/disposable-test-env.ts stop        # Stop the test environment
+tsx scripts/db/disposable-test-env.ts cleanup     # Full cleanup (stop + remove config/data)
+```
+
+Configuration:
+- Config directory: `supabase/test/config.toml`
+- Project ID: `celebra-me-test`
+- Ports: API 54331, DB 54332, Studio 54333, Shadow 54330
+- Seed data: `supabase/test/seed-test-data.sql`
+- Migrations: copied from `supabase/migrations/` on first start
+
+## Sentinel
+
+A sentinel row in the `public._db_sentinel` table proves the persistent local database was not
+reset. It must survive all normal CI and development workflows.
+
+```bash
+tsx scripts/db/sentinel-check.ts insert    # Create the sentinel (one-time)
+tsx scripts/db/sentinel-check.ts check     # Verify sentinel exists (exit 1 if missing)
+tsx scripts/db/sentinel-check.ts remove    # Remove sentinel (cleanup)
+```
+
+The sentinel test is part of the guard validation suite. Run it after CI to confirm the
+persistent-local database was preserved.
 
 ## Agent Rules
 
+- The persistent local database (`celebra-me-rsvp`) is protected state. Treat it like a
+  development-critical resource that must never be destroyed.
+- Agents must never run `supabase db reset`, `docker volume rm`, or any destructive DDL against
+  the persistent local or production targets.
+- Remote reset flags (`--linked`, `--db-url` pointing to remote) are prohibited without explicit
+  target classification passing the guard.
+- Destructive tests (reset, schema drops, truncate, migration rollback) must use the disposable
+  test environment (`pnpm db:disposable:reset`).
+- Production is strictly read-only unless the user explicitly authorizes a separate production
+  deployment goal with `pnpm db:prod:migrate`.
+- Unknown database targets must cause an immediate abort of the operation.
+- Dumps and credentials must never enter Git. They are stored under `.tmp/`, `.backups/`,
+  and `.secrets/` which are all gitignored.
+- Before any database operation, classify the target using `pnpm db:guard:classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`.
 - Do not run `supabase db push --linked`.
 - For production patches, stop at `pnpm db:prod:patch -- --file <path>` until a reviewed execution
   harness exists.
 - Prefer fail-closed behavior over preserving old command compatibility.
+- `pnpm run ci` must never reset or modify the persistent local database.
+- The sentinel must survive the full validation pipeline.
 
 ## Completion Checklist
 
 - Classified the task as operational DB work or legitimate runtime app writes.
-- Used the runbook for command details and kept production credentials out of logs/docs/chat.
-- Blocked `pnpm db:push`, raw linked Supabase push, and disabled service-role repair scripts.
+- Identified the target environment (production / persistent-local / disposable-test / unknown).
+- Used the guard to verify target before any database command.
+- Kept production credentials out of logs/docs/chat.
+- Blocked `pnpm db:push`, `pnpm db:local:reset`, raw linked Supabase push, and disabled
+  service-role repair scripts.
 - Required the manifest before any production patch linting.
+- Verified sentinel preservation after running CI or validation.
 - Ran the relevant DB safety, link, and doc checks before reporting back.
