@@ -15,6 +15,28 @@ import {
 	sqlLiteral,
 	tryRunCommand,
 } from './db-workflow-lib.ts';
+import { spawnSync } from 'node:child_process';
+
+function getSupabaseServiceRoleKeyFromStatus(): string | null {
+	const result = spawnSync('supabase', ['status', '-o', 'json'], {
+		cwd: process.cwd(),
+		encoding: 'utf8',
+		shell: process.platform === 'win32',
+	});
+	if (result.status === 0) {
+		try {
+			const stdout = result.stdout;
+			const jsonStart = stdout.indexOf('{');
+			if (jsonStart !== -1) {
+				const data = JSON.parse(stdout.slice(jsonStart));
+				return data.SERVICE_ROLE_KEY || null;
+			}
+		} catch {
+			// Ignore JSON parsing errors
+		}
+	}
+	return null;
+}
 
 interface CheckResult {
 	name: string;
@@ -46,8 +68,14 @@ async function validateAssetApi(): Promise<CheckResult> {
 		};
 	}
 
+	const appEnv = loadAppEnv();
+	const statusKey = getSupabaseServiceRoleKeyFromStatus();
+	if (statusKey) {
+		appEnv.SUPABASE_SERVICE_ROLE_KEY = statusKey;
+	}
+
 	const result = tryRunCommand('node', ['scripts/db/_check-asset-api.mjs', invitationId], {
-		env: loadAppEnv(),
+		env: appEnv,
 	});
 
 	if (result.status !== 0) {

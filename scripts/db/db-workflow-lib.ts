@@ -41,7 +41,7 @@ export function parseTsv(output: string): string[][] {
 		.trim()
 		.split(/\r?\n/)
 		.filter(Boolean)
-		.map((line) => line.split('\t'));
+		.map((line) => line.split(/[|\t]/));
 }
 
 export function fail(message: string): never {
@@ -237,12 +237,14 @@ export function runCommand(
 	options: RunOptions = {},
 ): CommandResult {
 	const { throwOnError = true } = options;
+	const isShellRequired = ['npx', 'supabase', 'pnpm', 'npm'].includes(command);
 	const spawnOptions: SpawnSyncOptions = {
 		cwd: PROJECT_ROOT,
 		env: { ...process.env, ...options.env },
 		input: options.input,
 		encoding: 'utf8',
 		stdio: options.inherit ? 'inherit' : 'pipe',
+		shell: isShellRequired && process.platform === 'win32',
 	};
 	const result = spawnSync(command, args, spawnOptions);
 	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
@@ -292,7 +294,7 @@ export function runPsql(sql: string, dbUrl = LOCAL_DB_URL, redact: string[] = []
 			'--no-align',
 			'--tuples-only',
 			'--field-separator',
-			'\t',
+			'|',
 			'--dbname',
 			dbUrl,
 		],
