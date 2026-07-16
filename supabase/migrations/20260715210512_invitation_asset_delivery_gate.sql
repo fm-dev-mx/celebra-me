@@ -5,6 +5,13 @@ alter table public.invitation_assets
   add column if not exists original_mime_type text,
   add column if not exists original_file_size integer;
 
+-- Reconcile constraints that may already exist from previous manual runs.
+alter table public.invitation_assets
+  drop constraint if exists invitation_assets_dimensions_positive,
+  drop constraint if exists invitation_assets_height_positive,
+  drop constraint if exists invitation_assets_file_size_positive,
+  drop constraint if exists invitation_assets_validated_metadata_complete;
+
 alter table public.invitation_assets
   add constraint invitation_assets_dimensions_positive
     check (width is null or width > 0) not valid,
@@ -24,6 +31,18 @@ alter table public.invitation_assets
         and original_file_size is not null
       )
     ) not valid;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from storage.buckets
+    where id = 'invitation-assets'
+  ) then
+    raise exception 'Storage bucket invitation-assets does not exist';
+  end if;
+end;
+$$;
 
 update storage.buckets
 set file_size_limit = 8388608
