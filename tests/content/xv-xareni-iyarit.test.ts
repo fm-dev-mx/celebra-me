@@ -7,9 +7,10 @@ import type { EventContentEntry } from '@/lib/content/events';
 
 const projectRoot = process.cwd();
 const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-xareni-iyarit');
-const payloadPath = path.join(projectRoot, '.agent/plans/active/xv-xareni-iyarit-db-payload.json');
+const payloadPath = path.join(projectRoot, '.agent/reports/xv-xareni-iyarit-db-payload.json');
 const stylePath = path.join(projectRoot, 'src/styles/themes/sections/_xv-xareni-iyarit.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
+const profilePath = path.join(projectRoot, 'src/styles/invitation-profiles/xareni-iyarit.scss');
 
 const expectedAssets = [
 	'hero.webp',
@@ -43,9 +44,11 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 	describe('theme', () => {
 		it('adds a scoped rose champagne override without changing the global celestial-blue preset', () => {
 			const sectionIndex = fs.readFileSync(sectionsIndexPath, 'utf8');
+			const profile = fs.readFileSync(profilePath, 'utf8');
 			const styles = fs.readFileSync(stylePath, 'utf8');
 
-			expect(sectionIndex).toContain("@forward 'xv-xareni-iyarit';");
+			expect(sectionIndex).not.toContain("@forward 'xv-xareni-iyarit';");
+			expect(profile).toContain("@use '../themes/sections/xv-xareni-iyarit';");
 			expect(styles).toContain('.event--xareni-iyarit.theme-preset--celestial-blue');
 			expect(styles).toContain('--xareni-deep-mauve-rgb: 122 62 87;');
 			expect(styles).toContain('--xareni-ivory-rgb: 255 248 244;');

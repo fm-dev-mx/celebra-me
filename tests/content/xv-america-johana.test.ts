@@ -66,7 +66,7 @@ describe('XV America Johana client invitation preparation', () => {
 		const sectionIndex = fs.readFileSync(sectionsIndexPath, 'utf8');
 		const styles = fs.readFileSync(stylePath, 'utf8');
 
-		expect(sectionIndex).toContain("@forward 'xv-america-johana';");
+		expect(sectionIndex).not.toContain("@forward 'xv-america-johana';");
 		expect(styles).toContain('.event--america-johana.theme-preset--celestial-blue');
 		expect(styles).toContain('--america-red-rgb: 132 21 30;');
 		expect(styles).toContain('--america-ivory-rgb: 255 250 242;');

@@ -173,6 +173,25 @@ describe('Style boundary governance', () => {
 		expect(globalScss).not.toContain("@use 'themes/sections'");
 	});
 
+	it('shared invitation CSS excludes client profiles and inactive preset bases', () => {
+		const invitationScss = read('src/styles/invitation.scss');
+		const sectionIndex = read('src/styles/themes/sections/_index.scss');
+		const sharedBase = read('src/styles/themes/sections/_base-theme.scss');
+
+		expect(invitationScss).toContain("@use 'themes/sections'");
+		for (const profile of [
+			'leah-lexa-rhythm',
+			'luna-y-estrella',
+			'xv-xareni-iyarit',
+			'xv-america-johana',
+			'xv-valentina-hernandez',
+		]) {
+			expect(sectionIndex).not.toContain(profile);
+		}
+		expect(sharedBase).not.toContain('.theme-preset--');
+		expect(sharedBase).not.toContain('.event--');
+	});
+
 	it('invitation components avoid direct section-theme imports', () => {
 		const invitationAstroFiles = getFilesRecursively('src/components/invitation', ['.astro']);
 

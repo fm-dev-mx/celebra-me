@@ -1897,7 +1897,7 @@
 }
 
 // galleryArrowPulse is globally emitted because _xv-valentina-hernandez.scss
-// is imported through invitation.scss → themes/sections/_index.scss.
+// is loaded only for the matching visualProfileId through invitation-profiles/valentina-hernandez.scss.
 // ~0.5 KB overhead across all pages; acceptable for this exclusive scope.
 @keyframes galleryArrowPulse {
 	0%,
