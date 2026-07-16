@@ -243,4 +243,8 @@ select coalesce(json_agg(sub), '[]'::json)::text from (
 	console.log('  - auth.sessions, auth.refresh_tokens, auth.mfa_*, auth.oauth_*, auth.flow_state, auth.audit_log_entries');
 }
 
-main();
+const isMain = process.argv[1]?.endsWith('export-auth-users.ts');
+
+if (isMain) {
+	main();
+}
