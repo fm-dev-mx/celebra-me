@@ -40,18 +40,18 @@ canonical environment workflow.
 
 ## Core Scripts
 
-| Command                    | Purpose                                                                             |
-| -------------------------- | ----------------------------------------------------------------------------------- |
-| `pnpm dev`                 | start the Astro dev server                                                          |
-| `pnpm build`               | run `astro check`, then generate the production Astro/Vercel build                  |
-| `pnpm preview`             | preview the Astro app locally                                                       |
-| `pnpm type-check`          | run `astro check`                                                                   |
-| `pnpm lint`                | run ESLint across the repository                                                    |
-| `pnpm lint:styles`         | audit all SCSS sources with Stylelint                                               |
-| `pnpm lint:styles:changed` | lint only changed stylesheet files                                                  |
-| `pnpm test`                | run the Jest suite                                                                  |
+| Command                    | Purpose                                                                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                 | start the Astro dev server                                                                                                    |
+| `pnpm build`               | run `astro check`, then generate the production Astro/Vercel build                                                            |
+| `pnpm preview`             | preview the Astro app locally                                                                                                 |
+| `pnpm type-check`          | run `astro check`                                                                                                             |
+| `pnpm lint`                | run ESLint across the repository                                                                                              |
+| `pnpm lint:styles`         | audit all SCSS sources with Stylelint                                                                                         |
+| `pnpm lint:styles:changed` | lint only changed stylesheet files                                                                                            |
+| `pnpm test`                | run the Jest suite                                                                                                            |
 | `pnpm run ci`              | canonical full gate: type-check, ESLint, full Stylelint, governance, parity, PII, unit, E2E, production build, and Git safety |
-| `pnpm ops <command>`       | run repository ops tooling through `scripts/cli.mjs`                                |
+| `pnpm ops <command>`       | run repository ops tooling through `scripts/cli.mjs`                                                                          |
 
 ## Ops CLI
 
@@ -74,7 +74,7 @@ celebra-me/
 ├── src/
 │   ├── assets/              # Source images and icons consumed through the asset pipeline
 │   ├── components/          # Astro components and React islands
-│   ├── content/             # Astro content collections (`events`, `event-demos`, `event-templates`)
+│   ├── content/             # Astro content collections (`event-demos`, `event-templates`)
 │   ├── data/                # Static marketing and supporting data modules
 │   ├── hooks/               # Shared React hooks
 │   ├── interfaces/          # Shared TS interfaces
@@ -100,7 +100,6 @@ celebra-me/
 
 - `/dashboard/invitados`
 - `/dashboard/admin`
-- `/dashboard/eventos`
 - `/dashboard/usuarios`
 - `/dashboard/claimcodes`
 - `/dashboard/mfa-setup`

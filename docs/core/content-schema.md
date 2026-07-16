@@ -87,9 +87,10 @@ The optional `sectionOrder` field controls the render order of invitation sectio
 
 ### Rules
 
-- **Optional**. If omitted, `DEFAULT_SECTION_ORDER` (defined in `page-data.ts`) is used and
-  `PersonalizedAccess` is placed automatically before `rsvp` (or after `quote` if no guest context
-  exists).
+- **Optional**. If omitted, present sections follow `CONTENT_SECTION_KEYS`. When guest context or
+  demo-preview context exists, `personalizedAccess` is inserted immediately before `rsvp`.
+- Without guest or demo-preview context, an omitted order does not create a personalized-access
+  section.
 - When present, the renderer follows the array verbatim — `personalizedAccess` must be explicitly
   listed to appear.
 - Interludes are appended after their `afterSection` parent regardless of the section's position in

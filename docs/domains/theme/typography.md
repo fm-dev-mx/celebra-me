@@ -1,23 +1,16 @@
 # Typography System
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-07-16
 
-This document defines the active typography stack loaded by `src/layouts/Layout.astro`.
+This document defines the active, route-scoped typography stack.
 
 ## Loaded Runtime Families
 
-`Layout.astro` currently loads ten font families:
-
-1. Cinzel
-2. Playfair Display
-3. Pinyon Script
-4. EB Garamond
-5. Montserrat
-6. Cormorant Garamond
-7. Bodoni Moda
-8. Instrument Sans
-9. The Nautigal
-10. Special Elite
+`Layout.astro` loads Montserrat for the shared application shell. Invitation font imports live in
+the active preset entrypoints under `src/styles/invitation-presets/*.scss`, so a route downloads
+only the families required by its preset. The supported family vocabulary includes Cinzel, Playfair
+Display, Pinyon Script, EB Garamond, Montserrat, Cormorant Garamond, Bodoni Moda, Instrument Sans,
+The Nautigal, and Special Elite.
 
 ## Core Roles
 
@@ -55,11 +48,9 @@ Current runtime typography variables include:
 
 Loading multiple font families impacts page load performance and Cumulative Layout Shift (CLS).
 
-- **Family Cap**: The current stack is limited to **10 families**.
-- **Audit Requirement**: Any new family added to `Layout.astro` must be justified by a premium theme
-  (e.g., Jewelry Box, Luxury Hacienda).
-- **Follow-up**: Font families are still imported globally today; reduce or route-scope them only
-  after a preset-by-preset typography audit to avoid regressions.
+- **Shared shell cap**: keep the global layout to the UI family unless a cross-application need is
+  proven.
+- **Preset scope**: add invitation families to the owning preset stylesheet, not to `Layout.astro`.
 - **Fallbacks**: Always provide generic fallbacks (`serif`, `sans-serif`) in the CSS variables to
   prevent invisible text during loading.
 
@@ -68,4 +59,5 @@ Loading multiple font families impacts page load performance and Cumulative Layo
 - Use the `--font-*` CSS variables in theme-sensitive component styles.
 - Do not hardcode raw font-family declarations inside invitation section styles when a runtime token
   already exists.
-- If the loaded font list changes, update this doc and `src/layouts/Layout.astro` in the same task.
+- If the loaded font list changes, update this doc and the owning layout or preset entrypoint in the
+  same task.

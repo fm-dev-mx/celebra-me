@@ -2,9 +2,9 @@
 
 **Last Updated:** 2026-06-19
 
-Celebra-me uses Astro content collections for legacy/static fallback content, showcase demos, and
-internal templates. Real/client invitations are DB-published content; see
-[`event-governance.md`](event-governance.md) for the real invitation source-of-truth contract.
+Celebra-me uses Astro content collections for showcase demos and internal templates. Real/client
+invitations are DB-published content; see [`event-governance.md`](event-governance.md) for the real
+invitation source-of-truth contract.
 
 ## Source of Truth
 
@@ -16,15 +16,16 @@ internal templates. Real/client invitations are DB-published content; see
 
 ## Active Collections
 
-| Collection        | Path                             | Purpose                                       |
-| ----------------- | -------------------------------- | --------------------------------------------- |
-| `event-demos`     | `src/content/event-demos/**`     | public showcase demos                         |
-| `event-templates` | `src/content/event-templates/**` | internal templates; verify runtime use        |
+| Collection        | Path                             | Purpose                           |
+| ----------------- | -------------------------------- | --------------------------------- |
+| `event-demos`     | `src/content/event-demos/**`     | public showcase demos             |
+| `event-templates` | `src/content/event-templates/**` | development-only reusable masters |
 
-Only `event-demos` is routable through the public invitation routes. DB-published
-client content from `published_invitation_content` is resolved before static fallback content.
-`event-templates` exists for internal masters, but its runtime use is limited and should be verified
-before relying on it for a creation workflow.
+`event-demos` is publicly routable. `event-templates` is resolvable only in development through the
+explicit template path in `src/lib/content/events.ts`; production routing excludes it. DB-published
+client content from `published_invitation_content` is the only source for real/client invitations.
+Capability flags and canonical-reference roles are centralized in
+`src/lib/invitation/invitation-descriptors.ts`.
 
 ## Event Type Contract
 
@@ -49,6 +50,8 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `sacred-keepsake`
 - `premiere-floral`
 - `editorial`
+- `editorial-magazine`
+- `editorial-rose`
 - `angelic-presence`
 
 Section variant enums are consumed through `src/lib/theme/theme-contract.ts`. Do not duplicate
@@ -69,8 +72,8 @@ Public invitation routes resolve as:
 
 Event-specific source assets live under `src/assets/images/events/<asset-slug>/`.
 
-Static routable slugs must remain globally unique across `event-demos`. Real/client
-route slugs live in DB publication rows and must stay distinct from demo/template slugs.
+Static routable slugs must remain globally unique across `event-demos`. Real/client route slugs live
+in DB publication rows and must stay distinct from demo/template slugs.
 
 When a route depends on local event assets, keep the asset exports in
 `src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them

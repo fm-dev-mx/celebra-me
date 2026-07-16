@@ -19,7 +19,6 @@ The RSVP domain covers:
 
 - `/dashboard/invitados`
 - `/dashboard/admin`
-- `/dashboard/eventos`
 - `/dashboard/usuarios`
 - `/dashboard/claimcodes`
 - `/dashboard/mfa-setup`
@@ -102,7 +101,8 @@ live tree.
 3. Dashboard islands call the dashboard APIs under `/api/dashboard/**`.
 4. Services and repositories resolve event ownership, claim-code access, guest CRUD, and audit
    writes.
-5. Guests dashboard updates stream over SSE via `/api/dashboard/guests/stream`.
+5. The guests dashboard refreshes through its active client/query behavior; there is no SSE route in
+   the current API contract.
 
 ### Guest Flow
 

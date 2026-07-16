@@ -12,8 +12,8 @@ rendering.
 
 Celebra-me follows these guiding principles:
 
-- **Hybrid by default** Static generation (SSG) is preferred. Server-side rendering (SSR) is used
-  only when required by the feature.
+- **SSR by default** Astro runs with `output: 'server'` on Vercel. Individual responses may still be
+  cacheable, but routes must be designed for runtime execution.
 - **Pragmatism over theory** Patterns are applied only when they reduce real complexity.
 - **Explicit boundaries** UI code, route orchestration, and server-only logic stay separated.
 - **Deploy safety first** Architecture must remain compatible with Astro and Vercel constraints.
@@ -24,16 +24,15 @@ Celebra-me follows these guiding principles:
 
 ### Default Strategy
 
-- Pages render at build time whenever possible.
-- Runtime server execution is reserved for:
+- Pages execute through the Astro SSR adapter. Public pages may opt into cache headers, while
+  personalized and protected responses remain private or non-cacheable.
+- Runtime server execution covers:
   - user input,
   - side effects,
   - protected operations,
   - integrations requiring secrets.
-- Current realtime behavior uses **Server-Sent Events (SSE)** via `/api/dashboard/guests/stream` for
-  near-real-time host dashboard updates.
-
-This matches Astro's hybrid model and the repository's current route structure.
+- Guest dashboard freshness is implemented by the active client/query behavior. Do not document a
+  realtime transport unless its route exists in `src/pages/api/**`.
 
 ---
 
@@ -162,11 +161,8 @@ This keeps middleware authorization aligned with the elevated session state.
 
 ## 7) Content Collections
 
-Astro content collections (`src/content/**`) are used for:
-
-- legacy/static fallback content,
-- public demos,
-- internal event templates.
+Astro content collections (`src/content/**`) are used for public demos and internal event templates.
+They are not a temporary fallback for real/client invitations.
 
 ### Active Collection Layout
 
@@ -280,7 +276,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 ### Host Dashboard Routes
 
 - `/dashboard/invitados`
-- `/dashboard/eventos`
 - `/dashboard/claimcodes`
 - `/dashboard/usuarios`
 - `/dashboard/admin`
@@ -294,7 +289,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 ### Host Dashboard API Endpoints
 
 - `GET /api/dashboard/guests?eventId=...&status=...&search=...`
-- `GET /api/dashboard/guests/stream`
 - `POST /api/dashboard/guests`
 - `POST /api/dashboard/guests/bulk`
 - `PATCH /api/dashboard/guests/:guestId`

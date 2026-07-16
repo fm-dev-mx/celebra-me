@@ -1,6 +1,6 @@
 # Motion Tokens
 
-**Last Updated:** 2026-03-25
+**Last Updated:** 2026-07-16
 
 ## Overview
 
@@ -52,10 +52,13 @@ Animations should always consume semantic tokens defined in
 ## Implementation Pattern
 
 Sections may define their own keyframes or use global utility classes. Theme-specific motion should
-flow through semantic or component tokens where it is reused.
+flow through semantic or component tokens where it is reused. Reveal content is visible in the
+server-rendered baseline. `src/utils/animations.ts` adds `has-motion` only after an
+`IntersectionObserver` is successfully attached; CSS may hide pending reveal items only beneath that
+class.
 
 ```scss
-.my-section[data-variant='jewelry-box'] {
+.has-motion .my-section[data-variant='jewelry-box'] {
   .reveal-item {
     opacity: 0;
     transform: translateY(10px);
@@ -70,6 +73,10 @@ flow through semantic or component tokens where it is reused.
   }
 }
 ```
+
+If observation is unavailable, throws, or exceeds the safety timeout, the runtime removes
+`has-motion` and reveals all items. Reduced-motion users are revealed immediately. New motion must
+preserve this fail-open behavior so content is never dependent on JavaScript to become readable.
 
 ## Accessibility (Reduced Motion)
 

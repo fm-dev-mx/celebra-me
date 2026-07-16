@@ -109,6 +109,21 @@ git push
 git push origin v0.X.Y
 ```
 
+## Database-dependent releases
+
+When application code depends on a migration, use this order:
+
+1. Validate the complete migration chain against local Supabase.
+2. Apply the reviewed required migrations to production with explicit owner authorization.
+3. Verify the RPCs, schema objects, grants, and metadata introduced by those migrations.
+4. Deploy the dependent application build.
+5. Run the production smoke and cache-isolation checks from
+   [`../domains/intake/production-flow.md`](../domains/intake/production-flow.md).
+
+Never deploy dependent code before its database contract. An application rollback may restore the
+prior deployment; an applied migration is immutable history and must be corrected by a new forward
+migration. Capture logs and current published/draft revisions before incident remediation.
+
 ## What to Record as Known Issues
 
 - Platform-specific skips (e.g., Windows tests skipped with `test.skip`).
