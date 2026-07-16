@@ -2,15 +2,17 @@ type CssModule = { default: string };
 
 export type SectionUrlMap = Record<string, Record<string, string>>;
 export type SectionBundleUrlMap = Record<string, string>;
+export type InvitationProfileUrlMap = Record<string, string>;
 
-export type SectionCssConfig = {
+type SectionCssConfig = {
 	section: string;
 	presetToEntrypoint: Record<string, string>;
 };
 
-export type InvitationCssInput = {
+type InvitationCssInput = {
 	themePreset: string;
 	footerVariant?: string;
+	visualProfileId?: string;
 };
 
 const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
@@ -54,6 +56,8 @@ export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): Se
 	return sectionBundleUrlMap;
 }
 
+export const buildInvitationProfileUrlMap = buildSectionBundleUrlMap;
+
 export function resolveSectionBundleCssUrl(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	preset: string,
@@ -72,6 +76,7 @@ export function resolveSectionCssUrl(
 	return sectionUrlMap[section]?.[entrypoint];
 }
 
+/** @internal — re-exported for tests */
 export function resolveSectionCssUrls(
 	sectionUrlMap: SectionUrlMap,
 	configs: SectionCssConfig[],
@@ -87,6 +92,7 @@ export function resolveInvitationCssUrls(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssInput,
+	profileUrlMap: InvitationProfileUrlMap = {},
 ): string[] {
 	const urls: string[] = [];
 	const bundleUrl = resolveSectionBundleCssUrl(sectionBundleUrlMap, input.themePreset);
@@ -106,5 +112,12 @@ export function resolveInvitationCssUrls(
 		}
 	}
 
-	return urls;
+	if (input.visualProfileId) {
+		const profileUrl = profileUrlMap[input.visualProfileId];
+		if (profileUrl) {
+			urls.push(profileUrl);
+		}
+	}
+
+	return [...new Set(urls)];
 }

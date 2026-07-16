@@ -1,5 +1,6 @@
 import {
 	buildSectionBundleUrlMap,
+	buildInvitationProfileUrlMap,
 	buildSectionUrlMap,
 	resolveInvitationCssUrls,
 	resolveSectionBundleCssUrl,
@@ -156,5 +157,33 @@ describe('section-css-resolver-map', () => {
 				footerVariant: 'editorial',
 			}),
 		).toEqual(['/_astro/editorial-bundle.css']);
+	});
+
+	it('loads only the active visual profile and deduplicates repeated URLs', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial-magazine.scss': {
+				default: '/_astro/editorial-magazine-bundle.css',
+			},
+		});
+		const profileUrlMap = buildInvitationProfileUrlMap({
+			'/src/styles/invitation-profiles/valentina-hernandez.scss': {
+				default: '/_astro/valentina-profile.css',
+			},
+			'/src/styles/invitation-profiles/xareni-iyarit.scss': {
+				default: '/_astro/xareni-profile.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(
+				bundleUrlMap,
+				{},
+				{
+					themePreset: 'editorial-magazine',
+					visualProfileId: 'valentina-hernandez',
+				},
+				profileUrlMap,
+			),
+		).toEqual(['/_astro/editorial-magazine-bundle.css', '/_astro/valentina-profile.css']);
 	});
 });
