@@ -47,6 +47,7 @@ export function resolveInvitationCssUrls(input: {
 	themePreset: string;
 	footerVariant?: string;
 	visualProfileId?: string;
+	slug?: string;
 }): string[] {
 	return resolveInvitationCssUrlsFromMaps(
 		sectionBundleUrlMap,

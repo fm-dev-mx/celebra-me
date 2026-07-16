@@ -13,6 +13,7 @@ type InvitationCssInput = {
 	themePreset: string;
 	footerVariant?: string;
 	visualProfileId?: string;
+	slug?: string;
 };
 
 const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
@@ -112,8 +113,9 @@ export function resolveInvitationCssUrls(
 		}
 	}
 
-	if (input.visualProfileId) {
-		const profileUrl = profileUrlMap[input.visualProfileId];
+	const profileId = input.visualProfileId || input.slug;
+	if (profileId) {
+		const profileUrl = profileUrlMap[profileId];
 		if (profileUrl) {
 			urls.push(profileUrl);
 		}

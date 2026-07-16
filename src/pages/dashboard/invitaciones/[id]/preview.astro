@@ -146,6 +146,8 @@ const activeSectionCssUrls =
 		? resolveInvitationCssUrls({
 				themePreset: pageCtx.viewModel.theme.preset,
 				footerVariant: pageCtx.footerVariant,
+				visualProfileId: pageCtx.viewModel.visualProfileId,
+				slug: invitationRecord?.slug ?? undefined,
 			})
 		: [];
 
