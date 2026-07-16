@@ -77,7 +77,7 @@ function logInvalidPublishedContent(input: {
 	slug: string;
 	eventType: string;
 	version: number;
-	issues: readonly { path: readonly PropertyKey[] }[];
+	issues: readonly { path: readonly PropertyKey[]; message: string }[];
 }): void {
 	console.error('[invitation-content] Invalid published content', {
 		publishedContentId: input.id,
@@ -87,7 +87,7 @@ function logInvalidPublishedContent(input: {
 		version: input.version,
 		issuePaths: input.issues
 			.slice(0, 10)
-			.map((issue) => issue.path.map(String).join('.') || '<root>'),
+			.map((issue) => `${issue.path.map(String).join('.') || '<root>'}: ${issue.message}`),
 	});
 }
 
