@@ -1,28 +1,15 @@
+import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
-	findDraftByInvitationId,
-	updateDraftStatus,
-} from '@/lib/intake/repositories/invitation-content-draft.repository';
-import {
-	upsertPublishedContent,
 	findPublishedByInvitationId,
 	findPublishedBySlugAndEventType,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
-import {
-	findInvitationById,
-	updateInvitation,
-} from '@/lib/intake/repositories/invitation.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
-import {
-	findEventByInvitationIdService,
-	findEventBySlugService,
-	createEventService,
-	updateEventService,
-} from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { getPublicUrl } from '@/lib/intake/storage';
-import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
+import type { InvitationAsset, InvitationContentDraft } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
@@ -33,6 +20,13 @@ import {
 	resolveInvitationTheme,
 } from '@/lib/intake/services/invitation-preset-resolver';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
+import { commitAtomicPublication } from '@/lib/intake/repositories/publication.repository';
+import {
+	ASSET_POLICY_VERSION,
+	MAX_OUTPUT_BYTES,
+	MAX_OUTPUT_DIMENSION,
+	OUTPUT_MIME_TYPE,
+} from '@/lib/intake/services/asset-policy';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -45,55 +39,6 @@ export interface PublishResult {
 	};
 }
 
-async function synchronizeClientRsvp(
-	invitation: Invitation,
-	invitationId: string,
-	publishSlug: string,
-): Promise<void> {
-	const [linkedEvent, slugEvent] = await Promise.all([
-		findEventByInvitationIdService(invitationId),
-		findEventBySlugService(publishSlug),
-	]);
-	if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
-		throw new ApiError(
-			409,
-			'conflict',
-			`El slug "${publishSlug}" ya está asociado a otro evento. Cambia el slug de la invitación antes de publicar.`,
-		);
-	}
-
-	const existingEvent = linkedEvent ?? slugEvent;
-	if (
-		existingEvent?.eventType !== undefined &&
-		existingEvent.eventType !== invitation.eventType
-	) {
-		throw new ApiError(
-			409,
-			'conflict',
-			`El slug "${publishSlug}" ya está asociado a un evento de tipo "${existingEvent.eventType}" (se esperaba "${invitation.eventType}"). Cambia el slug de la invitación o el tipo de evento.`,
-		);
-	}
-	if (existingEvent) {
-		await updateEventService({
-			eventId: existingEvent.id,
-			title: invitation.title,
-			slug: publishSlug,
-			status: 'published',
-			invitationId,
-		});
-		return;
-	}
-
-	await createEventService({
-		ownerUserId: invitation.createdBy!,
-		slug: publishSlug,
-		eventType: invitation.eventType,
-		title: invitation.title,
-		status: 'published',
-		invitationId,
-	});
-}
-
 /**
  * Walk content recursively and freeze all { type: 'uploaded', assetId }
  * references to { type: 'uploaded', assetId, src } using the asset library.
@@ -102,15 +47,17 @@ async function synchronizeClientRsvp(
 async function freezeUploadedContentRefs(
 	content: Record<string, unknown>,
 	invitationId: string,
+	priorPublishedContent?: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
 	const assets = await findAssetsByInvitationId(invitationId);
 	const assetMap = new Map(assets.map((a) => [a.id, a]));
+	const legacyPublishedAssetIds = collectUploadedAssetIds(priorPublishedContent);
 
-	function walk(value: unknown): unknown {
+	function walk(value: unknown, path = ''): unknown {
 		if (!value || typeof value !== 'object') return value;
 		const obj = value as Record<string, unknown>;
 
-		if (obj.type === 'uploaded' && typeof obj.assetId === 'string' && !obj.src) {
+		if (obj.type === 'uploaded' && typeof obj.assetId === 'string') {
 			const assetId = obj.assetId as string;
 			const asset = assetMap.get(assetId);
 			if (!asset) {
@@ -120,21 +67,98 @@ async function freezeUploadedContentRefs(
 					`No se pudo resolver la imagen "${assetId.slice(0, 8)}". El recurso fue eliminado de la biblioteca.`,
 				);
 			}
+			assertUploadedAssetPolicy(asset, path, legacyPublishedAssetIds.has(assetId));
 			return { ...obj, src: getPublicUrl(asset.bucket, asset.storagePath) };
 		}
 
 		if (Array.isArray(value)) {
-			return value.map(walk);
+			return value.map((child, index) => walk(child, `${path}[${index}]`));
 		}
 
 		const result: Record<string, unknown> = {};
 		for (const [key, child] of Object.entries(obj)) {
-			result[key] = walk(child);
+			result[key] = walk(child, path ? `${path}.${key}` : key);
 		}
 		return result;
 	}
 
 	return walk(content) as Record<string, unknown>;
+}
+
+function collectUploadedAssetIds(content?: Record<string, unknown>): Set<string> {
+	const ids = new Set<string>();
+	const walk = (value: unknown): void => {
+		if (!value || typeof value !== 'object') return;
+		if (Array.isArray(value)) {
+			value.forEach(walk);
+			return;
+		}
+		const obj = value as Record<string, unknown>;
+		if (obj.type === 'uploaded' && typeof obj.assetId === 'string') ids.add(obj.assetId);
+		Object.values(obj).forEach(walk);
+	};
+	walk(content);
+	return ids;
+}
+
+function assertUploadedAssetPolicy(
+	asset: InvitationAsset,
+	path: string,
+	isPreviouslyPublished: boolean,
+): void {
+	if ((asset.validationVersion ?? ASSET_POLICY_VERSION) < ASSET_POLICY_VERSION) {
+		if (isPreviouslyPublished) return;
+		throw new ApiError(
+			422,
+			'validation_error',
+			'Una imagen seleccionada es anterior al control de calidad. Vuelve a subirla antes de publicar.',
+			{ reason: 'asset_not_validated', assetId: asset.id, path },
+		);
+	}
+
+	if (
+		asset.mimeType !== OUTPUT_MIME_TYPE ||
+		!asset.width ||
+		!asset.height ||
+		!asset.fileSize ||
+		asset.fileSize > MAX_OUTPUT_BYTES ||
+		asset.width > MAX_OUTPUT_DIMENSION ||
+		asset.height > MAX_OUTPUT_DIMENSION
+	) {
+		throw new ApiError(
+			422,
+			'validation_error',
+			'Una imagen no tiene metadatos de entrega válidos. Vuelve a subirla antes de publicar.',
+			{ reason: 'asset_metadata_invalid', assetId: asset.id, path },
+		);
+	}
+
+	const longSide = Math.max(asset.width, asset.height);
+	const shortSide = Math.min(asset.width, asset.height);
+	const minimum = path.startsWith('hero.backgroundImage')
+		? { longSide: 1200, shortSide: 720, role: 'portada' }
+		: path === 'hero.portrait'
+			? { longSide: 960, shortSide: 640, role: 'retrato' }
+			: path === 'sharing.ogImage'
+				? { longSide: 1200, shortSide: 630, role: 'imagen para compartir' }
+				: { longSide: 800, shortSide: 480, role: 'sección' };
+
+	if (longSide < minimum.longSide || shortSide < minimum.shortSide) {
+		throw new ApiError(
+			422,
+			'validation_error',
+			`La imagen usada como ${minimum.role} no tiene resolución suficiente para publicarse.`,
+			{
+				reason: 'asset_dimensions_insufficient',
+				assetId: asset.id,
+				path,
+				width: asset.width,
+				height: asset.height,
+				requiredLongSide: minimum.longSide,
+				requiredShortSide: minimum.shortSide,
+			},
+		);
+	}
 }
 
 interface AssetRefEntry {
@@ -343,7 +367,11 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	});
 
 	// Freeze uploaded asset refs before validation
-	const frozenContent = await freezeUploadedContentRefs(mappedContent, invitationId);
+	const frozenContent = await freezeUploadedContentRefs(
+		mappedContent,
+		invitationId,
+		priorPublished?.content,
+	);
 
 	assertCountdownHasTiming(frozenContent);
 
@@ -376,30 +404,13 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		);
 	}
 
-	if (invitation.kind === 'client') {
-		await synchronizeClientRsvp(invitation, invitationId, publishSlug);
-	}
-
-	const result = await upsertPublishedContent({
-		invitationId: invitationId,
+	return commitAtomicPublication({
+		invitationId,
+		draftId: draft.id,
+		expectedDraftUpdatedAt: draft.updatedAt,
 		slug: publishSlug,
 		eventType: invitation.eventType,
 		isDemo: invitation.kind === 'demo',
 		content: publishedContent,
 	});
-
-	await updateInvitation(invitationId, { status: 'published' });
-
-	const updatedDraft = await updateDraftStatus(draft.id, 'approved');
-
-	return {
-		draft: updatedDraft,
-		publishedContent: {
-			id: result.id,
-			slug: result.slug,
-			eventType: result.eventType,
-			version: result.version,
-			publishedAt: result.publishedAt,
-		},
-	};
 }

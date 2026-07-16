@@ -33,6 +33,10 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	updateEventService: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/repositories/publication.repository', () => ({
+	commitAtomicPublication: jest.fn(),
+}));
+
 import {
 	findDraftByInvitationId,
 	updateDraftStatus,
@@ -56,6 +60,8 @@ import { publishDraft } from '@/lib/intake/services/publishing.service';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import * as assetRegistry from '@/lib/assets/asset-registry';
 import { getCollection } from 'astro:content';
+import { commitAtomicPublication } from '@/lib/intake/repositories/publication.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;
@@ -117,6 +123,9 @@ const mockFindEventByProjectId = findEventByInvitationIdService as jest.MockedFu
 >;
 const mockCreateEvent = createEventService as jest.MockedFunction<typeof createEventService>;
 const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
+const mockCommitAtomic = commitAtomicPublication as jest.MockedFunction<
+	typeof commitAtomicPublication
+>;
 
 const baseProject = {
 	id: 'proj-1',
@@ -221,6 +230,52 @@ beforeEach(() => {
 	mockFindEventByProjectId.mockResolvedValue(undefined as any);
 	mockFindPublishedByInvitationId.mockResolvedValue(null);
 	mockFindEventBySlug.mockResolvedValue(undefined as any);
+	mockCommitAtomic.mockImplementation(async (input) => {
+		if (!input.isDemo) {
+			const [linkedEvent, slugEvent] = await Promise.all([
+				mockFindEventByProjectId(input.invitationId),
+				mockFindEventBySlug(input.slug),
+			]);
+			if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
+				throw new ApiError(409, 'conflict', 'El slug ya está asociado a otro evento.');
+			}
+			const event = linkedEvent ?? slugEvent;
+			if (event?.eventType && event.eventType !== input.eventType) {
+				throw new ApiError(409, 'conflict', 'El evento tiene un tipo diferente.');
+			}
+			if (event) {
+				await mockUpdateEvent({
+					eventId: event.id,
+					title: baseProject.title,
+					slug: input.slug,
+					status: 'published',
+					invitationId: input.invitationId,
+				});
+			} else {
+				await mockCreateEvent({
+					ownerUserId: baseProject.createdBy,
+					slug: input.slug,
+					eventType: input.eventType as 'xv',
+					title: baseProject.title,
+					status: 'published',
+					invitationId: input.invitationId,
+				});
+			}
+		}
+		const published = await mockUpsertPublished(input);
+		await mockUpdateProject(input.invitationId, { status: 'published' });
+		const draft = await mockUpdateDraftStatus(input.draftId, 'approved');
+		return {
+			draft,
+			publishedContent: {
+				id: published.id,
+				slug: published.slug,
+				eventType: published.eventType,
+				version: published.version,
+				publishedAt: published.publishedAt,
+			},
+		};
+	});
 });
 
 describe('publishDraft', () => {
@@ -948,6 +1003,76 @@ describe('publishDraft', () => {
 			message: expect.stringContaining('No se pudo resolver la imagen'),
 		});
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
+	it('blocks publication when a validated asset is missing delivery metadata', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				gallery: { items: [{ image: { type: 'uploaded', assetId: VALID_UUID_1 } }] },
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Sin metadatos',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/missing.webp',
+				mimeType: 'image/webp',
+				validationVersion: 1,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			message: expect.stringContaining('metadatos'),
+			details: { reason: 'asset_metadata_invalid' },
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('blocks publication when an asset is too small for its assigned role', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					...validDraft.content.hero,
+					backgroundImage: { type: 'uploaded', assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Portada pequeña',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/small.webp',
+				mimeType: 'image/webp',
+				width: 800,
+				height: 600,
+				fileSize: 50_000,
+				validationVersion: 1,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			message: expect.stringContaining('resolución'),
+			details: { reason: 'asset_dimensions_insufficient', path: 'hero.backgroundImage' },
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('preserves existing {type:internal} refs through publish unchanged', async () => {
