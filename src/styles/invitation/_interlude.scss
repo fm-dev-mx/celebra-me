@@ -61,8 +61,8 @@
 		width: 100%;
 		height: 100%;
 		background: var(--interlude-bg, var(--color-surface-dark));
-		opacity: 0%;
-		transform: translate3d(0, 24px, 0) scale(1.015);
+		opacity: 100%;
+		transform: translate3d(0, 0, 0) scale(1);
 		transition:
 			opacity 800ms var(--ease-premium),
 			transform 800ms var(--ease-premium);
@@ -71,6 +71,11 @@
 	&.is-visible &__media {
 		opacity: 100%;
 		transform: translate3d(0, 0, 0) scale(1);
+	}
+
+	&.has-motion:not(.is-visible) &__media {
+		opacity: 0%;
+		transform: translate3d(0, 24px, 0) scale(1.015);
 	}
 
 	&__image {

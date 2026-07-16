@@ -1,52 +1,72 @@
 interface ObserverOptions {
 	threshold?: number | number[];
 	rootMargin?: string;
+	onObserved?: (target: Element) => void;
+	onFallback?: (target: Element) => void;
+	failOpenAfterMs?: number;
 	once?: boolean;
 }
 
-const observerCache = new Map<string, IntersectionObserver>();
+const DEFAULT_FAIL_OPEN_MS = 8000;
 
 export function createIntersectionObserver(
 	selector: string,
 	callback: (target: Element) => void,
 	options: ObserverOptions = {},
-) {
-	const { threshold = 0.1, rootMargin = '0px 0px -50px 0px', once = true } = options;
-	const cacheKey = `${JSON.stringify(threshold)}-${rootMargin}`;
+): IntersectionObserver | null {
+	const {
+		threshold = 0.1,
+		rootMargin = '0px 0px -50px 0px',
+		onObserved,
+		onFallback,
+		failOpenAfterMs = DEFAULT_FAIL_OPEN_MS,
+		once = true,
+	} = options;
+	const elements = Array.from(document.querySelectorAll(selector));
+	const revealed = new Set<Element>();
+	let observer: IntersectionObserver | null = null;
 
-	let observer = observerCache.get(cacheKey);
+	const reveal = (target: Element) => {
+		if (once && revealed.has(target)) return;
+		revealed.add(target);
+		callback(target);
+		if (once) observer?.unobserve(target);
+	};
 
-	if (!observer) {
+	const failOpen = () => {
+			elements.forEach((target) => {
+				if (!revealed.has(target)) onFallback?.(target);
+				reveal(target);
+			});
+		};
+
+	if (elements.length === 0) return null;
+	if (typeof window.IntersectionObserver !== 'function') {
+		failOpen();
+		return null;
+	}
+
+	try {
 		observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						const targetCallback = (
-							entry.target as Element & {
-								_revealCallback?: (target: Element) => void;
-							}
-						)._revealCallback;
-						if (targetCallback) {
-							targetCallback(entry.target);
-						}
-						if (once) {
-							observer!.unobserve(entry.target);
-						}
-					}
+					if (entry.isIntersecting) reveal(entry.target);
 				});
 			},
 			{ threshold, rootMargin },
 		);
-		observerCache.set(cacheKey, observer);
+
+		elements.forEach((target) => {
+			observer!.observe(target);
+			onObserved?.(target);
+		});
+	} catch {
+		observer?.disconnect();
+		failOpen();
+		return null;
 	}
 
-	const elements = document.querySelectorAll(selector);
-	elements.forEach((el) => {
-		(el as Element & { _revealCallback?: (target: Element) => void })._revealCallback =
-			callback;
-		observer!.observe(el);
-	});
-
+	window.setTimeout(failOpen, failOpenAfterMs);
 	return observer;
 }
 
@@ -55,25 +75,26 @@ export function initSectionReveal(
 	callbacks?: { onReveal?: (target: Element) => void },
 	options?: ObserverOptions,
 ): void {
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const sections = Array.from(document.querySelectorAll(selector));
+	const reveal = (target: Element) => {
+		target.classList.add('is-visible');
+		callbacks?.onReveal?.(target);
+	};
 
-	if (prefersReducedMotion) {
-		document.querySelectorAll(selector).forEach((el) => {
-			el.classList.add('is-visible', 'has-motion');
-		});
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		sections.forEach(reveal);
 		return;
 	}
 
-	document.querySelectorAll(selector).forEach((el) => {
-		el.classList.add('has-motion');
-	});
-
-	createIntersectionObserver(
-		`${selector}.has-motion`,
-		(target) => {
-			target.classList.add('is-visible');
-			callbacks?.onReveal?.(target);
+	createIntersectionObserver(selector, reveal, {
+		...options,
+		onObserved: (target) => {
+			target.classList.add('has-motion');
+			options?.onObserved?.(target);
 		},
-		options,
-	);
+		onFallback: (target) => {
+			target.classList.remove('has-motion');
+			options?.onFallback?.(target);
+		},
+	});
 }

@@ -218,8 +218,8 @@
 		column-gap: 1.6rem;
 		padding-block: clamp(1.4rem, 2.8vw, 2rem);
 		border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 20%);
-		opacity: 0%;
-		transform: translateY(12px);
+		opacity: 100%;
+		transform: translateY(0);
 		transition:
 			opacity 0.8s ease-out,
 			transform 0.8s ease-out;
@@ -231,6 +231,11 @@
 		&.is-visible {
 			opacity: 100%;
 			transform: translateY(0);
+		}
+
+		&.has-motion:not(.is-visible) {
+			opacity: 0%;
+			transform: translateY(12px);
 		}
 
 		@for $i from 1 through 20 {

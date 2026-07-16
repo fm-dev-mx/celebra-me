@@ -195,8 +195,8 @@
 		backdrop-filter: var(--gallery-item-backdrop-filter);
 
 		// Entrance reveal setup
-		opacity: 0%;
-		transform: translateY(18px) var(--gallery-item-transform, none);
+		opacity: 100%;
+		transform: translateY(0) var(--gallery-item-emphasis-transform, none);
 		transition:
 			opacity var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 			transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
@@ -222,7 +222,8 @@
 			mix-blend-mode: var(--gallery-item-image-base-blend);
 			transition:
 				filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
-				transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+				transform var(--gallery-item-transition-duration)
+					var(--gallery-item-transition-ease),
 				mix-blend-mode var(--gallery-item-transition-duration) ease;
 		}
 
@@ -239,6 +240,11 @@
 				transform: scale(var(--gallery-item-image-scale-in-view));
 				mix-blend-mode: var(--gallery-item-image-emphasis-blend);
 			}
+		}
+
+		&.has-motion:not(.is-visible) {
+			opacity: 0%;
+			transform: translateY(18px) var(--gallery-item-transform, none);
 		}
 
 		&:focus-visible {

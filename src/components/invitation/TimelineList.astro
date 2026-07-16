@@ -60,6 +60,8 @@ const { items, variant } = Astro.props;
 </div>
 
 <script>
+	import { initSectionReveal } from '@/utils/animations';
+
 	const wrappers = Array.from(document.querySelectorAll('[data-itinerary-wrapper]'));
 
 	wrappers.forEach((wrapper) => {
@@ -67,23 +69,7 @@ const { items, variant } = Astro.props;
 			return;
 		}
 
-		const items = Array.from(wrapper.querySelectorAll('[data-itinerary-item]'));
 		const line = wrapper.querySelector('[data-itinerary-line]');
-
-		if (items.length) {
-			const observer = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.isIntersecting) {
-							entry.target.classList.add('is-visible');
-						}
-					});
-				},
-				{ threshold: 0.15, rootMargin: '0px 0px -100px 0px' },
-			);
-
-			items.forEach((item) => observer.observe(item));
-		}
 
 		if (line instanceof SVGPathElement) {
 			const updateLine = () => {
@@ -101,5 +87,10 @@ const { items, variant } = Astro.props;
 			window.addEventListener('scroll', updateLine, { passive: true });
 			window.addEventListener('resize', updateLine);
 		}
+	});
+
+	initSectionReveal('[data-itinerary-item]', undefined, {
+		threshold: 0.15,
+		rootMargin: '0px 0px -100px 0px',
 	});
 </script>

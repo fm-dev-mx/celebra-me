@@ -44,6 +44,11 @@
 
 	&__header {
 		margin-bottom: var(--spacing-xl);
+		opacity: 100%;
+		transform: translateY(0);
+	}
+
+	&.has-motion:not(.is-visible) &__header {
 		opacity: 0%;
 		transform: translateY(20px);
 	}
@@ -355,4 +360,3 @@
 		}
 	}
 }
-

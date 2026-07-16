@@ -1,11 +1,9 @@
-import { createIntersectionObserver } from '@/utils/animations';
+import { initSectionReveal } from '@/utils/animations';
 
 export function initInterludeObserver(): void {
 	const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
 
 	if (interludes.length === 0) return;
-
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	interludes.forEach((interlude) => {
 		if (interlude instanceof HTMLElement) {
@@ -25,15 +23,6 @@ export function initInterludeObserver(): void {
 			}
 		}
 	});
-
-	if (prefersReducedMotion) {
-		interludes.forEach((interlude) => {
-			if (interlude instanceof HTMLElement) {
-				interlude.classList.add('is-visible');
-			}
-		});
-		return;
-	}
 
 	const isMobile = window.innerWidth <= 768;
 	const parallaxInterludes = isMobile
@@ -67,10 +56,8 @@ export function initInterludeObserver(): void {
 	if (parallaxInterludes.length > 0) {
 		requestParallaxUpdate();
 		window.addEventListener('scroll', requestParallaxUpdate, { passive: true });
-		window.addEventListener('resize', requestParallaxUpdate);
+		window.addEventListener('resize', requestParallaxUpdate, { passive: true });
 	}
 
-	createIntersectionObserver('.invitation-interlude', (target) => {
-		target.classList.add('is-visible');
-	});
+	initSectionReveal('.invitation-interlude');
 }

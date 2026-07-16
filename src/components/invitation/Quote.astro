@@ -49,12 +49,8 @@ const { text, author, variant = 'editorial' } = Astro.props;
 	</div>
 </section>
 <script>
-	import { createIntersectionObserver } from '@/utils/animations';
+	import { initSectionReveal } from '@/utils/animations';
 
-	createIntersectionObserver(
-		'.quote-line',
-		(target) => target.classList.add('is-visible'),
-		{ threshold: 0.2 },
-	);
+	initSectionReveal('.quote-line', undefined, { threshold: 0.2 });
 </script>
 

@@ -73,32 +73,18 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 </div>
 
 <script>
+	import { initSectionReveal } from '@/utils/animations';
+
 	const initGallery = () => {
 		const gallery = document.querySelector('[data-gallery]');
 		if (!gallery) return;
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		const galleryItems = Array.from(gallery.querySelectorAll('[data-gallery-item]'));
 
-		if (prefersReducedMotion || !('IntersectionObserver' in window)) {
-			galleryItems.forEach((item) => {
-				(item as HTMLElement).dataset.inView = 'true';
-			});
-		} else {
-			const observer = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.isIntersecting) {
-							const item = entry.target as HTMLElement;
-							item.dataset.inView = 'true';
-							observer.unobserve(item);
-						}
-					});
-				},
-				{ threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
-			);
-
-			galleryItems.forEach((item) => observer.observe(item));
-		}
+		initSectionReveal(
+			'[data-gallery-item]',
+			{ onReveal: (item) => ((item as HTMLElement).dataset.inView = 'true') },
+			{ threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+		);
 
 		const invitationRoot = gallery.closest('[data-event-slug]');
 

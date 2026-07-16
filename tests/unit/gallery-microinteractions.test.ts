@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const projectRoot = process.cwd();
+const projectRoot = path.resolve(__dirname, '../..');
 
 function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
@@ -9,19 +9,21 @@ function read(relativePath: string): string {
 
 function getRunnableGalleryScript(): string {
 	const component = read('src/components/invitation/PhotoGallery.astro');
-	const script = component.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+	const script = component.match(/<script>([\s\S]*?initSectionReveal[\s\S]*?)<\/script>/)?.[1];
 
 	if (!script) {
 		throw new Error('PhotoGallery script block was not found');
 	}
 
 	return script
+		.replace(/^\s*import\s*\{.*\}\s*from\s+['"].*['"];?\s*$/m, '')
 		.replaceAll(' as HTMLElement', '')
 		.replaceAll(': HTMLElement', '')
 		.replaceAll(': KeyboardEvent', '');
 }
 
 import { MockIntersectionObserver } from '../helpers/intersection-observer';
+import { initSectionReveal } from '@/utils/animations';
 
 function renderGallery() {
 	document.body.innerHTML = `
@@ -52,7 +54,7 @@ describe('Gallery microinteractions', () => {
 		renderGallery();
 		mockReducedMotion(true);
 
-		new Function(getRunnableGalleryScript())();
+		new Function('initSectionReveal', getRunnableGalleryScript())(initSectionReveal);
 
 		const items = Array.from(document.querySelectorAll<HTMLElement>('[data-gallery-item]'));
 		expect(items.map((item) => item.dataset.inView)).toEqual(['true', 'true']);
@@ -63,7 +65,7 @@ describe('Gallery microinteractions', () => {
 		renderGallery();
 		mockReducedMotion(false);
 
-		new Function(getRunnableGalleryScript())();
+		new Function('initSectionReveal', getRunnableGalleryScript())(initSectionReveal);
 
 		const items = Array.from(document.querySelectorAll<HTMLElement>('[data-gallery-item]'));
 		expect(items.map((item) => item.dataset.inView)).toEqual([undefined, undefined]);

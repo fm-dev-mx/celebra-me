@@ -22,15 +22,15 @@
 	max-width: 860px;
 	width: 100%;
 	text-align: center;
-	opacity: 0%;
-	transform: translateY(20px);
+	opacity: 100%;
+	transform: translateY(0);
 	transition:
 		opacity var(--duration-premium, 0.5s) var(--ease-premium, cubic-bezier(0.16, 1, 0.3, 1)),
 		transform var(--duration-premium, 0.5s) var(--ease-premium, cubic-bezier(0.16, 1, 0.3, 1));
 
-	.countdown-section.is-visible & {
-		opacity: 100%;
-		transform: translateY(0);
+	.countdown-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: translateY(20px);
 	}
 }
 
@@ -101,8 +101,8 @@
 	align-items: center;
 	gap: 0.4rem;
 	position: relative;
-	opacity: 0%;
-	transform: translateY(12px);
+	opacity: 100%;
+	transform: translateY(0);
 	transition:
 		opacity var(--duration-slower, 0.5s) var(--ease-out, ease-out),
 		transform var(--duration-slower, 0.5s) var(--ease-out, ease-out),
@@ -131,9 +131,9 @@
 		transition-delay: calc(0.15s + (3 * 0.08s));
 	}
 
-	.countdown-section.is-visible & {
-		opacity: 100%;
-		transform: translateY(0);
+	.countdown-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: translateY(12px);
 	}
 
 	@include mixins.respond-to(sm) {

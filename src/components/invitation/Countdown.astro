@@ -73,18 +73,8 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 	</div>
 </section>
 <script>
-	const countdownSections = Array.from(document.querySelectorAll('.countdown-section'));
-	const observer = new IntersectionObserver(
-		(entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					entry.target.classList.add('is-visible');
-				}
-			});
-		},
-		{ threshold: 0.15 },
-	);
+	import { initSectionReveal } from '@/utils/animations';
 
-	countdownSections.forEach((section) => observer.observe(section));
+	initSectionReveal('.countdown-section', undefined, { threshold: 0.15 });
 </script>
 
