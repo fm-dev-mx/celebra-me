@@ -153,4 +153,22 @@ describe('Style and Schema Resolver Parity', () => {
 			]);
 		});
 	});
+
+	describe('Static file integrity checks', () => {
+		it('proves that every statically registered profile points to an existing entrypoint file', () => {
+			const profilesDir = path.join(process.cwd(), 'src/styles/invitation-profiles');
+			const requiredProfiles = [
+				'america-johana',
+				'leah-lexa',
+				'luna-y-estrella',
+				'valentina-hernandez',
+				'xareni-iyarit',
+			];
+			for (const profile of requiredProfiles) {
+				const filePath = path.join(profilesDir, `${profile}.scss`);
+				const fileExists = fs.existsSync(filePath);
+				expect(fileExists).toBe(true);
+			}
+		});
+	});
 });
