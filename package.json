@@ -60,16 +60,8 @@
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
         "screenshot:page": "tsx scripts/screenshot/cli.ts",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
-        "db:local:test-unit": "npx jest --no-coverage tests/unit/db-guard.test.ts",
-        "db:disposable:start": "tsx scripts/db/disposable-test-env.ts start",
-        "db:disposable:reset": "tsx scripts/db/disposable-test-env.ts reset",
-        "db:disposable:run-tests": "tsx scripts/db/disposable-test-env.ts run-tests",
-        "db:disposable:stop": "tsx scripts/db/disposable-test-env.ts stop",
-        "db:disposable:cleanup": "tsx scripts/db/disposable-test-env.ts cleanup",
-        "db:guard:check": "tsx scripts/db/db-guard.ts check",
-        "db:guard:classify": "tsx scripts/db/db-guard.ts classify",
-        "db:guard:redact": "tsx scripts/db/db-guard.ts redact",
-        "db:guard:sentinel": "tsx scripts/db/sentinel-check.ts"
+        "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
+        "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
     },
     "dependencies": {
         "@astrojs/vercel": "10.0.8",
