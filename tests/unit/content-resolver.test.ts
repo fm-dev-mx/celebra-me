@@ -54,6 +54,9 @@ import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/publi
 import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+
+const validPublishedContent = validPublishedContentJson as unknown as Record<string, unknown>;
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
 const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
@@ -76,7 +79,7 @@ describe('resolveInvitationContent', () => {
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
-			content: { title: 'DB Content' },
+			content: validPublishedContent,
 		} as any);
 		mockGetRoutable.mockResolvedValue({
 			id: 'event-demos/xv/demo-xv',
@@ -135,13 +138,11 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('still throws on non-credential DB errors', async () => {
-		mockFindPublishedBySlugAndEventType.mockRejectedValue(
-			new Error('connection refused'),
-		);
+		mockFindPublishedBySlugAndEventType.mockRejectedValue(new Error('connection refused'));
 
-		await expect(
-			resolveInvitationContent('my-invitation', 'xv'),
-		).rejects.toThrow('connection refused');
+		await expect(resolveInvitationContent('my-invitation', 'xv')).rejects.toThrow(
+			'connection refused',
+		);
 	});
 
 	it('resolves static demo content when no DB content exists', async () => {
@@ -175,7 +176,7 @@ describe('resolveInvitationContent', () => {
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
-			content: {},
+			content: validPublishedContent,
 		} as any);
 
 		const result = await resolveInvitationContent('my-invitation', 'xv');
@@ -212,7 +213,7 @@ describe('resolveInvitationContent', () => {
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
-			content: {},
+			content: validPublishedContent,
 		} as any);
 
 		const resultXv = await resolveInvitationContent('my-invitation', 'xv');
@@ -248,7 +249,7 @@ describe('resolveInvitationContent', () => {
 			slug: 'safe',
 			eventType: 'xv',
 			isDemo: false,
-			content: { title: 'Safe Event', hero: {} },
+			content: validPublishedContent,
 		} as any);
 
 		const result = await resolveInvitationContent('safe', 'xv');
@@ -265,9 +266,8 @@ describe('resolveInvitationContent', () => {
 			eventType: 'xv',
 			isDemo: false,
 			content: {
+				...validPublishedContent,
 				_assetSlug: 'demo-xv-jewelry-box',
-				title: 'Published',
-				hero: { name: 'Test', label: 'Event', date: '2027-01-01' },
 			},
 		} as any);
 
@@ -275,5 +275,60 @@ describe('resolveInvitationContent', () => {
 
 		const vm = result!.viewModel as unknown as Record<string, unknown>;
 		expect(vm._assetSlug).toBeUndefined();
+	});
+
+	it('rejects malformed published content before adaptation and logs identifiers only', async () => {
+		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			id: 'published-1',
+			invitationId: 'invitation-1',
+			slug: 'broken-invitation',
+			eventType: 'xv',
+			isDemo: false,
+			content: { hero: { name: 'Private payload must not be logged' } },
+			version: 7,
+		} as any);
+
+		const result = await resolveInvitationContent('broken-invitation', 'xv');
+
+		expect(result).toBeNull();
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(consoleError).toHaveBeenCalledWith(
+			'[invitation-content] Invalid published content',
+			expect.objectContaining({
+				publishedContentId: 'published-1',
+				invitationId: 'invitation-1',
+				slug: 'broken-invitation',
+				eventType: 'xv',
+				version: 7,
+				issuePaths: expect.any(Array),
+			}),
+		);
+		expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
+			'Private payload must not be logged',
+		);
+		consoleError.mockRestore();
+	});
+
+	it('keeps schema-compatible legacy published snapshots renderable', async () => {
+		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+			slug: 'legacy-invitation',
+			eventType: 'xv',
+			isDemo: false,
+			content: validPublishedContent,
+		} as any);
+
+		const result = await resolveInvitationContent('legacy-invitation', 'xv');
+
+		expect(result?.source).toBe('published');
+		expect(mockAdaptDbEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({
+					title: validPublishedContent.title,
+					eventType: validPublishedContent.eventType,
+					_assetSlug: validPublishedContent._assetSlug,
+				}),
+			}),
+		);
 	});
 });

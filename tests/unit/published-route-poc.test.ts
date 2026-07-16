@@ -77,6 +77,12 @@ import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+
+const validPublishedContent = {
+	...validPublishedContentJson,
+	isDemo: false,
+};
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
 const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
@@ -99,19 +105,7 @@ describe('published route POC', () => {
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
-			content: {
-				eventType: 'xv',
-				title: 'Published Event',
-				theme: { preset: 'jewelry-box' },
-				hero: {
-					name: 'Published',
-					label: 'Event',
-					date: '2027-01-01',
-					backgroundImage: { type: 'internal', key: 'hero' },
-				},
-				envelope: { disabled: true },
-				sectionStyles: {},
-			},
+			content: { ...validPublishedContent, title: 'Published Event' },
 		} as any);
 
 		const result = await resolveInvitationContent('my-invitation', 'xv');
@@ -129,7 +123,7 @@ describe('published route POC', () => {
 			slug: 'ana-sofia',
 			eventType: 'xv',
 			isDemo: false,
-			content: { eventType: 'xv', title: 'DB Event' },
+			content: { ...validPublishedContent, title: 'DB Event' },
 		} as any);
 		mockGetRoutable.mockResolvedValue({ id: 'events/ana-sofia', data: {} } as any);
 
@@ -159,30 +153,7 @@ describe('published route POC', () => {
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
-			content: {
-				eventType: 'xv',
-				title: 'Published Event',
-				theme: { fontFamily: 'serif', preset: 'jewelry-box' },
-				hero: {
-					name: 'Ana',
-					label: 'XV',
-					date: '2027-01-01',
-					backgroundImage: { type: 'internal', key: 'hero' },
-				},
-				envelope: { disabled: true },
-				sectionOrder: ['quote', 'family', 'location', 'rsvp', 'gifts', 'thankYou'],
-				sectionStyles: { location: { showFlourishes: true } },
-				gallery: { title: 'Galeria', items: [] },
-				itinerary: { title: 'Itinerario', items: [] },
-				countdown: { title: 'Falta poco', footerText: 'Texto' },
-				interludes: [],
-				navigation: [{ label: 'Inicio', href: '#inicio' }],
-				sharing: { whatsappTemplate: 'Hola' },
-				rsvp: { title: 'Confirma', guestCap: 4, confirmationMode: 'api' },
-				gifts: { title: 'Regalos', items: [] },
-				quote: { text: 'Frase', author: 'Autor' },
-				thankYou: { message: 'Gracias', closingName: 'Ana' },
-			},
+			content: { ...validPublishedContent, title: 'Published Event' },
 		} as any);
 
 		const result = await resolveInvitationContent('my-invitation', 'xv');
@@ -261,15 +232,8 @@ describe('published route POC', () => {
 			eventType: 'xv',
 			isDemo: false,
 			content: {
-				eventType: 'xv',
+				...validPublishedContent,
 				title: 'Published',
-				theme: { preset: 'jewelry-box' },
-				hero: {
-					name: 'Ana',
-					label: 'XV',
-					date: '2027-01-01',
-					backgroundImage: { type: 'internal', key: 'hero' },
-				},
 				invitation_project_id: 'should-be-hidden',
 				tokenHash: 'should-not-expose',
 			},

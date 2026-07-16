@@ -5,6 +5,7 @@ import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { isDevEnvironment } from '@/lib/environment';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
@@ -70,6 +71,26 @@ function isSupabaseNetworkError(error: unknown): boolean {
 	return false;
 }
 
+function logInvalidPublishedContent(input: {
+	id: string;
+	invitationId: string;
+	slug: string;
+	eventType: string;
+	version: number;
+	issues: readonly { path: readonly PropertyKey[] }[];
+}): void {
+	console.error('[invitation-content] Invalid published content', {
+		publishedContentId: input.id,
+		invitationId: input.invitationId,
+		slug: input.slug,
+		eventType: input.eventType,
+		version: input.version,
+		issuePaths: input.issues
+			.slice(0, 10)
+			.map((issue) => issue.path.map(String).join('.') || '<root>'),
+	});
+}
+
 export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
@@ -81,7 +102,20 @@ export async function resolveInvitationContent(
 		try {
 			const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 			if (publishedEntry && publishedEntry.isDemo !== true) {
-				const rawContent = publishedEntry.content;
+				const parsedContent = eventContentSchema.safeParse(publishedEntry.content);
+				if (!parsedContent.success) {
+					logInvalidPublishedContent({
+						id: publishedEntry.id,
+						invitationId: publishedEntry.invitationId,
+						slug: publishedEntry.slug,
+						eventType: publishedEntry.eventType,
+						version: publishedEntry.version,
+						issues: parsedContent.error.issues,
+					});
+					return null;
+				}
+
+				const rawContent = parsedContent.data;
 				const viewModel = adaptDbEvent({
 					slug,
 					eventType: publishedEntry.eventType,
