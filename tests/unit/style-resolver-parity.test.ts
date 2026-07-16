@@ -27,13 +27,12 @@ describe('Style and Schema Resolver Parity', () => {
 			rsvp: { title: 'Confirma asistencia' },
 		};
 
-		it('accepts sectionStyles.hero.variant', () => {
+		it('accepts hero.variant', () => {
 			const payload = {
 				...basePayload,
-				sectionStyles: {
-					hero: {
-						variant: 'editorial-magazine',
-					},
+				hero: {
+					...basePayload.hero,
+					variant: 'editorial-magazine',
 				},
 			};
 			const res = eventContentSchema.safeParse(payload);
@@ -43,10 +42,11 @@ describe('Style and Schema Resolver Parity', () => {
 		it('rejects unrelated unknown keys under sectionStyles', () => {
 			const payload = {
 				...basePayload,
+				hero: {
+					...basePayload.hero,
+					variant: 'editorial-magazine',
+				},
 				sectionStyles: {
-					hero: {
-						variant: 'editorial-magazine',
-					},
 					unknownSectionKey: {
 						variant: 'luxury-hacienda',
 					},
@@ -63,10 +63,11 @@ describe('Style and Schema Resolver Parity', () => {
 		it('validates the complete published Valentina-compatible payload', () => {
 			const payload = {
 				...basePayload,
+				hero: {
+					...basePayload.hero,
+					variant: 'editorial-magazine',
+				},
 				sectionStyles: {
-					hero: {
-						variant: 'editorial-magazine',
-					},
 					rsvp: {
 						labels: {
 							name: 'Tu nombre',
