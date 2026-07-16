@@ -1,4 +1,7 @@
 .rsvp[data-variant='editorial-magazine'] {
+	--rsvp-radio-label-color: rgb(var(--editorial-magazine-white-rgb) / 72%);
+	--rsvp-radio-label-color-selected: var(--editorial-magazine-white);
+
 	position: relative;
 	border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
 	border-radius: 0;
@@ -18,10 +21,50 @@
 		letter-spacing: 0.24em;
 	}
 
+	.rsvp__access-kicker {
+		margin: 0 0 0.65rem;
+		color: var(--color-action-accent);
+		font-family: var(--font-label);
+		font-weight: 800;
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.rsvp__edition-label {
+		margin: 0.85rem 0 0;
+		color: rgb(var(--editorial-magazine-white-rgb) / 62%);
+		font-family: var(--font-label);
+		font-weight: 800;
+		font-size: 0.62rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.rsvp__response-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.8rem 0;
+		border-block: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
+		color: rgb(var(--editorial-magazine-white-rgb) / 74%);
+		font-family: var(--font-label);
+		font-weight: 800;
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+
+		span:last-child {
+			color: var(--color-action-accent);
+			white-space: nowrap;
+		}
+	}
+
 	.rsvp__title {
 		color: var(--editorial-magazine-white);
 		font-family: var(--font-display);
-		font-size: clamp(2.6rem, 7.5vw, 6rem);
+		font-size: clamp(1.8rem, 5.5vw, 3.2rem);
 		font-weight: 800;
 		line-height: 0.86;
 		text-transform: uppercase;
@@ -167,11 +210,54 @@
 		}
 	}
 
-	/* Fix country code input sizing in phone group */
-	select.rsvp__country-code {
+	/* Fix country code input sizing and styling in phone group */
+	.rsvp__field--phone select.rsvp__country-code {
 		width: 76px;
 		min-width: 60px;
 		flex: 0 0 auto;
 		padding: 0.75rem 1.5rem 0.75rem 0.5rem; /* Custom arrow padding override */
+		background-color: transparent;
+		border: none;
+		border-bottom: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border-radius: 0;
+		color: var(--editorial-magazine-white);
+
+		&:focus {
+			border-bottom-color: var(--editorial-magazine-white);
+			background-color: transparent;
+			box-shadow: none;
+		}
+	}
+
+	/* Attendance summary row — compact inline card after selection */
+	.rsvp__attendance-summary {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 22%);
+		border-radius: 0;
+		background: rgb(var(--editorial-magazine-white-rgb) / 5%);
+	}
+
+	.rsvp__attendance-summary-label {
+		color: rgb(var(--editorial-magazine-white-rgb) / 52%);
+		font-size: 0.62rem;
+	}
+
+	.rsvp__attendance-summary-value {
+		font-family: var(--font-label);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: var(--editorial-magazine-white);
+	}
+
+	.rsvp__attendance-change {
+		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border-radius: 0;
+		color: rgb(var(--editorial-magazine-white-rgb) / 68%);
+		font-size: 0.6rem;
+
+		&:hover {
+			border-color: var(--color-action-accent);
+			color: var(--color-action-accent);
+		}
 	}
 }
