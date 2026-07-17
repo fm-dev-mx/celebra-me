@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * DEPRECATED — Use scripts/provision/romina-invitation.ts instead via:
+ *   pnpm invitation:prod:provision -- --apply --owner-user-id <UUID> --source-dir <PATH>
+ *
+ * This script is retained only for local development setup. Do NOT use for
+ * production provisioning. See the new provisioner for production-safe
+ * workflow with dry-run support, owner validation, project identity checks,
+ * and rollback capabilities.
+ * ═══════════════════════════════════════════════════════════════════════
+ */
 
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';

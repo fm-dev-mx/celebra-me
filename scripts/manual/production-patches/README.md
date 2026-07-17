@@ -89,34 +89,34 @@ No database connection was opened and no SQL was executed.
 
 ### Apply (PowerShell)
 
+Set the required **environment variables**, then run apply:
+
 ```powershell
-$env:SUPABASE_URL = "https://<project>.supabase.co"
+$env:SUPABASE_URL = "https://<project-ref>.supabase.co"
+$env:PROD_DB_URL = "<POSTGRESQL_CONNECTION_STRING>"
 
 pnpm db:prod:patch -- --apply `
   --owner-user-id "<PRODUCTION_OWNER_USER_ID>" `
   --file "scripts/manual/production-patches/<patch-file>.sql"
 ```
 
-The runner:
-1. Validates UUID syntax before connecting
-2. Validates `SUPABASE_URL` (HTTPS, `.supabase.co` origin, no credentials/query/fragment)
-3. Verifies `SUPABASE_URL` and `PROD_DB_URL` reference the same project
-4. Injects both values into the psql session (session-scoped `set_config`)
-5. Executes the entire SQL transaction
+> ⚠️ **Never paste credentials into logs, documentation or chat.** The runner redacts
+> both `SUPABASE_URL` and `PROD_DB_URL` from its output.
 
-### Generator parity check
+> ⚠️ **If you exposed a production database credential** (e.g. the password inside
+> `PROD_DB_URL`) in a chat, screenshot or log, rotate that credential immediately.
+> Supabase project passwords can be reset via Project Settings → Database → Reset password.
 
-If the SQL changes, regenerate it:
+### Verification
 
-```bash
-pnpm exec tsx scripts/dev/generate-romina-invitation-sql.ts
-```
+The runner validates inputs in sequence before any connection attempt:
 
-Then verify the checked-in artifact matches:
-
-```bash
-pnpm exec tsx scripts/dev/generate-romina-invitation-sql.ts --check
-```
+1. `--dry-run` and `--apply` are mutually exclusive
+2. `--owner-user-id` must be a valid UUID
+3. `SUPABASE_URL` must be `https://<project>.supabase.co` (rejects `postgresql://`)
+4. `PROD_DB_URL` must be available from environment or gitignored secret file
+5. `SUPABASE_URL` and `PROD_DB_URL` must reference the same Supabase project
+6. All session settings (`app.owner_user_id`, `app.supabase_project_url`) and the patch SQL are sent in a single `psql` invocation
 
 ## Ownership conflict handling
 
