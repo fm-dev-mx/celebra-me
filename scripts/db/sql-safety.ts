@@ -207,12 +207,14 @@ export function validateOwnerUserId(raw: string | undefined): string {
  * extracted unambiguously.
  *
  * Supported PROD_DB_URL formats:
- *   Direct:      postgresql://user:pass@db.<ref>.supabase.co:5432/postgres
+ *   Direct:      postgresql://user:***@db.<ref>.supabase.co:5432/postgres
  *   Direct (no prefix):
- *                postgresql://user:pass@<ref>.supabase.co:5432/postgres
- *   Pooler:      postgresql://<ref>.<region>:pass@<region>.pooler.supabase.com:6543/postgres
+ *                postgresql://user:***@<ref>.supabase.co:5432/postgres
+ *   Pooler:      postgresql://<ref>.<region>:***@<region>.pooler.supabase.com:6543/postgres
  *   Pooler (host prefix):
- *                postgresql://user:pass@postgres.<ref>.pooler.supabase.com:5432/postgres
+ *                postgresql://user:***@postgres.<ref>.pooler.supabase.com:5432/postgres
+ *   Pooler (postgres user):
+ *                postgresql://postgres.<ref>:***@<region>.pooler.supabase.com:5432/postgres
  *
  * The project reference is extracted from:
  *   - SUPABASE_URL: hostname (<ref>.supabase.co)
@@ -236,11 +238,20 @@ export function assertSameSupabaseProject(
 		// Try hostname-based extraction first
 		let dbRef = extractProjectRef(dbParsed.hostname);
 		if (!dbRef) {
-			// For pooler URLs the project reference is in the username:
-			//   <ref>.<region>  or  <ref>.<region>:<role>
+			// For pooler URLs the project reference is in the username.
+			// Supported username formats:
+			//   <ref>.<region>       — e.g. abcdef.us-east-1 (ref = "abcdef")
+			//   postgres.<ref>       — e.g. postgres.abcdef  (ref = "abcdef")
+			//   postgres.<ref>:<role> — e.g. postgres.abcdef:postgres
 			const username = dbParsed.username;
 			if (username) {
-				dbRef = username.split('.')[0];
+				const isPooler = dbParsed.hostname.toLowerCase().endsWith('.pooler.supabase.com');
+				if (isPooler && username.startsWith('postgres.')) {
+					// postgres.<ref> or postgres.<ref>:<role> — skip "postgres." prefix
+					dbRef = username.slice('postgres.'.length).split('.')[0];
+				} else {
+					dbRef = username.split('.')[0];
+				}
 			}
 		}
 		if (!dbRef) {

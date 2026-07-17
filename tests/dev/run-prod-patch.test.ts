@@ -141,6 +141,42 @@ describe('assertSameSupabaseProject', () => {
 		).not.toThrow();
 	});
 
+	it('accepts matching projects (pooler, postgres.<ref> username)', () => {
+		expect(() =>
+			assertSameSupabaseProject(
+				'https://ineitkdkyrxqyressllp.supabase.co',
+				'postgresql://postgres.ineitkdkyrxqyressllp:***@aws-0-us-west-2.pooler.supabase.com:5432/postgres',
+			),
+		).not.toThrow();
+	});
+
+	it('accepts matching projects (pooler, postgres.<ref>:<role> username)', () => {
+		expect(() =>
+			assertSameSupabaseProject(
+				'https://abcdefghijklm.supabase.co',
+				'postgresql://postgres.abcdefghijklm:postgres:***@us-east-1.pooler.supabase.com:5432/postgres',
+			),
+		).not.toThrow();
+	});
+
+	it('rejects pooler username containing only postgres (no ref)', () => {
+		expect(() =>
+			assertSameSupabaseProject(
+				'https://abcdefghijklm.supabase.co',
+				'postgresql://postgres:***@us-east-1.pooler.supabase.com:5432/postgres',
+			),
+		).toThrow('must reference the same Supabase project');
+	});
+
+	it('rejects mismatched projects (pooler postgres.<ref>)', () => {
+		expect(() =>
+			assertSameSupabaseProject(
+				'https://project-a.supabase.co',
+				'postgresql://postgres.project-b:***@us-east-1.pooler.supabase.com:5432/postgres',
+			),
+		).toThrow('must reference the same Supabase project');
+	});
+
 	it('accepts URL-encoded usernames in PROD_DB_URL', () => {
 		expect(() =>
 			assertSameSupabaseProject(

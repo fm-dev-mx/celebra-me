@@ -25,18 +25,23 @@ reference the **same Supabase project**. Supported connection string formats:
 
 | Format | Example |
 |---|---|
-| Direct (db prefix) | `postgresql://user:pass@db.<ref>.supabase.co:5432/postgres` |
-| Direct (no prefix) | `postgresql://user:pass@<ref>.supabase.co:5432/postgres` |
-| Pooler (ref in username) | `postgresql://<ref>.<region>:pass@<region>.pooler.supabase.com:6543/postgres` |
-| Pooler (host prefix) | `postgresql://user:pass@postgres.<ref>.pooler.supabase.com:5432/postgres` |
+| Direct (db prefix) | `postgresql://user:***@db.<ref>.supabase.co:5432/postgres` |
+| Direct (no prefix) | `postgresql://user:***@<ref>.supabase.co:5432/postgres` |
+| Pooler (ref in username) | `postgresql://<ref>.<region>:***@<region>.pooler.supabase.com:6543/postgres` |
+| Pooler (postgres.<ref> user) | `postgresql://postgres.<ref>:***@<region>.pooler.supabase.com:5432/postgres` |
+| Pooler (host prefix) | `postgresql://user:***@postgres.<ref>.pooler.supabase.com:5432/postgres` |
 
 The project reference is extracted from:
 - **SUPABASE_URL**: hostname (`<ref>.supabase.co`)
 - **PROD_DB_URL**: hostname OR database username, depending on format
 
 **Pooler URLs** that use `<region>.pooler.supabase.com` hostnames extract the
-project reference from the **first segment of the database username**
-(e.g., `username = "<ref>.<region>"` → project ref = `<ref>`).
+project reference from the **username**. Two username formats are supported:
+
+- `<ref>.<region>` — project ref is the first segment (e.g., `abcdef.us-east-1` → ref = `abcdef`)
+- `postgres.<ref>` — project ref is the segment after `postgres.` (e.g., `postgres.abcdef` → ref = `abcdef`)
+
+The `postgres.<ref>` format is common when connecting as the `postgres` role for a specific project through the Supabase connection pooler.
 
 The runner aborts **before connecting** when:
 - The project references do not match
