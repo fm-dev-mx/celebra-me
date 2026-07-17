@@ -6,6 +6,7 @@ import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
+	alt?: string;
 	caption?: string;
 	key?: string;
 	focalPoint?: string;
@@ -44,11 +45,11 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				style={`${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
 				tabindex="0"
 				role="button"
-				aria-label={item.caption || `Ver imagen ${index + 1}`}
+				aria-label={item.alt || item.caption || `Ver imagen ${index + 1}`}
 			>
 			<img
 					src={src}
-					alt={item.caption || `Imagen ${index + 1}`}
+					alt={item.alt || item.caption || `Imagen ${index + 1}`}
 					width={width}
 					height={height}
 					loading="lazy"

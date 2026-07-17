@@ -263,6 +263,7 @@ export interface InvitationViewModel {
 			subtitle?: string;
 			items: Array<{
 				image: ImageAsset;
+				alt?: string;
 				caption?: string;
 				focalPoint?: string;
 				focalPointMobile?: string;

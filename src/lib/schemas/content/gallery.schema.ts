@@ -12,6 +12,7 @@ export const gallerySchema = z
 		items: z.array(
 			z.object({
 				image: AssetSchema,
+				alt: z.string().min(1).max(500).optional(),
 				caption: z.string().optional(),
 				focalPoint: focalPointSchema.optional(),
 				focalPointMobile: focalPointSchema.optional(),

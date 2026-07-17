@@ -68,6 +68,7 @@ export const gallerySchema = z
 			z
 				.object({
 					image: editableAssetSchema,
+					alt: optionalText(500),
 					caption: optionalText(500),
 					focalPoint: focalPointSchema.optional(),
 					focalPointMobile: focalPointSchema.optional(),
