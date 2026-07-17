@@ -11,11 +11,12 @@
  * from the enclosing scope at the time the mocked module is first loaded.
  */
 
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const ROMINA_PATCH_PATH = resolve(
+const TEST_PATCH_PATH = resolve(
 	process.cwd(),
-	'scripts/manual/production-patches/20260716_prepare_romina_rios_chaparro_xv.sql',
+	'scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql',
 );
 
 const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
@@ -82,9 +83,25 @@ function setEnv(env: Record<string, string>): void {
 }
 
 describe('run-prod-patch orchestration', () => {
+	describe('mode validation', () => {
+		it('exits 1 when no mode is specified', () => {
+			setArgs(['--file', TEST_PATCH_PATH]);
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when both --dry-run and --apply are specified', () => {
+			setArgs(['--dry-run', '--apply', '--file', TEST_PATCH_PATH]);
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('dry-run', () => {
 		it('exits 0 and never calls runPsql', () => {
-			setArgs(['--dry-run', '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--dry-run', '--file', TEST_PATCH_PATH]);
 			importRunner();
 			expect(exitCode).toBe(0);
 			expect(mockRunPsql).not.toHaveBeenCalled();
@@ -98,18 +115,9 @@ describe('run-prod-patch orchestration', () => {
 		});
 	});
 
-	describe('invalid arguments', () => {
-		it('exits 1 when no mode is specified', () => {
-			setArgs(['--file', ROMINA_PATCH_PATH]);
-			importRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-	});
-
 	describe('--apply input validation', () => {
 		it('exits 1 when --owner-user-id is missing', () => {
-			setArgs(['--apply', '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 			expect(exitCode).toBe(1);
@@ -117,7 +125,7 @@ describe('run-prod-patch orchestration', () => {
 		});
 
 		it('exits 1 when --owner-user-id is not a valid UUID', () => {
-			setArgs(['--apply', '--owner-user-id', 'not-a-uuid', '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', 'not-a-uuid', '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 			expect(exitCode).toBe(1);
@@ -125,14 +133,22 @@ describe('run-prod-patch orchestration', () => {
 		});
 
 		it('exits 1 when SUPABASE_URL is missing', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			importRunner();
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).not.toHaveBeenCalled();
 		});
 
-		it('exits 1 when SUPABASE_URL is invalid', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+		it('exits 1 when SUPABASE_URL is a postgresql:// string', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: 'postgresql://postgres:pass@host:5432/db' });
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when SUPABASE_URL is not a valid URL', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: 'not-a-url' });
 			importRunner();
 			expect(exitCode).toBe(1);
@@ -142,7 +158,7 @@ describe('run-prod-patch orchestration', () => {
 
 	describe('project consistency', () => {
 		it('exits 1 when PROD_DB_URL and SUPABASE_URL mismatch', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: 'https://project-a.supabase.co' });
 			mockGetProdDbUrl.mockReturnValue({
 				url: 'postgresql://postgres:***@db.project-b.supabase.co:5432/postgres',
@@ -154,10 +170,10 @@ describe('run-prod-patch orchestration', () => {
 		});
 
 		it('exits 1 when PROD_DB_URL format is unsupported', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			mockGetProdDbUrl.mockReturnValue({
-				url: 'postgresql://user:pass@unknown-host.com:5432/postgres',
+				url: 'postgresql://user:***@unknown-host.com:5432/postgres',
 				source: 'test-mock',
 			});
 			importRunner();
@@ -168,7 +184,7 @@ describe('run-prod-patch orchestration', () => {
 
 	describe('successful execution path', () => {
 		it('calls runPsql exactly once with session config + SQL', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 
@@ -179,7 +195,9 @@ describe('run-prod-patch orchestration', () => {
 			const [sqlArg, dbUrlArg, redactArg] = mockRunPsql.mock.calls[0];
 			expect(sqlArg).toContain("set_config('app.owner_user_id'");
 			expect(sqlArg).toContain("set_config('app.supabase_project_url'");
-			expect(sqlArg).toContain('DO $romina$');
+			expect(sqlArg).toContain('do $$');
+			expect(sqlArg).toContain('begin;');
+			expect(sqlArg).toContain('v_slug');
 			expect(dbUrlArg).toBe(VALID_PROD_DB_URL);
 
 			// Redact array includes both URLs
@@ -188,14 +206,14 @@ describe('run-prod-patch orchestration', () => {
 		});
 
 		it('places owner config before URL config before patch SQL', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 
 			const [sqlArg] = mockRunPsql.mock.calls[0];
 			const ownerIdx = sqlArg.indexOf("set_config('app.owner_user_id'");
 			const urlIdx = sqlArg.indexOf("set_config('app.supabase_project_url'");
-			const beginIdx = sqlArg.indexOf('BEGIN;');
+			const beginIdx = sqlArg.indexOf('begin;');
 
 			expect(ownerIdx).toBeGreaterThanOrEqual(0);
 			expect(urlIdx).toBeGreaterThan(ownerIdx);
@@ -203,7 +221,7 @@ describe('run-prod-patch orchestration', () => {
 		});
 
 		it('escapes single quotes in UUID and URL values', () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 
@@ -217,12 +235,21 @@ describe('run-prod-patch orchestration', () => {
 		it('exits 1 when runPsql returns nonzero', () => {
 			mockRunPsql.mockReturnValue({ status: 1, stdout: '', stderr: 'connection failed' });
 
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
 
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).toHaveBeenCalledTimes(1);
 		});
+	});
+});
+
+describe('package.json', () => {
+	it('does not inject --dry-run into the db:prod:patch script', () => {
+		const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8'));
+		const script: string = pkg.scripts['db:prod:patch'];
+		expect(script).toMatch(/^tsx scripts\/db\/run-prod-patch\.ts$/);
+		expect(script).not.toContain('--dry-run');
 	});
 });

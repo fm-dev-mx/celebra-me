@@ -14,16 +14,29 @@ const apply = process.argv.includes('--apply');
 const file = argValue('--file');
 const ownerUserId = argValue('--owner-user-id');
 
-if (!file || file === '--help' || file === '-h') {
+function printUsage(): void {
 	console.error('Usage: pnpm db:prod:patch -- --dry-run --file <production-patch.sql>');
 	console.error('       pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <production-patch.sql>');
+}
+
+// ── Mode validation ──────────────────────────────────────────────────────
+// Exactly one of --dry-run or --apply is required.
+
+if (dryRun && apply) {
+	console.error('Cannot specify both --dry-run and --apply. Choose one mode.');
 	process.exit(1);
 }
 
 if (!dryRun && !apply) {
-	console.error(
-		'Specify --dry-run (lint only) or --apply (execute after validation).',
-	);
+	printUsage();
+	console.error('       Specify --dry-run (lint only) or --apply (execute after validation).');
+	process.exit(1);
+}
+
+// ── File validation ──────────────────────────────────────────────────────
+
+if (!file || file === '--help' || file === '-h') {
+	printUsage();
 	process.exit(1);
 }
 
@@ -44,15 +57,15 @@ if (!result.ok) {
 	process.exit(1);
 }
 
+// ── Dry-run stops here ───────────────────────────────────────────────────
+
 if (dryRun) {
 	console.info(`Production patch dry-run passed lint: ${path}`);
 	console.info('No database connection was opened and no SQL was executed.');
 	process.exit(0);
 }
 
-if (!apply) process.exit(0);
-
-// ── --apply mode ──────────────────────────────────────────────────────────
+// ── --apply mode ─────────────────────────────────────────────────────────
 
 // 1. Validate owner UUID before connecting
 let validatedOwnerId: string;
@@ -64,10 +77,22 @@ try {
 	process.exit(1);
 }
 
-// 2. Validate SUPABASE_URL from environment
+// 2. Validate SUPABASE_URL from environment — must be HTTPS, not postgresql://
+const rawSupabaseUrl = process.env.SUPABASE_URL || '';
+if (!rawSupabaseUrl) {
+	console.error('SUPABASE_URL environment variable is required for --apply.');
+	process.exit(1);
+}
+if (rawSupabaseUrl.startsWith('postgresql://')) {
+	console.error(
+		'SUPABASE_URL must be the Supabase API URL (https://<project>.supabase.co), not a PostgreSQL connection string. ' +
+		'Set PROD_DB_URL for the database connection string.',
+	);
+	process.exit(1);
+}
 let normalizedUrl: string;
 try {
-	normalizedUrl = validateAndNormalizeSupabaseUrl(process.env.SUPABASE_URL || '');
+	normalizedUrl = validateAndNormalizeSupabaseUrl(rawSupabaseUrl);
 } catch (error: unknown) {
 	const message = error instanceof Error ? error.message : String(error);
 	console.error(message);

@@ -69,6 +69,8 @@ No credentials or project URLs are printed in logs.
 
 ### Dry-run (lint only, no database connection)
 
+The `db:prod:patch` script delegates mode selection to the CLI. No mode is hardcoded.
+
 ```bash
 pnpm db:prod:patch -- --dry-run \
   --file "scripts/manual/production-patches/<patch-file>.sql"
