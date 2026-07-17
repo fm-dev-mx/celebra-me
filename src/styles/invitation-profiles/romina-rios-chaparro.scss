@@ -1,0 +1,223 @@
+@use '../global/mixins' as mixins;
+
+// Romina Rios Chaparro — contemporary botanical palette and vertical-cover art direction.
+// Loaded only through invitation-profiles/romina-rios-chaparro.scss.
+.event--romina-rios-chaparro.theme-preset--premiere-floral {
+	--romina-sage: rgb(174 189 180);
+	--romina-sage-rgb: 174 189 180;
+	--romina-ivory: rgb(246 241 232);
+	--romina-ivory-rgb: 246 241 232;
+	--romina-warm-white: rgb(255 253 248);
+	--romina-gold: rgb(199 173 118);
+	--romina-gold-rgb: 199 173 118;
+	--romina-nude-rgb: 216 196 178;
+	--romina-botanical: rgb(49 73 58);
+	--romina-botanical-rgb: 49 73 58;
+	--romina-ink: rgb(44 42 39);
+	--romina-ink-rgb: 44 42 39;
+	--color-surface-primary: var(--romina-ivory);
+	--color-surface-primary-rgb: var(--romina-ivory-rgb);
+	--color-surface-soft: var(--romina-warm-white);
+	--color-surface-dark: var(--romina-botanical);
+	--color-surface-dark-rgb: var(--romina-botanical-rgb);
+	--color-action-primary: var(--romina-botanical);
+	--color-action-primary-rgb: var(--romina-botanical-rgb);
+	--color-action-accent: var(--romina-gold);
+	--color-action-accent-rgb: var(--romina-gold-rgb);
+	--color-gold-500: var(--romina-gold);
+	--color-gold-500-rgb: var(--romina-gold-rgb);
+	--color-text-primary: var(--romina-ink);
+	--color-text-primary-rgb: var(--romina-ink-rgb);
+	--color-text-emphasis: var(--romina-botanical);
+	--color-text-secondary: rgb(var(--romina-ink-rgb) / 76%);
+	--color-text-on-dark: var(--romina-ivory);
+	--color-border-subtle: rgb(var(--romina-gold-rgb) / 28%);
+	--color-glass-bg: rgb(var(--romina-ivory-rgb) / 14%);
+	--color-glass-bg-accent: rgb(var(--romina-sage-rgb) / 14%);
+	--color-glass-border: rgb(var(--romina-gold-rgb) / 38%);
+	--color-glass-shadow: rgb(var(--romina-botanical-rgb) / 20%);
+	--shadow-premium:
+		0 24px 56px rgb(var(--romina-botanical-rgb) / 14%),
+		0 12px 30px rgb(var(--romina-nude-rgb) / 18%);
+	--hero-card-bg: linear-gradient(
+		160deg,
+		rgb(var(--romina-ivory-rgb) / 86%) 0%,
+		rgb(var(--romina-sage-rgb) / 58%) 100%
+	);
+	--hero-card-border-hairline: rgb(var(--romina-gold-rgb) / 48%);
+	--hero-card-shadow-ambient:
+		0 30px 80px rgb(var(--romina-botanical-rgb) / 28%),
+		0 12px 32px rgb(var(--romina-gold-rgb) / 14%);
+	--hero-title-color-start: var(--romina-ivory);
+	--hero-title-color-mid: var(--romina-warm-white);
+	--hero-title-color-end: var(--romina-gold);
+	--hero-badge-bg: rgb(var(--romina-ivory-rgb) / 52%);
+	--hero-badge-border: rgb(var(--romina-gold-rgb) / 58%);
+	--hero-badge-text: var(--romina-ink);
+	--hero-label-color: var(--romina-gold);
+	--hero-divider-color: rgb(var(--romina-gold-rgb) / 82%);
+	--hero-overlay: rgb(var(--romina-botanical-rgb) / 48%);
+	--hero-overlay-gradient: linear-gradient(
+		180deg,
+		rgb(var(--romina-botanical-rgb) / 8%) 0%,
+		rgb(var(--romina-botanical-rgb) / 72%) 100%
+	);
+	--quote-bg:
+		radial-gradient(circle at 20% 20%, rgb(var(--romina-sage-rgb) / 18%), transparent 38%),
+		linear-gradient(145deg, rgb(38 57 46), var(--romina-botanical));
+	--quote-text-color: var(--romina-ivory);
+	--quote-author-color: rgb(var(--romina-ivory-rgb) / 82%);
+	--quote-accent-color: var(--romina-gold);
+	--quote-divider-color: var(--romina-gold);
+	--quote-ornament-color: var(--romina-sage);
+	--family-bg: radial-gradient(
+		circle at 50% 18%,
+		var(--romina-warm-white) 0%,
+		var(--romina-ivory) 58%,
+		rgb(var(--romina-sage-rgb) / 38%) 100%
+	);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--romina-sage-rgb) / 12%) 100%
+	);
+	--family-panel-bg: rgb(var(--romina-ivory-rgb) / 84%);
+	--family-panel-border: 1px solid rgb(var(--romina-gold-rgb) / 34%);
+	--family-text-primary: var(--romina-ink);
+	--family-text-muted: rgb(var(--romina-ink-rgb) / 70%);
+	--family-accent: var(--romina-botanical);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--romina-gold) 50%,
+		transparent 100%
+	);
+	--family-media-bg: var(--romina-ivory);
+	--family-media-border: 1px solid rgb(var(--romina-gold-rgb) / 42%);
+	--family-media-shadow:
+		0 28px 70px rgb(var(--romina-botanical-rgb) / 22%),
+		0 0 18px rgb(var(--romina-gold-rgb) / 14%);
+	--location-bg: linear-gradient(
+		180deg,
+		var(--romina-warm-white) 0%,
+		var(--romina-ivory) 56%,
+		rgb(var(--romina-sage-rgb) / 42%) 100%
+	);
+	--location-card-bg: linear-gradient(165deg, var(--romina-warm-white) 0%, var(--romina-ivory) 100%);
+	--location-card-shadow:
+		0 40px 90px -24px rgb(var(--romina-botanical-rgb) / 42%),
+		inset 0 0 36px rgb(var(--romina-gold-rgb) / 6%);
+	--location-card-hover-shadow:
+		0 56px 110px -28px rgb(var(--romina-botanical-rgb) / 54%),
+		0 0 34px rgb(var(--romina-gold-rgb) / 16%);
+	--location-place-color: var(--romina-ink);
+	--location-title-color: var(--romina-botanical);
+	--location-date-color: var(--romina-botanical);
+	--location-hour-color: rgb(var(--romina-ink-rgb) / 62%);
+	--location-address-color: rgb(var(--romina-ink-rgb) / 72%);
+	--location-nav-bg: rgb(var(--romina-sage-rgb) / 22%);
+	--location-nav-color: var(--romina-botanical);
+	--gold-metallic: linear-gradient(
+		135deg,
+		rgb(157 133 86) 0%,
+		var(--romina-gold) 38%,
+		rgb(234 216 173) 52%,
+		var(--romina-gold) 68%,
+		rgb(143 119 75) 100%
+	);
+	--gold-glow: 0 0 18px rgb(var(--romina-gold-rgb) / 24%);
+	--interlude-bg: var(--romina-botanical);
+	--interlude-image-filter: saturate(0.96) contrast(1.04) brightness(0.88);
+	--interlude-overlay-opacity: 0.24;
+	--interlude-overlay: linear-gradient(
+		180deg,
+		rgb(var(--romina-botanical-rgb) / 18%) 0%,
+		transparent 44%,
+		rgb(var(--romina-botanical-rgb) / 46%) 100%
+	);
+	--pa-card-bg-color: var(--romina-ivory);
+	--pa-card-border: 1px solid rgb(var(--romina-gold-rgb) / 38%);
+	--pa-title-color: var(--romina-botanical);
+	--pa-guest-color: var(--romina-ink);
+	--pa-count-color: var(--romina-botanical);
+	--pa-divider-diamond-bg: var(--romina-ivory);
+	--pa-count-frame-bg: linear-gradient(180deg, var(--romina-warm-white) 0%, var(--romina-ivory) 100%);
+
+	@media (width >= 600px) and (width <= 860px) {
+		.invitation-hero {
+			&__portrait {
+				width: min(64%, 460px);
+			}
+
+			&__title {
+				margin-bottom: 5vh;
+				font-size: clamp(4rem, 11vw, 5.25rem);
+				line-height: 0.82;
+				transform: none;
+			}
+		}
+	}
+
+	@include mixins.respond-to(lg) {
+		.invitation-hero {
+			align-items: flex-start;
+			justify-content: center;
+			text-align: left;
+			background:
+				radial-gradient(
+					circle at 78% 32%,
+					rgb(var(--romina-sage-rgb) / 28%),
+					transparent 34%
+				),
+				linear-gradient(
+					135deg,
+					rgb(34 53 42) 0%,
+					var(--romina-botanical) 62%,
+					rgb(38 60 48) 100%
+				);
+
+			&__background img {
+				display: block;
+				width: min(58vw, 760px);
+				height: 100%;
+				margin-left: auto;
+				object-fit: contain;
+				object-position: right center;
+			}
+
+			&__background::after {
+				background: linear-gradient(
+					90deg,
+					rgb(var(--romina-botanical-rgb) / 96%) 0%,
+					rgb(var(--romina-botanical-rgb) / 82%) 34%,
+					rgb(var(--romina-botanical-rgb) / 18%) 68%,
+					transparent 100%
+				);
+			}
+
+			&__content {
+				width: min(42vw, 560px);
+				margin: 0 0 0 clamp(3rem, 7vw, 8rem);
+				text-align: left;
+			}
+
+			&__title {
+				position: relative;
+				top: -4rem;
+				font-size: clamp(5rem, 6.7vw, 6rem);
+				line-height: 0.82;
+				mix-blend-mode: normal;
+				transform: none;
+			}
+
+			&__divider {
+				margin-inline: 0;
+			}
+
+			&__scroll-indicator {
+				left: clamp(3rem, 7vw, 8rem);
+				right: auto;
+			}
+		}
+	}
+}
