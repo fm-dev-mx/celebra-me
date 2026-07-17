@@ -1,0 +1,228 @@
+/**
+ * Runner orchestration tests — verify the actual execution path of
+ * run-prod-patch.ts up to the mocked database boundary.
+ *
+ * These tests mock runPsql and getProdDbUrl to isolate the runner's
+ * argument parsing, validation chain, SQL assembly and error handling
+ * from real database access.
+ *
+ * NOTE: jest.mock() calls are hoisted by Jest and must be at the top
+ * level (not inside beforeEach). The mock factories reference variables
+ * from the enclosing scope at the time the mocked module is first loaded.
+ */
+
+import { resolve } from 'node:path';
+
+const ROMINA_PATCH_PATH = resolve(
+	process.cwd(),
+	'scripts/manual/production-patches/20260716_prepare_romina_rios_chaparro_xv.sql',
+);
+
+const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
+const VALID_SUPABASE_URL = 'https://abcdefghijklm.supabase.co';
+const VALID_PROD_DB_URL =
+	'postgresql://postgres:***@db.abcdefghijklm.supabase.co:5432/postgres';
+
+// These are mutable variables that the mock closures capture.
+let mockRunPsql: jest.Mock;
+let mockGetProdDbUrl: jest.Mock;
+
+jest.mock('../../scripts/db/db-workflow-lib', () => ({
+	runPsql: (...args: unknown[]) => mockRunPsql(...args),
+	getProdDbUrl: (...args: unknown[]) => mockGetProdDbUrl(...args),
+}));
+
+let exitCode: number | null;
+
+beforeEach(() => {
+	jest.resetModules();
+
+	mockRunPsql = jest.fn().mockReturnValue({ status: 0, stdout: '', stderr: '' });
+	mockGetProdDbUrl = jest.fn().mockReturnValue({
+		url: VALID_PROD_DB_URL,
+		source: 'test-mock',
+	});
+
+	exitCode = null;
+	// Clear env vars that could interfere with tests
+	delete process.env.SUPABASE_URL;
+	delete process.env.PROD_DB_URL;
+
+	jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+		exitCode = code ?? null;
+		// Simulate real process.exit by throwing — this prevents the runner
+		// from continuing past the exit point.
+		throw Object.assign(new Error(`process.exit(${code})`), { __exitMock: true as const });
+	}) as () => never);
+
+	jest.spyOn(console, 'error').mockImplementation();
+	jest.spyOn(console, 'info').mockImplementation();
+	jest.spyOn(console, 'log').mockImplementation();
+});
+
+function importRunner(): void {
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		require('../../scripts/db/run-prod-patch');
+	} catch (error: unknown) {
+		const err = error as Error & { __exitMock?: boolean };
+		// Swallow the exit mock error
+		if (!err.__exitMock) throw error;
+	}
+}
+
+function setArgs(args: string[]): void {
+	process.argv = ['node', 'run-prod-patch.ts', '--', ...args];
+}
+
+function setEnv(env: Record<string, string>): void {
+	for (const [key, val] of Object.entries(env)) {
+		process.env[key] = val;
+	}
+}
+
+describe('run-prod-patch orchestration', () => {
+	describe('dry-run', () => {
+		it('exits 0 and never calls runPsql', () => {
+			setArgs(['--dry-run', '--file', ROMINA_PATCH_PATH]);
+			importRunner();
+			expect(exitCode).toBe(0);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when --file is missing', () => {
+			setArgs(['--dry-run']);
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('invalid arguments', () => {
+		it('exits 1 when no mode is specified', () => {
+			setArgs(['--file', ROMINA_PATCH_PATH]);
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('--apply input validation', () => {
+		it('exits 1 when --owner-user-id is missing', () => {
+			setArgs(['--apply', '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when --owner-user-id is not a valid UUID', () => {
+			setArgs(['--apply', '--owner-user-id', 'not-a-uuid', '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when SUPABASE_URL is missing', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when SUPABASE_URL is invalid', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: 'not-a-url' });
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('project consistency', () => {
+		it('exits 1 when PROD_DB_URL and SUPABASE_URL mismatch', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: 'https://project-a.supabase.co' });
+			mockGetProdDbUrl.mockReturnValue({
+				url: 'postgresql://postgres:***@db.project-b.supabase.co:5432/postgres',
+				source: 'test-mock',
+			});
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+
+		it('exits 1 when PROD_DB_URL format is unsupported', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			mockGetProdDbUrl.mockReturnValue({
+				url: 'postgresql://user:pass@unknown-host.com:5432/postgres',
+				source: 'test-mock',
+			});
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('successful execution path', () => {
+		it('calls runPsql exactly once with session config + SQL', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+
+			// The runner does not call process.exit(0) on success — it falls
+			// off the end. Verify runPsql was called correctly instead.
+			expect(mockRunPsql).toHaveBeenCalledTimes(1);
+
+			const [sqlArg, dbUrlArg, redactArg] = mockRunPsql.mock.calls[0];
+			expect(sqlArg).toContain("set_config('app.owner_user_id'");
+			expect(sqlArg).toContain("set_config('app.supabase_project_url'");
+			expect(sqlArg).toContain('DO $romina$');
+			expect(dbUrlArg).toBe(VALID_PROD_DB_URL);
+
+			// Redact array includes both URLs
+			expect(redactArg).toContain(VALID_SUPABASE_URL);
+			expect(redactArg).toContain(VALID_PROD_DB_URL);
+		});
+
+		it('places owner config before URL config before patch SQL', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+
+			const [sqlArg] = mockRunPsql.mock.calls[0];
+			const ownerIdx = sqlArg.indexOf("set_config('app.owner_user_id'");
+			const urlIdx = sqlArg.indexOf("set_config('app.supabase_project_url'");
+			const beginIdx = sqlArg.indexOf('BEGIN;');
+
+			expect(ownerIdx).toBeGreaterThanOrEqual(0);
+			expect(urlIdx).toBeGreaterThan(ownerIdx);
+			expect(beginIdx).toBeGreaterThan(urlIdx);
+		});
+
+		it('escapes single quotes in UUID and URL values', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+
+			const [sqlArg] = mockRunPsql.mock.calls[0];
+			expect(sqlArg).toContain(`'${VALID_UUID}'`);
+			expect(sqlArg).toContain(`'${VALID_SUPABASE_URL}'`);
+		});
+	});
+
+	describe('subprocess failure', () => {
+		it('exits 1 when runPsql returns nonzero', () => {
+			mockRunPsql.mockReturnValue({ status: 1, stdout: '', stderr: 'connection failed' });
+
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', ROMINA_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).toHaveBeenCalledTimes(1);
+		});
+	});
+});

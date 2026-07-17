@@ -145,3 +145,155 @@ export function lintProductionPatchSql(sql: string): LintResult {
 
 	return { ok: errors.length === 0, errors, manifest };
 }
+
+/**
+ * Validate and normalize a SUPABASE_URL for production patch execution.
+ * Returns the normalized URL (no trailing slash) on success.
+ * Throws an Error with a user-facing message on validation failure.
+ */
+export function validateAndNormalizeSupabaseUrl(rawUrl: string): string {
+	if (!rawUrl) {
+		throw new Error('SUPABASE_URL environment variable is required for --apply.');
+	}
+
+	let url: URL;
+	try {
+		url = new URL(rawUrl);
+	} catch {
+		throw new Error('SUPABASE_URL is not a valid URL.');
+	}
+
+	if (url.protocol !== 'https:') {
+		throw new Error('SUPABASE_URL must use HTTPS protocol.');
+	}
+	if (url.username || url.password) {
+		throw new Error('SUPABASE_URL must not contain credentials.');
+	}
+	if (url.search || url.hash) {
+		throw new Error('SUPABASE_URL must not contain query string or fragment.');
+	}
+	if (!url.hostname.endsWith('.supabase.co')) {
+		throw new Error(
+			'SUPABASE_URL hostname must be a Supabase project (.supabase.co).',
+		);
+	}
+
+	return rawUrl.replace(/\/+$/, '');
+}
+
+/**
+ * Validate that a value is a non-empty UUID string.
+ * Returns the validated UUID on success.
+ * Throws an Error with a user-facing message on validation failure.
+ */
+export function validateOwnerUserId(raw: string | undefined): string {
+	if (!raw || raw.trim() === '') {
+		throw new Error(
+			'--owner-user-id is required. Supply the production UUID of the customer who will own this invitation.',
+		);
+	}
+	const trimmed = raw.trim();
+	if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) {
+		throw new Error(
+			`--owner-user-id "${trimmed}" is not a valid UUID. Expected format: 00000000-0000-0000-0000-000000000000`,
+		);
+	}
+	return trimmed;
+}
+
+/**
+ * Validate that SUPABASE_URL and PROD_DB_URL point to the same Supabase
+ * project. Throws on mismatch or when the project reference cannot be
+ * extracted unambiguously.
+ *
+ * Supported PROD_DB_URL formats:
+ *   Direct:      postgresql://user:pass@db.<ref>.supabase.co:5432/postgres
+ *   Direct (no prefix):
+ *                postgresql://user:pass@<ref>.supabase.co:5432/postgres
+ *   Pooler:      postgresql://<ref>.<region>:pass@<region>.pooler.supabase.com:6543/postgres
+ *   Pooler (host prefix):
+ *                postgresql://user:pass@postgres.<ref>.pooler.supabase.com:5432/postgres
+ *
+ * The project reference is extracted from:
+ *   - SUPABASE_URL: hostname (<ref>.supabase.co)
+ *   - PROD_DB_URL:  hostname OR username depending on format
+ */
+export function assertSameSupabaseProject(
+	supabaseUrl: string,
+	prodDbUrl: string,
+): void {
+	try {
+		const supParsed = new URL(supabaseUrl);
+		const dbParsed = new URL(prodDbUrl);
+
+		const supRef = extractProjectRef(supParsed.hostname);
+		if (!supRef) {
+			throw new Error(
+				`Cannot extract Supabase project reference from SUPABASE_URL hostname "${supParsed.hostname}".`,
+			);
+		}
+
+		// Try hostname-based extraction first
+		let dbRef = extractProjectRef(dbParsed.hostname);
+		if (!dbRef) {
+			// For pooler URLs the project reference is in the username:
+			//   <ref>.<region>  or  <ref>.<region>:<role>
+			const username = dbParsed.username;
+			if (username) {
+				dbRef = username.split('.')[0];
+			}
+		}
+		if (!dbRef) {
+			throw new Error(
+				`Cannot extract Supabase project reference from PROD_DB_URL. The connection string format is unsupported or ambiguous.`,
+			);
+		}
+
+		if (supRef.toLowerCase() !== dbRef.toLowerCase()) {
+			throw new Error(
+				`SUPABASE_URL (project "${supRef}") and PROD_DB_URL (project "${dbRef}") must reference the same Supabase project.`,
+			);
+		}
+	} catch (error: unknown) {
+		if (error instanceof Error && error.message.includes('SUPABASE_URL')) {
+			throw error;
+		}
+		if (error instanceof TypeError || (error instanceof Error && /invalid url/i.test(error.message))) {
+			throw new Error(
+				'PROD_DB_URL is not a valid URL. Cannot verify project consistency.',
+				{ cause: error },
+			);
+		}
+		throw error;
+	}
+}
+
+/**
+ * Extract the Supabase project reference from a hostname.
+ * Returns the ref or null if the hostname is not a known Supabase format.
+ *
+ * Supported hostname patterns:
+ *   <ref>.supabase.co
+ *   db.<ref>.supabase.co
+ *   postgres.<ref>.pooler.supabase.com
+ *   <region>.pooler.supabase.com  (ref is NOT in hostname — returns null)
+ */
+function extractProjectRef(hostname: string): string | null {
+	const lower = hostname.toLowerCase();
+	if (lower.endsWith('.supabase.co')) {
+		// Remove .supabase.co suffix and optional db. prefix
+		const noSuffix = lower.replace(/\.supabase\.co$/, '');
+		return noSuffix.replace(/^db\./i, '').replace(/^postgres\./i, '');
+	}
+	if (lower.endsWith('.pooler.supabase.com')) {
+		// Remove .pooler.supabase.com suffix
+		const noSuffix = lower.replace(/\.pooler\.supabase\.com$/, '');
+		// Check for postgres.<ref> prefix
+		if (/^postgres\./i.test(noSuffix)) {
+			return noSuffix.replace(/^postgres\./i, '');
+		}
+		// Otherwise it's <region> — ref is in the username, not hostname
+		return null;
+	}
+	return null;
+}
