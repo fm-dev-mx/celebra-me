@@ -112,6 +112,7 @@ export const InvitationEditorSectionSchemas = {
 			.object({
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				date: optionalText(40),
 				image: editableAssetSchema.optional(),
 				focalPoint: focalPointSchema.optional(),
 				overlayAnchor: overlayAnchorSchema.optional(),

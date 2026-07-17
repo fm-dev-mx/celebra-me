@@ -324,6 +324,7 @@ export interface InvitationViewModel {
 		thankYou?: {
 			message: string;
 			closingName: string;
+			date?: string;
 			image?: ImageAsset;
 			focalPoint?: string;
 			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';

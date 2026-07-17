@@ -7,6 +7,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 interface Props {
 	message: string;
 	closingName: string;
+	date?: string;
 	image?: string | ImageAsset;
 	variant?: string;
 	focalPoint?: string;
@@ -23,6 +24,7 @@ interface Props {
 const {
 	message,
 	closingName,
+	date,
 	image,
 	variant = 'standard',
 	focalPoint,
@@ -113,6 +115,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 						<p class="closing-name">
 							{closingName}
 						</p>
+						{date && <p class="closing-date">{date}</p>}
 					</div>
 
 					{showThankYouBranding && (
@@ -143,6 +146,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 					<p class="closing-name">
 						{closingName}
 					</p>
+					{date && <p class="closing-date">{date}</p>}
 				</div>
 
 				{showThankYouBranding && (
@@ -168,6 +172,15 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 		--thank-you-safe-y: var(--safeY);
 		--thank-you-safe-width: var(--safeW);
 		--thank-you-safe-height: var(--safeH);
+	}
+
+	.closing-date {
+		margin: 0.5rem 0 0;
+		color: var(--color-text-secondary);
+		font-family: var(--font-label);
+		font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 	}
 </style>
 

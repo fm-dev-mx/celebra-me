@@ -116,6 +116,7 @@ export const thankYouSchema = z
 	.object({
 		message: z.string(),
 		closingName: z.string(),
+		date: z.string().optional(),
 		image: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
 		overlayAnchor: overlayAnchorSchema.optional(),
