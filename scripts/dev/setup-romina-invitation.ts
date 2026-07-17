@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
 	classifyDbTarget,
 	verifyLocalIdentity,
@@ -21,6 +21,59 @@ import {
 } from './romina-invitation-data';
 
 const BUCKET = 'invitation-assets';
+
+// Minimal Database type so the Supabase client can infer table names.
+// This file runs locally only (never in production) so full schema types
+// are not required — only the tables and columns accessed here.
+interface Database {
+	public: {
+		Tables: {
+			invitations: {
+				Row: Record<string, unknown>;
+				Insert: Record<string, unknown>;
+				Update: Record<string, unknown>;
+				Relationships: [];
+			};
+			invitation_assets: {
+				Row: Record<string, unknown>;
+				Insert: Record<string, unknown>;
+				Update: Record<string, unknown>;
+				Relationships: [];
+			};
+			invitation_content_drafts: {
+				Row: Record<string, unknown>;
+				Insert: Record<string, unknown>;
+				Update: Record<string, unknown>;
+				Relationships: [];
+			};
+			app_user_roles: {
+				Row: Record<string, unknown>;
+				Insert: Record<string, unknown>;
+				Update: Record<string, unknown>;
+				Relationships: [];
+			};
+		};
+		Views: Record<string, never>;
+		Functions: {
+			publish_invitation_atomic: {
+				Args: Record<string, unknown>;
+				Returns: {
+					draft: Record<string, unknown>;
+					publishedContent: {
+						id: string;
+						slug: string;
+						eventType: string;
+						version: number;
+						publishedAt: string;
+					};
+				};
+			};
+		};
+	};
+}
+
+type DbClient = SupabaseClient<Database>;
+
 interface LocalEnv {
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_ROLE_KEY: string;
@@ -100,7 +153,7 @@ function resolveSourceDirectory(): string {
 }
 
 async function ensureInvitation(
-	supabase: ReturnType<typeof createClient>,
+	supabase: DbClient,
 	ownerUserId: string,
 ): Promise<InvitationRow> {
 	const preset = findDemoPreset(ROMINA_EVENT.baseDemoId);
@@ -152,7 +205,7 @@ async function ensureInvitation(
 }
 
 async function uploadAssets(
-	supabase: ReturnType<typeof createClient>,
+	supabase: DbClient,
 	invitationId: string,
 	sourceDir: string,
 ): Promise<RominaAssetMap> {
@@ -230,7 +283,7 @@ async function uploadAssets(
 }
 
 async function upsertDraft(
-	supabase: ReturnType<typeof createClient>,
+	supabase: DbClient,
 	invitationId: string,
 	content: Record<string, unknown>,
 ): Promise<DraftRow> {
@@ -272,7 +325,7 @@ async function main(): Promise<void> {
 	const projectRoot = path.resolve(scriptDir, '..', '..');
 	const sourceDir = resolveSourceDirectory();
 	const env = loadLocalEnv(projectRoot);
-	const supabase: ReturnType<typeof createClient> = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+	const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
 		auth: { persistSession: false, autoRefreshToken: false },
 	});
 
