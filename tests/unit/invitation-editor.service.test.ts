@@ -4,6 +4,8 @@ jest.mock('astro:content', () => ({
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	findInvitationById: jest.fn(),
+	findInvitationBySlug: jest.fn(),
+	updateInvitationConditionally: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
@@ -23,7 +25,11 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 }));
 
 import { getCollection } from 'astro:content';
-import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
+import {
+	findInvitationById,
+	findInvitationBySlug,
+	updateInvitationConditionally,
+} from '@/lib/intake/repositories/invitation.repository';
 import {
 	findDraftByInvitationId,
 	updateDraftContentConditionally,
@@ -37,6 +43,7 @@ import {
 import {
 	getInvitationEditorContext,
 	restoreInvitationEditorFromPublished,
+	saveInvitationEditorMetadata,
 	saveInvitationEditorSection,
 } from '@/lib/intake/services/invitation-editor.service';
 
@@ -138,6 +145,8 @@ const demoContent = {
 beforeEach(() => {
 	jest.clearAllMocks();
 	(findInvitationById as jest.Mock).mockResolvedValue(invitation);
+	(findInvitationBySlug as jest.Mock).mockResolvedValue(null);
+	(updateInvitationConditionally as jest.Mock).mockResolvedValue(invitation);
 	(findDraftByInvitationId as jest.Mock).mockResolvedValue(draft);
 	(findPublishedByInvitationId as jest.Mock).mockResolvedValue(published);
 	(findEventByInvitationIdService as jest.Mock).mockResolvedValue(null);
@@ -665,7 +674,107 @@ describe('hydration edge cases', () => {
 	});
 });
 
+describe('saveInvitationEditorMetadata', () => {
+	const metadata = {
+		title: 'XV Ana actualizada',
+		slug: 'ana-actualizada',
+		status: 'published' as const,
+		clientName: '',
+		clientEmail: '',
+		clientWhatsapp: '',
+		photosReceived: false,
+	};
+
+	it('reopens an approved draft when public title or slug changes', async () => {
+		(updateInvitationConditionally as jest.Mock).mockResolvedValue({
+			...invitation,
+			title: metadata.title,
+			slug: metadata.slug,
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		const result = await saveInvitationEditorMetadata('proj-1', {
+			expectedUpdatedAt: invitation.updatedAt,
+			value: metadata,
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith('draft-1', draft.updatedAt, {
+			content: draft.content,
+			status: 'draft',
+		});
+		expect(result.draftStatus).toBe('draft');
+		expect(result.publication.hasUnpublishedChanges).toBe(true);
+	});
+
+	it('does not create pending publication for client-only metadata', async () => {
+		const result = await saveInvitationEditorMetadata('proj-1', {
+			expectedUpdatedAt: invitation.updatedAt,
+			value: {
+				...metadata,
+				title: invitation.title,
+				slug: invitation.slug,
+				clientName: 'Romina',
+			},
+		});
+
+		expect(updateDraftContentConditionally).not.toHaveBeenCalled();
+		expect(upsertDraft).not.toHaveBeenCalled();
+		expect(result.draftStatus).toBe('approved');
+		expect(result.publication.hasUnpublishedChanges).toBe(false);
+	});
+});
+
 describe('saveInvitationEditorSection', () => {
+	it('preserves a configured large guestCap while saving another RSVP field', async () => {
+		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
+			...draft,
+			content: { ...draft.content, rsvp: { guestCap: 100, title: 'Confirmación anterior' } },
+		});
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		await saveInvitationEditorSection('proj-1', 'rsvp', {
+			expectedUpdatedAt: draft.updatedAt,
+			value: { guestCap: 100, title: 'Confirmación actualizada' },
+		});
+
+		const savedContent = (updateDraftContentConditionally as jest.Mock).mock.calls[0][2]
+			.content;
+		expect(savedContent.rsvp).toMatchObject({
+			guestCap: 100,
+			title: 'Confirmación actualizada',
+		});
+	});
+
+	it('accepts a configured guestCap above the former product limit', async () => {
+		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
+			...draft,
+			status: 'draft',
+			updatedAt: '2026-05-30T03:00:00Z',
+		});
+
+		await saveInvitationEditorSection('proj-1', 'rsvp', {
+			expectedUpdatedAt: draft.updatedAt,
+			value: { guestCap: 21 },
+		});
+
+		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
+			'draft-1',
+			draft.updatedAt,
+			expect.objectContaining({
+				content: expect.objectContaining({ rsvp: { guestCap: 21 } }),
+			}),
+		);
+	});
+
 	it('saves main hero desktop and mobile image refs independently', async () => {
 		const desktopRef = {
 			type: 'uploaded' as const,
@@ -986,7 +1095,13 @@ describe('restoreInvitationEditorFromPublished', () => {
 		});
 
 		await restoreInvitationEditorFromPublished('proj-1', {
-			expectedUpdatedAt: draft.updatedAt,
+			expectedDraftUpdatedAt: draft.updatedAt,
+			expectedInvitationUpdatedAt: invitation.updatedAt,
+		});
+
+		expect(updateInvitationConditionally).toHaveBeenCalledWith('proj-1', invitation.updatedAt, {
+			title: published.content.title,
+			slug: published.slug,
 		});
 
 		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
@@ -1008,7 +1123,8 @@ describe('restoreInvitationEditorFromPublished', () => {
 
 		await expect(
 			restoreInvitationEditorFromPublished('proj-1', {
-				expectedUpdatedAt: draft.updatedAt,
+				expectedDraftUpdatedAt: draft.updatedAt,
+				expectedInvitationUpdatedAt: invitation.updatedAt,
 			}),
 		).rejects.toMatchObject({ status: 404 });
 	});

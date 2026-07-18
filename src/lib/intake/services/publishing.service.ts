@@ -1,4 +1,5 @@
 import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { randomUUID } from 'node:crypto';
 import {
 	findPublishedByInvitationId,
 	findPublishedBySlugAndEventType,
@@ -9,7 +10,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { getPublicUrl } from '@/lib/intake/storage';
-import type { InvitationAsset, InvitationContentDraft } from '@/lib/intake/types';
+import type { Invitation, InvitationAsset, InvitationContentDraft } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
@@ -20,7 +21,15 @@ import {
 	resolveInvitationTheme,
 } from '@/lib/intake/services/invitation-preset-resolver';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { commitAtomicPublication } from '@/lib/intake/repositories/publication.repository';
+import {
+	commitAtomicPublication,
+	replayAtomicPublication,
+} from '@/lib/intake/repositories/publication.repository';
+import {
+	createPublicationComparison,
+	hashPublicMetadata,
+	hashPublicationProjection,
+} from '@/lib/intake/services/publication-diff.service';
 import {
 	ASSET_POLICY_VERSION,
 	MAX_OUTPUT_BYTES,
@@ -36,6 +45,147 @@ export interface PublishResult {
 		eventType: string;
 		version: number;
 		publishedAt: string;
+	};
+	idempotent?: boolean;
+}
+
+export interface PublicationPreflight {
+	changedPaths: string[];
+	changedSections: Array<{ path: string; sectionId: string; sectionLabel: string }>;
+	draftRevision: string;
+	publishedVersion: number | null;
+	publicMetadataHash: string;
+	projectionHash: string;
+}
+
+export interface PublishPreflightInput {
+	draftRevision: string;
+	publishedVersion: number | null;
+	publicMetadataHash: string;
+	projectionHash: string;
+	idempotencyKey: string;
+}
+
+function parsePublicationProjection(content: Record<string, unknown>): Record<string, unknown> {
+	const result = eventContentSchema.safeParse(content);
+	if (result.success) return result.data as Record<string, unknown>;
+
+	const invalidPaths = result.error.issues
+		.map((issue) => issue.path.join('.'))
+		.filter(Boolean)
+		.join(', ');
+	throw new ApiError(
+		422,
+		'bad_request',
+		`La revisión contiene datos incompletos o inválidos. Corrige los campos marcados antes de publicar.${invalidPaths ? ` Campos: ${invalidPaths}.` : ''}`,
+		{ issues: result.error.issues },
+	);
+}
+
+function normalizePublishedProjection(content: Record<string, unknown>): Record<string, unknown> {
+	const result = eventContentSchema.safeParse(content);
+	return result.success ? (result.data as Record<string, unknown>) : content;
+}
+
+function resolvePublicationConfiguration(
+	invitation: Invitation,
+	priorPublished: Awaited<ReturnType<typeof findPublishedByInvitationId>>,
+) {
+	const guardResult = checkPublishGuard(invitation);
+	if (!guardResult.ok) throw new ApiError(422, 'config_error', guardResult.errors.join(' '));
+	const snapshot = findDemoPreset(invitation.baseDemoId) ?? invitation.snapshot;
+	if (!snapshot) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'No se encontró la configuración de la invitación para publicar.',
+		);
+	}
+	if (invitation.kind === 'client' && !invitation.createdBy) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.',
+		);
+	}
+	const assetSlug = resolveAssetSlug(invitation, priorPublished?.content);
+	if (!assetSlug) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración de la invitación no tiene slug de vista previa.',
+		);
+	}
+	if (!isValidEvent(assetSlug)) {
+		throw new ApiError(
+			422,
+			'bad_request',
+			'La configuración visual de esta invitación no es válida. No se encontraron los recursos gráficos asociados.',
+		);
+	}
+	return {
+		assetSlug,
+		publishSlug: getPublicSlug(invitation),
+		resolvedTheme: resolveInvitationTheme(invitation),
+		snapshot,
+	};
+}
+
+export async function getPublicationPreflight(invitationId: string): Promise<PublicationPreflight> {
+	const [invitation, draft, published] = await Promise.all([
+		findInvitationById(invitationId),
+		findDraftByInvitationId(invitationId),
+		findPublishedByInvitationId(invitationId),
+	]);
+	if (!invitation) throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
+	if (!draft || draft.status !== 'draft') {
+		throw new ApiError(409, 'conflict', 'No hay un borrador disponible para revisar.');
+	}
+
+	const catalogEntry = findDemoPreset(invitation.baseDemoId);
+	const snapshot = catalogEntry ?? invitation.snapshot;
+	const resolvedTheme = resolveInvitationTheme(invitation);
+	const demoContent = await loadDemoContent(snapshot.previewSlug);
+	const effectiveDraftContent = computeEffectiveContent(draft.content, published?.content);
+	const draftProjection = parsePublicationProjection(
+		mapDraftToPublished({
+			invitation: {
+				title: invitation.title,
+				eventType: invitation.eventType,
+				snapshot: { ...snapshot, themeId: resolvedTheme },
+			},
+			assetSlug: resolveAssetSlug(invitation, published?.content),
+			draftContent: effectiveDraftContent,
+			demoContent,
+			priorPublishedContent: published?.content,
+			isDemo: invitation.kind === 'demo',
+		}),
+	);
+	const comparison = createPublicationComparison({
+		draftProjection: {
+			content: draftProjection,
+			metadata: { title: invitation.title, slug: getPublicSlug(invitation) },
+		},
+		publishedProjection: published
+			? {
+					content: normalizePublishedProjection(published.content),
+					metadata: {
+						title:
+							typeof published.content.title === 'string'
+								? published.content.title
+								: undefined,
+						slug: published.slug,
+					},
+				}
+			: undefined,
+	});
+	return {
+		changedPaths: comparison.changedPaths,
+		changedSections: comparison.changedSections,
+		draftRevision: draft.updatedAt,
+		publishedVersion: published?.version ?? null,
+		publicMetadataHash: hashPublicMetadata(invitation, published?.content),
+		projectionHash: hashPublicationProjection(draftProjection),
 	};
 }
 
@@ -286,7 +436,10 @@ function assertCountdownHasTiming(content: Record<string, unknown>): void {
 	}
 }
 
-export async function publishDraft(invitationId: string): Promise<PublishResult> {
+export async function publishDraft(
+	invitationId: string,
+	preflight?: PublishPreflightInput,
+): Promise<PublishResult> {
 	const invitation = await findInvitationById(invitationId);
 	if (!invitation) {
 		throw new ApiError(404, 'not_found', 'Invitation not found.');
@@ -295,6 +448,18 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	const draft = await findDraftByInvitationId(invitationId);
 	if (!draft) {
 		throw new ApiError(404, 'not_found', 'No se encontró un borrador para esta invitación.');
+	}
+
+	if (draft.status !== 'draft' && preflight) {
+		return replayAtomicPublication({
+			invitationId,
+			draftId: draft.id,
+			expectedDraftUpdatedAt: preflight.draftRevision,
+			expectedPublishedVersion: preflight.publishedVersion,
+			publicMetadataHash: preflight.publicMetadataHash,
+			projectionHash: preflight.projectionHash,
+			idempotencyKey: preflight.idempotencyKey,
+		});
 	}
 
 	if (draft.status !== 'draft') {
@@ -311,48 +476,11 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		throw new ApiError(422, 'bad_request', 'El borrador no tiene contenido para publicar.');
 	}
 
-	const guardResult = checkPublishGuard(invitation);
-	if (!guardResult.ok) {
-		throw new ApiError(422, 'config_error', guardResult.errors.join(' '));
-	}
-	const resolvedTheme = resolveInvitationTheme(invitation);
-	const catalogEntry = findDemoPreset(invitation.baseDemoId);
-	const snapshot = catalogEntry ?? invitation.snapshot;
-	if (!snapshot) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'No se encontró la configuración de la invitación para publicar.',
-		);
-	}
-
-	if (invitation.kind === 'client' && !invitation.createdBy) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.',
-		);
-	}
-
+	const { assetSlug, publishSlug, resolvedTheme, snapshot } = resolvePublicationConfiguration(
+		invitation,
+		priorPublished,
+	);
 	const demoContent = await loadDemoContent(snapshot.previewSlug);
-
-	const publishSlug = getPublicSlug(invitation);
-	const rawSlug = resolveAssetSlug(invitation, priorPublished?.content);
-	if (!rawSlug) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La configuración de la invitación no tiene slug de vista previa.',
-		);
-	}
-	if (!isValidEvent(rawSlug)) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La configuración visual de esta invitación no es válida. No se encontraron los recursos gráficos asociados.',
-		);
-	}
-	const assetSlug = rawSlug;
 
 	const mappedContent = mapDraftToPublished({
 		invitation: {
@@ -363,32 +491,35 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 		assetSlug,
 		draftContent: effectiveDraftContent,
 		demoContent,
+		priorPublishedContent: priorPublished?.content,
 		isDemo: invitation.kind === 'demo',
 	});
+	const publicationProjection = parsePublicationProjection(mappedContent);
+	const reviewedPreflight: PublishPreflightInput = preflight ?? {
+		draftRevision: draft.updatedAt,
+		publishedVersion: priorPublished?.version ?? null,
+		publicMetadataHash: hashPublicMetadata(invitation, priorPublished?.content),
+		projectionHash: hashPublicationProjection(publicationProjection),
+		idempotencyKey: randomUUID(),
+	};
+	if (hashPublicationProjection(publicationProjection) !== reviewedPreflight.projectionHash) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'La publicación cambió desde que la revisaste. Revisa los cambios más recientes antes de publicar.',
+		);
+	}
 
 	// Freeze uploaded asset refs before validation
 	const frozenContent = await freezeUploadedContentRefs(
-		mappedContent,
+		publicationProjection,
 		invitationId,
 		priorPublished?.content,
 	);
 
 	assertCountdownHasTiming(frozenContent);
 
-	const publishedContentResult = eventContentSchema.safeParse(frozenContent);
-	if (!publishedContentResult.success) {
-		const invalidPaths = publishedContentResult.error.issues
-			.map((issue) => issue.path.join('.'))
-			.filter(Boolean)
-			.join(', ');
-		throw new ApiError(
-			422,
-			'bad_request',
-			`La revisión contiene datos incompletos o inválidos. Corrige los campos marcados antes de publicar.${invalidPaths ? ` Campos: ${invalidPaths}.` : ''}`,
-			{ issues: publishedContentResult.error.issues },
-		);
-	}
-	const publishedContent = publishedContentResult.data;
+	const publishedContent = parsePublicationProjection(frozenContent);
 
 	assertAllAssetsResolvable(publishedContent as Record<string, unknown>, assetSlug);
 
@@ -407,7 +538,11 @@ export async function publishDraft(invitationId: string): Promise<PublishResult>
 	return commitAtomicPublication({
 		invitationId,
 		draftId: draft.id,
-		expectedDraftUpdatedAt: draft.updatedAt,
+		expectedDraftUpdatedAt: reviewedPreflight.draftRevision,
+		expectedPublishedVersion: reviewedPreflight.publishedVersion,
+		publicMetadataHash: reviewedPreflight.publicMetadataHash,
+		projectionHash: reviewedPreflight.projectionHash,
+		idempotencyKey: reviewedPreflight.idempotencyKey,
 		slug: publishSlug,
 		eventType: invitation.eventType,
 		isDemo: invitation.kind === 'demo',

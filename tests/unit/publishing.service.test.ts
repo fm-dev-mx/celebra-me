@@ -35,6 +35,7 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 
 jest.mock('@/lib/intake/repositories/publication.repository', () => ({
 	commitAtomicPublication: jest.fn(),
+	replayAtomicPublication: jest.fn(),
 }));
 
 import {
@@ -56,12 +57,16 @@ import {
 	createEventService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
-import { publishDraft } from '@/lib/intake/services/publishing.service';
+import { getPublicationPreflight, publishDraft } from '@/lib/intake/services/publishing.service';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import * as assetRegistry from '@/lib/assets/asset-registry';
 import { getCollection } from 'astro:content';
-import { commitAtomicPublication } from '@/lib/intake/repositories/publication.repository';
+import {
+	commitAtomicPublication,
+	replayAtomicPublication,
+} from '@/lib/intake/repositories/publication.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;
@@ -125,6 +130,9 @@ const mockCreateEvent = createEventService as jest.MockedFunction<typeof createE
 const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
 const mockCommitAtomic = commitAtomicPublication as jest.MockedFunction<
 	typeof commitAtomicPublication
+>;
+const mockReplayAtomic = replayAtomicPublication as jest.MockedFunction<
+	typeof replayAtomicPublication
 >;
 
 const baseProject = {
@@ -279,6 +287,85 @@ beforeEach(() => {
 });
 
 describe('publishDraft', () => {
+	it('creates a canonical preflight that groups an envelope edit under its editor section', async () => {
+		const rominaProject = { ...baseProject, slug: 'romina' };
+		mockGetProject.mockResolvedValue(rominaProject as never);
+		const mappedPublishedContent = mapDraftToPublished({
+			invitation: {
+				title: baseProject.title,
+				eventType: baseProject.eventType,
+				snapshot: baseProject.snapshot as any,
+			},
+			assetSlug: baseProject.snapshot.previewSlug,
+			draftContent: validDraft.content,
+			demoContent: MINIMAL_DEMO_ENTRY.data,
+			isDemo: false,
+		});
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				envelope: { recipientName: 'Romina Ríos Chaparro' },
+			},
+		} as never);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			slug: 'romina',
+			content: mappedPublishedContent,
+		} as never);
+
+		const preflight = await getPublicationPreflight('proj-1');
+
+		expect(preflight.draftRevision).toBe(validDraft.updatedAt);
+		expect(preflight.publishedVersion).toBe(1);
+		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+		expect(preflight.changedSections).toEqual([
+			{
+				path: 'content.envelope.recipientName',
+				sectionId: 'envelope',
+				sectionLabel: 'Sobre / apertura',
+			},
+		]);
+	});
+
+	it('rejects publish when the reviewed canonical projection changed', async () => {
+		mockGetProject.mockResolvedValue(baseProject as never);
+		mockFindDraft.mockResolvedValue(validDraft as never);
+
+		await expect(
+			publishDraft('proj-1', {
+				draftRevision: validDraft.updatedAt,
+				publishedVersion: null,
+				publicMetadataHash: '00000000000000000000000000000000',
+				projectionHash: '00000000000000000000000000000000',
+				idempotencyKey: VALID_UUID_1,
+			}),
+		).rejects.toMatchObject({ status: 409, code: 'conflict' });
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('routes a lost-response retry for an approved draft to the atomic receipt', async () => {
+		mockGetProject.mockResolvedValue(baseProject as never);
+		mockFindDraft.mockResolvedValue(validDraft as never);
+		mockFindPublishedByInvitationId.mockResolvedValue(publishedRow as never);
+		const preflight = await getPublicationPreflight('proj-1');
+		mockFindDraft.mockResolvedValue({ ...validDraft, status: 'approved' } as never);
+		mockReplayAtomic.mockResolvedValue({
+			draft: { ...approvedDraft },
+			publishedContent: publishedRow,
+			idempotent: false,
+		} as never);
+
+		await expect(
+			publishDraft('proj-1', { ...preflight, idempotencyKey: VALID_UUID_1 }),
+		).resolves.toMatchObject({
+			publishedContent: { version: 1 },
+		});
+		expect(mockReplayAtomic).toHaveBeenCalledWith(
+			expect.objectContaining({ idempotencyKey: VALID_UUID_1 }),
+		);
+	});
+
 	it('publishes successfully from a valid draft', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);

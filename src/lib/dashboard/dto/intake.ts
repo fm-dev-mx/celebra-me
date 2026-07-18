@@ -192,3 +192,12 @@ export interface InvitationEditorSectionSaveResponse {
 	draftUpdatedAt: string;
 	publication: InvitationEditorPublicationDTO;
 }
+
+export interface InvitationPublicationPreflightDTO {
+	changedPaths: string[];
+	changedSections: Array<{ path: string; sectionId: string; sectionLabel: string }>;
+	draftRevision: string;
+	publishedVersion: number | null;
+	publicMetadataHash: string;
+	projectionHash: string;
+}

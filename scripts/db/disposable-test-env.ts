@@ -14,6 +14,9 @@
  *   tsx scripts/db/disposable-test-env.ts start
  *   tsx scripts/db/disposable-test-env.ts reset
  *   tsx scripts/db/disposable-test-env.ts run-tests
+ *   tsx scripts/db/disposable-test-env.ts run-application-flow
+ *   tsx scripts/db/disposable-test-env.ts run-concurrency-test
+ *   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test
  *   tsx scripts/db/disposable-test-env.ts stop
  *   tsx scripts/db/disposable-test-env.ts cleanup
  *   tsx scripts/db/disposable-test-env.ts db-url
@@ -48,8 +51,9 @@ const DISPOSABLE_PORTS = {
 	shadow: 54330,
 } as const;
 
-const DISPOSABLE_DB_URL =
-	`postgresql://supabase_admin:postgres@127.0.0.1:${DISPOSABLE_PORTS.db}/postgres`;
+const POSTGREST_CONTAINER = 'celebra-me-test-postgrest';
+
+const DISPOSABLE_DB_URL = `postgresql://supabase_admin:postgres@127.0.0.1:${DISPOSABLE_PORTS.db}/postgres`;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -107,6 +111,9 @@ Usage:
   tsx scripts/db/disposable-test-env.ts start      Create and start the disposable container
   tsx scripts/db/disposable-test-env.ts reset       Reset the disposable database (destructive)
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
+  tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
+  tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
+  tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
   tsx scripts/db/disposable-test-env.ts db-url      Show the disposable DB URL
@@ -170,15 +177,26 @@ function cmdStart(): void {
 
 	console.info('Starting disposable PostgreSQL via Docker...');
 	const result = runCommand('docker', [
-		'run', '-d',
-		'--name', 'celebra-me-test-db',
-		'-e', 'POSTGRES_PASSWORD=postgres',
-		'-p', `${DISPOSABLE_PORTS.db}:5432`,
+		'run',
+		'-d',
+		'--name',
+		'celebra-me-test-db',
+		'-e',
+		'POSTGRES_PASSWORD=postgres',
+		'-p',
+		`${DISPOSABLE_PORTS.db}:5432`,
 		'public.ecr.aws/supabase/postgres:17.6.1.143',
 	]);
 
 	if (result.status !== 0) {
-		const existing = runCommand('docker', ['ps', '-a', '--filter', 'name=celebra-me-test-db', '--format', '{{.Names}}']);
+		const existing = runCommand('docker', [
+			'ps',
+			'-a',
+			'--filter',
+			'name=celebra-me-test-db',
+			'--format',
+			'{{.Names}}',
+		]);
 		if (existing.stdout.trim() === 'celebra-me-test-db') {
 			console.info('Container already exists. Starting it...');
 			runCommand('docker', ['start', 'celebra-me-test-db']);
@@ -192,9 +210,12 @@ function cmdStart(): void {
 	let isReady = false;
 	for (let i = 0; i < 30; i++) {
 		const ready = runCommand('psql', [
-			'--set', 'ON_ERROR_STOP=1',
-			'--dbname', DISPOSABLE_DB_URL,
-			'--command', 'select 1;',
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			DISPOSABLE_DB_URL,
+			'--command',
+			'select 1;',
 		]);
 		if (ready.status === 0) {
 			isReady = true;
@@ -216,12 +237,18 @@ function cmdReset(): void {
 	console.info('=== Disposable Test Environment: Reset ===\n');
 
 	console.info('Resetting disposable database (drop & recreate public schema)...');
-	const result = runCommand('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--dbname', 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
-	], {
-		input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
-	});
+	const result = runCommand(
+		'psql',
+		[
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+		],
+		{
+			input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
+		},
+	);
 
 	if (result.status !== 0) {
 		console.error(result.stderr);
@@ -234,21 +261,30 @@ function cmdReset(): void {
 	if (existsSync(storageSchemaPath)) {
 		console.info('Applying storage schema structure...');
 		const schemaResult = runCommand('psql', [
-			'--set', 'ON_ERROR_STOP=1',
-			'--dbname', 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
-			'--file', storageSchemaPath,
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			'--file',
+			storageSchemaPath,
 		]);
 		if (schemaResult.status !== 0) {
 			console.error(schemaResult.stderr);
 			fail(`Applying storage schema failed (exit ${schemaResult.status}).`);
 		}
 		console.info('Dropping conflicting storage policies...');
-		const dropPoliciesResult = runCommand('psql', [
-			'--set', 'ON_ERROR_STOP=1',
-			'--dbname', 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
-		], {
-			input: 'drop policy if exists "public read invitation assets" on storage.objects; drop policy if exists "service_role write invitation assets" on storage.objects; drop policy if exists "service_role delete invitation assets" on storage.objects;'
-		});
+		const dropPoliciesResult = runCommand(
+			'psql',
+			[
+				'--set',
+				'ON_ERROR_STOP=1',
+				'--dbname',
+				'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			],
+			{
+				input: 'drop policy if exists "public read invitation assets" on storage.objects; drop policy if exists "service_role write invitation assets" on storage.objects; drop policy if exists "service_role delete invitation assets" on storage.objects;',
+			},
+		);
 		if (dropPoliciesResult.status !== 0) {
 			console.error(dropPoliciesResult.stderr);
 			fail(`Dropping storage policies failed (exit ${dropPoliciesResult.status}).`);
@@ -259,9 +295,12 @@ function cmdReset(): void {
 	if (existsSync(authSchemaPath)) {
 		console.info('Applying auth schema structure...');
 		const schemaResult = runCommand('psql', [
-			'--set', 'ON_ERROR_STOP=1',
-			'--dbname', 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
-			'--file', authSchemaPath,
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			'--file',
+			authSchemaPath,
 		]);
 		if (schemaResult.status !== 0) {
 			console.error(schemaResult.stderr);
@@ -271,10 +310,15 @@ function cmdReset(): void {
 
 	// Apply all 56 migrations from empty using the single-transaction runner
 	console.info('Applying all 56 migrations...');
-	const applyResult = runCommand('npx', ['-y', 'tsx', 'scripts/db/apply-migrations.ts',
-		'--db-url', 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres']);
+	const applyResult = runCommand('npx', [
+		'-y',
+		'tsx',
+		'scripts/db/apply-migrations.ts',
+		'--db-url',
+		'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+	]);
 	if (applyResult.status !== 0) {
-		console.error(`WARN: Migrations apply had issues: ${applyResult.stderr || applyResult.stdout}`);
+		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
 	} else {
 		console.info('All migrations applied.');
 	}
@@ -282,12 +326,15 @@ function cmdReset(): void {
 	if (existsSync(SYNTHETIC_DATA_SQL)) {
 		console.info('Applying synthetic seed data...');
 		const seedResult = runCommand('psql', [
-			'--set', 'ON_ERROR_STOP=1',
-			'--dbname', DISPOSABLE_DB_URL,
-			'--file', SYNTHETIC_DATA_SQL,
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			DISPOSABLE_DB_URL,
+			'--file',
+			SYNTHETIC_DATA_SQL,
 		]);
 		if (seedResult.status !== 0) {
-			console.error(`WARN: Seed data apply failed: ${seedResult.stderr}`);
+			fail(`Synthetic seed failure: ${seedResult.stderr}`);
 		} else {
 			console.info('Seed data applied.');
 		}
@@ -297,37 +344,124 @@ function cmdReset(): void {
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
 
-	const testPath = resolve(PROJECT_ROOT, 'supabase', 'tests', 'atomic_invitation_publication.test.sql');
+	const testPath = resolve(
+		PROJECT_ROOT,
+		'supabase',
+		'tests',
+		'atomic_invitation_publication.test.sql',
+	);
 	if (!existsSync(testPath)) {
 		console.info('No pgTAP test files found.');
 		return;
 	}
 
 	console.info('Ensuring pgTAP extension is created...');
-	runCommand('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--dbname', DISPOSABLE_DB_URL,
-	], {
+	runCommand('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL], {
 		input: 'CREATE EXTENSION IF NOT EXISTS pgtap;',
 	});
 
 	console.info('Running pgTAP tests...');
 	const result = runCommand('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--dbname', DISPOSABLE_DB_URL,
-		'--file', testPath,
+		'--set',
+		'ON_ERROR_STOP=1',
+		'--dbname',
+		DISPOSABLE_DB_URL,
+		'--file',
+		testPath,
 	]);
 	console.info(result.stdout || '');
-	if (result.status !== 0) {
-		console.error(`    FAILED: ${result.stderr}`);
+	const tapFailed =
+		/(^|\n)not ok\b/m.test(result.stdout) || /Looks like you/i.test(result.stdout);
+	if (result.status !== 0 || tapFailed) {
+		console.error(
+			`    ${result.status !== 0 ? 'Harness failure' : 'Failed TAP assertion'}: ${result.stderr || 'see TAP output above'}`,
+		);
 		process.exit(1);
 	}
 	console.info('Disposable tests completed.');
 }
 
+function startPostgrest(): void {
+	const existing = runCommand('docker', [
+		'ps',
+		'-a',
+		'--filter',
+		`name=${POSTGREST_CONTAINER}`,
+		'--format',
+		'{{.Names}}',
+	]);
+	if (existing.stdout.trim() === POSTGREST_CONTAINER) {
+		runCommand('docker', ['start', POSTGREST_CONTAINER]);
+		return;
+	}
+	const result = runCommand('docker', [
+		'run',
+		'-d',
+		'--rm',
+		'--name',
+		POSTGREST_CONTAINER,
+		'-p',
+		`${DISPOSABLE_PORTS.api}:3000`,
+		'-e',
+		'PGRST_DB_URI=postgresql://postgres:postgres@host.docker.internal:54332/postgres',
+		'-e',
+		'PGRST_DB_SCHEMAS=public',
+		'-e',
+		'PGRST_DB_ANON_ROLE=anon',
+		'-e',
+		'PGRST_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long',
+		'public.ecr.aws/supabase/postgrest:v14.14',
+	]);
+	if (result.status !== 0)
+		fail(`Application harness failure: PostgREST start failed: ${result.stderr}`);
+	for (let attempt = 0; attempt < 20; attempt++) {
+		const ready = runCommand('curl.exe', ['--silent', '--fail', 'http://127.0.0.1:54331/']);
+		if (ready.status === 0 || ready.status === 22) return;
+		sleep(250);
+	}
+	fail('Application harness failure: PostgREST did not become reachable.');
+}
+
+function cmdRunApplicationFlow(): void {
+	console.info('=== Disposable Test Environment: Application Publication Flow ===\n');
+	startPostgrest();
+	const result = runCommand('node', [
+		'--import',
+		'tsx',
+		'--experimental-loader',
+		'./scripts/db/test-asset-loader.mjs',
+		'scripts/db/publication-application-flow.ts',
+	]);
+	console.info(result.stdout || '');
+	if (result.status !== 0) {
+		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+	}
+}
+
+function cmdRunConcurrencyTest(): void {
+	console.info('=== Disposable Test Environment: Concurrent Publication ===\n');
+	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/publication-concurrency-test.ts']);
+	console.info(result.stdout || '');
+	if (result.status !== 0)
+		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+}
+
+function cmdRunStaleBaselineTest(): void {
+	console.info('=== Disposable Test Environment: Publication Stale Baselines ===\n');
+	const result = runCommand('npx', [
+		'-y',
+		'tsx',
+		'scripts/db/publication-stale-baseline-test.ts',
+	]);
+	console.info(result.stdout || '');
+	if (result.status !== 0)
+		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+}
+
 function cmdStop(): void {
 	console.info('=== Disposable Test Environment: Stop ===\n');
 
+	runCommand('docker', ['rm', '-f', POSTGREST_CONTAINER]);
 	const result = runCommand('docker', ['stop', 'celebra-me-test-db']);
 	if (result.status !== 0) {
 		console.warn(`docker stop warning: ${result.stderr}`);
@@ -366,6 +500,15 @@ function main(): void {
 			break;
 		case 'run-tests':
 			cmdRunTests();
+			break;
+		case 'run-application-flow':
+			cmdRunApplicationFlow();
+			break;
+		case 'run-concurrency-test':
+			cmdRunConcurrencyTest();
+			break;
+		case 'run-stale-baseline-test':
+			cmdRunStaleBaselineTest();
 			break;
 		case 'stop':
 			cmdStop();

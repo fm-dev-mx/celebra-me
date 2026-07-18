@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import InvitationEditor, {
-	formatPublishErrorMessage,
 	getCriticalSections,
 } from '@/components/dashboard/intake/editor/InvitationEditor';
 import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
@@ -9,6 +8,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 let saveSection: jest.Mock;
 let saveMetadata: jest.Mock;
 const publish = jest.fn();
+const preflightPublication = jest.fn();
 const reconcileRsvp = jest.fn();
 const restorePublished = jest.fn();
 
@@ -116,6 +116,7 @@ jest.mock('@/hooks/use-invitation-editor', () => ({
 		saveSection,
 		saveMetadata,
 		publish,
+		preflightPublication,
 		reconcileRsvp,
 		restorePublished,
 		assignOwner: jest.fn(),
@@ -163,6 +164,20 @@ beforeEach(() => {
 	jest.clearAllMocks();
 	saveSection = jest.fn().mockResolvedValue({ draftUpdatedAt: '2026-05-30T03:00:00Z' });
 	saveMetadata = jest.fn().mockResolvedValue(createContext().invitation);
+	preflightPublication.mockResolvedValue({
+		changedPaths: ['content.envelope.recipientName'],
+		changedSections: [
+			{
+				path: 'content.envelope.recipientName',
+				sectionId: 'envelope',
+				sectionLabel: 'Sobre / apertura',
+			},
+		],
+		draftRevision: '2026-05-30T02:00:00Z',
+		publishedVersion: 1,
+		publicMetadataHash: 'a'.repeat(32),
+		projectionHash: 'b'.repeat(32),
+	});
 	mockContext = createContext();
 	mockMatchMedia(true);
 });
@@ -179,29 +194,45 @@ describe('getCriticalSections', () => {
 	});
 });
 
-describe('formatPublishErrorMessage', () => {
-	it('replaces server field paths with Spanish editor labels', () => {
-		const result = formatPublishErrorMessage(new Error('Campos: hero.name, location.date.'));
-
-		expect(result).toContain('Datos principales');
-		expect(result).toContain('Fecha y ubicaciones');
-	});
-
-	it('renders itinerary item validation paths with item-level labels', () => {
-		const result = formatPublishErrorMessage(
-			new Error(
-				'Campos: itinerary.items.0.iconName, itinerary.items.1.iconName, itinerary.items.2.time.',
-			),
-		);
-
-		expect(result).toContain('Programa: actividad 1 icono');
-		expect(result).toContain('Programa: actividad 2 icono');
-		expect(result).toContain('Programa: actividad 3 hora');
-		expect(result).not.toContain('Programa, Programa, Programa');
-	});
-});
-
 describe('InvitationEditor', () => {
+	it('renders the exact server preflight summary without client-side sections', async () => {
+		mockContext = createContext({
+			content: {
+				...createContext().content,
+				family: { fatherName: 'Padre', motherName: 'Madre' },
+				location: { ceremony: { venueName: 'Salón', date: '2027-01-01' } },
+				rsvp: { title: 'Confirma', guestCap: 1, confirmationMode: 'api' },
+				gifts: { items: [{ type: 'cash', title: 'Sobres', text: 'Gracias' }] },
+			},
+			sectionStates: {
+				...createContext().sectionStates,
+				family: 'draft',
+				location: 'draft',
+				rsvp: 'draft',
+				gifts: 'draft',
+			},
+			publication: {
+				hasPublishedContent: true,
+				version: 1,
+				publishedAt: '2026-05-30T02:00:00Z',
+				hasUnpublishedChanges: true,
+			},
+			draftStatus: 'draft',
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Publicar cambios' }));
+
+		const dialog = await screen.findByRole('dialog');
+		expect(within(dialog).getAllByRole('listitem')).toHaveLength(1);
+		expect(
+			within(dialog)
+				.getAllByRole('listitem')
+				.map((item) => item.textContent),
+		).toEqual(['Sobre / apertura']);
+		expect(preflightPublication).toHaveBeenCalledTimes(1);
+	});
+
 	it('renders one selected editor section at a time', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 

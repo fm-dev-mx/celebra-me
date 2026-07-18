@@ -30,6 +30,7 @@ import type {
 	AssignOwnerResponse,
 	InvitationEditorContextDTO,
 	InvitationEditorSectionSaveResponse,
+	InvitationPublicationPreflightDTO,
 } from './dto/intake';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
@@ -326,9 +327,17 @@ export class AdminApi {
 				| 'photosReceived'
 			>;
 		},
-	): Promise<{ invitation: InvitationEditorContextDTO['invitation'] }> {
+	): Promise<{
+		invitation: InvitationEditorContextDTO['invitation'];
+		draftUpdatedAt: string | null;
+		draftStatus: InvitationEditorContextDTO['draftStatus'];
+		publication: InvitationEditorContextDTO['publication'];
+	}> {
 		const result = await dashboardApi.patch<{
 			invitation: InvitationEditorContextDTO['invitation'];
+			draftUpdatedAt: string | null;
+			draftStatus: InvitationEditorContextDTO['draftStatus'];
+			publication: InvitationEditorContextDTO['publication'];
 		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/metadata`, payload);
 		return this.handleResponse(result);
 	}
@@ -347,21 +356,36 @@ export class AdminApi {
 
 	async publishInvitationEditor(
 		invitationId: string,
+		payload: import('./dto/intake').InvitationPublicationPreflightDTO & {
+			idempotencyKey: string;
+		},
 	): Promise<{ context: InvitationEditorContextDTO; publishedContent: Record<string, unknown> }> {
 		const result = await dashboardApi.post<{
 			context: InvitationEditorContextDTO;
 			publishedContent: Record<string, unknown>;
-		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/publish`, {});
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/publish`, payload);
+		return this.handleResponse(result);
+	}
+
+	async getInvitationPublicationPreflight(
+		invitationId: string,
+	): Promise<InvitationPublicationPreflightDTO> {
+		const result = await dashboardApi.get<InvitationPublicationPreflightDTO>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/preflight`,
+		);
 		return this.handleResponse(result);
 	}
 
 	async restoreInvitationEditorFromPublished(
 		invitationId: string,
-		expectedUpdatedAt: string,
+		payload: {
+			expectedDraftUpdatedAt: string | null;
+			expectedInvitationUpdatedAt: string;
+		},
 	): Promise<{ context: InvitationEditorContextDTO }> {
 		const result = await dashboardApi.post<{ context: InvitationEditorContextDTO }>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/restore-published`,
-			{ expectedUpdatedAt },
+			payload,
 		);
 		return this.handleResponse(result);
 	}

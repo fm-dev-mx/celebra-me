@@ -16,7 +16,8 @@ export type ApiErrorCode =
 	| 'schema_mismatch'
 	| 'unsafe_target'
 	| 'missing_in_prod'
-	| 'stale_production_content';
+	| 'stale_production_content'
+	| 'upgrade_required';
 
 export class ApiError extends Error {
 	readonly status: number;

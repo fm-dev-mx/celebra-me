@@ -17,12 +17,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import {
-	classifyDbTarget,
-	verifyLocalIdentity,
-} from '../db/db-guard';
+import { classifyDbTarget, verifyLocalIdentity } from '../db/db-guard';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog';
 import { normalizeInvitationImage } from '../../src/lib/intake/services/asset-policy';
+import {
+	hashPublicMetadata,
+	hashPublicationProjection,
+} from '../../src/lib/intake/services/publication-diff.service';
 import {
 	buildRominaPublishedContent,
 	ROMINA_ASSET_SPECS,
@@ -163,10 +164,7 @@ function resolveSourceDirectory(): string {
 	return resolved;
 }
 
-async function ensureInvitation(
-	supabase: DbClient,
-	ownerUserId: string,
-): Promise<InvitationRow> {
+async function ensureInvitation(supabase: DbClient, ownerUserId: string): Promise<InvitationRow> {
 	const preset = findDemoPreset(ROMINA_EVENT.baseDemoId);
 	if (!preset || preset.themeId !== ROMINA_EVENT.themeId) {
 		throw new Error('The Premiere Floral catalog entry is missing or internally inconsistent.');
@@ -353,6 +351,20 @@ async function main(): Promise<void> {
 	const assets = await uploadAssets(supabase, invitation.id, sourceDir);
 	const content = buildRominaPublishedContent(assets);
 	const draft = await upsertDraft(supabase, invitation.id, content);
+	const { data: publicationBaseline, error: publicationBaselineError } = await supabase
+		.from('invitations')
+		.select('slug,title,event_type,base_demo_id,theme_id,kind,snapshot,status,archived_at')
+		.eq('id', invitation.id)
+		.single<Record<string, unknown>>();
+	if (publicationBaselineError || !publicationBaseline)
+		throw publicationBaselineError ?? new Error('Missing invitation publication baseline.');
+	const { data: priorPublished, error: priorPublishedError } = await supabase
+		.from('published_invitation_content')
+		.select('version,content')
+		.eq('invitation_project_id', invitation.id)
+		.is('deleted_at', null)
+		.maybeSingle<Record<string, unknown>>();
+	if (priorPublishedError) throw priorPublishedError;
 
 	const { data: publication, error: publicationError } = await supabase.rpc(
 		'publish_invitation_atomic',
@@ -360,6 +372,23 @@ async function main(): Promise<void> {
 			p_invitation_id: invitation.id,
 			p_draft_id: draft.id,
 			p_expected_draft_updated_at: draft.updated_at,
+			p_expected_published_version: (priorPublished?.version as number | undefined) ?? null,
+			p_public_metadata_hash: hashPublicMetadata(
+				{
+					slug: publicationBaseline.slug as string | null,
+					title: publicationBaseline.title as string,
+					eventType: publicationBaseline.event_type as string,
+					baseDemoId: publicationBaseline.base_demo_id as string,
+					themeId: publicationBaseline.theme_id as string,
+					kind: publicationBaseline.kind as string,
+					snapshot: publicationBaseline.snapshot,
+					status: publicationBaseline.status as string,
+					archivedAt: publicationBaseline.archived_at as string | null,
+				},
+				priorPublished?.content as Record<string, unknown> | undefined,
+			),
+			p_projection_hash: hashPublicationProjection(content),
+			p_idempotency_key: randomUUID(),
 			p_slug: ROMINA_EVENT.slug,
 			p_event_type: ROMINA_EVENT.eventType,
 			p_is_demo: false,

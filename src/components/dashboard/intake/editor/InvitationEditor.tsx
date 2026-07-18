@@ -27,6 +27,7 @@ import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetFiel
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
+	InvitationPublicationPreflightDTO,
 } from '@/lib/dashboard/dto/intake';
 import { useInvitationEditor } from '@/hooks/use-invitation-editor';
 import { useAssetLibrary } from '@/lib/intake/use-asset-library';
@@ -54,6 +55,10 @@ import {
 	getSectionValue,
 } from '@/lib/intake/services/section-content-mapper';
 import { supportsXareniPresentationOptions } from '@/lib/invitation/presentation-options';
+import {
+	getPublicationFeedback,
+	type PublicationFeedback,
+} from '@/lib/intake/publication-feedback';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
@@ -109,38 +114,6 @@ function uniqueSectionPresentation(sections: string[]) {
 		if (p) presented.set(p.id, p);
 	}
 	return Array.from(presented.values());
-}
-
-const SECTION_PATH_REGEX = new RegExp(
-	`\\b(${Object.keys(EDITOR_SECTION_PRESENTATION).join('|')})(?:\\.[\\w-]+|\\[\\d+\\])*`,
-	'g',
-);
-
-const ITINERARY_ITEM_FIELD_LABELS: Record<string, string> = {
-	iconName: 'icono',
-	label: 'actividad',
-	time: 'hora',
-	description: 'descripción',
-};
-
-function formatValidationPath(sectionPath: string): string {
-	const itineraryItemMatch = sectionPath.match(
-		/^itinerary\.items(?:\.(\d+)\.|\[(\d+)\]\.)([\w-]+)$/,
-	);
-	if (itineraryItemMatch) {
-		const itemNumber = Number(itineraryItemMatch[1] ?? itineraryItemMatch[2]) + 1;
-		const field = itineraryItemMatch[3];
-		const fieldLabel = ITINERARY_ITEM_FIELD_LABELS[field] ?? field;
-		return `Programa: actividad ${itemNumber} ${fieldLabel}`;
-	}
-
-	const key = sectionPath.split(/[.[]/, 1)[0];
-	return EDITOR_SECTION_PRESENTATION[key]?.label ?? sectionPath;
-}
-
-export function formatPublishErrorMessage(error: unknown): string {
-	const message = toErrorMessage(error, 'No se pudieron publicar los cambios.');
-	return message.replace(SECTION_PATH_REGEX, formatValidationPath);
 }
 
 export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
@@ -292,6 +265,15 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
+	const [publicationPreflight, setPublicationPreflight] =
+		useState<InvitationPublicationPreflightDTO | null>(null);
+	const publicationIdempotencyKey = useRef<string | null>(null);
+	const [publicationFeedback, setPublicationFeedback] = useState<PublicationFeedback>({
+		state: 'idle',
+	});
+	const [publicationFailurePhase, setPublicationFailurePhase] = useState<
+		'preflight' | 'publish' | null
+	>(null);
 	const [pickerField, setPickerField] = useState<PickerField | null>(null);
 
 	const handleAssignOwner = useCallback(async () => {
@@ -323,11 +305,35 @@ export default function InvitationEditor({ initialContext }: Props) {
 		});
 	});
 
-	const publish = async () => {
-		setConfirmation(null);
-		setErrors((current) => ({ ...current, publish: '' }));
+	const loadPublicationPreflight = async () => {
+		setPublicationFeedback({ state: 'idle' });
+		setPublicationFailurePhase(null);
 		try {
-			const ctx = await editor.publish();
+			const preflight = await editor.preflightPublication();
+			setPublicationPreflight(preflight);
+			publicationIdempotencyKey.current = crypto.randomUUID();
+		} catch (error) {
+			setPublicationFeedback(getPublicationFeedback(error));
+			setPublicationFailurePhase('preflight');
+		}
+	};
+
+	const requestPublicationConfirmation = async () => {
+		setConfirmation('publish');
+		setPublicationPreflight(null);
+		publicationIdempotencyKey.current = null;
+		await loadPublicationPreflight();
+	};
+
+	const publish = async () => {
+		if (!publicationPreflight || !publicationIdempotencyKey.current) return;
+		setPublicationFeedback({ state: 'idle' });
+		setPublicationFailurePhase(null);
+		try {
+			const ctx = await editor.publish({
+				...publicationPreflight,
+				idempotencyKey: publicationIdempotencyKey.current,
+			});
 			setSuccess((current) => ({
 				...current,
 				publish: 'Cambios publicados correctamente.',
@@ -335,12 +341,43 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const slug = getPublicSlug(ctx.invitation);
 			setPublishedSlug(slug);
 			refreshSavedPreview();
+			setPublicationFeedback({
+				state: 'success',
+				message:
+					'Los cambios se publicaron correctamente. Ya puedes abrir la invitación pública.',
+			});
 		} catch (error) {
-			setErrors((current) => ({
-				...current,
-				publish: formatPublishErrorMessage(error),
-			}));
+			setPublicationFeedback(getPublicationFeedback(error));
+			setPublicationFailurePhase('publish');
 		}
+	};
+
+	const closePublicationConfirmation = () => {
+		if (editor.operation.type === 'publishing' || editor.operation.type === 'preflighting')
+			return;
+		setConfirmation(null);
+		setPublicationPreflight(null);
+		setPublicationFeedback({ state: 'idle' });
+		setPublicationFailurePhase(null);
+		publicationIdempotencyKey.current = null;
+	};
+
+	const confirmPublicationAction = () => {
+		if (publicationFeedback.state === 'success') {
+			closePublicationConfirmation();
+			return;
+		}
+		if (publicationFeedback.state === 'error') {
+			if (!publicationFeedback.retryable) {
+				closePublicationConfirmation();
+				return;
+			}
+			if (publicationFailurePhase === 'preflight') {
+				void loadPublicationPreflight();
+				return;
+			}
+		}
+		void publish();
 	};
 
 	const main = content.hero ?? {};
@@ -497,15 +534,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 				...emptySectionsDetail.optional,
 			]),
 		[emptySectionsDetail],
-	);
-	const publishSummary = useMemo(
-		() =>
-			uniqueSectionPresentation(
-				Object.entries(editor.context.sectionStates)
-					.filter(([, source]) => source === 'draft')
-					.map(([section]) => section),
-			).map((section) => section.label),
-		[editor.context.sectionStates],
 	);
 
 	const [savingAll, setSavingAll] = useState(false);
@@ -693,7 +721,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				publishDisabled={publishDisabled}
 				onSaveAll={saveAllDirty}
 				onDiscard={discardChanges}
-				onPublish={() => setConfirmation('publish')}
+				onPublish={() => void requestPublicationConfirmation()}
 				editUrl={backUrl}
 				onPreviewRequest={requestPreview}
 			/>
@@ -763,11 +791,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						</p>
 					</div>
 				)}
-				{errors.publish && <p className="invitation-editor__error">{errors.publish}</p>}
-				{success.publish && !publishedSlug && (
-					<p className="invitation-editor__success">{success.publish}</p>
-				)}
-				{success.publish && publishedSlug && (
+				{success.publish && publishedSlug && confirmation !== 'publish' && (
 					<div className="invitation-editor__publish-success">
 						<h2>¡Publicado exitosamente!</h2>
 						<p>Los cambios ya están visibles en la página pública.</p>
@@ -1225,13 +1249,35 @@ export default function InvitationEditor({ initialContext }: Props) {
 			{confirmation === 'publish' && (
 				<ConfirmModal
 					title="Publicar cambios"
-					message="El borrador guardado reemplazará la versión pública actual. Revisa la vista previa antes de continuar."
-					confirmLabel="Publicar cambios"
+					message={
+						editor.operation.type === 'preflighting'
+							? 'Estamos revisando los cambios guardados antes de publicar.'
+							: editor.operation.type === 'publishing'
+								? 'Estamos publicando la revisión confirmada. No cierres esta ventana.'
+								: 'El borrador guardado reemplazará la versión pública actual. Revisa la vista previa antes de continuar.'
+					}
+					confirmLabel={
+						publicationFeedback.state === 'success' ||
+						(publicationFeedback.state === 'error' && !publicationFeedback.retryable)
+							? 'Cerrar'
+							: 'Publicar cambios'
+					}
 					previewUrl={previewUrl}
-					summary={publishSummary}
-					loading={editor.operation.type === 'publishing'}
-					onCancel={() => setConfirmation(null)}
-					onConfirm={() => void publish()}
+					summary={
+						publicationPreflight?.changedSections.map(
+							(section) => section.sectionLabel,
+						) ?? []
+					}
+					feedback={
+						publicationFeedback.state === 'idle' ? undefined : publicationFeedback
+					}
+					hideCancel={publicationFeedback.state === 'success'}
+					loading={
+						editor.operation.type === 'publishing' ||
+						editor.operation.type === 'preflighting'
+					}
+					onCancel={closePublicationConfirmation}
+					onConfirm={confirmPublicationAction}
 				/>
 			)}
 			{pickerField && (

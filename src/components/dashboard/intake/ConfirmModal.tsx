@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useId, type FC } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 
 interface Props {
@@ -11,6 +11,11 @@ interface Props {
 	loading?: boolean;
 	previewUrl?: string;
 	summary?: string[];
+	feedback?: Exclude<
+		import('@/lib/intake/publication-feedback').PublicationFeedback,
+		{ state: 'idle' }
+	>;
+	hideCancel?: boolean;
 }
 
 const ConfirmModal: FC<Props> = ({
@@ -23,14 +28,36 @@ const ConfirmModal: FC<Props> = ({
 	loading,
 	previewUrl,
 	summary,
+	feedback,
+	hideCancel = false,
 }) => {
+	const descriptionId = useId();
 	return (
-		<ModalShell title={title} onClose={onCancel}>
+		<ModalShell
+			title={title}
+			onClose={onCancel}
+			descriptionId={descriptionId}
+			disableClose={loading}
+			initialFocus="heading"
+			variant="confirm"
+		>
 			<div className="confirm-modal__body">
-				<p className="confirm-modal__message">{message}</p>
+				<p id={descriptionId} className="confirm-modal__message">
+					{message}
+				</p>
+				{feedback && (
+					<div
+						className={`confirm-modal__feedback confirm-modal__feedback--${feedback.state}`}
+						role={feedback.state === 'error' ? 'alert' : 'status'}
+						aria-live={feedback.state === 'error' ? 'assertive' : 'polite'}
+					>
+						<p>{feedback.message}</p>
+						{'guidance' in feedback && <p>{feedback.guidance}</p>}
+					</div>
+				)}
 				{summary && summary.length > 0 && (
 					<>
-						<p>Secciones guardadas que se publicarán:</p>
+						<p>Cambios pendientes frente a la versión pública:</p>
 						<ul>
 							{summary.map((item) => (
 								<li key={item}>{item}</li>
@@ -45,21 +72,27 @@ const ConfirmModal: FC<Props> = ({
 						Vista previa
 					</a>
 				)}
-				<button
-					type="button"
-					className="btn-secondary"
-					onClick={onCancel}
-					disabled={loading}
-				>
-					Cancelar
-				</button>
+				{!hideCancel && (
+					<button
+						type="button"
+						className="btn-secondary"
+						onClick={onCancel}
+						disabled={loading}
+					>
+						Cancelar
+					</button>
+				)}
 				<button
 					type="button"
 					className={`btn-primary${destructive ? ' btn-primary--danger' : ''}`}
 					onClick={onConfirm}
 					disabled={loading}
 				>
-					{loading ? 'Procesando...' : confirmLabel}
+					{loading
+						? 'Procesando...'
+						: feedback?.state === 'error' && feedback.retryable
+							? 'Reintentar'
+							: confirmLabel}
 				</button>
 			</div>
 		</ModalShell>

@@ -19,13 +19,20 @@ const PROJECT_ROOT = process.cwd();
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
 function runPsqlFileSingleTxn(dbUrl: string, filePath: string): { ok: boolean; output: string } {
-	const result = spawnSync('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--single-transaction',
-		'--no-psqlrc',
-		'--dbname', dbUrl,
-		'--file', filePath,
-	], { encoding: 'utf8', stdio: 'pipe' });
+	const result = spawnSync(
+		'psql',
+		[
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--single-transaction',
+			'--no-psqlrc',
+			'--dbname',
+			dbUrl,
+			'--file',
+			filePath,
+		],
+		{ encoding: 'utf8', stdio: 'pipe' },
+	);
 	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
 	const stderr = typeof result.stderr === 'string' ? result.stderr : '';
 	return {
@@ -77,7 +84,9 @@ function main(): void {
 		.filter((f) => f.endsWith('.sql'))
 		.sort();
 
-	console.info(`Applying ${files.length} migrations from ${MIGRATIONS_DIR} to ${dbUrl.replace(/:[^:@/]*@/, ':***@')}`);
+	console.info(
+		`Applying ${files.length} migrations from ${MIGRATIONS_DIR} to ${dbUrl.replace(/:[^:@/]*@/, ':***@')}`,
+	);
 
 	let applied = 0;
 	let failed = 0;
@@ -91,9 +100,15 @@ function main(): void {
 		} else {
 			console.info('FAIL');
 			// Extract just the last error line for brevity
-			const errorLine = result.output.split('\n').filter((l) => l.includes('ERROR')).pop() ?? result.output;
+			const errorLine =
+				result.output
+					.split('\n')
+					.filter((l) => l.includes('ERROR'))
+					.pop() ?? result.output;
 			console.error(`    ${errorLine.trim()}`);
 			failed++;
+			console.error('Migration application stopped at the first failure.');
+			break;
 		}
 	}
 
