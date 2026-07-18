@@ -121,7 +121,7 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		title: 'Confirma tu asistencia',
 		subcopy:
 			'Tu respuesta ayuda a mis papis a preparar cada detalle para recibirme con mucho cariño.',
-		guestCap: 100,
+		guestCap: 250,
 		accessMode: 'personalized-only',
 		confirmationMessage:
 			'Gracias por confirmar. Mis papis y yo estamos muy felices de saber que nos acompañarán.',

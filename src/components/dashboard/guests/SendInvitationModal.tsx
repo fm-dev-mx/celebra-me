@@ -239,7 +239,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 									setCustomAttendeesError(null);
 								}
 							}}
-							placeholder={`1\u2013${MAX_CUSTOM_ATTENDEES}`}
+							placeholder="Más de 5"
 							autoFocus
 						/>
 						{customAttendeesError && (
@@ -393,7 +393,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				return;
 			}
 			if (parsed > MAX_CUSTOM_ATTENDEES) {
-				setCustomAttendeesError(`Máximo ${MAX_CUSTOM_ATTENDEES} pases.`);
+				setCustomAttendeesError('El valor excede el límite técnico permitido.');
 				return;
 			}
 		}

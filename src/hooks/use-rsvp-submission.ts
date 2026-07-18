@@ -18,6 +18,7 @@ import {
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
+import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
 
 interface InitialGuestData {
 	fullName?: string;
@@ -69,10 +70,10 @@ export function useRsvpSubmission({
 	const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
 	const [attendanceStatus, setAttendanceStatus] =
 		useState<AttendanceStatus>(initialAttendanceStatus);
-	const effectiveGuestCap = Math.max(
-		1,
-		isDemoPreview ? guestCap : (initialData?.maxAllowedAttendees ?? guestCap),
-	);
+	const configuredGuestCap = isDemoPreview
+		? guestCap
+		: (initialData?.maxAllowedAttendees ?? guestCap);
+	const { maxTotalAttendees: effectiveGuestCap } = resolveGuestCap(configuredGuestCap);
 	const initialAttendeeCount =
 		initialAttendanceStatus === 'declined'
 			? 0

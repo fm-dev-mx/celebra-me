@@ -3,6 +3,7 @@ import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
+import { RSVP_GUEST_CAP_MIN, RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 
 interface RsvpValue {
 	title?: string;
@@ -67,13 +68,19 @@ export default function RsvpSectionEditor({
 					}
 				/>
 				<Field
-					label="Máximo de acompañantes"
+					label="Máximo de asistentes por confirmación"
 					type="number"
 					value={String(rsvp.guestCap ?? '')}
+					min={RSVP_GUEST_CAP_MIN}
+					max={RSVP_GUEST_CAP_TECHNICAL_MAX}
 					onChange={(value) =>
 						updateRsvp({ guestCap: value ? Number(value) : undefined })
 					}
 				/>
+				<p className="invitation-editor__helper-text">
+					Incluye a la persona principal y a todos sus acompañantes en una misma
+					confirmación.
+				</p>
 				<label className="invitation-editor__field">
 					<span>Modo de confirmación</span>
 					<select

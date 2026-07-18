@@ -6,6 +6,7 @@ import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/sha
 import { SECTION_LABELS } from '@/lib/intake/labels';
 import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';
+import { RSVP_GUEST_CAP_MIN, RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 import { validateDraftContent } from '@/lib/intake/validation/validate-draft-content';
 import type { ValidationError } from '@/lib/intake/validation/validate-draft-content';
 import FormField from '@/components/dashboard/intake/FormField';
@@ -453,14 +454,20 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 					errors={validationErrors}
 				/>
 				<div className="intake-editor__field">
-					<label className="intake-field__label">Acompañantes máximo</label>
+					<label className="intake-field__label">
+						Máximo de asistentes por confirmación
+					</label>
 					<input
 						className="intake-field__input"
 						type="number"
 						value={numFallback(rsvp.guestCap)}
 						onChange={(e) => setField('rsvp', 'guestCap', Number(e.target.value))}
-						min={0}
+						min={RSVP_GUEST_CAP_MIN}
+						max={RSVP_GUEST_CAP_TECHNICAL_MAX}
 					/>
+					<p className="intake-editor__section-desc">
+						Incluye a la persona principal y a todos sus acompañantes.
+					</p>
 				</div>
 				<FormField
 					section="rsvp"

@@ -117,7 +117,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		const parsed = parseInt(trimmed, 10);
 		if (isNaN(parsed) || parsed < 1) return { value: 1, error: 'Ingresa un número de pases.' };
 		if (parsed > MAX_CUSTOM_ATTENDEES)
-			return { value: 1, error: `Máximo ${MAX_CUSTOM_ATTENDEES} pases.` };
+			return { value: 1, error: 'El valor excede el límite técnico permitido.' };
 		return { value: parsed };
 	};
 
@@ -343,7 +343,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 										max={MAX_CUSTOM_ATTENDEES}
 										value={customInputValue}
 										onChange={(e) => setCustomInputValue(e.target.value)}
-										placeholder={`1\u2013${MAX_CUSTOM_ATTENDEES}`}
+										placeholder="Más de 5"
 										autoFocus
 									/>
 									{fieldErrors.customAttendees && (

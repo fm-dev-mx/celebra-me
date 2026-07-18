@@ -8,6 +8,8 @@ interface Props {
 	placeholder?: string;
 	labelExtra?: ReactNode;
 	maxLength?: number;
+	min?: number;
+	max?: number;
 }
 
 export default function Field({
@@ -18,6 +20,8 @@ export default function Field({
 	placeholder,
 	labelExtra,
 	maxLength,
+	min,
+	max,
 }: Props) {
 	return (
 		<label className="invitation-editor__field">
@@ -30,6 +34,8 @@ export default function Field({
 				value={value}
 				placeholder={placeholder}
 				maxLength={maxLength}
+				min={min}
+				max={max}
 				onChange={(event) => onChange(event.target.value)}
 			/>
 		</label>

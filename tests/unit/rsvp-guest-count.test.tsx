@@ -168,6 +168,16 @@ describe('RSVP guest count behavior', () => {
 		expect(getHook()?.attendeeCount).toBe(6);
 	});
 
+	it('uses a configured attendee cap above the former product limit without clamping', () => {
+		const { getHook } = createTestHarness({
+			guestCap: 250,
+			initialGuestData: { maxAllowedAttendees: 250 },
+		});
+
+		expect(getHook()?.effectiveGuestCap).toBe(250);
+		expect(getHook()?.attendeeCount).toBe(250);
+	});
+
 	it('allows guest to reduce from maxAllowedAttendees to a lower valid number (4->2)', () => {
 		const { getHook } = createTestHarness({
 			initialGuestData: { maxAllowedAttendees: 4, attendeeCount: 0 },

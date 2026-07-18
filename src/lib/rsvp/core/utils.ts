@@ -1,3 +1,5 @@
+import { RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
+
 export const MAX_TEXT_LEN = 500;
 export const MAX_GUEST_COMMENT_LEN = 1000;
 export const DEFAULT_COUNTRY_CODE = '+52';
@@ -48,7 +50,7 @@ export function normalizeName(input: string): string {
 /**
  * Ensures an attendee count is a safe, non-negative integer within bounds.
  */
-export function toSafeAttendeeCount(raw: unknown, max = 20): number {
+export function toSafeAttendeeCount(raw: unknown, max = RSVP_GUEST_CAP_TECHNICAL_MAX): number {
 	if (typeof raw !== 'number' || !Number.isFinite(raw)) {
 		const parsed = parseInt(String(raw), 10);
 		if (isNaN(parsed)) return 0;

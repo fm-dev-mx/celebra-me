@@ -31,6 +31,7 @@ import {
 } from '@/lib/constants/branding-removal-rules';
 import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 import {
@@ -301,10 +302,13 @@ export async function createDashboardGuest(input: {
 		}
 	}
 
-	const maxAllowedAttendees = Math.max(
-		1,
-		Math.min(20, Math.trunc(input.maxAllowedAttendees || 1)),
-	);
+	const capResult = rsvpGuestCapSchema.safeParse(input.maxAllowedAttendees ?? 1);
+	if (!capResult.success) {
+		throw new ApiError(400, 'bad_request', 'El máximo de asistentes no es válido.', {
+			issues: capResult.error.issues,
+		});
+	}
+	const maxAllowedAttendees = capResult.data;
 
 	let created;
 	try {
@@ -376,10 +380,15 @@ export async function updateDashboardGuest(input: {
 			? toSafeAttendeeCount(input.attendeeCount)
 			: existing.attendeeCount;
 	const nextAttendeeCount = nextStatus === 'declined' ? 0 : requestedCount;
-	const nextCap =
-		input.maxAllowedAttendees !== undefined
-			? Math.max(1, Math.min(20, Math.trunc(input.maxAllowedAttendees)))
-			: existing.maxAllowedAttendees;
+	const nextCapResult = rsvpGuestCapSchema.safeParse(
+		input.maxAllowedAttendees ?? existing.maxAllowedAttendees,
+	);
+	if (!nextCapResult.success) {
+		throw new ApiError(400, 'bad_request', 'El máximo de asistentes no es válido.', {
+			issues: nextCapResult.error.issues,
+		});
+	}
+	const nextCap = nextCapResult.data;
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
 		throw new ApiError(

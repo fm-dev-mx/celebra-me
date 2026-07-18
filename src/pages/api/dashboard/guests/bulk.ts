@@ -9,6 +9,7 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { z } from 'zod';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 const BulkGuestSchema = z.object({
 	full_name: z.string().min(1),
@@ -16,7 +17,7 @@ const BulkGuestSchema = z.object({
 	country_code: z.string().optional().nullable(),
 	email: z.email().optional().nullable(),
 	tags: z.array(z.string()).optional(),
-	max_allowed_attendees: z.number().optional().default(2),
+	max_allowed_attendees: rsvpGuestCapSchema.optional().default(2),
 });
 
 const BulkImportSchema = z.object({
