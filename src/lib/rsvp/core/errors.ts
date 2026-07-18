@@ -8,6 +8,8 @@ export type ApiErrorCode =
 	| 'rate_limited'
 	| 'limit_reached'
 	| 'internal_error'
+	| 'service_unavailable'
+	| 'upstream_error'
 	| 'submission_already_approved'
 	| 'invalid_submission_status'
 	| 'invalid_draft_status'

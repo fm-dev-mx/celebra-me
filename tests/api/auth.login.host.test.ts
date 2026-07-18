@@ -3,7 +3,6 @@ import { POST as loginHost } from '@/pages/api/auth/login-host';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import * as rateLimitProvider from '@/lib/rsvp/security/rate-limit-provider';
-import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
@@ -54,7 +53,7 @@ describe('API: /api/auth/login-host', () => {
 	});
 
 	it('Scenario: Failed Password Login (Invalid Credentials)', async () => {
-		signInMock.mockRejectedValue(new ApiError(401, 'unauthorized', 'Credenciales invalidas'));
+		signInMock.mockRejectedValue(new Error('Supabase auth error (401).'));
 
 		const response = await loginHost({
 			request: createMockRequest({

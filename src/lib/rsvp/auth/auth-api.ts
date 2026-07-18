@@ -22,17 +22,64 @@ export interface AuthAdminUser {
 async function authRequest<T>(options: AuthApiOptions): Promise<T> {
 	const method = options.method ?? 'POST';
 	const apiKey = options.useServiceRole ? getSupabaseServiceRoleKey() : getSupabaseAnonKey();
-	const response = await fetch(`${getSupabaseUrl()}/auth/v1/${options.path}`, {
-		method,
-		headers: {
-			apikey: apiKey,
-			Authorization: `Bearer ${options.authToken || apiKey}`,
-			'Content-Type': 'application/json',
-		},
-		body: options.body ? JSON.stringify(options.body) : undefined,
-	});
+	const supabaseUrl = getSupabaseUrl();
+	const requestUrl = `${supabaseUrl}/auth/v1/${options.path}`;
+
+	let response: Response;
+	try {
+		response = await fetch(requestUrl, {
+			method,
+			headers: {
+				apikey: apiKey,
+				Authorization: `Bearer ${options.authToken || apiKey}`,
+				'Content-Type': 'application/json',
+			},
+			body: options.body ? JSON.stringify(options.body) : undefined,
+		});
+	} catch (cause) {
+		const causeCode =
+			cause instanceof Error ? (cause.cause as Record<string, unknown> | undefined)?.code as string | undefined : undefined;
+		console.error(
+			'[auth] fetch failed',
+			JSON.stringify({
+				stage: 'fetch',
+				errorName: cause instanceof Error ? cause.name : typeof cause,
+				errorMessage: cause instanceof Error ? cause.message : String(cause),
+				causeCode,
+			}),
+		);
+		throw Object.assign(
+			new Error('auth-request-failed'),
+			{ _stage: 'fetch' },
+		);
+	}
+
 	if (!response.ok) {
-		throw new Error(`Supabase auth error (${response.status}).`);
+		const status = response.status;
+		const bodyText = await response.text().catch(() => '');
+		let supabaseCode: string | undefined;
+		try {
+			const parsed = JSON.parse(bodyText) as Record<string, unknown>;
+			supabaseCode =
+				(typeof parsed.error === 'string' ? parsed.error : undefined) ??
+				(typeof parsed.error_code === 'string' ? parsed.error_code : undefined) ??
+				(typeof parsed.message === 'string' && parsed.message !== 'Invalid API key'
+					? parsed.message
+					: undefined);
+		} catch { /* ignore parse failure */ }
+
+		console.error(
+			'[auth] upstream error',
+			JSON.stringify({
+				stage: 'response',
+				status,
+				supabaseCode,
+			}),
+		);
+		throw Object.assign(
+			new Error(`Supabase auth error (${status}).`),
+			{ _stage: 'response', _status: status, _supabaseCode: supabaseCode },
+		);
 	}
 	return (await response.json()) as T;
 }
