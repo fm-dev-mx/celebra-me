@@ -70,12 +70,22 @@ function mapCountdownFromDraft(
 	draftCountdown: DraftContent['countdown'],
 	demoCountdown: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
-): Record<string, unknown> {
+	sectionOrder: string[] | undefined,
+): Record<string, unknown> | undefined {
 	if (ctx.isDemo && demoCountdown) return { ...demoCountdown };
 
+	const isEnabled = sectionOrder
+		? sectionOrder.includes('countdown')
+		: draftCountdown !== undefined;
+
+	if (!isEnabled) return undefined;
+
+	const title = str(draftCountdown?.title);
+	const footerText = str(draftCountdown?.footerText);
+
 	return {
-		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
-		footerText: str(draftCountdown?.footerText) || COUNTDOWN_DEFAULTS.footerText,
+		title: title || COUNTDOWN_DEFAULTS.title,
+		footerText: footerText || COUNTDOWN_DEFAULTS.footerText,
 	};
 }
 
@@ -750,6 +760,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
 			ctx,
+			draftContent.sectionOrder ?? (priorPublished?.sectionOrder as string[] | undefined),
 		),
 		rsvp: rsvpSection,
 		music: musicSection,

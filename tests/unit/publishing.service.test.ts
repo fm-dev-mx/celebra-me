@@ -67,6 +67,14 @@ import {
 } from '@/lib/intake/repositories/publication.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
+import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import type { DemoPreset } from '@/lib/intake/types';
+import {
+	buildRominaPublishedContent,
+	ROMINA_ASSET_SPECS,
+	ROMINA_EVENT,
+	type RominaAssetMap,
+} from '../../scripts/dev/romina-invitation-data';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;
@@ -328,6 +336,31 @@ describe('publishDraft', () => {
 		]);
 	});
 
+	it('reports no pending sections when the persisted draft matches the public projection', async () => {
+		mockGetProject.mockResolvedValue({ ...baseProject, slug: publishedRow.slug } as never);
+		const projectedContent = mapDraftToPublished({
+			invitation: {
+				title: baseProject.title,
+				eventType: baseProject.eventType,
+				snapshot: baseProject.snapshot as DemoPreset,
+			},
+			assetSlug: baseProject.snapshot.previewSlug,
+			draftContent: validDraft.content,
+			demoContent: MINIMAL_DEMO_ENTRY.data,
+			isDemo: false,
+		});
+		mockFindDraft.mockResolvedValue(validDraft as never);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: projectedContent,
+		} as never);
+
+		const preflight = await getPublicationPreflight('proj-1');
+
+		expect(preflight.changedPaths).toEqual([]);
+		expect(preflight.changedSections).toEqual([]);
+	});
+
 	it('rejects publish when the reviewed canonical projection changed', async () => {
 		mockGetProject.mockResolvedValue(baseProject as never);
 		mockFindDraft.mockResolvedValue(validDraft as never);
@@ -420,6 +453,7 @@ describe('publishDraft', () => {
 			...validDraft,
 			content: {
 				...validDraft.content,
+				countdown: { title: 'Mi cuenta regresiva' },
 				eventTiming: {
 					localDateTime: '2026-08-01T20:00',
 				},
@@ -453,6 +487,218 @@ describe('publishDraft', () => {
 		await publishDraft('proj-1');
 
 		expect(mockUpsertPublished).toHaveBeenCalled();
+	});
+
+	it('preflight blocks with Spanish error when renderable countdown has incomplete eventTiming', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				countdown: { title: 'Mi cuenta regresiva' },
+				eventTiming: {
+					localDateTime: '2026-08-01T20:00',
+				},
+			},
+		} as any);
+
+		await expect(getPublicationPreflight('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'bad_request',
+			message: expect.stringContaining('cuenta regresiva'),
+		});
+	});
+
+	it('preflight succeeds and publish succeeds when countdown is enabled with valid timing', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				countdown: {},
+				eventTiming: {
+					localDateTime: '2027-11-20T18:00',
+					timeZone: 'America/Mazatlan',
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		// Preflight succeeds
+		const preflightResult = await getPublicationPreflight('proj-1');
+		expect(preflightResult).toHaveProperty('projectionHash');
+
+		// Publish succeeds
+		await publishDraft('proj-1');
+		expect(mockUpsertPublished).toHaveBeenCalled();
+	});
+
+	it('preflight reports only the envelope section and publish succeeds on envelope-only change without countdown', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				envelope: {
+					envelopeName: 'Nuevo Sobre Especial',
+					disabled: false,
+				},
+			},
+		} as any);
+
+		const basePublishedContent = mapDraftToPublished({
+			invitation: {
+				title: baseProject.title,
+				eventType: baseProject.eventType,
+				snapshot: { ...baseProject.snapshot, themeId: 'jewelry-box' } as any,
+			},
+			assetSlug: 'demo-xv-jewelry-box',
+			draftContent: validDraft.content,
+			demoContent: {},
+			isDemo: false,
+		});
+
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			id: 'pub-prior',
+			invitationId: 'proj-1',
+			slug: baseProject.slug || 'xv-proj-1',
+			eventType: 'xv',
+			isDemo: false,
+			version: 1,
+			publishedAt: '2026-01-01T00:00:00Z',
+			createdAt: '2026-01-01T00:00:00Z',
+			updatedAt: '2026-01-01T00:00:00Z',
+			content: {
+				...basePublishedContent,
+				envelope: {
+					...(basePublishedContent.envelope as any),
+					envelopeName: 'Sobre Antiguo',
+					disabled: false,
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		// Preflight only reports envelope section
+		const preflightResult = await getPublicationPreflight('proj-1');
+		expect(preflightResult.changedSections).toEqual([
+			{
+				path: 'content.envelope.envelopeName',
+				sectionId: 'envelope',
+				sectionLabel: 'Sobre / apertura',
+			},
+		]);
+
+		// Publish succeeds and the new envelope name is present in published content
+		await publishDraft('proj-1');
+		const publishedContent = mockUpsertPublished.mock.calls[0][0].content as any;
+		expect(publishedContent.envelope.envelopeName).toBe('Nuevo Sobre Especial');
+		// Countdown was never enabled, so it should not be present
+		expect(publishedContent.countdown).toBeUndefined();
+	});
+
+	it('preserves existing valid countdown when performing an unrelated edit', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				envelope: {
+					envelopeName: 'Nuevo Sobre Especial',
+					disabled: false,
+				},
+			},
+		} as any);
+
+		const basePublishedContent = mapDraftToPublished({
+			invitation: {
+				title: baseProject.title,
+				eventType: baseProject.eventType,
+				snapshot: { ...baseProject.snapshot, themeId: 'jewelry-box' } as any,
+			},
+			assetSlug: 'demo-xv-jewelry-box',
+			draftContent: validDraft.content,
+			demoContent: {},
+			isDemo: false,
+		});
+
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			id: 'pub-prior',
+			invitationId: 'proj-1',
+			slug: baseProject.slug || 'xv-proj-1',
+			eventType: 'xv',
+			isDemo: false,
+			version: 1,
+			publishedAt: '2026-01-01T00:00:00Z',
+			createdAt: '2026-01-01T00:00:00Z',
+			updatedAt: '2026-01-01T00:00:00Z',
+			content: {
+				...basePublishedContent,
+				countdown: {
+					title: '¡Cada día falta menos!',
+					footerText: 'Te esperamos.',
+				},
+				envelope: {
+					...(basePublishedContent.envelope as any),
+					envelopeName: 'Sobre Antiguo',
+					disabled: false,
+				},
+			},
+		} as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+
+		await publishDraft('proj-1');
+		const publishedContent = mockUpsertPublished.mock.calls[0][0].content as any;
+		expect(publishedContent.envelope.envelopeName).toBe('Nuevo Sobre Especial');
+		expect(publishedContent.countdown).toEqual({
+			title: '¡Cada día falta menos!',
+			footerText: 'Te esperamos.',
+		});
+	});
+
+	it('preflight and publish semantic validation cannot drift and produce equivalent results from the same candidate', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindPublishedByInvitationId.mockResolvedValue(null);
+
+		const draftWithInvalidTiming = {
+			...validDraft,
+			content: {
+				...validDraft.content,
+				countdown: {
+					title: '¡Falta muy poco!',
+				},
+				eventTiming: {
+					localDateTime: '2027-11-20T18:00', // missing timezone -> invalid timing
+				},
+			},
+		};
+
+		mockFindDraft.mockResolvedValue(draftWithInvalidTiming as any);
+
+		let preflightError: any;
+		try {
+			await getPublicationPreflight('proj-1');
+		} catch (err) {
+			preflightError = err;
+		}
+
+		let publishError: any;
+		try {
+			await publishDraft('proj-1');
+		} catch (err) {
+			publishError = err;
+		}
+
+		expect(preflightError).toBeDefined();
+		expect(publishError).toBeDefined();
+		expect(preflightError.status).toBe(publishError.status);
+		expect(preflightError.message).toBe(publishError.message);
 	});
 
 	it('rejects when no draft exists', async () => {
@@ -927,6 +1173,7 @@ describe('publishDraft', () => {
 	});
 
 	it('rejects publish when asset slug does not resolve to a valid event directory', async () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		const projectUnknownSlug = {
 			...baseProject,
 			slug: 'invitacion-desconocida',
@@ -938,11 +1185,123 @@ describe('publishDraft', () => {
 		mockGetProject.mockResolvedValue(projectUnknownSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 
-		await expect(publishDraft('proj-1')).rejects.toMatchObject({
-			status: 422,
-			code: 'bad_request',
-		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		try {
+			await expect(publishDraft('proj-1')).rejects.toMatchObject({
+				status: 422,
+				code: 'bad_request',
+				details: {
+					section: 'visual',
+					catalog: 'event-asset-registry',
+					stage: 'publish',
+				},
+			});
+			expect(warn).toHaveBeenCalledWith(
+				'Invitation publication visual asset resolution failed',
+				expect.objectContaining({
+					invitationId: 'proj-1',
+					stage: 'publish',
+				}),
+			);
+			expect(mockUpsertPublished).not.toHaveBeenCalled();
+		} finally {
+			warn.mockRestore();
+		}
+	});
+
+	it('uses the demo visual asset fallback for editorial-magazine preflight and publish', async () => {
+		const editorialMagazineProject = {
+			...baseProject,
+			baseDemoId: 'demo-xv-editorial-magazine',
+			themeId: 'editorial-magazine',
+			snapshot: {
+				...baseProject.snapshot,
+				id: 'demo-xv-editorial-magazine',
+				themeId: 'editorial-magazine',
+				previewSlug: 'demo-xv-editorial-magazine',
+			},
+		};
+		mockGetProject.mockResolvedValue(editorialMagazineProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockGetCollection.mockResolvedValue([
+			{
+				...MINIMAL_DEMO_ENTRY,
+				id: 'xv/demo-xv-editorial-magazine.json',
+				data: {
+					...MINIMAL_DEMO_ENTRY.data,
+					_assetSlug: 'demo-xv-editorial',
+				},
+			},
+		] as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(editorialMagazineProject as any);
+
+		const preflight = await getPublicationPreflight('proj-1');
+		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+
+		await publishDraft('proj-1');
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({ _assetSlug: 'demo-xv-editorial' }),
+			}),
+		);
+	});
+
+	it('publishes the real Romina uploaded-asset shape without requiring an internal registry pack', async () => {
+		const rominaAssets = Object.fromEntries(
+			ROMINA_ASSET_SPECS.map((asset, index) => [
+				asset.key,
+				{
+					type: 'uploaded' as const,
+					assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+					src: `https://cdn.test/invitation-assets/${asset.key}.webp`,
+				},
+			]),
+		) as RominaAssetMap;
+		const rominaPublishedContent = buildRominaPublishedContent(rominaAssets);
+		const rominaProject = {
+			...baseProject,
+			slug: ROMINA_EVENT.slug,
+			title: ROMINA_EVENT.title,
+			baseDemoId: ROMINA_EVENT.baseDemoId,
+			themeId: ROMINA_EVENT.themeId,
+		};
+		const rominaStoredAssets = ROMINA_ASSET_SPECS.map((asset) => ({
+			id: rominaAssets[asset.key].assetId,
+			invitationId: 'proj-1',
+			bucket: 'invitation-assets',
+			storagePath: `invitations/proj-1/optimized/${asset.key}.webp`,
+			mimeType: 'image/webp',
+			width: 1600,
+			height: 1200,
+			fileSize: 100_000,
+			validationVersion: 1,
+		}));
+
+		mockGetProject.mockResolvedValue(rominaProject as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			slug: ROMINA_EVENT.slug,
+			content: rominaPublishedContent,
+		} as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: mapNestedToDraftContent(rominaPublishedContent),
+		} as any);
+		mockFindAssets.mockResolvedValue(rominaStoredAssets as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(rominaProject as any);
+
+		const preflight = await getPublicationPreflight('proj-1');
+		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+
+		await publishDraft('proj-1');
+		expect(mockUpsertPublished).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.objectContaining({ _assetSlug: ROMINA_EVENT.assetSlug }),
+			}),
+		);
 	});
 
 	it('rejects publish when hero backgroundImage key does not resolve in the asset registry', async () => {
@@ -964,8 +1323,7 @@ describe('publishDraft', () => {
 	});
 
 	it('allows publish when hero backgroundImage is an external URL', async () => {
-		const astroContent = jest.requireMock('astro:content');
-		astroContent.getCollection.mockResolvedValue([
+		mockGetCollection.mockResolvedValue([
 			{
 				id: 'xv/demo-xv-jewelry-box.json',
 				data: {
@@ -1180,8 +1538,7 @@ describe('publishDraft', () => {
 	});
 
 	it('preserves external src refs through publish unchanged', async () => {
-		const astroContent = jest.requireMock('astro:content');
-		astroContent.getCollection.mockResolvedValue([
+		mockGetCollection.mockResolvedValue([
 			{
 				id: 'xv/demo-xv-jewelry-box.json',
 				data: {

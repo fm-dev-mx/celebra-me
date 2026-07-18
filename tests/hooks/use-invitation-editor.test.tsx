@@ -209,6 +209,32 @@ describe('useInvitationEditor operation invariants', () => {
 		await waitFor(() => expect(result.current.operation).toEqual({ type: 'idle' }));
 	});
 
+	it('replaces the publication baseline with the committed server context', async () => {
+		const publishedContext: InvitationEditorContextDTO = {
+			...mockContext,
+			draftStatus: 'approved',
+			draftUpdatedAt: '2026-01-02T00:00:00Z',
+			publication: {
+				hasPublishedContent: true,
+				version: 2,
+				publishedAt: '2026-01-02T00:00:00Z',
+				hasUnpublishedChanges: false,
+			},
+		};
+		mockedAdminApi.publishInvitationEditor.mockResolvedValue({
+			context: publishedContext,
+			publishedContent: {},
+		});
+
+		const { result } = renderHook(() => useInvitationEditor(mockContext));
+		await act(async () => {
+			await result.current.publish(publicationPreflight);
+		});
+
+		expect(result.current.context).toEqual(publishedContext);
+		expect(result.current.context.publication.hasUnpublishedChanges).toBe(false);
+	});
+
 	it('prevents concurrent saveSection calls', async () => {
 		let resolveSave!: (value: InvitationEditorSectionSaveResponse) => void;
 		mockedAdminApi.updateInvitationEditorSection.mockReturnValue(

@@ -228,6 +228,29 @@ describe('getInvitationEditorContext', () => {
 		expect(result.invitation.snapshot.previewSlug).toBe('demo-xv-enchanted-rose');
 	});
 
+	it('uses a demo visual fallback when its previewSlug is not an asset registry key', async () => {
+		(findInvitationById as jest.Mock).mockResolvedValue({
+			...invitation,
+			kind: 'demo',
+			slug: null,
+			snapshot: {
+				...invitation.snapshot,
+				previewSlug: 'demo-xv-editorial-magazine',
+			},
+		});
+		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
+		(getCollection as jest.Mock).mockResolvedValue([
+			{
+				id: 'xv/demo-xv-editorial-magazine.json',
+				data: { ...demoContent, _assetSlug: 'demo-xv-editorial' },
+			},
+		]);
+
+		const result = await getInvitationEditorContext('proj-1');
+
+		expect(result.assetLookupSlug).toBe('demo-xv-editorial');
+	});
+
 	it('hydrates all keys with draft priority over published over demo', async () => {
 		const result = await getInvitationEditorContext('proj-1');
 

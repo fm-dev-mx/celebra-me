@@ -95,4 +95,19 @@ describe('resolveAssetSlug', () => {
 
 		expect(result).toBe('demo-legacy-slug');
 	});
+
+	it('uses the demo visual configuration before the legacy previewSlug fallback', () => {
+		mockIsValidEvent.mockReturnValue(false);
+
+		const result = resolveAssetSlug(
+			invitation({
+				kind: 'demo',
+				snapshot: { previewSlug: 'demo-editorial-magazine' },
+			}),
+			null,
+			{ _assetSlug: 'demo-editorial' },
+		);
+
+		expect(result).toBe('demo-editorial');
+	});
 });

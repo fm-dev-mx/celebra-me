@@ -340,6 +340,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 			}));
 			const slug = getPublicSlug(ctx.invitation);
 			setPublishedSlug(slug);
+			// The response context is the committed publication baseline. The preflight
+			// describes the version that was just published, so it must not remain visible.
+			setPublicationPreflight(null);
+			publicationIdempotencyKey.current = null;
 			refreshSavedPreview();
 			setPublicationFeedback({
 				state: 'success',

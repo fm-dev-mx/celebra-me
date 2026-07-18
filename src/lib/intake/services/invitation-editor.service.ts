@@ -118,7 +118,7 @@ export async function getInvitationEditorContext(
 	);
 
 	const contentSource = resolveContentSource(sectionStates);
-	const assetLookupSlug = resolveAssetSlug(invitation, published?.content);
+	const assetLookupSlug = resolveAssetSlug(invitation, published?.content, demoContent);
 
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =

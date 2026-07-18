@@ -233,6 +233,48 @@ describe('InvitationEditor', () => {
 		expect(preflightPublication).toHaveBeenCalledTimes(1);
 	});
 
+	it('clears the preflight summary after a successful publish', async () => {
+		mockContext = createContext({
+			content: {
+				...createContext().content,
+				family: { fatherName: 'Padre', motherName: 'Madre' },
+				location: { ceremony: { venueName: 'Salón', date: '2027-01-01' } },
+				rsvp: { title: 'Confirma', guestCap: 1, confirmationMode: 'api' },
+			},
+			sectionStates: {
+				...createContext().sectionStates,
+				family: 'draft',
+				location: 'draft',
+				rsvp: 'draft',
+			},
+			publication: {
+				hasPublishedContent: true,
+				version: 1,
+				publishedAt: '2026-05-30T02:00:00Z',
+				hasUnpublishedChanges: true,
+			},
+			draftStatus: 'draft',
+		});
+		publish.mockResolvedValue(mockContext);
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Publicar cambios' }));
+		const dialog = await screen.findByRole('dialog');
+		expect(within(dialog).getByText('Sobre / apertura')).toBeInTheDocument();
+
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Publicar cambios' }));
+
+		await waitFor(() => {
+			expect(
+				within(dialog).getByText(
+					'Los cambios se publicaron correctamente. Ya puedes abrir la invitación pública.',
+				),
+			).toBeInTheDocument();
+		});
+		expect(within(dialog).queryByText('Cambios pendientes frente a la versión pública:')).not.toBeInTheDocument();
+		expect(within(dialog).queryByText('Sobre / apertura')).not.toBeInTheDocument();
+	});
+
 	it('renders one selected editor section at a time', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
