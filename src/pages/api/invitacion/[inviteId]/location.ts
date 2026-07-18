@@ -4,7 +4,7 @@ import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 function withNoStore(response: Response): Response {
-	response.headers.set('Cache-Control', 'no-store');
+	response.headers.set('Cache-Control', 'no-store, private');
 	return response;
 }
 

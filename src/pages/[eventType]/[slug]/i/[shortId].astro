@@ -11,19 +11,17 @@ const SITE_ORIGIN = resolvePublicSiteOrigin();
 const { eventType, shortId } = Astro.params;
 
 if (eventType && !isEventType(eventType)) {
-  return new Response(null, { status: 404 });
+  return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private', Vary: 'User-Agent' } });
 }
 
-// These headers ONLY apply on the 200 (OG shell) path.
-// For 404 responses, the middleware (applyShortId404Headers) sets no-store + Vary.
-// For 302 redirects, browser follows immediately; CDN caching is acceptable.
-Astro.response.headers.set('Cache-Control', 'no-store');
+// Personalized metadata and its redirects must never enter a shared cache.
+Astro.response.headers.set('Cache-Control', 'no-store, private');
 Astro.response.headers.set('Vary', 'User-Agent');
 
 const result = await resolveShortIdPage(shortId, Astro.request, SITE_ORIGIN);
 
 if (result.kind === 'error') {
-  return new Response(null, { status: 404 });
+  return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private', Vary: 'User-Agent' } });
 }
 
 if (result.kind === 'redirect') {

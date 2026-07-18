@@ -52,7 +52,11 @@ describe('Middleware: Authentication & Authorization', () => {
 			set: jest.fn(),
 			delete: jest.fn(),
 		};
-		mockRedirect = jest.fn((path) => ({ status: 302, path }));
+		mockRedirect = jest.fn((path) => {
+			const response = new Response(null, { status: 302, headers: { Location: path } });
+			Object.assign(response, { path });
+			return response;
+		});
 		mockNext = jest.fn(() => ({ status: 200 }));
 		originalFetch = global.fetch;
 		mockFetch = jest.fn();
@@ -76,6 +80,18 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
 
+	it('marks invitation-like 404 responses as private', async () => {
+		const context = createContext('/not-an-event/missing-invitation');
+		mockNext.mockReturnValue(new Response(null, { status: 404 }));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.status).toBe(404);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+	});
+
 	it('redirects private routes without session', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue(null);
@@ -83,6 +99,8 @@ describe('Middleware: Authentication & Authorization', () => {
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockRedirect).toHaveBeenCalledWith('/login');
 		expect(context.locals.session).toBeUndefined();
+		const response = mockRedirect.mock.results[0]?.value as Response;
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
 	it('passes an unauthenticated dashboard API request through to its route guard', async () => {
@@ -119,6 +137,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
 		expect(response.status).toBe(500);
 		expect(response.headers.get('content-type')).toContain('application/json');
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(await response.json()).toEqual({
 			success: false,
 			error: { code: 'internal_error', message: 'No fue posible validar la sesión.' },
@@ -406,9 +425,9 @@ describe('Middleware: Authentication & Authorization', () => {
 		const renderError = new Error('Page rendering error');
 		mockNext.mockRejectedValue(renderError);
 
-		await expect(
-			middleware(context as unknown as APIContext, mockNext)
-		).rejects.toThrow('Page rendering error');
+		await expect(middleware(context as unknown as APIContext, mockNext)).rejects.toThrow(
+			'Page rendering error',
+		);
 
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});

@@ -28,7 +28,7 @@ const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 
 if (!isEventType(eventType)) {
-	return new Response(null, { status: 404 });
+	return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private' } });
 }
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');
@@ -58,7 +58,7 @@ try {
 
 	if (!resolution) {
 		Astro.response.status = 404;
-		Astro.response.headers.set('Cache-Control', 'no-store');
+		Astro.response.headers.set('Cache-Control', 'no-store, private');
 	} else {
 		viewModel = resolution.viewModel;
 		const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
@@ -71,13 +71,14 @@ try {
 			eventEntry = await getRoutableEventEntry(slug, eventType);
 			if (!eventEntry) {
 				Astro.response.status = 404;
-				Astro.response.headers.set('Cache-Control', 'no-store');
+				Astro.response.headers.set('Cache-Control', 'no-store, private');
 			} else {
 				if (eventType !== eventEntry.data.eventType) {
 					const canonicalUrl = new URL(`/${eventEntry.data.eventType}/${slug}`, Astro.url);
 					if (inviteId) {
 						canonicalUrl.searchParams.set('invite', inviteId);
 					}
+					Astro.response.headers.set('Cache-Control', 'no-store, private');
 					return Astro.redirect(canonicalUrl.href, 301);
 				}
 				routeEventType = eventEntry.data.eventType;
@@ -99,6 +100,7 @@ try {
 				});
 				routePersonalizationDur = performance.now() - personalizationStart;
 				if (personalization.redirectPath) {
+					Astro.response.headers.set('Cache-Control', 'no-store, private');
 					return Astro.redirect(personalization.redirectPath, 302);
 				}
 				guestContext = personalization.guestContext;
@@ -137,8 +139,8 @@ try {
 }
 
 const cacheControl =
-	!hasInviteParam && page && viewModel
-		? 'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
+	!hasInviteParam && !renderError && page && viewModel
+		? 'public, max-age=0, s-maxage=0, must-revalidate'
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 

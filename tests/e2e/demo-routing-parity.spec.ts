@@ -1,6 +1,23 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Demo Routing Parity', () => {
+	test('uses correctness-first caching for public content and private caching for invalid routes', async ({
+		page,
+	}) => {
+		const publicResponse = await page.goto('/xv/demo-xv-jewelry-box?skipEnvelope=true', {
+			waitUntil: 'domcontentloaded',
+		});
+		expect(publicResponse?.headers()['cache-control']).toBe(
+			'public, max-age=0, s-maxage=0, must-revalidate',
+		);
+
+		const invalidResponse = await page.goto('/not-an-event/demo-xv-jewelry-box', {
+			waitUntil: 'domcontentloaded',
+		});
+		expect(invalidResponse?.status()).toBe(404);
+		expect(invalidResponse?.headers()['cache-control']).toBe('no-store, private');
+	});
+
 	test('renders a public demo event correctly without an inviteId', async ({ page }) => {
 		// A demo event provides high-fidelity showcase without requiring personalization
 		const response = await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', {
@@ -64,7 +81,9 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('.demo-lookbook__copy .demo-showroom__eyebrow')).toHaveText(
 				'Estilo destacado',
 			);
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('XV Celestial Blue');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'XV Celestial Blue',
+			);
 
 			// Selector section is visible with correct copy
 			const selectorSection = page.locator('.demo-showroom__selector');
@@ -84,7 +103,10 @@ test.describe('Demo Routing Parity', () => {
 				'demo-xv-editorial',
 			];
 			for (let i = 0; i < 3; i++) {
-				await expect(cards.nth(i)).toHaveAttribute('data-demo-slug', expectedSelectorSlugs[i]);
+				await expect(cards.nth(i)).toHaveAttribute(
+					'data-demo-slug',
+					expectedSelectorSlugs[i],
+				);
 			}
 
 			// Cards link to showroom query-param (not to the demo page directly)
@@ -105,7 +127,9 @@ test.describe('Demo Routing Parity', () => {
 			expect(response?.ok()).toBeTruthy();
 
 			// Featured panel shows the deep-linked demo
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Enchanted Rose');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Enchanted Rose',
+			);
 
 			// Selector shows 3 cards, Enchanted Rose is absent
 			const cards = page.locator('.demo-showroom__selector .demo-style');
@@ -127,7 +151,9 @@ test.describe('Demo Routing Parity', () => {
 			expect(response?.ok()).toBeTruthy();
 
 			// Jewelry Box is hidden — must fall back to Celestial Blue
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('XV Celestial Blue');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'XV Celestial Blue',
+			);
 			const cards = page.locator('.demo-showroom__selector .demo-style');
 			await expect(cards).toHaveCount(3);
 		});
@@ -138,7 +164,9 @@ test.describe('Demo Routing Parity', () => {
 			});
 			expect(response?.ok()).toBeTruthy();
 
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('XV Celestial Blue');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'XV Celestial Blue',
+			);
 		});
 
 		test('clicking a selector card updates the featured panel without a full page reload', async ({
@@ -155,7 +183,9 @@ test.describe('Demo Routing Parity', () => {
 			});
 
 			// Click the Editorial Magazine card
-			const magazineCard = page.locator('.demo-style[data-demo-slug="demo-xv-editorial-magazine"]');
+			const magazineCard = page.locator(
+				'.demo-style[data-demo-slug="demo-xv-editorial-magazine"]',
+			);
 			await expect(magazineCard).toBeVisible();
 			await magazineCard.click();
 
@@ -176,9 +206,13 @@ test.describe('Demo Routing Parity', () => {
 		}) => {
 			await page.goto('/demos/xv', { waitUntil: 'domcontentloaded' });
 
-			const magazineCard = page.locator('.demo-style[data-demo-slug="demo-xv-editorial-magazine"]');
+			const magazineCard = page.locator(
+				'.demo-style[data-demo-slug="demo-xv-editorial-magazine"]',
+			);
 			await magazineCard.click();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial Magazine');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Editorial Magazine',
+			);
 
 			const cards = page.locator('.demo-showroom__selector .demo-style');
 			await expect(cards).toHaveCount(3);
@@ -190,7 +224,11 @@ test.describe('Demo Routing Parity', () => {
 			// Celestial Blue returns to selector
 			expect(slugs).toContain('demo-xv-celestial-blue');
 			// Canonical order preserved
-			expect(slugs).toEqual(['demo-xv-celestial-blue', 'demo-xv-enchanted-rose', 'demo-xv-editorial']);
+			expect(slugs).toEqual([
+				'demo-xv-celestial-blue',
+				'demo-xv-enchanted-rose',
+				'demo-xv-editorial',
+			]);
 		});
 
 		test('user can return to Celestial Blue after selecting another demo', async ({ page }) => {
@@ -202,12 +240,16 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial');
 
 			// Celestial Blue should now be in the selector
-			const celestialCard = page.locator('.demo-style[data-demo-slug="demo-xv-celestial-blue"]');
+			const celestialCard = page.locator(
+				'.demo-style[data-demo-slug="demo-xv-celestial-blue"]',
+			);
 			await expect(celestialCard).toBeVisible();
 			await celestialCard.click();
 
 			// Returns to Celestial Blue
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('XV Celestial Blue');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'XV Celestial Blue',
+			);
 		});
 
 		test('CTA link in featured panel points to the selected demo route', async ({ page }) => {
@@ -236,7 +278,9 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial');
 		});
 
-		test('mobile viewport (390px) shows 3 selector cards without overflow', async ({ page }) => {
+		test('mobile viewport (390px) shows 3 selector cards without overflow', async ({
+			page,
+		}) => {
 			await page.setViewportSize({ width: 390, height: 844 });
 			await page.goto('/demos/xv', { waitUntil: 'domcontentloaded' });
 
@@ -256,7 +300,10 @@ test.describe('Demo Routing Parity', () => {
 			await page.addInitScript(() => {
 				(window as any).dataLayer = [];
 				document.addEventListener('click', (event) => {
-					const target = event.target instanceof Element ? event.target.closest('[data-track-event]') : null;
+					const target =
+						event.target instanceof Element
+							? event.target.closest('[data-track-event]')
+							: null;
 					if (!(target instanceof HTMLElement)) return;
 					const eventName = target.getAttribute('data-track-event');
 					if (!eventName) return;
@@ -267,7 +314,10 @@ test.describe('Demo Routing Parity', () => {
 					(window as any).dataLayer.push({
 						event: eventName,
 						cta_id: target.getAttribute('data-track-cta') || '',
-						cta_label: target.getAttribute('data-track-label') || target.textContent?.trim() || '',
+						cta_label:
+							target.getAttribute('data-track-label') ||
+							target.textContent?.trim() ||
+							'',
 						demo_slug: target.getAttribute('data-demo-slug') || '',
 					});
 				});
@@ -277,7 +327,9 @@ test.describe('Demo Routing Parity', () => {
 
 			// Click Editorial Magazine to dynamically replace DOM nodes
 			await page.locator('.demo-style[data-demo-slug="demo-xv-editorial-magazine"]').click();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial Magazine');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Editorial Magazine',
+			);
 
 			// Click "Ver demo" primary CTA on the newly swapped node
 			const cta = page.locator('[data-track-cta="demo_hero_open"]');
@@ -302,33 +354,47 @@ test.describe('Demo Routing Parity', () => {
 
 			// Select Editorial Magazine
 			await page.locator('.demo-style[data-demo-slug="demo-xv-editorial-magazine"]').click();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial Magazine');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Editorial Magazine',
+			);
 
 			// Select Enchanted Rose
 			await page.locator('.demo-style[data-demo-slug="demo-xv-enchanted-rose"]').click();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Enchanted Rose');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Enchanted Rose',
+			);
 
 			// Perform Back navigation
 			await page.goBack();
 			await expect(page).toHaveURL(/demo=demo-xv-editorial-magazine/);
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Editorial Magazine');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Editorial Magazine',
+			);
 
 			// Verify cards order
 			const cardsAfterBack = page.locator('.demo-showroom__selector .demo-style');
 			const slugsAfterBack = await cardsAfterBack.evaluateAll((els) =>
 				els.map((el) => el.getAttribute('data-demo-slug') ?? ''),
 			);
-			expect(slugsAfterBack).toEqual(['demo-xv-celestial-blue', 'demo-xv-enchanted-rose', 'demo-xv-editorial']);
+			expect(slugsAfterBack).toEqual([
+				'demo-xv-celestial-blue',
+				'demo-xv-enchanted-rose',
+				'demo-xv-editorial',
+			]);
 
 			// Perform Forward navigation
 			await page.goForward();
 			await expect(page).toHaveURL(/demo=demo-xv-enchanted-rose/);
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Enchanted Rose');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Enchanted Rose',
+			);
 
 			// Perform Back navigation twice to get to the initial state (no parameter)
 			await page.goBack();
 			await page.goBack();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('XV Celestial Blue');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'XV Celestial Blue',
+			);
 		});
 
 		test('preserves unrelated query parameters when using history state updates', async ({
@@ -340,7 +406,9 @@ test.describe('Demo Routing Parity', () => {
 
 			// Select Enchanted Rose
 			await page.locator('.demo-style[data-demo-slug="demo-xv-enchanted-rose"]').click();
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Enchanted Rose');
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
+				'Enchanted Rose',
+			);
 
 			// URL must keep utm parameters
 			const currentUrl = page.url();
@@ -394,7 +462,9 @@ test.describe('Demo Routing Parity', () => {
 			expect(response?.ok()).toBeTruthy();
 
 			// Singular intro copy
-			await expect(page.locator('.demo-showroom__eyebrow').first()).toHaveText('LOOKBOOK BODA');
+			await expect(page.locator('.demo-showroom__eyebrow').first()).toHaveText(
+				'LOOKBOOK BODA',
+			);
 			await expect(page.locator('.demo-showroom__title')).toHaveText(
 				'Referencia visual para tu invitación',
 			);

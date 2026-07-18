@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, successResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 import { isEventType, parsePublicGuestRsvpRequest } from '@/lib/rsvp/core/rsvp-request';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submission.service';
@@ -18,12 +18,14 @@ export const POST: APIRoute = async ({ params, request }) => {
 	try {
 		const eventTypeParam = sanitize(params.eventType, 40);
 		const slug = sanitize(params.slug, 140);
-		if (!eventTypeParam || !slug) return badRequest('eventType and slug are required.');
-		if (!isEventType(eventTypeParam)) return badRequest('eventType is invalid.');
+		if (!eventTypeParam || !slug)
+			return withPrivateCache(badRequest('eventType and slug are required.'));
+		if (!isEventType(eventTypeParam))
+			return withPrivateCache(badRequest('eventType is invalid.'));
 
 		const eventType = eventTypeParam;
 		const parsedRequest = await parsePublicGuestRsvpRequest(request);
-		if (parsedRequest instanceof Response) return parsedRequest;
+		if (parsedRequest instanceof Response) return withPrivateCache(parsedRequest);
 
 		const resolution = await resolveInvitationContent(slug, eventType);
 		if (!resolution || (resolution.source === 'static' && resolution.viewModel.isDemo)) {
@@ -56,7 +58,9 @@ export const POST: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
+			return withPrivateCache(
+				errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.')),
+			);
 		}
 
 		const result = await submitGuestRsvpByPublicEvent({
@@ -68,8 +72,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 			payload: parsedRequest.payload,
 		});
 
-		return successResponse({ message: 'RSVP saved.', ...result });
+		return withPrivateCache(successResponse({ message: 'RSVP saved.', ...result }));
 	} catch (error) {
-		return errorResponse(error);
+		return withPrivateCache(errorResponse(error));
 	}
 };

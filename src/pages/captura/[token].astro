@@ -10,6 +10,7 @@ import type { IntakeBlockType } from '@/lib/intake/types';
 import { LOCKED_INVITATION_STATUSES } from '@/lib/intake/types';
 
 const { token } = Astro.params;
+Astro.response.headers.set('Cache-Control', 'no-store, private');
 
 let invitationTitle = '';
 let invitationEventType: EventType = 'xv';
@@ -23,7 +24,6 @@ let errorMessage = '';
 // middleware / rewrite edge cases that could produce an empty param.
 if (!token) {
 	Astro.response.status = 404;
-	Astro.response.headers.set('Cache-Control', 'no-store');
 	// eslint-disable-next-line no-useless-assignment
 	errorMessage = 'Enlace no válido.';
 	return;

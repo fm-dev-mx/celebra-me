@@ -3,6 +3,11 @@ import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
+export function withPrivateCache(response: Response): Response {
+	response.headers.set('Cache-Control', 'no-store, private');
+	return response;
+}
+
 export interface ApiSuccess<T> {
 	success: true;
 	data: T;

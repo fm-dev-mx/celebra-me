@@ -70,13 +70,28 @@ function applyShortId404Headers(pathname: string, response: Response): Response 
 		return response;
 	}
 
-	response.headers.set('Cache-Control', 'no-store');
+	response.headers.set('Cache-Control', 'no-store, private');
 	appendVaryHeader(response, 'User-Agent');
 	return response;
 }
 
 function isPreviewRoute(pathname: string): boolean {
 	return pathname.startsWith('/dashboard/invitaciones/') && pathname.endsWith('/preview');
+}
+
+function privateRedirect(redirect: (path: string) => Response, path: string): Response {
+	const response = redirect(path);
+	if (response instanceof Response) response.headers.set('Cache-Control', 'no-store, private');
+	return response;
+}
+
+function applyInvitationRoute404Headers(pathname: string, response: Response): Response {
+	if (!/^\/[^/]+\/[^/]+\/?$/.test(pathname) || response.status !== 404) {
+		return response;
+	}
+
+	response.headers.set('Cache-Control', 'no-store, private');
+	return response;
 }
 
 function buildCookieOptions(maxAge: number) {
@@ -312,20 +327,20 @@ async function handleProtectedAuthRequest(
 
 	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
-		return redirect('/login');
+		return privateRedirect(redirect, '/login');
 	}
 
 	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
 		if (isApiRoute) return null;
-		return url.pathname === '/login' ? null : redirect('/login');
+		return url.pathname === '/login' ? null : privateRedirect(redirect, '/login');
 	}
 
 	const authContext = resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
 		if (isApiRoute) return null;
-		return redirect('/login');
+		return privateRedirect(redirect, '/login');
 	}
 
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
@@ -341,7 +356,7 @@ async function handleProtectedAuthRequest(
 			authContext.role,
 			effectiveAdminStrongAuth,
 		);
-		if (redirectTarget) return redirect(redirectTarget);
+		if (redirectTarget) return privateRedirect(redirect, redirectTarget);
 	}
 
 	syncPostAuthCookies(cookies, authContext, trustCookie, now);
@@ -355,12 +370,7 @@ async function handleProtectedAuthRequest(
 	return null;
 }
 
-const BLOCKED_SCANNER_SEGMENTS = new Set([
-	'wp-admin',
-	'wp-content',
-	'wp-includes',
-	'cgi-bin',
-]);
+const BLOCKED_SCANNER_SEGMENTS = new Set(['wp-admin', 'wp-content', 'wp-includes', 'cgi-bin']);
 
 function isScannerRequest(pathname: string): boolean {
 	const lowercasePath = pathname.toLowerCase();
@@ -382,7 +392,10 @@ export const onRequest = defineMiddleware(
 
 		if (!shouldHandleAuth(url.pathname)) {
 			const response = await next();
-			return applyShortId404Headers(url.pathname, response);
+			return applyInvitationRoute404Headers(
+				url.pathname,
+				applyShortId404Headers(url.pathname, response),
+			);
 		}
 
 		let authRedirect: Response | null;
@@ -397,11 +410,13 @@ export const onRequest = defineMiddleware(
 		} catch (error) {
 			console.error('[Middleware] Auth error:', error);
 			if (url.pathname.startsWith('/api/dashboard')) {
-				return errorResponse(
+				const response = errorResponse(
 					new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
 				);
+				response.headers.set('Cache-Control', 'no-store, private');
+				return response;
 			}
-			return applyShortId404Headers(url.pathname, redirect('/login'));
+			return applyShortId404Headers(url.pathname, privateRedirect(redirect, '/login'));
 		}
 
 		if (authRedirect) {
