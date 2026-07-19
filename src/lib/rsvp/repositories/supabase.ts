@@ -8,6 +8,34 @@ type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
+export class SupabaseHttpError extends Error {
+	constructor(
+		public readonly status: number,
+		public readonly body: string,
+		public readonly code: string | null,
+	) {
+		super(`Supabase error (${status}): ${body || String(status)}`);
+		this.name = 'SupabaseHttpError';
+	}
+}
+
+function postgrestErrorCode(body: string): string | null {
+	try {
+		const parsed: unknown = JSON.parse(body);
+		if (
+			typeof parsed === 'object' &&
+			parsed !== null &&
+			'code' in parsed &&
+			typeof parsed.code === 'string'
+		) {
+			return parsed.code;
+		}
+	} catch {
+		// The original response remains available to callers for diagnostics.
+	}
+	return null;
+}
+
 export interface SupabaseRequestOptions {
 	pathWithQuery: string;
 	method?: HttpMethod;
@@ -38,7 +66,11 @@ export async function supabaseRestRequest<T>(options: SupabaseRequestOptions): P
 	});
 	if (!response.ok) {
 		const raw = await response.text();
-		throw new Error(`Supabase error (${response.status}): ${raw || response.statusText}`);
+		throw new SupabaseHttpError(
+			response.status,
+			raw || response.statusText,
+			postgrestErrorCode(raw),
+		);
 	}
 
 	// Read body once so we can safely attempt JSON parsing

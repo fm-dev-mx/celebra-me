@@ -1,5 +1,5 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { SupabaseHttpError, supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 
 export interface AtomicPublicationResult {
@@ -12,6 +12,47 @@ export interface AtomicPublicationResult {
 		publishedAt: string;
 	};
 	idempotent?: boolean;
+	/** False only for the temporary pre-migration RPC compatibility path. */
+	durableIdempotency?: boolean;
+}
+
+function isNewPublicationContractUnavailable(error: unknown): boolean {
+	// PostgREST PGRST202 means this exact overload is absent from its schema
+	// cache. Only the structured response emitted by supabaseRestRequest may
+	// enable the legacy path; transport or arbitrary Error text never can.
+	return (
+		error instanceof SupabaseHttpError &&
+		error.status === 404 &&
+		error.code === 'PGRST202' &&
+		error.body.includes('publish_invitation_atomic') &&
+		error.body.includes('p_expected_published_version')
+	);
+}
+
+async function commitLegacyPublication(input: {
+	invitationId: string;
+	draftId: string;
+	expectedDraftUpdatedAt: string;
+	slug: string;
+	eventType: string;
+	isDemo: boolean;
+	content: Record<string, unknown>;
+}): Promise<AtomicPublicationResult> {
+	const result = await supabaseRestRequest<AtomicPublicationResult>({
+		pathWithQuery: 'rpc/publish_invitation_atomic',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_invitation_id: input.invitationId,
+			p_draft_id: input.draftId,
+			p_expected_draft_updated_at: input.expectedDraftUpdatedAt,
+			p_slug: input.slug,
+			p_event_type: input.eventType,
+			p_is_demo: input.isDemo,
+			p_content: input.content,
+		},
+	});
+	return { ...result, durableIdempotency: false };
 }
 
 const PUBLICATION_ERRORS: Record<
@@ -124,7 +165,7 @@ export async function commitAtomicPublication(input: {
 	content: Record<string, unknown>;
 }): Promise<AtomicPublicationResult> {
 	try {
-		return await supabaseRestRequest<AtomicPublicationResult>({
+		const result = await supabaseRestRequest<AtomicPublicationResult>({
 			pathWithQuery: 'rpc/publish_invitation_atomic',
 			method: 'POST',
 			useServiceRole: true,
@@ -142,7 +183,15 @@ export async function commitAtomicPublication(input: {
 				p_content: input.content,
 			},
 		});
+		return { ...result, durableIdempotency: true };
 	} catch (error) {
+		if (isNewPublicationContractUnavailable(error)) {
+			try {
+				return await commitLegacyPublication(input);
+			} catch (legacyError) {
+				throwPublicationError(legacyError);
+			}
+		}
 		throwPublicationError(error);
 	}
 }
