@@ -2,6 +2,13 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import { classifyDbTarget, guardProduction } from '../../scripts/db/db-guard';
 import { enforceDisposableTargetOnly } from '../../scripts/db/apply-migrations';
 import { evaluateMigrationHistoryParity, fetchRemoteMigrationVersions } from '../../scripts/db/audit-db';
+import {
+	DISPOSABLE_DB_URL,
+	LOCAL_DB_URL,
+	PREVIEW_SECRET_FILES,
+	PROD_SECRET_FILES,
+	resolveDbUrl,
+} from '../../scripts/db/db-target-config';
 
 describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 	const originalEnv = process.env;
@@ -15,44 +22,95 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 		jest.restoreAllMocks();
 	});
 
+	describe('Canonical Database Reference Isolation & Target Classification', () => {
+		it('ensures DISPOSABLE_DB_URL is a valid postgresql URL pointing to port 54332', () => {
+			const url = new URL(DISPOSABLE_DB_URL);
+			expect(url.protocol).toBe('postgresql:');
+			expect(url.port).toBe('54332');
+			expect(url.pathname).toBe('/postgres');
+		});
+
+		it('ensures LOCAL_DB_URL is a valid postgresql URL pointing to port 54322', () => {
+			const url = new URL(LOCAL_DB_URL);
+			expect(url.protocol).toBe('postgresql:');
+			expect(url.port).toBe('54322');
+			expect(url.pathname).toBe('/postgres');
+		});
+
+		it('classifies PREVIEW_DB_URL host matching preview secret as preview target', () => {
+			const previewUrl = 'postgresql://postgres.iwipdvisoyerfdytuhwi:secret@aws-1-us-west-2.pooler.supabase.com:5432/postgres';
+			process.env.PREVIEW_DB_URL = previewUrl;
+
+			const result = classifyDbTarget(previewUrl);
+			expect(result.target).toBe('preview');
+			expect(result.reason).toContain('Matches PREVIEW_DB_URL');
+		});
+
+		it('classifies production cloud host not matching PREVIEW_DB_URL as production target', () => {
+			delete process.env.PREVIEW_DB_URL;
+			const prodUrl = 'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+
+			const result = classifyDbTarget(prodUrl);
+			expect(result.target).toBe('production');
+		});
+
+		it('resolves canonical URLs via resolveDbUrl', () => {
+			expect(resolveDbUrl('persistent-local')).toBe(LOCAL_DB_URL);
+			expect(resolveDbUrl('disposable-test')).toBe(DISPOSABLE_DB_URL);
+
+			process.env.PREVIEW_DB_URL = 'postgresql://user:pass@preview-host.supabase.com:5432/postgres';
+			expect(resolveDbUrl('preview')).toBe('postgresql://user:pass@preview-host.supabase.com:5432/postgres');
+
+			process.env.PROD_DB_URL = 'postgresql://user:pass@prod-host.supabase.com:5432/postgres';
+			expect(resolveDbUrl('production')).toBe('postgresql://user:pass@prod-host.supabase.com:5432/postgres');
+		});
+
+		it('uses documented secret files for PREVIEW and PROD', () => {
+			expect(PREVIEW_SECRET_FILES).toContain('.env.preview');
+			expect(PREVIEW_SECRET_FILES).toContain('.env.preview.local');
+			expect(PROD_SECRET_FILES).toContain('.env.production.local');
+			expect(PROD_SECRET_FILES).toContain('.env.prod.local');
+		});
+	});
+
 	describe('apply-migrations.ts target restrictions', () => {
-			function mockProcessExit() {
-				jest.spyOn(console, 'error').mockImplementation(() => {});
-				return jest.spyOn(process, 'exit').mockImplementation((() => {
-					throw new Error('process.exit(1) called');
-				}) as unknown as (code?: string | number | null) => never);
-			}
+		function mockProcessExit() {
+			jest.spyOn(console, 'error').mockImplementation(() => {});
+			return jest.spyOn(process, 'exit').mockImplementation((() => {
+				throw new Error('process.exit(1) called');
+			}) as unknown as (code?: string | number | null) => never);
+		}
 
-			it('blocks production target and exits with code 1', () => {
-				const mockExit = mockProcessExit();
+		it('blocks production target and exits with code 1', () => {
+			const mockExit = mockProcessExit();
 
-				const prodUrl = 'postgresql://postgres:***@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
-				expect(() => enforceDisposableTargetOnly(prodUrl)).toThrow('process.exit(1) called');
-				expect(mockExit).toHaveBeenCalledWith(1);
-			});
+			const prodUrl = 'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+			expect(() => enforceDisposableTargetOnly(prodUrl)).toThrow('process.exit(1) called');
+			expect(mockExit).toHaveBeenCalledWith(1);
+		});
 
-			it('blocks persistent-local target and exits with code 1', () => {
-				const mockExit = mockProcessExit();
+		it('blocks persistent-local target and exits with code 1', () => {
+			const mockExit = mockProcessExit();
 
-				const localUrl = 'postgresql://postgres:***@127.0.0.1:54322/postgres';
-				expect(() => enforceDisposableTargetOnly(localUrl)).toThrow('process.exit(1) called');
-				expect(mockExit).toHaveBeenCalledWith(1);
-			});
+			const localUrl = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+			expect(() => enforceDisposableTargetOnly(localUrl)).toThrow('process.exit(1) called');
+			expect(mockExit).toHaveBeenCalledWith(1);
+		});
 
-			it('blocks unknown DB URL and exits with code 1', () => {
-				const mockExit = mockProcessExit();
+		it('blocks unknown DB URL and exits with code 1', () => {
+			const mockExit = mockProcessExit();
 
-				const unknownUrl = 'postgresql://user:***@some-random-host.com:5432/postgres';
-				expect(() => enforceDisposableTargetOnly(unknownUrl)).toThrow('process.exit(1) called');
-				expect(mockExit).toHaveBeenCalledWith(1);
-			});
+			const unknownUrl = 'postgresql://user:secret@some-random-host.com:5432/postgres';
+			expect(() => enforceDisposableTargetOnly(unknownUrl)).toThrow('process.exit(1) called');
+			expect(mockExit).toHaveBeenCalledWith(1);
+		});
 
-			it('allows disposable-test environment', () => {
-				const mockExit = mockProcessExit();
-				const disposableUrl = 'postgresql://postgres:***@127.0.0.1:54332/postgres';
-				expect(() => enforceDisposableTargetOnly(disposableUrl)).not.toThrow();
-				expect(mockExit).not.toHaveBeenCalled();
-			});
+		it('allows disposable-test environment', () => {
+			const mockExit = mockProcessExit();
+			const disposableUrl = 'postgresql://postgres:postgres@127.0.0.1:54332/postgres';
+			expect(() => enforceDisposableTargetOnly(disposableUrl)).not.toThrow();
+			expect(mockExit).not.toHaveBeenCalled();
+		});
 	});
 
 	describe('db-guard.ts production migration rules', () => {

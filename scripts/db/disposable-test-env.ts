@@ -1,18 +1,18 @@
 /**
  * disposable-test-env.ts — Disposable Test Environment (Docker-based)
  *
- * Creates and manages a disposable PostgreSQL container for destructive testing.
+ * Creates and manages a disposable PostgreSQL container for destructive testing and canonical audit reconstruction.
  * Uses Docker directly (not Supabase CLI) for predictable, isolated behavior.
  *
  *   - Container:     celebra-me-test-db
  *   - Port:          54332
- *   - Credentials:   postgres / postgres
- *   - Image:         postgis/postgis:17-3.5 (PG 17 + PostGIS)
+ *   - Credentials:   supabase_admin / postgres (or postgres / postgres)
+ *   - Image:         public.ecr.aws/supabase/postgres:17.6.1.143
  *   - Data:          synthetic test data only
  *
  * Usage:
  *   tsx scripts/db/disposable-test-env.ts start
- *   tsx scripts/db/disposable-test-env.ts reset
+ *   tsx scripts/db/disposable-test-env.ts reset [--baseline]
  *   tsx scripts/db/disposable-test-env.ts run-tests
  *   tsx scripts/db/disposable-test-env.ts run-application-flow
  *   tsx scripts/db/disposable-test-env.ts run-concurrency-test
@@ -24,8 +24,14 @@
 
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { BASELINE_CUTOFF_VERSION, fail, runCommand } from './db-workflow-lib.ts';
-import { redactCredentials } from './db-guard.ts';
+import {
+	BASELINE_CUTOFF_VERSION,
+	DISPOSABLE_DB_URL,
+	DISPOSABLE_TEST,
+	fail,
+	redactCredentials,
+	runCommand,
+} from './db-workflow-lib.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -36,15 +42,13 @@ const DISPOSABLE_DIR = resolve(PROJECT_ROOT, 'supabase', 'test');
 const SYNTHETIC_DATA_SQL = resolve(DISPOSABLE_DIR, 'seed-test-data.sql');
 
 const DISPOSABLE_PORTS = {
-	api: 54331,
-	db: 54332,
-	studio: 54333,
-	shadow: 54330,
+	api: DISPOSABLE_TEST.apiPort,
+	db: DISPOSABLE_TEST.dbPort,
+	studio: DISPOSABLE_TEST.studioPort,
+	shadow: DISPOSABLE_TEST.shadowPort,
 } as const;
 
-const POSTGREST_CONTAINER = 'celebra-me-test-postgrest';
-
-const DISPOSABLE_DB_URL = `postgresql://supabase_admin:***@127.0.0.1:${DISPOSABLE_PORTS.db}/postgres`;
+const POSTGREST_CONTAINER = DISPOSABLE_TEST.postgrestContainerName;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,51 +73,70 @@ Usage:
 `);
 }
 
-// ---------------------------------------------------------------------------
-// Synthetic seed data
-// ---------------------------------------------------------------------------
-
 function ensureSeedData(): void {
 	if (!existsSync(SYNTHETIC_DATA_SQL)) {
 		fail(`Seed data file not found at ${SYNTHETIC_DATA_SQL}. Make sure the repository files are checked out correctly.`);
 	}
 }
 
+/**
+ * Verify if the container listening on 54332 is the intended disposable test container and is responsive.
+ */
+export function isDisposableDbReady(): boolean {
+	const result = runCommand('psql', [
+		'--set',
+		'ON_ERROR_STOP=1',
+		'--dbname',
+		DISPOSABLE_DB_URL,
+		'--command',
+		'select 1;',
+	], { throwOnError: false });
+	return result.status === 0;
+}
+
 // ---------------------------------------------------------------------------
 // Commands
 // ---------------------------------------------------------------------------
 
-function cmdStart(): void {
+export function cmdStart(): void {
 	console.info('=== Disposable Test Environment: Start ===\n');
 
 	ensureSeedData();
 
-	console.info('Starting disposable PostgreSQL via Docker...');
-	const result = runCommand('docker', [
-		'run',
-		'-d',
-		'--name',
-		'celebra-me-test-db',
-		'-e',
-		'POSTGRES_PASSWORD=postgres',
-		'-p',
-		`${DISPOSABLE_PORTS.db}:5432`,
-		'public.ecr.aws/supabase/postgres:17.6.1.143',
-	]);
+	// Quick check if already ready and authenticated
+	if (isDisposableDbReady()) {
+		console.info('Disposable PostgreSQL container is already running and accessible.');
+		return;
+	}
 
-	if (result.status !== 0) {
-		const existing = runCommand('docker', [
-			'ps',
-			'-a',
-			'--filter',
-			'name=celebra-me-test-db',
-			'--format',
-			'{{.Names}}',
-		]);
-		if (existing.stdout.trim() === 'celebra-me-test-db') {
-			console.info('Container already exists. Starting it...');
-			runCommand('docker', ['start', 'celebra-me-test-db']);
-		} else {
+	// Check if container exists
+	const existing = runCommand('docker', [
+		'ps',
+		'-a',
+		'--filter',
+		`name=${DISPOSABLE_TEST.containerName}`,
+		'--format',
+		'{{.Names}}',
+	], { throwOnError: false });
+
+	if (existing.stdout.trim() === DISPOSABLE_TEST.containerName) {
+		console.info('Container already exists. Starting it...');
+		runCommand('docker', ['start', DISPOSABLE_TEST.containerName], { throwOnError: false });
+	} else {
+		console.info('Starting disposable PostgreSQL via Docker...');
+		const result = runCommand('docker', [
+			'run',
+			'-d',
+			'--name',
+			DISPOSABLE_TEST.containerName,
+			'-e',
+			`POSTGRES_PASSWORD=${DISPOSABLE_TEST.dbPassword}`,
+			'-p',
+			`${DISPOSABLE_PORTS.db}:5432`,
+			'public.ecr.aws/supabase/postgres:17.6.1.143',
+		], { throwOnError: false });
+
+		if (result.status !== 0) {
 			console.error(result.stderr);
 			fail(`docker run failed (exit ${result.status}).`);
 		}
@@ -122,32 +145,56 @@ function cmdStart(): void {
 	console.info('Waiting for database to be ready...');
 	let isReady = false;
 	for (let i = 0; i < 30; i++) {
-		const ready = runCommand('psql', [
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--dbname',
-			DISPOSABLE_DB_URL,
-			'--command',
-			'select 1;',
-		]);
-		if (ready.status === 0) {
+		if (isDisposableDbReady()) {
 			isReady = true;
 			break;
 		}
 		sleep(1000);
 	}
+
+	// If container started but auth failed, attempt a clean recreate
+	if (!isReady) {
+		console.warn('Disposable database did not respond or auth failed. Recreating container...');
+		runCommand('docker', ['rm', '-f', DISPOSABLE_TEST.containerName], { throwOnError: false });
+		const recreateResult = runCommand('docker', [
+			'run',
+			'-d',
+			'--name',
+			DISPOSABLE_TEST.containerName,
+			'-e',
+			`POSTGRES_PASSWORD=${DISPOSABLE_TEST.dbPassword}`,
+			'-p',
+			`${DISPOSABLE_PORTS.db}:5432`,
+			'public.ecr.aws/supabase/postgres:17.6.1.143',
+		]);
+		if (recreateResult.status !== 0) {
+			fail(`docker recreate failed (exit ${recreateResult.status}).`);
+		}
+		for (let i = 0; i < 30; i++) {
+			if (isDisposableDbReady()) {
+				isReady = true;
+				break;
+			}
+			sleep(1000);
+		}
+	}
+
 	if (!isReady) {
 		fail('Database did not become ready in time.');
 	}
 
 	console.info(`\nDisposable test environment is running:`);
 	console.info(`  DB:       ${redactCredentials(DISPOSABLE_DB_URL)}`);
-	console.info(`  Container: celebra-me-test-db`);
+	console.info(`  Container: ${DISPOSABLE_TEST.containerName}`);
 	console.info(`  (Direct psql access only — no Supabase API/Studio)`);
 }
 
-function cmdReset(): void {
+export function cmdReset(): void {
 	console.info('=== Disposable Test Environment: Reset ===\n');
+
+	if (!isDisposableDbReady()) {
+		cmdStart();
+	}
 
 	console.info('Resetting disposable database (drop & recreate public schema)...');
 	const result = runCommand(
@@ -320,7 +367,7 @@ function startPostgrest(): void {
 		'-p',
 		`${DISPOSABLE_PORTS.api}:3000`,
 		'-e',
-		'PGRST_DB_URI=postgresql://postgres:***@host.docker.internal:54332/postgres',
+		`PGRST_DB_URI=postgresql://${DISPOSABLE_TEST.dbUser}:${DISPOSABLE_TEST.dbPassword}@host.docker.internal:54332/postgres`,
 		'-e',
 		'PGRST_DB_SCHEMAS=public',
 		'-e',
@@ -378,8 +425,8 @@ function cmdRunStaleBaselineTest(): void {
 function cmdStop(): void {
 	console.info('=== Disposable Test Environment: Stop ===\n');
 
-	runCommand('docker', ['rm', '-f', POSTGREST_CONTAINER]);
-	const result = runCommand('docker', ['stop', 'celebra-me-test-db']);
+	runCommand('docker', ['rm', '-f', POSTGREST_CONTAINER], { throwOnError: false });
+	const result = runCommand('docker', ['stop', DISPOSABLE_TEST.containerName], { throwOnError: false });
 	if (result.status !== 0) {
 		console.warn(`docker stop warning: ${result.stderr}`);
 	}
@@ -389,7 +436,7 @@ function cmdStop(): void {
 function cmdCleanup(): void {
 	cmdStop();
 
-	const rmResult = runCommand('docker', ['rm', 'celebra-me-test-db']);
+	const rmResult = runCommand('docker', ['rm', DISPOSABLE_TEST.containerName], { throwOnError: false });
 	if (rmResult.status !== 0) {
 		console.warn(`docker rm warning: ${rmResult.stderr}`);
 	} else {
@@ -442,4 +489,7 @@ function main(): void {
 	}
 }
 
-main();
+const isMainModule = process.argv[1]?.endsWith('disposable-test-env.ts');
+if (isMainModule) {
+	main();
+}

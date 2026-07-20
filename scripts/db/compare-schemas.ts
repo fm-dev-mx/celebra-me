@@ -10,9 +10,8 @@
  *   tsx scripts/db/compare-schemas.ts
  */
 
-import { getProdDbUrl, redactDbUrl, runPsql } from './db-workflow-lib.ts';
+import { DISPOSABLE_DB_URL, getProdDbUrl, redactDbUrl, runPsql } from './db-workflow-lib.ts';
 
-const DISPOSABLE_DB_URL = process.env.DISPOSABLE_DB_URL || 'postgresql://supabase_admin:***@127.0.0.1:54332/postgres';
 
 interface TableMetadata {
 	tableName: string;

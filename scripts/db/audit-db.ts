@@ -27,13 +27,10 @@ import {
 	runCommand,
 	runPsql,
 	PROJECT_ROOT,
+	resolveDbUrl,
+	classifyDbTarget,
 } from './db-workflow-lib.ts';
-import {
-	PREVIEW_SECRET_FILES,
-	PROD_SECRET_FILES,
-	getSecretFromEnvOrFiles,
-	PERSISTENT_LOCAL,
-} from './db-guard.ts';
+import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -375,13 +372,11 @@ export function fetchRemoteMigrationVersions(
 }
 
 function runMigrationsAudit(target: string, dbUrl: string): { remoteVersions: string[]; extraRemoteCount: number } {
-	// Fetch local migrations
 	const localMigrationFiles = readdirSync(MIGRATIONS_DIR)
 		.filter((f) => f.endsWith('.sql'))
 		.sort();
 	const localVersions = localMigrationFiles.map((f) => f.split('_')[0]!);
 
-	// Fetch remote migrations registered in schema_migrations
 	const { remoteVersions, isUninitialized } = fetchRemoteMigrationVersions(dbUrl);
 
 	const parity = evaluateMigrationHistoryParity(localVersions, remoteVersions);
@@ -545,7 +540,6 @@ function checkPolicies(
 }
 
 function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): number {
-	// Connect to local disposable database for baseline/target state comparison
 	if (!existsSync(resolve(PROJECT_ROOT, 'supabase', 'test', 'seed-test-data.sql'))) {
 		console.error('ERROR: Seed data file missing. Pipeline validation cannot run.');
 		process.exit(1);
@@ -553,7 +547,6 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 
 	const prod = fetchSchemaMetadata(dbUrl);
 
-	// Generate target database fingerprint
 	const targetFingerprint = generateFingerprint({
 		tables: prod.tables,
 		columns: prod.columns,
@@ -569,20 +562,22 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 
 	let errors = initialErrors;
 
-	// Check if local disposable db is reachable
-	let localReachable = false;
-	try {
-		const checkResult = runPsql('select 1;', DISPOSABLE_DB_URL);
-		localReachable = checkResult.status === 0;
-	} catch {
-		/* ignore */
+	// Ensure local disposable reference DB is running & reachable for canonical schema comparison
+	let localReachable = isDisposableDbReady();
+	if (!localReachable) {
+		console.log('Disposable reference database not running on port 54332. Starting disposable environment...');
+		try {
+			cmdStart();
+			localReachable = isDisposableDbReady();
+		} catch (err) {
+			console.warn(`Failed to start disposable reference database: ${err instanceof Error ? err.message : String(err)}`);
+		}
 	}
 
 	if (localReachable) {
-		console.log('Comparing schema against local disposable database...');
+		console.log('Comparing schema against canonical local disposable reference database...');
 		const local = fetchLocalSchemaMetadata();
 
-		// Compute local schema fingerprint
 		const localFingerprint = generateFingerprint({
 			tables: local.tables,
 			columns: local.columns,
@@ -598,7 +593,6 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 		const prodTableNames = new Set(prod.tables.map((t) => t.tableName));
 		const localTableNames = new Set(local.tables.map((t) => t.tableName));
 
-		// Detailed drift checks
 		errors += checkTables(prod.tables, local.tables, prodTableNames, localTableNames, target);
 		errors += checkColumns(prod.columns, local.columns, prodTableNames, localTableNames, target);
 		errors += checkConstraints(prod.constraints, local.constraints);
@@ -622,26 +616,21 @@ function main(): void {
 	let dbUrl = dbUrlIdx !== -1 ? process.argv[dbUrlIdx + 1] : undefined;
 
 	if (!target) {
-		console.error('Usage: tsx scripts/db/audit-db.ts --target <production|preview|persistent-local> [--db-url <url>]');
+		console.error('Usage: tsx scripts/db/audit-db.ts --target <production|preview|persistent-local|disposable-test> [--db-url <url>]');
 		process.exit(1);
 	}
 
 	// Resolve connection URL
-	if (!dbUrl) {
-		if (target === 'production') {
-			dbUrl = getSecretFromEnvOrFiles('PROD_DB_URL', PROD_SECRET_FILES);
-		} else if (target === 'preview') {
-			dbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-		} else if (target === 'persistent-local') {
-			dbUrl = `postgresql://postgres:postgres@127.0.0.1:${PERSISTENT_LOCAL.dbPort}/postgres`;
-		} else if (target === 'disposable-test') {
-			dbUrl = 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres';
-		}
-	}
-
+	dbUrl = resolveDbUrl(target, dbUrl);
 	if (!dbUrl) {
 		console.error(`ERROR: Database URL could not be resolved for target "${target}".`);
 		process.exit(1);
+	}
+
+	// Validate target classification
+	const classification = classifyDbTarget(dbUrl);
+	if (classification.target !== target) {
+		console.warn(`Target classification warning: expected "${target}", classified as "${classification.target}" (${classification.reason})`);
 	}
 
 	const sanitizedUrl = redactDbUrl(dbUrl);
@@ -667,7 +656,6 @@ function main(): void {
 	}
 }
 
-// Execute CLI when invoked directly
 if (process.argv[1]?.endsWith('audit-db.ts')) {
 	try {
 		main();
