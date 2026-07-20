@@ -191,3 +191,57 @@ describe('disposable-test-env — cross-platform fixes', () => {
 		});
 	});
 });
+
+// ---------------------------------------------------------------------------
+// Cross-platform loader: no hardcoded Windows paths
+// ---------------------------------------------------------------------------
+describe('test-asset-loader — portable demo-json URL', () => {
+	const LOADER_PATH = resolve(process.cwd(), 'scripts/db/test-asset-loader.mjs');
+
+	it('contains no machine-specific absolute path', () => {
+		const source = readFileSync(LOADER_PATH, 'utf8');
+		expect(source).not.toMatch(/D:\//);
+		expect(source).not.toMatch(/[A-Z]:\\/);
+		expect(source).not.toMatch(/file:\/\/\/[A-Z]:/i);
+	});
+
+	it('resolves the demo JSON relative to import.meta.url', () => {
+		const source = readFileSync(LOADER_PATH, 'utf8');
+		expect(source).toContain('import.meta.url');
+		// Must reference the correct relative path
+		expect(source).toContain('../../src/content/event-demos/xv/demo-xv-jewelry-box.json');
+	});
+
+	it('produces a file URL pointing to the actual demo JSON', () => {
+		// Simulate what the loader does: resolve relative to its own location
+		const loaderUrl = new URL(`file://${LOADER_PATH.replace(/\\/g, '/')}`);
+		const resolved = new URL('../../src/content/event-demos/xv/demo-xv-jewelry-box.json', loaderUrl);
+		// Verify the resolved URL ends with the expected relative path
+		expect(resolved.href).toMatch(/src\/content\/event-demos\/xv\/demo-xv-jewelry-box\.json$/);
+	});
+
+	it('uses a template literal for the generated source', () => {
+		const source = readFileSync(LOADER_PATH, 'utf8');
+		// The astro:content source must interpolate the URL variable
+		const astroContentLoad = source.slice(source.indexOf("url === 'astro:content'"));
+		expect(astroContentLoad).toContain('${demoJsonUrl}');
+	});
+
+	it('preserves the existing schema and registry stubs', () => {
+		const source = readFileSync(LOADER_PATH, 'utf8');
+		expect(source).toContain('test:asset-registry');
+		expect(source).toContain('test:event-content-schema');
+		expect(source).toContain('isValidEvent');
+		expect(source).toContain('eventContentSchema');
+	});
+
+	it('handles non-Windows import.meta.url patterns', () => {
+		// Simulate what the loader would produce on a Linux/GitHub Actions runner
+		const linuxPath = '/home/runner/work/celebra-me/celebra-me/scripts/db/test-asset-loader.mjs';
+		const linuxUrl = new URL(`file://${linuxPath}`);
+		const resolved = new URL('../../src/content/event-demos/xv/demo-xv-jewelry-box.json', linuxUrl);
+		expect(resolved.href).toBe(
+			'file:///home/runner/work/celebra-me/celebra-me/src/content/event-demos/xv/demo-xv-jewelry-box.json',
+		);
+	});
+});
