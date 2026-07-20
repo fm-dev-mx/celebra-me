@@ -5,8 +5,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { generatePreviewApprovalArtifact } from '../../scripts/provision/promote-preview-cli';
 import { verifyPreviewApprovalArtifact } from '../../scripts/provision/promote-prod-cli';
-import { finalizePreviewApproval } from '../../scripts/provision/finalize-preview-approval-cli';
-import { rejectPreviewApproval } from '../../scripts/provision/finalize-preview-approval-cli';
+import { finalizePreviewApproval, rejectPreviewApproval, parseFinalizerArgs } from '../../scripts/provision/finalize-preview-approval-cli';
 import type { ImportEngineResult } from '../../scripts/provision/invitation-import-engine';
 
 describe('Promotion CLI & Approval Artifact Verification', () => {
@@ -84,5 +83,60 @@ describe('Promotion CLI & Approval Artifact Verification', () => {
 		expect(() => {
 			verifyPreviewApprovalArtifact(unapprovedHash, undefined, ['.agent/tmp/approvals']);
 		}).toThrow(/No Preview approval artifact found/);
+	});
+});
+
+describe('Finalizer CLI Argument Parser', () => {
+	it('parses --artifact and --evidence without spurious reject', () => {
+		const { artifactPath, evidencePath, rejectReason } = parseFinalizerArgs([
+			'--artifact', '/tmp/artifact.json',
+			'--evidence', '/tmp/evidence.json',
+		]);
+		expect(artifactPath).toBe('/tmp/artifact.json');
+		expect(evidencePath).toBe('/tmp/evidence.json');
+		expect(rejectReason).toBeUndefined();
+	});
+
+	it('parses --artifact and --reject correctly', () => {
+		const { artifactPath, evidencePath, rejectReason } = parseFinalizerArgs([
+			'--artifact', '/tmp/artifact.json',
+			'--reject', 'Storage not isolated',
+		]);
+		expect(artifactPath).toBe('/tmp/artifact.json');
+		expect(rejectReason).toBe('Storage not isolated');
+		expect(evidencePath).toBeUndefined();
+	});
+
+	it('returns undefined for absent optional flags', () => {
+		const { artifactPath, evidencePath, rejectReason } = parseFinalizerArgs([
+			'--artifact', '/tmp/artifact.json',
+		]);
+		expect(artifactPath).toBe('/tmp/artifact.json');
+		expect(evidencePath).toBeUndefined();
+		expect(rejectReason).toBeUndefined();
+	});
+
+	it('handles preceding -- separator without affecting parse', () => {
+		const { artifactPath, evidencePath, rejectReason } = parseFinalizerArgs([
+			'--', '--artifact', '/tmp/artifact.json', '--evidence', '/tmp/evidence.json',
+		]);
+		expect(artifactPath).toBe('/tmp/artifact.json');
+		expect(evidencePath).toBe('/tmp/evidence.json');
+		expect(rejectReason).toBeUndefined();
+	});
+
+	it('correctly rejects when --reject value is absent', () => {
+		const { rejectReason } = parseFinalizerArgs([
+			'--artifact', '/tmp/artifact.json', '--reject',
+		]);
+		expect(rejectReason).toBeUndefined();
+	});
+
+	it('allows --evidence with additional positional args', () => {
+		const { artifactPath, evidencePath } = parseFinalizerArgs([
+			'--evidence', '/tmp/evidence.json', '--artifact', '/tmp/artifact.json',
+		]);
+		expect(artifactPath).toBe('/tmp/artifact.json');
+		expect(evidencePath).toBe('/tmp/evidence.json');
 	});
 });

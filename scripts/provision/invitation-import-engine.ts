@@ -8,7 +8,6 @@ import type { InvitationPackageData, InvitationPackageAsset } from './invitation
 import {
 	computePackageHash,
 	PACKAGE_SCHEMA_VERSION,
-	STORAGE_URL_PLACEHOLDER,
 } from './invitation-package.ts';
 import {
 	classifyDbTarget,
@@ -30,6 +29,16 @@ import {
 	hashPublicMetadata,
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
+import {
+	checkInvitationMetadataIdentical,
+	checkDraftContentIdentical,
+	checkPublishedContentIdentical,
+	checkAssetDbRowIdentical,
+	checkEventAndMembershipIdentical,
+	rewritePackageStorageUrls,
+	checkTargetDivergenceConflict,
+	buildResourceActions,
+} from './promotion-comparison.ts';
 
 export interface ImportEngineOptions {
 	packagePath: string;
@@ -92,138 +101,6 @@ function parsePsqlJsonArray(stdout: string): Array<Record<string, unknown>> {
 		>;
 	}
 	return JSON.parse(trimmed) as Array<Record<string, unknown>>;
-}
-
-function valEq(a: unknown, b: unknown): boolean {
-	const normA = a === '' || a === undefined ? null : a;
-	const normB = b === '' || b === undefined ? null : b;
-	return normA === normB;
-}
-
-export function canonicalizeValue(val: unknown, targetStorageUrl?: string): unknown {
-	if (val === null || val === undefined) return null;
-	if (typeof val === 'string') {
-		let str = val;
-		if (targetStorageUrl) str = str.replaceAll(targetStorageUrl, STORAGE_URL_PLACEHOLDER);
-		return str.replaceAll(
-			/https?:\/\/[a-zA-Z0-9_.-]+\/storage\/v1\/object\/public\/[a-zA-Z0-9_-]+/g,
-			STORAGE_URL_PLACEHOLDER,
-		);
-	}
-	if (typeof val === 'number' || typeof val === 'boolean') return val;
-	if (Array.isArray(val)) return val.map((item) => canonicalizeValue(item, targetStorageUrl));
-	if (typeof val === 'object') {
-		const result: Record<string, unknown> = {};
-		for (const key of Object.keys(val as Record<string, unknown>).sort()) {
-			result[key] = canonicalizeValue(
-				(val as Record<string, unknown>)[key],
-				targetStorageUrl,
-			);
-		}
-		return result;
-	}
-	return val;
-}
-
-export function isSemanticallyEqual(a: unknown, b: unknown, targetStorageUrl?: string): boolean {
-	return (
-		JSON.stringify(canonicalizeValue(a, targetStorageUrl)) ===
-		JSON.stringify(canonicalizeValue(b, targetStorageUrl))
-	);
-}
-
-export function checkInvitationMetadataIdentical(
-	pkgInv: InvitationPackageData['invitation'],
-	existingInv: Record<string, unknown> | null,
-	targetStorageUrl: string,
-): boolean {
-	if (!existingInv) return false;
-	return (
-		existingInv.title === pkgInv.title &&
-		existingInv.base_demo_id === pkgInv.baseDemoId &&
-		existingInv.theme_id === pkgInv.themeId &&
-		existingInv.kind === pkgInv.kind &&
-		valEq(existingInv.client_name, pkgInv.clientName) &&
-		valEq(existingInv.client_email, pkgInv.clientEmail) &&
-		valEq(existingInv.client_whatsapp, pkgInv.clientWhatsapp) &&
-		Boolean(existingInv.photos_received) === Boolean(pkgInv.photosReceived) &&
-		isSemanticallyEqual(pkgInv.snapshot, existingInv.snapshot, targetStorageUrl)
-	);
-}
-
-export function checkDraftContentIdentical(
-	pkgDraftContent: Record<string, unknown>,
-	existingDraft: Record<string, unknown> | null,
-	targetStorageUrl: string,
-): boolean {
-	if (!existingDraft) return false;
-	return isSemanticallyEqual(pkgDraftContent, existingDraft.content, targetStorageUrl);
-}
-
-export function checkPublishedContentIdentical(
-	pkgPublishedContent: Record<string, unknown>,
-	existingPub: Record<string, unknown> | null,
-	targetStorageUrl: string,
-	isInvMetadataIdentical: boolean,
-): boolean {
-	if (!existingPub || !isInvMetadataIdentical) return false;
-	return isSemanticallyEqual(pkgPublishedContent, existingPub.content, targetStorageUrl);
-}
-
-export function checkAssetDbRowIdentical(
-	pAsset: InvitationPackageAsset,
-	existingAssetRow: Record<string, unknown> | null,
-): boolean {
-	if (!existingAssetRow) return false;
-	const mainMeta =
-		existingAssetRow.display_name === pAsset.displayName &&
-		valEq(existingAssetRow.default_alt_text, pAsset.defaultAltText) &&
-		existingAssetRow.mime_type === pAsset.mimeType &&
-		valEq(existingAssetRow.width, pAsset.width) &&
-		valEq(existingAssetRow.height, pAsset.height) &&
-		valEq(existingAssetRow.file_size, pAsset.fileSize);
-	const validationMeta =
-		existingAssetRow.validation_version === pAsset.validationVersion &&
-		valEq(existingAssetRow.original_mime_type, pAsset.originalMimeType) &&
-		valEq(existingAssetRow.original_file_size, pAsset.originalFileSize);
-	return mainMeta && validationMeta;
-}
-
-export function checkEventAndMembershipIdentical(
-	pkg: InvitationPackageData,
-	ownerUserId: string,
-	targetInvitationId: string,
-	existingEvent: Record<string, unknown> | null,
-	existingMember: Record<string, unknown> | null,
-): boolean {
-	if (!existingEvent || !existingMember) return false;
-	const eventTitle = pkg.event?.title ?? pkg.invitation.title;
-	return (
-		existingEvent.owner_user_id === ownerUserId &&
-		existingEvent.title === eventTitle &&
-		existingEvent.status === 'published' &&
-		existingEvent.invitation_project_id === targetInvitationId &&
-		existingMember.user_id === ownerUserId &&
-		existingMember.membership_role === 'owner'
-	);
-}
-
-function rewritePackageStorageUrls(val: unknown, targetStorageUrl: string): unknown {
-	if (typeof val === 'string')
-		return val.replaceAll(`${STORAGE_URL_PLACEHOLDER}/`, `${targetStorageUrl}/`);
-	if (Array.isArray(val))
-		return val.map((item) => rewritePackageStorageUrls(item, targetStorageUrl));
-	if (val !== null && typeof val === 'object') {
-		const result: Record<string, unknown> = {};
-		for (const key of Object.keys(val as Record<string, unknown>)) {
-			result[key] = rewritePackageStorageUrls(
-				(val as Record<string, unknown>)[key],
-				targetStorageUrl,
-			);
-		}
-		return result;
-	}
-	return val;
 }
 
 function validatePackage(packagePath: string): InvitationPackageData {
@@ -658,31 +535,6 @@ function scanTargetState(
 	};
 }
 
-export function checkTargetDivergenceConflict(
-	slug: string,
-	targetDraftContent: Record<string, unknown>,
-	existingDraft: Record<string, unknown> | null,
-	existingPub: Record<string, unknown> | null,
-	allowDivergentOverwrite = false,
-): void {
-	if (!existingDraft || allowDivergentOverwrite) return;
-	if ((existingDraft.status as string) !== 'draft') return;
-
-	const pkgDraftHash = hashPublicationProjection(targetDraftContent);
-	const targetDraftHash = hashPublicationProjection(
-		(existingDraft.content as Record<string, unknown>) ?? {},
-	);
-	const targetPubHash = existingPub
-		? hashPublicationProjection((existingPub.content as Record<string, unknown>) ?? {})
-		: null;
-
-	if (targetDraftHash !== pkgDraftHash && targetDraftHash !== targetPubHash) {
-		throw new Error(
-			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${String(existingPub?.version ?? 'none')}; package content hash ${pkgDraftHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}.`,
-		);
-	}
-}
-
 function verifyPostPublication(pubQuery: string, targetDbUrl: string, route: string): number {
 	const verifyPubResult = runPsql(pubQuery, targetDbUrl, { tuplesOnly: true });
 	if (!verifyPubResult.stdout.trim())
@@ -699,75 +551,6 @@ function verifyPostPublication(pubQuery: string, targetDbUrl: string, route: str
 			);
 	}
 	return (verifyPubRow.version as number) || 1;
-}
-
-function buildResourceActions(params: {
-	slug: string;
-	route: string;
-	targetInvitationId: string;
-	existingInv: Record<string, unknown> | null;
-	isInvMetadataIdentical: boolean;
-	assetActions: ResourcePlanAction[];
-	existingDraft: Record<string, unknown> | null;
-	isDraftIdentical: boolean;
-	existingPub: Record<string, unknown> | null;
-	isPubIdentical: boolean;
-	existingEvent: Record<string, unknown> | null;
-	isEventAndMemberIdentical: boolean;
-}): ResourcePlanAction[] {
-	return [
-		{
-			resource: 'invitation',
-			name: params.slug,
-			action: !params.existingInv
-				? 'create'
-				: !params.isInvMetadataIdentical
-					? 'replace'
-					: 'reuse',
-			detail: !params.existingInv
-				? `Create new invitation ID ${params.targetInvitationId}`
-				: !params.isInvMetadataIdentical
-					? `Update invitation metadata for ID ${params.targetInvitationId}`
-					: `Invitation metadata up-to-date (ID ${params.targetInvitationId})`,
-		},
-		...params.assetActions,
-		{
-			resource: 'invitation_content_drafts',
-			name: `${params.slug}-draft`,
-			action: !params.existingDraft
-				? 'create'
-				: !params.isDraftIdentical
-					? 'replace'
-					: 'reuse',
-			detail: !params.existingDraft
-				? 'Create content draft'
-				: !params.isDraftIdentical
-					? 'Update content draft'
-					: 'Content draft up-to-date',
-		},
-		{
-			resource: 'published_invitation_content',
-			name: params.route,
-			action: !params.existingPub ? 'create' : !params.isPubIdentical ? 'replace' : 'reuse',
-			detail: !params.existingPub
-				? 'Publish initial version 1'
-				: !params.isPubIdentical
-					? `Publish (version ${(params.existingPub.version as number) + 1})`
-					: `Published content up-to-date (version ${params.existingPub.version})`,
-		},
-		{
-			resource: 'events',
-			name: `${params.slug}-event`,
-			action: !params.isEventAndMemberIdentical
-				? !params.existingEvent
-					? 'create'
-					: 'replace'
-				: 'reuse',
-			detail: !params.isEventAndMemberIdentical
-				? 'Upsert event and owner membership'
-				: 'Event and membership up-to-date',
-		},
-	];
 }
 
 function analyzeTargetDrift(

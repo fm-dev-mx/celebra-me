@@ -11,7 +11,7 @@ import {
 	checkPublishedContentIdentical,
 	checkAssetDbRowIdentical,
 	checkEventAndMembershipIdentical,
-} from '../../scripts/provision/invitation-import-engine';
+} from '../../scripts/provision/promotion-comparison';
 import type {
 	InvitationPackageAsset,
 	InvitationPackageData,

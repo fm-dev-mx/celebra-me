@@ -83,11 +83,21 @@ export function rejectPreviewApproval(
 	};
 }
 
+export function parseFinalizerArgs(
+	args: string[],
+): { artifactPath?: string; evidencePath?: string; rejectReason?: string } {
+	const artifactIdx = args.indexOf('--artifact');
+	const evidenceIdx = args.indexOf('--evidence');
+	const rejectIdx = args.indexOf('--reject');
+	const artifactPath = artifactIdx !== -1 ? args[artifactIdx + 1] : undefined;
+	const evidencePath = evidenceIdx !== -1 ? args[evidenceIdx + 1] : undefined;
+	const rejectReason = rejectIdx !== -1 ? args[rejectIdx + 1] : undefined;
+	return { artifactPath, evidencePath, rejectReason };
+}
+
 function main(): void {
 	const args = process.argv.slice(2);
-	const artifactPath = args[args.indexOf('--artifact') + 1];
-	const evidencePath = args[args.indexOf('--evidence') + 1];
-	const rejectReason = args[args.indexOf('--reject') + 1];
+	const { artifactPath, evidencePath, rejectReason } = parseFinalizerArgs(args);
 	if (!artifactPath || (!evidencePath && !rejectReason) || (evidencePath && rejectReason)) {
 		throw new Error(
 			'Usage: --artifact <path> --evidence <path> OR --artifact <path> --reject <reason>.',
