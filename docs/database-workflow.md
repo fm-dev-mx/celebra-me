@@ -40,16 +40,14 @@ categories, and precedence notes.
 ## Preview Environment Workflow
 
 ```text
-SUPPORTED BY TOOLING
-NOT YET PROVISIONED
-NOT YET HOSTED-VALIDATED
+PROVISIONED & HOSTED-VALIDATED
 ```
 
-- **Status & Parity**: Preview environment tooling exists (`pnpm db:preview:migrate`, `pnpm db:preview:audit`), but hosted Preview has not yet been provisioned or validated. Full Local–Preview–Production parity has not yet been demonstrated.
+- **Status & Parity**: Ephemeral Preview database environment is provisioned and hosted-validated. Dedicated Supabase Preview project is used for Vercel Preview deployments from `develop`.
 - **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL` as `preview`.
 - **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
-- **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against `PREVIEW_DB_URL`.
+- **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction (`127.0.0.1:54332`). Uninitialized Preview databases (0 remote migrations, 59 pending) return exit code `0`.
 - **Separation of Operations**: Migration, seed, and audit are separate operations. `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
 - **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview commands fail closed with exit code `1`.
 - **Synthetic Data & Privacy**: Preview must use isolated synthetic data (`supabase/test/seed-test-data.sql` or synthetic test fixtures). Production customer data must NEVER be copied into Preview.

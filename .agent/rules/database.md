@@ -31,9 +31,9 @@ Four distinct database targets exist:
 | Target | Identification | Usage | Destructive ops allowed? |
 |--------|---------------|-------|--------------------------|
 | **production** | Supabase cloud host (`*.supabase.co`, `*.supabase.com`) | Read-only inspection and export; schema mutations via `pnpm db:prod:migrate` only | NEVER |
-| **preview** | Ephemeral branch DB (`PREVIEW_DB_URL` or secret files) | Ephemeral branch testing (`SUPPORTED BY TOOLING`, `NOT YET PROVISIONED`, `NOT YET HOSTED-VALIDATED`) | NO — schema mutated via `pnpm db:preview:migrate` or `pnpm db:preview:patch` only |
-| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, project `celebra-me-rsvp` | Normal development | NO — protected state |
-| **disposable-test** | `127.0.0.1:54332` or `localhost:54332`, project `celebra-me-test` | Migration/pgTAP/seed/destructive tests | YES — created on demand |
+| **preview** | Hosted branch DB (`PREVIEW_DB_URL` or secret files) | Provisioned hosted Preview project for Vercel `develop` deployments | NO — schema mutated via `pnpm db:preview:migrate` or `pnpm db:preview:patch` only |
+| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev` | NO — protected state |
+| **disposable-test** | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db` | Migration reconstruction/pgTAP/seed/canonical audit reference | YES — created/recreated on demand |
 
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
@@ -58,18 +58,14 @@ boundaries through classification, identity verification, and per-target policy 
 
 ## Preview Environment Status & Rules
 
-- **Preview Status**:
-  ```text
-  SUPPORTED BY TOOLING
-  NOT YET PROVISIONED
-  NOT YET HOSTED-VALIDATED
-  ```
-- **Parity Status**: Full Local–Preview–Production parity has not yet been demonstrated.
+- **Preview Status**: `PROVISIONED & HOSTED-VALIDATED`
+- **Hosted Project**: Dedicated Supabase Preview project used by Vercel Preview deployments from `develop`.
 - **Credentials & Secret Resolution**: Credentials come from `PREVIEW_DB_URL` environment variable or gitignored secret files:
   - `.env.preview.local`
   - `.env.preview`
   - `.secrets/preview-db-url`
   - `.tmp/secrets/preview-db-url`
+- **Audit Workflow (`pnpm db:preview:audit`)**: Reads Preview migration and schema state, reconstructs the canonical disposable reference database (`127.0.0.1:54332`), and compares Preview against the canonical reference without mutating Preview or persistent local. Returns exit code `0` for an uninitialized Preview database with 0 remote and 59 pending migrations.
 - **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations only; it does not automatically seed or audit.
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate` and `pnpm db:preview:audit` fail closed with exit code `1`.
 - **Data Isolation**: Preview must use isolated synthetic test data (e.g. `supabase/test/seed-test-data.sql`) and separate credentials.
