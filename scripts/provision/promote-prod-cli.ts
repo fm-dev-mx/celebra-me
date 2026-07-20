@@ -221,8 +221,10 @@ async function main() {
 		console.log(`   Route:           \x1b[1m${result.route}\x1b[0m`);
 		console.log(`   Project Ref:     ${result.projectRef}`);
 		console.log(`   Owner User ID:   ${result.ownerUserId}`);
-		console.log(`   Published Ver:   v${result.publishedVersion}`);
-		console.log(`   Zero-Drift:      ${result.isZeroDriftRerun ? 'Yes' : 'No'}`);
+		console.log(`   Published Ver:     v${result.publishedVersion}`);
+		console.log(`   Planned Mutations: ${result.plannedMutations}`);
+		console.log(`   Executed Mutations:${result.executedMutations}`);
+		console.log(`   Zero-Drift:        ${result.isZeroDrift ? 'Yes' : 'No'}`);
 
 		console.log('\n   Plan Actions:');
 		for (const act of result.actions) {

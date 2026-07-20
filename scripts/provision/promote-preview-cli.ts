@@ -132,13 +132,15 @@ async function main() {
 		console.log(
 			`\x1b[32m✅ Preview promotion ${isApply ? 'completed' : 'dry-run ready'}!\x1b[0m`,
 		);
-		console.log(`   Package Hash:    \x1b[1m${result.packageHash}\x1b[0m`);
-		console.log(`   Route:           \x1b[1m${result.route}\x1b[0m`);
-		console.log(`   Project Ref:     ${result.projectRef}`);
-		console.log(`   Owner User ID:   ${result.ownerUserId}`);
-		console.log(`   Published Ver:   v${result.publishedVersion}`);
+		console.log(`   Package Hash:      \x1b[1m${result.packageHash}\x1b[0m`);
+		console.log(`   Route:             \x1b[1m${result.route}\x1b[0m`);
+		console.log(`   Project Ref:       ${result.projectRef}`);
+		console.log(`   Owner User ID:     ${result.ownerUserId}`);
+		console.log(`   Published Ver:     v${result.publishedVersion}`);
+		console.log(`   Planned Mutations: ${result.plannedMutations}`);
+		console.log(`   Executed Mutations:${result.executedMutations}`);
 		console.log(
-			`   Zero-Drift:      ${result.isZeroDriftRerun ? 'Yes (0 mutations performed)' : 'No (mutations applied)'}`,
+			`   Zero-Drift:        ${result.isZeroDrift ? 'Yes (0 mutations planned/executed)' : 'No (mutations required)'}`,
 		);
 
 		console.log('\n   Plan Actions:');
