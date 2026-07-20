@@ -22,19 +22,10 @@
  *   tsx scripts/db/disposable-test-env.ts db-url
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface RunOptions {
-	env?: NodeJS.ProcessEnv;
-	input?: string;
-	throwOnError?: boolean;
-}
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { BASELINE_CUTOFF_VERSION, fail, runCommand } from './db-workflow-lib.ts';
+import { redactCredentials } from './db-guard.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -53,63 +44,21 @@ const DISPOSABLE_PORTS = {
 
 const POSTGREST_CONTAINER = 'celebra-me-test-postgrest';
 
-const DISPOSABLE_DB_URL = `postgresql://supabase_admin:postgres@127.0.0.1:${DISPOSABLE_PORTS.db}/postgres`;
+const DISPOSABLE_DB_URL = `postgresql://supabase_admin:***@127.0.0.1:${DISPOSABLE_PORTS.db}/postgres`;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function ensureDir(path: string): void {
-	mkdirSync(path, { recursive: true });
-}
-
 function sleep(ms: number): void {
-	// Synchronous sleep via Atomics.wait (works in Node.js, not browser)
 	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
-
-function runCommand(
-	command: string,
-	args: string[],
-	options: RunOptions = {},
-): { status: number | null; stdout: string; stderr: string } {
-	const isShellRequired = ['npx', 'supabase', 'pnpm', 'npm'].includes(command);
-	const spawnOptions: SpawnSyncOptions = {
-		cwd: PROJECT_ROOT,
-		env: { ...process.env, ...options.env },
-		input: options.input,
-		encoding: 'utf8',
-		stdio: 'pipe',
-		shell: isShellRequired && process.platform === 'win32',
-	};
-	const result = spawnSync(command, args, spawnOptions);
-	return {
-		status: result.status,
-		stdout: typeof result.stdout === 'string' ? result.stdout : '',
-		stderr: typeof result.stderr === 'string' ? result.stderr : (result.error?.message ?? ''),
-	};
-}
-
-function writeTextFile(path: string, content: string): void {
-	ensureDir(dirname(path));
-	writeFileSync(path, content, 'utf8');
-}
-
-function redactCredentials(text: string): string {
-	const urlPattern = /(postgres(?:ql)?:\/\/)(?:[^\s@]+@)?(?:[^\s:]+(?::\d+)?\/[^\s]*)/gi;
-	return text.replace(urlPattern, (_match, protocol) => `${protocol}<redacted>@<host>`);
-}
-
-function fail(message: string): never {
-	console.error(`ERROR: ${message}`);
-	process.exit(1);
 }
 
 function printUsage(): void {
 	console.info(`
 Usage:
   tsx scripts/db/disposable-test-env.ts start      Create and start the disposable container
-  tsx scripts/db/disposable-test-env.ts reset       Reset the disposable database (destructive)
+  tsx scripts/db/disposable-test-env.ts reset [--baseline] Reset the disposable database (destructive)
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
@@ -125,45 +74,9 @@ Usage:
 // ---------------------------------------------------------------------------
 
 function ensureSeedData(): void {
-	if (existsSync(SYNTHETIC_DATA_SQL)) return;
-
-	ensureDir(DISPOSABLE_DIR);
-
-	const sql = `-- Synthetic test data for disposable test environment
--- Generated for testing purposes only. No PII or production data.
-
-INSERT INTO auth.users (id, aud, role, email, created_at, updated_at)
-VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'test-admin@celebra-me.test', now(), now()),
-  ('a0000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'test-client@celebra-me.test', now(), now())
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.events (id, slug, title, event_type, owner_user_id, status)
-VALUES
-  ('e0000000-0000-0000-0000-000000000001', 'test-xv-event', 'Test XV Event', 'xv', 'a0000000-0000-0000-0000-000000000001', 'published'),
-  ('e0000000-0000-0000-0000-000000000002', 'test-wedding-event', 'Test Wedding Event', 'boda', 'a0000000-0000-0000-0000-000000000001', 'published')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
-VALUES
-  ('f0000000-0000-0000-0000-000000000001', 'test-invitation-xv', 'Test XV Invitation', 'xv', 'draft', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'a0000000-0000-0000-0000-000000000001', 'client'),
-  ('f0000000-0000-0000-0000-000000000002', 'test-invitation-wedding', 'Test Wedding Invitation', 'boda', 'draft', 'demo-wedding-classic', 'classic', '{}'::jsonb, 'a0000000-0000-0000-0000-000000000002', 'client')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.app_user_roles (user_id, role)
-VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'super_admin'),
-  ('a0000000-0000-0000-0000-000000000002', 'host_client')
-ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version)
-VALUES
-  ('d0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'test-invitation-xv', 'xv', '{"title":"Test XV Invitation"}'::jsonb, 1)
-ON CONFLICT (id) DO NOTHING;
-`;
-
-	writeTextFile(SYNTHETIC_DATA_SQL, sql);
-	console.info(`Seed data written: ${SYNTHETIC_DATA_SQL}`);
+	if (!existsSync(SYNTHETIC_DATA_SQL)) {
+		fail(`Seed data file not found at ${SYNTHETIC_DATA_SQL}. Make sure the repository files are checked out correctly.`);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -243,10 +156,10 @@ function cmdReset(): void {
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--dbname',
-			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			DISPOSABLE_DB_URL,
 		],
 		{
-			input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
+			input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; drop schema if exists supabase_migrations cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
 		},
 	);
 
@@ -264,7 +177,7 @@ function cmdReset(): void {
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--dbname',
-			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			DISPOSABLE_DB_URL,
 			'--file',
 			storageSchemaPath,
 		]);
@@ -279,7 +192,7 @@ function cmdReset(): void {
 				'--set',
 				'ON_ERROR_STOP=1',
 				'--dbname',
-				'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+				DISPOSABLE_DB_URL,
 			],
 			{
 				input: 'drop policy if exists "public read invitation assets" on storage.objects; drop policy if exists "service_role write invitation assets" on storage.objects; drop policy if exists "service_role delete invitation assets" on storage.objects;',
@@ -298,7 +211,7 @@ function cmdReset(): void {
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--dbname',
-			'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
+			DISPOSABLE_DB_URL,
 			'--file',
 			authSchemaPath,
 		]);
@@ -308,19 +221,23 @@ function cmdReset(): void {
 		}
 	}
 
-	// Apply all 56 migrations from empty using the single-transaction runner
-	console.info('Applying all 56 migrations...');
-	const applyResult = runCommand('npx', [
+	const isBaseline = process.argv.includes('--baseline');
+	const applyArgs = [
 		'-y',
 		'tsx',
 		'scripts/db/apply-migrations.ts',
 		'--db-url',
-		'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres',
-	]);
+		DISPOSABLE_DB_URL,
+	];
+	if (isBaseline) {
+		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
+	}
+	const applyResult = runCommand('npx', applyArgs);
 	if (applyResult.status !== 0) {
 		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
 	} else {
-		console.info('All migrations applied.');
+		console.info(applyResult.stdout);
+		console.info('Migrations applied successfully.');
 	}
 
 	if (existsSync(SYNTHETIC_DATA_SQL)) {
@@ -403,7 +320,7 @@ function startPostgrest(): void {
 		'-p',
 		`${DISPOSABLE_PORTS.api}:3000`,
 		'-e',
-		'PGRST_DB_URI=postgresql://postgres:postgres@host.docker.internal:54332/postgres',
+		'PGRST_DB_URI=postgresql://postgres:***@host.docker.internal:54332/postgres',
 		'-e',
 		'PGRST_DB_SCHEMAS=public',
 		'-e',
@@ -416,7 +333,7 @@ function startPostgrest(): void {
 		fail(`Application harness failure: PostgREST start failed: ${result.stderr}`);
 	for (let attempt = 0; attempt < 20; attempt++) {
 		const ready = runCommand('curl.exe', ['--silent', '--fail', 'http://127.0.0.1:54331/']);
-		if (ready.status === 0 || ready.status === 22) return;
+		if (ready.status === 0) return;
 		sleep(250);
 	}
 	fail('Application harness failure: PostgREST did not become reachable.');

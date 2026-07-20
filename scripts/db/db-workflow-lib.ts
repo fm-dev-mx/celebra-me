@@ -5,18 +5,15 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 
 export const PROJECT_ROOT = process.cwd();
+export const BASELINE_CUTOFF_VERSION = '20260715210600';
 export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
-export const LOCAL_DB_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+export const LOCAL_DB_URL = 'postgresql://postgres:***@127.0.0.1:54322/postgres';
+export const DISPOSABLE_DB_URL = 'postgresql://supabase_admin:***@127.0.0.1:54332/postgres';
 export const STORAGE_BUCKET_SIZE_LIMIT = 10_485_760;
 export const REQUIRED_LOCAL_SUPER_ADMIN_EMAIL = 'celebra.me.com@gmail.com';
 export const PSQL_REQUIRED_MESSAGE =
 	'psql is required for local DB workflow scripts. Install PostgreSQL client tools and make sure `psql` is available on PATH. Verify with `psql --version`.';
-export const PROD_SECRET_FILES = [
-	'.env.production.local',
-	'.env.prod.local',
-	'.secrets/prod-db-url',
-	'.tmp/secrets/prod-db-url',
-];
+import { PROD_SECRET_FILES } from './db-guard.ts';
 
 export interface CommandResult {
 	status: number | null;
@@ -238,15 +235,26 @@ export function runCommand(
 ): CommandResult {
 	const { throwOnError = true } = options;
 	const isShellRequired = ['npx', 'supabase', 'pnpm', 'npm'].includes(command);
+	let cmdToSpawn = command;
+	let argsToSpawn = args;
+	let useShell = false;
+
+	if (isShellRequired && process.platform === 'win32') {
+		cmdToSpawn = 'cmd.exe';
+		argsToSpawn = ['/d', '/s', '/c', command, ...args];
+	} else if (isShellRequired) {
+		useShell = true;
+	}
+
 	const spawnOptions: SpawnSyncOptions = {
 		cwd: PROJECT_ROOT,
 		env: { ...process.env, ...options.env },
 		input: options.input,
 		encoding: 'utf8',
 		stdio: options.inherit ? 'inherit' : 'pipe',
-		shell: isShellRequired && process.platform === 'win32',
+		shell: useShell,
 	};
-	const result = spawnSync(command, args, spawnOptions);
+	const result = spawnSync(cmdToSpawn, argsToSpawn, spawnOptions);
 	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
 	const stderr =
 		typeof result.stderr === 'string' ? result.stderr : (result.error?.message ?? '');

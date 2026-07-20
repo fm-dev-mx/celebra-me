@@ -26,22 +26,61 @@ asks you to change, backfill, replay, or manually invoke them.
 
 ## Database Environment Architecture
 
-Three distinct database targets exist:
+Four distinct database targets exist:
 
 | Target | Identification | Usage | Destructive ops allowed? |
 |--------|---------------|-------|--------------------------|
-| **production** | Supabase cloud host (`*.supabase.co`, `*.supabase.com`) | Read-only inspection and export | NEVER |
+| **production** | Supabase cloud host (`*.supabase.co`, `*.supabase.com`) | Read-only inspection and export; schema mutations via `pnpm db:prod:migrate` only | NEVER |
+| **preview** | Ephemeral branch DB (`PREVIEW_DB_URL` or secret files) | Ephemeral branch testing (`SUPPORTED BY TOOLING`, `NOT YET PROVISIONED`, `NOT YET HOSTED-VALIDATED`) | NO — schema mutated via `pnpm db:preview:migrate` or `pnpm db:preview:patch` only |
 | **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, project `celebra-me-rsvp` | Normal development | NO — protected state |
 | **disposable-test** | `127.0.0.1:54332` or `localhost:54332`, project `celebra-me-test` | Migration/pgTAP/seed/destructive tests | YES — created on demand |
 
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
 
+## Production Status & Governance
+
+- **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.
+- **Applied Migrations**: Production currently has all 59 migrations applied (`59/59`).
+- **Pending Migrations**: Zero (`0`) production migrations are pending.
+- **Migration Ownership**: All schema changes must be introduced through versioned migrations under `supabase/migrations/`.
+- **No Direct Production SQL**: Direct production SQL execution is not part of the normal workflow. Emergency patch files must contain the manifest required by [`manual-sql-manifest.md`](manual-sql-manifest.md) and stop at `pnpm db:prod:patch` (dry-run lint only).
+- **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool and is no longer part of the repository.
+- **Production Migration Safety Workflow**: `pnpm db:prod:migrate` is the only approved production mutation path and requires the exact safety workflow:
+  1. Target guard check (`db-guard.ts check --target production --operation migrate`)
+  2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
+  3. Read-only production schema audit (`pnpm db:prod:audit`)
+  4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
+  5. Automatic pre-migration backup (`.backups/prod/...`)
+  6. Interactive prompt requiring `MIGRATE <hostname>` or `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`
+  7. Migration application (`supabase db push --db-url <url> --yes`)
+  8. Post-migration schema verification (`supabase_migrations.schema_migrations` audit)
+
+## Preview Environment Status & Rules
+
+- **Preview Status**:
+  ```text
+  SUPPORTED BY TOOLING
+  NOT YET PROVISIONED
+  NOT YET HOSTED-VALIDATED
+  ```
+- **Parity Status**: Full Local–Preview–Production parity has not yet been demonstrated.
+- **Credentials & Secret Resolution**: Credentials come from `PREVIEW_DB_URL` environment variable or gitignored secret files:
+  - `.env.preview.local`
+  - `.env.preview`
+  - `.secrets/preview-db-url`
+  - `.tmp/secrets/preview-db-url`
+- **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations only; it does not automatically seed or audit.
+- **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate` and `pnpm db:preview:audit` fail closed with exit code `1`.
+- **Data Isolation**: Preview must use isolated synthetic test data (e.g. `supabase/test/seed-test-data.sql`) and separate credentials.
+- **No Production Data Copy**: Production customer data must NEVER be copied into Preview.
+
 ## Current Contract
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:prod:migrate` is the only implemented production mutation workflow.
+- `pnpm db:preview:migrate` applies pending migrations to Preview (`PREVIEW_DB_URL`).
 - `pnpm db:prod:patch -- --file <path>` is dry-run lint only. It never connects to the database and
   never executes SQL.
 - Production patch files must include the manifest required by
@@ -77,7 +116,7 @@ The database guard implements central safety policy. It is invoked automatically
 `pnpm db:*` commands. Direct invocation:
 
 ```bash
-tsx scripts/db/db-guard.ts check --target <production|persistent-local|disposable-test> --operation "<op>"
+tsx scripts/db/db-guard.ts check --target <production|preview|persistent-local|disposable-test> --operation "<op>"
 tsx scripts/db/db-guard.ts classify --db-url <connection-string>      # Classify a DB URL
 tsx scripts/db/db-guard.ts redact --text "<text>"                     # Redact credentials
 tsx scripts/db/sentinel-check.ts <insert|check|remove>                # Sentinel management

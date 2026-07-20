@@ -53,6 +53,9 @@ jobs:
                   VALIDATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: pnpm ops check-links
 
+            - name: Database pipeline validation
+              run: pnpm db:validate:pipeline
+
             - name: Install Playwright browser
               run: pnpm exec playwright install --with-deps chromium
 

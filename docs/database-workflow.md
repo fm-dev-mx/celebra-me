@@ -12,6 +12,14 @@ Production -> Local: allowed for read-only refreshes and backups.
 Local -> Production: allowed only for reviewed migrations.
 ```
 
+## Production Reconciliation Status
+
+- **Reconciliation Complete**: Production migration-history reconciliation is complete.
+- **Applied Migrations**: Production currently has all 59 migrations applied (`59/59`).
+- **Pending Migrations**: Zero (`0`) production migrations are pending.
+- **Migration Ownership**: All schema changes must be introduced through versioned migrations in `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
+- **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool and is no longer part of the repository.
+
 ## Environments
 
 See [`env-workflow.md`](env-workflow.md) for the canonical environment source hierarchy, variable
@@ -24,19 +32,42 @@ categories, and precedence notes.
 - Production credentials must come from shell environment variables or gitignored secret files such
   as `.env.production.local`, `.env.prod.local`, `.secrets/prod-db-url`, or
   `.tmp/secrets/prod-db-url`.
+- Preview credentials must come from `PREVIEW_DB_URL` or gitignored secret files such as
+  `.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, or `.tmp/secrets/preview-db-url`.
 - `.tmp/` and `.backups/` are never committed.
-- Never print or paste a full production connection string in logs, docs, issues, or chat.
+- Never print or paste a full production or preview connection string in logs, docs, issues, or chat.
+
+## Preview Environment Workflow
+
+```text
+SUPPORTED BY TOOLING
+NOT YET PROVISIONED
+NOT YET HOSTED-VALIDATED
+```
+
+- **Status & Parity**: Preview environment tooling exists (`pnpm db:preview:migrate`, `pnpm db:preview:audit`), but hosted Preview has not yet been provisioned or validated. Full Local–Preview–Production parity has not yet been demonstrated.
+- **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
+- **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL` as `preview`.
+- **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
+- **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against `PREVIEW_DB_URL`.
+- **Separation of Operations**: Migration, seed, and audit are separate operations. `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
+- **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview commands fail closed with exit code `1`.
+- **Synthetic Data & Privacy**: Preview must use isolated synthetic data (`supabase/test/seed-test-data.sql` or synthetic test fixtures). Production customer data must NEVER be copied into Preview.
 
 ## Common Commands
 
 ```bash
-pnpm db:local:refresh-from-prod
-pnpm db:local:refresh-from-prod-preserve-local
+pnpm db:local:restore-from-dump --dump <path>
 pnpm db:local:backup-wip
 pnpm db:local:bootstrap-admin
 pnpm db:local:validate
+pnpm db:disposable:reset
+pnpm db:validate:pipeline
 pnpm db:prod:backup
+pnpm db:prod:audit
 pnpm db:prod:migrate
+pnpm db:preview:migrate
+pnpm db:preview:audit
 pnpm db:prod:patch -- --file <path>
 pnpm db:sql:lint -- --file <path>
 ```

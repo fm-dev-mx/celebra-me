@@ -31,7 +31,7 @@ import { resolve } from 'node:path';
 // Types
 // ---------------------------------------------------------------------------
 
-export type DbTarget = 'production' | 'persistent-local' | 'disposable-test' | 'unknown';
+export type DbTarget = 'production' | 'preview' | 'persistent-local' | 'disposable-test' | 'unknown';
 
 export interface ClassificationResult {
 	target: DbTarget;
@@ -45,8 +45,43 @@ export interface GuardResult {
 }
 
 // ---------------------------------------------------------------------------
-// Constants
+// Constants & Secret Resolvers
 // ---------------------------------------------------------------------------
+
+export const PREVIEW_SECRET_FILES = [
+	'.env.preview.local',
+	'.env.preview',
+	'.secrets/preview-db-url',
+	'.tmp/secrets/preview-db-url',
+];
+
+export const PROD_SECRET_FILES = [
+	'.env.production.local',
+	'.env.prod.local',
+	'.secrets/prod-db-url',
+	'.tmp/secrets/prod-db-url',
+];
+
+/**
+ * Retrieve a database connection string or secret from the environment or files.
+ */
+export function getSecretFromEnvOrFiles(envVar: string, files: string[]): string {
+	if (process.env[envVar]?.trim()) {
+		return process.env[envVar]!.trim();
+	}
+	for (const fileName of files) {
+		const path = resolve(process.cwd(), fileName);
+		if (!existsSync(path)) continue;
+		const content = readFileSync(path, 'utf8').trim();
+		if (content.includes(`${envVar}=`)) {
+			const match = content.match(new RegExp(`${envVar}\\s*=\\s*["']?([^"'\r\n]+)["']?`));
+			if (match?.[1]) return match[1].trim();
+		} else if (content && !content.includes('\n')) {
+			return content;
+		}
+	}
+	return '';
+}
 
 /** The persistent local Supabase configuration. */
 export const PERSISTENT_LOCAL = {
@@ -147,6 +182,16 @@ export function classifyDbTarget(
 	}
 
 	const { hostname, port } = parsed;
+
+	// --- Preview check: matches PREVIEW_DB_URL ---
+	const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+	if (previewDbUrl && dbUrl === previewDbUrl) {
+		return {
+			target: 'preview',
+			reason: `Matches PREVIEW_DB_URL (host=${hostname}, port=${port})`,
+			dbUrl,
+		};
+	}
 
 	// --- Production check: host is a Supabase cloud host ---
 	if (
@@ -284,6 +329,14 @@ export function guardProduction(
 		return { ok: true, errors: [] };
 	}
 
+	if (operation === 'migrate') {
+		const parsed = parseDbUrl(classification.dbUrl ?? '');
+		const expectedHost = parsed?.hostname ?? '';
+		if (expectedHost && process.env.CONFIRM_PROD_MIGRATION === `MIGRATE ${expectedHost}`) {
+			return { ok: true, errors: [] };
+		}
+	}
+
 	// Block any write, DDL, or destructive operation
 	const blockedOperations = [
 		/^(insert|update|delete|truncate|drop|alter|create)\b/i,
@@ -340,6 +393,40 @@ export function guardPersistentLocal(
 	return { ok: errors.length === 0, errors };
 }
 
+/**
+ * Guard against destructive operations on the preview database.
+ * Preview allows migrations and audits but blocks direct resets and cascaded drops.
+ */
+export function guardPreview(
+	classification: ClassificationResult,
+	operation: string,
+): GuardResult {
+	const errors: string[] = [];
+
+	if (classification.target !== 'preview') {
+		return { ok: true, errors: [] };
+	}
+
+	const destructiveOps = [
+		{ pattern: /\bsupabase\s+db\s+reset\b/i, label: 'supabase db reset' },
+		{ pattern: /\bdocker\s+volume\s+rm\b/i, label: 'docker volume rm' },
+		{ pattern: /\bdocker\s+compose\s+down\s+-v\b/i, label: 'docker compose down -v' },
+		{ pattern: /\bdrop\s+(table|schema|database)\s+.*\bcascade\b/i, label: 'DROP ... CASCADE' },
+		{ pattern: /\btruncate\s+(table\s+)?(\w+\.)?\w+\s+cascade\b/i, label: 'TRUNCATE ... CASCADE' },
+	];
+
+	for (const { pattern, label } of destructiveOps) {
+		if (pattern.test(operation)) {
+			errors.push(
+				`PREVIEW BLOCKED: "${label}" is not permitted against the preview database. ` +
+					`Preview environment schema can be updated via pnpm db:preview:migrate or pnpm db:preview:patch.`,
+			);
+		}
+	}
+
+	return { ok: errors.length === 0, errors };
+}
+
 export function guardUnknown(classification: ClassificationResult, operation = 'unknown'): GuardResult {
 	const errors: string[] = [];
 
@@ -351,7 +438,7 @@ export function guardUnknown(classification: ClassificationResult, operation = '
 		`UNKNOWN TARGET BLOCKED: Cannot classify database target for operation "${operation}". ` +
 			`${classification.reason}. ` +
 			`All operations are blocked against unknown targets. ` +
-			`Specify --target production, --target persistent-local, or --target disposable-test ` +
+			`Specify --target production, --target preview, --target persistent-local, or --target disposable-test ` +
 			`to proceed.`,
 	);
 
@@ -432,6 +519,39 @@ function verifyPersistentLocalIdentity(): void {
 	}
 }
 
+function resolveDbUrl(target: string, dbUrl?: string): string {
+	if (dbUrl) return dbUrl;
+
+	if (target === 'production') {
+		return getSecretFromEnvOrFiles('PROD_DB_URL', PROD_SECRET_FILES) ?? '';
+	}
+	if (target === 'preview') {
+		return getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES) ?? '';
+	}
+	if (target === 'persistent-local') {
+		return `postgresql://postgres:postgres@127.0.0.1:${PERSISTENT_LOCAL.dbPort}/postgres`;
+	}
+	if (target === 'disposable-test') {
+		return `postgresql://postgres:postgres@127.0.0.1:${DISPOSABLE_TEST.dbPort}/postgres`;
+	}
+	return '';
+}
+
+function runGuards(target: string, classification: ClassificationResult, operation: string): GuardResult[] {
+	const guards: GuardResult[] = [];
+
+	if (target === 'production') {
+		guards.push(guardProduction(classification, operation));
+	} else if (target === 'preview') {
+		guards.push(guardPreview(classification, operation));
+	} else if (target === 'persistent-local') {
+		guards.push(guardPersistentLocal(classification, operation));
+	}
+
+	guards.push(guardUnknown(classification, operation));
+	return guards;
+}
+
 function cliCheck(): void {
 	const targetIdx = process.argv.indexOf('--target');
 	const target = targetIdx !== -1 ? process.argv[targetIdx + 1] : undefined;
@@ -442,12 +562,12 @@ function cliCheck(): void {
 
 	if (!target) {
 		console.error(
-			'Usage: tsx scripts/db/db-guard.ts check --target <production|persistent-local|disposable-test> [--operation <op>] [--db-url <url>]',
+			'Usage: tsx scripts/db/db-guard.ts check --target <production|preview|persistent-local|disposable-test> [--operation <op>] [--db-url <url>]',
 		);
 		process.exit(1);
 	}
 
-	const validTargets: DbTarget[] = ['production', 'persistent-local', 'disposable-test'];
+	const validTargets: DbTarget[] = ['production', 'preview', 'persistent-local', 'disposable-test'];
 	if (!validTargets.includes(target as DbTarget)) {
 		console.error(`Invalid target "${target}". Must be one of: ${validTargets.join(', ')}`);
 		process.exit(1);
@@ -458,31 +578,23 @@ function cliCheck(): void {
 		verifyPersistentLocalIdentity();
 	}
 
-	// Build the classification for --db-url or target name
-	const classification: ClassificationResult =
-		dbUrl || target === 'disposable-test'
-			? classifyDbTarget(
-					dbUrl ?? `postgresql://postgres:postgres@127.0.0.1:${DISPOSABLE_TEST.dbPort}/postgres`,
-				)
-			: classifyDbTarget(
-					`postgresql://postgres:postgres@127.0.0.1:${PERSISTENT_LOCAL.dbPort}/postgres`,
-					{ apiUrl: PERSISTENT_LOCAL.apiUrl },
-				);
+	// Auto-resolve connection URL if not provided
+	const resolvedUrl = resolveDbUrl(target, dbUrl);
+	if (!resolvedUrl) {
+		console.error(`ERROR: Database URL could not be resolved for target "${target}". Please check environment variables or secret files.`);
+		process.exit(1);
+	}
 
-	// Run the applicable guard
-	const guards: GuardResult[] = [];
-
-	if (target === 'production') {
-		guards.push(guardProduction(classification, operation ?? 'unknown'));
-	} else if (target === 'persistent-local') {
-		guards.push(guardPersistentLocal(classification, operation ?? 'unknown'));
-	} else {
+	if (target === 'disposable-test') {
 		console.log(`DISPOSABLE TEST: Target ${target} allows destructive operations.`);
 		process.exit(0);
 	}
 
-	// Check unknown classification
-	guards.push(guardUnknown(classification, operation ?? 'unknown'));
+	// Build the classification for the resolved connection string
+	const classification = classifyDbTarget(resolvedUrl);
+
+	// Run the applicable guard
+	const guards = runGuards(target, classification, operation ?? 'unknown');
 
 	const allErrors = guards.flatMap((g) => g.errors);
 	if (allErrors.length > 0) {
@@ -542,7 +654,7 @@ Usage:
   tsx scripts/db/db-guard.ts redact --text "<str>"             Redact credentials
   tsx scripts/db/db-guard.ts verify-local                      Verify local identity
 
-Targets: production, persistent-local, disposable-test
+Targets: production, preview, persistent-local, disposable-test
 `);
 			process.exit(1);
 		}
