@@ -258,3 +258,89 @@ export function classifyDbTarget(
 
 	return { target: 'unknown', reason: `Unrecognized host: ${hostname}`, dbUrl };
 }
+
+/**
+ * Extract the Supabase project reference from a DB URL.
+ *
+ * Supports two formats:
+ *
+ *   1. Direct DB host:  db.<project-ref>.supabase.co
+ *      → extracted from hostname
+ *
+ *   2. Supabase Pooler: postgres.<project-ref>@<region>.pooler.supabase.com
+ *      → extracted from username: the username must start exactly with
+ *        "postgres." and the project ref is the segment after that prefix.
+ *
+ * Returns the project ref string, or throws a descriptive error if neither
+ * format can be matched.
+ */
+export function extractSupabaseProjectRef(dbUrl: string): string {
+	const parsed = parseDbUrl(dbUrl);
+	if (!parsed) {
+		throw new Error(`Cannot parse DB URL: ${redactDbUrl(dbUrl)}`);
+	}
+
+	const { hostname, user } = parsed;
+
+	// 1. Pooler: detected by hostname containing pooler.supabase.com
+	if (hostname.includes('pooler.supabase.com')) {
+		if (!user.includes('.')) {
+			throw new Error(
+				`Pooler URL username "${user}" does not contain a project reference segment. ` +
+					`Expected format: postgres.<project-ref>`,
+			);
+		}
+		const parts = user.split('.');
+		// e.g. "postgres.iwipdvisoyerfdytuhwi" → ["postgres", "iwipdvisoyerfdytuhwi"]
+		if (parts[0] !== 'postgres') {
+			throw new Error(
+				`Pooler URL username "${user}" does not start with "postgres.". ` +
+					`Expected format: postgres.<project-ref>`,
+			);
+		}
+		if (parts.length < 2 || !parts[1]) {
+			throw new Error(
+				`Pooler URL username "${user}" is missing the project reference segment. ` +
+					`Expected format: postgres.<project-ref>`,
+			);
+		}
+		if (parts.length > 2) {
+			throw new Error(
+				`Pooler URL username "${user}" has unexpected segments (${parts.length}). ` +
+					`Expected exactly 2 segments: postgres.<project-ref>`,
+			);
+		}
+		return parts[1];
+	}
+
+	// 2. Direct host: db.<ref>.supabase.co or <ref>.supabase.co
+	const directMatch = hostname.match(/^(?:db\.)?([^.]+)\.supabase\.(co|com)$/);
+	if (directMatch) {
+		return directMatch[1];
+	}
+
+	throw new Error(
+		`Cannot extract Supabase project reference from DB URL host="${hostname}" user="${user}". ` +
+			`Expected db.<ref>.supabase.co or postgres.<ref>@pooler.supabase.com format.`,
+	);
+}
+
+/**
+ * Tables that must never be synced to Preview for privacy/security reasons.
+ * Mirror-sync scripts use this to exclude guest, RSVP, tracking, and other
+ * operational data from the Preview environment.
+ */
+export const EXCLUDED_TABLES = [
+	'guest_invitations',
+	'guest_invitation_audit',
+	'event_claim_codes',
+	'intake_requests',
+	'intake_submissions',
+	'audit_logs',
+	'rsvp_records',
+	'rsvp_audit_log',
+	'rsvp_channel_log',
+	'visitor_sessions',
+	'commercial_attribution_identity',
+	'commercial_analytics',
+] as const;

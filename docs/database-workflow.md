@@ -47,10 +47,23 @@ PROVISIONED & HOSTED-VALIDATED
 - **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL` as `preview`.
 - **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
+- **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data from Production to Preview:
+  - `--dry-run`: report what would change without mutating.
+  - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
 - **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction (`127.0.0.1:54332`). Uninitialized Preview databases (0 remote migrations, 59 pending) return exit code `0`.
 - **Separation of Operations**: Migration, seed, and audit are separate operations. `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
 - **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview commands fail closed with exit code `1`.
-- **Synthetic Data & Privacy**: Preview must use isolated synthetic data (`supabase/test/seed-test-data.sql` or synthetic test fixtures). Production customer data must NEVER be copied into Preview.
+- **Synthetic Data & Privacy**: Preview must use isolated synthetic data (`supabase/test/seed-test-data.sql` or synthetic test fixtures) for non-invitation operational data. Production customer data must NEVER be copied into Preview.
+- **Invitation Content Exception**: Preview MAY mirror invitation-facing production content (names, dates, locations, photographs) required for regression testing. The following categories remain prohibited:
+  - Guest and RSVP data (`guest_invitations`, `guest_invitation_audit`)
+  - Auth users, credentials, sessions, MFA factors
+  - Intake submissions (`intake_requests`, `intake_submissions`)
+  - Audit logs
+  - Commercial/tracking data (`visitor_sessions`, `commercial_attribution_identity`, `commercial_analytics`)
+  - Claim codes (`event_claim_codes`)
+  - RSVP tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`)
+- **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the dedicated Preview admin). Real Production auth users are never copied.
+- **Storage Mirroring**: Asset binaries from `invitation-assets` bucket are copied to Preview Storage. URLs in mirrored JSON content are rewritten from Production Storage host to Preview Storage host.
 
 ## Common Commands
 

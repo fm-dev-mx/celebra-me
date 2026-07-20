@@ -50,6 +50,7 @@
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
         "db:preview:migrate": "tsx scripts/db/db-guard.ts check --target preview --operation migrate && tsx scripts/db/push-preview-migrations.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
+        "db:preview:sync-invitations": "tsx scripts/db/db-guard.ts check --target preview --operation sync-invitations --db-url \"${PREVIEW_DB_URL}\" && tsx scripts/db/preview-sync-invitations.ts",
         "db:local:audit": "tsx scripts/db/db-guard.ts check --target persistent-local --operation audit && tsx scripts/db/audit-db.ts --target persistent-local",
         "db:disposable:start": "tsx scripts/db/disposable-test-env.ts start",
         "db:disposable:reset": "tsx scripts/db/disposable-test-env.ts reset",

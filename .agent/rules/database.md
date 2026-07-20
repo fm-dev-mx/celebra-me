@@ -68,8 +68,9 @@ boundaries through classification, identity verification, and per-target policy 
 - **Audit Workflow (`pnpm db:preview:audit`)**: Reads Preview migration and schema state, reconstructs the canonical disposable reference database (`127.0.0.1:54332`), and compares Preview against the canonical reference without mutating Preview or persistent local. Returns exit code `0` for an uninitialized Preview database with 0 remote and 59 pending migrations.
 - **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations only; it does not automatically seed or audit.
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate` and `pnpm db:preview:audit` fail closed with exit code `1`.
-- **Data Isolation**: Preview must use isolated synthetic test data (e.g. `supabase/test/seed-test-data.sql`) and separate credentials.
-- **No Production Data Copy**: Production customer data must NEVER be copied into Preview.
+- **Data Isolation**: Preview must use isolated synthetic test data (e.g. `supabase/test/seed-test-data.sql`) and separate credentials for non-invitation operational data.
+- **Invitation Content Exception**: Preview MAY mirror invitation-facing production content for regression testing. The controlled workflow (`pnpm db:preview:sync-invitations`) handles ownership remapping, Storage URL rewriting, and exclusion of prohibited data categories. See `docs/database-workflow.md` for the full policy.
+- **No Production Data Copy**: Production Auth users, guest data, RSVP records, tracking, commercial, and other private operational data must NEVER be copied into Preview. See `docs/database-workflow.md` for the complete exclusion list.
 
 ## Current Contract
 

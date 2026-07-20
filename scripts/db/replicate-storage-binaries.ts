@@ -9,7 +9,8 @@
  *   tsx scripts/db/replicate-storage-binaries.ts [--target local|disposable]
  */
 
-import { getProdDbUrl, parseDbUrl, runPsql, parseTsv } from './db-workflow-lib.ts';
+import { getProdDbUrl, runPsql, parseTsv } from './db-workflow-lib.ts';
+import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -85,20 +86,9 @@ async function main() {
 		console.info(`Targeting persistent local environment on ${localApiUrl}`);
 	}
 
-	// 1. Get production details
+	// 1. Get production details using shared ref resolver
 	const { url: prodDbUrl } = getProdDbUrl();
-	const parsed = parseDbUrl(prodDbUrl);
-	if (!parsed) {
-		throw new Error('Invalid PROD_DB_URL. Expected a valid PostgreSQL connection URL.');
-	}
-
-	const projectRef = parsed.user.split('.')[1] || parsed.hostname.split('.')[0];
-	if (!projectRef) {
-		throw new Error(
-			`Could not extract Supabase project reference from: ${parsed.user} or ${parsed.hostname}`,
-		);
-	}
-
+	const projectRef = extractSupabaseProjectRef(prodDbUrl);
 	const prodCdnBase = `https://${projectRef}.supabase.co/storage/v1/object/public/invitation-assets`;
 	console.info(`Production Project Ref: ${projectRef}`);
 	console.info(`Production CDN Base:   ${prodCdnBase}`);
