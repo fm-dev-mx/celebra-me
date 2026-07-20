@@ -17,8 +17,10 @@ Local -> Production: allowed only for reviewed migrations.
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
 - **Applied Migrations**: Production currently has all 59 migrations applied (`59/59`).
 - **Pending Migrations**: Zero (`0`) production migrations are pending.
-- **Migration Ownership**: All schema changes must be introduced through versioned migrations in `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
-- **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool and is no longer part of the repository.
+- **Migration Ownership**: All schema changes must be introduced through versioned migrations in
+  `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
+- **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool
+  and is no longer part of the repository.
 
 ## Environments
 
@@ -35,7 +37,57 @@ categories, and precedence notes.
 - Preview credentials must come from `PREVIEW_DB_URL` or gitignored secret files such as
   `.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, or `.tmp/secrets/preview-db-url`.
 - `.tmp/` and `.backups/` are never committed.
-- Never print or paste a full production or preview connection string in logs, docs, issues, or chat.
+- Never print or paste a full production or preview connection string in logs, docs, issues, or
+  chat.
+
+## Local Endpoints
+
+For local development and testing, the explicit endpoints are:
+
+```text
+Supabase API:         http://127.0.0.1:54321
+Local PostgreSQL:     127.0.0.1:54322
+Disposable PostgreSQL: 127.0.0.1:54332
+```
+
+## Canonical Invitation Promotion Workflow
+
+The promotion of an invitation follows a strict, safe, and reproducible pipeline:
+
+```text
+Local authoring (127.0.0.1:54322)
+  -> Export immutable package (pnpm invitation:package)
+  -> Preview import & publish (pnpm invitation:promote:preview)
+  -> Generate Preview approval artifact (.agent/tmp/approvals/)
+  -> Production import & publish (pnpm invitation:promote:prod)
+```
+
+### Distinction: Promotion vs. Production-to-Preview Mirror
+
+- **Invitation Promotion (`pnpm invitation:promote:*`)**: Moves an immutable, versioned invitation
+  package from Local -> Preview -> Production. Preview is a validation environment only; Production
+  NEVER imports directly from the Preview DB or Storage.
+- **Production-to-Preview Mirror (`pnpm db:preview:sync-invitations`)**: An independent, separate
+  tool that mirrors published invitations from Production -> Preview for regression testing. It
+  remains unchanged.
+
+### Commands
+
+1. **Export Package (Local)**:
+   ```bash
+   pnpm invitation:package -- --slug <slug> --dry-run
+   pnpm invitation:package -- --slug <slug> --apply
+   ```
+2. **Promote to Preview**:
+   ```bash
+   pnpm invitation:promote:preview -- --package <path> --dry-run
+   pnpm invitation:promote:preview -- --package <path> --apply
+   ```
+3. **Promote to Production**:
+   ```bash
+   pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --dry-run
+   pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --apply
+   ```
 
 ## Preview Environment Workflow
 
@@ -43,27 +95,45 @@ categories, and precedence notes.
 PROVISIONED & HOSTED-VALIDATED
 ```
 
-- **Status & Parity**: Ephemeral Preview database environment is provisioned and hosted-validated. Dedicated Supabase Preview project is used for Vercel Preview deployments from `develop`.
-- **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
-- **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL` as `preview`.
+- **Status & Parity**: Ephemeral Preview database environment is provisioned and hosted-validated.
+  Dedicated Supabase Preview project is used for Vercel Preview deployments from `develop`.
+- **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files
+  (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
+- **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
+  as `preview`.
 - **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
-- **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data from Production to Preview:
+- **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data
+  from Production to Preview:
   - `--dry-run`: report what would change without mutating.
-  - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
-- **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction (`127.0.0.1:54332`). Uninitialized Preview databases (0 remote migrations, 59 pending) return exit code `0`.
-- **Separation of Operations**: Migration, seed, and audit are separate operations. `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
-- **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview commands fail closed with exit code `1`.
-- **Synthetic Data & Privacy**: Preview must use isolated synthetic data (`supabase/test/seed-test-data.sql` or synthetic test fixtures) for non-invitation operational data. Production customer data must NEVER be copied into Preview.
-- **Invitation Content Exception**: Preview MAY mirror invitation-facing production content (names, dates, locations, photographs) required for regression testing. The following categories remain prohibited:
+  - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
+    `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
+- **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against
+  `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction
+  (`127.0.0.1:54332`). Uninitialized Preview databases (0 remote migrations, 59 pending) return exit
+  code `0`.
+- **Separation of Operations**: Migration, seed, and audit are separate operations.
+  `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
+- **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview
+  commands fail closed with exit code `1`.
+- **Synthetic Data & Privacy**: Preview must use isolated synthetic data
+  (`supabase/test/seed-test-data.sql` or synthetic test fixtures) for non-invitation operational
+  data. Production customer data must NEVER be copied into Preview.
+- **Invitation Content Exception**: Preview MAY mirror invitation-facing production content (names,
+  dates, locations, photographs) required for regression testing. The following categories remain
+  prohibited:
   - Guest and RSVP data (`guest_invitations`, `guest_invitation_audit`)
   - Auth users, credentials, sessions, MFA factors
   - Intake submissions (`intake_requests`, `intake_submissions`)
   - Audit logs
-  - Commercial/tracking data (`visitor_sessions`, `commercial_attribution_identity`, `commercial_analytics`)
+  - Commercial/tracking data (`visitor_sessions`, `commercial_attribution_identity`,
+    `commercial_analytics`)
   - Claim codes (`event_claim_codes`)
   - RSVP tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`)
-- **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the dedicated Preview admin). Real Production auth users are never copied.
-- **Storage Mirroring**: Asset binaries from `invitation-assets` bucket are copied to Preview Storage. URLs in mirrored JSON content are rewritten from Production Storage host to Preview Storage host.
+- **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the
+  dedicated Preview admin). Real Production auth users are never copied.
+- **Storage Mirroring**: Asset binaries from `invitation-assets` bucket are copied to Preview
+  Storage. URLs in mirrored JSON content are rewritten from Production Storage host to Preview
+  Storage host.
 
 ## Common Commands
 
@@ -192,12 +262,12 @@ pnpm db:local:validate
 ```
 
 `pnpm db:prod:backup` reads production `public` data and writes a timestamped dump under
-`.backups/prod/`. It does not mutate production. `pnpm db:local:restore-from-dump` imports the
-dump into the persistent-local database using a staging schema, with `INSERT...WHERE NOT EXISTS`
+`.backups/prod/`. It does not mutate production. `pnpm db:local:restore-from-dump` imports the dump
+into the persistent-local database using a staging schema, with `INSERT...WHERE NOT EXISTS`
 semantics — existing local data is preserved, not overwritten.
 
-If schema drift is detected during staging import, the script stops and reports the failure.
-Do not patch around drift manually; add or apply the missing migration locally.
+If schema drift is detected during staging import, the script stops and reports the failure. Do not
+patch around drift manually; add or apply the missing migration locally.
 
 ### Refresh local while preserving local-only data
 
@@ -229,24 +299,24 @@ not include Supabase Storage binaries or a full auth snapshot.
 
 ### Reset local only (BLOCKED — use disposable-test)
 
-The persistent local database (`celebra-me-rsvp`) is protected state. It must never be reset
-by project workflows or automated agents.
+The persistent local database (`celebra-me-rsvp`) is protected state. It must never be reset by
+project workflows or automated agents.
 
 ```bash
 pnpm db:local:reset              # BLOCKED — echoes message and exits 1
 pnpm db:local:reset:force        # REMOVED — does not exist
 ```
 
-To perform destructive database testing (migration tests, schema drops, truncate, rollback),
-use the isolated disposable test environment:
+To perform destructive database testing (migration tests, schema drops, truncate, rollback), use the
+isolated disposable test environment:
 
 ```bash
 pnpm db:disposable:reset         # Reset the disposable database (destructive)
 pnpm db:disposable:cleanup       # Full cleanup (remove container + data)
 ```
 
-The disposable environment runs on port 54332 with a separate Docker container and
-synthetic test data only. It cannot affect the persistent local database.
+The disposable environment runs on port 54332 with a separate Docker container and synthetic test
+data only. It cannot affect the persistent local database.
 
 ### Bootstrap or repair the local admin
 
@@ -254,10 +324,10 @@ synthetic test data only. It cannot affect the persistent local database.
 pnpm db:local:bootstrap-admin
 ```
 
-To bootstrap or repair the local admin without resetting the persistent database, run the
-command above. The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`.
-The password must be set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`.
-Do not hardcode real passwords in source code.
+To bootstrap or repair the local admin without resetting the persistent database, run the command
+above. The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`. The password must be
+set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode real passwords in
+source code.
 
 ### Backup production
 
@@ -301,9 +371,13 @@ blocked.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
 - Do not run `pnpm db:push`; it is blocked because raw Supabase push can target a linked remote.
-- Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive tests.
-- Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` — these are blocked because they call `supabase db reset`. Use `pnpm db:prod:backup` + `pnpm db:local:restore-from-dump` instead.
-- Do not run `supabase db reset --local --yes` directly — this destroys the persistent local database.
+- Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive
+  tests.
+- Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` —
+  these are blocked because they call `supabase db reset`. Use `pnpm db:prod:backup` +
+  `pnpm db:local:restore-from-dump` instead.
+- Do not run `supabase db reset --local --yes` directly — this destroys the persistent local
+  database.
 - Do not delete persistent Docker volumes (`supabase_db_celebra-me-rsvp`).
 - Do not run `docker compose down -v` for the persistent Supabase project.
 - Do not run `pnpm ops adopt-legacy-events`; it is disabled because it can create invitations and
@@ -318,8 +392,8 @@ blocked.
   data without it.
 - Login fails locally: run `pnpm db:local:validate`; then verify `SUPER_ADMIN_EMAILS` and
   `RSVP_ADMIN_PASSWORD` or `LOCAL_SUPER_ADMIN_PASSWORD` are local values.
-- `PGRST205` table-not-found errors: run `pnpm db:local:restore-from-dump --dump <path>` using
-  a valid production dump, or use the disposable environment for schema testing.
+- `PGRST205` table-not-found errors: run `pnpm db:local:restore-from-dump --dump <path>` using a
+  valid production dump, or use the disposable environment for schema testing.
 - Local schema drift: refresh stops during staging import/copy. Apply missing local migrations or
   add a reviewed migration; do not hand-edit production dumps.
 - Missing `PROD_DB_URL`: export it in the shell or place it in a gitignored secret file. Never store

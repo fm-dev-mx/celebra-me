@@ -14,7 +14,12 @@ import { resolve } from 'node:path';
 // Types
 // ---------------------------------------------------------------------------
 
-export type DbTarget = 'production' | 'preview' | 'persistent-local' | 'disposable-test' | 'unknown';
+export type DbTarget =
+	| 'production'
+	| 'preview'
+	| 'persistent-local'
+	| 'disposable-test'
+	| 'unknown';
 
 export interface ClassificationResult {
 	target: DbTarget;
@@ -36,6 +41,8 @@ export const PREVIEW_SECRET_FILES = [
 	'.env.preview',
 	'.secrets/preview-db-url',
 	'.tmp/secrets/preview-db-url',
+	'.secrets/preview-supabase-service-role-key',
+	'.tmp/secrets/preview-supabase-service-role-key',
 ] as const;
 
 export const PROD_SECRET_FILES = [
@@ -92,15 +99,17 @@ export function getSecretFromEnvOrFiles(envVar: string, files: readonly string[]
 	if (process.env[envVar]?.trim()) {
 		return process.env[envVar]!.trim();
 	}
+	const normalizedVar = envVar.toLowerCase().replace(/_/g, '-');
 	for (const fileName of files) {
 		const path = resolve(process.cwd(), fileName);
 		if (!existsSync(path)) continue;
 		const content = readFileSync(path, 'utf8').trim();
+		if (!content) continue;
 		if (content.includes(`${envVar}=`)) {
 			const match = content.match(new RegExp(`${envVar}\\s*=\\s*["']?([^"'\r\n]+)["']?`));
 			if (match?.[1]) return match[1].trim();
-		} else if (content && !content.includes('\n')) {
-			return content;
+		} else if (fileName.toLowerCase().includes(normalizedVar)) {
+			return content.trim();
 		}
 	}
 	return '';
@@ -196,7 +205,9 @@ export function classifyDbTarget(
 		const previewParsed = parseDbUrl(previewDbUrl);
 		if (
 			dbUrl === previewDbUrl ||
-			(previewParsed && parsed.hostname === previewParsed.hostname && parsed.port === previewParsed.port)
+			(previewParsed &&
+				parsed.hostname === previewParsed.hostname &&
+				parsed.port === previewParsed.port)
 		) {
 			return {
 				target: 'preview',
@@ -207,7 +218,11 @@ export function classifyDbTarget(
 	}
 
 	// 2. Production check: cloud Supabase host
-	if (SUPABASE_HOST_SUFFIXES.some((suffix) => hostname === suffix.slice(1) || hostname.endsWith(suffix))) {
+	if (
+		SUPABASE_HOST_SUFFIXES.some(
+			(suffix) => hostname === suffix.slice(1) || hostname.endsWith(suffix),
+		)
+	) {
 		return { target: 'production', reason: `Supabase cloud host: ${hostname}`, dbUrl };
 	}
 
