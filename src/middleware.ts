@@ -10,6 +10,7 @@ import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
+import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
 interface CookieStore {
 	get(name: string): { value: string } | undefined;
@@ -293,17 +294,24 @@ function buildSessionFromUser(
 	};
 }
 
-function computeMfaBypass(authContext: AuthContext): {
+function computeMfaBypass(authContext: AuthContext, email?: string): {
 	hasDevMfaBypass: boolean;
+	hasPreviewBypass: boolean;
 	effectiveAdminStrongAuth: boolean;
 } {
+	const isSuperAdmin = authContext.role === 'super_admin';
 	const hasDevMfaBypass =
 		!authContext.hasAdminStrongAuth &&
-		authContext.role === 'super_admin' &&
+		isSuperAdmin &&
 		isDevMfaBypassEnabled();
+	const hasPreviewBypass =
+		!authContext.hasAdminStrongAuth &&
+		isSuperAdmin &&
+		isPreviewMfaBypassEnabled({ userEmail: email ?? '', userRole: authContext.role ?? '' });
 	return {
 		hasDevMfaBypass,
-		effectiveAdminStrongAuth: authContext.hasAdminStrongAuth || hasDevMfaBypass,
+		hasPreviewBypass,
+		effectiveAdminStrongAuth: authContext.hasAdminStrongAuth || hasDevMfaBypass || hasPreviewBypass,
 	};
 }
 
@@ -344,7 +352,7 @@ async function handleProtectedAuthRequest(
 	}
 
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
-	const { effectiveAdminStrongAuth } = computeMfaBypass(authContext);
+	const { effectiveAdminStrongAuth } = computeMfaBypass(authContext, user.email);
 
 	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);

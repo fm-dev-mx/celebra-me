@@ -12,9 +12,12 @@ import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { shouldSkipCsrfValidation, validateCsrfToken } from '@/lib/rsvp/security/csrf';
 import { getEnv } from '@/lib/server/env';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
+import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
 function hasEffectiveAdminStrongAuth(session: SessionContext): boolean {
-	return session.isSuperAdmin && isDevMfaBypassEnabled();
+	if (session.isSuperAdmin && isDevMfaBypassEnabled()) return true;
+	if (session.isSuperAdmin && isPreviewMfaBypassEnabled({ userEmail: session.email ?? '', userRole: session.role ?? '' })) return true;
+	return false;
 }
 
 function getTrustedDeviceCookie(request: Request): string {
@@ -26,14 +29,6 @@ function getTrustedDeviceCookie(request: Request): string {
 function isFreshMfaRequired(): boolean {
 	const value = sanitize(getEnv('REQUIRE_FRESH_MFA_FOR_ADMIN'), 10).toLowerCase();
 	return value === 'true' || value === '1';
-}
-
-export async function requireAdminSession(request: Request): Promise<SessionContext> {
-	const session = await requireSessionContext(request);
-	if (!session.isSuperAdmin) {
-		throw new ApiError(403, 'forbidden', 'Not authorized for global administration.');
-	}
-	return session;
 }
 
 export async function requireAdminStrongSession(request: Request): Promise<SessionContext> {
