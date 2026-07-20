@@ -58,6 +58,10 @@ function sleep(ms: number): void {
 	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
+function sleepAsync(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function printUsage(): void {
 	console.info(`
 Usage:
@@ -345,20 +349,12 @@ function cmdRunTests(): void {
 	console.info('Disposable tests completed.');
 }
 
-function startPostgrest(): void {
-	const existing = runCommand('docker', [
-		'ps',
-		'-a',
-		'--filter',
-		`name=${POSTGREST_CONTAINER}`,
-		'--format',
-		'{{.Names}}',
-	]);
-	if (existing.stdout.trim() === POSTGREST_CONTAINER) {
-		runCommand('docker', ['start', POSTGREST_CONTAINER]);
-		return;
-	}
-	const result = runCommand('docker', [
+/**
+ * Build docker CLI arguments for the PostgREST container.
+ * Exported for testing.
+ */
+export function buildPostgrestDockerArgs(isLinux: boolean): string[] {
+	const args = [
 		'run',
 		'-d',
 		'--rm',
@@ -375,20 +371,49 @@ function startPostgrest(): void {
 		'-e',
 		'PGRST_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long',
 		'public.ecr.aws/supabase/postgrest:v14.14',
-	]);
-	if (result.status !== 0)
-		fail(`Application harness failure: PostgREST start failed: ${result.stderr}`);
+	];
+	if (isLinux) {
+		args.splice(3, 0, '--add-host=host.docker.internal:host-gateway');
+	}
+	return args;
+}
+
+async function waitForPostgrestReady(): Promise<void> {
 	for (let attempt = 0; attempt < 20; attempt++) {
-		const ready = runCommand('curl.exe', ['--silent', '--fail', 'http://127.0.0.1:54331/']);
-		if (ready.status === 0) return;
-		sleep(250);
+		try {
+			const response = await fetch('http://127.0.0.1:54331/');
+			if (response.ok || response.status === 404) return;
+		} catch {
+			// Not ready yet
+		}
+		await sleepAsync(250);
 	}
 	fail('Application harness failure: PostgREST did not become reachable.');
 }
 
-function cmdRunApplicationFlow(): void {
+async function startPostgrest(): Promise<void> {
+	const existing = runCommand('docker', [
+		'ps',
+		'-a',
+		'--filter',
+		`name=${POSTGREST_CONTAINER}`,
+		'--format',
+		'{{.Names}}',
+	]);
+	if (existing.stdout.trim() === POSTGREST_CONTAINER) {
+		runCommand('docker', ['start', POSTGREST_CONTAINER]);
+	} else {
+		const dockerArgs = buildPostgrestDockerArgs(process.platform === 'linux');
+		const result = runCommand('docker', dockerArgs);
+		if (result.status !== 0)
+			fail(`Application harness failure: PostgREST start failed: ${result.stderr}`);
+	}
+	await waitForPostgrestReady();
+}
+
+async function cmdRunApplicationFlow(): Promise<void> {
 	console.info('=== Disposable Test Environment: Application Publication Flow ===\n');
-	startPostgrest();
+	await startPostgrest();
 	const result = runCommand('node', [
 		'--import',
 		'tsx',
@@ -398,7 +423,11 @@ function cmdRunApplicationFlow(): void {
 	]);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
-		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('Application flow stderr:', cleanStderr || '(none)');
+		console.error('Application flow stdout:', cleanStdout || '(none)');
+		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
 	}
 }
 
@@ -406,8 +435,13 @@ function cmdRunConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Concurrent Publication ===\n');
 	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/publication-concurrency-test.ts']);
 	console.info(result.stdout || '');
-	if (result.status !== 0)
-		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+	if (result.status !== 0) {
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('Concurrency test stderr:', cleanStderr || '(none)');
+		console.error('Concurrency test stdout:', cleanStdout || '(none)');
+		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
+	}
 }
 
 function cmdRunStaleBaselineTest(): void {
@@ -418,8 +452,13 @@ function cmdRunStaleBaselineTest(): void {
 		'scripts/db/publication-stale-baseline-test.ts',
 	]);
 	console.info(result.stdout || '');
-	if (result.status !== 0)
-		fail(`Application assertion failure: ${result.stderr || result.stdout}`);
+	if (result.status !== 0) {
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('Stale baseline test stderr:', cleanStderr || '(none)');
+		console.error('Stale baseline test stdout:', cleanStdout || '(none)');
+		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
+	}
 }
 
 function cmdStop(): void {
@@ -453,7 +492,7 @@ function cmdDbUrl(): void {
 // Main
 // ---------------------------------------------------------------------------
 
-function main(): void {
+async function main(): Promise<void> {
 	const command = process.argv[2];
 	switch (command) {
 		case 'start':
@@ -466,7 +505,7 @@ function main(): void {
 			cmdRunTests();
 			break;
 		case 'run-application-flow':
-			cmdRunApplicationFlow();
+			await cmdRunApplicationFlow();
 			break;
 		case 'run-concurrency-test':
 			cmdRunConcurrencyTest();
@@ -491,5 +530,8 @@ function main(): void {
 
 const isMainModule = process.argv[1]?.endsWith('disposable-test-env.ts');
 if (isMainModule) {
-	main();
+	main().catch((error: unknown) => {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exit(1);
+	});
 }

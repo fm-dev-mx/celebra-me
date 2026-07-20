@@ -1,0 +1,193 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { redactCredentials } from '../../scripts/db/db-workflow-lib.ts';
+import { buildPostgrestDockerArgs } from '../../scripts/db/disposable-test-env.ts';
+
+// ---------------------------------------------------------------------------
+// Cross-platform CI fixes: curl.exe removal, Linux Docker --add-host,
+// failure diagnostics, and secret redaction.
+// ---------------------------------------------------------------------------
+describe('disposable-test-env — cross-platform fixes', () => {
+	// -----------------------------------------------------------------------
+	// 1. No curl.exe dependency
+	// -----------------------------------------------------------------------
+	describe('readiness check', () => {
+		it('does not reference curl.exe anywhere in the source', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+				'utf8',
+			);
+			expect(source).not.toContain('curl.exe');
+		});
+
+		it('uses Node.js fetch for PostgREST readiness', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+				'utf8',
+			);
+			// The waitForPostgrestReady function uses fetch()
+			expect(source).toContain("fetch('http://127.0.0.1:54331/'");
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// 2. Linux Docker host mapping
+	// -----------------------------------------------------------------------
+	describe('buildPostgrestDockerArgs', () => {
+		it('includes --add-host=host.docker.internal:host-gateway on Linux', () => {
+			const args = buildPostgrestDockerArgs(true);
+			expect(args).toContain('--add-host=host.docker.internal:host-gateway');
+		});
+
+		it('does not include --add-host on non-Linux', () => {
+			const args = buildPostgrestDockerArgs(false);
+			expect(args).not.toContain('--add-host');
+		});
+
+		it('splice inserts --add-host at position 3 (after --rm, before --name)', () => {
+			const args = buildPostgrestDockerArgs(true);
+			const spliceIndex = args.indexOf('--add-host=host.docker.internal:host-gateway');
+			expect(spliceIndex).toBe(3);
+			expect(args[spliceIndex - 1]).toBe('--rm');
+			expect(args[spliceIndex + 1]).toBe('--name');
+		});
+
+		it('retains all required docker flags', () => {
+			const args = buildPostgrestDockerArgs(false);
+			expect(args).toContain('run');
+			expect(args).toContain('-d');
+			expect(args).toContain('--rm');
+			expect(args).toContain('--name');
+			expect(args).toContain('-p');
+			expect(args).toContain('-e');
+		});
+
+		it('includes PGRST_DB_URI with host.docker.internal', () => {
+			const args = buildPostgrestDockerArgs(false);
+			const dbUriArg = args.find((a) => a.startsWith('PGRST_DB_URI='));
+			expect(dbUriArg).toBeDefined();
+			expect(dbUriArg).toContain('host.docker.internal');
+		});
+
+		it('includes the real dbPassword in PGRST_DB_URI (not literal ***)', () => {
+			const args = buildPostgrestDockerArgs(false);
+			const dbUriArg = args.find((a) => a.startsWith('PGRST_DB_URI='));
+			expect(dbUriArg).toBeDefined();
+			expect(dbUriArg).not.toContain(':***@');
+			expect(dbUriArg).toMatch(/PGRST_DB_URI=postgresql:\/\/supabase_admin:postgres@/);
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// 3. Child-process stdout/stderr propagation & secret redaction
+	// -----------------------------------------------------------------------
+	describe('failure diagnostics', () => {
+		it('disposable-test-env.ts failure paths redact credentials', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+				'utf8',
+			);
+			// Each cmdRun* failure path must call redactCredentials on stderr/stdout
+			const redactUsages = source.match(/redactCredentials\(result\.(stderr|stdout)\)/g);
+			expect(redactUsages).not.toBeNull();
+			// All three cmdRun* functions should have redaction
+			expect(redactUsages!.length).toBeGreaterThanOrEqual(4);
+		});
+
+		it('disposable-test-env.ts prints stderr and stdout labels on failure', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+				'utf8',
+			);
+			expect(source).toContain("console.error('Application flow stderr:");
+			expect(source).toContain("console.error('Application flow stdout:");
+			expect(source).toContain("console.error('Concurrency test stderr:");
+			expect(source).toContain("console.error('Stale baseline test stderr:");
+		});
+
+		it('validate-pipeline.ts runDisposableTestCommand preserves nested failure', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/validate-pipeline.ts'),
+				'utf8',
+			);
+			// Must reference stdout and stderr in the failure path
+			const failSectionLines = source
+				.split('\n')
+				.filter(
+					(l) =>
+						l.includes('.stdout') || l.includes('.stderr') || l.includes('redactCredentials'),
+				);
+			// At minimum one call to each after the import
+			const stdoutRefs = failSectionLines.filter((l) => l.includes('.stdout'));
+			const stderrRefs = failSectionLines.filter((l) => l.includes('.stderr'));
+			const redactRefs = failSectionLines.filter((l) => l.includes('redactCredentials'));
+			expect(stdoutRefs.length).toBeGreaterThanOrEqual(1);
+			expect(stderrRefs.length).toBeGreaterThanOrEqual(1);
+			expect(redactRefs.length).toBeGreaterThanOrEqual(1);
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// 4. redactCredentials edge cases
+	// -----------------------------------------------------------------------
+	describe('redactCredentials', () => {
+		it('redacts postgres:// URLs', () => {
+			const input = 'Error: postgres://user:secret@host:5432/db';
+			expect(redactCredentials(input)).not.toContain('secret');
+			expect(redactCredentials(input)).toMatch(/\/\/<redacted>/);
+		});
+
+		it('redacts postgresql:// URLs', () => {
+			const input = 'postgresql://supabase_admin:***@127.0.0.1:54332/postgres';
+			const result = redactCredentials(input);
+			expect(result).not.toContain(':***@');
+			expect(result).toContain('<redacted>');
+		});
+
+		it('redacts URLs with user but no password', () => {
+			const input = 'postgresql://user@host:5432/db';
+			expect(redactCredentials(input)).toContain('<redacted>');
+			expect(redactCredentials(input)).not.toContain('user@host');
+		});
+
+		it('passes through text without any URL', () => {
+			const input = 'plain text without any connection string';
+			expect(redactCredentials(input)).toBe(input);
+		});
+
+		it('handles empty string', () => {
+			expect(redactCredentials('')).toBe('');
+		});
+
+		it('preserves text around redacted URLs', () => {
+			const input = 'prefix postgresql://u:p@h/d suffix';
+			const result = redactCredentials(input);
+			expect(result).toContain('prefix ');
+			expect(result).toContain(' suffix');
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// 5. Source integrity — no accidental regression
+	// -----------------------------------------------------------------------
+	describe('source integrity', () => {
+		it('disposable-test-env.ts has async main() with catch handler', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+				'utf8',
+			);
+			expect(source).toContain('async function main()');
+			// The entry point handles the promise
+			expect(source).toContain('main().catch(');
+		});
+
+		it('validate-pipeline.ts imports redactCredentials', () => {
+			const source = readFileSync(
+				resolve(process.cwd(), 'scripts/db/validate-pipeline.ts'),
+				'utf8',
+			);
+			const importLine = source.match(/import\s*\{[^}]+\}\s*from\s*['"]\.\/db-workflow-lib/)?.[0];
+			expect(importLine).toContain('redactCredentials');
+		});
+	});
+});

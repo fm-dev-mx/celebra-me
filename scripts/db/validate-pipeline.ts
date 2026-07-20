@@ -22,6 +22,7 @@ import {
 	runCommand,
 	fail,
 	PROJECT_ROOT,
+	redactCredentials,
 } from './db-workflow-lib.ts';
 import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles } from './db-guard.ts';
 
@@ -69,6 +70,10 @@ function runDisposableTestCommand(action: string, args: string[] = []): { status
 		throwOnError: false,
 	});
 	if (res.status !== 0) {
+		console.error(`\n--- disposable-test-env.ts ${action} failed (exit ${res.status}) ---`);
+		if (res.stdout) console.error(`stdout:\n${redactCredentials(res.stdout)}`);
+		if (res.stderr) console.error(`stderr:\n${redactCredentials(res.stderr)}`);
+		console.error(`--- end ${action} failure ---`);
 		fail(`disposable-test-env.ts ${action} failed with exit code ${res.status}.`);
 	}
 	return res;
