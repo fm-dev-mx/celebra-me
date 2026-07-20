@@ -310,6 +310,7 @@ interface DatabaseUpsertParams {
 	pkg: InvitationPackageData;
 	targetSnapshot: Record<string, unknown>;
 	targetDraftContent: Record<string, unknown>;
+	targetPublishedContent: Record<string, unknown>;
 	existingDraft: Record<string, unknown> | null;
 	existingPub: Record<string, unknown> | null;
 }
@@ -363,7 +364,8 @@ function executePublicationRpcCall(
 	finalDraftId: string,
 	finalDraftUpdatedAt: string,
 ): void {
-	const { targetDbUrl, targetInvitationId, slug, eventType, pkg, targetDraftContent } = params;
+	const { targetDbUrl, targetInvitationId, slug, eventType, pkg, targetPublishedContent } =
+		params;
 
 	const liveInvRes = runPsql(
 		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
@@ -394,7 +396,7 @@ function executePublicationRpcCall(
 		},
 		livePub?.content as Record<string, unknown> | undefined,
 	);
-	const projectionHash = hashPublicationProjection(targetDraftContent);
+	const projectionHash = hashPublicationProjection(targetPublishedContent);
 	const idempotencyKey = randomUUID();
 
 	const rpcSql = `
@@ -410,7 +412,7 @@ function executePublicationRpcCall(
 				p_slug => ${sqlLiteral(slug)},
 				p_event_type => ${sqlLiteral(eventType)},
 				p_is_demo => ${pkg.invitation.kind === 'demo' ? 'true' : 'false'},
-				p_content => ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb
+				p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb
 			)
 		) t;
 	`;
@@ -678,7 +680,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		pkg.draft.content,
 		targetStorageUrl,
 	) as Record<string, unknown>;
-	const projectionHash = hashPublicationProjection(targetDraftContent);
+	const targetPublishedContent = rewritePackageStorageUrls(
+		pkg.publishedContent?.content ?? pkg.draft.content,
+		targetStorageUrl,
+	) as Record<string, unknown>;
+	const projectionHash = hashPublicationProjection(targetPublishedContent);
 
 	checkTargetDivergenceConflict(
 		slug,
@@ -761,7 +767,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			pkg.draft.content,
 			targetStorageUrl,
 		) as Record<string, unknown>;
-
 		mutationsPerformed += executeDatabaseUpserts({
 			targetDbUrl,
 			targetInvitationId,
@@ -771,6 +776,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			pkg,
 			targetSnapshot,
 			targetDraftContent,
+			targetPublishedContent,
 			existingDraft,
 			existingPub,
 		});
