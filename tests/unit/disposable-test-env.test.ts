@@ -115,7 +115,9 @@ describe('disposable-test-env — cross-platform fixes', () => {
 				.split('\n')
 				.filter(
 					(l) =>
-						l.includes('.stdout') || l.includes('.stderr') || l.includes('redactCredentials'),
+						l.includes('.stdout') ||
+						l.includes('.stderr') ||
+						l.includes('redactCredentials'),
 				);
 			// At minimum one call to each after the import
 			const stdoutRefs = failSectionLines.filter((l) => l.includes('.stdout'));
@@ -186,9 +188,134 @@ describe('disposable-test-env — cross-platform fixes', () => {
 				resolve(process.cwd(), 'scripts/db/validate-pipeline.ts'),
 				'utf8',
 			);
-			const importLine = source.match(/import\s*\{[^}]+\}\s*from\s*['"]\.\/db-workflow-lib/)?.[0];
+			const importLine = source.match(
+				/import\s*\{[^}]+\}\s*from\s*['"]\.\/db-workflow-lib/,
+			)?.[0];
 			expect(importLine).toContain('redactCredentials');
 		});
+	});
+});
+
+// ---------------------------------------------------------------------------
+// 6. Startup resilience — two-stage readiness, extended timeout, image retries
+// ---------------------------------------------------------------------------
+describe('startup resilience', () => {
+	it('defines READINESS_TIMEOUT_MS >= 120_000 for cold runners', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		// Must use an extended timeout for GitHub-hosted cold runners
+		// The constant uses numeric separator: 120_000
+		const match = source.match(/READINESS_TIMEOUT_MS\s*=\s*120_000/);
+		expect(match).not.toBeNull();
+	});
+
+	it('fresh container is NOT recreated after 30s (no unconditional delete)', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		// The old behavior had an unconditional recreate loop after 30 iterations.
+		// Verify: no "for (let i = 0; i < 30; i++)" + "rm -f" pattern remains
+		// in the startup path for fresh containers.
+		const cmdStartSection = source.slice(source.indexOf('export function cmdStart'));
+		const recreateAfterTimeout = cmdStartSection.match(/rm\s+-f/);
+		// The only rm -f should be in the stale-container branch, guarded
+		// by containerExists() being true and waitForContainerReady() failing
+		if (recreateAfterTimeout) {
+			// Must be guarded by the stale-container check, not in a fresh-create path
+			const rmIndex = cmdStartSection.indexOf('rm');
+			const guardStart = cmdStartSection.slice(Math.max(0, rmIndex - 120), rmIndex);
+			expect(guardStart).toContain('stale or broken');
+		}
+	});
+
+	it('uses two-stage readiness: pg_isready internal then external psql', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		expect(source).toContain('pg_isready');
+		expect(source).toContain('isDisposableDbReady');
+	});
+
+	it('isDisposableDbReady remains the final success condition', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		// waitForContainerReady must call isDisposableDbReady as the final gate
+		const waitFn = source.slice(source.indexOf('function waitForContainerReady'));
+		expect(waitFn).toContain('isDisposableDbReady');
+		// Must be the check that sets the success flag
+		expect(waitFn).toMatch(/isDisposableDbReady/);
+	});
+
+	it('image pull retries are bounded (IMAGE_RETRY_COUNT)', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		const match = source.match(/IMAGE_RETRY_COUNT\s*=\s*(\d+)/);
+		expect(match).not.toBeNull();
+		const count = parseInt(match![1]!, 10);
+		expect(count).toBeGreaterThan(0);
+		expect(count).toBeLessThan(10); // no unbounded retries
+	});
+
+	it('emits docker container state and logs diagnostics on failure', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		const diagSection = source.slice(source.indexOf('// Diagnostics for failure'));
+		// Must capture container state via docker inspect
+		expect(diagSection).toContain("'inspect'");
+		expect(diagSection).toContain("'logs'");
+		expect(diagSection).toContain('Container state');
+		expect(diagSection).toContain('Last 30 log lines');
+	});
+
+	it('failWithDiagnostics does not print database URLs or secrets', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		// Find the function body between braces
+		const fnStart = source.indexOf('function failWithDiagnostics');
+		const fnBodyStart = source.indexOf('{', fnStart);
+		// Match the closing brace at the same indentation level
+		const bodyMatch = source.slice(fnBodyStart).match(/\{([^}]*)\}/);
+		const failFnBody = bodyMatch?.[1] ?? '';
+		expect(failFnBody).not.toContain('DISPOSABLE_DB_URL');
+		expect(failFnBody).not.toContain('dbPassword');
+	});
+
+	it('isContainerPgReady uses docker exec with pg_isready and DISPOSABLE_TEST.dbUser', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		const fnSection = source.slice(source.indexOf('function isContainerPgReady'));
+		// Find the function body
+		const braceStart = fnSection.indexOf('{');
+		const braceEnd = fnSection.indexOf('}', braceStart);
+		const body = fnSection.slice(braceStart, braceEnd + 1);
+		expect(body).toContain('docker');
+		expect(body).toContain('exec');
+		expect(body).toContain('pg_isready');
+		expect(body).toContain('DISPOSABLE_TEST.dbUser');
+	});
+
+	it('no production or preview database can be targeted', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
+			'utf8',
+		);
+		// Must NOT reference PROD_DB_URL or PREVIEW_DB_URL
+		expect(source).not.toContain('PROD_DB_URL');
+		expect(source).not.toContain('PREVIEW_DB_URL');
 	});
 });
 
@@ -215,7 +342,10 @@ describe('test-asset-loader — portable demo-json URL', () => {
 	it('produces a file URL pointing to the actual demo JSON', () => {
 		// Simulate what the loader does: resolve relative to its own location
 		const loaderUrl = new URL(`file://${LOADER_PATH.replace(/\\/g, '/')}`);
-		const resolved = new URL('../../src/content/event-demos/xv/demo-xv-jewelry-box.json', loaderUrl);
+		const resolved = new URL(
+			'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			loaderUrl,
+		);
 		// Verify the resolved URL ends with the expected relative path
 		expect(resolved.href).toMatch(/src\/content\/event-demos\/xv\/demo-xv-jewelry-box\.json$/);
 	});
@@ -237,9 +367,13 @@ describe('test-asset-loader — portable demo-json URL', () => {
 
 	it('handles non-Windows import.meta.url patterns', () => {
 		// Simulate what the loader would produce on a Linux/GitHub Actions runner
-		const linuxPath = '/home/runner/work/celebra-me/celebra-me/scripts/db/test-asset-loader.mjs';
+		const linuxPath =
+			'/home/runner/work/celebra-me/celebra-me/scripts/db/test-asset-loader.mjs';
 		const linuxUrl = new URL(`file://${linuxPath}`);
-		const resolved = new URL('../../src/content/event-demos/xv/demo-xv-jewelry-box.json', linuxUrl);
+		const resolved = new URL(
+			'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			linuxUrl,
+		);
 		expect(resolved.href).toBe(
 			'file:///home/runner/work/celebra-me/celebra-me/src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);

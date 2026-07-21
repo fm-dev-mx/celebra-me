@@ -29,11 +29,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type {
-	DbTarget,
-	ClassificationResult,
-	GuardResult,
-} from './db-target-config.ts';
+import type { DbTarget, ClassificationResult, GuardResult } from './db-target-config.ts';
 import {
 	PERSISTENT_LOCAL,
 	classifyDbTarget,
@@ -47,6 +43,8 @@ export type { DbTarget, ClassificationResult, GuardResult } from './db-target-co
 export {
 	PREVIEW_SECRET_FILES,
 	PERSISTENT_LOCAL,
+	LOCAL_DB_URL,
+	DISPOSABLE_DB_URL,
 	getSecretFromEnvOrFiles,
 	redactDbUrl,
 	redactCredentials,
@@ -171,7 +169,10 @@ export function guardPersistentLocal(
 		{ pattern: /\bdocker\s+volume\s+rm\b/i, label: 'docker volume rm' },
 		{ pattern: /\bdocker\s+compose\s+down\s+-v\b/i, label: 'docker compose down -v' },
 		{ pattern: /\bdrop\s+(table|schema|database)\s+.*\bcascade\b/i, label: 'DROP ... CASCADE' },
-		{ pattern: /\btruncate\s+(table\s+)?(\w+\.)?\w+\s+cascade\b/i, label: 'TRUNCATE ... CASCADE' },
+		{
+			pattern: /\btruncate\s+(table\s+)?(\w+\.)?\w+\s+cascade\b/i,
+			label: 'TRUNCATE ... CASCADE',
+		},
 		{ pattern: /\bsupabase\s+db\s+push\b/i, label: 'supabase db push' },
 	];
 
@@ -192,10 +193,7 @@ export function guardPersistentLocal(
  * Guard against destructive operations on the preview database.
  * Preview allows migrations and audits but blocks direct resets and cascaded drops.
  */
-export function guardPreview(
-	classification: ClassificationResult,
-	operation: string,
-): GuardResult {
+export function guardPreview(classification: ClassificationResult, operation: string): GuardResult {
 	const errors: string[] = [];
 
 	if (classification.target !== 'preview') {
@@ -207,7 +205,10 @@ export function guardPreview(
 		{ pattern: /\bdocker\s+volume\s+rm\b/i, label: 'docker volume rm' },
 		{ pattern: /\bdocker\s+compose\s+down\s+-v\b/i, label: 'docker compose down -v' },
 		{ pattern: /\bdrop\s+(table|schema|database)\s+.*\bcascade\b/i, label: 'DROP ... CASCADE' },
-		{ pattern: /\btruncate\s+(table\s+)?(\w+\.)?\w+\s+cascade\b/i, label: 'TRUNCATE ... CASCADE' },
+		{
+			pattern: /\btruncate\s+(table\s+)?(\w+\.)?\w+\s+cascade\b/i,
+			label: 'TRUNCATE ... CASCADE',
+		},
 	];
 
 	for (const { pattern, label } of destructiveOps) {
@@ -222,7 +223,10 @@ export function guardPreview(
 	return { ok: errors.length === 0, errors };
 }
 
-export function guardUnknown(classification: ClassificationResult, operation = 'unknown'): GuardResult {
+export function guardUnknown(
+	classification: ClassificationResult,
+	operation = 'unknown',
+): GuardResult {
 	const errors: string[] = [];
 
 	if (classification.target !== 'unknown') {
@@ -259,9 +263,7 @@ export function validateDumpIntegrity(dumpPath: string): GuardResult {
 		}
 
 		if (!/^(INSERT|COPY|CREATE|SET)\b/im.test(content.trim())) {
-			errors.push(
-				`Dump file does not appear to contain valid SQL: ${dumpPath}`,
-			);
+			errors.push(`Dump file does not appear to contain valid SQL: ${dumpPath}`);
 		}
 
 		return { ok: true, errors: [] };
@@ -299,7 +301,11 @@ function verifyPersistentLocalIdentity(): void {
 	}
 }
 
-function runGuards(target: string, classification: ClassificationResult, operation: string): GuardResult[] {
+function runGuards(
+	target: string,
+	classification: ClassificationResult,
+	operation: string,
+): GuardResult[] {
 	const guards: GuardResult[] = [];
 
 	if (target === 'production') {
@@ -329,7 +335,12 @@ function cliCheck(): void {
 		process.exit(1);
 	}
 
-	const validTargets: DbTarget[] = ['production', 'preview', 'persistent-local', 'disposable-test'];
+	const validTargets: DbTarget[] = [
+		'production',
+		'preview',
+		'persistent-local',
+		'disposable-test',
+	];
 	if (!validTargets.includes(target as DbTarget)) {
 		console.error(`Invalid target "${target}". Must be one of: ${validTargets.join(', ')}`);
 		process.exit(1);
@@ -341,7 +352,9 @@ function cliCheck(): void {
 
 	const resolvedUrl = resolveDbUrl(target, dbUrl);
 	if (!resolvedUrl) {
-		console.error(`ERROR: Database URL could not be resolved for target "${target}". Please check environment variables or secret files.`);
+		console.error(
+			`ERROR: Database URL could not be resolved for target "${target}". Please check environment variables or secret files.`,
+		);
 		process.exit(1);
 	}
 

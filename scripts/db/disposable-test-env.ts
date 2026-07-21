@@ -50,6 +50,23 @@ const DISPOSABLE_PORTS = {
 
 const POSTGREST_CONTAINER = DISPOSABLE_TEST.postgrestContainerName;
 
+/** Image identifier for the Supabase PostgreSQL container. */
+const POSTGRES_IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.143';
+
+/**
+ * Bounded wait for a fresh disposable PostgreSQL container to become ready.
+ * GitHub-hosted cold runners may need significantly longer than a warm local
+ * cache. The value is explicit and centralized.
+ */
+const READINESS_TIMEOUT_MS = 120_000;
+
+/** How long between readiness poll cycles. */
+const READINESS_POLL_MS = 1_000;
+
+/** Docker image-pull retry budget. */
+const IMAGE_RETRY_COUNT = 3;
+const IMAGE_RETRY_DELAY_MS = 5_000;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -79,23 +96,192 @@ Usage:
 
 function ensureSeedData(): void {
 	if (!existsSync(SYNTHETIC_DATA_SQL)) {
-		fail(`Seed data file not found at ${SYNTHETIC_DATA_SQL}. Make sure the repository files are checked out correctly.`);
+		fail(
+			`Seed data file not found at ${SYNTHETIC_DATA_SQL}. Make sure the repository files are checked out correctly.`,
+		);
 	}
 }
 
 /**
  * Verify if the container listening on 54332 is the intended disposable test container and is responsive.
+ * This is the EXTERNAL authenticated check — the final success condition.
  */
 export function isDisposableDbReady(): boolean {
-	const result = runCommand('psql', [
-		'--set',
-		'ON_ERROR_STOP=1',
-		'--dbname',
-		DISPOSABLE_DB_URL,
-		'--command',
-		'select 1;',
-	], { throwOnError: false });
+	const result = runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL, '--command', 'select 1;'],
+		{ throwOnError: false },
+	);
 	return result.status === 0;
+}
+
+/**
+ * Check internal PostgreSQL readiness inside the container.
+ * Uses docker exec + pg_isready to determine whether the PostgreSQL server
+ * process is accepting connections, independent of external port mapping.
+ */
+function isContainerPgReady(): boolean {
+	const result = runCommand(
+		'docker',
+		['exec', DISPOSABLE_TEST.containerName, 'pg_isready', '-U', DISPOSABLE_TEST.dbUser],
+		{ throwOnError: false },
+	);
+	return result.status === 0;
+}
+
+/**
+ * Check whether the Docker container is currently running.
+ */
+function isContainerRunning(): boolean {
+	const result = runCommand(
+		'docker',
+		['ps', '--filter', `name=${DISPOSABLE_TEST.containerName}`, '--format', '{{.Names}}'],
+		{ throwOnError: false },
+	);
+	return result.stdout.trim() === DISPOSABLE_TEST.containerName;
+}
+
+/**
+ * Check if the container exists at all (running or stopped).
+ */
+function containerExists(): boolean {
+	const result = runCommand(
+		'docker',
+		['ps', '-a', '--filter', `name=${DISPOSABLE_TEST.containerName}`, '--format', '{{.Names}}'],
+		{ throwOnError: false },
+	);
+	return result.stdout.trim() === DISPOSABLE_TEST.containerName;
+}
+
+/**
+ * Ensure the Docker image is available locally. If absent, pull it with
+ * bounded retry and backoff. Fails closed after all attempts are exhausted.
+ */
+function ensureImageExists(): void {
+	// Check if image already exists locally
+	const imageCheck = runCommand('docker', ['image', 'inspect', POSTGRES_IMAGE], {
+		throwOnError: false,
+	});
+	if (imageCheck.status === 0) {
+		console.info(`  Image ${POSTGRES_IMAGE} already present locally.`);
+		return;
+	}
+
+	console.info(`  Pulling ${POSTGRES_IMAGE} (up to ${IMAGE_RETRY_COUNT} retries)...`);
+	for (let attempt = 1; attempt <= IMAGE_RETRY_COUNT; attempt++) {
+		if (attempt > 1) {
+			const delay = IMAGE_RETRY_DELAY_MS * attempt;
+			console.info(`  Retry ${attempt}/${IMAGE_RETRY_COUNT} after ${delay}ms...`);
+			sleep(delay);
+		}
+		const pullResult = runCommand('docker', ['pull', POSTGRES_IMAGE], {
+			throwOnError: false,
+		});
+		if (pullResult.status === 0) {
+			console.info(`  Image ${POSTGRES_IMAGE} pulled successfully.`);
+			return;
+		}
+		console.warn(
+			`  docker pull attempt ${attempt} failed: ${pullResult.stderr?.slice(0, 200) || `exit ${pullResult.status}`}`,
+		);
+	}
+	fail(
+		`Failed to pull ${POSTGRES_IMAGE} after ${IMAGE_RETRY_COUNT} attempts. Check Docker Hub rate limits and network connectivity.`,
+	);
+}
+
+/**
+ * Wait for the container to become ready using a two-stage check:
+ *   1. Internal: docker exec pg_isready — PostgreSQL process accepting connections.
+ *   2. External: authenticated psql via DISPOSABLE_DB_URL — port mapping and credentials.
+ *
+ * Returns true if the external authenticated check passed within the timeout.
+ */
+function waitForContainerReady(): boolean {
+	const deadline = Date.now() + READINESS_TIMEOUT_MS;
+	let internalReady = false;
+	let externalReady = false;
+
+	console.info(`  Waiting up to ${READINESS_TIMEOUT_MS / 1000}s for database readiness...`);
+
+	while (Date.now() < deadline) {
+		// Stage 1: internal PostgreSQL readiness
+		if (!internalReady) {
+			if (isContainerPgReady()) {
+				internalReady = true;
+				console.info('  Internal pg_isready: OK');
+			} else {
+				sleep(READINESS_POLL_MS);
+				continue;
+			}
+		}
+
+		// Stage 2: external authenticated check
+		if (isDisposableDbReady()) {
+			externalReady = true;
+			break;
+		}
+
+		sleep(READINESS_POLL_MS);
+	}
+
+	if (externalReady) {
+		return true;
+	}
+
+	// Diagnostics for failure
+	console.warn(`\n  Database did not become ready within ${READINESS_TIMEOUT_MS / 1000}s.`);
+	console.warn(`  Internal pg_isready: ${internalReady ? 'PASSED' : 'FAILED'}`);
+
+	const externalResult = runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL, '--command', 'select 1;'],
+		{ throwOnError: false },
+	);
+	console.warn(
+		`  External authenticated check: ${externalResult.status === 0 ? 'PASSED' : `FAILED (exit ${externalResult.status})`}`,
+	);
+
+	// Docker container state diagnostics
+	const containerStatus = runCommand(
+		'docker',
+		['inspect', DISPOSABLE_TEST.containerName, '--format', '{{.State.Status}}'],
+		{ throwOnError: false },
+	);
+	if (containerStatus.status === 0) {
+		console.warn(`  Container state: ${containerStatus.stdout.trim() || '(unknown)'}`);
+	}
+
+	const healthStatus = runCommand(
+		'docker',
+		['inspect', DISPOSABLE_TEST.containerName, '--format', '{{.State.Health.Status}}'],
+		{ throwOnError: false },
+	);
+	if (healthStatus.status === 0 && healthStatus.stdout.trim()) {
+		console.warn(`  Health status: ${healthStatus.stdout.trim()}`);
+	}
+
+	// Last N log lines (sanitized — never contains secrets for disposable)
+	const logs = runCommand('docker', ['logs', '--tail', '30', DISPOSABLE_TEST.containerName], {
+		throwOnError: false,
+	});
+	if (logs.status === 0 && logs.stdout) {
+		console.warn(`  Last 30 log lines:\n${logs.stdout.slice(0, 2000)}`);
+	}
+	if (logs.stderr) {
+		console.warn(`  Last 30 log lines (stderr):\n${logs.stderr.slice(0, 2000)}`);
+	}
+
+	return false;
+}
+
+/**
+ * Emit sanitized diagnostics on final startup failure and exit.
+ * Never prints database URLs, passwords, tokens, or other secrets.
+ */
+function failWithDiagnostics(): never {
+	// All diagnostic info was already printed by waitForContainerReady.
+	fail('Database did not become ready in time.');
 }
 
 // ---------------------------------------------------------------------------
@@ -107,60 +293,47 @@ export function cmdStart(): void {
 
 	ensureSeedData();
 
-	// Quick check if already ready and authenticated
+	// Quick path: already running and authenticated
 	if (isDisposableDbReady()) {
 		console.info('Disposable PostgreSQL container is already running and accessible.');
 		return;
 	}
 
-	// Check if container exists
-	const existing = runCommand('docker', [
-		'ps',
-		'-a',
-		'--filter',
-		`name=${DISPOSABLE_TEST.containerName}`,
-		'--format',
-		'{{.Names}}',
-	], { throwOnError: false });
+	// Ensure the Docker image is available locally (pull with bounded retry)
+	ensureImageExists();
 
-	if (existing.stdout.trim() === DISPOSABLE_TEST.containerName) {
-		console.info('Container already exists. Starting it...');
-		runCommand('docker', ['start', DISPOSABLE_TEST.containerName], { throwOnError: false });
-	} else {
-		console.info('Starting disposable PostgreSQL via Docker...');
-		const result = runCommand('docker', [
-			'run',
-			'-d',
-			'--name',
-			DISPOSABLE_TEST.containerName,
-			'-e',
-			`POSTGRES_PASSWORD=${DISPOSABLE_TEST.dbPassword}`,
-			'-p',
-			`${DISPOSABLE_PORTS.db}:5432`,
-			'public.ecr.aws/supabase/postgres:17.6.1.143',
-		], { throwOnError: false });
+	const exists = containerExists();
 
-		if (result.status !== 0) {
-			console.error(result.stderr);
-			fail(`docker run failed (exit ${result.status}).`);
+	if (exists) {
+		const running = isContainerRunning();
+		if (running) {
+			console.info(
+				'Container already exists and is running. Waiting for database readiness...',
+			);
+		} else {
+			console.info('Container exists but is stopped. Starting it...');
+			runCommand('docker', ['start', DISPOSABLE_TEST.containerName], { throwOnError: false });
 		}
-	}
 
-	console.info('Waiting for database to be ready...');
-	let isReady = false;
-	for (let i = 0; i < 30; i++) {
-		if (isDisposableDbReady()) {
-			isReady = true;
-			break;
+		// Wait for readiness with the extended timeout
+		if (waitForContainerReady()) {
+			printReady();
+			return;
 		}
-		sleep(1000);
-	}
 
-	// If container started but auth failed, attempt a clean recreate
-	if (!isReady) {
-		console.warn('Disposable database did not respond or auth failed. Recreating container...');
+		// The container failed to become ready despite being created earlier.
+		// This is evidence of a stale or broken container — recreate once.
+		console.warn('\nContainer failed to become ready. Removing and recreating...');
 		runCommand('docker', ['rm', '-f', DISPOSABLE_TEST.containerName], { throwOnError: false });
-		const recreateResult = runCommand('docker', [
+
+		// Fall through to create a fresh container below
+	}
+
+	// Fresh container: create and wait (never destroy while initializing)
+	console.info('Starting disposable PostgreSQL via Docker...');
+	const createResult = runCommand(
+		'docker',
+		[
 			'run',
 			'-d',
 			'--name',
@@ -169,24 +342,28 @@ export function cmdStart(): void {
 			`POSTGRES_PASSWORD=${DISPOSABLE_TEST.dbPassword}`,
 			'-p',
 			`${DISPOSABLE_PORTS.db}:5432`,
-			'public.ecr.aws/supabase/postgres:17.6.1.143',
-		]);
-		if (recreateResult.status !== 0) {
-			fail(`docker recreate failed (exit ${recreateResult.status}).`);
-		}
-		for (let i = 0; i < 30; i++) {
-			if (isDisposableDbReady()) {
-				isReady = true;
-				break;
-			}
-			sleep(1000);
-		}
+			POSTGRES_IMAGE,
+		],
+		{ throwOnError: false },
+	);
+
+	if (createResult.status !== 0) {
+		console.error(createResult.stderr);
+		fail(`docker run failed (exit ${createResult.status}).`);
 	}
 
-	if (!isReady) {
-		fail('Database did not become ready in time.');
+	// A fresh container gets one continuous readiness window.
+	// It is NOT recreated merely because it hasn't become ready after 30s.
+	if (waitForContainerReady()) {
+		printReady();
+		return;
 	}
 
+	// Final failure with diagnostics
+	failWithDiagnostics();
+}
+
+function printReady(): void {
 	console.info(`\nDisposable test environment is running:`);
 	console.info(`  DB:       ${redactCredentials(DISPOSABLE_DB_URL)}`);
 	console.info(`  Container: ${DISPOSABLE_TEST.containerName}`);
@@ -201,18 +378,9 @@ export function cmdReset(): void {
 	}
 
 	console.info('Resetting disposable database (drop & recreate public schema)...');
-	const result = runCommand(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--dbname',
-			DISPOSABLE_DB_URL,
-		],
-		{
-			input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; drop schema if exists supabase_migrations cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
-		},
-	);
+	const result = runCommand('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL], {
+		input: 'drop schema if exists public cascade; drop schema if exists storage cascade; drop schema if exists auth cascade; drop schema if exists supabase_migrations cascade; create schema public; grant all on schema public to postgres; grant all on schema public to public;',
+	});
 
 	if (result.status !== 0) {
 		console.error(result.stderr);
@@ -239,12 +407,7 @@ export function cmdReset(): void {
 		console.info('Dropping conflicting storage policies...');
 		const dropPoliciesResult = runCommand(
 			'psql',
-			[
-				'--set',
-				'ON_ERROR_STOP=1',
-				'--dbname',
-				DISPOSABLE_DB_URL,
-			],
+			['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL],
 			{
 				input: 'drop policy if exists "public read invitation assets" on storage.objects; drop policy if exists "service_role write invitation assets" on storage.objects; drop policy if exists "service_role delete invitation assets" on storage.objects;',
 			},
@@ -427,7 +590,9 @@ async function cmdRunApplicationFlow(): Promise<void> {
 		const cleanStdout = redactCredentials(result.stdout);
 		console.error('Application flow stderr:', cleanStderr || '(none)');
 		console.error('Application flow stdout:', cleanStdout || '(none)');
-		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
+		fail(
+			`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
 	}
 }
 
@@ -440,7 +605,9 @@ function cmdRunConcurrencyTest(): void {
 		const cleanStdout = redactCredentials(result.stdout);
 		console.error('Concurrency test stderr:', cleanStderr || '(none)');
 		console.error('Concurrency test stdout:', cleanStdout || '(none)');
-		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
+		fail(
+			`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
 	}
 }
 
@@ -457,7 +624,9 @@ function cmdRunStaleBaselineTest(): void {
 		const cleanStdout = redactCredentials(result.stdout);
 		console.error('Stale baseline test stderr:', cleanStderr || '(none)');
 		console.error('Stale baseline test stdout:', cleanStdout || '(none)');
-		fail(`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`);
+		fail(
+			`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
 	}
 }
 
@@ -465,7 +634,9 @@ function cmdStop(): void {
 	console.info('=== Disposable Test Environment: Stop ===\n');
 
 	runCommand('docker', ['rm', '-f', POSTGREST_CONTAINER], { throwOnError: false });
-	const result = runCommand('docker', ['stop', DISPOSABLE_TEST.containerName], { throwOnError: false });
+	const result = runCommand('docker', ['stop', DISPOSABLE_TEST.containerName], {
+		throwOnError: false,
+	});
 	if (result.status !== 0) {
 		console.warn(`docker stop warning: ${result.stderr}`);
 	}
@@ -475,7 +646,9 @@ function cmdStop(): void {
 function cmdCleanup(): void {
 	cmdStop();
 
-	const rmResult = runCommand('docker', ['rm', DISPOSABLE_TEST.containerName], { throwOnError: false });
+	const rmResult = runCommand('docker', ['rm', DISPOSABLE_TEST.containerName], {
+		throwOnError: false,
+	});
 	if (rmResult.status !== 0) {
 		console.warn(`docker rm warning: ${rmResult.stderr}`);
 	} else {

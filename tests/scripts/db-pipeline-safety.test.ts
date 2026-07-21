@@ -1,12 +1,20 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { classifyDbTarget, guardProduction } from '../../scripts/db/db-guard';
 import { enforceDisposableTargetOnly } from '../../scripts/db/apply-migrations';
-import { evaluateMigrationHistoryParity, fetchRemoteMigrationVersions } from '../../scripts/db/audit-db';
+import {
+	evaluateMigrationHistoryParity,
+	fetchRemoteMigrationVersions,
+} from '../../scripts/db/audit-db';
 import {
 	DISPOSABLE_DB_URL,
 	LOCAL_DB_URL,
+	parseDbUrl,
+	PERSISTENT_LOCAL,
+	DISPOSABLE_TEST,
 	PREVIEW_SECRET_FILES,
 	PROD_SECRET_FILES,
+	redactCredentials,
+	redactDbUrl,
 	resolveDbUrl,
 } from '../../scripts/db/db-target-config';
 
@@ -38,7 +46,8 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 		});
 
 		it('classifies PREVIEW_DB_URL host matching preview secret as preview target', () => {
-			const previewUrl = 'postgresql://postgres.iwipdvisoyerfdytuhwi:secret@aws-1-us-west-2.pooler.supabase.com:5432/postgres';
+			const previewUrl =
+				'postgresql://postgres.iwipdvisoyerfdytuhwi:secret@aws-1-us-west-2.pooler.supabase.com:5432/postgres';
 			process.env.PREVIEW_DB_URL = previewUrl;
 
 			const result = classifyDbTarget(previewUrl);
@@ -48,7 +57,8 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 
 		it('classifies production cloud host not matching PREVIEW_DB_URL as production target', () => {
 			delete process.env.PREVIEW_DB_URL;
-			const prodUrl = 'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+			const prodUrl =
+				'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
 
 			const result = classifyDbTarget(prodUrl);
 			expect(result.target).toBe('production');
@@ -58,11 +68,16 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			expect(resolveDbUrl('persistent-local')).toBe(LOCAL_DB_URL);
 			expect(resolveDbUrl('disposable-test')).toBe(DISPOSABLE_DB_URL);
 
-			process.env.PREVIEW_DB_URL = 'postgresql://user:pass@preview-host.supabase.com:5432/postgres';
-			expect(resolveDbUrl('preview')).toBe('postgresql://user:pass@preview-host.supabase.com:5432/postgres');
+			process.env.PREVIEW_DB_URL =
+				'postgresql://user:pass@preview-host.supabase.com:5432/postgres';
+			expect(resolveDbUrl('preview')).toBe(
+				'postgresql://user:pass@preview-host.supabase.com:5432/postgres',
+			);
 
 			process.env.PROD_DB_URL = 'postgresql://user:pass@prod-host.supabase.com:5432/postgres';
-			expect(resolveDbUrl('production')).toBe('postgresql://user:pass@prod-host.supabase.com:5432/postgres');
+			expect(resolveDbUrl('production')).toBe(
+				'postgresql://user:pass@prod-host.supabase.com:5432/postgres',
+			);
 		});
 
 		it('uses documented secret files for PREVIEW and PROD', () => {
@@ -84,7 +99,8 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 		it('blocks production target and exits with code 1', () => {
 			const mockExit = mockProcessExit();
 
-			const prodUrl = 'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+			const prodUrl =
+				'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
 			expect(() => enforceDisposableTargetOnly(prodUrl)).toThrow('process.exit(1) called');
 			expect(mockExit).toHaveBeenCalledWith(1);
 		});
@@ -114,7 +130,8 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 	});
 
 	describe('db-guard.ts production migration rules', () => {
-		const prodUrl = 'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+		const prodUrl =
+			'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
 		const prodClassification = classifyDbTarget(prodUrl);
 
 		it('blocks migrate operation when no CONFIRM_PROD_MIGRATION env is set', () => {
@@ -265,6 +282,53 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			const result = fetchRemoteMigrationVersions(testUrl, mockRunner as any);
 			expect(result.isUninitialized).toBe(false);
 			expect(result.remoteVersions).toEqual([]);
+		});
+	});
+
+	describe('Canonical URL credential integrity', () => {
+		it('LOCAL_DB_URL credentials match PERSISTENT_LOCAL config', () => {
+			const parsed = parseDbUrl(LOCAL_DB_URL);
+			expect(parsed).not.toBeNull();
+			expect(parsed!.user).toBe(PERSISTENT_LOCAL.dbUser);
+			expect(parsed!.password).toBe(PERSISTENT_LOCAL.dbPassword);
+			expect(parsed!.hostname).toBe('127.0.0.1');
+			expect(parsed!.port).toBe(PERSISTENT_LOCAL.dbPort);
+			expect(parsed!.pathname).toBe(PERSISTENT_LOCAL.dbName);
+		});
+
+		it('DISPOSABLE_DB_URL credentials match DISPOSABLE_TEST config', () => {
+			const parsed = parseDbUrl(DISPOSABLE_DB_URL);
+			expect(parsed).not.toBeNull();
+			expect(parsed!.user).toBe(DISPOSABLE_TEST.dbUser);
+			expect(parsed!.password).toBe(DISPOSABLE_TEST.dbPassword);
+			expect(parsed!.hostname).toBe('127.0.0.1');
+			expect(parsed!.port).toBe(DISPOSABLE_TEST.dbPort);
+			expect(parsed!.pathname).toBe(DISPOSABLE_TEST.dbName);
+		});
+
+		it('neither LOCAL_DB_URL nor DISPOSABLE_DB_URL contains literal ***', () => {
+			expect(LOCAL_DB_URL).not.toContain('***');
+			expect(DISPOSABLE_DB_URL).not.toContain('***');
+		});
+
+		it('redactDbUrl removes the real password from LOCAL_DB_URL', () => {
+			const redacted = redactDbUrl(LOCAL_DB_URL);
+			// Check password position is redacted — the password "postgres" also
+			// legitimately appears in the username and database pathname, so check
+			// the credential section specifically
+			expect(redacted).toMatch(/\/\/[^:]+:<redacted>@/);
+			expect(redacted).toContain(PERSISTENT_LOCAL.dbUser);
+		});
+
+		it('redactCredentials removes the real password from DISPOSABLE_DB_URL', () => {
+			const redacted = redactCredentials(DISPOSABLE_DB_URL);
+			// Verify redacted form shows the credential section is masked
+			expect(redacted).toMatch(/\/\/<redacted>@<host>/);
+		});
+
+		it('resolveDbUrl returns DISPOSABLE_DB_URL for disposable-test target', () => {
+			const resolved = resolveDbUrl('disposable-test');
+			expect(resolved).toBe(DISPOSABLE_DB_URL);
 		});
 	});
 });
