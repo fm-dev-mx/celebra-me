@@ -1,7 +1,7 @@
 import { cpSync, mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import { runCommand } from '../helpers/run-command';
+import { runCommand, sanitizeEnv } from '../helpers/run-command';
 import { initGitRepo, cleanupFixture } from '../helpers/git-fixture';
 
 const ROOT = process.cwd();
@@ -33,9 +33,9 @@ function cleanupRepoFixture(repoRoot: string) {
 	try {
 		rmSync(join(repoRoot, 'node_modules'), { recursive: true, force: true });
 	} catch (e) {
-			// Best-effort cleanup for Windows junctions.
-			console.warn('Failed to remove node_modules junction:', e);
-		}
+		// Best-effort cleanup for Windows junctions.
+		console.warn('Failed to remove node_modules junction:', e);
+	}
 
 	cleanupFixture(repoRoot);
 }
@@ -57,7 +57,7 @@ describe('lint-styles-changed script', () => {
 			const result = runCommand('node', [SCRIPT_PATH], {
 				cwd: repoRoot,
 				allowFailure: true,
-				env: { ...process.env, CI: 'true' },
+				env: sanitizeEnv({ CI: 'true' }),
 			});
 
 			expect(result.status).toBe(0);
@@ -88,7 +88,7 @@ describe('lint-styles-changed script', () => {
 			const result = runCommand('node', [SCRIPT_PATH], {
 				cwd: repoRoot,
 				allowFailure: true,
-				env: { ...process.env, CI: 'true' },
+				env: sanitizeEnv({ CI: 'true' }),
 			});
 
 			expect(result.status).not.toBe(0);

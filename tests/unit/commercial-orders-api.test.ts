@@ -25,6 +25,7 @@ import {
 	markCommercialOrderDepositPaid,
 } from '@/lib/commercial/orders.service';
 import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { POST as createOrder, GET as listOrders } from '@/pages/api/dashboard/commercial/orders';
 import { POST as markDepositPaid } from '@/pages/api/dashboard/commercial/orders/[orderId]/deposit-paid';
 
@@ -242,7 +243,11 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 
 	it('rejects deposit paid when amount exceeds order total with controlled Spanish error', async () => {
 		mockMarkCommercialOrderDepositPaid.mockRejectedValue(
-			new Error('El anticipo no puede ser mayor que el monto total de la orden.'),
+			new ApiError(
+				400,
+				'validation_error',
+				'El anticipo no puede ser mayor que el monto total de la orden.',
+			),
 		);
 
 		const request = new Request(
