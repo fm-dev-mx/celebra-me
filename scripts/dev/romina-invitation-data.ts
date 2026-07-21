@@ -133,12 +133,11 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 		_assetSlug: ROMINA_EVENT.assetSlug,
 		hero: {
 			name: 'Romina Ríos Chaparro',
-			label: 'Mis XV',
+			label: 'MIS XV',
 			date: ROMINA_EVENT.startsAtUtc,
 			backgroundImage: assets.hero,
 			backgroundImageMobile: assets.hero,
 			backgroundImageDesktop: assets.hero,
-			portrait: assets.portrait,
 			focalPoint: '50% 42%',
 			focalPointMobile: '50% 42%',
 			focalPointTablet: '50% 40%',
@@ -146,13 +145,13 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 		},
 		envelope: {
 			disabled: false,
-			cardLabel: 'Mis XV',
+			cardLabel: 'MIS XV',
 			envelopeName: 'Romina',
 			cardName: 'Romina',
 			cardTagline: '14 · 08 · 2026',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
-			sealInitials: 'R',
+			sealInitials: 'RC',
 			microcopy: 'Abra su invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',
@@ -180,12 +179,12 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 			focalPoint: '50% 35%',
 		},
 		countdown: {
-			title: 'La celebración comienza en',
-			footerText: 'Ceremonia · 5:00 p. m.',
+			title: 'LA CELEBRACIÓN COMIENZA EN',
+			footerText: 'Ceremonia Religiosa · 5:00 p. m.',
 		},
 		location: {
 			visibility: 'public',
-			introEyebrow: '14 de agosto de 2026',
+			introEyebrow: 'VIERNES · 14 DE AGOSTO DE 2026',
 			introHeading: 'Ceremonia y recepción',
 			ceremony: {
 				venueEvent: 'Ceremonia',
@@ -197,17 +196,25 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 				mapUrl: googleMapsSearch(ceremonyQuery),
 				googleMapsUrl: googleMapsSearch(ceremonyQuery),
 				appleMapsUrl: appleMapsSearch(ceremonyQuery),
+				coordinates: {
+					lat: 30.4137,
+					lng: -107.9125,
+				},
 			},
 			reception: {
-				venueEvent: 'Recepción',
+				venueEvent: 'Recepción y cena',
 				venueName: 'Gabro Jardín de Eventos',
 				address: receptionAddress,
 				city: 'Nuevo Casas Grandes, Chihuahua',
 				date: '14 de agosto de 2026',
-				time: 'Cena a partir de las 8:30 p. m.',
+				time: '8:30 p. m.',
 				mapUrl: googleMapsSearch(receptionQuery),
 				googleMapsUrl: googleMapsSearch(receptionQuery),
 				appleMapsUrl: appleMapsSearch(receptionQuery),
+				coordinates: {
+					lat: 30.428,
+					lng: -107.925,
+				},
 			},
 		},
 		interludes: [
@@ -239,11 +246,6 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 					focalPointDesktop: '50% 24%',
 				},
 				{
-					image: assets.sageLandscape,
-					alt: 'Romina con vestido verde salvia en un jardín botánico',
-					focalPoint: '50% 45%',
-				},
-				{
 					image: assets.petPortrait,
 					alt: 'Romina posa con una de sus mascotas',
 					focalPoint: '50% 30%',
@@ -264,26 +266,21 @@ export function buildRominaPublishedContent(assets: RominaAssetMap): Record<stri
 					focalPoint: '50% 32%',
 				},
 				{
-					image: assets.social,
-					alt: 'Romina con vestido verde salvia en una composición horizontal',
-					focalPoint: '50% 44%',
-				},
-				{
 					image: assets.pinkFloral,
 					alt: 'Romina con vestido rosa junto a una estructura floral',
 					focalPoint: '50% 28%',
 				},
 				{
-					image: assets.closing,
-					alt: 'Romina junto a globos con el número quince',
-					focalPoint: '50% 45%',
+					image: assets.social,
+					alt: 'Romina con vestido verde salvia en una composición horizontal',
+					focalPoint: '50% 44%',
 				},
 			],
 		},
 		rsvp: {
 			title: 'Confirme su asistencia',
 			subcopy:
-				'Será muy especial contar con su presencia. Confirme su asistencia para ayudarnos a preparar cada detalle.',
+				'Nos dará mucho gusto contar con su presencia. Por favor, confirme su asistencia para ayudarnos a preparar cada detalle.',
 			guestCap: 4,
 			accessMode: 'personalized-only',
 			confirmationMode: 'api',

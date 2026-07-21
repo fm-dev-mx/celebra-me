@@ -59,11 +59,34 @@ describe('Romina local invitation content', () => {
 				startsAtUtc: '2026-08-14T23:00:00.000Z',
 			},
 			rsvp: { accessMode: 'personalized-only' },
+			envelope: { sealInitials: 'RC' },
 			thankYou: { closingName: 'Romina', date: '14 de agosto de 2026' },
 		});
-		expect(result.data!.gallery!.items).toHaveLength(9);
+		const typedContent = content as any;
+		expect(typedContent.hero.portrait).toBeUndefined();
+		expect(typedContent.hero.backgroundImage).toBeDefined();
+		expect(typedContent.location.ceremony.coordinates).toEqual({
+			lat: expect.any(Number),
+			lng: expect.any(Number),
+		});
+		expect(typedContent.location.reception.coordinates).toEqual({
+			lat: expect.any(Number),
+			lng: expect.any(Number),
+		});
+		expect(typedContent.location.ceremony.coordinates).not.toEqual(
+			typedContent.location.reception.coordinates,
+		);
+		expect(result.data!.gallery!.items).toHaveLength(7);
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('gifts');
+		const jsonString = JSON.stringify(content);
+		expect(jsonString).not.toContain('contar with');
+		expect(typedContent.rsvp.subcopy).toContain('contar con su presencia');
+		expect(typedContent.rsvp.subcopy).not.toMatch(/15 de julio|deadline/i);
+		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(typedContent.location.ceremony.appleMapsUrl).toMatch(/^https:\/\//);
+		expect(typedContent.location.reception.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(typedContent.location.reception.appleMapsUrl).toMatch(/^https:\/\//);
 	});
 
 	it('builds a public page context from uploaded images without an internal asset registry pack', () => {

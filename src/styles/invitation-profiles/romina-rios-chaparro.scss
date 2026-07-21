@@ -103,7 +103,11 @@
 		var(--romina-ivory) 56%,
 		rgb(var(--romina-sage-rgb) / 42%) 100%
 	);
-	--location-card-bg: linear-gradient(165deg, var(--romina-warm-white) 0%, var(--romina-ivory) 100%);
+	--location-card-bg: linear-gradient(
+		165deg,
+		var(--romina-warm-white) 0%,
+		var(--romina-ivory) 100%
+	);
 	--location-card-shadow:
 		0 40px 90px -24px rgb(var(--romina-botanical-rgb) / 42%),
 		inset 0 0 36px rgb(var(--romina-gold-rgb) / 6%);
@@ -141,18 +145,124 @@
 	--pa-guest-color: var(--romina-ink);
 	--pa-count-color: var(--romina-botanical);
 	--pa-divider-diamond-bg: var(--romina-ivory);
-	--pa-count-frame-bg: linear-gradient(180deg, var(--romina-warm-white) 0%, var(--romina-ivory) 100%);
+	--pa-count-frame-bg: linear-gradient(
+		180deg,
+		var(--romina-warm-white) 0%,
+		var(--romina-ivory) 100%
+	);
+
+	// Envelope seal — elevated gold wax seal with RC monogram
+	--monogram-font-size: 7.5px;
+	--monogram-letter-spacing: 1.2px;
+
+	.envelope-seal-button__visual {
+		background: radial-gradient(
+			circle at 34% 32%,
+			rgb(244 231 198) 0%,
+			var(--romina-gold) 48%,
+			rgb(138 114 70) 100%
+		);
+		border: 1px solid rgb(var(--romina-gold-rgb) / 64%);
+		box-shadow:
+			0 12px 28px rgb(var(--romina-botanical-rgb) / 32%),
+			inset 0 2px 5px rgb(255 255 255 / 65%),
+			inset 0 -3px 7px rgb(0 0 0 / 48%);
+
+		.seal-icon {
+			color: var(--romina-botanical);
+			filter: drop-shadow(0 1px 1px rgb(255 255 255 / 40%));
+		}
+	}
+
+	// Hero section — responsive typography for single-image cover
+	.invitation-hero {
+		&__label {
+			font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+			letter-spacing: 0.35em;
+		}
+
+		&__title {
+			font-size: clamp(2.2rem, 7.5vw, 4.8rem);
+			line-height: 1.05;
+			letter-spacing: -0.01em;
+		}
+
+		&__details {
+			gap: 0.4rem;
+		}
+
+		&__date {
+			font-size: clamp(0.85rem, 3vw, 1.1rem);
+			letter-spacing: 0.16em;
+		}
+	}
+
+	// Countdown section — WCAG 2.1 AA high contrast (8.24:1 ratio)
+	.countdown-section {
+		background: linear-gradient(145deg, rgb(38 57 46) 0%, var(--romina-botanical) 100%);
+		color: var(--romina-ivory);
+
+		.countdown-title {
+			color: var(--romina-ivory);
+		}
+
+		.countdown-date .event-date {
+			color: var(--romina-ivory);
+			font-weight: 500;
+			letter-spacing: 0.22em;
+		}
+
+		.countdown__value {
+			color: var(--romina-gold);
+		}
+
+		.countdown__label {
+			color: var(--romina-ivory);
+			opacity: 85%;
+		}
+
+		.countdown-invitation-text {
+			color: var(--romina-ivory);
+			opacity: 90%;
+		}
+	}
+
+	// Location section — card layout, map sizing, and touch targets
+	.event-location {
+		&__card {
+			box-shadow: var(--location-card-shadow);
+		}
+
+		&__card-image-container {
+			min-height: clamp(220px, 32vw, 320px);
+		}
+
+		&__nav-button {
+			min-height: 44px;
+			padding: 0.75rem 1.25rem;
+			font-size: 0.85rem;
+			font-weight: 500;
+			letter-spacing: 0.08em;
+			border-radius: 6px;
+			transition: all 0.2s ease;
+
+			&:focus-visible {
+				outline: 2px solid var(--romina-gold);
+				outline-offset: 3px;
+			}
+
+			&:active {
+				transform: translateY(1px);
+			}
+		}
+	}
 
 	@media (width >= 600px) and (width <= 860px) {
 		.invitation-hero {
-			&__portrait {
-				width: min(64%, 460px);
-			}
-
 			&__title {
 				margin-bottom: 5vh;
-				font-size: clamp(4rem, 11vw, 5.25rem);
-				line-height: 0.82;
+				font-size: clamp(3.5rem, 10vw, 4.8rem);
+				line-height: 0.9;
 				transform: none;
 			}
 		}
