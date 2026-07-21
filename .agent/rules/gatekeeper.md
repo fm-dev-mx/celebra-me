@@ -172,10 +172,11 @@ Large Change Mode note:
 
 ### 2.9 Database Safety (Agent Command Blocking)
 
-The persistent local database (`celebra-me-rsvp`) is protected state. Agents must never execute
-any of the following commands, whether through pnpm wrappers or directly in the shell:
+The persistent local database (`celebra-me-rsvp`) is protected state. Agents must never execute any
+of the following commands, whether through pnpm wrappers or directly in the shell:
 
 **Blocked commands (all targets):**
+
 - `supabase db reset --local --yes` — destroys persistent local DB
 - `supabase db reset --linked` — destroys linked remote/production DB
 - `supabase db push --local` — overwrites local schema (use disposable)
@@ -184,27 +185,51 @@ any of the following commands, whether through pnpm wrappers or directly in the 
 - `docker compose down -v` with the persistent Supabase project — deletes volumes
 
 **Blocked commands (production only):**
+
 - `supabase db push --db-url <prod_url>` — mutates production
 - `supabase migration up --db-url <prod_url>` — mutates production
 - Any `psql` or SQL mutation against a production host (`*.supabase.co`, `*.supabase.com`)
 
 **Allowed commands (disposable-test only):**
+
 - `supabase db reset --workdir <disposable_dir>` — resets disposable test env
 - `docker stop` / `docker rm` `celebra-me-test-db` — manages disposable container
 
-**Enforcement limitation:**
-This repository has no shell-level or process-level interceptor that can block raw commands
-outside the `pnpm` wrapper system. The Supabase CLI, Docker CLI, and psql are on PATH and
-can be invoked directly by a developer or agent bypassing all guards. The blocks above are
+**Enforcement limitation:** This repository has no shell-level or process-level interceptor that can
+block raw commands outside the `pnpm` wrapper system. The Supabase CLI, Docker CLI, and psql are on
+PATH and can be invoked directly by a developer or agent bypassing all guards. The blocks above are
 enforced through:
+
 1. **Executable guard**: `pnpm db:*` commands run through `scripts/db/db-guard.ts`
 2. **Agent policy**: this document — agents must self-enforce these blocks
-3. **Code protection**: `pnpm db:local:reset` is blocked, `pnpm db:local:refresh-from-prod`
-   and `pnpm db:local:refresh-from-prod-preserve-local` are blocked, and all `supabase db reset
-   --local --yes` calls have been removed from project scripts
+3. **Code protection**: `pnpm db:local:reset` is blocked, `pnpm db:local:refresh-from-prod` and
+   `pnpm db:local:refresh-from-prod-preserve-local` are blocked, and all
+   `supabase db reset --local --yes` calls have been removed from project scripts
 
-If an agent is asked to run any blocked command, it must refuse and explain the safe
-alternative. Unknown or ambiguous database targets must cause an immediate abort.
+If an agent is asked to run any blocked command, it must refuse and explain the safe alternative.
+Unknown or ambiguous database targets must cause an immediate abort.
+
+---
+
+### 2.10 Operational Security & Alert Remediation Policy
+
+When handling security scanner findings (CodeQL, SAST, dependency alerts):
+
+1. **Data-Flow Analysis Required**: Perform full data-flow analysis (source, controls, sanitizers,
+   sink) before changing code.
+2. **Scanner Evasion Prohibited**: Semantically neutral changes designed solely to defeat pattern
+   matching (such as hiding hash algorithm strings behind variables, wrapping functions to interrupt
+   data flow, copying process.env, or repeatedly shifting comments) are strictly prohibited.
+3. **Strict Suppression Rules**: Inline or workflow suppressions are permitted only when an alert is
+   demonstrably non-exploitable or an intentionally accepted risk. Every suppression must specify
+   the exact query ID, target location, classification, accepted risk justification, and regression
+   evidence.
+4. **CI Workflow Boundary**: A passing CI workflow does not prove zero remaining security alerts.
+   All new security findings must be inspected directly even when CI succeeds.
+5. **No Reactive Commit Chains**: Speculative trial-and-error commit chains are not allowed.
+   Validate security fixes locally before committing, and consolidate history cleanly.
+6. **Behavioral Testing Required**: Any security remediation affecting executable code must include
+   behavioral unit or integration tests proving correctness and preventing regressions.
 
 ---
 
@@ -275,18 +300,17 @@ pnpm validate:staged       # ESLint + Stylelint + Prettier + related Jest on STA
 pnpm agent:git-safety:check
 ```
 
-`pnpm validate:staged` is **strictly staged** (the Git index). It does not
-look at unstaged working-tree edits and does not auto-format anything. It
-no-ops successfully when there are no staged matching files.
+`pnpm validate:staged` is **strictly staged** (the Git index). It does not look at unstaged
+working-tree edits and does not auto-format anything. It no-ops successfully when there are no
+staged matching files.
 
-Prettier is intentionally **advisory** here: the repo carries pre-existing
-formatting debt in staged files that is not part of the workflow change.
-Blocking on that debt would conflate scope. ESLint, Stylelint, and related
-Jest are hard gates. New or modified files in the workflow commit must
-still be formatted — advisory is not a license to commit unformatted code.
+Prettier is intentionally **advisory** here: the repo carries pre-existing formatting debt in staged
+files that is not part of the workflow change. Blocking on that debt would conflate scope. ESLint,
+Stylelint, and related Jest are hard gates. New or modified files in the workflow commit must still
+be formatted — advisory is not a license to commit unformatted code.
 
-**B) Shared component, schema, adapter, render-data, routing, Supabase, or
-content-resolution changes — broader local feedback:**
+**B) Shared component, schema, adapter, render-data, routing, Supabase, or content-resolution
+changes — broader local feedback:**
 
 ```sh
 pnpm validate:changed      # ESLint + Stylelint + Prettier + related Jest on WORKING-TREE files
@@ -296,9 +320,8 @@ pnpm validate:event-parity # when event/content parity can be affected
 pnpm agent:git-safety:check
 ```
 
-Use `pnpm validate:changed` when you have unstaged edits you want feedback
-on before staging. Use `pnpm test:changed` to run only the tests that
-cover the files you have staged.
+Use `pnpm validate:changed` when you have unstaged edits you want feedback on before staging. Use
+`pnpm test:changed` to run only the tests that cover the files you have staged.
 
 **C) Final pre-push / pre-deploy confidence (full validation, do not skip):**
 
@@ -315,14 +338,14 @@ pnpm build
 pnpm agent:git-safety:check
 ```
 
-`pnpm ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app` (`astro build`)
-after its earlier type-check to avoid duplicating the check. `pnpm ci:quick`
-runs `astro check` plus a scoped ESLint pass and is for fast feedback only;
-it is **safe in CI** (it does not depend on local Git staging state) but
-**must not** replace tier C for production-sensitive changes.
+`pnpm ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app`
+(`astro build`) after its earlier type-check to avoid duplicating the check. `pnpm ci:quick` runs
+`astro check` plus a scoped ESLint pass and is for fast feedback only; it is **safe in CI** (it does
+not depend on local Git staging state) but **must not** replace tier C for production-sensitive
+changes.
 
-The pre-push hook intentionally remains lean (commit-message validation only);
-do not move tests or type-checks into pre-push.
+The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
+type-checks into pre-push.
 
 ---
 

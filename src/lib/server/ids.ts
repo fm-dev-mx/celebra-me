@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 
 /**
  * Generates a URL-safe short ID using a Base62-like character set.
@@ -6,10 +6,9 @@ import { randomBytes } from 'node:crypto';
  */
 export function generateShortId(length = 8): string {
 	const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	const bytes = randomBytes(length);
 	let result = '';
 	for (let i = 0; i < length; i++) {
-		result += chars[bytes[i] % chars.length];
+		result += chars[randomInt(0, chars.length)];
 	}
 	return result;
 }

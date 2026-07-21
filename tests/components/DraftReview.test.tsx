@@ -224,16 +224,14 @@ describe('DraftReview', () => {
 
 		expect(screen.getByText(/Amazon:/)).toBeInTheDocument();
 		expect(
-			screen.getByText((content) =>
-				content.includes('https://www.amazon.com.mx/registries/gl/guest-view/9ZB19QOMLJ45'),
+			screen.getByText(
+				/https:\/\/www\.amazon\.com\.mx\/registries\/gl\/guest-view\/9ZB19QOMLJ45/,
 			),
 		).toBeInTheDocument();
 		expect(screen.getByText(/Liverpool:/)).toBeInTheDocument();
 		expect(
-			screen.getByText((content) =>
-				content.includes(
-					'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52015693',
-				),
+			screen.getByText(
+				/https:\/\/mesaderegalos\.liverpool\.com\.mx\/milistaderegalos\/52015693/,
 			),
 		).toBeInTheDocument();
 	});
