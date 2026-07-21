@@ -141,7 +141,7 @@
         "ts-jest": "^29.4.11",
         "tsx": "^4.22.4",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.61.1"
+        "typescript-eslint": "^8.65.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
