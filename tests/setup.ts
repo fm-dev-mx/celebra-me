@@ -151,6 +151,8 @@ const allowedConsoleErrorPatterns: RegExp[] = [
 	/RSVP Sync/i,
 	/GuestDashboard API/i,
 	/\bRSVP\b/i, // allows both "RSVP" and "RSVP-V2" variants
+	/\[login\] auth/, // auth error classification logging
+	/\[auth\] /, // auth-api upstream/fetch error logging
 ];
 
 beforeEach(() => {

@@ -1,5 +1,7 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -62,6 +64,31 @@ describe('Romina local invitation content', () => {
 		expect(result.data!.gallery!.items).toHaveLength(9);
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('gifts');
+	});
+
+	it('builds a public page context from uploaded images without an internal asset registry pack', () => {
+		const content = buildRominaPublishedContent(buildTestAssets());
+		const viewModel = adaptDbEvent({
+			slug: ROMINA_EVENT.slug,
+			eventType: ROMINA_EVENT.eventType,
+			isDemo: false,
+			content,
+			assetSlug: ROMINA_EVENT.assetSlug,
+		});
+		const page = buildPageContextFromViewModel({
+			viewModel,
+			slug: ROMINA_EVENT.slug,
+			eventType: ROMINA_EVENT.eventType,
+		});
+
+		expect(page.wrapper.className).toContain('event--romina-rios-chaparro');
+		expect(page.layout.image).toContain('/invitation-assets/');
+		expect(page.renderPlan).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ type: 'section', section: 'gallery' }),
+				expect.objectContaining({ type: 'interlude' }),
+			]),
+		);
 	});
 
 	it('does not reference the deprecated SQL generator or patch', () => {
