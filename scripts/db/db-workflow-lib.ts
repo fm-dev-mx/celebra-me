@@ -354,7 +354,7 @@ export function createProdBackup(prodUrl: string, backupPath?: string, schemaOnl
 	if (schemaOnly) {
 		dumpArgs.push('--schema-only');
 	} else {
-		dumpArgs.push('--data-only', '--use-copy');
+		dumpArgs.push('--data-only');
 	}
 	dumpArgs.push('--db-url', prodUrl);
 

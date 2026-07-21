@@ -71,12 +71,12 @@ describe('createProdBackup', () => {
 		spawnSync.mockClear();
 	});
 
-	it('passes --data-only and --use-copy for data backup (schemaOnly=false)', () => {
+	it('uses --data-only (not --schema-only or --use-copy) for data backup', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', false);
 		expect(spawnSync).toHaveBeenCalledTimes(1);
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--data-only');
-		expect(args).toContain('--use-copy');
+		expect(args).not.toContain('--use-copy');
 		expect(args).not.toContain('--schema-only');
 	});
 
@@ -111,6 +111,25 @@ describe('createProdBackup', () => {
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--db-url');
 		expect(args).toContain(fakeUrl);
+	});
+
+	it('fails closed when pg_dump returns non-zero', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+		spawnSync.mockReturnValueOnce({
+			status: 1,
+			stdout: '',
+			stderr: 'pg_dump: error: connection to server failed',
+			error: undefined,
+		});
+		expect(() => createProdBackup(fakeUrl, '/tmp/dump.sql', false)).toThrow('process.exit:1');
+		expect(errorSpy).toHaveBeenCalledWith(
+			expect.stringContaining('Command failed'),
+		);
+		errorSpy.mockRestore();
+		jest.restoreAllMocks();
 	});
 });
 
