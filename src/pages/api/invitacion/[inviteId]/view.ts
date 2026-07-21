@@ -1,6 +1,12 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import {
+	badRequest,
+	errorResponse,
+	jsonResponse,
+	parseJsonBody,
+	withPrivateCache,
+} from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 
@@ -18,7 +24,7 @@ function getIp(request: Request): string {
 export const POST: APIRoute = async ({ params, request }) => {
 	try {
 		const inviteId = sanitize(params.inviteId, 100);
-		if (!inviteId) return badRequest('inviteId is required.');
+		if (!inviteId) return withPrivateCache(badRequest('inviteId is required.'));
 
 		const ip = getIp(request);
 		const allowed = await checkRateLimit({
@@ -29,20 +35,22 @@ export const POST: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
+			return withPrivateCache(
+				errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.')),
+			);
 		}
 
 		const bodyResult = await parseJsonBody(request).catch(() => ({}));
 		if (bodyResult instanceof Response) {
-			return bodyResult;
+			return withPrivateCache(bodyResult);
 		}
 		const body = bodyResult as Record<string, unknown>;
 		const viewPercentage =
 			typeof body?.viewPercentage === 'number' ? body.viewPercentage : undefined;
 
 		await trackInvitationView(inviteId, viewPercentage);
-		return jsonResponse({ message: 'View recorded.' });
+		return withPrivateCache(jsonResponse({ message: 'View recorded.' }));
 	} catch (error) {
-		return errorResponse(error);
+		return withPrivateCache(errorResponse(error));
 	}
 };

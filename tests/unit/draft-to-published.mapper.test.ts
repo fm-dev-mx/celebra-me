@@ -1175,10 +1175,7 @@ describe('mapDraftToPublished', () => {
 	it('uses neutral countdown text for non-demo invitations', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.countdown).toMatchObject({
-			title: '¡Falta muy poco!',
-			footerText: 'Prepárate para una noche inolvidable',
-		});
+		expect(result.countdown).toBeUndefined();
 	});
 
 	it('uses editable countdown copy for real invitations when draft provides it', () => {
@@ -1234,6 +1231,10 @@ describe('mapDraftToPublished', () => {
 		};
 		const result = mapDraftToPublished({
 			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				countdown: {},
+			},
 			demoContent: demoWithStaleFooter,
 		});
 

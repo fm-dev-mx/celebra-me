@@ -1,7 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useInvitationEditor } from '@/hooks/use-invitation-editor';
 import { adminApi } from '@/lib/dashboard/admin-api';
-import type { InvitationEditorContextDTO } from '@/lib/dashboard/dto/intake';
+import type {
+	InvitationEditorContextDTO,
+	InvitationPublicationPreflightDTO,
+} from '@/lib/dashboard/dto/intake';
 import type { InvitationEditorSectionSaveResponse } from '@/lib/dashboard/dto/intake';
 
 jest.mock('@/lib/dashboard/admin-api', () => ({
@@ -10,6 +13,7 @@ jest.mock('@/lib/dashboard/admin-api', () => ({
 		updateInvitationEditorSection: jest.fn(),
 		updateInvitationEditorMetadata: jest.fn(),
 		publishInvitationEditor: jest.fn(),
+		getInvitationPublicationPreflight: jest.fn(),
 		restoreInvitationEditorFromPublished: jest.fn(),
 		reconcileInvitationEditorRsvp: jest.fn(),
 		assignOwner: jest.fn(),
@@ -67,6 +71,16 @@ const sectionSaveResponse: InvitationEditorSectionSaveResponse = {
 	},
 };
 
+const publicationPreflight: InvitationPublicationPreflightDTO & { idempotencyKey: string } = {
+	draftRevision: '2026-01-01T00:00:00Z',
+	publishedVersion: null,
+	publicMetadataHash: '00000000000000000000000000000000',
+	projectionHash: 'a'.repeat(32),
+	changedPaths: ['content.hero.name'],
+	changedSections: [{ path: 'content.hero.name', sectionId: 'hero', sectionLabel: 'Portada' }],
+	idempotencyKey: '2d1e798d-d651-4490-9f30-af0a7ca9b9c9',
+};
+
 const mockMetadata = {
 	title: 'New Title',
 	slug: 'test-invitation',
@@ -106,6 +120,9 @@ describe('useInvitationEditor operation invariants', () => {
 			mock: () =>
 				mockedAdminApi.updateInvitationEditorMetadata.mockResolvedValue({
 					invitation: mockContext.invitation,
+					draftUpdatedAt: mockContext.draftUpdatedAt,
+					draftStatus: mockContext.draftStatus,
+					publication: mockContext.publication,
 				}),
 			call: (api) => api.saveMetadata(mockMetadata, '2026-01-01T00:00:00Z'),
 		},
@@ -180,7 +197,7 @@ describe('useInvitationEditor operation invariants', () => {
 
 		const { result } = renderHook(() => useInvitationEditor(mockContext));
 		act(() => {
-			result.current.publish();
+			result.current.publish(publicationPreflight);
 		});
 
 		await waitFor(() => expect(result.current.operation).toEqual({ type: 'publishing' }));
@@ -190,6 +207,32 @@ describe('useInvitationEditor operation invariants', () => {
 		});
 
 		await waitFor(() => expect(result.current.operation).toEqual({ type: 'idle' }));
+	});
+
+	it('replaces the publication baseline with the committed server context', async () => {
+		const publishedContext: InvitationEditorContextDTO = {
+			...mockContext,
+			draftStatus: 'approved',
+			draftUpdatedAt: '2026-01-02T00:00:00Z',
+			publication: {
+				hasPublishedContent: true,
+				version: 2,
+				publishedAt: '2026-01-02T00:00:00Z',
+				hasUnpublishedChanges: false,
+			},
+		};
+		mockedAdminApi.publishInvitationEditor.mockResolvedValue({
+			context: publishedContext,
+			publishedContent: {},
+		});
+
+		const { result } = renderHook(() => useInvitationEditor(mockContext));
+		await act(async () => {
+			await result.current.publish(publicationPreflight);
+		});
+
+		expect(result.current.context).toEqual(publishedContext);
+		expect(result.current.context.publication.hasUnpublishedChanges).toBe(false);
 	});
 
 	it('prevents concurrent saveSection calls', async () => {
@@ -232,7 +275,9 @@ describe('useInvitationEditor operation invariants', () => {
 			restoreCall = result.current.restorePublished();
 		});
 
-		await expect(result.current.publish()).rejects.toThrow('Editor is busy');
+		await expect(result.current.publish(publicationPreflight)).rejects.toThrow(
+			'Editor is busy',
+		);
 
 		await act(async () => {
 			resolveRestore({ context: mockContext });
@@ -273,7 +318,7 @@ describe('useInvitationEditor operation invariants', () => {
 		const { result } = renderHook(() => useInvitationEditor(mockContext));
 		let publishCall!: Promise<unknown>;
 		act(() => {
-			publishCall = result.current.publish();
+			publishCall = result.current.publish(publicationPreflight);
 		});
 
 		await expect(result.current.restorePublished()).rejects.toThrow('Editor is busy');

@@ -76,7 +76,7 @@ export const FAMILY_FIELD_LABELS: Record<string, string> = {
 
 export const RSVP_FIELD_LABELS: Record<string, string> = {
 	title: 'Título',
-	guestCap: 'Acompañantes máximo',
+	guestCap: 'Máximo de asistentes por confirmación',
 	confirmationMessage: 'Mensaje de confirmación',
 	confirmationMode: 'Modo de confirmación',
 	whatsappPhone: 'WhatsApp',
@@ -191,22 +191,6 @@ export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: st
 	sectionOrder: { id: 'publication', label: 'Publicación' },
 	sharing: { id: 'sharing', label: 'Plantillas de mensaje' },
 };
-
-export const NAV_ITEMS: Array<{ id: string; label: string }> = [
-	{ id: 'metadata', label: 'Datos de la invitación' },
-	{ id: 'main', label: 'Datos principales' },
-	{ id: 'family', label: 'Personas principales' },
-	{ id: 'location', label: 'Fecha y ubicaciones' },
-	{ id: 'itinerary', label: 'Programa' },
-	{ id: 'rsvp', label: 'Confirmación de asistencia' },
-	{ id: 'music', label: 'Música' },
-	{ id: 'gifts', label: 'Mesa de regalos' },
-	{ id: 'messages', label: 'Mensajes especiales' },
-	{ id: 'gallery', label: 'Galería' },
-	{ id: 'publication', label: 'Publicación' },
-	{ id: 'sharing', label: 'Plantillas de mensaje' },
-	{ id: 'assetLibrary', label: 'Biblioteca de imágenes' },
-];
 
 type FieldGroup = 'hero' | 'family';
 

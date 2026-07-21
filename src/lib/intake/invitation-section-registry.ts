@@ -282,6 +282,21 @@ export function getEditorSectionById(sectionId: string): EditorSectionDefinition
 	);
 }
 
+/** Maps a published projection path back to its canonical editor presentation. */
+export function getEditorSectionForPublishedPath(
+	path: string,
+): EditorSectionDefinition | undefined {
+	const parts = path.split(/[.[]/, 2);
+	const key = parts[0] === 'content' ? parts[1] : parts[0];
+	if (parts[0] === 'metadata') return CONFIG_SECTION_DEFINITIONS.metadata;
+	if (key === 'title') return CONFIG_SECTION_DEFINITIONS.metadata;
+	if (key === 'description') return PUBLIC_SECTION_DEFINITIONS.hero;
+	return [
+		...Object.values(PUBLIC_SECTION_DEFINITIONS),
+		...Object.values(CONFIG_SECTION_DEFINITIONS),
+	].find((section) => section.draftContentKeys.includes(key));
+}
+
 export function getPreviewAnchorForSection(sectionId: string): string {
 	return getEditorSectionById(sectionId)?.previewAnchor ?? '';
 }

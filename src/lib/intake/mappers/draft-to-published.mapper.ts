@@ -14,6 +14,27 @@ type PublishCtx = { isDemo: boolean };
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
 
+const demoValue = (ctx: PublishCtx, value: unknown): unknown => (ctx.isDemo ? value : undefined);
+
+function definedFields(
+	prior: Record<string, unknown> | undefined,
+	keys: readonly string[],
+): Record<string, unknown> {
+	if (!prior) return {};
+	return Object.fromEntries(
+		keys.filter((key) => prior[key] !== undefined).map((key) => [key, prior[key]]),
+	);
+}
+
+function clientPriorFields(
+	ctx: PublishCtx,
+	prior: Record<string, unknown> | undefined,
+	keys?: readonly string[],
+): Record<string, unknown> {
+	if (ctx.isDemo || !prior) return {};
+	return keys ? definedFields(prior, keys) : { ...prior };
+}
+
 /**
  * Maps editable draft envelope fields onto the published envelope structure.
  *
@@ -49,12 +70,22 @@ function mapCountdownFromDraft(
 	draftCountdown: DraftContent['countdown'],
 	demoCountdown: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
-): Record<string, unknown> {
+	sectionOrder: string[] | undefined,
+): Record<string, unknown> | undefined {
 	if (ctx.isDemo && demoCountdown) return { ...demoCountdown };
 
+	const isEnabled = sectionOrder
+		? sectionOrder.includes('countdown')
+		: draftCountdown !== undefined;
+
+	if (!isEnabled) return undefined;
+
+	const title = str(draftCountdown?.title);
+	const footerText = str(draftCountdown?.footerText);
+
 	return {
-		title: str(draftCountdown?.title) || COUNTDOWN_DEFAULTS.title,
-		footerText: str(draftCountdown?.footerText) || COUNTDOWN_DEFAULTS.footerText,
+		title: title || COUNTDOWN_DEFAULTS.title,
+		footerText: footerText || COUNTDOWN_DEFAULTS.footerText,
 	};
 }
 
@@ -172,12 +203,12 @@ function buildGodparentGroups(draftFamily: FamilyDraft):
 
 function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
-	celebrantName: string,
+	priorFamily?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftFamily)) return undefined;
 	const family = draftFamily as FamilyDraft;
 
-	const result: Record<string, unknown> = {};
+	const result: Record<string, unknown> = definedFields(priorFamily, ['focalPoint']);
 	const parents: Record<string, unknown> = {};
 
 	if (str(family.fatherName)) parents.father = str(family.fatherName);
@@ -219,8 +250,6 @@ function mapFamilyFromDraft(
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
-	result.celebrantName = celebrantName;
-
 	return isNonEmptyObject(result) ? result : undefined;
 }
 
@@ -366,6 +395,7 @@ export interface PublishInput {
 	assetSlug?: string;
 	draftContent: DraftContent;
 	demoContent: Record<string, unknown>;
+	priorPublishedContent?: Record<string, unknown>;
 	isDemo?: boolean;
 }
 
@@ -373,6 +403,7 @@ export interface PublishInput {
 function buildHeroFromDraft(
 	draftHero: NonNullable<DraftContent['hero']>,
 	demoHero: Record<string, unknown> | undefined,
+	priorHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
 	ctx: PublishCtx,
 ): Record<string, unknown> {
@@ -390,6 +421,13 @@ function buildHeroFromDraft(
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
+		...clientPriorFields(ctx, priorHero, [
+			'variant',
+			'focalPoint',
+			'focalPointMobile',
+			'focalPointTablet',
+			'focalPointDesktop',
+		]),
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
 			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',
@@ -416,6 +454,7 @@ function buildHeroFromDraft(
 function mapHeroSection(
 	draftHero: DraftContent['hero'],
 	demoHero: Record<string, unknown> | undefined,
+	priorHero: Record<string, unknown> | undefined,
 	invitationTitle: string,
 	ctx: PublishCtx,
 ): Record<string, unknown> {
@@ -431,6 +470,7 @@ function mapHeroSection(
 	return buildHeroFromDraft(
 		draftHero as NonNullable<DraftContent['hero']>,
 		demoHero,
+		priorHero,
 		invitationTitle,
 		ctx,
 	);
@@ -450,6 +490,7 @@ function resolveRsvpResponseMessages(
 function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
+	priorRsvp: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftRsvp)) return undefined;
@@ -467,7 +508,8 @@ function mapRsvpSection(
 	const title = str(draftRsvp.title) || demoStr(ctx, demo.title);
 	const confirmationMessage =
 		str(draftRsvp.confirmationMessage) || demoStr(ctx, demo.confirmationMessage);
-	const accessMode = (ctx.isDemo ? str(demo.accessMode) : undefined) || 'personalized-only';
+	const accessMode =
+		(ctx.isDemo ? str(demo.accessMode) : str(priorRsvp?.accessMode)) || 'personalized-only';
 	const whatsappConfig = whatsappPhone
 		? { phone: whatsappPhone }
 		: ctx.isDemo
@@ -486,6 +528,7 @@ function mapRsvpSection(
 		subcopy,
 		...(confirmationDeadline ? { confirmationDeadline } : {}),
 		...(responseMessages ? { responseMessages } : {}),
+		...clientPriorFields(ctx, priorRsvp, ['personalizedAccess']),
 	};
 }
 
@@ -539,6 +582,7 @@ function mapQuoteSection(
 function mapThankYouSection(
 	draftThankYou: DraftContent['thankYou'],
 	demoThankYou: Record<string, unknown> | undefined,
+	priorThankYou: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const message = str(draftThankYou?.message);
@@ -553,7 +597,8 @@ function mapThankYouSection(
 		return {
 			message,
 			closingName: str(draftThankYou?.closingName) || demoStr(ctx, demoThankYou?.closingName),
-			image: draftThankYou?.image ?? (ctx.isDemo ? demoThankYou?.image : undefined),
+			image: draftThankYou?.image ?? demoValue(ctx, demoThankYou?.image),
+			...clientPriorFields(ctx, priorThankYou, ['date']),
 			...overlayFields,
 		};
 	}
@@ -596,6 +641,7 @@ function resolveReminderTemplate(
 function mapSharingFromDraft(
 	draftSharing: Record<string, unknown> | undefined,
 	demoSharing: Record<string, unknown> | undefined,
+	priorSharing: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	const draftMessages = (draftSharing || {}) as Record<string, unknown>;
@@ -608,17 +654,19 @@ function mapSharingFromDraft(
 
 	const shareMessages = invitation ? { invitation, reminder } : undefined;
 
-	const whatsappTemplate =
-		ctx.isDemo && typeof demoSharing?.whatsappTemplate === 'string'
-			? demoSharing.whatsappTemplate
-			: undefined;
-	const ogImage = ctx.isDemo ? demoSharing?.ogImage : undefined;
+	const whatsappTemplate = demoValue(ctx, demoSharing?.whatsappTemplate);
+	const ogImage = demoValue(ctx, demoSharing?.ogImage);
 	const ogDescription = str(draftMessages.ogDescription);
+	const result: Record<string, unknown> = clientPriorFields(ctx, priorSharing);
 
-	const hasAnyContent = shareMessages || whatsappTemplate || ogImage || ogDescription;
+	const hasAnyContent =
+		shareMessages ||
+		whatsappTemplate ||
+		ogImage ||
+		ogDescription ||
+		Object.keys(result).length > 0;
 	if (!hasAnyContent) return undefined;
 
-	const result: Record<string, unknown> = {};
 	if (whatsappTemplate) result.whatsappTemplate = whatsappTemplate;
 	if (shareMessages) result.shareMessages = shareMessages;
 	if (ogImage) result.ogImage = ogImage;
@@ -631,13 +679,13 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const { draftContent, invitation, demoContent, isDemo = false } = input;
 	const ctx: PublishCtx = { isDemo };
 	const snapshot = invitation.snapshot;
-
-	const celebName = str(draftContent.hero?.name) || invitation.title;
+	const priorPublished = input.priorPublishedContent;
 
 	const locationSection = mapLocationFromDraft(draftContent.location, demoContent, ctx);
 	const rsvpSection = mapRsvpSection(
 		draftContent.rsvp,
 		demoContent.rsvp as Record<string, unknown> | undefined,
+		priorPublished?.rsvp as Record<string, unknown> | undefined,
 		ctx,
 	);
 	const musicSection = mapMusicSection(
@@ -658,19 +706,30 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const thankYouSection = mapThankYouSection(
 		draftContent.thankYou,
 		demoContent.thankYou as Record<string, unknown> | undefined,
+		priorPublished?.thankYou as Record<string, unknown> | undefined,
 		ctx,
 	);
 	const heroSection = mapHeroSection(
 		draftContent.hero,
 		demoContent.hero as Record<string, unknown> | undefined,
+		priorPublished?.hero as Record<string, unknown> | undefined,
 		invitation.title,
 		ctx,
 	);
-	const familySection = mapFamilyFromDraft(draftContent.family, celebName);
+	const familySection = mapFamilyFromDraft(
+		draftContent.family,
+		priorPublished?.family as Record<string, unknown> | undefined,
+	);
 
 	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
 
 	return {
+		...(!ctx.isDemo && priorPublished?.templateId !== undefined
+			? { templateId: priorPublished.templateId }
+			: {}),
+		...(!ctx.isDemo && priorPublished?.visualProfileId !== undefined
+			? { visualProfileId: priorPublished.visualProfileId }
+			: {}),
 		eventType: invitation.eventType,
 		title: invitation.title,
 		description: str(draftContent.description) || demoStr(ctx, demoContent.description),
@@ -701,6 +760,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
 			ctx,
+			draftContent.sectionOrder ?? (priorPublished?.sectionOrder as string[] | undefined),
 		),
 		rsvp: rsvpSection,
 		music: musicSection,
@@ -709,10 +769,12 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		thankYou: thankYouSection,
 
 		interludes: draftContent.interludes ?? (ctx.isDemo ? demoContent.interludes : undefined),
-		sectionStyles: ctx.isDemo ? demoContent.sectionStyles : undefined,
+		sectionStyles: ctx.isDemo ? demoContent.sectionStyles : priorPublished?.sectionStyles,
+		navigation: ctx.isDemo ? demoContent.navigation : priorPublished?.navigation,
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,
 			demoContent.sharing as Record<string, unknown> | undefined,
+			priorPublished?.sharing as Record<string, unknown> | undefined,
 			ctx,
 		),
 

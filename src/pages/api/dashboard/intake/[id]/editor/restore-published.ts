@@ -8,7 +8,10 @@ import {
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 
-const RestorePublishedSchema = z.object({ expectedUpdatedAt: z.string().min(1) });
+const RestorePublishedSchema = z.object({
+	expectedDraftUpdatedAt: z.string().min(1).nullable(),
+	expectedInvitationUpdatedAt: z.string().min(1),
+});
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {

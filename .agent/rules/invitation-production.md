@@ -35,6 +35,22 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
 
+## Packaging and promotion workflow
+
+- Invitation promotion uses the canonical package pipeline:
+  `Local (127.0.0.1:54322) -> pnpm invitation:package -> pnpm invitation:promote:preview -> pnpm invitation:promote:prod`.
+- Preview is a validation environment. Production MUST NOT import directly from the Preview database
+  or Storage.
+- Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
+  and embedded base64 assets with SHA-256 signatures.
+- Packages MUST NOT leak local or environment-specific Supabase URLs (sanitized to
+  `__STORAGE_URL__`).
+- Preview promotion requires target project `iwipdvisoyerfdytuhwi` and generates a non-secret
+  Preview approval artifact (`.agent/tmp/approvals/preview-approval-<hash>.json`).
+- Production promotion requires a matching Preview approval artifact for the exact package hash, an
+  existing target owner UUID (`--owner-user-id`), zero source-URL verification, and explicit
+  confirmation.
+
 ## Scope and cleanup
 
 Prefer the smallest current contract change. Do not redesign the renderer, create a universal

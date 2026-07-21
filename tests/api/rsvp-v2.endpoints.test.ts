@@ -39,6 +39,7 @@ describe('RSVP v2 endpoint baseline', () => {
 		const request = createMockRequest();
 		const response = await getInvitationContext({ params: {}, request } as never);
 		expect(response.status).toBe(400);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
 	it('returns bad request on invitation rsvp with invalid status', async () => {
@@ -49,5 +50,6 @@ describe('RSVP v2 endpoint baseline', () => {
 		});
 		const response = await postInvitationRsvp({ params: { inviteId }, request } as never);
 		expect(response.status).toBe(400);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 });

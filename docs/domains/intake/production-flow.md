@@ -19,6 +19,26 @@ database migrations remain authoritative for executable behavior. The content co
 
 Production database mutations, deployments, and rollbacks require explicit human authorization.
 
+## Publication integrity rollout
+
+Phase one retains the old seven-argument RPC only as a service-role fail-closed
+`publish_upgrade_required` stub. Apply it, deploy the application and provisioning scripts using the
+current RPC, monitor legacy calls while old serverless instances drain, then remove the stub in a
+separate reviewed migration. During that overlap, publishing from an old instance is intentionally
+unavailable.
+
+Successful confirmation stores a durable idempotency receipt containing the full request fingerprint
+and exact response. It is retained for the invitation/draft lifetime with restrictive foreign keys;
+one receipt per successful confirmation gives bounded linear growth, so no scheduler is needed. The
+transaction locks and validates invitation metadata, draft, and published-content fingerprints
+before any write. The disposable pgTAP runner uses `ON_ERROR_STOP` and fails for migration, harness,
+or TAP assertion failures.
+
+For release evidence, reset the disposable database and run `run-tests`, `run-concurrency-test`,
+`run-stale-baseline-test`, and `run-application-flow` through `scripts/db/disposable-test-env.ts`.
+The latter uses isolated PostgREST to exercise the service path; the two database runners verify the
+contention branch and stale public-input rollback paths.
+
 ## 1. Intake and preparation
 
 Before creating a record, collect:
@@ -146,10 +166,39 @@ Required cases:
 - Keyboard navigation, visible focus, and correct reading/order semantics.
 - Maps, WhatsApp templates, personalized passes, RSVP, gallery navigation, image crops, and image
   loading priority.
-- Anonymous request and `?invite=` personalized request. Anonymous HTML may use the public cache;
-  personalized responses must remain `no-store, private`.
+- Anonymous request and `?invite=` personalized request. Anonymous HTML uses the correctness-first
+  `public, max-age=0, s-maxage=0, must-revalidate` policy: browsers and shared caches may store it
+  but must revalidate before reuse. This prioritizes publication freshness over CDN cache-hit rate;
+  confirm the effective Vercel behavior after deployment. Personalized responses remain
+  `no-store, private`.
 
 ## 7. Publish
+
+The editor first requests a server-side publication preflight. It maps the effective draft through
+the canonical draft-to-published mapper, normalizes representational noise (including
+null/empty/derived upload URLs), compares it with the published projection, and returns only
+meaningful changed editor sections plus a reviewed draft revision, published version, public
+metadata hash (`slug` + `title`), and projection hash. It is authorized, read-only, and responds
+with `Cache-Control: no-store, private`. The confirmation modal presents that server result; it
+never infers a change from hydrated section provenance.
+
+Labels are ordered and de-duplicated by the canonical section registry. The modal renders them
+verbatim; it does not append, rename, regroup, or calculate sections client-side. `photoNotes` is
+draft-only and excluded from the public comparison. It stays open for preflight, publication,
+conflict, validation, maintenance (`upgrade_required`), and transient failures. Only centrally
+classified transient failures offer retry; success remains visible in the dialog.
+
+`guestCap` is the configurable maximum **total** attendees selectable in one RSVP response,
+including the named guest. Any positive integer supported by the PostgreSQL `integer` column is
+valid. The editor, public RSVP runtime, dashboard guest operations, and database constraints share
+that contract without a smaller product-level clamp.
+
+| Route or response                                                                       | Cache-Control                                    |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Anonymous invitation                                                                    | `public, max-age=0, s-maxage=0, must-revalidate` |
+| Personalized invitation, metadata, token capture, dashboard preview                     | `no-store, private`                              |
+| Preflight, publication, RSVP/context/view APIs                                          | `no-store, private`                              |
+| Invalid type, missing invitation, authorization failure, validation/conflict, redirects | `no-store, private`                              |
 
 `publishDraft()` performs these gates before the write:
 
@@ -159,14 +208,20 @@ Required cases:
 4. Uploaded references are frozen to public URLs and asset delivery policy passes.
 5. The `(event_type, slug)` does not belong to another invitation.
 
-The repository then calls `publish_invitation_atomic` with the draft ID and expected draft
-timestamp. In one transaction the RPC locks the invitation and draft, rejects stale or non-draft
-state, synchronizes the RSVP event, creates or versions published content, marks the invitation
-published, and marks the draft approved.
+The repository then calls `publish_invitation_atomic` with the reviewed draft timestamp, published
+version, public-metadata hash, projection hash, and a client-generated UUID idempotency key. In one
+transaction the RPC locks the invitation, draft, and published row; rejects stale or non-draft
+state; synchronizes the RSVP event; creates or versions published content; marks the invitation
+published; and marks the draft approved. `invitation_publication_idempotency` stores the key as its
+primary key, bound to invitation, draft revision, projection hash, and resulting content/version.
+Retrying the exact confirmed request returns that stored publication without incrementing its
+version; reuse with different parameters is rejected. Contact-only changes do not alter the public
+metadata hash and therefore do not invalidate a confirmation.
 
 - Success is all-or-nothing and returns the approved draft plus published version metadata.
 - Failure commits none of those state changes.
-- A network failure with no success response is safe to retry after reloading current state.
+- A network failure with no success response is safe to retry with the same confirmation while the
+  editor remains open; a changed revision requires a fresh preflight.
 - Republication requires an editable `draft` again; it increments the published version.
 - Concurrent or stale publication returns 409. Reload; never force the timestamp or update tables
   independently.
@@ -182,9 +237,10 @@ Required order:
 4. Deploy application code that depends on those migrations.
 5. Run the production smoke tests below and inspect Vercel/Supabase logs.
 
-Application code must not be deployed before its required database migration. In particular, atomic
-publication requires `20260715210301_atomic_invitation_publication.sql`, and asset metadata gating
-requires `20260715210512_invitation_asset_delivery_gate.sql`.
+Application code must not be deployed before its required database migration. In particular,
+reviewed atomic publication requires `20260717193000_publication_preflight_integrity.sql` (after
+`20260715210301_atomic_invitation_publication.sql`), and asset metadata gating requires
+`20260715210512_invitation_asset_delivery_gate.sql`.
 
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production

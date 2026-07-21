@@ -158,21 +158,25 @@ describe('rsvp service branches', () => {
 		).rejects.toMatchObject({ status: 400 });
 	});
 
-	it('createDashboardGuest clamps maxAllowedAttendees and succeeds', async () => {
+	it('createDashboardGuest preserves a configured attendee limit above 20', async () => {
 		createGuestInvitationMock.mockResolvedValue({
 			...baseGuest,
-			maxAllowedAttendees: 20,
+			maxAllowedAttendees: 250,
 		});
 		const result = await createDashboardGuest({
 			eventId: 'evt-1',
 			fullName: 'Guest',
 			phone: '6680000000',
 			countryCode: '+52',
-			maxAllowedAttendees: 100,
+			maxAllowedAttendees: 250,
 			hostAccessToken: 'token',
 			origin: 'http://localhost',
 		});
-		expect(result.item.maxAllowedAttendees).toBe(20);
+		expect(createGuestInvitationMock).toHaveBeenCalledWith(
+			expect.objectContaining({ maxAllowedAttendees: 250 }),
+			expect.any(String),
+		);
+		expect(result.item.maxAllowedAttendees).toBe(250);
 	});
 
 	it('updateDashboardGuest enforces confirmed attendee bounds', async () => {

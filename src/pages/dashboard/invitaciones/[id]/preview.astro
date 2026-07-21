@@ -27,6 +27,7 @@ import '@/styles/invitation.scss';
 import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
 
 const { id } = Astro.params;
+Astro.response.headers.set('Cache-Control', 'no-store, private');
 
 let errorMessage: string | null = null;
 let previewSource: string | null = null;

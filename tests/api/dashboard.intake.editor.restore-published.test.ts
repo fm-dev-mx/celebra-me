@@ -24,7 +24,10 @@ describe('/api/dashboard/intake/[id]/editor/restore-published', () => {
 		(restoreInvitationEditorFromPublished as jest.Mock).mockResolvedValue({ id: 'draft-1' });
 
 		const response = await POST({
-			request: createMockRequest({ expectedUpdatedAt: '2026-05-30T01:00:00Z' }),
+			request: createMockRequest({
+				expectedDraftUpdatedAt: '2026-05-30T01:00:00Z',
+				expectedInvitationUpdatedAt: '2026-05-30T00:00:00Z',
+			}),
 			cookies: {},
 			params: { id: 'proj-1' },
 		} as never);
@@ -32,7 +35,8 @@ describe('/api/dashboard/intake/[id]/editor/restore-published', () => {
 		expect(response.status).toBe(200);
 		expect(requireEditorMutationAccess).toHaveBeenCalled();
 		expect(restoreInvitationEditorFromPublished).toHaveBeenCalledWith('proj-1', {
-			expectedUpdatedAt: '2026-05-30T01:00:00Z',
+			expectedDraftUpdatedAt: '2026-05-30T01:00:00Z',
+			expectedInvitationUpdatedAt: '2026-05-30T00:00:00Z',
 		});
 	});
 });

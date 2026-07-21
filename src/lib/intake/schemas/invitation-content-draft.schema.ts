@@ -23,6 +23,7 @@ import {
 	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
 	z.object({ action: z.literal('generate') }),
@@ -97,7 +98,7 @@ export const InvitationContentDraftContentSchema = z
 		rsvp: z
 			.object({
 				title: optionalText(200),
-				guestCap: z.number().int().min(1).max(20).optional(),
+				guestCap: rsvpGuestCapSchema.optional(),
 				confirmationMessage: optionalText(1000),
 				confirmationMode: optionalText(20),
 				whatsappPhone: optionalText(30),

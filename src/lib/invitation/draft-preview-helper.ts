@@ -90,7 +90,7 @@ export async function buildDraftPreviewPageContext(
 		const assetLookupSlug =
 			getAssetSlugFromContent(draftContent as unknown as Record<string, unknown>) ??
 			options.assetLookupSlug ??
-			resolveAssetSlug(invitation);
+			resolveAssetSlug(invitation, undefined, demoContent);
 
 		// Resolve uploaded asset refs to public Storage URLs for preview
 		let resolvedContent = draftContent as unknown as Record<string, unknown>;

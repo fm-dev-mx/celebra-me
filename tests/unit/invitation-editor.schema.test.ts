@@ -548,7 +548,7 @@ describe('InvitationEditorSectionSchemas.rsvp (guestCap parity)', () => {
 	it('accepts large guestCap values from published content', () => {
 		const value = {
 			title: 'Confirma tu asistencia',
-			guestCap: 100,
+			guestCap: 250,
 			confirmationMode: 'api' as const,
 		};
 		const result = InvitationEditorSectionSchemas.rsvp.safeParse(value);
