@@ -71,31 +71,34 @@ describe('createProdBackup', () => {
 		spawnSync.mockClear();
 	});
 
-	it('uses --data-only (not --schema-only or --use-copy) for data backup', () => {
+	it('uses --data-only (not --schema-only, --use-copy, or --db-url) for data backup', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', false);
 		expect(spawnSync).toHaveBeenCalledTimes(1);
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--data-only');
 		expect(args).not.toContain('--use-copy');
 		expect(args).not.toContain('--schema-only');
+		expect(args).not.toContain('--db-url');
 	});
 
-	it('passes --schema-only for schema backup (schemaOnly=true)', () => {
+	it('passes --schema-only (not --db-url) for schema backup', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', true);
 		expect(spawnSync).toHaveBeenCalledTimes(1);
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--schema-only');
 		expect(args).not.toContain('--data-only');
 		expect(args).not.toContain('--use-copy');
+		expect(args).not.toContain('--db-url');
 	});
 
-	it('includes --schema public and -f output in both modes', () => {
+	it('includes --schema public, -f, and --dbname in both modes', () => {
 		createProdBackup(fakeUrl, '/tmp/data.sql', false);
 		let args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--schema');
 		expect(args).toContain('public');
 		expect(args).toContain('-f');
 		expect(args).toContain('/tmp/data.sql');
+		expect(args).toContain('--dbname');
 
 		spawnSync.mockClear();
 		createProdBackup(fakeUrl, '/tmp/schema.sql', true);
@@ -104,13 +107,15 @@ describe('createProdBackup', () => {
 		expect(args).toContain('public');
 		expect(args).toContain('-f');
 		expect(args).toContain('/tmp/schema.sql');
+		expect(args).toContain('--dbname');
 	});
 
-	it('passes the db-url via --db-url arg', () => {
+	it('passes the db-url via --dbname (not --db-url)', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', false);
 		const args = spawnSync.mock.calls[0][1] as string[];
-		expect(args).toContain('--db-url');
+		expect(args).toContain('--dbname');
 		expect(args).toContain(fakeUrl);
+		expect(args).not.toContain('--db-url');
 	});
 
 	it('fails closed when pg_dump returns non-zero', () => {

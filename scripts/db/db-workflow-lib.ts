@@ -356,7 +356,7 @@ export function createProdBackup(prodUrl: string, backupPath?: string, schemaOnl
 	} else {
 		dumpArgs.push('--data-only');
 	}
-	dumpArgs.push('--db-url', prodUrl);
+	dumpArgs.push('--dbname', prodUrl);
 
 	const res = runCommand('pg_dump', dumpArgs, { redact: [prodUrl] });
 	if (res.status !== 0) {
