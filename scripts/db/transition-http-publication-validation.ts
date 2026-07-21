@@ -4,7 +4,12 @@
  * RPC shapes/statuses; it never receives production credentials.
  */
 import { createHmac, randomUUID } from 'node:crypto';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import {
+	createServer,
+	request as httpRequest,
+	type IncomingMessage,
+	type ServerResponse,
+} from 'node:http';
 import { spawn, type ChildProcess } from 'node:child_process';
 
 const gatewayPort = 54335;
@@ -55,7 +60,60 @@ async function readBody(request: IncomingMessage): Promise<Buffer> {
 	return Buffer.concat(chunks);
 }
 
+/**
+ * Allowed path prefixes for the local PostgREST proxy.
+ * The Astro app only interacts with these Supabase API routes during validation.
+ */
+const ALLOWED_PATH_PREFIXES = ['/rest/v1/', '/auth/v1/'] as const;
+
+/** Allowed HTTP methods for proxied requests. */
+const ALLOWED_METHODS = new Set(['GET', 'POST', 'PATCH', 'DELETE']);
+
+/**
+ * Validates that the target path is safe to proxy.
+ * Rejects absolute URLs, protocol-relative URLs, path traversal, and
+ * unexpected path prefixes before any fetch call.
+ */
+function assertSafeProxyPath(targetPath: string): void {
+	// Reject protocol-relative or absolute URL patterns
+	if (
+		targetPath.startsWith('//') ||
+		targetPath.startsWith('http://') ||
+		targetPath.startsWith('https://')
+	) {
+		throw new Error(`Rejected unsafe path (absolute/protocol-relative): ${targetPath}`);
+	}
+
+	// Reject path traversal
+	if (targetPath.includes('..')) {
+		throw new Error(`Rejected unsafe path (traversal): ${targetPath}`);
+	}
+
+	// Reject null-byte injection
+	if (targetPath.includes('\0')) {
+		throw new Error('Rejected unsafe path (null byte)');
+	}
+
+	// Ensure the normalized path starts with an allowed prefix
+	const normalized = targetPath.split('?')[0] ?? targetPath;
+	if (!ALLOWED_PATH_PREFIXES.some((prefix) => normalized.startsWith(prefix))) {
+		throw new Error(`Rejected unexpected path prefix: ${normalized}`);
+	}
+}
+
 async function proxy(request: IncomingMessage, response: ServerResponse): Promise<void> {
+	// Validate HTTP method
+	if (!ALLOWED_METHODS.has(request.method ?? 'GET')) {
+		response.writeHead(405, { 'content-type': 'application/json' });
+		response.end(
+			JSON.stringify({
+				code: 'method_not_allowed',
+				message: `Method ${request.method} is not allowed.`,
+			}),
+		);
+		return;
+	}
+
 	const url = new URL(request.url ?? '/', gatewayOrigin);
 	if (url.pathname === '/auth/v1/user') {
 		response.writeHead(200, { 'content-type': 'application/json' });
@@ -74,31 +132,47 @@ async function proxy(request: IncomingMessage, response: ServerResponse): Promis
 	const targetPath = url.pathname.startsWith('/rest/v1/')
 		? `${url.pathname.replace('/rest/v1', '')}${url.search}`
 		: `${url.pathname}${url.search}`;
-	const upstream = await fetch(`${postgrestOrigin}${targetPath}`, {
+
+	// Validate path safety before proxying
+	assertSafeProxyPath(targetPath);
+
+	// Proxy via Node http.request with a hardcoded hostname — the path is
+	// validated by assertSafeProxyPath, and the host is never user-controlled.
+	// SSRF risk is eliminated because only path traversal and prefix are
+	// attacker-accessible; the target host is fixed.
+	const httpOptions = {
+		hostname: '127.0.0.1',
+		port: 54331,
+		path: targetPath,
 		method: request.method,
 		headers: request.headers as Record<string, string>,
-		// Copy the Node Buffer into a DOM-compatible body instead of passing
-		// its ArrayBufferLike backing store through fetch's stricter typings.
-		body: body.length ? Uint8Array.from(body) : undefined,
-	});
-	const raw = await upstream.text();
-	if (targetPath === '/rpc/publish_invitation_atomic' && request.method === 'POST') {
-		const parsed = JSON.parse(body.toString('utf8')) as Record<string, unknown>;
-		const shape = 'p_expected_published_version' in parsed ? 'new' : 'legacy';
-		let code: string | null = null;
-		try {
-			code = (JSON.parse(raw) as { code?: string }).code ?? null;
-		} catch {
-			/* non-JSON error bodies are recorded as no code */
+	};
+	const proxyReq = httpRequest(httpOptions, (proxyRes: IncomingMessage) => {
+		if (targetPath.startsWith('/rpc/publish_invitation_atomic') && request.method === 'POST') {
+			const chunks: Buffer[] = [];
+			proxyRes.on('data', (chunk: Buffer) => chunks.push(chunk));
+			proxyRes.on('end', () => {
+				const raw = Buffer.concat(chunks).toString('utf8');
+				let parsed: Record<string, unknown> = {};
+				try {
+					parsed = JSON.parse(body.toString('utf8')) as Record<string, unknown>;
+				} catch {
+					/* ignore invalid JSON body */
+				}
+				const shape = 'p_expected_published_version' in parsed ? 'new' : 'legacy';
+				let code: string | null = null;
+				try {
+					code = (JSON.parse(raw) as { code?: string }).code ?? null;
+				} catch {
+					/* non-JSON error bodies are recorded as no code */
+				}
+				rpcTraces.push({ shape, status: proxyRes.statusCode ?? 200, code });
+			});
 		}
-		rpcTraces.push({ shape, status: upstream.status, code });
-	}
-	const headers: Record<string, string> = {};
-	upstream.headers.forEach((value, key) => {
-		headers[key] = value;
+		response.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
+		proxyRes.pipe(response);
 	});
-	response.writeHead(upstream.status, headers);
-	response.end(raw);
+	proxyReq.end(body);
 }
 
 async function waitFor(url: string): Promise<void> {
