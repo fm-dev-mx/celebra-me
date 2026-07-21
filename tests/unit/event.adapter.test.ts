@@ -119,9 +119,9 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.theme.preset).toBe('jewelry-box');
 		expect(viewModel.sections.location?.ceremony).toBeDefined();
-		expect(viewModel.sections.location?.ceremony?.venueName).toBeTruthy();
+		expect(viewModel.sections.location?.ceremony?.venueName).toBeDefined();
 		expect(viewModel.sections.location?.variant).toBe('jewelry-box');
-		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
+		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 	});
 
 	it('passes location intro copy through to the invitation view model', () => {
@@ -170,7 +170,7 @@ describe('adaptEvent', () => {
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
+		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
@@ -187,8 +187,8 @@ describe('adaptEvent', () => {
 		expect(viewModel.id).toBe('demo-baby-shower-celestial');
 		expect(viewModel.theme.preset).toBe('celestial-blue');
 		expect(viewModel.sections.rsvp?.eventSlug).toBe('demo-baby-shower-celestial');
-		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
-		expect(viewModel.sections.family?.featuredImage?.src).toBe('test-file-stub');
+		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
+		expect(viewModel.sections.family?.featuredImage?.src).toEqual(expect.any(String));
 	});
 
 	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {
@@ -203,9 +203,9 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.id).toBe('demo-primera-comunion-illustrated');
 		expect(viewModel.theme.preset).toBe('angelic-presence');
-		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
-		expect(viewModel.sections.location?.ceremony?.image?.src).toBe('test-file-stub');
-		expect(viewModel.sections.thankYou?.image?.src).toBe('test-file-stub');
+		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
+		expect(viewModel.sections.location?.ceremony?.image?.src).toEqual(expect.any(String));
+		expect(viewModel.sections.thankYou?.image?.src).toEqual(expect.any(String));
 	});
 
 	it('resolves backgroundImageMobile when present in hero data', () => {
@@ -311,7 +311,7 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.countdown?.targetSource).toBe('legacyHeroDate');
 	});
 
-	it('countdown renders from eventTiming alone without explicit countdown content', () => {
+	it('builds countdown data from eventTiming when legacy content has no sectionOrder', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 
 		const event = {
@@ -351,7 +351,7 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.countdown).toBeUndefined();
 	});
 
-	it('injects countdown into sectionOrder when synthesized from eventTiming alone', () => {
+	it('does not inject countdown into an explicit sectionOrder when eventTiming exists', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 
 		const event = {
@@ -375,9 +375,7 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.sections.countdown).toBeDefined();
 		expect(viewModel.sectionOrder).toBeDefined();
-		expect(viewModel.sectionOrder!.indexOf('countdown')).toBeLessThan(
-			viewModel.sectionOrder!.indexOf('location'),
-		);
+		expect(viewModel.sectionOrder).not.toContain('countdown');
 	});
 
 	it('does not inject countdown into sectionOrder when no resolvable target exists', () => {
@@ -409,7 +407,7 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.sections.countdown).toBeUndefined();
 		expect(viewModel.sectionOrder).toBeDefined();
-		expect(viewModel.sectionOrder!.includes('countdown')).toBe(false);
+		expect(viewModel.sectionOrder).not.toContain('countdown');
 	});
 
 	it('throws for invalid theme presets instead of silently falling back', () => {

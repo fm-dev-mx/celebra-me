@@ -8,6 +8,8 @@ export type ApiErrorCode =
 	| 'rate_limited'
 	| 'limit_reached'
 	| 'internal_error'
+	| 'service_unavailable'
+	| 'upstream_error'
 	| 'submission_already_approved'
 	| 'invalid_submission_status'
 	| 'invalid_draft_status'
@@ -16,7 +18,8 @@ export type ApiErrorCode =
 	| 'schema_mismatch'
 	| 'unsafe_target'
 	| 'missing_in_prod'
-	| 'stale_production_content';
+	| 'stale_production_content'
+	| 'upgrade_required';
 
 export class ApiError extends Error {
 	readonly status: number;

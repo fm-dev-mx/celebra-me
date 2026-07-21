@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import type { EventType } from '@/lib/theme/theme-contract';
+import { RSVP_GUEST_CAP_MIN, RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 
 interface Props {
 	data: Record<string, unknown>;
@@ -37,7 +38,7 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 
 			<div className="intake-field">
 				<label className="intake-field__label" htmlFor="guestCap">
-					Capacidad de invitados (por pase){' '}
+					Máximo de asistentes por confirmación{' '}
 					<span className="intake-field__required">*</span>
 				</label>
 				<input
@@ -46,11 +47,14 @@ const RsvpConfigBlock: FC<Props> = ({ data, onChange, disabled }) => {
 					className="intake-field__input"
 					value={getNumber('guestCap') || ''}
 					onChange={(e) => onChange('guestCap', Number.parseInt(e.target.value, 10) || 0)}
-					min={1}
-					max={20}
+					min={RSVP_GUEST_CAP_MIN}
+					max={RSVP_GUEST_CAP_TECHNICAL_MAX}
 					disabled={disabled}
 					required
 				/>
+				<p className="intake-field__help">
+					Incluye a la persona principal y a todos sus acompañantes.
+				</p>
 			</div>
 
 			<div className="intake-field">

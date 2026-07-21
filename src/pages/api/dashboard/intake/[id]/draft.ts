@@ -13,7 +13,7 @@ import {
 	createDraftRevision,
 	updateDraftContentByInvitation,
 } from '@/lib/intake/services/draft-generation.service';
-import { publishDraft } from '@/lib/intake/services/publishing.service';
+import { getPublicationPreflight, publishDraft } from '@/lib/intake/services/publishing.service';
 import { toInvitationContentDraftDTO } from '@/lib/dashboard/dto/intake-mapper';
 import {
 	DraftActionSchema,
@@ -49,7 +49,11 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		if (parsed instanceof Response) return parsed;
 
 		if (parsed.action === 'publish') {
-			const result = await publishDraft(id);
+			const preflight = await getPublicationPreflight(id);
+			const result = await publishDraft(id, {
+				...preflight,
+				idempotencyKey: crypto.randomUUID(),
+			});
 			return jsonResponse({
 				draft: toInvitationContentDraftDTO(result.draft),
 				publishedContent: result.publishedContent,

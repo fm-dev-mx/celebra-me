@@ -23,6 +23,7 @@ import {
 	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 export const INVITATION_EDITOR_SECTION_KEYS = [
 	'main',
@@ -79,7 +80,7 @@ export const InvitationEditorSectionSchemas = {
 	rsvp: z
 		.object({
 			title: optionalText(200),
-			guestCap: z.number().int().min(1).max(999).optional(),
+			guestCap: rsvpGuestCapSchema.optional(),
 			confirmationMessage: optionalText(1000),
 			confirmationMode: z.enum(['api', 'whatsapp', 'both']).optional(),
 			whatsappPhone: optionalText(30),

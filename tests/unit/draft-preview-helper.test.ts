@@ -275,6 +275,22 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
 	});
 
+	it('uses the demo visual fallback when previewSlug is not an asset registry key', async () => {
+		const invitation = makeProject({
+			kind: 'demo',
+			slug: null,
+			snapshot: { ...demoPreset, previewSlug: 'demo-xv-editorial-magazine' },
+		});
+
+		await buildDraftPreviewPageContext(invitation, validDraftContent, {
+			...validDemoContent,
+			_assetSlug: 'demo-xv-editorial',
+		});
+
+		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.assetSlug).toBe('demo-xv-editorial');
+	});
+
 	it('succeeds with empty demo content (missing event-demos entry)', async () => {
 		const invitation = makeProject();
 

@@ -302,119 +302,119 @@ const RSVP: React.FC<RSVPProps> = ({
 		restoreInitialResponse();
 	}, [restoreInitialResponse]);
 
-		return (
-			<section data-screenshot-section="rsvp" className="rsvp-section">
-				<RsvpContext.Provider value={{ eventType }}>
-					<AnimatePresence mode="wait">
-				{submitted ? (
-					<motion.div
-						key="rsvp-success"
-						initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.98 }}
-						transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-					>
-						<SubmittedState
-							ref={successRef}
-							title={title}
-							variant={variant}
-							onFocusCapture={scheduleRsvpRecenter}
-							name={name}
-							attendanceStatus={attendanceStatus}
-							confirmationMessage={confirmationMessage}
-							celebrantName={celebrantName}
-							responseMessages={responseMessages}
-							revealedLocation={resolvedLocation}
-							locationError={locationError}
-							allowResponseEditing={allowResponseEditing}
-							onChangeResponse={handleChangeResponse}
-							showWhatsAppCta={showWhatsAppCta}
-							whatsAppUrl={buildWhatsAppUrl({
-								whatsappConfig,
-								attendanceStatus,
-								attendeeCount,
-								name,
-								title,
-							})}
-							onWhatsAppClick={() => {
-								void handleWhatsAppClick();
-							}}
-							eventStartsAt={eventStartsAt}
-							eventTimeZone={eventTimeZone}
-							eventSlug={eventSlug}
-						/>
-					</motion.div>
-				) : (
-					<motion.div
-						key="rsvp-form"
-						initial={prefersReducedMotion ? undefined : { opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-						transition={{ duration: 0.5 }}
-					>
-						<RsvpFormView
-							ref={sectionRef}
-							title={title}
-							subcopy={resolvedSubcopy}
-							variant={variant}
-							onFocusCapture={scheduleRsvpRecenter}
-							prefersReducedMotion={!!prefersReducedMotion}
-							nameLocked={nameLocked}
-							nameLabel={labelsResolved.nameLabel}
-							guestCountLabel={labelsResolved.guestCountLabel}
-							attendanceLabel={labelsResolved.attendanceLabel}
-							buttonLabel={labelsResolved.buttonLabel}
-							phoneLabel={labelsResolved.phoneLabel}
-							notesLabel={labelsResolved.notesLabel}
-							notesPlaceholder={labelsResolved.notesPlaceholder}
-							name={name}
-							phone={phone}
-							countryCode={countryCode}
-							showPhoneField={showPhoneField}
-							showIdentityFields={showIdentityFields}
-							touched={touched}
-							errors={errors}
-							attendanceStatus={attendanceStatus}
-							supportsPlusOnes={supportsPlusOnes}
-							effectiveGuestCap={effectiveGuestCap}
-							attendeeCount={attendeeCount}
-							notes={notes}
-							isSubmitting={isSubmitting}
-							submitStatus={submitStatus}
-							nameRef={nameRef}
-							phoneRef={phoneRef}
-							attendanceRef={attendanceRef}
-							guestCountRef={guestCountRef}
-							isDemoPreview={isDemoPreview}
-							showCancelEdit={isEditingResponse}
-							onSubmit={handleSubmit}
-							onCancelEdit={handleCancelEdit}
-							onNameChange={(value) => {
-								setName(value);
-								if (touched.name) validate();
-							}}
-							onPhoneChange={(value) => {
-								handlePhoneChange(value);
-								if (touched.phone) validate();
-							}}
-							onCountryCodeChange={(value) => {
-								setCountryCode(value);
-								if (touched.phone) validate();
-							}}
-							onAttendanceChange={handleAttendanceChange}
-							onGuestCountChange={(value) => {
-								setAttendeeCount(value);
-								if (touched.guestCount) validate();
-							}}
-							onNotesChange={setNotes}
-							onBlur={handleBlur}
-						/>
-					</motion.div>
-				)}
-					</AnimatePresence>
-				</RsvpContext.Provider>
-			</section>
-		);
+	return (
+		<section data-screenshot-section="rsvp" className="rsvp-section">
+			<RsvpContext.Provider value={{ eventType }}>
+				<AnimatePresence mode="wait">
+					{submitted ? (
+						<motion.div
+							key="rsvp-success"
+							initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.98 }}
+							transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+						>
+							<SubmittedState
+								ref={successRef}
+								title={title}
+								variant={variant}
+								onFocusCapture={scheduleRsvpRecenter}
+								name={name}
+								attendanceStatus={attendanceStatus}
+								confirmationMessage={confirmationMessage}
+								celebrantName={celebrantName}
+								responseMessages={responseMessages}
+								revealedLocation={resolvedLocation}
+								locationError={locationError}
+								allowResponseEditing={allowResponseEditing}
+								onChangeResponse={handleChangeResponse}
+								showWhatsAppCta={showWhatsAppCta}
+								whatsAppUrl={buildWhatsAppUrl({
+									whatsappConfig,
+									attendanceStatus,
+									attendeeCount,
+									name,
+									title,
+								})}
+								onWhatsAppClick={() => {
+									void handleWhatsAppClick();
+								}}
+								eventStartsAt={eventStartsAt}
+								eventTimeZone={eventTimeZone}
+								eventSlug={eventSlug}
+							/>
+						</motion.div>
+					) : (
+						<motion.div
+							key="rsvp-form"
+							initial={prefersReducedMotion ? undefined : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+							transition={{ duration: 0.5 }}
+						>
+							<RsvpFormView
+								ref={sectionRef}
+								title={title}
+								subcopy={resolvedSubcopy}
+								variant={variant}
+								onFocusCapture={scheduleRsvpRecenter}
+								prefersReducedMotion={!!prefersReducedMotion}
+								nameLocked={nameLocked}
+								nameLabel={labelsResolved.nameLabel}
+								guestCountLabel={labelsResolved.guestCountLabel}
+								attendanceLabel={labelsResolved.attendanceLabel}
+								buttonLabel={labelsResolved.buttonLabel}
+								phoneLabel={labelsResolved.phoneLabel}
+								notesLabel={labelsResolved.notesLabel}
+								notesPlaceholder={labelsResolved.notesPlaceholder}
+								name={name}
+								phone={phone}
+								countryCode={countryCode}
+								showPhoneField={showPhoneField}
+								showIdentityFields={showIdentityFields}
+								touched={touched}
+								errors={errors}
+								attendanceStatus={attendanceStatus}
+								supportsPlusOnes={supportsPlusOnes}
+								effectiveGuestCap={effectiveGuestCap}
+								attendeeCount={attendeeCount}
+								notes={notes}
+								isSubmitting={isSubmitting}
+								submitStatus={submitStatus}
+								nameRef={nameRef}
+								phoneRef={phoneRef}
+								attendanceRef={attendanceRef}
+								guestCountRef={guestCountRef}
+								isDemoPreview={isDemoPreview}
+								showCancelEdit={isEditingResponse}
+								onSubmit={handleSubmit}
+								onCancelEdit={handleCancelEdit}
+								onNameChange={(value) => {
+									setName(value);
+									if (touched.name) validate();
+								}}
+								onPhoneChange={(value) => {
+									handlePhoneChange(value);
+									if (touched.phone) validate();
+								}}
+								onCountryCodeChange={(value) => {
+									setCountryCode(value);
+									if (touched.phone) validate();
+								}}
+								onAttendanceChange={handleAttendanceChange}
+								onGuestCountChange={(value) => {
+									setAttendeeCount(value);
+									if (touched.guestCount) validate();
+								}}
+								onNotesChange={setNotes}
+								onBlur={handleBlur}
+							/>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</RsvpContext.Provider>
+		</section>
+	);
 };
 
 export default RSVP;

@@ -23,6 +23,7 @@ import {
 	sanitize,
 	toSafeAttendeeCount,
 } from '@/lib/rsvp/core/utils';
+import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
@@ -63,10 +64,6 @@ type ResolvedRsvpTarget =
 
 function isInviteIdentity(identity: RsvpIdentity): identity is InviteRsvpIdentity {
 	return 'inviteId' in identity;
-}
-
-function clampGuestCap(raw: number) {
-	return Math.max(1, Math.min(20, Math.trunc(raw || 1)));
 }
 
 export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTarget> {
@@ -112,7 +109,8 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 				fullName,
 				phone: phone ?? undefined,
 				countryCode: identity.countryCode,
-				maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
+				maxAllowedAttendees: resolveGuestCap(identity.maxAllowedAttendees)
+					.maxTotalAttendees,
 				entrySource: 'generic_public',
 				tags: ['system:public'],
 			},
@@ -159,11 +157,12 @@ export async function persistRsvpResponse(
 			'Confirmed attendance requires at least 1 attendee.',
 		);
 	}
-	if (attendeeCount > invitation.maxAllowedAttendees) {
+	const maxAllowedAttendees = resolveGuestCap(invitation.maxAllowedAttendees).maxTotalAttendees;
+	if (attendeeCount > maxAllowedAttendees) {
 		throw new ApiError(
 			400,
 			'bad_request',
-			`The limit for this invitation is ${invitation.maxAllowedAttendees}.`,
+			`The limit for this invitation is ${maxAllowedAttendees}.`,
 		);
 	}
 

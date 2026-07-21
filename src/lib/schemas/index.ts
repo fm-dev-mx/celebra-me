@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import { RSVP_GUEST_CAP_TECHNICAL_MAX, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 const ADMIN_LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
@@ -72,12 +73,7 @@ export const CreateEventSchema = z.object({
 		.optional()
 		.default(''),
 
-	maxAllowedAttendees: z
-		.number()
-		.int()
-		.min(1, { message: 'At least 1 attendee is required' })
-		.max(20, { message: 'No more than 20 attendees are allowed' })
-		.optional(),
+	maxAllowedAttendees: rsvpGuestCapSchema.optional(),
 
 	status: EventStatusSchema.optional().default('draft'),
 });
@@ -231,7 +227,7 @@ export const UpdateGuestSchema = z.object({
 		.number()
 		.int()
 		.min(0, { message: 'Attendee count cannot be negative' })
-		.max(20, { message: 'No more than 20 attendees are allowed' })
+		.max(RSVP_GUEST_CAP_TECHNICAL_MAX, { message: 'Attendee count exceeds storage capacity' })
 		.optional()
 		.default(1),
 

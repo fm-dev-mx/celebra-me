@@ -3,6 +3,7 @@ import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorSectionSaveResponse,
+	InvitationPublicationPreflightDTO,
 } from '@/lib/dashboard/dto/intake';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
@@ -11,6 +12,7 @@ export type EditorOperation =
 	| { type: 'loading' }
 	| { type: 'saving-section'; section: InvitationEditorSectionKey | 'metadata' }
 	| { type: 'publishing' }
+	| { type: 'preflighting' }
 	| { type: 'reconciling' }
 	| { type: 'restoring' }
 	| { type: 'assigning-owner' };
@@ -82,20 +84,38 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 					context.invitation.id,
 					{ expectedUpdatedAt, value },
 				);
-				setContext((current) => ({ ...current, invitation: result.invitation }));
+				setContext((current) => ({
+					...current,
+					invitation: result.invitation,
+					draftUpdatedAt: result.draftUpdatedAt,
+					draftStatus: result.draftStatus,
+					publication: result.publication,
+				}));
 				return result.invitation;
 			});
 		},
 		[context.invitation.id, context.invitation.updatedAt],
 	);
 
-	const publish = useCallback(async () => {
-		return guard({ type: 'publishing' }, async () => {
-			const result = await adminApi.publishInvitationEditor(context.invitation.id);
-			setContext(result.context);
-			return result.context;
-		});
-	}, [context.invitation.id]);
+	const publish = useCallback(
+		async (preflight: InvitationPublicationPreflightDTO & { idempotencyKey: string }) => {
+			return guard({ type: 'publishing' }, async () => {
+				const result = await adminApi.publishInvitationEditor(context.invitation.id, {
+					...preflight,
+				});
+				setContext(result.context);
+				return result.context;
+			});
+		},
+		[context.invitation.id],
+	);
+
+	const preflightPublication =
+		useCallback(async (): Promise<InvitationPublicationPreflightDTO> => {
+			return guard({ type: 'preflighting' }, () =>
+				adminApi.getInvitationPublicationPreflight(context.invitation.id),
+			);
+		}, [context.invitation.id]);
 
 	const reconcileRsvp = useCallback(async () => {
 		return guard({ type: 'reconciling' }, async () => {
@@ -115,10 +135,12 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 
 	const restorePublished = useCallback(async () => {
 		return guard({ type: 'restoring' }, async () => {
-			const expectedUpdatedAt = context.draftUpdatedAt ?? context.invitation.updatedAt;
 			const result = await adminApi.restoreInvitationEditorFromPublished(
 				context.invitation.id,
-				expectedUpdatedAt,
+				{
+					expectedDraftUpdatedAt: context.draftUpdatedAt,
+					expectedInvitationUpdatedAt: context.invitation.updatedAt,
+				},
 			);
 			setContext(result.context);
 			return result.context;
@@ -132,6 +154,7 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		saveMetadata,
 		saveSection,
 		publish,
+		preflightPublication,
 		reconcileRsvp,
 		restorePublished,
 		assignOwner,

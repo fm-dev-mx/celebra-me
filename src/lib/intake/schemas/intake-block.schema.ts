@@ -7,6 +7,7 @@ import {
 	paypalGiftItemSchema,
 	cashGiftItemSchema,
 } from '@/lib/schemas/content/gifts.schema';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 const pendingFieldMarker = z.literal('__pending__').optional();
 
@@ -107,7 +108,7 @@ export const photosBlockSchema = z.object({
 
 export const rsvpConfigBlockSchema = z.object({
 	title: z.string().min(1, 'El título es obligatorio.').max(200).trim(),
-	guestCap: z.number().int().min(1, 'Al menos 1 acompañante.').max(20, 'Máximo 20 acompañantes.'),
+	guestCap: rsvpGuestCapSchema,
 	confirmationMessage: z.string().min(1, 'El mensaje es obligatorio.').max(1000).trim(),
 	confirmationMode: z.enum(['api', 'whatsapp', 'both']),
 	whatsappPhone: optionalString,

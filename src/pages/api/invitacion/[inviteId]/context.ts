@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 
@@ -18,7 +18,7 @@ function getIp(request: Request): string {
 export const GET: APIRoute = async ({ params, request }) => {
 	try {
 		const inviteId = sanitize(params.inviteId, 100);
-		if (!inviteId) return badRequest('inviteId is required.');
+		if (!inviteId) return withPrivateCache(badRequest('inviteId is required.'));
 
 		const ip = getIp(request);
 		const allowed = await checkRateLimit({
@@ -29,12 +29,14 @@ export const GET: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
+			return withPrivateCache(
+				errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.')),
+			);
 		}
 
 		const context = await getInvitationContextByInviteId(inviteId);
-		return jsonResponse(context);
+		return withPrivateCache(jsonResponse(context));
 	} catch (error) {
-		return errorResponse(error);
+		return withPrivateCache(errorResponse(error));
 	}
 };

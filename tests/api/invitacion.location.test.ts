@@ -36,7 +36,7 @@ describe('GET /api/invitacion/[inviteId]/location', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
-		expect(response.headers.get('cache-control')).toBe('no-store');
+		expect(response.headers.get('cache-control')).toBe('no-store, private');
 
 		const body = await response.json();
 		expect(body).toMatchObject({

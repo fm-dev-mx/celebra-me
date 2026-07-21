@@ -124,7 +124,9 @@ describe('GuestFormModal — custom attendees', () => {
 		fireEvent.change(input, { target: { value: String(MAX_CUSTOM_ATTENDEES + 1) } });
 		submitForm();
 		await waitFor(() => {
-			expect(screen.getByText(`Máximo ${MAX_CUSTOM_ATTENDEES} pases.`)).toBeInTheDocument();
+			expect(
+				screen.getByText('El valor excede el límite técnico permitido.'),
+			).toBeInTheDocument();
 		});
 		expect(onSubmit).not.toHaveBeenCalled();
 	});

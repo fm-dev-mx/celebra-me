@@ -61,6 +61,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(getInvitationContextMock).toHaveBeenCalledWith('invite-1');
 	});
 
@@ -87,6 +88,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(submitGuestRsvpMock).toHaveBeenCalledWith(
 			'invite-1',
 			expect.objectContaining({
@@ -105,6 +107,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1', undefined);
 	});
 });

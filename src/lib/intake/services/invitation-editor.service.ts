@@ -118,7 +118,7 @@ export async function getInvitationEditorContext(
 	);
 
 	const contentSource = resolveContentSource(sectionStates);
-	const assetLookupSlug = resolveAssetSlug(invitation, published?.content);
+	const assetLookupSlug = resolveAssetSlug(invitation, published?.content, demoContent);
 
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =
@@ -158,8 +158,6 @@ export async function saveInvitationEditorSection(
 		});
 	}
 
-	const normalizedValue = valueResult.data;
-
 	// Use the persisted draft (not hydrated content) as baseline so
 	// demo-originated values are never persisted into the draft.
 	// When no draft exists, seed from published content to prevent sparse drafts.
@@ -168,6 +166,7 @@ export async function saveInvitationEditorSection(
 		findPublishedByInvitationId(invitationId),
 	]);
 	const currentContent = draft?.content ?? published?.content ?? {};
+	const normalizedValue = valueResult.data;
 	const nextContent = applySectionValue(currentContent, section, normalizedValue);
 
 	const savedDraft = draft
@@ -217,6 +216,17 @@ export async function saveInvitationEditorMetadata(
 		};
 	},
 ) {
+	const [currentInvitation, draft, published] = await Promise.all([
+		findInvitationById(invitationId),
+		findDraftByInvitationId(invitationId),
+		findPublishedByInvitationId(invitationId),
+	]);
+	if (!currentInvitation) {
+		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
+	}
+	const changesPublicMetadata =
+		currentInvitation.title !== input.value.title ||
+		currentInvitation.slug !== input.value.slug;
 	if (input.value.slug) {
 		const matchingInvitation = await findInvitationBySlug(input.value.slug);
 		if (matchingInvitation && matchingInvitation.id !== invitationId) {
@@ -241,7 +251,33 @@ export async function saveInvitationEditorMetadata(
 		);
 	}
 
-	return { invitation: savedInvitation };
+	// Title and slug are resolved from the invitation record when publishing.
+	// Reopen (or seed) a draft only when either public value actually changed;
+	// contact-only metadata must not create a misleading pending-publication state.
+	let publicationDraft = draft;
+	if (published && changesPublicMetadata && draft?.status !== 'draft') {
+		const content = draft?.content ?? mapNestedToDraftContent(published.content);
+		publicationDraft = draft
+			? await updateDraftContentConditionally(draft.id, draft.updatedAt, {
+					content,
+					status: 'draft',
+				})
+			: await upsertDraft({ invitationId, submissionId: null, content });
+		if (!publicationDraft) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+			);
+		}
+	}
+
+	return {
+		invitation: savedInvitation,
+		draftUpdatedAt: publicationDraft?.updatedAt ?? null,
+		draftStatus: publicationDraft?.status ?? null,
+		publication: createPublicationState(publicationDraft, published),
+	};
 }
 
 export async function reconcileInvitationRsvp(invitationId: string) {
@@ -290,19 +326,51 @@ export async function reconcileInvitationRsvp(invitationId: string) {
 
 export async function restoreInvitationEditorFromPublished(
 	invitationId: string,
-	input: { expectedUpdatedAt: string },
+	input: {
+		expectedDraftUpdatedAt: string | null;
+		expectedInvitationUpdatedAt: string;
+	},
 ) {
-	const [draft, published] = await Promise.all([
+	const [invitation, draft, published] = await Promise.all([
+		findInvitationById(invitationId),
 		findDraftByInvitationId(invitationId),
 		findPublishedByInvitationId(invitationId),
 	]);
+	if (!invitation) {
+		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
+	}
 	if (!published) {
 		throw new ApiError(404, 'not_found', 'No existe una versión pública para restaurar.');
+	}
+	if (
+		invitation.updatedAt !== input.expectedInvitationUpdatedAt ||
+		(draft?.updatedAt ?? null) !== input.expectedDraftUpdatedAt
+	) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+		);
+	}
+
+	const publishedTitle =
+		typeof published.content.title === 'string' ? published.content.title : invitation.title;
+	const savedInvitation = await updateInvitationConditionally(
+		invitationId,
+		input.expectedInvitationUpdatedAt,
+		{ title: publishedTitle, slug: published.slug },
+	);
+	if (!savedInvitation) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+		);
 	}
 
 	const content = mapNestedToDraftContent(published.content);
 	const savedDraft = draft
-		? await updateDraftContentConditionally(draft.id, input.expectedUpdatedAt, {
+		? await updateDraftContentConditionally(draft.id, input.expectedDraftUpdatedAt!, {
 				content,
 				status: 'draft',
 			})

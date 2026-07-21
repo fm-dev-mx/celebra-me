@@ -952,6 +952,29 @@
 	overflow: hidden;
 }
 
+/* --- Environment banner --- */
+.dashboard-env-banner {
+	width: 100%;
+	padding: 0.5rem 1rem;
+	text-align: center;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.dashboard-env-banner--preview {
+	background: var(--color-state-warning-bg);
+	color: var(--color-state-warning-text);
+	border-bottom: 1px solid var(--color-state-warning-border);
+}
+
+.dashboard-env-banner--local {
+	background: var(--color-state-info-bg);
+	color: var(--color-state-info-text);
+	border-bottom: 1px solid var(--color-state-info-border);
+}
+
 .dashboard-shell-body--nav-open .dashboard-shell__backdrop {
 	opacity: 100%;
 	pointer-events: auto;

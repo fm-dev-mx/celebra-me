@@ -49,11 +49,18 @@ Read-only composition: loads `invitation` + `draft` + `published` rows, derives 
 - Writes invitation metadata including any `status` value (arbitrary transitions allowed)
 - Checks slug uniqueness before writing (conflict → 409)
 - Uses optimistic locking (`updateInvitationConditionally`)
+- A meaningful public title or route-slug edit on an already published invitation reopens (or seeds)
+  a `draft`, so it is represented in the publication preflight. Client-contact-only changes do not
+  create a pending-publication state.
 
 ### Restore from published (`restoreInvitationEditorFromPublished`)
 
-- Copies published content into a new draft with `status = 'draft'`
-- Fails with 404 if no published content exists
+- Replaces editable content with a reverse-mapped copy of the public snapshot and resets public
+  title/slug metadata to that snapshot; client contact and operational metadata are preserved.
+- Reuses the current draft row when present, sets `status = 'draft'`, and clears draft-only fields
+  such as `photoNotes`. When no draft exists, it creates one.
+- Optimistically checks both invitation and draft revisions. A concurrent save returns 409; missing
+  published content returns 404.
 
 ### Publish (`publishDraft`)
 
@@ -64,6 +71,37 @@ for the full guard list.
 
 On success: draft `status = 'approved'`, published content upserted (version incremented),
 invitation `status = 'published'`, RSVP event synchronized.
+
+### Publication presentation and guest capacity
+
+The preflight response is the sole source for confirmation-summary labels. It uses semantic
+draft-versus-public comparison, canonical registry order, and unique labels; `photoNotes` is
+draft-only. The modal renders it verbatim, remains mounted during requests, announces loading,
+error, and success, and keeps failures inside the dialog. Only the centralized transient-error
+classification permits retry. Conflicts, validation failures, idempotency-input conflicts, and
+`publish_upgrade_required` require a new action instead.
+
+`guestCap` is the configurable maximum total attendees in one RSVP response, including the named
+guest. Any positive integer supported by the PostgreSQL `integer` column is valid. Editor, public
+RSVP, dashboard guest operations, and persistence share that contract and must not apply a smaller
+product-level clamp.
+
+### Cache policy
+
+Anonymous invitations use `public, max-age=0, s-maxage=0, must-revalidate`. Personalized invitation
+and metadata routes, dashboard preview, intake-token capture, preflight/publication and RSVP APIs,
+all invitation errors, validation/conflict/auth failures, and redirects use `no-store, private`.
+Verify Vercel/CDN freshness only after deployment.
+
+The editor obtains an authorized, read-only canonical server preflight before confirmation. It
+compares the mapped effective draft against published content after normalizing empty values, object
+key ordering, and derived upload URLs, and sends `Cache-Control: no-store, private`. The
+confirmation carries draft and published baselines, a public metadata hash (`slug` + `title`), a
+projection hash, and a client-generated UUID idempotency key. The atomic RPC locks all three records
+and rejects a stale public or draft baseline; contact-only metadata changes do not invalidate
+confirmation. A globally unique idempotency record binds the request to its result, so an exact
+retry returns the already-completed publication without a second version bump while a key reused
+with different parameters is rejected.
 
 ### Demo publish
 
@@ -94,8 +132,10 @@ and hasn't been approved).
 Optimistic locking is used in editor save paths (`updateDraftContentConditionally`,
 `updateInvitationConditionally`) — conflict returns null, service throws 409.
 
-Operations without locking (`upsertDraft`, `upsertPublishedContent`, `updateDraftStatus`) are a
-known risk. These are candidates for a separate fix — do not rely on them for write safety.
+The publication path does not rely on the non-transactional repository helpers
+(`upsertPublishedContent`, `updateDraftStatus`) for write safety; it commits through the atomic RPC.
+`upsertDraft` remains limited to draft initialization/reopening and must not be used as a substitute
+for publication concurrency protection.
 
 The conflict error message is:
 `"Otra persona guardó cambios antes que tú. Recarga los datos para continuar."`
@@ -117,3 +157,20 @@ The service layer relies on these implicit contracts from the repository layer:
    upsert
 
 Repositories at `src/lib/intake/repositories/`.
+
+## Publication RPC rollout and receipts
+
+`20260717193000_publication_preflight_integrity.sql` is phase one. It introduces the current RPC and
+keeps the historical seven-argument overload as a service-role-only, fail-closed
+`publish_upgrade_required` stub. Apply it first, deploy application and operational consumers of the
+new contract, monitor legacy stub calls until cached instances drain, then use a separately reviewed
+cleanup migration to remove the stub. The overlap intentionally provides publication-only
+maintenance.
+
+The idempotency receipt binds invitation/draft revisions, expected published version and content
+fingerprint, public metadata baseline, projection, publication inputs, and exact JSON response. It
+is retained for the invitation/draft lifetime with `ON DELETE RESTRICT`: at most one row is added
+per successful confirmation, so growth is linear and no scheduled cleanup is justified. A retry
+reaches database receipt replay even after approval; non-identical approved-draft requests remain
+invalid. Public metadata includes slug, title, event type, base demo, theme, kind, snapshot, status,
+and archive availability; contact and operational fields are excluded.

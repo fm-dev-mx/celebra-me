@@ -9,13 +9,14 @@ describe('Dynamic Routing Early Rejection Contracts', () => {
 		const source = readSource('src/pages/[eventType]/[slug].astro');
 
 		expect(source).toContain("import { isEventType } from '@/lib/theme/theme-contract';");
-		expect(source).toContain("if (!isEventType(eventType)) {");
-		expect(source).toContain("return new Response(null, { status: 404 });");
-		
+		expect(source).toContain('if (!isEventType(eventType)) {');
+		expect(source).toContain('return new Response(null, { status: 404, headers:');
+		expect(source).toContain("'Cache-Control': 'no-store, private'");
+
 		// Assert that this check happens BEFORE resolveInvitationContent is invoked
 		const isEventTypeIdx = source.indexOf('if (!isEventType(eventType))');
 		const resolveContentIdx = source.indexOf('resolveInvitationContent(');
-		
+
 		expect(isEventTypeIdx).toBeGreaterThan(-1);
 		expect(resolveContentIdx).toBeGreaterThan(-1);
 		expect(isEventTypeIdx).toBeLessThan(resolveContentIdx);
@@ -25,8 +26,9 @@ describe('Dynamic Routing Early Rejection Contracts', () => {
 		const source = readSource('src/pages/[eventType]/[slug]/i/[shortId].astro');
 
 		expect(source).toContain("import { isEventType } from '@/lib/theme/theme-contract';");
-		expect(source).toContain("if (eventType && !isEventType(eventType)) {");
-		expect(source).toContain("return new Response(null, { status: 404 });");
+		expect(source).toContain('if (eventType && !isEventType(eventType)) {');
+		expect(source).toContain('return new Response(null, { status: 404, headers:');
+		expect(source).toContain("'Cache-Control': 'no-store, private'");
 
 		// Assert that this check happens BEFORE resolveShortIdPage is invoked
 		const isEventTypeIdx = source.indexOf('if (eventType && !isEventType(eventType))');

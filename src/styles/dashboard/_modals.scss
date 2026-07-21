@@ -42,6 +42,7 @@
 		var(--color-surface-primary);
 	box-shadow: var(--shadow-emphasis);
 	animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+	color: var(--color-text-primary);
 
 	@include mixins.respond-below(sm) {
 		width: 100vw;
@@ -130,6 +131,43 @@
 			margin: 0.25rem 0.5rem;
 			padding: 0 1rem 0.5rem;
 			padding-bottom: calc(5rem + env(safe-area-inset-bottom, 1rem));
+		}
+	}
+
+	.confirm-modal__body {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	.confirm-modal__feedback {
+		margin: 1rem 0;
+		padding: 0.875rem 1rem;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 0.5rem;
+		text-align: left;
+		color: var(--color-text-primary);
+		background: var(--color-surface-elevated);
+
+		p {
+			margin: 0;
+			line-height: 1.45;
+		}
+
+		p + p {
+			margin-top: 0.5rem;
+			color: var(--color-text-secondary);
+		}
+
+		&--error {
+			border-color: var(--color-state-danger-border, var(--color-border-emphasis));
+			background: var(--color-state-danger-surface, var(--color-surface-elevated));
+		}
+
+		&--success {
+			border-color: var(--color-state-success-border, var(--color-border-emphasis));
+			background: var(--color-state-success-surface, var(--color-surface-elevated));
 		}
 	}
 

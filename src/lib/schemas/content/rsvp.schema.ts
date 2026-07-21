@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 export const rsvpSectionStyleSchema = z
 	.object({
@@ -25,7 +26,7 @@ export const rsvpSchema = z
 	.object({
 		subcopy: z.string().optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
-		guestCap: z.number().int().positive().default(1),
+		guestCap: rsvpGuestCapSchema.default(1),
 		accessMode: z.enum(['personalized-only', 'hybrid']).default('personalized-only'),
 		confirmationMessage: z
 			.string()

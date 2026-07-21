@@ -3,7 +3,7 @@ import type { IntakeBlockDefinition } from '@/lib/intake/types';
 export const rsvpConfigBlock: IntakeBlockDefinition = {
 	type: 'rsvp-config',
 	displayName: 'Confirmación de asistencia',
-	description: 'Título, capacidad de invitados y mensaje de confirmación.',
+	description: 'Título, máximo total de asistentes y mensaje de confirmación.',
 	fields: [
 		{
 			name: 'title',
@@ -14,10 +14,10 @@ export const rsvpConfigBlock: IntakeBlockDefinition = {
 		},
 		{
 			name: 'guestCap',
-			label: 'Número máximo de acompañantes por invitado',
+			label: 'Número máximo total de asistentes por respuesta',
 			type: 'number',
 			required: true,
-			placeholder: 'Ej: 4',
+			placeholder: 'Ej: 4 (incluye al invitado principal)',
 		},
 		{
 			name: 'confirmationMessage',

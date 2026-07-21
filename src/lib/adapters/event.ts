@@ -572,20 +572,9 @@ export function adaptEvent(
 		thankYou: buildThankYouSectionData(context),
 	};
 
-	// Ensure synthesized sections (e.g. countdown derived from eventTiming alone)
-	// appear in the render plan even when the stored sectionOrder omits them.
-	let resolvedSectionOrder = adapterData.sectionOrder;
-	if (resolvedSectionOrder && sections.countdown && !resolvedSectionOrder.includes('countdown')) {
-		const locIdx = resolvedSectionOrder.indexOf('location');
-		resolvedSectionOrder =
-			locIdx !== -1
-				? [
-						...resolvedSectionOrder.slice(0, locIdx),
-						'countdown',
-						...resolvedSectionOrder.slice(locIdx),
-					]
-				: [...resolvedSectionOrder, 'countdown'];
-	}
+	// An explicit sectionOrder is the publication visibility authority. A missing
+	// order is handled once by the render-plan legacy path; derived section data
+	// must never opt a section back into an explicit configuration.
 
 	return {
 		id: entrySlug,
@@ -600,7 +589,7 @@ export function adaptEvent(
 		hero: buildHero(context),
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
-		sectionOrder: resolvedSectionOrder,
+		sectionOrder: adapterData.sectionOrder,
 		sections,
 		music: adapterData.music
 			? {

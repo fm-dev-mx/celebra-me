@@ -260,7 +260,7 @@ function mapFamilyToDraft(
 		motherName: str(parents?.mother),
 		fatherDeceased: bool(parents?.fatherDeceased),
 		motherDeceased: bool(parents?.motherDeceased),
-		parentsOrder: parents?.parentsOrder as ParentsOrder | undefined,
+		parentsOrder: (family.parentsOrder ?? parents?.parentsOrder) as ParentsOrder | undefined,
 		spouseName: str(family.spouse),
 		godparents: formatFamilyMembersAsLines(family.godparents),
 		godparentGroups: godparentGroupsArr

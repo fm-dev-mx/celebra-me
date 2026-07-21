@@ -104,6 +104,7 @@ describe('Invitation API: public landing RSVP', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(submitGuestRsvpByPublicEventMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				fullName: 'Mariana Soto',

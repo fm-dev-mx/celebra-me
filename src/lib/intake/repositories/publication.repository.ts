@@ -1,5 +1,5 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { SupabaseHttpError, supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 
 export interface AtomicPublicationResult {
@@ -11,11 +11,57 @@ export interface AtomicPublicationResult {
 		version: number;
 		publishedAt: string;
 	};
+	idempotent?: boolean;
+	/** False only for the temporary pre-migration RPC compatibility path. */
+	durableIdempotency?: boolean;
+}
+
+function isNewPublicationContractUnavailable(error: unknown): boolean {
+	// PostgREST PGRST202 means this exact overload is absent from its schema
+	// cache. Only the structured response emitted by supabaseRestRequest may
+	// enable the legacy path; transport or arbitrary Error text never can.
+	return (
+		error instanceof SupabaseHttpError &&
+		error.status === 404 &&
+		error.code === 'PGRST202' &&
+		error.body.includes('publish_invitation_atomic') &&
+		error.body.includes('p_expected_published_version')
+	);
+}
+
+async function commitLegacyPublication(input: {
+	invitationId: string;
+	draftId: string;
+	expectedDraftUpdatedAt: string;
+	slug: string;
+	eventType: string;
+	isDemo: boolean;
+	content: Record<string, unknown>;
+}): Promise<AtomicPublicationResult> {
+	const result = await supabaseRestRequest<AtomicPublicationResult>({
+		pathWithQuery: 'rpc/publish_invitation_atomic',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_invitation_id: input.invitationId,
+			p_draft_id: input.draftId,
+			p_expected_draft_updated_at: input.expectedDraftUpdatedAt,
+			p_slug: input.slug,
+			p_event_type: input.eventType,
+			p_is_demo: input.isDemo,
+			p_content: input.content,
+		},
+	});
+	return { ...result, durableIdempotency: false };
 }
 
 const PUBLICATION_ERRORS: Record<
 	string,
-	{ status: number; code: 'not_found' | 'conflict' | 'invalid_draft_status'; message: string }
+	{
+		status: number;
+		code: 'not_found' | 'conflict' | 'invalid_draft_status' | 'upgrade_required';
+		message: string;
+	}
 > = {
 	publish_invitation_not_found: {
 		status: 404,
@@ -38,6 +84,31 @@ const PUBLICATION_ERRORS: Record<
 		message:
 			'El borrador cambió mientras se publicaba. Recarga la página e inténtalo de nuevo.',
 	},
+	publish_stale_public_metadata: {
+		status: 409,
+		code: 'conflict',
+		message: 'El título o slug público cambió mientras se publicaba. Recarga la página.',
+	},
+	publish_stale_published: {
+		status: 409,
+		code: 'conflict',
+		message: 'La versión pública cambió mientras se publicaba. Recarga la página.',
+	},
+	publish_idempotency_key_reused: {
+		status: 409,
+		code: 'conflict',
+		message: 'Esta confirmación de publicación ya fue usada con otros cambios.',
+	},
+	publish_idempotency_not_found: {
+		status: 409,
+		code: 'invalid_draft_status',
+		message: 'El borrador ya fue publicado o dejó de estar disponible.',
+	},
+	publish_upgrade_required: {
+		status: 503,
+		code: 'upgrade_required',
+		message: 'La publicación requiere actualizar el editor.',
+	},
 	publish_slug_conflict: {
 		status: 409,
 		code: 'conflict',
@@ -58,6 +129,11 @@ const PUBLICATION_ERRORS: Record<
 		code: 'conflict',
 		message: 'El tipo de evento cambió mientras se publicaba. Recarga la página.',
 	},
+	publish_public_contract_mismatch: {
+		status: 409,
+		code: 'conflict',
+		message: 'La configuración pública cambió mientras se publicaba. Recarga la página.',
+	},
 	publish_owner_required: {
 		status: 409,
 		code: 'conflict',
@@ -65,17 +141,31 @@ const PUBLICATION_ERRORS: Record<
 	},
 };
 
+function throwPublicationError(error: unknown): never {
+	const raw = error instanceof Error ? error.message : String(error);
+	for (const [marker, mapped] of Object.entries(PUBLICATION_ERRORS)) {
+		if (raw.includes(marker)) {
+			throw new ApiError(mapped.status, mapped.code, mapped.message, { reason: marker });
+		}
+	}
+	throw error;
+}
+
 export async function commitAtomicPublication(input: {
 	invitationId: string;
 	draftId: string;
 	expectedDraftUpdatedAt: string;
+	expectedPublishedVersion: number | null;
+	publicMetadataHash: string;
+	projectionHash: string;
+	idempotencyKey: string;
 	slug: string;
 	eventType: string;
 	isDemo: boolean;
 	content: Record<string, unknown>;
 }): Promise<AtomicPublicationResult> {
 	try {
-		return await supabaseRestRequest<AtomicPublicationResult>({
+		const result = await supabaseRestRequest<AtomicPublicationResult>({
 			pathWithQuery: 'rpc/publish_invitation_atomic',
 			method: 'POST',
 			useServiceRole: true,
@@ -83,19 +173,54 @@ export async function commitAtomicPublication(input: {
 				p_invitation_id: input.invitationId,
 				p_draft_id: input.draftId,
 				p_expected_draft_updated_at: input.expectedDraftUpdatedAt,
+				p_expected_published_version: input.expectedPublishedVersion,
+				p_public_metadata_hash: input.publicMetadataHash,
+				p_projection_hash: input.projectionHash,
+				p_idempotency_key: input.idempotencyKey,
 				p_slug: input.slug,
 				p_event_type: input.eventType,
 				p_is_demo: input.isDemo,
 				p_content: input.content,
 			},
 		});
+		return { ...result, durableIdempotency: true };
 	} catch (error) {
-		const raw = error instanceof Error ? error.message : String(error);
-		for (const [marker, mapped] of Object.entries(PUBLICATION_ERRORS)) {
-			if (raw.includes(marker)) {
-				throw new ApiError(mapped.status, mapped.code, mapped.message, { reason: marker });
+		if (isNewPublicationContractUnavailable(error)) {
+			try {
+				return await commitLegacyPublication(input);
+			} catch (legacyError) {
+				throwPublicationError(legacyError);
 			}
 		}
-		throw error;
+		throwPublicationError(error);
+	}
+}
+
+export async function replayAtomicPublication(input: {
+	invitationId: string;
+	draftId: string;
+	expectedDraftUpdatedAt: string;
+	expectedPublishedVersion: number | null;
+	publicMetadataHash: string;
+	projectionHash: string;
+	idempotencyKey: string;
+}): Promise<AtomicPublicationResult> {
+	try {
+		return await supabaseRestRequest<AtomicPublicationResult>({
+			pathWithQuery: 'rpc/replay_invitation_publication',
+			method: 'POST',
+			useServiceRole: true,
+			body: {
+				p_invitation_id: input.invitationId,
+				p_draft_id: input.draftId,
+				p_expected_draft_updated_at: input.expectedDraftUpdatedAt,
+				p_expected_published_version: input.expectedPublishedVersion,
+				p_public_metadata_hash: input.publicMetadataHash,
+				p_projection_hash: input.projectionHash,
+				p_idempotency_key: input.idempotencyKey,
+			},
+		});
+	} catch (error) {
+		throwPublicationError(error);
 	}
 }

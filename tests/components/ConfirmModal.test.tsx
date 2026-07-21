@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 
 describe('ConfirmModal', () => {
@@ -37,6 +37,47 @@ describe('ConfirmModal', () => {
 		expect(screen.getByText('Procesando...')).toBeInTheDocument();
 		expect(screen.getByText('Procesando...')).toBeDisabled();
 		expect(screen.getByText('Cancelar')).toBeDisabled();
+		expect(screen.getByRole('button', { name: 'Cerrar modal' })).toBeDisabled();
+	});
+
+	it('moves focus to the dialog heading and closes with Escape when idle', async () => {
+		const onCancel = jest.fn();
+		render(<ConfirmModal {...defaultProps} onCancel={onCancel} />);
+
+		await waitFor(() =>
+			expect(screen.getByRole('heading', { name: 'Confirmar acción' })).toHaveFocus(),
+		);
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onCancel).toHaveBeenCalledTimes(1);
+	});
+
+	it('announces publication feedback inside the active dialog', () => {
+		render(
+			<ConfirmModal
+				{...defaultProps}
+				feedback={{
+					state: 'error',
+					message: 'El borrador cambió antes de terminar la publicación.',
+					guidance: 'Recarga el editor antes de volver a publicar.',
+					retryable: false,
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole('alert')).toHaveTextContent(
+			'El borrador cambió antes de terminar la publicación.',
+		);
+		expect(screen.getByRole('alert')).toHaveTextContent(
+			'Recarga el editor antes de volver a publicar.',
+		);
+	});
+
+	it('does not close with Escape while processing', () => {
+		const onCancel = jest.fn();
+		render(<ConfirmModal {...defaultProps} onCancel={onCancel} loading />);
+
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onCancel).not.toHaveBeenCalled();
 	});
 
 	it('applies danger class when destructive is true', () => {
