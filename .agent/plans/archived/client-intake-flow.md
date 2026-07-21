@@ -78,7 +78,7 @@ later release.
 - Supabase is available and configured (`SUPABASE_URL`, `SUPABASE_ANON_KEY`,
   `SUPABASE_SERVICE_ROLE_KEY`).
 - The existing Supabase REST client pattern (`src/lib/rsvp/repositories/supabase.ts`) is reusable.
-- The existing admin session/auth (`requireAdminSession`) protects new admin routes.
+- The existing admin session/auth (`requireAdminStrongSession`) protects new admin routes.
 - The existing email infrastructure (`src/lib/server/email.ts`) supports notification extension.
 - Vercel serverless functions have a 30-second max duration.
 - No persistent filesystem writes at runtime.
@@ -434,7 +434,7 @@ None (existing tables untouched).
 
 #### Acceptance Criteria
 
-- All endpoints require admin session (reuse `requireAdminSession`).
+- All endpoints require admin session (reuse `requireAdminStrongSession`).
 - Creating a project snapshots the selected `DemoPreset` into `invitation_projects.snapshot`.
 - Creating an intake request generates a token, stores the hash, and returns the raw token once.
 - Token regeneration invalidates the old token and generates a new one.

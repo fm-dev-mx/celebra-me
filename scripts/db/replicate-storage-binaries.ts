@@ -9,7 +9,8 @@
  *   tsx scripts/db/replicate-storage-binaries.ts [--target local|disposable]
  */
 
-import { getProdDbUrl, parseDbUrl, runPsql, parseTsv } from './db-workflow-lib.ts';
+import { getProdDbUrl, runPsql, parseTsv } from './db-workflow-lib.ts';
+import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -25,7 +26,7 @@ function getSupabaseKeys(): { url: string; key: string } {
 	if (result.status === 0) {
 		try {
 			const stdout = result.stdout;
-			const jsonLine = stdout.split('\n').find(l => l.trim().startsWith('{'));
+			const jsonLine = stdout.split('\n').find((l) => l.trim().startsWith('{'));
 			if (jsonLine) {
 				const data = JSON.parse(jsonLine);
 				if (data.API_URL && data.SERVICE_ROLE_KEY) {
@@ -55,7 +56,10 @@ function loadLocalSecrets(): { url: string; key: string } {
 		const eqIdx = trimmed.indexOf('=');
 		if (eqIdx === -1) continue;
 		const k = trimmed.slice(0, eqIdx).trim();
-		const v = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+		const v = trimmed
+			.slice(eqIdx + 1)
+			.trim()
+			.replace(/^["']|["']$/g, '');
 		if (k === 'SUPABASE_URL') url = v;
 		if (k === 'SUPABASE_SERVICE_ROLE_KEY') key = v;
 	}
@@ -82,16 +86,9 @@ async function main() {
 		console.info(`Targeting persistent local environment on ${localApiUrl}`);
 	}
 
-	// 1. Get production details
+	// 1. Get production details using shared ref resolver
 	const { url: prodDbUrl } = getProdDbUrl();
-	const parsed = parseDbUrl(prodDbUrl);
-
-	// Extract project ref from username
-	const projectRef = parsed.username.split('.')[1] || parsed.hostname.split('.')[0];
-	if (!projectRef) {
-		throw new Error(`Could not extract Supabase project reference from: ${parsed.username} or ${parsed.hostname}`);
-	}
-
+	const projectRef = extractSupabaseProjectRef(prodDbUrl);
 	const prodCdnBase = `https://${projectRef}.supabase.co/storage/v1/object/public/invitation-assets`;
 	console.info(`Production Project Ref: ${projectRef}`);
 	console.info(`Production CDN Base:   ${prodCdnBase}`);
@@ -104,10 +101,10 @@ async function main() {
 		where bucket_id = 'invitation-assets'
 		order by name;
 	`;
-	
+
 	const psqlResult = runPsql(querySql, prodDbUrl);
 	const rows = parseTsv(psqlResult.stdout);
-	
+
 	const objects = rows
 		.filter((r) => r.length >= 2 && r[0])
 		.map((r) => ({
@@ -137,7 +134,9 @@ async function main() {
 			// Download
 			const dlRes = await fetch(downloadUrl);
 			if (!dlRes.ok) {
-				throw new Error(`Download failed with status ${dlRes.status} (${dlRes.statusText})`);
+				throw new Error(
+					`Download failed with status ${dlRes.status} (${dlRes.statusText})`,
+				);
 			}
 			const buffer = await dlRes.arrayBuffer();
 
@@ -145,7 +144,7 @@ async function main() {
 			const ulRes = await fetch(uploadUrl, {
 				method: 'POST',
 				headers: {
-					'Authorization': `Bearer ${localServiceKey}`,
+					Authorization: `Bearer ${localServiceKey}`,
 					'Content-Type': obj.mime,
 					'x-upsert': 'true',
 				},

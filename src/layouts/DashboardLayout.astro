@@ -11,6 +11,11 @@ interface Props {
 
 const { title } = Astro.props as Props;
 
+// Non-production banner
+const isPreviewEnv = process.env.VERCEL_ENV === 'preview';
+const isPreviewBypassActive = isPreviewEnv && process.env.PREVIEW_MFA_BYPASS === 'true';
+const isLocalEnv = process.env.VERCEL_ENV === undefined || process.env.VERCEL_ENV === 'development';
+
 // Middleware enforces the authenticated session and stores it in
 // Astro.locals.session. The layout reads from locals (not request cookies)
 // to avoid a race condition where middleware has refreshed the session but
@@ -82,6 +87,16 @@ const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.
 						<h1>{currentSectionLabel}</h1>
 					</div>
 				</header>
+				{isPreviewBypassActive && (
+					<div class="dashboard-env-banner dashboard-env-banner--preview">
+						⚠️ ENTORNO PREVIEW — MFA desactivado
+					</div>
+				)}
+				{isLocalEnv && (
+					<div class="dashboard-env-banner dashboard-env-banner--local">
+						🧪 ENTORNO LOCAL
+					</div>
+				)}
 				<main class="dashboard-main">
 					<slot />
 				</main>

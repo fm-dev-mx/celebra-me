@@ -26,6 +26,9 @@ Only the category-level rules that cannot be expressed in code are listed here:
   expose `SUPABASE_SERVICE_ROLE_KEY` or other server-only secrets with a `PUBLIC_` prefix.
 - **Server-only runtime:** Loaded server-side only through `src/lib/server/env.ts`. Includes
   credentials, API keys, and internal URLs.
+- **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
+  `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`, `PREVIEW_MFA_BYPASS`, `PREVIEW_ADMIN_EMAILS` — used by
+  Preview DB workflows and MFA bypass. Never used in Production.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, one-off script filters.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only. It must
