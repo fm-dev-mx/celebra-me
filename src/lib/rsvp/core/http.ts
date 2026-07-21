@@ -74,7 +74,7 @@ export function internalError(error: unknown): Response {
 }
 
 export function errorResponse(error: unknown): Response {
-	// Log only 5xx errors for backend visibility
+	// Log all errors server-side for diagnostics
 	if (isApiError(error)) {
 		// Only log server errors (5xx), not client errors (4xx)
 		if (error.status >= 500) {
@@ -93,20 +93,16 @@ export function errorResponse(error: unknown): Response {
 		);
 	}
 
-	// Non-ApiError: check if it's an empty object or has no meaningful message
-	const isErrorInstance = error instanceof Error;
+	// Non-ApiError: log the full details server-side, return sanitized message
 	const isEmptyObject =
-		error && typeof error === 'object' && !isErrorInstance && Object.keys(error).length === 0;
+		error &&
+		typeof error === 'object' &&
+		!(error instanceof Error) &&
+		Object.keys(error).length === 0;
 
 	if (!isEmptyObject) {
 		console.error('[rsvp] Unexpected Error:', error);
 	}
-
-	const fallbackMessage = isErrorInstance
-		? error.message
-		: typeof error === 'string'
-			? error
-			: 'Internal server error.';
 
 	const errorCode = isEmptyObject ? 'bad_request' : 'internal_error';
 	const status = isEmptyObject ? 400 : 500;
@@ -116,7 +112,7 @@ export function errorResponse(error: unknown): Response {
 			success: false,
 			error: {
 				code: errorCode,
-				message: fallbackMessage,
+				message: 'Internal server error.',
 			},
 		},
 		status,
