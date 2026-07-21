@@ -2,6 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
+function isHostOrSubdomain(hostname: string, domain: string): boolean {
+	const normalizedHost = hostname.toLowerCase();
+	const normalizedDomain = domain.toLowerCase();
+	return normalizedHost === normalizedDomain || normalizedHost.endsWith(`.${normalizedDomain}`);
+}
+
 const VIEWPORTS = [
 	{ name: '375x812', width: 375, height: 812 },
 	{ name: '414x896', width: 414, height: 896 },
@@ -61,12 +67,22 @@ for (const viewport of VIEWPORTS) {
 
 		page.on('requestfailed', (request) => {
 			const url = request.url();
+			let hostname = '';
+			try {
+				hostname = new URL(url).hostname;
+			} catch {
+				// Non-standard URL string
+			}
 			if (
-				url.includes('google') ||
-				url.includes('vercel') ||
-				url.includes('apple.com') ||
-				url.includes('waze.com') ||
-				url.includes('maps.app.goo.gl') ||
+				isHostOrSubdomain(hostname, 'google.com') ||
+				isHostOrSubdomain(hostname, 'googletagmanager.com') ||
+				isHostOrSubdomain(hostname, 'google-analytics.com') ||
+				isHostOrSubdomain(hostname, 'googleapis.com') ||
+				isHostOrSubdomain(hostname, 'goo.gl') ||
+				isHostOrSubdomain(hostname, 'vercel.app') ||
+				isHostOrSubdomain(hostname, 'vercel.com') ||
+				isHostOrSubdomain(hostname, 'apple.com') ||
+				isHostOrSubdomain(hostname, 'waze.com') ||
 				url.endsWith('.mp3') ||
 				url.endsWith('.MP3') ||
 				url.endsWith('.wav')

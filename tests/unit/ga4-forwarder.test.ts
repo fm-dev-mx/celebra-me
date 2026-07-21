@@ -75,13 +75,23 @@ describe('ga4-forwarder real implementation tests', () => {
 
 		// Intercept appendChild to simulate script loading
 		appendChildSpy = jest.spyOn(document.head, 'appendChild').mockImplementation((node) => {
-			if (node instanceof HTMLScriptElement && node.src.includes('googletagmanager.com')) {
-				// Simulate asynchronous script onload
-				setTimeout(() => {
-					if (node.onload) {
-						(node.onload as any)();
+			if (node instanceof HTMLScriptElement) {
+				try {
+					const scriptUrl = new URL(node.src, 'https://localhost');
+					if (
+						scriptUrl.hostname === 'www.googletagmanager.com' ||
+						scriptUrl.hostname === 'googletagmanager.com'
+					) {
+						// Simulate asynchronous script onload
+						setTimeout(() => {
+							if (node.onload) {
+								(node.onload as any)();
+							}
+						}, 0);
 					}
-				}, 0);
+				} catch {
+					// Non-parseable script URL
+				}
 			}
 			return node;
 		});
@@ -113,9 +123,13 @@ describe('ga4-forwarder real implementation tests', () => {
 		expect(appendChildSpy).toHaveBeenCalled();
 		expect(window.dataLayer).toBeDefined();
 
-		const rawPageViewEvents = window.dataLayer?.filter(
-			(item: any) => Object.prototype.toString.call(item) === '[object Arguments]' && item[0] === 'event' && item[1] === 'page_view'
-		) || [];
+		const rawPageViewEvents =
+			window.dataLayer?.filter(
+				(item: any) =>
+					Object.prototype.toString.call(item) === '[object Arguments]' &&
+					item[0] === 'event' &&
+					item[1] === 'page_view',
+			) || [];
 		expect(rawPageViewEvents.length).toBe(1);
 
 		// Assert command types and order
@@ -166,7 +180,7 @@ describe('ga4-forwarder real implementation tests', () => {
 
 		// Trigger observer to start loading
 		consentListeners.forEach((listener) =>
-			listener({ necessary: true, analytics: true, marketing: false })
+			listener({ necessary: true, analytics: true, marketing: false }),
 		);
 
 		// Wait for load completion
@@ -176,9 +190,13 @@ describe('ga4-forwarder real implementation tests', () => {
 		expect(window.dataLayer).toBeDefined();
 
 		// Count page_view events
-		const pageViewEvents = window.dataLayer?.filter(
-			(item: any) => Object.prototype.toString.call(item) === '[object Arguments]' && item[0] === 'event' && item[1] === 'page_view'
-		) || [];
+		const pageViewEvents =
+			window.dataLayer?.filter(
+				(item: any) =>
+					Object.prototype.toString.call(item) === '[object Arguments]' &&
+					item[0] === 'event' &&
+					item[1] === 'page_view',
+			) || [];
 		expect(pageViewEvents.length).toBe(1);
 
 		// Assert command types and order
