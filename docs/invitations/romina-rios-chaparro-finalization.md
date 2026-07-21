@@ -82,3 +82,22 @@ original-requirement completion matrix, image allocation catalog, and publicatio
    recommended prior to printed distribution.
 2. **RSVP Guest Cap**: Guest limit is configured to `guestCap: 4`. Per-pass invitation caps may be
    adjusted in the host dashboard as needed.
+
+---
+
+## 3.6 Local Data Divergence & Synchronization Record
+
+| Parameter / Aspect | Details / Value |
+| --- | --- |
+| **Root Cause** | Stale version 1 record in local Supabase `published_invitation_content` table published prior to source code updates in `scripts/dev/romina-invitation-data.ts`. |
+| **Public Route Data Source** | `published_invitation_content` in local Supabase PostgreSQL via `resolveInvitationContent`. |
+| **Dashboard Data Source** | `invitations` and `published_invitation_content` in local Supabase PostgreSQL via `/api/dashboard/intake`. |
+| **Invitation ID** | `b2658714-33f3-4194-ae2f-74f89c97cfa9` |
+| **Local Owner User ID** | `c08a4681-46b4-480b-8a91-c6d740ac3887` (`celebra.me.com@gmail.com`) |
+| **Synchronization Method** | Programmatic local DB synchronization using authoritative payload `buildRominaPublishedContent(assetsMap)` updating `published_invitation_content` (Version 4) and `invitation_content_drafts`. |
+| **Values Before Sync** | `hero.portrait` present, `location.ceremony.coordinates` undefined, `location.reception.coordinates` undefined, `mediaMode` `"none"`, `rsvp.subcopy` `"contar with"`, `sealInitials` `"R"`. |
+| **Values After Sync** | `hero.portrait` undefined (absent), `ceremony.coordinates` `{ lat: 30.4137, lng: -107.9125 }`, `reception.coordinates` `{ lat: 30.4280, lng: -107.9250 }`, `mediaMode` `"map"`, `rsvp.subcopy` `"contar con"`, `sealInitials` `"RC"`. |
+| **Dashboard Resolution** | Inviting list properly displays Romina client invitation under active local admin user session. |
+| **Hero Final Runtime** | Single-photo background cover (`IMG_3263.jpeg`), zero floating portrait overlay, responsive clamp title legibility across 320px–1440px. |
+| **Location Cards & Maps** | Cards output `data-media-mode="map"`, render Google Map container, and provide verified Google Maps & Apple Maps navigation buttons. |
+

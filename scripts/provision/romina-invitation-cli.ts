@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 /**
- * romina-invitation-cli.ts — CLI entrypoint for the Romina provisioner.
+ * romina-invitation-cli.ts — Deprecated Romina CLI wrapper.
  *
- * This file is the package-script target (invitation:prod:provision).
- * It unconditionally calls main() and handles errors with redacted output
- * and non-zero exit codes.
- *
- * The implementation lives in romina-invitation.ts and is importable
- * without triggering any side effects.
+ * ═══════════════════════════════════════════════════════════════════════
+ * DEPRECATED — Use pnpm invitation:apply:local instead via:
+ *   pnpm invitation:apply:local -- --slug romina-rios-chaparro --source-dir <PATH> [--apply]
+ * ═══════════════════════════════════════════════════════════════════════
  */
 
-import { main, redactSecrets } from './romina-invitation.js';
+import { main, redactSecrets } from './romina-invitation.ts';
+
+console.warn(
+	'\x1b[33m[DEPRECATION NOTICE] invitation:prod:provision is deprecated. Use pnpm invitation:apply:local -- --slug romina-rios-chaparro instead.\x1b[0m',
+);
 
 main().catch((err) => {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error(`\x1b[31mFatal error:\x1b[0m ${redactSecrets(message)}`);
-  process.exit(1);
+	const message = err instanceof Error ? err.message : String(err);
+	console.error(`\x1b[31mFatal error:\x1b[0m ${redactSecrets(message)}`);
+	process.exit(1);
 });

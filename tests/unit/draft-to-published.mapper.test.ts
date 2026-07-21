@@ -2296,4 +2296,39 @@ describe('sharing section mapping', () => {
 		const shareMessages = sharing.shareMessages as Record<string, string>;
 		expect(shareMessages.reminder).toBe(DEFAULT_REMINDER_MESSAGE);
 	});
+
+	it('preserves venueEvent labels from priorPublishedContent when present', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent: {
+				location: {
+					ceremony: { venueEvent: 'Misa de Gracias' },
+					reception: { venueEvent: 'Brindis y Baile' },
+				},
+			},
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					ceremony: {
+						venueName: 'Iglesia San Juan',
+						address: 'Calle 1',
+						city: 'City',
+						date: '2026-06-15',
+						time: '18:00',
+					},
+					reception: {
+						venueName: 'Salon Real',
+						address: 'Calle 2',
+						city: 'City',
+						date: '2026-06-15',
+						time: '20:00',
+					},
+				},
+			},
+		});
+
+		const location = result.location as Record<string, any>;
+		expect(location.ceremony.venueEvent).toBe('Misa de Gracias');
+		expect(location.reception.venueEvent).toBe('Brindis y Baile');
+	});
 });

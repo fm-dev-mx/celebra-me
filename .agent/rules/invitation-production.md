@@ -35,10 +35,12 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
 
-## Packaging and promotion workflow
+## Local application, packaging, and promotion workflow
 
+- Versioned invitation definitions are single TypeScript files under `scripts/provision/invitations/<slug>.ts`.
+- Applying a definition to persistent-local uses `pnpm invitation:apply:local -- --slug <slug> --source-dir <path> [--apply]`. Default is `--dry-run`.
 - Invitation promotion uses the canonical package pipeline:
-  `Local (127.0.0.1:54322) -> pnpm invitation:package -> pnpm invitation:promote:preview -> pnpm invitation:promote:prod`.
+  `Single-File Definition -> pnpm invitation:apply:local -> pnpm invitation:package -> pnpm invitation:promote:preview -> pnpm invitation:promote:prod`.
 - Preview is a validation environment. Production MUST NOT import directly from the Preview database
   or Storage.
 - Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,

@@ -55,10 +55,11 @@ Disposable PostgreSQL: 127.0.0.1:54332
 The promotion of an invitation follows a strict, safe, and reproducible pipeline:
 
 ```text
-Local authoring (127.0.0.1:54322)
+Single-file definition (scripts/provision/invitations/<slug>.ts)
+  -> Apply to persistent-local (pnpm invitation:apply:local)
   -> Export immutable package (pnpm invitation:package)
   -> Preview import & publish (pnpm invitation:promote:preview)
-  -> Generate Preview approval artifact (.agent/tmp/approvals/)
+  -> Generate & finalize Preview approval artifact (.agent/tmp/approvals/)
   -> Production import & publish (pnpm invitation:promote:prod)
 ```
 
@@ -73,17 +74,26 @@ Local authoring (127.0.0.1:54322)
 
 ### Commands
 
-1. **Export Package (Local)**:
+1. **Apply Definition to Persistent-Local**:
+   ```bash
+   pnpm invitation:apply:local -- --slug <slug> --source-dir <path> --dry-run
+   pnpm invitation:apply:local -- --slug <slug> --source-dir <path> --apply
+   ```
+2. **Export Package (Local)**:
    ```bash
    pnpm invitation:package -- --slug <slug> --dry-run
    pnpm invitation:package -- --slug <slug> --apply
    ```
-2. **Promote to Preview**:
+3. **Promote to Preview**:
    ```bash
    pnpm invitation:promote:preview -- --package <path> --dry-run
    pnpm invitation:promote:preview -- --package <path> --apply
    ```
-3. **Promote to Production**:
+4. **Finalize Preview Approval**:
+   ```bash
+   pnpm invitation:approval:finalize -- --artifact <artifact-path> --evidence <evidence-path>
+   ```
+5. **Promote to Production**:
    ```bash
    pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --dry-run
    pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --apply

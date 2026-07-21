@@ -31,9 +31,15 @@ owns the command inventory.
 | `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range                                                         |
 | `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | disabled fail-closed guard; real/client invitations are DB-published content                                            |
 
-`pnpm ops adopt-legacy-events` remains registered for historical visibility but fails closed.
-`pnpm ops new-invitation` also fails closed because the old static invitation scaffold no longer
-matches the production invitation workflow.
+## Invitation Provisioning & Promotion Commands
+
+| Command | Canonical Script | Purpose |
+| ------- | ---------------- | ------- |
+| `pnpm invitation:apply:local` | `scripts/provision/apply-local-invitation-cli.ts` | Apply a single-file definition (`scripts/provision/invitations/<slug>.ts`) to persistent-local |
+| `pnpm invitation:package` | `scripts/provision/invitation-package-cli.ts` | Export immutable JSON package from persistent-local with embedded WebP assets & SHA-256 hash |
+| `pnpm invitation:promote:preview` | `scripts/provision/promote-preview-cli.ts` | Import package into hosted Preview DB/Storage & generate pending approval artifact |
+| `pnpm invitation:approval:finalize` | `scripts/provision/finalize-preview-approval-cli.ts` | Finalize pending Preview approval artifact with hosted validation evidence |
+| `pnpm invitation:promote:prod` | `scripts/provision/promote-prod-cli.ts` | Import package into Production DB/Storage (requires matching approved artifact & confirmation) |
 
 ## Database Command Inventory
 

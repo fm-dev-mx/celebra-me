@@ -9,7 +9,10 @@ import { buildPublishedEventTiming } from '@/lib/time/event-time';
 import { venueSchema } from '@/lib/intake/schemas/shared-content.schema';
 import type { z } from 'zod';
 
-type PublishCtx = { isDemo: boolean };
+type PublishCtx = {
+	isDemo: boolean;
+	priorPublishedContent?: Record<string, unknown>;
+};
 
 const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
 	ctx.isDemo ? str(val) : undefined;
@@ -316,6 +319,7 @@ function mapIndicationsFromDraft(
 	return mapped.length > 0 ? mapped : undefined;
 }
 
+// eslint-disable-next-line complexity -- Venue mapping covers ceremony, reception, and prior content fallbacks.
 function mapLocationFromDraft(
 	draftLocation: DraftContent['location'],
 	demoContent: Record<string, unknown> | undefined,
@@ -357,13 +361,17 @@ function mapLocationFromDraft(
 		}
 		result.venues = mappedVenues;
 	} else {
+		const priorLocation = ctx.priorPublishedContent?.location as Record<string, unknown> | undefined;
 		const ceremony = mapVenue(
 			draftLocation.ceremony,
 			demoLocation?.ceremony as Record<string, unknown> | undefined,
 			ctx,
 		);
 		if (ceremony) {
-			ceremony.venueEvent = 'Ceremonia';
+			ceremony.venueEvent =
+				str((priorLocation?.ceremony as Record<string, unknown> | undefined)?.venueEvent) ||
+				str((demoLocation?.ceremony as Record<string, unknown> | undefined)?.venueEvent) ||
+				'Ceremonia';
 			result.ceremony = ceremony;
 		}
 		const reception = mapVenue(
@@ -372,7 +380,10 @@ function mapLocationFromDraft(
 			ctx,
 		);
 		if (reception) {
-			reception.venueEvent = 'Recepción';
+			reception.venueEvent =
+				str((priorLocation?.reception as Record<string, unknown> | undefined)?.venueEvent) ||
+				str((demoLocation?.reception as Record<string, unknown> | undefined)?.venueEvent) ||
+				'Recepción';
 			result.reception = reception;
 		}
 	}
@@ -677,7 +688,7 @@ function mapSharingFromDraft(
 // eslint-disable-next-line complexity -- The publish mapping covers many sections with optional demo fallback.
 export function mapDraftToPublished(input: PublishInput): Record<string, unknown> {
 	const { draftContent, invitation, demoContent, isDemo = false } = input;
-	const ctx: PublishCtx = { isDemo };
+	const ctx: PublishCtx = { isDemo, priorPublishedContent: input.priorPublishedContent };
 	const snapshot = invitation.snapshot;
 	const priorPublished = input.priorPublishedContent;
 
