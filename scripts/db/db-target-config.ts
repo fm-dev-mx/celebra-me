@@ -85,8 +85,12 @@ export const DISPOSABLE_TEST = {
 } as const;
 
 /** Canonical Connection Strings */
-export const LOCAL_DB_URL = `postgresql://${PERSISTENT_LOCAL.dbUser}:${PERSISTENT_LOCAL.dbPassword}@127.0.0.1:${PERSISTENT_LOCAL.dbPort}/${PERSISTENT_LOCAL.dbName}`;
-export const DISPOSABLE_DB_URL = `postgresql://${DISPOSABLE_TEST.dbUser}:${DISPOSABLE_TEST.dbPassword}@127.0.0.1:${DISPOSABLE_TEST.dbPort}/${DISPOSABLE_TEST.dbName}`;
+export const LOCAL_DB_URL =
+	`postgresql://${PERSISTENT_LOCAL.dbUser}:${PERSISTENT_LOCAL.dbPassword}` +
+	`@127.0.0.1:${PERSISTENT_LOCAL.dbPort}/${PERSISTENT_LOCAL.dbName}`;
+export const DISPOSABLE_DB_URL =
+	`postgresql://${DISPOSABLE_TEST.dbUser}:${DISPOSABLE_TEST.dbPassword}` +
+	`@127.0.0.1:${DISPOSABLE_TEST.dbPort}/${DISPOSABLE_TEST.dbName}`;
 
 /** Cloud Supabase Host Suffixes */
 const SUPABASE_HOST_SUFFIXES = ['.supabase.co', '.supabase.com'] as const;
@@ -297,8 +301,8 @@ export function extractSupabaseProjectRef(dbUrl: string): string {
 
 	const { hostname, user } = parsed;
 
-	// 1. Pooler: detected by hostname containing pooler.supabase.com
-	if (hostname.includes('pooler.supabase.com')) {
+	// 1. Pooler: exact hostname or dot-delimited subdomain of pooler.supabase.com
+	if (hostname === 'pooler.supabase.com' || hostname.endsWith('.pooler.supabase.com')) {
 		if (!user.includes('.')) {
 			throw new Error(
 				`Pooler URL username "${user}" does not contain a project reference segment. ` +
