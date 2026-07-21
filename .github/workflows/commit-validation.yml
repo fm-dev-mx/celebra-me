@@ -23,6 +23,42 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Resolve validation range
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
+                  PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  PUSH_BEFORE_SHA: ${{ github.event.before }}
+                  PUSH_HEAD_SHA: ${{ github.sha }}
+              run: |
+                  set -euo pipefail
+
+                  if [ "$EVENT_NAME" = "pull_request" ]; then
+                    BASE_SHA="$PR_BASE_SHA"
+                    HEAD_SHA="$PR_HEAD_SHA"
+                  else
+                    BASE_SHA="$PUSH_BEFORE_SHA"
+                    HEAD_SHA="$PUSH_HEAD_SHA"
+                  fi
+
+                  if [ -z "$HEAD_SHA" ]; then
+                    echo "Unable to resolve validation head SHA"
+                    exit 1
+                  fi
+
+                  if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+                    BASE_SHA="$(git rev-parse "${HEAD_SHA}^")"
+                  fi
+
+                  git cat-file -e "${BASE_SHA}^{commit}"
+                  git cat-file -e "${HEAD_SHA}^{commit}"
+
+                  echo "VALIDATION_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+                  echo "VALIDATION_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+                  echo "Validation event: $EVENT_NAME"
+                  echo "Base SHA: $BASE_SHA"
+                  echo "Head SHA: $HEAD_SHA"
+
             - name: Install pnpm
               uses: pnpm/action-setup@v6
 
@@ -37,30 +73,19 @@ jobs:
 
             - name: Validate commit messages
               run: |
-                  echo "Validating commits for PR #${{ github.event.pull_request.number }}"
-                  BASE_SHA="${{ github.event.pull_request.base.sha }}"
-                  HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-                  echo "Base SHA: $BASE_SHA"
-                  echo "Head SHA: $HEAD_SHA"
-                  COMMITS=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | wc -l)
-                  echo "Number of commits in PR: $COMMITS"
+                  COMMITS=$(git rev-list --count "$VALIDATION_BASE_SHA..$VALIDATION_HEAD_SHA")
+                  echo "Number of commits in validation range: $COMMITS"
                   if [ "$COMMITS" -eq 0 ]; then
-                    echo "No commits found in PR range"
+                    echo "No commits found in validation range"
                     exit 0
                   fi
-                  node scripts/validate-commits.mjs "$BASE_SHA" "$HEAD_SHA"
+                  node scripts/validate-commits.mjs "$VALIDATION_BASE_SHA" "$VALIDATION_HEAD_SHA"
 
             - name: Documentation link integrity
-              env:
-                  VALIDATION_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-                  VALIDATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: pnpm ops check-links
 
             - name: Install Playwright browser
               run: pnpm exec playwright install --with-deps chromium
 
             - name: Required validation suite
-              env:
-                  VALIDATION_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-                  VALIDATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: pnpm run ci
