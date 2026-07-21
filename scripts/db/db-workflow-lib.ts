@@ -179,9 +179,13 @@ export function assertAppEnvIsLocal(appEnv = loadAppEnv()): void {
 }
 
 export function assertLocalApiReachable(apiUrl = LOCAL_SUPABASE_URL): void {
-	const res = runCommand('curl.exe', ['--silent', '--fail', `${apiUrl}/rest/v1/`], { throwOnError: false });
+	const res = runCommand('curl.exe', ['--silent', '--fail', `${apiUrl}/rest/v1/`], {
+		throwOnError: false,
+	});
 	if (res.status !== 0) {
-		fail(`Local Supabase API is not reachable on ${apiUrl}. Run supabase status or supabase start.`);
+		fail(
+			`Local Supabase API is not reachable on ${apiUrl}. Run supabase status or supabase start.`,
+		);
 	}
 }
 
@@ -190,12 +194,18 @@ export function assertLocalDbReachable(dbUrl = LOCAL_DB_URL): void {
 	if (versionCheck.status !== 0) {
 		fail(PSQL_REQUIRED_MESSAGE);
 	}
-	const res = runCommand('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', dbUrl, '--command', 'select 1;'], {
-		throwOnError: false,
-		redact: [dbUrl],
-	});
+	const res = runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', dbUrl, '--command', 'select 1;'],
+		{
+			throwOnError: false,
+			redact: [dbUrl],
+		},
+	);
 	if (res.status !== 0) {
-		fail(`Local Supabase DB is not reachable on ${redactDbUrl(dbUrl)}. Run supabase status or supabase start.`);
+		fail(
+			`Local Supabase DB is not reachable on ${redactDbUrl(dbUrl)}. Run supabase status or supabase start.`,
+		);
 	}
 }
 
@@ -250,27 +260,36 @@ export function assertNoProdCredentialsInLocalEnv(): void {
 	}
 }
 
+export type AllowedShellCommand = 'npx' | 'supabase' | 'pnpm' | 'npm';
+
+export const ALLOWED_SHELL_COMMANDS = new Set<string>(['npx', 'supabase', 'pnpm', 'npm']);
+
 export function runCommand(
 	command: string,
 	args: string[],
 	options: RunOptions = {},
 ): CommandResult {
 	const { throwOnError = true } = options;
-	const isShellRequired = ['npx', 'supabase', 'pnpm', 'npm'].includes(command);
+	const isShellCommand = ALLOWED_SHELL_COMMANDS.has(command);
+
 	let cmdToSpawn = command;
 	let argsToSpawn = args;
 	let useShell = false;
 
-	if (isShellRequired && process.platform === 'win32') {
-		cmdToSpawn = 'cmd.exe';
-		argsToSpawn = ['/d', '/s', '/c', command, ...args];
-	} else if (isShellRequired) {
-		useShell = true;
+	if (isShellCommand) {
+		if (process.platform === 'win32') {
+			cmdToSpawn = 'cmd.exe';
+			argsToSpawn = ['/d', '/s', '/c', command, ...args];
+		} else {
+			useShell = true;
+		}
+	} else {
+		useShell = false;
 	}
 
 	const spawnOptions: SpawnSyncOptions = {
 		cwd: PROJECT_ROOT,
-		env: options.env ?? process.env,
+		env: { ...(options.env ?? process.env) },
 		input: options.input,
 		shell: useShell,
 		encoding: 'utf8',
@@ -299,14 +318,18 @@ export function runCommand(
 	};
 }
 
-export function tryRunCommand(command: string, args: string[], options: RunOptions = {}): CommandResult {
+export function tryRunCommand(
+	command: string,
+	args: string[],
+	options: RunOptions = {},
+): CommandResult {
 	return runCommand(command, args, { ...options, throwOnError: false });
 }
 
 export function runPsql(
 	sqlOrFile: string,
 	dbUrl?: string | (RunOptions & { isFile?: boolean; tuplesOnly?: boolean }),
-	options?: RunOptions & { isFile?: boolean; tuplesOnly?: boolean } | string[],
+	options?: (RunOptions & { isFile?: boolean; tuplesOnly?: boolean }) | string[],
 ): CommandResult {
 	let targetUrl = LOCAL_DB_URL;
 	let runOpts: RunOptions & { isFile?: boolean; tuplesOnly?: boolean } = {};
@@ -342,11 +365,19 @@ export function runPsql(
 	});
 }
 
-export function runPsqlFile(filePath: string, dbUrl: string = LOCAL_DB_URL, options: RunOptions = {}): CommandResult {
+export function runPsqlFile(
+	filePath: string,
+	dbUrl: string = LOCAL_DB_URL,
+	options: RunOptions = {},
+): CommandResult {
 	return runPsql(filePath, dbUrl, { ...options, isFile: true });
 }
 
-export function createProdBackup(prodUrl: string, backupPath?: string, schemaOnly?: boolean): string {
+export function createProdBackup(
+	prodUrl: string,
+	backupPath?: string,
+	schemaOnly?: boolean,
+): string {
 	const defaultDir = resolve(PROJECT_ROOT, '.backups', 'prod');
 	ensureDir(defaultDir);
 	const outputFile = backupPath || resolve(defaultDir, `prod-backup-${timestamp()}.sql`);
@@ -365,7 +396,10 @@ export function createProdBackup(prodUrl: string, backupPath?: string, schemaOnl
 	return outputFile;
 }
 
-export function getMissingTables(expectedTables: readonly string[], existingTables: string[]): string[] {
+export function getMissingTables(
+	expectedTables: readonly string[],
+	existingTables: string[],
+): string[] {
 	const existingSet = new Set(existingTables);
 	return expectedTables.filter((t) => !existingSet.has(t));
 }
@@ -486,7 +520,9 @@ export async function confirmProductionAction(
 	console.info(`To proceed, type "${requiredConfirmation}":`);
 	const inputStr = await promptUser('> ');
 	if (inputStr !== requiredConfirmation) {
-		fail(`Confirmation mismatched. Expected "${requiredConfirmation}", received "${inputStr}". Aborting.`);
+		fail(
+			`Confirmation mismatched. Expected "${requiredConfirmation}", received "${inputStr}". Aborting.`,
+		);
 	}
 }
 
