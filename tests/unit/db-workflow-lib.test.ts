@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+	ALLOWED_SHELL_COMMANDS,
 	PSQL_REQUIRED_MESSAGE,
 	REFRESH_PARITY_TABLES,
 	assertAppEnvIsLocal,
@@ -11,6 +12,7 @@ import {
 	getLocalSuperAdminPassword,
 	getMissingTables,
 	requireLocalSuperAdminConfig,
+	runCommand,
 	sqlLiteral,
 	transformDumpForStaging,
 	validateRefreshParity,
@@ -71,31 +73,34 @@ describe('createProdBackup', () => {
 		spawnSync.mockClear();
 	});
 
-	it('passes --data-only and --use-copy for data backup (schemaOnly=false)', () => {
+	it('uses --data-only (not --schema-only, --use-copy, or --db-url) for data backup', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', false);
 		expect(spawnSync).toHaveBeenCalledTimes(1);
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--data-only');
-		expect(args).toContain('--use-copy');
+		expect(args).not.toContain('--use-copy');
 		expect(args).not.toContain('--schema-only');
+		expect(args).not.toContain('--db-url');
 	});
 
-	it('passes --schema-only for schema backup (schemaOnly=true)', () => {
+	it('passes --schema-only (not --db-url) for schema backup', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', true);
 		expect(spawnSync).toHaveBeenCalledTimes(1);
 		const args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--schema-only');
 		expect(args).not.toContain('--data-only');
 		expect(args).not.toContain('--use-copy');
+		expect(args).not.toContain('--db-url');
 	});
 
-	it('includes --schema public and -f output in both modes', () => {
+	it('includes --schema public, -f, and --dbname in both modes', () => {
 		createProdBackup(fakeUrl, '/tmp/data.sql', false);
 		let args = spawnSync.mock.calls[0][1] as string[];
 		expect(args).toContain('--schema');
 		expect(args).toContain('public');
 		expect(args).toContain('-f');
 		expect(args).toContain('/tmp/data.sql');
+		expect(args).toContain('--dbname');
 
 		spawnSync.mockClear();
 		createProdBackup(fakeUrl, '/tmp/schema.sql', true);
@@ -104,13 +109,32 @@ describe('createProdBackup', () => {
 		expect(args).toContain('public');
 		expect(args).toContain('-f');
 		expect(args).toContain('/tmp/schema.sql');
+		expect(args).toContain('--dbname');
 	});
 
-	it('passes the db-url via --db-url arg', () => {
+	it('passes the db-url via --dbname (not --db-url)', () => {
 		createProdBackup(fakeUrl, '/tmp/dump.sql', false);
 		const args = spawnSync.mock.calls[0][1] as string[];
-		expect(args).toContain('--db-url');
+		expect(args).toContain('--dbname');
 		expect(args).toContain(fakeUrl);
+		expect(args).not.toContain('--db-url');
+	});
+
+	it('fails closed when pg_dump returns non-zero', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+		spawnSync.mockReturnValueOnce({
+			status: 1,
+			stdout: '',
+			stderr: 'pg_dump: error: connection to server failed',
+			error: undefined,
+		});
+		expect(() => createProdBackup(fakeUrl, '/tmp/dump.sql', false)).toThrow('process.exit:1');
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Command failed'));
+		errorSpy.mockRestore();
+		jest.restoreAllMocks();
 	});
 });
 
@@ -646,5 +670,71 @@ describe('ensureTablesExist', () => {
 				'test-target',
 			),
 		).toThrow(/table_a[\s\S]*table_b/);
+	});
+});
+
+describe('runCommand security & allowlisting', () => {
+	beforeEach(() => {
+		spawnSync.mockClear();
+	});
+
+	it('contains the explicit set of allowed shell commands', () => {
+		expect(ALLOWED_SHELL_COMMANDS.has('npx')).toBe(true);
+		expect(ALLOWED_SHELL_COMMANDS.has('supabase')).toBe(true);
+		expect(ALLOWED_SHELL_COMMANDS.has('pnpm')).toBe(true);
+		expect(ALLOWED_SHELL_COMMANDS.has('npm')).toBe(true);
+		expect(ALLOWED_SHELL_COMMANDS.has('psql')).toBe(false);
+		expect(ALLOWED_SHELL_COMMANDS.has('pg_dump')).toBe(false);
+	});
+
+	it('defaults direct binary commands (e.g. psql) to shell: false', () => {
+		spawnSync.mockReturnValueOnce({ status: 0, stdout: '1', stderr: '' });
+		runCommand('psql', ['--version']);
+		expect(spawnSync).toHaveBeenCalledWith(
+			'psql',
+			['--version'],
+			expect.objectContaining({ shell: false }),
+		);
+	});
+
+	it('routes allowed shell commands safely on win32 via cmd.exe without shell string interpolation', () => {
+		const originalPlatform = process.platform;
+		Object.defineProperty(process, 'platform', { value: 'win32' });
+
+		try {
+			spawnSync.mockReturnValueOnce({ status: 0, stdout: 'ok', stderr: '' });
+			runCommand('pnpm', ['test']);
+			expect(spawnSync).toHaveBeenCalledWith(
+				'cmd.exe',
+				['/d', '/s', '/c', 'pnpm', 'test'],
+				expect.objectContaining({ shell: false }),
+			);
+		} finally {
+			Object.defineProperty(process, 'platform', { value: originalPlatform });
+		}
+	});
+
+	it('redacts sensitive tokens in command failure error output', () => {
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+
+		const secret = 'postgresql://user:supersecretpass@127.0.0.1:5432/db';
+		spawnSync.mockReturnValueOnce({
+			status: 1,
+			stdout: '',
+			stderr: `Connection failed to ${secret}`,
+		});
+
+		expect(() => runCommand('psql', ['--dbname', secret], { redact: [secret] })).toThrow(
+			'process.exit:1',
+		);
+
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('<redacted>'));
+		expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining('supersecretpass'));
+
+		errorSpy.mockRestore();
+		jest.restoreAllMocks();
 	});
 });

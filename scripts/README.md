@@ -37,11 +37,19 @@ matches the production invitation workflow.
 
 ## Database Command Inventory
 
-| Command                               | Owner          | Purpose                                                         |
-| ------------------------------------- | -------------- | --------------------------------------------------------------- |
-| `pnpm db:push`                        | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push |
-| `pnpm db:sql:lint -- --file <path>`   | `scripts/db/`  | lint a manifest-bearing production SQL patch                    |
-| `pnpm db:prod:patch -- --file <path>` | `scripts/db/`  | dry-run-only production patch entrypoint                        |
+| Command                               | Owner          | Purpose                                                                        |
+| ------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| `pnpm db:push`                        | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                |
+| `pnpm db:prod:backup`                 | `scripts/db/`  | read-only production data dump                                                 |
+| `pnpm db:prod:audit`                  | `scripts/db/`  | read-only production migration history & schema audit                          |
+| `pnpm db:prod:migrate`                | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)       |
+| `pnpm db:preview:migrate`             | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                         |
+| `pnpm db:preview:audit`               | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                        |
+| `pnpm db:disposable:reset`            | `scripts/db/`  | reset isolated disposable test environment container                           |
+| `pnpm db:validate:pipeline`           | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows) |
+| `pnpm db:local:restore-from-dump`     | `scripts/db/`  | import production dump into persistent local database                          |
+| `pnpm db:sql:lint -- --file <path>`   | `scripts/db/`  | lint a manifest-bearing production SQL patch                                   |
+| `pnpm db:prod:patch -- --file <path>` | `scripts/db/`  | dry-run-only production patch entrypoint                                       |
 
 Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
 the [manual SQL manifest](../.agent/rules/manual-sql-manifest.md).

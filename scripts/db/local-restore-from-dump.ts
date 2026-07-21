@@ -29,6 +29,7 @@ import { resolve } from 'node:path';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import {
 	classifyDbTarget,
+	LOCAL_DB_URL,
 	redactCredentials,
 	validateDumpIntegrity,
 	PERSISTENT_LOCAL,
@@ -48,7 +49,6 @@ interface CommandResult {
 // Constants
 // ---------------------------------------------------------------------------
 
-const LOCAL_DB_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 const STAGING_SCHEMA = 'restore_staging';
 
 // Tables whose exact copy is mandatory for functional parity
@@ -122,20 +122,23 @@ function runCommand(
 
 function runPsql(sql: string): CommandResult {
 	return runCommand('psql', [
-		'--set', 'ON_ERROR_STOP=1',
+		'--set',
+		'ON_ERROR_STOP=1',
 		'--no-align',
 		'--tuples-only',
-		'--dbname', LOCAL_DB_URL,
-		'--command', sql,
+		'--dbname',
+		LOCAL_DB_URL,
+		'--command',
+		sql,
 	]);
 }
 
 function runPsqlFile(filePath: string): CommandResult {
-	return runCommand('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--dbname', LOCAL_DB_URL,
-		'--file', filePath,
-	], { redact: [LOCAL_DB_URL] });
+	return runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', LOCAL_DB_URL, '--file', filePath],
+		{ redact: [LOCAL_DB_URL] },
+	);
 }
 
 function printStep(step: string): void {
@@ -186,7 +189,7 @@ select count(*)::text as rows from public.invitations;
 	if (existingRows > 0) {
 		fail(
 			`Local database already contains ${existingRows} invitation(s). ` +
-			'Restore requires empty local. Aborting per policy.',
+				'Restore requires empty local. Aborting per policy.',
 		);
 	}
 	console.info('  PASS: Local database is empty (ready for non-destructive restore)');
@@ -450,9 +453,16 @@ function phase7PostRestore(): void {
 	printStep('Phase 7: Post-restore validation');
 
 	const tables = [
-		'invitations', 'events', 'published_invitation_content',
-		'guest_invitations', 'rsvp_records', 'leads', 'customers',
-		'sales_orders', 'tracking_events', 'visitor_sessions',
+		'invitations',
+		'events',
+		'published_invitation_content',
+		'guest_invitations',
+		'rsvp_records',
+		'leads',
+		'customers',
+		'sales_orders',
+		'tracking_events',
+		'visitor_sessions',
 	];
 	for (const table of tables) {
 		const result = runPsql(`select count(*)::text from public."${table}";`);
@@ -476,7 +486,12 @@ where id = '00000000-0000-0000-0000-000000000000'::uuid;
 // Phase 9 — Cleanup
 // ---------------------------------------------------------------------------
 
-function phase8Cleanup(dumpPath: string, keepDump: boolean, authDumpPath?: string, storageDumpPath?: string): void {
+function phase8Cleanup(
+	dumpPath: string,
+	keepDump: boolean,
+	authDumpPath?: string,
+	storageDumpPath?: string,
+): void {
 	printStep('Phase 8: Cleanup');
 
 	const dropResult = runPsql(`drop schema if exists ${STAGING_SCHEMA} cascade;`);
@@ -509,9 +524,11 @@ function main(): void {
 	const dumpIdx = args.indexOf('--dump');
 	const dumpPath = dumpIdx !== -1 ? resolve(process.cwd(), args[dumpIdx + 1]) : undefined;
 	const authDumpIdx = args.indexOf('--auth-dump');
-	const authDumpPath = authDumpIdx !== -1 ? resolve(process.cwd(), args[authDumpIdx + 1]) : undefined;
+	const authDumpPath =
+		authDumpIdx !== -1 ? resolve(process.cwd(), args[authDumpIdx + 1]) : undefined;
 	const storageDumpIdx = args.indexOf('--storage-dump');
-	const storageDumpPath = storageDumpIdx !== -1 ? resolve(process.cwd(), args[storageDumpIdx + 1]) : undefined;
+	const storageDumpPath =
+		storageDumpIdx !== -1 ? resolve(process.cwd(), args[storageDumpIdx + 1]) : undefined;
 	const keepDump = args.includes('--keep-dump');
 	const dryRun = args.includes('--dry-run');
 

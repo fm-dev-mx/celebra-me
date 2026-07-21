@@ -10,9 +10,7 @@
  *   tsx scripts/db/compare-schemas.ts
  */
 
-import { getProdDbUrl, redactDbUrl, runPsql } from './db-workflow-lib.ts';
-
-const DISPOSABLE_DB_URL = process.env.DISPOSABLE_DB_URL || 'postgresql://supabase_admin:***@127.0.0.1:54332/postgres';
+import { DISPOSABLE_DB_URL, getProdDbUrl, redactDbUrl, runPsql } from './db-workflow-lib.ts';
 
 interface TableMetadata {
 	tableName: string;
@@ -94,10 +92,7 @@ const ALLOWED_LOCAL_ADDITIONS = {
 		'service_role read all invitations',
 		'service_role read all published_invitation_content',
 	]),
-	functions: new Set([
-		'publish_invitation_atomic',
-		'get_asset_delivery_url',
-	]),
+	functions: new Set(['publish_invitation_atomic', 'get_asset_delivery_url']),
 };
 
 function queryJson<T>(sql: string, dbUrl: string): T[] {
@@ -106,7 +101,9 @@ function queryJson<T>(sql: string, dbUrl: string): T[] {
 	try {
 		return JSON.parse(result.stdout.trim()) as T[];
 	} catch (err) {
-		console.error(`Failed to parse JSON result from query:\n${sql}\nOutput received:\n${result.stdout}`);
+		console.error(
+			`Failed to parse JSON result from query:\n${sql}\nOutput received:\n${result.stdout}`,
+		);
 		throw err;
 	}
 }
@@ -116,7 +113,7 @@ function queryTables(dbUrl: string): TableMetadata[] {
 		`select table_name as "tableName", table_type as "tableType"
 		 from information_schema.tables
 		 where table_schema = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
@@ -125,7 +122,7 @@ function queryColumns(dbUrl: string): ColumnMetadata[] {
 		`select table_name as "tableName", column_name as "columnName", data_type as "dataType", is_nullable as "isNullable", column_default as "columnDefault"
 		 from information_schema.columns
 		 where table_schema = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
@@ -136,7 +133,7 @@ function queryConstraints(dbUrl: string): ConstraintMetadata[] {
 		 join information_schema.key_column_usage kcu on tc.constraint_name = kcu.constraint_name and tc.table_schema = kcu.table_schema
 		 left join information_schema.constraint_column_usage ccu on ccu.constraint_name = tc.constraint_name and ccu.table_schema = tc.table_schema
 		 where tc.table_schema = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
@@ -145,7 +142,7 @@ function queryIndexes(dbUrl: string): IndexMetadata[] {
 		`select tablename as "tableName", indexname as "indexName", indexdef as "indexDef"
 		 from pg_indexes
 		 where schemaname = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
@@ -154,7 +151,7 @@ function queryPolicies(dbUrl: string): PolicyMetadata[] {
 		`select tablename as "tableName", policyname as "policyName", roles::text as "roles", cmd as "cmd", qual as "qual", with_check as "withCheck"
 		 from pg_policies
 		 where schemaname = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
@@ -163,12 +160,13 @@ function queryTriggers(dbUrl: string): TriggerMetadata[] {
 		`select event_object_table as "tableName", trigger_name as "triggerName", event_manipulation as "eventManipulation", action_statement as "actionStatement", action_timing as "actionTiming"
 		 from information_schema.triggers
 		 where trigger_schema = 'public'`,
-		dbUrl
+		dbUrl,
 	);
 }
 
 const normalizeDef = (def: string, name: string) => {
-	return def.replace(new RegExp(name, 'g'), 'NAME_PLACEHOLDER')
+	return def
+		.replace(new RegExp(name, 'g'), 'NAME_PLACEHOLDER')
 		.replace(/\bauth\.uid\b/g, 'uid')
 		.replace(/\bauth\.jwt\b/g, 'jwt')
 		.replace(/\bauth\.role\b/g, 'role')
@@ -178,7 +176,10 @@ const normalizeDef = (def: string, name: string) => {
 		.trim();
 };
 
-function auditTables(prodTables: TableMetadata[], localTables: TableMetadata[]): { errors: number; warnings: number } {
+function auditTables(
+	prodTables: TableMetadata[],
+	localTables: TableMetadata[],
+): { errors: number; warnings: number } {
 	let errors = 0;
 	let warnings = 0;
 	console.log('\n--- 1. Tables Audit ---');
@@ -187,7 +188,9 @@ function auditTables(prodTables: TableMetadata[], localTables: TableMetadata[]):
 
 	for (const table of prodTableNames) {
 		if (!localTableNames.has(table)) {
-			console.error(`❌ ERROR: Table "${table}" exists in production but is missing locally!`);
+			console.error(
+				`❌ ERROR: Table "${table}" exists in production but is missing locally!`,
+			);
 			errors++;
 		}
 	}
@@ -195,9 +198,13 @@ function auditTables(prodTables: TableMetadata[], localTables: TableMetadata[]):
 	for (const table of localTableNames) {
 		if (!prodTableNames.has(table)) {
 			if (ALLOWED_LOCAL_ADDITIONS.tables.has(table)) {
-				console.log(`ℹ️  INFO: Table "${table}" is local-only (expected addition from migrations)`);
+				console.log(
+					`ℹ️  INFO: Table "${table}" is local-only (expected addition from migrations)`,
+				);
 			} else {
-				console.warn(`⚠️  WARNING: Table "${table}" is local-only but not in the approved migrations list!`);
+				console.warn(
+					`⚠️  WARNING: Table "${table}" is local-only but not in the approved migrations list!`,
+				);
 				warnings++;
 			}
 		}
@@ -229,16 +236,26 @@ function auditColumns(
 		}
 
 		if (col.dataType !== localCol.dataType) {
-			console.error(`❌ ERROR: Column "${key}" type mismatch! Production="${col.dataType}", Local="${localCol.dataType}"`);
+			console.error(
+				`❌ ERROR: Column "${key}" type mismatch! Production="${col.dataType}", Local="${localCol.dataType}"`,
+			);
 			errors++;
 		}
 
 		if (col.isNullable !== localCol.isNullable) {
-			if (localCol.isNullable === 'NO' && col.isNullable === 'YES' && !localCol.columnDefault) {
-				console.error(`❌ ERROR: Column "${key}" nullability mismatch! Production=NULL, Local=NOT NULL without default!`);
+			if (
+				localCol.isNullable === 'NO' &&
+				col.isNullable === 'YES' &&
+				!localCol.columnDefault
+			) {
+				console.error(
+					`❌ ERROR: Column "${key}" nullability mismatch! Production=NULL, Local=NOT NULL without default!`,
+				);
 				errors++;
 			} else {
-				console.warn(`⚠️  WARNING: Column "${key}" nullability mismatch. Production="${col.isNullable}", Local="${localCol.isNullable}"`);
+				console.warn(
+					`⚠️  WARNING: Column "${key}" nullability mismatch. Production="${col.isNullable}", Local="${localCol.isNullable}"`,
+				);
 				warnings++;
 			}
 		}
@@ -246,14 +263,20 @@ function auditColumns(
 
 	for (const col of localCols) {
 		const key = `${col.tableName}.${col.columnName}`;
-		const prodCol = prodCols.find((pc) => pc.tableName === col.tableName && pc.columnName === col.columnName);
-		
+		const prodCol = prodCols.find(
+			(pc) => pc.tableName === col.tableName && pc.columnName === col.columnName,
+		);
+
 		if (!prodCol && prodTableNames.has(col.tableName)) {
 			const allowedCols = ALLOWED_LOCAL_ADDITIONS.columns.get(col.tableName) || [];
 			if (allowedCols.includes(col.columnName)) {
-				console.log(`ℹ️  INFO: Column "${key}" is local-only (expected addition from migrations)`);
+				console.log(
+					`ℹ️  INFO: Column "${key}" is local-only (expected addition from migrations)`,
+				);
 			} else {
-				console.warn(`⚠️  WARNING: Column "${key}" is local-only but not in the approved migrations list!`);
+				console.warn(
+					`⚠️  WARNING: Column "${key}" is local-only but not in the approved migrations list!`,
+				);
 				warnings++;
 			}
 		}
@@ -261,20 +284,28 @@ function auditColumns(
 	return { errors, warnings };
 }
 
-function auditConstraints(prodConstraints: ConstraintMetadata[], localConstraints: ConstraintMetadata[]): { errors: number } {
+function auditConstraints(
+	prodConstraints: ConstraintMetadata[],
+	localConstraints: ConstraintMetadata[],
+): { errors: number } {
 	let errors = 0;
 	console.log('\n--- 3. Constraints Audit ---');
 	const localConstraintNames = new Set(localConstraints.map((c) => c.constraintName));
 	for (const c of prodConstraints) {
 		if (!localConstraintNames.has(c.constraintName)) {
-			console.error(`❌ ERROR: Constraint "${c.constraintName}" on "${c.tableName}" (${c.constraintType}) is missing locally!`);
+			console.error(
+				`❌ ERROR: Constraint "${c.constraintName}" on "${c.tableName}" (${c.constraintType}) is missing locally!`,
+			);
 			errors++;
 		}
 	}
 	return { errors };
 }
 
-function auditIndexes(prodIndexes: IndexMetadata[], localIndexes: IndexMetadata[]): { errors: number } {
+function auditIndexes(
+	prodIndexes: IndexMetadata[],
+	localIndexes: IndexMetadata[],
+): { errors: number } {
 	let errors = 0;
 	console.log('\n--- 4. Indexes Audit ---');
 	for (const prodIdx of prodIndexes) {
@@ -286,24 +317,35 @@ function auditIndexes(prodIndexes: IndexMetadata[], localIndexes: IndexMetadata[
 		});
 
 		if (!hasByName && !hasByDef) {
-			console.error(`❌ ERROR: Index "${prodIdx.indexName}" on "${prodIdx.tableName}" is missing locally!`);
+			console.error(
+				`❌ ERROR: Index "${prodIdx.indexName}" on "${prodIdx.tableName}" is missing locally!`,
+			);
 			errors++;
 		} else if (!hasByName && hasByDef) {
-			console.log(`ℹ️  INFO: Index on "${prodIdx.tableName}" exists locally but under a different name (cosmetic only)`);
+			console.log(
+				`ℹ️  INFO: Index on "${prodIdx.tableName}" exists locally but under a different name (cosmetic only)`,
+			);
 		}
 	}
 	return { errors };
 }
 
-function auditPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMetadata[]): { errors: number; warnings: number } {
+function auditPolicies(
+	prodPolicies: PolicyMetadata[],
+	localPolicies: PolicyMetadata[],
+): { errors: number; warnings: number } {
 	let errors = 0;
 	let warnings = 0;
 	console.log('\n--- 5. RLS Policies Audit ---');
 	for (const prodPol of prodPolicies) {
-		const match = localPolicies.find((lp) => lp.tableName === prodPol.tableName && lp.policyName === prodPol.policyName);
+		const match = localPolicies.find(
+			(lp) => lp.tableName === prodPol.tableName && lp.policyName === prodPol.policyName,
+		);
 
 		if (!match) {
-			console.error(`❌ ERROR: RLS Policy "${prodPol.policyName}" on "${prodPol.tableName}" is missing locally!`);
+			console.error(
+				`❌ ERROR: RLS Policy "${prodPol.policyName}" on "${prodPol.tableName}" is missing locally!`,
+			);
 			errors++;
 		} else {
 			const normProdQual = normalizeDef(prodPol.qual || '', prodPol.policyName);
@@ -312,7 +354,9 @@ function auditPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMeta
 			const normLocalCheck = normalizeDef(match.withCheck || '', match.policyName);
 
 			if (normProdQual !== normLocalQual || normProdCheck !== normLocalCheck) {
-				console.warn(`⚠️  WARNING: RLS Policy "${prodPol.policyName}" on "${prodPol.tableName}" has different logic locally!`);
+				console.warn(
+					`⚠️  WARNING: RLS Policy "${prodPol.policyName}" on "${prodPol.tableName}" has different logic locally!`,
+				);
 				warnings++;
 			}
 		}
@@ -320,14 +364,21 @@ function auditPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMeta
 	return { errors, warnings };
 }
 
-function auditTriggers(prodTriggers: TriggerMetadata[], localTriggers: TriggerMetadata[]): { errors: number } {
+function auditTriggers(
+	prodTriggers: TriggerMetadata[],
+	localTriggers: TriggerMetadata[],
+): { errors: number } {
 	let errors = 0;
 	console.log('\n--- 6. Triggers Audit ---');
 	for (const prodTrg of prodTriggers) {
-		const match = localTriggers.find((lt) => lt.tableName === prodTrg.tableName && lt.triggerName === prodTrg.triggerName);
+		const match = localTriggers.find(
+			(lt) => lt.tableName === prodTrg.tableName && lt.triggerName === prodTrg.triggerName,
+		);
 
 		if (!match) {
-			console.error(`❌ ERROR: Trigger "${prodTrg.triggerName}" on "${prodTrg.tableName}" is missing locally!`);
+			console.error(
+				`❌ ERROR: Trigger "${prodTrg.triggerName}" on "${prodTrg.tableName}" is missing locally!`,
+			);
 			errors++;
 		}
 	}
@@ -336,7 +387,7 @@ function auditTriggers(prodTriggers: TriggerMetadata[], localTriggers: TriggerMe
 
 function main(): void {
 	const { url: prodDbUrl } = getProdDbUrl();
-	
+
 	console.log('╔══════════════════════════════════════════════════════════╗');
 	console.log('║               Schema Parity Audit Gate                   ║');
 	console.log('╚══════════════════════════════════════════════════════════╝');
@@ -346,7 +397,7 @@ function main(): void {
 
 	const prevEnv = process.env.PGOPTIONS;
 	process.env.PGOPTIONS = '-c default_transaction_read_only=on';
-	
+
 	let prodTables: TableMetadata[], localTables: TableMetadata[];
 	let prodCols: ColumnMetadata[], localCols: ColumnMetadata[];
 	let prodConstraints: ConstraintMetadata[], localConstraints: ConstraintMetadata[];
@@ -380,7 +431,13 @@ function main(): void {
 	const resPolicies = auditPolicies(prodPolicies, localPolicies);
 	const resTriggers = auditTriggers(prodTriggers, localTriggers);
 
-	const errors = resTables.errors + resCols.errors + resConstraints.errors + resIndexes.errors + resPolicies.errors + resTriggers.errors;
+	const errors =
+		resTables.errors +
+		resCols.errors +
+		resConstraints.errors +
+		resIndexes.errors +
+		resPolicies.errors +
+		resTriggers.errors;
 	const warnings = resTables.warnings + resCols.warnings + resPolicies.warnings;
 
 	console.log('\n============================================================');
@@ -390,10 +447,14 @@ function main(): void {
 	console.log('============================================================');
 
 	if (errors > 0) {
-		console.error('\n❌ SCHEMA PARITY FAILED: Hard schema differences exist that could cause restore or runtime failures.');
+		console.error(
+			'\n❌ SCHEMA PARITY FAILED: Hard schema differences exist that could cause restore or runtime failures.',
+		);
 		process.exit(1);
 	} else {
-		console.log('\n✅ SCHEMA PARITY PASSED: Local schema is a compatible superset of production.');
+		console.log(
+			'\n✅ SCHEMA PARITY PASSED: Local schema is a compatible superset of production.',
+		);
 		process.exit(0);
 	}
 }
