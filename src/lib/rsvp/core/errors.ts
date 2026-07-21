@@ -33,6 +33,7 @@ export class ApiError extends Error {
 		details?: Record<string, unknown>,
 	) {
 		super(message);
+		this.name = 'ApiError';
 		this.status = status;
 		this.code = code;
 		this.details = details;
@@ -40,7 +41,16 @@ export class ApiError extends Error {
 }
 
 export function isApiError(error: unknown): error is ApiError {
-	return error instanceof ApiError;
+	if (error instanceof ApiError) return true;
+	if (typeof error === 'object' && error !== null) {
+		const err = error as Record<string, unknown>;
+		return (
+			(err.name === 'ApiError' || 'code' in err) &&
+			typeof err.status === 'number' &&
+			typeof err.code === 'string'
+		);
+	}
+	return false;
 }
 
 export function toErrorMessage(error: unknown, fallback: string): string {

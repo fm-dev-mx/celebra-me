@@ -26,6 +26,8 @@ interface ImportMetaEnv {
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
 	readonly SUPER_ADMIN_EMAILS: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
+	readonly PREVIEW_MFA_BYPASS: string;
+	readonly PREVIEW_ADMIN_EMAILS: string;
 	readonly BASE_URL: string;
 	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;

@@ -19,6 +19,57 @@ import {
 } from '@/lib/rsvp/security/auth-security';
 import { resolvePasswordAuthEmail } from '@/lib/rsvp/services/auth-identifier.service';
 
+/**
+ * Classifies an error thrown during signInWithPassword into an appropriate
+ * ApiError with a safe user-facing message.  No internal hostnames, keys,
+ * upstream bodies or stack traces are exposed to the client.
+ */
+function classifySignInError(cause: unknown, identifier: string): ApiError {
+	if (!(cause instanceof Error)) {
+		return new ApiError(500, 'internal_error', 'Error interno del servidor.');
+	}
+
+	// Network-level failure — Supabase is unreachable.
+	if (cause.message === 'auth-request-failed') {
+		console.error('[login] auth: unreachable (503)');
+		return new ApiError(503, 'service_unavailable', 'Servicio de autenticación no disponible.');
+	}
+
+	// Upstream responded with an error status.
+	const match = cause.message.match(/^Supabase auth error \((\d+)\)\.$/);
+	if (match) {
+		const status = Number(match[1]);
+		const stage = (cause as Error & { _stage?: string })._stage ?? 'response';
+
+		if (status === 401 || status === 400) {
+			console.error(
+				'[login] auth: invalid credentials (401)',
+				JSON.stringify({ identifier }),
+			);
+			return new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+		}
+
+		if (status >= 500) {
+			console.error('[login] auth: upstream 5xx', JSON.stringify({ status, stage }));
+			return new ApiError(502, 'upstream_error', 'Error del servicio de autenticación.');
+		}
+
+		// Other 4xx statuses (429, 403, etc.) — return as-is.
+		console.error('[login] auth: unexpected response', JSON.stringify({ status, stage }));
+		return new ApiError(status, 'upstream_error', 'Error del servicio de autenticación.');
+	}
+
+	// Unknown error type — log and return generic 500.
+	console.error(
+		'[login] auth: unhandled error',
+		JSON.stringify({
+			errorName: cause.constructor.name,
+			errorMessage: cause.message,
+		}),
+	);
+	return new ApiError(500, 'internal_error', 'Error interno del servidor.');
+}
+
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		assertSameOrigin(request, url.origin);
@@ -61,7 +112,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		assertValidPassword(password);
 		const authEmail = await resolvePasswordAuthEmail(identifier);
 		if (!authEmail) {
-			throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+			return errorResponse(new ApiError(401, 'unauthorized', 'Credenciales inválidas.'));
 		}
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
 		try {
@@ -69,8 +120,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 				email: authEmail,
 				password,
 			});
-		} catch {
-			throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+		} catch (cause) {
+			throw classifySignInError(cause, identifier);
 		}
 		const payload = {
 			ok: true,
