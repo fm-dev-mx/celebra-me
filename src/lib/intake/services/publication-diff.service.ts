@@ -1,6 +1,22 @@
 import { createHash } from 'node:crypto';
 import { getEditorSectionForPublishedPath } from '@/lib/intake/invitation-section-registry';
 
+/**
+ * Generates a 32-character MD5 hex digest for publication optimistic concurrency control.
+ *
+ * ACCEPTED RISK / NON-AUTHENTICATION FINGERPRINT:
+ * MD5 is used exclusively to produce a lightweight projection digest for optimistic
+ * locking during atomic publication. The PostgreSQL migration RPC `publish_invitation_atomic`
+ * recomputes the exact same MD5 digest inside PostgreSQL (`md5(...)`) while holding
+ * `FOR UPDATE` row locks. Concurrency safety is guaranteed by PostgreSQL database locks
+ * and transactions, not cryptographic collision resistance. Node and PostgreSQL MUST produce
+ * identical fingerprints to maintain publication compatibility.
+ */
+// codeql[js/weak-cryptographic-algorithm]
+function optimisticLockHash(content: string): string {
+	return createHash('md5').update(content).digest('hex');
+}
+
 export interface PublicationChange {
 	path: string;
 	sectionId: string;
@@ -18,16 +34,14 @@ export interface PublicationComparison {
 export function hashPublicationProjection(projection: Record<string, unknown>): string {
 	const canonical =
 		(canonicalizePublicationValue(projection) as Record<string, unknown> | undefined) ?? {};
-	return createHash('md5').update(JSON.stringify(canonical)).digest('hex');
+	return optimisticLockHash(JSON.stringify(canonical));
 }
 
 /** Fingerprint of the persisted jsonb document, without publication normalization. */
 export function hashPublishedContentFingerprint(
 	content: Record<string, unknown> | undefined,
 ): string {
-	return createHash('md5')
-		.update(toPostgresJsonbText(content ?? {}))
-		.digest('hex');
+	return optimisticLockHash(toPostgresJsonbText(content ?? {}));
 }
 
 /** Stable optimistic-lock token for the invitation fields that affect public output. */
@@ -66,10 +80,10 @@ export function hashPublicMetadata(
 		themeId: input.themeId,
 		title: input.title,
 	};
-	const metadataHash = createHash('md5').update(toPostgresJsonbText(projection)).digest('hex');
-	return createHash('md5')
-		.update(`${metadataHash}\u001f${hashPublishedContentFingerprint(publishedContent)}`)
-		.digest('hex');
+	const metadataHash = optimisticLockHash(toPostgresJsonbText(projection));
+	return optimisticLockHash(
+		`${metadataHash}\u001f${hashPublishedContentFingerprint(publishedContent)}`,
+	);
 }
 
 function toPostgresJsonbText(value: unknown): string {
