@@ -2,11 +2,13 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
-import { normalizeInvitationImage } from '../../src/lib/intake/services/asset-policy.ts';
+import { createClient } from '@supabase/supabase-js';
+import { normalizeInvitationImage, extractBlobRawBytes } from '../../src/lib/intake/services/asset-policy.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import type { InvitationDefinition, UploadedAssetMap, UploadedAssetRef } from './invitations/invitation-definition.ts';
+import { resolveLocalEnv } from './local-provision-env.ts';
 
 export const RELEASE_SCHEMA_VERSION = '2.0.0';
 export const ASSET_KEY_PREFIX = '__INVITATION_ASSET_KEY__:';
@@ -30,7 +32,12 @@ export function canonicalize(value: unknown): string {
 	const record = value as Record<string, unknown>;
 	return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalize(record[key])}`).join(',')}}`;
 }
-function hash(value: unknown): string { return createHash('sha256').update(typeof value === 'string' ? value : canonicalize(value)).digest('hex'); }
+function hash(value: unknown): string {
+	if (Buffer.isBuffer(value) || value instanceof Uint8Array) {
+		return createHash('sha256').update(value).digest('hex');
+	}
+	return createHash('sha256').update(typeof value === 'string' ? value : canonicalize(value)).digest('hex');
+}
 export function semanticAssetRef(key: string): UploadedAssetRef { return { type: 'uploaded', assetId: `${ASSET_KEY_PREFIX}${key}`, src: `${STORAGE_URL_PLACEHOLDER}/${ASSET_KEY_PREFIX}${key}` }; }
 export function buildSemanticAssetMap(definition: InvitationDefinition): UploadedAssetMap { return Object.fromEntries(definition.assets.map((asset) => [asset.key, semanticAssetRef(asset.key)])); }
 export function materializeAssetReferences(value: unknown, assets: Record<string, UploadedAssetRef>): unknown {
@@ -46,19 +53,74 @@ export function materializeAssetReferences(value: unknown, assets: Record<string
 	}
 	return value;
 }
-export async function buildNormalizedInvitationRelease(options: { slug: string; sourceDir: string }): Promise<NormalizedInvitationRelease> {
-	const definition = getInvitationDefinition(options.slug);
-	const root = resolve(options.sourceDir);
-	if (!existsSync(root) || !statSync(root).isDirectory()) throw new Error(`Invitation asset root does not exist: ${root}`);
+
+/** Load assets from the persistent-local Supabase DB and Storage (no sourceDir provided). */
+async function loadPersistedAssets(
+	slug: string,
+	specs: InvitationDefinition['assets'],
+): Promise<NormalizedInvitationAsset[]> {
+	const env = resolveLocalEnv();
+	const supabase = createClient(env.apiUrl, env.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+	const { data: inv } = await supabase.from('invitations').select('id').eq('slug', slug).is('archived_at', null).maybeSingle();
+	if (!inv?.id) throw new Error(`No persistent-local invitation found for slug "${slug}" and no sourceDir provided.`);
+
+	const { data: dbAssets } = await supabase.from('invitation_assets').select('*').eq('invitation_id', inv.id).is('deleted_at', null);
+	if (!dbAssets || dbAssets.length === 0) throw new Error(`No persisted invitation assets found for slug "${slug}".`);
+
+	const dbAssetMap = new Map((dbAssets as Array<Record<string, unknown>>).map((r) => [r.display_name as string, r]));
 	const assets: NormalizedInvitationAsset[] = [];
-	for (const asset of definition.assets) {
-		const source = resolve(root, asset.relativePath);
-		if (!source.startsWith(`${root}${sep}`) || !existsSync(source) || !statSync(source).isFile()) throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
-		const sourceBytes = readFileSync(source);
-		const normalized = await normalizeInvitationImage(new Blob([Uint8Array.from(sourceBytes)], { type: 'image/jpeg' }), 'image/jpeg');
-		const bytes = new Uint8Array(await normalized.blob.arrayBuffer());
-		assets.push({ key: asset.key, displayName: asset.displayName, alt: asset.alt, focalPoint: asset.focalPoint, bytes, dataBase64: Buffer.from(bytes).toString('base64'), sha256: hash(bytes), mimeType: normalized.mimeType, width: normalized.width, height: normalized.height, fileSize: normalized.fileSize, validationVersion: normalized.validationVersion, originalMimeType: normalized.originalMimeType, originalFileSize: normalized.originalFileSize });
+
+	for (const spec of specs) {
+		const match = dbAssetMap.get(spec.displayName);
+		if (!match) throw new Error(`Missing persisted asset matching displayName "${spec.displayName}" for key "${spec.key}".`);
+
+		const storagePath = match.storage_path as string;
+		const { data: fileData, error } = await supabase.storage.from('invitation-assets').download(storagePath);
+		if (error || !fileData) throw new Error(`Failed to download persisted storage object "${storagePath}" for asset "${spec.key}": ${error?.message}`);
+
+		const bytes = new Uint8Array(await fileData.arrayBuffer());
+		assets.push({
+			key: spec.key,
+			displayName: spec.displayName,
+			alt: spec.alt,
+			focalPoint: spec.focalPoint,
+			bytes,
+			dataBase64: Buffer.from(bytes).toString('base64'),
+			sha256: hash(bytes),
+			mimeType: match.mime_type as string,
+			width: Number(match.width),
+			height: Number(match.height),
+			fileSize: Number(match.file_size),
+			validationVersion: Number(match.validation_version ?? 1),
+			originalMimeType: (match.original_mime_type as string) || (match.mime_type as string),
+			originalFileSize: Number(match.original_file_size ?? match.file_size),
+		});
 	}
+	return assets;
+}
+
+export async function buildNormalizedInvitationRelease(options: { slug: string; sourceDir?: string }): Promise<NormalizedInvitationRelease> {
+	const definition = getInvitationDefinition(options.slug);
+	let assets: NormalizedInvitationAsset[];
+
+	if (options.sourceDir) {
+		const root = resolve(options.sourceDir);
+		if (!existsSync(root) || !statSync(root).isDirectory()) throw new Error(`Invitation asset root does not exist: ${root}`);
+		assets = [];
+		for (const asset of definition.assets) {
+			const source = resolve(root, asset.relativePath);
+			if (!source.startsWith(`${root}${sep}`) || !existsSync(source) || !statSync(source).isFile()) throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
+			const sourceBytes = readFileSync(source);
+			const normalized = await normalizeInvitationImage(new Blob([Uint8Array.from(sourceBytes)], { type: 'image/jpeg' }), 'image/jpeg');
+			const raw = await extractBlobRawBytes(normalized.blob);
+			if (!raw) throw new Error('Could not extract bytes from Blob.');
+			const bytes = raw;
+			assets.push({ key: asset.key, displayName: asset.displayName, alt: asset.alt, focalPoint: asset.focalPoint, bytes, dataBase64: Buffer.from(bytes).toString('base64'), sha256: hash(bytes), mimeType: normalized.mimeType, width: normalized.width, height: normalized.height, fileSize: normalized.fileSize, validationVersion: normalized.validationVersion, originalMimeType: normalized.originalMimeType, originalFileSize: normalized.originalFileSize });
+		}
+	} else {
+		assets = await loadPersistedAssets(options.slug, definition.assets);
+	}
+
 	assets.sort((a, b) => a.key.localeCompare(b.key));
 	const snapshot = findDemoPreset(definition.baseDemoId);
 	if (!snapshot || snapshot.themeId !== definition.themeId) throw new Error(`Definition has invalid preset/theme pairing: ${definition.baseDemoId}.`);

@@ -178,10 +178,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			r,
 		]),
 	);
+	const existingAssetsByDisplayName = new Map(
+		((existingAssetRows ?? []) as Array<Record<string, unknown>>).map((r) => [
+			r.display_name as string,
+			r,
+		]),
+	);
 
 	for (const norm of normalizedPhotos) {
-		const storagePath = `managed/${slug}/${norm.key}.webp`;
-		const existingAsset = existingAssetsByPath.get(storagePath);
+		const existingAsset = existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) || existingAssetsByDisplayName.get(norm.displayName);
+		const storagePath = (existingAsset?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
 		const assetId = (existingAsset?.id as string) || randomUUID();
 		const publicUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
@@ -262,9 +268,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	);
 
 	const isDraftContentIdentical =
-		existingDraft && JSON.stringify(existingDraft.content) === JSON.stringify(proposedContent);
+		existingDraft && canonicalize(existingDraft.content) === canonicalize(proposedContent);
 	const isPubContentIdentical =
-		existingPub && JSON.stringify(existingPub.content) === JSON.stringify(proposedContent);
+		existingPub && canonicalize(existingPub.content) === canonicalize(proposedContent);
 
 	const actions: Array<{ resource: string; name: string; action: string; detail: string }> = [
 		{
@@ -376,9 +382,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	// 2. Storage Uploads & Metadata Upserts
 	for (const norm of normalizedPhotos) {
 		const assetRef = assetMap[norm.key];
-		const storagePath = `managed/${slug}/${norm.key}.webp`;
-
-		const existing = existingAssetsByPath.get(storagePath);
+		const existing = existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) || existingAssetsByDisplayName.get(norm.displayName);
+		const storagePath = (existing?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
 		let storageHash: string | null = null;
 		try {
 			const response = await fetch(assetRef.src);
@@ -569,14 +574,19 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	const finalInvitationRow = finalInvitation.data as Record<string, unknown> | null;
 	const finalAssetsByPath = new Map(
-		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((asset) => [asset.storage_path as string, asset]),
+		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [a.storage_path as string, a]),
+	);
+	const finalAssetsByDisplayName = new Map(
+		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [a.display_name as string, a]),
 	);
 	const assetsVerified = await Promise.all(normalizedPhotos.map(async (asset) => {
-		const storagePath = `managed/${slug}/${asset.key}.webp`;
-		const row = finalAssetsByPath.get(storagePath);
+		// Prefer the managed canonical path, fall back to existing row matched by display_name (e.g. pre-existing invitations/<uuid>/optimized/<id>.webp).
+		const managedPath = `managed/${slug}/${asset.key}.webp`;
+		const row = finalAssetsByPath.get(managedPath) || finalAssetsByDisplayName.get(asset.displayName);
+		const actualPath = (row?.storage_path as string) || managedPath;
 		if (!row || row.display_name !== asset.displayName || row.default_alt_text !== asset.alt || row.mime_type !== asset.mimeType || Number(row.file_size) !== asset.fileSize || Number(row.width) !== asset.width || Number(row.height) !== asset.height || Number(row.validation_version) !== asset.validationVersion || row.original_mime_type !== asset.originalMimeType || Number(row.original_file_size) !== asset.originalFileSize) return false;
 		try {
-			const response = await fetch(`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`);
+			const response = await fetch(`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${actualPath}`);
 			return response.ok && createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex') === asset.imageHash;
 		} catch {
 			return false;
@@ -595,8 +605,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		finalInvitationRow.client_whatsapp === (definition.clientWhatsapp ?? '') &&
 		finalInvitationRow.photos_received === (definition.photosReceived ?? true) &&
 		finalInvitationRow.created_by === ownerUserId &&
-		JSON.stringify(finalDraft.data?.content) === JSON.stringify(proposedContent) &&
-		JSON.stringify(finalPublication.data?.content) === JSON.stringify(proposedContent) &&
+		canonicalize(finalDraft.data?.content) === canonicalize(proposedContent) &&
+		canonicalize(finalPublication.data?.content) === canonicalize(proposedContent) &&
 		finalEventRow?.owner_user_id === ownerUserId &&
 		finalEventRow.event_type === definition.eventType &&
 		finalEventRow.title === definition.title &&
