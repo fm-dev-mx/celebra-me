@@ -176,8 +176,6 @@ export function buildRominaPublishedContent(
 		family: {
 			eyebrow: 'Familia',
 			title: 'Con el amor de mis padres y la compañía de mis padrinos',
-			sectionSubtitle:
-				'Me acompañan en este día tan especial mis padres, Claudia Chaparro Juárez y Christian Miguel Ríos, así como mis padrinos, Fernando Nájera y Esmeralda Carbajal.',
 			parents: {
 				mother: 'Claudia Chaparro Juárez',
 				father: 'Christian Miguel Ríos',
