@@ -48,9 +48,14 @@ export interface LocalApplyResult {
 	ownerUserId: string;
 	publishedVersion: number;
 	isZeroDrift: boolean;
-	plannedMutations: number;
-	executedMutations: number;
-	mutationsPerformed: number;
+	plannedOperations: number;
+	completedOperations: number;
+	databaseInserts: number;
+	databaseUpdates: number;
+	databaseDeletes: number;
+	storageUploads: number;
+	storageOverwrites: number;
+	storageDeletes: number;
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
 }
 
@@ -240,7 +245,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		existingInv.event_type === definition.eventType &&
 		existingInv.base_demo_id === definition.baseDemoId &&
 		existingInv.theme_id === definition.themeId &&
-		JSON.stringify(existingInv.snapshot) === JSON.stringify(preset) &&
+		canonicalize(existingInv.snapshot) === canonicalize(preset) &&
 		existingInv.kind === 'client' &&
 		existingInv.client_name === definition.clientName &&
 		existingInv.client_email === (definition.clientEmail ?? '') &&
@@ -312,12 +317,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		},
 	];
 
-	const plannedMutations = actions.filter(
+	const plannedOperations = actions.filter(
 		(a) => a.action === 'create' || a.action === 'replace',
 	).length;
-	const isZeroDrift = plannedMutations === 0;
+	const isZeroDrift = plannedOperations === 0;
 	const currentVersion = (existingPub?.version as number) || 1;
 	const targetVersion = isPubContentIdentical ? currentVersion : existingPub ? currentVersion + 1 : 1;
+
+	// Calculate estimated DB and Storage metrics for dry-run / reporting
+	const estInserts =
+		(!existingInv ? 1 : 0) +
+		assetActions.filter((a) => a.action === 'create').length +
+		(!existingDraft ? 1 : 0) +
+		(!isPubContentIdentical || !existingPub ? 1 : 0) +
+		(!existingEvent ? 1 : 0) +
+		(!existingMembership ? 1 : 0) +
+		(plannedOperations > 0 ? 1 : 0);
+	const estUpdates =
+		(existingInv && !isInvitationIdentical ? 1 : 0) +
+		assetActions.filter((a) => a.action === 'replace').length +
+		(existingDraft && !isDraftContentIdentical ? 1 : 0) +
+		(existingEvent && !isEventIdentical ? 1 : 0) +
+		(existingMembership && !isMembershipIdentical ? 1 : 0);
+	const estUploads = assetActions.filter((a) => a.action === 'create').length;
+	const estOverwrites = assetActions.filter((a) => a.action === 'replace').length;
 
 	if (!isApply || isZeroDrift) {
 		return {
@@ -328,9 +351,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			ownerUserId,
 			publishedVersion: targetVersion,
 			isZeroDrift,
-			plannedMutations,
-			executedMutations: 0,
-			mutationsPerformed: 0,
+			plannedOperations,
+			completedOperations: 0,
+			databaseInserts: estInserts,
+			databaseUpdates: estUpdates,
+			databaseDeletes: 0,
+			storageUploads: estUploads,
+			storageOverwrites: estOverwrites,
+			storageDeletes: 0,
 			actions,
 		};
 	}
@@ -347,7 +375,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	try {
-		let executedMutations = 0;
 
 		// 1. Ensure Invitation Record
 		const invMetadata = {
@@ -369,14 +396,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			// Already flagged as isPreExisting at line 387 — no tracking push needed.
 			const { error } = await supabase.from('invitations').update(invMetadata).eq('id', invitationId);
 			if (error) throw error;
-			executedMutations++;
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
 				.insert({ id: invitationId, slug, ...invMetadata });
 			if (error) throw error;
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
-			executedMutations++;
 		}
 
 	// 2. Storage Uploads & Metadata Upserts
@@ -439,7 +464,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				if (error) throw error;
 				trackedResources.push({ type: 'invitation_asset', id: assetRef.assetId, isPreExisting: false });
 			}
-			executedMutations++;
 		}
 	}
 
@@ -476,7 +500,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			draftUpdatedAt = data.updated_at as string;
 			trackedResources.push({ type: 'invitation_content_draft', id: newId, isPreExisting: false });
 		}
-		executedMutations++;
 	}
 
 	// 4. Publish via atomic RPC if published content changed
@@ -521,7 +544,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 		if (pubError) throw pubError;
 		finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
-		executedMutations++;
 	}
 
 	// 5. Upsert Event and Membership
@@ -539,25 +561,21 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		});
 		if (eventError) throw eventError;
 		trackedResources.push({ type: 'event', id: eventId, isPreExisting: false });
-		executedMutations++;
 	} else if (!isEventIdentical) {
 		const { error: eventError } = await supabase
 			.from('events')
 			.update({ owner_user_id: ownerUserId, event_type: definition.eventType, title: definition.title, status: 'published', invitation_project_id: invitationId })
 			.eq('id', eventId);
 		if (eventError) throw eventError;
-		executedMutations++;
 	}
 
 	if (!existingMembership) {
 		const { error: membershipError } = await supabase.from('event_memberships').insert({ event_id: eventId, user_id: ownerUserId, membership_role: 'owner' });
 		if (membershipError) throw membershipError;
 		trackedResources.push({ type: 'event_membership', id: `${eventId}:${ownerUserId}`, isPreExisting: false });
-		executedMutations++;
 	} else if (!isMembershipIdentical) {
 		const { error: membershipError } = await supabase.from('event_memberships').update({ membership_role: 'owner', deleted_at: null }).eq('event_id', eventId).eq('user_id', ownerUserId);
 		if (membershipError) throw membershipError;
-		executedMutations++;
 	}
 
 	const [finalInvitation, finalDraft, finalPublication, finalAssets, finalEvent, finalMembership] =
@@ -633,7 +651,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			applied_at: new Date().toISOString(),
 		});
 	if (provenanceError) throw provenanceError;
-	executedMutations++;
 
 	return {
 		slug,
@@ -643,9 +660,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		ownerUserId,
 		publishedVersion: finalVersion,
 		isZeroDrift: false,
-		plannedMutations,
-		executedMutations,
-		mutationsPerformed: executedMutations,
+		plannedOperations,
+		completedOperations: plannedOperations,
+		databaseInserts: estInserts,
+		databaseUpdates: estUpdates,
+		databaseDeletes: 0,
+		storageUploads: estUploads,
+		storageOverwrites: estOverwrites,
+		storageDeletes: 0,
 		actions,
 	};
 	} catch (err) {

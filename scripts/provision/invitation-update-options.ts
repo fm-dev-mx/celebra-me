@@ -10,20 +10,77 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 	return values as InvitationUpdateTarget[];
 }
 
-export function buildStatusReport(args: string[]): Record<string, unknown> {
+export interface StatusReportOptions {
+	slug?: string;
+	targets?: InvitationUpdateTarget[];
+	includeLegacy?: boolean;
+	includeArchived?: boolean;
+	includeDemos?: boolean;
+}
+
+export function parseStatusOptions(input: string[] | StatusReportOptions): StatusReportOptions {
+	if (!Array.isArray(input)) {
+		return {
+			slug: input.slug,
+			targets: input.targets && input.targets.length > 0 ? input.targets : undefined,
+			includeLegacy: Boolean(input.includeLegacy),
+			includeArchived: Boolean(input.includeArchived),
+			includeDemos: Boolean(input.includeDemos),
+		};
+	}
 	const value = (flag: string): string | undefined => {
-		const index = args.indexOf(flag);
-		return index >= 0 ? args[index + 1] : undefined;
+		const index = input.indexOf(flag);
+		return index >= 0 ? input[index + 1] : undefined;
 	};
-	const requestedSlug = value('--slug');
-	const statusTargets = parseTargets(value('--targets'));
-	const targets = statusTargets.length > 0 ? statusTargets : ['local', 'preview', 'production'];
+	const rawTargets = value('--targets');
+	const parsedTargets = parseTargets(rawTargets);
+	return {
+		slug: value('--slug'),
+		targets: parsedTargets.length > 0 ? parsedTargets : undefined,
+		includeLegacy: input.includes('--include-legacy'),
+		includeArchived: input.includes('--include-archived'),
+		includeDemos: input.includes('--include-demos'),
+	};
+}
+
+export function buildStatusReport(input: string[] | StatusReportOptions): Record<string, unknown> {
+	const opts = parseStatusOptions(input);
+	const requestedSlug = opts.slug;
+	const targets = opts.targets && opts.targets.length > 0 ? opts.targets : ['local', 'preview', 'production'];
+
 	const definitions = listInvitationDefinitions()
 		.filter((definition) => !requestedSlug || definition.slug === requestedSlug)
 		.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-		.map((definition) => ({
-			slug: definition.slug, title: definition.title, createdAt: definition.createdAt, classification: 'UNVERIFIED',
-			environments: Object.fromEntries(targets.map((target) => [target, { status: 'UNVERIFIED', reason: 'Fast target summaries require configured target credentials and are read-only.' }])),
-		}));
-	return { mode: 'status', filters: { slug: requestedSlug, targets, includeLegacy: args.includes('--include-legacy'), includeArchived: args.includes('--include-archived'), includeDemos: args.includes('--include-demos') }, definitions, legacy: args.includes('--include-legacy') ? { status: 'UNVERIFIED', reason: 'Legacy discovery requires a configured target and is not available from definitions alone.' } : undefined };
+		.map((definition) => {
+			const envEntries = targets.map((target) => {
+				const envInfo = {
+					status: 'UNVERIFIED',
+					reason: 'Fast target summaries require configured target credentials and are read-only.',
+				};
+				return [target, envInfo];
+			});
+			return {
+				slug: definition.slug,
+				title: definition.title,
+				createdAt: definition.createdAt,
+				classification: 'UNVERIFIED',
+				environments: Object.fromEntries(envEntries),
+			};
+		});
+
+	return {
+		mode: 'status',
+		filters: {
+			slug: requestedSlug ?? null,
+			targets,
+			includeLegacy: opts.includeLegacy ?? false,
+			includeArchived: opts.includeArchived ?? false,
+			includeDemos: opts.includeDemos ?? false,
+		},
+		definitions,
+		legacy: opts.includeLegacy
+			? { status: 'UNVERIFIED', reason: 'Legacy discovery requires a configured target and is not available from definitions alone.' }
+			: undefined,
+	};
 }
+
