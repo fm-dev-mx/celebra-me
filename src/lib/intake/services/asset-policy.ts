@@ -26,6 +26,30 @@ export interface NormalizedInvitationImage {
 	validationVersion: number;
 }
 
+/**
+ * Extracts raw bytes from a Blob-like value across different runtime environments.
+ * Handles standard web Blob (arrayBuffer), jsdom's internal symbol representation,
+ * Node Buffer/Uint8Array, and objects with a .buffer property.
+ */
+export async function extractBlobRawBytes(file: Blob): Promise<Uint8Array | undefined> {
+	if (Buffer.isBuffer(file) || file instanceof Uint8Array) return new Uint8Array(file);
+	if (typeof (file as { arrayBuffer?: unknown }).arrayBuffer === 'function') {
+		return new Uint8Array(await (file as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer());
+	}
+	if (typeof (file as { bytes?: () => Promise<Uint8Array> }).bytes === 'function') {
+		return await (file as { bytes: () => Promise<Uint8Array> }).bytes();
+	}
+	const symbols = Object.getOwnPropertySymbols(file);
+	const impl = symbols.length > 0 ? (file as unknown as Record<symbol, unknown>)[symbols[0]] as Record<string, unknown> | undefined : undefined;
+	if (impl?._buffer && (Buffer.isBuffer(impl._buffer) || impl._buffer instanceof Uint8Array)) {
+		return new Uint8Array(impl._buffer as Uint8Array);
+	}
+	if (file && typeof file === 'object' && 'buffer' in file && file.buffer) {
+		return new Uint8Array(file.buffer as ArrayBuffer);
+	}
+	return undefined;
+}
+
 export async function normalizeInvitationImage(
 	file: Blob,
 	declaredMimeType: string,
@@ -50,7 +74,11 @@ export async function normalizeInvitationImage(
 	}
 
 	try {
-		const input = Buffer.from(await file.arrayBuffer());
+		const rawBytes = await extractBlobRawBytes(file);
+		if (!rawBytes) {
+			throw new ApiError(422, 'validation_error', 'La imagen está vacía o dañada.');
+		}
+		const input = Buffer.from(rawBytes);
 		const metadata = await sharp(input, {
 			failOn: 'error',
 			limitInputPixels: MAX_INPUT_PIXELS,
@@ -118,7 +146,7 @@ export async function normalizeInvitationImage(
 		}
 
 		return {
-			blob: new Blob([Uint8Array.from(output.data).buffer], { type: OUTPUT_MIME_TYPE }),
+			blob: new Blob([Uint8Array.from(output.data)], { type: OUTPUT_MIME_TYPE }),
 			width: output.info.width,
 			height: output.info.height,
 			fileSize: output.info.size,
