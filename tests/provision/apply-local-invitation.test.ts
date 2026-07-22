@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { Mock } from 'jest-mock';
-import { resolveLocalEnv } from '../../scripts/provision/apply-local-invitation.ts';
+import { resolveLocalEnv } from '../../scripts/provision/local-provision-env.ts';
 
 jest.mock('node:child_process', () => ({ execFileSync: jest.fn() }));
 jest.mock('node:fs', () => {

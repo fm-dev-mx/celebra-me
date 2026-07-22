@@ -13,11 +13,7 @@
  */
 
 import { createHash, randomUUID } from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { classifyDbTarget, verifyLocalIdentity } from '../db/db-guard.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	hashPublicMetadata,
@@ -25,28 +21,23 @@ import {
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
-import { buildNormalizedInvitationRelease, materializeAssetReferences } from './normalized-invitation-release.ts';
+import { buildNormalizedInvitationRelease, canonicalize, materializeAssetReferences } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
 import type {
 	UploadedAssetMap,
 } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
+import { resolveLocalEnv } from './local-provision-env.ts';
 
 const BUCKET = 'invitation-assets';
 
 export interface ApplyLocalOptions {
 	slug: string;
-	sourceDir: string;
+	sourceDir?: string;
 	ownerUserId?: string;
 	apply?: boolean;
 	allowDivergentOverwrite?: boolean;
 	projectRoot?: string;
-}
-
-export interface LocalEnv {
-	apiUrl: string;
-	dbUrl: string;
-	serviceRoleKey: string;
 }
 
 export interface LocalApplyResult {
@@ -61,50 +52,6 @@ export interface LocalApplyResult {
 	executedMutations: number;
 	mutationsPerformed: number;
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
-}
-
-// ---------------------------------------------------------------------------
-// Environment & Local Target Verification
-// ---------------------------------------------------------------------------
-
-export function resolveLocalEnv(projectRoot?: string): LocalEnv {
-	const root = projectRoot ?? process.cwd();
-
-	let output: string;
-	try {
-		output = execFileSync('supabase', ['status', '-o', 'json'], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-		});
-	} catch {
-		throw new Error(
-			'Local Supabase is required for invitation:update. Refusing to run without local Supabase status.',
-		);
-	}
-
-	const status = JSON.parse(output) as Record<string, unknown>;
-	const apiUrl = status.API_URL as string;
-	const dbUrl = status.DB_URL as string;
-	const serviceRoleKey = status.SERVICE_ROLE_KEY as string;
-
-	if (typeof apiUrl !== 'string' || typeof dbUrl !== 'string' || typeof serviceRoleKey !== 'string') {
-		throw new Error('Local Supabase status is incomplete. Refusing to run.');
-	}
-
-	const classification = classifyDbTarget(dbUrl, { apiUrl });
-	const identity = verifyLocalIdentity({
-		supabaseStatus: output,
-		supabaseConfig: fs.readFileSync(path.join(root, 'supabase', 'config.toml'), 'utf8'),
-	});
-
-	if (classification.target !== 'persistent-local' || !identity.ok) {
-		throw new Error(
-			`Refusing to run: local target verification failed (${classification.reason}${identity.errors.length ? '; ' + identity.errors.join(' ') : ''}).`,
-		);
-	}
-
-	return { apiUrl, dbUrl, serviceRoleKey };
 }
 
 // ---------------------------------------------------------------------------
