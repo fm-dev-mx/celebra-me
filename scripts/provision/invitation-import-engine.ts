@@ -114,13 +114,15 @@ export function validatePackageData(pkg: InvitationPackageData): InvitationPacka
 	for (const [name, value] of Object.entries({
 		sourceHash: pkg.sourceHash,
 		metadataHash: pkg.metadataHash,
-		projectionHash: pkg.projectionHash,
 		assetManifestHash: pkg.assetManifestHash,
 		packageHash: pkg.packageHash,
 	})) {
 		if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) {
 			throw new Error(`Package is missing a valid SHA-256 ${name}.`);
 		}
+	}
+	if (typeof pkg.projectionHash !== 'string' || !/^[a-f0-9]{32}$/.test(pkg.projectionHash)) {
+		throw new Error('Package is missing a valid MD5 projectionHash.');
 	}
 	if (!pkg.definitionCreatedAt || !pkg.sourceSlug || !pkg.publishedContent || !pkg.event) {
 		throw new Error('Package is missing required release metadata, published content, or event data.');
@@ -837,8 +839,12 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		) {
 			throw new Error('Final target verification failed; managed-release provenance was not recorded.');
 		}
+		// managed_invitation_release_provenance.projection_hash has a check constraint requiring
+		// 64-char SHA-256 hex. The package carries an MD5 projectionHash (32 chars) for the
+		// publish_invitation_atomic RPC. Derive the provenance value by SHA-256 hashing the MD5.
+		const provenanceProjectionHash = createHash('sha256').update(pkg.projectionHash).digest('hex');
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(pkg.projectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		executedMutations++;

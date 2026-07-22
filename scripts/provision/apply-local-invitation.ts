@@ -626,7 +626,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			source_hash: release.sourceHash,
 			package_hash: packageHash,
 			metadata_hash: release.metadataHash,
-			projection_hash: release.projectionHash,
+			// SHA-256 of the materialized proposed content (the provenance table check constraint
+			// requires 64-char hex; release.projectionHash is MD5/32-char for the RPC).
+			projection_hash: createHash('sha256').update(canonicalize(proposedContent)).digest('hex'),
 			asset_manifest_hash: release.assetManifestHash,
 			applied_at: new Date().toISOString(),
 		});

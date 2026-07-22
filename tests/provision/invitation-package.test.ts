@@ -4,8 +4,9 @@ import type { NormalizedInvitationRelease } from '../../scripts/provision/normal
 import { validatePackageData } from '../../scripts/provision/invitation-import-engine.ts';
 
 const hash = 'a'.repeat(64);
+const md5hash = 'a'.repeat(32);
 const basePayload: Omit<InvitationPackageData, 'packageHash'> = {
-	schemaVersion: '2.0.0', sourceHash: hash, metadataHash: hash, projectionHash: hash, assetManifestHash: hash,
+	schemaVersion: '2.0.0', sourceHash: hash, metadataHash: hash, projectionHash: md5hash, assetManifestHash: hash,
 	definitionCreatedAt: '2026-07-20T00:00:00.000Z', sourceSlug: 'test-invitation',
 	invitation: { slug: 'test-invitation', title: 'Test', eventType: 'xv', baseDemoId: 'demo', themeId: 'theme', visualProfileId: 'profile', kind: 'client', clientName: 'Client', clientEmail: '', clientWhatsapp: '', photosReceived: true, snapshot: {} },
 	draft: { status: 'draft', content: { hero: { title: 'Test' } } }, publishedContent: { content: { hero: { title: 'Test' } } }, event: { title: 'Test', eventType: 'xv', status: 'published' },
@@ -23,7 +24,7 @@ describe('invitation package', () => {
 
 	it('uses the serialized package hash as the normalized release provenance identity', () => {
 		const release: NormalizedInvitationRelease = {
-			schemaVersion: '2.0.0', slug: 'test-invitation', definitionCreatedAt: '2026-07-20T00:00:00.000Z', sourceHash: hash, metadataHash: hash, projectionHash: hash, assetManifestHash: hash,
+			schemaVersion: '2.0.0', slug: 'test-invitation', definitionCreatedAt: '2026-07-20T00:00:00.000Z', sourceHash: hash, metadataHash: hash, projectionHash: md5hash, assetManifestHash: hash,
 			metadata: { title: 'Test', eventType: 'xv', baseDemoId: 'demo', themeId: 'theme', visualProfileId: 'profile', clientName: 'Client', clientEmail: '', clientWhatsapp: '', photosReceived: true, snapshot: {} },
 			draftContent: { hero: { type: 'uploaded', assetId: '__INVITATION_ASSET_KEY__:hero', src: '__STORAGE_URL__/__INVITATION_ASSET_KEY__:hero' } },
 			publishedProjection: { hero: { type: 'uploaded', assetId: '__INVITATION_ASSET_KEY__:hero', src: '__STORAGE_URL__/__INVITATION_ASSET_KEY__:hero' } },
