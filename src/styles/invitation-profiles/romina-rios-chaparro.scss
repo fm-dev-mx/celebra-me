@@ -145,11 +145,6 @@
 	--pa-guest-color: var(--romina-ink);
 	--pa-count-color: var(--romina-botanical);
 	--pa-divider-diamond-bg: var(--romina-ivory);
-	--pa-count-frame-bg: linear-gradient(
-		180deg,
-		var(--romina-warm-white) 0%,
-		var(--romina-ivory) 100%
-	);
 
 	// Envelope seal — elevated gold wax seal with RC monogram
 	--monogram-font-size: 7.5px;
@@ -191,6 +186,10 @@
 			gap: 0.4rem;
 			bottom: 0;
 			margin-bottom: 12rem;
+
+			@include mixins.respond-to(lg) {
+				margin-bottom: 5rem;
+			}
 		}
 
 		&__date {
