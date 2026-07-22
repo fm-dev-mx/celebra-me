@@ -37,12 +37,19 @@ before creating, editing, publishing, or validating an invitation. Content struc
 
 ## Local application, packaging, and promotion workflow
 
-- Versioned invitation definitions are single TypeScript files under `scripts/provision/invitations/<slug>.ts`.
-- Applying a definition to persistent-local uses `pnpm invitation:apply:local -- --slug <slug> --source-dir <path> [--apply]`. Default is `--dry-run`.
-- Invitation promotion uses the canonical package pipeline:
-  `Single-File Definition -> pnpm invitation:apply:local -> pnpm invitation:package -> pnpm invitation:promote:preview -> pnpm invitation:promote:prod`.
-- Preview is a validation environment. Production MUST NOT import directly from the Preview database
-  or Storage.
+- Versioned invitation definitions are single TypeScript files under
+  `scripts/provision/invitations/<slug>.ts`.
+- Managed invitation changes use
+  `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
+- The canonical pipeline is
+  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Resume Production`.
+- Preview is a validation environment. Production MUST NOT import directly from the Preview
+  database or Storage.
+- Production resume from an approved package requires a matching Preview approval artifact and
+  explicit owner:
+  ```bash
+  pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --owner-user-id <uuid> --apply
+  ```
 - Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
   and embedded base64 assets with SHA-256 signatures.
 - Packages MUST NOT leak local or environment-specific Supabase URLs (sanitized to

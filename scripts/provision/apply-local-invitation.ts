@@ -12,23 +12,22 @@
  *  - Idempotent: safe to re-run against unchanged definitions/photos (reports 0 mutations performed).
  */
 
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { classifyDbTarget, verifyLocalIdentity } from '../db/db-guard.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
-import { normalizeInvitationImage } from '../../src/lib/intake/services/asset-policy.ts';
 import {
 	hashPublicMetadata,
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
-import { hashBytes } from './romina/helpers.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
+import { buildNormalizedInvitationRelease, materializeAssetReferences } from './normalized-invitation-release.ts';
+import { serializeInvitationPackage } from './invitation-package.ts';
 import type {
-	InvitationDefinition,
 	UploadedAssetMap,
 } from './invitations/invitation-definition.ts';
 
@@ -39,6 +38,7 @@ export interface ApplyLocalOptions {
 	sourceDir: string;
 	ownerUserId?: string;
 	apply?: boolean;
+	allowDivergentOverwrite?: boolean;
 	projectRoot?: string;
 }
 
@@ -46,21 +46,6 @@ export interface LocalEnv {
 	apiUrl: string;
 	dbUrl: string;
 	serviceRoleKey: string;
-}
-
-export interface NormalizedPhotoSpec {
-	key: string;
-	displayName: string;
-	alt: string;
-	bytes: Uint8Array;
-	mimeType: string;
-	width: number;
-	height: number;
-	fileSize: number;
-	validationVersion: number;
-	originalMimeType: string;
-	originalFileSize: number;
-	imageHash: string;
 }
 
 export interface LocalApplyResult {
@@ -93,7 +78,7 @@ export function resolveLocalEnv(projectRoot?: string): LocalEnv {
 		});
 	} catch {
 		throw new Error(
-			'Local Supabase is required for invitation:apply:local. Refusing to run without local Supabase status.',
+			'Local Supabase is required for invitation:update. Refusing to run without local Supabase status.',
 		);
 	}
 
@@ -122,56 +107,6 @@ export function resolveLocalEnv(projectRoot?: string): LocalEnv {
 }
 
 // ---------------------------------------------------------------------------
-// Photo Processing & Asset Verification
-// ---------------------------------------------------------------------------
-
-export async function processSourcePhotos(
-	definition: InvitationDefinition,
-	sourceDir: string,
-): Promise<NormalizedPhotoSpec[]> {
-	const resolvedDir = path.resolve(sourceDir);
-	if (!fs.existsSync(resolvedDir) || !fs.statSync(resolvedDir).isDirectory()) {
-		throw new Error(`Photo source directory does not exist or is not a directory: ${resolvedDir}`);
-	}
-
-	const normalizedList: NormalizedPhotoSpec[] = [];
-
-	for (const spec of definition.assetSpecs) {
-		const sourcePath = path.join(resolvedDir, spec.fileName);
-		if (!fs.existsSync(sourcePath)) {
-			throw new Error(
-				`Required source photograph "${spec.fileName}" for asset "${spec.displayName}" missing in ${resolvedDir}`,
-			);
-		}
-
-		const sourceBytes = fs.readFileSync(sourcePath);
-		const normalized = await normalizeInvitationImage(
-			new Blob([Uint8Array.from(sourceBytes)], { type: 'image/jpeg' }),
-			'image/jpeg',
-		);
-
-		const uploadBytes = new Uint8Array(await normalized.blob.arrayBuffer());
-
-		normalizedList.push({
-			key: spec.key,
-			displayName: spec.displayName,
-			alt: spec.alt,
-			bytes: uploadBytes,
-			mimeType: normalized.mimeType,
-			width: normalized.width,
-			height: normalized.height,
-			fileSize: normalized.fileSize,
-			validationVersion: normalized.validationVersion,
-			originalMimeType: normalized.originalMimeType,
-			originalFileSize: normalized.originalFileSize,
-			imageHash: hashBytes(uploadBytes),
-		});
-	}
-
-	return normalizedList;
-}
-
-// ---------------------------------------------------------------------------
 // Owner Resolution
 // ---------------------------------------------------------------------------
 
@@ -190,6 +125,7 @@ export async function resolveLocalOwner(
 			.eq('user_id', explicitOwnerId)
 			.maybeSingle();
 		if (data?.user_id) return data.user_id as string;
+		throw new Error(`Explicit local owner UUID "${explicitOwnerId}" does not have an eligible role.`);
 	}
 
 	const { data: adminRole } = await supabase
@@ -232,14 +168,20 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const definition = getInvitationDefinition(slug);
 	const ownerUserId = await resolveLocalOwner(supabase, explicitOwnerId);
-	const normalizedPhotos = await processSourcePhotos(definition, sourceDir);
+	const release = await buildNormalizedInvitationRelease({ slug, sourceDir });
+	const packageHash = serializeInvitationPackage(release).packageHash;
+	const preset = findDemoPreset(definition.baseDemoId);
+	if (!preset || preset.themeId !== definition.themeId) {
+		throw new Error(`Demo preset "${definition.baseDemoId}" is invalid or theme mismatch.`);
+	}
+	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
 
 	const route = `/${definition.eventType}/${definition.slug}`;
 
 	// Check existing invitation
 	const { data: existingInv } = await supabase
 		.from('invitations')
-		.select('id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, created_by')
+		.select('id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by')
 		.eq('slug', slug)
 		.is('archived_at', null)
 		.maybeSingle();
@@ -262,6 +204,15 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.order('version', { ascending: false })
 		.limit(1)
 		.maybeSingle();
+	const { data: existingEvent } = await supabase
+		.from('events')
+		.select('id, owner_user_id, event_type, title, status, invitation_project_id')
+		.eq('slug', slug)
+		.is('deleted_at', null)
+		.maybeSingle();
+	const { data: existingMembership } = existingEvent?.id
+		? await supabase.from('event_memberships').select('membership_role').eq('event_id', existingEvent.id).eq('user_id', ownerUserId).is('deleted_at', null).maybeSingle()
+		: { data: null };
 
 	// Build asset map with uploaded references
 	const assetMap = {} as UploadedAssetMap;
@@ -269,22 +220,21 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
-		.select('id, display_name, storage_path, file_size, width, height')
+		.select('id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size')
 		.eq('invitation_id', invitationId)
 		.is('deleted_at', null);
 
-	const existingAssetsByName = new Map(
+	const existingAssetsByPath = new Map(
 		((existingAssetRows ?? []) as Array<Record<string, unknown>>).map((r) => [
-			r.display_name as string,
+			r.storage_path as string,
 			r,
 		]),
 	);
 
 	for (const norm of normalizedPhotos) {
-		const existingAsset = existingAssetsByName.get(norm.displayName);
+		const storagePath = `managed/${slug}/${norm.key}.webp`;
+		const existingAsset = existingAssetsByPath.get(storagePath);
 		const assetId = (existingAsset?.id as string) || randomUUID();
-		const storagePath =
-			(existingAsset?.storage_path as string) || `invitations/${invitationId}/optimized/${norm.key}.webp`;
 		const publicUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
 		assetMap[norm.key] = {
@@ -293,11 +243,24 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			src: publicUrl,
 		};
 
+		let storageHash: string | null = null;
+		try {
+			const response = await fetch(publicUrl);
+			if (response.ok) storageHash = createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex');
+		} catch {
+			// Missing or unreadable storage is drift and will be repaired on apply.
+		}
 		const isIdentical =
 			existingAsset &&
+			storageHash === norm.imageHash &&
+			existingAsset.default_alt_text === norm.alt &&
+			existingAsset.mime_type === norm.mimeType &&
 			Number(existingAsset.file_size) === norm.fileSize &&
 			Number(existingAsset.width) === norm.width &&
-			Number(existingAsset.height) === norm.height;
+			Number(existingAsset.height) === norm.height &&
+			Number(existingAsset.validation_version) === norm.validationVersion &&
+			existingAsset.original_mime_type === norm.originalMimeType &&
+			Number(existingAsset.original_file_size) === norm.originalFileSize;
 
 		if (isIdentical) {
 			assetActions.push({
@@ -316,7 +279,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		}
 	}
 
-	const proposedContent = definition.buildPublishedContent(assetMap);
+	const proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<string, unknown>;
+	const isInvitationIdentical = Boolean(
+		existingInv &&
+		existingInv.title === definition.title &&
+		existingInv.event_type === definition.eventType &&
+		existingInv.base_demo_id === definition.baseDemoId &&
+		existingInv.theme_id === definition.themeId &&
+		JSON.stringify(existingInv.snapshot) === JSON.stringify(preset) &&
+		existingInv.kind === 'client' &&
+		existingInv.client_name === definition.clientName &&
+		existingInv.client_email === (definition.clientEmail ?? '') &&
+		existingInv.client_whatsapp === (definition.clientWhatsapp ?? '') &&
+		existingInv.photos_received === (definition.photosReceived ?? true) &&
+		existingInv.created_by === ownerUserId,
+	);
+	const isEventIdentical = Boolean(
+		existingEvent &&
+		existingEvent.owner_user_id === ownerUserId &&
+		existingEvent.event_type === definition.eventType &&
+		existingEvent.title === definition.title &&
+		existingEvent.status === 'published' &&
+		existingEvent.invitation_project_id === invitationId,
+	);
+	const isMembershipIdentical = existingMembership?.membership_role === 'owner';
 
 	// Divergence check
 	checkTargetDivergenceConflict(
@@ -324,7 +310,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		proposedContent,
 		existingDraft ? { status: existingDraft.status as string, content: existingDraft.content as Record<string, unknown>, updated_at: existingDraft.updated_at as string } : null,
 		existingPub ? { content: existingPub.content as Record<string, unknown> } : null,
-		false,
+		options.allowDivergentOverwrite ?? false,
 	);
 
 	const isDraftContentIdentical =
@@ -336,10 +322,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		{
 			resource: 'invitation',
 			name: slug,
-			action: !existingInv ? 'create' : 'reuse',
+			action: !existingInv ? 'create' : isInvitationIdentical ? 'reuse' : 'replace',
 			detail: !existingInv
 				? `Create invitation record (${invitationId})`
-				: `Invitation record up-to-date (${invitationId})`,
+				: isInvitationIdentical ? `Invitation record up-to-date (${invitationId})` : 'Reconcile invitation metadata and owner',
 		},
 		...assetActions,
 		{
@@ -351,6 +337,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				: isDraftContentIdentical
 					? 'Content draft up-to-date'
 					: 'Update content draft',
+		},
+		{
+			resource: 'events', name: slug, action: !existingEvent ? 'create' : isEventIdentical ? 'reuse' : 'replace',
+			detail: !existingEvent ? 'Create event ownership record' : isEventIdentical ? 'Event ownership up-to-date' : 'Reconcile event ownership and publication identity',
+		},
+		{
+			resource: 'event_memberships', name: `${slug}-owner`, action: !existingMembership ? 'create' : isMembershipIdentical ? 'reuse' : 'replace',
+			detail: !existingMembership ? 'Create owner membership' : isMembershipIdentical ? 'Owner membership up-to-date' : 'Restore owner membership role',
 		},
 		{
 			resource: 'published_invitation_content',
@@ -391,11 +385,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	let executedMutations = 0;
 
 	// 1. Ensure Invitation Record
-	const preset = findDemoPreset(definition.baseDemoId);
-	if (!preset || preset.themeId !== definition.themeId) {
-		throw new Error(`Demo preset "${definition.baseDemoId}" is invalid or theme mismatch.`);
-	}
-
 	const invMetadata = {
 		title: definition.title,
 		event_type: definition.eventType,
@@ -411,9 +400,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		kind: 'client',
 	};
 
-	if (existingInv) {
+	if (existingInv && !isInvitationIdentical) {
 		const { error } = await supabase.from('invitations').update(invMetadata).eq('id', invitationId);
 		if (error) throw error;
+		executedMutations++;
 	} else {
 		const { error } = await supabase
 			.from('invitations')
@@ -425,14 +415,27 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	// 2. Storage Uploads & Metadata Upserts
 	for (const norm of normalizedPhotos) {
 		const assetRef = assetMap[norm.key];
-		const storagePath = `invitations/${invitationId}/optimized/${norm.key}.webp`;
+		const storagePath = `managed/${slug}/${norm.key}.webp`;
 
-		const existing = existingAssetsByName.get(norm.displayName);
+		const existing = existingAssetsByPath.get(storagePath);
+		let storageHash: string | null = null;
+		try {
+			const response = await fetch(assetRef.src);
+			if (response.ok) storageHash = createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex');
+		} catch {
+			// Missing or unreadable storage is drift and will be repaired below.
+		}
 		const isIdentical =
 			existing &&
+			storageHash === norm.imageHash &&
+			existing.default_alt_text === norm.alt &&
+			existing.mime_type === norm.mimeType &&
 			Number(existing.file_size) === norm.fileSize &&
 			Number(existing.width) === norm.width &&
-			Number(existing.height) === norm.height;
+			Number(existing.height) === norm.height &&
+			Number(existing.validation_version) === norm.validationVersion &&
+			existing.original_mime_type === norm.originalMimeType &&
+			Number(existing.original_file_size) === norm.originalFileSize;
 
 		if (!isIdentical) {
 			const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, norm.bytes, {
@@ -553,14 +556,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	// 5. Upsert Event and Membership
-	const { data: eventRow } = await supabase
-		.from('events')
-		.select('id')
-		.eq('slug', slug)
-		.is('deleted_at', null)
-		.maybeSingle();
-
-	let eventId = eventRow?.id as string | undefined;
+	let eventId = existingEvent?.id as string | undefined;
 	if (!eventId) {
 		eventId = randomUUID();
 		const { error: eventError } = await supabase.from('events').insert({
@@ -574,24 +570,92 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		});
 		if (eventError) throw eventError;
 		executedMutations++;
-	}
-
-	const { data: membershipRow } = await supabase
-		.from('event_memberships')
-		.select('event_id')
-		.eq('event_id', eventId)
-		.eq('user_id', ownerUserId)
-		.is('deleted_at', null)
-		.maybeSingle();
-
-	if (!membershipRow) {
-		await supabase.from('event_memberships').insert({
-			event_id: eventId,
-			user_id: ownerUserId,
-			membership_role: 'owner',
-		});
+	} else if (!isEventIdentical) {
+		const { error: eventError } = await supabase
+			.from('events')
+			.update({ owner_user_id: ownerUserId, event_type: definition.eventType, title: definition.title, status: 'published', invitation_project_id: invitationId })
+			.eq('id', eventId);
+		if (eventError) throw eventError;
 		executedMutations++;
 	}
+
+	if (!existingMembership) {
+		const { error: membershipError } = await supabase.from('event_memberships').insert({ event_id: eventId, user_id: ownerUserId, membership_role: 'owner' });
+		if (membershipError) throw membershipError;
+		executedMutations++;
+	} else if (!isMembershipIdentical) {
+		const { error: membershipError } = await supabase.from('event_memberships').update({ membership_role: 'owner', deleted_at: null }).eq('event_id', eventId).eq('user_id', ownerUserId);
+		if (membershipError) throw membershipError;
+		executedMutations++;
+	}
+
+	const [finalInvitation, finalDraft, finalPublication, finalAssets, finalEvent, finalMembership] =
+		await Promise.all([
+			supabase.from('invitations').select('title, event_type, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by').eq('id', invitationId).single(),
+			supabase.from('invitation_content_drafts').select('content').eq('invitation_project_id', invitationId).is('deleted_at', null).maybeSingle(),
+			supabase.from('published_invitation_content').select('content').eq('invitation_project_id', invitationId).is('deleted_at', null).order('version', { ascending: false }).limit(1).maybeSingle(),
+			supabase.from('invitation_assets').select('display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size').eq('invitation_id', invitationId).is('deleted_at', null),
+			supabase.from('events').select('id, owner_user_id, event_type, title, status, invitation_project_id').eq('slug', slug).is('deleted_at', null).maybeSingle(),
+			supabase.from('event_memberships').select('membership_role').eq('event_id', eventId).eq('user_id', ownerUserId).is('deleted_at', null).maybeSingle(),
+		]);
+	if (finalInvitation.error || finalDraft.error || finalPublication.error || finalAssets.error || finalEvent.error || finalMembership.error) {
+		throw new Error('Final Local verification query failed; managed-release provenance was not recorded.');
+	}
+	const finalInvitationRow = finalInvitation.data as Record<string, unknown> | null;
+	const finalAssetsByPath = new Map(
+		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((asset) => [asset.storage_path as string, asset]),
+	);
+	const assetsVerified = await Promise.all(normalizedPhotos.map(async (asset) => {
+		const storagePath = `managed/${slug}/${asset.key}.webp`;
+		const row = finalAssetsByPath.get(storagePath);
+		if (!row || row.display_name !== asset.displayName || row.default_alt_text !== asset.alt || row.mime_type !== asset.mimeType || Number(row.file_size) !== asset.fileSize || Number(row.width) !== asset.width || Number(row.height) !== asset.height || Number(row.validation_version) !== asset.validationVersion || row.original_mime_type !== asset.originalMimeType || Number(row.original_file_size) !== asset.originalFileSize) return false;
+		try {
+			const response = await fetch(`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`);
+			return response.ok && createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex') === asset.imageHash;
+		} catch {
+			return false;
+		}
+	}));
+	const finalEventRow = finalEvent.data as Record<string, unknown> | null;
+	const verified = Boolean(
+		finalInvitationRow &&
+		finalInvitationRow.title === definition.title &&
+		finalInvitationRow.event_type === definition.eventType &&
+		finalInvitationRow.base_demo_id === definition.baseDemoId &&
+		finalInvitationRow.theme_id === definition.themeId &&
+		finalInvitationRow.kind === 'client' &&
+		finalInvitationRow.client_name === definition.clientName &&
+		finalInvitationRow.client_email === (definition.clientEmail ?? '') &&
+		finalInvitationRow.client_whatsapp === (definition.clientWhatsapp ?? '') &&
+		finalInvitationRow.photos_received === (definition.photosReceived ?? true) &&
+		finalInvitationRow.created_by === ownerUserId &&
+		JSON.stringify(finalDraft.data?.content) === JSON.stringify(proposedContent) &&
+		JSON.stringify(finalPublication.data?.content) === JSON.stringify(proposedContent) &&
+		finalEventRow?.owner_user_id === ownerUserId &&
+		finalEventRow.event_type === definition.eventType &&
+		finalEventRow.title === definition.title &&
+		finalEventRow.status === 'published' &&
+		finalEventRow.invitation_project_id === invitationId &&
+		finalMembership.data?.membership_role === 'owner' &&
+		assetsVerified.every(Boolean),
+	);
+	if (!verified) throw new Error('Final Local verification failed; managed-release provenance was not recorded.');
+
+	const { error: provenanceError } = await supabase
+		.from('managed_invitation_release_provenance')
+		.upsert({
+			invitation_id: invitationId,
+			definition_slug: release.slug,
+			release_schema_version: release.schemaVersion,
+			source_hash: release.sourceHash,
+			package_hash: packageHash,
+			metadata_hash: release.metadataHash,
+			projection_hash: release.projectionHash,
+			asset_manifest_hash: release.assetManifestHash,
+			applied_at: new Date().toISOString(),
+		});
+	if (provenanceError) throw provenanceError;
+	executedMutations++;
 
 	return {
 		slug,

@@ -3,16 +3,13 @@ import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resol
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import {
 	buildRominaPublishedContent,
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
 	type RominaAssetMap,
-} from '../../scripts/dev/romina-invitation-data';
+} from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 
-const PROVISIONER_PATH = resolve(process.cwd(), 'scripts/provision/romina-invitation.ts');
 
 function buildTestAssets(): RominaAssetMap {
 	return Object.fromEntries(
@@ -62,7 +59,14 @@ describe('Romina local invitation content', () => {
 			envelope: { sealInitials: 'RC' },
 			thankYou: { closingName: 'Romina', date: '14 de agosto de 2026' },
 		});
-		const typedContent = content as any;
+		const typedContent = content as {
+			hero: { portrait?: unknown; backgroundImage?: unknown };
+			location: {
+				ceremony: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
+				reception: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
+			};
+			rsvp: { subcopy: string };
+		};
 		expect(typedContent.hero.portrait).toBeUndefined();
 		expect(typedContent.hero.backgroundImage).toBeDefined();
 		expect(typedContent.location.ceremony.coordinates).toEqual({
@@ -114,15 +118,7 @@ describe('Romina local invitation content', () => {
 		);
 	});
 
-	it('does not reference the deprecated SQL generator or patch', () => {
-		// The Romina invitation has exactly one official workflow:
-		//   pnpm invitation:prod:provision -- --dry-run ...
-		//   pnpm invitation:prod:provision -- --apply ...
-		// The obsolete SQL generator and its generated artifact have been
-		// removed. Verify the production provisioner is the sole workflow.
-		const provisioner = readFileSync(PROVISIONER_PATH, 'utf8');
-		expect(provisioner).toContain('pnpm invitation:prod:provision');
-		expect(provisioner).not.toMatch(/generate-romina-invitation-sql/);
-		expect(provisioner).not.toMatch(/run-prod-patch/);
+	it('keeps the declaration free of provisioning implementation details', () => {
+		expect(JSON.stringify(ROMINA_EVENT)).not.toMatch(/supabase|owner_user_id/i);
 	});
 });

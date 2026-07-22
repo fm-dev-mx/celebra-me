@@ -13,7 +13,7 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 | **Branch**                        | `develop`                                                |
 | **Pre-implementation Commit SHA** | `effa09ee90d6e6729e9ecc8ec5ee7be759faee2f`               |
 | **Local Runtime URL**             | `http://localhost:4321/xv/romina-rios-chaparro`          |
-| **Data Source (Local)**           | `scripts/dev/romina-invitation-data.ts`                  |
+| **Data Source (Local)**           | `scripts/provision/invitations/romina-rios-chaparro.ts`  |
 | **Data Source (Production)**      | Hosted Supabase PostgreSQL (`published_content` table)   |
 | **Storage Bucket**                | `invitation-assets` / `invitations/romina-rios-chaparro` |
 | **Production URL**                | `https://www.celebra-me.com/xv/romina-rios-chaparro`     |
@@ -36,7 +36,7 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 | **Final Copy Changes**          | Uppercase chapter labels (`MIS XV`), formal date headers (`VIERNES · 14 DE AGOSTO DE 2026`), streamlined RSVP subcopy | `creative decision` | Removes unverified RSVP deadline and enhances formal tone                                     | Elegant editorial narrative coherence              | None                                           |
 | **Gallery Allocation**          | 7 unique, non-overlapping photographs                                                                                 | `creative decision` | Eliminates image duplication between Hero, Interlude, Thank You, and Gallery                  | Non-repetitive visual rhythm across all sections   | None                                           |
 | **Image Duplication Exception** | `IMG_3201.jpeg` used for Social OG preview and Gallery item                                                           | `verified`          | Open Graph image is invisible in page layout, allowing its use in Gallery                     | Standard OG sharing behavior                       | None                                           |
-| **Publication Workflow**        | `pnpm invitation:prod:provision` CLI pipeline                                                                         | `verified`          | Canonical production provisioning and publication pipeline                                    | Atomic draft & published update in Supabase        | None                                           |
+| **Publication Workflow**        | `pnpm invitation:update` managed release pipeline                                                                     | `superseded`        | Define, package, Preview approval, then Production resume                                    | Atomic publication remains required                | None                                           |
 
 ---
 
@@ -89,7 +89,7 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 
 | Parameter / Aspect | Details / Value |
 | --- | --- |
-| **Root Cause** | Stale version 1 record in local Supabase `published_invitation_content` table published prior to source code updates in `scripts/dev/romina-invitation-data.ts`. |
+| **Root Cause** | Historical stale version 1 record published before the canonical definition was materialized through the managed release workflow. |
 | **Public Route Data Source** | `published_invitation_content` in local Supabase PostgreSQL via `resolveInvitationContent`. |
 | **Dashboard Data Source** | `invitations` and `published_invitation_content` in local Supabase PostgreSQL via `/api/dashboard/intake`. |
 | **Invitation ID** | `b2658714-33f3-4194-ae2f-74f89c97cfa9` |

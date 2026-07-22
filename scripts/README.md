@@ -35,11 +35,7 @@ owns the command inventory.
 
 | Command | Canonical Script | Purpose |
 | ------- | ---------------- | ------- |
-| `pnpm invitation:apply:local` | `scripts/provision/apply-local-invitation-cli.ts` | Apply a single-file definition (`scripts/provision/invitations/<slug>.ts`) to persistent-local |
-| `pnpm invitation:package` | `scripts/provision/invitation-package-cli.ts` | Export immutable JSON package from persistent-local with embedded WebP assets & SHA-256 hash |
-| `pnpm invitation:promote:preview` | `scripts/provision/promote-preview-cli.ts` | Import package into hosted Preview DB/Storage & generate pending approval artifact |
-| `pnpm invitation:approval:finalize` | `scripts/provision/finalize-preview-approval-cli.ts` | Finalize pending Preview approval artifact with hosted validation evidence |
-| `pnpm invitation:promote:prod` | `scripts/provision/promote-prod-cli.ts` | Import package into Production DB/Storage (requires matching approved artifact & confirmation) |
+| `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and resume the managed invitation release workflow |
 
 ## Database Command Inventory
 

@@ -55,17 +55,12 @@ Disposable PostgreSQL: 127.0.0.1:54332
 The promotion of an invitation follows a strict, safe, and reproducible pipeline:
 
 ```text
-Single-file definition (scripts/provision/invitations/<slug>.ts)
-  -> Apply to persistent-local (pnpm invitation:apply:local)
-  -> Export immutable package (pnpm invitation:package)
-  -> Preview import & publish (pnpm invitation:promote:preview)
-  -> Generate & finalize Preview approval artifact (.agent/tmp/approvals/)
-  -> Production import & publish (pnpm invitation:promote:prod)
+Definition -> normalized release -> Local -> immutable package -> Preview approval -> Production resume
 ```
 
 ### Distinction: Promotion vs. Production-to-Preview Mirror
 
-- **Invitation Promotion (`pnpm invitation:promote:*`)**: Moves an immutable, versioned invitation
+- **Invitation update (`pnpm invitation:update`)**: Moves an immutable, versioned invitation
   package from Local -> Preview -> Production. Preview is a validation environment only; Production
   NEVER imports directly from the Preview DB or Storage.
 - **Production-to-Preview Mirror (`pnpm db:preview:sync-invitations`)**: An independent, separate
@@ -74,29 +69,11 @@ Single-file definition (scripts/provision/invitations/<slug>.ts)
 
 ### Commands
 
-1. **Apply Definition to Persistent-Local**:
+1. **Plan/update a managed definition**:
    ```bash
-   pnpm invitation:apply:local -- --slug <slug> --source-dir <path> --dry-run
-   pnpm invitation:apply:local -- --slug <slug> --source-dir <path> --apply
-   ```
-2. **Export Package (Local)**:
-   ```bash
-   pnpm invitation:package -- --slug <slug> --dry-run
-   pnpm invitation:package -- --slug <slug> --apply
-   ```
-3. **Promote to Preview**:
-   ```bash
-   pnpm invitation:promote:preview -- --package <path> --dry-run
-   pnpm invitation:promote:preview -- --package <path> --apply
-   ```
-4. **Finalize Preview Approval**:
-   ```bash
-   pnpm invitation:approval:finalize -- --artifact <artifact-path> --evidence <evidence-path>
-   ```
-5. **Promote to Production**:
-   ```bash
-   pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --dry-run
-   pnpm invitation:promote:prod -- --package <path> --owner-user-id <uuid> --apply
+   pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run
+   pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --apply
+   pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --owner-user-id <uuid> --apply
    ```
 
 ## Preview Environment Workflow

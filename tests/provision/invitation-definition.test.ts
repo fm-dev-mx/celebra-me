@@ -38,6 +38,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 		it('returns a valid definition object when parameters pass', () => {
 			const def = defineInvitation({
 				slug: 'test-invitation',
+				createdAt: '2026-07-20T00:00:00.000Z',
 				eventType: 'xv',
 				title: 'Test Title',
 				clientName: 'Client Name',
@@ -49,19 +50,20 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					timeZone: 'America/Chihuahua',
 					startsAtUtc: '2026-08-14T23:00:00.000Z',
 				},
-				assetSpecs: [{ key: 'hero', fileName: 'hero.jpg', displayName: 'Hero', alt: 'Alt' }],
-				buildPublishedContent: () => ({ hero: { name: 'Test' } }),
+				assets: [{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' }],
+				buildPublishedContent: (assets) => ({ hero: { image: assets.hero } }),
 			});
 
 			expect(def.slug).toBe('test-invitation');
 			expect(def.eventType).toBe('xv');
-			expect(def.assetSpecs).toHaveLength(1);
+			expect(def.assets).toHaveLength(1);
 		});
 
 		it('throws on missing slug', () => {
 			expect(() =>
 				defineInvitation({
 					slug: '',
+					createdAt: '2026-07-20T00:00:00.000Z',
 					eventType: 'xv',
 					title: 'Title',
 					clientName: 'Client',
@@ -69,10 +71,21 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
-					assetSpecs: [],
+					assets: [],
 					buildPublishedContent: () => ({}),
 				}),
 			).toThrow(/non-empty string slug/);
+		});
+
+		it('rejects environment-local asset references in content', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'unsafe-reference', createdAt: '2026-07-20T00:00:00.000Z', eventType: 'xv', title: 'Title', clientName: 'Client', baseDemoId: 'demo', themeId: 'theme', visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' }],
+					buildPublishedContent: () => ({ hero: { type: 'uploaded', assetId: '00000000-0000-4000-8000-000000000001', src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/hero.webp' } }),
+				}),
+			).toThrow(/semantic key/i);
 		});
 	});
 
@@ -101,7 +114,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(rominaInvitation.slug).toBe(ROMINA_EVENT.slug);
 			expect(rominaInvitation.eventType).toBe(ROMINA_EVENT.eventType);
 			expect(rominaInvitation.title).toBe(ROMINA_EVENT.title);
-			expect(rominaInvitation.assetSpecs).toHaveLength(11);
+			expect(rominaInvitation.assets).toHaveLength(11);
 		});
 
 		it('builds published content matching expected projection structure', () => {

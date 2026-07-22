@@ -9,8 +9,6 @@
 import { defineInvitation } from './invitation-definition.ts';
 import type { InvitationDefinition, UploadedAssetMap, UploadedAssetRef } from './invitation-definition.ts';
 
-export type { UploadedAssetRef };
-
 export const ROMINA_EVENT = {
 	eventType: 'xv',
 	slug: 'romina-rios-chaparro',
@@ -27,67 +25,67 @@ export const ROMINA_EVENT = {
 export const ROMINA_ASSET_SPECS = [
 	{
 		key: 'hero',
-		fileName: 'IMG_3263.jpeg',
+		relativePath: 'IMG_3263.jpeg',
 		displayName: 'Romina — portada',
 		alt: 'Romina con vestido verde salvia vista de espaldas entre follaje',
 	},
 	{
 		key: 'portrait',
-		fileName: 'IMG_3462.jpeg',
+		relativePath: 'IMG_3462.jpeg',
 		displayName: 'Romina — retrato de presentación',
 		alt: 'Retrato sonriente de Romina entre flores',
 	},
 	{
 		key: 'family',
-		fileName: 'IMG_3405.jpeg',
+		relativePath: 'IMG_3405.jpeg',
 		displayName: 'Romina — familia',
 		alt: 'Romina acompañada por su familia y sus mascotas',
 	},
 	{
 		key: 'sageLandscape',
-		fileName: 'IMG_3191.jpeg',
+		relativePath: 'IMG_3191.jpeg',
 		displayName: 'Romina — vestido salvia horizontal',
 		alt: 'Romina con vestido verde salvia en un jardín botánico',
 	},
 	{
 		key: 'social',
-		fileName: 'IMG_3201.jpeg',
+		relativePath: 'IMG_3201.jpeg',
 		displayName: 'Romina — vista previa social',
 		alt: 'Romina con vestido verde salvia en una composición horizontal',
 	},
 	{
 		key: 'petPortrait',
-		fileName: 'IMG_3308.jpeg',
+		relativePath: 'IMG_3308.jpeg',
 		displayName: 'Romina — retrato con mascota',
 		alt: 'Romina posa con una de sus mascotas',
 	},
 	{
 		key: 'petLandscape',
-		fileName: 'IMG_3324.jpeg',
+		relativePath: 'IMG_3324.jpeg',
 		displayName: 'Romina — mascotas',
 		alt: 'Romina comparte un momento con sus mascotas en el jardín',
 	},
 	{
 		key: 'whitePortrait',
-		fileName: 'IMG_3331.jpeg',
+		relativePath: 'IMG_3331.jpeg',
 		displayName: 'Romina — capítulo blanco',
 		alt: 'Romina con vestido blanco en un entorno botánico',
 	},
 	{
 		key: 'whiteBotanical',
-		fileName: 'IMG_3386.jpeg',
+		relativePath: 'IMG_3386.jpeg',
 		displayName: 'Romina — retrato botánico',
 		alt: 'Romina con vestido blanco entre vegetación y cactus',
 	},
 	{
 		key: 'pinkFloral',
-		fileName: 'IMG_3449.jpeg',
+		relativePath: 'IMG_3449.jpeg',
 		displayName: 'Romina — capítulo floral',
 		alt: 'Romina con vestido rosa junto a una estructura floral',
 	},
 	{
 		key: 'closing',
-		fileName: 'IMG_3442.jpeg',
+		relativePath: 'IMG_3442.jpeg',
 		displayName: 'Romina — cierre XV',
 		alt: 'Romina junto a globos con el número quince',
 	},
@@ -318,6 +316,7 @@ export function buildRominaPublishedContent(
 
 export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvitation({
 	slug: ROMINA_EVENT.slug,
+	createdAt: '2026-07-20T00:00:00.000Z',
 	eventType: ROMINA_EVENT.eventType,
 	title: ROMINA_EVENT.title,
 	clientName: 'Romina Ríos Chaparro',
@@ -332,7 +331,7 @@ export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvi
 		timeZone: ROMINA_EVENT.timeZone,
 		startsAtUtc: ROMINA_EVENT.startsAtUtc,
 	},
-	assetSpecs: ROMINA_ASSET_SPECS,
+	assets: ROMINA_ASSET_SPECS,
 	buildPublishedContent(assets) {
 		return buildRominaPublishedContent(assets);
 	},

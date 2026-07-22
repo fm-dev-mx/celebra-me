@@ -31,6 +31,8 @@ Only the category-level rules that cannot be expressed in code are listed here:
   Preview DB workflows and MFA bypass. Never used in Production.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, one-off script filters.
+  `pnpm invitation:update` treats Preview and Production URLs/credentials as script-only values;
+  packages and invitation definitions must contain semantic asset references, never those values.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only. It must
   never be accepted where a Supabase REST/API URL is required.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables.
@@ -44,6 +46,9 @@ Only the category-level rules that cannot be expressed in code are listed here:
 - `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be used by public health checks.
 - Service-role scripts must fail closed for remote Supabase unless they have a command-specific
   confirmation.
+- `pnpm invitation:update` requires `--non-interactive` in non-TTY automation and refuses
+  divergent overwrite without both `--allow-divergent-overwrite` and an exact
+  `--confirm-overwrite <target>:<slug>:<package-hash>` token.
 - `PUBLIC_*` variables must be browser-safe.
 - `PROD_DB_URL` is only for Postgres workflows such as backups, refreshes, and reviewed migrations.
 - Logs may show variable names, source filenames, presence/absence, and local/remote classification.

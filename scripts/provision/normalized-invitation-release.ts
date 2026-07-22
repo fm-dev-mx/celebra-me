@@ -1,0 +1,72 @@
+/** Environment-neutral managed invitation release builder. */
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
+import { normalizeInvitationImage } from '../../src/lib/intake/services/asset-policy.ts';
+import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
+import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
+import { getInvitationDefinition } from './invitations/registry.ts';
+import type { InvitationDefinition, UploadedAssetMap, UploadedAssetRef } from './invitations/invitation-definition.ts';
+
+export const RELEASE_SCHEMA_VERSION = '2.0.0';
+export const ASSET_KEY_PREFIX = '__INVITATION_ASSET_KEY__:';
+export const STORAGE_URL_PLACEHOLDER = '__STORAGE_URL__';
+
+export interface NormalizedInvitationAsset {
+	key: string; displayName: string; alt: string; focalPoint?: Record<string, string>;
+	bytes: Uint8Array; dataBase64: string; sha256: string; mimeType: string;
+	width: number; height: number; fileSize: number; validationVersion: number;
+	originalMimeType: string; originalFileSize: number;
+}
+export interface NormalizedInvitationRelease {
+	schemaVersion: string; slug: string; definitionCreatedAt: string;
+	sourceHash: string; metadataHash: string; projectionHash: string; assetManifestHash: string;
+	metadata: { title: string; eventType: string; baseDemoId: string; themeId: string; visualProfileId: string; clientName: string; clientEmail: string; clientWhatsapp: string; photosReceived: boolean; snapshot: Record<string, unknown> };
+	draftContent: Record<string, unknown>; publishedProjection: Record<string, unknown>; assets: NormalizedInvitationAsset[];
+}
+export function canonicalize(value: unknown): string {
+	if (value === null || typeof value !== 'object') return JSON.stringify(value);
+	if (Array.isArray(value)) return `[${value.map(canonicalize).join(',')}]`;
+	const record = value as Record<string, unknown>;
+	return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalize(record[key])}`).join(',')}}`;
+}
+function hash(value: unknown): string { return createHash('sha256').update(typeof value === 'string' ? value : canonicalize(value)).digest('hex'); }
+export function semanticAssetRef(key: string): UploadedAssetRef { return { type: 'uploaded', assetId: `${ASSET_KEY_PREFIX}${key}`, src: `${STORAGE_URL_PLACEHOLDER}/${ASSET_KEY_PREFIX}${key}` }; }
+export function buildSemanticAssetMap(definition: InvitationDefinition): UploadedAssetMap { return Object.fromEntries(definition.assets.map((asset) => [asset.key, semanticAssetRef(asset.key)])); }
+export function materializeAssetReferences(value: unknown, assets: Record<string, UploadedAssetRef>): unknown {
+	if (Array.isArray(value)) return value.map((item) => materializeAssetReferences(item, assets));
+	if (value !== null && typeof value === 'object') {
+		const record = value as Record<string, unknown>;
+		if (record.type === 'uploaded' && typeof record.assetId === 'string' && record.assetId.startsWith(ASSET_KEY_PREFIX)) {
+			const ref = assets[record.assetId.slice(ASSET_KEY_PREFIX.length)];
+			if (!ref) throw new Error(`No target asset mapping exists for semantic key "${record.assetId}".`);
+			return ref;
+		}
+		return Object.fromEntries(Object.entries(record).map(([key, item]) => [key, materializeAssetReferences(item, assets)]));
+	}
+	return value;
+}
+export async function buildNormalizedInvitationRelease(options: { slug: string; sourceDir: string }): Promise<NormalizedInvitationRelease> {
+	const definition = getInvitationDefinition(options.slug);
+	const root = resolve(options.sourceDir);
+	if (!existsSync(root) || !statSync(root).isDirectory()) throw new Error(`Invitation asset root does not exist: ${root}`);
+	const assets: NormalizedInvitationAsset[] = [];
+	for (const asset of definition.assets) {
+		const source = resolve(root, asset.relativePath);
+		if (!source.startsWith(`${root}${sep}`) || !existsSync(source) || !statSync(source).isFile()) throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
+		const sourceBytes = readFileSync(source);
+		const normalized = await normalizeInvitationImage(new Blob([Uint8Array.from(sourceBytes)], { type: 'image/jpeg' }), 'image/jpeg');
+		const bytes = new Uint8Array(await normalized.blob.arrayBuffer());
+		assets.push({ key: asset.key, displayName: asset.displayName, alt: asset.alt, focalPoint: asset.focalPoint, bytes, dataBase64: Buffer.from(bytes).toString('base64'), sha256: hash(bytes), mimeType: normalized.mimeType, width: normalized.width, height: normalized.height, fileSize: normalized.fileSize, validationVersion: normalized.validationVersion, originalMimeType: normalized.originalMimeType, originalFileSize: normalized.originalFileSize });
+	}
+	assets.sort((a, b) => a.key.localeCompare(b.key));
+	const snapshot = findDemoPreset(definition.baseDemoId);
+	if (!snapshot || snapshot.themeId !== definition.themeId) throw new Error(`Definition has invalid preset/theme pairing: ${definition.baseDemoId}.`);
+	const metadata = { title: definition.title, eventType: definition.eventType, baseDemoId: definition.baseDemoId, themeId: definition.themeId, visualProfileId: definition.visualProfileId, clientName: definition.clientName, clientEmail: definition.clientEmail ?? '', clientWhatsapp: definition.clientWhatsapp ?? '', photosReceived: definition.photosReceived ?? true, snapshot: snapshot as unknown as Record<string, unknown> };
+	const draftContent = definition.buildPublishedContent(buildSemanticAssetMap(definition));
+	const assetManifestHash = hash(assets.map(({ bytes: _bytes, dataBase64: _data, ...asset }) => asset));
+	const metadataHash = hash(metadata);
+	const projectionHash = hashPublicationProjection(draftContent);
+	const sourceHash = hash({ schemaVersion: RELEASE_SCHEMA_VERSION, slug: definition.slug, createdAt: definition.createdAt, metadata, draftContent, assetManifestHash });
+	return { schemaVersion: RELEASE_SCHEMA_VERSION, slug: definition.slug, definitionCreatedAt: definition.createdAt, sourceHash, metadataHash, projectionHash, assetManifestHash, metadata, draftContent, publishedProjection: draftContent, assets };
+}

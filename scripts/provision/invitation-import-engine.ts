@@ -36,9 +36,12 @@ import {
 	checkTargetDivergenceConflict,
 	buildResourceActions,
 } from './promotion-comparison.ts';
+import { materializeAssetReferences } from './normalized-invitation-release.ts';
+import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 
 export interface ImportEngineOptions {
-	packagePath: string;
+	packagePath?: string;
+	packageData?: InvitationPackageData;
 	target: 'preview' | 'production';
 	ownerUserId?: string;
 	dryRun?: boolean;
@@ -100,6 +103,36 @@ function parsePsqlJsonArray(stdout: string): Array<Record<string, unknown>> {
 	return JSON.parse(trimmed) as Array<Record<string, unknown>>;
 }
 
+export function validatePackageData(pkg: InvitationPackageData): InvitationPackageData {
+	if (!pkg || typeof pkg !== 'object') throw new Error('Package data is required.');
+	if (pkg.schemaVersion !== PACKAGE_SCHEMA_VERSION) {
+		throw new Error(
+			`Package schema version mismatch: expected "${PACKAGE_SCHEMA_VERSION}", got "${pkg.schemaVersion}".`,
+		);
+	}
+	for (const [name, value] of Object.entries({
+		sourceHash: pkg.sourceHash,
+		metadataHash: pkg.metadataHash,
+		projectionHash: pkg.projectionHash,
+		assetManifestHash: pkg.assetManifestHash,
+		packageHash: pkg.packageHash,
+	})) {
+		if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) {
+			throw new Error(`Package is missing a valid SHA-256 ${name}.`);
+		}
+	}
+	if (!pkg.definitionCreatedAt || !pkg.sourceSlug || !pkg.publishedContent || !pkg.event) {
+		throw new Error('Package is missing required release metadata, published content, or event data.');
+	}
+	const computedHash = computePackageHash(pkg);
+	if (computedHash !== pkg.packageHash) {
+		throw new Error(
+			`Package hash integrity verification failed! Computed ${computedHash}, package claims ${pkg.packageHash}.`,
+		);
+	}
+	return pkg;
+}
+
 function validatePackage(packagePath: string): InvitationPackageData {
 	if (!existsSync(packagePath))
 		throw new Error(`Package file does not exist at path: "${packagePath}"`);
@@ -110,20 +143,7 @@ function validatePackage(packagePath: string): InvitationPackageData {
 		throw new Error(`Package file at "${packagePath}" is not valid JSON.`, { cause: err });
 	}
 
-	if (pkg.schemaVersion !== PACKAGE_SCHEMA_VERSION) {
-		throw new Error(
-			`Package schema version mismatch: expected "${PACKAGE_SCHEMA_VERSION}", got "${pkg.schemaVersion}".`,
-		);
-	}
-
-	const computedHash = computePackageHash(pkg);
-	if (computedHash !== pkg.packageHash) {
-		throw new Error(
-			`Package hash integrity verification failed! Computed ${computedHash}, package claims ${pkg.packageHash}.`,
-		);
-	}
-
-	return pkg;
+	return validatePackageData(pkg);
 }
 
 function validateTargetClassification(
@@ -152,14 +172,9 @@ function resolveOwner(
 	expectedTarget: 'preview' | 'production',
 	explicitOwnerId: string | undefined,
 	targetDbUrl: string,
-	dryRun: boolean,
 ): string {
 	if (expectedTarget === 'preview') {
 		const ownerUserId = resolvePreviewAdminUser(targetDbUrl);
-		if (!dryRun) {
-			updatePreviewAdminRole(targetDbUrl, ownerUserId);
-			ensureHostProfile(targetDbUrl, ownerUserId);
-		}
 		return ownerUserId;
 	}
 
@@ -328,16 +343,38 @@ interface DatabaseUpsertParams {
 	shouldUpsertDraft: boolean;
 	shouldPublish: boolean;
 	shouldUpsertEvent: boolean;
+	assetRefs: UploadedAssetMap;
+}
+
+/** Revalidates the draft revision immediately before an apply phase can write. */
+export function assertDraftRevisionUnchanged(
+	targetDbUrl: string,
+	existingDraft: Record<string, unknown> | null,
+): void {
+	if (!existingDraft?.id || !existingDraft.updated_at) return;
+	const revision = runPsql(
+		`select updated_at::text from public.invitation_content_drafts where id = '${existingDraft.id}'::uuid and deleted_at is null;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	).stdout.trim();
+	const expected = Date.parse(String(existingDraft.updated_at));
+	const actual = Date.parse(revision);
+	if (!revision || !Number.isFinite(expected) || !Number.isFinite(actual) || expected !== actual) {
+		throw new Error('Target draft changed after planning; refusing to overwrite a stale revision.');
+	}
 }
 
 function upsertAssetRows(
 	targetDbUrl: string,
 	targetInvitationId: string,
 	assets: InvitationPackageAsset[],
+	assetRefs: UploadedAssetMap,
 ): number {
 	let count = 0;
 	for (const pAsset of assets) {
-		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size) values ('${randomUUID()}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, deleted_at = null, updated_at = now();`;
+		const assetId = assetRefs[pAsset.key]?.assetId;
+		if (!assetId) throw new Error(`Missing target asset UUID for semantic key "${pAsset.key}".`);
+		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, deleted_at = null, updated_at = now();`;
 		runPsql(assetSql, targetDbUrl);
 		count++;
 	}
@@ -349,7 +386,7 @@ function executePublicationRpcCall(
 	finalDraftId: string,
 	finalDraftUpdatedAt: string,
 ): void {
-	const { targetDbUrl, targetInvitationId, slug, eventType, pkg, targetPublishedContent } =
+	const { targetDbUrl, targetInvitationId, slug, eventType, targetPublishedContent } =
 		params;
 	const liveInvRes = runPsql(
 		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
@@ -379,7 +416,7 @@ function executePublicationRpcCall(
 		},
 		livePub?.content as Record<string, unknown> | undefined,
 	);
-	const rpcSql = `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => '${finalDraftId}'::uuid, p_expected_draft_updated_at => '${finalDraftUpdatedAt}'::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_is_demo => ${pkg.invitation.kind === 'demo' ? 'true' : 'false'}, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
+	const rpcSql = `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => '${finalDraftId}'::uuid, p_expected_draft_updated_at => '${finalDraftUpdatedAt}'::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_is_demo => false, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
 	if (!runPsql(rpcSql, targetDbUrl, { tuplesOnly: true }).stdout.trim()) {
 		throw new Error('Publication RPC failed to return a result.');
 	}
@@ -411,7 +448,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	}
 
 	if (assetsForDbUpsert.length > 0) {
-		count += upsertAssetRows(targetDbUrl, targetInvitationId, assetsForDbUpsert);
+		count += upsertAssetRows(targetDbUrl, targetInvitationId, assetsForDbUpsert, params.assetRefs);
 	}
 
 	if (shouldUpsertDraft) {
@@ -556,19 +593,14 @@ function analyzeTargetDrift(
 	targetDbUrl: string,
 	ownerUserId: string,
 	allowDivergentOverwrite: boolean,
+	assetRefs: UploadedAssetMap,
 ) {
 	const slug = pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
 	const scanned = scanTargetState(targetDbUrl, slug, eventType, ownerUserId);
-	const targetDraftContent = rewritePackageStorageUrls(
-		pkg.draft.content,
-		targetStorageUrl,
-	) as Record<string, unknown>;
-	const targetPublishedContent = rewritePackageStorageUrls(
-		pkg.publishedContent?.content ?? pkg.draft.content,
-		targetStorageUrl,
-	) as Record<string, unknown>;
+	const targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<string, unknown>;
+	const targetPublishedContent = materializeAssetReferences(pkg.publishedContent?.content ?? pkg.draft.content, assetRefs) as Record<string, unknown>;
 
 	checkTargetDivergenceConflict(
 		slug,
@@ -621,10 +653,17 @@ function analyzeTargetDrift(
 	};
 }
 
+function resolveTargetAssetRefs(pkg: InvitationPackageData, targetDbUrl: string, invitationId: string, targetStorageUrl: string): UploadedAssetMap {
+	const result = runPsql(`select id, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null;`, targetDbUrl, { tuplesOnly: true, throwOnError: false });
+	const existing = new Map(parsePsqlJsonArray(result.stdout).map((row) => [row.storage_path as string, row.id as string]));
+	return Object.fromEntries(pkg.assets.map((asset) => [asset.key, { type: 'uploaded' as const, assetId: existing.get(asset.storagePath) ?? randomUUID(), src: `${targetStorageUrl}/${asset.storagePath}` }]));
+}
+
 // ---------------------------------------------------------------------------
 // Main Importer
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line complexity -- Ordered target validation, planning, writes, and verification are intentionally one safety boundary.
 export async function runImportEngine(options: ImportEngineOptions): Promise<ImportEngineResult> {
 	const {
 		packagePath,
@@ -633,22 +672,28 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		dryRun = true,
 		targetDbUrl,
 	} = options;
-	const pkg = validatePackage(packagePath);
+	if (Boolean(packagePath) === Boolean(options.packageData)) {
+		throw new Error('Provide exactly one of packagePath or packageData.');
+	}
+	const pkg = packagePath ? validatePackage(packagePath) : validatePackageData(options.packageData!);
 	const targetSupabaseUrl = options.targetSupabaseUrl ?? deriveSupabaseUrlFromDbUrl(targetDbUrl);
 	const { targetClassification, projectRef } = validateTargetClassification(
 		expectedTarget,
 		targetDbUrl,
 		targetSupabaseUrl,
 	);
-	const ownerUserId = resolveOwner(expectedTarget, explicitOwnerId, targetDbUrl, dryRun);
+	const ownerUserId = resolveOwner(expectedTarget, explicitOwnerId, targetDbUrl);
 	const targetStorageUrl = buildStorageUrl(targetSupabaseUrl);
 
+	const initialScan = scanTargetState(targetDbUrl, pkg.invitation.slug, pkg.invitation.eventType, ownerUserId);
+	const assetRefs = resolveTargetAssetRefs(pkg, targetDbUrl, initialScan.targetInvitationId, targetStorageUrl);
 	const drift = analyzeTargetDrift(
 		pkg,
 		targetStorageUrl,
 		targetDbUrl,
 		ownerUserId,
 		options.allowDivergentOverwrite ?? false,
+		assetRefs,
 	);
 	const { assetsToUpload, assetsToUpsertDbOnly, assetActions, verifiedAssetHashes } =
 		await scanAssetStatus(pkg.assets, targetStorageUrl, targetDbUrl, drift.targetInvitationId);
@@ -701,6 +746,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
 	try {
 		let executedMutations = 0;
+		assertDraftRevisionUnchanged(targetDbUrl, drift.existingDraft);
+		if (expectedTarget === 'preview') {
+			updatePreviewAdminRole(targetDbUrl, ownerUserId);
+			ensureHostProfile(targetDbUrl, ownerUserId);
+		}
 		const serviceRoleKey =
 			options.serviceRoleKey ||
 			getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES);
@@ -715,7 +765,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			Object.assign(verifiedAssetHashes, uploadRes.verifiedAssetHashes);
 			executedMutations += uploadRes.uploadedCount;
 		}
-
 		const dbMutations = executeDatabaseUpserts({
 			targetDbUrl,
 			targetInvitationId: drift.targetInvitationId,
@@ -736,6 +785,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			shouldUpsertDraft: !drift.isDraftIdentical || !drift.existingDraft,
 			shouldPublish: !drift.isPubIdentical || !drift.existingPub,
 			shouldUpsertEvent: !drift.isEventAndMemberIdentical,
+			assetRefs,
 		});
 		executedMutations += dbMutations;
 
@@ -743,6 +793,41 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			!drift.isPubIdentical || !drift.existingPub
 				? verifyPostPublication(drift.pubQuery, targetDbUrl, drift.route)
 				: targetVersion;
+		const finalAssetRefs = resolveTargetAssetRefs(
+			pkg,
+			targetDbUrl,
+			drift.targetInvitationId,
+			targetStorageUrl,
+		);
+		const finalDrift = analyzeTargetDrift(
+			pkg,
+			targetStorageUrl,
+			targetDbUrl,
+			ownerUserId,
+			false,
+			finalAssetRefs,
+		);
+		const finalAssets = await scanAssetStatus(
+			pkg.assets,
+			targetStorageUrl,
+			targetDbUrl,
+			finalDrift.targetInvitationId,
+		);
+		if (
+			!finalDrift.isInvMetadataIdentical ||
+			!finalDrift.isDraftIdentical ||
+			!finalDrift.isPubIdentical ||
+			!finalDrift.isEventAndMemberIdentical ||
+			finalAssets.assetsToUpload.length > 0 ||
+			finalAssets.assetsToUpsertDbOnly.length > 0
+		) {
+			throw new Error('Final target verification failed; managed-release provenance was not recorded.');
+		}
+		runPsql(
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(pkg.projectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
+			targetDbUrl,
+		);
+		executedMutations++;
 		return {
 			packageHash: pkg.packageHash,
 			slug: drift.slug,

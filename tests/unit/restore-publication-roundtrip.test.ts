@@ -4,7 +4,7 @@ import {
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
 	buildRominaPublishedContent,
-} from '../../scripts/dev/romina-invitation-data';
+} from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';

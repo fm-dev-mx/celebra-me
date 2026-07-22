@@ -133,9 +133,9 @@ Supabase schema changes are versioned under `supabase/migrations`. Production mi
 reconciliation is complete (`59/59` migrations active, 0 pending). Direct production SQL is
 prohibited; all schema changes must be introduced through versioned migrations.
 
-Preview tooling exists (`pnpm db:preview:migrate`, `pnpm db:preview:audit`), but hosted Preview is
-`SUPPORTED BY TOOLING`, `NOT YET PROVISIONED`, `NOT YET HOSTED-VALIDATED`. Preview must use isolated
-synthetic data and separate credentials (`PREVIEW_DB_URL`).
+Hosted Preview is the mandatory managed-invitation QA gate. It uses isolated synthetic data and
+separate credentials (`PREVIEW_DB_URL`); migration and audit tooling are `pnpm db:preview:migrate`
+and `pnpm db:preview:audit`.
 
 For local development, use local Supabase and keep `.env.local` pointed away from production.
 
@@ -153,9 +153,7 @@ For local development, use local Supabase and keep `.env.local` pointed away fro
 | `pnpm db:prod:migrate`            | Apply reviewed migrations to production (runs preflight checks, backup, and confirmation) |
 | `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                    |
 | `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                   |
-| `pnpm invitation:package`         | Export local invitation state into an immutable versioned package                         |
-| `pnpm invitation:promote:preview` | Import & publish invitation package to Preview; generate approval artifact                |
-| `pnpm invitation:promote:prod`    | Import & publish approved invitation package to Production (dry-run/apply)                |
+| `pnpm invitation:update`          | Unified managed invitation update, package, Preview approval, and Production resume       |
 | `pnpm db:prod:patch`              | Dry-run lint for manifest-bearing production patches                                      |
 | `pnpm db:sql:lint`                | Lint a production SQL patch file                                                          |
 | `pnpm db:migrate:new <name>`      | Scaffold a new migration                                                                  |

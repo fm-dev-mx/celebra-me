@@ -74,7 +74,7 @@ import {
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
 	type RominaAssetMap,
-} from '../../scripts/dev/romina-invitation-data';
+} from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;

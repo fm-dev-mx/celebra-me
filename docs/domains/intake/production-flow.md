@@ -24,19 +24,10 @@ Production database mutations, deployments, and rollbacks require explicit human
 Version-controlled invitations (e.g. Romina) are defined as single TypeScript files under `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Single-file definition (scripts/provision/invitations/<slug>.ts)
-  -> Apply to persistent-local (pnpm invitation:apply:local)
-  -> Export immutable package (pnpm invitation:package)
-  -> Preview import & publish (pnpm invitation:promote:preview)
-  -> Generate & finalize Preview approval artifact (.agent/tmp/approvals/)
-  -> Production import & publish (pnpm invitation:promote:prod)
+Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Resume Production
 ```
 
-1. **Local Application**: `pnpm invitation:apply:local -- --slug <slug> --source-dir <path> [--apply]` (default `--dry-run`).
-2. **Package Export**: `pnpm invitation:package -- --slug <slug> --apply`.
-3. **Preview Promotion**: `pnpm invitation:promote:preview -- --package <package-path> --apply`.
-4. **Preview Approval**: `pnpm invitation:approval:finalize -- --artifact <artifact-path> --evidence <evidence-path>`.
-5. **Production Promotion**: `pnpm invitation:promote:prod -- --package <package-path> --owner-user-id <uuid> --apply`.
+Use `pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run|--apply`. The `all` workflow stops after Preview; Production resumes only from the exact approved package with an explicit owner and confirmation.
 
 ## Publication integrity rollout
 
