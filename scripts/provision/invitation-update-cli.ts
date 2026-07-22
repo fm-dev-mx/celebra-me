@@ -30,6 +30,28 @@ async function main(): Promise<void> {
 	const args = process.argv.slice(2); const json = args.includes('--json'); const statusMode = args.includes('--status'); const apply = args.includes('--apply'); const dryRun = args.includes('--dry-run');
 	const artifact = value(args, '--artifact'); const evidence = value(args, '--evidence');
 	if (artifact || evidence) { if (!artifact || !evidence || !apply) throw new Error('Approval requires --artifact <path> --evidence <path> --apply.'); print({ approval: finalizePreviewApprovalArtifact(artifact, evidence).approvalState }, json); return; }
+	if (args.includes('--help') || args.includes('-h')) {
+		console.log(`
+invitation:update — Unified managed invitation update/release CLI
+
+Usage:
+  pnpm invitation:update --status [--targets <local|preview|production|all>] [--json]
+  pnpm invitation:update --slug <slug> --targets <targets> --source-dir <dir> --dry-run|--apply [--non-interactive]
+  pnpm invitation:update --artifact <path> --evidence <path> --apply
+
+Options:
+  --status                     Read-only inventory status check
+  --targets <targets>          Target environments: local, preview, production, all
+  --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
+  --source-dir <dir>           Directory containing source assets
+  --dry-run                    Simulate changes without performing writes
+  --apply                      Perform actual database and storage updates
+  --non-interactive            Skip interactive prompts for non-TTY execution
+  --json                       Format output as JSON
+  --help                       Show this help message
+`);
+		return;
+	}
 	if (statusMode) {
 		const report = buildStatusReport(args) as Record<string, unknown>;
 		const selected = parseTargets(value(args, '--targets'));

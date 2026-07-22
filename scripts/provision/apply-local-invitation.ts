@@ -30,6 +30,7 @@ import { serializeInvitationPackage } from './invitation-package.ts';
 import type {
 	UploadedAssetMap,
 } from './invitations/invitation-definition.ts';
+import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 
 const BUCKET = 'invitation-assets';
 
@@ -382,35 +383,48 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	// ── APPLY MUTATIONS ──────────────────────────────────────────────────
-	let executedMutations = 0;
-
-	// 1. Ensure Invitation Record
-	const invMetadata = {
-		title: definition.title,
-		event_type: definition.eventType,
-		status: 'draft',
-		base_demo_id: definition.baseDemoId,
-		theme_id: definition.themeId,
-		snapshot: preset,
-		client_name: definition.clientName,
-		client_email: definition.clientEmail ?? '',
-		client_whatsapp: definition.clientWhatsapp ?? '',
-		photos_received: definition.photosReceived ?? true,
-		created_by: ownerUserId,
-		kind: 'client',
-	};
-
-	if (existingInv && !isInvitationIdentical) {
-		const { error } = await supabase.from('invitations').update(invMetadata).eq('id', invitationId);
-		if (error) throw error;
-		executedMutations++;
-	} else {
-		const { error } = await supabase
-			.from('invitations')
-			.insert({ id: invitationId, slug, ...invMetadata });
-		if (error) throw error;
-		executedMutations++;
+	const trackedResources: TrackedResource[] = [];
+	if (existingInv) trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: true });
+	if (existingEvent) trackedResources.push({ type: 'event', id: existingEvent.id as string, isPreExisting: true });
+	if (existingMembership) trackedResources.push({ type: 'event_membership', id: `${existingEvent?.id as string}:${ownerUserId}`, isPreExisting: true });
+	if (existingDraft) trackedResources.push({ type: 'invitation_content_draft', id: existingDraft.id as string, isPreExisting: true });
+	for (const [pathKey, assetRow] of existingAssetsByPath.entries()) {
+		trackedResources.push({ type: 'invitation_asset', id: assetRow.id as string, isPreExisting: true });
+		trackedResources.push({ type: 'storage_object', id: pathKey, isPreExisting: true });
 	}
+
+	try {
+		let executedMutations = 0;
+
+		// 1. Ensure Invitation Record
+		const invMetadata = {
+			title: definition.title,
+			event_type: definition.eventType,
+			status: 'draft',
+			base_demo_id: definition.baseDemoId,
+			theme_id: definition.themeId,
+			snapshot: preset,
+			client_name: definition.clientName,
+			client_email: definition.clientEmail ?? '',
+			client_whatsapp: definition.clientWhatsapp ?? '',
+			photos_received: definition.photosReceived ?? true,
+			created_by: ownerUserId,
+			kind: 'client',
+		};
+
+		if (existingInv && !isInvitationIdentical) {
+			// Already flagged as isPreExisting at line 387 — no tracking push needed.
+			const { error } = await supabase.from('invitations').update(invMetadata).eq('id', invitationId);
+			if (error) throw error;
+			executedMutations++;
+		} else if (!existingInv) {
+			const { error } = await supabase
+				.from('invitations')
+				.insert({ id: invitationId, slug, ...invMetadata });
+			if (error) throw error;
+			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
+			executedMutations++;
+		}
 
 	// 2. Storage Uploads & Metadata Upserts
 	for (const norm of normalizedPhotos) {
@@ -443,6 +457,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				upsert: true,
 			});
 			if (uploadError) throw uploadError;
+			if (!existing) trackedResources.push({ type: 'storage_object', id: storagePath, isPreExisting: false });
 
 			const assetMetadata = {
 				invitation_id: invitationId,
@@ -470,6 +485,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					.from('invitation_assets')
 					.insert({ id: assetRef.assetId, ...assetMetadata });
 				if (error) throw error;
+				trackedResources.push({ type: 'invitation_asset', id: assetRef.assetId, isPreExisting: false });
 			}
 			executedMutations++;
 		}
@@ -506,6 +522,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			if (error) throw error;
 			draftId = data.id as string;
 			draftUpdatedAt = data.updated_at as string;
+			trackedResources.push({ type: 'invitation_content_draft', id: newId, isPreExisting: false });
 		}
 		executedMutations++;
 	}
@@ -569,6 +586,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			invitation_project_id: invitationId,
 		});
 		if (eventError) throw eventError;
+		trackedResources.push({ type: 'event', id: eventId, isPreExisting: false });
 		executedMutations++;
 	} else if (!isEventIdentical) {
 		const { error: eventError } = await supabase
@@ -582,6 +600,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	if (!existingMembership) {
 		const { error: membershipError } = await supabase.from('event_memberships').insert({ event_id: eventId, user_id: ownerUserId, membership_role: 'owner' });
 		if (membershipError) throw membershipError;
+		trackedResources.push({ type: 'event_membership', id: `${eventId}:${ownerUserId}`, isPreExisting: false });
 		executedMutations++;
 	} else if (!isMembershipIdentical) {
 		const { error: membershipError } = await supabase.from('event_memberships').update({ membership_role: 'owner', deleted_at: null }).eq('event_id', eventId).eq('user_id', ownerUserId);
@@ -670,4 +689,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		mutationsPerformed: executedMutations,
 		actions,
 	};
+	} catch (err) {
+		await cleanupLocalResources(supabase, slug, trackedResources);
+		throw err;
+	}
 }

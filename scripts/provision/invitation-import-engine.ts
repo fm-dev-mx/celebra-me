@@ -38,6 +38,7 @@ import {
 } from './promotion-comparison.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
+import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -744,6 +745,19 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	}
 
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
+	const trackedResources: TrackedResource[] = [];
+	if (drift.existingInv) trackedResources.push({ type: 'invitation', id: drift.targetInvitationId, isPreExisting: true });
+	if (drift.existingEvent) trackedResources.push({ type: 'event', id: drift.existingEvent.id as string, isPreExisting: true });
+	if (drift.existingDraft) trackedResources.push({ type: 'invitation_content_draft', id: drift.existingDraft.id as string, isPreExisting: true });
+	if (!drift.existingInv) trackedResources.push({ type: 'invitation', id: drift.targetInvitationId, isPreExisting: false });
+	for (const asset of assetsToUpload) {
+		trackedResources.push({ type: 'storage_object', id: asset.storagePath, isPreExisting: false });
+		const ref = assetRefs[asset.key];
+		if (ref?.assetId) {
+			trackedResources.push({ type: 'invitation_asset', id: ref.assetId, isPreExisting: false });
+		}
+	}
+
 	try {
 		let executedMutations = 0;
 		assertDraftRevisionUnchanged(targetDbUrl, drift.existingDraft);
@@ -846,6 +860,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			isZeroDriftRerun: false,
 		};
 	} catch (err) {
+		await cleanupHostedPsqlResources(targetDbUrl, drift.slug, trackedResources);
 		const message = err instanceof Error ? err.message : String(err);
 		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactDbUrl(message)}`);
 		throw new Error(message, { cause: err });
