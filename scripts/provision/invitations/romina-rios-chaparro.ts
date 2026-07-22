@@ -7,7 +7,11 @@
  */
 
 import { defineInvitation } from './invitation-definition.ts';
-import type { InvitationDefinition, UploadedAssetMap, UploadedAssetRef } from './invitation-definition.ts';
+import type {
+	InvitationDefinition,
+	UploadedAssetMap,
+	UploadedAssetRef,
+} from './invitation-definition.ts';
 
 export const ROMINA_EVENT = {
 	eventType: 'xv',
@@ -170,6 +174,10 @@ export function buildRominaPublishedContent(
 			author: 'Romina',
 		},
 		family: {
+			eyebrow: 'Familia',
+			title: 'Con el amor de mis padres y la compañía de mis padrinos',
+			sectionSubtitle:
+				'Me acompañan en este día tan especial mis padres, Claudia Chaparro Juárez y Christian Miguel Ríos, así como mis padrinos, Fernando Nájera y Esmeralda Carbajal.',
 			parents: {
 				mother: 'Claudia Chaparro Juárez',
 				father: 'Christian Miguel Ríos',
