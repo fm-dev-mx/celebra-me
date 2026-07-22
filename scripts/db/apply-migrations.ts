@@ -18,11 +18,11 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { classifyDbTarget, redactDbUrl } from './db-guard.ts';
 
-const PROJECT_ROOT = process.cwd();
-const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
+export const PROJECT_ROOT = process.cwd();
+export const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 const SAFE_FILENAME_PATTERN = /^(\d{14})_([a-zA-Z0-9_-]+)\.sql$/;
 
-function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; output: string } {
+export function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; output: string } {
 	const result = spawnSync('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', dbUrl], {
 		input: sqlInput,
 		encoding: 'utf8',
@@ -36,7 +36,7 @@ function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; output:
 	};
 }
 
-function getValidatedMigrationFiles(
+export function getValidatedMigrationFiles(
 	maxVersion?: string,
 ): { filename: string; version: string; name: string }[] {
 	if (!existsSync(MIGRATIONS_DIR)) {
