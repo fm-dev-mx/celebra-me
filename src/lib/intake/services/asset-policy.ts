@@ -15,6 +15,22 @@ const FORMAT_MIME: Record<string, string> = {
 	webp: 'image/webp',
 };
 
+export function detectFileMimeType(filePath: string, sourceBytes?: Uint8Array): string {
+	const ext = filePath.split('.').pop()?.toLowerCase();
+	if (ext === 'png') return 'image/png';
+	if (ext === 'webp') return 'image/webp';
+	if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+	if (sourceBytes && sourceBytes.length >= 4) {
+		if (sourceBytes[0] === 0x89 && sourceBytes[1] === 0x50 && sourceBytes[2] === 0x4e && sourceBytes[3] === 0x47) {
+			return 'image/png';
+		}
+		if (sourceBytes[0] === 0x52 && sourceBytes[1] === 0x49 && sourceBytes[2] === 0x46 && sourceBytes[3] === 0x46) {
+			return 'image/webp';
+		}
+	}
+	return 'image/jpeg';
+}
+
 export interface NormalizedInvitationImage {
 	blob: Blob;
 	width: number;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
+import { ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
 import {
 	EVENT_TYPES,
 	INVITATION_RENDER_SECTION_KEYS,
@@ -68,7 +68,7 @@ const externalAssetSchema = z
 const uploadedAssetSchema = z
 	.object({
 		type: z.literal('uploaded'),
-		assetId: z.uuid(),
+		assetId: z.union([z.uuid(), z.string().startsWith('__INVITATION_ASSET_KEY__:')]),
 		src: z.string().optional(),
 	})
 	.strict();

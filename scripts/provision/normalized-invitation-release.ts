@@ -99,6 +99,9 @@ async function loadPersistedAssets(
 	return assets;
 }
 
+import { detectFileMimeType } from '../../src/lib/intake/services/asset-policy.ts';
+import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+
 export async function buildNormalizedInvitationRelease(options: { slug: string; sourceDir?: string }): Promise<NormalizedInvitationRelease> {
 	const definition = getInvitationDefinition(options.slug);
 	let assets: NormalizedInvitationAsset[];
@@ -111,7 +114,8 @@ export async function buildNormalizedInvitationRelease(options: { slug: string; 
 			const source = resolve(root, asset.relativePath);
 			if (!source.startsWith(`${root}${sep}`) || !existsSync(source) || !statSync(source).isFile()) throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
 			const sourceBytes = readFileSync(source);
-			const normalized = await normalizeInvitationImage(new Blob([Uint8Array.from(sourceBytes)], { type: 'image/jpeg' }), 'image/jpeg');
+			const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
+			const normalized = await normalizeInvitationImage(new Blob([Uint8Array.from(sourceBytes)], { type: declaredMime }), declaredMime);
 			const raw = await extractBlobRawBytes(normalized.blob);
 			if (!raw) throw new Error('Could not extract bytes from Blob.');
 			const bytes = raw;
@@ -126,6 +130,15 @@ export async function buildNormalizedInvitationRelease(options: { slug: string; 
 	if (!snapshot || snapshot.themeId !== definition.themeId) throw new Error(`Definition has invalid preset/theme pairing: ${definition.baseDemoId}.`);
 	const metadata = { title: definition.title, eventType: definition.eventType, baseDemoId: definition.baseDemoId, themeId: definition.themeId, visualProfileId: definition.visualProfileId, clientName: definition.clientName, clientEmail: definition.clientEmail ?? '', clientWhatsapp: definition.clientWhatsapp ?? '', photosReceived: definition.photosReceived ?? true, snapshot: snapshot as unknown as Record<string, unknown> };
 	const draftContent = definition.buildPublishedContent(buildSemanticAssetMap(definition));
+
+	const canonicalValidation = eventContentSchema.safeParse(draftContent);
+	if (!canonicalValidation.success) {
+		const issues = canonicalValidation.error.issues
+			.map((issue) => `${issue.path.map(String).join('.') || '<root>'}: ${issue.message}`)
+			.join('; ');
+		throw new Error(`Managed invitation "${definition.slug}" failed canonical publication validation: ${issues}`);
+	}
+
 	const assetManifestHash = hash(assets.map(({ bytes: _bytes, dataBase64: _data, ...asset }) => asset));
 	const metadataHash = hash(metadata);
 	const projectionHash = hashPublicationProjection(draftContent);

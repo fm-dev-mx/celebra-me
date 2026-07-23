@@ -1,5 +1,5 @@
 import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/theme-contract';
-import type { EventAssetKey } from '@/lib/assets/asset-registry';
+import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
 export type CaptureLinkStatus = 'active' | 'expired' | 'missing' | 'revoked' | 'unavailable';
 export type InvitationKind = 'demo' | 'client';
