@@ -9,7 +9,8 @@ import type { InvitationPackageData, InvitationPackageAsset } from './invitation
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
 import {
 	classifyDbTarget,
-	redactDbUrl,
+	redactCredentials,
+	validateEnvironmentUrlsPreflight,
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
 	type DbTarget,
@@ -19,9 +20,6 @@ import {
 	resolvePreviewAdminUser,
 	updatePreviewAdminRole,
 	ensureHostProfile,
-	deriveSupabaseUrlFromDbUrl,
-	getProjectRefFromSupabaseUrl,
-	buildStorageUrl,
 } from '../db/preview-sync-guards.ts';
 import {
 	hashPublicMetadata,
@@ -176,28 +174,6 @@ function validatePackage(packagePath: string): InvitationPackageData {
 	return validatePackageData(pkg);
 }
 
-function validateTargetClassification(
-	expectedTarget: 'preview' | 'production',
-	targetDbUrl: string,
-	targetSupabaseUrl: string,
-): { targetClassification: ReturnType<typeof classifyDbTarget>; projectRef: string } {
-	const targetClassification = classifyDbTarget(targetDbUrl, { apiUrl: targetSupabaseUrl });
-	if (expectedTarget !== targetClassification.target) {
-		throw new Error(
-			`Target classification mismatch: expected ${expectedTarget}, classified as "${targetClassification.target}".`,
-		);
-	}
-
-	const projectRef = getProjectRefFromSupabaseUrl(targetSupabaseUrl);
-	if (expectedTarget === 'preview' && projectRef !== 'iwipdvisoyerfdytuhwi') {
-		throw new Error(
-			`Preview promotion safety abort: expected Preview project "iwipdvisoyerfdytuhwi", got "${projectRef}".`,
-		);
-	}
-
-	return { targetClassification, projectRef };
-}
-
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export interface TargetInvitationIdentity {
@@ -320,26 +296,34 @@ async function probeStorageStates(
 }> {
 	const observedStorage: Record<string, ObservedStorageState> = {};
 	const verifiedAssetHashes: Record<string, string> = {};
-	const pathsToProbe = new Set<string>();
+	const pathsToProbe = Array.from(
+		new Set([
+			...assets.map((a) => a.storagePath),
+			...targetDbAssets.map((t) => t.storagePath),
+		]),
+	);
 
-	for (const pAsset of assets) pathsToProbe.add(pAsset.storagePath);
-	for (const targetRecord of targetDbAssets) pathsToProbe.add(targetRecord.storagePath);
-
-	for (const storagePath of pathsToProbe) {
-		const targetAssetUrl = `${targetStorageUrl}/${storagePath}`;
-		try {
-			const fetchRes = await fetch(targetAssetUrl);
-			if (fetchRes.ok) {
-				const ab = await fetchRes.arrayBuffer();
-				const hash = sha256Bytes(new Uint8Array(ab));
-				observedStorage[storagePath] = { present: true, sha256: hash, httpStatus: fetchRes.status };
-				verifiedAssetHashes[storagePath] = hash;
-			} else {
-				observedStorage[storagePath] = { present: false, sha256: null, httpStatus: fetchRes.status };
-			}
-		} catch {
-			observedStorage[storagePath] = { present: false, sha256: null };
-		}
+	const BATCH_SIZE = 5;
+	for (let i = 0; i < pathsToProbe.length; i += BATCH_SIZE) {
+		const batch = pathsToProbe.slice(i, i + BATCH_SIZE);
+		await Promise.all(
+			batch.map(async (storagePath) => {
+				const targetAssetUrl = `${targetStorageUrl}/${storagePath}`;
+				try {
+					const fetchRes = await fetch(targetAssetUrl);
+					if (fetchRes.ok) {
+						const ab = await fetchRes.arrayBuffer();
+						const hash = sha256Bytes(new Uint8Array(ab));
+						observedStorage[storagePath] = { present: true, sha256: hash, httpStatus: fetchRes.status };
+						verifiedAssetHashes[storagePath] = hash;
+					} else {
+						observedStorage[storagePath] = { present: false, sha256: null, httpStatus: fetchRes.status };
+					}
+				} catch {
+					observedStorage[storagePath] = { present: false, sha256: null };
+				}
+			}),
+		);
 	}
 	return { observedStorage, verifiedAssetHashes };
 }
@@ -900,12 +884,15 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const pkg = packagePath
 		? validatePackage(packagePath)
 		: validatePackageData(options.packageData!);
-	const targetSupabaseUrl = options.targetSupabaseUrl ?? deriveSupabaseUrlFromDbUrl(targetDbUrl);
-	const { targetClassification, projectRef } = validateTargetClassification(
-		expectedTarget,
+	const validatedUrls = validateEnvironmentUrlsPreflight({
+		target: expectedTarget,
 		targetDbUrl,
-		targetSupabaseUrl,
-	);
+		explicitSupabaseUrl: options.targetSupabaseUrl,
+	});
+	const targetSupabaseUrl = validatedUrls.supabaseUrl;
+	const projectRef = validatedUrls.projectRef;
+	const targetStorageUrl = validatedUrls.storageUrl;
+	const targetClassification = classifyDbTarget(targetDbUrl, { apiUrl: targetSupabaseUrl });
 	const identity = resolveTargetIdentity(
 		expectedTarget,
 		pkg.invitation.slug,
@@ -913,7 +900,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		targetDbUrl,
 	);
 	const ownerUserId = identity.ownerUserId;
-	const targetStorageUrl = buildStorageUrl(targetSupabaseUrl);
 
 	const initialScan = scanTargetState(
 		targetDbUrl,
@@ -1402,7 +1388,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			trackedResources,
 		);
 		const message = err instanceof Error ? err.message : String(err);
-		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactDbUrl(message)}`);
+		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactCredentials(message)}`);
 		const recoveryStatus =
 			cleanupResult.status === 'CAMBIOS_REVERTIDOS'
 				? 'ERROR — CAMBIOS REVERTIDOS'

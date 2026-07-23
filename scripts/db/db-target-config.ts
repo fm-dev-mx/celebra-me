@@ -32,6 +32,67 @@ export interface GuardResult {
 	errors: string[];
 }
 
+export interface ValidatedTargetUrls {
+	target: 'preview' | 'production';
+	dbUrl: string;
+	supabaseUrl: string;
+	storageUrl: string;
+	projectRef: string;
+}
+
+export function validateEnvironmentUrlsPreflight(input: {
+	target: 'preview' | 'production';
+	targetDbUrl: string;
+	explicitSupabaseUrl?: string;
+}): ValidatedTargetUrls {
+	const { target, targetDbUrl, explicitSupabaseUrl } = input;
+	if (!targetDbUrl || typeof targetDbUrl !== 'string') {
+		throw new Error(`Target "${target}" requires a non-empty database connection URL.`);
+	}
+	const projectRef = extractSupabaseProjectRef(targetDbUrl);
+
+	if (target === 'preview' && projectRef !== 'iwipdvisoyerfdytuhwi') {
+		throw new Error(
+			`Preview promotion safety abort: expected Preview project "iwipdvisoyerfdytuhwi", got "${projectRef}".`,
+		);
+	}
+
+	let supabaseUrl = `https://${projectRef}.supabase.co`;
+	if (explicitSupabaseUrl) {
+		let parsedApi: URL;
+		try {
+			parsedApi = new URL(explicitSupabaseUrl);
+		} catch {
+			throw new Error(`Invalid explicit Supabase API URL provided: "${explicitSupabaseUrl}".`);
+		}
+		if (
+			parsedApi.hostname.includes('pooler.supabase.com') ||
+			parsedApi.hostname.includes('pooler.supabase.co')
+		) {
+			throw new Error(
+				`Supabase API URL "${explicitSupabaseUrl}" contains a pooler hostname. Pooler connection strings must never be used as HTTP or Storage API endpoints.`,
+			);
+		}
+		const apiRef = parsedApi.hostname.replace('.supabase.co', '').replace('.supabase.com', '');
+		if (apiRef !== projectRef) {
+			throw new Error(
+				`Cross-project URL mismatch: DB connection project reference ("${projectRef}") does not match API URL project reference ("${apiRef}").`,
+			);
+		}
+		supabaseUrl = explicitSupabaseUrl.replace(/\/+$/, '');
+	}
+
+	const storageUrl = `${supabaseUrl}/storage/v1/object/public/invitation-assets`;
+
+	return {
+		target,
+		dbUrl: targetDbUrl,
+		supabaseUrl,
+		storageUrl,
+		projectRef,
+	};
+}
+
 // ---------------------------------------------------------------------------
 // Secret File Paths
 // ---------------------------------------------------------------------------
