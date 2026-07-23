@@ -76,12 +76,29 @@ export function planCleanup(input: CleanupPlan | TrackedResource[]): {
 	const toSkip: TrackedResource[] = [];
 	const unrestoredOverwrites: TrackedResource[] = [];
 
+	const contentOverwrittenUnrestored = resources.some(
+		(r) =>
+			r.isPreExisting &&
+			r.wasOverwritten &&
+			!r.restored &&
+			(r.type === 'published_invitation_content' ||
+				r.type === 'invitation_content_draft' ||
+				r.type === 'invitation'),
+	);
+
 	for (const res of resources) {
 		if (res.isPreExisting) {
 			toSkip.push(res);
 			if (res.wasOverwritten && !res.restored) {
 				unrestoredOverwrites.push(res);
 			}
+		} else if (
+			contentOverwrittenUnrestored &&
+			(res.type === 'storage_object' || res.type === 'invitation_asset')
+		) {
+			// Protection against deleting uploaded assets when published or draft content remains committed
+			toSkip.push(res);
+			unrestoredOverwrites.push(res);
 		} else {
 			toRemove.push(res);
 		}
