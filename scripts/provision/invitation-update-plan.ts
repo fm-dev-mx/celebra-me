@@ -3,6 +3,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import type { AssetPolicy } from './asset-reconciliation.ts';
 
 export type FunctionalOperation =
 	| 'insert'
@@ -12,6 +13,7 @@ export type FunctionalOperation =
 	| 'upload'
 	| 'overwrite'
 	| 'reuse'
+	| 'repair_metadata'
 	| 'skip';
 
 export interface FunctionalChange {
@@ -24,6 +26,8 @@ export interface FunctionalChange {
 	newValue?: unknown;
 	scope: 'database' | 'storage';
 	technicalWriteCount: number;
+	targets?: string[];
+	targetPreviousValues?: Record<string, unknown>;
 }
 
 export interface DatabaseOpsSummary {
@@ -42,6 +46,7 @@ export interface StorageOpsSummary {
 export interface TargetPreconditions {
 	sourceHash?: string;
 	packageHash?: string;
+	assetManifestHash?: string;
 	verifiedProjectRef?: string;
 	targetInvitationId?: string;
 	existingDraftUpdatedAt?: string;
@@ -74,6 +79,7 @@ export interface OperationalPlan {
 	invitationTitle: string;
 	sourceHash: string;
 	packageHash: string;
+	assetPolicy?: AssetPolicy;
 	targetEnvironment: 'local' | 'preview' | 'production';
 	verifiedProjectRef: string;
 	functionalChanges: FunctionalChange[];
@@ -124,6 +130,7 @@ export function verifyPlanPreconditions(
 		existingPublishedVersion?: number;
 		targetInvitationId?: string;
 		assetStateHash?: string;
+		assetManifestHash?: string;
 	},
 ): { ok: boolean; reason?: string } {
 	const { targetPreconditions } = plan;
@@ -141,6 +148,13 @@ export function verifyPlanPreconditions(
 		return {
 			ok: false,
 			reason: 'PRECONDITION_FAILED: The resolved package changed after planning.',
+		};
+	}
+
+	if (mismatch('assetManifestHash')) {
+		return {
+			ok: false,
+			reason: 'PRECONDITION_FAILED: The canonical asset manifest changed after planning.',
 		};
 	}
 

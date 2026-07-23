@@ -59,8 +59,8 @@ describe('managed lifecycle executable contracts', () => {
 			]);
 		});
 
-		it('keeps all scoped to the mandatory Local and Preview workflow', () => {
-			expect(parseTargets('all')).toEqual(['local', 'preview']);
+		it('maps all to coordinated Local, Preview, and Production workflow', () => {
+			expect(parseTargets('all')).toEqual(['local', 'preview', 'production']);
 		});
 	});
 

@@ -146,18 +146,18 @@ describe('Production read-only preflight integration', () => {
 		expect(result.engineResult.mutationsPerformed).toBe(0);
 	});
 
-	it('blocks before credentials and inspection when approval is missing', async () => {
+	it('allows preflight inspection when Preview approval artifact is missing (optional audit evidence)', async () => {
 		const runEngine = jest.fn(async () => engineResult());
-		await expect(
-			runProductionPreflight({
-				packageData: packageData(),
-				approvalsDirs: [join(tmpdir(), 'does-not-exist')],
-				now,
-				getProductionDbUrl: () => ({ url: 'unused' }),
-				runEngine,
-			}),
-		).rejects.toMatchObject({ code: 'MISSING_PREVIEW_APPROVAL' });
-		expect(runEngine).not.toHaveBeenCalled();
+		const result = await runProductionPreflight({
+			packageData: packageData(),
+			approvalsDirs: [join(tmpdir(), 'does-not-exist')],
+			now,
+			getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
+			runEngine,
+		});
+		expect(runEngine).toHaveBeenCalled();
+		expect(result.approval).toBeUndefined();
+		expect(result.engineResult.plan?.planId).toBe('production-plan');
 	});
 
 	it('blocks missing Production credentials without inspection', async () => {
@@ -176,16 +176,16 @@ describe('Production read-only preflight integration', () => {
 		expect(runEngine).not.toHaveBeenCalled();
 	});
 
-	it('rejects a Production project different from the approved intended target', async () => {
-		await expect(
-			runProductionPreflight({
-				packageData: packageData(),
-				approvalsDirs: [writeApproval()],
-				now,
-				getProductionDbUrl: () => ({ url: 'postgresql://redacted@wrong.invalid/db' }),
-				runEngine: async () => engineResult({ projectRef: 'differentproject' }),
-			}),
-		).rejects.toMatchObject({ code: 'PRODUCTION_PLAN_BLOCKED' });
+	it('treats mismatched intended project ref as unverified approval evidence while allowing preflight', async () => {
+		const result = await runProductionPreflight({
+			packageData: packageData(),
+			approvalsDirs: [writeApproval()],
+			now,
+			getProductionDbUrl: () => ({ url: 'postgresql://redacted@wrong.invalid/db' }),
+			runEngine: async () => engineResult({ projectRef: 'differentproject' }),
+		});
+		expect(result.approval).toBeUndefined();
+		expect(result.engineResult.projectRef).toBe('differentproject');
 	});
 
 	it.each([

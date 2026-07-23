@@ -93,10 +93,9 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 		expect(parsedLocal.targets).not.toContain('production');
 	});
 
-	it('rejects invalid mode flags combination', () => {
-		expect(() => parseStatusOptions(['--targets', 'local,production'])).toThrow(
-			/Local \+ Production is invalid/i,
-		);
+	it('expands production selection to coordinated Local, Preview, and Production scope', () => {
+		const parsed = parseStatusOptions(['--targets', 'local,production']);
+		expect(parsed.targets).toEqual(['local', 'preview', 'production']);
 	});
 
 	it('validates JSON output structure contains logical operations and separate physical mutations', () => {

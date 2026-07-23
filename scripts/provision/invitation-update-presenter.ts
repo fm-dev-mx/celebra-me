@@ -5,6 +5,8 @@
  * into clear, user-friendly Spanish terminal output without raw object dumps.
  */
 
+import type { FunctionalChange } from './invitation-update-plan.ts';
+
 const useColor = (): boolean => {
 	if (process.env.NO_COLOR || !process.stdout.isTTY) return false;
 	return true;
@@ -242,26 +244,51 @@ export interface OperationalPlanData {
 		deletes: number;
 	};
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
-	functionalChanges?: Array<{
-		section: string;
-		entity: string;
-		label: string;
-		operation:
-			| 'insert'
-			| 'update'
-			| 'delete'
-			| 'move'
-			| 'upload'
-			| 'overwrite'
-			| 'reuse'
-			| 'skip';
-		field?: string;
-		previousValue?: unknown;
-		newValue?: unknown;
-		scope: 'database' | 'storage';
-	}>;
+	functionalChanges?: FunctionalChange[];
 	publishedVersion?: number;
 	targetPlans?: TargetPlanData[];
+}
+
+export function formatTargetsSpanish(targets: string[]): string {
+	const labels = targets.map((t) =>
+		t === 'local' ? 'Local' : t === 'preview' ? 'Preview' : t === 'production' ? 'Producción' : t,
+	);
+	if (labels.length === 0) return '';
+	if (labels.length === 1) return labels[0]!;
+	if (labels.length === 2) return `${labels[0]} y ${labels[1]}`;
+	return `${labels.slice(0, -1).join(', ')} y ${labels.at(-1)}`;
+}
+
+export function consolidateTargetFunctionalChanges(
+	targetPlans: TargetPlanData[],
+): OperationalPlanData['functionalChanges'] {
+	if (!targetPlans || targetPlans.length === 0) return [];
+	const map = new Map<string, NonNullable<OperationalPlanData['functionalChanges']>[number]>();
+
+	for (const tp of targetPlans) {
+		if (!tp.functionalChanges) continue;
+		for (const change of tp.functionalChanges) {
+			const key = `${change.scope}:${change.operation}:${change.section}:${change.field ?? change.entity}:${String(change.newValue ?? '')}`;
+			const existing = map.get(key);
+			if (!existing) {
+				const entry = {
+					...change,
+					targets: [tp.target],
+					targetPreviousValues: { [tp.target]: change.previousValue },
+				};
+				map.set(key, entry);
+			} else {
+				if (!existing.targets?.includes(tp.target)) {
+					existing.targets?.push(tp.target);
+				}
+				if (existing.targetPreviousValues) {
+					existing.targetPreviousValues[tp.target] = change.previousValue;
+				}
+			}
+		}
+	}
+
+	return Array.from(map.values());
 }
 
 // eslint-disable-next-line complexity -- Formats all functional change categories for CLI output.
@@ -284,8 +311,22 @@ export function formatFunctionalChanges(
 		lines.push('');
 		for (const u of updates) {
 			lines.push(`  • ${u.section} — ${u.entity}`);
-			if (u.previousValue !== undefined) lines.push(`    Antes : ${String(u.previousValue)}`);
-			if (u.newValue !== undefined) lines.push(`    Ahora : ${String(u.newValue)}`);
+			const targetPrevEntries = u.targetPreviousValues ? Object.entries(u.targetPreviousValues) : [];
+			const distinctPrevValues = new Set(targetPrevEntries.map(([, v]) => String(v)));
+
+			if (targetPrevEntries.length > 1 && distinctPrevValues.size > 1) {
+				for (const [t, prev] of targetPrevEntries) {
+					const envLabel = t === 'local' ? 'Local' : t === 'preview' ? 'Preview' : 'Producción';
+					lines.push(`    ${envLabel.padEnd(10)} : ${String(prev ?? '(vacío)')}`);
+				}
+				if (u.newValue !== undefined) lines.push(`    Nuevo      : ${String(u.newValue)}`);
+			} else {
+				if (u.previousValue !== undefined) lines.push(`    Antes    : ${String(u.previousValue)}`);
+				if (u.newValue !== undefined) lines.push(`    Ahora    : ${String(u.newValue)}`);
+				if (u.targets && u.targets.length > 1) {
+					lines.push(`    Entornos : ${formatTargetsSpanish(u.targets)}`);
+				}
+			}
 		}
 		lines.push('');
 	}
@@ -296,6 +337,9 @@ export function formatFunctionalChanges(
 		for (const i of inserts) {
 			lines.push(`  • ${i.section} — ${i.entity}`);
 			if (i.newValue !== undefined) lines.push(`    Valor : ${String(i.newValue)}`);
+			if (i.targets && i.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(i.targets)}`);
+			}
 		}
 		lines.push('');
 	}
@@ -307,6 +351,9 @@ export function formatFunctionalChanges(
 			lines.push(`  • ${d.section} — ${d.entity}`);
 			if (d.previousValue !== undefined)
 				lines.push(`    Anterior : ${String(d.previousValue)}`);
+			if (d.targets && d.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(d.targets)}`);
+			}
 		}
 		lines.push('');
 	}
@@ -319,6 +366,9 @@ export function formatFunctionalChanges(
 			if (move.previousValue !== undefined)
 				lines.push(`    Antes : ${String(move.previousValue)}`);
 			if (move.newValue !== undefined) lines.push(`    Ahora : ${String(move.newValue)}`);
+			if (move.targets && move.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(move.targets)}`);
+			}
 		}
 		lines.push('');
 	}
@@ -329,6 +379,9 @@ export function formatFunctionalChanges(
 		for (const u of uploads) {
 			lines.push(`  • ${u.section} — ${u.entity}`);
 			if (u.newValue) lines.push(`    Detalle : ${String(u.newValue)}`);
+			if (u.targets && u.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(u.targets)}`);
+			}
 		}
 		lines.push('');
 	}
@@ -339,6 +392,9 @@ export function formatFunctionalChanges(
 		for (const o of overwrites) {
 			lines.push(`  • ${o.section} — ${o.entity}`);
 			if (o.newValue) lines.push(`    Detalle : ${String(o.newValue)}`);
+			if (o.targets && o.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(o.targets)}`);
+			}
 		}
 		lines.push('');
 	}
@@ -348,6 +404,9 @@ export function formatFunctionalChanges(
 		lines.push('');
 		for (const sd of storageDeletes) {
 			lines.push(`  • ${sd.section} — ${sd.entity}`);
+			if (sd.targets && sd.targets.length > 1) {
+				lines.push(`    Entornos : ${formatTargetsSpanish(sd.targets)}`);
+			}
 		}
 		lines.push('');
 	}

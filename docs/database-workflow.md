@@ -72,9 +72,10 @@ Definition -> normalized release -> Local -> immutable package -> Preview approv
 
 1. **Plan/update a managed definition**:
    ```bash
-   pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run
-   pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --apply
-   pnpm invitation:update -- --package <path> --slug <slug> --targets production --dry-run
+   pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
+   pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
+   pnpm invitation:update -- --slug <slug> --targets production --dry-run
+   pnpm invitation:update -- --slug <slug> --targets production --apply
    ```
 
 ## Preview Environment Workflow

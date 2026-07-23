@@ -154,7 +154,7 @@ For local development, use local Supabase and keep `.env.local` pointed away fro
 | `pnpm db:prod:migrate`            | Apply reviewed migrations to production (runs preflight checks, backup, and confirmation) |
 | `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                    |
 | `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                   |
-| `pnpm invitation:update`          | Unified managed invitation update, package, Preview approval, and Production resume       |
+| `pnpm invitation:update`          | Unified managed invitation update, package, Preview approval, and direct Production release |
 | `pnpm db:prod:patch`              | Dry-run lint for manifest-bearing production patches                                      |
 | `pnpm db:sql:lint`                | Lint a production SQL patch file                                                          |
 | `pnpm db:migrate:new <name>`      | Scaffold a new migration                                                                  |

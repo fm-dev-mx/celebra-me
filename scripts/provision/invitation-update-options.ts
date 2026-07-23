@@ -6,16 +6,17 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 	if (!raw) return [];
 	const values =
 		raw === 'all'
-			? ['local', 'preview']
+			? ['local', 'preview', 'production']
 			: raw
 					.split(/[\s,]+/)
 					.map((s) => s.trim())
 					.filter(Boolean);
-	if (values.includes('local') && values.includes('production') && !values.includes('preview'))
-		throw new Error('Local + Production is invalid: Preview approval is mandatory.');
 	for (const target of values)
 		if (!['local', 'preview', 'production'].includes(target))
 			throw new Error(`Unknown target "${target}".`);
+	if (values.includes('production')) {
+		return ['local', 'preview', 'production'];
+	}
 	const selected = new Set(values);
 	return (['local', 'preview', 'production'] as InvitationUpdateTarget[]).filter((target) =>
 		selected.has(target),
@@ -39,11 +40,16 @@ const VALID_FLAGS = new Set([
 	'--adoption-apply',
 	'--adoption-manifest',
 	'--preview-provenance',
+	'--asset-policy',
+	'--prune-assets',
 	'--include-legacy',
 	'--include-archived',
 	'--include-demos',
 	'--artifact',
 	'--evidence',
+	'--confirm-slug',
+	'--confirm-scope',
+	'--confirm-destructive',
 	'--help',
 	'-h',
 ]);
@@ -68,6 +74,8 @@ export function checkUnknownFlags(args: string[]): void {
 					'--adoption-manifest',
 					'--artifact',
 					'--evidence',
+					'--confirm-slug',
+					'--asset-policy',
 				].includes(arg)
 			) {
 				i++;

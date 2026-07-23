@@ -32,11 +32,15 @@ export interface ProductionPreflightResult {
 	targetDbUrl: string;
 }
 
+import type { AssetPolicy } from './asset-reconciliation.ts';
+
 export async function runProductionPreflight(input: {
 	packageData: InvitationPackageData;
 	ownerUserId?: string;
 	approvalsDirs?: string[];
 	now?: Date;
+	assetPolicy?: AssetPolicy;
+	pruneAssets?: boolean;
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 }): Promise<ProductionPreflightResult> {
@@ -75,6 +79,8 @@ export async function runProductionPreflight(input: {
 			targetDbUrl,
 			ownerUserId: input.ownerUserId,
 			dryRun: true,
+			assetPolicy: input.assetPolicy,
+			pruneAssets: input.pruneAssets,
 		});
 		assertEngineResult(engineResult, undefined, 'Producción', false);
 		let finalApproval: PreviewApprovalArtifact | undefined;

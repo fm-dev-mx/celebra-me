@@ -42,24 +42,29 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Managed invitation changes use
   `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
 - The canonical pipeline is
-  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Continue to Production`.
+  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Production` or direct publication `Define -> Plan -> Direct Production Publication (Coordinated Local -> Preview -> Production)`.
+- Selecting Production automatically expands release scope to `Local -> Preview -> Production` executed sequentially in that order. Production executes last.
 - Preview is a validation environment. Production MUST NOT import directly from the Preview database
   or Storage.
-- Production continuation from an approved package requires a matching Preview approval artifact.
-  Existing invitations resolve and preserve their owner from the selected target row; an explicit
+- Direct Production publication does not require a pre-existing Preview approval artifact (if present, it is recorded as optional audit evidence).
+- Existing invitations resolve and preserve their owner from the selected target row; an explicit
   owner is required only when the target invitation does not yet exist:
   ```bash
   pnpm invitation:update --slug <slug> --targets production --package <path> --apply
   ```
+- Non-interactive execution for Production direct publication requires `--confirm-slug <slug>`, `--confirm-scope`, and `--confirm-destructive` (when destructive operations exist).
+- Managed invitation asset updates are governed by explicit asset policy (`--asset-policy verify|missing|sync`, default `missing`).
+- Asset identity is stable across environments matched by `key` and `displayName`; binary equality is proven by `sha256` content hash rather than target UUIDs or paths.
+- Text-only updates with matching binaries perform 0 Storage uploads.
+- Asset pruning is strictly isolated behind `--prune-assets` with explicit confirmation.
 - Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
   and embedded base64 assets with SHA-256 signatures.
 - Packages MUST NOT leak local or environment-specific Supabase URLs (sanitized to
   `__STORAGE_URL__`).
 - Preview promotion requires target project `iwipdvisoyerfdytuhwi` and generates a non-secret
   Preview approval artifact (`.agent/tmp/approvals/preview-approval-<hash>.json`).
-- Production promotion requires a matching Preview approval artifact for the exact package hash,
-  target-scoped owner resolution by slug (or `--owner-user-id` only for a new invitation), zero
-  source-URL verification, and explicit confirmation.
+- Direct Production publication performs coordinated sequential release across Local, Preview, and Production, target-scoped owner resolution by slug (or `--owner-user-id` only for a new invitation), zero
+  source-URL verification, multi-target semantic diff presentation, and explicit confirmation gates.
 - Multi-target execution produces independent per-target plans and statuses (`local`, `preview`,
   `production`). An uninspected target must be reported as `NO EVALUADO` or `BLOQUEADO` (never false
   `SIN CAMBIOS`).

@@ -8,10 +8,14 @@ import { assertEngineResult } from './invitation-engine-result.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
 import { createPendingPreviewApprovalArtifact } from './preview-approval-service.ts';
 
+import type { AssetPolicy } from './asset-reconciliation.ts';
+
 export async function runPreviewApply(input: {
 	packageData: InvitationPackageData;
 	targetDbUrl: string;
 	plan: OperationalPlan;
+	assetPolicy?: AssetPolicy;
+	pruneAssets?: boolean;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	createPendingApproval?: typeof createPendingPreviewApprovalArtifact;
 }): Promise<ImportEngineResult & { plan: OperationalPlan }> {
@@ -21,6 +25,8 @@ export async function runPreviewApply(input: {
 		targetDbUrl: input.targetDbUrl,
 		dryRun: false,
 		plan: input.plan,
+		assetPolicy: input.assetPolicy,
+		pruneAssets: input.pruneAssets,
 	});
 	assertEngineResult(result, input.plan.planId, 'Preview', true);
 	(input.createPendingApproval ?? createPendingPreviewApprovalArtifact)({

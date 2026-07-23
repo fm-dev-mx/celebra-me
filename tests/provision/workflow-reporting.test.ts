@@ -2,9 +2,9 @@ import { describe, expect, it } from '@jest/globals';
 import { buildStatusReport, parseTargets } from '../../scripts/provision/invitation-update-options.ts';
 
 describe('unified workflow dependency reporting', () => {
-	it('maps all to the mandatory Local/Preview workflow and rejects invalid bypasses', () => {
-		expect(parseTargets('all')).toEqual(['local', 'preview']);
-		expect(() => parseTargets('local,production')).toThrow(/Preview approval is mandatory/i);
+	it('maps all and production to the coordinated Local/Preview/Production release pipeline', () => {
+		expect(parseTargets('all')).toEqual(['local', 'preview', 'production']);
+		expect(parseTargets('local,production')).toEqual(['local', 'preview', 'production']);
 	});
 
 	it('honors read-only status filters and does not pretend unqueried targets are present', () => {

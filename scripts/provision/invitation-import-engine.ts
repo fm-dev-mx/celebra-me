@@ -31,7 +31,6 @@ import {
 	checkInvitationMetadataIdentical,
 	checkDraftContentIdentical,
 	checkPublishedContentIdentical,
-	checkAssetDbRowIdentical,
 	checkEventAndMembershipIdentical,
 	rewritePackageStorageUrls,
 	checkTargetDivergenceConflict,
@@ -47,6 +46,13 @@ import {
 	type FunctionalChange,
 	type OperationalPlan,
 } from './invitation-update-plan.ts';
+import {
+	reconcileAssets,
+	type AssetPolicy,
+	type TargetAssetRecord,
+	type ObservedStorageState,
+	type AssetReconciliationResult,
+} from './asset-reconciliation.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -58,12 +64,14 @@ export interface ImportEngineOptions {
 	targetSupabaseUrl?: string;
 	serviceRoleKey?: string;
 	plan?: OperationalPlan;
+	assetPolicy?: AssetPolicy;
+	pruneAssets?: boolean;
 }
 
 export interface ResourcePlanAction {
 	resource: string;
 	name: string;
-	action: 'create' | 'replace' | 'reuse' | 'skip';
+	action: 'create' | 'replace' | 'reuse' | 'skip' | 'delete';
 	detail: string;
 }
 
@@ -269,88 +277,157 @@ function resolveTargetIdentity(
 	});
 }
 
+function fetchTargetDbAssets(
+	targetDbUrl?: string,
+	targetInvitationId?: string,
+): TargetAssetRecord[] {
+	const targetDbAssets: TargetAssetRecord[] = [];
+	if (!targetDbUrl || !targetInvitationId) return targetDbAssets;
+
+	const assetsQuery = `select id::text, display_name, storage_path, bucket, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, default_alt_text from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
+	const assetsResult = runPsql(`select json_agg(t) from (${assetsQuery}) t;`, targetDbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+	});
+	for (const row of parsePsqlJsonArray(assetsResult.stdout)) {
+		if (typeof row.storage_path === 'string') {
+			targetDbAssets.push({
+				id: row.id as string,
+				displayName: row.display_name as string,
+				storagePath: row.storage_path as string,
+				bucket: (row.bucket as string) ?? 'invitation-assets',
+				mimeType: (row.mime_type as string) ?? 'image/webp',
+				fileSize: row.file_size !== null ? Number(row.file_size) : null,
+				width: row.width !== null ? Number(row.width) : null,
+				height: row.height !== null ? Number(row.height) : null,
+				validationVersion: Number(row.validation_version ?? 1),
+				originalMimeType: (row.original_mime_type as string) ?? null,
+				originalFileSize: row.original_file_size !== null ? Number(row.original_file_size) : null,
+				altText: (row.default_alt_text as string) ?? null,
+			});
+		}
+	}
+	return targetDbAssets;
+}
+
+async function probeStorageStates(
+	assets: InvitationPackageAsset[],
+	targetDbAssets: TargetAssetRecord[],
+	targetStorageUrl: string,
+): Promise<{
+	observedStorage: Record<string, ObservedStorageState>;
+	verifiedAssetHashes: Record<string, string>;
+}> {
+	const observedStorage: Record<string, ObservedStorageState> = {};
+	const verifiedAssetHashes: Record<string, string> = {};
+	const pathsToProbe = new Set<string>();
+
+	for (const pAsset of assets) pathsToProbe.add(pAsset.storagePath);
+	for (const targetRecord of targetDbAssets) pathsToProbe.add(targetRecord.storagePath);
+
+	for (const storagePath of pathsToProbe) {
+		const targetAssetUrl = `${targetStorageUrl}/${storagePath}`;
+		try {
+			const fetchRes = await fetch(targetAssetUrl);
+			if (fetchRes.ok) {
+				const ab = await fetchRes.arrayBuffer();
+				const hash = sha256Bytes(new Uint8Array(ab));
+				observedStorage[storagePath] = { present: true, sha256: hash, httpStatus: fetchRes.status };
+				verifiedAssetHashes[storagePath] = hash;
+			} else {
+				observedStorage[storagePath] = { present: false, sha256: null, httpStatus: fetchRes.status };
+			}
+		} catch {
+			observedStorage[storagePath] = { present: false, sha256: null };
+		}
+	}
+	return { observedStorage, verifiedAssetHashes };
+}
+
 async function scanAssetStatus(
 	assets: InvitationPackageAsset[],
 	targetStorageUrl: string,
 	targetDbUrl?: string,
 	targetInvitationId?: string,
+	policy: AssetPolicy = 'missing',
+	pruneAssets = false,
 ): Promise<{
 	assetsToUpload: InvitationPackageAsset[];
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
+	assetsToDelete: TargetAssetRecord[];
 	assetActions: ResourcePlanAction[];
 	verifiedAssetHashes: Record<string, string>;
 	assetStateHash: string;
+	reconciliation: AssetReconciliationResult;
 }> {
-	const assetsToUpload: InvitationPackageAsset[] = [];
-	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
-	const assetActions: ResourcePlanAction[] = [];
-	const verifiedAssetHashes: Record<string, string> = {};
-	const observedAssetHashes: Record<string, string | null> = {};
+	const targetDbAssets = fetchTargetDbAssets(targetDbUrl, targetInvitationId);
+	const { observedStorage, verifiedAssetHashes } = await probeStorageStates(
+		assets,
+		targetDbAssets,
+		targetStorageUrl,
+	);
 
-	const existingDbMap = new Map<string, Record<string, unknown>>();
-	if (targetDbUrl && targetInvitationId) {
-		const assetsQuery = `select display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
-		const assetsResult = runPsql(`select json_agg(t) from (${assetsQuery}) t;`, targetDbUrl, {
-			tuplesOnly: true,
-			throwOnError: false,
-		});
-		for (const row of parsePsqlJsonArray(assetsResult.stdout)) {
-			if (typeof row.storage_path === 'string') existingDbMap.set(row.storage_path, row);
-		}
+	const reconciliation = reconcileAssets({
+		canonicalAssets: assets,
+		targetDbAssets,
+		observedStorage,
+		policy,
+		pruneAssets,
+	});
+
+	if (reconciliation.blocked) {
+		throw new Error(
+			reconciliation.blockReason ??
+				'La reconciliación de archivos fue bloqueada debido a inconsistencias o conflictos de estado.',
+		);
 	}
 
-	for (const pAsset of assets) {
-		const targetAssetUrl = `${targetStorageUrl}/${pAsset.storagePath}`;
-		let binaryIdentical = false;
-		let binaryPresent = false;
+	const assetsToUpload: InvitationPackageAsset[] = [];
+	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
+	const assetsToDelete: TargetAssetRecord[] = [];
+	const assetActions: ResourcePlanAction[] = [];
 
-		try {
-			const fetchRes = await fetch(targetAssetUrl);
-			if (fetchRes.ok) {
-				binaryPresent = true;
-				const ab = await fetchRes.arrayBuffer();
-				const targetHash = sha256Bytes(new Uint8Array(ab));
-				observedAssetHashes[pAsset.storagePath] = targetHash;
-				if (targetHash === pAsset.sha256) {
-					binaryIdentical = true;
-					verifiedAssetHashes[pAsset.storagePath] = targetHash;
-				}
-			}
-		} catch {
-			// Asset not present on target storage
-		}
-		if (!(pAsset.storagePath in observedAssetHashes)) {
-			observedAssetHashes[pAsset.storagePath] = null;
-		}
+	const canonicalMap = new Map(assets.map((a) => [a.key, a]));
 
-		const dbRowIdentical = checkAssetDbRowIdentical(
-			pAsset,
-			existingDbMap.get(pAsset.storagePath) ?? null,
-		);
+	for (const item of reconciliation.reconciledAssets) {
+		const pAsset = canonicalMap.get(item.key);
+		if (!pAsset) continue;
 
-		if (binaryIdentical && dbRowIdentical) {
+		if (item.plannedAction === 'REUSE') {
 			assetActions.push({
 				resource: 'invitation_assets',
-				name: pAsset.displayName,
+				name: item.displayName,
 				action: 'reuse',
-				detail: `Storage binary and metadata up-to-date (SHA-256: ${pAsset.sha256.slice(0, 12)}…)`,
+				detail: `Storage binary and metadata up-to-date (SHA-256: ${item.canonicalHash.slice(0, 12)}…)`,
 			});
-		} else if (binaryIdentical && !dbRowIdentical) {
+		} else if (item.plannedAction === 'REPAIR_METADATA') {
 			assetsToUpsertDbOnly.push(pAsset);
 			assetActions.push({
 				resource: 'invitation_assets',
-				name: pAsset.displayName,
+				name: item.displayName,
 				action: 'replace',
 				detail: `Update asset DB metadata (Storage binary up-to-date)`,
 			});
-		} else {
+		} else if (item.plannedAction === 'UPLOAD' || item.plannedAction === 'OVERWRITE') {
 			assetsToUpload.push(pAsset);
 			assetActions.push({
 				resource: 'invitation_assets',
-				name: pAsset.displayName,
-				action:
-					binaryPresent || existingDbMap.has(pAsset.storagePath) ? 'replace' : 'create',
-				detail: `Upload binary to Storage (${(pAsset.fileSize ?? 0) / 1024} KB WebP)`,
+				name: item.displayName,
+				action: item.plannedAction === 'UPLOAD' ? 'create' : 'replace',
+				detail: `${item.plannedAction === 'UPLOAD' ? 'Upload binary to' : 'Overwrite binary in'} Storage (${(pAsset.fileSize ?? 0) / 1024} KB WebP)`,
+			});
+		}
+	}
+
+	for (const item of reconciliation.unreferencedAssets) {
+		if (item.plannedAction === 'PRUNE') {
+			const targetRecord = targetDbAssets.find((r) => r.storagePath === item.targetStoragePath);
+			if (targetRecord) assetsToDelete.push(targetRecord);
+			assetActions.push({
+				resource: 'invitation_assets',
+				name: item.displayName,
+				action: 'delete',
+				detail: `Delete unreferenced asset with --prune-assets`,
 			});
 		}
 	}
@@ -358,17 +435,20 @@ async function scanAssetStatus(
 	const assetStateHash = createHash('sha256')
 		.update(
 			JSON.stringify({
-				rows: [...existingDbMap.entries()].sort(([a], [b]) => a.localeCompare(b)),
-				observedAssetHashes,
+				rows: targetDbAssets.sort((a, b) => a.storagePath.localeCompare(b.storagePath)),
+				observedStorage,
 			}),
 		)
 		.digest('hex');
+
 	return {
 		assetsToUpload,
 		assetsToUpsertDbOnly,
+		assetsToDelete,
 		assetActions,
 		verifiedAssetHashes,
 		assetStateHash,
+		reconciliation,
 	};
 }
 
@@ -862,7 +942,14 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		assetActions,
 		verifiedAssetHashes,
 		assetStateHash,
-	} = await scanAssetStatus(pkg.assets, targetStorageUrl, targetDbUrl, drift.targetInvitationId);
+	} = await scanAssetStatus(
+		pkg.assets,
+		targetStorageUrl,
+		targetDbUrl,
+		drift.targetInvitationId,
+		options.assetPolicy ?? 'missing',
+		options.pruneAssets ?? false,
+	);
 	const actions = buildResourceActions({
 		slug: drift.slug,
 		route: drift.route,
@@ -1253,6 +1340,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			targetStorageUrl,
 			targetDbUrl,
 			finalDrift.targetInvitationId,
+			options.assetPolicy ?? 'missing',
+			options.pruneAssets ?? false,
 		);
 		if (
 			!finalDrift.isInvMetadataIdentical ||

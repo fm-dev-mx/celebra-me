@@ -25,16 +25,13 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Continue to Production
+Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Production
+  (or Direct Production Publication: Coordinated Local -> Preview -> Production)
 ```
 
 Use
-`pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run|--apply`.
-The `all` workflow stops after Preview; Production continues only by passing the exact approved
-package with `--package` (there is no `--resume` flag) and completing confirmation. Existing target
-invitations resolve and preserve their owner by slug; `--owner-user-id` is only required when
-creating a new target invitation. Every selected target is inspected and planned before any
-mutation; a blocked or unevaluated target aborts the complete apply phase.
+`pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
+Selecting `production` (or `all`) automatically expands the target pipeline to `Local -> Preview -> Production` sequentially, with Production executing last. Direct Production publication does not require a pre-existing Preview approval artifact (recorded as optional audit evidence if present). Non-interactive production publication requires `--confirm-slug <slug>`, `--confirm-scope`, and `--confirm-destructive` (when destructive changes exist). Existing target invitations resolve and preserve their owner by slug; `--owner-user-id` is only required when creating a new target invitation. Every selected target is inspected and planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across all targets.
 
 ## Publication integrity rollout
 

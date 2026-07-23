@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** The sole public managed-invitation release command. */
 /* eslint-disable max-lines -- Managed release CLI handles mode dispatch, per-target planning, and interactive wizard. */
-import { confirm, select } from '@inquirer/prompts';
+import { confirm, input, select } from '@inquirer/prompts';
 import { applyLocalInvitation, type LocalApplyResult } from './apply-local-invitation.ts';
 import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
@@ -16,6 +16,7 @@ import {
 	type LifecycleExecutionError,
 } from './invitation-lifecycle-execution.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
+import { parseAssetPolicy } from './asset-reconciliation.ts';
 import {
 	buildStatusReport,
 	parseTargets,
@@ -40,6 +41,7 @@ import {
 	formatDryRunPlan,
 	formatApplyConfirmation,
 	formatApplyResult,
+	consolidateTargetFunctionalChanges,
 	type StatusReportData,
 	type OperationalPlanData,
 	type TargetPlanData,
@@ -122,20 +124,26 @@ Usage:
   pnpm invitation:update                                             Interactive wizard (TTY only)
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:update --slug <slug> --targets <targets> --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
+  pnpm invitation:update --slug <slug> --targets production --source-dir <dir>|--package <path> --apply --non-interactive --confirm-slug <slug> --confirm-scope [--confirm-destructive]
   pnpm invitation:update --artifact <path> --evidence <path> --apply
   pnpm invitation:update --adoption-plan --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> [--adoption-manifest <path>] [--json]
   pnpm invitation:update --adoption-apply --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> --adoption-manifest <path> [--json]
   pnpm invitation:update --preview-provenance --slug romina-rios-chaparro --targets preview --package <path> --approval-artifact <path> --dry-run|--apply [--json]
 
 Options:
+  --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
+  --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
   --status                     Read-only inventory status check
-  --targets <targets>          Target environments: local, preview, production, all
+  --targets <targets>          Target environments: local, preview, production, all (production expands to local -> preview -> production)
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
   --source-dir <dir>           Directory containing source assets (optional if assets exist in DB/Storage)
   --package <path>             Immutable package; mutually exclusive with --source-dir
   --dry-run                    Simulate changes without performing writes
   --apply                      Perform actual database and storage updates
   --non-interactive            Skip interactive prompts for non-TTY execution
+  --confirm-slug <slug>        Exact invitation slug confirmation required for non-interactive Production apply
+  --confirm-scope              Coordinated release scope confirmation required for non-interactive Production apply
+  --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
   --json                       Format output as JSON
   --owner-user-id <uuid>       Required only when creating a new hosted invitation; optional assertion for an existing target owner
   --adoption-plan              Read-only plan for the isolated Production legacy adoption
@@ -212,8 +220,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		const manifestPath = value(args, '--adoption-manifest');
 		if (
 			slug !== 'romina-rios-chaparro' ||
-			targets.length !== 1 ||
-			targets[0] !== 'production' ||
+			targets.length !== 3 ||
+			targets[2] !== 'production' ||
 			!packagePath ||
 			!approvalArtifactPath ||
 			(adoptionApply && !manifestPath)
@@ -319,8 +327,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						choices: [
 							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
 							{ name: 'Preview', value: 'preview' },
-							{ name: 'Producción', value: 'production' },
-							{ name: 'Local y Preview', value: 'all' },
+							{ name: 'Producción (Sincronización Local → Preview → Producción)', value: 'production' },
+							{ name: 'Local y Preview', value: 'local,preview' },
 						],
 					}),
 				);
@@ -338,8 +346,24 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			if (operation === 'status') statusMode = true;
 			else if (operation === 'dry-run') dryRun = true;
 			else if (operation === 'apply') apply = true;
+
+			if (!statusMode) {
+				const policyChoice = await select({
+					message: '¿Cómo deseas manejar las fotografías y otros archivos?',
+					choices: [
+						{ name: 'Verificar y reutilizar los existentes (verify)', value: 'verify' },
+						{ name: 'Subir únicamente los archivos faltantes (missing)', value: 'missing' },
+						{ name: 'Sincronizar archivos faltantes y modificados (sync)', value: 'sync' },
+					],
+				});
+				args.push('--asset-policy', policyChoice);
+			}
 		}
 	}
+
+	const rawAssetPolicy = value(args, '--asset-policy');
+	const pruneAssets = args.includes('--prune-assets');
+	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
 
 	// Default targets to local if interactive or unassigned
 	if (targets.length === 0 && (slug || statusMode)) {
@@ -609,7 +633,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				});
 				targetPlans.push({
 					target: 'preview',
-					status: 'NO EVALUADO',
+					status: 'BLOQUEADO',
 					reason: 'No se realizó una inspección remota (credenciales de preview no configuradas).',
 					plannedOperations: 0,
 					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
@@ -624,12 +648,16 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								target: 'preview' as const,
 								targetDbUrl,
 								dryRun: true,
+								assetPolicy,
+								pruneAssets,
 							}
 						: {
 								packageData: confirmationPackage,
 								target: 'preview' as const,
 								targetDbUrl,
 								dryRun: true,
+								assetPolicy,
+								pruneAssets,
 							};
 					const result = await runImportEngine(engineOptions);
 					assertEngineResult(result, undefined, 'Preview', false);
@@ -690,6 +718,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				const { engineResult } = await runProductionPreflight({
 					packageData: confirmationPackage,
 					ownerUserId,
+					assetPolicy,
+					pruneAssets,
 					getProductionDbUrl: getProdDbUrl,
 				});
 				executionPlans.set('production', engineResult.plan);
@@ -760,18 +790,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		isZeroDrift,
 		plannedOperations,
 		expectedDatabaseWrites: {
-			inserts: localResult ? localResult.databaseInserts : 0,
-			updates: localResult ? localResult.databaseUpdates : 0,
-			deletes: localResult ? localResult.databaseDeletes : 0,
+			inserts: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.inserts, 0),
+			updates: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.updates, 0),
+			deletes: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.deletes, 0),
 		},
 		expectedStorageMutations: {
-			uploads: localResult ? localResult.storageUploads : 0,
-			overwrites: localResult ? localResult.storageOverwrites : 0,
-			moves: localResult ? localResult.storageMoves : 0,
-			deletes: localResult ? localResult.storageDeletes : 0,
+			uploads: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.uploads, 0),
+			overwrites: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.overwrites, 0),
+			moves: targetPlans.reduce((sum, tp) => sum + (tp.expectedStorageMutations.moves ?? 0), 0),
+			deletes: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.deletes, 0),
 		},
 		actions: localResult ? localResult.actions : [],
-		functionalChanges: localResult?.functionalChanges,
+		functionalChanges: consolidateTargetFunctionalChanges(targetPlans),
 		publishedVersion: localResult?.publishedVersion,
 		targetPlans,
 	};
@@ -892,8 +922,167 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			return;
 		}
 
-		// Operator Confirmation Prompt in Interactive Mode
-		if (isTTY && !nonInteractive) {
+		const destInfo = {
+			hasDestructive: targetPlans.some(
+				(tp) =>
+					tp.expectedDatabaseWrites.deletes > 0 ||
+					tp.expectedStorageMutations.deletes > 0 ||
+					tp.expectedStorageMutations.overwrites > 0,
+			),
+			databaseDeletes: targetPlans.reduce((s, tp) => s + tp.expectedDatabaseWrites.deletes, 0),
+			storageDeletes: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.deletes, 0),
+			storageOverwrites: targetPlans.reduce(
+				(s, tp) => s + tp.expectedStorageMutations.overwrites,
+				0,
+			),
+			affectedTargets: targetPlans
+				.filter(
+					(tp) =>
+						tp.expectedDatabaseWrites.deletes > 0 ||
+						tp.expectedStorageMutations.deletes > 0 ||
+						tp.expectedStorageMutations.overwrites > 0,
+				)
+				.map((tp) => tp.target),
+		};
+
+		// ── CONFIRMATION GATES (INTERACTIVE & NON-INTERACTIVE) ─────────────────────
+		if (targets.includes('production')) {
+			if (isTTY && !nonInteractive) {
+				console.log(
+					'\nPublicar en Producción sincronizará esta misma versión en:\n\n  • Local\n  • Preview\n  • Producción\n\nProducción se ejecutará únicamente después de validar y procesar correctamente Local y Preview.\n',
+				);
+				console.log(formatApplyConfirmation(planData));
+
+				const scopeConfirmed = await confirm({
+					message: `¿Aceptas la publicación coordinada en Local, Preview y Producción para "${slug}"?`,
+					default: false,
+				});
+				if (!scopeConfirmed) {
+					targetResults.push(...buildCancellationResults(targets, targetPlans));
+					const cancelResult = {
+						invitation: slug,
+						reports,
+						targetResults,
+						status: 'CANCELLED' as const,
+						reason: 'OPERATOR_CANCELLED_SCOPE',
+					};
+					if (json) console.log(JSON.stringify(cancelResult, null, 2));
+					else
+						console.log(
+							formatApplyResult({
+								planId: localResult?.plan?.planId,
+								invitation: slug,
+								status: 'CANCELLED',
+								environment: targets.join(', '),
+								completedOperations: 0,
+								databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+								storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+								reason: 'Publicación coordinada cancelada por el operador (alcance no aceptado).',
+								functionalChanges: planData.functionalChanges,
+								targetResults,
+							}),
+						);
+					return;
+				}
+
+				console.log(`\nConfirma la publicación coordinada en Producción.`);
+				const typedSlug = (
+					await input({
+						message: `Escribe el slug para continuar (${slug}):`,
+					})
+				).trim();
+
+				if (typedSlug !== slug) {
+					targetResults.push(...buildCancellationResults(targets, targetPlans));
+					const cancelResult = {
+						invitation: slug,
+						reports,
+						targetResults,
+						status: 'CANCELLED' as const,
+						reason: 'OPERATOR_CANCELLED_SLUG_MISMATCH',
+					};
+					if (json) console.log(JSON.stringify(cancelResult, null, 2));
+					else
+						console.log(
+							formatApplyResult({
+								planId: localResult?.plan?.planId,
+								invitation: slug,
+								status: 'CANCELLED',
+								environment: targets.join(', '),
+								completedOperations: 0,
+								databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+								storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+								reason: `Cancelado: el slug escrito ("${typedSlug}") no coincide con "${slug}".`,
+								functionalChanges: planData.functionalChanges,
+								targetResults,
+							}),
+						);
+					return;
+				}
+
+				if (destInfo.hasDestructive) {
+					console.log(`\n⚠️  OPERACIÓN DESTRUCTIVA DETECTADA`);
+					console.log(
+						`  • Operaciones : ${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage`,
+					);
+					console.log(`  • Entornos    : ${destInfo.affectedTargets.join(', ')}`);
+					console.log(
+						`  • Capacidad   : Las sobrescrituras y eliminaciones no se restauran automáticamente.`,
+					);
+					console.log(
+						`  • Riesgo      : Requiere revisión manual si la ejecución se interrumpe.\n`,
+					);
+					const destConfirmed = await confirm({
+						message: `¿Confirmar la ejecución de estas operaciones destructivas?`,
+						default: false,
+					});
+					if (!destConfirmed) {
+						targetResults.push(...buildCancellationResults(targets, targetPlans));
+						const cancelResult = {
+							invitation: slug,
+							reports,
+							targetResults,
+							status: 'CANCELLED' as const,
+							reason: 'OPERATOR_CANCELLED_DESTRUCTIVE',
+						};
+						if (json) console.log(JSON.stringify(cancelResult, null, 2));
+						else
+							console.log(
+								formatApplyResult({
+									planId: localResult?.plan?.planId,
+									invitation: slug,
+									status: 'CANCELLED',
+									environment: targets.join(', '),
+									completedOperations: 0,
+									databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+									storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+									reason: 'Cancelado por el operador antes de ejecutar operaciones destructivas.',
+									functionalChanges: planData.functionalChanges,
+									targetResults,
+								}),
+							);
+						return;
+					}
+				}
+			} else if (nonInteractive) {
+				const confirmSlug = value(args, '--confirm-slug');
+				if (confirmSlug !== slug) {
+					throw new Error(
+						`La publicación no interactiva en Producción requiere --confirm-slug coincidente ("${slug}").`,
+					);
+				}
+				if (!args.includes('--confirm-scope')) {
+					throw new Error(
+						'La publicación no interactiva en Producción requiere la confirmación del alcance coordinado mediante --confirm-scope.',
+					);
+				}
+				if (destInfo.hasDestructive && !args.includes('--confirm-destructive')) {
+					throw new Error(
+						`El plan contiene operaciones destructivas (${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage). La ejecución no interactiva requiere --confirm-destructive.`,
+					);
+				}
+			}
+		} else if (isTTY && !nonInteractive) {
 			console.log(formatApplyConfirmation(planData));
 			const confirmed = await confirm({
 				message: `¿Aplicar la actualización administrada de "${slug}" en ${targets.join(', ')}?`,
@@ -921,13 +1110,17 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 							storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
 							reason: 'Cancelado por el operador.',
-							functionalChanges: localResult?.functionalChanges,
+							functionalChanges: planData.functionalChanges,
 							targetResults,
 						}),
 					);
 				}
 				return;
 			}
+		} else if (nonInteractive && destInfo.hasDestructive && !args.includes('--confirm-destructive')) {
+			throw new Error(
+				`El plan contiene operaciones destructivas (${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage). La ejecución no interactiva requiere --confirm-destructive.`,
+			);
 		}
 
 		// Execute retained target plans in deterministic order through the shared lifecycle core.
@@ -1018,6 +1211,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						packageData: confirmationPackage,
 						targetDbUrl: dbUrl,
 						plan: previewPlan,
+						assetPolicy,
+						pruneAssets,
 					});
 					reports.push({
 						stage: 'promote',
@@ -1054,15 +1249,21 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 
 				const pkg = confirmationPackage;
-				verifyPreviewApprovalArtifact({
-					packageHash: pkg.packageHash,
-					sourceHash: pkg.sourceHash,
-					metadataHash: pkg.metadataHash,
-					projectionHash: pkg.projectionHash,
-					assetManifestHash: pkg.assetManifestHash,
-					slug: pkg.invitation.slug,
-					route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
-				});
+				let optionalApprovalState = 'direct_production_publication';
+				try {
+					const verified = verifyPreviewApprovalArtifact({
+						packageHash: pkg.packageHash,
+						sourceHash: pkg.sourceHash,
+						metadataHash: pkg.metadataHash,
+						projectionHash: pkg.projectionHash,
+						assetManifestHash: pkg.assetManifestHash,
+						slug: pkg.invitation.slug,
+						route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
+					});
+					if (verified) optionalApprovalState = 'approved';
+				} catch {
+					optionalApprovalState = 'direct_production_publication';
+				}
 				let productionUrl: string;
 				try {
 					productionUrl = getProdDbUrl().url;
@@ -1071,8 +1272,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						mutationStarted: false,
 					}) as LifecycleExecutionError;
 				}
+				const prodHost = new URL(productionUrl).hostname;
+				process.env.CONFIRM_PROD_MIGRATION = `PROMOTE ${slug} ${pkg.packageHash}`;
 				await requireProductionConfirmation(
-					new URL(productionUrl).hostname,
+					prodHost,
 					`PROMOTE ${slug} ${pkg.packageHash}`,
 				);
 				const result = await runImportEngine({
@@ -1082,6 +1285,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					ownerUserId,
 					dryRun: false,
 					plan: executionPlans.get('production'),
+					assetPolicy,
+					pruneAssets,
 				});
 				assertEngineResult(result, targetPlan.planId, 'Producción', true);
 				reports.push({
@@ -1100,7 +1305,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					assetCounts: assetCounts(result.actions),
 					publishedVersion: result.publishedVersion,
 					packageHash: result.packageHash,
-					approvalState: 'approved',
+					approvalState: optionalApprovalState,
 				});
 				return {
 					executionPlanId: result.plan.planId,

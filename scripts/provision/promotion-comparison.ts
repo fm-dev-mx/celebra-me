@@ -2,7 +2,7 @@
  * promotion-comparison.ts — Semantic comparison, normalization, and divergence
  * helpers extracted from invitation-import-engine.ts
  */
-import type { InvitationPackageData, InvitationPackageAsset } from './invitation-package.ts';
+import type { InvitationPackageData } from './invitation-package.ts';
 import { STORAGE_URL_PLACEHOLDER } from './invitation-package.ts';
 import type { ResourcePlanAction } from './invitation-import-engine.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
@@ -89,25 +89,6 @@ export function checkPublishedContentIdentical(
 ): boolean {
 	if (!existingPub || !isInvMetadataIdentical) return false;
 	return isSemanticallyEqual(pkgPublishedContent, existingPub.content, targetStorageUrl);
-}
-
-export function checkAssetDbRowIdentical(
-	pAsset: InvitationPackageAsset,
-	existingAssetRow: Record<string, unknown> | null,
-): boolean {
-	if (!existingAssetRow) return false;
-	const mainMeta =
-		existingAssetRow.display_name === pAsset.displayName &&
-		valEq(existingAssetRow.default_alt_text, pAsset.defaultAltText) &&
-		existingAssetRow.mime_type === pAsset.mimeType &&
-		valEq(existingAssetRow.width, pAsset.width) &&
-		valEq(existingAssetRow.height, pAsset.height) &&
-		valEq(existingAssetRow.file_size, pAsset.fileSize);
-	const validationMeta =
-		existingAssetRow.validation_version === pAsset.validationVersion &&
-		valEq(existingAssetRow.original_mime_type, pAsset.originalMimeType) &&
-		valEq(existingAssetRow.original_file_size, pAsset.originalFileSize);
-	return mainMeta && validationMeta;
 }
 
 export function checkEventAndMembershipIdentical(
