@@ -1273,11 +1273,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					}) as LifecycleExecutionError;
 				}
 				const prodHost = new URL(productionUrl).hostname;
-				process.env.CONFIRM_PROD_MIGRATION = `PROMOTE ${slug} ${pkg.packageHash}`;
-				await requireProductionConfirmation(
-					prodHost,
-					`PROMOTE ${slug} ${pkg.packageHash}`,
-				);
+				if (!nonInteractive) {
+					await requireProductionConfirmation(
+						prodHost,
+						`PROMOTE ${slug} ${pkg.packageHash}`,
+					);
+				}
 				const result = await runImportEngine({
 					packageData: confirmationPackage,
 					target: 'production',
