@@ -77,7 +77,7 @@
     "dependencies": {
         "@astrojs/vercel": "10.0.8",
         "@fontsource-variable/bodoni-moda": "^5.2.7",
-        "@fontsource-variable/cinzel": "^5.2.8",
+        "@fontsource-variable/cinzel": "^5.3.0",
         "@fontsource-variable/cormorant-garamond": "^5.2.6",
         "@fontsource-variable/eb-garamond": "^5.2.7",
         "@fontsource-variable/instrument-sans": "^5.2.8",
