@@ -14,6 +14,7 @@ const SCRIPTS = {
 	'validate-event-parity': { script: 'validate-event-parity.ts', runtime: 'tsx' },
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
 	'graphify-views': { script: 'graphify/entry.ts', runtime: 'tsx' },
+	'graphify-refresh': { script: 'graphify/refresh.ts', runtime: 'tsx' },
 	'new-invitation': { script: 'new-invitation.mjs', runtime: 'node' },
 	'data-audit-events-invitations': {
 		script: 'data-audit-events-invitations.mjs',
