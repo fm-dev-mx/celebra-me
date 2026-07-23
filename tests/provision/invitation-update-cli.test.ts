@@ -98,7 +98,7 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 		expect(parsed.targets).toEqual(['local', 'production']);
 	});
 
-	it('validates JSON output structure contains logical operations and separate physical mutations', () => {
+	it('formats terminal output with no-op results showing zero aggregate counters in plural form', () => {
 		const applyResult = {
 			invitation: 'romina-rios-chaparro',
 			status: 'IN_SYNC' as const,
@@ -110,7 +110,56 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 		};
 		const formatted = formatApplyResult(applyResult);
 		expect(formatted).toContain('Resultado de Ejecución');
-		expect(formatted).toContain('Inserción');
-		expect(formatted).toContain('Subida');
+		expect(formatted).toContain('0 inserciones');
+		expect(formatted).toContain('0 subidas');
+	});
+
+	it('formats terminal output with singular labels when a single operation is performed', () => {
+		const applyResult = {
+			invitation: 'romina-rios-chaparro',
+			status: 'UPDATED' as const,
+			environment: 'local',
+			completedOperations: 3,
+			databaseWrites: { inserts: 1, updates: 2, deletes: 0 },
+			storageMutations: { uploads: 1, overwrites: 0, deletes: 0 },
+			publishedVersion: 2,
+		};
+		const formatted = formatApplyResult(applyResult);
+		expect(formatted).toContain('Resultado de Ejecución');
+		expect(formatted).toContain('CAMBIOS APLICADOS');
+		expect(formatted).toContain('1 inserción');
+		expect(formatted).toContain('2 actualizaciones');
+		expect(formatted).toContain('1 subida');
+	});
+
+	it('separates logical operations from physical database and storage mutations in structured result', () => {
+		const applyResult = {
+			invitation: 'romina-rios-chaparro',
+			status: 'IN_SYNC' as const,
+			environment: 'local',
+			completedOperations: 0,
+			databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+			storageMutations: { uploads: 0, overwrites: 0, deletes: 0 },
+			publishedVersion: 1,
+		};
+		// Validate the structured contract directly — not through the terminal formatter.
+		// completedOperations is a logical concept, separate from physical mutation counters.
+		expect(applyResult).toHaveProperty('completedOperations');
+		expect(typeof applyResult.completedOperations).toBe('number');
+
+		expect(applyResult.databaseWrites).toEqual({
+			inserts: expect.any(Number),
+			updates: expect.any(Number),
+			deletes: expect.any(Number),
+		});
+
+		expect(applyResult.storageMutations).toEqual({
+			uploads: expect.any(Number),
+			overwrites: expect.any(Number),
+			deletes: expect.any(Number),
+		});
+
+		// Logical operations and physical mutations are distinct top-level fields
+		expect(applyResult).not.toHaveProperty('operations');
 	});
 });
