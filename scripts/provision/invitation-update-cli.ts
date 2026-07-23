@@ -10,6 +10,7 @@ import { getInvitationDefinition, listInvitationDefinitions } from './invitation
 import {
 	buildStatusReport,
 	parseTargets,
+	checkUnknownFlags,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
@@ -123,6 +124,7 @@ Options:
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
 export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const args = argv;
+	checkUnknownFlags(args);
 	const json = args.includes('--json');
 	const nonInteractive = args.includes('--non-interactive');
 	const isTTY = Boolean(process.stdout.isTTY);

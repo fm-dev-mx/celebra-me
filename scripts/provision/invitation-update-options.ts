@@ -10,6 +10,58 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 	return values as InvitationUpdateTarget[];
 }
 
+const VALID_FLAGS = new Set([
+	'--status',
+	'--targets',
+	'--slug',
+	'--source-dir',
+	'--dry-run',
+	'--apply',
+	'--non-interactive',
+	'--json',
+	'--technical',
+	'--owner-user-id',
+	'--package',
+	'--approval-artifact',
+	'--adoption-plan',
+	'--adoption-apply',
+	'--adoption-manifest',
+	'--preview-provenance',
+	'--include-legacy',
+	'--include-archived',
+	'--include-demos',
+	'--artifact',
+	'--evidence',
+	'--help',
+	'-h',
+]);
+
+export function checkUnknownFlags(args: string[]): void {
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg.startsWith('-')) {
+			if (!VALID_FLAGS.has(arg)) {
+				throw new Error(`Opción no reconocida: "${arg}". Use --help para ver las opciones permitidas.`);
+			}
+			if (
+				[
+					'--targets',
+					'--slug',
+					'--source-dir',
+					'--owner-user-id',
+					'--package',
+					'--approval-artifact',
+					'--adoption-manifest',
+					'--artifact',
+					'--evidence',
+				].includes(arg)
+			) {
+				i++;
+			}
+		}
+	}
+}
+
 export interface StatusReportOptions {
 	slug?: string;
 	targets?: InvitationUpdateTarget[];
@@ -83,4 +135,3 @@ export function buildStatusReport(input: string[] | StatusReportOptions): Record
 			: undefined,
 	};
 }
-

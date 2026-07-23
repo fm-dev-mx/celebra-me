@@ -203,34 +203,7 @@ export function classifyDbTarget(
 
 	const { hostname, port } = parsed;
 
-	// 1. Preview check: matches PREVIEW_DB_URL
-	const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-	if (previewDbUrl) {
-		const previewParsed = parseDbUrl(previewDbUrl);
-		if (
-			dbUrl === previewDbUrl ||
-			(previewParsed &&
-				parsed.hostname === previewParsed.hostname &&
-				parsed.port === previewParsed.port)
-		) {
-			return {
-				target: 'preview',
-				reason: `Matches PREVIEW_DB_URL (host=${hostname}, port=${port})`,
-				dbUrl,
-			};
-		}
-	}
-
-	// 2. Production check: cloud Supabase host
-	if (
-		SUPABASE_HOST_SUFFIXES.some(
-			(suffix) => hostname === suffix.slice(1) || hostname.endsWith(suffix),
-		)
-	) {
-		return { target: 'production', reason: `Supabase cloud host: ${hostname}`, dbUrl };
-	}
-
-	// 3. Disposable test check
+	// 1. Disposable test check
 	if (DISPOSABLE_TEST.dbHosts.includes(hostname) && port === DISPOSABLE_TEST.dbPort) {
 		return {
 			target: 'disposable-test',
@@ -239,7 +212,7 @@ export function classifyDbTarget(
 		};
 	}
 
-	// 4. Persistent local check
+	// 2. Persistent local check
 	if (PERSISTENT_LOCAL.dbHosts.includes(hostname) && port === PERSISTENT_LOCAL.dbPort) {
 		if (options?.apiUrl) {
 			try {
@@ -266,13 +239,50 @@ export function classifyDbTarget(
 		};
 	}
 
-	// 5. Local but non-standard port
+	// 3. Local but non-standard port
 	if (PERSISTENT_LOCAL.dbHosts.includes(hostname)) {
 		return {
 			target: 'unknown',
 			reason: `Local host ${hostname} on non-standard port ${port} — cannot classify`,
 			dbUrl,
 		};
+	}
+
+	// 4. Cloud Supabase check via project reference (direct host or pooler)
+	try {
+		const projectRef = extractSupabaseProjectRef(dbUrl);
+		const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+		let previewProjectRef = 'iwipdvisoyerfdytuhwi';
+		if (previewDbUrl) {
+			try {
+				previewProjectRef = extractSupabaseProjectRef(previewDbUrl);
+			} catch {
+				// Use fallback preview project ref if PREVIEW_DB_URL cannot yield a ref
+			}
+		}
+
+		if (projectRef === previewProjectRef) {
+			return {
+				target: 'preview',
+				reason: `Matches PREVIEW_DB_URL / Preview project reference (${projectRef})`,
+				dbUrl,
+			};
+		}
+
+		return {
+			target: 'production',
+			reason: `Supabase cloud host for project reference (${projectRef})`,
+			dbUrl,
+		};
+	} catch {
+		// Fall back to host-suffix matching if project ref extraction fails
+		if (
+			SUPABASE_HOST_SUFFIXES.some(
+				(suffix) => hostname === suffix.slice(1) || hostname.endsWith(suffix),
+			)
+		) {
+			return { target: 'production', reason: `Supabase cloud host: ${hostname}`, dbUrl };
+		}
 	}
 
 	return { target: 'unknown', reason: `Unrecognized host: ${hostname}`, dbUrl };
