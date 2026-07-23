@@ -254,3 +254,4 @@ export function formatApplyResult(result: ApplyResultData): string {
 
 	return lines.join('\n');
 }
+
