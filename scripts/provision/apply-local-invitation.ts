@@ -11,6 +11,7 @@
  *  - Local dashboard divergence protection: aborts if target draft has unpublished edits.
  *  - Idempotent: safe to re-run against unchanged definitions/photos (reports 0 mutations performed).
  */
+/* eslint-disable max-lines -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish. */
 
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -33,12 +34,21 @@ import { resolveLocalEnv } from './local-provision-env.ts';
 
 const BUCKET = 'invitation-assets';
 
+import {
+	buildSemanticFunctionalChanges,
+	computePlanId,
+	verifyPlanPreconditions,
+	type FunctionalChange,
+	type OperationalPlan,
+} from './invitation-update-plan.ts';
+
 interface ApplyLocalOptions {
 	slug: string;
 	sourceDir?: string;
 	ownerUserId?: string;
 	apply?: boolean;
 	projectRoot?: string;
+	plan?: OperationalPlan;
 }
 
 export interface LocalApplyResult {
@@ -59,6 +69,14 @@ export interface LocalApplyResult {
 	storageMoves: number;
 	storageDeletes: number;
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
+	functionalChanges: FunctionalChange[];
+	plan: OperationalPlan;
+	receipt?: {
+		planId: string;
+		executedAt: string;
+		status: string;
+		completedOperations: number;
+	};
 }
 
 // ---------------------------------------------------------------------------
@@ -178,11 +196,17 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				.is('deleted_at', null)
 				.maybeSingle()
 		: { data: null };
+	const { data: existingProvenance } = await supabase
+		.from('managed_invitation_release_provenance')
+		.select('invitation_id')
+		.eq('invitation_id', invitationId)
+		.maybeSingle();
 
 	// Build asset map with uploaded references
 	const assetMap = {} as UploadedAssetMap;
 	const assetActions: Array<{ resource: string; name: string; action: string; detail: string }> =
 		[];
+	const currentAssetStates: Array<Record<string, unknown>> = [];
 
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
@@ -241,6 +265,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			Number(existingAsset.validation_version) === norm.validationVersion &&
 			existingAsset.original_mime_type === norm.originalMimeType &&
 			Number(existingAsset.original_file_size) === norm.originalFileSize;
+		currentAssetStates.push({
+			key: norm.key,
+			storagePath,
+			storageHash,
+			metadata: existingAsset ?? null,
+		});
 
 		if (isIdentical) {
 			assetActions.push({
@@ -359,6 +389,17 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					: `Publish new version ${(existingPub.version as number) + 1}`,
 		},
 	];
+	const hasManagedChanges = actions.some(
+		(action) => action.action === 'create' || action.action === 'replace',
+	);
+	if (hasManagedChanges) {
+		actions.push({
+			resource: 'managed_invitation_release_provenance',
+			name: 'Procedencia de la versión administrada',
+			action: existingProvenance ? 'replace' : 'create',
+			detail: 'Registrar la identidad del paquete ejecutado',
+		});
+	}
 
 	const plannedOperations = actions.filter(
 		(a) => a.action === 'create' || a.action === 'replace',
@@ -378,15 +419,87 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(!existingDraft ? 1 : 0) +
 		(!isPubContentIdentical || !existingPub ? 1 : 0) +
 		(!existingEvent ? 1 : 0) +
-		(!existingMembership ? 1 : 0);
+		(!existingMembership ? 1 : 0) +
+		(hasManagedChanges && !existingProvenance ? 1 : 0);
 	const estUpdates =
 		(existingInv && !isInvitationIdentical ? 1 : 0) +
 		assetActions.filter((a) => a.action === 'replace').length +
 		(existingDraft && !isDraftContentIdentical ? 1 : 0) +
 		(existingEvent && !isEventIdentical ? 1 : 0) +
-		(existingMembership && !isMembershipIdentical ? 1 : 0);
+		(existingMembership && !isMembershipIdentical ? 1 : 0) +
+		(hasManagedChanges && existingProvenance ? 1 : 0);
 	const estUploads = assetActions.filter((a) => a.action === 'create').length;
 	const estOverwrites = assetActions.filter((a) => a.action === 'replace').length;
+
+	const functionalChanges = buildSemanticFunctionalChanges({
+		sourceContent: proposedContent,
+		targetContent:
+			(existingPub?.content as Record<string, unknown> | undefined) ??
+			(existingDraft?.content as Record<string, unknown> | undefined) ??
+			null,
+		assetActions,
+	});
+
+	const assetStateHash = createHash('sha256')
+		.update(canonicalize(currentAssetStates))
+		.digest('hex');
+	const targetPreconditions = {
+		sourceHash: release.sourceHash,
+		packageHash,
+		verifiedProjectRef: 'persistent-local',
+		targetInvitationId: invitationId,
+		existingDraftUpdatedAt: existingDraft?.updated_at as string | undefined,
+		existingPublishedVersion: existingPub?.version as number | undefined,
+		assetStateHash,
+	};
+
+	const computedPlanId = computePlanId({
+		slug,
+		sourceHash: release.sourceHash,
+		targetEnvironment: 'local',
+		projectRef: 'persistent-local',
+		changes: functionalChanges,
+		preconditions: targetPreconditions,
+	});
+
+	const currentPlan: OperationalPlan = {
+		planId: computedPlanId,
+		invitationSlug: slug,
+		invitationTitle: definition.title,
+		sourceHash: release.sourceHash,
+		packageHash,
+		targetEnvironment: 'local',
+		verifiedProjectRef: 'persistent-local',
+		functionalChanges,
+		physicalDatabaseOps: { inserts: estInserts, updates: estUpdates, deletes: 0 },
+		storageOps: { uploads: estUploads, overwrites: estOverwrites, moves: 0, deletes: 0 },
+		targetPreconditions,
+		sensitivityClassification: 'public',
+		executionStatus: isZeroDrift ? 'IN_SYNC' : 'PLANNED',
+	};
+	const constructedPlan = options.plan ?? currentPlan;
+
+	if (isApply && options.plan) {
+		const precheck = verifyPlanPreconditions(options.plan, {
+			sourceHash: release.sourceHash,
+			packageHash,
+			verifiedProjectRef: 'persistent-local',
+			targetInvitationId: invitationId,
+			existingDraftUpdatedAt: existingDraft?.updated_at as string | undefined,
+			existingPublishedVersion: existingPub?.version as number | undefined,
+			assetStateHash,
+		});
+		if (!precheck.ok) {
+			throw new Error(
+				precheck.reason ?? 'PRECONDITION_FAILED: Target state changed after planning.',
+			);
+		}
+		if (options.plan.planId !== currentPlan.planId) {
+			throw new Error(
+				'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
+			);
+		}
+	}
 
 	if (!isApply || isZeroDrift) {
 		return {
@@ -407,39 +520,75 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			storageMoves: 0,
 			storageDeletes: 0,
 			actions,
+			functionalChanges,
+			plan: constructedPlan,
 		};
 	}
 
 	// ── APPLY MUTATIONS ──────────────────────────────────────────────────
 	const trackedResources: TrackedResource[] = [];
+	if (hasManagedChanges && existingProvenance)
+		trackedResources.push({
+			type: 'managed_invitation_release_provenance',
+			id: invitationId,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
 	if (existingInv)
-		trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: true });
+		trackedResources.push({
+			type: 'invitation',
+			id: invitationId,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
 	if (existingEvent)
 		trackedResources.push({
 			type: 'event',
 			id: existingEvent.id as string,
 			isPreExisting: true,
+			wasOverwritten: false,
 		});
 	if (existingMembership)
 		trackedResources.push({
 			type: 'event_membership',
 			id: `${existingEvent?.id as string}:${ownerUserId}`,
 			isPreExisting: true,
+			wasOverwritten: false,
 		});
 	if (existingDraft)
 		trackedResources.push({
 			type: 'invitation_content_draft',
 			id: existingDraft.id as string,
 			isPreExisting: true,
+			wasOverwritten: false,
+		});
+	if (existingPub)
+		trackedResources.push({
+			type: 'published_invitation_content',
+			id: invitationId,
+			isPreExisting: true,
+			wasOverwritten: false,
 		});
 	for (const [pathKey, assetRow] of existingAssetsByPath.entries()) {
 		trackedResources.push({
 			type: 'invitation_asset',
 			id: assetRow.id as string,
 			isPreExisting: true,
+			wasOverwritten: false,
 		});
-		trackedResources.push({ type: 'storage_object', id: pathKey, isPreExisting: true });
+		trackedResources.push({
+			type: 'storage_object',
+			id: pathKey,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
 	}
+	const markOverwritten = (type: TrackedResource['type'], id: string): void => {
+		const resource = trackedResources.find(
+			(candidate) => candidate.type === type && candidate.id === id,
+		);
+		if (resource?.isPreExisting) resource.wasOverwritten = true;
+	};
 
 	try {
 		// 1. Ensure Invitation Record
@@ -465,6 +614,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				.update(invMetadata)
 				.eq('id', invitationId);
 			if (error) throw error;
+			markOverwritten('invitation', invitationId);
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
@@ -511,6 +661,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 						upsert: true,
 					});
 				if (uploadError) throw uploadError;
+				if (existing) markOverwritten('storage_object', storagePath);
 				if (!existing)
 					trackedResources.push({
 						type: 'storage_object',
@@ -539,6 +690,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 						.update(assetMetadata)
 						.eq('id', assetRef.assetId);
 					if (error) throw error;
+					markOverwritten('invitation_asset', assetRef.assetId);
 				} else {
 					const { error } = await supabase
 						.from('invitation_assets')
@@ -566,6 +718,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					.select('id, updated_at')
 					.single();
 				if (error) throw error;
+				markOverwritten('invitation_content_draft', existingDraft.id as string);
 				draftId = data.id as string;
 				draftUpdatedAt = data.updated_at as string;
 			} else {
@@ -640,6 +793,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			);
 
 			if (pubError) throw pubError;
+			if (existingPub) markOverwritten('published_invitation_content', invitationId);
 			finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
 		}
 
@@ -670,6 +824,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				})
 				.eq('id', eventId);
 			if (eventError) throw eventError;
+			markOverwritten('event', eventId);
 		}
 
 		if (!existingMembership) {
@@ -689,6 +844,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				.eq('event_id', eventId)
 				.eq('user_id', ownerUserId);
 			if (membershipError) throw membershipError;
+			markOverwritten('event_membership', `${eventId}:${ownerUserId}`);
 		}
 
 		const [
@@ -848,6 +1004,15 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				applied_at: new Date().toISOString(),
 			});
 		if (provenanceError) throw provenanceError;
+		if (existingProvenance) {
+			markOverwritten('managed_invitation_release_provenance', invitationId);
+		} else {
+			trackedResources.push({
+				type: 'managed_invitation_release_provenance',
+				id: invitationId,
+				isPreExisting: false,
+			});
+		}
 
 		return {
 			slug,
@@ -867,9 +1032,52 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			storageMoves: 0,
 			storageDeletes: 0,
 			actions,
+			functionalChanges,
+			plan: constructedPlan,
+			receipt: {
+				planId: constructedPlan.planId,
+				executedAt: new Date().toISOString(),
+				status: 'CAMBIOS APLICADOS',
+				completedOperations: plannedOperations,
+			},
 		};
 	} catch (err) {
-		await cleanupLocalResources(supabase, slug, trackedResources);
-		throw err;
+		const mutatedResources = trackedResources.filter(
+			(resource) => !resource.isPreExisting || resource.wasOverwritten,
+		);
+		const storageResources = mutatedResources.filter(
+			(resource) => resource.type === 'storage_object',
+		);
+		const databaseResources = mutatedResources.filter(
+			(resource) => resource.type !== 'storage_object',
+		);
+		const cleanupRes = await cleanupLocalResources(supabase, slug, trackedResources);
+		const recoveryStatus =
+			cleanupRes.status === 'CAMBIOS_REVERTIDOS'
+				? 'ERROR — CAMBIOS REVERTIDOS'
+				: 'ERROR — REQUIERE REVISIÓN';
+		const detailedError = new Error(
+			`[${recoveryStatus}] ${err instanceof Error ? err.message : String(err)}`,
+			{ cause: err },
+		);
+		(detailedError as unknown as Record<string, unknown>).recoveryStatus = recoveryStatus;
+		(detailedError as unknown as Record<string, unknown>).cleanupResult = cleanupRes;
+		(detailedError as unknown as Record<string, unknown>).mutationStarted =
+			mutatedResources.length > 0;
+		(detailedError as unknown as Record<string, unknown>).executionTotals = {
+			completedOperations: mutatedResources.length,
+			databaseWrites: {
+				inserts: databaseResources.filter((resource) => !resource.isPreExisting).length,
+				updates: databaseResources.filter((resource) => resource.isPreExisting).length,
+				deletes: 0,
+			},
+			storageMutations: {
+				uploads: storageResources.filter((resource) => !resource.isPreExisting).length,
+				overwrites: storageResources.filter((resource) => resource.isPreExisting).length,
+				moves: 0,
+				deletes: 0,
+			},
+		};
+		throw detailedError;
 	}
 }

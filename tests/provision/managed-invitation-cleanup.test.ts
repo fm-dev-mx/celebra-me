@@ -33,7 +33,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 			return true;
 		});
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.removed).toHaveLength(1);
 		expect(deletedIds).toEqual(['inv-new']);
@@ -53,7 +56,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 			return true;
 		});
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.removed).toHaveLength(3);
 		// Verified reverse order of deletion (child membership -> event -> invitation container)
@@ -72,7 +78,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 			return true;
 		});
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.removed).toHaveLength(2);
 		expect(deletedIds).toEqual(['asset-row-1', 'path/hero.webp']);
@@ -90,7 +99,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 
 		const deleter = jest.fn(async () => true);
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.skippedPreExisting).toHaveLength(5);
 		expect(result.removed).toHaveLength(1);
@@ -112,7 +124,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 			return true;
 		});
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.skippedPreExisting.map((r) => r.id)).toEqual(['inv-exist', 'evt-exist']);
 		expect(result.removed.map((r) => r.id)).toEqual(['storage-new', 'asset-new']);
@@ -131,7 +146,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 
 		// Second run on already-cleaned resources
 		const deleter2 = jest.fn(async () => true);
-		const res2 = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: [] }, deleter2);
+		const res2 = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: [] },
+			deleter2,
+		);
 		expect(res2.removed).toHaveLength(0);
 		expect(res2.failures).toHaveLength(0);
 	});
@@ -147,7 +165,10 @@ describe('managed invitation partial-failure cleanup safety', () => {
 			return true;
 		});
 
-		const result = await executeCleanup({ invitationSlug: 'test-slug', trackedResources: resources }, deleter);
+		const result = await executeCleanup(
+			{ invitationSlug: 'test-slug', trackedResources: resources },
+			deleter,
+		);
 
 		expect(result.removed).toHaveLength(1);
 		expect(result.removed[0]?.id).toBe('storage-ok');
@@ -155,5 +176,149 @@ describe('managed invitation partial-failure cleanup safety', () => {
 		expect(result.failures[0]?.error).toContain('DB connection drop');
 		expect(result.requiresManualReview).toHaveLength(1);
 		expect(result.requiresManualReview[0]?.id).toBe('asset-fail');
+	});
+
+	describe('Failure Injection & Truthful Recovery Suite', () => {
+		it('handles failure before mutation (0 resources created, 0 removed)', async () => {
+			const resources: TrackedResource[] = [];
+			const deleter = jest.fn(async () => true);
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.removed).toHaveLength(0);
+			expect(result.failures).toHaveLength(0);
+			expect(result.requiresManualReview).toHaveLength(0);
+		});
+
+		it('handles failure after creating a Storage object (removes newly created storage object)', async () => {
+			const resources: TrackedResource[] = [
+				{ type: 'storage_object', id: 'managed/test/new-photo.webp', isPreExisting: false },
+			];
+			const deletedIds: string[] = [];
+			const deleter = jest.fn(async (res: TrackedResource) => {
+				deletedIds.push(res.id);
+				return true;
+			});
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.removed).toHaveLength(1);
+			expect(deletedIds).toEqual(['managed/test/new-photo.webp']);
+		});
+
+		it('handles failure after overwriting a Storage object (preserves pre-existing storage object tracking)', async () => {
+			const resources: TrackedResource[] = [
+				{
+					type: 'storage_object',
+					id: 'managed/test/existing-hero.webp',
+					isPreExisting: true,
+				},
+			];
+			const deleter = jest.fn(async () => true);
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.skippedPreExisting).toHaveLength(1);
+			expect(result.removed).toHaveLength(0);
+		});
+
+		it('handles failure during database preparation (removes newly created draft, preserves invitation)', async () => {
+			const resources: TrackedResource[] = [
+				{ type: 'invitation', id: 'inv-preexisting', isPreExisting: true },
+				{ type: 'invitation_content_draft', id: 'draft-failed', isPreExisting: false },
+			];
+			const deletedIds: string[] = [];
+			const deleter = jest.fn(async (res: TrackedResource) => {
+				deletedIds.push(res.id);
+				return true;
+			});
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.skippedPreExisting.map((r) => r.id)).toEqual(['inv-preexisting']);
+			expect(result.removed.map((r) => r.id)).toEqual(['draft-failed']);
+		});
+
+		it('handles failure after publication but before final verification', async () => {
+			const resources: TrackedResource[] = [
+				{ type: 'invitation', id: 'inv-1', isPreExisting: false },
+				{ type: 'storage_object', id: 'managed/test/photo.webp', isPreExisting: false },
+				{ type: 'invitation_content_draft', id: 'draft-1', isPreExisting: false },
+			];
+			const deletedIds: string[] = [];
+			const deleter = jest.fn(async (res: TrackedResource) => {
+				deletedIds.push(res.id);
+				return true;
+			});
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.removed).toHaveLength(3);
+			// Verifies cleanup in reverse order of creation
+			expect(deletedIds).toEqual(['draft-1', 'managed/test/photo.webp', 'inv-1']);
+		});
+
+		it('handles failure during compensation (reports ERROR — REQUIERE REVISIÓN boundary)', async () => {
+			const resources: TrackedResource[] = [
+				{ type: 'invitation', id: 'inv-new', isPreExisting: false },
+				{ type: 'storage_object', id: 'managed/test/stuck.webp', isPreExisting: false },
+			];
+			const deleter = jest.fn(async (res: TrackedResource) => {
+				if (res.id === 'inv-new') throw new Error('DB lock error during cleanup');
+				return true;
+			});
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.removed.map((r) => r.id)).toEqual(['managed/test/stuck.webp']);
+			expect(result.failures).toHaveLength(1);
+			expect(result.requiresManualReview.map((r) => r.id)).toEqual(['inv-new']);
+			expect(result.status).toBe('REQUIERE_REVISION');
+		});
+
+		it('flags REQUIERE_REVISION when pre-existing resource was overwritten and not restored', async () => {
+			const resources: TrackedResource[] = [
+				{
+					type: 'storage_object',
+					id: 'managed/test/hero.webp',
+					isPreExisting: true,
+					wasOverwritten: true,
+				},
+			];
+			const deleter = jest.fn(async () => true);
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.skippedPreExisting).toHaveLength(1);
+			expect(result.unrestoredOverwrites).toHaveLength(1);
+			expect(result.status).toBe('REQUIERE_REVISION');
+		});
+
+		it('reports CAMBIOS_REVERTIDOS when pre-existing overwrite is successfully restored', async () => {
+			const resources: TrackedResource[] = [
+				{
+					type: 'storage_object',
+					id: 'managed/test/hero.webp',
+					isPreExisting: true,
+					wasOverwritten: true,
+					restored: true,
+				},
+			];
+			const deleter = jest.fn(async () => true);
+			const result = await executeCleanup(
+				{ invitationSlug: 'test-slug', trackedResources: resources },
+				deleter,
+			);
+			expect(result.skippedPreExisting).toHaveLength(1);
+			expect(result.unrestoredOverwrites).toHaveLength(0);
+			expect(result.status).toBe('CAMBIOS_REVERTIDOS');
+		});
 	});
 });

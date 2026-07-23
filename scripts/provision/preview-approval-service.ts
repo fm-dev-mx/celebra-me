@@ -14,6 +14,7 @@ export interface PreviewApprovalArtifact {
 	createdAt: string;
 	approvedAt?: string;
 	approvedBy?: string;
+	intendedProductionProjectRef?: string;
 	route: string;
 	schemaVersion?: string;
 	expectedAssetHashes: Record<string, string>;
@@ -22,6 +23,10 @@ export interface PreviewApprovalArtifact {
 		previewProjectRef: string;
 		route: string;
 		projectionHash: string;
+		planId: string;
+		reviewedAt: string;
+		reviewedBy: string;
+		intendedProductionProjectRef: string;
 		checklistResults: Record<string, boolean>;
 		storageHashVerification: Record<string, string>;
 	};
@@ -35,6 +40,7 @@ export interface ApprovedReleaseIdentity {
 	planId?: string;
 	slug: string;
 	route: string;
+	intendedProductionProjectRef?: string;
 }
 export function createPendingPreviewApprovalArtifact(input: {
 	packageHash: string;
@@ -136,10 +142,23 @@ export function finalizePreviewApprovalArtifact(
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
 	if (!Object.values(evidence.checklistResults).every(Boolean))
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
+	if (!artifact.planId || evidence.planId !== artifact.planId)
+		throw new Error('Hosted Preview evidence does not match the executed Preview plan.');
+	if (!evidence.reviewedBy?.trim() || !Number.isFinite(Date.parse(evidence.reviewedAt)))
+		throw new Error(
+			'Hosted Preview evidence requires a reviewer and a valid review timestamp.',
+		);
+	if (!/^[a-z0-9]{8,32}$/i.test(evidence.intendedProductionProjectRef))
+		throw new Error(
+			'Hosted Preview evidence requires the intended Production project reference.',
+		);
 	validateStorageEvidence(artifact, evidence);
 	const approved: PreviewApprovalArtifact = {
 		...artifact,
 		approvalState: 'approved',
+		approvedAt: evidence.reviewedAt,
+		approvedBy: evidence.reviewedBy.trim(),
+		intendedProductionProjectRef: evidence.intendedProductionProjectRef,
 		hostedValidation: evidence,
 	};
 	writeFileSync(resolve(process.cwd(), artifactPath), JSON.stringify(approved, null, 2), 'utf8');
@@ -168,12 +187,21 @@ function checkArtifactHashesAndFormat(
 	if (artifact.route !== identity.route) return false;
 	if (!artifact.hostedValidation) return false;
 	if (artifact.hostedValidation.projectionHash !== identity.projectionHash) return false;
+	if (!artifact.planId || artifact.hostedValidation.planId !== artifact.planId) return false;
+	if (!artifact.approvedAt || !artifact.approvedBy) return false;
+	if (!artifact.intendedProductionProjectRef) return false;
+	if (
+		identity.intendedProductionProjectRef &&
+		artifact.intendedProductionProjectRef !== identity.intendedProductionProjectRef
+	)
+		return false;
 	return isHashFormatValid(artifact);
 }
 
 export function verifyPreviewApprovalArtifact(
 	identity: ApprovedReleaseIdentity,
 	approvalsDirs = ['.agent/tmp/approvals'],
+	now = new Date(),
 ): PreviewApprovalArtifact {
 	const path = approvalsDirs
 		.map((dir) =>
@@ -191,6 +219,15 @@ export function verifyPreviewApprovalArtifact(
 		throw new Error(
 			'Preview approval artifact is stale, incomplete, or does not match the exact release hashes.',
 		);
+	}
+	const approvedAtMs = Date.parse(artifact.approvedAt!);
+	const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+	if (
+		!Number.isFinite(approvedAtMs) ||
+		approvedAtMs > now.getTime() ||
+		now.getTime() - approvedAtMs > maxAgeMs
+	) {
+		throw new Error('Preview approval artifact is stale and must be reviewed again.');
 	}
 	if (identity.planId && artifact.planId && artifact.planId !== identity.planId) {
 		throw new Error(

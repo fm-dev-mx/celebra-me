@@ -13,9 +13,7 @@ import {
 } from '../../scripts/provision/invitation-update-plan.ts';
 import { checkUnknownFlags } from '../../scripts/provision/invitation-update-options.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
-import {
-	verifyPreviewApprovalArtifact,
-} from '../../scripts/provision/preview-approval-service.ts';
+import { verifyPreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
 
 describe('Managed Lifecycle Remediation Suite', () => {
 	describe('Server-Safe Import Boundary & Module Safety', () => {
@@ -35,7 +33,8 @@ describe('Managed Lifecycle Remediation Suite', () => {
 
 		it('ensures shared schema modules import from neutral asset-keys, not asset-registry', async () => {
 			// Importing shared schema or base event schema under Node must not trigger ESM image imports
-			const baseEventModule = await import('../../src/lib/schemas/content/base-event.schema.ts');
+			const baseEventModule =
+				await import('../../src/lib/schemas/content/base-event.schema.ts');
 			expect(baseEventModule.eventContentSchema).toBeDefined();
 		});
 	});
@@ -81,21 +80,26 @@ describe('Managed Lifecycle Remediation Suite', () => {
 
 	describe('Environment & Credential Isolation', () => {
 		it('extracts project reference correctly from direct host and pooler URLs', () => {
-			const directUrl = 'postgresql://postgres:pass@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
-			const poolerUrl = 'postgresql://postgres.iwipdvisoyerfdytuhwi:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
+			const directUrl =
+				'postgresql://postgres:pass@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
+			const poolerUrl =
+				'postgresql://postgres.iwipdvisoyerfdytuhwi:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
 			expect(extractSupabaseProjectRef(directUrl)).toBe('iwipdvisoyerfdytuhwi');
 			expect(extractSupabaseProjectRef(poolerUrl)).toBe('iwipdvisoyerfdytuhwi');
 		});
 
 		it('classifies Preview vs Production based on project reference', () => {
-			const previewPooler = 'postgresql://postgres.iwipdvisoyerfdytuhwi:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
-			const prodPooler = 'postgresql://postgres.fmdevmxprod:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
+			const previewPooler =
+				'postgresql://postgres.iwipdvisoyerfdytuhwi:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
+			const prodPooler =
+				'postgresql://postgres.fmdevmxprod:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
 			expect(classifyDbTarget(previewPooler).target).toBe('preview');
 			expect(classifyDbTarget(prodPooler).target).toBe('production');
 		});
 
 		it('redacts credentials and database connection strings in errors', () => {
-			const secretUrl = 'postgresql://postgres:secretpassword123@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
+			const secretUrl =
+				'postgresql://postgres:secretpassword123@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
 			const redacted = redactDbUrl(secretUrl);
 			expect(redacted).not.toContain('secretpassword123');
 			expect(redacted).toContain('<redacted>');
@@ -144,6 +148,9 @@ describe('Managed Lifecycle Remediation Suite', () => {
 			physicalDatabaseOps: { inserts: 1, updates: 1, deletes: 0 },
 			storageOps: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
 			targetPreconditions: {
+				sourceHash: 'a'.repeat(64),
+				packageHash: 'b'.repeat(64),
+				verifiedProjectRef: 'celebra-me-rsvp',
 				targetInvitationId: 'inv-uuid-1',
 				existingDraftUpdatedAt: '2026-07-23T10:00:00Z',
 				existingPublishedVersion: 2,
@@ -166,6 +173,9 @@ describe('Managed Lifecycle Remediation Suite', () => {
 
 		it('verifies preconditions successfully when target state is unchanged', () => {
 			const res = verifyPlanPreconditions(samplePlan, {
+				sourceHash: 'a'.repeat(64),
+				packageHash: 'b'.repeat(64),
+				verifiedProjectRef: 'celebra-me-rsvp',
 				targetInvitationId: 'inv-uuid-1',
 				existingDraftUpdatedAt: '2026-07-23T10:00:00Z',
 				existingPublishedVersion: 2,
@@ -175,6 +185,9 @@ describe('Managed Lifecycle Remediation Suite', () => {
 
 		it('fails precondition verification when target draft has drifted', () => {
 			const res = verifyPlanPreconditions(samplePlan, {
+				sourceHash: 'a'.repeat(64),
+				packageHash: 'b'.repeat(64),
+				verifiedProjectRef: 'celebra-me-rsvp',
 				targetInvitationId: 'inv-uuid-1',
 				existingDraftUpdatedAt: '2026-07-23T11:00:00Z',
 				existingPublishedVersion: 2,
@@ -183,22 +196,22 @@ describe('Managed Lifecycle Remediation Suite', () => {
 			expect(res.reason).toContain('Precondition failed');
 		});
 
-	describe('Preview Approval Artifact & Production Guardrail', () => {
-		it('rejects verification when approval artifact does not match release identity', () => {
-			const mockIdentity = {
-				packageHash: 'c'.repeat(64),
-				sourceHash: 'a'.repeat(64),
-				metadataHash: 'b'.repeat(64),
-				projectionHash: 'd'.repeat(32),
-				assetManifestHash: 'e'.repeat(64),
-				slug: 'romina-rios-chaparro',
-				route: '/invitacion/xv/romina-rios-chaparro',
-			};
+		describe('Preview Approval Artifact & Production Guardrail', () => {
+			it('rejects verification when approval artifact does not match release identity', () => {
+				const mockIdentity = {
+					packageHash: 'c'.repeat(64),
+					sourceHash: 'a'.repeat(64),
+					metadataHash: 'b'.repeat(64),
+					projectionHash: 'd'.repeat(32),
+					assetManifestHash: 'e'.repeat(64),
+					slug: 'romina-rios-chaparro',
+					route: '/invitacion/xv/romina-rios-chaparro',
+				};
 
-			expect(() => verifyPreviewApprovalArtifact(mockIdentity)).toThrow(
-				/No approved Preview artifact exists/,
-			);
+				expect(() => verifyPreviewApprovalArtifact(mockIdentity)).toThrow(
+					/No approved Preview artifact exists/,
+				);
+			});
 		});
-	});
 	});
 });

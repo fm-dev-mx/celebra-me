@@ -40,6 +40,13 @@ import {
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
+import {
+	buildSemanticFunctionalChanges,
+	computePlanId,
+	verifyPlanPreconditions,
+	type FunctionalChange,
+	type OperationalPlan,
+} from './invitation-update-plan.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -50,6 +57,7 @@ export interface ImportEngineOptions {
 	targetDbUrl: string;
 	targetSupabaseUrl?: string;
 	serviceRoleKey?: string;
+	plan?: OperationalPlan;
 }
 
 export interface ResourcePlanAction {
@@ -75,6 +83,15 @@ export interface ImportEngineResult {
 	mutationsPerformed: number;
 	verifiedAssetHashes: Record<string, string>;
 	isZeroDriftRerun: boolean;
+	functionalChanges?: FunctionalChange[];
+	plan?: OperationalPlan;
+	receipt?: {
+		planId: string;
+		executedAt: string;
+		status: 'EXECUTED' | 'IN_SYNC';
+		completedOperations: number;
+		publishedVersion?: number;
+	};
 }
 
 function sha256Bytes(bytes: Uint8Array): string {
@@ -262,11 +279,13 @@ async function scanAssetStatus(
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
 	assetActions: ResourcePlanAction[];
 	verifiedAssetHashes: Record<string, string>;
+	assetStateHash: string;
 }> {
 	const assetsToUpload: InvitationPackageAsset[] = [];
 	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
 	const assetActions: ResourcePlanAction[] = [];
 	const verifiedAssetHashes: Record<string, string> = {};
+	const observedAssetHashes: Record<string, string | null> = {};
 
 	const existingDbMap = new Map<string, Record<string, unknown>>();
 	if (targetDbUrl && targetInvitationId) {
@@ -283,12 +302,15 @@ async function scanAssetStatus(
 	for (const pAsset of assets) {
 		const targetAssetUrl = `${targetStorageUrl}/${pAsset.storagePath}`;
 		let binaryIdentical = false;
+		let binaryPresent = false;
 
 		try {
 			const fetchRes = await fetch(targetAssetUrl);
 			if (fetchRes.ok) {
+				binaryPresent = true;
 				const ab = await fetchRes.arrayBuffer();
 				const targetHash = sha256Bytes(new Uint8Array(ab));
+				observedAssetHashes[pAsset.storagePath] = targetHash;
 				if (targetHash === pAsset.sha256) {
 					binaryIdentical = true;
 					verifiedAssetHashes[pAsset.storagePath] = targetHash;
@@ -296,6 +318,9 @@ async function scanAssetStatus(
 			}
 		} catch {
 			// Asset not present on target storage
+		}
+		if (!(pAsset.storagePath in observedAssetHashes)) {
+			observedAssetHashes[pAsset.storagePath] = null;
 		}
 
 		const dbRowIdentical = checkAssetDbRowIdentical(
@@ -323,13 +348,28 @@ async function scanAssetStatus(
 			assetActions.push({
 				resource: 'invitation_assets',
 				name: pAsset.displayName,
-				action: 'replace',
+				action:
+					binaryPresent || existingDbMap.has(pAsset.storagePath) ? 'replace' : 'create',
 				detail: `Upload binary to Storage (${(pAsset.fileSize ?? 0) / 1024} KB WebP)`,
 			});
 		}
 	}
 
-	return { assetsToUpload, assetsToUpsertDbOnly, assetActions, verifiedAssetHashes };
+	const assetStateHash = createHash('sha256')
+		.update(
+			JSON.stringify({
+				rows: [...existingDbMap.entries()].sort(([a], [b]) => a.localeCompare(b)),
+				observedAssetHashes,
+			}),
+		)
+		.digest('hex');
+	return {
+		assetsToUpload,
+		assetsToUpsertDbOnly,
+		assetActions,
+		verifiedAssetHashes,
+		assetStateHash,
+	};
 }
 
 async function uploadAndVerifyAssets(
@@ -722,6 +762,7 @@ function analyzeTargetDrift(
 		existingDraft: scanned.existingDraft,
 		existingPub: scanned.existingPub,
 		existingEvent: scanned.existingEvent,
+		existingMember: scanned.existingMember,
 		targetDraftContent,
 		targetPublishedContent,
 		isInvMetadataIdentical,
@@ -815,8 +856,13 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		assetRefs,
 		identity.existingInvitation,
 	);
-	const { assetsToUpload, assetsToUpsertDbOnly, assetActions, verifiedAssetHashes } =
-		await scanAssetStatus(pkg.assets, targetStorageUrl, targetDbUrl, drift.targetInvitationId);
+	const {
+		assetsToUpload,
+		assetsToUpsertDbOnly,
+		assetActions,
+		verifiedAssetHashes,
+		assetStateHash,
+	} = await scanAssetStatus(pkg.assets, targetStorageUrl, targetDbUrl, drift.targetInvitationId);
 	const actions = buildResourceActions({
 		slug: drift.slug,
 		route: drift.route,
@@ -831,6 +877,39 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		existingEvent: drift.existingEvent,
 		isEventAndMemberIdentical: drift.isEventAndMemberIdentical,
 	});
+	const hasManagedChanges = actions.some(
+		(action) => action.action === 'create' || action.action === 'replace',
+	);
+	const provenanceExists =
+		runPsql(
+			`select exists (select 1 from public.managed_invitation_release_provenance where invitation_id = '${drift.targetInvitationId}'::uuid);`,
+			targetDbUrl,
+			{ tuplesOnly: true },
+		).stdout.trim() === 't';
+	if (hasManagedChanges) {
+		if (expectedTarget === 'preview') {
+			actions.push(
+				{
+					resource: 'preview_identity',
+					name: 'Rol administrativo de Preview',
+					action: 'replace',
+					detail: 'Verificar el rol del propietario dedicado de Preview',
+				},
+				{
+					resource: 'preview_identity',
+					name: 'Perfil anfitrión de Preview',
+					action: 'replace',
+					detail: 'Verificar el perfil anfitrión dedicado de Preview',
+				},
+			);
+		}
+		actions.push({
+			resource: 'managed_invitation_release_provenance',
+			name: 'Procedencia de la versión administrada',
+			action: provenanceExists ? 'replace' : 'create',
+			detail: 'Registrar la identidad del paquete ejecutado',
+		});
+	}
 
 	const plannedMutations = actions.filter(
 		(act) => act.action === 'create' || act.action === 'replace',
@@ -842,6 +921,98 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		: drift.existingPub
 			? targetVersion + 1
 			: 1;
+	const functionalChanges = buildSemanticFunctionalChanges({
+		sourceContent: drift.targetPublishedContent,
+		targetContent: (drift.existingPub?.content as Record<string, unknown> | undefined) ?? null,
+		assetActions,
+	});
+	const targetPreconditions = {
+		sourceHash: pkg.sourceHash,
+		packageHash: pkg.packageHash,
+		verifiedProjectRef: projectRef,
+		targetInvitationId: drift.targetInvitationId,
+		existingDraftUpdatedAt: drift.existingDraft?.updated_at as string | undefined,
+		existingPublishedVersion: drift.existingPub?.version as number | undefined,
+		assetStateHash,
+	};
+	const operationFingerprint = createHash('sha256')
+		.update(
+			JSON.stringify(
+				actions.map(({ resource, name, action }) => ({ resource, name, action })),
+			),
+		)
+		.digest('hex');
+	const planId = computePlanId({
+		slug: drift.slug,
+		sourceHash: pkg.sourceHash,
+		targetEnvironment: expectedTarget,
+		projectRef,
+		changes: functionalChanges,
+		preconditions: targetPreconditions,
+		operationFingerprint,
+	});
+	const databaseActions = actions.filter(
+		(action) =>
+			action.resource !== 'invitation_assets' &&
+			(action.action === 'create' || action.action === 'replace'),
+	);
+	const assetDbActions = assetActions.filter(
+		(action) => action.action === 'create' || action.action === 'replace',
+	);
+	const currentPlan: OperationalPlan = {
+		planId,
+		invitationSlug: drift.slug,
+		invitationTitle: pkg.invitation.title,
+		sourceHash: pkg.sourceHash,
+		packageHash: pkg.packageHash,
+		targetEnvironment: expectedTarget,
+		verifiedProjectRef: projectRef,
+		functionalChanges,
+		physicalDatabaseOps: {
+			inserts:
+				databaseActions.filter((action) => action.action === 'create').length +
+				assetDbActions.filter((action) => action.action === 'create').length,
+			updates:
+				databaseActions.filter((action) => action.action === 'replace').length +
+				assetDbActions.filter((action) => action.action === 'replace').length,
+			deletes: 0,
+		},
+		storageOps: {
+			uploads: assetActions.filter((action) => action.action === 'create').length,
+			overwrites:
+				assetsToUpload.length -
+				assetActions.filter((action) => action.action === 'create').length,
+			moves: 0,
+			deletes: 0,
+		},
+		targetPreconditions,
+		sensitivityClassification: 'public',
+		executionStatus: isZeroDrift ? 'IN_SYNC' : 'PLANNED',
+	};
+
+	if (!dryRun) {
+		if (!options.plan) {
+			throw new Error(
+				'PRECONDITION_FAILED: Apply requires the exact target plan produced by preflight.',
+			);
+		}
+		const precheck = verifyPlanPreconditions(options.plan, {
+			sourceHash: pkg.sourceHash,
+			packageHash: pkg.packageHash,
+			verifiedProjectRef: projectRef,
+			targetInvitationId: drift.targetInvitationId,
+			existingDraftUpdatedAt: drift.existingDraft?.updated_at as string | undefined,
+			existingPublishedVersion: drift.existingPub?.version as number | undefined,
+			assetStateHash,
+		});
+		if (!precheck.ok) throw new Error(precheck.reason);
+		if (options.plan.planId !== currentPlan.planId) {
+			throw new Error(
+				'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
+			);
+		}
+	}
+	const executionPlan = options.plan ?? currentPlan;
 
 	if (dryRun || isZeroDrift) {
 		return {
@@ -860,28 +1031,78 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			mutationsPerformed: 0,
 			verifiedAssetHashes,
 			isZeroDriftRerun: isZeroDrift,
+			functionalChanges,
+			plan: executionPlan,
+			receipt: isZeroDrift
+				? {
+						planId: executionPlan.planId,
+						executedAt: new Date().toISOString(),
+						status: 'IN_SYNC',
+						completedOperations: 0,
+						publishedVersion: targetVersion,
+					}
+				: undefined,
 		};
 	}
 
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
 	const trackedResources: TrackedResource[] = [];
-	if (drift.existingInv)
+	if (expectedTarget === 'preview') {
+		trackedResources.push(
+			{
+				type: 'preview_identity',
+				id: `app_user_roles:${ownerUserId}`,
+				isPreExisting: true,
+				wasOverwritten: false,
+			},
+			{
+				type: 'preview_identity',
+				id: `host_profiles:${ownerUserId}`,
+				isPreExisting: true,
+				wasOverwritten: false,
+			},
+		);
+	}
+	trackedResources.push({
+		type: 'managed_invitation_release_provenance',
+		id: drift.targetInvitationId,
+		isPreExisting: provenanceExists,
+		wasOverwritten: false,
+	});
+	if (drift.existingInv && !drift.isInvMetadataIdentical)
 		trackedResources.push({
 			type: 'invitation',
 			id: drift.targetInvitationId,
 			isPreExisting: true,
+			wasOverwritten: false,
 		});
-	if (drift.existingEvent)
+	if (drift.existingEvent && !drift.isEventAndMemberIdentical)
 		trackedResources.push({
 			type: 'event',
 			id: drift.existingEvent.id as string,
 			isPreExisting: true,
+			wasOverwritten: false,
 		});
-	if (drift.existingDraft)
+	if (drift.existingDraft && !drift.isDraftIdentical)
 		trackedResources.push({
 			type: 'invitation_content_draft',
 			id: drift.existingDraft.id as string,
 			isPreExisting: true,
+			wasOverwritten: false,
+		});
+	if (drift.existingMember && drift.existingEvent && !drift.isEventAndMemberIdentical)
+		trackedResources.push({
+			type: 'event_membership',
+			id: `${String(drift.existingEvent.id)}:${ownerUserId}`,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
+	if (drift.existingPub && !drift.isPubIdentical)
+		trackedResources.push({
+			type: 'published_invitation_content',
+			id: drift.targetInvitationId,
+			isPreExisting: true,
+			wasOverwritten: false,
 		});
 	if (!drift.existingInv)
 		trackedResources.push({
@@ -890,33 +1111,72 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			isPreExisting: false,
 		});
 	for (const asset of assetsToUpload) {
+		const plannedAssetAction = assetActions.find((action) => action.name === asset.displayName);
 		trackedResources.push({
 			type: 'storage_object',
 			id: asset.storagePath,
-			isPreExisting: false,
+			isPreExisting: plannedAssetAction?.action !== 'create',
+			wasOverwritten: false,
 		});
 		const ref = assetRefs[asset.key];
 		if (ref?.assetId) {
 			trackedResources.push({
 				type: 'invitation_asset',
 				id: ref.assetId,
-				isPreExisting: false,
+				isPreExisting: plannedAssetAction?.action !== 'create',
+				wasOverwritten: false,
 			});
 		}
 	}
+	for (const asset of assetsToUpsertDbOnly) {
+		const ref = assetRefs[asset.key];
+		if (ref?.assetId) {
+			trackedResources.push({
+				type: 'invitation_asset',
+				id: ref.assetId,
+				isPreExisting: true,
+				wasOverwritten: false,
+			});
+		}
+	}
+	const markPlannedOverwrites = (types: TrackedResource['type'][]): void => {
+		for (const resource of trackedResources) {
+			if (resource.isPreExisting && types.includes(resource.type)) {
+				resource.wasOverwritten = true;
+			}
+		}
+	};
+	const markResourceOverwritten = (type: TrackedResource['type'], id: string): void => {
+		const resource = trackedResources.find(
+			(candidate) => candidate.type === type && candidate.id === id,
+		);
+		if (resource?.isPreExisting) resource.wasOverwritten = true;
+	};
 
+	let mutationStarted = false;
+	let executedMutations = 0;
+	let completedDatabaseWrites = { inserts: 0, updates: 0, deletes: 0 };
+	let completedStorageMutations = { uploads: 0, overwrites: 0, moves: 0, deletes: 0 };
 	try {
-		let executedMutations = 0;
 		assertDraftRevisionUnchanged(targetDbUrl, drift.existingDraft);
 		if (expectedTarget === 'preview') {
 			updatePreviewAdminRole(targetDbUrl, ownerUserId);
+			mutationStarted = true;
+			executedMutations++;
+			completedDatabaseWrites.updates++;
+			markResourceOverwritten('preview_identity', `app_user_roles:${ownerUserId}`);
 			ensureHostProfile(targetDbUrl, ownerUserId);
+			executedMutations++;
+			completedDatabaseWrites.updates++;
+			markResourceOverwritten('preview_identity', `host_profiles:${ownerUserId}`);
 		}
 		const serviceRoleKey =
 			options.serviceRoleKey ||
 			getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES);
 
 		if (assetsToUpload.length > 0) {
+			mutationStarted = true;
+			markPlannedOverwrites(['storage_object']);
 			const uploadRes = await uploadAndVerifyAssets(
 				assetsToUpload,
 				targetSupabaseUrl,
@@ -925,7 +1185,22 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			);
 			Object.assign(verifiedAssetHashes, uploadRes.verifiedAssetHashes);
 			executedMutations += uploadRes.uploadedCount;
+			completedStorageMutations = {
+				uploads: assetActions.filter((action) => action.action === 'create').length,
+				overwrites: assetActions.filter((action) => action.action === 'replace').length,
+				moves: 0,
+				deletes: 0,
+			};
 		}
+		mutationStarted = true;
+		markPlannedOverwrites([
+			'invitation',
+			'event',
+			'event_membership',
+			'invitation_asset',
+			'invitation_content_draft',
+			'published_invitation_content',
+		]);
 		const dbMutations = executeDatabaseUpserts({
 			targetDbUrl,
 			targetInvitationId: drift.targetInvitationId,
@@ -949,6 +1224,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			assetRefs,
 		});
 		executedMutations += dbMutations;
+		completedDatabaseWrites = {
+			inserts: executionPlan.physicalDatabaseOps.inserts - (provenanceExists ? 0 : 1),
+			updates: executionPlan.physicalDatabaseOps.updates - (provenanceExists ? 1 : 0),
+			deletes: executionPlan.physicalDatabaseOps.deletes,
+		};
 
 		const finalPublishedVersion =
 			!drift.isPubIdentical || !drift.existingPub
@@ -992,11 +1272,14 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		const provenanceProjectionHash = createHash('sha256')
 			.update(pkg.projectionHash)
 			.digest('hex');
+		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
 			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		executedMutations++;
+		if (provenanceExists) completedDatabaseWrites.updates++;
+		else completedDatabaseWrites.inserts++;
 		return {
 			packageHash: pkg.packageHash,
 			slug: drift.slug,
@@ -1013,11 +1296,37 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			mutationsPerformed: executedMutations,
 			verifiedAssetHashes,
 			isZeroDriftRerun: false,
+			functionalChanges,
+			plan: executionPlan,
+			receipt: {
+				planId: executionPlan.planId,
+				executedAt: new Date().toISOString(),
+				status: 'EXECUTED',
+				completedOperations: executedMutations,
+				publishedVersion: finalPublishedVersion,
+			},
 		};
 	} catch (err) {
-		await cleanupHostedPsqlResources(targetDbUrl, drift.slug, trackedResources);
+		const cleanupResult = await cleanupHostedPsqlResources(
+			targetDbUrl,
+			drift.slug,
+			trackedResources,
+		);
 		const message = err instanceof Error ? err.message : String(err);
 		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactDbUrl(message)}`);
-		throw new Error(message, { cause: err });
+		const recoveryStatus =
+			cleanupResult.status === 'CAMBIOS_REVERTIDOS'
+				? 'ERROR — CAMBIOS REVERTIDOS'
+				: 'ERROR — REQUIERE REVISIÓN';
+		const wrapped = new Error(`[${recoveryStatus}] ${message}`, { cause: err });
+		(wrapped as unknown as Record<string, unknown>).recoveryStatus = recoveryStatus;
+		(wrapped as unknown as Record<string, unknown>).cleanupResult = cleanupResult;
+		(wrapped as unknown as Record<string, unknown>).mutationStarted = mutationStarted;
+		(wrapped as unknown as Record<string, unknown>).executionTotals = {
+			completedOperations: executedMutations,
+			databaseWrites: completedDatabaseWrites,
+			storageMutations: completedStorageMutations,
+		};
+		throw wrapped;
 	}
 }

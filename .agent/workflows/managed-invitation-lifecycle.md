@@ -1,33 +1,55 @@
 # Managed Invitation Lifecycle Workflow — Celebra-me
 
-This document is the authoritative, versioned workflow for any repository agent creating, testing, previewing, approving, publishing, and updating managed digital invitations across Local, Preview, and Production targets.
+This is the authoritative workflow for planning and executing managed invitation updates across
+Local, Preview, and Production. Executable behavior remains owned by
+`scripts/provision/invitation-update-cli.ts` and its imported services.
 
----
+## Canonical lifecycle
 
-## 17-Step Canonical Lifecycle Workflow
+1. Validate the repository state, source or immutable package, invitation identity, target
+   selection, credentials, and target project identities.
+2. Resolve the existing owner independently in every target. `--owner-user-id` is required only when
+   the invitation does not yet exist in that hosted target.
+3. Inspect **every** selected target before mutation. An unavailable or failed inspection is
+   `NO EVALUADO` or `BLOQUEADO`, never `SIN CAMBIOS`.
+4. Build and retain one immutable plan per target. Each plan carries its own project identity,
+   source/package hashes, functional changes, technical operations, preconditions, and plan ID.
+5. Present all target plans. If any mandatory preflight is incomplete or blocked, abort the whole
+   mutation phase before confirmation; an earlier Local target must not mutate.
+6. After confirmation, execute only plans with pending changes in deterministic order: Local →
+   Preview → Production. Stop later mutations after the first execution failure.
+7. Immediately before each mutation, validate the retained plan against current source/package,
+   project, invitation/draft/publication, and asset state. Drift requires a new plan.
+8. Attach the same plan ID to confirmation, execution, receipt, and final target result. Never
+   replace a confirmed plan with a hidden rescan.
+9. Verify database, Storage, and published state. Every selected target receives an explicit final
+   result in both human and JSON output.
+10. Classify recovery truthfully. `ERROR — CAMBIOS REVERTIDOS` is valid only when every completed
+    mutation was restored and verified; unsupported restoration, pre-existing overwrites, or failed
+    compensation require `ERROR — REQUIERE REVISIÓN`.
 
-1. **Repository & Environment Preflight**: Verify branch, working tree state, and target environment credentials (Local: `127.0.0.1:54322`, Preview: `iwipdvisoyerfdytuhwi`, Production: cloud host).
-2. **Requirement Intake**: Gather client facts (names, date, event type, theme, photos, registry, venues). Do not infer missing client facts.
-3. **Identity & Owner Resolution**: Determine invitation slug, event type, and target owner (`created_by` UUID). Require explicit `--owner-user-id` for new hosted invitations.
-4. **Theme, Profile & Section Selection**: Select theme preset (`enchanted-rose`, `editorial-magazine`, etc.), visual profile, and included/omitted sections.
-5. **Content & Asset Preparation**: Place source images in asset directory. Run MIME detection (`detectFileMimeType`) and Sharp optimization.
-6. **Local Validation & Immutable Plan Creation**: Build normalized release (`buildNormalizedInvitationRelease`) and validate against canonical `eventContentSchema`. Generate `OperationalPlan`.
-7. **Local Apply**: Run `pnpm invitation:update --slug <slug> --targets local --apply`. Verify atomic database and storage writes.
-8. **Local Visual & Functional Verification**: Test public route `/<eventType>/<slug>` locally. Verify hero, section rendering, accessibility, and responsiveness.
-9. **Preview Package & Plan**: Export release package (`pnpm invitation:update --slug <slug> --targets preview --dry-run`).
-10. **Preview Apply & Verification**: Apply release to Preview target (`pnpm invitation:update --slug <slug> --targets preview --apply`).
-11. **Human Preview Approval**: Operator inspects Preview deployment and generates signed Preview approval artifact in `.agent/tmp/approvals/`.
-12. **Production Preflight**: Verify Preview approval artifact validity, package hash matching, and Production target credentials.
-13. **Explicit Production Authorization**: Require explicit human confirmation (`requireProductionConfirmation`) with hostname and package hash.
-14. **Production Execution**: Promote approved package to Production target using `runImportEngine`.
-15. **Public Verification**: Verify production public URL rendering and post-publication database state.
-16. **Recovery or Roll-Forward**: If any failure occurs, record execution status (`CAMBIOS APLICADOS`, `ERROR — CAMBIOS REVERTIDOS`, `ERROR — REQUIERE REVISIÓN`) and execute compensating restoration if needed.
-17. **Subsequent Managed Updates**: For updates, re-run from Step 6 using the immutable semantic plan with drift protection.
+## Commands
 
----
+```bash
+pnpm invitation:update -- --help
+pnpm invitation:update -- --slug <slug> --targets local --source-dir <path> --dry-run
+pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
+pnpm invitation:update -- --slug <slug> --targets production --package <path> --dry-run
+```
 
-## Mandatory Agent Rules
+`--source-dir` and `--package` are mutually exclusive. There is no `--resume` flag: Production
+continues by selecting the exact immutable package with `--package`. The `all` target alias means
+Local plus Preview; Production must be selected explicitly and requires a valid, fresh Preview
+approval bound to the executed Preview plan, reviewer, timestamp, Preview project, and intended
+Production project. Production mutation also requires explicit operator authorization.
 
-* **No Unasked Commits**: Do not stage or commit files unless explicitly instructed by the user.
-* **No Unapproved Production Mutation**: Production mutation requires explicit human authorization.
-* **Fail-Closed Safety**: Any validation error, missing asset, or credential mismatch must block pipeline execution immediately.
+## Approval and recovery boundaries
+
+- A pending Preview artifact is not approval. Hosted verification and a human reviewer must finalize
+  it before Production preflight can pass.
+- Preview and Production always have distinct target plan IDs.
+- Newly created resources may be removed during compensation. Pre-existing resources must never be
+  deleted by cleanup. If an overwritten pre-existing resource cannot be restored automatically, the
+  result requires manual review.
+- Agents must not mutate Preview or Production, stage files, or create commits without explicit
+  authorization for that exact action.

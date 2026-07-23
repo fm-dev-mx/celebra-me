@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from '@jest/globals';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -17,6 +17,13 @@ const PROJECTION_HASH = 'd'.repeat(32);
 const ASSET_MANIFEST_HASH = 'e'.repeat(64);
 const ASSET_HASH = 'f'.repeat(64);
 const ASSET_PATH = 'managed/test/hero.webp';
+const PLAN_ID = 'preview-plan-1234';
+const BASE_REVIEW_EVIDENCE = {
+	planId: PLAN_ID,
+	reviewedAt: new Date().toISOString(),
+	reviewedBy: 'qa@celebra-me.test',
+	intendedProductionProjectRef: 'productionproject',
+};
 
 afterEach(() => {
 	process.chdir(originalCwd);
@@ -43,6 +50,7 @@ function buildFixture(expectedAssetHashes?: Record<string, string>): {
 		sourceHash: SOURCE_HASH,
 		metadataHash: METADATA_HASH,
 		assetManifestHash: ASSET_MANIFEST_HASH,
+		planId: PLAN_ID,
 		slug: 'test-invitation',
 		previewProjectRef: 'iwipdvisoyerfdytuhwi',
 		route: '/xv/test-invitation',
@@ -53,6 +61,7 @@ function buildFixture(expectedAssetHashes?: Record<string, string>): {
 	writeFileSync(
 		join(dir, 'evidence.json'),
 		JSON.stringify({
+			...BASE_REVIEW_EVIDENCE,
 			packageHash: PACKAGE_HASH,
 			previewProjectRef: 'iwipdvisoyerfdytuhwi',
 			route: '/xv/test-invitation',
@@ -102,6 +111,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -124,6 +134,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -149,6 +160,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -171,6 +183,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -193,6 +206,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -215,6 +229,7 @@ describe('Preview approval artifact', () => {
 			writeFileSync(
 				evidencePath(fixture.dir),
 				JSON.stringify({
+					...BASE_REVIEW_EVIDENCE,
 					packageHash: fixture.packageHash,
 					previewProjectRef: 'iwipdvisoyerfdytuhwi',
 					route: '/xv/test-invitation',
@@ -282,11 +297,95 @@ describe('Preview approval artifact', () => {
 		}
 	});
 
-	it('cleans up temporary fixture directories after test', () => {
+	it('rejects approval evidence whose executed Preview plan ID does not match', () => {
 		const fixture = buildFixture();
-		// buildFixture adds to createdDirs, so afterEach will clean it up
-		expect(fixture.dir.startsWith(tmpdir())).toBe(true);
-		expect(existsSync(fixture.dir)).toBe(true);
-		// The afterEach handler will remove this; just verify the directory exists now
+		try {
+			const evidence = JSON.parse(readFileSync(evidencePath(fixture.dir), 'utf8')) as Record<
+				string,
+				unknown
+			>;
+			evidence.planId = 'different-preview-plan';
+			writeFileSync(evidencePath(fixture.dir), JSON.stringify(evidence));
+			expect(() =>
+				finalizePreviewApprovalArtifact(fixture.artifactPath, evidencePath(fixture.dir)),
+			).toThrow(/executed Preview plan/i);
+		} finally {
+			process.chdir(originalCwd);
+		}
 	});
+
+	it('rejects approval evidence without reviewer identity or timestamp', () => {
+		const fixture = buildFixture();
+		try {
+			const evidence = JSON.parse(readFileSync(evidencePath(fixture.dir), 'utf8')) as Record<
+				string,
+				unknown
+			>;
+			delete evidence.reviewedBy;
+			writeFileSync(evidencePath(fixture.dir), JSON.stringify(evidence));
+			expect(() =>
+				finalizePreviewApprovalArtifact(fixture.artifactPath, evidencePath(fixture.dir)),
+			).toThrow(/reviewer and a valid review timestamp/i);
+		} finally {
+			process.chdir(originalCwd);
+		}
+	});
+
+	it('rejects a stale approved artifact', () => {
+		const fixture = buildFixture();
+		try {
+			finalizePreviewApprovalArtifact(fixture.artifactPath, evidencePath(fixture.dir));
+			const artifact = JSON.parse(readFileSync(fixture.artifactPath, 'utf8')) as Record<
+				string,
+				unknown
+			>;
+			artifact.approvedAt = '2026-06-01T00:00:00.000Z';
+			writeFileSync(fixture.artifactPath, JSON.stringify(artifact));
+			expect(() =>
+				verifyPreviewApprovalArtifact(
+					{
+						packageHash: PACKAGE_HASH,
+						sourceHash: SOURCE_HASH,
+						metadataHash: METADATA_HASH,
+						projectionHash: PROJECTION_HASH,
+						assetManifestHash: ASSET_MANIFEST_HASH,
+						planId: PLAN_ID,
+						slug: 'test-invitation',
+						route: '/xv/test-invitation',
+						intendedProductionProjectRef: 'productionproject',
+					},
+					['.agent/tmp/approvals'],
+					new Date('2026-07-23T00:00:00.000Z'),
+				),
+			).toThrow(/stale/i);
+		} finally {
+			process.chdir(originalCwd);
+		}
+	});
+
+	it('rejects an approval intended for a different Production project', () => {
+		const fixture = buildFixture();
+		try {
+			finalizePreviewApprovalArtifact(fixture.artifactPath, evidencePath(fixture.dir));
+			expect(() =>
+				verifyPreviewApprovalArtifact(
+					{
+						packageHash: PACKAGE_HASH,
+						sourceHash: SOURCE_HASH,
+						metadataHash: METADATA_HASH,
+						projectionHash: PROJECTION_HASH,
+						assetManifestHash: ASSET_MANIFEST_HASH,
+						planId: PLAN_ID,
+						slug: 'test-invitation',
+						route: '/xv/test-invitation',
+						intendedProductionProjectRef: 'anotherproject',
+					},
+					['.agent/tmp/approvals'],
+				),
+			).toThrow(/stale, incomplete, or does not match/i);
+		} finally {
+			process.chdir(originalCwd);
+		}
+	});
+
 });

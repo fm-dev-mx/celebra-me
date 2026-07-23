@@ -4,10 +4,22 @@ export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
 
 export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] {
 	if (!raw) return [];
-	const values = raw === 'all' ? ['local', 'preview'] : raw.split(',');
-	if (values.includes('local') && values.includes('production') && !values.includes('preview')) throw new Error('Local + Production is invalid: Preview approval is mandatory.');
-	for (const target of values) if (!['local', 'preview', 'production'].includes(target)) throw new Error(`Unknown target "${target}".`);
-	return values as InvitationUpdateTarget[];
+	const values =
+		raw === 'all'
+			? ['local', 'preview']
+			: raw
+					.split(/[\s,]+/)
+					.map((s) => s.trim())
+					.filter(Boolean);
+	if (values.includes('local') && values.includes('production') && !values.includes('preview'))
+		throw new Error('Local + Production is invalid: Preview approval is mandatory.');
+	for (const target of values)
+		if (!['local', 'preview', 'production'].includes(target))
+			throw new Error(`Unknown target "${target}".`);
+	const selected = new Set(values);
+	return (['local', 'preview', 'production'] as InvitationUpdateTarget[]).filter((target) =>
+		selected.has(target),
+	);
 }
 
 const VALID_FLAGS = new Set([
@@ -41,7 +53,9 @@ export function checkUnknownFlags(args: string[]): void {
 		const arg = args[i];
 		if (arg.startsWith('-')) {
 			if (!VALID_FLAGS.has(arg)) {
-				throw new Error(`Opción no reconocida: "${arg}". Use --help para ver las opciones permitidas.`);
+				throw new Error(
+					`Opción no reconocida: "${arg}". Use --help para ver las opciones permitidas.`,
+				);
 			}
 			if (
 				[
@@ -98,7 +112,8 @@ export function parseStatusOptions(input: string[] | StatusReportOptions): Statu
 export function buildStatusReport(input: string[] | StatusReportOptions): Record<string, unknown> {
 	const opts = parseStatusOptions(input);
 	const requestedSlug = opts.slug;
-	const targets = opts.targets && opts.targets.length > 0 ? opts.targets : ['local', 'preview', 'production'];
+	const targets =
+		opts.targets && opts.targets.length > 0 ? opts.targets : ['local', 'preview', 'production'];
 
 	const definitions = listInvitationDefinitions()
 		.filter((definition) => !requestedSlug || definition.slug === requestedSlug)
@@ -131,7 +146,10 @@ export function buildStatusReport(input: string[] | StatusReportOptions): Record
 		},
 		definitions,
 		legacy: opts.includeLegacy
-			? { status: 'UNVERIFIED', reason: 'Legacy discovery requires a configured target and is not available from definitions alone.' }
+			? {
+					status: 'UNVERIFIED',
+					reason: 'Legacy discovery requires a configured target and is not available from definitions alone.',
+				}
 			: undefined,
 	};
 }

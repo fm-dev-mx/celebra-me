@@ -26,9 +26,23 @@ export interface StatusReportData {
 		title: string;
 		createdAt: string;
 		classification: string;
-		environments: Record<string, { status: string; managedStatus?: string; syncStatus?: string; reason?: string }>;
+		environments: Record<
+			string,
+			{ status: string; managedStatus?: string; syncStatus?: string; reason?: string }
+		>;
 	}>;
-	inventory?: Record<string, { verified: boolean; rows: Array<{ slug: string; status: string; hasProvenance?: boolean; assetComplete?: boolean }> }>;
+	inventory?: Record<
+		string,
+		{
+			verified: boolean;
+			rows: Array<{
+				slug: string;
+				status: string;
+				hasProvenance?: boolean;
+				assetComplete?: boolean;
+			}>;
+		}
+	>;
 	readiness?: {
 		verdict: string;
 		reasons: string[];
@@ -43,10 +57,18 @@ function formatDbWrites(writes: { inserts: number; updates: number; deletes: num
 	return `${ins}, ${upd}, ${del}`;
 }
 
-function formatStorageMutations(mutations: { uploads: number; overwrites: number; moves?: number; deletes: number }): string {
+function formatStorageMutations(mutations: {
+	uploads: number;
+	overwrites: number;
+	moves?: number;
+	deletes: number;
+}): string {
 	const upl = `${mutations.uploads} ${mutations.uploads === 1 ? 'subida' : 'subidas'}`;
 	const ovr = `${mutations.overwrites} ${mutations.overwrites === 1 ? 'sobrescritura' : 'sobrescrituras'}`;
-	const mov = mutations.moves !== undefined ? `, ${mutations.moves} ${mutations.moves === 1 ? 'movimiento' : 'movimientos'}` : '';
+	const mov =
+		mutations.moves !== undefined
+			? `, ${mutations.moves} ${mutations.moves === 1 ? 'movimiento' : 'movimientos'}`
+			: '';
 	const del = `${mutations.deletes} ${mutations.deletes === 1 ? 'eliminación' : 'eliminaciones'}`;
 	return `${upl}, ${ovr}${mov}, ${del}`;
 }
@@ -82,8 +104,12 @@ function resolveSyncText(sync: string): string {
 function formatEnvironmentStatus(
 	target: string,
 	defSlug: string,
-	envInfo: { status: string; managedStatus?: string; syncStatus?: string; reason?: string } | undefined,
-	inventoryLocal: { verified: boolean; rows: Array<{ slug: string; status: string }> } | undefined,
+	envInfo:
+		| { status: string; managedStatus?: string; syncStatus?: string; reason?: string }
+		| undefined,
+	inventoryLocal:
+		| { verified: boolean; rows: Array<{ slug: string; status: string }> }
+		| undefined,
 ): string {
 	let localRowStatus: string | undefined;
 	if (target === 'local' && inventoryLocal?.verified) {
@@ -91,19 +117,38 @@ function formatEnvironmentStatus(
 		localRowStatus = row ? row.status : 'NOT_PRESENT';
 	}
 	const managed = envInfo?.managedStatus ?? localRowStatus ?? envInfo?.status ?? 'UNVERIFIED';
-	const sync = envInfo?.syncStatus ?? (envInfo?.status === 'IN_SYNC' ? 'IN_SYNC' : envInfo?.status === 'DRIFT' ? 'DRIFT' : 'UNEVALUATED');
+	const sync =
+		envInfo?.syncStatus ??
+		(envInfo?.status === 'IN_SYNC'
+			? 'IN_SYNC'
+			: envInfo?.status === 'DRIFT'
+				? 'DRIFT'
+				: 'UNEVALUATED');
 
 	return `   Estado en ${colors.bold(target)}:\n     Estado administrado : ${resolveManagedText(managed)}\n     Sincronización      : ${resolveSyncText(sync)}`;
 }
 
 function formatReadinessDetails(readiness: NonNullable<StatusReportData['readiness']>): string[] {
 	const lines: string[] = [];
-	const verdictColor = readiness.verdict === 'READY' ? colors.green : readiness.verdict === 'NO-GO' ? colors.yellow : colors.red;
+	const verdictColor =
+		readiness.verdict === 'READY'
+			? colors.green
+			: readiness.verdict === 'NO-GO'
+				? colors.yellow
+				: colors.red;
 	lines.push(`   Evaluación Integridad: ${verdictColor(readiness.verdict)}`);
-	lines.push(`     - Trazabilidad Provenance : ${readiness.details.hasProvenance ? colors.green('Sí') : colors.yellow('No')}`);
-	lines.push(`     - Archivos de Storage     : ${readiness.details.storageBinaryVerified ? colors.green('Verificados') : colors.yellow('Incompletos / Sin verificar')}`);
-	lines.push(`     - Fotografía Hero         : ${readiness.details.heroValid ? colors.green('Válida') : colors.yellow('Pendiente')}`);
-	lines.push(`     - Mapas Ubicación         : ${readiness.details.mapsValid ? colors.green('Válidos') : colors.yellow('Pendientes')}`);
+	lines.push(
+		`     - Trazabilidad Provenance : ${readiness.details.hasProvenance ? colors.green('Sí') : colors.yellow('No')}`,
+	);
+	lines.push(
+		`     - Archivos de Storage     : ${readiness.details.storageBinaryVerified ? colors.green('Verificados') : colors.yellow('Incompletos / Sin verificar')}`,
+	);
+	lines.push(
+		`     - Fotografía Hero         : ${readiness.details.heroValid ? colors.green('Válida') : colors.yellow('Pendiente')}`,
+	);
+	lines.push(
+		`     - Mapas Ubicación         : ${readiness.details.mapsValid ? colors.green('Válidos') : colors.yellow('Pendientes')}`,
+	);
 
 	if (readiness.reasons.length > 0) {
 		lines.push('   Observaciones / Desviaciones:');
@@ -126,7 +171,11 @@ export function formatStatusReport(data: StatusReportData): string {
 	lines.push('');
 
 	if (data.definitions.length === 0) {
-		lines.push(colors.yellow('No se encontraron definiciones de invitación para el filtro especificado.'));
+		lines.push(
+			colors.yellow(
+				'No se encontraron definiciones de invitación para el filtro especificado.',
+			),
+		);
 		return lines.join('\n');
 	}
 
@@ -135,7 +184,14 @@ export function formatStatusReport(data: StatusReportData): string {
 		lines.push(`   Definición Canónica : Encontrada (Creada: ${def.createdAt.slice(0, 10)})`);
 
 		for (const target of data.filters.targets) {
-			lines.push(formatEnvironmentStatus(target, def.slug, def.environments[target], data.inventory?.local));
+			lines.push(
+				formatEnvironmentStatus(
+					target,
+					def.slug,
+					def.environments[target],
+					data.inventory?.local,
+				),
+			);
 		}
 
 		if (data.readiness && data.filters.slug === def.slug) {
@@ -147,47 +203,269 @@ export function formatStatusReport(data: StatusReportData): string {
 	return lines.join('\n');
 }
 
+export interface TargetPlanData {
+	target: string;
+	planId?: string;
+	status:
+		| 'CAMBIOS PENDIENTES'
+		| 'SIN CAMBIOS'
+		| 'NO EVALUADO'
+		| 'BLOQUEADO'
+		| 'CAMBIOS APLICADOS'
+		| 'ERROR — CAMBIOS REVERTIDOS'
+		| 'ERROR — REQUIERE REVISIÓN';
+	reason?: string;
+	plannedOperations: number;
+	expectedDatabaseWrites: { inserts: number; updates: number; deletes: number };
+	expectedStorageMutations: {
+		uploads: number;
+		overwrites: number;
+		moves?: number;
+		deletes: number;
+	};
+	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
+	functionalChanges?: OperationalPlanData['functionalChanges'];
+	publishedVersion?: number;
+}
+
 export interface OperationalPlanData {
+	planId?: string;
 	invitation: string;
 	targets: string[];
 	isZeroDrift: boolean;
 	plannedOperations: number;
 	expectedDatabaseWrites: { inserts: number; updates: number; deletes: number };
-	expectedStorageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
+	expectedStorageMutations: {
+		uploads: number;
+		overwrites: number;
+		moves?: number;
+		deletes: number;
+	};
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
+	functionalChanges?: Array<{
+		section: string;
+		entity: string;
+		label: string;
+		operation:
+			| 'insert'
+			| 'update'
+			| 'delete'
+			| 'move'
+			| 'upload'
+			| 'overwrite'
+			| 'reuse'
+			| 'skip';
+		field?: string;
+		previousValue?: unknown;
+		newValue?: unknown;
+		scope: 'database' | 'storage';
+	}>;
 	publishedVersion?: number;
+	targetPlans?: TargetPlanData[];
 }
 
+// eslint-disable-next-line complexity -- Formats all functional change categories for CLI output.
+export function formatFunctionalChanges(
+	changes?: OperationalPlanData['functionalChanges'],
+): string[] {
+	if (!changes || changes.length === 0) return [];
+	const lines: string[] = [];
+
+	const updates = changes.filter((c) => c.operation === 'update');
+	const inserts = changes.filter((c) => c.operation === 'insert');
+	const deletes = changes.filter((c) => c.operation === 'delete' && c.scope === 'database');
+	const moves = changes.filter((c) => c.operation === 'move');
+	const uploads = changes.filter((c) => c.operation === 'upload');
+	const overwrites = changes.filter((c) => c.operation === 'overwrite');
+	const storageDeletes = changes.filter((c) => c.operation === 'delete' && c.scope === 'storage');
+
+	if (updates.length > 0) {
+		lines.push(colors.bold(`ACTUALIZACIONES · ${updates.length}`));
+		lines.push('');
+		for (const u of updates) {
+			lines.push(`  • ${u.section} — ${u.entity}`);
+			if (u.previousValue !== undefined) lines.push(`    Antes : ${String(u.previousValue)}`);
+			if (u.newValue !== undefined) lines.push(`    Ahora : ${String(u.newValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (inserts.length > 0) {
+		lines.push(colors.bold(`INSERCIONES · ${inserts.length}`));
+		lines.push('');
+		for (const i of inserts) {
+			lines.push(`  • ${i.section} — ${i.entity}`);
+			if (i.newValue !== undefined) lines.push(`    Valor : ${String(i.newValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (deletes.length > 0) {
+		lines.push(colors.bold(`ELIMINACIONES · ${deletes.length}`));
+		lines.push('');
+		for (const d of deletes) {
+			lines.push(`  • ${d.section} — ${d.entity}`);
+			if (d.previousValue !== undefined)
+				lines.push(`    Anterior : ${String(d.previousValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (moves.length > 0) {
+		lines.push(colors.bold(`REORDENAMIENTOS · ${moves.length}`));
+		lines.push('');
+		for (const move of moves) {
+			lines.push(`  • ${move.section} — ${move.entity}`);
+			if (move.previousValue !== undefined)
+				lines.push(`    Antes : ${String(move.previousValue)}`);
+			if (move.newValue !== undefined) lines.push(`    Ahora : ${String(move.newValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (uploads.length > 0) {
+		lines.push(colors.bold(`SUBIDAS STORAGE · ${uploads.length}`));
+		lines.push('');
+		for (const u of uploads) {
+			lines.push(`  • ${u.section} — ${u.entity}`);
+			if (u.newValue) lines.push(`    Detalle : ${String(u.newValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (overwrites.length > 0) {
+		lines.push(colors.bold(`SOBRESCRITURAS STORAGE · ${overwrites.length}`));
+		lines.push('');
+		for (const o of overwrites) {
+			lines.push(`  • ${o.section} — ${o.entity}`);
+			if (o.newValue) lines.push(`    Detalle : ${String(o.newValue)}`);
+		}
+		lines.push('');
+	}
+
+	if (storageDeletes.length > 0) {
+		lines.push(colors.bold(`ELIMINACIONES STORAGE · ${storageDeletes.length}`));
+		lines.push('');
+		for (const sd of storageDeletes) {
+			lines.push(`  • ${sd.section} — ${sd.entity}`);
+		}
+		lines.push('');
+	}
+
+	return lines;
+}
+
+function resolveStatusColor(status: TargetPlanData['status']): string {
+	switch (status) {
+		case 'CAMBIOS APLICADOS':
+		case 'SIN CAMBIOS':
+			return colors.green(status);
+		case 'CAMBIOS PENDIENTES':
+		case 'ERROR — CAMBIOS REVERTIDOS':
+			return colors.yellow(status);
+		case 'NO EVALUADO':
+			return colors.dim(status);
+		case 'BLOQUEADO':
+		case 'ERROR — REQUIERE REVISIÓN':
+			return colors.red(status);
+		default:
+			return status;
+	}
+}
+
+// eslint-disable-next-line complexity -- Per-target lifecycle states require distinct truthful presentation branches.
 export function formatDryRunPlan(plan: OperationalPlanData): string {
 	const lines: string[] = [];
 	lines.push(colors.bold(colors.cyan('=== Plan de Simulación (Dry-Run) ===')));
 	lines.push('');
 	lines.push(`Invitación   : ${colors.bold(plan.invitation)}`);
 	lines.push(`Entorno(s)   : ${plan.targets.join(', ')}`);
-	lines.push(`Estado Plan  : ${plan.isZeroDrift ? colors.green('Sin cambios requeridos (0 deriva)') : colors.yellow('Cambios pendientes')}`);
 	lines.push('');
 
-	lines.push(colors.bold('Operaciones Lógicas Planificadas:'));
-	lines.push(`  • Operaciones totales : ${plan.plannedOperations}`);
-	lines.push(`  • Escrituras DB est.  : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
-	lines.push(`  • Mutaciones Storage  : ${formatStorageMutations(plan.expectedStorageMutations)}`);
-	lines.push('');
+	if (plan.targetPlans && plan.targetPlans.length > 0) {
+		for (const tp of plan.targetPlans) {
+			lines.push(colors.bold(`📌 Entorno: ${tp.target}`));
+			if (tp.planId) {
+				lines.push(`  ID de Plan   : ${colors.dim(tp.planId)}`);
+			}
+			lines.push(`  Estado       : ${resolveStatusColor(tp.status)}`);
+			if (tp.reason) {
+				lines.push(`  Motivo       : ${tp.reason}`);
+			}
+			lines.push('');
 
-	if (plan.actions.length > 0) {
-		lines.push(colors.bold('Desglose de Recursos:'));
-		for (const action of plan.actions) {
-			const badge =
-				action.action === 'reuse' || action.action === 'skip'
-					? colors.dim(`[${action.action.toUpperCase()}]`)
-					: action.action === 'create'
-						? colors.green('[CREAR]')
-						: colors.yellow('[REEMPLAZAR]');
-			lines.push(`  ${badge} ${action.resource} (${action.name}) — ${action.detail}`);
+			if (tp.status === 'CAMBIOS PENDIENTES' || tp.status === 'SIN CAMBIOS') {
+				const functionalLines = formatFunctionalChanges(tp.functionalChanges);
+				if (functionalLines.length > 0) {
+					lines.push(...functionalLines.map((l) => `  ${l}`));
+				}
+				lines.push(`  Resumen Técnico de Operaciones (${tp.target}):`);
+				lines.push(`    • Operaciones totales : ${tp.plannedOperations}`);
+				lines.push(
+					`    • Escrituras DB est.  : ${formatDbWrites(tp.expectedDatabaseWrites)}`,
+				);
+				lines.push(
+					`    • Mutaciones Storage  : ${formatStorageMutations(tp.expectedStorageMutations)}`,
+				);
+				lines.push('');
+			}
 		}
+	} else {
+		if (plan.planId) {
+			lines.push(`ID de Plan   : ${colors.dim(plan.planId)}`);
+		}
+		lines.push(
+			`Estado Plan  : ${
+				plan.isZeroDrift
+					? colors.green('SIN CAMBIOS — Sin cambios requeridos (0 deriva)')
+					: colors.yellow('CAMBIOS PENDIENTES')
+			}`,
+		);
 		lines.push('');
+
+		const functionalLines = formatFunctionalChanges(plan.functionalChanges);
+		if (functionalLines.length > 0) {
+			lines.push(...functionalLines);
+		}
+
+		lines.push(colors.bold('Resumen Técnico de Operaciones:'));
+		lines.push(`  • Operaciones totales : ${plan.plannedOperations}`);
+		lines.push(`  • Escrituras DB est.  : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
+		lines.push(
+			`  • Mutaciones Storage  : ${formatStorageMutations(plan.expectedStorageMutations)}`,
+		);
+		lines.push('');
+
+		if (
+			plan.actions.length > 0 &&
+			(!plan.functionalChanges || plan.functionalChanges.length === 0)
+		) {
+			lines.push(colors.bold('Desglose de Recursos:'));
+			for (const action of plan.actions) {
+				const badge =
+					action.action === 'reuse' || action.action === 'skip'
+						? colors.dim(`[${action.action.toUpperCase()}]`)
+						: action.action === 'create'
+							? colors.green('[CREAR]')
+							: colors.yellow('[REEMPLAZAR]');
+				lines.push(`  ${badge} ${action.resource} (${action.name}) — ${action.detail}`);
+			}
+			lines.push('');
+		}
 	}
 
-	lines.push(colors.green('✔ Simulación completada con éxito. Ninguna modificación fue realizada en la base de datos ni en Storage.'));
+	const blocked = plan.targetPlans?.some(
+		(target) => target.status === 'BLOQUEADO' || target.status === 'NO EVALUADO',
+	);
+	lines.push(
+		blocked
+			? colors.red(
+					'✖ Preflight incompleto. No se realizó ninguna modificación; resuelva los requisitos indicados y vuelva a planificar.',
+				)
+			: colors.green(
+					'✔ Simulación completada con éxito. Ninguna modificación fue realizada en la base de datos ni en Storage.',
+				),
+	);
 	return lines.join('\n');
 }
 
@@ -195,63 +473,228 @@ export function formatApplyConfirmation(plan: OperationalPlanData): string {
 	const lines: string[] = [];
 	lines.push(colors.bold(colors.yellow('=== Confirmación de Aplicación ===')));
 	lines.push('');
-	lines.push(`Se aplicarán los siguientes cambios a la invitación "${colors.bold(plan.invitation)}" en ${plan.targets.join(', ')}:`);
-	lines.push(`  - Operaciones lógicas a ejecutar : ${plan.plannedOperations}`);
-	lines.push(`  - Escrituras DB estimadas        : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
-	lines.push(`  - Mutaciones en Supabase Storage : ${formatStorageMutations(plan.expectedStorageMutations)}`);
+	lines.push(
+		`Se aplicarán los siguientes cambios a la invitación "${colors.bold(plan.invitation)}" en ${plan.targets.join(', ')}:`,
+	);
+	if (plan.targetPlans?.length) {
+		for (const target of plan.targetPlans.filter(
+			(candidate) => candidate.status === 'CAMBIOS PENDIENTES',
+		)) {
+			lines.push(colors.bold(`📌 Entorno: ${target.target}`));
+			lines.push(`  ID de Plan   : ${colors.dim(target.planId ?? 'NO DISPONIBLE')}`);
+			lines.push(
+				...formatFunctionalChanges(target.functionalChanges).map((line) => `  ${line}`),
+			);
+			lines.push(`  Operaciones lógicas : ${target.plannedOperations}`);
+			lines.push(`  Escrituras DB est.  : ${formatDbWrites(target.expectedDatabaseWrites)}`);
+			lines.push(
+				`  Mutaciones Storage  : ${formatStorageMutations(target.expectedStorageMutations)}`,
+			);
+			lines.push('');
+		}
+	} else {
+		if (plan.planId) lines.push(`ID de Plan Planificado: ${colors.dim(plan.planId)}`);
+		lines.push('');
+		lines.push(...formatFunctionalChanges(plan.functionalChanges));
+		lines.push(`  - Operaciones lógicas a ejecutar : ${plan.plannedOperations}`);
+		lines.push(
+			`  - Escrituras DB estimadas        : ${formatDbWrites(plan.expectedDatabaseWrites)}`,
+		);
+		lines.push(
+			`  - Mutaciones en Supabase Storage : ${formatStorageMutations(plan.expectedStorageMutations)}`,
+		);
+	}
 	lines.push('');
 	return lines.join('\n');
 }
 
+export interface TargetApplyResultData {
+	target: string;
+	planId?: string;
+	status:
+		| 'CAMBIOS APLICADOS'
+		| 'SIN CAMBIOS'
+		| 'NO EVALUADO'
+		| 'BLOQUEADO'
+		| 'ERROR — CAMBIOS REVERTIDOS'
+		| 'ERROR — REQUIERE REVISIÓN'
+		| 'CANCELADO POR EL OPERADOR'
+		| 'CANCELLED'
+		| 'UPDATED'
+		| 'IN_SYNC'
+		| 'BLOCKED'
+		| 'FAILED';
+	reason?: string;
+	completedOperations: number;
+	databaseWrites: { inserts: number; updates: number; deletes: number };
+	storageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
+	publishedVersion?: number;
+	functionalChanges?: OperationalPlanData['functionalChanges'];
+}
+
 export interface ApplyResultData {
+	planId?: string;
 	invitation: string;
-	status: 'UPDATED' | 'IN_SYNC' | 'CANCELLED' | 'BLOCKED' | 'FAILED';
+	status:
+		| 'CAMBIOS APLICADOS'
+		| 'SIN CAMBIOS'
+		| 'NO EVALUADO'
+		| 'BLOQUEADO'
+		| 'ERROR — CAMBIOS REVERTIDOS'
+		| 'ERROR — REQUIERE REVISIÓN'
+		| 'CANCELADO POR EL OPERADOR'
+		| 'CANCELLED'
+		| 'UPDATED'
+		| 'IN_SYNC'
+		| 'BLOCKED'
+		| 'FAILED';
 	environment: string;
 	completedOperations: number;
 	databaseWrites: { inserts: number; updates: number; deletes: number };
 	storageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
 	publishedVersion?: number;
 	reason?: string;
+	functionalChanges?: OperationalPlanData['functionalChanges'];
+	targetResults?: TargetApplyResultData[];
 }
 
+// eslint-disable-next-line complexity -- Formats single-target and multi-target apply results.
 export function formatApplyResult(result: ApplyResultData): string {
 	const lines: string[] = [];
 	lines.push(colors.bold(colors.cyan('=== Resultado de Ejecución ===')));
 	lines.push('');
 	lines.push(`Invitación   : ${colors.bold(result.invitation)}`);
-	lines.push(`Entorno      : ${result.environment}`);
-
-	const statusText =
-		result.status === 'UPDATED'
-			? colors.green('✔ ACTUALIZADO CORRECTAMENTE')
-			: result.status === 'IN_SYNC'
-				? colors.green('✔ YA ESTÁ AL DÍA (Sin cambios requeridos)')
-				: result.status === 'CANCELLED'
-					? colors.yellow('⏹ CANCELADO POR EL OPERADOR')
-					: colors.red(`✖ BLOQUEADO / FALLIDO: ${result.reason ?? ''}`);
-
-	lines.push(`Estado Final : ${statusText}`);
+	lines.push(`Entorno(s)   : ${result.environment}`);
 	lines.push('');
 
-	if (result.status === 'IN_SYNC') {
-		lines.push(colors.green('La invitación ya está sincronizada. No hay cambios por aplicar.'));
-		lines.push(`Operaciones Lógicas Completadas : 0`);
-		lines.push(`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`);
-		lines.push(`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`);
-		if (result.publishedVersion !== undefined) {
-			lines.push(`Versión pública                 : v${result.publishedVersion}`);
+	if (result.targetResults && result.targetResults.length > 0) {
+		for (const tr of result.targetResults) {
+			lines.push(colors.bold(`📌 Entorno: ${tr.target}`));
+			if (tr.planId) {
+				lines.push(`  ID de Plan   : ${colors.dim(tr.planId)}`);
+			}
+
+			const normStatus: TargetPlanData['status'] =
+				tr.status === 'UPDATED' || tr.status === 'CAMBIOS APLICADOS'
+					? 'CAMBIOS APLICADOS'
+					: tr.status === 'IN_SYNC' || tr.status === 'SIN CAMBIOS'
+						? 'SIN CAMBIOS'
+						: tr.status === 'NO EVALUADO'
+							? 'NO EVALUADO'
+							: tr.status === 'CANCELLED' || tr.status === 'CANCELADO POR EL OPERADOR'
+								? 'CAMBIOS PENDIENTES'
+								: tr.status === 'BLOQUEADO' || tr.status === 'BLOCKED'
+									? 'BLOQUEADO'
+									: tr.status === 'ERROR — CAMBIOS REVERTIDOS'
+										? 'ERROR — CAMBIOS REVERTIDOS'
+										: 'ERROR — REQUIERE REVISIÓN';
+
+			const targetStatusText =
+				tr.status === 'CANCELLED' || tr.status === 'CANCELADO POR EL OPERADOR'
+					? colors.yellow('CANCELADO POR EL OPERADOR')
+					: resolveStatusColor(normStatus);
+			lines.push(`  Estado Final : ${targetStatusText}`);
+			if (tr.reason) {
+				lines.push(`  Motivo       : ${tr.reason}`);
+			}
+			lines.push('');
+
+			const functionalLines = formatFunctionalChanges(tr.functionalChanges);
+			if (functionalLines.length > 0) {
+				lines.push(...functionalLines.map((l) => `  ${l}`));
+			}
+
+			lines.push(`  Resumen Técnico de Ejecución (${tr.target}):`);
+			lines.push(`    • Operaciones completadas : ${tr.completedOperations}`);
+			lines.push(`    • Escrituras Base de Datos: ${formatDbWrites(tr.databaseWrites)}`);
+			lines.push(
+				`    • Mutaciones Storage      : ${formatStorageMutations(tr.storageMutations)}`,
+			);
+			if (tr.publishedVersion !== undefined) {
+				lines.push(`    • Versión pública          : v${tr.publishedVersion}`);
+			}
+			lines.push('');
 		}
-	} else if (result.status === 'UPDATED') {
-		lines.push(`Operaciones Lógicas Completadas : ${result.completedOperations}`);
-		lines.push(`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`);
-		lines.push(`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`);
-		if (result.publishedVersion !== undefined) {
-			lines.push(`Versión pública                 : v${result.publishedVersion}`);
+	} else {
+		if (result.planId) {
+			lines.push(`ID de Plan   : ${colors.dim(result.planId)}`);
 		}
-	} else if (result.status === 'CANCELLED') {
-		lines.push(colors.yellow('La operación fue cancelada antes de realizar cualquier cambio. Base de datos y Storage intactos.'));
+
+		const normalizedStatus =
+			result.status === 'UPDATED' || result.status === 'CAMBIOS APLICADOS'
+				? 'CAMBIOS APLICADOS'
+				: result.status === 'IN_SYNC' || result.status === 'SIN CAMBIOS'
+					? 'SIN CAMBIOS'
+					: result.status === 'CANCELLED'
+						? 'CANCELADO POR EL OPERADOR'
+						: result.status === 'NO EVALUADO'
+							? 'NO EVALUADO'
+							: result.status === 'BLOQUEADO'
+								? 'BLOQUEADO'
+								: result.status === 'ERROR — CAMBIOS REVERTIDOS'
+									? 'ERROR — CAMBIOS REVERTIDOS'
+									: 'ERROR — REQUIERE REVISIÓN';
+
+		const statusText =
+			normalizedStatus === 'CAMBIOS APLICADOS'
+				? colors.green('✔ CAMBIOS APLICADOS')
+				: normalizedStatus === 'SIN CAMBIOS'
+					? colors.green('✔ SIN CAMBIOS / YA ESTÁ AL DÍA')
+					: normalizedStatus === 'CANCELADO POR EL OPERADOR'
+						? colors.yellow('⏹ CANCELADO POR EL OPERADOR')
+						: normalizedStatus === 'NO EVALUADO'
+							? colors.dim('NO EVALUADO')
+							: normalizedStatus === 'BLOQUEADO'
+								? colors.red(`✖ BLOQUEADO (${result.reason ?? ''})`)
+								: normalizedStatus === 'ERROR — CAMBIOS REVERTIDOS'
+									? colors.yellow(
+											`✖ ERROR — CAMBIOS REVERTIDOS (${result.reason ?? ''})`,
+										)
+									: colors.red(
+											`✖ ERROR — REQUIERE REVISIÓN (${result.reason ?? ''})`,
+										);
+
+		lines.push(`Estado Final : ${statusText}`);
+		lines.push('');
+
+		const functionalLines = formatFunctionalChanges(result.functionalChanges);
+		if (functionalLines.length > 0) {
+			lines.push(...functionalLines);
+		}
+
+		if (normalizedStatus === 'SIN CAMBIOS') {
+			lines.push(
+				colors.green('La invitación ya está sincronizada. No hay cambios por aplicar.'),
+			);
+			lines.push(`Operaciones Lógicas Completadas : 0`);
+			lines.push(
+				`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`,
+			);
+			lines.push(
+				`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`,
+			);
+			if (result.publishedVersion !== undefined) {
+				lines.push(`Versión pública                 : v${result.publishedVersion}`);
+			}
+		} else if (normalizedStatus === 'CAMBIOS APLICADOS') {
+			lines.push(`Operaciones Lógicas Completadas : ${result.completedOperations}`);
+			lines.push(
+				`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`,
+			);
+			lines.push(
+				`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`,
+			);
+			if (result.publishedVersion !== undefined) {
+				lines.push(`Versión pública                 : v${result.publishedVersion}`);
+			}
+		} else if (normalizedStatus === 'CANCELADO POR EL OPERADOR') {
+			lines.push(
+				colors.yellow(
+					'La operación fue cancelada antes de realizar cualquier cambio. Base de datos y Storage intactos.',
+				),
+			);
+		}
 	}
 
 	return lines.join('\n');
 }
-
