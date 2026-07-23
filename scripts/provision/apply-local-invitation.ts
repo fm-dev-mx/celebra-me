@@ -42,6 +42,12 @@ import {
 	type OperationalPlan,
 } from './invitation-update-plan.ts';
 
+import {
+	apply3WaySemanticPatch,
+	type UpdateScope,
+} from './semantic-delta.ts';
+import type { AssetPolicy } from './asset-reconciliation.ts';
+
 interface ApplyLocalOptions {
 	slug: string;
 	sourceDir?: string;
@@ -49,6 +55,8 @@ interface ApplyLocalOptions {
 	apply?: boolean;
 	projectRoot?: string;
 	plan?: OperationalPlan;
+	updateScope?: UpdateScope;
+	assetPolicy?: AssetPolicy;
 }
 
 export interface LocalApplyResult {
@@ -134,7 +142,7 @@ async function resolveLocalOwner(
 // eslint-disable-next-line complexity -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish.
 export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<LocalApplyResult> {
 	const { slug, sourceDir, ownerUserId: explicitOwnerId, apply = false } = options;
-	const isApply = apply === true;
+	const isApply = apply;
 
 	const env = resolveLocalEnv(options.projectRoot);
 	const supabase = createClient(env.apiUrl, env.serviceRoleKey, {
@@ -289,10 +297,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		}
 	}
 
-	const proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<
-		string,
-		unknown
-	>;
+	const updateScope: UpdateScope = options.updateScope ?? 'content-only';
+
+	let proposedContent: Record<string, unknown>;
+	if (existingDraft?.content && (updateScope === 'content-only' || updateScope === 'assets-only')) {
+		const prevCanonical = (existingPub?.content as Record<string, unknown>) ??
+			(existingDraft.content as Record<string, unknown>);
+		const currCanonical = materializeAssetReferences(release.draftContent, assetMap) as Record<string, unknown>;
+		const patchRes = apply3WaySemanticPatch({
+			previousCanonical: prevCanonical,
+			currentCanonical: currCanonical,
+			currentTarget: existingDraft.content as Record<string, unknown>,
+			scope: updateScope,
+			targetName: slug,
+		});
+		if (patchRes.blocked) {
+			throw new Error(patchRes.blockReason ?? 'Asset preservation violation detected.');
+		}
+		proposedContent = patchRes.patchedContent;
+	} else {
+		proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<
+			string,
+			unknown
+		>;
+	}
 	const isInvitationIdentical = Boolean(
 		existingInv &&
 		existingInv.title === definition.title &&

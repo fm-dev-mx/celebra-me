@@ -49,8 +49,13 @@ export interface InvitationDefinition<K extends string = string> {
 	themeId: string;
 	visualProfileId: string;
 	eventTiming: InvitationEventTiming;
+	assetDir?: string;
 	assets: readonly InvitationAssetSpec[];
 	buildPublishedContent(assets: UploadedAssetMap<K>): Record<string, unknown>;
+}
+
+export function getInvitationAssetSourceDir(definition: InvitationDefinition): string {
+	return definition.assetDir ?? `src/assets/invitations/${definition.slug}`;
 }
 
 /**

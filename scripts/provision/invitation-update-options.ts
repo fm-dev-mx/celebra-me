@@ -41,6 +41,8 @@ const VALID_FLAGS = new Set([
 	'--adoption-manifest',
 	'--preview-provenance',
 	'--asset-policy',
+	'--update-scope',
+	'--content-only',
 	'--prune-assets',
 	'--include-legacy',
 	'--include-archived',
@@ -76,6 +78,7 @@ export function checkUnknownFlags(args: string[]): void {
 					'--evidence',
 					'--confirm-slug',
 					'--asset-policy',
+					'--update-scope',
 				].includes(arg)
 			) {
 				i++;

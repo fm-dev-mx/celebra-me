@@ -102,13 +102,17 @@ async function loadPersistedAssets(
 import { detectFileMimeType } from '../../src/lib/intake/services/asset-policy.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 
+import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
+
 export async function buildNormalizedInvitationRelease(options: { slug: string; sourceDir?: string }): Promise<NormalizedInvitationRelease> {
 	const definition = getInvitationDefinition(options.slug);
 	let assets: NormalizedInvitationAsset[];
 
-	if (options.sourceDir) {
-		const root = resolve(options.sourceDir);
-		if (!existsSync(root) || !statSync(root).isDirectory()) throw new Error(`Invitation asset root does not exist: ${root}`);
+	const effectiveSourceDir = options.sourceDir || getInvitationAssetSourceDir(definition);
+	const resolvedRoot = resolve(effectiveSourceDir);
+
+	if (existsSync(resolvedRoot) && statSync(resolvedRoot).isDirectory()) {
+		const root = resolvedRoot;
 		assets = [];
 		for (const asset of definition.assets) {
 			const source = resolve(root, asset.relativePath);
@@ -121,6 +125,8 @@ export async function buildNormalizedInvitationRelease(options: { slug: string; 
 			const bytes = raw;
 			assets.push({ key: asset.key, displayName: asset.displayName, alt: asset.alt, focalPoint: asset.focalPoint, bytes, dataBase64: Buffer.from(bytes).toString('base64'), sha256: hash(bytes), mimeType: normalized.mimeType, width: normalized.width, height: normalized.height, fileSize: normalized.fileSize, validationVersion: normalized.validationVersion, originalMimeType: normalized.originalMimeType, originalFileSize: normalized.originalFileSize });
 		}
+	} else if (options.sourceDir) {
+		throw new Error(`Invitation asset root does not exist: ${resolvedRoot}`);
 	} else {
 		assets = await loadPersistedAssets(options.slug, definition.assets);
 	}

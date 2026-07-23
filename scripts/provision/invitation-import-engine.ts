@@ -51,6 +51,10 @@ import {
 	type ObservedStorageState,
 	type AssetReconciliationResult,
 } from './asset-reconciliation.ts';
+import {
+	apply3WaySemanticPatch,
+	type UpdateScope,
+} from './semantic-delta.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -64,6 +68,7 @@ export interface ImportEngineOptions {
 	plan?: OperationalPlan;
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
+	updateScope?: UpdateScope;
 }
 
 export interface ResourcePlanAction {
@@ -771,19 +776,42 @@ function analyzeTargetDrift(
 	ownerUserId: string,
 	assetRefs: UploadedAssetMap,
 	existingInvitation: Record<string, unknown> | null,
+	updateScope: UpdateScope = 'content-only',
 ) {
 	const slug = pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
 	const scanned = scanTargetState(targetDbUrl, slug, eventType, ownerUserId, existingInvitation);
-	const targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
-		string,
-		unknown
-	>;
-	const targetPublishedContent = materializeAssetReferences(
-		pkg.publishedContent?.content ?? pkg.draft.content,
-		assetRefs,
-	) as Record<string, unknown>;
+
+	let targetDraftContent: Record<string, unknown>;
+	let targetPublishedContent: Record<string, unknown>;
+
+	if (scanned.existingDraft?.content && (updateScope === 'content-only' || updateScope === 'assets-only')) {
+		const prevCanonical = (scanned.existingPub?.content as Record<string, unknown>) ??
+			(scanned.existingDraft.content as Record<string, unknown>);
+		const currCanonical = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<string, unknown>;
+		const patchRes = apply3WaySemanticPatch({
+			previousCanonical: prevCanonical,
+			currentCanonical: currCanonical,
+			currentTarget: scanned.existingDraft.content as Record<string, unknown>,
+			scope: updateScope,
+			targetName: slug,
+		});
+		if (patchRes.blocked) {
+			throw new Error(patchRes.blockReason ?? 'Asset preservation violation detected.');
+		}
+		targetDraftContent = patchRes.patchedContent;
+		targetPublishedContent = patchRes.patchedContent;
+	} else {
+		targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
+			string,
+			unknown
+		>;
+		targetPublishedContent = materializeAssetReferences(
+			pkg.publishedContent?.content ?? pkg.draft.content,
+			assetRefs,
+		) as Record<string, unknown>;
+	}
 
 	checkTargetDivergenceConflict(
 		slug,
@@ -843,26 +871,61 @@ function resolveTargetAssetRefs(
 	targetStorageUrl: string,
 ): UploadedAssetMap {
 	const result = runPsql(
-		`select json_agg(t) from (select id, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null) t;`,
+		`select json_agg(t) from (select id, display_name, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
-	const existing = new Map(
-		parsePsqlJsonArray(result.stdout).map((row) => [
-			row.storage_path as string,
-			row.id as string,
-		]),
-	);
+	const rows = parsePsqlJsonArray(result.stdout);
+	const byPath = new Map(rows.map((row) => [row.storage_path as string, row]));
+	const byDisplayName = new Map(rows.map((row) => [row.display_name as string, row]));
+
 	return Object.fromEntries(
-		pkg.assets.map((asset) => [
-			asset.key,
-			{
-				type: 'uploaded' as const,
-				assetId: existing.get(asset.storagePath) ?? randomUUID(),
-				src: `${targetStorageUrl}/${asset.storagePath}`,
-			},
-		]),
+		pkg.assets.map((asset) => {
+			const existingRecord = byPath.get(asset.storagePath) ?? byDisplayName.get(asset.displayName);
+			const assetId = (existingRecord?.id as string) ?? randomUUID();
+			const storagePath = (existingRecord?.storage_path as string) ?? asset.storagePath;
+			return [
+				asset.key,
+				{
+					type: 'uploaded' as const,
+					assetId,
+					src: `${targetStorageUrl}/${storagePath}`,
+				},
+			];
+		}),
 	);
+}
+
+export function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string): string {
+	const dbRows = runPsql(
+		`select id::text, display_name, storage_path, mime_type, file_size from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null order by display_name;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	).stdout.trim();
+	const draftContent = runPsql(
+		`select content::text from public.invitation_content_drafts where invitation_project_id = '${invitationId}'::uuid and deleted_at is null limit 1;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	).stdout.trim();
+	const pubContent = runPsql(
+		`select content::text from public.published_invitation_content where invitation_project_id = '${invitationId}'::uuid and deleted_at is null order by version desc limit 1;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	).stdout.trim();
+
+	const extractRefs = (str: string) => {
+		const refs: string[] = [];
+		const regex = /"type"\s*:\s*"uploaded"\s*,\s*"assetId"\s*:\s*"([^"]+)"\s*,\s*"src"\s*:\s*"([^"]+)"/g;
+		let m: RegExpExecArray | null;
+		while ((m = regex.exec(str)) !== null) {
+			refs.push(`${m[1]}:${m[2]}`);
+		}
+		return refs.sort();
+	};
+
+	return createHash('sha256')
+		.update(JSON.stringify({ dbRows, draftRefs: extractRefs(draftContent), pubRefs: extractRefs(pubContent) }))
+		.digest('hex');
 }
 
 // ---------------------------------------------------------------------------
@@ -914,6 +977,9 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		initialScan.targetInvitationId,
 		targetStorageUrl,
 	);
+	const updateScope = options.updateScope ?? 'content-only';
+	const assetPolicy = options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+
 	const drift = analyzeTargetDrift(
 		pkg,
 		targetStorageUrl,
@@ -921,6 +987,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		ownerUserId,
 		assetRefs,
 		identity.existingInvitation,
+		updateScope,
 	);
 	const {
 		assetsToUpload,
@@ -933,7 +1000,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		targetStorageUrl,
 		targetDbUrl,
 		drift.targetInvitationId,
-		options.assetPolicy ?? 'missing',
+		assetPolicy,
 		options.pruneAssets ?? false,
 	);
 	const actions = buildResourceActions({
@@ -1119,6 +1186,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	}
 
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
+	const preApplyAssetFingerprint = computeTargetAssetFingerprint(targetDbUrl, drift.targetInvitationId);
 	const trackedResources: TrackedResource[] = [];
 	if (expectedTarget === 'preview') {
 		trackedResources.push(
@@ -1303,6 +1371,18 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			deletes: executionPlan.physicalDatabaseOps.deletes,
 		};
 
+		if (updateScope === 'content-only') {
+			const postApplyAssetFingerprint = computeTargetAssetFingerprint(
+				targetDbUrl,
+				drift.targetInvitationId,
+			);
+			if (preApplyAssetFingerprint !== postApplyAssetFingerprint) {
+				throw new Error(
+					'ASSET_PRESERVATION_VIOLATION: Se detectó una alteración en las referencias o registros de archivos del destino durante una actualización de solo contenido.',
+				);
+			}
+		}
+
 		const finalPublishedVersion =
 			!drift.isPubIdentical || !drift.existingPub
 				? verifyPostPublication(drift.pubQuery, targetDbUrl, drift.route)
@@ -1320,13 +1400,14 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			ownerUserId,
 			finalAssetRefs,
 			identity.existingInvitation,
+			updateScope,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,
 			targetStorageUrl,
 			targetDbUrl,
 			finalDrift.targetInvitationId,
-			options.assetPolicy ?? 'missing',
+			assetPolicy,
 			options.pruneAssets ?? false,
 		);
 		if (

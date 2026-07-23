@@ -33,6 +33,7 @@ export interface ProductionPreflightResult {
 }
 
 import type { AssetPolicy } from './asset-reconciliation.ts';
+import type { UpdateScope } from './semantic-delta.ts';
 
 export async function runProductionPreflight(input: {
 	packageData: InvitationPackageData;
@@ -41,6 +42,7 @@ export async function runProductionPreflight(input: {
 	now?: Date;
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
+	updateScope?: UpdateScope;
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 }): Promise<ProductionPreflightResult> {
@@ -81,6 +83,7 @@ export async function runProductionPreflight(input: {
 			dryRun: true,
 			assetPolicy: input.assetPolicy,
 			pruneAssets: input.pruneAssets,
+			updateScope: input.updateScope,
 		});
 		assertEngineResult(engineResult, undefined, 'Producción', false);
 		let finalApproval: PreviewApprovalArtifact | undefined;

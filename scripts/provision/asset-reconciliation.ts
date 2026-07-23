@@ -17,7 +17,7 @@ export type PlannedAssetAction =
 	| 'PRUNE'
 	| 'BLOCK';
 
-export type AssetPolicy = 'verify' | 'missing' | 'sync';
+export type AssetPolicy = 'verify' | 'missing' | 'sync' | 'preserve';
 
 export interface TargetAssetRecord {
 	id: string;
@@ -92,11 +92,16 @@ export interface AssetReconciliationOptions {
 export function parseAssetPolicy(raw?: string): AssetPolicy {
 	if (!raw) return 'missing';
 	const normalized = raw.trim().toLowerCase();
-	if (normalized === 'verify' || normalized === 'missing' || normalized === 'sync') {
+	if (
+		normalized === 'verify' ||
+		normalized === 'missing' ||
+		normalized === 'sync' ||
+		normalized === 'preserve'
+	) {
 		return normalized;
 	}
 	throw new Error(
-		`Política de archivos no válida "${raw}". Debe ser "verify", "missing" o "sync".`,
+		`Política de archivos no válida "${raw}". Debe ser "preserve", "verify", "missing" o "sync".`,
 	);
 }
 
@@ -138,7 +143,28 @@ function reconcileBinaryPresentHashMatch(
 		};
 	}
 
+	const isPreserve = policy === 'preserve';
 	const isVerify = policy === 'verify';
+	if (isPreserve && dbRecord) {
+		return {
+			item: {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: targetPath,
+				targetAssetId: dbRecord.id,
+				classification: 'MATCH',
+				plannedAction: 'REUSE',
+				reasonCode: 'ASSET_PRESERVED',
+				reason: `El archivo "${canonical.displayName}" se conservará intacto bajo la política preserve.`,
+				observedHash: storageState.sha256,
+				observedSize: dbRecord.fileSize,
+			},
+			blocked: false,
+		};
+	}
 	return {
 		item: {
 			key: canonical.key,
@@ -152,13 +178,13 @@ function reconcileBinaryPresentHashMatch(
 			plannedAction: isVerify ? 'BLOCK' : 'REPAIR_METADATA',
 			reasonCode: isVerify ? 'ASSET_METADATA_DRIFT_VERIFY_BLOCKED' : 'ASSET_METADATA_DRIFT',
 			reason: isVerify
-				? `El binario de "${canonical.displayName}" coincide pero falta o difiere el registro DB (bloqueado bajo política --asset-policy verify).`
+				? `El binario de "${canonical.displayName}" coincide pero falta o difiere el registro DB (bloqueado bajo política ${policy}).`
 				: `El binario de "${canonical.displayName}" coincide pero los metadatos en DB están desactualizados o faltan.`,
 			observedHash: storageState.sha256,
 			observedSize: dbRecord?.fileSize ?? null,
 		},
 		blocked: isVerify,
-		blockReason: isVerify ? `Derivación de metadatos detectada bajo la política verify en "${canonical.displayName}".` : undefined,
+		blockReason: isVerify ? `Derivación de metadatos detectada bajo la política ${policy} en "${canonical.displayName}".` : undefined,
 	};
 }
 
@@ -169,6 +195,27 @@ function reconcileBinaryPresentHashMismatch(
 	targetPath: string,
 	policy: AssetPolicy,
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
+	const isPreserve = policy === 'preserve';
+	if (isPreserve && dbRecord) {
+		return {
+			item: {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: targetPath,
+				targetAssetId: dbRecord.id,
+				classification: 'MATCH',
+				plannedAction: 'REUSE',
+				reasonCode: 'ASSET_PRESERVED',
+				reason: `El archivo "${canonical.displayName}" se conservará intacto bajo la política preserve.`,
+				observedHash: storageState.sha256,
+				observedSize: dbRecord.fileSize,
+			},
+			blocked: false,
+		};
+	}
 	const isSync = policy === 'sync';
 	return {
 		item: {
@@ -221,7 +268,7 @@ function reconcileBinaryAbsent(
 		};
 	}
 
-	const isVerify = policy === 'verify';
+	const isBlock = policy === 'verify' || policy === 'preserve';
 	return {
 		item: {
 			key: canonical.key,
@@ -231,16 +278,16 @@ function reconcileBinaryAbsent(
 			canonicalMimeType: canonical.mimeType,
 			targetStoragePath: targetPath,
 			classification: 'MISSING',
-			plannedAction: isVerify ? 'BLOCK' : 'UPLOAD',
-			reasonCode: isVerify ? 'ASSET_MISSING_VERIFY_BLOCKED' : 'ASSET_MISSING_UPLOAD',
-			reason: isVerify
-				? `El archivo binario para "${canonical.displayName}" no existe en Storage (bloqueado bajo política --asset-policy verify).`
+			plannedAction: isBlock ? 'BLOCK' : 'UPLOAD',
+			reasonCode: isBlock ? 'ASSET_MISSING_VERIFY_BLOCKED' : 'ASSET_MISSING_UPLOAD',
+			reason: isBlock
+				? `El archivo binario para "${canonical.displayName}" no existe en Storage (bloqueado bajo política --asset-policy ${policy}).`
 				: `El archivo binario para "${canonical.displayName}" no existe. Se subirá a Storage.`,
 			observedHash: null,
 			observedSize: null,
 		},
-		blocked: isVerify,
-		blockReason: isVerify ? `Archivo binario requerido ausente bajo la política verify: "${canonical.displayName}".` : undefined,
+		blocked: isBlock,
+		blockReason: isBlock ? `Archivo binario requerido ausente bajo la política ${policy}: "${canonical.displayName}".` : undefined,
 	};
 }
 

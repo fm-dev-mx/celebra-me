@@ -17,6 +17,7 @@ import {
 } from './invitation-lifecycle-execution.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
+import type { UpdateScope } from './semantic-delta.ts';
 import {
 	buildStatusReport,
 	parseTargets,
@@ -348,20 +349,39 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			else if (operation === 'apply') apply = true;
 
 			if (!statusMode) {
-				const policyChoice = await select({
-					message: '¿Cómo deseas manejar las fotografías y otros archivos?',
+				const scopeChoice = await select({
+					message: '¿Qué deseas actualizar?',
 					choices: [
-						{ name: 'Verificar y reutilizar los existentes (verify)', value: 'verify' },
-						{ name: 'Subir únicamente los archivos faltantes (missing)', value: 'missing' },
-						{ name: 'Sincronizar archivos faltantes y modificados (sync)', value: 'sync' },
+						{ name: 'Solo contenido', value: 'content-only' },
+						{ name: 'Contenido y fotografías', value: 'content-and-assets' },
+						{ name: 'Solo fotografías', value: 'assets-only' },
 					],
 				});
-				args.push('--asset-policy', policyChoice);
+				args.push('--update-scope', scopeChoice);
+
+				if (scopeChoice === 'content-only') {
+					args.push('--asset-policy', 'preserve');
+				} else {
+					const policyChoice = await select({
+						message: '¿Cómo deseas manejar las fotografías y otros archivos?',
+						choices: [
+							{ name: 'Verificar y reutilizar los existentes (verify)', value: 'verify' },
+							{ name: 'Subir únicamente los archivos faltantes (missing)', value: 'missing' },
+							{ name: 'Sincronizar archivos faltantes y modificados (sync)', value: 'sync' },
+						],
+					});
+					args.push('--asset-policy', policyChoice);
+				}
 			}
 		}
 	}
 
-	const rawAssetPolicy = value(args, '--asset-policy');
+	const rawScope = value(args, '--update-scope');
+	const updateScope: UpdateScope = rawScope === 'content-and-assets' || rawScope === 'assets-only'
+		? rawScope
+		: 'content-only';
+
+	const rawAssetPolicy = value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
 	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
 
@@ -555,6 +575,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					sourceDir,
 					ownerUserId,
 					apply: false,
+					updateScope,
+					assetPolicy,
 				});
 				executionPlans.set('local', localResult.plan);
 				targetPlans.push({
@@ -650,6 +672,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								dryRun: true,
 								assetPolicy,
 								pruneAssets,
+								updateScope,
 							}
 						: {
 								packageData: confirmationPackage,
@@ -658,6 +681,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								dryRun: true,
 								assetPolicy,
 								pruneAssets,
+								updateScope,
 							};
 					const result = await runImportEngine(engineOptions);
 					assertEngineResult(result, undefined, 'Preview', false);
@@ -720,6 +744,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					ownerUserId,
 					assetPolicy,
 					pruneAssets,
+					updateScope,
 					getProductionDbUrl: getProdDbUrl,
 				});
 				executionPlans.set('production', engineResult.plan);
@@ -1138,6 +1163,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						ownerUserId,
 						apply: true,
 						plan: localResult?.plan,
+						updateScope,
+						assetPolicy,
 					});
 					reports.push({
 						stage: 'apply',
@@ -1213,6 +1240,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						plan: previewPlan,
 						assetPolicy,
 						pruneAssets,
+						updateScope,
 					});
 					reports.push({
 						stage: 'promote',
@@ -1288,6 +1316,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					plan: executionPlans.get('production'),
 					assetPolicy,
 					pruneAssets,
+					updateScope,
 				});
 				assertEngineResult(result, targetPlan.planId, 'Producción', true);
 				reports.push({
