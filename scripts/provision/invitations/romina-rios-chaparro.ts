@@ -157,7 +157,7 @@ export function buildRominaPublishedContent(
 			disabled: false,
 			cardLabel: 'MIS XV',
 			envelopeName: 'Romina Ríos Chaparro',
-			cardName: 'Romina',
+			cardName: 'Romina Ríos Chaparro',
 			cardTagline: '14 · 08 · 2026',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
