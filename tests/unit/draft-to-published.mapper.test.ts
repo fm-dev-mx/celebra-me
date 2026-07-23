@@ -1581,7 +1581,7 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('places sectionMessage in both labels and root for backward compatibility', () => {
+	it('places sectionMessage inside labels object', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
@@ -1594,8 +1594,68 @@ describe('mapDraftToPublished', () => {
 		});
 
 		const family = result.family as Record<string, unknown>;
-		expect(family.sectionMessage).toBe('Mensaje familiar');
+		expect(family.sectionMessage).toBeUndefined();
 		expect((family.labels as Record<string, unknown>).sectionMessage).toBe('Mensaje familiar');
+	});
+
+	it('omits sectionMessage from published output when draft has no sectionMessage', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+				},
+			},
+		});
+
+		const family = result.family as Record<string, unknown>;
+		expect(family.sectionMessage).toBeUndefined();
+		if (family.labels) {
+			expect((family.labels as Record<string, unknown>).sectionMessage).toBeUndefined();
+		}
+	});
+
+	it('does not emit root-level sectionMessage for empty string in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					sectionMessage: '',
+				},
+			},
+		});
+
+		const family = result.family as Record<string, unknown>;
+		expect(family.sectionMessage).toBeUndefined();
+		if (family.labels) {
+			expect((family.labels as Record<string, unknown>).sectionMessage).toBeUndefined();
+		}
+	});
+
+	it('preserves other family labels when sectionMessage is mapped', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				family: {
+					fatherName: 'Juan',
+					motherName: 'María',
+					sectionMessage: 'Un mensaje',
+					sectionSubtitle: 'Mi Familia',
+					sectionTitle: 'Los que hacen mi vida completa',
+					parentsTitle: 'Con la bendición de',
+				},
+			},
+		});
+
+		const labels = (result.family as Record<string, unknown>).labels as Record<string, unknown>;
+		expect(labels.sectionMessage).toBe('Un mensaje');
+		expect(labels.sectionSubtitle).toBe('Mi Familia');
+		expect(labels.sectionTitle).toBe('Los que hacen mi vida completa');
+		expect(labels.parentsTitle).toBe('Con la bendición de');
 	});
 
 	it('maps family groups from draft format to published structured format', () => {

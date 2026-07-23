@@ -94,4 +94,31 @@ describe('published restore round-trip', () => {
 			},
 		]);
 	});
+
+	it('is structurally stable after multiple roundtrips', () => {
+		let round = published;
+		for (let i = 0; i < 3; i++) {
+			const draft = mapNestedToDraftContent(round);
+			const effective = computeEffectiveContent(draft, round);
+			const mapped = mapDraftToPublished({
+				invitation: {
+					title: ROMINA_EVENT.title,
+					eventType: ROMINA_EVENT.eventType,
+					snapshot: preset as never,
+				},
+				assetSlug: ROMINA_EVENT.assetSlug,
+				draftContent: effective,
+				demoContent,
+				priorPublishedContent: round,
+				isDemo: false,
+			});
+			round = eventContentSchema.parse(mapped) as unknown as Record<string, unknown>;
+		}
+
+		const draft = mapNestedToDraftContent(round);
+		const comparison = compareDraft(draft);
+
+		expect(comparison.changedPaths).toEqual([]);
+		expect(comparison.changedSections).toEqual([]);
+	});
 });

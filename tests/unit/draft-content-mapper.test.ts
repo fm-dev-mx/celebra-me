@@ -830,6 +830,22 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.family?.sectionMessage).toBe('Mensaje en raíz');
 	});
 
+	it('prefers labels.sectionMessage over root-level sectionMessage when both are present', () => {
+		const input = {
+			family: {
+				parents: { father: 'Juan' },
+				sectionMessage: 'Valor legacy',
+				labels: {
+					sectionMessage: 'Valor canónico',
+				},
+			},
+		};
+
+		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
+
+		expect(result.family?.sectionMessage).toBe('Valor canónico');
+	});
+
 	it('reads family groups from published format into flat draft format', () => {
 		const input = {
 			family: {

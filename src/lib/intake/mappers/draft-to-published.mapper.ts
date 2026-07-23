@@ -245,8 +245,6 @@ function mapFamilyFromDraft(
 	const labels = buildFamilyLabels(family);
 	if (labels) result.labels = labels;
 
-	if (str(family.sectionMessage)) result.sectionMessage = str(family.sectionMessage);
-
 	const mappedGroups = buildFamilyGroups(family);
 	if (mappedGroups) result.groups = mappedGroups;
 
