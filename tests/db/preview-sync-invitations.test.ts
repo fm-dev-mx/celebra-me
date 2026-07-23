@@ -69,7 +69,7 @@ describe('Target classification', () => {
 
 	it('rejects identical source and target host', () => {
 		const sameUrl =
-			'postgresql://postgres:password@db.iwipdvisoyerfdytuhwi.supabase.co:6543/postgres';
+			'postgresql://postgres:password@db.ineitkdkyrxqyressllp.supabase.co:6543/postgres';
 		const prodResult = classifyDbTarget(sameUrl);
 		expect(prodResult.target).toBe('production'); // .supabase.co → production
 	});
