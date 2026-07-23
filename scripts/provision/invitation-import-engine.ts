@@ -1,6 +1,7 @@
 /**
  * invitation-import-engine.ts — Shared Import Engine for Preview & Production
  */
+/* eslint-disable max-lines -- Target identity, planning, apply, and verification share one atomic safety boundary. */
 
 import { randomUUID, createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
@@ -46,7 +47,6 @@ export interface ImportEngineOptions {
 	target: 'preview' | 'production';
 	ownerUserId?: string;
 	dryRun?: boolean;
-	allowDivergentOverwrite?: boolean;
 	targetDbUrl: string;
 	targetSupabaseUrl?: string;
 	serviceRoleKey?: string;
@@ -125,7 +125,9 @@ export function validatePackageData(pkg: InvitationPackageData): InvitationPacka
 		throw new Error('Package is missing a valid MD5 projectionHash.');
 	}
 	if (!pkg.definitionCreatedAt || !pkg.sourceSlug || !pkg.publishedContent || !pkg.event) {
-		throw new Error('Package is missing required release metadata, published content, or event data.');
+		throw new Error(
+			'Package is missing required release metadata, published content, or event data.',
+		);
 	}
 	const computedHash = computePackageHash(pkg);
 	if (computedHash !== pkg.packageHash) {
@@ -171,28 +173,83 @@ function validateTargetClassification(
 	return { targetClassification, projectRef };
 }
 
-function resolveOwner(
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export interface TargetInvitationIdentity {
+	existingInvitation: Record<string, unknown> | null;
+	ownerUserId: string;
+	isNewInvitation: boolean;
+}
+
+/** Resolves ownership from the selected target before any plan or write is constructed. */
+export function resolveTargetInvitationIdentity(input: {
+	target: 'preview' | 'production';
+	slug: string;
+	explicitOwnerId?: string;
+	activeInvitations: Array<Record<string, unknown>>;
+	archivedInvitations: Array<Record<string, unknown>>;
+	previewOwnerUserId?: string;
+	ownerExists: (ownerUserId: string) => boolean;
+}): TargetInvitationIdentity {
+	if (input.activeInvitations.length > 1)
+		throw new Error(`Target contains multiple active invitations for slug "${input.slug}".`);
+	if (input.activeInvitations.length === 0 && input.archivedInvitations.length > 0)
+		throw new Error(`Target invitation "${input.slug}" is archived and cannot be updated.`);
+	const existingInvitation = input.activeInvitations[0] ?? null;
+	const ownerUserId = existingInvitation
+		? String(existingInvitation.created_by ?? '')
+		: input.target === 'preview'
+			? (input.previewOwnerUserId ?? '')
+			: (input.explicitOwnerId ?? '');
+	if (existingInvitation && existingInvitation.kind !== 'client')
+		throw new Error(`Target invitation "${input.slug}" is not a client invitation.`);
+	if (!ownerUserId || !UUID_PATTERN.test(ownerUserId))
+		throw new Error(
+			existingInvitation
+				? `Target invitation "${input.slug}" has a missing or invalid owner.`
+				: 'Creating a new Production invitation requires an explicit --owner-user-id <UUID>.',
+		);
+	if (existingInvitation && input.explicitOwnerId && input.explicitOwnerId !== ownerUserId)
+		throw new Error(
+			`--owner-user-id does not match the existing target owner for "${input.slug}".`,
+		);
+	if (!input.ownerExists(ownerUserId))
+		throw new Error(
+			`Target owner UUID "${ownerUserId}" does not exist in target auth.users table.`,
+		);
+	return { existingInvitation, ownerUserId, isNewInvitation: !existingInvitation };
+}
+
+function resolveTargetIdentity(
 	expectedTarget: 'preview' | 'production',
+	slug: string,
 	explicitOwnerId: string | undefined,
 	targetDbUrl: string,
-): string {
-	if (expectedTarget === 'preview') {
-		const ownerUserId = resolvePreviewAdminUser(targetDbUrl);
-		return ownerUserId;
-	}
-
-	if (!explicitOwnerId)
-		throw new Error('Production promotion requires an explicit --owner-user-id <UUID>.');
-	const ownerCheck = runPsql(
-		`select id from auth.users where id = ${sqlLiteral(explicitOwnerId)};`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+): TargetInvitationIdentity {
+	const rows = parsePsqlJsonArray(
+		runPsql(
+			`select json_agg(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, archived_at from public.invitations where slug = ${sqlLiteral(slug)} order by archived_at nulls first, id) t;`,
+			targetDbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		).stdout,
 	);
-	if (!ownerCheck.stdout.trim())
-		throw new Error(
-			`Production owner UUID "${explicitOwnerId}" does not exist in target auth.users table.`,
-		);
-	return explicitOwnerId;
+	return resolveTargetInvitationIdentity({
+		target: expectedTarget,
+		slug,
+		explicitOwnerId,
+		activeInvitations: rows.filter((row) => row.archived_at === null),
+		archivedInvitations: rows.filter((row) => row.archived_at !== null),
+		previewOwnerUserId:
+			expectedTarget === 'preview' ? resolvePreviewAdminUser(targetDbUrl) : undefined,
+		ownerExists: (ownerUserId) =>
+			Boolean(
+				runPsql(
+					`select id from auth.users where id = ${sqlLiteral(ownerUserId)};`,
+					targetDbUrl,
+					{ tuplesOnly: true, throwOnError: false },
+				).stdout.trim(),
+			),
+	});
 }
 
 async function scanAssetStatus(
@@ -362,8 +419,15 @@ export function assertDraftRevisionUnchanged(
 	).stdout.trim();
 	const expected = Date.parse(String(existingDraft.updated_at));
 	const actual = Date.parse(revision);
-	if (!revision || !Number.isFinite(expected) || !Number.isFinite(actual) || expected !== actual) {
-		throw new Error('Target draft changed after planning; refusing to overwrite a stale revision.');
+	if (
+		!revision ||
+		!Number.isFinite(expected) ||
+		!Number.isFinite(actual) ||
+		expected !== actual
+	) {
+		throw new Error(
+			'Target draft changed after planning; refusing to overwrite a stale revision.',
+		);
 	}
 }
 
@@ -376,7 +440,8 @@ function upsertAssetRows(
 	let count = 0;
 	for (const pAsset of assets) {
 		const assetId = assetRefs[pAsset.key]?.assetId;
-		if (!assetId) throw new Error(`Missing target asset UUID for semantic key "${pAsset.key}".`);
+		if (!assetId)
+			throw new Error(`Missing target asset UUID for semantic key "${pAsset.key}".`);
 		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, deleted_at = null, updated_at = now();`;
 		runPsql(assetSql, targetDbUrl);
 		count++;
@@ -389,8 +454,7 @@ function executePublicationRpcCall(
 	finalDraftId: string,
 	finalDraftUpdatedAt: string,
 ): void {
-	const { targetDbUrl, targetInvitationId, slug, eventType, targetPublishedContent } =
-		params;
+	const { targetDbUrl, targetInvitationId, slug, eventType, targetPublishedContent } = params;
 	const liveInvRes = runPsql(
 		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
 		targetDbUrl,
@@ -451,7 +515,12 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	}
 
 	if (assetsForDbUpsert.length > 0) {
-		count += upsertAssetRows(targetDbUrl, targetInvitationId, assetsForDbUpsert, params.assetRefs);
+		count += upsertAssetRows(
+			targetDbUrl,
+			targetInvitationId,
+			assetsForDbUpsert,
+			params.assetRefs,
+		);
 	}
 
 	if (shouldUpsertDraft) {
@@ -486,7 +555,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 
 	if (shouldUpsertEvent) {
 		const eventRes = runPsql(
-			`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(pkg.event?.title ?? pkg.invitation.title)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set owner_user_id = excluded.owner_user_id, title = excluded.title, status = 'published', invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
+			`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(pkg.event?.title ?? pkg.invitation.title)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set title = excluded.title, status = 'published', invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
 			targetDbUrl,
 			{ tuplesOnly: true },
 		);
@@ -521,13 +590,9 @@ function scanTargetState(
 	slug: string,
 	eventType: string,
 	ownerUserId: string,
+	existingInvitation: Record<string, unknown> | null,
 ): TargetScanResult {
-	const invResult = runPsql(
-		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, archived_at from public.invitations where slug = ${sqlLiteral(slug)} and archived_at is null limit 1) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const existingInv = invResult.stdout.trim() ? parsePsqlJson(invResult.stdout) : null;
+	const existingInv = existingInvitation;
 	const targetInvitationId = existingInv ? (existingInv.id as string) : randomUUID();
 
 	const draftResult = runPsql(
@@ -550,6 +615,9 @@ function scanTargetState(
 		{ tuplesOnly: true, throwOnError: false },
 	);
 	const existingEvent = eventResult.stdout.trim() ? parsePsqlJson(eventResult.stdout) : null;
+	if (existingInv && existingEvent && existingEvent.owner_user_id !== ownerUserId) {
+		throw new Error(`Target event owner does not match the invitation owner for "${slug}".`);
+	}
 
 	let existingMember: Record<string, unknown> | null = null;
 	if (existingEvent?.id) {
@@ -573,7 +641,9 @@ function scanTargetState(
 }
 
 function verifyPostPublication(pubQuery: string, targetDbUrl: string, route: string): number {
-	const verifyPubResult = runPsql(pubQuery, targetDbUrl, { tuplesOnly: true });
+	const verifyPubResult = runPsql(`select row_to_json(t) from (${pubQuery}) t;`, targetDbUrl, {
+		tuplesOnly: true,
+	});
 	if (!verifyPubResult.stdout.trim())
 		throw new Error(
 			`Post-publication verification failed: route "${route}" not found in target DB.`,
@@ -595,22 +665,27 @@ function analyzeTargetDrift(
 	targetStorageUrl: string,
 	targetDbUrl: string,
 	ownerUserId: string,
-	allowDivergentOverwrite: boolean,
 	assetRefs: UploadedAssetMap,
+	existingInvitation: Record<string, unknown> | null,
 ) {
 	const slug = pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
-	const scanned = scanTargetState(targetDbUrl, slug, eventType, ownerUserId);
-	const targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<string, unknown>;
-	const targetPublishedContent = materializeAssetReferences(pkg.publishedContent?.content ?? pkg.draft.content, assetRefs) as Record<string, unknown>;
+	const scanned = scanTargetState(targetDbUrl, slug, eventType, ownerUserId, existingInvitation);
+	const targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
+		string,
+		unknown
+	>;
+	const targetPublishedContent = materializeAssetReferences(
+		pkg.publishedContent?.content ?? pkg.draft.content,
+		assetRefs,
+	) as Record<string, unknown>;
 
 	checkTargetDivergenceConflict(
 		slug,
 		targetDraftContent,
 		scanned.existingDraft,
 		scanned.existingPub,
-		allowDivergentOverwrite,
 	);
 
 	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
@@ -656,10 +731,33 @@ function analyzeTargetDrift(
 	};
 }
 
-function resolveTargetAssetRefs(pkg: InvitationPackageData, targetDbUrl: string, invitationId: string, targetStorageUrl: string): UploadedAssetMap {
-	const result = runPsql(`select id, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null;`, targetDbUrl, { tuplesOnly: true, throwOnError: false });
-	const existing = new Map(parsePsqlJsonArray(result.stdout).map((row) => [row.storage_path as string, row.id as string]));
-	return Object.fromEntries(pkg.assets.map((asset) => [asset.key, { type: 'uploaded' as const, assetId: existing.get(asset.storagePath) ?? randomUUID(), src: `${targetStorageUrl}/${asset.storagePath}` }]));
+function resolveTargetAssetRefs(
+	pkg: InvitationPackageData,
+	targetDbUrl: string,
+	invitationId: string,
+	targetStorageUrl: string,
+): UploadedAssetMap {
+	const result = runPsql(
+		`select json_agg(t) from (select id, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null) t;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	const existing = new Map(
+		parsePsqlJsonArray(result.stdout).map((row) => [
+			row.storage_path as string,
+			row.id as string,
+		]),
+	);
+	return Object.fromEntries(
+		pkg.assets.map((asset) => [
+			asset.key,
+			{
+				type: 'uploaded' as const,
+				assetId: existing.get(asset.storagePath) ?? randomUUID(),
+				src: `${targetStorageUrl}/${asset.storagePath}`,
+			},
+		]),
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -678,25 +776,44 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	if (Boolean(packagePath) === Boolean(options.packageData)) {
 		throw new Error('Provide exactly one of packagePath or packageData.');
 	}
-	const pkg = packagePath ? validatePackage(packagePath) : validatePackageData(options.packageData!);
+	const pkg = packagePath
+		? validatePackage(packagePath)
+		: validatePackageData(options.packageData!);
 	const targetSupabaseUrl = options.targetSupabaseUrl ?? deriveSupabaseUrlFromDbUrl(targetDbUrl);
 	const { targetClassification, projectRef } = validateTargetClassification(
 		expectedTarget,
 		targetDbUrl,
 		targetSupabaseUrl,
 	);
-	const ownerUserId = resolveOwner(expectedTarget, explicitOwnerId, targetDbUrl);
+	const identity = resolveTargetIdentity(
+		expectedTarget,
+		pkg.invitation.slug,
+		explicitOwnerId,
+		targetDbUrl,
+	);
+	const ownerUserId = identity.ownerUserId;
 	const targetStorageUrl = buildStorageUrl(targetSupabaseUrl);
 
-	const initialScan = scanTargetState(targetDbUrl, pkg.invitation.slug, pkg.invitation.eventType, ownerUserId);
-	const assetRefs = resolveTargetAssetRefs(pkg, targetDbUrl, initialScan.targetInvitationId, targetStorageUrl);
+	const initialScan = scanTargetState(
+		targetDbUrl,
+		pkg.invitation.slug,
+		pkg.invitation.eventType,
+		ownerUserId,
+		identity.existingInvitation,
+	);
+	const assetRefs = resolveTargetAssetRefs(
+		pkg,
+		targetDbUrl,
+		initialScan.targetInvitationId,
+		targetStorageUrl,
+	);
 	const drift = analyzeTargetDrift(
 		pkg,
 		targetStorageUrl,
 		targetDbUrl,
 		ownerUserId,
-		options.allowDivergentOverwrite ?? false,
 		assetRefs,
+		identity.existingInvitation,
 	);
 	const { assetsToUpload, assetsToUpsertDbOnly, assetActions, verifiedAssetHashes } =
 		await scanAssetStatus(pkg.assets, targetStorageUrl, targetDbUrl, drift.targetInvitationId);
@@ -748,15 +865,43 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
 	const trackedResources: TrackedResource[] = [];
-	if (drift.existingInv) trackedResources.push({ type: 'invitation', id: drift.targetInvitationId, isPreExisting: true });
-	if (drift.existingEvent) trackedResources.push({ type: 'event', id: drift.existingEvent.id as string, isPreExisting: true });
-	if (drift.existingDraft) trackedResources.push({ type: 'invitation_content_draft', id: drift.existingDraft.id as string, isPreExisting: true });
-	if (!drift.existingInv) trackedResources.push({ type: 'invitation', id: drift.targetInvitationId, isPreExisting: false });
+	if (drift.existingInv)
+		trackedResources.push({
+			type: 'invitation',
+			id: drift.targetInvitationId,
+			isPreExisting: true,
+		});
+	if (drift.existingEvent)
+		trackedResources.push({
+			type: 'event',
+			id: drift.existingEvent.id as string,
+			isPreExisting: true,
+		});
+	if (drift.existingDraft)
+		trackedResources.push({
+			type: 'invitation_content_draft',
+			id: drift.existingDraft.id as string,
+			isPreExisting: true,
+		});
+	if (!drift.existingInv)
+		trackedResources.push({
+			type: 'invitation',
+			id: drift.targetInvitationId,
+			isPreExisting: false,
+		});
 	for (const asset of assetsToUpload) {
-		trackedResources.push({ type: 'storage_object', id: asset.storagePath, isPreExisting: false });
+		trackedResources.push({
+			type: 'storage_object',
+			id: asset.storagePath,
+			isPreExisting: false,
+		});
 		const ref = assetRefs[asset.key];
 		if (ref?.assetId) {
-			trackedResources.push({ type: 'invitation_asset', id: ref.assetId, isPreExisting: false });
+			trackedResources.push({
+				type: 'invitation_asset',
+				id: ref.assetId,
+				isPreExisting: false,
+			});
 		}
 	}
 
@@ -820,8 +965,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			targetStorageUrl,
 			targetDbUrl,
 			ownerUserId,
-			false,
 			finalAssetRefs,
+			identity.existingInvitation,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,
@@ -837,12 +982,16 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			finalAssets.assetsToUpload.length > 0 ||
 			finalAssets.assetsToUpsertDbOnly.length > 0
 		) {
-			throw new Error('Final target verification failed; managed-release provenance was not recorded.');
+			throw new Error(
+				'Final target verification failed; managed-release provenance was not recorded.',
+			);
 		}
 		// managed_invitation_release_provenance.projection_hash has a check constraint requiring
 		// 64-char SHA-256 hex. The package carries an MD5 projectionHash (32 chars) for the
 		// publish_invitation_atomic RPC. Derive the provenance value by SHA-256 hashing the MD5.
-		const provenanceProjectionHash = createHash('sha256').update(pkg.projectionHash).digest('hex');
+		const provenanceProjectionHash = createHash('sha256')
+			.update(pkg.projectionHash)
+			.digest('hex');
 		runPsql(
 			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,

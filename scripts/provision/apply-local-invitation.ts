@@ -21,22 +21,23 @@ import {
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
-import { buildNormalizedInvitationRelease, canonicalize, materializeAssetReferences } from './normalized-invitation-release.ts';
+import {
+	buildNormalizedInvitationRelease,
+	canonicalize,
+	materializeAssetReferences,
+} from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
-import type {
-	UploadedAssetMap,
-} from './invitations/invitation-definition.ts';
+import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 
 const BUCKET = 'invitation-assets';
 
-export interface ApplyLocalOptions {
+interface ApplyLocalOptions {
 	slug: string;
 	sourceDir?: string;
 	ownerUserId?: string;
 	apply?: boolean;
-	allowDivergentOverwrite?: boolean;
 	projectRoot?: string;
 }
 
@@ -55,6 +56,7 @@ export interface LocalApplyResult {
 	databaseDeletes: number;
 	storageUploads: number;
 	storageOverwrites: number;
+	storageMoves: number;
 	storageDeletes: number;
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
 }
@@ -63,7 +65,7 @@ export interface LocalApplyResult {
 // Owner Resolution
 // ---------------------------------------------------------------------------
 
-export async function resolveLocalOwner(
+async function resolveLocalOwner(
 	supabase: SupabaseClient,
 	explicitOwnerId?: string,
 ): Promise<string> {
@@ -78,7 +80,9 @@ export async function resolveLocalOwner(
 			.eq('user_id', explicitOwnerId)
 			.maybeSingle();
 		if (data?.user_id) return data.user_id as string;
-		throw new Error(`Explicit local owner UUID "${explicitOwnerId}" does not have an eligible role.`);
+		throw new Error(
+			`Explicit local owner UUID "${explicitOwnerId}" does not have an eligible role.`,
+		);
 	}
 
 	const { data: adminRole } = await supabase
@@ -134,7 +138,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	// Check existing invitation
 	const { data: existingInv } = await supabase
 		.from('invitations')
-		.select('id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by')
+		.select(
+			'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
+		)
 		.eq('slug', slug)
 		.is('archived_at', null)
 		.maybeSingle();
@@ -164,16 +170,25 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.is('deleted_at', null)
 		.maybeSingle();
 	const { data: existingMembership } = existingEvent?.id
-		? await supabase.from('event_memberships').select('membership_role').eq('event_id', existingEvent.id).eq('user_id', ownerUserId).is('deleted_at', null).maybeSingle()
+		? await supabase
+				.from('event_memberships')
+				.select('membership_role')
+				.eq('event_id', existingEvent.id)
+				.eq('user_id', ownerUserId)
+				.is('deleted_at', null)
+				.maybeSingle()
 		: { data: null };
 
 	// Build asset map with uploaded references
 	const assetMap = {} as UploadedAssetMap;
-	const assetActions: Array<{ resource: string; name: string; action: string; detail: string }> = [];
+	const assetActions: Array<{ resource: string; name: string; action: string; detail: string }> =
+		[];
 
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
-		.select('id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size')
+		.select(
+			'id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size',
+		)
 		.eq('invitation_id', invitationId)
 		.is('deleted_at', null);
 
@@ -191,8 +206,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	);
 
 	for (const norm of normalizedPhotos) {
-		const existingAsset = existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) || existingAssetsByDisplayName.get(norm.displayName);
-		const storagePath = (existingAsset?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
+		const existingAsset =
+			existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) ||
+			existingAssetsByDisplayName.get(norm.displayName);
+		const storagePath =
+			(existingAsset?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
 		const assetId = (existingAsset?.id as string) || randomUUID();
 		const publicUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
@@ -205,7 +223,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		let storageHash: string | null = null;
 		try {
 			const response = await fetch(publicUrl);
-			if (response.ok) storageHash = createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex');
+			if (response.ok)
+				storageHash = createHash('sha256')
+					.update(new Uint8Array(await response.arrayBuffer()))
+					.digest('hex');
 		} catch {
 			// Missing or unreadable storage is drift and will be repaired on apply.
 		}
@@ -238,7 +259,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		}
 	}
 
-	const proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<string, unknown>;
+	const proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<
+		string,
+		unknown
+	>;
 	const isInvitationIdentical = Boolean(
 		existingInv &&
 		existingInv.title === definition.title &&
@@ -267,9 +291,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	checkTargetDivergenceConflict(
 		slug,
 		proposedContent,
-		existingDraft ? { status: existingDraft.status as string, content: existingDraft.content as Record<string, unknown>, updated_at: existingDraft.updated_at as string } : null,
+		existingDraft
+			? {
+					status: existingDraft.status as string,
+					content: existingDraft.content as Record<string, unknown>,
+					updated_at: existingDraft.updated_at as string,
+				}
+			: null,
 		existingPub ? { content: existingPub.content as Record<string, unknown> } : null,
-		options.allowDivergentOverwrite ?? false,
 	);
 
 	const isDraftContentIdentical =
@@ -284,7 +313,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			action: !existingInv ? 'create' : isInvitationIdentical ? 'reuse' : 'replace',
 			detail: !existingInv
 				? `Create invitation record (${invitationId})`
-				: isInvitationIdentical ? `Invitation record up-to-date (${invitationId})` : 'Reconcile invitation metadata and owner',
+				: isInvitationIdentical
+					? `Invitation record up-to-date (${invitationId})`
+					: 'Reconcile invitation metadata and owner',
 		},
 		...assetActions,
 		{
@@ -298,12 +329,24 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					: 'Update content draft',
 		},
 		{
-			resource: 'events', name: slug, action: !existingEvent ? 'create' : isEventIdentical ? 'reuse' : 'replace',
-			detail: !existingEvent ? 'Create event ownership record' : isEventIdentical ? 'Event ownership up-to-date' : 'Reconcile event ownership and publication identity',
+			resource: 'events',
+			name: slug,
+			action: !existingEvent ? 'create' : isEventIdentical ? 'reuse' : 'replace',
+			detail: !existingEvent
+				? 'Create event ownership record'
+				: isEventIdentical
+					? 'Event ownership up-to-date'
+					: 'Reconcile event ownership and publication identity',
 		},
 		{
-			resource: 'event_memberships', name: `${slug}-owner`, action: !existingMembership ? 'create' : isMembershipIdentical ? 'reuse' : 'replace',
-			detail: !existingMembership ? 'Create owner membership' : isMembershipIdentical ? 'Owner membership up-to-date' : 'Restore owner membership role',
+			resource: 'event_memberships',
+			name: `${slug}-owner`,
+			action: !existingMembership ? 'create' : isMembershipIdentical ? 'reuse' : 'replace',
+			detail: !existingMembership
+				? 'Create owner membership'
+				: isMembershipIdentical
+					? 'Owner membership up-to-date'
+					: 'Restore owner membership role',
 		},
 		{
 			resource: 'published_invitation_content',
@@ -322,7 +365,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	).length;
 	const isZeroDrift = plannedOperations === 0;
 	const currentVersion = (existingPub?.version as number) || 1;
-	const targetVersion = isPubContentIdentical ? currentVersion : existingPub ? currentVersion + 1 : 1;
+	const targetVersion = isPubContentIdentical
+		? currentVersion
+		: existingPub
+			? currentVersion + 1
+			: 1;
 
 	// Calculate estimated DB and Storage metrics for dry-run / reporting
 	const estInserts =
@@ -331,8 +378,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(!existingDraft ? 1 : 0) +
 		(!isPubContentIdentical || !existingPub ? 1 : 0) +
 		(!existingEvent ? 1 : 0) +
-		(!existingMembership ? 1 : 0) +
-		(plannedOperations > 0 ? 1 : 0);
+		(!existingMembership ? 1 : 0);
 	const estUpdates =
 		(existingInv && !isInvitationIdentical ? 1 : 0) +
 		assetActions.filter((a) => a.action === 'replace').length +
@@ -358,6 +404,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			databaseDeletes: 0,
 			storageUploads: estUploads,
 			storageOverwrites: estOverwrites,
+			storageMoves: 0,
 			storageDeletes: 0,
 			actions,
 		};
@@ -365,17 +412,36 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	// ── APPLY MUTATIONS ──────────────────────────────────────────────────
 	const trackedResources: TrackedResource[] = [];
-	if (existingInv) trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: true });
-	if (existingEvent) trackedResources.push({ type: 'event', id: existingEvent.id as string, isPreExisting: true });
-	if (existingMembership) trackedResources.push({ type: 'event_membership', id: `${existingEvent?.id as string}:${ownerUserId}`, isPreExisting: true });
-	if (existingDraft) trackedResources.push({ type: 'invitation_content_draft', id: existingDraft.id as string, isPreExisting: true });
+	if (existingInv)
+		trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: true });
+	if (existingEvent)
+		trackedResources.push({
+			type: 'event',
+			id: existingEvent.id as string,
+			isPreExisting: true,
+		});
+	if (existingMembership)
+		trackedResources.push({
+			type: 'event_membership',
+			id: `${existingEvent?.id as string}:${ownerUserId}`,
+			isPreExisting: true,
+		});
+	if (existingDraft)
+		trackedResources.push({
+			type: 'invitation_content_draft',
+			id: existingDraft.id as string,
+			isPreExisting: true,
+		});
 	for (const [pathKey, assetRow] of existingAssetsByPath.entries()) {
-		trackedResources.push({ type: 'invitation_asset', id: assetRow.id as string, isPreExisting: true });
+		trackedResources.push({
+			type: 'invitation_asset',
+			id: assetRow.id as string,
+			isPreExisting: true,
+		});
 		trackedResources.push({ type: 'storage_object', id: pathKey, isPreExisting: true });
 	}
 
 	try {
-
 		// 1. Ensure Invitation Record
 		const invMetadata = {
 			title: definition.title,
@@ -394,7 +460,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 		if (existingInv && !isInvitationIdentical) {
 			// Already flagged as isPreExisting at line 387 — no tracking push needed.
-			const { error } = await supabase.from('invitations').update(invMetadata).eq('id', invitationId);
+			const { error } = await supabase
+				.from('invitations')
+				.update(invMetadata)
+				.eq('id', invitationId);
 			if (error) throw error;
 		} else if (!existingInv) {
 			const { error } = await supabase
@@ -404,272 +473,401 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
 		}
 
-	// 2. Storage Uploads & Metadata Upserts
-	for (const norm of normalizedPhotos) {
-		const assetRef = assetMap[norm.key];
-		const existing = existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) || existingAssetsByDisplayName.get(norm.displayName);
-		const storagePath = (existing?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
-		let storageHash: string | null = null;
-		try {
-			const response = await fetch(assetRef.src);
-			if (response.ok) storageHash = createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex');
-		} catch {
-			// Missing or unreadable storage is drift and will be repaired below.
-		}
-		const isIdentical =
-			existing &&
-			storageHash === norm.imageHash &&
-			existing.default_alt_text === norm.alt &&
-			existing.mime_type === norm.mimeType &&
-			Number(existing.file_size) === norm.fileSize &&
-			Number(existing.width) === norm.width &&
-			Number(existing.height) === norm.height &&
-			Number(existing.validation_version) === norm.validationVersion &&
-			existing.original_mime_type === norm.originalMimeType &&
-			Number(existing.original_file_size) === norm.originalFileSize;
+		// 2. Storage Uploads & Metadata Upserts
+		for (const norm of normalizedPhotos) {
+			const assetRef = assetMap[norm.key];
+			const existing =
+				existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) ||
+				existingAssetsByDisplayName.get(norm.displayName);
+			const storagePath =
+				(existing?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
+			let storageHash: string | null = null;
+			try {
+				const response = await fetch(assetRef.src);
+				if (response.ok)
+					storageHash = createHash('sha256')
+						.update(new Uint8Array(await response.arrayBuffer()))
+						.digest('hex');
+			} catch {
+				// Missing or unreadable storage is drift and will be repaired below.
+			}
+			const isIdentical =
+				existing &&
+				storageHash === norm.imageHash &&
+				existing.default_alt_text === norm.alt &&
+				existing.mime_type === norm.mimeType &&
+				Number(existing.file_size) === norm.fileSize &&
+				Number(existing.width) === norm.width &&
+				Number(existing.height) === norm.height &&
+				Number(existing.validation_version) === norm.validationVersion &&
+				existing.original_mime_type === norm.originalMimeType &&
+				Number(existing.original_file_size) === norm.originalFileSize;
 
-		if (!isIdentical) {
-			const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, norm.bytes, {
-				contentType: norm.mimeType,
-				upsert: true,
-			});
-			if (uploadError) throw uploadError;
-			if (!existing) trackedResources.push({ type: 'storage_object', id: storagePath, isPreExisting: false });
+			if (!isIdentical) {
+				const { error: uploadError } = await supabase.storage
+					.from(BUCKET)
+					.upload(storagePath, norm.bytes, {
+						contentType: norm.mimeType,
+						upsert: true,
+					});
+				if (uploadError) throw uploadError;
+				if (!existing)
+					trackedResources.push({
+						type: 'storage_object',
+						id: storagePath,
+						isPreExisting: false,
+					});
 
-			const assetMetadata = {
-				invitation_id: invitationId,
-				display_name: norm.displayName,
-				default_alt_text: norm.alt,
-				bucket: BUCKET,
-				storage_path: storagePath,
-				mime_type: norm.mimeType,
-				width: norm.width,
-				height: norm.height,
-				file_size: norm.fileSize,
-				validation_version: norm.validationVersion,
-				original_mime_type: norm.originalMimeType,
-				original_file_size: norm.originalFileSize,
-			};
+				const assetMetadata = {
+					invitation_id: invitationId,
+					display_name: norm.displayName,
+					default_alt_text: norm.alt,
+					bucket: BUCKET,
+					storage_path: storagePath,
+					mime_type: norm.mimeType,
+					width: norm.width,
+					height: norm.height,
+					file_size: norm.fileSize,
+					validation_version: norm.validationVersion,
+					original_mime_type: norm.originalMimeType,
+					original_file_size: norm.originalFileSize,
+				};
 
-			if (existing) {
-				const { error } = await supabase
-					.from('invitation_assets')
-					.update(assetMetadata)
-					.eq('id', assetRef.assetId);
-				if (error) throw error;
-			} else {
-				const { error } = await supabase
-					.from('invitation_assets')
-					.insert({ id: assetRef.assetId, ...assetMetadata });
-				if (error) throw error;
-				trackedResources.push({ type: 'invitation_asset', id: assetRef.assetId, isPreExisting: false });
+				if (existing) {
+					const { error } = await supabase
+						.from('invitation_assets')
+						.update(assetMetadata)
+						.eq('id', assetRef.assetId);
+					if (error) throw error;
+				} else {
+					const { error } = await supabase
+						.from('invitation_assets')
+						.insert({ id: assetRef.assetId, ...assetMetadata });
+					if (error) throw error;
+					trackedResources.push({
+						type: 'invitation_asset',
+						id: assetRef.assetId,
+						isPreExisting: false,
+					});
+				}
 			}
 		}
-	}
 
-	// 3. Upsert Draft
-	let draftId = existingDraft?.id as string | undefined;
-	let draftUpdatedAt = existingDraft?.updated_at as string | undefined;
+		// 3. Upsert Draft
+		let draftId = existingDraft?.id as string | undefined;
+		let draftUpdatedAt = existingDraft?.updated_at as string | undefined;
 
-	if (!isDraftContentIdentical || !existingDraft) {
-		if (existingDraft) {
-			const { data, error } = await supabase
-				.from('invitation_content_drafts')
-				.update({ content: proposedContent, status: 'draft', submission_id: null })
-				.eq('id', existingDraft.id)
-				.select('id, updated_at')
-				.single();
-			if (error) throw error;
-			draftId = data.id as string;
-			draftUpdatedAt = data.updated_at as string;
-		} else {
-			const newId = randomUUID();
-			const { data, error } = await supabase
-				.from('invitation_content_drafts')
-				.insert({
+		if (!isDraftContentIdentical || !existingDraft) {
+			if (existingDraft) {
+				const { data, error } = await supabase
+					.from('invitation_content_drafts')
+					.update({ content: proposedContent, status: 'draft', submission_id: null })
+					.eq('id', existingDraft.id)
+					.select('id, updated_at')
+					.single();
+				if (error) throw error;
+				draftId = data.id as string;
+				draftUpdatedAt = data.updated_at as string;
+			} else {
+				const newId = randomUUID();
+				const { data, error } = await supabase
+					.from('invitation_content_drafts')
+					.insert({
+						id: newId,
+						invitation_project_id: invitationId,
+						submission_id: null,
+						content: proposedContent,
+						status: 'draft',
+					})
+					.select('id, updated_at')
+					.single();
+				if (error) throw error;
+				draftId = data.id as string;
+				draftUpdatedAt = data.updated_at as string;
+				trackedResources.push({
+					type: 'invitation_content_draft',
 					id: newId,
-					invitation_project_id: invitationId,
-					submission_id: null,
-					content: proposedContent,
-					status: 'draft',
-				})
-				.select('id, updated_at')
+					isPreExisting: false,
+				});
+			}
+		}
+
+		// 4. Publish via atomic RPC if published content changed
+		let finalVersion = currentVersion;
+		if (!isPubContentIdentical || !existingPub) {
+			const { data: pubBaseline } = await supabase
+				.from('invitations')
+				.select(
+					'slug, title, event_type, base_demo_id, theme_id, kind, snapshot, status, archived_at',
+				)
+				.eq('id', invitationId)
 				.single();
-			if (error) throw error;
-			draftId = data.id as string;
-			draftUpdatedAt = data.updated_at as string;
-			trackedResources.push({ type: 'invitation_content_draft', id: newId, isPreExisting: false });
+
+			const publicMetaHash = hashPublicMetadata(
+				{
+					slug: pubBaseline!.slug as string,
+					title: pubBaseline!.title as string,
+					eventType: pubBaseline!.event_type as string,
+					baseDemoId: pubBaseline!.base_demo_id as string,
+					themeId: pubBaseline!.theme_id as string,
+					kind: pubBaseline!.kind as string,
+					snapshot: pubBaseline!.snapshot,
+					status: pubBaseline!.status as string,
+					archivedAt: (pubBaseline!.archived_at as string) ?? null,
+				},
+				existingPub?.content as Record<string, unknown> | undefined,
+			);
+
+			const projectionHash = hashPublicationProjection(proposedContent);
+
+			const { data: pubResult, error: pubError } = await supabase.rpc(
+				'publish_invitation_atomic',
+				{
+					p_invitation_id: invitationId,
+					p_draft_id: draftId!,
+					p_expected_draft_updated_at: draftUpdatedAt!,
+					p_expected_published_version: existingPub
+						? (existingPub.version as number)
+						: null,
+					p_public_metadata_hash: publicMetaHash,
+					p_projection_hash: projectionHash,
+					p_idempotency_key: randomUUID(),
+					p_slug: slug,
+					p_event_type: definition.eventType,
+					p_is_demo: false,
+					p_content: proposedContent,
+				},
+			);
+
+			if (pubError) throw pubError;
+			finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
 		}
-	}
 
-	// 4. Publish via atomic RPC if published content changed
-	let finalVersion = currentVersion;
-	if (!isPubContentIdentical || !existingPub) {
-		const { data: pubBaseline } = await supabase
-			.from('invitations')
-			.select('slug, title, event_type, base_demo_id, theme_id, kind, snapshot, status, archived_at')
-			.eq('id', invitationId)
-			.single();
+		// 5. Upsert Event and Membership
+		let eventId = existingEvent?.id as string | undefined;
+		if (!eventId) {
+			eventId = randomUUID();
+			const { error: eventError } = await supabase.from('events').insert({
+				id: eventId,
+				owner_user_id: ownerUserId,
+				slug,
+				event_type: definition.eventType,
+				title: definition.title,
+				status: 'published',
+				invitation_project_id: invitationId,
+			});
+			if (eventError) throw eventError;
+			trackedResources.push({ type: 'event', id: eventId, isPreExisting: false });
+		} else if (!isEventIdentical) {
+			const { error: eventError } = await supabase
+				.from('events')
+				.update({
+					owner_user_id: ownerUserId,
+					event_type: definition.eventType,
+					title: definition.title,
+					status: 'published',
+					invitation_project_id: invitationId,
+				})
+				.eq('id', eventId);
+			if (eventError) throw eventError;
+		}
 
-		const publicMetaHash = hashPublicMetadata(
-			{
-				slug: pubBaseline!.slug as string,
-				title: pubBaseline!.title as string,
-				eventType: pubBaseline!.event_type as string,
-				baseDemoId: pubBaseline!.base_demo_id as string,
-				themeId: pubBaseline!.theme_id as string,
-				kind: pubBaseline!.kind as string,
-				snapshot: pubBaseline!.snapshot,
-				status: pubBaseline!.status as string,
-				archivedAt: (pubBaseline!.archived_at as string) ?? null,
-			},
-			existingPub?.content as Record<string, unknown> | undefined,
-		);
+		if (!existingMembership) {
+			const { error: membershipError } = await supabase
+				.from('event_memberships')
+				.insert({ event_id: eventId, user_id: ownerUserId, membership_role: 'owner' });
+			if (membershipError) throw membershipError;
+			trackedResources.push({
+				type: 'event_membership',
+				id: `${eventId}:${ownerUserId}`,
+				isPreExisting: false,
+			});
+		} else if (!isMembershipIdentical) {
+			const { error: membershipError } = await supabase
+				.from('event_memberships')
+				.update({ membership_role: 'owner', deleted_at: null })
+				.eq('event_id', eventId)
+				.eq('user_id', ownerUserId);
+			if (membershipError) throw membershipError;
+		}
 
-		const projectionHash = hashPublicationProjection(proposedContent);
-
-		const { data: pubResult, error: pubError } = await supabase.rpc('publish_invitation_atomic', {
-			p_invitation_id: invitationId,
-			p_draft_id: draftId!,
-			p_expected_draft_updated_at: draftUpdatedAt!,
-			p_expected_published_version: existingPub ? (existingPub.version as number) : null,
-			p_public_metadata_hash: publicMetaHash,
-			p_projection_hash: projectionHash,
-			p_idempotency_key: randomUUID(),
-			p_slug: slug,
-			p_event_type: definition.eventType,
-			p_is_demo: false,
-			p_content: proposedContent,
-		});
-
-		if (pubError) throw pubError;
-		finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
-	}
-
-	// 5. Upsert Event and Membership
-	let eventId = existingEvent?.id as string | undefined;
-	if (!eventId) {
-		eventId = randomUUID();
-		const { error: eventError } = await supabase.from('events').insert({
-			id: eventId,
-			owner_user_id: ownerUserId,
-			slug,
-			event_type: definition.eventType,
-			title: definition.title,
-			status: 'published',
-			invitation_project_id: invitationId,
-		});
-		if (eventError) throw eventError;
-		trackedResources.push({ type: 'event', id: eventId, isPreExisting: false });
-	} else if (!isEventIdentical) {
-		const { error: eventError } = await supabase
-			.from('events')
-			.update({ owner_user_id: ownerUserId, event_type: definition.eventType, title: definition.title, status: 'published', invitation_project_id: invitationId })
-			.eq('id', eventId);
-		if (eventError) throw eventError;
-	}
-
-	if (!existingMembership) {
-		const { error: membershipError } = await supabase.from('event_memberships').insert({ event_id: eventId, user_id: ownerUserId, membership_role: 'owner' });
-		if (membershipError) throw membershipError;
-		trackedResources.push({ type: 'event_membership', id: `${eventId}:${ownerUserId}`, isPreExisting: false });
-	} else if (!isMembershipIdentical) {
-		const { error: membershipError } = await supabase.from('event_memberships').update({ membership_role: 'owner', deleted_at: null }).eq('event_id', eventId).eq('user_id', ownerUserId);
-		if (membershipError) throw membershipError;
-	}
-
-	const [finalInvitation, finalDraft, finalPublication, finalAssets, finalEvent, finalMembership] =
-		await Promise.all([
-			supabase.from('invitations').select('title, event_type, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by').eq('id', invitationId).single(),
-			supabase.from('invitation_content_drafts').select('content').eq('invitation_project_id', invitationId).is('deleted_at', null).maybeSingle(),
-			supabase.from('published_invitation_content').select('content').eq('invitation_project_id', invitationId).is('deleted_at', null).order('version', { ascending: false }).limit(1).maybeSingle(),
-			supabase.from('invitation_assets').select('display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size').eq('invitation_id', invitationId).is('deleted_at', null),
-			supabase.from('events').select('id, owner_user_id, event_type, title, status, invitation_project_id').eq('slug', slug).is('deleted_at', null).maybeSingle(),
-			supabase.from('event_memberships').select('membership_role').eq('event_id', eventId).eq('user_id', ownerUserId).is('deleted_at', null).maybeSingle(),
+		const [
+			finalInvitation,
+			finalDraft,
+			finalPublication,
+			finalAssets,
+			finalEvent,
+			finalMembership,
+		] = await Promise.all([
+			supabase
+				.from('invitations')
+				.select(
+					'title, event_type, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by',
+				)
+				.eq('id', invitationId)
+				.single(),
+			supabase
+				.from('invitation_content_drafts')
+				.select('content')
+				.eq('invitation_project_id', invitationId)
+				.is('deleted_at', null)
+				.maybeSingle(),
+			supabase
+				.from('published_invitation_content')
+				.select('content')
+				.eq('invitation_project_id', invitationId)
+				.is('deleted_at', null)
+				.order('version', { ascending: false })
+				.limit(1)
+				.maybeSingle(),
+			supabase
+				.from('invitation_assets')
+				.select(
+					'display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size',
+				)
+				.eq('invitation_id', invitationId)
+				.is('deleted_at', null),
+			supabase
+				.from('events')
+				.select('id, owner_user_id, event_type, title, status, invitation_project_id')
+				.eq('slug', slug)
+				.is('deleted_at', null)
+				.maybeSingle(),
+			supabase
+				.from('event_memberships')
+				.select('membership_role')
+				.eq('event_id', eventId)
+				.eq('user_id', ownerUserId)
+				.is('deleted_at', null)
+				.maybeSingle(),
 		]);
-	if (finalInvitation.error || finalDraft.error || finalPublication.error || finalAssets.error || finalEvent.error || finalMembership.error) {
-		throw new Error('Final Local verification query failed; managed-release provenance was not recorded.');
-	}
-	const finalInvitationRow = finalInvitation.data as Record<string, unknown> | null;
-	const finalAssetsByPath = new Map(
-		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [a.storage_path as string, a]),
-	);
-	const finalAssetsByDisplayName = new Map(
-		((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [a.display_name as string, a]),
-	);
-	const assetsVerified = await Promise.all(normalizedPhotos.map(async (asset) => {
-		// Prefer the managed canonical path, fall back to existing row matched by display_name (e.g. pre-existing invitations/<uuid>/optimized/<id>.webp).
-		const managedPath = `managed/${slug}/${asset.key}.webp`;
-		const row = finalAssetsByPath.get(managedPath) || finalAssetsByDisplayName.get(asset.displayName);
-		const actualPath = (row?.storage_path as string) || managedPath;
-		if (!row || row.display_name !== asset.displayName || row.default_alt_text !== asset.alt || row.mime_type !== asset.mimeType || Number(row.file_size) !== asset.fileSize || Number(row.width) !== asset.width || Number(row.height) !== asset.height || Number(row.validation_version) !== asset.validationVersion || row.original_mime_type !== asset.originalMimeType || Number(row.original_file_size) !== asset.originalFileSize) return false;
-		try {
-			const response = await fetch(`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${actualPath}`);
-			return response.ok && createHash('sha256').update(new Uint8Array(await response.arrayBuffer())).digest('hex') === asset.imageHash;
-		} catch {
-			return false;
+		if (
+			finalInvitation.error ||
+			finalDraft.error ||
+			finalPublication.error ||
+			finalAssets.error ||
+			finalEvent.error ||
+			finalMembership.error
+		) {
+			throw new Error(
+				'Final Local verification query failed; managed-release provenance was not recorded.',
+			);
 		}
-	}));
-	const finalEventRow = finalEvent.data as Record<string, unknown> | null;
-	const verified = Boolean(
-		finalInvitationRow &&
-		finalInvitationRow.title === definition.title &&
-		finalInvitationRow.event_type === definition.eventType &&
-		finalInvitationRow.base_demo_id === definition.baseDemoId &&
-		finalInvitationRow.theme_id === definition.themeId &&
-		finalInvitationRow.kind === 'client' &&
-		finalInvitationRow.client_name === definition.clientName &&
-		finalInvitationRow.client_email === (definition.clientEmail ?? '') &&
-		finalInvitationRow.client_whatsapp === (definition.clientWhatsapp ?? '') &&
-		finalInvitationRow.photos_received === (definition.photosReceived ?? true) &&
-		finalInvitationRow.created_by === ownerUserId &&
-		canonicalize(finalDraft.data?.content) === canonicalize(proposedContent) &&
-		canonicalize(finalPublication.data?.content) === canonicalize(proposedContent) &&
-		finalEventRow?.owner_user_id === ownerUserId &&
-		finalEventRow.event_type === definition.eventType &&
-		finalEventRow.title === definition.title &&
-		finalEventRow.status === 'published' &&
-		finalEventRow.invitation_project_id === invitationId &&
-		finalMembership.data?.membership_role === 'owner' &&
-		assetsVerified.every(Boolean),
-	);
-	if (!verified) throw new Error('Final Local verification failed; managed-release provenance was not recorded.');
+		const finalInvitationRow = finalInvitation.data as Record<string, unknown> | null;
+		const finalAssetsByPath = new Map(
+			((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [
+				a.storage_path as string,
+				a,
+			]),
+		);
+		const finalAssetsByDisplayName = new Map(
+			((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [
+				a.display_name as string,
+				a,
+			]),
+		);
+		const assetsVerified = await Promise.all(
+			normalizedPhotos.map(async (asset) => {
+				// Prefer the managed canonical path, fall back to existing row matched by display_name (e.g. pre-existing invitations/<uuid>/optimized/<id>.webp).
+				const managedPath = `managed/${slug}/${asset.key}.webp`;
+				const row =
+					finalAssetsByPath.get(managedPath) ||
+					finalAssetsByDisplayName.get(asset.displayName);
+				const actualPath = (row?.storage_path as string) || managedPath;
+				if (
+					!row ||
+					row.display_name !== asset.displayName ||
+					row.default_alt_text !== asset.alt ||
+					row.mime_type !== asset.mimeType ||
+					Number(row.file_size) !== asset.fileSize ||
+					Number(row.width) !== asset.width ||
+					Number(row.height) !== asset.height ||
+					Number(row.validation_version) !== asset.validationVersion ||
+					row.original_mime_type !== asset.originalMimeType ||
+					Number(row.original_file_size) !== asset.originalFileSize
+				)
+					return false;
+				try {
+					const response = await fetch(
+						`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${actualPath}`,
+					);
+					return (
+						response.ok &&
+						createHash('sha256')
+							.update(new Uint8Array(await response.arrayBuffer()))
+							.digest('hex') === asset.imageHash
+					);
+				} catch {
+					return false;
+				}
+			}),
+		);
+		const finalEventRow = finalEvent.data as Record<string, unknown> | null;
+		const verified = Boolean(
+			finalInvitationRow &&
+			finalInvitationRow.title === definition.title &&
+			finalInvitationRow.event_type === definition.eventType &&
+			finalInvitationRow.base_demo_id === definition.baseDemoId &&
+			finalInvitationRow.theme_id === definition.themeId &&
+			finalInvitationRow.kind === 'client' &&
+			finalInvitationRow.client_name === definition.clientName &&
+			finalInvitationRow.client_email === (definition.clientEmail ?? '') &&
+			finalInvitationRow.client_whatsapp === (definition.clientWhatsapp ?? '') &&
+			finalInvitationRow.photos_received === (definition.photosReceived ?? true) &&
+			finalInvitationRow.created_by === ownerUserId &&
+			canonicalize(finalDraft.data?.content) === canonicalize(proposedContent) &&
+			canonicalize(finalPublication.data?.content) === canonicalize(proposedContent) &&
+			finalEventRow?.owner_user_id === ownerUserId &&
+			finalEventRow.event_type === definition.eventType &&
+			finalEventRow.title === definition.title &&
+			finalEventRow.status === 'published' &&
+			finalEventRow.invitation_project_id === invitationId &&
+			finalMembership.data?.membership_role === 'owner' &&
+			assetsVerified.every(Boolean),
+		);
+		if (!verified)
+			throw new Error(
+				'Final Local verification failed; managed-release provenance was not recorded.',
+			);
 
-	const { error: provenanceError } = await supabase
-		.from('managed_invitation_release_provenance')
-		.upsert({
-			invitation_id: invitationId,
-			definition_slug: release.slug,
-			release_schema_version: release.schemaVersion,
-			source_hash: release.sourceHash,
-			package_hash: packageHash,
-			metadata_hash: release.metadataHash,
-			// SHA-256 of the materialized proposed content (the provenance table check constraint
-			// requires 64-char hex; release.projectionHash is MD5/32-char for the RPC).
-			projection_hash: createHash('sha256').update(canonicalize(proposedContent)).digest('hex'),
-			asset_manifest_hash: release.assetManifestHash,
-			applied_at: new Date().toISOString(),
-		});
-	if (provenanceError) throw provenanceError;
+		const { error: provenanceError } = await supabase
+			.from('managed_invitation_release_provenance')
+			.upsert({
+				invitation_id: invitationId,
+				definition_slug: release.slug,
+				release_schema_version: release.schemaVersion,
+				source_hash: release.sourceHash,
+				package_hash: packageHash,
+				metadata_hash: release.metadataHash,
+				// SHA-256 of the materialized proposed content (the provenance table check constraint
+				// requires 64-char hex; release.projectionHash is MD5/32-char for the RPC).
+				projection_hash: createHash('sha256')
+					.update(canonicalize(proposedContent))
+					.digest('hex'),
+				asset_manifest_hash: release.assetManifestHash,
+				applied_at: new Date().toISOString(),
+			});
+		if (provenanceError) throw provenanceError;
 
-	return {
-		slug,
-		route,
-		target: 'persistent-local',
-		invitationId,
-		ownerUserId,
-		publishedVersion: finalVersion,
-		isZeroDrift: false,
-		plannedOperations,
-		completedOperations: plannedOperations,
-		databaseInserts: estInserts,
-		databaseUpdates: estUpdates,
-		databaseDeletes: 0,
-		storageUploads: estUploads,
-		storageOverwrites: estOverwrites,
-		storageDeletes: 0,
-		actions,
-	};
+		return {
+			slug,
+			route,
+			target: 'persistent-local',
+			invitationId,
+			ownerUserId,
+			publishedVersion: finalVersion,
+			isZeroDrift: false,
+			plannedOperations,
+			completedOperations: plannedOperations,
+			databaseInserts: estInserts,
+			databaseUpdates: estUpdates,
+			databaseDeletes: 0,
+			storageUploads: estUploads,
+			storageOverwrites: estOverwrites,
+			storageMoves: 0,
+			storageDeletes: 0,
+			actions,
+		};
 	} catch (err) {
 		await cleanupLocalResources(supabase, slug, trackedResources);
 		throw err;

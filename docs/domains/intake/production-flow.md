@@ -27,7 +27,7 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Resume Production
 ```
 
-Use `pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run|--apply`. The `all` workflow stops after Preview; Production resumes only from the exact approved package with an explicit owner and confirmation.
+Use `pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run|--apply`. The `all` workflow stops after Preview; Production resumes only from the exact approved package and confirmation. Existing target invitations resolve and preserve their owner by slug; `--owner-user-id` is only required when creating a new target invitation.
 
 ## Publication integrity rollout
 

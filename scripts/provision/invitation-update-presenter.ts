@@ -26,7 +26,7 @@ export interface StatusReportData {
 		title: string;
 		createdAt: string;
 		classification: string;
-		environments: Record<string, { status: string; reason?: string }>;
+		environments: Record<string, { status: string; managedStatus?: string; syncStatus?: string; reason?: string }>;
 	}>;
 	inventory?: Record<string, { verified: boolean; rows: Array<{ slug: string; status: string; hasProvenance?: boolean; assetComplete?: boolean }> }>;
 	readiness?: {
@@ -36,10 +36,53 @@ export interface StatusReportData {
 	};
 }
 
+function formatDbWrites(writes: { inserts: number; updates: number; deletes: number }): string {
+	const ins = `${writes.inserts} ${writes.inserts === 1 ? 'inserción' : 'inserciones'}`;
+	const upd = `${writes.updates} ${writes.updates === 1 ? 'actualización' : 'actualizaciones'}`;
+	const del = `${writes.deletes} ${writes.deletes === 1 ? 'eliminación' : 'eliminaciones'}`;
+	return `${ins}, ${upd}, ${del}`;
+}
+
+function formatStorageMutations(mutations: { uploads: number; overwrites: number; moves?: number; deletes: number }): string {
+	const upl = `${mutations.uploads} ${mutations.uploads === 1 ? 'subida' : 'subidas'}`;
+	const ovr = `${mutations.overwrites} ${mutations.overwrites === 1 ? 'sobrescritura' : 'sobrescrituras'}`;
+	const mov = mutations.moves !== undefined ? `, ${mutations.moves} ${mutations.moves === 1 ? 'movimiento' : 'movimientos'}` : '';
+	const del = `${mutations.deletes} ${mutations.deletes === 1 ? 'eliminación' : 'eliminaciones'}`;
+	return `${upl}, ${ovr}${mov}, ${del}`;
+}
+
+function resolveManagedText(managed: string): string {
+	switch (managed) {
+		case 'MANAGED':
+			return colors.green('Registrada');
+		case 'UNAPPLIED_DEFINITION':
+			return colors.yellow('Sin registrar (Falta provenance)');
+		case 'NOT_PRESENT':
+			return colors.dim('No registrada');
+		default:
+			return colors.dim('Sin verificar');
+	}
+}
+
+function resolveSyncText(sync: string): string {
+	switch (sync) {
+		case 'IN_SYNC':
+			return colors.green('En sincronía');
+		case 'DRIFT':
+			return colors.yellow('Con deriva');
+		case 'BLOCKED':
+			return colors.red('Bloqueada');
+		case 'FAILED':
+			return colors.red('Fallida');
+		default:
+			return colors.dim('No evaluada');
+	}
+}
+
 function formatEnvironmentStatus(
 	target: string,
 	defSlug: string,
-	envInfo: { status: string; reason?: string } | undefined,
+	envInfo: { status: string; managedStatus?: string; syncStatus?: string; reason?: string } | undefined,
 	inventoryLocal: { verified: boolean; rows: Array<{ slug: string; status: string }> } | undefined,
 ): string {
 	let localRowStatus: string | undefined;
@@ -47,11 +90,10 @@ function formatEnvironmentStatus(
 		const row = inventoryLocal.rows.find((r) => r.slug === defSlug);
 		localRowStatus = row ? row.status : 'NOT_PRESENT';
 	}
-	const effectiveStatus = localRowStatus || envInfo?.status || 'UNVERIFIED';
-	const isSuccess = ['MANAGED', 'READY', 'IN_SYNC', 'UPDATED'].includes(effectiveStatus);
-	const isWarning = ['UNAPPLIED_DEFINITION', 'NO-GO', 'NOT_PRESENT'].includes(effectiveStatus);
-	const statusBadge = isSuccess ? colors.green(`[${effectiveStatus}]`) : isWarning ? colors.yellow(`[${effectiveStatus}]`) : colors.dim(`[${effectiveStatus}]`);
-	return `   Estado en ${colors.bold(target)} : ${statusBadge}`;
+	const managed = envInfo?.managedStatus ?? localRowStatus ?? envInfo?.status ?? 'UNVERIFIED';
+	const sync = envInfo?.syncStatus ?? (envInfo?.status === 'IN_SYNC' ? 'IN_SYNC' : envInfo?.status === 'DRIFT' ? 'DRIFT' : 'UNEVALUATED');
+
+	return `   Estado en ${colors.bold(target)}:\n     Estado administrado : ${resolveManagedText(managed)}\n     Sincronización      : ${resolveSyncText(sync)}`;
 }
 
 function formatReadinessDetails(readiness: NonNullable<StatusReportData['readiness']>): string[] {
@@ -111,7 +153,7 @@ export interface OperationalPlanData {
 	isZeroDrift: boolean;
 	plannedOperations: number;
 	expectedDatabaseWrites: { inserts: number; updates: number; deletes: number };
-	expectedStorageMutations: { uploads: number; overwrites: number; deletes: number };
+	expectedStorageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
 	publishedVersion?: number;
 }
@@ -127,10 +169,8 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 
 	lines.push(colors.bold('Operaciones Lógicas Planificadas:'));
 	lines.push(`  • Operaciones totales : ${plan.plannedOperations}`);
-	lines.push(`  • Escrituras DB est.  : ${plan.expectedDatabaseWrites.inserts} inserciones, ${plan.expectedDatabaseWrites.updates} actualizaciones, ${plan.expectedDatabaseWrites.deletes} eliminaciones`);
-	lines.push(
-		`  • Mutaciones Storage  : ${plan.expectedStorageMutations.uploads} subidas, ${plan.expectedStorageMutations.overwrites} sobrescrituras, ${plan.expectedStorageMutations.deletes} eliminaciones`,
-	);
+	lines.push(`  • Escrituras DB est.  : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
+	lines.push(`  • Mutaciones Storage  : ${formatStorageMutations(plan.expectedStorageMutations)}`);
 	lines.push('');
 
 	if (plan.actions.length > 0) {
@@ -157,12 +197,8 @@ export function formatApplyConfirmation(plan: OperationalPlanData): string {
 	lines.push('');
 	lines.push(`Se aplicarán los siguientes cambios a la invitación "${colors.bold(plan.invitation)}" en ${plan.targets.join(', ')}:`);
 	lines.push(`  - Operaciones lógicas a ejecutar : ${plan.plannedOperations}`);
-	lines.push(
-		`  - Escrituras DB estimadas        : ${plan.expectedDatabaseWrites.inserts} inserciones, ${plan.expectedDatabaseWrites.updates} actualizaciones, ${plan.expectedDatabaseWrites.deletes} eliminaciones`,
-	);
-	lines.push(
-		`  - Mutaciones en Supabase Storage : ${plan.expectedStorageMutations.uploads} subidas, ${plan.expectedStorageMutations.overwrites} sobrescrituras, ${plan.expectedStorageMutations.deletes} eliminaciones`,
-	);
+	lines.push(`  - Escrituras DB estimadas        : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
+	lines.push(`  - Mutaciones en Supabase Storage : ${formatStorageMutations(plan.expectedStorageMutations)}`);
 	lines.push('');
 	return lines.join('\n');
 }
@@ -173,7 +209,7 @@ export interface ApplyResultData {
 	environment: string;
 	completedOperations: number;
 	databaseWrites: { inserts: number; updates: number; deletes: number };
-	storageMutations: { uploads: number; overwrites: number; deletes: number };
+	storageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
 	publishedVersion?: number;
 	reason?: string;
 }
@@ -197,16 +233,20 @@ export function formatApplyResult(result: ApplyResultData): string {
 	lines.push(`Estado Final : ${statusText}`);
 	lines.push('');
 
-	if (result.status === 'UPDATED' || result.status === 'IN_SYNC') {
-		lines.push(`Operaciones Lógicas Completadas : ${result.completedOperations}`);
-		lines.push(
-			`Escrituras Base de Datos        : ${result.databaseWrites.inserts} inserciones, ${result.databaseWrites.updates} actualizaciones, ${result.databaseWrites.deletes} eliminaciones`,
-		);
-		lines.push(
-			`Mutaciones Storage             : ${result.storageMutations.uploads} subidas, ${result.storageMutations.overwrites} sobrescrituras, ${result.storageMutations.deletes} eliminaciones`,
-		);
+	if (result.status === 'IN_SYNC') {
+		lines.push(colors.green('La invitación ya está sincronizada. No hay cambios por aplicar.'));
+		lines.push(`Operaciones Lógicas Completadas : 0`);
+		lines.push(`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`);
+		lines.push(`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`);
 		if (result.publishedVersion !== undefined) {
-			lines.push(`Versión Pública Publicada        : v${result.publishedVersion}`);
+			lines.push(`Versión pública                 : v${result.publishedVersion}`);
+		}
+	} else if (result.status === 'UPDATED') {
+		lines.push(`Operaciones Lógicas Completadas : ${result.completedOperations}`);
+		lines.push(`Escrituras Base de Datos        : ${formatDbWrites(result.databaseWrites)}`);
+		lines.push(`Mutaciones Storage             : ${formatStorageMutations(result.storageMutations)}`);
+		if (result.publishedVersion !== undefined) {
+			lines.push(`Versión pública                 : v${result.publishedVersion}`);
 		}
 	} else if (result.status === 'CANCELLED') {
 		lines.push(colors.yellow('La operación fue cancelada antes de realizar cualquier cambio. Base de datos y Storage intactos.'));

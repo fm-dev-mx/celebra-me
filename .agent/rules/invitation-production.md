@@ -45,10 +45,11 @@ before creating, editing, publishing, or validating an invitation. Content struc
   `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Resume Production`.
 - Preview is a validation environment. Production MUST NOT import directly from the Preview
   database or Storage.
-- Production resume from an approved package requires a matching Preview approval artifact and
-  explicit owner:
+- Production resume from an approved package requires a matching Preview approval artifact. Existing
+  invitations resolve and preserve their owner from the selected target row; an explicit owner is
+  required only when the target invitation does not yet exist:
   ```bash
-  pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --owner-user-id <uuid> --apply
+  pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --apply
   ```
 - Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
   and embedded base64 assets with SHA-256 signatures.
@@ -56,9 +57,9 @@ before creating, editing, publishing, or validating an invitation. Content struc
   `__STORAGE_URL__`).
 - Preview promotion requires target project `iwipdvisoyerfdytuhwi` and generates a non-secret
   Preview approval artifact (`.agent/tmp/approvals/preview-approval-<hash>.json`).
-- Production promotion requires a matching Preview approval artifact for the exact package hash, an
-  existing target owner UUID (`--owner-user-id`), zero source-URL verification, and explicit
-  confirmation.
+- Production promotion requires a matching Preview approval artifact for the exact package hash,
+  target-scoped owner resolution by slug (or `--owner-user-id` only for a new invitation), zero
+  source-URL verification, and explicit confirmation.
 
 ## Scope and cleanup
 

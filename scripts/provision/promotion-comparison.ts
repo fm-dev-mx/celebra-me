@@ -160,9 +160,8 @@ export function checkTargetDivergenceConflict(
 	targetDraftContent: Record<string, unknown>,
 	existingDraft: Record<string, unknown> | null,
 	existingPub: Record<string, unknown> | null,
-	allowDivergentOverwrite = false,
 ): void {
-	if (!existingDraft || allowDivergentOverwrite) return;
+	if (!existingDraft) return;
 	if ((existingDraft.status as string) !== 'draft') return;
 
 	const pkgDraftHash = hashPublicationProjection(targetDraftContent);

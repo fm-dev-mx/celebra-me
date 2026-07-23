@@ -11,8 +11,11 @@ import {
 const originalCwd = process.cwd();
 const createdDirs: string[] = [];
 const PACKAGE_HASH = 'a'.repeat(64);
-const PROJECTION_HASH = 'b'.repeat(64);
-const ASSET_HASH = 'c'.repeat(64);
+const SOURCE_HASH = 'b'.repeat(64);
+const METADATA_HASH = 'c'.repeat(64);
+const PROJECTION_HASH = 'd'.repeat(32);
+const ASSET_MANIFEST_HASH = 'e'.repeat(64);
+const ASSET_HASH = 'f'.repeat(64);
 const ASSET_PATH = 'managed/test/hero.webp';
 
 afterEach(() => {
@@ -37,6 +40,9 @@ function buildFixture(expectedAssetHashes?: Record<string, string>): {
 	const hashes = expectedAssetHashes ?? { [ASSET_PATH]: ASSET_HASH };
 	const artifactPath = createPendingPreviewApprovalArtifact({
 		packageHash: PACKAGE_HASH,
+		sourceHash: SOURCE_HASH,
+		metadataHash: METADATA_HASH,
+		assetManifestHash: ASSET_MANIFEST_HASH,
 		slug: 'test-invitation',
 		previewProjectRef: 'iwipdvisoyerfdytuhwi',
 		route: '/xv/test-invitation',
@@ -73,8 +79,15 @@ describe('Preview approval artifact', () => {
 			).toBe('approved');
 			expect(
 				verifyPreviewApprovalArtifact(
-					fixture.packageHash,
-					{ slug: 'test-invitation', route: '/xv/test-invitation' },
+					{
+						packageHash: fixture.packageHash,
+						sourceHash: SOURCE_HASH,
+						metadataHash: METADATA_HASH,
+						projectionHash: PROJECTION_HASH,
+						assetManifestHash: ASSET_MANIFEST_HASH,
+						slug: 'test-invitation',
+						route: '/xv/test-invitation',
+					},
 					['.agent/tmp/approvals'],
 				).approvalState,
 			).toBe('approved');
@@ -218,11 +231,41 @@ describe('Preview approval artifact', () => {
 			// verify also passes
 			expect(
 				verifyPreviewApprovalArtifact(
-					fixture.packageHash,
-					{ slug: 'test-invitation', route: '/xv/test-invitation' },
+					{
+						packageHash: fixture.packageHash,
+						sourceHash: SOURCE_HASH,
+						metadataHash: METADATA_HASH,
+						projectionHash: PROJECTION_HASH,
+						assetManifestHash: ASSET_MANIFEST_HASH,
+						slug: 'test-invitation',
+						route: '/xv/test-invitation',
+					},
 					['.agent/tmp/approvals'],
 				).approvalState,
 			).toBe('approved');
+		} finally {
+			process.chdir(originalCwd);
+		}
+	});
+
+	it('rejects an approved artifact whose projection hash differs from the current release', () => {
+		const fixture = buildFixture();
+		try {
+			finalizePreviewApprovalArtifact(fixture.artifactPath, evidencePath(fixture.dir));
+			expect(() =>
+				verifyPreviewApprovalArtifact(
+					{
+						packageHash: fixture.packageHash,
+						sourceHash: SOURCE_HASH,
+						metadataHash: METADATA_HASH,
+						projectionHash: '1'.repeat(32),
+						assetManifestHash: ASSET_MANIFEST_HASH,
+						slug: 'test-invitation',
+						route: '/xv/test-invitation',
+					},
+					['.agent/tmp/approvals'],
+				),
+			).toThrow(/exact release hashes/i);
 		} finally {
 			process.chdir(originalCwd);
 		}

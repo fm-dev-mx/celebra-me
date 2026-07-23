@@ -25,21 +25,17 @@ export interface ExportPackageResult { packageData: InvitationPackageData; packa
 
 export function computePackageHash(payload: Omit<InvitationPackageData, 'packageHash'> | InvitationPackageData): string {
 	const { packageHash: _packageHash, ...rest } = payload as InvitationPackageData;
-	return createHash('sha256').update(canonicalize({ ...rest, assets: [...rest.assets].sort((a, b) => (a.key ?? a.storagePath).localeCompare(b.key ?? b.storagePath)) })).digest('hex');
-}
-export function sanitizeStorageUrls(value: unknown): unknown {
-	if (typeof value === 'string') return value.replace(/https?:\/\/[^\s"',\]]+\/storage\/v1\/object\/public\/invitation-assets\//g, `${STORAGE_URL_PLACEHOLDER}/`);
-	if (Array.isArray(value)) return value.map(sanitizeStorageUrls);
-	if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, sanitizeStorageUrls(item)]));
-	return value;
+	const sanitized = JSON.parse(JSON.stringify(rest)) as Omit<InvitationPackageData, 'packageHash'>;
+	return createHash('sha256').update(canonicalize({ ...sanitized, assets: [...sanitized.assets].sort((a, b) => (a.key ?? a.storagePath).localeCompare(b.key ?? b.storagePath)) })).digest('hex');
 }
 export function serializeInvitationPackage(release: NormalizedInvitationRelease): InvitationPackageData {
-	const payload: Omit<InvitationPackageData, 'packageHash'> = {
+	const rawPayload: Omit<InvitationPackageData, 'packageHash'> = {
 		schemaVersion: release.schemaVersion, sourceHash: release.sourceHash, metadataHash: release.metadataHash, projectionHash: release.projectionHash, assetManifestHash: release.assetManifestHash, definitionCreatedAt: release.definitionCreatedAt, sourceSlug: release.slug,
 		invitation: { slug: release.slug, title: release.metadata.title, eventType: release.metadata.eventType, baseDemoId: release.metadata.baseDemoId, themeId: release.metadata.themeId, visualProfileId: release.metadata.visualProfileId, kind: 'client', clientName: release.metadata.clientName, clientEmail: release.metadata.clientEmail, clientWhatsapp: release.metadata.clientWhatsapp, photosReceived: release.metadata.photosReceived, snapshot: release.metadata.snapshot },
 		draft: { status: 'draft', content: release.draftContent }, publishedContent: { content: release.publishedProjection }, event: { title: release.metadata.title, eventType: release.metadata.eventType, status: 'published' },
 		assets: release.assets.map((asset) => ({ key: asset.key, displayName: asset.displayName, defaultAltText: asset.alt, focalPoint: asset.focalPoint, bucket: 'invitation-assets', storagePath: `managed/${release.slug}/${asset.key}.webp`, mimeType: asset.mimeType, width: asset.width, height: asset.height, fileSize: asset.fileSize, validationVersion: asset.validationVersion, originalMimeType: asset.originalMimeType, originalFileSize: asset.originalFileSize, sha256: asset.sha256, dataBase64: asset.dataBase64 })),
 	};
+	const payload = JSON.parse(JSON.stringify(rawPayload)) as Omit<InvitationPackageData, 'packageHash'>;
 	return { ...payload, packageHash: computePackageHash(payload) };
 }
 export async function exportInvitationPackage(options: ExportPackageOptions): Promise<ExportPackageResult> {
