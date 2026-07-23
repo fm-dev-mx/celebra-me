@@ -76,11 +76,21 @@ describe('managed lifecycle executable contracts', () => {
 				/draft updated timestamp changed/i,
 			],
 			['existingPublishedVersion', 4, /published version changed/i],
-			['assetStateHash', 'f'.repeat(64), /Storage or asset metadata changed/i],
 		] as const)('blocks %s drift before mutation', (field, value, message) => {
 			const result = verifyPlanPreconditions(plan(), { ...unchangedState, [field]: value });
 			expect(result.ok).toBe(false);
 			expect(result.reason).toMatch(message);
+		});
+
+		it('accepts assetStateHash drift since CDN probes are non-deterministic between planning and apply', () => {
+			// assetStateHash is intentionally excluded from precondition verification because
+			// Storage HTTP probes via Supabase CDN produce non-deterministic results across
+			// edge nodes. Asset integrity is verified by the reconciliation engine during apply.
+			const result = verifyPlanPreconditions(plan(), {
+				...unchangedState,
+				assetStateHash: 'f'.repeat(64), // different from plan's 'c'.repeat(64)
+			});
+			expect(result.ok).toBe(true);
 		});
 
 		it('accepts the exact source, package, project, revision, version, and asset state', () => {

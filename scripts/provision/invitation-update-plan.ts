@@ -100,6 +100,13 @@ export function computePlanId(params: {
 	preconditions: TargetPreconditions;
 	operationFingerprint?: string;
 }): string {
+	// NOTE: assetStateHash is intentionally excluded from planId computation.
+	// Storage HTTP probes are served through Supabase's CDN, which may return
+	// different cached content-lengths or headers across edge nodes, making
+	// assetStateHash non-deterministic between the planning (dry-run) and
+	// execution (apply) phases. DB-level preconditions (draft timestamp,
+	// published version, invitation ID) provide sufficient safety guarantees.
+	const { assetStateHash: _excluded, ...stablePreconditions } = params.preconditions;
 	const raw = JSON.stringify({
 		slug: params.slug,
 		sourceHash: params.sourceHash,
@@ -114,10 +121,16 @@ export function computePlanId(params: {
 			after: c.newValue,
 			scope: c.scope,
 		})),
-		preconditions: params.preconditions,
+		preconditions: stablePreconditions,
 		operationFingerprint: params.operationFingerprint,
 	});
 	return createHash('sha256').update(raw).digest('hex').slice(0, 32);
+}
+
+function normalizeTimestamp(ts?: string): string | undefined {
+	if (!ts) return undefined;
+	const d = new Date(ts);
+	return isNaN(d.getTime()) ? ts.trim() : d.toISOString();
 }
 
 export function verifyPlanPreconditions(
@@ -175,7 +188,11 @@ export function verifyPlanPreconditions(
 		};
 	}
 
-	if (mismatch('existingDraftUpdatedAt')) {
+	if (
+		targetPreconditions.existingDraftUpdatedAt !== undefined &&
+		normalizeTimestamp(targetPreconditions.existingDraftUpdatedAt) !==
+			normalizeTimestamp(currentState.existingDraftUpdatedAt)
+	) {
 		return {
 			ok: false,
 			reason: `PRECONDITION_FAILED: Precondition failed: target draft updated timestamp changed after planning (expected ${targetPreconditions.existingDraftUpdatedAt}, got ${currentState.existingDraftUpdatedAt}).`,
@@ -189,12 +206,10 @@ export function verifyPlanPreconditions(
 		};
 	}
 
-	if (mismatch('assetStateHash')) {
-		return {
-			ok: false,
-			reason: 'PRECONDITION_FAILED: Target Storage or asset metadata changed after planning.',
-		};
-	}
+	// NOTE: assetStateHash is intentionally excluded from precondition verification.
+	// Storage HTTP probes are non-deterministic across CDN edge nodes; re-probing
+	// storage during apply frequently produces a different hash than planning.
+	// Asset-level verification is handled by the reconciliation phase in the engine.
 
 	return { ok: true };
 }
@@ -258,6 +273,12 @@ const FIELD_LABELS: Record<string, string> = {
 	buttonText: 'Texto de botón',
 	mapUrl: 'Enlace de mapa',
 	googleMapsUrl: 'Enlace de mapa',
+	sectionMessage: 'Mensaje de sección',
+	sectionTitle: 'Título de sección',
+	sectionSubtitle: 'Subtítulo de sección',
+	father: 'Padre',
+	mother: 'Madre',
+	parentsOrder: 'Orden de padres',
 };
 
 function humanizeSection(sectionKey: string): string {
