@@ -8,7 +8,7 @@ describe('unified workflow dependency reporting', () => {
 	});
 
 	it('honors read-only status filters and does not pretend unqueried targets are present', () => {
-		const report = buildStatusReport(['--status', '--slug', 'romina-rios-chaparro', '--targets', 'preview', '--include-legacy']) as { filters: { targets: string[]; includeLegacy: boolean }; definitions: Array<{ slug: string; environments: Record<string, { status: string }> }>; legacy: { status: string } };
+		const report = buildStatusReport({ slug: 'romina-rios-chaparro', targets: ['preview'], includeLegacy: true }) as { filters: { targets: string[]; includeLegacy: boolean }; definitions: Array<{ slug: string; environments: Record<string, { status: string }> }>; legacy: { status: string } };
 		expect(report.filters).toMatchObject({ targets: ['preview'], includeLegacy: true });
 		expect(report.definitions).toHaveLength(1);
 		expect(report.definitions[0]).toMatchObject({ slug: 'romina-rios-chaparro', environments: { preview: { status: 'UNVERIFIED' } } });

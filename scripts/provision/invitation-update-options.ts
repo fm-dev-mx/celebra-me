@@ -95,32 +95,17 @@ export interface StatusReportOptions {
 	includeDemos?: boolean;
 }
 
-export function parseStatusOptions(input: string[] | StatusReportOptions): StatusReportOptions {
-	if (!Array.isArray(input)) {
-		return {
-			slug: input.slug,
-			targets: input.targets && input.targets.length > 0 ? input.targets : undefined,
-			includeLegacy: Boolean(input.includeLegacy),
-			includeArchived: Boolean(input.includeArchived),
-			includeDemos: Boolean(input.includeDemos),
-		};
-	}
-	const value = (flag: string): string | undefined => {
-		const index = input.indexOf(flag);
-		return index >= 0 ? input[index + 1] : undefined;
-	};
-	const rawTargets = value('--targets');
-	const parsedTargets = parseTargets(rawTargets);
+export function parseStatusOptions(input: StatusReportOptions): StatusReportOptions {
 	return {
-		slug: value('--slug'),
-		targets: parsedTargets.length > 0 ? parsedTargets : undefined,
-		includeLegacy: input.includes('--include-legacy'),
-		includeArchived: input.includes('--include-archived'),
-		includeDemos: input.includes('--include-demos'),
+		slug: input.slug,
+		targets: input.targets && input.targets.length > 0 ? input.targets : undefined,
+		includeLegacy: Boolean(input.includeLegacy),
+		includeArchived: Boolean(input.includeArchived),
+		includeDemos: Boolean(input.includeDemos),
 	};
 }
 
-export function buildStatusReport(input: string[] | StatusReportOptions): Record<string, unknown> {
+export function buildStatusReport(input: StatusReportOptions): Record<string, unknown> {
 	const opts = parseStatusOptions(input);
 	const requestedSlug = opts.slug;
 	const targets =

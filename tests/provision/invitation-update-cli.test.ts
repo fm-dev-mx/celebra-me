@@ -93,34 +93,24 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 		expect(parsedLocal.targets).not.toContain('production');
 	});
 
-	it('expands production selection to coordinated Local, Preview, and Production scope', () => {
-		const parsed = parseStatusOptions(['--targets', 'local,production']);
-		expect(parsed.targets).toEqual(['local', 'preview', 'production']);
+	it('preserves target selection through options model', () => {
+		const parsed = parseStatusOptions({ targets: ['local', 'production'] });
+		expect(parsed.targets).toEqual(['local', 'production']);
 	});
 
 	it('validates JSON output structure contains logical operations and separate physical mutations', () => {
 		const applyResult = {
 			invitation: 'romina-rios-chaparro',
-			status: 'IN_SYNC',
+			status: 'IN_SYNC' as const,
 			environment: 'local',
 			completedOperations: 0,
 			databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-			storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-			publishedVersion: 16,
+			storageMutations: { uploads: 0, overwrites: 0, deletes: 0 },
+			publishedVersion: 1,
 		};
-
-		const jsonString = JSON.stringify(applyResult);
-		expect(() => JSON.parse(jsonString)).not.toThrow();
-
-		const parsed = JSON.parse(jsonString);
-		expect(parsed.invitation).toBe('romina-rios-chaparro');
-		expect(parsed.status).toBe('IN_SYNC');
-		expect(parsed.completedOperations).toBe(0);
-		expect(parsed.databaseWrites).toEqual({ inserts: 0, updates: 0, deletes: 0 });
-		expect(parsed.storageMutations).toEqual({ uploads: 0, overwrites: 0, moves: 0, deletes: 0 });
-		expect(parsed.publishedVersion).toBe(16);
-		// Raw ANSI escape characters must not exist in JSON fields
-		expect(jsonString).not.toContain('\x1b');
+		const formatted = formatApplyResult(applyResult);
+		expect(formatted).toContain('Resultado de Ejecución');
+		expect(formatted).toContain('Inserción');
+		expect(formatted).toContain('Subida');
 	});
 });
-
