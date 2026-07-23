@@ -8,10 +8,14 @@ export interface PreviewApprovalArtifact {
 	metadataHash: string;
 	projectionHash: string;
 	assetManifestHash: string;
+	planId?: string;
 	slug: string;
 	previewProjectRef: string;
 	createdAt: string;
+	approvedAt?: string;
+	approvedBy?: string;
 	route: string;
+	schemaVersion?: string;
 	expectedAssetHashes: Record<string, string>;
 	hostedValidation?: {
 		packageHash: string;
@@ -28,6 +32,7 @@ export interface ApprovedReleaseIdentity {
 	metadataHash: string;
 	projectionHash: string;
 	assetManifestHash: string;
+	planId?: string;
 	slug: string;
 	route: string;
 }
@@ -37,6 +42,7 @@ export function createPendingPreviewApprovalArtifact(input: {
 	metadataHash: string;
 	projectionHash: string;
 	assetManifestHash: string;
+	planId?: string;
 	slug: string;
 	previewProjectRef: string;
 	route: string;
@@ -58,6 +64,7 @@ export function createPendingPreviewApprovalArtifact(input: {
 		JSON.stringify(
 			{
 				...input,
+				schemaVersion: '2.0.0',
 				createdAt: new Date().toISOString(),
 				approvalState: 'pending_hosted_validation',
 			},
@@ -138,6 +145,32 @@ export function finalizePreviewApprovalArtifact(
 	writeFileSync(resolve(process.cwd(), artifactPath), JSON.stringify(approved, null, 2), 'utf8');
 	return approved;
 }
+function isHashFormatValid(artifact: PreviewApprovalArtifact): boolean {
+	return (
+		/^[a-f0-9]{64}$/.test(artifact.sourceHash) &&
+		/^[a-f0-9]{64}$/.test(artifact.metadataHash) &&
+		/^[a-f0-9]{64}$/.test(artifact.assetManifestHash) &&
+		/^[a-f0-9]{32}$/.test(artifact.projectionHash)
+	);
+}
+
+function checkArtifactHashesAndFormat(
+	artifact: PreviewApprovalArtifact,
+	identity: ApprovedReleaseIdentity,
+): boolean {
+	if (artifact.approvalState !== 'approved') return false;
+	if (artifact.packageHash !== identity.packageHash) return false;
+	if (artifact.sourceHash !== identity.sourceHash) return false;
+	if (artifact.metadataHash !== identity.metadataHash) return false;
+	if (artifact.projectionHash !== identity.projectionHash) return false;
+	if (artifact.assetManifestHash !== identity.assetManifestHash) return false;
+	if (artifact.slug !== identity.slug) return false;
+	if (artifact.route !== identity.route) return false;
+	if (!artifact.hostedValidation) return false;
+	if (artifact.hostedValidation.projectionHash !== identity.projectionHash) return false;
+	return isHashFormatValid(artifact);
+}
+
 export function verifyPreviewApprovalArtifact(
 	identity: ApprovedReleaseIdentity,
 	approvalsDirs = ['.agent/tmp/approvals'],
@@ -154,27 +187,18 @@ export function verifyPreviewApprovalArtifact(
 	if (!path)
 		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
 	const artifact = JSON.parse(readFileSync(path, 'utf8')) as PreviewApprovalArtifact;
-	if (
-		artifact.approvalState !== 'approved' ||
-		artifact.packageHash !== identity.packageHash ||
-		artifact.sourceHash !== identity.sourceHash ||
-		artifact.metadataHash !== identity.metadataHash ||
-		artifact.projectionHash !== identity.projectionHash ||
-		artifact.assetManifestHash !== identity.assetManifestHash ||
-		artifact.slug !== identity.slug ||
-		artifact.route !== identity.route ||
-		!artifact.hostedValidation ||
-		artifact.hostedValidation.projectionHash !== identity.projectionHash ||
-		!/^[a-f0-9]{64}$/.test(artifact.sourceHash) ||
-		!/^[a-f0-9]{64}$/.test(artifact.metadataHash) ||
-		!/^[a-f0-9]{64}$/.test(artifact.assetManifestHash) ||
-		!/^[a-f0-9]{32}$/.test(artifact.projectionHash)
-	)
+	if (!checkArtifactHashesAndFormat(artifact, identity)) {
 		throw new Error(
 			'Preview approval artifact is stale, incomplete, or does not match the exact release hashes.',
 		);
-	validateStorageEvidence(artifact, artifact.hostedValidation);
-	if (!Object.values(artifact.hostedValidation.checklistResults).every(Boolean))
+	}
+	if (identity.planId && artifact.planId && artifact.planId !== identity.planId) {
+		throw new Error(
+			`Preview approval artifact plan ID mismatch: artifact has "${artifact.planId}", release has "${identity.planId}".`,
+		);
+	}
+	validateStorageEvidence(artifact, artifact.hostedValidation!);
+	if (!Object.values(artifact.hostedValidation!.checklistResults).every(Boolean))
 		throw new Error('Preview approval evidence is incomplete.');
 	return artifact;
 }
