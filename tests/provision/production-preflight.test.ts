@@ -140,7 +140,7 @@ describe('Production read-only preflight integration', () => {
 		expect(runEngine).toHaveBeenCalledWith(
 			expect.objectContaining({ target: 'production', dryRun: true }),
 		);
-		expect(result.approval.planId).toBe(previewPlanId);
+		expect(result.approval!.planId).toBe(previewPlanId);
 		expect(result.engineResult.plan?.planId).toBe('production-plan');
 		expect(result.engineResult.projectRef).toBe(productionProjectRef);
 		expect(result.engineResult.mutationsPerformed).toBe(0);
