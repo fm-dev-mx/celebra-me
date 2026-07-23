@@ -29,13 +29,21 @@ owns the command inventory.
 | `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`      | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
 | `pnpm ops validate-event-parity` | `scripts/validate-event-parity.ts` | compare content events against the Supabase `events` table                                                              |
 | `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range                                                         |
+| `pnpm ops graphify-views`        | `scripts/graphify/entry.ts`        | generate Graphify operational domain and community reports                                                              |
+| `pnpm ops graphify-refresh`      | `scripts/graphify/refresh.ts`      | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                 |
 | `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | disabled fail-closed guard; real/client invitations are DB-published content                                            |
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command | Canonical Script | Purpose |
-| ------- | ---------------- | ------- |
-| `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and resume the managed invitation release workflow |
+| Command                  | Canonical Script                             | Purpose                                                                                                                                                                          |
+| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and continue managed invitations from an exact package, with per-target independent plans, semantic diffs, and truthful recovery |
+
+The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
+plan per target, and delegates mutation ordering/result synthesis to
+`invitation-lifecycle-execution.ts`. Preview apply and Production read-only preflight use the shared
+`preview-apply.ts` and `production-preflight.ts` adapters, so interactive and non-interactive modes
+execute the same retained plans. Any blocked selected target aborts the complete mutation phase.
 
 ## Database Command Inventory
 

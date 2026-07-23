@@ -1,5 +1,9 @@
 # Implementation & Decision Record — `romina-rios-chaparro`
 
+> Historical, non-authoritative record. Exact versions, identifiers, commands, and runtime claims
+> below describe the implementation session in which they were recorded. For current operations, use
+> `.agent/workflows/managed-invitation-lifecycle.md` and `pnpm invitation:update -- --help`.
+
 This document records the implementation details, baseline state, decision register,
 original-requirement completion matrix, image allocation catalog, and publication workflow for the
 `romina-rios-chaparro` digital invitation.
@@ -36,7 +40,7 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 | **Final Copy Changes**          | Uppercase chapter labels (`MIS XV`), formal date headers (`VIERNES · 14 DE AGOSTO DE 2026`), streamlined RSVP subcopy | `creative decision` | Removes unverified RSVP deadline and enhances formal tone                                     | Elegant editorial narrative coherence              | None                                           |
 | **Gallery Allocation**          | 7 unique, non-overlapping photographs                                                                                 | `creative decision` | Eliminates image duplication between Hero, Interlude, Thank You, and Gallery                  | Non-repetitive visual rhythm across all sections   | None                                           |
 | **Image Duplication Exception** | `IMG_3201.jpeg` used for Social OG preview and Gallery item                                                           | `verified`          | Open Graph image is invisible in page layout, allowing its use in Gallery                     | Standard OG sharing behavior                       | None                                           |
-| **Publication Workflow**        | `pnpm invitation:update` managed release pipeline                                                                     | `superseded`        | Define, package, Preview approval, then Production resume                                    | Atomic publication remains required                | None                                           |
+| **Publication Workflow**        | `pnpm invitation:update` managed release pipeline                                                                     | `superseded`        | Define, package, Preview approval, then Production resume                                     | Atomic publication remains required                | None                                           |
 
 ---
 
@@ -87,17 +91,16 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 
 ## 3.6 Local Data Divergence & Synchronization Record
 
-| Parameter / Aspect | Details / Value |
-| --- | --- |
-| **Root Cause** | Historical stale version 1 record published before the canonical definition was materialized through the managed release workflow. |
-| **Public Route Data Source** | `published_invitation_content` in local Supabase PostgreSQL via `resolveInvitationContent`. |
-| **Dashboard Data Source** | `invitations` and `published_invitation_content` in local Supabase PostgreSQL via `/api/dashboard/intake`. |
-| **Invitation ID** | `b2658714-33f3-4194-ae2f-74f89c97cfa9` |
-| **Local Owner User ID** | `c08a4681-46b4-480b-8a91-c6d740ac3887` (`celebra.me.com@gmail.com`) |
-| **Synchronization Method** | Programmatic local DB synchronization using authoritative payload `buildRominaPublishedContent(assetsMap)` updating `published_invitation_content` (Version 4) and `invitation_content_drafts`. |
-| **Values Before Sync** | `hero.portrait` present, `location.ceremony.coordinates` undefined, `location.reception.coordinates` undefined, `mediaMode` `"none"`, `rsvp.subcopy` `"contar with"`, `sealInitials` `"R"`. |
-| **Values After Sync** | `hero.portrait` undefined (absent), `ceremony.coordinates` `{ lat: 30.4137, lng: -107.9125 }`, `reception.coordinates` `{ lat: 30.4280, lng: -107.9250 }`, `mediaMode` `"map"`, `rsvp.subcopy` `"contar con"`, `sealInitials` `"RC"`. |
-| **Dashboard Resolution** | Inviting list properly displays Romina client invitation under active local admin user session. |
-| **Hero Final Runtime** | Single-photo background cover (`IMG_3263.jpeg`), zero floating portrait overlay, responsive clamp title legibility across 320px–1440px. |
-| **Location Cards & Maps** | Cards output `data-media-mode="map"`, render Google Map container, and provide verified Google Maps & Apple Maps navigation buttons. |
-
+| Parameter / Aspect           | Details / Value                                                                                                                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Root Cause**               | Historical stale version 1 record published before the canonical definition was materialized through the managed release workflow.                                                                                                    |
+| **Public Route Data Source** | `published_invitation_content` in local Supabase PostgreSQL via `resolveInvitationContent`.                                                                                                                                           |
+| **Dashboard Data Source**    | `invitations` and `published_invitation_content` in local Supabase PostgreSQL via `/api/dashboard/intake`.                                                                                                                            |
+| **Invitation ID**            | `b2658714-33f3-4194-ae2f-74f89c97cfa9`                                                                                                                                                                                                |
+| **Local Owner User ID**      | `c08a4681-46b4-480b-8a91-c6d740ac3887` (`celebra.me.com@gmail.com`)                                                                                                                                                                   |
+| **Synchronization Method**   | Programmatic local DB synchronization using authoritative payload `buildRominaPublishedContent(assetsMap)` updating `published_invitation_content` (Version 4) and `invitation_content_drafts`.                                       |
+| **Values Before Sync**       | `hero.portrait` present, `location.ceremony.coordinates` undefined, `location.reception.coordinates` undefined, `mediaMode` `"none"`, `rsvp.subcopy` `"contar with"`, `sealInitials` `"R"`.                                           |
+| **Values After Sync**        | `hero.portrait` undefined (absent), `ceremony.coordinates` `{ lat: 30.4137, lng: -107.9125 }`, `reception.coordinates` `{ lat: 30.4280, lng: -107.9250 }`, `mediaMode` `"map"`, `rsvp.subcopy` `"contar con"`, `sealInitials` `"RC"`. |
+| **Dashboard Resolution**     | Inviting list properly displays Romina client invitation under active local admin user session.                                                                                                                                       |
+| **Hero Final Runtime**       | Single-photo background cover (`IMG_3263.jpeg`), zero floating portrait overlay, responsive clamp title legibility across 320px–1440px.                                                                                               |
+| **Location Cards & Maps**    | Cards output `data-media-mode="map"`, render Google Map container, and provide verified Google Maps & Apple Maps navigation buttons.                                                                                                  |

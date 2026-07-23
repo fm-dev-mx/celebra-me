@@ -41,7 +41,8 @@ boundaries through classification, identity verification, and per-target policy 
 ## Production Status & Governance
 
 - **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.
-- **Applied Migrations**: Production currently has all 59 migrations applied (`59/59`).
+- **Hosted migration state**: Never freeze an applied/pending count in active guidance. Obtain the
+  current state with the read-only Production audit before any migration decision.
 - **Pending Migrations**: Zero (`0`) production migrations are pending.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations under
   `supabase/migrations/`.
@@ -97,7 +98,8 @@ boundaries through classification, identity verification, and per-target policy 
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
-- `pnpm db:local:migrate` applies pending migrations to persistent-local transactionally without resetting.
+- `pnpm db:local:migrate` applies pending migrations to persistent-local transactionally without
+  resetting.
 - `pnpm db:prod:migrate` is the only implemented production mutation workflow.
 - `pnpm db:preview:migrate` applies pending migrations to Preview (`PREVIEW_DB_URL`).
 - `pnpm db:prod:patch -- --file <path>` is dry-run lint only. It never connects to the database and

@@ -14,7 +14,7 @@
  *   8. Post-migration schema verification (`supabase_migrations.schema_migrations`)
  *
  * Current Production Status:
- *   - Reconciliation complete: 59/59 migrations active, 0 pending.
+ *   - Hosted reconciliation state must be established by the current read-only audit.
  *   - Direct SQL is prohibited; all schema changes must use versioned migrations.
  *
  * Credentials:

@@ -42,14 +42,14 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Managed invitation changes use
   `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
 - The canonical pipeline is
-  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Resume Production`.
-- Preview is a validation environment. Production MUST NOT import directly from the Preview
-  database or Storage.
-- Production resume from an approved package requires a matching Preview approval artifact. Existing
-  invitations resolve and preserve their owner from the selected target row; an explicit owner is
-  required only when the target invitation does not yet exist:
+  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Continue to Production`.
+- Preview is a validation environment. Production MUST NOT import directly from the Preview database
+  or Storage.
+- Production continuation from an approved package requires a matching Preview approval artifact.
+  Existing invitations resolve and preserve their owner from the selected target row; an explicit
+  owner is required only when the target invitation does not yet exist:
   ```bash
-  pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --apply
+  pnpm invitation:update --slug <slug> --targets production --package <path> --apply
   ```
 - Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
   and embedded base64 assets with SHA-256 signatures.
@@ -60,6 +60,13 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Production promotion requires a matching Preview approval artifact for the exact package hash,
   target-scoped owner resolution by slug (or `--owner-user-id` only for a new invitation), zero
   source-URL verification, and explicit confirmation.
+- Multi-target execution produces independent per-target plans and statuses (`local`, `preview`,
+  `production`). An uninspected target must be reported as `NO EVALUADO` or `BLOQUEADO` (never false
+  `SIN CAMBIOS`).
+- Failed operations that overwrite pre-existing DB or Storage resources without automatic
+  restoration yield `ERROR — REQUIERE REVISIÓN` (not `ERROR — CAMBIOS REVERTIDOS`).
+- Production preflight failure outputs concise, actionable Spanish instructions without leaking raw
+  package hashes or stack traces in default mode.
 
 ## Scope and cleanup
 

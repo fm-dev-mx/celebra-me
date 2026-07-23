@@ -130,8 +130,9 @@ celebra-me/
 ## Database Workflow
 
 Supabase schema changes are versioned under `supabase/migrations`. Production migration-history
-reconciliation is complete (`59/59` migrations active, 0 pending). Direct production SQL is
-prohibited; all schema changes must be introduced through versioned migrations.
+reconciliation status must be read from the live, read-only audit; repository migration counts are
+not evidence of hosted state. Direct production SQL is prohibited; all schema changes must be
+introduced through versioned migrations.
 
 Hosted Preview is the mandatory managed-invitation QA gate. It uses isolated synthetic data and
 separate credentials (`PREVIEW_DB_URL`); migration and audit tooling are `pnpm db:preview:migrate`
@@ -149,7 +150,7 @@ For local development, use local Supabase and keep `.env.local` pointed away fro
 | `pnpm db:disposable:reset`        | Reset the isolated disposable test database (destructive testing)                         |
 | `pnpm db:validate:pipeline`       | Run full database pipeline validation (baseline, latest, pgTAP, application flows)        |
 | `pnpm db:prod:backup`             | Read-only production data dump                                                            |
-| `pnpm db:prod:audit`              | Read-only production migration history & schema audit (reports `59/59`, zero pending)     |
+| `pnpm db:prod:audit`              | Read-only production migration history and current schema audit                           |
 | `pnpm db:prod:migrate`            | Apply reviewed migrations to production (runs preflight checks, backup, and confirmation) |
 | `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                    |
 | `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                   |

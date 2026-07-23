@@ -12,11 +12,12 @@ Production -> Local: allowed for read-only refreshes and backups.
 Local -> Production: allowed only for reviewed migrations.
 ```
 
-## Production Reconciliation Status
+## Production Reconciliation Status (point-in-time)
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
-- **Applied Migrations**: Production currently has all 59 migrations applied (`59/59`).
-- **Pending Migrations**: Zero (`0`) production migrations are pending.
+- The repository currently contains **62** versioned migration files. Never infer hosted status or
+  pending counts from this number; obtain current Production state with the read-only
+  `pnpm db:prod:audit` workflow.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations in
   `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
 - **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool
@@ -55,14 +56,14 @@ Disposable PostgreSQL: 127.0.0.1:54332
 The promotion of an invitation follows a strict, safe, and reproducible pipeline:
 
 ```text
-Definition -> normalized release -> Local -> immutable package -> Preview approval -> Production resume
+Definition -> normalized release -> Local -> immutable package -> Preview approval -> Production continuation
 ```
 
 ### Distinction: Promotion vs. Production-to-Preview Mirror
 
-- **Invitation update (`pnpm invitation:update`)**: Moves an immutable, versioned invitation
-  package from Local -> Preview -> Production. Preview is a validation environment only; Production
-  NEVER imports directly from the Preview DB or Storage.
+- **Invitation update (`pnpm invitation:update`)**: Moves an immutable, versioned invitation package
+  from Local -> Preview -> Production. Preview is a validation environment only; Production NEVER
+  imports directly from the Preview DB or Storage.
 - **Production-to-Preview Mirror (`pnpm db:preview:sync-invitations`)**: An independent, separate
   tool that mirrors published invitations from Production -> Preview for regression testing. It
   remains unchanged.
@@ -73,7 +74,7 @@ Definition -> normalized release -> Local -> immutable package -> Preview approv
    ```bash
    pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --dry-run
    pnpm invitation:update -- --non-interactive --slug <slug> --targets local,preview --source-dir <path> --apply
-   pnpm invitation:update -- --resume --package <path> --slug <slug> --targets production --owner-user-id <uuid> --apply
+   pnpm invitation:update -- --package <path> --slug <slug> --targets production --dry-run
    ```
 
 ## Preview Environment Workflow
@@ -96,8 +97,8 @@ PROVISIONED & HOSTED-VALIDATED
     `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
 - **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against
   `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction
-  (`127.0.0.1:54332`). Uninitialized Preview databases (0 remote migrations, 59 pending) return exit
-  code `0`.
+  (`127.0.0.1:54332`). The audit reports the live remote/pending counts; documentation does not
+  freeze a migration total.
 - **Separation of Operations**: Migration, seed, and audit are separate operations.
   `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
 - **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview
