@@ -250,7 +250,7 @@ function reconcileCanonicalAsset(
 	storageState: ObservedStorageState,
 	policy: AssetPolicy,
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
-	const targetPath = dbRecord?.storagePath ?? canonical.storagePath;
+	const targetPath = canonical.storagePath;
 
 	if (!storageState.present) {
 		return reconcileBinaryAbsent(canonical, dbRecord, targetPath, policy);

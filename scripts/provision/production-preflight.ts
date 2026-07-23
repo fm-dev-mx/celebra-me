@@ -98,9 +98,13 @@ export async function runProductionPreflight(input: {
 		return { approval: finalApproval, engineResult, targetDbUrl };
 	} catch (error) {
 		if (error instanceof ProductionPreflightError) throw error;
+		const msg = error instanceof Error ? error.message : String(error);
+		const safeReason = /bloquead|ausente|derivacio?n|politica|conflict/i.test(msg)
+			? msg
+			: 'No fue posible verificar de forma segura el proyecto y el estado de Producción. Revise las credenciales, la identidad de Database y Storage, y vuelva a ejecutar el preflight.';
 		throw new ProductionPreflightError(
 			'PRODUCTION_PLAN_BLOCKED',
-			'No fue posible verificar de forma segura el proyecto y el estado de Producción. Revise las credenciales, la identidad de Database y Storage, y vuelva a ejecutar el preflight.',
+			safeReason,
 			error,
 		);
 	}
