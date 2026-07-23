@@ -156,7 +156,7 @@ export function buildRominaPublishedContent(
 		envelope: {
 			disabled: false,
 			cardLabel: 'MIS XV',
-			envelopeName: 'Romina',
+			envelopeName: 'Romina Ríos Chaparro',
 			cardName: 'Romina',
 			cardTagline: '14 · 08 · 2026',
 			sealStyle: 'wax',
@@ -183,7 +183,7 @@ export function buildRominaPublishedContent(
 			labels: {
 				sectionSubtitle: 'Familia',
 				sectionTitle: 'Con el amor de mis padres y la compañía de mis padrinos',
-				parentsTitle: 'Con el amor de mis padres',
+				parentsTitle: 'Con la bendición de',
 				godparentsTitle: 'Acompañada por mis padrinos',
 				sectionMessage:
 					'Su amor ha acompañado cada paso de mi vida. Gracias por estar a mi lado y ser parte de un día que guardaré siempre en mi corazón.',
