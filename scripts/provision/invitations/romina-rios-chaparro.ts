@@ -174,8 +174,6 @@ export function buildRominaPublishedContent(
 			author: 'Romina',
 		},
 		family: {
-			eyebrow: 'Familia',
-			title: 'Con el amor de mis padres y la compañía de mis padrinos',
 			parents: {
 				mother: 'Claudia Chaparro Juárez',
 				father: 'Christian Miguel Ríos',
@@ -183,9 +181,12 @@ export function buildRominaPublishedContent(
 			parentsOrder: 'mother-first',
 			godparents: [{ name: 'Fernando Nájera' }, { name: 'Esmeralda Carbajal' }],
 			labels: {
-				sectionTitle: 'Mi familia',
+				sectionSubtitle: 'Familia',
+				sectionTitle: 'Con el amor de mis padres y la compañía de mis padrinos',
 				parentsTitle: 'Con el amor de mis padres',
 				godparentsTitle: 'Acompañada por mis padrinos',
+				sectionMessage:
+					'Su amor ha acompañado cada paso de mi vida. Gracias por estar a mi lado y ser parte de un día que guardaré siempre en mi corazón.',
 			},
 			featuredImage: assets.family,
 			focalPoint: '50% 35%',
