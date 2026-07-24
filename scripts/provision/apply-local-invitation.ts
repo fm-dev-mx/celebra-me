@@ -827,6 +827,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 		// 5. Upsert Event and Membership
 		let eventId = existingEvent?.id as string | undefined;
+
 		if (!eventId) {
 			eventId = randomUUID();
 			const { error: eventError } = await supabase.from('events').insert({

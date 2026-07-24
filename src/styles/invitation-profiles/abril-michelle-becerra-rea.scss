@@ -1,0 +1,139 @@
+@use '../global/mixins' as mixins;
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+
+// Abril Michelle Becerra Rea — romantic-editorial dusty rose & antique gold visual profile.
+// Loaded strictly through invitation-profiles/abril-michelle-becerra-rea.scss.
+.event--abril-michelle-becerra-rea.theme-preset--premiere-floral {
+	--font-display: 'Cormorant Garamond Variable', serif;
+
+	// Brand & Theme Palette
+	--abril-dusty-rose: rgb(212 165 165);
+	--abril-dusty-rose-rgb: 212 165 165;
+	--abril-rose-soft: rgb(245 225 225);
+	--abril-rose-soft-rgb: 245 225 225;
+	--abril-ivory: rgb(255 253 249);
+	--abril-ivory-rgb: 255 253 249;
+	--abril-cream: rgb(250 246 238);
+	--abril-warm-sand: rgb(239 228 214);
+	--abril-warm-sand-rgb: 239 228 214;
+	--abril-antique-gold: rgb(197 160 89);
+	--abril-antique-gold-rgb: 197 160 89;
+	--abril-dark-neutral: rgb(45 36 36);
+	--abril-dark-neutral-rgb: 45 36 36;
+	--abril-wine-dark: rgb(65 42 45);
+	--abril-wine-dark-rgb: 65 42 45;
+
+	// Surface & Tokens
+	--color-surface-primary: var(--abril-ivory);
+	--color-surface-primary-rgb: var(--abril-ivory-rgb);
+	--color-surface-soft: var(--abril-cream);
+	--color-surface-dark: var(--abril-wine-dark);
+	--color-surface-dark-rgb: var(--abril-wine-dark-rgb);
+
+	// Action & Accent
+	--color-action-primary: var(--abril-wine-dark);
+	--color-action-primary-rgb: var(--abril-wine-dark-rgb);
+	--color-action-accent: var(--abril-antique-gold);
+	--color-action-accent-rgb: var(--abril-antique-gold-rgb);
+	--color-gold-500: var(--abril-antique-gold);
+	--color-gold-500-rgb: var(--abril-antique-gold-rgb);
+
+	// Text Colors
+	--color-text-primary: var(--abril-dark-neutral);
+	--color-text-primary-rgb: var(--abril-dark-neutral-rgb);
+	--color-text-emphasis: var(--abril-wine-dark);
+	--color-text-secondary: rgb(var(--abril-dark-neutral-rgb) / 76%);
+	--color-text-on-dark: var(--abril-ivory);
+
+	// Borders & Glassmorphism
+	--color-border-subtle: rgb(var(--abril-antique-gold-rgb) / 28%);
+	--color-glass-bg: rgb(var(--abril-ivory-rgb) / 14%);
+	--color-glass-bg-accent: rgb(var(--abril-dusty-rose-rgb) / 14%);
+	--color-glass-border: rgb(var(--abril-antique-gold-rgb) / 38%);
+	--color-glass-shadow: rgb(var(--abril-wine-dark-rgb) / 20%);
+	--shadow-premium:
+		0 24px 56px rgb(var(--abril-wine-dark-rgb) / 14%),
+		0 12px 30px rgb(var(--abril-warm-sand-rgb) / 24%);
+
+	// Hero Section Contracts
+	--hero-card-bg: linear-gradient(
+		160deg,
+		rgb(var(--abril-ivory-rgb) / 88%) 0%,
+		rgb(var(--abril-rose-soft-rgb) / 64%) 100%
+	);
+	--hero-card-border-hairline: rgb(var(--abril-antique-gold-rgb) / 48%);
+	--hero-card-shadow-ambient:
+		0 30px 80px rgb(var(--abril-wine-dark-rgb) / 24%),
+		0 12px 32px rgb(var(--abril-antique-gold-rgb) / 16%);
+	--hero-title-color-start: var(--abril-ivory);
+	--hero-title-color-mid: var(--abril-cream);
+	--hero-title-color-end: var(--abril-antique-gold);
+	--hero-badge-bg: rgb(var(--abril-ivory-rgb) / 60%);
+	--hero-badge-border: rgb(var(--abril-antique-gold-rgb) / 58%);
+	--hero-badge-text: var(--abril-dark-neutral);
+	--hero-label-color: var(--abril-antique-gold);
+	--hero-divider-color: rgb(var(--abril-antique-gold-rgb) / 82%);
+	--hero-overlay: rgb(var(--abril-wine-dark-rgb) / 42%);
+	--hero-overlay-gradient: linear-gradient(
+		180deg,
+		rgb(var(--abril-wine-dark-rgb) / 12%) 0%,
+		rgb(var(--abril-wine-dark-rgb) / 68%) 100%
+	);
+
+	// Section Treatments
+	--quote-bg:
+		radial-gradient(circle at 20% 20%, rgb(var(--abril-dusty-rose-rgb) / 18%), transparent 40%),
+		linear-gradient(145deg, rgb(52 32 35), var(--abril-wine-dark));
+	--quote-text-color: var(--abril-ivory);
+	--quote-author-color: rgb(var(--abril-ivory-rgb) / 85%);
+	--quote-accent-color: var(--abril-antique-gold);
+	--quote-divider-color: var(--abril-antique-gold);
+	--quote-ornament-color: var(--abril-dusty-rose);
+	--family-bg: radial-gradient(
+		circle at 50% 18%,
+		var(--abril-ivory) 0%,
+		var(--abril-cream) 58%,
+		rgb(var(--abril-rose-soft-rgb) / 45%) 100%
+	);
+	--itinerary-card-bg: var(--abril-ivory);
+	--itinerary-accent: var(--abril-antique-gold);
+	--gallery-card-shadow: 0 16px 40px rgb(var(--abril-wine-dark-rgb) / 12%);
+	--location-card-bg: var(--abril-ivory);
+
+	// Hero art direction & responsive focal point tuning
+	.invitation-hero {
+		background-position: 50% 40%;
+
+		@include mixins.respond-to('sm') {
+			background-position: 50% 38%;
+		}
+
+		@include mixins.respond-to('md') {
+			background-position: 50% 40%;
+		}
+
+		@include mixins.respond-to('lg') {
+			background-position: 50% 42%;
+		}
+
+		.hero-content {
+			max-width: 48rem;
+		}
+
+		.hero-title {
+			font-family: var(--font-display);
+			font-size: clamp(2.5rem, 6vw, 4.25rem);
+			letter-spacing: -0.01em;
+			line-height: 1.1;
+		}
+	}
+
+	// Location section styling
+	.invitation-location {
+		.location-card {
+			border: 1px solid rgb(var(--abril-antique-gold-rgb) / 25%);
+			background-color: var(--abril-ivory);
+			box-shadow: 0 8px 30px rgb(var(--abril-wine-dark-rgb) / 8%);
+		}
+	}
+}

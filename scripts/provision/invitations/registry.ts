@@ -5,6 +5,7 @@
  */
 
 import type { InvitationDefinition } from './invitation-definition.ts';
+import { abrilInvitation } from './abril-michelle-becerra-rea.ts';
 import { rominaInvitation } from './romina-rios-chaparro.ts';
 
 const registry = new Map<string, InvitationDefinition>();
@@ -17,6 +18,7 @@ function registerInvitation(definition: InvitationDefinition): void {
 }
 
 // Register canonical invitations
+registerInvitation(abrilInvitation);
 registerInvitation(rominaInvitation);
 
 /**
