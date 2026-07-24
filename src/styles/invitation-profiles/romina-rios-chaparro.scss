@@ -179,8 +179,7 @@
 		}
 
 		&__title {
-			// TEST: Parisienne (script 400)
-			font-family: 'Parisienne', cursive;
+			font-family: Parisienne, cursive;
 			font-style: normal;
 			font-weight: 400;
 			text-transform: none;
@@ -313,7 +312,7 @@
 		.invitation-hero {
 			&__title {
 				margin-bottom: 5vh;
-				font-family: 'Parisienne', cursive;
+				font-family: Parisienne, cursive;
 				font-style: normal;
 				font-weight: 400;
 				font-size: clamp(3rem, 11vw, 5rem);
@@ -370,7 +369,7 @@
 			&__title {
 				position: relative;
 				top: -4rem;
-				font-family: 'Parisienne', cursive;
+				font-family: Parisienne, cursive;
 				font-style: normal;
 				font-weight: 400;
 				text-transform: none;
