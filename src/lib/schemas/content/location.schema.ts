@@ -5,7 +5,11 @@ import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.sche
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 
 const locationCoordinatesSchema = z
-	.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+	.object({
+		lat: z.number().min(-90).max(90),
+		lng: z.number().min(-180).max(180),
+		zoom: z.number().min(1).max(22).optional(),
+	})
 	.optional();
 const richTextSchema = z.string();
 

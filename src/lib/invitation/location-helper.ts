@@ -22,6 +22,7 @@ export interface VenueData {
 	coordinates?: {
 		lat: number;
 		lng: number;
+		zoom?: number;
 	};
 }
 

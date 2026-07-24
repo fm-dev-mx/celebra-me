@@ -34,6 +34,7 @@ interface VenueData {
 	coordinates?: {
 		lat: number;
 		lng: number;
+		zoom?: number;
 	};
 	events?: VenueEventItem[];
 }
@@ -102,6 +103,7 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 							<GoogleMap
 								lat={venue.coordinates.lat}
 								lng={venue.coordinates.lng}
+								zoom={venue.coordinates.zoom}
 								title={venue.venueName}
 								variant={variant}
 							/>

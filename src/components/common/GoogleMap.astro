@@ -17,7 +17,7 @@ function latLngToPixel(latVal: number, lngVal: number, zoomLevel: number) {
 	return { x, y };
 }
 
-const { lat, lng, zoom = 14, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
+const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
 
 const isRustic =
 	mapStyle === 'rustic' ||

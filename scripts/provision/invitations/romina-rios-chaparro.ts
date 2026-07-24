@@ -227,6 +227,7 @@ export function buildRominaPublishedContent(
 				coordinates: {
 					lat: 30.428,
 					lng: -107.925,
+					zoom: 13,
 				},
 			},
 		},
