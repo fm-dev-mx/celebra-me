@@ -1,5 +1,6 @@
 ---
 // Custom Google Map component with CSS filter styling & clean static tile option.
+/* eslint-disable no-restricted-syntax -- dynamic transforms require inline style */
 interface Props {
 	lat: number;
 	lng: number;
@@ -50,7 +51,7 @@ if (isRustic) {
 			tileGrid.push({
 				x: dx + 2,
 				y: dy + 2,
-				url: `https://${sub}.basemaps.cartocdn.com/rastertiles/light_all/${zoom}/${tx}/${ty}.png`,
+				url: `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tx}/${ty}.png`,
 			});
 		}
 	}
@@ -63,8 +64,7 @@ if (isRustic) {
 			<div class="rustic-map-wrapper">
 				<div
 					class="rustic-map-tiles"
-					data-shift-x={shiftX}
-					data-shift-y={shiftY}
+					style={`transform: translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px);`}
 				>
 					{tileGrid.map((tile) => (
 						<img
@@ -101,15 +101,6 @@ if (isRustic) {
 	<div class="map-overlay" aria-hidden="true"></div>
 </div>
 
-<script is:inline>
-	document.querySelectorAll('.rustic-map-tiles[data-shift-x]').forEach(function(el) {
-		const x = el.getAttribute('data-shift-x');
-		const y = el.getAttribute('data-shift-y');
-		if (x !== null && y !== null) {
-			el.style.transform = 'translate(-50%, -50%) translate(' + x + 'px, ' + y + 'px)';
-		}
-	});
-</script>
 
 <style lang="scss">
 	.google-map-container {
@@ -229,7 +220,7 @@ if (isRustic) {
 		}
 
 		&[data-map-style='rustic'] {
-			--map-frame-filter: sepia(0.35) saturate(0.7) hue-rotate(-8deg) contrast(0.96) brightness(0.96);
+			--map-frame-filter: sepia(0.18) saturate(0.85) hue-rotate(-6deg) contrast(1.04) brightness(0.96);
 			--map-border: rgb(var(--color-action-accent-rgb, 199 173 118) / 0.35);
 			--map-shadow: inset 0 0 30px rgb(var(--color-surface-dark-rgb, 49 73 58) / 0.18);
 			--map-overlay: linear-gradient(
