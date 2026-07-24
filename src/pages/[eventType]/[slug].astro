@@ -184,6 +184,14 @@ const activeSectionCssUrls =
 const headLinks = [
 	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
 	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
+	// Google Fonts — Parisienne (script 400) for Romina profile.
+	// Other font families are served via @fontsource-variable/* packages.
+	{ rel: 'preconnect' as const, href: 'https://fonts.googleapis.com' },
+	{ rel: 'preconnect' as const, href: 'https://fonts.gstatic.com' },
+	{
+		rel: 'stylesheet' as const,
+		href: 'https://fonts.googleapis.com/css2?family=Parisienne&display=swap',
+	},
 ];
 
 const wrapperDataAttributes = page

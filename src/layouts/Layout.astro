@@ -25,7 +25,7 @@ interface Props {
 	themeMode?: 'light' | 'dark';
 	transparentHeader?: boolean;
 	headLinks?: Array<{
-		rel: 'preload' | 'stylesheet';
+		rel: 'preconnect' | 'preload' | 'stylesheet';
 		href: string;
 		as?: 'image' | 'style';
 		media?: string;
