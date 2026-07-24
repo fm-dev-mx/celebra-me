@@ -1,28 +1,115 @@
 ---
-// Custom Google Map component with CSS filter styling.
+// Custom Google Map component with CSS filter styling & clean static tile option.
 interface Props {
 	lat: number;
 	lng: number;
 	zoom?: number;
 	title?: string;
-	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite' | 'rustic';
 	variant?: string;
 }
 
-const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
+function latLngToPixel(latVal: number, lngVal: number, zoomLevel: number) {
+	const n = Math.pow(2, zoomLevel);
+	const x = ((lngVal + 180) / 360) * n * 256;
+	const latRad = (latVal * Math.PI) / 180;
+	const y = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n * 256;
+	return { x, y };
+}
+
+const { lat, lng, zoom = 14, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
+
+const isRustic =
+	mapStyle === 'rustic' ||
+	variant === 'premiere-floral' ||
+	variant === 'romina-rios-chaparro' ||
+	variant === 'luxury-hacienda';
+
+let tileGrid: Array<{ x: number; y: number; url: string }> = [];
+let shiftX = 0;
+let shiftY = 0;
+
+if (isRustic) {
+	const { x, y } = latLngToPixel(lat, lng, zoom);
+	const centerTileX = Math.floor(x / 256);
+	const centerTileY = Math.floor(y / 256);
+	const offsetX = x % 256;
+	const offsetY = y % 256;
+
+	shiftX = Math.round(128 - offsetX);
+	shiftY = Math.round(128 - offsetY);
+
+	const subdomains = ['a', 'b', 'c'];
+	let subIdx = 0;
+	for (let dy = -1; dy <= 1; dy++) {
+		for (let dx = -1; dx <= 1; dx++) {
+			const tx = centerTileX + dx;
+			const ty = centerTileY + dy;
+			const sub = subdomains[subIdx % subdomains.length];
+			subIdx++;
+			tileGrid.push({
+				x: dx + 2,
+				y: dy + 2,
+				url: `https://${sub}.basemaps.cartocdn.com/rastertiles/light_all/${zoom}/${tx}/${ty}.png`,
+			});
+		}
+	}
+}
 ---
-<div class="google-map-container" data-map-style={mapStyle} data-variant={variant}>
-	<iframe
-		width="100%"
-		height="100%"
-		src={`https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`}
-		title={title}
-		aria-label={title}
-		loading="lazy"
-	>
-	</iframe>
+
+<div class="google-map-container" data-map-style={isRustic ? 'rustic' : mapStyle} data-variant={variant}>
+	{
+		isRustic ? (
+			<div class="rustic-map-wrapper">
+				<div
+					class="rustic-map-tiles"
+					data-shift-x={shiftX}
+					data-shift-y={shiftY}
+				>
+					{tileGrid.map((tile) => (
+						<img
+							src={tile.url}
+							alt=""
+							loading="lazy"
+							decoding="async"
+							class="rustic-map-tile"
+							data-col={tile.x}
+							data-row={tile.y}
+						/>
+					))}
+				</div>
+				<div class="rustic-map-marker" title={title} aria-label={title}>
+					<div class="rustic-map-pin">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">
+							<path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+						</svg>
+					</div>
+					<div class="rustic-map-pulse" />
+				</div>
+			</div>
+		) : (
+			<iframe
+				width="100%"
+				height="100%"
+				src={`https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`}
+				title={title}
+				aria-label={title}
+				loading="lazy"
+			/>
+		)
+	}
 	<div class="map-overlay" aria-hidden="true"></div>
 </div>
+
+<script is:inline>
+	document.querySelectorAll('.rustic-map-tiles[data-shift-x]').forEach(function(el) {
+		const x = el.getAttribute('data-shift-x');
+		const y = el.getAttribute('data-shift-y');
+		if (x !== null && y !== null) {
+			el.style.transform = 'translate(-50%, -50%) translate(' + x + 'px, ' + y + 'px)';
+		}
+	});
+</script>
 
 <style lang="scss">
 	.google-map-container {
@@ -47,6 +134,90 @@ const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } 
 			transition: filter var(--duration-standard, 400ms) var(--ease-standard, ease);
 		}
 
+		.rustic-map-wrapper {
+			position: absolute;
+			inset: 0;
+			overflow: hidden;
+			background-color: var(--map-surface);
+		}
+
+		.rustic-map-tiles {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 768px;
+			height: 768px;
+			display: grid;
+			grid-template-columns: repeat(3, 256px);
+			grid-template-rows: repeat(3, 256px);
+			pointer-events: none;
+			transform: translate(-50%, -50%);
+			filter: var(--map-frame-filter);
+			transition: filter var(--duration-standard, 400ms) var(--ease-standard, ease);
+		}
+
+		.rustic-map-tile {
+			width: 256.5px;
+			height: 256.5px;
+			margin: -0.25px;
+			display: block;
+			user-select: none;
+			object-fit: cover;
+
+			&[data-col='1'] {
+				grid-column: 1;
+			}
+
+			&[data-col='2'] {
+				grid-column: 2;
+			}
+
+			&[data-col='3'] {
+				grid-column: 3;
+			}
+
+			&[data-row='1'] {
+				grid-row: 1;
+			}
+
+			&[data-row='2'] {
+				grid-row: 2;
+			}
+
+			&[data-row='3'] {
+				grid-row: 3;
+			}
+		}
+
+		.rustic-map-marker {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -100%);
+			z-index: 2;
+			pointer-events: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.rustic-map-pin {
+			width: 28px;
+			height: 36px;
+			color: var(--color-action-accent, rgb(199 173 118));
+			filter: drop-shadow(0 4px 8px rgb(0 0 0 / 45%));
+			transition: transform 0.3s ease;
+		}
+
+		.rustic-map-pulse {
+			width: 14px;
+			height: 6px;
+			border-radius: 50%;
+			background: rgb(var(--color-action-accent-rgb, 199 173 118) / 0.4);
+			box-shadow: 0 0 12px var(--color-action-accent, rgb(199 173 118));
+			margin-top: -4px;
+		}
+
 		.map-overlay {
 			position: absolute;
 			inset: 0;
@@ -55,6 +226,18 @@ const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } 
 			border: 1px solid var(--map-border);
 			border-radius: inherit;
 			background: var(--map-overlay);
+		}
+
+		&[data-map-style='rustic'] {
+			--map-frame-filter: sepia(0.35) saturate(0.7) hue-rotate(-8deg) contrast(0.96) brightness(0.96);
+			--map-border: rgb(var(--color-action-accent-rgb, 199 173 118) / 0.35);
+			--map-shadow: inset 0 0 30px rgb(var(--color-surface-dark-rgb, 49 73 58) / 0.18);
+			--map-overlay: linear-gradient(
+				180deg,
+				rgb(var(--color-surface-primary-rgb, 246 241 232) / 0.08) 0%,
+				transparent 45%,
+				rgb(var(--color-surface-dark-rgb, 49 73 58) / 0.12) 100%
+			);
 		}
 
 		&[data-map-style='minimal'] {
@@ -118,8 +301,13 @@ const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } 
 			);
 		}
 
-		&:hover iframe {
+		&:hover iframe,
+		&:hover .rustic-map-tiles {
 			filter: saturate(1.02) contrast(1.01) brightness(0.98);
+		}
+
+		&[data-map-style='rustic']:hover .rustic-map-tiles {
+			filter: sepia(0.28) saturate(0.8) contrast(0.98) brightness(0.98);
 		}
 
 		&[data-variant='celestial-blue']:hover iframe {
@@ -127,3 +315,4 @@ const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } 
 		}
 	}
 </style>
+
