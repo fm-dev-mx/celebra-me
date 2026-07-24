@@ -76,6 +76,7 @@ describe('Romina local invitation content', () => {
 		expect(typedContent.location.reception.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),
+			zoom: 13,
 		});
 		expect(typedContent.location.ceremony.coordinates).not.toEqual(
 			typedContent.location.reception.coordinates,

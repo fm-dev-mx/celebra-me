@@ -210,12 +210,15 @@ function parseCoordinate(value: unknown, min: number, max: number): number | und
 
 function buildCoordinates(
 	venue: Record<string, unknown>,
-): { lat: number; lng: number } | undefined {
+): { lat: number; lng: number; zoom?: number } | undefined {
 	if (venue.coordinates === undefined) return undefined;
 	const c = venue.coordinates as Record<string, unknown>;
 	const lat = parseCoordinate(c.lat, -90, 90);
 	const lng = parseCoordinate(c.lng, -180, 180);
-	if (lat !== undefined && lng !== undefined) return { lat, lng };
+	const zoom = typeof c.zoom === 'number' && c.zoom >= 1 && c.zoom <= 22 ? c.zoom : undefined;
+	if (lat !== undefined && lng !== undefined) {
+		return { lat, lng, ...(zoom !== undefined ? { zoom } : {}) };
+	}
 	return undefined;
 }
 

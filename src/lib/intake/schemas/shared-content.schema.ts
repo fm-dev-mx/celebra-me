@@ -41,7 +41,11 @@ export const venueSchema = z
 		wazeUrl: optionalUrl,
 		image: editableAssetSchema.optional(),
 		coordinates: z
-			.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+			.object({
+				lat: z.number().min(-90).max(90),
+				lng: z.number().min(-180).max(180),
+				zoom: z.number().min(1).max(22).optional(),
+			})
 			.optional(),
 	})
 	.strict();
