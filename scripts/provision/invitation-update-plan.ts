@@ -443,11 +443,11 @@ export function buildSemanticFunctionalChanges(params: {
 			}
 			return;
 		}
-		if (Array.isArray(sourceValue) && targetCanonical === undefined) {
+		if (Array.isArray(sourceValue) && !Array.isArray(targetValue) && targetCanonical === undefined) {
 			walk(section, fieldPath, sourceValue, []);
 			return;
 		}
-		if (Array.isArray(targetValue) && sourceCanonical === undefined) {
+		if (Array.isArray(targetValue) && !Array.isArray(sourceValue) && sourceCanonical === undefined) {
 			walk(section, fieldPath, [], targetValue);
 			return;
 		}
