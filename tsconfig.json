@@ -30,6 +30,6 @@
         "resolveJsonModule": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "tests/**/*", "scripts/**/*", "src/env.d.ts"],
+    "include": ["src/**/*", "tests/**/*", "scripts/**/*", "src/env.d.ts", "playwright*.config.ts"],
     "exclude": ["dist"]
 }

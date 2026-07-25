@@ -57,10 +57,10 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                      | Relationship                                          |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                | Present in app/runtime typing; omitted from template. |
+| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                        | Relationship                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                  | Present in app/runtime typing; omitted from template. |
 
 The Cloudinary variables are server-only operational inputs for trusted provisioning scripts. Never
 create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files.
@@ -98,6 +98,49 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
   order.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
+
+## External Vercel Preview E2E
+
+Preview Playwright configs (`playwright.preview*.config.ts`) load `.env.e2e.local` before resolving
+configuration. The default `playwright.config.ts` used by `pnpm test:e2e:ci` / `pnpm run ci` does
+not load that file, so a local Preview harness cannot redirect the canonical CI suite. Existing
+shell or CI variables take precedence; the file fills only missing values in Preview configs. The
+file is ignored by the existing `.env.*.local` rule and must never be copied into Vercel runtime
+environment variables.
+
+Required for authenticated Preview runs:
+
+```text
+PLAYWRIGHT_BASE_URL
+PLAYWRIGHT_HOST_LOGIN
+PLAYWRIGHT_HOST_PASSWORD
+VERCEL_AUTOMATION_BYPASS_SECRET
+PLAYWRIGHT_PREVIEW_INVITATION_ID
+```
+
+`PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the idempotent Preview fixture
+command (`pnpm test:e2e:preview:provision`): create or reconcile slug `e2e-preview-publication`,
+copy demo-derived content, and run publication preflight. It does **not** publish.
+
+`PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true` separately authorizes fixture-only publication (baseline
+publish during provisioning, and the serialized publication smoke in `pnpm test:e2e:preview`). It is
+false by default. Neither flag authorizes Production operations.
+
+Run public smoke checks with `pnpm test:e2e:preview:public` and authenticated checks with
+`pnpm test:e2e:preview`. Run fixture provisioning only after explicit owner approval with
+`pnpm test:e2e:preview:provision`, then copy the printed non-secret fixture UUID to
+`PLAYWRIGHT_PREVIEW_INVITATION_ID` in `.env.e2e.local`. Authorize publication separately when a
+baseline or smoke publish is required.
+
+The Deployment Protection secret is sent only during a single same-origin health request that asks
+Vercel to establish its bypass cookie. It is never configured as a global browser header, so
+cross-origin image, font, analytics, Supabase, and Cloudinary requests cannot receive it.
+
+Authenticated Preview projects always disable screenshots, video, traces, and persistent
+`storageState`. `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS=true` enables only a sanitized JSON attachment
+containing route outcomes, status codes, counts, and booleans; it never includes request bodies,
+headers, cookies, tokens, login values, or CSRF values. Preview configs also disable Playwright's
+automatic failure-time page snapshot so authenticated DOM content cannot be written to the report.
 
 ## Cleanup Notes
 
