@@ -12,7 +12,11 @@ when_to_use:
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
-related_skills: []
+related_skills:
+  - staged-code-review
+  - staged-code-review-apply
+  - release-prepare
+  - git-stash-branch-cleanup
 related_docs:
   - docs/core/git-governance.md
   - docs/core/release-process.md

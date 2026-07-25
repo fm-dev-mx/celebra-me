@@ -57,8 +57,12 @@ state and never has authority over these definitions.
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
+| `git-stash-branch-cleanup`    | audit and clean stale stashes/branches with confirmation           |
 | `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
+| `release-prepare`             | prepare version bump + CHANGELOG without commit/tag/push           |
 | `seo-metadata`                | metadata, sharing, and search presentation                         |
+| `staged-code-review`          | simplification-first analysis of staged git changes (read-only)    |
+| `staged-code-review-apply`    | gated application of staged-code-review fixes (no stage/commit)    |
 | `supabase`                    | Supabase Auth, RLS, Edge Functions, Storage, CLI, and MCP guidance |
 | `supabase-postgres`           | Postgres performance, indexes, connections, schema, and locking    |
 | `testing`                     | unit, integration, and E2E testing guidance                        |
@@ -204,6 +208,9 @@ Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/gi
 | Supabase or database work         | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md` |
 | Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans    |
 | Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                           |
+| Staged review before commit       | `staged-code-review` then `staged-code-review-apply`                                         |
+| Release candidate prep            | `release-prepare` and `docs/core/release-process.md`                                         |
+| Stash / branch housekeeping       | `git-stash-branch-cleanup`                                                                   |
 | Real invitation pre-work audit    | `client-invitation-audit` (then `managed-invitation-lifecycle` to apply)                     |
 | Demo date / transform consistency | `demo-content-consistency`                                                                   |
 | Manual production SQL authoring   | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                           |

@@ -29,7 +29,10 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
   files are forbidden). Anti-slop and polish/critique ideas belong inside `frontend-design` and
   visual-director templates only.
 - **Global Hermes (or other host) skills** — may exist outside the repository for cross-project
-  tooling. They never override `.agent/skills/`. See External Runtime Discovery below.
+  tooling. They never override `.agent/skills/`. See External Runtime Discovery below. Do **not**
+  dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
+  review, release prepare, stash cleanup) into `.agent/skills/` when they are part of this product's
+  operating contract, then point the host at `.agent/skills` via `external_dirs`.
 
 ## Constraints
 
@@ -47,7 +50,10 @@ canonical source.
 
 - Do **not** create `HERMES.md`, `.hermes.md`, or other provider-specific entry files. `AGENTS.md`
   is the only project entry point.
-- Do **not** copy global host skills into `.agent/skills/`.
+- Do **not** copy the host's global skill catalog into `.agent/skills/` as a dump or mirror.
+- Do **promote** Celebra-owned workflows into `.agent/skills/` (SCHEMA-compliant, provider-neutral)
+  when they belong to this product; after promotion, host copies should stub/redirect here so
+  `.agent/skills/` remains the single authority.
 - Do **not** re-host ComfyUI / multi-brand creative infrastructure inside this product repo.
 - Local/host config (gitignored, e.g. Hermes `skills.external_dirs`) may point at this repo's
   `.agent/skills/` path so the host can load Celebra-me skills without forking them.
@@ -72,8 +78,10 @@ software-development, database, media, git, research, and computer-use. Those st
 
 Celebra-me tracked skills (canonical) cover product contracts only, for example: `astro-patterns`,
 `backend-engineering`, `frontend-design`, `theme-architecture`, `supabase`, `supabase-postgres`,
-`testing`, `copywriting-es`, `commit-planner`, `documentation-governance`, and related domain skills
-listed in `.agent/index.md`.
+`testing`, `copywriting-es`, `commit-planner`, `staged-code-review`, `staged-code-review-apply`,
+`release-prepare`, `git-stash-branch-cleanup`, `client-invitation-audit`, `production-sql-patches`,
+`demo-content-consistency`, `documentation-governance`, and related domain skills listed in
+`.agent/index.md`.
 
 **Rule:** Hermes provides tooling discovery; `.agent/` provides Celebra-me authority. Overlap in
 names never overrides `.agent/skills/`.

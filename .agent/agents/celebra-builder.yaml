@@ -38,7 +38,11 @@ skills:
     - client-invitation-audit
     - demo-content-consistency
     - production-sql-patches
+    - staged-code-review
+    - staged-code-review-apply
     - commit-planner
+    - release-prepare
+    - git-stash-branch-cleanup
     - testing
 constraints:
     - Bound by gatekeeper rules — no new `any`, no Tailwind
