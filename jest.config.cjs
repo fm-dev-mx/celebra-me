@@ -1,5 +1,7 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 const strictRsvpCoverage = process.env.RSVP_STRICT_COVERAGE === 'true';
+const sanitizeHtmlEsmPackages =
+	'(?:htmlparser2|entities|domhandler|domelementtype|domutils|dom-serializer)';
 
 module.exports = {
 	// ESM + TypeScript preset
@@ -20,7 +22,17 @@ module.exports = {
 				tsconfig: '<rootDir>/tsconfig.test.json',
 			},
 		],
+		// Transform only sanitize-html's ESM parser graph for Jest's CJS runtime:
+		// htmlparser2 parses markup; entities decodes/encodes entities; domhandler builds
+		// the DOM; domelementtype classifies nodes; domutils traverses/manipulates it;
+		// dom-serializer serializes the sanitized tree.
+		[`[\\\\/]node_modules[\\\\/]${sanitizeHtmlEsmPackages}[\\\\/].+\\.jsx?$`]:
+			'<rootDir>/scripts/jest-esm-to-cjs-transform.cjs',
 	},
+
+	// Match any node_modules segment so nested htmlparser2/node_modules/* is not ignored.
+	// Remove this exception when Jest can execute this ESM graph directly in the repo pipeline.
+	transformIgnorePatterns: [`[\\\\/]node_modules[\\\\/](?!${sanitizeHtmlEsmPackages}[\\\\/])`],
 
 	moduleNameMapper: {
 		// Fix ESM relative imports that may include ".js" extension in compiled output

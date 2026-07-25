@@ -178,17 +178,53 @@ Not all situations fit the conventions. If a change requires deviating:
 
 `package.json` is the source of truth for installed versions. As of 2026-07-25:
 
-| Package    | Repo baseline                  | Upgrade stance                                             |
-| ---------- | ------------------------------ | ---------------------------------------------------------- |
-| Astro      | 6.x (e.g. `6.4.8`)             | Stay on Astro 6 until a dedicated Astro 7 migration window |
-| TypeScript | 5.9.x                          | Stay on TS 5.9 until tooling/Astro are ready for TS 7      |
-| React      | 19.x                           | Patch updates OK within 19.x                               |
-| Other deps | pinned/caret in `package.json` | Patch/minor when needed for bugs or security               |
+| Package    | Repo baseline                                                                                                                                               | Upgrade stance                                                                                                |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Astro      | 7.x (e.g. `7.1.3`) with `@astrojs/vercel` 11.x / `@astrojs/react` 6.x                                                                                       | Patch/minor within Astro 7; majors need a dedicated window                                                    |
+| TypeScript | **Hybrid:** CLI compiler **7.0.2** (`@typescript/native` → `tsc`); programmatic tooling API via package name `typescript` → `@typescript/typescript6@6.0.2` | Keep dual-install until typescript-eslint / `@astrojs/check` / `ts-jest` support the TS ≥7.1 programmatic API |
+| React      | 19.x                                                                                                                                                        | Patch updates OK within 19.x                                                                                  |
+| Other deps | pinned/caret in `package.json`                                                                                                                              | Patch/minor when needed for bugs or security                                                                  |
 
-Do **not** mix major framework upgrades with documentation/governance or invitation production work.
-An Astro 7 or TypeScript 7 upgrade is its own project: changelog entry, smoke `pnpm build`, focused
-E2E, and adapter/content-collection verification. Prefer Context7 (or equivalent) against the pinned
-versions when API details are uncertain.
+### TypeScript hybrid arrangement (verified)
+
+| Command / consumer                   | Resolves                      | Effective version                         |
+| ------------------------------------ | ----------------------------- | ----------------------------------------- |
+| `tsc` (via `pnpm type-check`)        | `@typescript/native` bin      | **7.0.2**                                 |
+| `astro check`                        | `require('typescript')`       | **6.0.x API** (`@typescript/typescript6`) |
+| ESLint `typescript-eslint`           | `require('typescript')`       | **6.0.x API**                             |
+| Jest `ts-jest`                       | `require('typescript')`       | **6.0.x API**                             |
+| `scripts/validate-ui-governance.mjs` | `import ts from 'typescript'` | **6.0.x API**                             |
+
+`scripts/validate-ui-governance.mjs` is the only repository script that imports `typescript`
+directly. `pnpm type-check` runs `astro check && tsc --noEmit -p tsconfig.json` so both the Astro
+language service and the TypeScript **7** CLI compile-check run. Do **not** describe the repo as
+“fully on TypeScript 7” for ESLint/Jest/astro-check — only the CLI compiler is 7.x until upstream
+ships a stable TS 7 programmatic API (expected with TypeScript ≥7.1). **Removal condition:** when
+`typescript-eslint`, `@astrojs/check`, `ts-jest`, and `scripts/validate-ui-governance.mjs` work
+against TypeScript ≥7.1 and pass `pnpm lint` + `pnpm type-check` + `pnpm validate:ui-governance` +
+`pnpm test` with `"typescript": "7.x"` and no `@typescript/typescript6` shim.
+
+### `sanitize-html` ESM compatibility
+
+`sanitize-html@2.17.6` intentionally resolves its production parser to `htmlparser2@12`; do not
+override that security update to an older parser. Vercel's serverless loader cannot load the
+CommonJS `sanitize-html` entry when it synchronously requires the ESM-only parser. The bounded
+`vite.ssr.noExternal` list in `astro.config.mjs` therefore bundles only this runtime graph:
+
+- `htmlparser2` parses markup and depends on `entities`, `domhandler`, and `domutils`;
+- `entities` decodes and encodes HTML entities;
+- `domhandler` builds the DOM tree and uses `domelementtype` for node classification;
+- `domutils` traverses/manipulates the tree and uses `dom-serializer` for output.
+
+Jest uses the same six-package ESM graph through `scripts/jest-esm-to-cjs-transform.cjs`, scoped by
+`jest.config.cjs`; that transform is test-only and is not imported into production code. Remove the
+Jest exception when the repository Jest pipeline consumes the graph directly. Remove the Vite SSR
+exception when the Vercel runtime can load the upstream CommonJS-to-ESM boundary directly (or
+`sanitize-html` ships a compatible entry), and only after local handler invocation, the full local
+suite, and an authenticated Preview smoke test pass without it.
+
+Prefer Context7 (or equivalent) against the pinned versions when API details are uncertain. Major
+framework upgrades should not mix with invitation production work.
 
 ## 13) Adding Real or Client Invitations
 

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { loadEnv } from 'vite';
 
 const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
+const isBuildCommand = process.argv.includes('build');
 
 /**
  * Allowlist of project-owned environment variables that local .env may
@@ -127,6 +128,22 @@ export default defineConfig({
 	},
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
+		ssr: {
+			// Vercel's serverless loader cannot require htmlparser2@12 (ESM-only)
+			// through sanitize-html's CommonJS entrypoint. Bundle that parser chain
+			// so Vite resolves the CJS-to-ESM interop during the SSR build.
+			noExternal: isBuildCommand
+				? [
+						'sanitize-html',
+						'htmlparser2',
+						'entities',
+						'domhandler',
+						'domelementtype',
+						'domutils',
+						'dom-serializer',
+					]
+				: undefined,
+		},
 		define: {
 			'import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID': JSON.stringify(
 				process.env.PUBLIC_GOOGLE_ANALYTICS_ID ?? '',

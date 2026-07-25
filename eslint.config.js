@@ -1,8 +1,8 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import astroParser from 'astro-eslint-parser';
+import * as astroParser from 'astro-eslint-parser';
 import eslintPluginAstro from 'eslint-plugin-astro';
-import eslintPluginImport from 'eslint-plugin-import';
+import eslintPluginImportX from 'eslint-plugin-import-x';
 import eslintPluginBoundaries from 'eslint-plugin-boundaries';
 import globals from 'globals';
 
@@ -79,11 +79,11 @@ export default [
 	// ------------------------------------------------------------
 	{
 		plugins: {
-			import: eslintPluginImport,
+			'import-x': eslintPluginImportX,
 			boundaries: eslintPluginBoundaries,
 		},
 		settings: {
-			'import/resolver': {
+			'import-x/resolver': {
 				typescript: true,
 			},
 			'boundaries/elements': [
@@ -107,7 +107,7 @@ export default [
 			'max-lines': ['error', { max: 800, skipBlankLines: true, skipComments: true }],
 			complexity: ['error', 20],
 			// Coupling
-			'import/no-cycle': 'error',
+			'import-x/no-cycle': 'error',
 			'boundaries/dependencies': [
 				'error',
 				{

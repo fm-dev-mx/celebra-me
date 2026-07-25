@@ -1,7 +1,8 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "ignoreDeprecations": "5.0",
-        "module": "es2020"
+        "ignoreDeprecations": "6.0",
+        "module": "es2020",
+        "rootDir": "."
     }
 }

@@ -55,8 +55,10 @@ authority above.
 
 ## Architecture
 
-- **Framework:** Astro 6 SSR (`output: 'server'`) with the Vercel adapter. Major upgrades (Astro 7,
-  TypeScript 7) are deferred; see `docs/core/project-conventions.md` → Platform Version Policy.
+- **Framework:** Astro 7 SSR (`output: 'server'`) with the Vercel adapter. TypeScript uses a
+  **hybrid** toolchain: CLI compiler 7.x via `@typescript/native`, while ESLint / `astro check` /
+  `ts-jest` use the TypeScript 6 programmatic API shim (see `docs/core/project-conventions.md` →
+  Platform Version Policy).
 - **Content:** `events`, `event-demos`, and `event-templates` are loaded from JSON under
   `src/content/` through `astro:content`.
 - **Boundaries:** `src/pages/` contains routes, `src/lib/` contains server/domain logic,

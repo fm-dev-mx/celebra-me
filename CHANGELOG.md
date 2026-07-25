@@ -17,6 +17,13 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Changed
 
+- **Platform baseline**: Astro 7.1.x (`@astrojs/vercel` 11.x, `@astrojs/react` 6.x, Vite 8) and a
+  hybrid TypeScript arrangement (CLI **7.0.2** via `@typescript/native`; tooling API via
+  `@typescript/typescript6` for ESLint / `astro check` / `ts-jest`). Coordinated latest-stable
+  dependency refresh; Jest transforms only the ESM `htmlparser2` parser graph while Vite bundles
+  that graph for Vercel SSR, instead of overriding production parsers; ESLint 10 uses
+  `eslint-plugin-import-x` for supported peers; global SCSS no longer uses Astro-scoped `:global()`
+  (Lightning CSS safe).
 - **Agent governance SSOT**: ownership matrix and invitation authority chain in `.agent/index.md`;
   layered CHANGELOG policy in `docs/core/release-process.md`; Context7/Impeccable/Hermes discovery
   rules in skill loaders; platform version policy deferring Astro 7 / TypeScript 7 majors; DB/env

@@ -22,8 +22,8 @@ Celebra-me follows these guiding principles:
 
 ## 2) Astro Execution Model
 
-The repository intentionally tracks **Astro 6** SSR with the Vercel adapter. Do not treat Astro 7+
-as the active baseline until a dedicated upgrade lands. Platform version policy lives in
+The repository tracks **Astro 7** SSR with the Vercel adapter. Platform version policy (including
+the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
 [`project-conventions.md`](project-conventions.md#12-platform-version-policy).
 
 ### Default Strategy
