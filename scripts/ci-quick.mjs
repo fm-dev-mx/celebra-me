@@ -6,9 +6,9 @@
  * the local Git index state) and in local development.
  *
  * Scope:
- *   - In CI (with VALIDATION_BASE_SHA/HEAD_SHA): runs type-check plus
- *     ESLint on the explicit PR range, then exits.
- *   - Locally: runs type-check plus ESLint on the working tree
+ *   - In CI (with VALIDATION_BASE_SHA/HEAD_SHA): runs type-check,
+ *     structural validation, and ESLint on the explicit PR range.
+ *   - Locally: runs type-check, structural validation, and ESLint on the working tree
  *     (tracked + untracked, deduped). This is *not* the same scope as
  *     `validate:staged`; it is broader and does not require a clean
  *     staging area.
@@ -63,7 +63,10 @@ console.log(
 // Step 1 — type-check (always full repo; cheap relative to ESLint)
 fail('type-check', runStep('astro check (full repo)', 'pnpm', ['run', 'type-check']));
 
-// Step 2 — ESLint on the resolved scope (or full repo if scope is empty
+// Step 2 — deterministic repository structure checks.
+fail('validate:structure', runStep('repository structure', 'pnpm', ['run', 'validate:structure']));
+
+// Step 3 — ESLint on the resolved scope (or full repo if scope is empty
 // for safety).
 const files = getChangedFiles()
 	.filter((file) => !IGNORE_FILES.test(file))

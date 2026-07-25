@@ -2,31 +2,22 @@
 /**
  * related-test-files.mjs
  *
- * Single source of truth for "which Jest tests cover this source file?".
- * Used by `pnpm test:changed` and `pnpm validate:staged` so both entry
- * points stay in sync.
+ * Single source of truth for the changed files passed to Jest
+ * `--findRelatedTests`.
  *
  * Public API:
- *   getRelatedTestFiles(sourceFiles: string[]): string[]
- *     - For each source file, returns the path of its co-located
- *       `.test.ts`/`.test.tsx`, filtered to those that exist on disk.
- *     - If a source file IS a test file, it is included directly.
+ *   getRelatedTestSourceFiles(changedFiles: string[]): string[]
+ *     - Returns changed JavaScript, TypeScript, and Astro source files.
+ *     - Directly changed test files remain in the list so Jest runs them.
+ *     - Missing paths are excluded (for example, deleted working-tree files).
  */
 
 import { existsSync } from 'node:fs';
 
 const SOURCE_PATTERN = /\.(?:ts|tsx|js|jsx|mjs|cjs|astro)$/u;
-const TEST_PATTERN = /\.test\.(?:ts|tsx)$/u;
 
-export function getRelatedTestFiles(sourceFiles) {
-	const candidates = new Set();
-
-	for (const file of sourceFiles.filter((f) => SOURCE_PATTERN.test(f))) {
-		const base = file.replace(SOURCE_PATTERN, '');
-		candidates.add(`${base}.test.ts`);
-		candidates.add(`${base}.test.tsx`);
-		if (TEST_PATTERN.test(file)) candidates.add(file);
-	}
-
-	return [...candidates].filter((candidate) => existsSync(candidate));
+export function getRelatedTestSourceFiles(changedFiles, pathExists = existsSync) {
+	return [
+		...new Set(changedFiles.filter((file) => SOURCE_PATTERN.test(file) && pathExists(file))),
+	];
 }

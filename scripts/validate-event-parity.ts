@@ -186,7 +186,7 @@ async function main(): Promise<void> {
 Validate routable slug uniqueness and DB/published content parity.
 
 Usage:
-  pnpm ops validate-event-parity [options]
+  pnpm validate:event-parity -- [options]
 
 Options:
   --slug <slug>             Filter to a single slug

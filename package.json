@@ -19,14 +19,15 @@
         "test:e2e:ci": "playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts",
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
         "test:e2e:ga4": "playwright test --config=playwright.ga4.config.ts",
-        "test:e2e:infra": "echo 'Reserved for DB-backed e2e (RSVP, social preview, real invitations) — requires SUPABASE env'",
-        "test:e2e:visual": "echo 'Reserved for screenshot/audit e2e (valentina-face, ximena, xv-demo) — requires SUPABASE env'",
+        "test:e2e:infra": "node scripts/run-e2e-tier.mjs infra",
+        "test:e2e:visual": "node scripts/run-e2e-tier.mjs visual",
         "type-check": "astro check",
-        "ci": "pnpm type-check && pnpm lint && pnpm lint:styles && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm test && pnpm test:e2e:ci && pnpm build:app && pnpm agent:git-safety:check",
+        "ci": "pnpm type-check && pnpm validate:structure && pnpm lint && pnpm lint:styles && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm test && pnpm test:e2e:ci && pnpm build:app && pnpm agent:git-safety:check",
         "ci:quick": "node scripts/ci-quick.mjs",
         "ci:diagnose": "node scripts/ci-diagnose.mjs",
         "validate:staged": "node scripts/validate-staged.mjs",
         "validate:changed": "node scripts/validate-changed.mjs",
+        "validate:structure": "node scripts/validate-structure.mjs",
         "lint": "eslint .",
         "lint:styles": "stylelint \"src/**/*.scss\"",
         "lint:styles:changed": "node scripts/lint-styles-changed.mjs",
@@ -69,7 +70,6 @@
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
-        "screenshot:page": "tsx scripts/screenshot/cli.ts",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
@@ -143,20 +143,9 @@
         "typescript-eslint": "^8.64.0"
     },
     "lint-staged": {
-        "*.{ts,tsx,js,jsx,mjs,cjs}": [
-            "eslint --fix --cache",
-            "prettier --write"
-        ],
-        "*.astro": [
-            "eslint --fix --cache",
-            "prettier --write"
-        ],
-        "*.{scss,css}": [
-            "stylelint --fix --cache",
-            "prettier --write"
-        ],
-        "*.{json,md,yml,yaml}": [
-            "prettier --write"
-        ]
+        "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
+        "*.astro": ["eslint --fix --cache", "prettier --write"],
+        "*.{scss,css}": ["stylelint --fix --cache", "prettier --write"],
+        "*.{json,md,yml,yaml}": ["prettier --write"]
     }
 }

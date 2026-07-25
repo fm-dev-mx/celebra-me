@@ -22,16 +22,15 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                          | Canonical Script                   | Purpose                                                                                                                 |
-| -------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `pnpm ops check-links`           | `scripts/check-links.mjs`          | validate relative links inside changed Markdown files                                                                   |
-| `pnpm ops optimize-assets`       | `scripts/optimize-assets.mjs`      | optimize and copy the current demo asset set into the expected invitation asset slots                                   |
-| `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`      | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
-| `pnpm ops validate-event-parity` | `scripts/validate-event-parity.ts` | compare content events against the Supabase `events` table                                                              |
-| `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range                                                         |
-| `pnpm ops graphify-views`        | `scripts/graphify/entry.ts`        | generate Graphify operational domain and community reports                                                              |
-| `pnpm ops graphify-refresh`      | `scripts/graphify/refresh.ts`      | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                 |
-| `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`       | disabled fail-closed guard; real/client invitations are DB-published content                                            |
+| Command                     | Canonical Script               | Purpose                                                                                                                 |
+| --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                   |
+| `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | optimize and copy the current demo asset set into the expected invitation asset slots                                   |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                         |
+| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                              |
+| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                 |
+| `pnpm ops new-invitation`   | `scripts/new-invitation.mjs`   | disabled fail-closed guard; real/client invitations are DB-published content                                            |
 
 ## Invitation Provisioning & Promotion Commands
 
@@ -44,6 +43,15 @@ plan per target, and delegates mutation ordering/result synthesis to
 `invitation-lifecycle-execution.ts`. Preview apply and Production read-only preflight use the shared
 `preview-apply.ts` and `production-preflight.ts` adapters, so interactive and non-interactive modes
 execute the same retained plans. Any blocked selected target aborts the complete mutation phase.
+
+## Validation Commands
+
+| Command                      | Canonical Script                   | Purpose                                                       |
+| ---------------------------- | ---------------------------------- | ------------------------------------------------------------- |
+| `pnpm validate:event-parity` | `scripts/validate-event-parity.ts` | compare content events against the Supabase `events` table    |
+| `pnpm validate:structure`    | `scripts/validate-structure.mjs`   | validate deterministic repository and agent structure rules   |
+| `pnpm validate:staged`       | `scripts/validate-staged.mjs`      | validate staged files without modifying them                  |
+| `pnpm validate:changed`      | `scripts/validate-changed.mjs`     | validate staged, unstaged, and untracked working-tree changes |
 
 ## Database Command Inventory
 
@@ -80,6 +88,6 @@ Documentation should point to these source files instead of duplicating executab
 pnpm ops --help
 pnpm ops check-links
 pnpm ops validate-schema
-pnpm ops validate-event-parity --allowMissingDb
+pnpm validate:event-parity
 pnpm ops validate-commits HEAD~5 HEAD
 ```

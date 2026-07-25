@@ -35,7 +35,6 @@ module.exports = {
 		// Root aliases
 		'^@/(.*)$': '<rootDir>/src/$1',
 		'^@tests/(.*)$': '<rootDir>/tests/$1',
-		'^@core/(.*)$': '<rootDir>/src/$1',
 
 		// Components & Layouts
 		'^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -50,9 +49,6 @@ module.exports = {
 		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
 		'^@interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
 
-		// Pages
-		'^@pages/(.*)$': '<rootDir>/src/pages/$1',
-
 		// Astro virtual modules (tests)
 		'^astro:content$': '<rootDir>/tests/mocks/astro-content.ts',
 		'^astro:middleware$': '<rootDir>/tests/mocks/astro-middleware.ts',
@@ -62,8 +58,7 @@ module.exports = {
 	// Correct glob patterns (no regex syntax here)
 	testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
 
-	// Coverage
-	collectCoverage: true,
+	// Coverage is opt-in through `pnpm test:coverage`.
 	collectCoverageFrom: [
 		'src/**/*.{ts,tsx}',
 		'!src/**/index.ts',

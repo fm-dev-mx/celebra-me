@@ -11,7 +11,6 @@ const SCRIPTS = {
 	'optimize-assets': { script: 'optimize-assets.mjs', runtime: 'node' },
 	'check-links': { script: 'check-links.mjs', runtime: 'node' },
 	'validate-schema': { script: 'validate-schema.mjs', runtime: 'node' },
-	'validate-event-parity': { script: 'validate-event-parity.ts', runtime: 'tsx' },
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
 	'graphify-views': { script: 'graphify/entry.ts', runtime: 'tsx' },
 	'graphify-refresh': { script: 'graphify/refresh.ts', runtime: 'tsx' },
