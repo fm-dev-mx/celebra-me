@@ -40,16 +40,28 @@ function hash(value: unknown): string {
 }
 export function semanticAssetRef(key: string): UploadedAssetRef { return { type: 'uploaded', assetId: `${ASSET_KEY_PREFIX}${key}`, src: `${STORAGE_URL_PLACEHOLDER}/${ASSET_KEY_PREFIX}${key}` }; }
 export function buildSemanticAssetMap(definition: InvitationDefinition): UploadedAssetMap { return Object.fromEntries(definition.assets.map((asset) => [asset.key, semanticAssetRef(asset.key)])); }
-export function materializeAssetReferences(value: unknown, assets: Record<string, UploadedAssetRef>): unknown {
-	if (Array.isArray(value)) return value.map((item) => materializeAssetReferences(item, assets));
+import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
+
+export function materializeAssetReferences(
+	value: unknown,
+	assets: Record<string, UploadedAssetRef>,
+	parentKey?: string,
+): unknown {
+	if (Array.isArray(value)) return value.map((item) => materializeAssetReferences(item, assets, parentKey));
 	if (value !== null && typeof value === 'object') {
 		const record = value as Record<string, unknown>;
 		if (record.type === 'uploaded' && typeof record.assetId === 'string' && record.assetId.startsWith(ASSET_KEY_PREFIX)) {
-			const ref = assets[record.assetId.slice(ASSET_KEY_PREFIX.length)];
+			const key = record.assetId.slice(ASSET_KEY_PREFIX.length);
+			const ref = assets[key];
 			if (!ref) throw new Error(`No target asset mapping exists for semantic key "${record.assetId}".`);
+			if (parentKey === 'ogImage' && ref.src.includes('cloudinary.com')) {
+				return { ...ref, src: buildCloudinaryOgImageUrl(ref.src) };
+			}
 			return ref;
 		}
-		return Object.fromEntries(Object.entries(record).map(([key, item]) => [key, materializeAssetReferences(item, assets)]));
+		return Object.fromEntries(
+			Object.entries(record).map(([k, item]) => [k, materializeAssetReferences(item, assets, k)]),
+		);
 	}
 	return value;
 }

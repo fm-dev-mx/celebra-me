@@ -14,6 +14,11 @@
 /* eslint-disable max-lines -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish. */
 
 import { createHash, randomUUID } from 'node:crypto';
+
+function deriveDeterministicUuid(namespace: string, seed: string): string {
+	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
+	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
@@ -31,6 +36,7 @@ import { serializeInvitationPackage } from './invitation-package.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
+import { uploadOrReconcileCloudinaryAsset } from './cloudinary-adapter.ts';
 
 const BUCKET = 'invitation-assets';
 
@@ -171,7 +177,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.is('archived_at', null)
 		.maybeSingle();
 
-	const invitationId = (existingInv?.id as string) || randomUUID();
+	const invitationId = (existingInv?.id as string) || deriveDeterministicUuid('invitation', slug);
 
 	// Check existing draft & publication for divergence
 	const { data: existingDraft } = await supabase
@@ -219,14 +225,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
 		.select(
-			'id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size',
+			'id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata',
 		)
 		.eq('invitation_id', invitationId)
 		.is('deleted_at', null);
 
 	const existingAssetsByPath = new Map(
 		((existingAssetRows ?? []) as Array<Record<string, unknown>>).map((r) => [
-			r.storage_path as string,
+			(r.provider_public_id as string) || (r.storage_path as string),
 			r,
 		]),
 	);
@@ -241,59 +247,118 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const existingAsset =
 			existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) ||
 			existingAssetsByDisplayName.get(norm.displayName);
-		const storagePath =
-			(existingAsset?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
-		const assetId = (existingAsset?.id as string) || randomUUID();
-		const publicUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+		const assetId =
+			(existingAsset?.id as string) || deriveDeterministicUuid('asset', `${slug}:${norm.key}`);
+		const useCloudinary = slug === 'abril-michelle-becerra-rea' || existingAsset?.provider === 'cloudinary';
 
-		assetMap[norm.key] = {
-			type: 'uploaded',
-			assetId,
-			src: publicUrl,
-		};
-
-		let storageHash: string | null = null;
-		try {
-			const response = await fetch(publicUrl);
-			if (response.ok)
-				storageHash = createHash('sha256')
-					.update(new Uint8Array(await response.arrayBuffer()))
-					.digest('hex');
-		} catch {
-			// Missing or unreadable storage is drift and will be repaired on apply.
-		}
-		const isIdentical =
-			existingAsset &&
-			storageHash === norm.imageHash &&
-			existingAsset.default_alt_text === norm.alt &&
-			existingAsset.mime_type === norm.mimeType &&
-			Number(existingAsset.file_size) === norm.fileSize &&
-			Number(existingAsset.width) === norm.width &&
-			Number(existingAsset.height) === norm.height &&
-			Number(existingAsset.validation_version) === norm.validationVersion &&
-			existingAsset.original_mime_type === norm.originalMimeType &&
-			Number(existingAsset.original_file_size) === norm.originalFileSize;
-		currentAssetStates.push({
-			key: norm.key,
-			storagePath,
-			storageHash,
-			metadata: existingAsset ?? null,
-		});
-
-		if (isIdentical) {
-			assetActions.push({
-				resource: 'invitation_assets',
-				name: norm.displayName,
-				action: 'reuse',
-				detail: `Storage binary up-to-date (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+		if (useCloudinary) {
+			const cRes = await uploadOrReconcileCloudinaryAsset({
+				slug,
+				key: norm.key,
+				displayName: norm.displayName,
+				alt: norm.alt,
+				bytes: norm.bytes,
+				sha256: norm.sha256,
+				mimeType: norm.mimeType,
+				width: norm.width,
+				height: norm.height,
+				dryRun: !isApply,
 			});
+
+			assetMap[norm.key] = {
+				type: 'uploaded',
+				assetId,
+				src: cRes.secureUrl,
+			};
+
+			const isIdentical =
+				Boolean(existingAsset) &&
+				existingAsset?.provider === 'cloudinary' &&
+				(existingAsset.secure_url === cRes.secureUrl || existingAsset.provider_public_id === cRes.publicId) &&
+				existingAsset.sha256 === norm.imageHash &&
+				existingAsset.default_alt_text === norm.alt &&
+				existingAsset.mime_type === norm.mimeType &&
+				Number(existingAsset.file_size) === cRes.bytes &&
+				Number(existingAsset.width) === cRes.width &&
+				Number(existingAsset.height) === cRes.height &&
+				Number(existingAsset.validation_version) === norm.validationVersion;
+
+			currentAssetStates.push({
+				key: norm.key,
+				storagePath: cRes.publicId,
+				storageHash: norm.imageHash,
+				metadata: existingAsset ?? null,
+			});
+
+			if (isIdentical) {
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: 'reuse',
+					detail: `Cloudinary asset up-to-date (${(cRes.bytes / 1024).toFixed(1)} KB WebP)`,
+				});
+			} else {
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: existingAsset ? 'replace' : 'create',
+					detail: `${existingAsset ? 'Update' : 'Upload'} binary to Cloudinary (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				});
+			}
 		} else {
-			assetActions.push({
-				resource: 'invitation_assets',
-				name: norm.displayName,
-				action: existingAsset ? 'replace' : 'create',
-				detail: `${existingAsset ? 'Update' : 'Upload'} binary to Storage (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+			const storagePath =
+				(existingAsset?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
+			const publicUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+
+			assetMap[norm.key] = {
+				type: 'uploaded',
+				assetId,
+				src: publicUrl,
+			};
+
+			let storageHash: string | null = null;
+			try {
+				const response = await fetch(publicUrl);
+				if (response.ok)
+					storageHash = createHash('sha256')
+						.update(new Uint8Array(await response.arrayBuffer()))
+						.digest('hex');
+			} catch {
+				// Missing or unreadable storage is drift and will be repaired on apply.
+			}
+			const isIdentical =
+				Boolean(existingAsset) &&
+				storageHash === norm.imageHash &&
+				existingAsset!.default_alt_text === norm.alt &&
+				existingAsset!.mime_type === norm.mimeType &&
+				Number(existingAsset!.file_size) === norm.fileSize &&
+				Number(existingAsset!.width) === norm.width &&
+				Number(existingAsset!.height) === norm.height &&
+				Number(existingAsset!.validation_version) === norm.validationVersion &&
+				existingAsset!.original_mime_type === norm.originalMimeType &&
+				Number(existingAsset!.original_file_size) === norm.originalFileSize;
+			currentAssetStates.push({
+				key: norm.key,
+				storagePath,
+				storageHash,
+				metadata: existingAsset ?? null,
 			});
+
+			if (isIdentical) {
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: 'reuse',
+					detail: `Storage binary up-to-date (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				});
+			} else {
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: existingAsset ? 'replace' : 'create',
+					detail: `${existingAsset ? 'Update' : 'Upload'} binary to Storage (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				});
+			}
 		}
 	}
 
@@ -657,78 +722,150 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const existing =
 				existingAssetsByPath.get(`managed/${slug}/${norm.key}.webp`) ||
 				existingAssetsByDisplayName.get(norm.displayName);
-			const storagePath =
-				(existing?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
-			let storageHash: string | null = null;
-			try {
-				const response = await fetch(assetRef.src);
-				if (response.ok)
-					storageHash = createHash('sha256')
-						.update(new Uint8Array(await response.arrayBuffer()))
-						.digest('hex');
-			} catch {
-				// Missing or unreadable storage is drift and will be repaired below.
-			}
-			const isIdentical =
-				existing &&
-				storageHash === norm.imageHash &&
-				existing.default_alt_text === norm.alt &&
-				existing.mime_type === norm.mimeType &&
-				Number(existing.file_size) === norm.fileSize &&
-				Number(existing.width) === norm.width &&
-				Number(existing.height) === norm.height &&
-				Number(existing.validation_version) === norm.validationVersion &&
-				existing.original_mime_type === norm.originalMimeType &&
-				Number(existing.original_file_size) === norm.originalFileSize;
+			const useCloudinary = slug === 'abril-michelle-becerra-rea' || existing?.provider === 'cloudinary';
 
-			if (!isIdentical) {
-				const { error: uploadError } = await supabase.storage
-					.from(BUCKET)
-					.upload(storagePath, norm.bytes, {
-						contentType: norm.mimeType,
-						upsert: true,
-					});
-				if (uploadError) throw uploadError;
-				if (existing) markOverwritten('storage_object', storagePath);
-				if (!existing)
-					trackedResources.push({
-						type: 'storage_object',
-						id: storagePath,
-						isPreExisting: false,
-					});
+			if (useCloudinary) {
+				const cRes = await uploadOrReconcileCloudinaryAsset({
+					slug,
+					key: norm.key,
+					displayName: norm.displayName,
+					alt: norm.alt,
+					bytes: norm.bytes,
+					sha256: norm.sha256,
+					mimeType: norm.mimeType,
+					dryRun: false,
+				});
 
-				const assetMetadata = {
-					invitation_id: invitationId,
-					display_name: norm.displayName,
-					default_alt_text: norm.alt,
-					bucket: BUCKET,
-					storage_path: storagePath,
-					mime_type: norm.mimeType,
-					width: norm.width,
-					height: norm.height,
-					file_size: norm.fileSize,
-					validation_version: norm.validationVersion,
-					original_mime_type: norm.originalMimeType,
-					original_file_size: norm.originalFileSize,
-				};
+				const isIdentical =
+					Boolean(existing) &&
+					existing?.provider === 'cloudinary' &&
+					(existing.secure_url === cRes.secureUrl || existing.provider_public_id === cRes.publicId) &&
+					existing.sha256 === norm.imageHash &&
+					existing.default_alt_text === norm.alt &&
+					existing.mime_type === norm.mimeType &&
+					Number(existing.file_size) === cRes.bytes &&
+					Number(existing.width) === cRes.width &&
+					Number(existing.height) === cRes.height &&
+					Number(existing.validation_version) === norm.validationVersion;
 
-				if (existing) {
-					const { error } = await supabase
-						.from('invitation_assets')
-						.update(assetMetadata)
-						.eq('id', assetRef.assetId);
-					if (error) throw error;
-					markOverwritten('invitation_asset', assetRef.assetId);
-				} else {
-					const { error } = await supabase
-						.from('invitation_assets')
-						.insert({ id: assetRef.assetId, ...assetMetadata });
-					if (error) throw error;
-					trackedResources.push({
-						type: 'invitation_asset',
-						id: assetRef.assetId,
-						isPreExisting: false,
-					});
+				if (!isIdentical) {
+					const assetMetadata = {
+						invitation_id: invitationId,
+						display_name: norm.displayName,
+						default_alt_text: norm.alt,
+						bucket: BUCKET,
+						storage_path: cRes.publicId,
+						mime_type: norm.mimeType,
+						width: cRes.width,
+						height: cRes.height,
+						file_size: cRes.bytes,
+						validation_version: norm.validationVersion,
+						original_mime_type: norm.originalMimeType,
+						original_file_size: norm.originalFileSize,
+						provider: 'cloudinary',
+						provider_public_id: cRes.publicId,
+						provider_version: cRes.version,
+						secure_url: cRes.secureUrl,
+						sha256: norm.sha256,
+						provider_metadata: cRes.metadata,
+					};
+
+					if (existing) {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.update(assetMetadata)
+							.eq('id', assetRef.assetId);
+						if (error) throw error;
+						markOverwritten('invitation_asset', assetRef.assetId);
+					} else {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.insert({ id: assetRef.assetId, ...assetMetadata });
+						if (error) throw error;
+						trackedResources.push({
+							type: 'invitation_asset',
+							id: assetRef.assetId,
+							isPreExisting: false,
+						});
+					}
+				}
+			} else {
+				const storagePath =
+					(existing?.storage_path as string) || `managed/${slug}/${norm.key}.webp`;
+				let storageHash: string | null = null;
+				try {
+					const response = await fetch(assetRef.src);
+					if (response.ok)
+						storageHash = createHash('sha256')
+							.update(new Uint8Array(await response.arrayBuffer()))
+							.digest('hex');
+				} catch {
+					// Missing or unreadable storage is drift and will be repaired below.
+				}
+				const isIdentical =
+					existing &&
+					storageHash === norm.imageHash &&
+					existing.default_alt_text === norm.alt &&
+					existing.mime_type === norm.mimeType &&
+					Number(existing.file_size) === norm.fileSize &&
+					Number(existing.width) === norm.width &&
+					Number(existing.height) === norm.height &&
+					Number(existing.validation_version) === norm.validationVersion &&
+					existing.original_mime_type === norm.originalMimeType &&
+					Number(existing.original_file_size) === norm.originalFileSize;
+
+				if (!isIdentical) {
+					const { error: uploadError } = await supabase.storage
+						.from(BUCKET)
+						.upload(storagePath, norm.bytes, {
+							contentType: norm.mimeType,
+							upsert: true,
+						});
+					if (uploadError) throw uploadError;
+					if (existing) markOverwritten('storage_object', storagePath);
+					if (!existing)
+						trackedResources.push({
+							type: 'storage_object',
+							id: storagePath,
+							isPreExisting: false,
+						});
+
+					const assetMetadata = {
+						invitation_id: invitationId,
+						display_name: norm.displayName,
+						default_alt_text: norm.alt,
+						bucket: BUCKET,
+						storage_path: storagePath,
+						mime_type: norm.mimeType,
+						width: norm.width,
+						height: norm.height,
+						file_size: norm.fileSize,
+						validation_version: norm.validationVersion,
+						original_mime_type: norm.originalMimeType,
+						original_file_size: norm.originalFileSize,
+						provider: 'supabase',
+						provider_public_id: storagePath,
+						sha256: norm.sha256,
+					};
+
+					if (existing) {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.update(assetMetadata)
+							.eq('id', assetRef.assetId);
+						if (error) throw error;
+						markOverwritten('invitation_asset', assetRef.assetId);
+					} else {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.insert({ id: assetRef.assetId, ...assetMetadata });
+						if (error) throw error;
+						trackedResources.push({
+							type: 'invitation_asset',
+							id: assetRef.assetId,
+							isPreExisting: false,
+						});
+					}
 				}
 			}
 		}
@@ -919,7 +1056,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			supabase
 				.from('invitation_assets')
 				.select(
-					'display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size',
+					'display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, secure_url, sha256',
 				)
 				.eq('invitation_id', invitationId)
 				.is('deleted_at', null),
@@ -952,7 +1089,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const finalInvitationRow = finalInvitation.data as Record<string, unknown> | null;
 		const finalAssetsByPath = new Map(
 			((finalAssets.data ?? []) as Array<Record<string, unknown>>).map((a) => [
-				a.storage_path as string,
+				(a.provider_public_id as string) || (a.storage_path as string),
 				a,
 			]),
 		);
@@ -983,6 +1120,20 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					Number(row.original_file_size) !== asset.originalFileSize
 				)
 					return false;
+
+				if (row.provider === 'cloudinary' || row.secure_url) {
+					const secureUrl = row.secure_url as string;
+					const rowSha = row.sha256 as string;
+					if (!secureUrl || !secureUrl.startsWith('https://res.cloudinary.com')) return false;
+					if (rowSha && rowSha !== asset.imageHash) return false;
+					try {
+						const response = await fetch(secureUrl);
+						return response.ok;
+					} catch {
+						return false;
+					}
+				}
+
 				try {
 					const response = await fetch(
 						`${env.apiUrl}/storage/v1/object/public/${BUCKET}/${actualPath}`,

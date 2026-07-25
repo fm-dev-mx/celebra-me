@@ -265,7 +265,7 @@ function fetchTargetDbAssets(
 	const targetDbAssets: TargetAssetRecord[] = [];
 	if (!targetDbUrl || !targetInvitationId) return targetDbAssets;
 
-	const assetsQuery = `select id::text, display_name, storage_path, bucket, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, default_alt_text from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
+	const assetsQuery = `select id::text, display_name, storage_path, bucket, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, default_alt_text, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
 	const assetsResult = runPsql(`select json_agg(t) from (${assetsQuery}) t;`, targetDbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,
@@ -285,6 +285,12 @@ function fetchTargetDbAssets(
 				originalMimeType: (row.original_mime_type as string) ?? null,
 				originalFileSize: row.original_file_size !== null ? Number(row.original_file_size) : null,
 				altText: (row.default_alt_text as string) ?? null,
+				provider: (row.provider as string) ?? 'supabase',
+				providerPublicId: (row.provider_public_id as string) ?? null,
+				providerVersion: (row.provider_version as string) ?? null,
+				secureUrl: (row.secure_url as string) ?? null,
+				sha256: (row.sha256 as string) ?? null,
+				providerMetadata: (row.provider_metadata as Record<string, unknown>) ?? null,
 			});
 		}
 	}
@@ -304,7 +310,7 @@ async function probeStorageStates(
 	const pathsToProbe = Array.from(
 		new Set([
 			...assets.map((a) => a.storagePath),
-			...targetDbAssets.map((t) => t.storagePath),
+			...targetDbAssets.map((t) => t.providerPublicId || t.storagePath),
 		]),
 	);
 
@@ -313,7 +319,8 @@ async function probeStorageStates(
 		const batch = pathsToProbe.slice(i, i + BATCH_SIZE);
 		await Promise.all(
 			batch.map(async (storagePath) => {
-				const targetAssetUrl = `${targetStorageUrl}/${storagePath}`;
+				const dbAsset = targetDbAssets.find((t) => t.storagePath === storagePath || t.providerPublicId === storagePath);
+				const targetAssetUrl = dbAsset?.secureUrl ?? (storagePath.startsWith('http') ? storagePath : `${targetStorageUrl}/${storagePath}`);
 				try {
 					const fetchRes = await fetch(targetAssetUrl);
 					if (fetchRes.ok) {
