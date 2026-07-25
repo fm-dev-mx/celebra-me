@@ -32,6 +32,12 @@ export interface TargetAssetRecord {
 	originalMimeType?: string | null;
 	originalFileSize?: number | null;
 	altText?: string | null;
+	provider?: string | null;
+	providerPublicId?: string | null;
+	providerVersion?: string | null;
+	secureUrl?: string | null;
+	sha256?: string | null;
+	providerMetadata?: Record<string, unknown> | null;
 }
 
 export interface ObservedStorageState {
