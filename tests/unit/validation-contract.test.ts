@@ -78,6 +78,17 @@ describe('canonical validation contract', () => {
 		const workflowPath = path.resolve(process.cwd(), '.github/workflows/commit-validation.yml');
 		expect(() => fs.readFileSync(workflowPath, 'utf8')).not.toThrow();
 		const workflow = fs.readFileSync(workflowPath, 'utf8');
+
+		expect(workflow).toContain('name: Commit Validation ADU');
+		expect(workflow).toContain('policy-validation:');
+		expect(workflow).toContain('name: Repository Policy');
+		expect(workflow).toContain('application-validation:');
+		expect(workflow).toContain('name: Application Suite');
+		expect(workflow).toContain('node scripts/validate-commits.mjs');
+		expect(workflow).toContain('pnpm ops check-links');
 		expect(workflow).toContain('run: pnpm run ci');
+		expect((workflow.match(/run: pnpm run ci/g) ?? []).length).toBe(1);
+		expect(workflow).not.toMatch(/needs:\s*policy-validation/);
+		expect(workflow).not.toContain('name: Validate PR Commits');
 	});
 });

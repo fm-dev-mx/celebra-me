@@ -156,16 +156,16 @@ judgment.
 
 ## Ownership
 
-| Owner                                     | Responsibility                                                      |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| `.agent/plans/README.md`                  | Contract for durable repository-tracked plans                       |
-| `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                       |
-| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                 |
-| `commitlint.config.cjs`                   | Commit message validation and quality rules                         |
-| `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges |
-| `.husky/pre-commit`                       | Branch protection and staged-file checks                            |
-| `.husky/pre-push`                         | Audit-only commit-range validation before push                      |
-| `.github/workflows/commit-validation.yml` | Pull request commit validation and docs link checks                 |
+| Owner                                     | Responsibility                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `.agent/plans/README.md`                  | Contract for durable repository-tracked plans                                                    |
+| `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                                    |
+| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                                              |
+| `commitlint.config.cjs`                   | Commit message validation and quality rules                                                      |
+| `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges                              |
+| `.husky/pre-commit`                       | Branch protection and staged-file checks                                                         |
+| `.husky/pre-push`                         | Audit-only commit-range validation before push                                                   |
+| `.github/workflows/commit-validation.yml` | Repository policy checks (commit messages, doc links) and full application suite (`pnpm run ci`) |
 
 ## Active Hooks and CI Sequence
 
@@ -174,7 +174,14 @@ judgment.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
    pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
-4. CI runs on push to `develop` and on pull requests targeting `main`.
+4. CI workflow `Commit Validation ADU` (`.github/workflows/commit-validation.yml`) runs on push to
+   `develop` and on pull requests targeting `main`. It reports two parallel jobs with
+   non-overlapping validation:
+   - **Repository Policy** — commit-message range checks and `pnpm ops check-links`
+   - **Application Suite** — canonical `pnpm run ci` (after Playwright Chromium install)
+     Checkout/pnpm/Node/install setup is duplicated per job because GitHub Actions jobs do not share
+     a workspace. Jobs are not linked with `needs`, so one job's failure does not cancel the other;
+     the trade-off is duplicated setup and two runners instead of sequential short-circuiting.
 
 ## Guarantees
 
@@ -182,8 +189,10 @@ judgment.
 - Subjects must describe the actual change with a concrete target.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
-- Branch protection remains in place for `main`. `develop` is the active trunk — direct commits are
-  allowed but commitlint and lint-staged still apply.
+- Direct commits and pushes to `main` are blocked by local hooks (`pre-commit` / `pre-push`).
+  `develop` is the active trunk — direct commits are allowed but commitlint and lint-staged still
+  apply. Do not assume GitHub classic branch protection or repository rulesets are configured;
+  verify live repository settings when required-check enforcement is needed.
 - Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
   local gate.
 

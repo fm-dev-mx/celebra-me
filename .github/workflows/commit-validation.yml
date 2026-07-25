@@ -12,9 +12,13 @@ on:
         branches:
             - main
 
+# Parallel jobs report separate GitHub status checks (policy vs application).
+# Checkout/pnpm/Node/install are duplicated because jobs do not share a workspace.
+# No `needs` dependency: failures are independent (no cross-job short-circuit) at the
+# cost of extra runner setup. Timing claims are not assumed beyond that trade-off.
 jobs:
-    validate-commits:
-        name: Validate PR Commits
+    policy-validation:
+        name: Repository Policy
         runs-on: ubuntu-latest
 
         steps:
@@ -83,6 +87,26 @@ jobs:
 
             - name: Documentation link integrity
               run: pnpm ops check-links
+
+    application-validation:
+        name: Application Suite
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
 
             - name: Install Playwright browser
               run: pnpm exec playwright install --with-deps chromium
