@@ -3,7 +3,8 @@ name: client-invitation-audit
 description: |
   Pre-implementation audit for a real (non-demo) client invitation: pipeline identification,
   theme/preset check, section and asset audit, demo-counterpart invariants, and a two-lane
-  client-vs-theme spec. Discovery only — no implementation until the user authorizes next work.
+  client-vs-theme spec. Discovery only — implementation requires task authorization and a complete
+  audit/spec.
 domain: workflow
 version: 1.0.0
 when_to_use:
@@ -25,6 +26,7 @@ related_docs:
   - docs/core/invitation-creation-contract.md
   - docs/domains/intake/production-flow.md
   - .agent/workflows/managed-invitation-lifecycle.md
+  - .agent/workflows/design-reference-to-build.md
   - docs/domains/content/event-governance.md
 ---
 
@@ -72,6 +74,12 @@ git branch --show-current
 
 Prefer a clean tree for audit clarity; if dirty, note unrelated files and do not touch them.
 
+For reference-driven visual work, also complete
+[`design-reference-brief`](../../templates/creative/design-reference-brief.md). Record the live
+route, demo counterpart (when one exists), active preset, primary mobile viewport, and current-state
+visual evidence before proposing changes. The brief owns task-scoped visual context; this audit
+continues to own pipeline discovery and Lane A/Lane B classification.
+
 ### Phase 1 — Pipeline identification
 
 Resolve how content reaches the browser (see live `content-resolver`):
@@ -112,13 +120,17 @@ focal issues. Template:
 
 ### Phase 5 — Two-lane spec
 
-Write `.agent/plans/active/<slug>-*.spec.md` with:
+Record a conversation-scoped or task-handoff spec with:
 
 - **Lane A** — client-specific completion (data, assets, scoped SCSS)
 - **Lane B** — reusable theme refinements only when both client and demo benefit
 
-Structure: [`references/two-lane-spec-structure.md`](references/two-lane-spec-structure.md). Follow
-`.agent/plans/README.md` for frontmatter/status. Do not implement until the user authorizes.
+Structure: [`references/two-lane-spec-structure.md`](references/two-lane-spec-structure.md). Create
+`.agent/plans/active/<slug>-*.spec.md` only when the tracked-plan threshold in
+`.agent/plans/README.md` is met or the repository owner explicitly requests it; then follow that
+file's frontmatter/status contract. Do not implement until the current task authorizes
+implementation and the audit/spec is complete; a second approval is not required when the user's
+current request already authorizes the bounded implementation.
 
 ## Parallelism
 
@@ -134,6 +146,6 @@ For large inventories, group phases with
 
 ## Hard constraints
 
-- Audit is read-only unless the user authorizes creating/updating the plan spec file.
+- Audit is read-only unless the task authorizes a handoff or tracked spec artifact.
 - No Preview/Production mutation, staging, or commits from this skill.
 - Visible copy stays Spanish; identifiers/comments English.

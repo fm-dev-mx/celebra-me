@@ -13,6 +13,7 @@ preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
   - Read .agent/briefs/celebra-me.md for brand voice when brand-facing
+  - Complete the design-reference brief for reference-driven redesigns
 inputs:
   - Visual requirements, page layouts, components, and theme context
 outputs:
@@ -25,6 +26,7 @@ related_docs:
   - docs/domains/theme/typography.md
   - docs/domains/theme/architecture.md
   - .agent/briefs/celebra-me.md
+  - .agent/workflows/design-reference-to-build.md
 ---
 
 # Frontend Design
@@ -43,6 +45,18 @@ are now managed by `theme-architecture`.
 - Do **not** install Impeccable (or similar) as a parallel SSOT, and do **not** add root
   PRODUCT/DESIGN markdown files. Selective anti-slop and polish ideas from external design skills
   are absorbed here; they never become a second design system.
+
+## Pre-Design Context Gate
+
+Before reference-driven visual implementation, complete
+[`design-reference-brief`](../../templates/creative/design-reference-brief.md) and follow
+[`design-reference-to-build`](../../workflows/design-reference-to-build.md).
+
+The brief owns task-scoped inputs, reference interpretation, boundaries, deviations, blocking
+conditions, and acceptance criteria. For a real invitation, it supplements rather than replaces
+`client-invitation-audit` and the two-lane spec. Inspect verified Celebra-me components, demos,
+presets, and invitation evidence before external references. External screenshots and Figma frames
+communicate intent only; they never override the brand brief or live theme contract.
 
 ## Design Philosophy
 
@@ -151,3 +165,20 @@ Use this as a procedure (not a separate skill) before shipping UI or invitation 
 7. **Motion** — intentional, reduced-motion safe (`animation-motion`).
 8. **Copy fit** — Spanish UI strings do not overflow or collide at mobile widths.
 9. **Distill** — remove any card, chip, or rule whose removal does not hurt understanding.
+
+## Focused Visual Iteration
+
+Run visual iteration as a bounded loop:
+
+1. **Capture** — record the current target and primary mobile baseline.
+2. **Define** — name one coherent visual delta, its owning layer, allowed files, and preserved
+   behavior.
+3. **Change** — edit only that section, element, token group, asset, or scoped override.
+4. **Verify** — compare against the baseline and apply the checklist above.
+5. **Stop or repeat** — accept the unit or define the next independent delta; do not broaden the
+   pass implicitly.
+
+Prefer approved client/product assets over generated placeholders. When a visual change alters a
+live token, preset, section variant, or isolation contract, run
+`.agent/workflows/theme-architecture-governance.md` and update the canonical theme documentation as
+required there.

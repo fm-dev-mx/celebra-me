@@ -9,13 +9,17 @@ brand: celebra-me
 
 ## Item Under Review
 
-| Field          | Value                                                      |
-| -------------- | ---------------------------------------------------------- |
-| **Campaign**   |                                                            |
-| **Asset type** | Reel script / Social post / Carousel / Image / Video frame |
-| **Brand**      | Celebra-me                                                 |
-| **Reviewer**   |                                                            |
-| **Date**       |                                                            |
+| Field                    | Value                                                            |
+| ------------------------ | ---------------------------------------------------------------- |
+| **Campaign**             |                                                                  |
+| **Asset type**           | Reel / Social / Carousel / Image / Video frame / UI / Invitation |
+| **Brand**                | Celebra-me                                                       |
+| **Reviewer**             |                                                                  |
+| **Date**                 |                                                                  |
+| **Brief**                |                                                                  |
+| **Baseline**             |                                                                  |
+| **Post-change evidence** |                                                                  |
+| **Required viewports**   |                                                                  |
 
 ## Copy QA
 
@@ -48,10 +52,32 @@ When reviewing shipped invitation or marketing UI (not only generated images), a
 `frontend-design` Visual Critique / Polish Checklist (brand-first viewport, one job per section,
 theme tokens, hierarchy, spacing, contrast/focus, reduced-motion, Spanish copy fit, distill).
 
-| Check                                              | Pass/Fail | Notes |
-| -------------------------------------------------- | --------- | ----- |
-| frontend-design polish checklist completed         |           |       |
-| No forbidden parallel design SSOT (PRODUCT/DESIGN) |           |       |
+Use `Pass`, `Fail`, `Blocked`, or `N/A`. A pass requires evidence at every viewport named by the
+brief; `Blocked` identifies evidence or environment that could not be obtained.
+
+| Area                                                                         | Status | Affected section / viewport | Evidence and notes |
+| ---------------------------------------------------------------------------- | ------ | --------------------------- | ------------------ |
+| Reference fidelity and approved deviations                                   |        |                             |                    |
+| Responsive behavior and reflow                                               |        |                             |                    |
+| Content legibility, contrast, and focus                                      |        |                             |                    |
+| Typography hierarchy and consistency                                         |        |                             |                    |
+| Image resolution, crop, focal point, and treatment                           |        |                             |                    |
+| Layout rhythm, alignment, and spacing                                        |        |                             |                    |
+| Component, token, preset, and theme consistency                              |        |                             |                    |
+| Accessibility-relevant visual behavior and reduced motion                    |        |                             |                    |
+| Cross-page, cross-section, or sibling-preset regressions                     |        |                             |                    |
+| Rendered technical defects, overflow, broken assets, or interaction failures |        |                             |                    |
+| Production UI contains no temporary placeholder assets                       |        |                             |                    |
+| `frontend-design` polish checklist completed                                 |        |                             |                    |
+
+## UI / Invitation Findings
+
+Severity: `Critical` blocks safe delivery or core use; `Important` fails an approved criterion or
+causes a material regression; `Minor` is observable but does not block acceptance.
+
+| ID  | Severity | Status                    | Section / viewport | Source file / line | Criterion | Expected | Actual | Evidence | Revision owner |
+| --- | -------- | ------------------------- | ------------------ | ------------------ | --------- | -------- | ------ | -------- | -------------- |
+|     |          | Open / Resolved / Blocked |                    |                    |           |          |        |          |                |
 
 ## Technical QA
 
@@ -63,6 +89,8 @@ theme tokens, hierarchy, spacing, contrast/focus, reduced-motion, Spanish copy f
 | Aspect ratio matches target platform |           |       |
 
 ## Issues Found
+
+Use this summary for non-UI assets. UI and invitation findings belong in the evidence table above.
 
 ### Critical (must fix before delivery)
 
@@ -78,10 +106,10 @@ theme tokens, hierarchy, spacing, contrast/focus, reduced-motion, Spanish copy f
 
 ## Overall Assessment
 
-| Verdict        | Description                 |
-| -------------- | --------------------------- |
-| ✅ Approved    | Ready for delivery          |
-| ⚠️ Conditional | Fix critical issues first   |
-| ❌ Rejected    | Recreate with revised brief |
+| Verdict    | Description                                              |
+| ---------- | -------------------------------------------------------- |
+| ✅ Pass    | Every required area and acceptance criterion passes      |
+| ❌ Fail    | One or more criteria fail; revision evidence is required |
+| ⛔ Blocked | Required input, environment, or evidence is unavailable  |
 
 ## Notes / Recommendations

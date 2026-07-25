@@ -44,6 +44,22 @@ Use a subagent only when the task creates ONE of these benefits:
 - **High overhead-to-value ratio** — if preparing and verifying the handoff costs as much as the
   task, do it directly
 
+## Visual Work Zones
+
+For reference-driven design work, parallelize only when both file ownership and design decisions are
+independent.
+
+| Safe to run in parallel                                 | Keep sequential                                                |
+| ------------------------------------------------------- | -------------------------------------------------------------- |
+| Copy exploration + visual-reference research            | Two tasks editing the same preset or section variant           |
+| Asset classification + read-only component audit        | Visual direction + implementation before direction is approved |
+| Separate QA passes after implementation is complete     | Layout and motion changes on the same component                |
+| Independent surfaces with disjoint files and acceptance | Lane A and Lane B work sharing a theme contract or resolver    |
+
+Every parallel handoff must name its allowed files or zones. If two tasks share a route, preset,
+layout contract, section variant, or file, keep them sequential. Runtime model/provider selection is
+never encoded in repository handoffs.
+
 ## File-Access Hygiene
 
 Subagents must follow strict file-access discipline to avoid slow scans, OneDrive download triggers,
@@ -111,6 +127,7 @@ This prevents context truncation and reduces `context` string bloat.
 ```
 .agent/tmp/handoffs/<task-id>/
 ├── approved-copy.json          # Copywriter output, approved by the orchestrator
+├── design-reference-brief.md   # Task-scoped visual context when a sequential handoff needs it
 ├── visual-direction.md         # Visual direction, approved by the orchestrator
 ├── implementation-spec.md      # Spec for the builder subagent
 └── qa-checklist.md             # Quality review expectations

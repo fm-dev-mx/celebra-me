@@ -23,6 +23,7 @@ related_docs:
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
   - .agent/workflows/theme-architecture-governance.md
+  - .agent/workflows/design-reference-to-build.md
 ---
 
 # Theme Architecture
@@ -109,6 +110,24 @@ The active theme and event contract is `src/lib/theme/theme-contract.ts`.
 
 `src/lib/theme/color-tokens.ts` is only a content color role contract. It maps approved content
 roles to semantic CSS custom properties and must not become a parallel color system.
+
+## Design Reference Handoff
+
+Treat screenshots, Figma frames, generated concepts, and external design libraries as visual inputs,
+not implementation contracts.
+
+1. Identify the intended hierarchy, spacing, typography, color roles, surface treatment, motion, and
+   responsive behavior.
+2. Map those decisions to existing semantic and public component tokens first.
+3. Put section structure and selector-aware behavior in the owning section base or variant.
+4. Use a preset only for reusable theme identity; use a slug-scoped override only for genuine
+   client-specific work.
+5. Reject pasted generated CSS, arbitrary design-tool values, and new parallel token names until
+   they are reconciled with the three-level architecture.
+
+If the reference requires a new live token, preset, variant, or isolation rule, run
+`.agent/workflows/theme-architecture-governance.md`. Update `docs/domains/theme/architecture.md`
+only when the live technical contract changes, not merely because a new visual brief exists.
 
 ## Operational Rules for CSS Boundaries
 

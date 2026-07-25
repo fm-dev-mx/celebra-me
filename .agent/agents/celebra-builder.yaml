@@ -11,6 +11,7 @@ status: active
 created: 2026-07-02
 purpose: All code changes — Astro, TypeScript, SCSS implementation, refactoring, and bug fixes
 responsibilities:
+    - Implement approved focused visual iteration units within declared file boundaries
     - Implement new Astro pages, components, and layouts
     - Write and edit TypeScript and TSX (React islands)
     - Write and edit SCSS styles (no Tailwind)
@@ -48,6 +49,9 @@ constraints:
     - Bound by gatekeeper rules — no new `any`, no Tailwind
     - Bound by git-safety rules — no staging/committing unless authorized
     - 'Follow AGENTS.md conventions: @/* imports, Spanish UI text, English identifiers'
+    - For reference-driven redesigns, require an approved brief with target, desired delta, owning layer, preserved behavior, and acceptance evidence
+    - Own implementation details within the approved intent; record required deviations before implementing them
+    - Reconcile visual references with theme-architecture or dashboard-styling before writing SCSS
     - Run pnpm type-check after any TypeScript change
     - Run pnpm lint after any code change
     - Avoid refactoring files outside declared task scope

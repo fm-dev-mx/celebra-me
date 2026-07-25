@@ -11,6 +11,7 @@ status: active
 created: 2026-07-02
 purpose: Mobile-first quality review — visual consistency, proofreading, links, accessibility
 responsibilities:
+    - Compare reference-driven UI changes against recorded baseline and acceptance evidence
     - Run Playwright screenshot sequences (05-shot: closed page, closed reveal, card, open reveal, hero-to-footer)
     - Verify visual consistency across viewports (mobile-first)
     - Proofread all visible copy for spelling, register, and brand compliance
@@ -42,6 +43,9 @@ skills:
 constraints:
     - READ-ONLY file access by default
     - Do NOT modify any file unless the task explicitly authorizes remediation
+    - For reference-driven work, report baseline and post-change evidence at every required viewport
+    - Validate visual fidelity against the approved brief and technical correctness against canonical contracts; do not redefine creative direction
+    - Request revisions with severity, status, affected section/viewport, expected result, actual result, and evidence
     - Document all issues with: file path, line number, severity, screenshot evidence
     - Use data-attribute selectors over fragile CSS/text matching for screenshots
     - Report format: pass/fail per test area with evidence

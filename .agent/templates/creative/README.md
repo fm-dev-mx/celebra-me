@@ -17,13 +17,14 @@ versions or be extracted generic.
 
 ## Templates
 
-| Template                 | Purpose                                                |
-| ------------------------ | ------------------------------------------------------ |
-| `reel-brief.md`          | Short-form video reel script structure                 |
-| `social-image-brief.md`  | Social post / carousel copy and image prompt structure |
-| `video-frame-brief.md`   | Initial/final video frame prompt with ComfyUI params   |
-| `image-prompt-output.md` | Generation parameter log for reproducibility           |
-| `creative-qa-report.md`  | Checklist and report for reviewing creative outputs    |
+| Template                    | Purpose                                                |
+| --------------------------- | ------------------------------------------------------ |
+| `design-reference-brief.md` | Task-scoped visual context and acceptance contract     |
+| `reel-brief.md`             | Short-form video reel script structure                 |
+| `social-image-brief.md`     | Social post / carousel copy and image prompt structure |
+| `video-frame-brief.md`      | Initial/final video frame prompt with ComfyUI params   |
+| `image-prompt-output.md`    | Generation parameter log for reproducibility           |
+| `creative-qa-report.md`     | Checklist and report for reviewing creative outputs    |
 
 ## Cross-Workspace Reference
 

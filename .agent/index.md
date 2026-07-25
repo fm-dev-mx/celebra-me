@@ -76,18 +76,20 @@ state and never has authority over these definitions.
 
 ## Available Templates (Creative)
 
-| Template              | Purpose                                                     |
-| --------------------- | ----------------------------------------------------------- |
-| `creative-qa-report`  | checklist and report for reviewing creative outputs         |
-| `image-prompt-output` | generation parameter log for reproducibility                |
-| `reel-brief`          | short-form video reel script structure                      |
-| `social-image-brief`  | social post or carousel copy and image prompt structure     |
-| `video-frame-brief`   | initial/final video frame prompt with generation parameters |
+| Template                 | Purpose                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| `creative-qa-report`     | checklist and report for reviewing creative outputs         |
+| `design-reference-brief` | task-scoped context and acceptance contract for visual work |
+| `image-prompt-output`    | generation parameter log for reproducibility                |
+| `reel-brief`             | short-form video reel script structure                      |
+| `social-image-brief`     | social post or carousel copy and image prompt structure     |
+| `video-frame-brief`      | initial/final video frame prompt with generation parameters |
 
 ## Available Workflows
 
 | Workflow                        | File                                                | Use when                                                         |
 | ------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
+| `design-reference-to-build`     | `.agent/workflows/design-reference-to-build.md`     | visual work moves from references through implementation and QA  |
 | `error-remediation`             | `.agent/workflows/error-remediation.md`             | a command, test, or validation check fails                       |
 | `managed-invitation-lifecycle`  | `.agent/workflows/managed-invitation-lifecycle.md`  | a managed invitation moves through local, preview, or production |
 | `plan-authoring`                | `.agent/workflows/plan-authoring.md`                | work needs sequencing or a durable tracked plan                  |
@@ -202,6 +204,7 @@ Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/gi
 | Task type                         | Add                                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------------------- |
 | Visual or UI work                 | `.agent/rules/agent-routing.md` plus the relevant design or theme skill                      |
+| Reference-driven visual redesign  | `design-reference-to-build`, `frontend-design`, and the design-reference brief               |
 | Backend or data work              | `backend-engineering`, relevant domain docs, and API/database rules                          |
 | Documentation or governance drift | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                    |
 | Testing or regression work        | `testing` and affected domain docs                                                           |

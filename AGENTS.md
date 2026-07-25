@@ -86,6 +86,10 @@ Use `.agent/rules/agent-routing.md` for routing and
 `.agent/skills/` are the tracked canonical skill source; local installations under `.agents/` are
 never authoritative.
 
+Reference-driven invitation, demo, landing, or dashboard redesign follows
+`.agent/workflows/design-reference-to-build.md`; the workflow orchestrates the existing brand,
+visual-intent, theme, QA, and invitation authorities without replacing them.
+
 ## Planning and Validation
 
 Use conversation-scoped planning by default. Create a tracked plan only for multi-session or

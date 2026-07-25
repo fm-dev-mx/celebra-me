@@ -15,17 +15,37 @@ Before routing, read:
 
 ## Route by Responsibility
 
-| Work                                                     | Role contract             | Typical capabilities                                          |
-| -------------------------------------------------------- | ------------------------- | ------------------------------------------------------------- |
-| Astro, TypeScript, SCSS, refactors, bug fixes            | `celebra-builder`         | repository read/write, command execution                      |
-| Invitation, UI, social, or marketing copy                | `celebra-copywriter`      | repository read/write, Spanish copy expertise                 |
-| Visual direction, palettes, image prompts, design review | `celebra-visual-director` | repository read, vision; image generation only when requested |
-| Tests, screenshots, links, accessibility, proofreading   | `celebra-qa`              | repository read, command execution, browser when needed       |
+| Work                                                     | Role contract                  | Typical capabilities                                          |
+| -------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------- |
+| Astro, TypeScript, SCSS, refactors, bug fixes            | `celebra-builder`              | repository read/write, command execution                      |
+| Invitation, UI, social, or marketing copy                | `celebra-copywriter`           | repository read/write, Spanish copy expertise                 |
+| Visual direction, palettes, image prompts, design review | `celebra-visual-director`      | repository read, vision; image generation only when requested |
+| Tests, screenshots, links, accessibility, proofreading   | `celebra-qa`                   | repository read, command execution, browser when needed       |
+| Reference-driven visual redesign                         | visual-director → builder → QA | direction, bounded implementation, evidence-based review      |
 
 The orchestrator normally handles planning, decomposition, governance decisions, and result
 synthesis. Documentation implementation may use the builder role when it is a bounded file-edit
 task. Research stays with the orchestrator unless it forms an independent, self-contained
 investigation.
+
+Use `.agent/workflows/design-reference-to-build.md` when supplied or cited visual references require
+interpretation before implementation. Do not impose it on a correction whose target and expected
+result are already objective (for example, an exact copy replacement or spacing/token value).
+
+## Reference-Driven Routing Decisions
+
+| Request                                                        | Route                                                                                                                                                                     |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build a new real invitation from visual references             | `design-reference-to-build` + `client-invitation-audit`; visual-director → builder → QA                                                                                   |
+| Build a new demo, landing, or dashboard from visual references | `design-reference-to-build`; visual-director → builder → QA                                                                                                               |
+| Refine part of an existing surface                             | Direct builder + focused QA when the delta is explicit; otherwise `design-reference-to-build`                                                                             |
+| Audit an already implemented invitation                        | QA using `creative-qa-report`; add `client-invitation-audit` only for pipeline, asset, or Lane A/Lane B discovery                                                         |
+| Create or extend a reusable theme, token, preset, or variant   | `theme-architecture-governance`; also use `design-reference-to-build` when references determine visual intent                                                             |
+| Implement visual work that changes copy or data                | Add copywriter for copy and the owning content/data workflow; visual direction does not authorize content invention                                                       |
+| Work from incomplete, inconsistent, or low-quality references  | Visual-director records unsupported details; block only when the missing decision prevents an observable acceptance criterion or requires inventing client content/assets |
+
+The orchestrator may perform these roles directly. The sequence names decision ownership, not a
+requirement to create subagents.
 
 ## When to Delegate
 
