@@ -2,7 +2,8 @@
 
 /// <reference types="astro/client" />
 /// <reference types="framer-motion" />
-// reference path="../.astro/types.d.ts"
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- Astro generates this project type reference.
+/// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/content" />
 
 interface ImportMetaEnv {
@@ -18,6 +19,10 @@ interface ImportMetaEnv {
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;
 	readonly PUBLIC_META_PIXEL_ID: string;
 	readonly PUBLIC_META_PIXEL_ENABLED: string;
+	readonly META_CAPI_DELIVERY_MODE: string;
+	readonly META_CAPI_ACCESS_TOKEN: string;
+	readonly META_PIXEL_ID: string;
+	readonly META_TEST_EVENT_CODE: string;
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
 	readonly RSVP_CLAIM_CODE_PEPPER: string;
@@ -26,8 +31,12 @@ interface ImportMetaEnv {
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
 	readonly SUPER_ADMIN_EMAILS: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
+	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;
 	readonly PREVIEW_ADMIN_EMAILS: string;
+	readonly VERCEL: string;
+	readonly VERCEL_ENV: string;
+	readonly VERCEL_GIT_COMMIT_REF: string;
 	readonly BASE_URL: string;
 	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;

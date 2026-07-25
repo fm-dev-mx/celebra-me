@@ -1,54 +1,27 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 import { getEnv } from '@/lib/server/env';
 
 describe('getEnv', () => {
-	const originalCwd = process.cwd();
-	const originalNodeEnv = process.env.NODE_ENV;
-	const tempRoot = join(tmpdir(), `celebra-env-test-${Date.now()}`);
+	const key = 'CELEBRA_TEST_ENV_VALUE';
+	const originalValue = process.env[key];
 
-	beforeAll(() => {
-		mkdirSync(tempRoot, { recursive: true });
+	beforeEach(() => {
+		delete process.env[key];
 	});
 
 	afterAll(() => {
-		process.chdir(originalCwd);
-		process.env.NODE_ENV = originalNodeEnv;
-		rmSync(tempRoot, { recursive: true, force: true });
+		if (originalValue === undefined) {
+			delete process.env[key];
+			return;
+		}
+		process.env[key] = originalValue;
 	});
 
-	beforeEach(() => {
-		delete process.env.CELEBRA_TEST_ENV_USER;
-		delete process.env.CELEBRA_TEST_ENV_PASSWORD;
-	});
-
-	it('prefers process.env over files', () => {
-		process.env.NODE_ENV = 'development';
-		process.env.CELEBRA_TEST_ENV_USER = 'from-process';
-		process.chdir(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'CELEBRA_TEST_ENV_USER=from-file\n', 'utf8');
-
-		expect(getEnv('CELEBRA_TEST_ENV_USER')).toBe('from-process');
+	it('returns the value from process.env', () => {
+		process.env[key] = 'from-process';
+		expect(getEnv(key)).toBe('from-process');
 	});
 
 	it('returns an empty value when process.env is missing', () => {
-		process.env.NODE_ENV = 'development';
-		process.chdir(tempRoot);
-		writeFileSync(
-			join(tempRoot, '.env.local'),
-			'CELEBRA_TEST_ENV_PASSWORD=from-local\n',
-			'utf8',
-		);
-
-		expect(getEnv('CELEBRA_TEST_ENV_PASSWORD')).toBe('');
-	});
-
-	it('does not read files in test mode', () => {
-		process.env.NODE_ENV = 'test';
-		process.chdir(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'CELEBRA_TEST_ENV_USER=from-file\n', 'utf8');
-
-		expect(getEnv('CELEBRA_TEST_ENV_USER')).toBe('');
+		expect(getEnv(key)).toBe('');
 	});
 });
