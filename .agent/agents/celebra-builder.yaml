@@ -35,6 +35,9 @@ skills:
     - astro-patterns
     - frontend-design
     - theme-architecture
+    - client-invitation-audit
+    - demo-content-consistency
+    - production-sql-patches
     - commit-planner
     - testing
 constraints:

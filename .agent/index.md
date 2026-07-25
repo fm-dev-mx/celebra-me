@@ -51,15 +51,18 @@ state and never has authority over these definitions.
 | `astro-patterns`              | Astro rendering, routing, and client-boundary guidance             |
 | `backend-engineering`         | API routes, services, validation, and integrations                 |
 | `celebra-delegation-patterns` | provider-neutral subagent requests, handoffs, and synthesis        |
+| `client-invitation-audit`     | pre-implementation audit for real invitations + two-lane spec      |
 | `commit-planner`              | commit partitioning and message planning                           |
 | `copywriting-es`              | Spanish UI and invitation copy standards                           |
+| `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
+| `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
 | `seo-metadata`                | metadata, sharing, and search presentation                         |
 | `supabase`                    | Supabase Auth, RLS, Edge Functions, Storage, CLI, and MCP guidance |
 | `supabase-postgres`           | Postgres performance, indexes, connections, schema, and locking    |
 | `testing`                     | unit, integration, and E2E testing guidance                        |
-| `theme-architecture`          | theme tokens, presets, and section-theme contracts                 |
+| `theme-architecture`          | theme tokens, presets, section contracts, and preset extension     |
 
 ## Available Briefs
 
@@ -201,6 +204,9 @@ Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/gi
 | Supabase or database work         | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md` |
 | Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans    |
 | Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                           |
+| Real invitation pre-work audit    | `client-invitation-audit` (then `managed-invitation-lifecycle` to apply)                     |
+| Demo date / transform consistency | `demo-content-consistency`                                                                   |
+| Manual production SQL authoring   | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                           |
 | Creative or marketing production  | `.agent/briefs/celebra-me.md` and the relevant creative template                             |
 | Framework API uncertainty         | Relevant skill plus Context7/docs MCP against `package.json` versions                        |
 | Visual polish / anti-slop review  | `frontend-design` critique checklist (not external design SSOT installs)                     |

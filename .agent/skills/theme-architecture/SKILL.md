@@ -4,10 +4,11 @@ description:
   Manage Celebra-me design tokens, theme presets, section styling contracts, and component token
   architecture.
 domain: frontend
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Editing SCSS tokens, presets, theme sections, or component styling architecture
   - Reviewing theme consistency, token usage, or preset isolation
+  - Adding a new theme preset through the full SSOT + CSS resolver chain
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -17,9 +18,11 @@ outputs:
   - Implementation guidance for token-safe SCSS architecture
 related_skills:
   - frontend-design
+  - client-invitation-audit
 related_docs:
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
+  - .agent/workflows/theme-architecture-governance.md
 ---
 
 # Theme Architecture
@@ -125,6 +128,45 @@ When editing or reviewing invitation theme styles, follow these rules strictly:
 6. **Check existing conventions before creating new files.** Look at sibling sections and existing
    variant files for patterns before introducing new organization.
 
+## Extending a Preset (SSOT + CSS layers)
+
+When adding a new preset, map the active pipeline first (`themes/presets/`, `invitation-presets/`,
+`invitation-sections-by-preset/`, resolvers). Do not edit unused barrel files that are not imported
+by the live CSS graph.
+
+### Required layers
+
+| Layer            | Typical path                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| Preset tokens    | `src/styles/themes/presets/_<preset>.scss`                                            |
+| CSS entrypoint   | `src/styles/invitation-presets/<preset>.scss`                                         |
+| Section bundle   | `src/styles/invitation-sections-by-preset/<preset>.scss`                              |
+| Section wrappers | `src/styles/invitation-sections/<section>/<preset>.scss` as needed                    |
+| Section variants | `src/styles/themes/sections/<section>/_<preset>.scss` only when tokens are not enough |
+
+Not every section needs a variant file. Prefer hero/gallery when visual impact is high; skip
+symmetry-only files (see Sections above).
+
+### SSOT propagation order
+
+1. `THEME_PRESETS` in `src/lib/theme/theme-contract.ts` (publish guard)
+2. Demo catalog (`DEMO_PRESET_CATALOG` or current equivalent)
+3. Demo JSON under `src/content/event-demos/`
+4. Preset SCSS + entrypoint + section bundle
+5. Demo asset registry under `src/assets/images/events/` when required
+
+Never skip the theme-contract registration step.
+
+### Resolver fallback is a blocking failure
+
+Preset/section CSS resolvers may silently fall back to a default preset (e.g. `jewelry-box`) when an
+entrypoint is missing. Treat any fallback as ship-blocking: verify file existence, glob coverage,
+loaded stylesheets, `[data-variant='<preset>']`, and computed tokens on `.theme-preset--<preset>`
+(wrapper element — not `:root`).
+
+Also run `.agent/workflows/theme-architecture-governance.md` when contracts or isolation rules
+change.
+
 ## Review Checklist
 
 - No foundation token is consumed directly by a component unless there is a documented reason.
@@ -138,3 +180,4 @@ When editing or reviewing invitation theme styles, follow these rules strictly:
 - No state token layer is introduced; state values stay in component contracts.
 - Hardcoded reusable colors are moved to foundation, semantic, component, or email constants as
   appropriate.
+- New presets are registered in theme-contract and do not silently resolve to the fallback preset.
