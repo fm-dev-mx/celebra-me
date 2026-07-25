@@ -24,8 +24,8 @@ importers:
         specifier: 10.0.8
         version: 10.0.8(astro@6.4.8(@types/node@22.20.1)(@vercel/functions@3.7.1(ws@8.21.0))(jiti@2.6.1)(rollup@4.62.2)(sass-embedded@1.100.0)(sass@1.100.0)(tsx@4.22.4)(yaml@2.9.0))(react@19.2.7)(rollup@4.62.2)(ws@8.21.0)
       '@fontsource-variable/bodoni-moda':
-        specifier: ^5.2.7
-        version: 5.2.7
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/cinzel':
         specifier: ^5.2.8
         version: 5.2.8
@@ -1041,8 +1041,8 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@fontsource-variable/bodoni-moda@5.2.7':
-    resolution: {integrity: sha512-GZo4yqbmS/72On15EcAcKHjYfPbWCPKh4AlkVp8OP2pcGMD+XGoXVuNPEPFgaAfMJpcsa2fsJj/BvQby0gH7Eg==}
+  '@fontsource-variable/bodoni-moda@5.3.0':
+    resolution: {integrity: sha512-yTDXk4+/J8I20KjtkHBbXDQNeE5PR3BZa0gv/YRza+kyxsz+mmg0la/n/hsr6+WvSfVP7Lc8lRTjHGIYwBW43A==}
 
   '@fontsource-variable/cinzel@5.2.8':
     resolution: {integrity: sha512-62ddfR79tYNWxIZJPlyFGBusbnONbPL6d163mT/jZOGV4vV8so6Z3buRM5epqtiA6qcVVeF8OZijJJGeLABGJg==}
@@ -4788,8 +4788,8 @@ packages:
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
 
-  react-is@19.2.7:
-    resolution: {integrity: sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A==}
+  react-is@19.2.8:
+    resolution: {integrity: sha512-s5un28nYxKJw5gvUHyW5PCC28CvBqLu9r3cWgzHT4Vo/5fqqkFcdRYsGcKf50WMPpjjFZS5d76fn3YCo2njKwQ==}
 
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
@@ -6850,7 +6850,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@fontsource-variable/bodoni-moda@5.2.7': {}
+  '@fontsource-variable/bodoni-moda@5.3.0': {}
 
   '@fontsource-variable/cinzel@5.2.8': {}
 
@@ -11106,7 +11106,7 @@ snapshots:
       '@jest/schemas': 30.4.1
       ansi-styles: 5.2.0
       react-is-18: react-is@18.3.1
-      react-is-19: react-is@19.2.7
+      react-is-19: react-is@19.2.8
 
   prismjs@1.30.0: {}
 
@@ -11133,7 +11133,7 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-is@19.2.7: {}
+  react-is@19.2.8: {}
 
   react-refresh@0.18.0: {}
 
