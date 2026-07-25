@@ -8,6 +8,13 @@ if (typeof structuredClone === 'undefined') {
 	globalThis.structuredClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 }
 
+import { TransformStream } from 'node:stream/web';
+
+if (typeof globalThis.TransformStream === 'undefined') {
+	// @ts-expect-error polyfill for Jest Node environment
+	globalThis.TransformStream = TransformStream;
+}
+
 /**
  * Fetch API Polyfills for JSDOM
  * JSDOM does not provide Response, Request, or Headers globals by default.

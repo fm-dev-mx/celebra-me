@@ -207,4 +207,41 @@ describe('screenshot CLI utilities', () => {
 			rmSync(tempDir, { recursive: true, force: true });
 		}
 	});
+
+	it('fails manifest status when files generated are fewer than planned required files', () => {
+		const [mobileNarrow] = resolveViewports('site', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [mobileNarrow],
+			perViewportPlanned: { 'mobile-narrow': 5 },
+			target: 'critical-qa',
+			captures: [
+				{
+					path: 'temp/screenshots/abril/mobile-narrow/01-initial.png',
+					viewportName: 'mobile-narrow',
+					label: 'Initial cover',
+					success: true,
+				},
+				{
+					path: 'temp/screenshots/abril/mobile-narrow/02-reveal.png',
+					viewportName: 'mobile-narrow',
+					label: 'Reveal cover',
+					success: true,
+				},
+				{
+					path: 'temp/screenshots/abril/mobile-narrow/05-full-open.png',
+					viewportName: 'mobile-narrow',
+					label: 'Full invitation',
+					success: true,
+				},
+			],
+		});
+
+		expect(manifest[0]).toEqual({
+			name: 'mobile-narrow',
+			files: 3,
+			expected: 5,
+			status: 'failed',
+		});
+	});
 });
+

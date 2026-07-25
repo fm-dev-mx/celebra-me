@@ -14,7 +14,9 @@ import {
 	type SelectorValidationReport,
 	type ScreenshotWarning,
 	type BlankBottomValidation,
+	type SectionCoverageReport,
 } from './types.js';
+import { deriveSectionInventory } from './inventory.js';
 import {
 	createPageSlug,
 	resolveOutputDir,
@@ -25,6 +27,7 @@ import {
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	validateBlankBottom,
+	getFileArtifactMeta,
 } from './utils.js';
 import {
 	launchBrowser,
@@ -40,6 +43,7 @@ import {
 interface SingleViewportCaptureResult {
 	captures: CaptureResult[];
 	plannedCaptures: number;
+	plannedTasks?: Array<{ id: string; required: boolean }>;
 	report: ViewportRunReport;
 }
 
@@ -83,6 +87,17 @@ async function captureSingleViewport(
 				requestFailures,
 			});
 
+			if (viewportReport.sectionCoverage) {
+				const cov = viewportReport.sectionCoverage;
+				console.log(`  ─── Section Coverage Matrix (${viewport.name}) ───`);
+				console.log(`    Expected sections:   ${cov.expectedCount}`);
+				console.log(`    Rendered sections:   ${cov.renderedCount}`);
+				console.log(`    Planned captures:    ${cov.plannedCount}`);
+				console.log(`    Successful captures: ${cov.successfulCount}`);
+				console.log(`    Missing sections:    ${cov.missingSections.length > 0 ? cov.missingSections.join(', ') : 'none'}`);
+				console.log(`    Duplicate sections:  ${cov.duplicateSections.length > 0 ? cov.duplicateSections.join(', ') : 'none'}`);
+			}
+
 			// Log summary for this viewport
 			const succeeded = results.filter((r) => r.success).length;
 			const failed = viewportReport.failures.length;
@@ -96,12 +111,18 @@ async function captureSingleViewport(
 			if (blockingErrorsCount > 0) summaryParts += `, ${blockingErrorsCount} blocking error(s)`;
 			console.log(`  ─── ${summaryParts} ───`);
 
-			return { captures: results, plannedCaptures: plannedCount, report: viewportReport };
+			return {
+				captures: results,
+				plannedCaptures: plannedCount,
+				plannedTasks: results.map((r) => ({ id: r.id ?? '', required: !r.isOptional })),
+				report: viewportReport,
+			};
 		} catch (err) {
 			console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
 			return {
 				captures: [],
 				plannedCaptures: 0,
+				plannedTasks: [],
 				report: {
 					name: viewport.name,
 					width: viewport.width,
@@ -176,6 +197,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 
 	// ── 3. Capture each viewport ──────────────────────────────────────────
 	const perViewportPlanned: Record<string, number> = {};
+	const perViewportPlannedTasks: Record<string, Array<{ id: string; required: boolean }>> = {};
 
 	try {
 		for (let i = 0; i < job.viewports.length; i++) {
@@ -188,6 +210,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 			allCaptures.push(...result.captures);
 			viewportReports.push(result.report);
 			perViewportPlanned[viewport.name] = result.plannedCaptures;
+			perViewportPlannedTasks[viewport.name] = result.plannedTasks ?? [];
 		}
 	} finally {
 		await browser.close();
@@ -198,6 +221,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		viewports: job.viewports,
 		captures: allCaptures,
 		perViewportPlanned,
+		perViewportPlannedTasks,
 		target: job.target,
 	});
 	const manifestFiles = manifest.reduce((sum, vp) => sum + vp.files, 0);
@@ -221,6 +245,10 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		);
 	const failed = failures.length + manifestFailures.length;
 	const blockingErrors = Math.max(0, failures.length - captureFailed) + manifestFailures.length;
+
+	// Separate required vs optional captures for unambiguous summary reporting.
+	const requiredCaptures = allCaptures.filter((r) => !r.isOptional);
+	const optionalOmitted = allCaptures.filter((r) => r.isOptional && !r.success).length;
 
 	const reportStatus: ScreenshotRunReport['status'] = failed > 0
 		? 'failed'
@@ -250,9 +278,12 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('═'.repeat(56));
 	console.log('📊  RESULTS');
 	console.log('═'.repeat(56));
-	console.log(`  Total captures:  ${allCaptures.length}`);
-	console.log(`  Successful:      ${succeeded}`);
-	console.log(`  Failed:          ${failed}`);
+	console.log(`  Required captures: ${requiredCaptures.length}`);
+	console.log(`  Successful:        ${requiredCaptures.filter((r) => r.success).length}`);
+	console.log(`  Failed:            ${failed}`);
+	if (optionalOmitted > 0) {
+		console.log(`  Optional omitted:  ${optionalOmitted} (see notices)`);
+	}
 	console.log(`  Warnings:        ${warnings.length}`);
 	console.log(`  Notices:         ${notices.length}`);
 	console.log(`  Blocking errors: ${blockingErrors}`);
@@ -337,22 +368,42 @@ async function buildViewportReport({
 			.filter((result) => result.success)
 			.map(async (result) => {
 				const metadata = await readImageMetadata(result.path);
+				const artifactMeta = await getFileArtifactMeta(result.path).catch(() => undefined);
 
 				return {
 					path: result.path,
 					label: result.label,
 					width: metadata.width,
 					height: metadata.height,
+					hash: result.hash ?? artifactMeta?.hash,
+					sizeBytes: result.sizeBytes ?? artifactMeta?.sizeBytes,
+					mtimeMs: result.mtimeMs ?? artifactMeta?.mtimeMs,
+					strategy: result.strategy,
+					verificationStatus: result.verificationStatus ?? 'passed',
 				};
 			}),
 	);
 	const detailedWarnings: ScreenshotWarning[] = [];
 	const blankBottomValidations: BlankBottomValidation[] = [];
 
+	// Post-capture overwrite check: verify artifact hashes have not changed
+	for (const file of outputFiles) {
+		if (file.hash) {
+			const currentMeta = await getFileArtifactMeta(file.path).catch(() => undefined);
+			if (!currentMeta || currentMeta.hash !== file.hash) {
+				captureFailures.push(`FULL_PAGE_ARTIFACT_OVERWRITTEN: Artifact ${file.path} was overwritten or modified after verification.`);
+			}
+		}
+	}
+
 	// Track capture failures (not validation issues)
 	for (const result of results) {
 		if (!result.success) {
-			captureFailures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
+			if (result.isOptional) {
+				notices.push(`Optional capture "${result.label}" omitted: ${result.error ?? 'not supported'}`);
+			} else {
+				captureFailures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
+			}
 		}
 	}
 
@@ -371,15 +422,24 @@ async function buildViewportReport({
 
 	appendExpectedOutputFailures(captureFailures, job, results, outputFiles);
 
-	// Dimension check on full-page captures — warning only, not a failure
-	for (const file of outputFiles.filter((outputFile) => isViewportSizedCapture(outputFile.label))) {
+	// Physical dimension check on full-page captures — fail if viewport-sized on multi-viewport page
+	for (const file of outputFiles.filter((outputFile) => isFullPageCaptureLabel(outputFile.label))) {
 		if (!file.width || !file.height) {
-			warnings.push(`Could not read dimensions for ${file.path}`);
+			captureFailures.push(`FULL_PAGE_CAPTURE_FAILED: Could not read image dimensions for ${file.path}`);
 			continue;
 		}
-		if (file.width < viewport.width || file.height < viewport.height) {
-			warnings.push(
-				`${file.path} dimensions ${file.width}x${file.height} are smaller than viewport ${viewport.width}x${viewport.height}`,
+		const viewportPixelWidth = Math.round(viewport.width * viewport.deviceScaleFactor);
+		const viewportPixelHeight = Math.round(viewport.height * viewport.deviceScaleFactor);
+
+		if (file.width < viewportPixelWidth) {
+			captureFailures.push(
+				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} width ${file.width}px is smaller than viewport width ${viewportPixelWidth}px`,
+			);
+		}
+
+		if (documentHeight > viewport.height + 20 && Math.abs(file.height - viewportPixelHeight) <= 10) {
+			captureFailures.push(
+				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} height ${file.height}px is equal to single viewport height (${viewportPixelHeight}px) for multi-viewport page (${documentHeight}px CSS height).`,
 			);
 		}
 	}
@@ -390,6 +450,14 @@ async function buildViewportReport({
 		);
 	}
 
+	let sectionCoverage: SectionCoverageReport | undefined;
+
+	if (job.pageType === 'invitation') {
+		const inventory = await deriveSectionInventory(page);
+		sectionCoverage = buildSectionCoverage(inventory, results, captureFailures);
+	}
+
+
 	return {
 		name: viewport.name,
 		width: viewport.width,
@@ -398,6 +466,7 @@ async function buildViewportReport({
 		documentHeight,
 		outputFiles,
 		criticalSelectors,
+		sectionCoverage,
 		warnings,
 		detailedWarnings,
 		notices,
@@ -413,6 +482,55 @@ async function buildViewportReport({
 // =============================================================================
 // Helper Functions — Extracted to Reduce Cognitive Complexity
 // =============================================================================
+
+/**
+ * Build section coverage report from a section inventory and capture results.
+ * Mutates captureFailures when sections are missing or duplicate roots are detected.
+ */
+function buildSectionCoverage(
+	inventory: Awaited<ReturnType<typeof deriveSectionInventory>>,
+	results: CaptureResult[],
+	captureFailures: string[],
+): SectionCoverageReport {
+	const sectionResults = results.filter((r) => r.label.startsWith('Section:'));
+	const missingSections: string[] = [];
+
+	for (const sec of inventory.sections) {
+		const found = results.some(
+			(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
+		);
+		if (!found) {
+			missingSections.push(sec.id);
+			captureFailures.push(`Missing section capture for required section "${sec.id}".`);
+		}
+	}
+
+	for (const dup of inventory.duplicates) {
+		captureFailures.push(`Duplicate section root detected in DOM: "${dup}".`);
+	}
+
+	return {
+		expectedCount: inventory.expected,
+		renderedCount: inventory.rendered,
+		plannedCount: sectionResults.length,
+		successfulCount: sectionResults.filter((r) => r.success).length,
+		missingSections,
+		duplicateSections: inventory.duplicates,
+		sections: inventory.sections.map((sec) => {
+			const match = results.find(
+				(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
+			);
+			return {
+				id: sec.id,
+				order: sec.order,
+				label: sec.label,
+				selector: sec.selector,
+				status: match ? 'captured' : 'missing',
+				file: match?.path,
+			};
+		}),
+	};
+}
 
 /**
  * Validate blank bottom on full-page captures.
@@ -464,6 +582,7 @@ async function validateFullPageBlanks(
 		const isFullPage =
 			file.path.includes('02-full-page') ||
 			file.path.includes('01-initial-full-page') ||
+			file.path.includes('05-invitation-full-page') ||
 			file.path.includes('05-invitation-full-open');
 		if (!isFullPage) continue;
 
@@ -569,10 +688,6 @@ async function collectSelectorAndRequestWarnings(
 	}
 
 	return { criticalSelectors, blockingErrors };
-}
-
-function isViewportSizedCapture(label: string): boolean {
-	return label === 'Viewport' || label === 'Full page' || label === 'Initial full page';
 }
 
 function isFullPageCaptureLabel(label: string): boolean {
@@ -762,6 +877,7 @@ function isCriticalRequest(url: string): boolean {
 	try {
 		const parsed = new URL(url);
 		if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+			if (parsed.pathname.includes('/node_modules/.vite/deps/')) return false;
 			return /\.(css|js|mjs|ts|tsx|astro|png|jpg|jpeg|webp|gif|svg|avif|woff2?|ttf|otf)$/i.test(
 				parsed.pathname,
 			);

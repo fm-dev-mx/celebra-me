@@ -26,9 +26,8 @@ import {
 	formatViewport,
 	getDefaultCriticalSelectors,
 	getViewportProfileSummary,
-	getAvailableDemos,
-	getAvailableTemplates,
 } from './utils.js';
+import { discoverAllInvitations, discoverStaticDemos, discoverStaticTemplates } from './discovery.js';
 
 // =============================================================================
 // Interactive CLI Entry
@@ -163,17 +162,33 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		const selectionMode = await select<string>({
 			message: 'Select the invitation or demo to capture:',
 			choices: [
+				{ name: 'Select from All Discovered Invitations (Demos, Provisioned, DB)...', value: 'select-all-discovered' },
 				{ name: 'Select from Event Demos...', value: 'select-demo' },
 				{ name: 'Select from Invitation Templates...', value: 'select-template' },
+				{ name: 'Capture ALL Discovered Invitations', value: 'all-discovered' },
 				{ name: 'Capture ALL Event Demos', value: 'all-demos' },
 				{ name: 'Capture ALL Templates', value: 'all-templates' },
 				{ name: 'Enter route/URL manually', value: 'manual' },
 			],
-			default: 'select-demo',
+			default: 'select-all-discovered',
 		});
 
-		if (selectionMode === 'select-demo') {
-			const demos = getAvailableDemos();
+		if (selectionMode === 'select-all-discovered') {
+			const discovered = discoverAllInvitations();
+			if (discovered.length === 0) {
+				console.warn('  ⚠ No invitations discovered.');
+				return null;
+			}
+			const chosenRoute = await select<string>({
+				message: 'Which invitation?',
+				choices: discovered.map((d) => ({
+					name: `${d.name} (${d.source}) [${d.route}]`,
+					value: d.route,
+				})),
+			});
+			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
+		} else if (selectionMode === 'select-demo') {
+			const demos = discoverStaticDemos();
 			if (demos.length === 0) {
 				console.warn('  ⚠ No event demos found in src/content/event-demos.');
 				return null;
@@ -184,7 +199,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 			});
 			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
 		} else if (selectionMode === 'select-template') {
-			const templates = getAvailableTemplates();
+			const templates = discoverStaticTemplates();
 			if (templates.length === 0) {
 				console.warn('  ⚠ No templates found in src/content/event-templates.');
 				return null;
@@ -194,15 +209,22 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 				choices: templates.map((t) => ({ name: t.name, value: t.route })),
 			});
 			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
+		} else if (selectionMode === 'all-discovered') {
+			const discovered = discoverAllInvitations();
+			if (discovered.length === 0) {
+				console.warn('  ⚠ No invitations discovered.');
+				return null;
+			}
+			resolvedUrls = discovered.map((d) => ({ name: d.slug, url: d.route }));
 		} else if (selectionMode === 'all-demos') {
-			const demos = getAvailableDemos();
+			const demos = discoverStaticDemos();
 			if (demos.length === 0) {
 				console.warn('  ⚠ No event demos found in src/content/event-demos.');
 				return null;
 			}
 			resolvedUrls = demos.map((d) => ({ name: d.slug, url: d.route }));
 		} else if (selectionMode === 'all-templates') {
-			const templates = getAvailableTemplates();
+			const templates = discoverStaticTemplates();
 			if (templates.length === 0) {
 				console.warn('  ⚠ No templates found in src/content/event-templates.');
 				return null;

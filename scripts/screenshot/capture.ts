@@ -23,13 +23,21 @@ import {
 	DEFAULT_IMAGE_TIMEOUT,
 	DEFAULT_STABILITY_DELAY,
 } from './types.js';
+import { deriveSectionInventory, detectRevealCapabilities } from './inventory.js';
 import {
 	buildScreenshotPath,
 	formatDuration,
+	formatExtension,
 	getAboveFoldCriticalSelector,
 	getDefaultHideSelectors,
+	getDocumentHeight,
 	playwrightFormatOptions,
+	verifyPhysicalPng,
+	verifySectionCropInclusion,
+	publishArtifactAtomically,
 } from './utils.js';
+
+export type TaskRequirement = 'required' | 'optional' | 'unsupported';
 
 export interface CaptureTask {
 	id: string;
@@ -51,6 +59,8 @@ export interface CaptureTask {
 		| 'reveal-letter-open'
 		| 'reveal-open'
 		| 'full-open';
+	requirement?: TaskRequirement;
+	viewportOnly?: boolean;
 }
 
 export function getPlannedCaptureLabel(id: string): string {
@@ -65,100 +75,129 @@ export async function resolveCapturePlan(
 	const tasks: CaptureTask[] = [];
 
 	if (job.pageType === 'invitation') {
-		const hasReveal = (await findRevealSection(page)) !== null;
+		const capabilities = await detectRevealCapabilities(page);
 
 		if (job.target === 'full-page') {
 			tasks.push({
-				id: '01-initial-full-page',
-				label: 'Initial full page (closed)',
+				id: '01-initial-closed-viewport',
+				label: capabilities.revealType === 'editorial-cover' ? 'Initial cover (closed)' : 'Initial envelope (closed)',
 				type: 'invitation-step',
 				invitationStep: 'initial-full-page',
+				requirement: 'required',
+				viewportOnly: true,
 			});
-			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && hasReveal) {
+			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && capabilities.hasReveal) {
 				tasks.push({
-					id: '05-invitation-full-open',
+					id: '05-invitation-full-page',
 					label: 'Full invitation (open)',
 					type: 'invitation-step',
 					invitationStep: 'full-open',
+					requirement: 'required',
 				});
 			}
 		} else if (job.target === 'critical-qa') {
 			tasks.push({
-				id: '01-initial-full-page',
-				label: 'Initial full page (closed)',
+				id: '01-initial-closed-viewport',
+				label: capabilities.revealType === 'editorial-cover' ? 'Initial cover (closed)' : 'Initial envelope (closed)',
 				type: 'invitation-step',
 				invitationStep: 'initial-full-page',
+				requirement: 'required',
+				viewportOnly: true,
 			});
-			if (job.revealHandling !== 'open-only' && hasReveal) {
+			if (job.revealHandling !== 'open-only' && capabilities.hasReveal) {
 				tasks.push({
-					id: '02-reveal-section-closed',
-					label: 'Reveal section (closed)',
+					id: '02-reveal-closed',
+					label: capabilities.revealType === 'editorial-cover' ? 'Reveal cover (closed)' : 'Reveal section (closed)',
 					type: 'invitation-step',
 					invitationStep: 'reveal-closed',
+					requirement: 'optional',
 				});
 			}
-			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && hasReveal) {
+			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && capabilities.hasReveal) {
+				if (capabilities.hasLetter) {
+					tasks.push({
+						id: '03-reveal-letter-open',
+						label: 'Reveal letter (open)',
+						type: 'invitation-step',
+						invitationStep: 'reveal-letter-open',
+						requirement: 'optional',
+					});
+				}
+				if (capabilities.hasFlapTransition) {
+					tasks.push({
+						id: '04-reveal-transition-open',
+						label: 'Reveal transition (open)',
+						type: 'invitation-step',
+						invitationStep: 'reveal-open',
+						requirement: 'optional',
+					});
+				}
 				tasks.push({
-					id: '03-reveal-letter-open',
-					label: 'Reveal letter (open)',
-					type: 'invitation-step',
-					invitationStep: 'reveal-letter-open',
-				});
-				tasks.push({
-					id: '04-reveal-section-open',
-					label: 'Reveal section (open)',
-					type: 'invitation-step',
-					invitationStep: 'reveal-open',
-				});
-				tasks.push({
-					id: '05-invitation-full-open',
+					id: '05-invitation-full-page',
 					label: 'Full invitation (open)',
 					type: 'invitation-step',
 					invitationStep: 'full-open',
+					requirement: 'required',
 				});
 			}
 
-			// Predefined critical sections
-			if (job.mode === 'audit') {
-				const critical = job.criticalSelectors.filter((s) => s.capture);
-				let cIndex = 20;
-				for (const c of critical) {
-					const exists = (await page.locator(c.selector).count()) > 0;
-					if (exists || c.required) {
+			// Dynamically derive section inventory for per-section captures
+			const inventory = await deriveSectionInventory(page);
+			if (inventory.sections.length > 0) {
+				for (const sec of inventory.sections) {
+					const orderStr = String(sec.order).padStart(2, '0');
+					tasks.push({
+						id: `10-${orderStr}-${sec.id}`,
+						label: `Section: ${sec.label}`,
+						type: 'section',
+						selector: sec.selector,
+						requirement: 'required',
+					});
+				}
+			} else {
+				const sections = KNOWN_SECTIONS.filter((s) => s.pageType === 'invitation');
+				let sIndex = 1;
+				for (const s of sections) {
+					const count = await page.locator(s.selector).count();
+					if (count > 0) {
+						const orderStr = String(sIndex).padStart(2, '0');
 						tasks.push({
-							id: `${cIndex}-critical-${c.label || 'elem'}`,
-							label: `Critical: ${c.label || c.selector}`,
-							type: 'critical',
-							selector: c.selector,
+							id: `10-${orderStr}-${s.outputSlug}`,
+							label: `Section: ${s.label}`,
+							type: 'section',
+							selector: s.selector,
+							requirement: 'required',
 						});
-						cIndex++;
+						sIndex++;
 					}
 				}
 			}
 		} else if (job.target === 'all-sections') {
-			const sections = KNOWN_SECTIONS.filter((s) => s.pageType === 'invitation');
-			let sIndex = 6;
-			for (const s of sections) {
-				let selector = s.selector;
-				let found = (await page.locator(selector).count()) > 0;
-				if (!found && s.fallbackSelectors) {
-					for (const fb of s.fallbackSelectors) {
-						if ((await page.locator(fb).count()) > 0) {
-							selector = fb;
-							found = true;
-							break;
-						}
-					}
+			const inventory = await deriveSectionInventory(page);
+			if (inventory.sections.length > 0) {
+				for (const sec of inventory.sections) {
+					const orderStr = String(sec.order).padStart(2, '0');
+					tasks.push({
+						id: `10-${orderStr}-${sec.id}`,
+						label: `Section: ${sec.label}`,
+						type: 'section',
+						selector: sec.selector,
+						requirement: 'required',
+					});
 				}
-				if (found) {
-					// Check visibility before planning — skip hidden sections
-					const isVis = await page.locator(selector).first().isVisible().catch(() => false);
-					if (isVis) {
+			} else {
+				const sections = KNOWN_SECTIONS.filter((s) => s.pageType === 'invitation');
+				let sIndex = 1;
+				for (const s of sections) {
+					const count = await page.locator(s.selector).count();
+					if (count > 0) {
+						const orderStr = String(sIndex).padStart(2, '0');
 						tasks.push({
-							id: `${String(sIndex).padStart(2, '0')}-section-${s.outputSlug}`,
+							id: `10-${orderStr}-${s.outputSlug}`,
 							label: `Section: ${s.label}`,
 							type: 'section',
-							selector,
+							selector: s.selector,
+							requirement: 'required',
 						});
 						sIndex++;
 					}
@@ -440,8 +479,57 @@ export function createContext(browser: Browser, viewport: Viewport): Promise<Bro
  *  4. Visible images loaded
  *  5. Small settle delay for layout shifts
  */
+export async function waitForCustomElements(page: Page): Promise<void> {
+	try {
+		await page.evaluate(async () => {
+			if (typeof window.customElements === 'undefined') return;
+			const customNames = ['ds-envelope-reveal', 'ds-editorial-cover'];
+			for (const name of customNames) {
+				if (document.querySelector(name)) {
+					await window.customElements.whenDefined(name).catch(() => {});
+				}
+			}
+		});
+	} catch {
+		// Non-fatal
+	}
+}
+
+export async function waitForBackgroundImages(page: Page): Promise<void> {
+	try {
+		await page.evaluate(async (timeoutMs) => {
+			const elements = Array.from(document.querySelectorAll('*'));
+			const bgUrls: string[] = [];
+			for (const el of elements) {
+				const bg = window.getComputedStyle(el).backgroundImage;
+				if (bg && bg !== 'none' && bg.includes('url(')) {
+					const match = bg.match(/url\((['"]?)(.*?)\1\)/);
+					if (match && match[2] && !match[2].startsWith('data:')) {
+						bgUrls.push(match[2]);
+					}
+				}
+			}
+			await Promise.all(
+				bgUrls.map(
+					(url) =>
+						new Promise<void>((resolve) => {
+							const img = new Image();
+							img.onload = () => resolve();
+							img.onerror = () => resolve();
+							img.src = url;
+							setTimeout(resolve, timeoutMs);
+						}),
+				),
+			);
+		}, DEFAULT_IMAGE_TIMEOUT);
+	} catch {
+		// Non-fatal
+	}
+}
+
 export async function waitForPageStability(page: Page): Promise<void> {
 	await page.waitForLoadState('domcontentloaded');
+	await waitForCustomElements(page);
 
 	// Best-effort network idle
 	try {
@@ -452,6 +540,7 @@ export async function waitForPageStability(page: Page): Promise<void> {
 
 	await waitForFonts(page);
 	await waitForImages(page);
+	await waitForBackgroundImages(page);
 
 	// Small settle delay
 	await page.waitForTimeout(DEFAULT_STABILITY_DELAY);
@@ -656,9 +745,13 @@ async function normalizeForAudit(page: Page): Promise<void> {
         animation-delay: 0s !important;
       }
 
-      /* Remove reveal/cover from layout when in open/preview-opened state */
+      /* Remove reveal/cover from layout when in open/preview-opened or revealed state */
       html[data-screenshot='audit'] [data-screenshot='reveal-section'][data-preview-state='opened'],
-      html[data-screenshot='audit'] ds-editorial-cover[data-preview-state='opened'] {
+      html[data-screenshot='audit'] [data-screenshot='reveal-section'].is-preview-opened,
+      html[data-screenshot='audit'] .event-theme-wrapper[data-reveal-state='revealed'] [data-screenshot='reveal-section'],
+      html[data-screenshot='audit'] .event-theme-wrapper[data-reveal-state='preview-opened'] [data-screenshot='reveal-section'],
+      html[data-screenshot='audit'] ds-editorial-cover[data-preview-state='opened'],
+      html[data-screenshot='audit'] ds-editorial-cover.is-preview-opened {
         display: none !important;
       }
 
@@ -1082,11 +1175,6 @@ export async function captureFullPage(
 		success: true,
 	};
 }
-/**
- * Capture a single landing-page section for the stitched full-page screenshot.
- * Pushes results, warnings, and failures into the caller-supplied arrays.
- * Called once per section by {@link captureLandingStitchedFullPage}.
- */
 /**
  * Capture a single landing-page section for the stitched full-page screenshot.
  * Pushes results, warnings, and failures into the caller-supplied arrays.
@@ -1522,6 +1610,110 @@ async function validateDistinctReveal(results: CaptureResult[]): Promise<void> {
  *
  * Logs a warning at each fallback.
  */
+async function captureInvitationStitchedFullPage(
+	page: Page,
+	outputPath: string,
+	format: OutputFormat,
+	topY: number,
+	bottomY: number,
+	viewportWidth: number,
+): Promise<boolean> {
+	const initialViewport = page.viewportSize() ?? { width: viewportWidth, height: 844 };
+	const tmpDir = path.join(path.dirname(outputPath), `.stitch-invitation-${Date.now()}`);
+	await fs.promises.mkdir(tmpDir, { recursive: true });
+
+	try {
+		const restoreOverlays = await hideFixedOverlaysForCapture(page);
+		const capturedTiles: Array<{ file: string; width: number; height: number }> = [];
+
+		const tileSize = initialViewport.height;
+		let yOffset = topY;
+		let tileIdx = 0;
+
+		while (yOffset < bottomY) {
+			const currentTileHeight = Math.min(tileSize, bottomY - yOffset);
+			const tileFile = path.join(tmpDir, `tile-${tileIdx}.png`);
+
+			await page.evaluate((y) => window.scrollTo(0, y), yOffset);
+			await page.waitForTimeout(100);
+
+			await page.screenshot({
+				path: tileFile,
+				clip: { x: 0, y: 0, width: initialViewport.width, height: currentTileHeight },
+				...playwrightFormatOptions(format),
+			});
+
+			const meta = await sharp(tileFile).metadata();
+			if (meta.width && meta.height) {
+				capturedTiles.push({ file: tileFile, width: meta.width, height: meta.height });
+			}
+			yOffset += currentTileHeight;
+			tileIdx++;
+		}
+
+		await page.evaluate(() => window.scrollTo(0, 0));
+		await restoreOverlays();
+
+		const currentViewport = page.viewportSize();
+		if (
+			!currentViewport ||
+			currentViewport.width !== initialViewport.width ||
+			currentViewport.height !== initialViewport.height
+		) {
+			throw new Error(
+				`VIEWPORT_MUTATED_DURING_CAPTURE: Viewport mutated during tile capture (${initialViewport.width}x${initialViewport.height} -> ${currentViewport?.width}x${currentViewport?.height})`,
+			);
+		}
+
+		if (capturedTiles.length === 0) return false;
+
+		const canvasWidth = capturedTiles.reduce((max, t) => Math.max(max, t.width), 0);
+		const canvasHeight = capturedTiles.reduce((sum, t) => sum + t.height, 0);
+
+		const composites = await Promise.all(
+			capturedTiles.map(async (t, idx) => {
+				let input = sharp(t.file);
+				if (t.width !== canvasWidth) {
+					input = input.resize({ width: canvasWidth });
+				}
+				const buf = await input.toBuffer();
+				const top = capturedTiles.slice(0, idx).reduce((sum, p) => sum + p.height, 0);
+				return { input: buf, top, left: 0 };
+			}),
+		);
+
+		await sharp({
+			create: {
+				width: canvasWidth,
+				height: canvasHeight,
+				channels: 4,
+				background: { r: 0, g: 0, b: 0, alpha: 0 },
+			},
+		})
+			.composite(composites)
+			.png()
+			.toFile(outputPath);
+
+		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+		return true;
+	} catch (err) {
+		console.warn(`  ⚠ Segmented capture failed: ${err}`);
+		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+		throw err;
+	}
+}
+
+/**
+ * Capture the 05-invitation-full-page screenshot.
+ *
+ * Full-page capture pipeline:
+ *  1. Trigger lazy loading and force eager images.
+ *  2. Derive canonical section inventory and reconcile expected vs rendered sections.
+ *  3. Perform canonical segmented tile capture with viewport UNCHANGED.
+ *  4. Validate viewport immutability and physical PNG dimensions.
+ *  5. Compare visual section inclusion by cropping each expected section.
+ *  6. Publish artifact atomically to protect against partial/stale overwrites.
+ */
 async function captureInvitationOpen(
 	page: Page,
 	outputDir: string,
@@ -1529,147 +1721,138 @@ async function captureInvitationOpen(
 	format: OutputFormat,
 ): Promise<CaptureResult[]> {
 	const results: CaptureResult[] = [];
-
-	const targets = [
-		{ selector: '[data-screenshot="invitation-open-hero"]', label: 'invitation-open-hero' },
-		{
-			selector: '[data-screenshot="invitation-open-content"]',
-			label: 'invitation-open-content',
-		},
-		{ selector: '[data-screenshot="invitation-content"]', label: 'invitation-content' },
-		{ selector: '[data-screenshot="invitation-root"]', label: 'invitation-root' },
-	];
-
-	let chosenSelector: string | null = null;
-	let chosenLabel = '';
-
-	for (const t of targets) {
-		const count = await page.locator(t.selector).count();
-		if (count > 0) {
-			chosenSelector = t.selector;
-			chosenLabel = t.label;
-			break;
-		}
-		if (t.label !== targets[targets.length - 1].label) {
-			console.warn(`  ⚠ [WARN] ${t.label} target not found; checking next target.`);
-		}
-	}
-
-	if (!chosenSelector) {
-		console.warn('  ⚠ [WARN] No screenshot target found — skipping 05.');
-		return results;
-	}
-
-	const legacyHeroInfo = await page.evaluate(() => {
-		const hero = document.querySelector('[data-screenshot="invitation-hero"]');
-		if (!hero) return null;
-
-		return {
-			text: (hero.textContent ?? '').replace(/\s+/g, ' ').trim(),
-			hasImage: Boolean(hero.querySelector('img')),
-		};
-	});
-
-	if (chosenLabel === 'invitation-hero' && legacyHeroInfo) {
-		const rawBounds = await page.evaluate((sel) => {
-			const el = document.querySelector(sel);
-			if (!el) return null;
-			const rect = el.getBoundingClientRect();
-			return { height: rect.height, viewportHeight: window.innerHeight };
-		}, chosenSelector);
-		if (rawBounds && rawBounds.height < rawBounds.viewportHeight * 0.7) {
-			console.warn(
-				'  ⚠ [WARN] invitation-hero exists but appears to be the intro/name card (less than 70% viewport height), not the intended opened hero. Prefer invitation-open-hero.',
-			);
-		}
-	}
-
-	// Trigger lazy loading before capture
-	await scrollForLazyLoad(page);
-	await page.waitForTimeout(300);
-
 	const fullOpenPath = await buildScreenshotPath(
 		outputDir,
 		viewportName,
-		'05-invitation-full-open',
+		'05-invitation-full-page',
 		format,
 	);
 
 	try {
-		await page.evaluate((sel) => {
-			if (!document.querySelector(sel)) return;
-			const imgs = Array.from(
-				document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]'),
-			);
+		// 1. Scroll through page to trigger lazy loading and IntersectionObservers
+		await scrollForLazyLoad(page);
+		await page.waitForTimeout(300);
+
+		// 2. Force all lazy images to eager loading & wait for image loads
+		await page.evaluate(() => {
+			const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('img'));
 			imgs.forEach((img) => {
 				img.loading = 'eager';
 			});
-		}, chosenSelector);
-		await page.waitForTimeout(500);
+		});
+		await page.waitForTimeout(300);
 
-		const captureBounds = await page.evaluate((sel) => {
-			const target = document.querySelector(sel);
-			if (!target) return null;
-
-			const rect = target.getBoundingClientRect();
-			const doc = document.documentElement;
-			const body = document.body;
-			const y = Math.max(0, Math.floor(rect.top + window.scrollY));
-			const width = Math.ceil(Math.max(doc.clientWidth, body.scrollWidth, doc.scrollWidth));
-			const docHeight = Math.ceil(Math.max(body.scrollHeight, doc.scrollHeight));
-			const height = Math.max(1, docHeight - y);
-
-			return { x: 0, y, width, height };
-		}, chosenSelector);
-
-		if (!captureBounds) {
-			throw new Error(`Target disappeared before capture: ${chosenSelector}`);
+		// 3. Derive layout evidence from canonical section inventory
+		const initialInventory = await deriveSectionInventory(page);
+		if (initialInventory.missing.length > 0) {
+			throw new Error(`SECTION_COVERAGE_INCOMPLETE: Required sections missing from rendered DOM: ${initialInventory.missing.join(', ')}`);
+		}
+		if (initialInventory.duplicates.length > 0) {
+			throw new Error(`SECTION_COVERAGE_INCOMPLETE: Duplicate section roots detected in DOM: ${initialInventory.duplicates.join(', ')}`);
 		}
 
-		const restoreReveal = await page.evaluate(() => {
-			const reveal = document.querySelector<HTMLElement>(
-				'[data-screenshot="reveal-section"]',
+		// Wait briefly for layout stability & measure again
+		await page.waitForTimeout(100);
+		const checkInventory = await deriveSectionInventory(page);
+		if (
+			checkInventory.sections.length !== initialInventory.sections.length ||
+			Math.abs(checkInventory.bottomY - initialInventory.bottomY) > 5
+		) {
+			throw new Error('LAYOUT_CHANGED_DURING_CAPTURE: Section geometry or content height changed during stabilization check.');
+		}
+
+		const initialViewport = page.viewportSize() ?? { width: 390, height: 844 };
+		const viewportWidth = initialViewport.width;
+		const viewportHeight = initialViewport.height;
+
+		const topY = initialInventory.sections.length > 0 ? initialInventory.topY : 0;
+		const bottomY = initialInventory.sections.length > 0 ? initialInventory.bottomY : await getDocumentHeight(page);
+		const expectedCssHeight = Math.max(100, Math.ceil(bottomY - topY));
+
+		const runId = Date.now();
+		const tempPath = path.join(outputDir, `.tmp-${runId}-${viewportName}-05-invitation-full-page.${formatExtension(format)}`);
+
+		// 4. Canonical strategy: Segmented tile capture with viewport UNCHANGED
+		const stitchedSuccess = await captureInvitationStitchedFullPage(
+			page,
+			tempPath,
+			format,
+			topY,
+			bottomY,
+			viewportWidth,
+		);
+
+		if (!stitchedSuccess) {
+			throw new Error(`FULL_PAGE_CAPTURE_FAILED: Segmented capture strategy failed for ${viewportName}.`);
+		}
+
+		// 5. Verify viewport immutability
+		const postViewport = page.viewportSize();
+		if (
+			!postViewport ||
+			postViewport.width !== initialViewport.width ||
+			postViewport.height !== initialViewport.height
+		) {
+			throw new Error(
+				`VIEWPORT_MUTATED_DURING_CAPTURE: Configured viewport mutated during capture (${initialViewport.width}x${initialViewport.height} -> ${postViewport?.width}x${postViewport?.height}).`,
 			);
-			if (!reveal) return null;
+		}
 
-			const previousVisibility = reveal.style.visibility;
-			reveal.style.setProperty('visibility', 'hidden', 'important');
-
-			return { previousVisibility };
+		// 6. Physical PNG verification
+		const deviceScaleFactor = (await page.evaluate(() => window.devicePixelRatio)) || 2;
+		const physCheck = await verifyPhysicalPng({
+			filePath: tempPath,
+			expectedCssWidth: viewportWidth,
+			expectedCssHeight: expectedCssHeight,
+			viewportCssHeight: viewportHeight,
+			deviceScaleFactor,
 		});
 
-		try {
-			await page.waitForTimeout(100);
-			const startsAtDocumentTop = captureBounds.y <= 1;
-			await page.screenshot({
-				path: fullOpenPath,
-				...(startsAtDocumentTop ? { fullPage: true } : { clip: captureBounds }),
-				...playwrightFormatOptions(format),
-			});
-		} finally {
-			if (restoreReveal) {
-				await page.evaluate((state) => {
-					const reveal = document.querySelector<HTMLElement>(
-						'[data-screenshot="reveal-section"]',
-					);
-					if (!reveal) return;
+		if (!physCheck.valid) {
+			await fs.promises.rm(tempPath, { force: true }).catch(() => {});
+			throw new Error(`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`);
+		}
 
-					if (state.previousVisibility) {
-						reveal.style.visibility = state.previousVisibility;
-					} else {
-						reveal.style.removeProperty('visibility');
-					}
-				}, restoreReveal);
+		// 7. Visual section crop comparison
+		for (const sec of initialInventory.sections) {
+			const standalonePath = await buildScreenshotPath(
+				outputDir,
+				viewportName,
+				`10-${String(sec.order).padStart(2, '0')}-${sec.id}`,
+				format,
+			);
+			const cropCheck = await verifySectionCropInclusion({
+				fullPagePath: tempPath,
+				sectionId: sec.id,
+				sectionBounds: sec.bounds,
+				topY,
+				deviceScaleFactor,
+				standalonePath,
+			});
+			if (!cropCheck.valid) {
+				await fs.promises.rm(tempPath, { force: true }).catch(() => {});
+				throw new Error(`${cropCheck.errorCode ?? 'SECTION_CAPTURE_MISMATCH'}: ${cropCheck.error}`);
 			}
 		}
 
+		// 8. Publish artifact atomically
+		const published = await publishArtifactAtomically(tempPath, fullOpenPath);
+
 		results.push({
-			path: fullOpenPath,
+			path: published.path,
 			viewportName,
 			label: 'Full invitation (open)',
 			success: true,
+			hash: published.hash,
+			sizeBytes: published.sizeBytes,
+			mtimeMs: published.mtimeMs,
+			strategy: 'stitched',
+			verificationStatus: 'passed',
 		});
-		console.log(`  ✓ Captured: 05-invitation-full-open (${viewportName}) [via ${chosenLabel}]`);
+
+		console.log(
+			`  ✓ Captured: 05-invitation-full-page (${viewportName}) [${initialInventory.sections.length} section(s), ${expectedCssHeight}px, strategy: stitched]`,
+		);
 	} catch (err) {
 		console.warn(`  ⚠ Failed to capture 05 open page: ${err}`);
 		results.push({
@@ -1735,7 +1918,9 @@ export async function captureInvitationScreenshots(
 
 	// 1. Resolve capture plan
 	const tasks = await resolveCapturePlan(page, job);
-	const plannedCount = tasks.length;
+	// plannedCount excludes optional captures so the manifest expected-vs-files
+	// comparison only covers required content QA tasks.
+	const plannedCount = tasks.filter((t) => t.requirement !== 'optional').length;
 
 	// 2. Print capture plan to console
 	console.log('  Planned captures:');
@@ -1767,9 +1952,10 @@ export async function captureInvitationScreenshots(
 
 		if (t.type === 'invitation-step') {
 			if (t.invitationStep === 'initial-full-page') {
-				// Already in closed state from initial navigation — skip redundant
 				try {
-					const result = await captureFullPage(page, taskPath, format);
+					const result = t.viewportOnly
+						? await captureViewport(page, taskPath, format)
+						: await captureFullPage(page, taskPath, format);
 					result.viewportName = viewportName;
 					result.label = t.label;
 					results.push(result);
@@ -1784,8 +1970,9 @@ export async function captureInvitationScreenshots(
 					});
 				}
 			} else if (t.invitationStep === 'reveal-closed') {
-				// Already in closed state from initial navigation
+				await ensureClosedState();
 				const revealSelector = await findRevealSection(page);
+				let captured = false;
 				if (revealSelector) {
 					const result = await captureElement(page, revealSelector, taskPath, format);
 					if (result) {
@@ -1793,38 +1980,91 @@ export async function captureInvitationScreenshots(
 						result.label = t.label;
 						results.push(result);
 						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+						captured = true;
 					}
+				}
+				if (!captured) {
+					results.push({
+						path: taskPath,
+						viewportName,
+						label: t.label,
+						success: false,
+						isOptional: true,
+						error: 'Reveal closed element not found or could not be captured.',
+					});
 				}
 			} else if (t.invitationStep === 'reveal-letter-open') {
-				await ensureOpenState();
-				const letterSelector = await findRevealLetter(page);
-				if (letterSelector) {
-					const result = await captureElement(page, letterSelector, taskPath, format);
-					if (result) {
-						result.viewportName = viewportName;
-						result.label = t.label;
-						results.push(result);
-						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+				// Capture intermediate letter-open state by clicking seal trigger on closed page BEFORE entering final open state
+				await ensureClosedState();
+				const isOpened = await openRevealSection(page);
+				let captured = false;
+				if (isOpened) {
+					const letterSelector = await findRevealLetter(page);
+					if (letterSelector) {
+						const result = await captureElement(page, letterSelector, taskPath, format);
+						if (result) {
+							result.viewportName = viewportName;
+							result.label = t.label;
+							results.push(result);
+							console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+							captured = true;
+						}
 					}
 				}
+				if (!captured) {
+					results.push({
+						path: taskPath,
+						viewportName,
+						label: t.label,
+						success: false,
+						isOptional: true,
+						error: 'Reveal letter element not found or could not be captured.',
+					});
+				}
 			} else if (t.invitationStep === 'reveal-open') {
-				await ensureOpenState();
-				const revealSelector = await findRevealSection(page);
-				if (revealSelector) {
-					const result = await captureElement(page, revealSelector, taskPath, format);
-					if (result) {
-						result.viewportName = viewportName;
-						result.label = t.label;
-						results.push(result);
-						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+				// Capture intermediate reveal-open state while envelope is open before entering final open state
+				await ensureClosedState();
+				const isOpened = await openRevealSection(page);
+				let captured = false;
+				if (isOpened) {
+					const revealSelector = await findRevealSection(page);
+					if (revealSelector) {
+						const result = await captureElement(page, revealSelector, taskPath, format);
+						if (result) {
+							result.viewportName = viewportName;
+							result.label = t.label;
+							results.push(result);
+							console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+							captured = true;
+						}
 					}
+				}
+				if (!captured) {
+					results.push({
+						path: taskPath,
+						viewportName,
+						label: t.label,
+						success: false,
+						isOptional: true,
+						error: 'Reveal section open element not found or could not be captured.',
+					});
 				}
 			} else if (t.invitationStep === 'full-open') {
 				await ensureOpenState();
 				const fullOpenResult = await captureInvitationOpen(page, outputDir, viewportName, format);
-				for (const r of fullOpenResult) {
-					r.viewportName = viewportName;
-					results.push(r);
+				if (fullOpenResult.length > 0) {
+					for (const r of fullOpenResult) {
+						r.viewportName = viewportName;
+						results.push(r);
+					}
+				} else {
+					results.push({
+						path: taskPath,
+						viewportName,
+						label: t.label,
+						success: false,
+						error: 'Full open invitation target not found or could not be captured.',
+					});
 				}
 			}
 		} else if (t.type === 'section' || t.type === 'critical') {
@@ -1920,7 +2160,9 @@ export async function captureGeneralPageScreenshots(
 
 	// Resolve capture plan
 	const tasks = await resolveCapturePlan(page, job);
-	const plannedCount = tasks.length;
+	// plannedCount excludes optional captures so the manifest expected-vs-files
+	// comparison only covers required content QA tasks.
+	const plannedCount = tasks.filter((t) => t.requirement !== 'optional').length;
 
 	// Print capture plan to console
 	console.log('  Planned captures:');
@@ -2007,9 +2249,6 @@ export async function captureGeneralPageScreenshots(
 // =============================================================================
 // Section Capture
 // =============================================================================
-
-
-
 
 
 // =============================================================================

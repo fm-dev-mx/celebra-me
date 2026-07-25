@@ -1,0 +1,157 @@
+import { resolveViewports, buildCurrentRunManifest, validateBlankBottom } from '../../../scripts/screenshot/utils';
+import { resolveCapturePlan } from '../../../scripts/screenshot/capture';
+import type { ScreenshotJob } from '../../../scripts/screenshot/types';
+
+describe('Screenshot workflow sequence & capability contracts', () => {
+	const mockPageWithEnvelope = {
+		locator: (selector: string) => ({
+			count: async () => {
+				if (selector === '[data-screenshot="reveal-section"]') return 1;
+				if (selector === '[data-screenshot="reveal-letter"]') return 1;
+				if (selector === '[data-screenshot="reveal-trigger"]') return 1;
+				return 0;
+			},
+			first: () => ({
+				isVisible: async () => true,
+			}),
+		}),
+		evaluate: async () => ({
+			hasReveal: true,
+			revealType: 'envelope' as const,
+			hasLetter: true,
+			hasFlapTransition: true,
+		}),
+	};
+
+	const mockPageWithEditorialCover = {
+		locator: (selector: string) => ({
+			count: async () => {
+				if (selector === '[data-screenshot="reveal-section"]') return 1;
+				return 0;
+			},
+			first: () => ({
+				isVisible: async () => true,
+			}),
+		}),
+		evaluate: async () => ({
+			hasReveal: true,
+			revealType: 'editorial-cover' as const,
+			hasLetter: false,
+			hasFlapTransition: false,
+		}),
+	};
+
+	const baseJob: ScreenshotJob = {
+		pageType: 'invitation',
+		mode: 'audit',
+		url: 'http://localhost:4321/xv/abril-michelle-becerra-rea',
+		baseUrl: 'http://localhost:4321',
+		viewportProfile: 'invitation',
+		viewports: resolveViewports('invitation', ['mobile-narrow']),
+		target: 'critical-qa',
+		revealHandling: 'auto',
+		animationHandling: 'disable',
+		sectionCapture: 'auto',
+		criticalSelectors: [],
+		waitSelectors: [],
+		hideSelectors: [],
+		authMethod: 'none',
+		outputFormat: 'png',
+		outputFolderStyle: 'default',
+	};
+
+	it('plans all 5 reveal steps for standard envelope invitations (Abril Michelle / Boda Jewelry Box)', async () => {
+		const tasks = await resolveCapturePlan(mockPageWithEnvelope as unknown as import('playwright').Page, baseJob);
+		expect(tasks.length).toBe(5);
+
+		expect(tasks[0].id).toBe('01-initial-closed-viewport');
+		expect(tasks[0].viewportOnly).toBe(true);
+		expect(tasks[0].label).toContain('envelope');
+
+		expect(tasks[1].id).toBe('02-reveal-closed');
+		expect(tasks[2].id).toBe('03-reveal-letter-open');
+		expect(tasks[3].id).toBe('04-reveal-transition-open');
+		expect(tasks[4].id).toBe('05-invitation-full-page');
+	});
+
+	it('plans only valid cover and full-open tasks for editorial cover variants (skipping letter 03/04)', async () => {
+		const tasks = await resolveCapturePlan(mockPageWithEditorialCover as unknown as import('playwright').Page, baseJob);
+		expect(tasks.length).toBe(3);
+
+		expect(tasks[0].id).toBe('01-initial-closed-viewport');
+		expect(tasks[0].viewportOnly).toBe(true);
+		expect(tasks[0].label).toContain('cover');
+
+		expect(tasks[1].id).toBe('02-reveal-closed');
+		expect(tasks[2].id).toBe('05-invitation-full-page');
+
+		// Unsupported letter steps must be excluded from planned count
+		expect(tasks.some((t) => t.id === '03-reveal-letter-open')).toBe(false);
+		expect(tasks.some((t) => t.id === '04-reveal-transition-open')).toBe(false);
+	});
+
+	it('correctly validates trailing blank space using layout evidence rather than solid background color', async () => {
+		const validationWithContentEnd = await validateBlankBottom('dummy.png', {
+			docHeight: 2000,
+			lastContentBottom: 1980,
+			trailingBlankPx: 20,
+		});
+		expect(validationWithContentEnd.trailingBlankSpaceDetected).toBe(false);
+
+		const validationWithBlankTail = await validateBlankBottom('dummy.png', {
+			docHeight: 2500,
+			lastContentBottom: 2000,
+			trailingBlankPx: 500,
+		});
+		expect(validationWithBlankTail.trailingBlankSpaceDetected).toBe(true);
+	});
+
+	it('marks manifest status as failed when generated files are fewer than planned required tasks', () => {
+		const [viewport] = resolveViewports('invitation', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [viewport],
+			perViewportPlanned: { 'mobile-narrow': 5 },
+			target: 'critical-qa',
+			captures: [
+				{ path: 'a.png', viewportName: 'mobile-narrow', label: '01', success: true },
+				{ path: 'b.png', viewportName: 'mobile-narrow', label: '02', success: true },
+				{ path: 'c.png', viewportName: 'mobile-narrow', label: '03', success: true },
+			],
+		});
+
+		expect(manifest[0].status).toBe('failed');
+		expect(manifest[0].files).toBe(3);
+		expect(manifest[0].expected).toBe(5);
+	});
+
+	it('detects FULL_PAGE_DIMENSION_MISMATCH when full-page PNG is viewport-sized on multi-viewport page', async () => {
+		const { verifyPhysicalPng } = await import('../../../scripts/screenshot/utils');
+		// Mock physical PNG check where actual height = viewport height (1688px) but content height = 10000px
+		const testPath = 'screenshots/xv-abril-michelle-becerra-rea/mobile-standard/01-initial-closed-viewport.png';
+		const check = await verifyPhysicalPng({
+			filePath: testPath,
+			expectedCssWidth: 390,
+			expectedCssHeight: 10000,
+			viewportCssHeight: 844,
+			deviceScaleFactor: 2,
+		});
+
+		expect(check.valid).toBe(false);
+		expect(check.errorCode).toBe('FULL_PAGE_DIMENSION_MISMATCH');
+	});
+
+	it('detects SECTION_OUTSIDE_FULL_PAGE when section bounds exceed image height', async () => {
+		const { verifySectionCropInclusion } = await import('../../../scripts/screenshot/utils');
+		const testPath = 'screenshots/xv-abril-michelle-becerra-rea/mobile-standard/01-initial-closed-viewport.png';
+		const check = await verifySectionCropInclusion({
+			fullPagePath: testPath,
+			sectionId: 'thankYou',
+			sectionBounds: { y: 2500, height: 500 },
+			topY: 0,
+			deviceScaleFactor: 2,
+		});
+
+		expect(check.valid).toBe(false);
+		expect(check.errorCode).toBe('SECTION_OUTSIDE_FULL_PAGE');
+	});
+});

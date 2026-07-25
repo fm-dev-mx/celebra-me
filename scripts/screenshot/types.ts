@@ -171,6 +171,7 @@ export interface ScreenshotSelectorConfig {
 
 /** Result of a single screenshot capture */
 export interface CaptureResult {
+	id?: string;
 	path: string;
 	viewportName: string;
 	label: string;
@@ -178,6 +179,12 @@ export interface CaptureResult {
 	error?: string;
 	fallback?: 'native-full-page';
 	stitchFailures?: string[];
+	isOptional?: boolean;
+	hash?: string;
+	sizeBytes?: number;
+	mtimeMs?: number;
+	strategy?: 'direct' | 'stitched';
+	verificationStatus?: 'passed' | 'failed';
 }
 
 export type ValidationStatus = 'passed' | 'warning' | 'failed';
@@ -189,6 +196,11 @@ export interface ScreenshotOutputFileReport {
 	label: string;
 	width?: number;
 	height?: number;
+	hash?: string;
+	sizeBytes?: number;
+	mtimeMs?: number;
+	strategy?: 'direct' | 'stitched';
+	verificationStatus?: 'passed' | 'failed';
 }
 
 export interface SelectorValidationReport {
@@ -224,6 +236,28 @@ export interface ViewportManifestReport {
 	files: number;
 	expected: number;
 	status: ValidationStatus;
+	requiredExpected?: number;
+	requiredVerified?: number;
+	optionalGenerated?: number;
+	optionalOmitted?: number;
+	missingRequiredTaskIds?: string[];
+}
+
+export interface SectionCoverageReport {
+	expectedCount: number;
+	renderedCount: number;
+	plannedCount: number;
+	successfulCount: number;
+	missingSections: string[];
+	duplicateSections: string[];
+	sections: Array<{
+		id: string;
+		order: number;
+		label: string;
+		selector: string;
+		status: 'captured' | 'failed' | 'missing' | 'duplicate';
+		file?: string;
+	}>;
 }
 
 export interface ViewportRunReport {
@@ -234,6 +268,7 @@ export interface ViewportRunReport {
 	documentHeight: number;
 	outputFiles: ScreenshotOutputFileReport[];
 	criticalSelectors: SelectorValidationReport[];
+	sectionCoverage?: SectionCoverageReport;
 	warnings: string[];
 	detailedWarnings?: ScreenshotWarning[];
 	notices?: string[];

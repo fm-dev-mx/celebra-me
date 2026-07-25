@@ -32,9 +32,27 @@ const interludeIndices = new Map<number, number>();
 		}
 	}
 }
+
+const interludeId = (i: number) => {
+  const idx = interludeIndices.get(i);
+  return idx ? `interlude-${idx}` : 'interlude';
+};
+
+const expectedSectionIds = [
+	'hero',
+	...sections.map((s, i) =>
+		s.component === 'interlude'
+			? interludeId(i)
+			: s.component,
+	),
+];
 ---
 
-<div id="invitation-sections-container" data-total-sections={sections.length}>
+<div
+	id="invitation-sections-container"
+	data-total-sections={sections.length}
+	data-expected-sections={JSON.stringify(expectedSectionIds)}
+>
 	{
 		sections.map(({component, props, afterInterlude}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
@@ -42,6 +60,9 @@ const interludeIndices = new Map<number, number>();
 			return (
 				<div
 					data-section-id={`section-${index}-${component}`}
+					data-screenshot-section={component === 'interlude'
+						? interludeId(index)
+						: component}
 					class="invitation-section-wrapper"
 					{...(afterInterlude && { 'data-after-interlude': '' })}
 				>
