@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { abrilInvitation } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
-import type { UploadedAssetMap } from '../../scripts/provision/invitations/invitation-definition.ts';
+import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 
 interface MockMaybeSingle {
 	maybeSingle: () => Promise<{ data: { id: string } | null }>;
@@ -26,18 +26,8 @@ describe('applyLocalInvitation event recognition contract', () => {
 	});
 
 	it('ensures buildPublishedContent produces stable event parameters for event upsert', () => {
-		const semanticAssets = Object.fromEntries(
-			abrilInvitation.assets.map((asset) => [
-				asset.key,
-				{
-					type: 'uploaded' as const,
-					assetId: `__INVITATION_ASSET_KEY__:${asset.key}`,
-					src: `__STORAGE_URL__/__INVITATION_ASSET_KEY__:${asset.key}`,
-				},
-			]),
-		);
 		const content = abrilInvitation.buildPublishedContent(
-			semanticAssets as unknown as UploadedAssetMap,
+			buildSemanticAssetMap(abrilInvitation),
 		);
 		expect(content._assetSlug).toBe('abril-michelle-becerra-rea');
 		expect(content.visualProfileId).toBe('abril-michelle-becerra-rea');
