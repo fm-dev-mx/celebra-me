@@ -158,9 +158,12 @@ When helping with commit planning, answer in this order:
    exclusions, state "No exclusions for this commit" only after confirming the entire diff was
    partitioned across the plan's commits. Never answer with a bare "Nothing" — every commit boundary
    implies something was left behind; name it.
-4. `Suggested messages`: header, optional body, and a brief rationale for the chosen type, scope,
+4. `CHANGELOG note:` exactly one of:
+   - `update Unreleased` — product/operator-visible milestone; include the bullet text, or
+   - `n/a — not a product milestone` — ordinary atomic work with no changelog entry required.
+5. `Suggested messages`: header, optional body, and a brief rationale for the chosen type, scope,
    and subject.
-5. `Staging guidance`: suggest exact file paths (e.g.
+6. `Staging guidance`: suggest exact file paths (e.g.
    `git add src/lib/auth.ts src/pages/login.tsx`), never directory-level globs like
    `git add src/data/ tests/unit/`. If staging spans multiple files, list each path explicitly.
    Where hunks within a single file belong to different commits, suggest

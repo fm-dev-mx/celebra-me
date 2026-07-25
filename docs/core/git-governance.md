@@ -1,9 +1,9 @@
 # Git Governance: Commit Policy
 
 **Status:** Active  
-**Last Updated:** 2026-07-25 **Change Note:** Points release history readers to the layered
-CHANGELOG policy in `release-process.md`. Branch model remains develop trunk / main protected via
-fast-forward.
+**Last Updated:** 2026-07-25  
+**Change Note:** Points release history readers to the layered CHANGELOG policy in
+`release-process.md`. Branch model remains develop trunk / main protected via fast-forward.
 
 ## Overview
 

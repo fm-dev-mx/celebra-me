@@ -15,7 +15,9 @@ preconditions:
 related_skills: []
 related_docs:
   - .agent/workflows/system-doc-alignment.md
+  - .agent/index.md
   - docs/core/project-conventions.md
+  - docs/core/release-process.md
 ---
 
 # Documentation Governance
@@ -24,12 +26,14 @@ Use this as a thin loader for the active documentation integrity contract.
 
 1. Read `.agent/workflows/system-doc-alignment.md` and treat it as the authoritative workflow for
    documentation drift, governance metadata alignment, and Sync Contract enforcement.
-2. Keep active docs in the current taxonomy:
+2. Treat the Ownership Matrix and invitation authority chain in `.agent/index.md` as the SSOT map;
+   do not invent a second ownership table elsewhere.
+3. Keep active docs in the current taxonomy:
    - `docs/core/` for evergreen architecture and policy
    - `docs/domains/` for bounded feature or domain docs
    - `docs/archive/` for historical or superseded material
    - `.agent/index.md` for active discovery links
-3. Use conversation-scoped planning by default. Create a repo-tracked note under `.agent/plans/`
+4. Use conversation-scoped planning by default. Create a repo-tracked note under `.agent/plans/`
    only for multi-session or high-risk work, or when the repository owner explicitly asks for one.
-4. Load [`backend-engineering`](../backend-engineering/SKILL.md) as well when the documentation task
+5. Load [`backend-engineering`](../backend-engineering/SKILL.md) as well when the documentation task
    covers API, schema, or integration behavior.

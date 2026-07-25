@@ -28,6 +28,9 @@ CLI behavior lives in `scripts/provision/invitation-update-cli.ts` and its impor
 
 ## Commands
 
+Illustrative only. Flags and target expansion follow the live CLI and runbook — never copy flag
+semantics from this workflow into other docs.
+
 ```bash
 pnpm invitation:update -- --help
 pnpm invitation:update -- --slug <slug> --targets local --source-dir <path> --dry-run
@@ -35,8 +38,9 @@ pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <pa
 pnpm invitation:update -- --slug <slug> --targets production --package <path> --dry-run
 ```
 
-Flags and target expansion can change with the executable contract. The CLI help and canonical
-runbook are authoritative; do not preserve copied flag semantics in this workflow.
+Inspect `pnpm invitation:update -- --help` and
+[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md) before
+composing a real invocation.
 
 - Newly created resources may be removed during compensation. Pre-existing resources must never be
   deleted by cleanup. If an overwritten pre-existing resource cannot be restored automatically, the

@@ -286,8 +286,13 @@ The agent must switch to **Large Change Mode** when any of the following apply:
 
 When the reviewed work is a **release checkpoint** or a clearly product-visible milestone:
 
+- Require an explicit `CHANGELOG note:` verdict matching commit-planner: `update Unreleased` or
+  `n/a — not a product milestone` (the latter is wrong for a release cut).
+- For a release cut / tag, confirm the pre-tag checklist in
+  [`docs/core/release-process.md`](../../docs/core/release-process.md) (real Unreleased bullets, no
+  invitation ops dump, schema summarized only, promote + reset, version + tag alignment).
 - Confirm `CHANGELOG.md` `[Unreleased]` (or the versioned section being cut) matches the layered
-  policy in [`docs/core/release-process.md`](../../docs/core/release-process.md).
+  policy in that same doc.
 - Do not demand a changelog bullet for every commit or every migration file.
 - Prefer invitation ops detail under `docs/invitations/` and schema history under
   `supabase/migrations/`.

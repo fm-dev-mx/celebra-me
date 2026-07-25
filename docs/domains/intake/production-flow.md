@@ -1,21 +1,20 @@
 # Invitation Production Runbook
 
-This is the canonical operational workflow for producing a client invitation. The live code and
-database migrations remain authoritative for executable behavior. The content contract is
-[`docs/core/content-schema.md`](../../core/content-schema.md); architecture is
-[`docs/core/architecture.md`](../../core/architecture.md).
+**Owns:** invitation lifecycle, packaging, target order, approval, publication, deployment,
+verification, and recovery (how production works).
 
-This runbook owns invitation lifecycle, packaging, target-order, approval, publication, deployment,
-verification, and recovery guidance. Agent rules and workflows link here for those semantics rather
-than copying them.
+**Does not own:** identity field lists, thin agent procedure, or agent safety constraints. Live code
+and migrations remain authoritative for executable behavior.
 
-Identity and required fields are owned by
+Identity requirements:
 [`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Agent
-procedure is
+procedure:
 [`.agent/workflows/managed-invitation-lifecycle.md`](../../../.agent/workflows/managed-invitation-lifecycle.md).
-Agent safety constraints are
-[`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). See the
-invitation authority chain in [`.agent/index.md`](../../../.agent/index.md).
+Safety constraints:
+[`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). Content
+shape: [`docs/core/content-schema.md`](../../core/content-schema.md). Architecture:
+[`docs/core/architecture.md`](../../core/architecture.md). Authority chain:
+[`.agent/index.md`](../../../.agent/index.md).
 
 ## Roles and responsibility
 

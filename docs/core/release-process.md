@@ -33,12 +33,15 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 
 ### Release checkpoint discipline
 
-Before creating a version tag:
+Before creating a version tag, complete this **pre-tag checklist** (all must pass):
 
-1. Move `[Unreleased]` bullets into a new `## [X.Y.Z] - YYYY-MM-DD` section (Keep a Changelog).
-2. Leave a fresh empty `[Unreleased]` section for the next cycle.
-3. Confirm invitation-only detail was not pasted wholesale from ops notes.
-4. Confirm schema detail is summarized, with migrations remaining the schema history.
+- [ ] `[Unreleased]` contains at least one real bullet (not only HTML comments / empty headings).
+- [ ] No wholesale paste of `docs/invitations/<slug>.md` ops notes into the changelog.
+- [ ] Schema impact is summarized only; full history remains in `supabase/migrations/`.
+- [ ] Promote `[Unreleased]` bullets into `## [X.Y.Z] - YYYY-MM-DD` (Keep a Changelog groups).
+- [ ] Reset `[Unreleased]` to an empty pending section for the next cycle.
+- [ ] `package.json` `version` matches the new section (no leading `v`).
+- [ ] Annotated tag `vX.Y.Z` will match that version.
 
 ## When to Create a Version Checkpoint
 

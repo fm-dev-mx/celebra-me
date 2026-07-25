@@ -41,8 +41,8 @@ are now managed by `theme-architecture`.
 - Brand and voice: [`.agent/briefs/celebra-me.md`](../../briefs/celebra-me.md)
 - Theme tokens and SCSS architecture: `theme-architecture` + `docs/domains/theme/*`
 - Do **not** install Impeccable (or similar) as a parallel SSOT, and do **not** add root
-  `PRODUCT.md` / `DESIGN.md`. Selective anti-slop and polish ideas from external design skills are
-  absorbed here; they never become a second design system.
+  PRODUCT/DESIGN markdown files. Selective anti-slop and polish ideas from external design skills
+  are absorbed here; they never become a second design system.
 
 ## Design Philosophy
 

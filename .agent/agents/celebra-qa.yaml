@@ -38,6 +38,7 @@ skills:
     - testing
     - accessibility
     - agent-communication
+    - frontend-design
 constraints:
     - READ-ONLY file access by default
     - Do NOT modify any file unless the task explicitly authorizes remediation
@@ -45,3 +46,4 @@ constraints:
     - Use data-attribute selectors over fragile CSS/text matching for screenshots
     - Report format: pass/fail per test area with evidence
     - If a pnpm build or pnpm test command fails, report the full error excerpt
+    - For UI polish passes, use frontend-design Visual Critique / Polish Checklist

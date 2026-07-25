@@ -10,6 +10,11 @@
 > corrected architecture. A separate Hermes-level creative workspace (`creative-ops`) should house
 > multi-brand creative infrastructure, brand briefs for non-Celebra-me brands, and local
 > image-generation workflows.
+>
+> **Bridge verification (2026-07-25):** Hermes host `skills.external_dirs` includes
+> `D:\code\celebra-me\.agent\skills` alongside `creative-ops` skills. Canonical loading rules and
+> the Hermes-vs-repo inventory live in `.agent/load-skills.md` (External Runtime Discovery). Do not
+> treat this archived audit as live policy.
 
 ---
 

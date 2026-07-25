@@ -42,6 +42,17 @@ brand: celebra-me
 | Resolution sufficient for intended use    |           |       |
 | Style consistent with other assets in set |           |       |
 
+## UI / Invitation Visual QA
+
+When reviewing shipped invitation or marketing UI (not only generated images), also apply the
+`frontend-design` Visual Critique / Polish Checklist (brand-first viewport, one job per section,
+theme tokens, hierarchy, spacing, contrast/focus, reduced-motion, Spanish copy fit, distill).
+
+| Check                                              | Pass/Fail | Notes |
+| -------------------------------------------------- | --------- | ----- |
+| frontend-design polish checklist completed         |           |       |
+| No forbidden parallel design SSOT (PRODUCT/DESIGN) |           |       |
+
 ## Technical QA
 
 | Check                                | Pass/Fail | Notes |
@@ -74,7 +85,3 @@ brand: celebra-me
 | ❌ Rejected    | Recreate with revised brief |
 
 ## Notes / Recommendations
-
-```
-
-```

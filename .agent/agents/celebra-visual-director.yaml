@@ -45,4 +45,4 @@ constraints:
     - Preferred: warm lighting, natural skin texture, elegant composition
     - Follow brand visual identity in .agent/briefs/celebra-me.md
     - Use frontend-design Visual Critique / Polish Checklist for design review passes
-    - Do NOT introduce root PRODUCT.md or DESIGN.md or treat external design installs as SSOT
+    - Do NOT introduce root PRODUCT/DESIGN markdown files or treat external design installs as SSOT

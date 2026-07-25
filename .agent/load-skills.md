@@ -25,8 +25,8 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
 - **Context7 / docs MCP** — optional lookup for current third-party library docs. Integrate by thin
   references inside framework skills (`astro-patterns`, `backend-engineering`, `supabase`,
   `testing`). Never install a duplicate `.agent/skills/context7/`.
-- **Impeccable.style** — do not install as a parallel design SSOT (`PRODUCT.md` / `DESIGN.md` at
-  repo root are forbidden). Anti-slop and polish/critique ideas belong inside `frontend-design` and
+- **Impeccable.style** — do not install as a parallel design SSOT (root PRODUCT/DESIGN markdown
+  files are forbidden). Anti-slop and polish/critique ideas belong inside `frontend-design` and
   visual-director templates only.
 - **Global Hermes (or other host) skills** — may exist outside the repository for cross-project
   tooling. They never override `.agent/skills/`. See External Runtime Discovery below.
@@ -53,3 +53,27 @@ canonical source.
   `.agent/skills/` path so the host can load Celebra-me skills without forking them.
 - Creative brand contracts for Celebra-me stay in `.agent/briefs/`, `.agent/templates/`, and role
   YAML under `.agent/agents/`.
+
+### Host discovery verification (Hermes)
+
+Expected host setup for this repo (configure outside git; do not commit host config):
+
+- Include the absolute path to this checkout's `.agent/skills` directory in Hermes
+  `skills.external_dirs` (example on this machine: `D:\code\celebra-me\.agent\skills`).
+- Keep any cross-project creative skills (e.g. a separate `creative-ops` skills dir) in their own
+  external dir; do not merge them into Celebra-me's `.agent/skills/`.
+- If Celebra-me repo skills are missing from Hermes discovery, fix the host `external_dirs` entry —
+  do not duplicate skills into the Hermes global tree.
+
+### Hermes categories vs Celebra-me skills (inventory)
+
+Hermes global categories (host-local, non-authoritative) typically include areas such as creative,
+software-development, database, media, git, research, and computer-use. Those stay on the host.
+
+Celebra-me tracked skills (canonical) cover product contracts only, for example: `astro-patterns`,
+`backend-engineering`, `frontend-design`, `theme-architecture`, `supabase`, `supabase-postgres`,
+`testing`, `copywriting-es`, `commit-planner`, `documentation-governance`, and related domain skills
+listed in `.agent/index.md`.
+
+**Rule:** Hermes provides tooling discovery; `.agent/` provides Celebra-me authority. Overlap in
+names never overrides `.agent/skills/`.

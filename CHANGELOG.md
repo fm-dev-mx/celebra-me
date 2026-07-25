@@ -19,7 +19,8 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 - **Agent governance SSOT**: ownership matrix and invitation authority chain in `.agent/index.md`;
   layered CHANGELOG policy in `docs/core/release-process.md`; Context7/Impeccable/Hermes discovery
-  rules in skill loaders; platform version policy deferring Astro 7 / TypeScript 7 majors.
+  rules in skill loaders; platform version policy deferring Astro 7 / TypeScript 7 majors; DB/env
+  ownership headers; CHANGELOG milestone checklist; Hermes host discovery verification note.
 - **Env contract alignment**: runtime typing and `.env.example` reconciled; Cloudinary credentials
   treated as script-only operational inputs (not app `ImportMetaEnv`).
 - **Invitation SCSS delivery**: redundant per-section preset passthroughs removed; preset bundles

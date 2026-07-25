@@ -2,6 +2,12 @@
 
 **Last Updated:** 2026-07-25
 
+**Owns:** current Supabase/Postgres schema overview, entity relationships, and major data flows.
+
+**Does not own:** migration/ops procedures — those live in
+[`docs/database-workflow.md`](../../database-workflow.md). See the Ownership Matrix in
+[`.agent/index.md`](../../../.agent/index.md).
+
 This document describes the current Celebra-me Supabase/Postgres schema, entity relationships, and
 major data flows.
 

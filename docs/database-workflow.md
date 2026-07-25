@@ -1,5 +1,12 @@
 # Database Workflow
 
+**Owns:** how to operate Local / Preview / Production databases (migrations, backups, refresh,
+authorization boundaries).
+
+**Does not own:** schema ERD or entity semantics — those live in
+[`docs/domains/database/overview.md`](domains/database/overview.md). See the Ownership Matrix in
+[`.agent/index.md`](../.agent/index.md).
+
 ## Principle
 
 Local development uses local Supabase. Production is the source of real customer data. Production

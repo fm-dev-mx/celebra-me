@@ -207,8 +207,8 @@ We establish these executable rules for the `editorial-magazine` theme:
   - [editorial-magazine.scss (presets/sections)](../../../src/styles/invitation-sections-by-preset/editorial-magazine.scss)
   - [NEW]
     [\_editorial-magazine.scss (personalized-access)](../../../src/styles/themes/sections/personalized-access/_editorial-magazine.scss)
-  - [NEW]
-    [editorial-magazine.scss (invitation-sections)](../../../src/styles/invitation-sections/personalized-access/editorial-magazine.scss)
+  - [NEW] `src/styles/invitation-sections/personalized-access/editorial-magazine.scss` (historical
+    plan path; not shipped — live composition is the by-preset bundle above)
 - **Acceptance Criteria**: The card has no heavy shadow, uses monospace labels, and features a clean
   barcode/serial look.
 
@@ -328,8 +328,8 @@ We establish these executable rules for the `editorial-magazine` theme:
   - [editorial-magazine.scss (presets/sections)](../../../src/styles/invitation-sections-by-preset/editorial-magazine.scss)
   - [NEW]
     [\_editorial-magazine.scss (header)](../../../src/styles/themes/sections/header/_editorial-magazine.scss)
-  - [NEW]
-    [editorial-magazine.scss (invitation-sections/header)](../../../src/styles/invitation-sections/header/editorial-magazine.scss)
+  - [NEW] `src/styles/invitation-sections/header/editorial-magazine.scss` (historical plan path; not
+    shipped — live composition is the by-preset bundle above)
 - **Acceptance Criteria**: Transparent header uses editorial variables; mobile navigation drawer is
   desaturated black.
 
