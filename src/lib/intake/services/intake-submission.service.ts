@@ -61,15 +61,6 @@ export async function saveSubmissionStep(
 	});
 }
 
-/** @deprecated Use saveSubmissionStep with allowApproved: true instead. */
-export async function saveInternalSubmissionStep(
-	id: string,
-	blockType: string,
-	blockData: Record<string, unknown>,
-): Promise<IntakeSubmission> {
-	return saveSubmissionStep(id, blockType, blockData, true);
-}
-
 export async function submitSubmission(
 	id: string,
 	clientComments?: string,

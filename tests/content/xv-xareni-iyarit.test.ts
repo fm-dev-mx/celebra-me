@@ -7,7 +7,10 @@ import type { EventContentEntry } from '@/lib/content/events';
 
 const projectRoot = process.cwd();
 const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-xareni-iyarit');
-const payloadPath = path.join(projectRoot, '.agent/reports/xv-xareni-iyarit-db-payload.json');
+const payloadPath = path.join(
+	projectRoot,
+	'tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json',
+);
 const stylePath = path.join(projectRoot, 'src/styles/themes/sections/_xv-xareni-iyarit.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
 const profilePath = path.join(projectRoot, 'src/styles/invitation-profiles/xareni-iyarit.scss');

@@ -4,14 +4,14 @@ import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invita
 import { adaptEvent } from '../../src/lib/adapters/event.ts';
 import { buildInvitationSectionRenderDescriptors } from '../../src/lib/invitation/section-render-data.ts';
 import { buildInvitationRenderPlan } from '../../src/lib/invitation/render-plan.ts';
-import type { EventContentEntry } from '../../src/lib/content/events.ts';
+import { parseEventContentData } from '../helpers/event-content-fixture.ts';
 
 describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 	it('proves end-to-end definition -> release -> projection -> adapter -> descriptor contract for Family labels', () => {
 		// 1. Definition -> 2. Published Projection (via semantic asset map)
-		const publishedProjection = rominaInvitation.buildPublishedContent(
-			buildSemanticAssetMap(rominaInvitation),
-		) as EventContentEntry['data'];
+		const publishedProjection = parseEventContentData(
+			rominaInvitation.buildPublishedContent(buildSemanticAssetMap(rominaInvitation)),
+		);
 
 		expect(publishedProjection.family).toBeDefined();
 		expect(publishedProjection.family?.labels?.sectionSubtitle).toBe('Familia');
@@ -22,7 +22,11 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 		expect((publishedProjection.family as Record<string, unknown>).eyebrow).toBeUndefined();
 
 		// 3. Adapter -> ViewModel
-		const viewModel = adaptEvent({ id: 'romina-rios-chaparro', data: publishedProjection });
+		const viewModel = adaptEvent({
+			id: 'romina-rios-chaparro',
+			collection: 'event-demos',
+			data: publishedProjection,
+		});
 		expect(viewModel.sections.family).toBeDefined();
 		expect(viewModel.sections.family?.labels?.sectionSubtitle).toBe('Familia');
 		expect(viewModel.sections.family?.labels?.sectionTitle).toBe(
@@ -49,6 +53,3 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 		}
 	});
 });
-
-
-

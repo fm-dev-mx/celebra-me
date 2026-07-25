@@ -16,8 +16,8 @@
 -- REQUIRED before execution:
 --   1. Replace the __OWNER_USER_ID__ placeholder in the set_config block
 --      with the actual admin UUID from auth.users (run: SELECT id FROM auth.users LIMIT 1)
---   2. Verify the content payload below matches
---      .agent/plans/active/xv-valentina-hernandez-db-payload.json
+--   2. Review the content payload below against
+--      docs/invitations/valentina-hernandez.md
 --   3. Take and verify a production DB backup
 --   4. Validate on local/staging environment first
 --   5. Obtain explicit Paco approval
@@ -34,7 +34,7 @@
 -- @script-id: 20260626_valentina_hernandez_xv
 -- @purpose: Create or update Valentina Hernández Almaguer's XV invitation — continuation-safe, constraint-independent
 -- @env: production
--- @ticket: spec audit at .agent/plans/active/valentina-editorial-magazine-real-invitation.spec.md
+-- @ticket: docs/invitations/valentina-hernandez.md
 -- @tables: invitation_projects, published_invitation_content, events, event_memberships
 -- @operation: insert, update
 -- @expected-rows-min: 0
@@ -55,9 +55,8 @@
 --   JOIN public.events e ON e.id = m.event_id
 --   WHERE e.slug = 'valentina-hernandez';
 -- @rollback: See rollback section at bottom
--- NOTE: The content payload below is DUPLICATED from
---       .agent/plans/active/xv-valentina-hernandez-db-payload.json.
---       Keep both in sync when either is updated.
+-- NOTE: The content payload below is the repository source used by
+--       tests/content/valentina-hernandez-payload.test.ts.
 --
 -- MUSIC PRESERVATION:
 --   If published_invitation_content already has content.music, this patch

@@ -75,6 +75,7 @@ import {
 	ROMINA_EVENT,
 	type RominaAssetMap,
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
+import { buildEventDemoEntry } from '../helpers/event-content-fixture';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;
@@ -83,9 +84,8 @@ const VALID_UUID_1 = '550e8400-e29b-41d4-a716-446655440001';
 const VALID_UUID_2 = '550e8400-e29b-41d4-a716-446655440002';
 const MISSING_UUID = '550e8400-e29b-41d4-a716-446655449999';
 
-const MINIMAL_DEMO_ENTRY = {
-	id: 'xv/demo-xv-jewelry-box.json',
-	data: {
+const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
+	{
 		eventType: 'xv',
 		title: 'Demo Jewelry Box',
 		theme: { fontFamily: 'serif', preset: 'jewelry-box' },
@@ -110,7 +110,8 @@ const MINIMAL_DEMO_ENTRY = {
 		quote: { text: 'Demo quote', author: 'Author' },
 		gallery: { eyebrow: 'Galería', title: 'Galería', items: [] },
 	},
-};
+	'xv/demo-xv-jewelry-box.json',
+);
 const mockFindAssets = findAssetsByInvitationId as jest.MockedFunction<
 	typeof findAssetsByInvitationId
 >;
@@ -1324,26 +1325,18 @@ describe('publishDraft', () => {
 
 	it('allows publish when hero backgroundImage is an external URL', async () => {
 		mockGetCollection.mockResolvedValue([
-			{
-				id: 'xv/demo-xv-jewelry-box.json',
-				data: {
-					eventType: 'xv',
-					title: 'Demo Jewelry Box',
-					theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+			buildEventDemoEntry(
+				{
+					...MINIMAL_DEMO_ENTRY.data,
 					hero: {
-						name: 'Lucía García',
-						label: 'Mis XV Años',
-						date: '2026-06-15',
+						...MINIMAL_DEMO_ENTRY.data.hero,
+						date: '2026-06-15T20:00:00.000Z',
 						backgroundImage: {
 							type: 'external',
 							src: 'https://images.example.com/hero.jpg',
 						},
 						variant: 'jewelry-box',
 					},
-					envelope: { disabled: true, sealStyle: 'wax', microcopy: 'Toca' },
-					gallery: { title: 'Galería', items: [] },
-					location: {},
-					quote: { text: 'Una noche inolvidable' },
 					sectionOrder: [
 						'quote',
 						'family',
@@ -1359,7 +1352,8 @@ describe('publishDraft', () => {
 					sectionStyles: {},
 					navigation: [],
 				},
-			},
+				'xv/demo-xv-jewelry-box.json',
+			),
 		]);
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
@@ -1539,28 +1533,21 @@ describe('publishDraft', () => {
 
 	it('preserves external src refs through publish unchanged', async () => {
 		mockGetCollection.mockResolvedValue([
-			{
-				id: 'xv/demo-xv-jewelry-box.json',
-				data: {
-					eventType: 'xv',
-					title: 'Demo Jewelry Box',
-					theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+			buildEventDemoEntry(
+				{
+					...MINIMAL_DEMO_ENTRY.data,
 					hero: {
-						name: 'Lucía García',
-						label: 'Mis XV Años',
-						date: '2026-06-15',
+						...MINIMAL_DEMO_ENTRY.data.hero,
+						date: '2026-06-15T20:00:00.000Z',
 						backgroundImage: {
 							type: 'external',
 							src: 'https://images.example.com/hero.jpg',
 						},
 						variant: 'jewelry-box',
 					},
-					envelope: { disabled: true },
-					gallery: { title: 'Galería', items: [] },
-					location: {},
-					quote: { text: 'Una noche inolvidable' },
 				},
-			},
+				'xv/demo-xv-jewelry-box.json',
+			),
 		]);
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue({

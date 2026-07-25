@@ -145,7 +145,8 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 		path: path.join(viewportDir, 'section-rsvp-confirmed-selected.png'),
 	});
 
-	await page.getByLabel('No podré').click({ force: true });
+	await page.getByRole('button', { name: 'Cambiar' }).click();
+	await page.getByLabel('No podré asistir').click({ force: true });
 	await page.waitForTimeout(200);
 	await rsvpSection.screenshot({
 		path: path.join(viewportDir, 'section-rsvp-declined-selected.png'),

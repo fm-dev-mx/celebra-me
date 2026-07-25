@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
 import { XARENI_SEAL_COLORS } from '@/lib/invitation/presentation-options';
 
+export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover']);
+export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
+
 export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional().default(false),
@@ -29,7 +32,7 @@ export const envelopeSchema = z
 				background: ColorTokenSchema.optional(),
 			})
 			.optional(),
-		revealVariant: z.enum(['celestial-blue', 'editorial-cover']).optional(),
+		revealVariant: envelopeRevealVariantSchema.optional(),
 		coverEdition: z.string().optional(),
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),

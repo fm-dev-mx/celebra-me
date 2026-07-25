@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content';
 import type { DemoPreset, Invitation, InvitationContentDraft } from '@/lib/intake/types';
 import type { PublishedInvitationContent } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { buildEventDemoEntry } from '../helpers/event-content-fixture';
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	findInvitationBySlug: jest.fn(),
@@ -48,13 +49,22 @@ const getCollectionMock = getCollection as jest.MockedFunction<typeof getCollect
 const BABY_SHOWER_SLUG = 'demo-baby-shower-celestial';
 const BABY_SHOWER_ENTRY_ID = 'baby-shower/demo-baby-shower-celestial.json';
 
-const BASE_STATIC_CONTENT = {
-	eventType: 'baby-shower' as const,
-	isDemo: true,
-	title: 'Baby Shower de Luna Celeste',
-	theme: { fontFamily: 'serif', preset: 'celestial-blue' },
-	hero: { name: 'Luna Celeste', label: 'Mi Baby Shower' },
-};
+const baseDemoEntry = buildEventDemoEntry(
+	{
+		eventType: 'baby-shower',
+		isDemo: true,
+		title: 'Baby Shower de Luna Celeste',
+		theme: { fontFamily: 'serif', preset: 'celestial-blue' },
+		hero: {
+			name: 'Luna Celeste',
+			label: 'Mi Baby Shower',
+			date: '2026-10-17T18:00:00.000Z',
+			backgroundImage: '/assets/hero.jpg',
+		},
+	},
+	BABY_SHOWER_ENTRY_ID,
+);
+const BASE_STATIC_CONTENT = baseDemoEntry.data;
 
 const demoPresetSnapshot = {
 	id: 'demo-baby-shower-celestial',
@@ -147,11 +157,6 @@ function mockDraft(overrides: Partial<InvitationContentDraft> = {}): InvitationC
 		...overrides,
 	};
 }
-
-const baseDemoEntry = {
-	id: BABY_SHOWER_ENTRY_ID,
-	data: { ...BASE_STATIC_CONTENT },
-};
 
 beforeEach(() => {
 	jest.clearAllMocks();

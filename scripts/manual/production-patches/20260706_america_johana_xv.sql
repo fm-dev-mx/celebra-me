@@ -17,8 +17,8 @@
 -- REQUIRED before execution:
 --   1. Replace the __OWNER_USER_ID__ placeholder in the set_config block
 --      with the actual admin UUID from auth.users.
---   2. Verify the content payload below matches
---      .agent/plans/active/xv-america-johana-db-payload.json
+--   2. Review the content and asset requirements in
+--      docs/invitations/america-johana-asset-report.md
 --   3. Take and verify a production DB backup
 --   4. Validate on local/staging environment first
 --   5. Obtain explicit operator approval before execution
@@ -27,7 +27,7 @@
 -- @script-id: 20260706_america_johana_xv
 -- @purpose: Create or update América Johana's XV invitation and linked RSVP records from the approved DB payload
 -- @env: production
--- @ticket: operator note 2026-07-06 plus .agent/plans/active/xv-america-johana-db-payload.json
+-- @ticket: docs/invitations/america-johana-asset-report.md
 -- @tables: public.invitations, public.published_invitation_content, public.events, public.event_memberships
 -- @operation: update
 -- @expected-rows-min: 0
@@ -35,9 +35,8 @@
 -- @requires-backup: true
 -- @dry-run-query: SELECT id, kind, slug, event_type, status, base_demo_id, theme_id, archived_at FROM public.invitations WHERE slug = 'america-johana' AND event_type = 'xv'; SELECT id, slug, event_type, version, published_at, deleted_at FROM public.published_invitation_content WHERE slug = 'america-johana' AND event_type = 'xv'; SELECT id, slug, event_type, status, invitation_project_id, deleted_at FROM public.events WHERE slug = 'america-johana'; SELECT m.id, m.event_id, m.user_id, m.membership_role, m.deleted_at FROM public.event_memberships m JOIN public.events e ON e.id = m.event_id WHERE e.slug = 'america-johana';
 -- @rollback: See rollback section at bottom. Restore from verified production backup or run the targeted delete sequence only after confirming that all América Johana rows must be removed.
--- NOTE: The content payload below is DUPLICATED from
---       .agent/plans/active/xv-america-johana-db-payload.json.
---       Keep both in sync when either is updated.
+-- NOTE: The content payload below is the repository source used by
+--       tests/content/xv-america-johana.test.ts.
 --
 -- MUSIC PRESERVATION:
 --   If published_invitation_content already has content.music, this patch

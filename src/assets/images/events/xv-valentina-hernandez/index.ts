@@ -13,9 +13,8 @@
 // Interludes are provisional client photos used as decorative breaks.
 // Replace with no-people decorative editorial images (generated) for production.
 //
-// See .agent/plans/active/xv-valentina-hernandez-db-payload.json for
-// the asset key mapping.
-// See separate asset-mapping-report.md for the full mapping per key.
+// See docs/invitations/valentina-hernandez.md for the asset mapping,
+// current readiness constraints, and production replacement guidance.
 
 import hero from './hero.jpg';
 import portrait from './portrait.jpg';

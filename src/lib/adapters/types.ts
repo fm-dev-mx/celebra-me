@@ -21,6 +21,7 @@ import type {
 	LocationPresentation,
 } from '@/lib/invitation/presentation-options';
 import type { z } from 'zod';
+import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
 
 export interface ThemeConfig {
@@ -170,8 +171,8 @@ export interface EnvelopeViewModel {
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
 		coverIssue?: string;
-		/** Explicit reveal variant. When 'editorial-cover', renders the editorial cover instead of the envelope. */
-		revealVariant?: 'editorial-cover';
+		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */
+		revealVariant?: EnvelopeRevealVariant;
 	};
 }
 
