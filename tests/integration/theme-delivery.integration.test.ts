@@ -1,41 +1,41 @@
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import type { EventContentEntry } from '@/lib/content/events';
+import { buildEventContentData } from '../helpers/event-content-fixture';
 
 function makeEventEntry(data: EventContentEntry['data'], id = 'evt-123'): EventContentEntry {
 	return {
 		id,
-		slug: data.slug,
-		collection: 'events',
+		collection: 'event-demos',
 		data,
-	} as EventContentEntry;
+	};
 }
 
 describe('Theme Delivery Integration', () => {
-	const baseData = {
+	const baseData = buildEventContentData({
 		title: 'Boda Demo',
 		eventType: 'boda',
-		status: 'published',
-		slug: 'boda-demo',
 		isDemo: false,
 		theme: {
 			preset: 'luxury-hacienda',
 		},
 		hero: {
 			name: 'Celebrant',
-			date: '2025-01-01',
+			date: '2025-01-01T00:00:00.000Z',
 			backgroundImage: '/assets/hero.jpg',
 		},
 		location: {
-			city: 'CDMX',
-			venueName: 'Hacienda Demo',
-		},
-		sections: {
-			rsvp: true,
+			reception: {
+				venueName: 'Hacienda Demo',
+				address: 'Centro',
+				city: 'CDMX',
+				date: '1 ene 2025',
+				time: '18:00',
+			},
 		},
 		envelope: {
-			enabled: false,
+			disabled: false,
 		},
-	} as EventContentEntry['data'];
+	});
 
 	it('should deliver preset identity without injecting preset color overrides', () => {
 		const pageContext = prepareInvitationPageContext({
@@ -52,16 +52,16 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should include envelope semantic color overrides when envelope is enabled', () => {
-		const data = {
+		const data = buildEventContentData({
 			...baseData,
 			envelope: {
-				enabled: true,
+				disabled: false,
 				closedPalette: {
 					background: 'surfaceDark',
 					primary: 'surfacePrimary',
 				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data),
@@ -76,7 +76,7 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should not inject envelope background overrides without an explicit closed palette background', () => {
-		const data = {
+		const data = buildEventContentData({
 			...baseData,
 			envelope: {
 				disabled: false,
@@ -86,7 +86,7 @@ describe('Theme Delivery Integration', () => {
 					primary: 'surfacePrimary',
 				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data),
@@ -100,7 +100,7 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should allow previewTheme to override only the delivered preset for premiere-family invitations', () => {
-		const data = {
+		const data = buildEventContentData({
 			...baseData,
 			eventType: 'xv',
 			title: 'Ximena',
@@ -114,8 +114,13 @@ describe('Theme Delivery Integration', () => {
 				variant: 'premiere-floral',
 			},
 			location: {
-				city: 'Los Mochis',
-				venueName: 'Venue',
+				reception: {
+					venueName: 'Venue',
+					address: 'Centro',
+					city: 'Los Mochis',
+					date: '11 abr 2026',
+					time: '20:00',
+				},
 			},
 			sectionStyles: {
 				location: {
@@ -133,7 +138,7 @@ describe('Theme Delivery Integration', () => {
 					accent: 'surfaceDark',
 				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data, 'events/ximena-meza-trasvina'),
@@ -149,7 +154,7 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should deliver angelic-presence preset with correct wrapper attributes', () => {
-		const data = {
+		const data = buildEventContentData({
 			...baseData,
 			eventType: 'bautizo',
 			title: 'Bautismo Demo',
@@ -162,10 +167,15 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				city: 'Ciudad de México',
-				venueName: 'Parroquia de San José',
+				ceremony: {
+					venueName: 'Parroquia de San José',
+					address: 'Centro',
+					city: 'Ciudad de México',
+					date: '15 jun 2026',
+					time: '10:00',
+				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
@@ -176,7 +186,7 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should render exactly one theme-preset class for angelic-presence', () => {
-		const data = {
+		const data = buildEventContentData({
 			...baseData,
 			eventType: 'bautizo',
 			title: 'Bautismo Demo',
@@ -189,10 +199,15 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				city: 'Ciudad de México',
-				venueName: 'Parroquia de San José',
+				ceremony: {
+					venueName: 'Parroquia de San José',
+					address: 'Centro',
+					city: 'Ciudad de México',
+					date: '15 jun 2026',
+					time: '10:00',
+				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
@@ -208,11 +223,9 @@ describe('Theme Delivery Integration', () => {
 	});
 
 	it('should not affect celestial-blue invitation through existing test coverage', () => {
-		const celestialBlueData = {
+		const celestialBlueData = buildEventContentData({
 			title: 'XV de Ana Sofía',
 			eventType: 'xv',
-			status: 'published',
-			slug: 'ana-sofia-cota-guillen',
 			isDemo: false,
 			theme: {
 				preset: 'celestial-blue',
@@ -223,10 +236,15 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				city: 'Los Mochis',
-				venueName: "Palapa Zavala's",
+				reception: {
+					venueName: "Palapa Zavala's",
+					address: 'Centro',
+					city: 'Los Mochis',
+					date: '23 may 2026',
+					time: '00:00',
+				},
 			},
-		} as EventContentEntry['data'];
+		});
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(celestialBlueData, 'events/ana-sofia-cota-guillen'),

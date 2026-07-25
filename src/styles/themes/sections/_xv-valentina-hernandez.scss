@@ -527,7 +527,7 @@
 			}
 
 			&::before {
-				/* Positioning inherited from invitation-sections/hero/editorial-magazine.scss:63-70 */
+				/* Positioning inherited from themes/sections/hero/_editorial-magazine.scss. */
 				border-color: rgb(var(--v-white-rgb) / 18%);
 			}
 		}
@@ -537,7 +537,7 @@
 			padding: clamp(0.75rem, 3vw, 1rem);
 
 			&::before {
-				/* Positioning inherited from invitation-sections/hero/editorial-magazine.scss:63-70 */
+				/* Positioning inherited from themes/sections/hero/_editorial-magazine.scss. */
 				inset: clamp(0.7rem, 3vw, 1rem);
 				border-color: rgb(var(--v-white-rgb) / 18%);
 			}
@@ -553,7 +553,7 @@
 			}
 
 			.invitation-hero__background::after {
-				/* Positioning inherited from invitation-sections/hero/editorial-magazine.scss:76-83 */
+				/* Positioning inherited from themes/sections/hero/_editorial-magazine.scss. */
 				background: linear-gradient(
 					to bottom,
 					transparent 0%,

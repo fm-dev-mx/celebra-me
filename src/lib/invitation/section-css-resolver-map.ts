@@ -35,7 +35,7 @@ export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionU
 		const sectionName = parts.at(-2);
 		if (!fileName || !sectionName) continue;
 
-		const entrypoint = fileName.replace(/\.scss$/, '');
+		const entrypoint = fileName.replace(/^_/, '').replace(/\.scss$/, '');
 		sectionUrlMap[sectionName] ??= {};
 		sectionUrlMap[sectionName][entrypoint] = mod.default;
 	}

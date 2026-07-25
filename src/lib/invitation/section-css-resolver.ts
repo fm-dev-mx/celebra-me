@@ -7,12 +7,18 @@ import {
 	resolveSectionBundleCssUrl as resolveBundleCssUrl,
 } from '@/lib/invitation/section-css-resolver-map';
 
-const sectionModules = import.meta.glob('/src/styles/invitation-sections/**/*.scss', {
-	query: '?url',
-	eager: true,
-}) as Record<string, { default: string }>;
-// Eager glob over a small directory (~dozen files, URLs only).
-// If this directory grows significantly, consider lazy imports.
+const footerVariantModules = import.meta.glob(
+	[
+		'/src/styles/themes/sections/footer/_angelic-presence.scss',
+		'/src/styles/themes/sections/footer/_editorial.scss',
+		'/src/styles/themes/sections/footer/_enchanted-rose.scss',
+		'/src/styles/themes/sections/footer/_premiere-floral.scss',
+	],
+	{
+		query: '?url',
+		eager: true,
+	},
+) as Record<string, { default: string }>;
 
 const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-by-preset/*.scss', {
 	query: '?url',
@@ -24,7 +30,7 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 	eager: true,
 }) as Record<string, { default: string }>;
 
-const sectionUrlMap = buildSectionUrlMap(sectionModules);
+const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
 
@@ -51,7 +57,7 @@ export function resolveInvitationCssUrls(input: {
 }): string[] {
 	return resolveInvitationCssUrlsFromMaps(
 		sectionBundleUrlMap,
-		sectionUrlMap,
+		footerVariantUrlMap,
 		input,
 		invitationProfileUrlMap,
 	);

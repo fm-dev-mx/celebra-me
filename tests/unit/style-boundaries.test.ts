@@ -24,13 +24,21 @@ function getExistingPartials(sectionDir: string): string[] {
 		.map((f) => f.replace(/^_|\.scss$/g, ''));
 }
 
-function getSectionEntrypoints(section: string): string[] {
-	const absoluteDir = path.join(projectRoot, `src/styles/invitation-sections/${section}`);
+function getPresetBundleImports(section: string): string[] {
+	const bundleDir = 'src/styles/invitation-sections-by-preset';
+	const absoluteDir = path.join(projectRoot, bundleDir);
 	if (!fs.existsSync(absoluteDir)) return [];
-	return fs
+
+	const importPattern = new RegExp(`@use\\s+'\\.\\./themes/sections/${section}/([^']+)'`, 'g');
+	const imports = fs
 		.readdirSync(absoluteDir)
 		.filter((f) => f.endsWith('.scss'))
-		.map((f) => f.replace(/\.scss$/g, ''));
+		.flatMap((file) => {
+			const content = read(`${bundleDir}/${file}`);
+			return [...content.matchAll(importPattern)].map((match) => match[1]);
+		});
+
+	return [...new Set(imports)];
 }
 
 function getFilesRecursively(dir: string, extensions: string[]): string[] {
@@ -192,6 +200,46 @@ describe('Style boundary governance', () => {
 		expect(sharedBase).not.toContain('.event--');
 	});
 
+	it('preset section bundles import canonical modules without passthrough entrypoints', () => {
+		const bundleFiles = getFilesRecursively('src/styles/invitation-sections-by-preset', [
+			'.scss',
+		]);
+
+		expect(getFilesRecursively('src/styles/invitation-sections', ['.scss'])).toHaveLength(0);
+		for (const file of bundleFiles) {
+			expect(read(file)).not.toContain('../invitation-sections/');
+		}
+
+		const premiereFloral = read(
+			'src/styles/invitation-sections-by-preset/premiere-floral.scss',
+		);
+		const editorialHeroImport =
+			"@use '../themes/sections/hero/editorial' as hero-premiere-floral-editorial;";
+		const premiereHeroImport =
+			"@use '../themes/sections/hero/premiere-floral' as hero-premiere-floral;";
+
+		expect(premiereFloral).toContain(editorialHeroImport);
+		expect(premiereFloral).toContain(premiereHeroImport);
+		expect(premiereFloral.indexOf(editorialHeroImport)).toBeLessThan(
+			premiereFloral.indexOf(premiereHeroImport),
+		);
+	});
+
+	it('footer override discovery targets only canonical footer variants', () => {
+		const resolver = read('src/lib/invitation/section-css-resolver.ts');
+
+		expect(resolver).not.toContain('/src/styles/invitation-sections/');
+		for (const variant of [
+			'angelic-presence',
+			'editorial',
+			'enchanted-rose',
+			'premiere-floral',
+		]) {
+			expect(resolver).toContain(`/src/styles/themes/sections/footer/_${variant}.scss`);
+		}
+		expect(resolver).not.toContain('/src/styles/themes/sections/footer/*.scss');
+	});
+
 	it('invitation components avoid direct section-theme imports', () => {
 		const invitationAstroFiles = getFilesRecursively('src/components/invitation', ['.astro']);
 
@@ -232,13 +280,13 @@ describe('Style boundary governance', () => {
 	it('location enchanted-rose visuals live in a scoped section variant', () => {
 		const sectionsIndex = read('src/styles/themes/sections/_index.scss');
 		const locationIndex = read('src/styles/themes/sections/location/_index.scss');
-		const locationEntrypoints = getSectionEntrypoints('location');
+		const locationBundleImports = getPresetBundleImports('location');
 		const locationVariant = read('src/styles/themes/sections/location/_enchanted-rose.scss');
 
 		expect(sectionsIndex).toContain("@forward 'location';");
 		expect(locationIndex).toContain("@forward 'base';");
 		expect(locationIndex).not.toContain("@forward 'enchanted-rose';");
-		expect(locationEntrypoints).toContain('enchanted-rose');
+		expect(locationBundleImports).toContain('enchanted-rose');
 		expect(locationVariant).toContain(".event-location[data-variant='enchanted-rose']");
 		expect(locationVariant).toContain('--location-er-frame-bg');
 		expect(locationVariant).toContain(':focus-visible');
@@ -327,11 +375,11 @@ describe('Style boundary governance', () => {
 		}
 	});
 
-	it('personalized-access index keeps base while variants move to section entrypoints', () => {
+	it('personalized-access index keeps base while bundles load canonical variants', () => {
 		const dir = 'src/styles/themes/sections/personalized-access';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
-		const entrypoints = getSectionEntrypoints('personalized-access');
+		const bundleImports = getPresetBundleImports('personalized-access');
 
 		expect(forwarded).toContain('base');
 
@@ -340,9 +388,9 @@ describe('Style boundary governance', () => {
 			expect(fs.existsSync(path.join(projectRoot, dir, `_${name}.scss`))).toBe(true);
 		}
 
-		// Every existing partial must be forwarded or intentionally split into an entrypoint.
+		// Every existing partial must be forwarded or loaded directly by a preset bundle.
 		for (const name of existing) {
-			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
+			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
 		}
 	});
 
@@ -367,18 +415,18 @@ describe('Style boundary governance', () => {
 		expect(base).not.toMatch(/@use\s/);
 	});
 
-	it('no orphaned or legacy personalized-access variant partials', () => {
+	it('no orphaned personalized-access variant partials', () => {
 		const dir = 'src/styles/themes/sections/personalized-access';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
-		const entrypoints = getSectionEntrypoints('personalized-access');
+		const bundleImports = getPresetBundleImports('personalized-access');
 
-		// Every file on disk must be intentionally forwarded or split.
+		// Every file on disk must be intentionally forwarded or imported by a bundle.
 		for (const name of existing) {
-			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
+			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
 		}
 
-		for (const name of entrypoints) {
+		for (const name of bundleImports) {
 			expect(existing).toContain(name);
 		}
 	});
@@ -428,17 +476,17 @@ describe('Style boundary governance', () => {
 		expect(familyBase).toContain('box-shadow: var(--family-panel-shadow');
 	});
 
-	it('no orphaned or legacy family variant partials', () => {
+	it('no orphaned family variant partials', () => {
 		const dir = 'src/styles/themes/sections/family';
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
-		const entrypoints = getSectionEntrypoints('family');
+		const bundleImports = getPresetBundleImports('family');
 
 		for (const name of existing) {
-			expect(forwarded.includes(name) || entrypoints.includes(name)).toBe(true);
+			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
 		}
 
-		for (const name of entrypoints) {
+		for (const name of bundleImports) {
 			expect(existing).toContain(name);
 		}
 	});

@@ -10,49 +10,44 @@ import {
 
 describe('section-css-resolver-map', () => {
 	const modules = {
-		'/src/styles/invitation-sections/gallery/jewelry-box.scss': {
-			default: '/_astro/gallery-jewelry-box.css',
+		'/src/styles/themes/sections/footer/_editorial.scss': {
+			default: '/_astro/footer-editorial.css',
 		},
-		'/src/styles/invitation-sections/gallery/editorial.scss': {
-			default: '/_astro/gallery-editorial.css',
-		},
-		'/src/styles/invitation-sections/hero/jewelry-box.scss': {
-			default: '/_astro/hero-jewelry-box.css',
-		},
-		'/src/styles/invitation-sections/hero/editorial.scss': {
-			default: '/_astro/hero-editorial.css',
+		'/src/styles/themes/sections/footer/_enchanted-rose.scss': {
+			default: '/_astro/footer-enchanted-rose.css',
 		},
 	};
 
-	it('builds section URL maps from glob module defaults', () => {
+	it('builds section URL maps from canonical partial module defaults', () => {
 		expect(buildSectionUrlMap(modules)).toEqual({
-			gallery: {
-				'jewelry-box': '/_astro/gallery-jewelry-box.css',
-				editorial: '/_astro/gallery-editorial.css',
-			},
-			hero: {
-				'jewelry-box': '/_astro/hero-jewelry-box.css',
-				editorial: '/_astro/hero-editorial.css',
+			footer: {
+				editorial: '/_astro/footer-editorial.css',
+				'enchanted-rose': '/_astro/footer-enchanted-rose.css',
 			},
 		});
 	});
 
 	it('resolves preset aliases and returns undefined for base-only fallbacks', () => {
 		const sectionUrlMap = buildSectionUrlMap(modules);
-		const heroPresetToEntrypoint = {
-			'jewelry-box': 'jewelry-box',
-			'premiere-floral': 'editorial',
+		const footerPresetToEntrypoint = {
+			editorial: 'editorial',
+			'enchanted-rose': 'enchanted-rose',
 		};
 
 		expect(
-			resolveSectionCssUrl(sectionUrlMap, 'hero', heroPresetToEntrypoint, 'premiere-floral'),
-		).toBe('/_astro/hero-editorial.css');
+			resolveSectionCssUrl(
+				sectionUrlMap,
+				'footer',
+				footerPresetToEntrypoint,
+				'enchanted-rose',
+			),
+		).toBe('/_astro/footer-enchanted-rose.css');
 		expect(
 			resolveSectionCssUrl(
 				sectionUrlMap,
-				'hero',
-				heroPresetToEntrypoint,
-				'jewelry-box-wedding',
+				'footer',
+				footerPresetToEntrypoint,
+				'luxury-hacienda',
 			),
 		).toBeUndefined();
 	});
@@ -61,28 +56,21 @@ describe('section-css-resolver-map', () => {
 		const sectionUrlMap = buildSectionUrlMap(modules);
 		const configs = [
 			{
-				section: 'gallery',
+				section: 'footer',
 				presetToEntrypoint: {
-					'premiere-floral': 'editorial',
+					'enchanted-rose': 'enchanted-rose',
 				},
 			},
 			{
-				section: 'hero',
+				section: 'missing',
 				presetToEntrypoint: {
-					'premiere-floral': 'editorial',
-				},
-			},
-			{
-				section: 'rsvp',
-				presetToEntrypoint: {
-					'premiere-floral': 'premiere-floral',
+					'enchanted-rose': 'enchanted-rose',
 				},
 			},
 		];
 
-		expect(resolveSectionCssUrls(sectionUrlMap, configs, 'premiere-floral')).toEqual([
-			'/_astro/gallery-editorial.css',
-			'/_astro/hero-editorial.css',
+		expect(resolveSectionCssUrls(sectionUrlMap, configs, 'enchanted-rose')).toEqual([
+			'/_astro/footer-enchanted-rose.css',
 		]);
 	});
 
@@ -123,10 +111,10 @@ describe('section-css-resolver-map', () => {
 			},
 		});
 		const sectionUrlMap = buildSectionUrlMap({
-			'/src/styles/invitation-sections/footer/editorial.scss': {
+			'/src/styles/themes/sections/footer/_editorial.scss': {
 				default: '/_astro/footer-editorial.css',
 			},
-			'/src/styles/invitation-sections/footer/enchanted-rose.scss': {
+			'/src/styles/themes/sections/footer/_enchanted-rose.scss': {
 				default: '/_astro/footer-enchanted-rose.css',
 			},
 		});
@@ -146,7 +134,7 @@ describe('section-css-resolver-map', () => {
 			},
 		});
 		const sectionUrlMap = buildSectionUrlMap({
-			'/src/styles/invitation-sections/footer/editorial.scss': {
+			'/src/styles/themes/sections/footer/_editorial.scss': {
 				default: '/_astro/footer-editorial.css',
 			},
 		});
