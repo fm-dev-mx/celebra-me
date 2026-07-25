@@ -110,7 +110,7 @@
 		text-decoration: none;
 		flex-shrink: 0;
 
-		:global(.logo) {
+		.logo {
 			width: auto;
 			height: 36px;
 			transition: opacity 0.2s ease;
@@ -692,7 +692,7 @@
 			display: none;
 		}
 
-		.dashboard-sidebar__logo-link :global(.logo) {
+		.dashboard-sidebar__logo-link .logo {
 			opacity: 100%;
 			width: auto;
 			overflow: visible;
@@ -741,7 +741,7 @@
 		.dashboard-sidebar__logo-link {
 			justify-content: flex-start;
 
-			:global(.logo) {
+			.logo {
 				height: 30px;
 			}
 		}

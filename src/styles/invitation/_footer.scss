@@ -91,11 +91,9 @@
 		}
 	}
 
-	.footer-brand-logo {
-		:global(.logo) {
-			transform: scale(0.7);
-			transform-origin: center;
-		}
+	.footer-brand-logo.logo {
+		transform: scale(0.7);
+		transform-origin: center;
 	}
 }
 

@@ -248,36 +248,8 @@
 	}
 }
 
-// ==========================================================================
-// LUXURY HACIENDA COMPONENT THEMES (Header & Music Player)
-// These belong in component-specific theme files but temporarily reside here
-// until such files are created.
-// ==========================================================================
-
-:global(.event-header[data-variant='luxury-hacienda']) {
-	@media (width <= 540px) {
-		.event-header__title-full {
-			display: none;
-		}
-
-		.event-header__title-initials {
-			display: inline;
-			font-size: 1.1rem;
-			letter-spacing: 0.25em;
-			font-weight: 300;
-			color: rgb(186 158 108 / 65%);
-			opacity: 85%;
-		}
-	}
-
-	@media (width > 540px) {
-		.event-header__title-initials {
-			display: none;
-		}
-	}
-}
-
-:global(.music-player[data-variant='luxury-hacienda'] .music-player__button) {
+// Music player theme override (header rules live under themes/sections/header/)
+.music-player[data-variant='luxury-hacienda'] .music-player__button {
 	transform: scale(0.85);
 	opacity: 70%;
 

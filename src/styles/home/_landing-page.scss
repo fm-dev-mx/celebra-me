@@ -8,8 +8,8 @@ html {
 	flex-direction: column;
 }
 
-:global(.landing-sections-wrapper) section,
-:global(.landing-sections-wrapper) .hero-prime {
+.landing-sections-wrapper section,
+.landing-sections-wrapper .hero-prime {
 	scroll-snap-align: start;
 	scroll-margin-top: calc(var(--nav-current-height, 70px) + 2.5rem);
 	min-height: auto;
@@ -67,4 +67,3 @@ footer {
 		font-family: var(--font-display);
 	}
 }
-

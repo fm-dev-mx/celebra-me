@@ -7,9 +7,21 @@
 
 .testimonials-section {
 	position: relative;
-	background:
-		linear-gradient(180deg, var(--color-ink) 0%, rgb(24 16 13) 100%),
-		var(--color-ink);
+	background: linear-gradient(180deg, var(--color-ink) 0%, rgb(24 16 13) 100%), var(--color-ink);
+
+	// Reveal children when the landing scroll observer adds .is-visible.
+	// Kept in the global stylesheet so Vite/Lightning CSS never sees Astro :global().
+	&.is-visible {
+		.testimonials__left,
+		.testimonials__rotator {
+			opacity: 100%;
+			transform: translateY(0);
+		}
+
+		.testimonials__indicator {
+			opacity: 100%;
+		}
+	}
 
 	// Gold hairline top separator (matches other editorial bands)
 	&::before {
@@ -131,11 +143,6 @@
 	font-weight: 500;
 	letter-spacing: 0.04em;
 	line-height: 1.5;
-
-	// Style the middle dots with gold
-	:global(·) {
-		color: rgb(var(--color-action-accent-rgb) / 50%);
-	}
 }
 
 // ===========================================================================

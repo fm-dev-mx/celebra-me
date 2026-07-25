@@ -170,13 +170,13 @@
 }
 
 // Hide header until the envelope reveal completes (when enabled)
-:global(.event-theme-wrapper[data-reveal-state='sealed']) #event-header {
+.event-theme-wrapper[data-reveal-state='sealed'] #event-header {
 	opacity: 0%;
 	pointer-events: none;
 	transition: opacity var(--duration-slower) var(--ease-in-out);
 }
 
-:global(.event-theme-wrapper[data-reveal-state='revealed']) #event-header {
+.event-theme-wrapper[data-reveal-state='revealed'] #event-header {
 	opacity: 100%;
 	pointer-events: auto;
 }

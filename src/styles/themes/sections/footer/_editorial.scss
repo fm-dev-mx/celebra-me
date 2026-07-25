@@ -61,13 +61,11 @@
 			color: var(--color-text-on-dark);
 		}
 
-		.footer-brand-logo {
-			:global(&.logo) {
-				width: 8.5rem;
-				height: auto;
-				transform: none;
-				filter: brightness(1.2);
-			}
+		.footer-brand-logo.logo {
+			width: 8.5rem;
+			height: auto;
+			transform: none;
+			filter: brightness(1.2);
 		}
 	}
 
