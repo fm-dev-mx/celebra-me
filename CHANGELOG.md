@@ -20,6 +20,18 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 - **Agent governance SSOT**: ownership matrix and invitation authority chain in `.agent/index.md`;
   layered CHANGELOG policy in `docs/core/release-process.md`; Context7/Impeccable/Hermes discovery
   rules in skill loaders; platform version policy deferring Astro 7 / TypeScript 7 majors.
+- **Env contract alignment**: runtime typing and `.env.example` reconciled; Cloudinary credentials
+  treated as script-only operational inputs (not app `ImportMetaEnv`).
+- **Invitation SCSS delivery**: redundant per-section preset passthroughs removed; preset bundles
+  remain the CSS delivery surface via the section CSS resolver.
+- **Provisioning and screenshot tooling**: Cloudinary apply/import helpers and screenshot capture
+  utilities modularized for clearer operator workflows.
+
+### Tests / Validation
+
+- **Shared validation runner** and `validate:structure` gate wired into `pnpm run ci`; pre-commit
+  runs lint-staged then source-based related Jest tests; E2E infra/visual tiers via
+  `scripts/run-e2e-tier.mjs`.
 
 ## [0.11.0-beta.1] - 2026-07-07
 
