@@ -11,10 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { resolveLocalEnv } from './local-provision-env.ts';
-import {
-	resolveCloudinaryConfig,
-	initCloudinary,
-} from './cloudinary-adapter.ts';
+import { resolveCloudinaryConfig, initCloudinary } from './cloudinary-adapter.ts';
 import { ABRIL_ASSET_SPECS } from './invitations/abril-michelle-becerra-rea.ts';
 import { buildNormalizedInvitationRelease } from './normalized-invitation-release.ts';
 import { applyLocalInvitation } from './apply-local-invitation.ts';
@@ -52,6 +49,22 @@ export interface MigrationJournal {
 	error?: string;
 }
 
+interface CloudinaryMigrationResource {
+	public_id: string;
+	asset_id: string;
+	secure_url: string;
+	bytes: number;
+	format: string;
+	width: number;
+	height: number;
+	context?: {
+		custom?: {
+			displayName?: string;
+			sha256?: string;
+		};
+	};
+}
+
 const TARGET_FOLDER = 'xv/abril-michelle-becerra-rea/assets';
 
 export async function preflightReorganization(slug: string): Promise<MigrationMapping[]> {
@@ -65,7 +78,9 @@ export async function preflightReorganization(slug: string): Promise<MigrationMa
 	}
 
 	const release = await buildNormalizedInvitationRelease({ slug });
-	const specKeyMap = new Map(ABRIL_ASSET_SPECS.map((spec) => [spec.key, spec]));
+	const specKeyMap = new Map<string, (typeof ABRIL_ASSET_SPECS)[number]>(
+		ABRIL_ASSET_SPECS.map((spec) => [spec.key, spec]),
+	);
 
 	// Fetch current Cloudinary resources under both legacy and new folders
 	const [legacyRes, newRes] = await Promise.all([
@@ -83,8 +98,11 @@ export async function preflightReorganization(slug: string): Promise<MigrationMa
 		}),
 	]);
 
-	const allResources = [...legacyRes.resources, ...newRes.resources];
-	const resourceByPublicId = new Map<string, any>();
+	const allResources = [
+		...legacyRes.resources,
+		...newRes.resources,
+	] as CloudinaryMigrationResource[];
+	const resourceByPublicId = new Map<string, CloudinaryMigrationResource>();
 
 	for (const r of allResources) {
 		resourceByPublicId.set(r.public_id, r);
@@ -93,15 +111,17 @@ export async function preflightReorganization(slug: string): Promise<MigrationMa
 	const mappings: MigrationMapping[] = [];
 
 	for (const asset of release.assets) {
-		const spec = specKeyMap.get(asset.key as any);
+		const spec = specKeyMap.get(asset.key);
 		if (!spec) throw new Error(`Missing spec for asset key "${asset.key}"`);
 
 		// Match existing resource by displayName, context sha256, or exact public ID
 		const existingResource = allResources.find((r) => {
 			const custom = r.context?.custom;
-			if (custom?.displayName && decodeURIComponent(custom.displayName) === spec.displayName) return true;
+			if (custom?.displayName && decodeURIComponent(custom.displayName) === spec.displayName)
+				return true;
 			if (custom?.sha256 && custom.sha256 === asset.sha256) return true;
-			if (r.public_id === `${TARGET_FOLDER}/${asset.key}-${asset.sha256.slice(0, 12)}`) return true;
+			if (r.public_id === `${TARGET_FOLDER}/${asset.key}-${asset.sha256.slice(0, 12)}`)
+				return true;
 			return false;
 		});
 
@@ -194,7 +214,9 @@ export async function executeReorganization(
 		}
 
 		try {
-			console.log(`Renaming Cloudinary asset ${m.stableAssetId}: ${m.oldPublicId} -> ${m.newPublicId}`);
+			console.log(
+				`Renaming Cloudinary asset ${m.stableAssetId}: ${m.oldPublicId} -> ${m.newPublicId}`,
+			);
 			const renameRes = await cloudinary.uploader.rename(m.oldPublicId, m.newPublicId, {
 				overwrite: false,
 			});
@@ -231,10 +253,14 @@ export async function executeReorganization(
 			journal.error = String(err);
 
 			// ── COMPENSATION: Reverse completed remote steps ─────────────────
-			console.log('\nInitiating Compensation Phase: Reversing completed Cloudinary renames...');
+			console.log(
+				'\nInitiating Compensation Phase: Reversing completed Cloudinary renames...',
+			);
 			for (const step of [...journal.completedRemoteSteps].reverse()) {
 				try {
-					console.log(`Reversing rename for ${step.stableAssetId}: ${step.newPublicId} -> ${step.oldPublicId}`);
+					console.log(
+						`Reversing rename for ${step.stableAssetId}: ${step.newPublicId} -> ${step.oldPublicId}`,
+					);
 					await cloudinary.uploader.rename(step.newPublicId, step.oldPublicId, {
 						overwrite: true,
 					});
@@ -243,7 +269,9 @@ export async function executeReorganization(
 					journal.status = 'FAILED_UNRESOLVED';
 				}
 			}
-			throw new Error(`Cloudinary reorganization failed and compensated: ${err}`);
+			throw new Error(`Cloudinary reorganization failed and compensated: ${err}`, {
+				cause: err,
+			});
 		}
 	}
 
@@ -252,11 +280,7 @@ export async function executeReorganization(
 	const env = resolveLocalEnv();
 	const supabase = createClient(env.apiUrl, env.serviceRoleKey);
 
-	const { data: inv } = await supabase
-		.from('invitations')
-		.select('id')
-		.eq('slug', slug)
-		.single();
+	const { data: inv } = await supabase.from('invitations').select('id').eq('slug', slug).single();
 
 	if (!inv?.id) {
 		throw new Error(`Database update failed: Invitation "${slug}" not found.`);
@@ -290,8 +314,14 @@ export async function executeReorganization(
 	}
 
 	// Publish updated content with new Cloudinary URLs and swapped Family/Gallery 2 photos
-	console.log('Publishing updated invitation release with new asset hierarchy (updateScope: assets-only)...');
-	const applyResult = await applyLocalInvitation({ slug, apply: true, updateScope: 'assets-only' });
+	console.log(
+		'Publishing updated invitation release with new asset hierarchy (updateScope: assets-only)...',
+	);
+	const applyResult = await applyLocalInvitation({
+		slug,
+		apply: true,
+		updateScope: 'assets-only',
+	});
 	console.log(`Release published successfully at version ${applyResult.publishedVersion}!`);
 
 	journal.completedAt = new Date().toISOString();

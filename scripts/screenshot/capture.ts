@@ -68,10 +68,7 @@ export function getPlannedCaptureLabel(id: string): string {
 }
 
 // eslint-disable-next-line complexity
-export async function resolveCapturePlan(
-	page: Page,
-	job: ScreenshotJob,
-): Promise<CaptureTask[]> {
+export async function resolveCapturePlan(page: Page, job: ScreenshotJob): Promise<CaptureTask[]> {
 	const tasks: CaptureTask[] = [];
 
 	if (job.pageType === 'invitation') {
@@ -80,13 +77,20 @@ export async function resolveCapturePlan(
 		if (job.target === 'full-page') {
 			tasks.push({
 				id: '01-initial-closed-viewport',
-				label: capabilities.revealType === 'editorial-cover' ? 'Initial cover (closed)' : 'Initial envelope (closed)',
+				label:
+					capabilities.revealType === 'editorial-cover'
+						? 'Initial cover (closed)'
+						: 'Initial envelope (closed)',
 				type: 'invitation-step',
 				invitationStep: 'initial-full-page',
 				requirement: 'required',
 				viewportOnly: true,
 			});
-			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && capabilities.hasReveal) {
+			if (
+				job.revealHandling !== 'closed-only' &&
+				job.revealHandling !== 'skip' &&
+				capabilities.hasReveal
+			) {
 				tasks.push({
 					id: '05-invitation-full-page',
 					label: 'Full invitation (open)',
@@ -98,7 +102,10 @@ export async function resolveCapturePlan(
 		} else if (job.target === 'critical-qa') {
 			tasks.push({
 				id: '01-initial-closed-viewport',
-				label: capabilities.revealType === 'editorial-cover' ? 'Initial cover (closed)' : 'Initial envelope (closed)',
+				label:
+					capabilities.revealType === 'editorial-cover'
+						? 'Initial cover (closed)'
+						: 'Initial envelope (closed)',
 				type: 'invitation-step',
 				invitationStep: 'initial-full-page',
 				requirement: 'required',
@@ -107,13 +114,20 @@ export async function resolveCapturePlan(
 			if (job.revealHandling !== 'open-only' && capabilities.hasReveal) {
 				tasks.push({
 					id: '02-reveal-closed',
-					label: capabilities.revealType === 'editorial-cover' ? 'Reveal cover (closed)' : 'Reveal section (closed)',
+					label:
+						capabilities.revealType === 'editorial-cover'
+							? 'Reveal cover (closed)'
+							: 'Reveal section (closed)',
 					type: 'invitation-step',
 					invitationStep: 'reveal-closed',
 					requirement: 'optional',
 				});
 			}
-			if (job.revealHandling !== 'closed-only' && job.revealHandling !== 'skip' && capabilities.hasReveal) {
+			if (
+				job.revealHandling !== 'closed-only' &&
+				job.revealHandling !== 'skip' &&
+				capabilities.hasReveal
+			) {
 				if (capabilities.hasLetter) {
 					tasks.push({
 						id: '03-reveal-letter-open',
@@ -257,7 +271,8 @@ export async function resolveCapturePlan(
 				}
 
 				const hasMain =
-					(await page.locator('[data-screenshot="main"], main, .main-content').count()) > 0;
+					(await page.locator('[data-screenshot="main"], main, .main-content').count()) >
+					0;
 				if (hasMain) {
 					tasks.push({
 						id: '04-main',
@@ -857,8 +872,10 @@ export async function navigateTo(
 	// when transpiled evaluate/waitForFunction callbacks are executed in the browser context.
 	await page.addInitScript(() => {
 		if (typeof window !== 'undefined' && !('__name' in window)) {
-			(window as unknown as Record<string, unknown>).__name = (target: object, value: string) =>
-				Object.defineProperty(target, 'name', { value, configurable: true });
+			(window as unknown as Record<string, unknown>).__name = (
+				target: object,
+				value: string,
+			) => Object.defineProperty(target, 'name', { value, configurable: true });
 		}
 	});
 
@@ -1193,44 +1210,89 @@ async function captureSingleSectionForStitch(
 	const loc = page.locator(section.selector).first();
 	const count = await loc.count().catch(() => 0);
 	if (count === 0) {
-	skipped.push(section.id);
-	return;
+		skipped.push(section.id);
+		return;
 	}
 
 	const file = path.join(tmpDir, `${section.id}.png`);
 	try {
-	await loc.waitFor({ state: 'visible', timeout: stitchTimeoutMs });
-	await loc.evaluate((element) => {
-		element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
-	});
-	await page.waitForTimeout(150);
-	const clip = await loc.evaluate((element) => {
-		const rect = element.getBoundingClientRect();
-		return {
-			x: Math.max(0, window.scrollX + rect.left),
-			y: Math.max(0, window.scrollY + rect.top),
-			width: Math.max(0, rect.width),
-			height: Math.max(0, rect.height),
-			docWidth: Math.max(
-				document.documentElement.scrollWidth,
-				document.body.scrollWidth,
-			),
-			docHeight: Math.max(
-				document.documentElement.scrollHeight,
-				document.body.scrollHeight,
-			),
-		};
-	});
-	if (!clip || clip.width <= 0 || clip.height <= 0) {
-		// Clip unavailable — fall back to locator.screenshot
-		await loc.screenshot({
-			path: file,
-			animations: 'disabled',
-			...playwrightFormatOptions(format),
+		await loc.waitFor({ state: 'visible', timeout: stitchTimeoutMs });
+		await loc.evaluate((element) => {
+			element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
 		});
+		await page.waitForTimeout(150);
+		const clip = await loc.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return {
+				x: Math.max(0, window.scrollX + rect.left),
+				y: Math.max(0, window.scrollY + rect.top),
+				width: Math.max(0, rect.width),
+				height: Math.max(0, rect.height),
+				docWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+				docHeight: Math.max(
+					document.documentElement.scrollHeight,
+					document.body.scrollHeight,
+				),
+			};
+		});
+		if (!clip || clip.width <= 0 || clip.height <= 0) {
+			// Clip unavailable — fall back to locator.screenshot
+			await loc.screenshot({
+				path: file,
+				animations: 'disabled',
+				...playwrightFormatOptions(format),
+			});
+			const meta = await sharp(file).metadata();
+			if (!meta.width || !meta.height) {
+				throw new Error('unstable element');
+			}
+			capturedSections.push({
+				id: section.id,
+				file,
+				width: meta.width,
+				height: meta.height,
+			});
+			return;
+		}
+		const boundedClip = {
+			x: Math.min(clip.x, Math.max(0, clip.docWidth - 1)),
+			y: Math.min(clip.y, Math.max(0, clip.docHeight - 1)),
+			width: Math.min(clip.width, Math.max(1, clip.docWidth - clip.x)),
+			height: Math.min(clip.height, Math.max(1, clip.docHeight - clip.y)),
+		};
+		if (boundedClip.width <= 0 || boundedClip.height <= 0) {
+			throw new Error('clip outside page bounds');
+		}
+
+		const restoreOverlays = section.keepHeader ? null : await hideFixedOverlaysForCapture(page);
+		try {
+			try {
+				await page.screenshot({
+					path: file,
+					clip: boundedClip,
+					...playwrightFormatOptions(format),
+				});
+			} catch (screenshotErr) {
+				const msg =
+					screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
+				if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
+					throw screenshotErr;
+				}
+				// Clip failed (2x DPR / complex CSS issue) — fall back to locator.screenshot with animations disabled
+				await loc.screenshot({
+					path: file,
+					animations: 'disabled',
+					...playwrightFormatOptions(format),
+				});
+			}
+		} finally {
+			if (restoreOverlays) await restoreOverlays();
+		}
+
 		const meta = await sharp(file).metadata();
 		if (!meta.width || !meta.height) {
-			throw new Error('unstable element');
+			skipped.push(`${section.id} (empty)`);
+			return;
 		}
 		capturedSections.push({
 			id: section.id,
@@ -1238,64 +1300,14 @@ async function captureSingleSectionForStitch(
 			width: meta.width,
 			height: meta.height,
 		});
-		return;
-	}
-	const boundedClip = {
-		x: Math.min(clip.x, Math.max(0, clip.docWidth - 1)),
-		y: Math.min(clip.y, Math.max(0, clip.docHeight - 1)),
-		width: Math.min(clip.width, Math.max(1, clip.docWidth - clip.x)),
-		height: Math.min(clip.height, Math.max(1, clip.docHeight - clip.y)),
-	};
-	if (boundedClip.width <= 0 || boundedClip.height <= 0) {
-		throw new Error('clip outside page bounds');
-	}
-
-	const restoreOverlays = section.keepHeader
-		? null
-		: await hideFixedOverlaysForCapture(page);
-	try {
-		try {
-			await page.screenshot({
-				path: file,
-				clip: boundedClip,
-				...playwrightFormatOptions(format),
-			});
-			} catch (screenshotErr) {
-			const msg = screenshotErr instanceof Error ? screenshotErr.message : String(screenshotErr);
-			if (!msg.includes('Clipped area is either empty or outside the resulting image')) {
-				throw screenshotErr;
-			}
-			// Clip failed (2x DPR / complex CSS issue) — fall back to locator.screenshot with animations disabled
-			await loc.screenshot({
-				path: file,
-				animations: 'disabled',
-				...playwrightFormatOptions(format),
-			});
-			}
-	} finally {
-		if (restoreOverlays) await restoreOverlays();
-	}
-
-	const meta = await sharp(file).metadata();
-	if (!meta.width || !meta.height) {
-		skipped.push(`${section.id} (empty)`);
-		return;
-	}
-	capturedSections.push({
-		id: section.id,
-		file,
-		width: meta.width,
-		height: meta.height,
-	});
 	} catch (err) {
-	const reason = describeStitchFailure(err);
-	console.warn(
-		`  ⚠ Stitch: section "${section.id}" failed after ${formatDuration(stitchTimeoutMs)} — ${reason}`,
-	);
-	failedSections.push(`${section.id}: ${reason}`);
+		const reason = describeStitchFailure(err);
+		console.warn(
+			`  ⚠ Stitch: section "${section.id}" failed after ${formatDuration(stitchTimeoutMs)} — ${reason}`,
+		);
+		failedSections.push(`${section.id}: ${reason}`);
 	}
 }
-
 
 /**
  * Stitch a landing `02-full-page` capture from per-section element screenshots.
@@ -1519,7 +1531,9 @@ export async function captureElement(
 				});
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
-				if (!message.includes('Clipped area is either empty or outside the resulting image')) {
+				if (
+					!message.includes('Clipped area is either empty or outside the resulting image')
+				) {
 					throw error;
 				}
 				await locator.screenshot({
@@ -1703,6 +1717,35 @@ async function captureInvitationStitchedFullPage(
 	}
 }
 
+type InvitationSectionInventory = Awaited<ReturnType<typeof deriveSectionInventory>>;
+
+function assertCompleteInvitationInventory(inventory: InvitationSectionInventory): void {
+	if (inventory.missing.length > 0) {
+		throw new Error(
+			`SECTION_COVERAGE_INCOMPLETE: Required sections missing from rendered DOM: ${inventory.missing.join(', ')}`,
+		);
+	}
+	if (inventory.duplicates.length > 0) {
+		throw new Error(
+			`SECTION_COVERAGE_INCOMPLETE: Duplicate section roots detected in DOM: ${inventory.duplicates.join(', ')}`,
+		);
+	}
+}
+
+function assertStableInvitationInventory(
+	initialInventory: InvitationSectionInventory,
+	checkInventory: InvitationSectionInventory,
+): void {
+	if (
+		checkInventory.sections.length !== initialInventory.sections.length ||
+		Math.abs(checkInventory.bottomY - initialInventory.bottomY) > 5
+	) {
+		throw new Error(
+			'LAYOUT_CHANGED_DURING_CAPTURE: Section geometry or content height changed during stabilization check.',
+		);
+	}
+}
+
 /**
  * Capture the 05-invitation-full-page screenshot.
  *
@@ -1744,33 +1787,29 @@ async function captureInvitationOpen(
 
 		// 3. Derive layout evidence from canonical section inventory
 		const initialInventory = await deriveSectionInventory(page);
-		if (initialInventory.missing.length > 0) {
-			throw new Error(`SECTION_COVERAGE_INCOMPLETE: Required sections missing from rendered DOM: ${initialInventory.missing.join(', ')}`);
-		}
-		if (initialInventory.duplicates.length > 0) {
-			throw new Error(`SECTION_COVERAGE_INCOMPLETE: Duplicate section roots detected in DOM: ${initialInventory.duplicates.join(', ')}`);
-		}
+		assertCompleteInvitationInventory(initialInventory);
 
 		// Wait briefly for layout stability & measure again
 		await page.waitForTimeout(100);
 		const checkInventory = await deriveSectionInventory(page);
-		if (
-			checkInventory.sections.length !== initialInventory.sections.length ||
-			Math.abs(checkInventory.bottomY - initialInventory.bottomY) > 5
-		) {
-			throw new Error('LAYOUT_CHANGED_DURING_CAPTURE: Section geometry or content height changed during stabilization check.');
-		}
+		assertStableInvitationInventory(initialInventory, checkInventory);
 
 		const initialViewport = page.viewportSize() ?? { width: 390, height: 844 };
 		const viewportWidth = initialViewport.width;
 		const viewportHeight = initialViewport.height;
 
 		const topY = initialInventory.sections.length > 0 ? initialInventory.topY : 0;
-		const bottomY = initialInventory.sections.length > 0 ? initialInventory.bottomY : await getDocumentHeight(page);
+		const bottomY =
+			initialInventory.sections.length > 0
+				? initialInventory.bottomY
+				: await getDocumentHeight(page);
 		const expectedCssHeight = Math.max(100, Math.ceil(bottomY - topY));
 
 		const runId = Date.now();
-		const tempPath = path.join(outputDir, `.tmp-${runId}-${viewportName}-05-invitation-full-page.${formatExtension(format)}`);
+		const tempPath = path.join(
+			outputDir,
+			`.tmp-${runId}-${viewportName}-05-invitation-full-page.${formatExtension(format)}`,
+		);
 
 		// 4. Canonical strategy: Segmented tile capture with viewport UNCHANGED
 		const stitchedSuccess = await captureInvitationStitchedFullPage(
@@ -1783,7 +1822,9 @@ async function captureInvitationOpen(
 		);
 
 		if (!stitchedSuccess) {
-			throw new Error(`FULL_PAGE_CAPTURE_FAILED: Segmented capture strategy failed for ${viewportName}.`);
+			throw new Error(
+				`FULL_PAGE_CAPTURE_FAILED: Segmented capture strategy failed for ${viewportName}.`,
+			);
 		}
 
 		// 5. Verify viewport immutability
@@ -1810,7 +1851,9 @@ async function captureInvitationOpen(
 
 		if (!physCheck.valid) {
 			await fs.promises.rm(tempPath, { force: true }).catch(() => {});
-			throw new Error(`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`);
+			throw new Error(
+				`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`,
+			);
 		}
 
 		// 7. Visual section crop comparison
@@ -1831,7 +1874,9 @@ async function captureInvitationOpen(
 			});
 			if (!cropCheck.valid) {
 				await fs.promises.rm(tempPath, { force: true }).catch(() => {});
-				throw new Error(`${cropCheck.errorCode ?? 'SECTION_CAPTURE_MISMATCH'}: ${cropCheck.error}`);
+				throw new Error(
+					`${cropCheck.errorCode ?? 'SECTION_CAPTURE_MISMATCH'}: ${cropCheck.error}`,
+				);
 			}
 		}
 
@@ -2051,7 +2096,12 @@ export async function captureInvitationScreenshots(
 				}
 			} else if (t.invitationStep === 'full-open') {
 				await ensureOpenState();
-				const fullOpenResult = await captureInvitationOpen(page, outputDir, viewportName, format);
+				const fullOpenResult = await captureInvitationOpen(
+					page,
+					outputDir,
+					viewportName,
+					format,
+				);
 				if (fullOpenResult.length > 0) {
 					for (const r of fullOpenResult) {
 						r.viewportName = viewportName;
@@ -2074,12 +2124,22 @@ export async function captureInvitationScreenshots(
 				results.push(captured);
 				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 			} else {
-				const isVisible = await page.locator(t.selector!).first().isVisible().catch(() => false);
+				const isVisible = await page
+					.locator(t.selector!)
+					.first()
+					.isVisible()
+					.catch(() => false);
 				const failMsg = isVisible
 					? `Element "${t.selector}" could not be captured.`
 					: 'Element is hidden — skipped.';
 				console.log(`  ℹ ${t.id} — ${isVisible ? 'failed' : 'hidden'}`);
-				results.push({ path: taskPath, viewportName, label: t.label, success: false, error: failMsg });
+				results.push({
+					path: taskPath,
+					viewportName,
+					label: t.label,
+					success: false,
+					error: failMsg,
+				});
 			}
 		}
 		tMark();
@@ -2087,32 +2147,35 @@ export async function captureInvitationScreenshots(
 
 	await validateDistinctReveal(results);
 
+	// =============================================================================
+	// Section Capture — extracted for complexity reduction
+	// =============================================================================
 
-// =============================================================================
-// Section Capture — extracted for complexity reduction
-// =============================================================================
+	/**
+	 * Capture a section/critical element with fast visibility check.
+	 * Returns CaptureResult on success, null if hidden or errored.
+	 */
+	async function captureSectionElement(
+		page: Page,
+		task: CaptureTask,
+		outputPath: string,
+		viewportName: string,
+		format: OutputFormat,
+	): Promise<CaptureResult | null> {
+		const isVisible = await page
+			.locator(task.selector!)
+			.first()
+			.isVisible()
+			.catch(() => false);
+		if (!isVisible) return null;
 
-/**
- * Capture a section/critical element with fast visibility check.
- * Returns CaptureResult on success, null if hidden or errored.
- */
-async function captureSectionElement(
-	page: Page,
-	task: CaptureTask,
-	outputPath: string,
-	viewportName: string,
-	format: OutputFormat,
-): Promise<CaptureResult | null> {
-	const isVisible = await page.locator(task.selector!).first().isVisible().catch(() => false);
-	if (!isVisible) return null;
+		const result = await captureElement(page, task.selector!, outputPath, format);
+		if (!result) return null;
 
-	const result = await captureElement(page, task.selector!, outputPath, format);
-	if (!result) return null;
-
-	result.viewportName = viewportName;
-	result.label = task.label;
-	return result;
-}
+		result.viewportName = viewportName;
+		result.label = task.label;
+		return result;
+	}
 
 	// Print timing summary
 	if (timings.length > 0) {
@@ -2174,7 +2237,10 @@ export async function captureGeneralPageScreenshots(
 		const taskPath = await buildScreenshotPath(outputDir, viewportName, t.id, format);
 		if (t.type === 'viewport') {
 			try {
-				await resetScrollAndAssertAboveFold(page, getAboveFoldCriticalSelector(job.pageType));
+				await resetScrollAndAssertAboveFold(
+					page,
+					getAboveFoldCriticalSelector(job.pageType),
+				);
 				const result = await captureViewport(page, taskPath, format);
 				result.viewportName = viewportName;
 				result.label = t.label;
@@ -2249,7 +2315,6 @@ export async function captureGeneralPageScreenshots(
 // =============================================================================
 // Section Capture
 // =============================================================================
-
 
 // =============================================================================
 // Helpers

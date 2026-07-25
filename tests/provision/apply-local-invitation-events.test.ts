@@ -36,7 +36,9 @@ describe('applyLocalInvitation event recognition contract', () => {
 				},
 			]),
 		);
-		const content = abrilInvitation.buildPublishedContent(semanticAssets as unknown as UploadedAssetMap);
+		const content = abrilInvitation.buildPublishedContent(
+			semanticAssets as unknown as UploadedAssetMap,
+		);
 		expect(content._assetSlug).toBe('abril-michelle-becerra-rea');
 		expect(content.visualProfileId).toBe('abril-michelle-becerra-rea');
 		expect(content.eventType).toBe('xv');
@@ -86,7 +88,9 @@ describe('applyLocalInvitation event recognition contract', () => {
 			// Simulate Step 5 logic from applyLocalInvitation:
 			// 2. RPC ran and created/updated event in database
 			// 3. Subsequent lookup retrieves it by slug
-			let eventId: string | undefined = existingEvent ? (existingEvent['id'] as string) : undefined;
+			let eventId: string | undefined = existingEvent
+				? (existingEvent['id'] as string)
+				: undefined;
 			if (!eventId) {
 				const { data: currentEvent } = await mockSupabase
 					.from('events')
@@ -115,7 +119,8 @@ describe('applyLocalInvitation event recognition contract', () => {
 
 			// Initial state: no existing membership
 			let existingMembership: { event_id: string; user_id: string } | null = null;
-			const createdMemberships: Array<{ event_id: string; user_id: string; role: string }> = [];
+			const createdMemberships: Array<{ event_id: string; user_id: string; role: string }> =
+				[];
 
 			// 6. Owner membership is created once
 			if (!existingMembership) {
@@ -147,8 +152,8 @@ describe('applyLocalInvitation event recognition contract', () => {
 			const slug = 'abril-michelle-becerra-rea';
 			let queryCalled = false;
 
-			const mockSupabase = {
-				from: (_table?: string): MockSelect => {
+			const mockSupabase: { from: (table: string) => MockSelect } = {
+				from: () => {
 					queryCalled = true;
 					return {
 						select: () => ({
@@ -164,7 +169,9 @@ describe('applyLocalInvitation event recognition contract', () => {
 			};
 
 			// 8. Existing-event behavior remains unchanged
-			let eventId: string | undefined = existingEvent ? (existingEvent['id'] as string) : undefined;
+			let eventId: string | undefined = existingEvent
+				? (existingEvent['id'] as string)
+				: undefined;
 			if (!eventId) {
 				const { data: currentEvent } = await mockSupabase
 					.from('events')

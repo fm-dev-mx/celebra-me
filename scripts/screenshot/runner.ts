@@ -73,76 +73,83 @@ async function captureSingleViewport(
 		requestFailures.push(classifyRequestFailure(request));
 	});
 
-		try {
-			const { results, plannedCount } = await (job.pageType === 'invitation'
-				? captureInvitationScreenshots(page, job, outputDir, viewport.name)
-				: captureGeneralPageScreenshots(page, job, outputDir, viewport.name));
+	try {
+		const { results, plannedCount } = await (job.pageType === 'invitation'
+			? captureInvitationScreenshots(page, job, outputDir, viewport.name)
+			: captureGeneralPageScreenshots(page, job, outputDir, viewport.name));
 
-			const viewportReport = await buildViewportReport({
-				page,
-				job,
-				viewport,
-				results,
-				consoleErrors,
-				requestFailures,
-			});
+		const viewportReport = await buildViewportReport({
+			page,
+			job,
+			viewport,
+			results,
+			consoleErrors,
+			requestFailures,
+		});
 
-			if (viewportReport.sectionCoverage) {
-				const cov = viewportReport.sectionCoverage;
-				console.log(`  ─── Section Coverage Matrix (${viewport.name}) ───`);
-				console.log(`    Expected sections:   ${cov.expectedCount}`);
-				console.log(`    Rendered sections:   ${cov.renderedCount}`);
-				console.log(`    Planned captures:    ${cov.plannedCount}`);
-				console.log(`    Successful captures: ${cov.successfulCount}`);
-				console.log(`    Missing sections:    ${cov.missingSections.length > 0 ? cov.missingSections.join(', ') : 'none'}`);
-				console.log(`    Duplicate sections:  ${cov.duplicateSections.length > 0 ? cov.duplicateSections.join(', ') : 'none'}`);
-			}
-
-			// Log summary for this viewport
-			const succeeded = results.filter((r) => r.success).length;
-			const failed = viewportReport.failures.length;
-			const warningsCount = viewportReport.warnings.length + (viewportReport.detailedWarnings?.length ?? 0);
-			const noticesCount = viewportReport.notices?.length ?? 0;
-			const blockingErrorsCount = viewportReport.failures.filter((f) => f.includes('blocking') || f.includes('Critical')).length;
-			let summaryParts = `Done: ${succeeded} captured`;
-			if (failed > 0) summaryParts += `, ${failed} failed`;
-			if (warningsCount > 0) summaryParts += `, ${warningsCount} warning(s)`;
-			if (noticesCount > 0) summaryParts += `, ${noticesCount} notice(s)`;
-			if (blockingErrorsCount > 0) summaryParts += `, ${blockingErrorsCount} blocking error(s)`;
-			console.log(`  ─── ${summaryParts} ───`);
-
-			return {
-				captures: results,
-				plannedCaptures: plannedCount,
-				plannedTasks: results.map((r) => ({ id: r.id ?? '', required: !r.isOptional })),
-				report: viewportReport,
-			};
-		} catch (err) {
-			console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
-			return {
-				captures: [],
-				plannedCaptures: 0,
-				plannedTasks: [],
-				report: {
-					name: viewport.name,
-					width: viewport.width,
-					height: viewport.height,
-					deviceScaleFactor: viewport.deviceScaleFactor,
-					documentHeight: 0,
-					outputFiles: [],
-					criticalSelectors: [],
-					warnings: [],
-					failures: [String(err)],
-					consoleErrors: consoleErrors.map(classifyConsoleError),
-					requestFailures,
-				},
-			};
-		} finally {
-			await context.close();
+		if (viewportReport.sectionCoverage) {
+			const cov = viewportReport.sectionCoverage;
+			console.log(`  ─── Section Coverage Matrix (${viewport.name}) ───`);
+			console.log(`    Expected sections:   ${cov.expectedCount}`);
+			console.log(`    Rendered sections:   ${cov.renderedCount}`);
+			console.log(`    Planned captures:    ${cov.plannedCount}`);
+			console.log(`    Successful captures: ${cov.successfulCount}`);
+			console.log(
+				`    Missing sections:    ${cov.missingSections.length > 0 ? cov.missingSections.join(', ') : 'none'}`,
+			);
+			console.log(
+				`    Duplicate sections:  ${cov.duplicateSections.length > 0 ? cov.duplicateSections.join(', ') : 'none'}`,
+			);
 		}
-	}
 
-	/**
+		// Log summary for this viewport
+		const succeeded = results.filter((r) => r.success).length;
+		const failed = viewportReport.failures.length;
+		const warningsCount =
+			viewportReport.warnings.length + (viewportReport.detailedWarnings?.length ?? 0);
+		const noticesCount = viewportReport.notices?.length ?? 0;
+		const blockingErrorsCount = viewportReport.failures.filter(
+			(f) => f.includes('blocking') || f.includes('Critical'),
+		).length;
+		let summaryParts = `Done: ${succeeded} captured`;
+		if (failed > 0) summaryParts += `, ${failed} failed`;
+		if (warningsCount > 0) summaryParts += `, ${warningsCount} warning(s)`;
+		if (noticesCount > 0) summaryParts += `, ${noticesCount} notice(s)`;
+		if (blockingErrorsCount > 0) summaryParts += `, ${blockingErrorsCount} blocking error(s)`;
+		console.log(`  ─── ${summaryParts} ───`);
+
+		return {
+			captures: results,
+			plannedCaptures: plannedCount,
+			plannedTasks: results.map((r) => ({ id: r.id ?? '', required: !r.isOptional })),
+			report: viewportReport,
+		};
+	} catch (err) {
+		console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
+		return {
+			captures: [],
+			plannedCaptures: 0,
+			plannedTasks: [],
+			report: {
+				name: viewport.name,
+				width: viewport.width,
+				height: viewport.height,
+				deviceScaleFactor: viewport.deviceScaleFactor,
+				documentHeight: 0,
+				outputFiles: [],
+				criticalSelectors: [],
+				warnings: [],
+				failures: [String(err)],
+				consoleErrors: consoleErrors.map(classifyConsoleError),
+				requestFailures,
+			},
+		};
+	} finally {
+		await context.close();
+	}
+}
+
+/**
  * Execute a complete screenshot job across all configured viewports.
  *
  * This is the top-level orchestrator:
@@ -233,9 +240,13 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	const warnings = viewportReports.flatMap((report) => report.warnings);
 	const detailedWarnings = viewportReports.flatMap((report) => report.detailedWarnings ?? []);
 	const notices = viewportReports.flatMap((report) => report.notices ?? []);
-	const blankBottomValidations = viewportReports.flatMap((report) => report.blankBottomValidations ?? []);
+	const blankBottomValidations = viewportReports.flatMap(
+		(report) => report.blankBottomValidations ?? [],
+	);
 	const failures = viewportReports.flatMap((report) => report.failures);
-	const fallbacks = viewportReports.flatMap((report) => report.fallback ? [report.fallback] : []);
+	const fallbacks = viewportReports.flatMap((report) =>
+		report.fallback ? [report.fallback] : [],
+	);
 	const stitchFailures = viewportReports.flatMap((report) => report.stitchFailures ?? []);
 	const manifestFailures = manifest
 		.filter((viewportManifest) => viewportManifest.status === 'failed')
@@ -250,11 +261,8 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	const requiredCaptures = allCaptures.filter((r) => !r.isOptional);
 	const optionalOmitted = allCaptures.filter((r) => r.isOptional && !r.success).length;
 
-	const reportStatus: ScreenshotRunReport['status'] = failed > 0
-		? 'failed'
-		: warnings.length > 0
-			? 'warning'
-			: 'passed';
+	const reportStatus: ScreenshotRunReport['status'] =
+		failed > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'passed';
 
 	const report: ScreenshotRunReport = {
 		route: job.url,
@@ -319,9 +327,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		console.log('  📁 Current-run manifest:');
 		for (const vp of manifest) {
 			const status = vp.status !== 'passed' ? ' ⚠' : '';
-			console.log(
-				`    ${vp.name}/  (${vp.files} files, expected ${vp.expected})${status}`,
-			);
+			console.log(`    ${vp.name}/  (${vp.files} files, expected ${vp.expected})${status}`);
 		}
 		console.log(`    Total generated this run: ${manifestFiles} files`);
 		console.log('');
@@ -391,7 +397,9 @@ async function buildViewportReport({
 		if (file.hash) {
 			const currentMeta = await getFileArtifactMeta(file.path).catch(() => undefined);
 			if (!currentMeta || currentMeta.hash !== file.hash) {
-				captureFailures.push(`FULL_PAGE_ARTIFACT_OVERWRITTEN: Artifact ${file.path} was overwritten or modified after verification.`);
+				captureFailures.push(
+					`FULL_PAGE_ARTIFACT_OVERWRITTEN: Artifact ${file.path} was overwritten or modified after verification.`,
+				);
 			}
 		}
 	}
@@ -400,16 +408,32 @@ async function buildViewportReport({
 	for (const result of results) {
 		if (!result.success) {
 			if (result.isOptional) {
-				notices.push(`Optional capture "${result.label}" omitted: ${result.error ?? 'not supported'}`);
+				notices.push(
+					`Optional capture "${result.label}" omitted: ${result.error ?? 'not supported'}`,
+				);
 			} else {
 				captureFailures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
 			}
 		}
 	}
 
-	await validateFullPageBlanks(outputFiles, blankBottomValidations, detailedWarnings, warnings, job.url, viewport.name);
+	await validateFullPageBlanks(
+		outputFiles,
+		blankBottomValidations,
+		detailedWarnings,
+		warnings,
+		job.url,
+		viewport.name,
+	);
 	const { criticalSelectors, blockingErrors } = await collectSelectorAndRequestWarnings(
-		page, job, requestFailures, consoleErrors, detailedWarnings, warnings, notices, viewport.name,
+		page,
+		job,
+		requestFailures,
+		consoleErrors,
+		detailedWarnings,
+		warnings,
+		notices,
+		viewport.name,
 	);
 	captureFailures.push(...blockingErrors);
 	const classifiedConsoleErrors = consoleErrors.map(classifyConsoleError);
@@ -423,26 +447,7 @@ async function buildViewportReport({
 	appendExpectedOutputFailures(captureFailures, job, results, outputFiles);
 
 	// Physical dimension check on full-page captures — fail if viewport-sized on multi-viewport page
-	for (const file of outputFiles.filter((outputFile) => isFullPageCaptureLabel(outputFile.label))) {
-		if (!file.width || !file.height) {
-			captureFailures.push(`FULL_PAGE_CAPTURE_FAILED: Could not read image dimensions for ${file.path}`);
-			continue;
-		}
-		const viewportPixelWidth = Math.round(viewport.width * viewport.deviceScaleFactor);
-		const viewportPixelHeight = Math.round(viewport.height * viewport.deviceScaleFactor);
-
-		if (file.width < viewportPixelWidth) {
-			captureFailures.push(
-				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} width ${file.width}px is smaller than viewport width ${viewportPixelWidth}px`,
-			);
-		}
-
-		if (documentHeight > viewport.height + 20 && Math.abs(file.height - viewportPixelHeight) <= 10) {
-			captureFailures.push(
-				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} height ${file.height}px is equal to single viewport height (${viewportPixelHeight}px) for multi-viewport page (${documentHeight}px CSS height).`,
-			);
-		}
-	}
+	appendFullPageDimensionFailures(captureFailures, outputFiles, documentHeight, viewport);
 
 	if (documentHeight < viewport.height) {
 		warnings.push(
@@ -456,7 +461,6 @@ async function buildViewportReport({
 		const inventory = await deriveSectionInventory(page);
 		sectionCoverage = buildSectionCoverage(inventory, results, captureFailures);
 	}
-
 
 	return {
 		name: viewport.name,
@@ -477,6 +481,41 @@ async function buildViewportReport({
 		consoleErrors: classifiedConsoleErrors,
 		requestFailures,
 	};
+}
+
+function appendFullPageDimensionFailures(
+	captureFailures: string[],
+	outputFiles: Array<{ path: string; label: string; width?: number; height?: number }>,
+	documentHeight: number,
+	viewport: ScreenshotJob['viewports'][number],
+): void {
+	for (const file of outputFiles.filter((outputFile) =>
+		isFullPageCaptureLabel(outputFile.label),
+	)) {
+		if (!file.width || !file.height) {
+			captureFailures.push(
+				`FULL_PAGE_CAPTURE_FAILED: Could not read image dimensions for ${file.path}`,
+			);
+			continue;
+		}
+		const viewportPixelWidth = Math.round(viewport.width * viewport.deviceScaleFactor);
+		const viewportPixelHeight = Math.round(viewport.height * viewport.deviceScaleFactor);
+
+		if (file.width < viewportPixelWidth) {
+			captureFailures.push(
+				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} width ${file.width}px is smaller than viewport width ${viewportPixelWidth}px`,
+			);
+		}
+
+		if (
+			documentHeight > viewport.height + 20 &&
+			Math.abs(file.height - viewportPixelHeight) <= 10
+		) {
+			captureFailures.push(
+				`FULL_PAGE_DIMENSION_MISMATCH: ${file.path} height ${file.height}px is equal to single viewport height (${viewportPixelHeight}px) for multi-viewport page (${documentHeight}px CSS height).`,
+			);
+		}
+	}
 }
 
 // =============================================================================
@@ -548,7 +587,9 @@ function appendExpectedOutputFailures(
 	).length;
 
 	if (job.target === 'all-sections' && results.length === 0) {
-		captureFailures.push(`No capturable sections resolved for ${job.pageType} route ${job.url}.`);
+		captureFailures.push(
+			`No capturable sections resolved for ${job.pageType} route ${job.url}.`,
+		);
 	}
 
 	if (job.target === 'single-section' && results.length === 0) {
@@ -620,10 +661,13 @@ async function collectSelectorAndRequestWarnings(
 
 	// Critical selectors — reclassify "Optional selector not found" as notices
 	const criticalSelectors = await validateCriticalSelectors(page, job.criticalSelectors);
-	
+
 	for (const selector of criticalSelectors) {
 		for (const w of selector.warnings ?? []) {
-			if (w.startsWith('Optional selector not found:') || w.startsWith('Optional selector is not visibly ready:')) {
+			if (
+				w.startsWith('Optional selector not found:') ||
+				w.startsWith('Optional selector is not visibly ready:')
+			) {
 				notices.push(w);
 			} else {
 				detailedWarnings.push({
@@ -721,9 +765,11 @@ async function readAuditNormalizations(page: Page): Promise<string[]> {
 	try {
 		return await page.evaluate(() => {
 			return (
-				(window as Window & {
-					__screenshotAuditNormalizations?: string[];
-				}).__screenshotAuditNormalizations ?? []
+				(
+					window as Window & {
+						__screenshotAuditNormalizations?: string[];
+					}
+				).__screenshotAuditNormalizations ?? []
 			);
 		});
 	} catch {
@@ -748,11 +794,14 @@ async function getDocumentHeight(page: Page): Promise<number> {
  * results from null/undefined/broken-shape data crossing the page boundary.
  */
 function isSelectorValidationReportArray(value: unknown): value is SelectorValidationReport[] {
-	return Array.isArray(value) && value.every(
-		(item) =>
-			item !== null &&
-			typeof item === 'object' &&
-			typeof (item as Record<string, unknown>).selector === 'string',
+	return (
+		Array.isArray(value) &&
+		value.every(
+			(item) =>
+				item !== null &&
+				typeof item === 'object' &&
+				typeof (item as Record<string, unknown>).selector === 'string',
+		)
 	);
 }
 

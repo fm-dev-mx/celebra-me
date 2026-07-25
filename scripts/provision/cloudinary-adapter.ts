@@ -48,6 +48,25 @@ export interface CloudinaryAssetResult {
 	action: 'REUSE' | 'UPLOAD';
 }
 
+interface CloudinaryResourceData {
+	public_id: string;
+	version: string | number;
+	secure_url?: string;
+	width: number;
+	height: number;
+	bytes: number;
+	format: string;
+	resource_type: string;
+	created_at: string;
+	asset_id?: string;
+	asset_folder?: string;
+	folder?: string;
+	context?: {
+		custom?: { sha256?: string };
+		sha256?: string;
+	};
+}
+
 let isConfigured = false;
 
 export function resolveCloudinaryConfig(): CloudinaryConfig {
@@ -112,6 +131,117 @@ export function buildCloudinaryPublicId(
 	return `invitations/${slug}/${sanitizedKey}-${shaPrefix}`;
 }
 
+function buildAssetResult(
+	resource: CloudinaryResourceData,
+	input: CloudinaryAssetUploadInput,
+	canonicalSecureUrl: string,
+	action: CloudinaryAssetResult['action'],
+): CloudinaryAssetResult {
+	return {
+		provider: 'cloudinary',
+		publicId: resource.public_id,
+		version: String(resource.version),
+		secureUrl: (resource.secure_url ?? canonicalSecureUrl).replace(/\/v\d+\//, '/v1/'),
+		sha256: input.sha256,
+		width: resource.width,
+		height: resource.height,
+		bytes: resource.bytes,
+		format: resource.format,
+		metadata: {
+			resource_type: resource.resource_type,
+			created_at: resource.created_at,
+			asset_id: resource.asset_id,
+			asset_folder: resource.asset_folder ?? resource.folder ?? '',
+		},
+		action,
+	};
+}
+
+function getCloudinaryErrorStatus(error: unknown): number | undefined {
+	if (typeof error !== 'object' || error === null || !('http_code' in error)) return undefined;
+	return typeof error.http_code === 'number' ? error.http_code : undefined;
+}
+
+function isCollisionError(error: unknown): boolean {
+	return error instanceof Error && error.message.includes('collision');
+}
+
+async function findExistingAsset(
+	publicId: string,
+	input: CloudinaryAssetUploadInput,
+	canonicalSecureUrl: string,
+): Promise<CloudinaryAssetResult | null> {
+	try {
+		const resource = (await cloudinary.api.resource(publicId, {
+			context: true,
+		})) as CloudinaryResourceData | null;
+		if (!resource) return null;
+
+		const existingSha = resource.context?.custom?.sha256 ?? resource.context?.sha256;
+		if (existingSha && existingSha !== input.sha256) {
+			throw new Error(
+				`Cloudinary public ID collision detected for "${publicId}": existing sha256 (${existingSha.slice(0, 12)}…) does not match input sha256 (${input.sha256.slice(0, 12)}…).`,
+			);
+		}
+
+		return buildAssetResult(resource, input, canonicalSecureUrl, 'REUSE');
+	} catch (error: unknown) {
+		const statusCode = getCloudinaryErrorStatus(error);
+		if (statusCode !== 404 && isCollisionError(error)) throw error;
+		return null;
+	}
+}
+
+function buildPredictedAssetResult(
+	publicId: string,
+	input: CloudinaryAssetUploadInput,
+	canonicalSecureUrl: string,
+): CloudinaryAssetResult {
+	return {
+		provider: 'cloudinary',
+		publicId,
+		version: '1',
+		secureUrl: canonicalSecureUrl,
+		sha256: input.sha256,
+		width: input.width ?? 1000,
+		height: input.height ?? 1000,
+		bytes: input.bytes.length,
+		format: 'webp',
+		metadata: { predicted: true },
+		action: 'UPLOAD',
+	};
+}
+
+function assertCloudinaryCredentials(config: CloudinaryConfig): void {
+	if (!config.apiKey || !config.apiSecret || !config.cloudName) {
+		throw new Error(
+			'Stop before mutation: Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing in the local environment. Please configure them in process.env or .env.local to proceed with upload.',
+		);
+	}
+}
+
+async function uploadCloudinaryAsset(
+	publicId: string,
+	input: CloudinaryAssetUploadInput,
+	canonicalSecureUrl: string,
+): Promise<CloudinaryAssetResult> {
+	const dataUri = `data:${input.mimeType};base64,${Buffer.from(input.bytes).toString('base64')}`;
+	const targetFolder =
+		input.assetFolder ??
+		(input.slug === 'abril-michelle-becerra-rea' ? `xv/${input.slug}/assets` : undefined);
+
+	const uploadResult: UploadApiResponse = await cloudinary.uploader.upload(dataUri, {
+		public_id: publicId,
+		asset_folder: targetFolder,
+		overwrite: false,
+		unique_filename: false,
+		context: `sha256=${input.sha256}|slug=${input.slug}|key=${input.key}|displayName=${encodeURIComponent(input.displayName)}`,
+		tags: ['managed-invitation', input.slug],
+	});
+
+	return buildAssetResult(uploadResult, input, canonicalSecureUrl, 'UPLOAD');
+}
+
 /**
  * Uploads or reconciles a managed invitation binary on Cloudinary.
  * Guarantees idempotency and prevents binary overwrites/collisions.
@@ -122,99 +252,26 @@ export async function uploadOrReconcileCloudinaryAsset(
 	initCloudinary();
 	const config = resolveCloudinaryConfig();
 
-	const publicId = buildCloudinaryPublicId(input.slug, input.key, input.sha256, input.assetFolder);
+	const publicId = buildCloudinaryPublicId(
+		input.slug,
+		input.key,
+		input.sha256,
+		input.assetFolder,
+	);
 	const canonicalSecureUrl = `https://res.cloudinary.com/${config.cloudName}/image/upload/v1/${publicId}.webp`;
 
 	// 1. Inspect existing Cloudinary resource if present
-	try {
-		const resource = await cloudinary.api.resource(publicId, { context: true });
-		if (resource) {
-			const existingSha = resource.context?.custom?.sha256 ?? resource.context?.sha256;
-			if (existingSha && existingSha !== input.sha256) {
-				throw new Error(
-					`Cloudinary public ID collision detected for "${publicId}": existing sha256 (${existingSha.slice(0, 12)}…) does not match input sha256 (${input.sha256.slice(0, 12)}…).`,
-				);
-			}
-
-			return {
-				provider: 'cloudinary',
-				publicId: resource.public_id,
-				version: String(resource.version),
-				secureUrl: (resource.secure_url ?? canonicalSecureUrl).replace(/\/v\d+\//, '/v1/'),
-				sha256: input.sha256,
-				width: resource.width,
-				height: resource.height,
-				bytes: resource.bytes,
-				format: resource.format,
-				metadata: {
-					resource_type: resource.resource_type,
-					created_at: resource.created_at,
-					asset_id: resource.asset_id,
-					asset_folder: resource.asset_folder ?? resource.folder ?? '',
-				},
-				action: 'REUSE',
-			};
-		}
-	} catch (err: unknown) {
-		const statusCode = (err as { http_code?: number })?.http_code;
-		if (statusCode !== 404) {
-			if (err instanceof Error && err.message.includes('collision')) throw err;
-		}
-	}
+	const existingResult = await findExistingAsset(publicId, input, canonicalSecureUrl);
+	if (existingResult) return existingResult;
 
 	if (input.dryRun) {
-		return {
-			provider: 'cloudinary',
-			publicId,
-			version: '1',
-			secureUrl: canonicalSecureUrl,
-			sha256: input.sha256,
-			width: input.width ?? 1000,
-			height: input.height ?? 1000,
-			bytes: input.bytes.length,
-			format: 'webp',
-			metadata: { predicted: true },
-			action: 'UPLOAD',
-		};
+		return buildPredictedAssetResult(publicId, input, canonicalSecureUrl);
 	}
 
-	if (!config.apiKey || !config.apiSecret || !config.cloudName) {
-		throw new Error(
-			'Stop before mutation: Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing in the local environment. Please configure them in process.env or .env.local to proceed with upload.',
-		);
-	}
+	assertCloudinaryCredentials(config);
 
 	// 2. Upload binary stream to Cloudinary
-	const dataUri = `data:${input.mimeType};base64,${Buffer.from(input.bytes).toString('base64')}`;
-	const targetFolder = input.assetFolder ?? (input.slug === 'abril-michelle-becerra-rea' ? `xv/${input.slug}/assets` : undefined);
-
-	const uploadRes: UploadApiResponse = await cloudinary.uploader.upload(dataUri, {
-		public_id: publicId,
-		asset_folder: targetFolder,
-		overwrite: false,
-		unique_filename: false,
-		context: `sha256=${input.sha256}|slug=${input.slug}|key=${input.key}|displayName=${encodeURIComponent(input.displayName)}`,
-		tags: ['managed-invitation', input.slug],
-	});
-
-	return {
-		provider: 'cloudinary',
-		publicId: uploadRes.public_id,
-		version: String(uploadRes.version),
-		secureUrl: (uploadRes.secure_url ?? canonicalSecureUrl).replace(/\/v\d+\//, '/v1/'),
-		sha256: input.sha256,
-		width: uploadRes.width,
-		height: uploadRes.height,
-		bytes: uploadRes.bytes,
-		format: uploadRes.format,
-		metadata: {
-			resource_type: uploadRes.resource_type,
-			created_at: uploadRes.created_at,
-			asset_id: uploadRes.asset_id,
-			asset_folder: uploadRes.asset_folder ?? uploadRes.folder ?? '',
-		},
-		action: 'UPLOAD',
-	};
+	return uploadCloudinaryAsset(publicId, input, canonicalSecureUrl);
 }
 
 /**

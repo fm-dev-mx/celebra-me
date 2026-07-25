@@ -5,13 +5,13 @@ dashboard, login, and custom routes.
 
 ## Support Level
 
-| Page type                                          | Status                                  |
-| -------------------------------------------------- | --------------------------------------- |
-| Invitations with screenshot mode (`?screenshot=1`) | ✅ Verified — full 5-shot sequence      |
-| Landing pages                                      | ✅ Verified                             |
-| Dashboard/admin (no auth)                          | ✅ Functional                           |
-| Dashboard/admin (requires auth)                    | ⚠️ Not validated — no auth pipeline yet |
-| Login pages                                        | ⚠️ Not validated                        |
+| Page type                                          | Status                                          |
+| -------------------------------------------------- | ----------------------------------------------- |
+| Invitations with screenshot mode (`?screenshot=1`) | ✅ Verified — full 5-shot sequence              |
+| Landing pages                                      | ✅ Verified                                     |
+| Dashboard/admin (no auth)                          | ✅ Functional                                   |
+| Dashboard/admin (requires auth)                    | ⚠️ Not validated — no auth pipeline yet         |
+| Login pages                                        | ⚠️ Not validated                                |
 | Batch mode (`--config`)                            | ✅ Implemented — see Configuration File section |
 
 ## Quick Start
@@ -24,7 +24,7 @@ pnpm screenshot
 pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding
 
 # Direct — general page (flags) — VERIFIED for landing
-pnpm screenshot:page --url=http://localhost:4321/
+pnpm screenshot --url=http://localhost:4321/
 ```
 
 ## Default Mode
@@ -34,9 +34,9 @@ The default mode is `audit`, which is intended for recurring visual QA. It marks
 page to trigger lazy loading and reveal effects, waits for height stability, records critical
 selector visibility, then normalizes reveal states and disables animations right before capture.
 
-Use `--mode=raw` only when debugging real runtime behavior with minimal intervention. Each run writes
-`report.json` with route, mode, viewport metadata, generated files, dimensions, document height,
-selector checks, warnings, failures, console errors, and request failures.
+Use `--mode=raw` only when debugging real runtime behavior with minimal intervention. Each run
+writes `report.json` with route, mode, viewport metadata, generated files, dimensions, document
+height, selector checks, warnings, failures, console errors, and request failures.
 
 ## Commands
 
@@ -44,7 +44,7 @@ selector checks, warnings, failures, console errors, and request failures.
 | ---------------------------------- | ---------------------------------------------- | --------------------------------------- |
 | `pnpm screenshot`                  | Interactive mode (guides through all options)  | ✅                                      |
 | `pnpm screenshot:invite --url=...` | Direct invitation capture                      | ✅ Verified                             |
-| `pnpm screenshot:page --url=...`   | Direct page capture (landing/dashboard/custom) | ⚠️ Landing verified, auth pages pending |
+| `pnpm screenshot --url=...`        | Direct page capture (landing/dashboard/custom) | ⚠️ Landing verified, auth pages pending |
 
 ## Interactive Flow
 
@@ -88,7 +88,7 @@ landing pages).
 
 ```bash
 # All options
-pnpm screenshot:page \
+pnpm screenshot \
   --url=/dashboard \
   --type=dashboard \
   --profile=site \
@@ -108,24 +108,24 @@ pnpm screenshot:invite \
 
 ### CLI Flags
 
-| Flag                     | Short | Description                                                                                  |
-| ------------------------ | ----- | -------------------------------------------------------------------------------------------- |
-| `--url=<url>`            | `-u`  | URL or route to capture                                                                      |
-| `--base-url=<url>`       |       | Base URL for route resolution (default: http://localhost:4321)                               |
-| `--type=<type>`          | `-t`  | Page type: invitation, landing, dashboard, admin, login, custom                              |
-| `--mode=<mode>`          |       | Mode: audit (default), raw                                                                   |
-| `--profile=<name>`       | `-p`  | Viewport profile: invitation, site, full, single                                             |
-| `--viewport=<names>`     |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop |
-| `--set=<name>`           |       | Invitation set: essential, full-qa, reveal-only, full-page                                   |
-| `--general-set=<name>`   |       | Page set: basic, full-qa                                                                     |
-| `--reveal=<mode>`        |       | Reveal handling: auto, force-open, closed-only, open-only, skip                              |
-| `--animation=<mode>`     |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead.                         |
-| `--sections=<mode>`      |       | Sections: none, auto, known, custom                                                          |
-| `--auth=<method>`        |       | Auth: none, existing-session, storage-state, manual-login                                    |
-| `--format=<fmt>`         | `-f`  | Output: png, jpeg, webp, pdf                                                                 |
-| `--output=<path>`        | `-o`  | Custom output folder                                                                         |
-| `--output-style=<style>` |       | Folder style: default, timestamped, custom, overwrite                                        |
-| `--config=<path>`        |       | Path to screenshot.config.json                                                               |
+| Flag                     | Short | Description                                                                                            |
+| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |
+| `--url=<url>`            | `-u`  | URL or route to capture                                                                                |
+| `--base-url=<url>`       |       | Base URL for route resolution (default: http://localhost:4321)                                         |
+| `--type=<type>`          | `-t`  | Page type: invitation, landing, dashboard, admin, login, custom                                        |
+| `--mode=<mode>`          |       | Mode: audit (default), raw                                                                             |
+| `--profile=<name>`       | `-p`  | Viewport profile: invitation, site, full, single                                                       |
+| `--viewport=<names>`     |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop          |
+| `--set=<name>`           |       | Invitation set: essential, full-qa, reveal-only, full-page                                             |
+| `--general-set=<name>`   |       | Page set: basic, full-qa                                                                               |
+| `--reveal=<mode>`        |       | Reveal handling: auto, force-open, closed-only, open-only, skip                                        |
+| `--animation=<mode>`     |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead. |
+| `--sections=<mode>`      |       | Sections: none, auto, known, custom                                                                    |
+| `--auth=<method>`        |       | Auth: none, existing-session, storage-state, manual-login                                              |
+| `--format=<fmt>`         | `-f`  | Output: png, jpeg, webp, pdf                                                                           |
+| `--output=<path>`        | `-o`  | Custom output folder                                                                                   |
+| `--output-style=<style>` |       | Folder style: default, timestamped, custom, overwrite                                                  |
+| `--config=<path>`        |       | Path to screenshot.config.json                                                                         |
 
 ## Output Structure
 
@@ -269,15 +269,24 @@ optional elements produce warnings, not errors.
 
 ```html
 <section data-screenshot="landing-hero">
-<section data-screenshot="landing-event-types">
-<section data-screenshot="landing-includes">
-<section data-screenshot="landing-essence">
-<section data-screenshot="landing-testimonials">
-<section data-screenshot="landing-process">
-<section data-screenshot="landing-pricing">
-<section data-screenshot="landing-faq">
-<section data-screenshot="landing-contact">
-<footer data-screenshot="landing-footer">
+  <section data-screenshot="landing-event-types">
+    <section data-screenshot="landing-includes">
+      <section data-screenshot="landing-essence">
+        <section data-screenshot="landing-testimonials">
+          <section data-screenshot="landing-process">
+            <section data-screenshot="landing-pricing">
+              <section data-screenshot="landing-faq">
+                <section data-screenshot="landing-contact">
+                  <footer data-screenshot="landing-footer"></footer>
+                </section>
+              </section>
+            </section>
+          </section>
+        </section>
+      </section>
+    </section>
+  </section>
+</section>
 ```
 
 ## Requirements

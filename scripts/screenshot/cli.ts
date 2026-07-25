@@ -6,7 +6,7 @@
 // Usage:
 //   pnpm screenshot                              # Interactive mode
 //   pnpm screenshot:invite --url=...             # Direct invitation mode
-//   pnpm screenshot:page --url=...               # Direct general page mode
+//   pnpm screenshot --url=...                    # Direct general page mode
 //
 // =============================================================================
 
@@ -129,7 +129,7 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 		console.error(
 			'    pnpm screenshot:invite --url=http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
 		);
-		console.error('    pnpm screenshot:page --url=http://localhost:4321/dashboard');
+		console.error('    pnpm screenshot --url=http://localhost:4321/dashboard');
 		process.exit(1);
 	}
 
@@ -226,20 +226,28 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 
 	for (const page of pages) {
 		const baseUrl = config.baseUrl ?? options.baseUrl ?? DEFAULT_BASE_URL;
-		const profile = page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
+		const profile =
+			page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
 		const viewports = resolveViewports(profile, page.viewports);
 		const route = page.route;
-		const outputFolderStyle = options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default';
+		const outputFolderStyle =
+			options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default';
 		const outputFolder =
 			options.output ??
-			(config.outputDir ? path.join(config.outputDir, page.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) : undefined);
+			(config.outputDir
+				? path.join(
+						config.outputDir,
+						page.name
+							.toLowerCase()
+							.replace(/[^a-z0-9]+/g, '-')
+							.replace(/^-|-$/g, ''),
+					)
+				: undefined);
 
-		const target = page.target ?? (
-			(page.invitationSet === 'full-page') ? 'full-page' : 'critical-qa'
-		);
-		const includeLayout = page.includeLayout ?? (
-			(target === 'critical-qa' && page.pageType !== 'invitation')
-		);
+		const target =
+			page.target ?? (page.invitationSet === 'full-page' ? 'full-page' : 'critical-qa');
+		const includeLayout =
+			page.includeLayout ?? (target === 'critical-qa' && page.pageType !== 'invitation');
 
 		const job: ScreenshotJob = {
 			pageType: page.pageType,
