@@ -1,4 +1,8 @@
-import { resolveViewports, buildCurrentRunManifest, validateBlankBottom } from '../../../scripts/screenshot/utils';
+import {
+	resolveViewports,
+	buildCurrentRunManifest,
+	validateBlankBottom,
+} from '../../../scripts/screenshot/utils';
 import { resolveCapturePlan } from '../../../scripts/screenshot/capture';
 import type { ScreenshotJob } from '../../../scripts/screenshot/types';
 
@@ -61,7 +65,10 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 	};
 
 	it('plans all 5 reveal steps for standard envelope invitations (Abril Michelle / Boda Jewelry Box)', async () => {
-		const tasks = await resolveCapturePlan(mockPageWithEnvelope as unknown as import('playwright').Page, baseJob);
+		const tasks = await resolveCapturePlan(
+			mockPageWithEnvelope as unknown as import('playwright').Page,
+			baseJob,
+		);
 		expect(tasks.length).toBe(5);
 
 		expect(tasks[0].id).toBe('01-initial-closed-viewport');
@@ -75,7 +82,10 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 	});
 
 	it('plans only valid cover and full-open tasks for editorial cover variants (skipping letter 03/04)', async () => {
-		const tasks = await resolveCapturePlan(mockPageWithEditorialCover as unknown as import('playwright').Page, baseJob);
+		const tasks = await resolveCapturePlan(
+			mockPageWithEditorialCover as unknown as import('playwright').Page,
+			baseJob,
+		);
 		expect(tasks.length).toBe(3);
 
 		expect(tasks[0].id).toBe('01-initial-closed-viewport');
@@ -124,12 +134,41 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 		expect(manifest[0].expected).toBe(5);
 	});
 
+	let tempDir: string;
+	let tempPngPath: string;
+
+	beforeAll(async () => {
+		const sharp = (await import('sharp')).default;
+		const fs = await import('node:fs/promises');
+		const os = await import('node:os');
+		const path = await import('node:path');
+
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'screenshot-seq-test-'));
+		tempPngPath = path.join(tempDir, 'test-viewport.png');
+
+		await sharp({
+			create: {
+				width: 780,
+				height: 1688,
+				channels: 4,
+				background: { r: 255, g: 255, b: 255, alpha: 1 },
+			},
+		})
+			.png()
+			.toFile(tempPngPath);
+	});
+
+	afterAll(async () => {
+		const fs = await import('node:fs/promises');
+		if (tempDir) {
+			await fs.rm(tempDir, { recursive: true, force: true });
+		}
+	});
+
 	it('detects FULL_PAGE_DIMENSION_MISMATCH when full-page PNG is viewport-sized on multi-viewport page', async () => {
 		const { verifyPhysicalPng } = await import('../../../scripts/screenshot/utils');
-		// Mock physical PNG check where actual height = viewport height (1688px) but content height = 10000px
-		const testPath = 'screenshots/xv-abril-michelle-becerra-rea/mobile-standard/01-initial-closed-viewport.png';
 		const check = await verifyPhysicalPng({
-			filePath: testPath,
+			filePath: tempPngPath,
 			expectedCssWidth: 390,
 			expectedCssHeight: 10000,
 			viewportCssHeight: 844,
@@ -142,9 +181,8 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 
 	it('detects SECTION_OUTSIDE_FULL_PAGE when section bounds exceed image height', async () => {
 		const { verifySectionCropInclusion } = await import('../../../scripts/screenshot/utils');
-		const testPath = 'screenshots/xv-abril-michelle-becerra-rea/mobile-standard/01-initial-closed-viewport.png';
 		const check = await verifySectionCropInclusion({
-			fullPagePath: testPath,
+			fullPagePath: tempPngPath,
 			sectionId: 'thankYou',
 			sectionBounds: { y: 2500, height: 500 },
 			topY: 0,
