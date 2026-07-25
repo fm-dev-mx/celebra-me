@@ -1,10 +1,10 @@
 ---
 title: Editorial Magazine Theme Rescue and Visual Leakage Fixes
-status: active
+status: implemented
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-07-25
 related_skills:
   - theme-architecture
   - frontend-design
@@ -47,8 +47,8 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Incomplete/Generic Feel**: Animation transitions can cause layout shifts on some mobile
   viewports.
 - **Likely Source Files**:
-  - [EditorialCoverReveal.astro](file:///d:/code/celebra-me/src/components/invitation/EditorialCoverReveal.astro)
-  - [\_editorial-cover.scss](file:///d:/code/celebra-me/src/styles/invitation/_editorial-cover.scss)
+  - [EditorialCoverReveal.astro](../../../src/components/invitation/EditorialCoverReveal.astro)
+  - [\_editorial-cover.scss](../../../src/styles/invitation/_editorial-cover.scss)
 - **Proposed Correction**: Clean up entrance and exit animations to prevent any layout shifts.
   Ensure the CTA remains accessible and the no-JS fallback functions.
 - **Risk Level**: Low
@@ -60,9 +60,9 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Incomplete/Generic Feel**: The brand logo and mobile action drawer fall back to standard web
   layouts because header logic only checks `variant === 'editorial'`.
 - **Likely Source Files**:
-  - [EventHeader.astro](file:///d:/code/celebra-me/src/components/invitation/EventHeader.astro)
-  - [HeaderBase.astro](file:///d:/code/celebra-me/src/components/common/HeaderBase.astro)
-  - [\_editorial-magazine.scss (header)](file:///d:/code/celebra-me/src/styles/themes/sections/header/_editorial-magazine.scss)
+  - [EventHeader.astro](../../../src/components/invitation/EventHeader.astro)
+  - [HeaderBase.astro](../../../src/components/common/HeaderBase.astro)
+  - [\_editorial-magazine.scss (header)](../../../src/styles/themes/sections/header/_editorial-magazine.scss)
 - **Proposed Correction**: Ensure that checks for `variant === 'editorial'` are expanded to also
   cover `variant === 'editorial-magazine'`.
 - **Risk Level**: Low
@@ -74,7 +74,7 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Incomplete/Generic Feel**: Mobile layout vertically stacks but has padding and spacing
   inconsistencies.
 - **Likely Source Files**:
-  - [\_editorial-magazine.scss (hero)](file:///d:/code/celebra-me/src/styles/themes/sections/hero/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (hero)](../../../src/styles/themes/sections/hero/_editorial-magazine.scss)
 - **Proposed Correction**: Refine mobile layout padding to match the strict editorial margins.
 - **Risk Level**: Low
 - **Expected Visual Impact**: Medium
@@ -84,8 +84,8 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Current Strengths**: Barcode decoration and serial number look print-inspired.
 - **Incomplete/Generic Feel**: Renders as a default card with rounded corners and drop shadows.
 - **Likely Source Files**:
-  - [PersonalizedAccess.astro](file:///d:/code/celebra-me/src/components/invitation/PersonalizedAccess.astro)
-  - [\_editorial-magazine.scss (personalized-access)](file:///d:/code/celebra-me/src/styles/themes/sections/personalized-access/_editorial-magazine.scss)
+  - [PersonalizedAccess.astro](../../../src/components/invitation/PersonalizedAccess.astro)
+  - [\_editorial-magazine.scss (personalized-access)](../../../src/styles/themes/sections/personalized-access/_editorial-magazine.scss)
 - **Proposed Correction**: Redesign as a **VIP VIP Credential / Archival Access Card** rather than a
   perforated coupon. Use a sharp monochrome layout, thin hairlines, and serial metadata. Remove all
   shadows and border-radius.
@@ -97,7 +97,7 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Current Strengths**: Asymmetric credits column layout on desktop.
 - **Incomplete/Generic Feel**: Outer cards feel default.
 - **Likely Source Files**:
-  - [\_editorial-magazine.scss (family)](file:///d:/code/celebra-me/src/styles/themes/sections/family/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (family)](../../../src/styles/themes/sections/family/_editorial-magazine.scss)
 - **Proposed Correction**: Lighten the border rules to thin hairlines
   (`rgb(var(--editorial-magazine-ink-rgb) / 10%)`).
 - **Risk Level**: Low
@@ -109,7 +109,7 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Incomplete/Generic Feel**: Captions are permanently visible, but images have variable
   desaturation.
 - **Likely Source Files**:
-  - [\_editorial-magazine.scss (gallery)](file:///d:/code/celebra-me/src/styles/themes/sections/gallery/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (gallery)](../../../src/styles/themes/sections/gallery/_editorial-magazine.scss)
 - **Proposed Correction**: Ensure captions use high-contrast monospace lettering and apply
   desaturation filters carefully per image type.
 - **Risk Level**: Low
@@ -122,9 +122,9 @@ experience, breaking the print-magazine illusion. Specifically:
   etc. which do not exist in `VenueCard.astro`. Also, indications styling targets
   `.event-location__indication` instead of `.event-location__indication-item`.
 - **Likely Source Files**:
-  - [VenueCard.astro](file:///d:/code/celebra-me/src/components/invitation/components/VenueCard.astro)
-  - [EventLocation.astro](file:///d:/code/celebra-me/src/components/invitation/EventLocation.astro)
-  - [\_editorial-magazine.scss (location)](file:///d:/code/celebra-me/src/styles/themes/sections/location/_editorial-magazine.scss)
+  - [VenueCard.astro](../../../src/components/invitation/components/VenueCard.astro)
+  - [EventLocation.astro](../../../src/components/invitation/EventLocation.astro)
+  - [\_editorial-magazine.scss (location)](../../../src/styles/themes/sections/location/_editorial-magazine.scss)
 - **Proposed Correction**:
   1. Map location text selectors in `_editorial-magazine.scss` to target
      `.event-location__card-content-place`, `.event-location__card-content-date`,
@@ -141,8 +141,8 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Incomplete/Generic Feel**: Submit buttons, disabled/loading states, success/error views, and
   radio/options fall back to standard web layouts.
 - **Likely Source Files**:
-  - [RSVP.tsx](file:///d:/code/celebra-me/src/components/invitation/RSVP.tsx)
-  - [\_editorial-magazine.scss (rsvp)](file:///d:/code/celebra-me/src/styles/themes/sections/rsvp/_editorial-magazine.scss)
+  - [RSVP.tsx](../../../src/components/invitation/RSVP.tsx)
+  - [\_editorial-magazine.scss (rsvp)](../../../src/styles/themes/sections/rsvp/_editorial-magazine.scss)
 - **Proposed Correction**: Redesign RSVP input options as flat monochrome tiles. Ensure all states
   (disabled, loading, success/error) follow the strict black-and-white editorial system.
 - **Risk Level**: Low
@@ -153,7 +153,7 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Current Strengths**: Card shadows are removed.
 - **Incomplete/Generic Feel**: Standard boxy grid borders.
 - **Likely Source Files**:
-  - [\_editorial-magazine.scss (gifts)](file:///d:/code/celebra-me/src/styles/themes/sections/gifts/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (gifts)](../../../src/styles/themes/sections/gifts/_editorial-magazine.scss)
 - **Proposed Correction**: Simplify border rules to look like a clean catalog guide.
 - **Risk Level**: Low
 - **Expected Visual Impact**: Medium
@@ -163,7 +163,7 @@ experience, breaking the print-magazine illusion. Specifically:
 - **Current Strengths**: Side-by-side grid split is active.
 - **Incomplete/Generic Feel**: Small signature font.
 - **Likely Source Files**:
-  - [\_editorial-magazine.scss (thank-you)](file:///d:/code/celebra-me/src/styles/themes/sections/thank-you/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (thank-you)](../../../src/styles/themes/sections/thank-you/_editorial-magazine.scss)
 - **Proposed Correction**: Enlarge the calligraphy signature (`.closing-name`) to make a strong
   back-cover statement.
 - **Risk Level**: Low
@@ -178,8 +178,8 @@ experience, breaking the print-magazine illusion. Specifically:
   2. `_editorial.scss` only styles `.invitation-footer[data-variant='editorial']`, leaving
      `editorial-magazine` to fall back to default rounded/colored buttons.
 - **Likely Source Files**:
-  - [Footer.astro](file:///d:/code/celebra-me/src/components/invitation/Footer.astro)
-  - [\_editorial.scss (footer)](file:///d:/code/celebra-me/src/styles/themes/sections/footer/_editorial.scss)
+  - [Footer.astro](../../../src/components/invitation/Footer.astro)
+  - [\_editorial.scss (footer)](../../../src/styles/themes/sections/footer/_editorial.scss)
 - **Proposed Correction**:
   1. Map `editorial-magazine` to `editorial` in `Footer.astro` logic.
   2. Extend selectors in `_editorial.scss` to target both `[data-variant='editorial']` and

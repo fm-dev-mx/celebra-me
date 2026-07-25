@@ -1,9 +1,9 @@
 ---
 title: Valentina Hernández XV Top Premium Hardening
-status: active
+status: superseded
 type: implementation
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-07-25
 autonomy: 'Level 2 — Local code changes allowed, no staging/commit/deploy'
 related_skills:
   - frontend-design
@@ -17,6 +17,8 @@ related_rules:
 related_docs:
   - docs/core/architecture.md
   - docs/domains/theme/architecture.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández XV Top Premium Hardening
@@ -39,7 +41,7 @@ running production SQL, changing schemas, or refactoring the invitation architec
   `published_invitation_content` first for real non-demo invitations, then blocks non-demo static
   fallback.
 - Canonical editable content payload discovered by repo search and SQL comments:
-  `.agent/plans/active/xv-valentina-hernandez-db-payload.json`.
+  `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`.
 - Embedded production patch payload to synchronize after canonical edits:
   `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`.
 - Event-scoped SCSS override: `src/styles/themes/sections/_xv-valentina-hernandez.scss`.
@@ -106,7 +108,7 @@ running production SQL, changing schemas, or refactoring the invitation architec
    - Verify the test fails before payload edits because current content contains placeholders.
 
 2. **Canonical content cleanup**
-   - Edit `.agent/plans/active/xv-valentina-hernandez-db-payload.json`.
+   - Edit `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`.
    - Remove incomplete family names instead of displaying bracketed confirmations.
    - Treat the unknown ceremony as polished required context or hide the venue if it cannot be
      completed.

@@ -1,71 +1,52 @@
 # Agent Workflow Rules — Celebra-me
 
-**Status:** Active **Last Updated:** 2026-06-28
+**Status:** Active **Last Updated:** 2026-07-25
 
-This document defines the operational Git workflow for AI agents in this repository.
+This document owns the operating procedure for agents. Human branch, commit, release, and promotion
+policy lives in [`docs/core/git-governance.md`](../../docs/core/git-governance.md). Git
+authorization and worktree preservation live in [`git-safety.md`](git-safety.md).
 
----
+## Operating Procedure
 
-## Core Workflow
+1. **Load governance:** read `AGENTS.md`, `.agent/index.md`, `gatekeeper.md`, and `git-safety.md`;
+   then load only the relevant domain rule, workflow, skill, and canonical doc.
+2. **Inspect state:** identify the current branch and distinguish staged, unstaged, and untracked
+   work. Treat all pre-existing worktree and index state as user-owned.
+3. **Set scope:** state the requested outcome, allowed files, non-goals, safety boundaries, and
+   verification path. Use conversation-scoped planning unless the tracked-plan threshold is met.
+4. **Implement narrowly:** edit only authorized files. Do not opportunistically clean unrelated
+   changes or alter the index.
+5. **Verify proportionally:** use the validation tier owned by `gatekeeper.md`; run narrower domain
+   checks when they provide stronger evidence.
+6. **Check preservation:** compare HEAD and staged state with the session baseline. Unexpected drift
+   is a blocker; report it instead of repairing it automatically.
+7. **Report:** list files changed, validations and skips, remaining risks, worktree status, and
+   whether any Git write or production action occurred.
 
-The repository uses a **linear two-branch model**:
+## Agent-Specific Git Rules
 
-- **`develop`** is the active trunk for daily development. Work here by default.
-- **`main`** is the protected production branch. Never commit or push directly to `main` without
-  explicit override.
-- **Annotated tags** (`vX.Y.Z`) mark versions and checkpoints, not branches.
+- Work on the current branch. Do not create, switch, merge, rebase, delete, or clean branches unless
+  the user explicitly requests that exact operation.
+- Do not stage, commit, stash, discard, or rewrite worktree/history state without current-task
+  authorization under `git-safety.md`.
+- Never force-push or rewrite shared history autonomously.
+- Branch cleanup, release tagging, production promotion, and rollback are separate tasks requiring
+  explicit authorization.
+- A documented command, environment override, rollback snippet, or plan does not grant permission to
+  execute it.
 
----
+## Planning Boundary
 
-## Agent Rules
+Use conversation-scoped planning by default. Create or update a repository-tracked plan only when
+the work is multi-session, high risk, or explicitly requested by the repository owner. The tracked
+plan contract lives in `.agent/plans/README.md`.
 
-### Working Branch
+## Ownership Boundaries
 
-- Work on the current branch, normally `develop`.
-- Do not create feature, fix, chore, deps, release, checkpoint, backup, or any other branches
-  automatically. Branches are an exception for complex or explicitly requested work, not the
-  default.
-- If a short-lived branch is genuinely needed, clean it up immediately after merging.
-
-### Integration Method
-
-- Do not use `git merge` as the default integration method.
-- Use `git pull --rebase` for synchronization with upstream.
-- Prefer `git rebase` for integrating local changes onto an updated `develop`.
-- Prefer **fast-forward-only** promotion (`git merge --ff-only`) from `develop` to `main`.
-
-### Safety Rules
-
-- Never force-push (`git push --force` or `git push --force-with-lease`) without explicit user
-  approval.
-- Never rewrite `main` or shared history without explicit approval.
-- Never delete local or remote branches without:
-  1. A complete inventory of what exists.
-  2. An archive-tag strategy to preserve branch tips.
-  3. Explicit user approval for each batch.
-- Branch cleanup is always a separate, explicitly approved operation — never bundled with
-  implementation work.
-
-### Versioning
-
-- Use annotated tags for versions and checkpoints: `git tag -a vX.Y.Z -m "..."`
-- Tag names follow semantic versioning: `v<major>.<minor>.<patch>` or
-  `v<major>.<minor>.<patch>-beta.<N>`
-- Do not create `release/*` or `chore/release-into-main-*` branches for releases.
-- Update `CHANGELOG.md` before tagging a release.
-
-### Overrides
-
-- Commit to `main` override: `SKIP_BRANCH_PROTECTION=true git commit`
-- Push to `main` override: `ALLOW_MAIN_PUSH=true git push origin main`
-- These overrides require explicit user direction — never use them autonomously.
-
----
-
-## Relationship to Other Rules
-
-| Rule                          | Relationship                                                                                                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.agent/rules/git-safety.md`  | Git write operations still require explicit user authorization. Workflow rules define _which_ operations are correct; git-safety defines _when_ they are allowed. |
-| `AGENTS.md`                   | Entry point — workflow rules flesh out the "Work directly on `develop` by default" policy.                                                                        |
-| `docs/core/git-governance.md` | Human-facing policy document. These rules are the agent-facing operational version.                                                                               |
+| Owner                         | Responsibility                                      |
+| ----------------------------- | --------------------------------------------------- |
+| `AGENTS.md`                   | entry point, authority order, and non-negotiables   |
+| `.agent/rules/git-safety.md`  | Git authorization and baseline workflow             |
+| `.agent/rules/gatekeeper.md`  | review/remediation rules and validation tiers       |
+| `docs/core/git-governance.md` | human branch, commit, release, and promotion policy |
+| `.agent/plans/README.md`      | durable tracked-plan format and lifecycle           |

@@ -4,7 +4,7 @@ Updated: 2026-07-01
 
 ## Baseline
 
-Source triage: `.agent/plans/active/demo-counterpart-architecture.spec.md`.
+Source triage: `.agent/plans/archived/demo-counterpart-architecture.spec.md`.
 
 Initial checks:
 

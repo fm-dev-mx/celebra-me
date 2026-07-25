@@ -26,6 +26,14 @@ related_docs:
 > service/repository layers, [`supabase-postgres`](../supabase-postgres/SKILL.md) for query
 > performance.
 
+## Current Library Docs (Context7)
+
+When `@supabase/supabase-js`, Auth, RLS helpers, Storage, or CLI behavior is uncertain, consult
+current library docs via Context7 (or the runtime's equivalent docs MCP) using the versions pinned
+in `package.json`. Prefer also the repo `supabase` / `supabase-postgres` skills and
+`docs/database-workflow.md`. Context7 never overrides Celebra-me migrations, RLS contracts, or
+canonical docs.
+
 ## RLS and Auth
 
 ### Core Rules

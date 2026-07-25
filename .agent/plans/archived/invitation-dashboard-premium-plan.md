@@ -480,7 +480,7 @@ pnpm build
 
 - `.agent/plans/README.md`
 - `.agent/plans/archived/invitation-dashboard-premium-plan.md`
-- `.agent/plans/active/editor-hydration-fix.md`
+- `.agent/plans/archived/editor-hydration-fix.md`
 - `.agent/plans/active/section-architecture-refactor-plan.md`
 
 ### Editor UI and Styles

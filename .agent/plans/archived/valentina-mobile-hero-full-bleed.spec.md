@@ -1,19 +1,21 @@
 ---
 title: Valentina Mobile Hero Full Bleed Spec
-status: active
+status: superseded
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 related_skills:
   - frontend-design
   - theme-architecture
   - accessibility
 related_plans:
-  - .agent/plans/active/valentina-mobile-hero-gallery-upgrade.spec.md
+  - .agent/plans/archived/valentina-mobile-hero-gallery-upgrade.spec.md
 related_rules:
   - .agent/rules/gatekeeper.md
   - .agent/rules/git-safety.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Mobile Hero Full Bleed Spec
@@ -57,11 +59,11 @@ from a framed portrait card layout to a full-bleed premium fashion magazine cove
 
 ## 3. Files Inspected & Modified
 
-- [xv-valentina-hernandez-db-payload.json](file:///d:/code/celebra-me/.agent/plans/active/xv-valentina-hernandez-db-payload.json)
+- [Valentina SQL payload](../../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
   (Inspected & Modified)
-- [20260626_valentina_hernandez_xv.sql](file:///d:/code/celebra-me/scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
+- [20260626_valentina_hernandez_xv.sql](../../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
   (Inspected & Modified)
-- [\_xv-valentina-hernandez.scss](file:///d:/code/celebra-me/src/styles/themes/sections/_xv-valentina-hernandez.scss)
+- [\_xv-valentina-hernandez.scss](../../../src/styles/themes/sections/_xv-valentina-hernandez.scss)
   (To be modified)
 
 ## 4. Acceptance Criteria

@@ -211,10 +211,10 @@ app. Production was not deployed.
 
 ### Known deferred work
 
-| Item                      | Reason                                                                                                                                                                                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Section splitting**     | **All listed section theme variants implemented on branch.** Base CSS reduced from ~545 KB before gallery to **184.6 KB** after full section split. Production/preview deployment still requires explicit approval. See `.agent/plans/active/public-invitation-section-architecture.md`. |
-| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                  |
+| Item                      | Reason                                                                                                                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Section splitting**     | **All listed section theme variants implemented on branch.** Base CSS reduced from ~545 KB before gallery to **184.6 KB** after full section split. Production/preview deployment still requires explicit approval. See `.agent/plans/archived/public-invitation-section-architecture.md`. |
+| **Phase 1 cache headers** | **Unchanged.** Logic remains identical.                                                                                                                                                                                                                                                    |
 
 ## Risk mitigation
 

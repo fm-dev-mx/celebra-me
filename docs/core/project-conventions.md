@@ -174,10 +174,26 @@ Not all situations fit the conventions. If a change requires deviating:
 - This directory is ignored by git to keep the repository clean.
 - When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
 
-## 12) Adding Real or Client Invitations
+## 12) Platform Version Policy
 
-Real/client invitations are DB-published content. Use
-`docs/domains/content/event-governance.md` as the source of truth for real invitation governance.
+`package.json` is the source of truth for installed versions. As of 2026-07-25:
+
+| Package    | Repo baseline                  | Upgrade stance                                             |
+| ---------- | ------------------------------ | ---------------------------------------------------------- |
+| Astro      | 6.x (e.g. `6.4.8`)             | Stay on Astro 6 until a dedicated Astro 7 migration window |
+| TypeScript | 5.9.x                          | Stay on TS 5.9 until tooling/Astro are ready for TS 7      |
+| React      | 19.x                           | Patch updates OK within 19.x                               |
+| Other deps | pinned/caret in `package.json` | Patch/minor when needed for bugs or security               |
+
+Do **not** mix major framework upgrades with documentation/governance or invitation production work.
+An Astro 7 or TypeScript 7 upgrade is its own project: changelog entry, smoke `pnpm build`, focused
+E2E, and adapter/content-collection verification. Prefer Context7 (or equivalent) against the pinned
+versions when API details are uncertain.
+
+## 13) Adding Real or Client Invitations
+
+Real/client invitations are DB-published content. Use `docs/domains/content/event-governance.md` as
+the source of truth for real invitation governance.
 
 When a real invitation uses local routed media:
 

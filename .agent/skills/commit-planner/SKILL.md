@@ -15,6 +15,7 @@ preconditions:
 related_skills: []
 related_docs:
   - docs/core/git-governance.md
+  - docs/core/release-process.md
 ---
 
 # Commit Planner
@@ -29,8 +30,8 @@ scopes, and generic subjects.
 ## Inspect First
 
 1. Re-read [`docs/core/git-governance.md`](../../../docs/core/git-governance.md) and check
-   [`commitlint.config.cjs`](../../../commitlint.config.cjs) for current enforced rules
-   (types, scopes, header-max-length, forbidden vocabulary).
+   [`commitlint.config.cjs`](../../../commitlint.config.cjs) for current enforced rules (types,
+   scopes, header-max-length, forbidden vocabulary).
 2. Run `git status --short`.
 3. Run `git diff --stat`, `git diff`, and `git diff --cached`.
 4. Distinguish unstaged, staged, and untracked work before proposing commit boundaries.
@@ -84,7 +85,7 @@ Treat these as commit-hygiene red flags:
 - "while I was here" edits,
 - vague or process-oriented commit language,
 - mixing unrelated concerns in a single file (e.g. data attributes + copy refresh + export changes
-  + test rewrite + comment fixes + line endings) — these must be split per hunk with `git add -p`,
+  - test rewrite + comment fixes + line endings) — these must be split per hunk with `git add -p`,
 - bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
 Treat audit-only warnings as review prompts, not hard gates: `3+` files with no body, non-bulleted
@@ -100,15 +101,14 @@ Use `type(scope): specific subject`.
 - Require a concrete `scope` in `kebab-case`.
 - Make the subject describe the result, not the process.
 - Name the most relevant changed thing concretely.
-- Keep the full header (type + scope + subject) under the project's `header-max-length` limit.
-  Check `commitlint.config.cjs` for the current value (as of writing: **130** characters). If
-  the subject exceeds this, trim it or choose a shorter scope.
+- Keep the full header (type + scope + subject) under the project's `header-max-length` limit. Check
+  `commitlint.config.cjs` for the current value (as of writing: **130** characters). If the subject
+  exceeds this, trim it or choose a shorter scope.
 - Avoid vague language such as `misc`, `wip`, `fix stuff`, `quick fix`, `tweaks`, `improvements`,
   `changes`, `stuff`, or `things`.
-- Avoid process language such as `apply changes`, `record`, or `process`.
-  ✅ The commitlint regex was patched to allow `process.` (as in `process.env`), so
-  Node.js runtime references no longer trigger false positives. Still avoid bare
-  `process` as a verb (e.g. `process the data`).
+- Avoid process language such as `apply changes`, `record`, or `process`. ✅ The commitlint regex
+  was patched to allow `process.` (as in `process.env`), so Node.js runtime references no longer
+  trigger false positives. Still avoid bare `process` as a verb (e.g. `process the data`).
 
 ## Apply the Body Policy
 
@@ -132,9 +132,20 @@ Use `type(scope): specific subject`.
   ```
 
   The commitlint rule `body-max-line-length: [2, 'always', 140]` is a **hard error** (severity 2).
-  It is enforced at push time even in audit mode. Use `wc -c` or your editor's column ruler to
-  check before committing. Each `-m` argument passed to `git commit` is a separate paragraph;
-  lines within it must individually stay under the limit.
+  It is enforced at push time even in audit mode. Use `wc -c` or your editor's column ruler to check
+  before committing. Each `-m` argument passed to `git commit` is a separate paragraph; lines within
+  it must individually stay under the limit.
+
+## CHANGELOG Awareness (milestones only)
+
+Treat [`docs/core/release-process.md`](../../../docs/core/release-process.md) as the layered
+changelog policy. When planning commits for a **product-visible milestone** or release checkpoint:
+
+- Call out whether `CHANGELOG.md` `[Unreleased]` should gain a bullet in the same work unit.
+- Keep per-client invitation detail in `docs/invitations/<slug>.md`; do not dump ops notes into the
+  system changelog.
+- Keep schema history in `supabase/migrations/`; summarize product impact only in the changelog.
+- Do **not** require a changelog update for every atomic commit.
 
 ## Structure the Response
 
@@ -142,29 +153,29 @@ When helping with commit planning, answer in this order:
 
 1. `Atomicity verdict`: atomic, should split, or ambiguous.
 2. `Proposed commit plan`: one entry per commit with included paths or hunk-level boundaries.
-3. `Keep out of this commit` (per commit entry): list excluded files, hunks, or patterns for
-   each commit in the plan, with a one-sentence rationale per exclusion. If a proposed commit
-   has zero exclusions, state "No exclusions for this commit" only after confirming the entire
-   diff was partitioned across the plan's commits. Never answer with a bare "Nothing" — every
-   commit boundary implies something was left behind; name it.
+3. `Keep out of this commit` (per commit entry): list excluded files, hunks, or patterns for each
+   commit in the plan, with a one-sentence rationale per exclusion. If a proposed commit has zero
+   exclusions, state "No exclusions for this commit" only after confirming the entire diff was
+   partitioned across the plan's commits. Never answer with a bare "Nothing" — every commit boundary
+   implies something was left behind; name it.
 4. `Suggested messages`: header, optional body, and a brief rationale for the chosen type, scope,
    and subject.
-5. `Staging guidance`: suggest exact file paths (e.g. `git add src/lib/auth.ts src/pages/login.tsx`),
-   never directory-level globs like `git add src/data/ tests/unit/`. If staging spans multiple files,
-   list each path explicitly. Where hunks within a single file belong to different commits, suggest
+5. `Staging guidance`: suggest exact file paths (e.g.
+   `git add src/lib/auth.ts src/pages/login.tsx`), never directory-level globs like
+   `git add src/data/ tests/unit/`. If staging spans multiple files, list each path explicitly.
+   Where hunks within a single file belong to different commits, suggest
    `git add -p path/to/file.ts` with hunk-by-hunk guidance. Do not run `git commit` unless the user
    explicitly asks for commit creation.
 
-   When proposing staged sequencing after `git reset HEAD`, show a complete stage → inspect →
-   commit → verify boundary for each commit. Do not list several `git add` groups in a row without
-   the intervening commit commands or explicit user-confirmation checkpoints. Prefer exact file
-   paths over broad directory adds. Use `git add -p` when a file contains hunks for more than one
-   commit.
+   When proposing staged sequencing after `git reset HEAD`, show a complete stage → inspect → commit
+   → verify boundary for each commit. Do not list several `git add` groups in a row without the
+   intervening commit commands or explicit user-confirmation checkpoints. Prefer exact file paths
+   over broad directory adds. Use `git add -p` when a file contains hunks for more than one commit.
 
 ## Commit Execution (plan → commit)
 
-Execute multi-commit plans silently once the user approves the plan. Do NOT ask for
-confirmation between commits — the plan IS the approval.
+Execute multi-commit plans silently once the user approves the plan. Do NOT ask for confirmation
+between commits — the plan IS the approval.
 
 ### Preconditions
 
@@ -197,11 +208,11 @@ confirmation between commits — the plan IS the approval.
      -m "- path/other: other"
    ```
 
-   - Use `--no-verify` when the pre-commit hook has a known infrastructure failure
-     (e.g. pnpm path crash on git-bash). On healthy hook environments, omit it.
+   - Use `--no-verify` when the pre-commit hook has a known infrastructure failure (e.g. pnpm path
+     crash on git-bash). On healthy hook environments, omit it.
    - Do NOT ask the user to confirm each commit — the plan was already approved.
-   - Do NOT stop between commits unless a commit fails (build error, hook rejection,
-     merge conflict). In that case, report the failure and stop.
+   - Do NOT stop between commits unless a commit fails (build error, hook rejection, merge
+     conflict). In that case, report the failure and stop.
 
 3. **Use exact file paths** — never directory globs:
 
@@ -246,9 +257,9 @@ git reset --soft HEAD~1
 
 **Pre-checks (run these before suggesting any destructive command):**
 
-- Verify the wrong-branch commits have not been pushed: `git log --oneline origin/<branch>..<branch>`.
-  If this returns any output, the commits have already been pushed — **do not use `git reset --hard`**.
-  Use `git revert` instead.
+- Verify the wrong-branch commits have not been pushed:
+  `git log --oneline origin/<branch>..<branch>`. If this returns any output, the commits have
+  already been pushed — **do not use `git reset --hard`**. Use `git revert` instead.
 - Confirm the working tree is clean: `git status --short` must show nothing.
 - Confirm no unpushed commits on other branches would be orphaned.
 
@@ -320,29 +331,29 @@ Verify with `git diff --cached` before committing.
   (e.g. "exclude generated working files" instead of "exclude .agent/tmp").
 - **`git add -p` for shared files**: when a single file contains changes belonging to different
   commits, stage hunks separately with `git add -p` rather than staging the whole file.
-- **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to
-  `develop` and other branches pass through to commitlint + lint-staged normally. The override
-  variables `SKIP_BRANCH_PROTECTION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches
-  — never present them as a routine staging or planning option in the commit plan. Only mention
-  them when the user explicitly asks how to bypass protection or when documenting an already-approved
+- **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to `develop`
+  and other branches pass through to commitlint + lint-staged normally. The override variables
+  `SKIP_BRANCH_PROTECTION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches — never
+  present them as a routine staging or planning option in the commit plan. Only mention them when
+  the user explicitly asks how to bypass protection or when documenting an already-approved
   exception. Every use must be flagged with a caution: "This bypasses branch protection — confirm
   with the team before running."
 - **Stash-pop merge conflicts**: when stashing from one branch and popping onto another that
-  modified the same files, `git stash pop` reports merge conflicts (`UU` in `git status`).
-  Resolve with `git checkout --theirs <file>` (stash version) or `git checkout --ours <file>`
-  (branch version). Then `git add <file>` to mark resolved and `git stash drop` if preserved.
-  Verify with `git diff --cached` before committing.
-- **Stash across branches may advance develop**: the stash + branch switch + stash-pop cycle
-  can trigger husky rebase hooks that fast-forward `develop`. Always verify the current branch
-  after stash-pop with `git branch --show-current`. If `develop` was advanced accidentally, use
+  modified the same files, `git stash pop` reports merge conflicts (`UU` in `git status`). Resolve
+  with `git checkout --theirs <file>` (stash version) or `git checkout --ours <file>` (branch
+  version). Then `git add <file>` to mark resolved and `git stash drop` if preserved. Verify with
+  `git diff --cached` before committing.
+- **Stash across branches may advance develop**: the stash + branch switch + stash-pop cycle can
+  trigger husky rebase hooks that fast-forward `develop`. Always verify the current branch after
+  stash-pop with `git branch --show-current`. If `develop` was advanced accidentally, use
   `git reflog show develop` to find its prior position, then reset with
   `git checkout develop && git reset --hard <prior-commit>`.
 - **`body-max-line-length` (hard error with `--no-verify`)**: commitlint enforces
   `body-max-line-length: [2, 'always', 140]`. The `--no-verify` flag bypasses the commit-msg hook
   that normally catches this at commit time, so the error only surfaces during pre-push validation.
   Always pre-validate the message with `echo <message> | pnpm exec commitlint` when using
-  `--no-verify`. Split any body line that exceeds 140 characters into continuation lines (see
-  "Apply the Body Policy" above).
+  `--no-verify`. Split any body line that exceeds 140 characters into continuation lines (see "Apply
+  the Body Policy" above).
 - **`process.env` false positive in `no-process-language`**: the subject rule previously flagged
   `process` in `process.env` because the regex `\bprocess\b` matched any standalone occurrence. The
   regex was patched in `commitlint.config.cjs` to exclude `process.` with a negative lookahead
@@ -351,25 +362,27 @@ Verify with `git diff --cached` before committing.
 - **SCSS pre-commit hooks (stylelint)**: lint-staged runs stylelint on staged SCSS files. Common
   rejections and fixes:
 
-  * `no-invalid-position-at-import-rule` when adding CSS font imports to files with existing
-    `@use` rules. **Fix**: use Sass `@use` with explicit `as` namespaces instead of `@import`:
+  - `no-invalid-position-at-import-rule` when adding CSS font imports to files with existing `@use`
+    rules. **Fix**: use Sass `@use` with explicit `as` namespaces instead of `@import`:
+
     ```scss
-    @use "@fontsource-variable/cormorant-garamond/index.css" as cormorant-garamond;
-    @use "@fontsource/pinyon-script/400.css" as pinyon-script;
+    @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+    @use '@fontsource/pinyon-script/400.css' as pinyon-script;
     ```
-    The `as` namespace is required because `index.css` generates a colliding namespace and
-    numeric segments like `400.css` generate an invalid Sass namespace. **Test first** with
+
+    The `as` namespace is required because `index.css` generates a colliding namespace and numeric
+    segments like `400.css` generate an invalid Sass namespace. **Test first** with
     `pnpm build && pnpm lint` to catch these before the hook rejects.
 
-  * `scss/comment-no-empty` — empty `//` lines as visual separators.
-    **Fix**: remove empty comment lines or append text so every `//` line carries content.
+  - `scss/comment-no-empty` — empty `//` lines as visual separators. **Fix**: remove empty comment
+    lines or append text so every `//` line carries content.
 
-  * `no-duplicate-selectors` — adding new properties to an existing selector by writing a new
-    block instead of merging.
-    **Fix**: merge new properties into the existing block and remove the duplicate block.
+  - `no-duplicate-selectors` — adding new properties to an existing selector by writing a new block
+    instead of merging. **Fix**: merge new properties into the existing block and remove the
+    duplicate block.
 
-  * `max-nesting-depth` — exceeding the project limit (typically 3). Common pattern:
-    `&::placeholder`, `&:hover`, or `option` inside `input` inside a class (depth 4+).
-    **Fix**: extract to a sibling level-3 rule — e.g., `input::placeholder` instead of
-    `&::placeholder` nested inside `input`. For `&:hover`, extract to `.parent:hover`.
-    For `option`, extract to `.parent option`.
+  - `max-nesting-depth` — exceeding the project limit (typically 3). Common pattern:
+    `&::placeholder`, `&:hover`, or `option` inside `input` inside a class (depth 4+). **Fix**:
+    extract to a sibling level-3 rule — e.g., `input::placeholder` instead of `&::placeholder`
+    nested inside `input`. For `&:hover`, extract to `.parent:hover`. For `option`, extract to
+    `.parent option`.

@@ -1,8 +1,8 @@
 ---
 title: Multi-Section Consolidation Review
-status: active
+status: final
 created: unknown
-updated: 2026-05-31
+updated: 2026-07-25
 ---
 
 # Multi-Section Consolidation Review
@@ -671,7 +671,7 @@ theme-appropriate colors.
 - `src/styles/themes/sections/_index.scss` — Removed `@forward 'interlude'`
 - `tests/unit/theme-presets.test.ts` — Removed interlude section-file references from angelic and
   sacred section lists; added `'styles interludes through the base interlude contract'` test
-- `.agent/plans/multi-section-consolidation-review.md` — This note
+- `.agent/plans/archived/multi-section-consolidation-review.md` — This note
 
 **Files deleted:** `src/styles/themes/sections/interlude/` (7 files: `_index.scss`, `_base.scss`,
 `_angelic-presence.scss`, `_celestial-blue.scss`, `_editorial.scss`, `_premiere-floral.scss`,

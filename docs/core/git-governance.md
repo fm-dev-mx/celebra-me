@@ -1,20 +1,23 @@
 # Git Governance: Commit Policy
 
 **Status:** Active  
-**Last Updated:** 2026-06-28  
-**Change Note:** Transitioned to linear two-branch model with develop as active trunk and main as
-protected production branch. Added Production Promotion section with fast-forward flow.
+**Last Updated:** 2026-07-25 **Change Note:** Points release history readers to the layered
+CHANGELOG policy in `release-process.md`. Branch model remains develop trunk / main protected via
+fast-forward.
 
 ## Overview
 
-This document defines the commit policy and validation workflow for the repository.
+This document owns the human branch, commit, release, and production-promotion policy. Validation
+tiers are owned by [`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md); agent execution
+rules are owned by [`.agent/rules/workflow.md`](../../.agent/rules/workflow.md).
 
 The repository uses a **linear two-branch workflow** with annotated tags for releases:
 
 - `develop` is the active trunk for daily development. Direct commits are allowed.
 - `main` is the protected production branch, updated only via fast-forward from `develop`.
 - Annotated tags (`vX.Y.Z`) mark versions/checkpoints.
-- Release history is documented in `CHANGELOG.md`.
+- Release history is documented in `CHANGELOG.md`. Layered changelog policy (system vs invitation vs
+  database) is owned by [`release-process.md`](release-process.md).
 
 The repository relies on conventional commits, hook-based branch protection, local validation, and
 CI push/PR validation. Planning records under `.agent/plans/` remain useful for human coordination,
@@ -155,14 +158,16 @@ judgment.
 
 | Owner                                     | Responsibility                                                      |
 | ----------------------------------------- | ------------------------------------------------------------------- |
-| `.agent/plans/README.md`                  | Planning index and contract for all implementation phases           |
+| `.agent/plans/README.md`                  | Contract for durable repository-tracked plans                       |
+| `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                       |
+| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                 |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                         |
 | `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges |
 | `.husky/pre-commit`                       | Branch protection and staged-file checks                            |
 | `.husky/pre-push`                         | Audit-only commit-range validation before push                      |
 | `.github/workflows/commit-validation.yml` | Pull request commit validation and docs link checks                 |
 
-## Active Validation Sequence
+## Active Hooks and CI Sequence
 
 1. `pre-commit` blocks direct commits to `main` unless explicitly bypassed and runs
    `pnpm lint-staged` on all branches. Commits to `develop` and other branches are allowed.
@@ -192,7 +197,7 @@ When a release is ready:
 # 1. Ensure develop is up to date and validated
 git checkout develop
 git pull --rebase
-pnpm run ci           # or narrower: build, lint, test
+pnpm run ci
 
 # 2. Fast-forward main to match develop
 git checkout main

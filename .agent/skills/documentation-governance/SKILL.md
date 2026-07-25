@@ -29,7 +29,7 @@ Use this as a thin loader for the active documentation integrity contract.
    - `docs/domains/` for bounded feature or domain docs
    - `docs/archive/` for historical or superseded material
    - `.agent/index.md` for active discovery links
-3. Use conversation-scoped planning by default. Only create a repo-tracked note under
-   `.agent/plans/` when the repository owner explicitly asks for one.
+3. Use conversation-scoped planning by default. Create a repo-tracked note under `.agent/plans/`
+   only for multi-session or high-risk work, or when the repository owner explicitly asks for one.
 4. Load [`backend-engineering`](../backend-engineering/SKILL.md) as well when the documentation task
    covers API, schema, or integration behavior.

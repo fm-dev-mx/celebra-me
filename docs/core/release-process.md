@@ -1,13 +1,44 @@
 # Release Process — Celebra-me
 
 **Status:** Active  
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-07-25
 
 ## Overview
 
-This document defines a lightweight release checkpoint process for the Celebra-me repository.
-Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no release branches,
-no automation runners, no semantic-release.
+This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
+repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
+release branches, no automation runners, no semantic-release.
+
+## Layered CHANGELOG Policy
+
+Keep one history owner per change type. Do not dump every commit, migration, or invitation edit into
+`CHANGELOG.md`.
+
+| Level             | Source of truth                                         | What belongs in `CHANGELOG.md`                                                        |
+| ----------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| System / product  | `CHANGELOG.md` + annotated tag + `package.json` version | Notable features, breaking changes, infra, dependency milestones                      |
+| Client invitation | `docs/invitations/<slug>.md` (+ SQL patches / manifest) | Only publishable milestones (new client invitation shipped, major theme/content ship) |
+| Database schema   | `supabase/migrations/` (+ manual SQL manifest rules)    | Product/ops impact summary only — never a full migration inventory                    |
+| Agents / docs     | Usually omit                                            | Only when a human-facing operational contract changes                                 |
+
+### Continuous discipline (`[Unreleased]`)
+
+- Add a bullet under `CHANGELOG.md` → `[Unreleased]` when a **product-visible** or
+  **operator-visible** change lands and is intended for the next checkpoint.
+- Do **not** require a changelog entry for every commit.
+- Prefer updating `[Unreleased]` in the same milestone PR/work unit that ships the behavior, not
+  only at tag time.
+- Per-client operational detail stays in `docs/invitations/<slug>.md`; link or summarize in
+  `[Unreleased]` only for notable ships.
+
+### Release checkpoint discipline
+
+Before creating a version tag:
+
+1. Move `[Unreleased]` bullets into a new `## [X.Y.Z] - YYYY-MM-DD` section (Keep a Changelog).
+2. Leave a fresh empty `[Unreleased]` section for the next cycle.
+3. Confirm invitation-only detail was not pasted wholesale from ops notes.
+4. Confirm schema detail is summarized, with migrations remaining the schema history.
 
 ## When to Create a Version Checkpoint
 
@@ -52,14 +83,15 @@ Set the `version` field to the chosen version **without** the leading `v`:
 
 ### 3. Update `CHANGELOG.md`
 
-Add an entry under the `[Unreleased]` section with today's date and the chosen version:
+Promote accumulated `[Unreleased]` items into a dated version section (Keep a Changelog groups such
+as Added / Changed / Fixed). Optionally append verification notes for the checkpoint:
 
 ```markdown
 ## [0.2.0-beta.1] - 2026-05-23
 
-### Stable baseline
+### Added
 
-Summary of what was stabilized since the last checkpoint.
+- Summary of product-visible work stabilized since the last checkpoint.
 
 ### Verification
 
@@ -74,6 +106,8 @@ Summary of what was stabilized since the last checkpoint.
 
 - Document any known platform or environment limitations relevant to this checkpoint.
 ```
+
+Reset `[Unreleased]` to an empty pending section after the promotion.
 
 ### 4. Commit the changes
 

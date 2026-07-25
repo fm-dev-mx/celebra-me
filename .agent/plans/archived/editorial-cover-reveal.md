@@ -340,7 +340,7 @@ The editorial cover should feel like the cover of a premium fashion/ lifestyle m
 
 | Action | File                                                                       |
 | ------ | -------------------------------------------------------------------------- |
-| CREATE | `.agent/plans/active/editorial-cover-reveal.md`                            |
+| CREATE | `.agent/plans/archived/editorial-cover-reveal.md`                          |
 | CREATE | `src/components/invitation/EditorialCoverReveal.astro`                     |
 | CREATE | `src/styles/invitation/_editorial-cover.scss`                              |
 | MODIFY | `src/lib/adapters/types.ts` (add envelope optional fields)                 |

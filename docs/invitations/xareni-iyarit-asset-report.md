@@ -1,6 +1,7 @@
 # XV Xareni Iyarit Asset Report
 
-Archived from the active-plan directory on 2026-07-16; this is evidence, not actionable work.
+Relocated from the former agent reports directory on 2026-07-25; this is evidence, not actionable
+work.
 
 Generated: 2026-06-20
 

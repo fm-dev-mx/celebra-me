@@ -6,9 +6,9 @@
 > **⚠️ BOUNDARY CORRECTION (Loop 1B):** This report was written during the initial audit before the
 > Celebra-me/CEJ architectural boundary was clarified. CEJ is a **separate brand** and must not live
 > inside the Celebra-me repository. All CEJ references in this document are included as historical
-> audit notes only — they do not define the project scope. See `.agent/plans/active/README.md` for
-> the corrected architecture. A separate Hermes-level creative workspace (`creative-ops`) should
-> house multi-brand creative infrastructure, brand briefs for non-Celebra-me brands, and local
+> audit notes only — they do not define the project scope. See `.agent/plans/README.md` for the
+> corrected architecture. A separate Hermes-level creative workspace (`creative-ops`) should house
+> multi-brand creative infrastructure, brand briefs for non-Celebra-me brands, and local
 > image-generation workflows.
 
 ---

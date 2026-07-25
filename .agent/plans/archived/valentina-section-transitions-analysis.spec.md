@@ -1,15 +1,15 @@
 ---
 title: Valentina Hernández XV — Section Transitions Visual Analysis
-status: active
+status: superseded
 plan_type: analysis
 autonomy_level: 0 — Read-only analysis; no implementation
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-07-25
 related_plans:
-  - .agent/plans/active/valentina-premium-reveal-transition.spec.md
-  - .agent/plans/active/valentina-editorial-accent-pass.spec.md
-  - .agent/plans/active/editorial-magazine-theme.spec.md
-  - .agent/plans/active/valentina-editorial-magazine-real-invitation.spec.md
+  - .agent/plans/archived/valentina-premium-reveal-transition.spec.md
+  - .agent/plans/archived/valentina-editorial-accent-pass.spec.md
+  - .agent/plans/archived/editorial-magazine-theme.spec.md
+  - .agent/plans/archived/valentina-editorial-magazine-real-invitation.spec.md
 related_rules:
   - .agent/rules/gatekeeper.md
   - docs/domains/theme/architecture.md
@@ -17,6 +17,8 @@ related_skills:
   - theme-architecture
   - frontend-design
   - animation-motion
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández XV — Section Transitions Analysis
@@ -45,7 +47,8 @@ The `/xv/valentina-hernandez` invitation renders components in this order from
 | Section 10      | `ThankYou.astro`              | Dark/ink          | Closing / back cover |
 | Footer          | `Footer.astro`                | Dark/ink          | Colophon / WhatsApp  |
 
-Source: `sectionOrder` in `.agent/plans/active/xv-valentina-hernandez-db-payload.json` lines 16–27.
+Source: `sectionOrder` in `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
+lines 16–27.
 
 ### 1.2 Components and SCSS Files Inspected
 

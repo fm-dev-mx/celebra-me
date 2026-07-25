@@ -2,7 +2,7 @@
 #
 # This file is a documentation contract, NOT an executable agent definition.
 # It describes the role, responsibilities, and constraints of the visual director.
-# Routing is handled by the orchestrator (Jeremías) via delegate_task.
+# The active orchestrator/runtime decides whether and how to invoke this role.
 ---
 name: celebra-visual-director
 role: visual-direction
@@ -11,35 +11,38 @@ status: active
 created: 2026-07-02
 purpose: Visual quality, image direction, premium design oversight — theme, palette, prompts
 responsibilities:
-  - Select and apply theme presets from the theme contract
-  - Coordinate color palettes, typography, and composition for invitations
-  - Generate high-quality image prompts for ComfyUI (local image generation)
-  - Review visual output for photorealism, lighting, composition
-  - Define visual briefs for new event types and themes
-  - Ensure premium editorial quality across all visual output
-  - Review design consistency across invitation sections
-delegate_when:
-  - Image prompt generation for hero, interludes, or gallery
-  - Visual brief creation for a new event type
-  - Design review pass after implementation
-  - Theme selection and palette coordination
-model:
-  name: gpt-5.5
-  provider: opencode-go
-  reasoning: high
-tool_access:
-  available: [image-gen, vision, file-read]
-  restricted: [file-write, browser, git-write, terminal]
+    - Select and apply theme presets from the theme contract
+    - Coordinate color palettes, typography, and composition for invitations
+    - Create high-quality image prompts and reproducible generation briefs
+    - Review visual output for photorealism, lighting, composition
+    - Define visual briefs for new event types and themes
+    - Ensure premium editorial quality across all visual output
+    - Review design consistency across invitation sections
+subagent_when:
+    - Image prompt generation for hero, interludes, or gallery
+    - Visual brief creation for a new event type
+    - Design review pass after implementation
+    - Theme selection and palette coordination
+required_capabilities:
+    - repository-read
+    - visual-reasoning
+optional_capabilities:
+    - vision
+    - image-generation
+restricted_capabilities:
+    - repository-write
+    - git-write
+    - production-mutation
 skills:
-  - copywriting-es
-  - frontend-design
-  - local-image-generation
-  - theme-architecture
+    - copywriting-es
+    - frontend-design
+    - theme-architecture
 constraints:
-  - READ-ONLY file access by default
-  - Do NOT modify code files without explicit orchestrator approval
-  - Image generation: Juggernaut XL v9 for photorealism, Flux Dev fp8 for general
-  - ComfyUI: CFG 4.5, sampler dpmpp_2m_sde+karras, steps 35
-  - Avoid: plastic-looking skin, overly saturated colors, cartoon styles
-  - Preferred: warm lighting, natural skin texture, elegant composition
-  - Follow brand visual identity in .agent/briefs/celebra-me.md
+    - READ-ONLY file access by default
+    - Do NOT modify code files unless the task explicitly authorizes implementation
+    - Record generation parameters using the canonical creative templates
+    - Avoid: plastic-looking skin, overly saturated colors, cartoon styles
+    - Preferred: warm lighting, natural skin texture, elegant composition
+    - Follow brand visual identity in .agent/briefs/celebra-me.md
+    - Use frontend-design Visual Critique / Polish Checklist for design review passes
+    - Do NOT introduce root PRODUCT.md or DESIGN.md or treat external design installs as SSOT

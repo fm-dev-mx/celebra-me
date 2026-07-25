@@ -81,7 +81,7 @@ const activePresetUrl = viewModel?.theme?.preset
 
 ### Phase 3 — CSS Split
 
-See `.agent/plans/active/public-invitation-css-splitting.md` for detailed impact table and
+See `.agent/plans/archived/public-invitation-css-splitting.md` for detailed impact table and
 per-preset sizes.
 
 **Summary**: Base invitation CSS reduced from 704 KB to 545 KB (−23%). Active preset loaded as
@@ -174,12 +174,12 @@ deployed.
 
 ## Supporting Artifacts
 
-| Artifact                                                 | Content                                  |
-| -------------------------------------------------------- | ---------------------------------------- |
-| `.agent/plans/active/public-invitation-performance.md`   | Master plan, updated with final statuses |
-| `.agent/plans/active/lcp-measurement-results.md`         | Phase 2 LCP measurements                 |
-| `.agent/plans/active/css-measurement-results.md`         | Phase 3 CSS coverage measurements        |
-| `.agent/plans/active/public-invitation-css-splitting.md` | Per-preset split implementation plan     |
+| Artifact                                                   | Content                                  |
+| ---------------------------------------------------------- | ---------------------------------------- |
+| `.agent/plans/archived/public-invitation-performance.md`   | Master plan, updated with final statuses |
+| `.agent/plans/archived/lcp-measurement-results.md`         | Phase 2 LCP measurements                 |
+| `.agent/plans/archived/css-measurement-results.md`         | Phase 3 CSS coverage measurements        |
+| `.agent/plans/archived/public-invitation-css-splitting.md` | Per-preset split implementation plan     |
 
 ## Post-Deploy P0 RCA / Guardrail
 

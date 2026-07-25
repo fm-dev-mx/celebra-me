@@ -1,11 +1,11 @@
 ---
 title: Valentina Hernández Almaguer — XV Invitation Spec
-status: draft
+status: superseded
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-07-25
 related_plans:
   - .agent/plans/active/xv-xareni-iyarit-client-invitation.md
-  - .agent/plans/active/invitation-workflow-flow-analysis.md
+  - .agent/plans/archived/invitation-workflow-flow-analysis.md
 related_rules:
   - .agent/rules/invitation-production.md
   - .agent/rules/invitation-preset-source-of-truth.md
@@ -13,7 +13,8 @@ related_rules:
   - .agent/rules/database.md
 commercial_scope: template-adaptation ($499 tier)
 supersedes: []
-superseded_by: []
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández Almaguer — XV Invitation Spec

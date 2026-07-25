@@ -1,10 +1,10 @@
 ---
 title: Workflow Simplification — Two-Branch Linear Model with Tags
-status: active
+status: implemented
 plan_type: documentation, implementation
 autonomy_level: 2
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 related_rules:
   - .agent/rules/git-safety.md
   - .agent/rules/gatekeeper.md
@@ -89,15 +89,15 @@ markers**.
 
 ## 4. Files Changed
 
-| File                                                               | Change                                                                                                                                                                                                                                                    |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.husky/pre-commit`                                                | Removed `develop` from branch protection check. Only `main` is blocked now.                                                                                                                                                                               |
-| `.husky/pre-push`                                                  | Added `refs/heads/main` push guard with `ALLOW_MAIN_PUSH=true` override. Moved `ZERO_SHA` before first loop.                                                                                                                                              |
-| `.github/workflows/commit-validation.yml`                          | Added `push: { branches: [develop] }`. PR trigger now targets only `main`.                                                                                                                                                                                |
-| `AGENTS.md`                                                        | Line 40: replaced "Do not commit directly to `main` or `develop`; use a feature branch" with "Work directly on `develop` by default. Do not commit directly to `main`. Use short-lived branches only when complexity or the task explicitly requires it." |
-| `docs/core/git-governance.md`                                      | Overview now describes two-branch linear model. Active Validation Sequence updated. Guarantees section: only `main` is protected. Added Production Promotion section with fast-forward flow.                                                              |
-| `.agent/rules/workflow.md`                                         | **Created.** Defines operational Git workflow for agents: working branch, integration method, safety rules, versioning, overrides.                                                                                                                        |
-| `.agent/plans/active/workflow-simplification-linear-model.spec.md` | Updated to reflect implemented policy. (This file.)                                                                                                                                                                                                       |
+| File                                                                 | Change                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.husky/pre-commit`                                                  | Removed `develop` from branch protection check. Only `main` is blocked now.                                                                                                                                                                               |
+| `.husky/pre-push`                                                    | Added `refs/heads/main` push guard with `ALLOW_MAIN_PUSH=true` override. Moved `ZERO_SHA` before first loop.                                                                                                                                              |
+| `.github/workflows/commit-validation.yml`                            | Added `push: { branches: [develop] }`. PR trigger now targets only `main`.                                                                                                                                                                                |
+| `AGENTS.md`                                                          | Line 40: replaced "Do not commit directly to `main` or `develop`; use a feature branch" with "Work directly on `develop` by default. Do not commit directly to `main`. Use short-lived branches only when complexity or the task explicitly requires it." |
+| `docs/core/git-governance.md`                                        | Overview now describes two-branch linear model. Active Validation Sequence updated. Guarantees section: only `main` is protected. Added Production Promotion section with fast-forward flow.                                                              |
+| `.agent/rules/workflow.md`                                           | **Created.** Defines operational Git workflow for agents: working branch, integration method, safety rules, versioning, overrides.                                                                                                                        |
+| `.agent/plans/archived/workflow-simplification-linear-model.spec.md` | Updated to reflect implemented policy. (This file.)                                                                                                                                                                                                       |
 
 ## 5. Remaining Decisions Before Branch Cleanup
 
@@ -123,5 +123,5 @@ git checkout origin/develop -- \
   AGENTS.md \
   docs/core/git-governance.md \
   .agent/rules/workflow.md \
-  .agent/plans/active/workflow-simplification-linear-model.spec.md
+  .agent/plans/archived/workflow-simplification-linear-model.spec.md
 ```

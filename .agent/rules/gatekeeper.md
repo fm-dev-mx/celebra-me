@@ -1,6 +1,6 @@
 # Gatekeeper Rules — Celebra-me
 
-This document defines the **operational contract** for the Gatekeeper agent.
+This document defines the provider-neutral **review/remediation and validation contract**.
 
 It specifies:
 
@@ -17,8 +17,8 @@ These rules are **authoritative** unless explicitly overridden by the repository
 
 ## 1) Scope of Operation
 
-- The Gatekeeper primarily operates on the current task scope and should inspect the actual diff
-  that is being reviewed.
+- The review/remediation process primarily operates on the current task scope and should inspect the
+  actual diff that is being reviewed.
 - If staged changes exist, prefer them as the clearest review boundary.
 - It must prioritize keeping the repository **buildable and deployable**.
 
@@ -282,6 +282,18 @@ The agent must switch to **Large Change Mode** when any of the following apply:
 
 ---
 
+## 4.5) Release and CHANGELOG Checkpoints
+
+When the reviewed work is a **release checkpoint** or a clearly product-visible milestone:
+
+- Confirm `CHANGELOG.md` `[Unreleased]` (or the versioned section being cut) matches the layered
+  policy in [`docs/core/release-process.md`](../../docs/core/release-process.md).
+- Do not demand a changelog bullet for every commit or every migration file.
+- Prefer invitation ops detail under `docs/invitations/` and schema history under
+  `supabase/migrations/`.
+
+---
+
 ## 5) Verification Protocol
 
 ### 5.1 Script Detection
@@ -327,6 +339,7 @@ Use `pnpm validate:changed` when you have unstaged edits you want feedback on be
 
 ```sh
 pnpm type-check
+pnpm validate:structure
 pnpm lint
 pnpm lint:styles
 pnpm validate:ui-governance
@@ -340,9 +353,9 @@ pnpm agent:git-safety:check
 
 `pnpm ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app`
 (`astro build`) after its earlier type-check to avoid duplicating the check. `pnpm ci:quick` runs
-`astro check` plus a scoped ESLint pass and is for fast feedback only; it is **safe in CI** (it does
-not depend on local Git staging state) but **must not** replace tier C for production-sensitive
-changes.
+`astro check`, deterministic structure validation, and a scoped ESLint pass and is for fast feedback
+only; it is **safe in CI** (it does not depend on local Git staging state) but **must not** replace
+tier C for production-sensitive changes.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.

@@ -1,20 +1,22 @@
 ---
 title: Valentina Family and Location Editorial Pass Spec
-status: active
+status: superseded
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 related_skills:
   - frontend-design
   - theme-architecture
   - accessibility
   - backend-engineering
 related_plans:
-  - .agent/plans/active/valentina-final-blockers-pass.spec.md
+  - .agent/plans/archived/valentina-final-blockers-pass.spec.md
 related_rules:
   - .agent/rules/gatekeeper.md
   - .agent/rules/git-safety.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Family and Location Editorial Pass Spec
@@ -70,32 +72,29 @@ invitation.
 
 ## 3. Files Inspected
 
-- [Family.astro](file:///d:/code/celebra-me/src/components/invitation/Family.astro)
-- [EventLocation.astro](file:///d:/code/celebra-me/src/components/invitation/EventLocation.astro)
-- [VenueCard.astro](file:///d:/code/celebra-me/src/components/invitation/components/VenueCard.astro)
-- [\_xv-valentina-hernandez.scss](file:///d:/code/celebra-me/src/styles/themes/sections/_xv-valentina-hernandez.scss)
-- [\_event-location.scss](file:///d:/code/celebra-me/src/styles/invitation/_event-location.scss)
-- [xv-valentina-hernandez-db-payload.json](file:///d:/code/celebra-me/.agent/plans/active/xv-valentina-hernandez-db-payload.json)
+- [Family.astro](../../../src/components/invitation/Family.astro)
+- [EventLocation.astro](../../../src/components/invitation/EventLocation.astro)
+- [VenueCard.astro](../../../src/components/invitation/components/VenueCard.astro)
+- [\_xv-valentina-hernandez.scss](../../../src/styles/themes/sections/_xv-valentina-hernandez.scss)
+- [\_event-location.scss](../../../src/styles/invitation/_event-location.scss)
+- [Valentina SQL payload](../../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
 
 ## 4. Proposed Changes
 
 ### A. Location Grouping Logic (Shared)
 
-- **[NEW] [location-helper.ts](file:///d:/code/celebra-me/src/lib/invitation/location-helper.ts)**:
+- **[NEW] [location-helper.ts](../../../src/lib/invitation/location-helper.ts)**:
   - Implement `groupVenues(venues: VenueEntry[]): GroupedVenue[]`.
   - Group venues sharing the same `googleMapsUrl` (trimmed, lowercase, non-empty) or matching
     normalized `venueName` + `address` when `googleMapsUrl` is missing.
   - Consolidate events into an `events` array containing `name` and `time`.
   - Mark grouped items as `type: 'grouped'`.
-- **[NEW]
-  [location-helper.test.ts](file:///d:/code/celebra-me/tests/unit/location-helper.test.ts)**:
+- **[NEW] [location-helper.test.ts](../../../tests/unit/location-helper.test.ts)**:
   - Unit tests validating correct grouping, fallback address matching, and ignoring of different
     venues.
-- **[MODIFY]
-  [EventLocation.astro](file:///d:/code/celebra-me/src/components/invitation/EventLocation.astro)**:
+- **[MODIFY] [EventLocation.astro](../../../src/components/invitation/EventLocation.astro)**:
   - Import and apply `groupVenues` to `displayVenues`.
-- **[MODIFY]
-  [VenueCard.astro](file:///d:/code/celebra-me/src/components/invitation/components/VenueCard.astro)**:
+- **[MODIFY] [VenueCard.astro](../../../src/components/invitation/components/VenueCard.astro)**:
   - Update `Props` and `VenueData` interface to optionally accept `events`
     (`{ name: string; time: string }[]`).
   - Render a compact itinerary list if `venue.events` exists, matching the existing
@@ -104,7 +103,7 @@ invitation.
 ### B. Valentina Editorial Upgrades (Family & Location styling)
 
 - **[MODIFY]
-  [\_xv-valentina-hernandez.scss](file:///d:/code/celebra-me/src/styles/themes/sections/_xv-valentina-hernandez.scss)**:
+  [\_xv-valentina-hernandez.scss](../../../src/styles/themes/sections/_xv-valentina-hernandez.scss)**:
   - **Family Section Styling**:
     - Remove boxy borders, shadows, and background of `.family__panel` to open up the editorial
       spread.

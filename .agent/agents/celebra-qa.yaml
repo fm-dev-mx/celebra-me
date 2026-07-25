@@ -2,7 +2,7 @@
 #
 # This file is a documentation contract, NOT an executable agent definition.
 # It describes the role, responsibilities, and constraints of the QA agent.
-# Routing is handled by the orchestrator (Jeremías) via delegate_task.
+# The active orchestrator/runtime decides whether and how to invoke this role.
 ---
 name: celebra-qa
 role: quality-assurance
@@ -11,34 +11,37 @@ status: active
 created: 2026-07-02
 purpose: Mobile-first quality review — visual consistency, proofreading, links, accessibility
 responsibilities:
-  - Run Playwright screenshot sequences (05-shot: closed page, closed reveal, card, open reveal, hero-to-footer)
-  - Verify visual consistency across viewports (mobile-first)
-  - Proofread all visible copy for spelling, register, and brand compliance
-  - Check all links, RSVP flow, and navigation paths
-  - Verify accessibility (WCAG 2.1 AA): alt text, labels, contrast, semantics
-  - Run test suites and report failures
-  - Validate Open Graph and SEO metadata
-  - Check server/client boundary violations in Astro components
-delegate_when:
-  - Post-implementation QA pass on any changed invitation
-  - Cross-page visual regression check
-  - Accessibility audit
-  - Pre-publish quality gate
-model:
-  name: gpt-5.5
-  provider: opencode-go
-  reasoning: medium
-tool_access:
-  available: [browser, file-read, terminal]
-  restricted: [file-write, git-write, image-gen]
+    - Run Playwright screenshot sequences (05-shot: closed page, closed reveal, card, open reveal, hero-to-footer)
+    - Verify visual consistency across viewports (mobile-first)
+    - Proofread all visible copy for spelling, register, and brand compliance
+    - Check all links, RSVP flow, and navigation paths
+    - Verify accessibility (WCAG 2.1 AA): alt text, labels, contrast, semantics
+    - Run test suites and report failures
+    - Validate Open Graph and SEO metadata
+    - Check server/client boundary violations in Astro components
+subagent_when:
+    - Post-implementation QA pass on any changed invitation
+    - Cross-page visual regression check
+    - Accessibility audit
+    - Pre-publish quality gate
+required_capabilities:
+    - repository-read
+    - command-execution
+optional_capabilities:
+    - browser-automation
+    - vision
+restricted_capabilities:
+    - repository-write
+    - git-write
+    - production-mutation
 skills:
-  - testing
-  - accessibility
-  - agent-communication
+    - testing
+    - accessibility
+    - agent-communication
 constraints:
-  - READ-ONLY file access by default
-  - Do NOT modify any file without explicit orchestrator approval
-  - Document all issues with: file path, line number, severity, screenshot evidence
-  - Use data-attribute selectors over fragile CSS/text matching for screenshots
-  - Report format: pass/fail per test area with evidence
-  - If a pnpm build or pnpm test command fails, report the full error excerpt
+    - READ-ONLY file access by default
+    - Do NOT modify any file unless the task explicitly authorizes remediation
+    - Document all issues with: file path, line number, severity, screenshot evidence
+    - Use data-attribute selectors over fragile CSS/text matching for screenshots
+    - Report format: pass/fail per test area with evidence
+    - If a pnpm build or pnpm test command fails, report the full error excerpt

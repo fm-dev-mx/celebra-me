@@ -1,16 +1,18 @@
 ---
 title: Valentina Hernández XV — Editorial-Magazine Real Invitation
-status: draft
+status: superseded
 created: 2026-06-27
-updated: 2026-06-27 (SQL continuation section added 2026-06-27)
+updated: 2026-07-25
 supersedes:
-  - .agent/plans/active/valentina-hernandez-xv-invitation.spec.md
+  - .agent/plans/archived/valentina-hernandez-xv-invitation.spec.md
 related_plans:
-  - .agent/plans/active/editorial-magazine-theme.spec.md
-  - .agent/plans/active/xv-valentina-hernandez-asset-report.md
+  - .agent/plans/archived/editorial-magazine-theme.spec.md
+  - docs/invitations/valentina-hernandez.md
 related_rules:
   - .agent/rules/invitation-production.md
   - .agent/rules/manual-sql-manifest.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández XV — Editorial-Magazine Real Invitation
@@ -20,7 +22,7 @@ related_rules:
 Real content updates, photo/asset mapping, copy. No fake placeholders, no new schema fields, no
 hardcoded Valentina CSS selectors.
 
-### 1. Content Payload (DB payload at `.agent/plans/active/xv-valentina-hernandez-db-payload.json`)
+### 1. Content Payload (DB payload at `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`)
 
 | Field                             | Current Value                                                                        | Proposed Value                                                                 | Reason                                                         |
 | --------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | -------------------------------------------------------------- |
@@ -92,7 +94,7 @@ All 17 images in `src/assets/images/events/xv-valentina-hernandez/` are WhatsApp
 **Production requirement:** Replace with original high-resolution photos → crop → editorial grade
 (editorial-magazine aesthetic) → WebP quality 86.
 
-See `.agent/plans/active/xv-valentina-hernandez-asset-report.md` for full mapping.
+See `docs/invitations/valentina-hernandez.md` for full mapping.
 
 ### 8. Asset Directory Status
 
@@ -448,10 +450,10 @@ The new approach (`editorial-magazine` theme) changes:
 | File                                                                    | Action                | Reason                                                                                                                                                                                                                                |
 | ----------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/styles/themes/sections/_xv-valentina-hernandez.scss`               | **Rewrite**           | Currently remaps celestial-blue tokens. Must remap editorial-magazine tokens instead. Scope changes from `.event--valentina-hernandez.theme-preset--celestial-blue` to `.event--valentina-hernandez.theme-preset--editorial-magazine` |
-| `.agent/plans/active/xv-valentina-hernandez-db-payload.json`            | **Update**            | Change `theme.preset`, add envelope cover fields, add section variant mappings, update envelope config                                                                                                                                |
+| `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` | **Update**            | Change `theme.preset`, add envelope cover fields, add section variant mappings, update envelope config                                                                                                                                |
 | `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` | **Rewrite**           | Content payload embedded in the SQL must match updated DB payload                                                                                                                                                                     |
 | `src/assets/images/events/xv-valentina-hernandez/index.ts`              | **Update**            | Change `.jpg` imports to `.webp` when originals arrive                                                                                                                                                                                |
-| `.agent/plans/active/valentina-hernandez-xv-invitation.spec.md`         | **Archive/supersede** | Replaced by this spec                                                                                                                                                                                                                 |
+| `.agent/plans/archived/valentina-hernandez-xv-invitation.spec.md`       | **Archive/supersede** | Replaced by this spec                                                                                                                                                                                                                 |
 | `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` | **Rewrite (phase 2)** | Changed from insert-only to idempotent continuation-safe upsert — see 5.1                                                                                                                                                             |
 
 ### 5.1 SQL Patch: Insert-Only → State-Aware Continuation/Upsert
@@ -512,19 +514,19 @@ the patch can proceed. |
 
 ## 6. Implementation Order
 
-| Phase | Task                                                                                                                                    | Lane                                                                                                                                                                                                                              | Dependency                              |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------------- |
-| 0     | Resolve PENDIENTE items: parent names, godparent names, ceremony venue, Liverpool URL, RSVP deadline                                    | Client/Paco                                                                                                                                                                                                                       | None — must precede publication         |
-| 1     | **Rewrite DB payload** (`.agent/plans/active/xv-valentina-hernandez-db-payload.json`): change preset, add variants, add envelope fields | A                                                                                                                                                                                                                                 | Phase 0 data                            |
-| 2     | **Rewrite client SCSS** (`_xv-valentina-hernandez.scss`): switch from celestial-blue override to editorial-magazine override            | A                                                                                                                                                                                                                                 | Phase 1 (know which tokens to override) |
-| 3     | **Update sectionStyles** in content payload: all sections to `variant: "editorial-magazine"`                                            | A                                                                                                                                                                                                                                 | Phase 1                                 |
-|       | 4                                                                                                                                       | **Rewrite SQL patch**: continuation-safe upsert per section 5.1. Replaces insert-only preflight and DML with state-aware DO blocks (UPDATE/INSERT/resurrect). NOT strictly idempotent — reruns bump version on published content. | A                                       | Phase 1, Phase 3          |
-|       | 5                                                                                                                                       | **Asset replacement**: when originals arrive, crop → editorial grade → WebP → update `index.ts`                                                                                                                                   | A                                       | Client provides originals |
-| 6     | **Validate demo** (`/xv/demo-xv-editorial-magazine`): confirm no regression                                                             | B                                                                                                                                                                                                                                 | Phase 2 (after SCSS changes)            |
-| 7     | **Validate Valentina route** (`/xv/valentina-hernandez`): all sections, mobile/desktop, RSVP                                            | A+B                                                                                                                                                                                                                               | Phase 4+6                               |
-| 8     | **Theme-level polish**: fix any shared issues found in validation                                                                       | B                                                                                                                                                                                                                                 | Phase 6-7                               |
-| 9     | **Local/staging validation** + build verification                                                                                       | A                                                                                                                                                                                                                                 | Phase 4                                 |
-| 10    | Production execution (Paco approval required)                                                                                           | A                                                                                                                                                                                                                                 | Phase 5+9                               |
+| Phase | Task                                                                                                                                               | Lane                                                                                                                                                                                                                              | Dependency                              |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------------- |
+| 0     | Resolve PENDIENTE items: parent names, godparent names, ceremony venue, Liverpool URL, RSVP deadline                                               | Client/Paco                                                                                                                                                                                                                       | None — must precede publication         |
+| 1     | **Rewrite DB payload** (`scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`): change preset, add variants, add envelope fields | A                                                                                                                                                                                                                                 | Phase 0 data                            |
+| 2     | **Rewrite client SCSS** (`_xv-valentina-hernandez.scss`): switch from celestial-blue override to editorial-magazine override                       | A                                                                                                                                                                                                                                 | Phase 1 (know which tokens to override) |
+| 3     | **Update sectionStyles** in content payload: all sections to `variant: "editorial-magazine"`                                                       | A                                                                                                                                                                                                                                 | Phase 1                                 |
+|       | 4                                                                                                                                                  | **Rewrite SQL patch**: continuation-safe upsert per section 5.1. Replaces insert-only preflight and DML with state-aware DO blocks (UPDATE/INSERT/resurrect). NOT strictly idempotent — reruns bump version on published content. | A                                       | Phase 1, Phase 3          |
+|       | 5                                                                                                                                                  | **Asset replacement**: when originals arrive, crop → editorial grade → WebP → update `index.ts`                                                                                                                                   | A                                       | Client provides originals |
+| 6     | **Validate demo** (`/xv/demo-xv-editorial-magazine`): confirm no regression                                                                        | B                                                                                                                                                                                                                                 | Phase 2 (after SCSS changes)            |
+| 7     | **Validate Valentina route** (`/xv/valentina-hernandez`): all sections, mobile/desktop, RSVP                                                       | A+B                                                                                                                                                                                                                               | Phase 4+6                               |
+| 8     | **Theme-level polish**: fix any shared issues found in validation                                                                                  | B                                                                                                                                                                                                                                 | Phase 6-7                               |
+| 9     | **Local/staging validation** + build verification                                                                                                  | A                                                                                                                                                                                                                                 | Phase 4                                 |
+| 10    | Production execution (Paco approval required)                                                                                                      | A                                                                                                                                                                                                                                 | Phase 5+9                               |
 
 ---
 

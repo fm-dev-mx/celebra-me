@@ -9,10 +9,10 @@ hardening_run: 2026-06-22
 closure_run: 2026-06-22
 related_docs:
   - .agent/plans/README.md
-  - .agent/plans/active/public-invitation-performance.md
-  - .agent/plans/active/public-invitation-performance-final-report.md
-  - .agent/plans/active/public-invitation-css-splitting.md
-  - .agent/plans/active/css-measurement-results.md
+  - .agent/plans/archived/public-invitation-performance.md
+  - .agent/plans/archived/public-invitation-performance-final-report.md
+  - .agent/plans/archived/public-invitation-css-splitting.md
+  - .agent/plans/archived/css-measurement-results.md
   - .agent/plans/active/section-architecture-refactor-plan.md
 related_files:
   - src/styles/invitation.scss
@@ -747,10 +747,10 @@ is **hero** (has `:where()` base, 8 of 9 variants, low structural risk).
 **Docs/planning commit:** `docs(agent): finalize section CSS loop plan`
 
 - `.agent/plans/README.md`
-- `.agent/plans/active/public-invitation-section-architecture.md`
-- `.agent/plans/active/public-invitation-css-splitting.md`
-- `.agent/plans/active/public-invitation-performance-final-report.md`
-- `.agent/plans/active/public-invitation-performance.md`
+- `.agent/plans/archived/public-invitation-section-architecture.md`
+- `.agent/plans/archived/public-invitation-css-splitting.md`
+- `.agent/plans/archived/public-invitation-performance-final-report.md`
+- `.agent/plans/archived/public-invitation-performance.md`
 
 **Gallery implementation commit:** `perf(invitation): split gallery section CSS`
 

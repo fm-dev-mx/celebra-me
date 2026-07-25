@@ -185,6 +185,18 @@ tokens. They should consume semantic tokens and component tokens by default.
 Theme identity belongs in the preset. If a section requires theme-specific behavior, expose that
 behavior through a public component token and let the preset provide the value.
 
+## Runtime CSS Delivery
+
+- `src/styles/invitation.scss` keeps shared invitation structure and imports the existing
+  `src/styles/themes/sections/_index.scss` barrel for shared section bases.
+- `src/styles/invitation-presets/*.scss` remain the preset and font entrypoints.
+- `src/styles/invitation-sections-by-preset/*.scss` import canonical `src/styles/themes/sections/**`
+  modules directly. Their import order is the emitted cascade order, and a bundle may explicitly
+  compose multiple canonical modules when a variant depends on both.
+- `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus only a requested
+  canonical footer override and visual profile. Canonical section partials are not exposed through a
+  general per-section passthrough directory.
+
 ## Runtime Contract
 
 `src/lib/theme/theme-contract.ts` owns active event types and active invitation preset names.

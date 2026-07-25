@@ -1,10 +1,10 @@
 ---
 title: Editorial Magazine Top Premium Specification
-status: active
+status: implemented
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-07-25
 related_skills:
   - theme-architecture
   - frontend-design
@@ -157,10 +157,10 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Adjust `src/styles/invitation/_editorial-cover.scss` to handle absolute positioning of the
     image, film-grain, and typography layouts on mobile.
 - **Affected Files**:
-  - [EditorialCoverReveal.astro](file:///d:/code/celebra-me/src/components/invitation/EditorialCoverReveal.astro)
-  - [\_editorial-cover.scss](file:///d:/code/celebra-me/src/styles/invitation/_editorial-cover.scss)
-  - [[slug].astro](file:///d:/code/celebra-me/src/pages/[eventType]/[slug].astro)
-  - [preview.astro](file:///d:/code/celebra-me/src/pages/dashboard/invitaciones/[id]/preview.astro)
+  - [EditorialCoverReveal.astro](../../../src/components/invitation/EditorialCoverReveal.astro)
+  - [\_editorial-cover.scss](../../../src/styles/invitation/_editorial-cover.scss)
+  - [[slug].astro](../../../src/pages/[eventType]/[slug].astro)
+  - [preview.astro](../../../src/pages/dashboard/invitaciones/[id]/preview.astro)
 - **Acceptance Criteria**: The cover displays the hero image in high-contrast desaturated tone;
   typography sits beautifully over it.
 
@@ -173,7 +173,7 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Refine grid layout in `src/styles/themes/sections/hero/_editorial-magazine.scss` to enforce
     clean asymmetry.
 - **Affected Files**:
-  - [\_editorial-magazine.scss (hero)](file:///d:/code/celebra-me/src/styles/themes/sections/hero/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (hero)](../../../src/styles/themes/sections/hero/_editorial-magazine.scss)
 - **Acceptance Criteria**: Desktop layout splits title and portrait cleanly; mobile layout maintains
   correct vertical stacking with zero text overlap.
 
@@ -186,7 +186,7 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Refine margins and paddings in `src/styles/themes/sections/quote/_editorial-magazine.scss`.
   - Ensure the drop cap behaves correctly. Add a semantic folio line at the bottom.
 - **Affected Files**:
-  - [\_editorial-magazine.scss (quote)](file:///d:/code/celebra-me/src/styles/themes/sections/quote/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (quote)](../../../src/styles/themes/sections/quote/_editorial-magazine.scss)
 
 ### Guest Pass (Personalized Access)
 
@@ -204,11 +204,11 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Ensure the `VISTA PREVIA DEMO` label is styled as a separate demo/debug badge or minor tag,
     rather than invading the premium editorial pass layout.
 - **Affected Files**:
-  - [editorial-magazine.scss (presets/sections)](file:///d:/code/celebra-me/src/styles/invitation-sections-by-preset/editorial-magazine.scss)
+  - [editorial-magazine.scss (presets/sections)](../../../src/styles/invitation-sections-by-preset/editorial-magazine.scss)
   - [NEW]
-    [\_editorial-magazine.scss (personalized-access)](file:///d:/code/celebra-me/src/styles/themes/sections/personalized-access/_editorial-magazine.scss)
+    [\_editorial-magazine.scss (personalized-access)](../../../src/styles/themes/sections/personalized-access/_editorial-magazine.scss)
   - [NEW]
-    [editorial-magazine.scss (invitation-sections)](file:///d:/code/celebra-me/src/styles/invitation-sections/personalized-access/editorial-magazine.scss)
+    [editorial-magazine.scss (invitation-sections)](../../../src/styles/invitation-sections/personalized-access/editorial-magazine.scss)
 - **Acceptance Criteria**: The card has no heavy shadow, uses monospace labels, and features a clean
   barcode/serial look.
 
@@ -222,7 +222,7 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Remove panel backgrounds and outer borders. Use large serif names paired with small uppercase
     labels (e.g., `MADRE / Ana García`).
 - **Affected Files**:
-  - [\_editorial-magazine.scss (family)](file:///d:/code/celebra-me/src/styles/themes/sections/family/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (family)](../../../src/styles/themes/sections/family/_editorial-magazine.scss)
 - **Acceptance Criteria**: No boxed panel borders; names list cleanly in column layouts.
 
 ### Gallery ("Doble Página Editorial")
@@ -238,8 +238,8 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Set `grid-column: span 12` for `WIDE` (full-bleed spread) and `span 6` for `FEATURE` items.
   - Make captions permanently visible below the photo frame with format `Fig. 01 — Caption`.
 - **Affected Files**:
-  - [getLayoutClass.ts](file:///d:/code/celebra-me/src/lib/components/gallery/getLayoutClass.ts)
-  - [\_editorial-magazine.scss (gallery)](file:///d:/code/celebra-me/src/styles/themes/sections/gallery/_editorial-magazine.scss)
+  - [getLayoutClass.ts](../../../src/lib/components/gallery/getLayoutClass.ts)
+  - [\_editorial-magazine.scss (gallery)](../../../src/styles/themes/sections/gallery/_editorial-magazine.scss)
 - **Acceptance Criteria**: Gallery renders asymmetric grid on desktop; captions are permanently
   visible and readable.
 
@@ -253,7 +253,7 @@ We establish these executable rules for the `editorial-magazine` theme:
     to target `countdown__timer`, `countdown__segment`, etc.
   - Style segments with vertical dividers (`border-right: 1px solid`) instead of outer card boxes.
 - **Affected Files**:
-  - [\_editorial-magazine.scss (countdown)](file:///d:/code/celebra-me/src/styles/themes/sections/countdown/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (countdown)](../../../src/styles/themes/sections/countdown/_editorial-magazine.scss)
 - **Acceptance Criteria**: Custom magazine typography (Bodoni Moda) applies to segments; segment
   borders are flat lines.
 
@@ -270,7 +270,7 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Remove alert icons in indications, styling them as flat editorial notes (e.g.
     `NOTA 01 / Código de vestimenta`).
 - **Affected Files**:
-  - [\_editorial-magazine.scss (location)](file:///d:/code/celebra-me/src/styles/themes/sections/location/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (location)](../../../src/styles/themes/sections/location/_editorial-magazine.scss)
 - **Acceptance Criteria**: Location button overrides apply (border-radius: 0); address button is
   restyled cleanly.
 
@@ -283,7 +283,7 @@ We establish these executable rules for the `editorial-magazine` theme:
     underline inputs (`border-bottom: 1px solid`).
   - Style the radio buttons as flat, selectable tiles with thin black/white borders.
 - **Affected Files**:
-  - [\_editorial-magazine.scss (rsvp)](file:///d:/code/celebra-me/src/styles/themes/sections/rsvp/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (rsvp)](../../../src/styles/themes/sections/rsvp/_editorial-magazine.scss)
 
 ### Gifts
 
@@ -294,7 +294,7 @@ We establish these executable rules for the `editorial-magazine` theme:
     by thin vertical dividers.
   - Style store links as outline rectangular buttons (`border-radius: 0`).
 - **Affected Files**:
-  - [\_editorial-magazine.scss (gifts)](file:///d:/code/celebra-me/src/styles/themes/sections/gifts/_editorial-magazine.scss)
+  - [\_editorial-magazine.scss (gifts)](../../../src/styles/themes/sections/gifts/_editorial-magazine.scss)
 
 ### Thank-You / Back Cover
 
@@ -306,8 +306,8 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Refine the typography and background values in
     `src/styles/themes/sections/thank-you/_editorial-magazine.scss` to match the brand guide.
 - **Affected Files**:
-  - [ThankYou.astro](file:///d:/code/celebra-me/src/components/invitation/ThankYou.astro)
-  - [\_editorial-magazine.scss (thank-you)](file:///d:/code/celebra-me/src/styles/themes/sections/thank-you/_editorial-magazine.scss)
+  - [ThankYou.astro](../../../src/components/invitation/ThankYou.astro)
+  - [\_editorial-magazine.scss (thank-you)](../../../src/styles/themes/sections/thank-you/_editorial-magazine.scss)
 - **Acceptance Criteria**: Thank you section renders in editorial split-grid on desktop; font styles
   load correctly.
 
@@ -325,11 +325,11 @@ We establish these executable rules for the `editorial-magazine` theme:
   - Ensure the music player has bottom-clearance variables set so it doesn't overlap CTA buttons on
     mobile viewports.
 - **Affected Files**:
-  - [editorial-magazine.scss (presets/sections)](file:///d:/code/celebra-me/src/styles/invitation-sections-by-preset/editorial-magazine.scss)
+  - [editorial-magazine.scss (presets/sections)](../../../src/styles/invitation-sections-by-preset/editorial-magazine.scss)
   - [NEW]
-    [\_editorial-magazine.scss (header)](file:///d:/code/celebra-me/src/styles/themes/sections/header/_editorial-magazine.scss)
+    [\_editorial-magazine.scss (header)](../../../src/styles/themes/sections/header/_editorial-magazine.scss)
   - [NEW]
-    [editorial-magazine.scss (invitation-sections/header)](file:///d:/code/celebra-me/src/styles/invitation-sections/header/editorial-magazine.scss)
+    [editorial-magazine.scss (invitation-sections/header)](../../../src/styles/invitation-sections/header/editorial-magazine.scss)
 - **Acceptance Criteria**: Transparent header uses editorial variables; mobile navigation drawer is
   desaturated black.
 

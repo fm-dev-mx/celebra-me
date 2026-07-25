@@ -1,16 +1,18 @@
 ---
 title: Valentina Hernández XV — Source-of-Truth Audit & Corrections
-status: active
+status: superseded
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-07-25
 supersedes:
-  - .agent/plans/active/valentina-editorial-magazine-real-invitation.spec.md
+  - .agent/plans/archived/valentina-editorial-magazine-real-invitation.spec.md
 related_plans:
-  - .agent/plans/active/xv-valentina-hernandez-db-payload.json
-  - .agent/plans/active/xv-valentina-hernandez-asset-report.md
+  - scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql
+  - docs/invitations/valentina-hernandez.md
 related_rules:
   - .agent/rules/invitation-production.md
   - .agent/rules/manual-sql-manifest.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández XV — Source-of-Truth Audit & Corrections
@@ -124,12 +126,12 @@ this data.
 
 ## Corrections Applied
 
-See `.agent/plans/active/xv-valentina-hernandez-db-payload.json` and
+See `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` and
 `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` for updated content.
 
 ### Files Modified
 
-1. `.agent/plans/active/xv-valentina-hernandez-db-payload.json`
+1. `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
 2. `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
 
 ### Validation

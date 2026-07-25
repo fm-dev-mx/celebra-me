@@ -1,21 +1,23 @@
 ---
 title: Valentina Hernandez XV Editorial Section Dividers
-status: active
+status: superseded
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 related_skills:
   - frontend-design
   - theme-architecture
   - animation-motion
 related_plans:
-  - .agent/plans/active/valentina-section-transitions-analysis.spec.md
-  - .agent/plans/active/valentina-editorial-accent-pass.spec.md
-  - .agent/plans/active/valentina-editorial-magazine-real-invitation.spec.md
+  - .agent/plans/archived/valentina-section-transitions-analysis.spec.md
+  - .agent/plans/archived/valentina-editorial-accent-pass.spec.md
+  - .agent/plans/archived/valentina-editorial-magazine-real-invitation.spec.md
 related_rules:
   - .agent/rules/gatekeeper.md
   - .agent/rules/git-safety.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernandez XV Editorial Section Dividers
@@ -59,7 +61,7 @@ are therefore treated as confirmation evidence only; implementation uses suffix 
 - `src/components/invitation/InvitationSections.astro`
 - `src/lib/invitation/render-plan.ts`
 - `src/lib/invitation/section-render-data.ts`
-- `.agent/plans/active/xv-valentina-hernandez-db-payload.json`
+- `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
 - `src/components/invitation/Quote.astro`
 - `src/components/invitation/Family.astro`
 - `src/components/invitation/Interlude.astro`

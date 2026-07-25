@@ -1,9 +1,11 @@
 ---
 title: Valentina Mobile Hero and Gallery Upgrade
-status: active
+status: superseded
 type: implementation
 autonomy: level-2
-updated: 2026-07-16
+updated: 2026-07-25
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Mobile Hero & Gallery Upgrade — Spec

@@ -178,10 +178,10 @@ All 11 demo JSONs now carry `templateId` and `_assetSlug`:
 
 ### Real invitation payload updates
 
-| Payload                                | templateId added      |
-| -------------------------------------- | --------------------- |
-| xv-xareni-iyarit-db-payload.json       | xv-celestial-blue     |
-| xv-valentina-hernandez-db-payload.json | xv-editorial-magazine |
+| Payload                             | templateId added      |
+| ----------------------------------- | --------------------- |
+| xv-xareni-iyarit-db-payload.json    | xv-celestial-blue     |
+| 20260626_valentina_hernandez_xv.sql | xv-editorial-magazine |
 
 ### RSVP/tracking safety
 

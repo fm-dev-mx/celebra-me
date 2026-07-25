@@ -6,10 +6,10 @@ autonomy_level: 2
 created: 2026-06-25
 updated: 2026-06-25
 related_docs:
-  - .agent/plans/active/public-invitation-performance.md
-  - .agent/plans/active/public-invitation-performance-final-report.md
-  - .agent/plans/active/public-invitation-section-architecture.md
-  - .agent/plans/active/css-measurement-results.md
+  - .agent/plans/archived/public-invitation-performance.md
+  - .agent/plans/archived/public-invitation-performance-final-report.md
+  - .agent/plans/archived/public-invitation-section-architecture.md
+  - .agent/plans/archived/css-measurement-results.md
 related_files:
   - src/components/home/Hero.astro
   - src/components/home/Services.astro

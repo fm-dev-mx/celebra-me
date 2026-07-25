@@ -1,19 +1,19 @@
 ---
 title: Valentina Hernández XV — Editorial Accent Pass
-status: active
+status: superseded
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-07-25
 related_skills:
   - frontend-design
   - theme-architecture
   - animation-motion
   - copywriting-es
 related_plans:
-  - .agent/plans/active/valentina-editorial-magazine-real-invitation.spec.md
-  - .agent/plans/active/editorial-magazine-top-premium-polish.spec.md
-  - .agent/plans/active/valentina-premium-reveal-transition.spec.md
+  - .agent/plans/archived/valentina-editorial-magazine-real-invitation.spec.md
+  - .agent/plans/archived/editorial-magazine-top-premium-polish.spec.md
+  - .agent/plans/archived/valentina-premium-reveal-transition.spec.md
 related_rules:
   - .agent/rules/gatekeeper.md
   - .agent/rules/git-safety.md
@@ -22,6 +22,8 @@ related_rules:
 related_docs:
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernández XV — Editorial Accent Pass

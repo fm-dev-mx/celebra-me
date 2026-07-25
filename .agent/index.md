@@ -2,50 +2,64 @@
 
 Use this file after reading `AGENTS.md`. It is the current discovery map for the repository.
 
-## Prerequisite Knowledge
+## Start Here
 
-- [`AGENTS.md`](../AGENTS.md) — entry point and loading order
-- `.agent/rules/gatekeeper.md` — review/remediation contract
-- `.agent/rules/agent-routing.md` — role-based agent routing decision tree
-- `.agent/load-skills.md` — skill loading protocol
+- [`AGENTS.md`](../AGENTS.md) — canonical entry point, authority order, and non-negotiables
+- `.agent/rules/gatekeeper.md` — review/remediation contract and validation tiers
+- `.agent/rules/git-safety.md` — task-scoped Git authorization and worktree preservation
+- `.agent/rules/agent-routing.md` — provider-neutral role and subagent routing
+- `.agent/load-skills.md` — runtime-neutral skill loading protocol
 
-## Agent Architecture
+## Role Contracts
 
-This repository uses a role-based agent system. Role contracts live in
-`.agent/agents/*.yaml`. See the [Agent Architecture section in AGENTS.md](../AGENTS.md#role-based-agent-architecture)
-for the full model, or `.agent/rules/agent-routing.md` for the routing decision tree.
+Role YAML files are provider-neutral documentation contracts. They describe responsibilities,
+capabilities, constraints, and canonical skill references; they are not executable runtime config.
 
-| Role Contract | File | Purpose |
-|---|---|---|
-| `celebra-builder` | `.agent/agents/celebra-builder.yaml` | Code implementation |
-| `celebra-copywriter` | `.agent/agents/celebra-copywriter.yaml` | Spanish copy and marketing text |
-| `celebra-qa` | `.agent/agents/celebra-qa.yaml` | Mobile-first quality review |
+| Role Contract             | File                                         | Purpose                            |
+| ------------------------- | -------------------------------------------- | ---------------------------------- |
+| `celebra-builder`         | `.agent/agents/celebra-builder.yaml`         | Code implementation                |
+| `celebra-copywriter`      | `.agent/agents/celebra-copywriter.yaml`      | Spanish copy and marketing text    |
+| `celebra-qa`              | `.agent/agents/celebra-qa.yaml`              | Mobile-first quality review        |
 | `celebra-visual-director` | `.agent/agents/celebra-visual-director.yaml` | Visual direction and image prompts |
 
-## Plan Governance
+## Active Rules
 
-- `.agent/plans/README.md`: plan governance, status taxonomy, and frontmatter schema. Plans live as
-  single Markdown files under `active/` (current) or `archived/` (historical).
+| Rule                                                | Owns                                               |
+| --------------------------------------------------- | -------------------------------------------------- |
+| `.agent/rules/agent-routing.md`                     | role selection, subagent boundaries, and handoffs  |
+| `.agent/rules/api-contracts.md`                     | API security, CSRF, and admin route composition    |
+| `.agent/rules/dashboard-styling.md`                 | dashboard SCSS guardrails                          |
+| `.agent/rules/database.md`                          | agent database and production-data safety          |
+| `.agent/rules/gatekeeper.md`                        | review/remediation contract and validation tiers   |
+| `.agent/rules/git-safety.md`                        | Git authorization and worktree preservation        |
+| `.agent/rules/intake-publishing.md`                 | intake and publication state-machine invariants    |
+| `.agent/rules/invitation-preset-source-of-truth.md` | invitation preset source ownership                 |
+| `.agent/rules/invitation-production.md`             | agent safety constraints for invitation production |
+| `.agent/rules/manual-sql-manifest.md`               | manual production SQL manifest requirements        |
+| `.agent/rules/workflow.md`                          | agent operating procedure                          |
 
 ## Available Skills
 
-| Skill                      | Purpose                                                                       |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| `accessibility`            | accessibility review and implementation guidance                              |
-| `agent-communication`      | clear, atomic agent-user interaction standards                                |
-| `animation-motion`         | motion behavior, transitions, and reduced-motion handling                     |
-| `astro-patterns`           | Astro rendering, routing, and client-boundary guidance                        |
-| `backend-engineering`      | API routes, services, validation, and integrations                            |
-| `commit-planner`           | executable commit partitioning and message planning                           |
-| `celebra-delegation-patterns` | delegate_task templates, context fields, and synthesis rules for Celebra-me temporary subagents |
-| `copywriting-es`           | Spanish UI and invitation copy standards                                      |
-| `documentation-governance` | loads the active documentation alignment workflow                             |
-| `frontend-design`          | visual design and composition guidance                                        |
-| `seo-metadata`             | metadata, sharing, and search presentation                                    |
-| `testing`                  | unit, integration, and E2E testing guidance                                   |
-| `theme-architecture`       | theme tokens, presets, and section-theme contracts                            |
-| `supabase`                 | Supabase Auth, RLS, Edge Functions, Storage, CLI, and MCP guidance            |
-| `supabase-postgres`        | Postgres query optimization, indexes, connections, schema design, and locking |
+`.agent/skills/` is the tracked canonical skill source. `.agents/` is ignored local installation
+state and never has authority over these definitions.
+
+| Skill                         | Purpose                                                            |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `accessibility`               | accessibility review and implementation guidance                   |
+| `agent-communication`         | clear, atomic agent-user interaction standards                     |
+| `animation-motion`            | motion behavior, transitions, and reduced-motion handling          |
+| `astro-patterns`              | Astro rendering, routing, and client-boundary guidance             |
+| `backend-engineering`         | API routes, services, validation, and integrations                 |
+| `celebra-delegation-patterns` | provider-neutral subagent requests, handoffs, and synthesis        |
+| `commit-planner`              | commit partitioning and message planning                           |
+| `copywriting-es`              | Spanish UI and invitation copy standards                           |
+| `documentation-governance`    | active documentation alignment workflow                            |
+| `frontend-design`             | visual design and composition guidance                             |
+| `seo-metadata`                | metadata, sharing, and search presentation                         |
+| `supabase`                    | Supabase Auth, RLS, Edge Functions, Storage, CLI, and MCP guidance |
+| `supabase-postgres`           | Postgres performance, indexes, connections, schema, and locking    |
+| `testing`                     | unit, integration, and E2E testing guidance                        |
+| `theme-architecture`          | theme tokens, presets, and section-theme contracts                 |
 
 ## Available Briefs
 
@@ -55,55 +69,138 @@ for the full model, or `.agent/rules/agent-routing.md` for the routing decision 
 
 ## Available Templates (Creative)
 
-| Template              | Purpose                                                |
-| --------------------- | ------------------------------------------------------ |
-| `reel-brief`          | short-form video reel script structure                 |
-| `social-image-brief`  | social post / carousel copy and image prompt structure |
-| `video-frame-brief`   | initial/final video frame prompt with ComfyUI params   |
-| `image-prompt-output` | generation parameter log for reproducibility           |
-| `creative-qa-report`  | checklist and report for reviewing creative outputs    |
+| Template              | Purpose                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `creative-qa-report`  | checklist and report for reviewing creative outputs         |
+| `image-prompt-output` | generation parameter log for reproducibility                |
+| `reel-brief`          | short-form video reel script structure                      |
+| `social-image-brief`  | social post or carousel copy and image prompt structure     |
+| `video-frame-brief`   | initial/final video frame prompt with generation parameters |
 
 ## Available Workflows
 
-| Workflow                        | Use When                                                                                |
-| ------------------------------- | --------------------------------------------------------------------------------------- |
-| `error-remediation`             | a command, test, or validation check is failing                                         |
-| `plan-authoring`                | the task needs clarified planning guidance or an explicitly requested repo-tracked note |
-| `system-doc-alignment`          | docs, governance metadata, or discovery docs may be stale                               |
-| `theme-architecture-governance` | theme presets or section theming need governance review                                 |
+| Workflow                        | File                                                | Use when                                                         |
+| ------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
+| `error-remediation`             | `.agent/workflows/error-remediation.md`             | a command, test, or validation check fails                       |
+| `managed-invitation-lifecycle`  | `.agent/workflows/managed-invitation-lifecycle.md`  | a managed invitation moves through local, preview, or production |
+| `plan-authoring`                | `.agent/workflows/plan-authoring.md`                | work needs sequencing or a durable tracked plan                  |
+| `system-doc-alignment`          | `.agent/workflows/system-doc-alignment.md`          | docs, governance metadata, or discovery links may be stale       |
+| `theme-architecture-governance` | `.agent/workflows/theme-architecture-governance.md` | theme presets or section theming need governance review          |
+
+## Planning
+
+Planning is conversation-scoped by default. Use `.agent/plans/README.md` when work is multi-session,
+high risk, or explicitly requested as a tracked plan. Files under `.agent/plans/archived/` are
+historical and not active authority.
+
+## Ownership Matrix (SSOT)
+
+One owner per concern. Other files may link here; they must not redefine the same policy.
+
+| Aspect                              | Owner                                               | Not the owner                                  |
+| ----------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| Agent discovery / active inventory  | `.agent/index.md`                                   | Archived plans, point-in-time reports          |
+| Validation tiers / review contract  | `.agent/rules/gatekeeper.md`                        | `docs/core/git-governance.md`, workflows       |
+| Agent operating procedure           | `.agent/rules/workflow.md`                          | Human branch/release policy docs               |
+| Git authorization / worktree safety | `.agent/rules/git-safety.md`                        | Commit-message style docs                      |
+| Human branch, commit, promotion     | `docs/core/git-governance.md`                       | Agent workflow rules                           |
+| Release checkpoints / version tags  | `docs/core/release-process.md`                      | Per-invitation notes                           |
+| Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)         | Migrations, invitation ops notes               |
+| Invitation identity requirements    | `docs/core/invitation-creation-contract.md`         | Runbook, agent workflow, safety rule           |
+| Invitation production runbook       | `docs/domains/intake/production-flow.md`            | Creation contract, agent workflow              |
+| Agent invitation procedure          | `.agent/workflows/managed-invitation-lifecycle.md`  | Runbook semantics, CLI flag copies             |
+| Invitation agent safety constraints | `.agent/rules/invitation-production.md`             | Runbook steps, creation field lists            |
+| Theme/preset runtime authority      | `.agent/rules/invitation-preset-source-of-truth.md` | Snapshots, published JSON alone                |
+| Schema / content shape              | `docs/core/content-schema.md` + live Zod            | Invitation ops notes                           |
+| Database operations                 | `docs/database-workflow.md`                         | Schema overview ERD                            |
+| Database schema overview            | `docs/domains/database/overview.md`                 | Ops runbooks                                   |
+| Environment variable hierarchy      | `docs/env-workflow.md`                              | Database workflow                              |
+| Brand / voice                       | `.agent/briefs/celebra-me.md`                       | Root PRODUCT/DESIGN markdown files (forbidden) |
+| Visual design intent                | `.agent/skills/frontend-design`                     | External design installs as SSOT               |
+| Theme tokens / SCSS architecture    | `docs/domains/theme/` + `theme-architecture` skill  | Brand brief alone                              |
+| Per-client invitation evidence      | `docs/invitations/` per-slug notes                  | `docs/core/`, system CHANGELOG dumps           |
+| Schema history                      | `supabase/migrations/` (+ manual SQL manifest)      | Full migration lists in CHANGELOG              |
+| Canonical skills                    | `.agent/skills/` (each skill SKILL file)            | `.agents/`, global Hermes skills               |
+| Available commands                  | `package.json`                                      | Copied command tables in stale docs            |
+
+### Invitation authority chain
+
+Load in this order for managed invitation work; do not copy semantics across layers:
+
+1. **Contract** — `docs/core/invitation-creation-contract.md` (what every invitation must define).
+2. **Runbook** — `docs/domains/intake/production-flow.md` (how production/lifecycle works).
+3. **Agent workflow** — `.agent/workflows/managed-invitation-lifecycle.md` (thin procedure).
+4. **Safety rule** — `.agent/rules/invitation-production.md` (agent hard constraints).
+5. **Executable CLI** — `pnpm invitation:update -- --help` and live provision scripts
+   (flags/behavior).
 
 ## Canonical Docs
+
+### Core
 
 - `docs/core/project-conventions.md`
 - `docs/core/architecture.md`
 - `docs/core/content-schema.md`
 - `docs/core/git-governance.md`
+- `docs/core/agent-interaction.md`
+- `docs/core/invitation-creation-contract.md`
+- `docs/core/release-process.md`
+- `docs/core/sensitive-data-guide.md`
+
+### Environment and Database
+
+- `docs/env-workflow.md`
+- `docs/database-workflow.md`
+- `docs/domains/database/overview.md`
+
+### Intake and Invitations
+
+- `docs/domains/intake/internal-invitation-editor.md`
+- `docs/domains/intake/production-flow.md`
+- `docs/domains/invitations/public-response-cache-policy.md`
+
+`docs/invitations/` contains invitation-specific finalization and operational notes. Those files may
+guide their named invitation but do not replace cross-cutting architecture or runbooks.
+
+- `docs/invitations/valentina-hernandez.md`
+- `docs/invitations/xareni-iyarit-asset-report.md`
+- `docs/invitations/america-johana-asset-report.md`
+- `docs/invitations/abril-michelle-becerra-rea.md`
+- `docs/invitations/romina-rios-chaparro-finalization.md`
+
+### Product Domains
+
 - `docs/domains/content/collections.md`
+- `docs/domains/content/enchanted-rose-photography-crops.md`
+- `docs/domains/content/event-governance.md`
+- `docs/domains/content/section-contracts.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/rsvp/database.md`
-- `docs/domains/tracking/commercial-attribution.md`
-- `.agent/rules/api-contracts.md`
-- `.agent/rules/database.md`
-- `.agent/rules/intake-publishing.md`
-- `.agent/rules/invitation-production.md`
 - `docs/domains/theme/architecture.md`
+- `docs/domains/theme/motion.md`
 - `docs/domains/theme/typography.md`
+- `docs/domains/tracking/commercial-attribution.md`
 
-Historical material lives under `docs/archive/` and must not be treated as the active source of
-truth.
+## Reports and Historical Material
+
+Invitation-specific operational evidence belongs under `docs/invitations/`. Historical audits and
+point-in-time reports belong under `docs/archive/reports/`. Reports can support a decision but never
+define current policy. Historical material under `docs/archive/` and `.agent/plans/archived/` is
+background only.
 
 ## Minimal Load Matrix
 
-`.agent/rules/git-safety.md` is required for **all** task types and is omitted from individual rows
-for brevity.
+Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/git-safety.md`.
 
-| Task Type                             | Minimum Context                                                                                                                                    |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visual or UI work                     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + relevant design/theme skill                                                                           |
-| Backend or data work                  | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `backend-engineering` + relevant domain docs                                                          |
-| Documentation or governance drift     | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `documentation-governance` + `system-doc-alignment`                                                                                   |
-| Testing or regression work            | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `testing` + affected domain docs                                                                    |
-| Supabase or database work             | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `.agent/rules/database.md` + `backend-engineering` + `supabase` + `supabase-postgres` + relevant docs |
-| Planning or commit governance         | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `plan-authoring` or `commit-planner`                                                                |
-| Planning or implementation sequencing | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `agent-communication` + `.agent/plans/README.md`                                                    |
-| Creative or marketing production      | `AGENTS.md` + `.agent/rules/gatekeeper.md` + `.agent/rules/agent-routing.md` + `.agent/briefs/celebra-me.md` + relevant creative template                                          |
+| Task type                         | Add                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| Visual or UI work                 | `.agent/rules/agent-routing.md` plus the relevant design or theme skill                      |
+| Backend or data work              | `backend-engineering`, relevant domain docs, and API/database rules                          |
+| Documentation or governance drift | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                    |
+| Testing or regression work        | `testing` and affected domain docs                                                           |
+| Supabase or database work         | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md` |
+| Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans    |
+| Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                           |
+| Creative or marketing production  | `.agent/briefs/celebra-me.md` and the relevant creative template                             |
+| Framework API uncertainty         | Relevant skill plus Context7/docs MCP against `package.json` versions                        |
+| Visual polish / anti-slop review  | `frontend-design` critique checklist (not external design SSOT installs)                     |

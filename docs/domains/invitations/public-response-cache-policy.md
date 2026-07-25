@@ -1,3 +1,10 @@
+---
+title: Public Invitation Response Policy
+lifecycle: evergreen
+domain: invitation-delivery
+last_reviewed: 2026-07-25
+---
+
 # Public invitation response policy
 
 ## Current contract

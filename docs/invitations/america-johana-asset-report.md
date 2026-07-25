@@ -1,13 +1,14 @@
 # XV América Johana Asset Report
 
-Archived from the active-plan directory on 2026-07-16; this is evidence, not actionable work.
+Relocated from the former agent reports directory on 2026-07-25; this is evidence, not actionable
+work.
 
 ## Source
 
-- Client folder:
-  `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\XV America Johana\Fotos`
+- Client source: original photo folder supplied outside the repository; the machine-local path is
+  not part of this durable record.
 - Asset namespace: `src/assets/images/events/xv-america-johana/`
-- Payload: `.agent/plans/active/xv-america-johana-db-payload.json`
+- Payload: `scripts/manual/production-patches/20260706_america_johana_xv.sql`
 
 ## Mapping
 

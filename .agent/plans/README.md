@@ -3,14 +3,16 @@
 `.agent/plans` stores operational plans that are still useful for agents.
 
 It is not a dumping ground for chat transcripts, logs, temporary prompts, or obsolete audits.
+Planning is conversation-scoped by default. Create or update a tracked plan only when work is
+multi-session, high risk, or explicitly requested by the repository owner.
 
 ## Structure
 
 ```text
 .agent/plans/
   README.md           # This file — plan governance
-  active/             # Plans that are approved, pending, or partially implemented
-  archived/           # Plans that are implemented, superseded, or historical
+  active/             # Draft, active, or blocked plans with remaining work
+  archived/           # Completed, deferred, superseded, final, or historical plans
 ```
 
 Local-only paths (`tmp/`, `drafts/`, `local/`) are gitignored. `archived/` is the canonical archive
@@ -18,13 +20,23 @@ location. A folder named `archive/` is legacy-only and must not receive new plan
 
 ## Plan Status Taxonomy
 
-| Status        | Meaning                                     |
-| ------------- | ------------------------------------------- |
-| `draft`       | Being discussed, not yet approved           |
-| `active`      | Approved and currently guiding work         |
-| `implemented` | Work completed, plan retained for reference |
-| `superseded`  | Replaced by a newer plan                    |
-| `archived`    | Historical — no longer actionable           |
+Use this provider-neutral taxonomy for plans and their artifacts:
+
+| Status        | When to use                                           |
+| ------------- | ----------------------------------------------------- |
+| `draft`       | Plan is being written or discussed, not yet approved  |
+| `active`      | Approved and currently guiding work                   |
+| `blocked`     | Active but cannot proceed until a dependency resolves |
+| `implemented` | Planned changes are complete                          |
+| `validated`   | All defined validation gates have passed              |
+| `accepted`    | Validated and accepted by human review                |
+| `deferred`    | Intentionally postponed until explicitly reactivated  |
+| `superseded`  | Replaced by a newer plan or durable source of truth   |
+| `final`       | Terminal state; no further action is planned          |
+
+`archived` is a directory lifecycle, not a frontmatter status. Keep `draft`, `active`, and `blocked`
+plans under `active/` while they have a real next action. Move completed or inactive plans to
+`archived/` after migrating durable knowledge to `docs/`, a rule, a workflow, or a skill.
 
 ## Standard Frontmatter
 
@@ -49,17 +61,18 @@ superseded_by:
 
 ## Governance Rules
 
-1. **Plans must be actionable.** If a document does not describe intent, constraints, or
+1. **Track only durable plans.** Routine single-session work stays in conversation context.
+2. **Plans must be actionable.** If a document does not describe intent, constraints, or
    implementation guidance, it belongs elsewhere (chat log, issue, etc.).
-2. **Status must be accurate.** Update status when work starts, finishes, or the plan becomes
+3. **Status must be accurate.** Update status when work starts, finishes, or the plan becomes
    obsolete.
-3. **No contradictions.** A plan must not contradict the current live codebase without being marked
-   `superseded` or `archived`.
-4. **Migrate stable knowledge.** When a plan produces durable architecture or policy, migrate that
+4. **No contradictions.** A plan must not contradict the current live codebase without being marked
+   `superseded` or moved to `archived/`.
+5. **Migrate stable knowledge.** When a plan produces durable architecture or policy, migrate that
    knowledge to `docs/` or a skill, then archive the plan.
-5. **No secrets or machine-local data.** Do not store credentials, logs, raw agent outputs, or
+6. **No secrets or machine-local data.** Do not store credentials, logs, raw agent outputs, or
    environment details.
-6. **One canonical plan per initiative.** Avoid multiple overlapping plans for the same goal.
+7. **One canonical plan per initiative.** Avoid multiple overlapping plans for the same goal.
 
 ## Relationship to Other Directories
 
@@ -76,17 +89,17 @@ Plans should be written as executable loops, not static documents.
 
 ### Current Public Invitation Performance State
 
-Current public invitation performance work must be represented by an existing file under
-`.agent/plans/active/`. The accepted section-architecture plan is archived at
-`.agent/plans/archived/public-invitation-section-architecture.md`; its measurements are historical,
-not the current payload baseline.
+The current response and cache contract lives at
+`docs/domains/invitations/public-response-cache-policy.md`. Performance implementation work belongs
+under `.agent/plans/active/` only while it has an actionable next step.
 
 - Production is not assumed to match the current branch. Validate production headers and CSS chunks
   before drawing conclusions from branch-local plans.
-- Production currently has the per-preset CSS split; full section theme splitting is branch/local
-  until preview or production deployment is explicitly approved.
-- Any future section split must update the active plan in the same loop and record base CSS size,
-  emitted section chunks, preview-vs-production state, validation, and remaining risks.
+- Historical measurements and completed splitting plans live under `.agent/plans/archived/`.
+- The remaining section-contract refactor is tracked by
+  `.agent/plans/active/section-architecture-refactor-plan.md`.
+- Any future performance plan must record its baseline, preview-versus-production state, validation,
+  and remaining risks.
 
 ### Loop Model
 
@@ -192,19 +205,8 @@ Every loop must produce a final report with these fields:
 
 ### Artifact Lifecycle
 
-Plans and their artifacts use the following status values:
-
-| Status        | When to use                                           |
-| ------------- | ----------------------------------------------------- |
-| `draft`       | Plan is being written or discussed, not yet approved  |
-| `active`      | Approved and currently guiding work                   |
-| `blocked`     | Active but cannot proceed until a dependency resolves |
-| `implemented` | Code changes complete, awaiting validation            |
-| `validated`   | All gates have passed, results documented             |
-| `accepted`    | Validated and accepted by human review                |
-| `deferred`    | Intentionally postponed — may be revisited            |
-| `superseded`  | Replaced by a newer plan that covers the same goal    |
-| `final`       | Terminal state — no further action planned            |
+Use the single status taxonomy above for plans and related artifacts. Do not introduce a second
+status vocabulary for a specific runtime or provider.
 
 When to update each artifact type:
 

@@ -38,17 +38,20 @@ If a required path is missing, stop and report it.
 1. Audit the current tree, live scripts, and active governance surface before editing docs.
 2. Compare active docs against live source, `.agent/index.md`, `AGENTS.md`,
    `.agent/plans/README.md`, `package.json`, `scripts/cli.mjs`, and the relevant governance owner.
-3. Use conversation-scoped planning by default. Only create a repo-tracked note under
-   `.agent/plans/` when the repository owner explicitly requests it.
+3. Use conversation-scoped planning by default. Create a repo-tracked note under `.agent/plans/`
+   only for multi-session or high-risk work, or when the repository owner explicitly requests it.
 4. Prefer consolidation over adding new workflow or governance documents.
 5. Enforce the Sync Contract in the same task:
    - behavior or architecture changes update `docs/core/architecture.md` and the matching
      `docs/domains/**` doc
    - workflow inventory or entrypoint changes update `.agent/index.md` and `AGENTS.md`
+   - ownership or authority-chain changes update the Ownership Matrix in `.agent/index.md`
    - new active docs go in the correct subtree and are linked from the active discovery doc when
      they become a source of truth
    - planning contract changes update `.agent/plans/README.md` when repo-tracked planning guidance
      changes
+   - release-history policy changes update `docs/core/release-process.md` and the `CHANGELOG.md`
+     header pointers when needed
 6. Remove or archive stale active references. Archived documents may retain legacy paths only when
    clearly marked as historical.
 7. After edits, detect the closest available verification scripts from `package.json` and

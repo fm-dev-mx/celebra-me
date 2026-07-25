@@ -28,6 +28,13 @@ related_docs:
 This skill guides testing practices for the Celebra-me project, ensuring code reliability and
 preventing regressions.
 
+## Current Library Docs (Context7)
+
+When Jest, React Testing Library, Playwright, or related matcher APIs are uncertain, consult current
+library docs via Context7 (or the runtime's equivalent docs MCP) using the versions pinned in
+`package.json`. Do not add a repo-local Context7 skill. Prefer existing repo test patterns when they
+differ from generic examples.
+
 ## Test Organization
 
 ```plaintext

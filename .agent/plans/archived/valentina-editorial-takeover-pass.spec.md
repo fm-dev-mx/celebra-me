@@ -1,10 +1,10 @@
 ---
 title: Valentina Hernandez XV Editorial Takeover Pass
-status: active
+status: superseded
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 related_skills:
   - frontend-design
   - theme-architecture
@@ -15,7 +15,9 @@ related_rules:
   - .agent/rules/git-safety.md
   - .agent/rules/invitation-production.md
 related_plans:
-  - .agent/plans/active/valentina-editorial-section-dividers.spec.md
+  - .agent/plans/archived/valentina-editorial-section-dividers.spec.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Hernandez XV Editorial Takeover Pass
@@ -101,7 +103,7 @@ Run:
 ```bash
 pnpm agent:git-safety:start
 git status --short
-git diff --staged -- .agent/plans/active/valentina-editorial-section-dividers.spec.md src/styles/themes/sections/_xv-valentina-hernandez.scss
+git diff --staged -- .agent/plans/archived/valentina-editorial-section-dividers.spec.md src/styles/themes/sections/_xv-valentina-hernandez.scss
 pnpm lint:styles:changed
 pnpm lint
 pnpm type-check
@@ -146,8 +148,8 @@ Accessibility/reduced-motion checks:
 - `.agent/rules/gatekeeper.md`
 - `.agent/rules/git-safety.md`
 - `.agent/rules/invitation-production.md`
-- `.agent/plans/active/valentina-editorial-section-dividers.spec.md`
-- `.agent/plans/active/xv-valentina-hernandez-db-payload.json`
+- `.agent/plans/archived/valentina-editorial-section-dividers.spec.md`
+- `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
 - `package.json`
 - `src/components/invitation/EventLocation.astro`
 - `src/components/invitation/components/VenueCard.astro`
@@ -166,7 +168,7 @@ Accessibility/reduced-motion checks:
 
 ## Files Changed
 
-- `.agent/plans/active/valentina-editorial-takeover-pass.spec.md` - created and updated with
+- `.agent/plans/archived/valentina-editorial-takeover-pass.spec.md` - created and updated with
   implementation notes and validation results.
 - `src/components/invitation/EventLocation.astro` - added real editorial guest-guide heading,
   guest-note titles, note numbers, and access labels for `editorial-magazine`.

@@ -29,6 +29,13 @@ related_docs:
 This skill governs **Astro Component Architecture** in Celebra-me. It focuses on how components
 render, fetch data, and interact with the client.
 
+## Current Framework Docs (Context7)
+
+When Astro, `@astrojs/*`, or hydration API details are uncertain, consult current library docs via
+Context7 (or the runtime's equivalent docs MCP) using the versions pinned in `package.json`. Do not
+add a repo-local Context7 skill. Context7 never overrides Celebra-me contracts, live code, or
+canonical `docs/`.
+
 ## Data Fetching Strategies
 
 ### 1. Static Content (Build Time)

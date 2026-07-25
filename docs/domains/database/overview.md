@@ -1,6 +1,6 @@
 # Database Overview
 
-**Last Updated:** 2026-06-05
+**Last Updated:** 2026-07-25
 
 This document describes the current Celebra-me Supabase/Postgres schema, entity relationships, and
 major data flows.
@@ -327,11 +327,17 @@ Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
 
 ## Migration Strategy
 
-Current state: 39 incremental migrations. Production uses `pnpm db:prod:migrate` to apply reviewed
-migrations only.
+Do not freeze a migration count in active documentation. Production uses `pnpm db:prod:migrate` to
+apply reviewed migrations only, and hosted state must be read through `pnpm db:prod:audit`.
 
-**For local/staging**: use `pnpm db:local:reset` (applies all migrations from scratch), then
-`pnpm db:local:validate`.
+**For persistent-local**: use `pnpm db:local:migrate` to apply pending migrations without resetting
+the protected database, then run `pnpm db:local:validate`. To import production-shaped data, use the
+non-destructive backup and restore workflow in `docs/database-workflow.md`.
+
+**For destructive reconstruction tests**: use `pnpm db:disposable:reset`. It targets the isolated
+disposable database, never persistent-local.
+
+**For Preview**: use `pnpm db:preview:migrate` with the guarded hosted Preview target.
 
 **For production**: never rewrite, delete, or squash already-applied migrations. Always add
 corrective migrations. Migration history is append-only. Do not push local data dumps to production;

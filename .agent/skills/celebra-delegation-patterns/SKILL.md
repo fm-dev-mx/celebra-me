@@ -1,13 +1,12 @@
 ---
 name: celebra-delegation-patterns
 description: |
-  Practical delegate_task patterns for Celebra-me: when to delegate, templates for each role,
-  required context fields, output formats, and synthesis rules. Use this skill whenever you
-  need to delegate a sub-task to a temporary subagent.
+  Provider-neutral subagent patterns for Celebra-me: routing criteria, role handoffs, required
+  context, output formats, and synthesis rules.
 domain: workflow
 version: 1.2.0
 when_to_use:
-  - Evaluating whether to use delegate_task for a sub-task
+  - Evaluating whether to use a temporary subagent for a sub-task
   - Drafting context for a role-style delegation (builder, copywriter, QA, visual-direction)
   - Processing or synthesizing subagent results
   - Defining task boundaries and output expectations before delegating
@@ -19,63 +18,69 @@ related_skills: []
 related_docs:
   - .agent/rules/agent-routing.md
 ---
+
 # Celebra-me Delegation Patterns
 
-Practical patterns for using `delegate_task(goal=..., context=...)` in Celebra-me.
-Subagents are temporary — they run once, report back, and disappear.
+Practical patterns for provider-neutral temporary-subagent handoffs in Celebra-me. The active
+runtime owns invocation syntax, model selection, concurrency, and mechanical capability controls.
 
-## When to Use `delegate_task`
+## When to Use a Subagent
 
 Use a subagent only when the task creates ONE of these benefits:
 
-| Benefit | Description | Example |
-|---|---|---|
-| **Parallel speed** | Two+ independent subtasks can run simultaneously | Copy + visual direction in parallel |
+| Benefit                | Description                                                                                                                                   | Example                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Parallel speed**     | Two+ independent subtasks can run simultaneously                                                                                              | Copy + visual direction in parallel                                               |
 | **Quality separation** | One agent creates, another reviews. Narrow role focus (e.g. copywriter working only on copy) is a subtype of this, not an independent reason. | Builder implements, QA verifies; copywriter focuses on copy without touching code |
-| **Risk reduction** | Independent verification before delivery | QA reviews production changes before publish |
+| **Risk reduction**     | Independent verification before delivery                                                                                                      | QA reviews production changes before publish                                      |
 
-## When NOT to Use `delegate_task`
+## When NOT to Use a Subagent
 
 - **Trivial edits** — single-line fix, typo, one-file change (<2 min)
 - **Unclear tasks** — you'd need to ask clarifying questions (subagents cannot use `clarify`)
-- **Insufficient context** — the subagent would need more background than you can provide in `context`
-- **Tightly coupled creative decisions** — visual coordination that requires seeing intermediate results
-- **High overhead-to-value ratio** — delegation costs ~2 tool calls + context setup; if the task itself is 3 tool calls, do it directly
+- **Insufficient context** — the subagent would need more background than the handoff can provide
+- **Tightly coupled creative decisions** — visual coordination that requires seeing intermediate
+  results
+- **High overhead-to-value ratio** — if preparing and verifying the handoff costs as much as the
+  task, do it directly
 
 ## File-Access Hygiene
 
-Subagents must follow strict file-access discipline to avoid slow scans, OneDrive download triggers, and unnecessary I/O:
+Subagents must follow strict file-access discipline to avoid slow scans, OneDrive download triggers,
+and unnecessary I/O:
 
-| Rule | Detail |
-|---|---|
-| **No broad searches** | Do NOT run repository-wide `search_files()` or `grep`/`rg` searches. Avoid patterns that could trigger OneDrive cloud-only file downloads through `rg.exe` or similar tools. |
-| **Target explicit paths** | Read only the files and directories directly relevant to the task. If the task doesn't specify paths, ask the orchestrator for them — do not scan to discover. |
-| **Avoid noise directories** | Do NOT read or search inside: `node_modules/`, `.astro/`, `dist/`, `.vercel/`, `coverage/`, `screenshots/`, `logs/`, `public/assets/`, `src/assets/images/events/*/` (binary media folders), or any `.git/` directory — unless the task explicitly requires it. |
-| **Prefer project entry points** | Start with known entry points (`AGENTS.md`, `.agent/index.md`, `src/data/`, `src/lib/`, `src/pages/`) rather than scanning from the root. |
-| **No asset enumeration** | Do not enumerate image assets, media files, or generated content unless the task is specifically about asset management. |
+| Rule                            | Detail                                                                                                                                                                                                                                                          |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No broad searches**           | Do NOT run repository-wide `search_files()` or `grep`/`rg` searches. Avoid patterns that could trigger OneDrive cloud-only file downloads through `rg.exe` or similar tools.                                                                                    |
+| **Target explicit paths**       | Read only the files and directories directly relevant to the task. If the task doesn't specify paths, ask the orchestrator for them — do not scan to discover.                                                                                                  |
+| **Avoid noise directories**     | Do NOT read or search inside: `node_modules/`, `.astro/`, `dist/`, `.vercel/`, `coverage/`, `screenshots/`, `logs/`, `public/assets/`, `src/assets/images/events/*/` (binary media folders), or any `.git/` directory — unless the task explicitly requires it. |
+| **Prefer project entry points** | Start with known entry points (`AGENTS.md`, `.agent/index.md`, `src/data/`, `src/lib/`, `src/pages/`) rather than scanning from the root.                                                                                                                       |
+| **No asset enumeration**        | Do not enumerate image assets, media files, or generated content unless the task is specifically about asset management.                                                                                                                                        |
 
 ## Output-Length Rules
 
-| Rule | Detail |
-|---|---|
-| **Target length** | 500–1,200 words (~3,000–7,000 characters). Stay concise. |
-| **Exception** | Only exceed 1,200 words when the task explicitly asks for deep analysis or multi-section output. |
-| **Structure** | Lead with recommendations or verdict (first paragraph). Follow with evidence. End with open questions or risks. |
-| **No padding** | Every paragraph should contain an actionable finding. Remove boilerplate, generic introductions, and restated instructions. |
+| Rule              | Detail                                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Target length** | 500–1,200 words (~3,000–7,000 characters). Stay concise.                                                                    |
+| **Exception**     | Only exceed 1,200 words when the task explicitly asks for deep analysis or multi-section output.                            |
+| **Structure**     | Lead with recommendations or verdict (first paragraph). Follow with evidence. End with open questions or risks.             |
+| **No padding**    | Every paragraph should contain an actionable finding. Remove boilerplate, generic introductions, and restated instructions. |
 
 ## Compact-Output Guidance
 
-For certain task types, subagents should use a compact format instead of the standard 500–1,200 word target.
+For certain task types, subagents should use a compact format instead of the standard 500–1,200 word
+target.
 
-| Use compact output for | Do NOT use compact output for |
-|---|---|
-| Technical checklists | Final client-facing copy |
-| QA summaries | Premium visual direction |
-| Builder implementation reports | Creative strategy |
-| Diff summaries | High-risk recommendations |
-| Repetitive validation tasks | Anything where nuance matters |
+| Use compact output for         | Do NOT use compact output for |
+| ------------------------------ | ----------------------------- |
+| Technical checklists           | Final client-facing copy      |
+| QA summaries                   | Premium visual direction      |
+| Builder implementation reports | Creative strategy             |
+| Diff summaries                 | High-risk recommendations     |
+| Repetitive validation tasks    | Anything where nuance matters |
 
 Compact output format:
+
 - Verdict first (one line)
 - Bullets only — no paragraphs
 - No boilerplate, no restating the prompt
@@ -85,54 +90,52 @@ Compact output format:
 
 ## Structured Handoffs
 
-Use `.agent/tmp/handoffs/<task-id>/` to pass approved output between
-sequential delegated tasks. This prevents context truncation and
-reduces `context` string bloat.
+Use `.agent/tmp/handoffs/<task-id>/` to pass approved output between sequential delegated tasks.
+This prevents context truncation and reduces `context` string bloat.
 
 ### When to use structured handoffs
 
-| Situation | Use handoff? |
-|---|---|
-| Sequential delegation (copy → builder → QA) | ✅ Yes |
-| Output may be truncated | ✅ Yes |
-| Subagent produces compact output but exact details are needed downstream | ✅ Yes |
-| Orchestrator pre-approves intermediate output before passing to next subagent | ✅ Yes |
-| Task is trivial, single delegation | ❌ No |
-| Only one read-only subagent | ❌ No |
-| Orchestrator can synthesize directly from the summary | ❌ No |
-| Handoff file overhead exceeds the task itself | ❌ No |
+| Situation                                                                 | Use handoff? |
+| ------------------------------------------------------------------------- | ------------ |
+| Sequential delegation (copy → builder → QA)                               | ✅ Yes       |
+| Output may be truncated                                                   | ✅ Yes       |
+| Subagent produces compact output but exact details are needed downstream  | ✅ Yes       |
+| Orchestrator approves intermediate output before passing to next subagent | ✅ Yes       |
+| Task is trivial, single delegation                                        | ❌ No        |
+| Only one read-only subagent                                               | ❌ No        |
+| Orchestrator can synthesize directly from the summary                     | ❌ No        |
+| Handoff file overhead exceeds the task itself                             | ❌ No        |
 
 ### File patterns
 
 ```
 .agent/tmp/handoffs/<task-id>/
-├── approved-copy.json          # Copywriter output, approved by Jeremías
-├── visual-direction.md         # Visual direction, approved by Jeremías
+├── approved-copy.json          # Copywriter output, approved by the orchestrator
+├── visual-direction.md         # Visual direction, approved by the orchestrator
 ├── implementation-spec.md      # Spec for the builder subagent
 └── qa-checklist.md             # Quality review expectations
 ```
 
-Create only the files actually needed for the task. Use `.json` for
-structured data (copy fields, config values), `.md` for narrative guidance.
+Create only the files actually needed for the task. Use `.json` for structured data (copy fields,
+config values), `.md` for narrative guidance.
 
 ### Do NOT store in handoffs
 
 - Secrets, credentials, API keys
 - Private client data (PII, full names beyond what's needed)
 - Large assets, generated images, screenshots
-- Full subagent transcripts (Hermes cache handles these)
+- Full subagent transcripts (use runtime-managed transcript storage)
 - Anything that should be version-controlled
 
 ### Cleanup
 
-Delete `handoffs/<task-id>/` after the task is complete and verified.
-Only delete files under the current task's handoff directory — never
-run broad delete commands. If preserving for reference, report the path
-and reason to the user.
+Delete `handoffs/<task-id>/` after the task is complete and verified. Only delete files under the
+current task's handoff directory — never run broad delete commands. If preserving for reference,
+report the path and reason to the user.
 
-## Required Context Fields (Always Include)
+## Required Handoff Fields (Always Include)
 
-Every `context` string must contain:
+Every subagent request must contain:
 
 1. **Role identity** — e.g. "Act as the Celebra-me QA reviewer"
 2. **Task scope** — what files, components, or areas the subagent should touch
@@ -141,14 +144,14 @@ Every `context` string must contain:
 5. **Validation commands** — what to run after making changes
 6. **Output format** — what the summary must include
 
-## Delegation Templates
+## Subagent Request Templates
 
 ### Template: Builder (Implementation)
 
-```python
-delegate_task(
-    goal="Implement [specific feature/fix/component] for Celebra-me",
-    context="""
+```text
+Subagent request
+Goal: Implement [specific feature/fix/component] for Celebra-me
+Instructions:
 Role: Celebra-me builder (implementation).
 
 Task: <describe exactly what to build or fix, in which files>
@@ -185,16 +188,14 @@ Self-check before responding:
 4. Evidence: did I run validation (or explain why not)?
 5. Output: is the report in the requested format and length?
 6. Risks: did I state any assumptions or remaining risks?
-"""
-)
 ```
 
 ### Template: Copywriter (Spanish Copy)
 
-```python
-delegate_task(
-    goal="Write invitation copy for [event type] — [event name]",
-    context="""
+```text
+Subagent request
+Goal: Write invitation copy for [event type] — [event name]
+Instructions:
 Role: Celebra-me copywriter (Spanish copy).
 
 Task: <describe what copy is needed and for which sections>
@@ -225,16 +226,14 @@ Self-check before responding:
 4. Role: did I stay within the copywriter role (no code or layout suggestions)?
 5. Safety: did I avoid modifying any files?
 6. Risks: did I state any uncertainty about tone or details?
-"""
-)
 ```
 
 ### Template: QA (Quality Review)
 
-```python
-delegate_task(
-    goal="Run QA review on [page/component]: mobile-first visual check, proofreading, links",
-    context="""
+```text
+Subagent request
+Goal: Run QA review on [page/component]: mobile-first visual check, proofreading, links
+Instructions:
 Role: Celebra-me QA reviewer.
 
 Task: <describe what to review — specific pages, components, or routes>
@@ -269,16 +268,14 @@ Self-check before responding:
 4. Role: did I stay within QA reviewer role (no code fixes)?
 5. Safety: did I avoid modifying any files or running git operations?
 6. Evidence: did I use data-attribute selectors for screenshots (not CSS text)?
-"""
-)
 ```
 
 ### Template: Visual Direction (Image Prompts)
 
-```python
-delegate_task(
-    goal="Create image prompts and visual direction for [event type] — [event name]",
-    context="""
+```text
+Subagent request
+Goal: Create image prompts and visual direction for [event type] — [event name]
+Instructions:
 Role: Celebra-me visual director.
 
 Task: <describe what visual content is needed>
@@ -291,15 +288,15 @@ Event context:
 
 Constraints:
 - READ-ONLY — do NOT modify code files
-- Image gen params: Juggernaut XL v9 for photorealism, Flux Dev fp8 for general
-- ComfyUI: CFG 4.5, sampler dpmpp_2m_sde+karras, steps 35
+- Use image-generation capabilities only when the task explicitly requests them
+- Do not assume a provider, model, sampler, or runtime; record applicable parameters
 - Avoid: plastic skin, oversaturated colors, cartoon styles
 - Preferred: warm lighting, natural skin texture, elegant composition
 - Prompts should use Spanish event vocabulary for subjects
 
 Output format:
 1. Per-image: prompt (English for technical parameters, Spanish for subject context),
-   negative prompt, model suggestion, CFG, sampler, steps, aspect ratio
+   negative prompt, capability requirements, and reproducibility parameters when applicable
 2. Palette recommendation (hex codes)
 3. Theme preset recommendation with rationale
 
@@ -309,9 +306,7 @@ Self-check before responding:
 3. Did I avoid unnecessary image generation or asset enumeration?
 4. Role: did I stay within visual director role (no code or copy changes)?
 5. Safety: did I avoid modifying any files?
-6. Risks: did I state any uncertainty about model suitability or palette fit?
-"""
-)
+6. Risks: did I state any uncertainty about capability availability or palette fit?
 ```
 
 ## Forbidden Actions for ALL Subagents
@@ -320,61 +315,66 @@ Regardless of role, subagents must NOT:
 
 - Stage or commit files (`git add`, `git commit`, etc.)
 - Run production database commands
-- Modify `config.yaml`, `.env`, or Hermes configuration
-- Modify project configuration files (`astro.config.mjs`, `tsconfig.json`, `package.json`) unless explicitly directed
+- Modify provider configuration, `.env`, or runtime settings
+- Modify project configuration files (`astro.config.mjs`, `tsconfig.json`, `package.json`) unless
+  explicitly directed
 - Install packages or modify dependencies without explicit instruction
 - Run destructive commands (`rm -rf`, `git reset --hard`, etc.)
 - Access or expose secrets (API keys, tokens, passwords)
 
-## Synthesis Rules for Jeremías
+## Orchestrator Synthesis Rules
 
 After a subagent completes, the orchestrator MUST:
 
 1. **Read the summary before acting** — don't auto-approve subagent work
-2. **Check for truncation** — if the summary appears cut off (starts mid-sentence, ends abruptly, or has a "TRUNCATED" marker), do NOT assume the missing content. Either ask for a concise re-summary or inspect the saved output only if a reliable cache path is provided.
-3. **Verify file changes** — cross-check claimed file modifications with `read_file` or `git status`. Subagent outputs are self-reported.
-4. **Re-run validation** — subagent-reported test/lint results are self-reported; run `pnpm type-check` and `pnpm lint` yourself after synthesis.
-5. **Check for conflicts between subagents** — when merging outputs from multiple subagents, explicitly verify they don't contradict each other (e.g., copywriter proposed different text than what builder already changed, or visual director selected a different palette than what's in the theme).
-6. **Report to user** — include subagent findings, your synthesis, any conflicts found, and remaining risks.
-7. **Clean up handoffs** — after the task is complete, delete `.agent/tmp/handoffs/<task-id>/`. Preserve only if the user explicitly asks to keep it for reference, and report the path and reason.
+2. **Check for truncation** — if the summary appears cut off (starts mid-sentence, ends abruptly, or
+   has a "TRUNCATED" marker), do NOT assume the missing content. Either ask for a concise re-summary
+   or inspect the saved output only if a reliable cache path is provided.
+3. **Verify file changes** — cross-check claimed modifications with repository reads and
+   `git status`. Subagent outputs are self-reported.
+4. **Re-run validation** — subagent-reported test/lint results are self-reported; run
+   `pnpm type-check` and `pnpm lint` yourself after synthesis.
+5. **Check for conflicts between subagents** — when merging outputs from multiple subagents,
+   explicitly verify they don't contradict each other (e.g., copywriter proposed different text than
+   what builder already changed, or visual director selected a different palette than what's in the
+   theme).
+6. **Report to user** — include subagent findings, your synthesis, any conflicts found, and
+   remaining risks.
+7. **Clean up handoffs** — after the task is complete, delete `.agent/tmp/handoffs/<task-id>/`.
+   Preserve only if the user explicitly asks to keep it for reference, and report the path and
+   reason.
 
 ### Parallel Batch Pattern
 
 For truly independent work, dispatch multiple subagents in one batch:
 
-```python
-from hermes_tools import terminal
+```text
+Parallel batch:
+- Role: copywriter
+  Goal: Write invitation copy for Valentina XV
+  Instructions: <full request fields above>
+- Role: visual director
+  Goal: Create image prompts for Valentina XV hero and interludes
+  Instructions: <full request fields above>
 
-tasks = [
-    {
-        "goal": "Write invitation copy for Valentina XV",
-        "context": "Role: copywriter. ... (full context per template above)",
-    },
-    {
-        "goal": "Create image prompts for Valentina XV hero and interludes",
-        "context": "Role: visual director. ... (full context per template above)",
-    },
-]
-# Max 3 concurrent children. If more than 3, split into batches.
-delegate_task(tasks=tasks)
+Invoke together only if the runtime supports parallel subagents and the requests are independent.
 ```
 
 ### Sequential Dependency Pattern
 
 When one subagent's output feeds another, run sequentially:
 
-```python
-# Step 1: Builder creates the component
-result1 = delegate_task(goal="Build the RSVP form component", context="...")
+```text
+Step 1 — builder:
+Goal: Build the RSVP form component
+Output: changed paths, decisions, and validation evidence
 
-# Step 2: QA reviews the built component
-result2 = delegate_task(
-    goal="QA review the RSVP form component",
-    context="... Previous build created these files: <files from result1>"
-)
+Step 2 — QA:
+Goal: Review the RSVP form component
+Input: only the verified changed paths and outcomes from Step 1
 ```
 
 ---
 
-_This skill is a living document. Update it as new delegation patterns emerge or
-as Hermes adds system-level tool gating for subagents._
+_This skill is a living document. Keep it independent of provider-specific invocation APIs, models,
+and configuration._

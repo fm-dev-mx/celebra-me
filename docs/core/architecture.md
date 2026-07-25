@@ -22,6 +22,10 @@ Celebra-me follows these guiding principles:
 
 ## 2) Astro Execution Model
 
+The repository intentionally tracks **Astro 6** SSR with the Vercel adapter. Do not treat Astro 7+
+as the active baseline until a dedicated upgrade lands. Platform version policy lives in
+[`project-conventions.md`](project-conventions.md#12-platform-version-policy).
+
 ### Default Strategy
 
 - Pages execute through the Astro SSR adapter. Public pages may opt into cache headers, while
@@ -207,6 +211,20 @@ They are not a temporary fallback for real/client invitations.
   free-form documentation lists.
 - Presets are the canonical source of theme identity. Section partials are organization and
   presentation, not independent theme identity.
+
+### 8.2 Invitation CSS Delivery
+
+- `src/styles/invitation.scss` emits shared invitation structure and the shared section bases
+  exposed by `src/styles/themes/sections/_index.scss`.
+- `src/styles/invitation-presets/*.scss` are runtime preset entrypoints. They load preset tokens and
+  preset-specific font packages.
+- `src/styles/invitation-sections-by-preset/*.scss` are runtime section-bundle entrypoints. They
+  import canonical `src/styles/themes/sections/**` modules directly in cascade order.
+- `src/lib/invitation/section-css-resolver.ts` resolves one preset bundle, an optional visual
+  profile, and only the requested canonical footer override. It does not discover every section
+  variant as an independent asset.
+- Public invitation and dashboard preview routes use the same resolver and preserve stylesheet
+  order: preset, section bundle, optional footer override, then optional visual profile.
 
 ---
 

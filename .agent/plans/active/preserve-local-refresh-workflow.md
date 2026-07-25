@@ -1,8 +1,8 @@
 ---
 title: Preserve-Local Refresh Workflow
-status: active
+status: blocked
 created: 2026-06-14
-updated: 2026-06-14
+updated: 2026-07-25
 related_skills:
   - backend-engineering
   - supabase
@@ -19,7 +19,8 @@ supersedes:
 ## Objective
 
 Refresh the local Supabase database from production data while preserving local-only invitations,
-events, demos, and all their dependent data. The final state should be:
+events, demos, and all their dependent data without resetting the protected persistent-local
+database. The intended final state is:
 
 ```txt
 local DB = production snapshot + preserved local-only invitations/demos
@@ -28,20 +29,24 @@ local DB = production snapshot + preserved local-only invitations/demos
 ## Constraints
 
 - Production is read-only. Never write to production.
+- Persistent-local is protected state. Never use `supabase db reset` or a destructive refresh.
 - All safety rules from `.agent/rules/database.md` and the task prompt apply.
 - Prefer dedicated new files over bloating `db-workflow-lib.ts`.
 - Follow existing patterns: psql COPY blocks, FK-safe ordering, staging schemas.
-- Full backups already exist at `D:\code\celebra-me-backup\db-full-20260614-084026`.
+- Backup and preserve-bundle paths must be operator-selected, gitignored, and validated at runtime.
 
 ## Implementation Files
 
-| File                                                     | Purpose                                                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `.agent/plans/active/preserve-local-refresh-workflow.md` | This plan                                                                                              |
-| `scripts/db/preserve-local-lib.ts`                       | Shared preserve-local logic (slug detection, row tracing, export, restore, validation, dry-run report) |
-| `scripts/db/refresh-local-from-prod-preserve-local.ts`   | CLI entrypoint orchestrating all 8 phases                                                              |
-| `tests/unit/preserve-local-planning.test.ts`             | Pure-logic tests for detection, export planning, validation                                            |
-| `docs/database-workflow.md`                              | Updated with new command docs                                                                          |
+| File                                                     | Current role                                                                                             |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `.agent/plans/active/preserve-local-refresh-workflow.md` | This blocked plan                                                                                        |
+| Future guarded entrypoint                                | Not implemented; must compose backup/restore without resetting persistent-local                          |
+| Future focused tests                                     | Must be introduced with the guarded entrypoint rather than retaining disconnected prototype code         |
+| `docs/database-workflow.md`                              | Documents only currently supported commands; update after a safe entrypoint is implemented and validated |
+
+The previous disconnected prototype (`preserve-local-lib.ts`, `refresh-copy.sql`, and its isolated
+tests) was removed during the July 2026 structural cleanup. It had no runnable entrypoint and could
+not prove the non-destructive workflow described here.
 
 ## Phases
 
@@ -85,8 +90,9 @@ local DB = production snapshot + preserved local-only invitations/demos
 
 ### Phase 6 — Refresh local from production
 
-- Use existing `supabase db reset` + production import
-- Delegate to existing lib functions
+- Import through the non-destructive staging workflow owned by `pnpm db:local:restore-from-dump`.
+- Preserve existing local rows by default and stop on schema drift or identity ambiguity.
+- Do not call either blocked refresh alias and do not invoke `supabase db reset`.
 
 ### Phase 7 — Restore preserved data
 
@@ -102,13 +108,22 @@ local DB = production snapshot + preserved local-only invitations/demos
 
 ```bash
 pnpm type-check
-pnpm test -- tests/unit/db-safety.test.ts tests/unit/db-workflow-lib.test.ts tests/unit/preserve-local-planning.test.ts
+pnpm test -- tests/unit/db-safety.test.ts tests/unit/db-workflow-lib.test.ts
 ```
 
-## Commands
+## Command status
+
+No preserve-refresh command is currently runnable. The package aliases `db:local:refresh-from-prod`
+and `db:local:refresh-from-prod-preserve-local` are intentional fail-closed safety rails and must
+remain blocked.
+
+The supported non-destructive import path is:
 
 ```bash
-pnpm db:local:refresh-from-prod-preserve-local -- --dry-run
-pnpm db:local:refresh-from-prod-preserve-local -- --export
-pnpm db:local:refresh-from-prod-preserve-local -- --confirm
+PROD_DB_URL=... pnpm db:prod:backup
+pnpm db:local:restore-from-dump --dump <path-to-dump>
+pnpm db:local:validate
 ```
+
+Unblock this plan only after a new guarded entrypoint proves preservation, ambiguity handling,
+Storage reporting, and sentinel survival without resetting persistent-local.

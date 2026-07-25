@@ -10,7 +10,7 @@ related_docs:
   - docs/core/architecture.md
   - .agent/rules/intake-publishing.md
   - .agent/rules/invitation-production.md
-  - .agent/plans/active/domain-simplification-packages-audit.md
+  - .agent/plans/archived/domain-simplification-packages-audit.md
 supersedes: []
 ---
 

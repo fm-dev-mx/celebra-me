@@ -5,11 +5,21 @@ Todos los cambios notables en el proyecto Celebra-me serán documentados en este
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este
 proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+Política por capas (qué va aquí vs notas por invitación vs migraciones):
+[`docs/core/release-process.md`](docs/core/release-process.md).
+
 ## [Unreleased]
 
 ### Added (pending)
 
-<!-- Items for the next release go here -->
+<!-- Product/operator-visible items for the next release. Not every commit. -->
+<!-- Client invitation detail → docs/invitations/<slug>.md; schema history → supabase/migrations/. -->
+
+### Changed
+
+- **Agent governance SSOT**: ownership matrix and invitation authority chain in `.agent/index.md`;
+  layered CHANGELOG policy in `docs/core/release-process.md`; Context7/Impeccable/Hermes discovery
+  rules in skill loaders; platform version policy deferring Astro 7 / TypeScript 7 majors.
 
 ## [0.11.0-beta.1] - 2026-07-07
 

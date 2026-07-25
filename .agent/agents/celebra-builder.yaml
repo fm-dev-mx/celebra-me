@@ -2,7 +2,7 @@
 #
 # This file is a documentation contract, NOT an executable agent definition.
 # It describes the role, responsibilities, and constraints of the builder agent.
-# Routing is handled by the orchestrator (Jeremías) via delegate_task.
+# The active orchestrator/runtime decides whether and how to invoke this role.
 ---
 name: celebra-builder
 role: implementation
@@ -11,36 +11,36 @@ status: active
 created: 2026-07-02
 purpose: All code changes — Astro, TypeScript, SCSS implementation, refactoring, and bug fixes
 responsibilities:
-  - Implement new Astro pages, components, and layouts
-  - Write and edit TypeScript and TSX (React islands)
-  - Write and edit SCSS styles (no Tailwind)
-  - Refactor existing code within bounded scope
-  - Fix bugs (frontend, backend, API routes)
-  - Run build, type-check, lint, and test commands to verify changes
-  - Create and update database migrations when authorized
-  - Create and update content collection JSON files
-delegate_when:
-  - Any file-edit task exceeding 2 minutes of effort
-  - Refactors touching 3 or more files
-  - New component or page creation
-  - Bug fixes requiring investigation across multiple modules
-model:
-  name: gpt-5.5
-  provider: opencode-go
-  reasoning: medium
-tool_access:
-  available: [file-read, file-write, terminal]
-  restricted: [git-write, browser, image-gen]
+    - Implement new Astro pages, components, and layouts
+    - Write and edit TypeScript and TSX (React islands)
+    - Write and edit SCSS styles (no Tailwind)
+    - Refactor existing code within bounded scope
+    - Fix bugs (frontend, backend, API routes)
+    - Run build, type-check, lint, and test commands to verify changes
+    - Create and update database migrations when authorized
+    - Create and update content collection JSON files
+subagent_when:
+    - Any file-edit task exceeding 2 minutes of effort
+    - Refactors touching 3 or more files
+    - New component or page creation
+    - Bug fixes requiring investigation across multiple modules
+required_capabilities:
+    - repository-read
+    - repository-write
+    - command-execution
+restricted_capabilities:
+    - git-write
+    - production-mutation
 skills:
-  - astro-patterns
-  - frontend-design
-  - theme-architecture
-  - commit-planner
-  - testing
+    - astro-patterns
+    - frontend-design
+    - theme-architecture
+    - commit-planner
+    - testing
 constraints:
-  - Bound by gatekeeper rules — no new `any`, no Tailwind
-  - Bound by git-safety rules — no staging/committing unless authorized
-  - "Follow AGENTS.md conventions: @/* imports, Spanish UI text, English identifiers"
-  - Run pnpm type-check after any TypeScript change
-  - Run pnpm lint after any code change
-  - Avoid refactoring files outside declared task scope
+    - Bound by gatekeeper rules — no new `any`, no Tailwind
+    - Bound by git-safety rules — no staging/committing unless authorized
+    - 'Follow AGENTS.md conventions: @/* imports, Spanish UI text, English identifiers'
+    - Run pnpm type-check after any TypeScript change
+    - Run pnpm lint after any code change
+    - Avoid refactoring files outside declared task scope

@@ -1,8 +1,17 @@
 # Canonical Invitation Creation Contract — Celebra-me
 
-This document defines the authoritative, global contract required for any human or AI agent to
-create, validate, preview, publish, and update a managed digital invitation within Celebra-me across
-Local, Preview, and Production targets.
+**Owns:** identity and required fields for any managed invitation (what must exist before apply).
+
+**Does not own:** operational runbook steps, CLI flags, packaging, target order, or agent safety
+constraints. Those live in:
+
+- Runbook — [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
+- Agent procedure —
+  [`.agent/workflows/managed-invitation-lifecycle.md`](../../.agent/workflows/managed-invitation-lifecycle.md)
+- Safety constraints —
+  [`.agent/rules/invitation-production.md`](../../.agent/rules/invitation-production.md)
+
+See the invitation authority chain in [`.agent/index.md`](../../.agent/index.md).
 
 ---
 
@@ -35,22 +44,24 @@ Every managed digital invitation must define:
 
 ---
 
-## 2. Mandatory Pipeline Boundaries & Verification
+## 2. Required Pipeline Invariants
 
-1. **Intake & Normalization**: Validate raw asset binaries (MIME type, 480px+ dimension, sharpness,
-   WebP conversion) and compute `sourceHash` & `assetManifestHash`.
-2. **Canonical Publication Validation**: Validate `draftContent` against `eventContentSchema` before
-   release acceptance, packaging, or database/storage mutation.
-3. **Immutable Operational Plan**: Generate deterministic `OperationalPlan` containing `planId`,
-   target preconditions (fingerprints of existing draft updated timestamp and published version),
-   functional changes, and physical DB/Storage counts.
-4. **Drift Protection**: Verify target preconditions immediately before apply; abort if target state
-   has drifted.
+These are contract invariants, not a substitute for the production runbook. Follow
+[`production-flow.md`](../domains/intake/production-flow.md) for procedure, packaging, target order,
+approval, and recovery.
+
+1. **Intake & Normalization**: Raw asset binaries must pass MIME, dimension, and sharpness checks;
+   normalized WebP delivery assets must carry `sourceHash` and `assetManifestHash`.
+2. **Canonical Publication Validation**: `draftContent` must validate against `eventContentSchema`
+   before release acceptance, packaging, or database/storage mutation.
+3. **Immutable Operational Plan**: Applies must be backed by a deterministic `OperationalPlan`
+   (`planId`, target preconditions, functional changes, physical DB/Storage counts).
+4. **Drift Protection**: Target preconditions must be re-checked immediately before apply; abort on
+   drift.
 5. **Bounded DB & Storage Apply**: Publication uses the atomic publication boundary. Other hosted
-   upserts and Storage writes use compensation. If a pre-existing overwrite cannot be restored or
-   final consistency cannot be verified, report `ERROR — REQUIERE REVISIÓN`; never claim a full
-   rollback.
-6. **Provenance Recording**: Record release provenance in
+   upserts and Storage writes use compensation. Never claim a full rollback without verified restore
+   of every completed mutation.
+6. **Provenance Recording**: Release provenance must be recorded in
    `public.managed_invitation_release_provenance`.
-7. **Preview Approval Binding**: Require an approved Preview artifact matching exact source/package
-   hashes and plan ID before Production deployment.
+7. **Preview Approval Binding**: Production deployment requires an approved Preview artifact that
+   matches exact source/package hashes and plan ID when the runbook requires that gate.

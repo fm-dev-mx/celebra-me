@@ -1,217 +1,107 @@
 # Agent Guide — Celebra-me
 
 Celebra-me is an Astro, TypeScript, SCSS, Supabase, and Vercel project for premium digital
-invitations, the host dashboard, RSVP operations, and invitation publishing.
-
-This is the canonical entry point for coding agents working in this repository.
+invitations, the host dashboard, RSVP operations, and invitation publishing. This is the canonical
+entry point for coding agents.
 
 ## Loading Order
 
 1. Read this file.
-2. Read `.agent/index.md` for the current discovery map.
-3. Read `.agent/load-skills.md` before using repo-local skills.
+2. Read `.agent/index.md` for the active discovery map.
+3. Read `.agent/load-skills.md` before using repository skills.
 4. Read `.agent/rules/gatekeeper.md` before changing files.
-5. Read `.agent/briefs/` for brand context when producing creative or marketing content.
-6. Read `.agent/templates/creative/` for structured output formats (reels, posts, prompts, QA).
-7. Load only the smallest relevant rule, workflow, skill, domain doc, or template for the task.
+5. Load only the smallest relevant rule, workflow, skill, domain doc, brief, or template.
 
 ## Authority Order
 
 1. Explicit repository-owner and current-task instructions.
-2. Active repository governance in this file, `.agent/rules/gatekeeper.md` (review/remediation
-   contract), and `.agent/**`.
-3. Active brand briefs in `.agent/briefs/`.
-4. Active architecture and domain docs in `docs/core/**` and `docs/domains/**`.
-5. Templates in `.agent/templates/creative/` for structured output formats.
-6. Historical material in `docs/archive/**` and `.agent/plans/archived/**` for background only.
+2. This file and active rules under `.agent/rules/`.
+3. Relevant workflows and canonical skills under `.agent/`.
+4. Active architecture and domain docs under `docs/core/` and `docs/domains/`.
+5. Brand briefs and structured templates under `.agent/briefs/` and `.agent/templates/`.
 
-If sources disagree, prefer the live codebase plus the highest-priority active source above.
+Historical plans and archived docs are background only. Point-in-time reports are evidence, not
+governance authority. If sources disagree, prefer the live codebase plus the highest active
+authority above.
 
 ## Non-Negotiable Rules
 
-- Do not bypass user constraints, especially around staging, commits, production data, and
+- Do not bypass user constraints, especially around staging, commits, production data, or
   destructive commands.
-- Do not stage or commit files unless explicitly asked. Git write permissions are task-scoped; see
-  `.agent/rules/git-safety.md` for the full policy and harness.
-- Do not introduce provider-specific agent files such as `.cursor/`, `CLAUDE.md`, or
-  `.agent/agents/*` without a concrete repository need.
-  **Exception:** documentation role-contract YAML files (`.agent/agents/celebra-*.yaml`)
-  are permitted as part of the role-based agent architecture described below.
-- Keep visible UI copy in Spanish; keep code, identifiers, and technical comments in English.
-- Preserve Astro server/client boundaries: UI and client islands must not import server-only code.
+- Do not stage or commit unless explicitly asked. Git authorization is task-scoped; follow
+  `.agent/rules/git-safety.md`.
+- Do not add provider-specific agent configuration such as `.cursor/` or `CLAUDE.md`.
+  `.agent/agents/*.yaml` is allowed only because those files are provider-neutral documentation
+  contracts, not executable configuration.
+- Keep visible UI copy in Spanish. Keep code, identifiers, and technical comments in English.
+- Preserve Astro server/client boundaries; client islands must not import server-only code.
 - Treat Vercel/Linux path casing as deployment-sensitive.
 - Use SCSS for maintained styling; do not introduce Tailwind.
 - Use `package.json` as the source of truth for available commands.
-- Commits must use scoped Conventional Commits, e.g. `feat(editor): ...`, `fix(invitation): ...`,
-  `chore(agent): ...`. Work directly on `develop` by default. Do not commit directly to `main`. Use
-  short-lived branches only when complexity or the task explicitly requires it.
+- Do not run production database operations without explicit authorization for that exact action.
 
-## Domain Rules
+## Governance Ownership
 
-- Git safety policy and harness: `.agent/rules/git-safety.md`
-- Gatekeeper/review contract: `.agent/rules/gatekeeper.md`
-- API security, CSRF, admin route composition: `.agent/rules/api-contracts.md`
-- Database and production safety: `.agent/rules/database.md`
-- Manual production SQL patch manifest: `.agent/rules/manual-sql-manifest.md`
-- Intake/publish state machine and editor flow: `.agent/rules/intake-publishing.md`
-- Real/client invitation publishing and `_assetSlug`: `.agent/rules/invitation-production.md`
-- Dashboard SCSS guardrails: `.agent/rules/dashboard-styling.md`
-- Plan governance: `.agent/plans/README.md`
-
-Human-facing architecture and domain sources live under `docs/core/**` and `docs/domains/**`.
-
-Brand context for creative and marketing production: `.agent/briefs/`. Structured output templates
-for creative assets: `.agent/templates/creative/`. Creative system discovery audit (June 2026):
-`.agent/plans/archived/hermes-creative-system-discovery.md`.
+- `.agent/index.md` owns discovery of active rules, workflows, skills, and canonical docs, including
+  the ownership matrix (SSOT) and invitation authority chain.
+- `.agent/rules/gatekeeper.md` owns review/remediation rules and validation tiers.
+- `.agent/rules/workflow.md` owns agent operating procedure.
+- `.agent/rules/git-safety.md` owns Git authorization and worktree preservation.
+- `docs/core/git-governance.md` owns human branch and commit policy.
+- `docs/core/invitation-creation-contract.md` owns invitation identity requirements.
+- `docs/domains/intake/production-flow.md` owns the invitation production runbook.
+- `docs/core/release-process.md` owns release checkpoints and layered CHANGELOG policy.
+- `.agent/plans/README.md` owns the contract for plans that need repository tracking.
 
 ## Architecture
 
-- **Framework**: Astro 6 SSR (`output: 'server'`) with Vercel adapter.
-- **Content collections**: `events`, `event-demos`, `event-templates` loaded from JSON files under
-  `src/content/` via `astro:content`.
-- **Path aliases** (both tsconfig and Vite): `@/*` → `src/*`, plus `@components/`, `@lib/`,
-  `@utils/`, `@styles/`, `@api/`, `@assets/`, `@content/`, `@data/`, `@hooks/`, `@images/`,
-  `@interfaces/`, `@layouts/`. TSX imports must use `@/*` (relative imports are forbidden by
-  ESLint).
-- **Key directories**:
-  - `src/pages/` — all routes (public, dashboard, API)
-  - `src/lib/` — domain logic, services, adapters, schemas (server-side)
-  - `src/components/` — Astro components and React islands (`client:*`)
-  - `supabase/migrations/` — versioned SQL schema changes
-- **UI copy**: Spanish. Code, identifiers, and technical comments: English. (See Non-Negotiable
-  Rules above.)
-- **Server/client boundary**: Keep server-only logic in `src/lib/` or API routes; client islands
-  must not import server-only modules. (See Non-Negotiable Rules above.)
-- **Slug distinction**: Content slugs, route slugs, and `_assetSlug` may differ. Do not assume
-  `_assetSlug === slug`. See `.agent/rules/invitation-production.md`.
+- **Framework:** Astro 6 SSR (`output: 'server'`) with the Vercel adapter. Major upgrades (Astro 7,
+  TypeScript 7) are deferred; see `docs/core/project-conventions.md` → Platform Version Policy.
+- **Content:** `events`, `event-demos`, and `event-templates` are loaded from JSON under
+  `src/content/` through `astro:content`.
+- **Boundaries:** `src/pages/` contains routes, `src/lib/` contains server/domain logic,
+  `src/components/` contains Astro components and React islands, and `supabase/migrations/` contains
+  versioned schema changes.
+- **Imports:** TSX uses configured `@/*` aliases; relative TSX imports are forbidden by ESLint.
+- **Slugs:** route slugs, content slugs, `previewSlug`, and `_assetSlug` can differ. Never infer
+  equality between them.
 
-## Role-Based Agent Architecture
+## Role Contracts and Skills
 
-This repository uses a role-based agent system. Jeremías acts as the **orchestrator**
-— the single entry point that interprets requests, routes sub-tasks to the
-appropriate role, and synthesizes results.
+`.agent/agents/*.yaml` describes provider-neutral roles, responsibilities, capabilities, and
+constraints. These files are documentation contracts; the active runtime decides whether the
+orchestrator performs the work directly or invokes a temporary subagent.
 
-### Role Contracts
+| Role                      | Focus                                                      |
+| ------------------------- | ---------------------------------------------------------- |
+| `celebra-builder`         | Astro, TypeScript, SCSS, and bounded implementation        |
+| `celebra-copywriter`      | Spanish invitation, UI, and marketing copy                 |
+| `celebra-qa`              | Mobile-first verification, accessibility, links, and tests |
+| `celebra-visual-director` | Visual direction, art briefs, palettes, and image prompts  |
 
-Role contracts are defined in `.agent/agents/*.yaml`. They are **documentation
-contracts** describing responsibilities, model assignment, tool access, and
-constraints for each role. They are NOT executable agent definitions — routing
-is handled by Jeremías via `delegate_task`.
+Use `.agent/rules/agent-routing.md` for routing and
+`.agent/skills/celebra-delegation-patterns/SKILL.md` for subagent handoffs. Repository skills under
+`.agent/skills/` are the tracked canonical skill source; local installations under `.agents/` are
+never authoritative.
 
-| Role Contract | Responsibility | Model | Reasoning |
-|---|---|---|---|
-| `celebra-builder` | Code implementation (Astro, TS, SCSS) | `gpt-5.5` via opencode-go | medium |
-| `celebra-copywriter` | Spanish copy and marketing text | `gpt-5.5` via opencode-go | low |
-| `celebra-qa` | Mobile-first quality review | `gpt-5.5` via opencode-go | medium |
-| `celebra-visual-director` | Visual direction and image prompts | `gpt-5.5` via opencode-go | high |
+## Planning and Validation
 
-All roles currently use the same model because only `opencode-go` credentials
-are configured. Model diversity will be introduced when additional providers
-are added.
+Use conversation-scoped planning by default. Create a tracked plan only for multi-session or
+high-risk work, or when the repository owner explicitly requests one. Follow
+`.agent/workflows/plan-authoring.md` and `.agent/plans/README.md`.
 
-### When to Delegate
-
-Delegate via `delegate_task` only when the sub-task meets ALL of these criteria:
-- Is expected to take more than 2 minutes of work
-- Is self-contained (can complete without asking clarifying questions)
-- Does not require user interaction
-- Has clear success criteria
-
-### When NOT to Delegate
-
-- Tasks requiring tight visual coordination or user approval
-- Tasks that take one or two tool calls
-- Planning, research, or documentation governance
-
-### Permission Model
-
-Per-agent tool restrictions are **instruction-based, not hard-enforced**.
-The orchestrator passes constraints via the `context` field of `delegate_task`.
-Subagents are expected to follow instructions but there is no system-level tool
-gating at delegation time. See `.agent/rules/agent-routing.md` for the full
-decision tree and constraint-passing patterns.
-
-### Loading Order
-
-When loading an agent role, read in this order:
-1. `AGENTS.md` — this file
-2. `.agent/rules/agent-routing.md` — routing decision tree
-3. `.agent/agents/<role>.yaml` — role contract
-4. Relevant skills from `.agent/index.md`
-
-## Validation Selection
-
-Detect available scripts from `package.json` before running validation. Prefer the narrowest command
-that proves the change. Use the tiered workflow documented in `.agent/rules/gatekeeper.md`
-section 5.2:
-
-- **A (small, localized, pre-commit):** `pnpm validate:staged` (staged files only) then
-  `pnpm agent:git-safety:check`.
-- **B (shared components, schema, adapter, render-data, routing, Supabase, content-resolution):**
-  `pnpm validate:changed` + `pnpm type-check` + `pnpm test:changed` +
-  `pnpm validate:event-parity` (when applicable) + `pnpm agent:git-safety:check`.
-- **C (pre-push / pre-deploy confidence):** `pnpm type-check` + `pnpm lint` + `pnpm lint:styles` +
-  `pnpm validate:ui-governance` + `pnpm validate:event-parity` + `pnpm validate:no-pii` +
-  `pnpm test` + `pnpm test:e2e:ci` + `pnpm build` + `pnpm agent:git-safety:check`.
-  `pnpm run ci` is the canonical equivalent; it runs `pnpm build:app` (`astro build`) directly after its earlier
-  type-check to avoid checking the same tree twice.
-
-`pnpm ci:quick` is a CI-safe fast feedback command. It does not depend on local Git staging
-state, so it is safe to call from a CI runner, and provides faster local iteration than the
-full pipeline. It **must not** replace tier C for production-sensitive changes. The pre-push
-hook intentionally remains lean; do not move tests or type-checks into pre-push.
-
-Tier-specific narrow targets still apply:
-
-- Documentation-only changes: `pnpm ops check-links`
-- Type or Astro boundary changes: `pnpm type-check`
-- JavaScript/TypeScript lint risk: `pnpm lint`
-- Content/schema/theme changes: `pnpm ops validate-schema`, `pnpm validate:event-parity`, or
-  `pnpm validate:no-pii` as relevant
-- Broad runtime or route changes: `pnpm build`
-- Git safety check (required after file modifications): `pnpm agent:git-safety:check`
-
-Do not run production database commands unless the user explicitly asks for that exact production
-operation.
-
-## Key Commands
-
-| Command                                | Purpose                                                                             |
-| -------------------------------------- | ----------------------------------------------------------------------------------- |
-| `pnpm dev`                             | start Astro dev server                                                              |
-| `pnpm build`                           | type-check, then run the production Astro/Vercel build                              |
-| `pnpm type-check`                      | `astro check`                                                                       |
-| `pnpm lint`                            | ESLint across the repo                                                              |
-| `pnpm test`                            | Jest suite                                                                          |
-| `pnpm test -- tests/path/file.test.ts` | single Jest test file                                                               |
-| `pnpm test -- --coverage`              | Jest with coverage                                                                  |
-| `pnpm test:e2e`                        | Playwright E2E suite                                                                |
-| `pnpm run ci`                          | canonical Tier C gate (type-check → lint → full stylelint → governance → parity → PII → unit → e2e → production build → Git safety) |
-| `pnpm run ci:quick`                    | fast CI-safe feedback (astro check + scoped ESLint). Uses VALIDATION_BASE/HEAD_SHA in CI, working tree locally. Not a substitute for `pnpm run ci`. |
-| `pnpm validate:staged`                 | ESLint + Stylelint + Prettier + related Jest on **staged** files only. Prettier is **advisory** (intentional transition step for legacy formatting debt); ESLint, Stylelint, and related Jest are hard gates. New or modified files must still be formatted. Safe no-op when nothing is staged. Use before commit. |
-| `pnpm validate:changed`                | Same as `validate:staged` but on **working-tree** files. Use for broader local feedback before staging. |
-| `pnpm test:changed`                    | Jest `--findRelatedTests` for **staged** source/test files. |
-| `pnpm test:coverage`                   | Jest with coverage explicitly enabled. |
-| `pnpm ops <command>`                   | repo ops dispatcher (`check-links`, `validate-schema`, etc.)                        |
-
-`pnpm db:push` is intentionally blocked. See README.md and `docs/database-workflow.md` for DB
-commands.
+Detect scripts from `package.json` and select validation through `.agent/rules/gatekeeper.md`.
+Documentation/governance changes normally require `pnpm validate:structure`, `pnpm ops check-links`,
+focused tests when executable validation contracts change, formatting, and the Git safety check. Do
+not duplicate the validation tiers in other governance docs.
 
 ## Optional Local Architecture Analysis
 
-Local development may generate `graphify-out/`, a Graphify knowledge graph for architecture
-exploration.
-
-- Graphify is optional and is not part of build, lint, test, CI, or deployment.
-- Do not commit `graphify-out/` or local `.graphifyignore` files.
-- Graphify findings are leads, not authority.
+`graphify-out/` may contain a local architecture graph. It is optional, ignored, and not part of
+build, validation, CI, or deployment. Its findings are leads, not authority.
 
 ## Final Report
 
-When finishing work, report: files changed, validations run and intentionally skipped (with
-reasons), remaining risks or second-pass cleanup candidates, and `git status --short`. Do not stage
-files unless explicitly asked.
-
-Before the final report, follow the session workflow in `.agent/rules/git-safety.md` (run
-`pnpm agent:git-safety:check`, then `pnpm agent:git-safety:end`). Explicitly state whether you
-staged or committed anything.
+Report changed files, validations run and intentionally skipped, remaining risks, and
+`git status --short`. Follow the closing workflow in `.agent/rules/git-safety.md` and state whether
+anything was staged or committed.

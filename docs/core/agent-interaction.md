@@ -1,7 +1,7 @@
 # Agent Interaction Guide — Celebra-me
 
 This guide helps human developers interact effectively with AI agents while maintaining the
-repository's high standards and **Lean Governance 2.0**.
+repository's active governance standards.
 
 ---
 
@@ -17,11 +17,11 @@ A high-quality prompt reduces cycles and prevents "hallucinations". Use this str
 
 ---
 
-## 2) Planning First
+## 2) Planning Scope
 
-Before executing any complex task, ensure you have an active plan under `.agent/plans/`. See
-`.agent/plans/README.md` for the current plan governance and frontmatter requirements. Plans live as
-single Markdown files under `.agent/plans/active/`.
+Keep planning in the conversation by default. Create a repository-tracked plan only when the work
+must span sessions, carries high implementation or production risk, or the repository owner asks for
+a durable plan. Tracked plans follow `.agent/plans/README.md`.
 
 ---
 

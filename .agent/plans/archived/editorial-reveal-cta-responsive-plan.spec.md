@@ -1,9 +1,9 @@
 ---
 title: Editorial Reveal CTA & Responsive Plan — Valentina
-status: draft
+status: superseded
 type: diagnostic
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-25
 autonomy: 'Level 0 — Report only. No changes of any kind.'
 related_skills:
   - frontend-design
@@ -11,11 +11,13 @@ related_skills:
   - accessibility
   - theme-architecture
 related_docs:
-  - .agent/plans/active/valentina-premium-reveal-transition.spec.md
-  - .agent/plans/active/editorial-magazine-theme.spec.md
-  - .agent/plans/active/valentina-mobile-hero-full-bleed.spec.md
+  - .agent/plans/archived/valentina-premium-reveal-transition.spec.md
+  - .agent/plans/archived/editorial-magazine-theme.spec.md
+  - .agent/plans/archived/valentina-mobile-hero-full-bleed.spec.md
   - docs/domains/theme/typography.md
   - docs/domains/theme/architecture.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Editorial Reveal CTA & Responsive Plan — Valentina
@@ -53,24 +55,24 @@ related_docs:
 
 ## 2. Files Inspected
 
-| File                                                              | Status                | Purpose                                                                     |
-| ----------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `src/components/invitation/EditorialCoverReveal.astro`            | Read                  | Reveal component; owns CTA rendering and JS reveal state machine            |
-| `src/styles/invitation/_editorial-cover.scss`                     | Read (883 lines)      | All cover layout, typography, CTA styles; base + editorial-magazine variant |
-| `src/styles/themes/sections/_xv-valentina-hernandez.scss`         | Read (1869 lines)     | Valentina-scoped overrides; cover, hero, section-by-section                 |
-| `src/styles/themes/sections/hero/_editorial-magazine.scss`        | Read (562 lines)      | Hero section variation for editorial-magazine preset                        |
-| `src/styles/themes/presets/_editorial-magazine.scss`              | Read                  | Theme preset tokens (ink, paper, red, fonts, etc.)                          |
-| `src/styles/global/_mixins.scss`                                  | Read                  | Mixin utilities (respond-to, respond-below, reduced-motion, short-viewport) |
-| `src/styles/tokens/_spacing.scss`                                 | Read                  | `$breakpoints` (xs:480, sm:640, md:768, lg:992, xl:1200)                    |
-| `src/pages/[eventType]/[slug].astro`                              | Read                  | Page route showing reveal rendering, `EditorialCoverReveal` integration     |
-| `src/styles/themes/header/_editorial-magazine.scss`               | Referenced from plans | Header editorial-magazine SCSS                                              |
-| `src/lib/invitation/page-data.ts`                                 | Read                  | Page context builder, envelope data construction                            |
-| `tests/unit/editorial-cover-reveal-contract.test.ts`              | Read                  | Unit tests for reveal contract, CTA copy, choreography, text-shadow         |
-| `tests/e2e/visual-qa-editorial-magazine.spec.ts`                  | Read                  | E2E visual QA test (mobile 430px only)                                      |
-| `tests/e2e/valentina-face-audit.spec.ts`                          | Read                  | Face audit E2E across 7 viewports (360, 390, 430, 768, 1024, 1366, 1440)    |
-| `.agent/plans/active/valentina-premium-reveal-transition.spec.md` | Read                  | Existing reveal transition spec — covers CTA, motion, cover exit            |
-| `.agent/plans/active/editorial-magazine-theme.spec.md`            | Read                  | Theme SDD — covers editorial-magazine implementation baseline               |
-| `.agent/plans/active/valentina-mobile-hero-full-bleed.spec.md`    | Read                  | Mobile hero full-bleed spec                                                 |
+| File                                                                | Status                | Purpose                                                                     |
+| ------------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
+| `src/components/invitation/EditorialCoverReveal.astro`              | Read                  | Reveal component; owns CTA rendering and JS reveal state machine            |
+| `src/styles/invitation/_editorial-cover.scss`                       | Read (883 lines)      | All cover layout, typography, CTA styles; base + editorial-magazine variant |
+| `src/styles/themes/sections/_xv-valentina-hernandez.scss`           | Read (1869 lines)     | Valentina-scoped overrides; cover, hero, section-by-section                 |
+| `src/styles/themes/sections/hero/_editorial-magazine.scss`          | Read (562 lines)      | Hero section variation for editorial-magazine preset                        |
+| `src/styles/themes/presets/_editorial-magazine.scss`                | Read                  | Theme preset tokens (ink, paper, red, fonts, etc.)                          |
+| `src/styles/global/_mixins.scss`                                    | Read                  | Mixin utilities (respond-to, respond-below, reduced-motion, short-viewport) |
+| `src/styles/tokens/_spacing.scss`                                   | Read                  | `$breakpoints` (xs:480, sm:640, md:768, lg:992, xl:1200)                    |
+| `src/pages/[eventType]/[slug].astro`                                | Read                  | Page route showing reveal rendering, `EditorialCoverReveal` integration     |
+| `src/styles/themes/header/_editorial-magazine.scss`                 | Referenced from plans | Header editorial-magazine SCSS                                              |
+| `src/lib/invitation/page-data.ts`                                   | Read                  | Page context builder, envelope data construction                            |
+| `tests/unit/editorial-cover-reveal-contract.test.ts`                | Read                  | Unit tests for reveal contract, CTA copy, choreography, text-shadow         |
+| `tests/e2e/visual-qa-editorial-magazine.spec.ts`                    | Read                  | E2E visual QA test (mobile 430px only)                                      |
+| `tests/e2e/valentina-face-audit.spec.ts`                            | Read                  | Face audit E2E across 7 viewports (360, 390, 430, 768, 1024, 1366, 1440)    |
+| `.agent/plans/archived/valentina-premium-reveal-transition.spec.md` | Read                  | Existing reveal transition spec — covers CTA, motion, cover exit            |
+| `.agent/plans/archived/editorial-magazine-theme.spec.md`            | Read                  | Theme SDD — covers editorial-magazine implementation baseline               |
+| `.agent/plans/archived/valentina-mobile-hero-full-bleed.spec.md`    | Read                  | Mobile hero full-bleed spec                                                 |
 
 ---
 

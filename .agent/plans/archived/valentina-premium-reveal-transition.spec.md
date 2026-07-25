@@ -1,9 +1,9 @@
 ---
 title: Valentina Premium Reveal Transition
-status: active
+status: superseded
 type: implementation
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-07-25
 autonomy: 'Level 2 - Local code changes allowed, no staging/commit/deploy'
 related_skills:
   - frontend-design
@@ -18,6 +18,8 @@ related_docs:
   - docs/core/architecture.md
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Valentina Premium Reveal Transition
@@ -71,8 +73,9 @@ All requested target files exist at the expected workspace paths:
 - `_editorial-magazine.scss` currently uses a full-screen background with a large uppercase hero
   name, right-side portrait, and metadata footer. That repeats the cover hierarchy too closely.
 - `Hero.astro` has no lyrical prose node inside the hero. The quote text exists in
-  `.agent/plans/active/xv-valentina-hernandez-db-payload.json` under `quote.text`, but it renders in
-  the quote section, not the hero. This implementation must avoid inventing invisible prose in CSS.
+  `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql` under `quote.text`, but it
+  renders in the quote section, not the hero. This implementation must avoid inventing invisible
+  prose in CSS.
 
 ## Authority And Scope
 

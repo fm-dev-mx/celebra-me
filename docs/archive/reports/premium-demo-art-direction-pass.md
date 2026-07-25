@@ -32,28 +32,28 @@ to the wedding preset.
 
 ### `/boda/demo-boda-jewelry-box-wedding`
 
-| Image Key / Path | Used In | Repeated? | Crop Risk | Premium Score | Keep / Replace |
-| --- | --- | ---: | --- | ---: | --- |
-| `hero` -> `editorial-hero.webp` | hero background | No | Low; vertical couple-safe | 9 | Keep |
-| `portrait` -> `gallery-couple-portrait.webp` | hero portrait | No | Low; centered couple | 8 | Keep |
-| `family` -> `family-ceremony.webp` | family | No | Low; full group visible | 8 | Keep |
-| `gallery01` -> `gallery-venue-atmosphere.webp` | gallery | No | Low; wide venue | 9 | Keep |
-| `gallery02` -> `gallery-stationery-detail.webp` | gallery | No | Low; detail-safe | 9 | Keep |
-| `gallery03` -> `gallery-table-setting.webp` | gallery | No | Low | 9 | Keep |
-| `gallery04` -> `gallery-ceremony-moment.webp` | gallery | No | Low; backs/three-quarter ceremony | 8 | Keep |
-| `gallery05` -> `gallery-evening-celebration.webp` | gallery | No | Low; evening couple centered | 8 | Keep |
-| `interlude01` -> `interlude-venue-quiet.webp` | interlude after quote | No | Low; vertical quiet architecture | 9 | Keep |
-| `interlude02` -> `interlude-envelope-detail.webp` | interlude after gifts | No | Low; quiet detail | 9 | Keep |
-| `thankYouPortrait` -> `gallery-01.webp` | thank-you | No | Low; ring macro legacy asset | 7 | Keep as temporary support |
+| Image Key / Path                                  | Used In               | Repeated? | Crop Risk                         | Premium Score | Keep / Replace            |
+| ------------------------------------------------- | --------------------- | --------: | --------------------------------- | ------------: | ------------------------- |
+| `hero` -> `editorial-hero.webp`                   | hero background       |        No | Low; vertical couple-safe         |             9 | Keep                      |
+| `portrait` -> `gallery-couple-portrait.webp`      | hero portrait         |        No | Low; centered couple              |             8 | Keep                      |
+| `family` -> `family-ceremony.webp`                | family                |        No | Low; full group visible           |             8 | Keep                      |
+| `gallery01` -> `gallery-venue-atmosphere.webp`    | gallery               |        No | Low; wide venue                   |             9 | Keep                      |
+| `gallery02` -> `gallery-stationery-detail.webp`   | gallery               |        No | Low; detail-safe                  |             9 | Keep                      |
+| `gallery03` -> `gallery-table-setting.webp`       | gallery               |        No | Low                               |             9 | Keep                      |
+| `gallery04` -> `gallery-ceremony-moment.webp`     | gallery               |        No | Low; backs/three-quarter ceremony |             8 | Keep                      |
+| `gallery05` -> `gallery-evening-celebration.webp` | gallery               |        No | Low; evening couple centered      |             8 | Keep                      |
+| `interlude01` -> `interlude-venue-quiet.webp`     | interlude after quote |        No | Low; vertical quiet architecture  |             9 | Keep                      |
+| `interlude02` -> `interlude-envelope-detail.webp` | interlude after gifts |        No | Low; quiet detail                 |             9 | Keep                      |
+| `thankYouPortrait` -> `gallery-01.webp`           | thank-you             |        No | Low; ring macro legacy asset      |             7 | Keep as temporary support |
 
 ### Other inspected demos
 
-| Demo | Repeated Findings | Action |
-| --- | --- | --- |
-| `/xv/demo-xv-editorial-rose` | No repeated major image keys after previous curation. Uses fallback asset slug. | Dedicated media prompts prepared. |
-| `/xv/demo-xv-enchanted-rose` | No repeated major image keys after previous curation. Uses fallback asset slug. | Dedicated media prompts prepared. |
-| `/xv/demo-xv-jewelry-box` | Interludes repeated gallery keys. | Remapped interludes to unused gallery keys and normalized location times. |
-| `/baby-shower/demo-baby-shower-celestial` | `hero` doubles as portrait; `gallery01` and `gallery03` also serve as interludes. | Normalized time/microcopy; documented as blocked by limited asset set. |
+| Demo                                      | Repeated Findings                                                                 | Action                                                                    |
+| ----------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `/xv/demo-xv-editorial-rose`              | No repeated major image keys after previous curation. Uses fallback asset slug.   | Dedicated media prompts prepared.                                         |
+| `/xv/demo-xv-enchanted-rose`              | No repeated major image keys after previous curation. Uses fallback asset slug.   | Dedicated media prompts prepared.                                         |
+| `/xv/demo-xv-jewelry-box`                 | Interludes repeated gallery keys.                                                 | Remapped interludes to unused gallery keys and normalized location times. |
+| `/baby-shower/demo-baby-shower-celestial` | `hero` doubles as portrait; `gallery01` and `gallery03` also serve as interludes. | Normalized time/microcopy; documented as blocked by limited asset set.    |
 
 ## 5. Repeated Photo Findings
 
@@ -83,22 +83,22 @@ Generated files were created with the built-in image generation tool and copied 
 `src/assets/images/events/demo-boda-jewelry-box-wedding/` as WebP assets. Original generated PNGs
 remain under `C:\Users\fmdevmx\.codex\generated_images\019f1f8a-af69-71b1-abf9-b05745f03835`.
 
-| Demo | Section | Image Purpose | Prompt / Asset Name | Status |
-| --- | --- | --- | --- | --- |
-| `/boda/demo-boda-jewelry-box-wedding` | Hero | Editorial couple hero | `editorial-hero.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Family | Solemn family/ceremonial image | `family-ceremony.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Hero portrait | Couple portrait support | `gallery-couple-portrait.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Gallery | Venue atmosphere | `gallery-venue-atmosphere.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Gallery | Stationery/floral detail | `gallery-stationery-detail.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Gallery | Table setting | `gallery-table-setting.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Gallery | Ceremony moment | `gallery-ceremony-moment.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Gallery | Evening celebration | `gallery-evening-celebration.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Interlude | Quiet venue pause | `interlude-venue-quiet.webp` | Generated |
-| `/boda/demo-boda-jewelry-box-wedding` | Interlude / gifts support | Envelope/table detail | `interlude-envelope-detail.webp` | Generated |
-| `/xv/demo-xv-editorial-rose` | Hero | XV editorial rose cover portrait | `xv-editorial-rose-hero-cover-portrait` | Prompt prepared |
-| `/xv/demo-xv-editorial-rose` | Interlude | Rose satin magazine divider | `xv-editorial-rose-interlude-rose-satin` | Prompt prepared |
-| `/xv/demo-xv-enchanted-rose` | Hero | Palace staircase rose gala | `xv-enchanted-rose-hero-palace-staircase` | Prompt prepared |
-| `/xv/demo-xv-enchanted-rose` | Interlude | Mirror, roses, candlelight divider | `xv-enchanted-rose-interlude-mirror-roses` | Prompt prepared |
+| Demo                                  | Section                   | Image Purpose                      | Prompt / Asset Name                        | Status          |
+| ------------------------------------- | ------------------------- | ---------------------------------- | ------------------------------------------ | --------------- |
+| `/boda/demo-boda-jewelry-box-wedding` | Hero                      | Editorial couple hero              | `editorial-hero.webp`                      | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Family                    | Solemn family/ceremonial image     | `family-ceremony.webp`                     | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Hero portrait             | Couple portrait support            | `gallery-couple-portrait.webp`             | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Gallery                   | Venue atmosphere                   | `gallery-venue-atmosphere.webp`            | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Gallery                   | Stationery/floral detail           | `gallery-stationery-detail.webp`           | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Gallery                   | Table setting                      | `gallery-table-setting.webp`               | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Gallery                   | Ceremony moment                    | `gallery-ceremony-moment.webp`             | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Gallery                   | Evening celebration                | `gallery-evening-celebration.webp`         | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Interlude                 | Quiet venue pause                  | `interlude-venue-quiet.webp`               | Generated       |
+| `/boda/demo-boda-jewelry-box-wedding` | Interlude / gifts support | Envelope/table detail              | `interlude-envelope-detail.webp`           | Generated       |
+| `/xv/demo-xv-editorial-rose`          | Hero                      | XV editorial rose cover portrait   | `xv-editorial-rose-hero-cover-portrait`    | Prompt prepared |
+| `/xv/demo-xv-editorial-rose`          | Interlude                 | Rose satin magazine divider        | `xv-editorial-rose-interlude-rose-satin`   | Prompt prepared |
+| `/xv/demo-xv-enchanted-rose`          | Hero                      | Palace staircase rose gala         | `xv-enchanted-rose-hero-palace-staircase`  | Prompt prepared |
+| `/xv/demo-xv-enchanted-rose`          | Interlude                 | Mirror, roses, candlelight divider | `xv-enchanted-rose-interlude-mirror-roses` | Prompt prepared |
 
 Bruno prompt direction retained for XV media: fictional, age-appropriate, no real people, no
 celebrities, no embedded text, cohesive rose/silver or palace/candlelight palette, vertical
@@ -124,8 +124,8 @@ mobile-safe crops, and distinct section-specific scenes.
   feeling.
 - Wedding itinerary styling removes icon-medallion emphasis and reads more like an editorial
   program.
-- Editorial rose and enchanted rose had gallery/gifts/interlude density reduced in the earlier
-  local pass.
+- Editorial rose and enchanted rose had gallery/gifts/interlude density reduced in the earlier local
+  pass.
 
 ## 10. Visual QA Results
 
@@ -134,7 +134,8 @@ Completed on local Astro dev server `http://127.0.0.1:4321/`.
 Browser path:
 
 - In-app Browser was initialized first, per the Browser skill.
-- In-app Browser screenshot capture timed out during the QA loop, so QA fell back to repo Playwright.
+- In-app Browser screenshot capture timed out during the QA loop, so QA fell back to repo
+  Playwright.
 - Playwright screenshots and JSON results were saved outside the repo under
   `C:\Users\fmdevmx\.codex\tmp\celebra-premium-demo-qa\`.
 
@@ -151,9 +152,9 @@ Results:
 - All inspected routes returned HTTP 200 at all tested viewports.
 - No horizontal overflow was detected at 390, 768, or 1280.
 - No relevant console warnings/errors were captured.
-- No failed image/network requests were captured after scrolling through each page. Some lazy/offscreen
-  image elements still reported `naturalWidth: 0` in DOM inspection, including existing optimized SVG
-  and below-fold assets, but request tracking showed no broken image URLs.
+- No failed image/network requests were captured after scrolling through each page. Some
+  lazy/offscreen image elements still reported `naturalWidth: 0` in DOM inspection, including
+  existing optimized SVG and below-fold assets, but request tracking showed no broken image URLs.
 - Wedding gallery rendered 5 curated images.
 - Wedding gifts rendered as one Liverpool CTA with envelope/buenos deseos copy in the section note.
 - Clean screenshots without the cookie banner were captured for wedding hero, wedding gallery,
@@ -167,9 +168,8 @@ Completed:
 - Focused tests:
   `pnpm test -- tests/content/demo-counterpart-audit.test.ts tests/unit/invitation.presenter.test.ts tests/unit/event.adapter.test.ts tests/unit/validate-schema-script.test.ts tests/unit/premium-demo-quality-gate.test.ts`
   passed: 5 suites, 198 tests.
-- Asset audit regression:
-  `pnpm test -- tests/unit/event-assets-audit.test.ts` passed after importing legacy wedding files
-  through the asset index.
+- Asset audit regression: `pnpm test -- tests/unit/event-assets-audit.test.ts` passed after
+  importing legacy wedding files through the asset index.
 - `pnpm lint` passed with 0 errors and 1 existing warning in `tests/e2e/debug-styles.spec.ts`.
 - `pnpm type-check` passed with 0 errors, 0 warnings, 0 hints.
 - `pnpm test` passed: 225 suites passed, 1 skipped; 3023 tests passed, 2 skipped.
@@ -190,8 +190,8 @@ Final safety gate:
 - Baby shower still needs generated replacement interludes to avoid repeating gallery assets.
 - Editorial rose and enchanted rose are visually improved but still use fallback media from
   `demo-xv-editorial`.
-- Generated wedding assets passed local visual QA at 390, 768, and 1280; final acceptance still needs
-  Paco's taste review on premium art direction.
+- Generated wedding assets passed local visual QA at 390, 768, and 1280; final acceptance still
+  needs Paco's taste review on premium art direction.
 - Existing route screenshots may intentionally change because wedding media and gallery rhythm were
   replaced.
 

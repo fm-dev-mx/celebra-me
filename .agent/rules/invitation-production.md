@@ -1,9 +1,17 @@
 # Invitation Production Rules
 
+**Owns:** agent safety constraints for invitation production (authorization, secrets, dry-run,
+rollback claims, scope limits).
+
+**Does not own:** identity field lists, runbook steps, or CLI flag semantics. Authority chain:
+creation contract → production runbook → managed-invitation-lifecycle workflow → this rule → live
+CLI help. See [`.agent/index.md`](../index.md).
+
 The canonical operational source is
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Read it
 before creating, editing, publishing, or validating an invitation. Content structure is defined by
-[`docs/core/content-schema.md`](../../docs/core/content-schema.md).
+[`docs/core/content-schema.md`](../../docs/core/content-schema.md). Identity requirements live in
+[`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
 
 ## Required preflight
 
@@ -35,43 +43,20 @@ before creating, editing, publishing, or validating an invitation. Content struc
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
 
-## Local application, packaging, and promotion workflow
+## Managed updates
 
-- Versioned invitation definitions are single TypeScript files under
-  `scripts/provision/invitations/<slug>.ts`.
-- Managed invitation changes use
-  `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
-- The canonical pipeline is
-  `Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Production` or direct publication `Define -> Plan -> Direct Production Publication (Coordinated Local -> Preview -> Production)`.
-- Selecting Production automatically expands release scope to `Local -> Preview -> Production` executed sequentially in that order. Production executes last.
-- Preview is a validation environment. Production MUST NOT import directly from the Preview database
-  or Storage.
-- Direct Production publication does not require a pre-existing Preview approval artifact (if present, it is recorded as optional audit evidence).
-- Existing invitations resolve and preserve their owner from the selected target row; an explicit
-  owner is required only when the target invitation does not yet exist:
-  ```bash
-  pnpm invitation:update --slug <slug> --targets production --package <path> --apply
-  ```
-- Non-interactive execution for Production direct publication requires `--confirm-slug <slug>`, `--confirm-scope`, and `--confirm-destructive` (when destructive operations exist).
-- Managed invitation asset updates are governed by explicit asset policy (`--asset-policy verify|missing|sync`, default `missing`).
-- Asset identity is stable across environments matched by `key` and `displayName`; binary equality is proven by `sha256` content hash rather than target UUIDs or paths.
-- Text-only updates with matching binaries perform 0 Storage uploads.
-- Asset pruning is strictly isolated behind `--prune-assets` with explicit confirmation.
-- Packages are immutable, deterministic versioned JSON files containing un-hashed metadata, content,
-  and embedded base64 assets with SHA-256 signatures.
-- Packages MUST NOT leak local or environment-specific Supabase URLs (sanitized to
-  `__STORAGE_URL__`).
-- Preview promotion requires target project `iwipdvisoyerfdytuhwi` and generates a non-secret
-  Preview approval artifact (`.agent/tmp/approvals/preview-approval-<hash>.json`).
-- Direct Production publication performs coordinated sequential release across Local, Preview, and Production, target-scoped owner resolution by slug (or `--owner-user-id` only for a new invitation), zero
-  source-URL verification, multi-target semantic diff presentation, and explicit confirmation gates.
-- Multi-target execution produces independent per-target plans and statuses (`local`, `preview`,
-  `production`). An uninspected target must be reported as `NO EVALUADO` or `BLOQUEADO` (never false
-  `SIN CAMBIOS`).
-- Failed operations that overwrite pre-existing DB or Storage resources without automatic
-  restoration yield `ERROR — REQUIERE REVISIÓN` (not `ERROR — CAMBIOS REVERTIDOS`).
-- Production preflight failure outputs concise, actionable Spanish instructions without leaking raw
-  package hashes or stack traces in default mode.
+Use `.agent/workflows/managed-invitation-lifecycle.md` as the thin agent procedure and the
+production runbook for lifecycle semantics, target order, flags, packaging, approval, and recovery
+behavior. Inspect the live CLI help before composing a command.
+
+The agent-specific constraints are:
+
+- Start with inspection and dry-run output.
+- Never classify an uninspected target as unchanged.
+- Never expose secrets, raw credentials, private client data, or environment-specific URLs.
+- Never prune assets, overwrite pre-existing resources, or claim successful rollback without
+  explicit evidence and authorization.
+- Never mutate Preview or Production without authorization for that exact target and operation.
 
 ## Scope and cleanup
 

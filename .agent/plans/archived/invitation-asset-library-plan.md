@@ -18,7 +18,7 @@ related_skills:
   - supabase
 related_docs:
   - .agent/plans/README.md
-  - .agent/plans/active/invitation-workflow-flow-analysis.md
+  - .agent/plans/archived/invitation-workflow-flow-analysis.md
   - .agent/plans/archived/invitation-dashboard-premium-plan.md
   - docs/domains/intake/internal-invitation-editor.md
 supersedes: []

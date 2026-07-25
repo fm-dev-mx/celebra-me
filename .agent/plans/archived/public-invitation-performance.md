@@ -23,7 +23,7 @@ related_docs:
   - .vercel/output/static/_astro/Layout.DjxAMGn1.css
 supersedes: []
 superseded_by:
-  - .agent/plans/active/public-invitation-performance-final-report.md
+  - .agent/plans/archived/public-invitation-performance-final-report.md
 ---
 
 # Public Invitation Route Performance
@@ -31,7 +31,7 @@ superseded_by:
 ## Status
 
 **Final — accepted slices only.** See
-`.agent/plans/active/public-invitation-performance-final-report.md` for the full closure report.
+`.agent/plans/archived/public-invitation-performance-final-report.md` for the full closure report.
 
 | Phase                          | Status                                                                            |
 | ------------------------------ | --------------------------------------------------------------------------------- |
@@ -150,7 +150,7 @@ curl -sI $PREVIEW_URL/boda/demo-boda-jewelry-box-wedding \
 
 **Scope**: Measurement only. No production code changes.
 
-**Artifact**: `.agent/plans/active/lcp-measurement-results.md`
+**Artifact**: `.agent/plans/archived/lcp-measurement-results.md`
 
 **Method**:
 
@@ -194,7 +194,7 @@ a meaningful contributor to LCP/FCP.
 
 **Scope**: Measurement only. No production code changes.
 
-**Artifact**: `.agent/plans/active/css-measurement-results.md`
+**Artifact**: `.agent/plans/archived/css-measurement-results.md`
 
 **Method**:
 
@@ -291,7 +291,7 @@ addressed.
 
 **Scope**: Measurement only. No production code changes.
 
-**Artifact**: `.agent/plans/active/font-measurement-results.md`
+**Artifact**: No separate result file was created; this phase remained deferred.
 
 **Method**:
 

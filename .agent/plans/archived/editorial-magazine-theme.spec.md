@@ -1,10 +1,10 @@
 ---
 title: Editorial Magazine XV Theme
-status: active
+status: implemented
 plan_type: implementation
 autonomy_level: 2
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-07-25
 related_skills:
   - theme-architecture
   - frontend-design
@@ -79,7 +79,9 @@ Reusable:
 
 Do not touch:
 
-- Production client invitations (which are Supabase-backed database records, not static filesystem content). Demos and templates in `src/content/event-demos` and `src/content/event-templates` remain under filesystem control.
+- Production client invitations (which are Supabase-backed database records, not static filesystem
+  content). Demos and templates in `src/content/event-demos` and `src/content/event-templates`
+  remain under filesystem control.
 - Database schema, migrations, Supabase repositories, or production SQL.
 - Invitation route architecture or duplicated page renderers.
 - Existing demos except regression-safe catalog and validation references.

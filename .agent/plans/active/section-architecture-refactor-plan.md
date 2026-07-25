@@ -2,7 +2,7 @@
 title: Section Architecture Refactor Plan
 status: active
 created: unknown
-updated: 2026-05-31
+updated: 2026-07-25
 ---
 
 # Section Architecture Refactor Plan
@@ -13,6 +13,26 @@ This plan outlines a phased migration from a highly fragmented theme-section sty
 (over 116 files) into a cleaner CSS variable contract system. The current approach forces visual
 differences (colors, fonts, spacings) to be implemented conditionally per theme rather than passing
 CSS variables predictably.
+
+## Current progress and corrected scope
+
+The original inventory below remains implementation context, but live source and this section take
+precedence where it overgeneralizes a section:
+
+- Quote, Gifts, MusicPlayer, and Interlude consolidation passes are implemented.
+- MusicPlayer and Interlude completion evidence is retained in
+  `.agent/plans/archived/multi-section-consolidation-review.md`.
+- ThankYou has a real `celestial-blue` structural branch and a `sacred-keepsake` full-bleed layout;
+  preserve both until screenshot evidence supports a replacement.
+- Countdown has a real `sacred-keepsake` layout hierarchy.
+- Location/VenueCard has map-versus-image, one-versus-two-venue, navigation, indication, and rivet
+  branches. It is not a skin-only section.
+- Gallery has variant-aware layout placement and interactive lightbox behavior. Preserve
+  `getLayoutClass()` or replace it with an equally explicit strategy.
+
+The next implementation slice must begin with a current source audit and a screenshot matrix. Do not
+reuse the old recommendation that Location, ThankYou, or Countdown can automatically follow the
+Gifts pattern.
 
 ## 2. Corrections or Objections to the Original Audit
 
@@ -145,12 +165,12 @@ No dedicated `_tokens.scss` layer will be introduced.
 
 ```bash
 # Build script will validate there are no broken SCSS references
-npm run build
+pnpm build
 ```
 
 ## 14. Visual Regression Checklist
 
-1. Setup local Dev Server (`npm run dev`).
+1. Set up the local development server (`pnpm dev`).
 2. Navigate to a Light theme demo (e.g. `jewelry-box` or `luxury-hacienda`) and verify the Quote
    section spacing and fonts are unchanged.
 3. Navigate to a Dark theme demo (e.g. `editorial`) and ensure contrast and layout remain correct.
@@ -359,7 +379,6 @@ Gifts imports, and validation passed.
 
 ### Recommended Next Section
 
-**Phase 3: Location/ThankYou/Countdown** — These content sections share a similar structure (section
-header + card grid) and can likely be consolidated using the same pattern as Gifts with minimal
-variable contracts. Alternatively, **Hero** could be considered if a simpler starting point is
-preferred.
+Choose the next section only after refreshing the source audit and screenshot matrix. ThankYou,
+Countdown, Location/VenueCard, and Gallery all retain real structural, layout, content, or behavior
+variants and must not be flattened through the Gifts pattern without explicit parity evidence.

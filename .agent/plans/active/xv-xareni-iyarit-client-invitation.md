@@ -61,7 +61,8 @@ Recommended evaluation slug and asset namespace: `xv-xareni-iyarit`.
   must be case-safe for Vercel/Linux: `xv-xareni-iyarit`.
 - Existing precedent: event-scoped section overrides refine shared presets without duplicating full
   themes.
-- Real/client invitations should be DB-published payloads. Do not create or restore `src/content/events` for client invitation content.
+- Real/client invitations should be DB-published payloads. Do not create or restore
+  `src/content/events` for client invitation content.
 
 ## Proposed Implementation Approach
 
@@ -78,13 +79,13 @@ schema/theme-contract/test/component branch updates for mostly visual needs.
 ## Files Likely To Change
 
 - `.agent/plans/active/xv-xareni-iyarit-client-invitation.md`
-- `.agent/plans/active/xv-xareni-iyarit-assets-report.md`
+- `docs/invitations/xareni-iyarit-asset-report.md`
 - `src/assets/images/events/xv-xareni-iyarit/index.ts`
 - `src/assets/images/events/xv-xareni-iyarit/*.webp`
 - `src/styles/themes/sections/_xv-xareni-iyarit.scss`
 - `src/styles/themes/sections/_index.scss`
-- `.agent/plans/active/xv-xareni-iyarit-db-payload.json` as the local schema-validated payload
-  artifact. This is not a production publish.
+- `tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json` as the local schema-validated
+  payload artifact. This is not a production publish.
 
 ## Theme And Color Strategy
 
@@ -145,8 +146,7 @@ romantic color grade, mild exposure lift, subtle sharpening, crops, and WebP qua
   tulle/embroidery, ivory mirror/floral shadows, lace divider with negative space, and RSVP/closing
   blush tulle.
 
-Detailed sizes and reductions are tracked in
-`.agent/plans/active/xv-xareni-iyarit-assets-report.md`.
+Detailed sizes and reductions are tracked in `docs/invitations/xareni-iyarit-asset-report.md`.
 
 ## Rejected Asset Inventory
 
@@ -163,7 +163,7 @@ DB-published payload guidance:
 - `_assetSlug: "xv-xareni-iyarit"`
 - `theme: { fontFamily: "serif", preset: "celestial-blue" }`
 - `sectionOrder`: mirror `demo-xv-celestial-blue`, but omit music from content.
-- Local artifact: `.agent/plans/active/xv-xareni-iyarit-db-payload.json`
+- Local artifact: `tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json`
 - Hero:
   - `name: "Xareni Iyarit"`
   - `label: "Mis XV años"`
@@ -204,7 +204,7 @@ DB-published payload guidance:
   size, final size, reduction percentage, and notes.
 - Focused Jest coverage for plan, asset registry, static assets, and scoped theme wiring.
 - Content/schema validation against `eventContentSchema` for
-  `.agent/plans/active/xv-xareni-iyarit-db-payload.json`.
+  `tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json`.
 - Asset registry/build check for `xv-xareni-iyarit`.
 - `pnpm type-check`
 - `pnpm lint`

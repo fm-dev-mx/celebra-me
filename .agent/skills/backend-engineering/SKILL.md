@@ -33,6 +33,13 @@ This skill governs **server-side engineering** in Celebra-me. It applies to API 
 (`src/pages/api/*`), Service layers (`src/lib/*/service.ts`), and Repository layers
 (`src/lib/*/repository.ts`).
 
+## Current Library Docs (Context7)
+
+When Zod, Astro `APIRoute`, Vercel adapter, or other dependency APIs are uncertain, consult current
+library docs via Context7 (or the runtime's equivalent docs MCP) using the versions pinned in
+`package.json`. Do not create a repo-local Context7 skill. Context7 never overrides Celebra-me API
+contracts, live code, or canonical `docs/`.
+
 ## Architecture Layers
 
 Strictly separate concerns into these three layers:

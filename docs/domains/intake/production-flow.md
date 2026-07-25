@@ -5,6 +5,18 @@ database migrations remain authoritative for executable behavior. The content co
 [`docs/core/content-schema.md`](../../core/content-schema.md); architecture is
 [`docs/core/architecture.md`](../../core/architecture.md).
 
+This runbook owns invitation lifecycle, packaging, target-order, approval, publication, deployment,
+verification, and recovery guidance. Agent rules and workflows link here for those semantics rather
+than copying them.
+
+Identity and required fields are owned by
+[`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Agent
+procedure is
+[`.agent/workflows/managed-invitation-lifecycle.md`](../../../.agent/workflows/managed-invitation-lifecycle.md).
+Agent safety constraints are
+[`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). See the
+invitation authority chain in [`.agent/index.md`](../../../.agent/index.md).
+
 ## Roles and responsibility
 
 | Concern                     | System                                                      | Agent/developer                                 | Designer                       | Manual/production operator                 |
@@ -31,7 +43,14 @@ Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Produ
 
 Use
 `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
-Selecting `production` (or `all`) automatically expands the target pipeline to `Local -> Preview -> Production` sequentially, with Production executing last. Direct Production publication does not require a pre-existing Preview approval artifact (recorded as optional audit evidence if present). Non-interactive production publication requires `--confirm-slug <slug>`, `--confirm-scope`, and `--confirm-destructive` (when destructive changes exist). Existing target invitations resolve and preserve their owner by slug; `--owner-user-id` is only required when creating a new target invitation. Every selected target is inspected and planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across all targets.
+Selecting `production` (or `all`) automatically expands the target pipeline to
+`Local -> Preview -> Production` sequentially, with Production executing last. Direct Production
+publication does not require a pre-existing Preview approval artifact (recorded as optional audit
+evidence if present). Non-interactive production publication requires `--confirm-slug <slug>`,
+`--confirm-scope`, and `--confirm-destructive` (when destructive changes exist). Existing target
+invitations resolve and preserve their owner by slug; `--owner-user-id` is only required when
+creating a new target invitation. Every selected target is inspected and planned before any
+mutation; a blocked or unevaluated target aborts the complete apply phase across all targets.
 
 ## Publication integrity rollout
 

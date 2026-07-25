@@ -142,34 +142,16 @@ pnpm db:prod:patch -- --file <path>
 pnpm db:sql:lint -- --file <path>
 ```
 
-`pnpm db:local:refresh-from-prod`
+### Blocked refresh aliases
 
-- Reads production `public` data through `PROD_DB_URL`.
-- Does not mutate production.
-- Destructively resets only the local Supabase DB.
-- Imports through a local staging schema, recreates local auth users, runs local backfills, and
-  validates FK integrity.
-- Allows exactly one extra local `app_user_roles` row for the local super-admin user.
-- Refreshes `invitation_assets` metadata only; actual Supabase Storage files are not copied by the
-  database dump, so metadata does not guarantee local object availability.
-- Already bootstraps the local super-admin user and role.
-- Use when local development needs a current production-shaped dataset.
+`db:local:refresh-from-prod` and `db:local:refresh-from-prod-preserve-local` remain in
+`package.json` only as fail-closed safety rails. They print a blocked-operation message and exit
+with a failure. They are not runnable refresh workflows and must not be bypassed with direct
+Supabase commands.
 
-`pnpm db:local:refresh-from-prod-preserve-local`
-
-- Like `db:local:refresh-from-prod` but preserves local-only invitations, events, and demos.
-- Detects local-only slugs by comparing `invitations.slug`, `events.slug`, and
-  `published_invitation_content(event_type, slug)` with production.
-- Preserves all dependent FK rows (drafts, assets, RSVPs, intake, guests, audit logs, etc.).
-- Creates auth user placeholders for preserved rows that reference local-only users.
-- Checks Storage binary availability and reports missing assets.
-- Three modes:
-  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --dry-run` — report only.
-  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --export` — create preserve
-    bundle without refreshing.
-  - `PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --confirm` — export +
-    refresh + restore.
-- Use when you need the latest production data but want to keep local demo/invitation work.
+Use `pnpm db:prod:backup` followed by `pnpm db:local:restore-from-dump` for a non-destructive
+import. The unresolved preserve-local enhancement remains tracked in
+`.agent/plans/active/preserve-local-refresh-workflow.md`.
 
 `pnpm db:local:backup-wip`
 
@@ -186,7 +168,7 @@ pnpm db:sql:lint -- --file <path>
 - Reads the password from `LOCAL_SUPER_ADMIN_PASSWORD || RSVP_ADMIN_PASSWORD`.
 - Ensures `auth.users.raw_app_meta_data.role = 'super_admin'`, upserts
   `public.app_user_roles.role = 'super_admin'`, and verifies password login.
-- Use after a local-only reset when you do not want to import production data.
+- Use for initial local setup or to repair the local admin without resetting the database.
 
 `pnpm db:local:validate`
 
@@ -196,7 +178,8 @@ pnpm db:sql:lint -- --file <path>
   `invitation_assets` row parity because Storage binaries are not copied.
 - Does not touch production.
 - Does not mutate production.
-- Use after `supabase start`, after local resets, and before debugging data-dependent flows.
+- Use after `supabase start`, local migration/import operations, and before debugging data-dependent
+  flows.
 
 `pnpm db:prod:backup`
 
@@ -234,7 +217,7 @@ pnpm db:sql:lint -- --file <path>
 ### Daily local development
 
 ```bash
-supabase start
+pnpm db:start
 pnpm dev
 pnpm db:local:validate
 ```
@@ -260,26 +243,26 @@ patch around drift manually; add or apply the missing migration locally.
 
 ### Refresh local while preserving local-only data
 
+There is no dedicated runnable preserve-refresh command yet. The current restore script is
+non-destructive: it imports through a staging schema and inserts rows that do not already exist. Use
+the supported backup/restore path:
+
 ```bash
-pnpm db:start
-PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --dry-run
-PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --export
-PROD_DB_URL=... pnpm db:local:refresh-from-prod-preserve-local -- --confirm
+PROD_DB_URL=... pnpm db:prod:backup
+pnpm db:local:restore-from-dump --dump <path-to-dump>
 pnpm db:local:validate
 ```
 
-This workflow detects invitations, events, and published content that exist only in the local
-database, exports them with all FK-dependent rows, refreshes from production, then restores the
-preserved data. Production is never mutated. Use `--dry-run` first to inspect what will be preserved
-and what risks exist.
+Existing local rows are preserved rather than overwritten. Schema drift or incompatible data stops
+the import. The broader preserve-bundle workflow is still blocked pending a guarded implementation;
+see `.agent/plans/active/preserve-local-refresh-workflow.md`.
 
 ### Preserve local WIP before refresh
 
 ```bash
-pnpm db:start
 pnpm db:local:backup-wip
-PROD_DB_URL=... pnpm db:local:refresh-from-prod
-pnpm db:local:validate
+PROD_DB_URL=... pnpm db:prod:backup
+pnpm db:local:restore-from-dump --dump <path-to-dump>
 ```
 
 This backup is manual, partial, and intended for recovery reference only. It includes selected local
@@ -291,17 +274,15 @@ not include Supabase Storage binaries or a full auth snapshot.
 The persistent local database (`celebra-me-rsvp`) is protected state. It must never be reset by
 project workflows or automated agents.
 
-```bash
-pnpm db:local:reset              # BLOCKED — echoes message and exits 1
-pnpm db:local:reset:force        # REMOVED — does not exist
-```
+The `db:local:reset` alias is a fail-closed safety rail that always exits with an error.
+`db:local:reset:force` does not exist. Neither name is a runnable workflow.
 
 To perform destructive database testing (migration tests, schema drops, truncate, rollback), use the
 isolated disposable test environment:
 
 ```bash
 pnpm db:disposable:reset         # Reset the disposable database (destructive)
-pnpm db:disposable:cleanup       # Full cleanup (remove container + data)
+tsx scripts/db/disposable-test-env.ts cleanup # Full disposable cleanup
 ```
 
 The disposable environment runs on port 54332 with a separate Docker container and synthetic test

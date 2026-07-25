@@ -8,7 +8,7 @@ version: 1.0.0
 when_to_use:
   - Interpreting vague or complex user requests
   - Guiding the user towards better prompt structures
-  - Validating that a request aligns with Lean Governance 2.0
+  - Validating that a request aligns with repository governance
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -41,8 +41,8 @@ A healthy prompt should focus on one behavioral intent.
 
 For any change that is not a trivial maintenance fix (as defined in `.agent/rules/gatekeeper.md`),
 the agent should ensure the scope, constraints, and verification path are clear before
-implementation. Use conversation-scoped planning by default; only create repo-tracked planning notes
-when the repository owner explicitly asks for them.
+implementation. Use conversation-scoped planning by default. Create a repo-tracked plan only for
+multi-session or high-risk work, or when the repository owner explicitly asks for one.
 
 ## Guiding the User
 

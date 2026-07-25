@@ -1,9 +1,11 @@
 ---
 title: Valentina RSVP and Hero Final Blockers
-status: active
+status: superseded
 type: implementation
 autonomy: level-2
-updated: 2026-07-16
+updated: 2026-07-25
+superseded_by:
+  - docs/invitations/valentina-hernandez.md
 ---
 
 # Spec: Valentina — RSVP mobile crowding & Hero intermediate breakpoints
@@ -67,7 +69,7 @@ updated: 2026-07-16
 - `src/lib/adapters/event.ts`
 - `src/styles/global/_mixins.scss`
 - `src/styles/tokens/_spacing.scss`
-- `.agent/plans/active/xv-valentina-hernandez-db-payload.json`
+- `scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql`
 
 ## Files changed
 
