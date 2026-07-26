@@ -112,14 +112,32 @@ Storage mutations when content is unchanged.
 | `interlude-crown`            | `src/assets/invitations/abril-michelle-becerra-rea/interlude-crown.webp`            | Interlude after quote    | `50% 50%`                             | Decorative  | Optional             |
 | `interlude-palace`           | `src/assets/invitations/abril-michelle-becerra-rea/interlude-palace.webp`           | Interlude after location | `50% 50%`                             | Decorative  | Optional venue photo |
 | `thank-you-confetti`         | `src/assets/invitations/abril-michelle-becerra-rea/thank-you-confetti.webp`         | Reserve                  | `50% 40%`                             | Provisional | Final studio         |
-| `gallery-01-candles`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-01-candles.webp`         | Gallery 1                | `50% 50%`                             | Provisional | Final studio         |
+| `gallery-01-candles`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-01-candles.webp`         | Gallery 1                | `50% 42%` (mobile `40%`)              | Provisional | Final studio         |
 | `gallery-02-bw-cake`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-02-bw-cake.webp`         | **Family featured**      | `48% 32%`                             | Provisional | Final studio         |
-| `gallery-03-seated-balloons` | `src/assets/invitations/abril-michelle-becerra-rea/gallery-03-seated-balloons.webp` | Gallery 3                | `50% 35%`                             | Provisional | Final studio         |
-| `gallery-04-white-suit`      | `src/assets/invitations/abril-michelle-becerra-rea/gallery-04-white-suit.webp`      | Gallery 4                | `50% 32%`                             | Provisional | Final studio         |
+| `gallery-03-seated-balloons` | `src/assets/invitations/abril-michelle-becerra-rea/gallery-03-seated-balloons.webp` | Gallery 3                | `42% 38%` (mobile `40% 36%`)          | Provisional | Final studio         |
+| `gallery-04-white-suit`      | `src/assets/invitations/abril-michelle-becerra-rea/gallery-04-white-suit.webp`      | Gallery 4                | `50% 28%` (mobile `26%`)              | Provisional | Final studio         |
 | `gallery-05-white-dress`     | `src/assets/invitations/abril-michelle-becerra-rea/gallery-05-white-dress.webp`     | **Thank You featured**   | `50% 40%`                             | Provisional | Final studio         |
 
 **Removed orphans (2026-07-25):** `hero.webp`, `gallery-01.webp`, `gallery-02.webp`,
 `gallery-03.webp`, `crown-detail.webp`, `closing.webp` (superseded v1 filenames).
+
+### Gallery curation
+
+- **Declared variant:** `gallery.variant: 'premiere-floral'` (explicit in provision; must not rely
+  on silent theme inheritance). Effective on-page look is the Lane A **uniform 2×2** override in
+  `abril-michelle-becerra-rea.scss` (aspect `4 / 5`), not the shared Premiere Floral irregular
+  mosaic. See [`docs/domains/theme/gallery-variants.md`](../domains/theme/gallery-variants.md).
+- **Item count:** four photos. Do not add a fifth without changing the profile grid (a lone fifth
+  cell breaks the 2×2).
+- **Narrative order (locked):**
+  1. `gallery-01-candles` — intimate XV symbol (color opener)
+  2. `family-portrait` — tiara / regal B&W contrast beat
+  3. `gallery-03-seated-balloons` — celebration staging
+  4. `gallery-04-white-suit` — fashion look closer
+- **Intentionally outside gallery:** `gallery-02-bw-cake` (Family featured),
+  `gallery-05-white-dress` (Thank You). Do not duplicate into adjacent sections.
+- **Reserve only:** `thank-you-confetti` — uploaded and inventoried; not wired into content. Prefer
+  as Thank You alternate later; do not force into the 2×2 set.
 
 ---
 
@@ -206,6 +224,10 @@ Storage mutations when content is unchanged.
     `5:00 p. m.` (`2026-09-12T23:00:00.000Z`) with Garden Palace location and no invented end time.
   - Editorial 2×2 gallery grid (uniform `4 / 5`) in profile SCSS; RSVP confirmed contrast +
     personalized fallbacks. Local published `v9`, dry-run `IN_SYNC`.
+- **2026-07-26:** Gallery governance pass:
+  - Documented Gallery curation (order, reserve confetti, explicit `gallery.variant`).
+  - Set `gallery.variant: 'premiere-floral'` in provision (no silent inherit).
+  - Linked platform as-is / deferred layout-role target in `docs/domains/theme/gallery-variants.md`.
 
 ---
 
@@ -268,6 +290,7 @@ Storage mutations when content is unchanged.
 | -------------------------------------------------------------------------- | ------------ |
 | Create routable `demo-xv-premiere-floral` JSON + fix catalog `previewSlug` | P1 theme SKU |
 | Document family featured-image pattern in theme-architecture               | P3           |
+| Gallery layout-role enum independent of theme (see gallery-variants.md)    | P2 platform  |
 
 ---
 
@@ -287,17 +310,17 @@ unit/provision gates + dry-run zero-drift used as technical evidence.
 
 ### UI / Invitation Visual QA
 
-| Area                                                 | Status  | Notes                                                                          |
-| ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------ |
-| Reference fidelity (premiere-floral + Abril profile) | Pass    | Lane A overrides only                                                          |
-| Typography hierarchy                                 | Pass    | Cormorant display; Cinzel label/date; BEM hero selectors                       |
-| Theme / token coherence                              | Pass    | Family/location/interlude/countdown/envelope/hero tokens                       |
-| Hero face-safe composition                           | Pass    | Unified negative-space stack; inherited editorial band removed; five viewports |
-| Image assignment / focal points                      | Pass    | Family = portrait; gallery B&W cake; approved hero crop restored in v7         |
-| Distill / anti-slop                                  | Pass    | No frosted hero card; no pills/glows                                           |
-| Reduced motion                                       | Pass    | Nav button transitions gated                                                   |
-| Production placeholder assets                        | Blocked | Provisional WhatsApp-derived photos — release gate                             |
-| Responsive / E2E visual audit                        | Pass    | 6/6 Playwright checks; deterministic reduced-motion screenshots                |
+| Area                                                 | Status  | Notes                                                                              |
+| ---------------------------------------------------- | ------- | ---------------------------------------------------------------------------------- |
+| Reference fidelity (premiere-floral + Abril profile) | Pass    | Lane A overrides only                                                              |
+| Typography hierarchy                                 | Pass    | Cormorant display; Cinzel label/date; BEM hero selectors                           |
+| Theme / token coherence                              | Pass    | Family/location/interlude/countdown/envelope/hero tokens                           |
+| Hero face-safe composition                           | Pass    | Unified negative-space stack; inherited editorial band removed; five viewports     |
+| Image assignment / focal points                      | Pass    | Family = B&W cake; gallery = candles → tiara → balloons → white suit; hero crop v7 |
+| Distill / anti-slop                                  | Pass    | No frosted hero card; no pills/glows                                               |
+| Reduced motion                                       | Pass    | Nav button transitions gated                                                       |
+| Production placeholder assets                        | Blocked | Provisional WhatsApp-derived photos — release gate                                 |
+| Responsive / E2E visual audit                        | Pass    | 6/6 Playwright checks; deterministic reduced-motion screenshots                    |
 
 ### Findings
 

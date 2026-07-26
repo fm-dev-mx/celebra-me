@@ -108,7 +108,20 @@ describe('Abril Michelle local invitation content', () => {
 			zoom: 16,
 		});
 
+		const assets = buildTestAssets();
+		expect(result.data!.gallery!.variant).toBe('premiere-floral');
 		expect(result.data!.gallery!.items).toHaveLength(4);
+		const galleryIds = result.data!.gallery!.items.map((item) =>
+			typeof item.image === 'object' && item.image && 'assetId' in item.image
+				? String(item.image.assetId)
+				: '',
+		);
+		expect(galleryIds).toEqual([
+			assets['gallery-01-candles'].assetId,
+			assets['family-portrait'].assetId,
+			assets['gallery-03-seated-balloons'].assetId,
+			assets['gallery-04-white-suit'].assetId,
+		]);
 		expect(result.data!.rsvp!.calendar).toEqual({
 			title: 'XV de Abril Michelle',
 			description:
@@ -117,18 +130,8 @@ describe('Abril Michelle local invitation content', () => {
 		});
 		expect(result.data!.rsvp!.responseMessages?.confirmed?.title).toContain('{guestName}');
 
-		const assets = buildTestAssets();
 		expect(result.data!.thankYou!.image).toEqual(assets['gallery-05-white-dress']);
 		expect(result.data!.family!.featuredImage).toEqual(assets['gallery-02-bw-cake']);
-
-		const galleryIds = result.data!.gallery!.items.map((item) =>
-			typeof item.image === 'object' && item.image && 'assetId' in item.image
-				? String(item.image.assetId)
-				: '',
-		);
-		expect(galleryIds).toContain(assets['family-portrait'].assetId);
-		expect(galleryIds).not.toContain(assets['gallery-02-bw-cake'].assetId);
-		expect(galleryIds).not.toContain(assets['gallery-05-white-dress'].assetId);
 		expect(assets['gallery-02-bw-cake'].assetId).not.toEqual(
 			assets['gallery-05-white-dress'].assetId,
 		);

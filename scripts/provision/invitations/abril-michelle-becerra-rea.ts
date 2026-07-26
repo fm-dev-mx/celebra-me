@@ -301,6 +301,7 @@ export function buildAbrilPublishedContent(
 			eyebrow: 'Recuerdos',
 			title: 'Abril Michelle',
 			subtitle: 'Luz, elegancia y la emoción de sus XV',
+			variant: 'premiere-floral',
 			items: [
 				{
 					image: assets['gallery-01-candles'],
