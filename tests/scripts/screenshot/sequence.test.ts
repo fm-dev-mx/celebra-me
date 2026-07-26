@@ -56,6 +56,7 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 		revealHandling: 'auto',
 		animationHandling: 'disable',
 		sectionCapture: 'auto',
+		sectionExtent: 'full',
 		criticalSelectors: [],
 		waitSelectors: [],
 		hideSelectors: [],

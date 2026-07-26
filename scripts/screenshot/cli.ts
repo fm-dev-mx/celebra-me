@@ -197,6 +197,7 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 		revealHandling: options.reveal ?? 'auto',
 		animationHandling: options.animation ?? 'disable',
 		sectionCapture,
+		sectionExtent: options.sectionExtent ?? 'full',
 		selectedSection,
 		sectionSelectors,
 		criticalSelectors: getDefaultCriticalSelectors(pageType),
@@ -263,6 +264,7 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 			revealHandling: page.revealHandling ?? 'auto',
 			animationHandling: page.animationHandling ?? options.animation ?? 'disable',
 			sectionCapture: page.sectionCapture ?? 'none',
+			sectionExtent: page.sectionExtent ?? 'full',
 			sectionSelectors: page.sectionSelectors,
 			criticalSelectors:
 				page.criticalSelectors && page.criticalSelectors.length > 0

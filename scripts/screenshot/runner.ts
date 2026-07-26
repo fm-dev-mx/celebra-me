@@ -1,6 +1,5 @@
-// =============================================================================
+/* eslint-disable max-lines -- Job runner owns browser lifecycle, viewport loop, and report assembly. */
 // CELEBRA-ME | Screenshot Tool — Job Runner
-// =============================================================================
 
 import sharp from 'sharp';
 import type { Page, Request } from 'playwright';
@@ -28,6 +27,7 @@ import {
 	classifyConsoleError,
 	validateBlankBottom,
 	getFileArtifactMeta,
+	removeLegacyInvitationFullOpenArtifacts,
 } from './utils.js';
 import {
 	launchBrowser,
@@ -35,10 +35,6 @@ import {
 	captureInvitationScreenshots,
 	captureGeneralPageScreenshots,
 } from './capture.js';
-
-// =============================================================================
-// Main Runner
-// =============================================================================
 
 interface SingleViewportCaptureResult {
 	captures: CaptureResult[];
@@ -181,10 +177,17 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	const outputDir = resolveOutputDir(pageSlug, job.outputFolderStyle, job.outputFolder);
 	await ensureDir(outputDir);
 
-	console.log(`  Output:  ${outputDir}/`);
-	console.log('');
+	if (job.pageType === 'invitation') {
+		const removedLegacy = await removeLegacyInvitationFullOpenArtifacts(outputDir);
+		if (removedLegacy.length > 0) {
+			console.log(
+				`  🧹 Removed ${removedLegacy.length} legacy 05-invitation-full-open artifact(s)`,
+			);
+		}
+	}
 
-	// ── 2. Launch browser ──────────────────────────────────────────────────
+	console.log(`  Output:  ${outputDir}/`);
+	// Sequential viewports avoid Vite optimize-dep races against `pnpm dev`.
 	let browser;
 	try {
 		browser = await launchBrowser();

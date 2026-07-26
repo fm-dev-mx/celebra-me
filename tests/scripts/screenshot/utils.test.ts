@@ -12,6 +12,7 @@ import {
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	getViewportProfileSummary,
+	intersectRectWithViewport,
 } from '../../../scripts/screenshot/utils';
 import type { ScreenshotRunReport } from '../../../scripts/screenshot/types';
 
@@ -20,6 +21,34 @@ describe('screenshot CLI utilities', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--url=/']).mode).toBeUndefined();
 		expect(parseCliArgs(['node', 'cli.ts', '--url=/', '--mode=raw']).mode).toBe('raw');
 		expect(parseCliArgs(['node', 'cli.ts', '--url=/', '--mode=audit']).mode).toBe('audit');
+	});
+
+	it('parses --section-extent for full and viewport framing', () => {
+		expect(parseCliArgs(['node', 'cli.ts', '--section-extent=full']).sectionExtent).toBe(
+			'full',
+		);
+		expect(parseCliArgs(['node', 'cli.ts', '--section-extent', 'viewport']).sectionExtent).toBe(
+			'viewport',
+		);
+		expect(
+			parseCliArgs(['node', 'cli.ts', '--section-extent=invalid']).sectionExtent,
+		).toBeUndefined();
+	});
+
+	it('intersects element boxes with the viewport for viewport-crop framing', () => {
+		const viewport = { width: 390, height: 844 };
+
+		expect(
+			intersectRectWithViewport({ x: 0, y: 0, width: 390, height: 2000 }, viewport),
+		).toEqual({ x: 0, y: 0, width: 390, height: 844 });
+
+		expect(
+			intersectRectWithViewport({ x: 10, y: 100, width: 370, height: 400 }, viewport),
+		).toEqual({ x: 10, y: 100, width: 370, height: 400 });
+
+		expect(
+			intersectRectWithViewport({ x: 0, y: 900, width: 390, height: 200 }, viewport),
+		).toBeNull();
 	});
 
 	it('resolves mobile-small as a temporary alias for canonical mobile-narrow', () => {
@@ -65,7 +94,7 @@ describe('screenshot CLI utilities', () => {
 		const [mobileNarrow, desktop] = resolveViewports('site', ['mobile-narrow', 'desktop']);
 		const manifest = buildCurrentRunManifest({
 			viewports: [mobileNarrow, desktop],
-			perViewportPlanned: { 'mobile-narrow': 3, 'desktop': 3 },
+			perViewportPlanned: { 'mobile-narrow': 3, desktop: 3 },
 			target: 'critical-qa',
 			captures: [
 				{
@@ -244,4 +273,3 @@ describe('screenshot CLI utilities', () => {
 		});
 	});
 });
-

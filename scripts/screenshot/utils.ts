@@ -19,13 +19,16 @@ import {
 	type ConsoleErrorReport,
 	type ViewportManifestReport,
 	type CaptureTarget,
+	type SectionExtent,
 	VIEWPORT_PROFILES,
 	DEFAULT_BASE_URL,
 } from './types.js';
 export {
 	calculateImageHash,
 	getFileArtifactMeta,
+	invalidateStaleInvitationFullPage,
 	publishArtifactAtomically,
+	removeLegacyInvitationFullOpenArtifacts,
 	validateBlankBottom,
 	verifyPhysicalPng,
 	verifySectionCropInclusion,
@@ -173,6 +176,11 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		},
 		'--section-selectors': () => {
 			options.sectionSelectors = value;
+		},
+		'--section-extent': () => {
+			if (value === 'full' || value === 'viewport') {
+				options.sectionExtent = value as SectionExtent;
+			}
 		},
 		'--auth': () => {
 			if (
@@ -832,6 +840,24 @@ export async function buildScreenshotPath(
 // ---------------------------------------------------------------------------
 // Format helpers for CLI output
 // ---------------------------------------------------------------------------
+
+/**
+ * Intersect an element box (viewport coordinates) with the visible viewport.
+ * Returns null when there is no visible overlap.
+ */
+export function intersectRectWithViewport(
+	box: { x: number; y: number; width: number; height: number },
+	viewport: { width: number; height: number },
+): { x: number; y: number; width: number; height: number } | null {
+	const left = Math.max(0, box.x);
+	const top = Math.max(0, box.y);
+	const right = Math.min(viewport.width, box.x + box.width);
+	const bottom = Math.min(viewport.height, box.y + box.height);
+	const width = right - left;
+	const height = bottom - top;
+	if (width <= 0 || height <= 0) return null;
+	return { x: left, y: top, width, height };
+}
 
 /**
  * Format a viewport for display: "390×844 @2x (mobile-standard)"

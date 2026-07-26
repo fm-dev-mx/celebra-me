@@ -75,6 +75,10 @@ $ pnpm screenshot
     Full        (mobile-narrow, mobile-standard, mobile-large, tablet, desktop)
     ...
 
+? How should section screenshots be framed?
+  ❯ Full section   (entire element height, even if taller than the viewport)
+    Viewport crop  (only what fits in the current viewport)
+
 ? How should reveal sections be handled?
   ❯ Auto-detect reveal section
     Force reveal open (query params)
@@ -82,7 +86,8 @@ $ pnpm screenshot
 ```
 
 The tool asks only relevant questions based on the page type (e.g. reveal questions are skipped for
-landing pages).
+landing pages). Section framing is always asked when the target includes section captures
+(`critical-qa`, `all-sections`, or `single-section`).
 
 ## Direct Mode (Flags)
 
@@ -104,28 +109,43 @@ pnpm screenshot:invite \
   --profile=invitation \
   --set=essential \
   --reveal=auto
+
+# All sections at full element height (default framing)
+pnpm screenshot:invite \
+  --url=/xv/abril-michelle-becerra-rea \
+  --target=all-sections \
+  --section-extent=full \
+  --profile=invitation
+
+# Single section, viewport crop only
+pnpm screenshot:invite \
+  --url=/xv/abril-michelle-becerra-rea \
+  --sections=hero \
+  --section-extent=viewport \
+  --viewport=mobile-standard
 ```
 
 ### CLI Flags
 
-| Flag                     | Short | Description                                                                                            |
-| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |
-| `--url=<url>`            | `-u`  | URL or route to capture                                                                                |
-| `--base-url=<url>`       |       | Base URL for route resolution (default: http://localhost:4321)                                         |
-| `--type=<type>`          | `-t`  | Page type: invitation, landing, dashboard, admin, login, custom                                        |
-| `--mode=<mode>`          |       | Mode: audit (default), raw                                                                             |
-| `--profile=<name>`       | `-p`  | Viewport profile: invitation, site, full, single                                                       |
-| `--viewport=<names>`     |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop          |
-| `--set=<name>`           |       | Invitation set: essential, full-qa, reveal-only, full-page                                             |
-| `--general-set=<name>`   |       | Page set: basic, full-qa                                                                               |
-| `--reveal=<mode>`        |       | Reveal handling: auto, force-open, closed-only, open-only, skip                                        |
-| `--animation=<mode>`     |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead. |
-| `--sections=<mode>`      |       | Sections: none, auto, known, custom                                                                    |
-| `--auth=<method>`        |       | Auth: none, existing-session, storage-state, manual-login                                              |
-| `--format=<fmt>`         | `-f`  | Output: png, jpeg, webp, pdf                                                                           |
-| `--output=<path>`        | `-o`  | Custom output folder                                                                                   |
-| `--output-style=<style>` |       | Folder style: default, timestamped, custom, overwrite                                                  |
-| `--config=<path>`        |       | Path to screenshot.config.json                                                                         |
+| Flag                      | Short | Description                                                                                            |
+| ------------------------- | ----- | ------------------------------------------------------------------------------------------------------ |
+| `--url=<url>`             | `-u`  | URL or route to capture                                                                                |
+| `--base-url=<url>`        |       | Base URL for route resolution (default: http://localhost:4321)                                         |
+| `--type=<type>`           | `-t`  | Page type: invitation, landing, dashboard, admin, login, custom                                        |
+| `--mode=<mode>`           |       | Mode: audit (default), raw                                                                             |
+| `--profile=<name>`        | `-p`  | Viewport profile: invitation, site, full, single                                                       |
+| `--viewport=<names>`      |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop          |
+| `--set=<name>`            |       | Invitation set: essential, full-qa, reveal-only, full-page                                             |
+| `--general-set=<name>`    |       | Page set: basic, full-qa                                                                               |
+| `--reveal=<mode>`         |       | Reveal handling: auto, force-open, closed-only, open-only, skip                                        |
+| `--animation=<mode>`      |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead. |
+| `--sections=<mode>`       |       | Sections: none, auto, known, custom (or a known section id for single-section)                         |
+| `--section-extent=<mode>` |       | Section framing: `full` (default, entire element) or `viewport` (visible crop only)                    |
+| `--auth=<method>`         |       | Auth: none, existing-session, storage-state, manual-login                                              |
+| `--format=<fmt>`          | `-f`  | Output: png, jpeg, webp, pdf                                                                           |
+| `--output=<path>`         | `-o`  | Custom output folder                                                                                   |
+| `--output-style=<style>`  |       | Folder style: default, timestamped, custom, overwrite                                                  |
+| `--config=<path>`         |       | Path to screenshot.config.json                                                                         |
 
 ## Output Structure
 
@@ -133,11 +153,12 @@ pnpm screenshot:invite \
 screenshots/
   demo-boda-jewelry-box-wedding/
     mobile-standard/
-      01-initial-full-page.png
-      02-reveal-section-closed.png
+      01-initial-closed-viewport.png
+      02-reveal-closed.png
       03-reveal-letter-open.png
-      04-reveal-section-open.png
-      05-invitation-full-open.png
+      04-reveal-transition-open.png
+      10-01-hero.png
+      05-invitation-full-page.png
     mobile-narrow/
       ...
     mobile-large/
@@ -151,15 +172,24 @@ screenshots/
     report.json
 ```
 
+Legacy filename `05-invitation-full-open.png` is removed automatically on invitation runs so it
+cannot be confused with the canonical `05-invitation-full-page.png`.
+
 ### Invitation Screenshots
 
-| File                           | Description                     |
-| ------------------------------ | ------------------------------- |
-| `01-initial-full-page.png`     | Full page (closed reveal state) |
-| `02-reveal-section-closed.png` | Reveal section, unopened        |
-| `03-reveal-letter-open.png`    | Letter/card content visible     |
-| `04-reveal-section-open.png`   | Reveal section, opened state    |
-| `05-invitation-full-open.png`  | Full page (after reveal)        |
+| File                             | Description                                             |
+| -------------------------------- | ------------------------------------------------------- |
+| `01-initial-closed-viewport.png` | Closed reveal state (viewport only)                     |
+| `02-reveal-closed.png`           | Reveal section, unopened                                |
+| `03-reveal-letter-open.png`      | Letter/card content visible                             |
+| `04-reveal-transition-open.png`  | Reveal transition (envelope flap)                       |
+| `10-*-{section}.png`             | Per-section captures (before full-page in full QA)      |
+| `05-invitation-full-page.png`    | Open invitation full page: vertical composite of `10-*` |
+
+`05-invitation-full-page` is built by stacking the same-run section captures (source of truth) after
+a deterministic `?screenshot=1&reveal=open` (one retry). Invitations must expose
+`data-screenshot-section` markers and support screenshot reveal-open. If open or composite fails,
+the job fails and any previous `05` for that viewport is removed (correct or nothing).
 
 ### General Page Screenshots
 
@@ -207,10 +237,12 @@ Mobile-small is accepted as a CLI alias for `mobile-narrow`; reports use the can
 
 ## Reveal Detection Priority
 
-1. **Query params**: `?screenshot=1&reveal=open` / `?screenshot=1&reveal=closed`
+1. **Query params**: `?screenshot=1&reveal=open` / `?screenshot=1&reveal=closed` (`reveal=closed`
+   also sets `forceEnvelope=true` so a prior open in the same browser context cannot skip/hide the
+   envelope via `localStorage`)
 2. **Data attributes**: `[data-screenshot="reveal-section"]`, `[data-screenshot="reveal-trigger"]`,
    `[data-screenshot="reveal-letter"]`
-3. **Click automation**: Finds and clicks the trigger button/link
+3. **Click automation**: Finds and clicks the trigger (force-click if attached but not visible)
 4. **Text fallback**: Matches against "abrir", "ver invitación", "descubrir", etc.
 
 ## Page Stability
@@ -220,11 +252,20 @@ Before each screenshot, the tool ensures:
 - `DOMContentLoaded` fired
 - Network idle (best-effort timeout)
 - Fonts loaded (`document.fonts.ready`)
-- Visible images loaded
-- Lazy-loaded images (scroll-triggered)
+- Visible images loaded (plus scoped, deduped background-image URLs)
+- Lazy-loaded images (scroll-triggered once per page; skipped if audit already scrolled)
+- Open-invitation hero image readiness before full-page stitch
 - Reveal/animated content normalized only in `audit` mode
 - CSS animations disabled right before capture in `audit` mode
 - Critical selector visibility and image readiness validated
+
+Viewports are captured **sequentially**. Parallel contexts against `pnpm dev` tend to hit Vite
+optimize-dep races; use a production preview build if you need more throughput later.
+
+If `05-invitation-full-page` fails verification — or the reveal never opens — any previous published
+file for that viewport is deleted so a stale full-page cannot sit next to freshly updated section
+captures. Section and full-page open captures are skipped together when a reveal exists but fails to
+open.
 
 ## Recommended Data Attributes
 

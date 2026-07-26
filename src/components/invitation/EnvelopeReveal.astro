@@ -182,11 +182,30 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
 
+			/** Screenshot tool needs the letter laid out; do not race-hide the host. */
+			const isScreenshotCaptureMode = () => {
+				try {
+					if (new URLSearchParams(window.location.search).get('screenshot') === '1') {
+						return true;
+					}
+				} catch {
+					// ignore
+				}
+				return Boolean(document.documentElement.dataset.screenshot);
+			};
+
 			// Helper: reveal card should be visible to accessibility when shown
 			const showCardToAccessibility = () => {
 				if (revealCard instanceof HTMLElement) {
 					revealCard.removeAttribute('aria-hidden');
 				}
+			};
+
+			/** Hold the open letter on-screen for `pnpm screenshot` step 03/04.
+			 * Do not add `is-preview-opened` — audit CSS hides that class with display:none. */
+			const holdLetterForScreenshotCapture = () => {
+				this.classList.add('is-opening');
+				showCardToAccessibility();
 			};
 
 			if (this.dataset.previewState === 'opened') {
@@ -222,13 +241,18 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
 				window.setTimeout(() => {
-					this.hidden = true;
+					// Keep host measurable during screenshot runs (display:none → 0×0 letter).
+					if (!isScreenshotCaptureMode()) {
+						this.hidden = true;
+					}
 				}, EXIT_ANIMATION_MS);
 			};
 
 			if (manager.shouldSkipEnvelope()) {
 				completeReveal();
-				this.hidden = true;
+				if (!isScreenshotCaptureMode()) {
+					this.hidden = true;
+				}
 				return;
 			}
 
@@ -249,6 +273,13 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 				manager.playOpenSound();
 				manager.setStoredFlag();
+
+				// Audit/raw screenshot click path: hold the letter painted. Later steps
+				// open invitation content via ?reveal=open (fresh navigation).
+				if (isScreenshotCaptureMode()) {
+					holdLetterForScreenshotCapture();
+					return;
+				}
 
 				if (getMotionPreference()) {
 					completeReveal();

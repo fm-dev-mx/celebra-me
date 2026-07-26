@@ -26,6 +26,9 @@ export type AnimationHandling = 'disable' | 'wait' | 'query-param' | 'custom';
 /** Whether and how to capture individual sections */
 export type SectionCapture = 'none' | 'auto' | 'known' | 'custom' | 'single';
 
+/** How to frame individual section / critical element screenshots */
+export type SectionExtent = 'full' | 'viewport';
+
 /** Authentication method */
 export type AuthMethod = 'none' | 'existing-session' | 'storage-state' | 'manual-login';
 
@@ -83,6 +86,11 @@ export interface ScreenshotJob {
 	revealHandling: RevealHandling;
 	animationHandling: AnimationHandling;
 	sectionCapture: SectionCapture;
+	/**
+	 * Framing for section/critical element captures.
+	 * `full` = entire element height; `viewport` = visible viewport crop only.
+	 */
+	sectionExtent: SectionExtent;
 	selectedSection?: string;
 	sectionSelectors?: string[];
 	criticalSelectors: ScreenshotSelectorConfig[];
@@ -116,6 +124,8 @@ export interface CliOptions {
 	sections?: string;
 	/** Comma-separated CSS selectors for custom sections */
 	sectionSelectors?: string;
+	/** Framing for section captures: full element or viewport crop */
+	sectionExtent?: SectionExtent;
 	auth?: AuthMethod;
 	format?: OutputFormat;
 	/** Custom output folder path */
@@ -154,6 +164,7 @@ export interface ScreenshotConfigPage {
 	revealHandling?: RevealHandling;
 	animationHandling?: AnimationHandling;
 	sectionCapture?: SectionCapture;
+	sectionExtent?: SectionExtent;
 	sectionSelectors?: string[];
 	criticalSelectors?: ScreenshotSelectorConfig[];
 	waitSelectors?: string[];

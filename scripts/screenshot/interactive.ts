@@ -15,6 +15,7 @@ import {
 	type Viewport,
 	type ScreenshotMode,
 	type CaptureTarget,
+	type SectionExtent,
 	DEFAULT_BASE_URL,
 	KNOWN_SECTIONS,
 } from './types.js';
@@ -27,7 +28,11 @@ import {
 	getDefaultCriticalSelectors,
 	getViewportProfileSummary,
 } from './utils.js';
-import { discoverAllInvitations, discoverStaticDemos, discoverStaticTemplates } from './discovery.js';
+import {
+	discoverAllInvitations,
+	discoverStaticDemos,
+	discoverStaticTemplates,
+} from './discovery.js';
 
 // =============================================================================
 // Interactive CLI Entry
@@ -44,17 +49,20 @@ async function askViewportProfile(
 		choices: [
 			{
 				name: `Invitation  (${getViewportProfileSummary('invitation')})`,
-				description: 'Mobile-only set: mobile-narrow, mobile-standard, mobile-large. Recommended responsive set for invitation QA.',
+				description:
+					'Mobile-only set: mobile-narrow, mobile-standard, mobile-large. Recommended responsive set for invitation QA.',
 				value: 'invitation',
 			},
 			{
 				name: `Site        (${getViewportProfileSummary('site')})`,
-				description: 'Recommended responsive set for landing / general page QA: mobile-narrow, mobile-standard, tablet, desktop.',
+				description:
+					'Recommended responsive set for landing / general page QA: mobile-narrow, mobile-standard, tablet, desktop.',
 				value: 'site',
 			},
 			{
 				name: `Full        (${getViewportProfileSummary('full')})`,
-				description: 'All five viewports: mobile-narrow, mobile-standard, mobile-large, tablet, desktop.',
+				description:
+					'All five viewports: mobile-narrow, mobile-standard, mobile-large, tablet, desktop.',
 				value: 'full',
 			},
 			{
@@ -72,7 +80,8 @@ async function askViewportProfile(
 			choices: [
 				{
 					name: 'mobile-narrow   (360×740, @2x)',
-					description: 'Smallest common mobile size; stresses typography and CTA legibility.',
+					description:
+						'Smallest common mobile size; stresses typography and CTA legibility.',
 					value: 'mobile-narrow',
 				},
 				{
@@ -106,8 +115,6 @@ async function askViewportProfile(
 		viewports: resolveViewports(choice as ViewportProfileType),
 	};
 }
-
-
 
 /**
  * Run the interactive CLI flow: ask questions, show summary, confirm.
@@ -162,7 +169,10 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		const selectionMode = await select<string>({
 			message: 'Select the invitation or demo to capture:',
 			choices: [
-				{ name: 'Select from All Discovered Invitations (Demos, Provisioned, DB)...', value: 'select-all-discovered' },
+				{
+					name: 'Select from All Discovered Invitations (Demos, Provisioned, DB)...',
+					value: 'select-all-discovered',
+				},
 				{ name: 'Select from Event Demos...', value: 'select-demo' },
 				{ name: 'Select from Invitation Templates...', value: 'select-template' },
 				{ name: 'Capture ALL Discovered Invitations', value: 'all-discovered' },
@@ -267,29 +277,33 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		message: 'What is the target of this screenshot run?',
 		choices: [
 			{
-				name: 'Full page         (full-page captures only)',
+				name: 'Full page         (page-level captures only)',
 				description:
 					pageType === 'invitation'
-						? 'Captures initial (closed) and opened full-page states for the invitation. For landing pages: one full-page screenshot.'
+						? 'Invitation: closed-state viewport (01) + opened stitched full-page (05). No per-section files.'
 						: 'Captures only full-page screenshots for the selected viewport(s).',
 				value: 'full-page',
 			},
 			{
-				name: 'Critical QA set   (full-page + predefined critical sections)',
-				description: 'Captures the full page plus predefined critical sections (e.g. hero, pricing, faq, contact).',
+				name: 'Critical QA set   (full-page + sections)',
+				description:
+					pageType === 'invitation'
+						? 'Closed viewport, reveal steps, each opened section, then stitched full-page (05).'
+						: 'Captures the full page plus predefined critical sections (e.g. hero, pricing, faq, contact).',
 				value: 'critical-qa',
 			},
 			{
 				name: 'All sections      (one screenshot per registered section)',
 				description:
 					pageType === 'invitation'
-						? 'Captures each visible opened invitation section individually. No full-page baseline. For full-page initial/opened states use Critical QA or Full Page target.'
+						? 'Captures each visible opened invitation section individually. No full-page baseline. For page-level states use Critical QA or Full Page.'
 						: 'Captures one screenshot per registered section, skipping full-page unless layout is explicitly included.',
 				value: 'all-sections',
 			},
 			{
 				name: 'Single section    (only the selected section)',
-				description: 'Captures exactly one selected section, skipping all page-level and other section screenshots.',
+				description:
+					'Captures exactly one selected section, skipping all page-level and other section screenshots.',
 				value: 'single-section',
 			},
 		],
@@ -300,7 +314,8 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 	if (target === 'critical-qa') {
 		if (pageType !== 'invitation') {
 			includeLayout = await select<boolean>({
-				message: 'Do you want to include standard layout captures (viewport, header, main, footer)?',
+				message:
+					'Do you want to include standard layout captures (viewport, header, main, footer)?',
 				choices: [
 					{ name: 'Yes, include standard layout captures', value: true },
 					{ name: 'No, only capture critical sections and full page', value: false },
@@ -330,6 +345,29 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		sectionCapture = 'known';
 	}
 
+	// ── 4b. Section framing (always when the run includes section captures) ─
+	let sectionExtent: SectionExtent = 'full';
+	if (target === 'critical-qa' || target === 'all-sections' || target === 'single-section') {
+		sectionExtent = await select<SectionExtent>({
+			message: 'How should section screenshots be framed?',
+			choices: [
+				{
+					name: 'Full section   (entire element height, even if taller than the viewport)',
+					description:
+						'Captures the complete section node. Recommended for visual QA of tall sections (gallery, RSVP, itinerary).',
+					value: 'full',
+				},
+				{
+					name: 'Viewport crop  (only what fits in the current viewport)',
+					description:
+						'After scrolling the section to the top, captures only the visible viewport slice.',
+					value: 'viewport',
+				},
+			],
+			default: 'full',
+		});
+	}
+
 	// ── 5. Viewport Profile ────────────────────────────────────────────────
 	const defaultProfile = getDefaultProfile(pageType);
 	const { viewportProfile, viewports } = await askViewportProfile(defaultProfile);
@@ -357,12 +395,14 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		choices: [
 			{
 				name: 'Audit',
-				description: 'Stable visual QA: waits for content, reduces motion, and disables scroll snapping.',
+				description:
+					'Stable visual QA: waits for content, reduces motion, and disables scroll snapping.',
 				value: 'audit',
 			},
 			{
 				name: 'Raw',
-				description: 'Minimal intervention: captures the page closer to actual runtime behavior for debugging.',
+				description:
+					'Minimal intervention: captures the page closer to actual runtime behavior for debugging.',
 				value: 'raw',
 			},
 		],
@@ -439,6 +479,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		revealHandling,
 		animationHandling: mode === 'audit' ? 'disable' : 'wait',
 		sectionCapture,
+		sectionExtent,
 		selectedSection,
 		sectionSelectors: undefined,
 		criticalSelectors: getDefaultCriticalSelectors(pageType),
@@ -457,8 +498,9 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 // Summary & Confirmation
 // =============================================================================
 
-async function confirmJobs(jobs: ScreenshotJob[]): Promise<ScreenshotJob[] | ScreenshotJob | null> {
+function printJobSummary(jobs: ScreenshotJob[]): void {
 	const isBatch = jobs.length > 1;
+	const job = jobs[0];
 
 	console.log('\n' + '─'.repeat(56));
 	console.log(`📋  SCREENSHOT JOB SUMMARY${isBatch ? ' (BATCH RUN)' : ''}`);
@@ -469,40 +511,54 @@ async function confirmJobs(jobs: ScreenshotJob[]): Promise<ScreenshotJob[] | Scr
 			console.log(`                   - ${j.url}`);
 		}
 	} else {
-		console.log(`  Page type:     ${jobs[0].pageType}`);
-		console.log(`  URL:           ${jobs[0].url}`);
-		console.log(`  Page slug:     ${createPageSlug(jobs[0].url)}`);
+		console.log(`  Page type:     ${job.pageType}`);
+		console.log(`  URL:           ${job.url}`);
+		console.log(`  Page slug:     ${createPageSlug(job.url)}`);
 	}
-	console.log(`  Profile:       ${jobs[0].viewportProfile}`);
-	console.log(`  Viewports:     ${jobs[0].viewports.length}`);
-	for (const vp of jobs[0].viewports) {
+	console.log(`  Profile:       ${job.viewportProfile}`);
+	console.log(`  Viewports:     ${job.viewports.length}`);
+	for (const vp of job.viewports) {
 		console.log(`                   ${formatViewport(vp)}`);
 	}
-	if (jobs[0].pageType === 'invitation') {
-		console.log(`  Reveal mode:    ${jobs[0].revealHandling}`);
+	if (job.pageType === 'invitation') {
+		console.log(`  Reveal mode:    ${job.revealHandling}`);
 	}
-	console.log(`  Target:        ${jobs[0].target}`);
-	if (jobs[0].pageType === 'invitation' && jobs[0].target === 'full-page') {
-		console.log('  Captures:      Full page states — initial (closed) + opened invitation');
+	console.log(`  Target:        ${job.target}`);
+	if (job.pageType === 'invitation' && job.target === 'full-page') {
+		console.log('  Captures:      Closed viewport (01) + opened stitched full-page (05)');
 	}
-	if (jobs[0].pageType !== 'invitation' && jobs[0].includeLayout) {
+	if (job.pageType !== 'invitation' && job.includeLayout) {
 		console.log(`  Incl. Layout:  Yes`);
 	}
-	console.log(`  Mode:          ${jobs[0].mode}`);
-	if (jobs[0].selectedSection) {
-		console.log(`  Sel. Section:  ${jobs[0].selectedSection}`);
+	if (
+		job.target === 'critical-qa' ||
+		job.target === 'all-sections' ||
+		job.target === 'single-section'
+	) {
+		console.log(
+			`  Section frame: ${job.sectionExtent === 'viewport' ? 'viewport crop' : 'full section'}`,
+		);
 	}
-	if (jobs[0].sectionSelectors?.length) {
-		console.log(`  Selectors:     ${jobs[0].sectionSelectors.join(', ')}`);
+	console.log(`  Mode:          ${job.mode}`);
+	if (job.selectedSection) {
+		console.log(`  Sel. Section:  ${job.selectedSection}`);
 	}
-	console.log(`  Auth:          ${jobs[0].authMethod}`);
-	console.log(`  Format:        ${jobs[0].outputFormat}`);
-	console.log(`  Output style:  ${jobs[0].outputFolderStyle}`);
+	if (job.sectionSelectors?.length) {
+		console.log(`  Selectors:     ${job.sectionSelectors.join(', ')}`);
+	}
+	console.log(`  Auth:          ${job.authMethod}`);
+	console.log(`  Format:        ${job.outputFormat}`);
+	console.log(`  Output style:  ${job.outputFolderStyle}`);
 	if (!isBatch) {
-		console.log(`  Output dir:    screenshots/${createPageSlug(jobs[0].url)}/`);
+		console.log(`  Output dir:    screenshots/${createPageSlug(job.url)}/`);
 	}
 	console.log('─'.repeat(56));
 	console.log('');
+}
+
+async function confirmJobs(jobs: ScreenshotJob[]): Promise<ScreenshotJob[] | ScreenshotJob | null> {
+	const isBatch = jobs.length > 1;
+	printJobSummary(jobs);
 
 	const action = await select<'run' | 'edit' | 'cancel'>({
 		message: 'Ready to run?',
@@ -522,8 +578,6 @@ async function confirmJobs(jobs: ScreenshotJob[]): Promise<ScreenshotJob[] | Scr
 		return null;
 	}
 
-	// Edit — start over
 	console.log('\nRestarting interactive flow...\n');
 	return runInteractiveFlow();
 }
-

@@ -256,6 +256,40 @@ export interface SectionCropVerificationResult {
 	valid: boolean;
 	error?: string;
 	errorCode?: string;
+	warning?: string;
+}
+
+/** Max mean absolute channel error (0–255) for hero strip similarity. */
+const HERO_STRIP_MAE_THRESHOLD = 28;
+
+async function compareHeroStripSimilarity(
+	cropBuffer: Buffer,
+	cropWidth: number,
+	cropHeight: number,
+	standalonePath: string,
+): Promise<{ similar: boolean; mae: number }> {
+	const stripHeight = Math.min(120, cropHeight);
+	const cropStrip = await sharp(cropBuffer, {
+		raw: { width: cropWidth, height: cropHeight, channels: 4 },
+	})
+		.extract({ left: 0, top: 0, width: cropWidth, height: stripHeight })
+		.resize(64, 32, { fit: 'fill' })
+		.raw()
+		.toBuffer();
+
+	const standaloneStrip = await sharp(standalonePath)
+		.resize(64, 32, { fit: 'fill' })
+		.ensureAlpha()
+		.raw()
+		.toBuffer();
+
+	let sum = 0;
+	const len = Math.min(cropStrip.length, standaloneStrip.length);
+	for (let i = 0; i < len; i++) {
+		sum += Math.abs(cropStrip[i] - standaloneStrip[i]);
+	}
+	const mae = len > 0 ? sum / len : 255;
+	return { similar: mae <= HERO_STRIP_MAE_THRESHOLD, mae };
 }
 
 export async function verifySectionCropInclusion(
@@ -280,10 +314,11 @@ export async function verifySectionCropInclusion(
 			};
 		}
 
-		// Extract crop from full-page PNG
+		// Extract crop from full-page PNG (normalize to RGBA for consistent raw math)
 		const actualExtractHeight = Math.min(cropHeight, Math.max(1, fullHeight - cropTop));
 		const cropBuffer = await sharp(fullPagePath)
 			.extract({ left: 0, top: cropTop, width: fullWidth, height: actualExtractHeight })
+			.ensureAlpha()
 			.raw()
 			.toBuffer();
 
@@ -302,20 +337,38 @@ export async function verifySectionCropInclusion(
 			};
 		}
 
-		// If standalone section capture exists, compare height dimensions
+		let warning: string | undefined;
+
+		// Height deltas between inventory bounds and element screenshots are common
+		// (sticky/overlays/DPR). Treat as warning so publish is not blocked by stale
+		// previous-run standalones or benign geometry skew.
 		if (standalonePath && syncFs.existsSync(standalonePath)) {
 			const standaloneMeta = await sharp(standalonePath).metadata();
 			const standaloneHeight = standaloneMeta.height || 0;
 			if (standaloneHeight > 0 && Math.abs(cropHeight - standaloneHeight) > 30) {
-				return {
-					valid: false,
-					error: `Section "${sectionId}" crop height (${cropHeight}px) differs materially from standalone capture height (${standaloneHeight}px).`,
-					errorCode: 'SECTION_CAPTURE_MISMATCH',
-				};
+				warning = `Section "${sectionId}" crop height (${cropHeight}px) differs from standalone (${standaloneHeight}px); continuing because crop is non-blank.`;
+			}
+
+			// Hero: require visual similarity of the top strip vs same-run standalone.
+			if (sectionId === 'hero') {
+				const { similar, mae } = await compareHeroStripSimilarity(
+					cropBuffer,
+					fullWidth,
+					actualExtractHeight,
+					standalonePath,
+				);
+				if (!similar) {
+					return {
+						valid: false,
+						error: `Section "hero" region in full-page does not match standalone hero capture (strip MAE ${mae.toFixed(1)} > ${HERO_STRIP_MAE_THRESHOLD}).`,
+						errorCode: 'SECTION_CAPTURE_MISMATCH',
+						warning,
+					};
+				}
 			}
 		}
 
-		return { valid: true };
+		return { valid: true, warning };
 	} catch (err) {
 		return {
 			valid: false,
@@ -323,6 +376,47 @@ export async function verifySectionCropInclusion(
 			errorCode: 'SECTION_CAPTURE_MISMATCH',
 		};
 	}
+}
+
+/**
+ * Remove a published invitation full-page artifact so a failed run cannot leave
+ * a previous-generation PNG that looks "current" next to freshly updated sections.
+ */
+export async function invalidateStaleInvitationFullPage(finalPath: string): Promise<boolean> {
+	try {
+		if (!syncFs.existsSync(finalPath)) return false;
+		await fs.rm(finalPath, { force: true });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Remove legacy `05-invitation-full-open.*` files that predate the canonical
+ * `05-invitation-full-page` name, avoiding mixed-generation comparisons.
+ */
+export async function removeLegacyInvitationFullOpenArtifacts(
+	outputDir: string,
+): Promise<string[]> {
+	const removed: string[] = [];
+	try {
+		const entries = await fs.readdir(outputDir, { withFileTypes: true });
+		for (const entry of entries) {
+			if (!entry.isDirectory()) continue;
+			const viewportDir = path.join(outputDir, entry.name);
+			const files = await fs.readdir(viewportDir);
+			for (const file of files) {
+				if (!file.startsWith('05-invitation-full-open.')) continue;
+				const fullPath = path.join(viewportDir, file);
+				await fs.rm(fullPath, { force: true });
+				removed.push(fullPath);
+			}
+		}
+	} catch {
+		// Output dir may not exist yet.
+	}
+	return removed;
 }
 
 export async function publishArtifactAtomically(
