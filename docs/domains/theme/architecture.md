@@ -1,8 +1,11 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-07-26
 
 Celebra-me uses a strict three-level styling architecture.
+
+Gallery section variants (as-is catalog, CSS coupling limits, and deferred layout-role target) are
+documented in [`gallery-variants.md`](gallery-variants.md).
 
 ## Token Levels
 
@@ -196,6 +199,11 @@ behavior through a public component token and let the preset provide the value.
 - `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus only a requested
   canonical footer override and visual profile. Canonical section partials are not exposed through a
   general per-section passthrough directory.
+
+Gallery CSS follows the theme-preset bundle path above. Setting `gallery.variant` to a different
+theme name does not load that theme’s gallery partial. See
+[`gallery-variants.md`](gallery-variants.md) for the honest swap recipe and the deferred layout-role
+delivery target.
 
 ## Runtime Contract
 

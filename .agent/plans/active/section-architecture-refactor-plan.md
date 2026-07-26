@@ -2,7 +2,7 @@
 title: Section Architecture Refactor Plan
 status: active
 created: unknown
-updated: 2026-07-25
+updated: 2026-07-26
 ---
 
 # Section Architecture Refactor Plan
@@ -33,6 +33,24 @@ precedence where it overgeneralizes a section:
 The next implementation slice must begin with a current source audit and a screenshot matrix. Do not
 reuse the old recommendation that Location, ThankYou, or Countdown can automatically follow the
 Gifts pattern.
+
+### Gallery backlog (deferred — not this invite polish)
+
+Product intent and as-is limits are recorded in `docs/domains/theme/gallery-variants.md`. When
+Gallery is the next section slice, follow this order — do **not** add more theme-named gallery
+skins:
+
+1. Screenshot matrix of current gallery variants (layout engines vs token skins).
+2. Propose a closed **layout-role** enum (tentative: `uniform-grid`, `editorial-mosaic`,
+   `magazine-spread`, `feature-mosaic`, `index-choreography`, `single-keepsake`) independent of
+   `THEME_PRESETS`.
+3. Unify near-duplicate skins (`sacred-keepsake` ≈ `angelic-presence`; absorb chrome into theme
+   tokens).
+4. Load gallery CSS by layout role (not only `invitation-sections-by-preset/<theme>`), then require
+   an explicit gallery variant on every invitation that includes the section.
+
+Until that ships, managed invites should set `gallery.variant` explicitly even when it matches
+`theme.preset` (see Abril provision).
 
 ## 2. Corrections or Objections to the Original Audit
 
