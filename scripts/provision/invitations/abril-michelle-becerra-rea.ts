@@ -220,8 +220,8 @@ export function buildAbrilPublishedContent(
 				sectionMessage:
 					'Gracias por guiarme con amor en cada instante. Su presencia y cariño hacen que este día sea infinitamente especial.',
 			},
-			featuredImage: assets['gallery-02-bw-cake'],
-			focalPoint: '50% 40%',
+			featuredImage: assets['family-portrait'],
+			focalPoint: '50% 35%',
 		},
 		countdown: {
 			title: 'LA CELEBRACIÓN COMIENZA EN',
@@ -256,8 +256,7 @@ export function buildAbrilPublishedContent(
 				time: '5:00 p. m.',
 				mapUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
 				googleMapsUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
-				appleMapsUrl:
-					'https://maps.apple.com/?q=Garden+Palace+Lagos+de+Moreno',
+				appleMapsUrl: 'https://maps.apple.com/?q=Garden+Palace+Lagos+de+Moreno',
 				coordinates: {
 					lat: 21.3206241,
 					lng: -101.9328009,
@@ -303,9 +302,9 @@ export function buildAbrilPublishedContent(
 					focalPointDesktop: '50% 50%',
 				},
 				{
-					image: assets['family-portrait'],
-					alt: 'Abril Michelle luciendo tiara y guantes',
-					focalPoint: '50% 35%',
+					image: assets['gallery-02-bw-cake'],
+					alt: 'Retrato en blanco y negro sosteniendo el pastel',
+					focalPoint: '50% 40%',
 				},
 				{
 					image: assets['gallery-03-seated-balloons'],

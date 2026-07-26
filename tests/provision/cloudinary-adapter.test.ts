@@ -33,8 +33,14 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 	describe('Public ID & Hierarchy Generation', () => {
 		it('builds deterministic immutable public ID under xv/abril-michelle-becerra-rea/assets without leading slash or extension', () => {
 			const dummySha = createHash('sha256').update('hello-world').digest('hex');
-			const publicId = buildCloudinaryPublicId('abril-michelle-becerra-rea', 'hero-desktop', dummySha);
-			expect(publicId).toBe(`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`);
+			const publicId = buildCloudinaryPublicId(
+				'abril-michelle-becerra-rea',
+				'hero-desktop',
+				dummySha,
+			);
+			expect(publicId).toBe(
+				`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+			);
 			expect(publicId.startsWith('/')).toBe(false);
 			expect(publicId.endsWith('.webp')).toBe(false);
 		});
@@ -47,13 +53,16 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 				dummySha,
 				'/xv/abril-michelle-becerra-rea/assets/',
 			);
-			expect(publicId).toBe(`xv/abril-michelle-becerra-rea/assets/gallery-02-bw-cake-${dummySha.slice(0, 12)}`);
+			expect(publicId).toBe(
+				`xv/abril-michelle-becerra-rea/assets/gallery-02-bw-cake-${dummySha.slice(0, 12)}`,
+			);
 		});
 	});
 
 	describe('OpenGraph Social Image Transformation', () => {
 		it('derives explicit 1200x630 horizontal transformation URL', () => {
-			const rawUrl = 'https://res.cloudinary.com/celebra-me/image/upload/v1/xv/abril-michelle-becerra-rea/assets/hero-desktop-12345.webp';
+			const rawUrl =
+				'https://res.cloudinary.com/celebra-me/image/upload/v1/xv/abril-michelle-becerra-rea/assets/hero-desktop-12345.webp';
 			const ogUrl = buildCloudinaryOgImageUrl(rawUrl);
 			expect(ogUrl).toBe(
 				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_auto/v1/xv/abril-michelle-becerra-rea/assets/hero-desktop-12345.webp',
@@ -61,7 +70,8 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 		});
 
 		it('returns unchanged URL if not a Cloudinary upload URL', () => {
-			const rawUrl = 'https://storage.supabase.co/v1/object/public/invitation-assets/test.webp';
+			const rawUrl =
+				'https://storage.supabase.co/v1/object/public/invitation-assets/test.webp';
 			expect(buildCloudinaryOgImageUrl(rawUrl)).toBe(rawUrl);
 		});
 	});
@@ -106,7 +116,9 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(res.action).toBe('UPLOAD');
 			expect(res.provider).toBe('cloudinary');
 			expect(res.secureUrl).toContain('res.cloudinary.com');
-			expect(res.publicId).toBe(`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`);
+			expect(res.publicId).toBe(
+				`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+			);
 		});
 	});
 
@@ -129,16 +141,18 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			}
 		});
 
-		it('swaps Family and Gallery 2 photos in published content', () => {
+		it('uses dedicated family portrait for Family and B&W cake in Gallery', () => {
 			const semanticMap = buildSemanticAssetMap(abrilInvitation);
 			const content = buildAbrilPublishedContent(semanticMap) as any;
 
-			// Family section receives gallery-02-bw-cake asset reference
-			expect(content.family.featuredImage.assetId).toContain('gallery-02-bw-cake');
+			// Family section receives the dedicated portrait
+			expect(content.family.featuredImage.assetId).toContain('family-portrait');
 
-			// Gallery item 2 receives family-portrait asset reference
-			expect(content.gallery.items[1].image.assetId).toContain('family-portrait');
-			expect(content.gallery.items[1].alt).toBe('Abril Michelle luciendo tiara y guantes');
+			// Gallery item 2 receives the editorial B&W cake portrait
+			expect(content.gallery.items[1].image.assetId).toContain('gallery-02-bw-cake');
+			expect(content.gallery.items[1].alt).toBe(
+				'Retrato en blanco y negro sosteniendo el pastel',
+			);
 
 			// Check all 5 gallery items use unique assets
 			const galleryAssetIds = content.gallery.items.map((item: any) => item.image.assetId);
@@ -200,7 +214,9 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			});
 
 			expect(res.action).toBe('REUSE');
-			expect(res.secureUrl).toBe('https://res.cloudinary.com/mock-cloud/image/upload/v1/test.webp');
+			expect(res.secureUrl).toBe(
+				'https://res.cloudinary.com/mock-cloud/image/upload/v1/test.webp',
+			);
 		});
 
 		it('throws collision error when existing Cloudinary asset has conflicting SHA-256 context', async () => {

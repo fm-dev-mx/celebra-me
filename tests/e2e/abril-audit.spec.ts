@@ -10,11 +10,7 @@ const VIEWPORTS = [
 	{ name: 'desktop', width: 1440, height: 900 },
 ] as const;
 
-const ARTIFACT_ROOT = path.resolve(
-	process.cwd(),
-	'temp',
-	'abril-audit-screenshots',
-);
+const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'abril-audit-screenshots');
 
 test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () => {
 	test.beforeAll(() => {
@@ -37,6 +33,8 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			});
 
 			await page.setViewportSize({ width: viewport.width, height: viewport.height });
+			// Freeze reveal motion so geometry and screenshots are deterministic.
+			await page.emulateMedia({ reducedMotion: 'reduce' });
 
 			const response = await page.goto('/xv/abril-michelle-becerra-rea?skipEnvelope=true', {
 				waitUntil: 'networkidle',
@@ -58,12 +56,64 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const heroBgCount = await heroBg.count();
 			expect(heroBgCount).toBeGreaterThanOrEqual(1);
 
+			// Hero composition contract: preserve approved crop and keep copy as one stack.
+			const expectedFocal =
+				viewport.width < 768 ? '50% 38%' : viewport.width < 992 ? '50% 40%' : '50% 42%';
+			const heroComposition = await page.locator('.invitation-hero').evaluate((element) => {
+				const content = element.querySelector<HTMLElement>('.invitation-hero__content')!;
+				const title = element.querySelector<HTMLElement>('.invitation-hero__title')!;
+				const details = element.querySelector<HTMLElement>('.invitation-hero__details')!;
+				const image = element.querySelector<HTMLElement>(
+					'.invitation-hero__background img',
+				)!;
+				const contentRect = content.getBoundingClientRect();
+				const titleRect = title.getBoundingClientRect();
+				const detailsRect = details.getBoundingClientRect();
+				const detailsStyle = getComputedStyle(details);
+				const titleStyle = getComputedStyle(title);
+				const titleMatrix = new DOMMatrixReadOnly(titleStyle.transform);
+
+				return {
+					contentRect: { top: contentRect.top, bottom: contentRect.bottom },
+					titleRect: { top: titleRect.top, bottom: titleRect.bottom },
+					detailsRect: { top: detailsRect.top, bottom: detailsRect.bottom },
+					detailsPosition: detailsStyle.position,
+					detailsBackground: detailsStyle.backgroundImage,
+					detailsBackdrop: detailsStyle.backdropFilter,
+					titleTranslateX: titleMatrix.m41,
+					titleTranslateY: titleMatrix.m42,
+					titleTextTransform: titleStyle.textTransform,
+					objectPosition: getComputedStyle(image).objectPosition,
+				};
+			});
+
+			expect(heroComposition.objectPosition).toBe(expectedFocal);
+			expect(heroComposition.detailsPosition).toBe('static');
+			expect(heroComposition.detailsBackground).toBe('none');
+			expect(heroComposition.detailsBackdrop).toBe('none');
+			expect(Math.abs(heroComposition.titleTranslateX)).toBeLessThan(4);
+			expect(Math.abs(heroComposition.titleTranslateY)).toBeLessThan(4);
+			expect(heroComposition.titleTextTransform).toBe('none');
+			expect(heroComposition.titleRect.top).toBeGreaterThanOrEqual(
+				heroComposition.contentRect.top,
+			);
+			expect(heroComposition.detailsRect.bottom).toBeLessThanOrEqual(
+				heroComposition.contentRect.bottom + 1,
+			);
+			expect(heroComposition.detailsRect.top - heroComposition.titleRect.bottom).toBeLessThan(
+				viewport.height * 0.15,
+			);
+
 			// 2. Locations verification
-			const locationSection = page.locator('section.event-location, .location-section, .location');
+			const locationSection = page.locator(
+				'section.event-location, .location-section, .location',
+			);
 			await expect(locationSection).toBeVisible();
 
 			// Both cards: Ceremony & Reception
-			const ceremonyName = page.locator('text=Templo y Ex Convento de Nuestra Señora de la Merced');
+			const ceremonyName = page.locator(
+				'text=Templo y Ex Convento de Nuestra Señora de la Merced',
+			);
 			await expect(ceremonyName).toBeVisible();
 
 			const receptionName = locationSection.getByText('Garden Palace', { exact: true });
@@ -100,14 +150,22 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const itinerarySection = page.locator('section.itinerary, .itinerary');
 			await expect(itinerarySection).toBeVisible();
 
-			const itineraryMisa = itinerarySection.getByRole('heading', { name: 'Misa', exact: true });
+			const itineraryMisa = itinerarySection.getByRole('heading', {
+				name: 'Misa',
+				exact: true,
+			});
 			await expect(itineraryMisa).toBeVisible();
 
-			const itineraryRecepcion = itinerarySection.getByRole('heading', { name: 'Recepción', exact: true });
+			const itineraryRecepcion = itinerarySection.getByRole('heading', {
+				name: 'Recepción',
+				exact: true,
+			});
 			await expect(itineraryRecepcion).toBeVisible();
 
 			// 5. Gallery & alt text verification
-			const galleryItems = page.locator('.gallery__item, .gallery img, img[alt*="Abril Michelle"]');
+			const galleryItems = page.locator(
+				'.gallery__item, .gallery img, img[alt*="Abril Michelle"]',
+			);
 			const galleryCount = await galleryItems.count();
 			expect(galleryCount).toBeGreaterThanOrEqual(4);
 
