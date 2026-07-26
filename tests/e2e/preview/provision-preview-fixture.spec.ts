@@ -24,6 +24,11 @@ import {
 	type InvitationSummary,
 } from './support';
 
+const PREVIEW_FIXTURE_EVENT_TIMING = {
+	localDateTime: '2026-11-21T18:00',
+	timeZone: 'America/Monterrey',
+} as const;
+
 test('provisions or verifies the deterministic Preview-only publication fixture', async ({
 	page,
 }) => {
@@ -73,9 +78,23 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 		fixtureContext.draftUpdatedAt ?? fixtureContext.invitation.updatedAt;
 
 	for (const section of INVITATION_EDITOR_SECTION_KEYS) {
-		const demoValue = getSectionValue(demoContext.content as DraftContent, section);
+		const sourceValue = getSectionValue(demoContext.content as DraftContent, section);
+		const demoValue =
+			section === 'location'
+				? {
+						...(sourceValue as Record<string, unknown>),
+						eventTiming: PREVIEW_FIXTURE_EVENT_TIMING,
+					}
+				: sourceValue;
 		const fixtureValue = getSectionValue(fixtureContent, section);
-		if (stableStringify(demoValue) === stableStringify(fixtureValue)) continue;
+		const shouldReopenPublishedDraft =
+			fixtureContext.publication.hasPublishedContent && section === 'location';
+		if (
+			!shouldReopenPublishedDraft &&
+			stableStringify(demoValue) === stableStringify(fixtureValue)
+		) {
+			continue;
+		}
 
 		await draftRateLimiter.beforeRequest();
 		const saved = await mutateJson<{ draftUpdatedAt: string }>(

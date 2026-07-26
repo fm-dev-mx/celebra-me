@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import {
 	loadPlaywrightEnvironment,
+	PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS,
 	PREVIEW_OUTPUT_ROOT,
 	validateAuthenticatedPreviewEnvironment,
 } from './scripts/playwright/preview-environment';
@@ -14,6 +15,7 @@ process.env.PLAYWRIGHT_PREVIEW_EXECUTION_MODE = 'provision';
 export default defineConfig({
 	testDir: './tests/e2e/preview',
 	testMatch: ['provision-preview-fixture.spec.ts'],
+	timeout: PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS * 3,
 	fullyParallel: false,
 	forbidOnly: true,
 	retries: 0,

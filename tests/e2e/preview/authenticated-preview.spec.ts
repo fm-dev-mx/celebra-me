@@ -92,13 +92,18 @@ test.describe.serial('Authenticated external Preview', () => {
 			'Publication requires PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true.',
 		);
 
-		test('no-change publication stays limited to the synthetic fixture', async ({ page }) => {
+		test('publication stays limited to the synthetic fixture', async ({ page }) => {
 			await loginAsPreviewAdmin(page, preview);
 			const { context } = await assertFixtureGuards(page);
-			expect(context.publication.hasPublishedContent).toBe(true);
 
 			const before = await readPublicationPreflight(page, preview.fixtureId);
-			expect(before.changedPaths).toEqual([]);
+			if (context.publication.hasPublishedContent) {
+				expect(before.changedPaths).toEqual([]);
+			} else {
+				expect(before.changedPaths.length).toBeGreaterThan(0);
+			}
+			const idempotencyKey = randomUUID();
+			const publicationInput = { ...before, idempotencyKey };
 
 			const result = await mutateJson<{
 				idempotent: boolean;
@@ -107,15 +112,24 @@ test.describe.serial('Authenticated external Preview', () => {
 				page,
 				`/api/dashboard/intake/${encodeURIComponent(preview.fixtureId)}/editor/publish`,
 				'POST',
-				{ ...before, idempotencyKey: randomUUID() },
+				publicationInput,
 				'Synthetic fixture publication',
 			);
 			expect(typeof result.idempotent).toBe('boolean');
 			expect(result.publishedContent.version).toBeGreaterThan(before.publishedVersion ?? 0);
 
-			const after = await readPublicationPreflight(page, preview.fixtureId);
-			expect(after.changedPaths).toEqual([]);
-			expect(after.projectionHash).toBe(before.projectionHash);
+			const replay = await mutateJson<{
+				idempotent: boolean;
+				publishedContent: { version: number };
+			}>(
+				page,
+				`/api/dashboard/intake/${encodeURIComponent(preview.fixtureId)}/editor/publish`,
+				'POST',
+				publicationInput,
+				'Synthetic fixture publication replay',
+			);
+			expect(replay.idempotent).toBe(result.idempotent);
+			expect(replay.publishedContent.version).toBe(result.publishedContent.version);
 
 			const publicResponse = await page.request.get(
 				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,

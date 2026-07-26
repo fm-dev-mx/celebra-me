@@ -14,7 +14,7 @@ process.env.PLAYWRIGHT_PREVIEW_EXECUTION_MODE = 'publication';
 export default defineConfig({
 	testDir: './tests/e2e/preview',
 	testMatch: ['authenticated-preview.spec.ts'],
-	grep: /no-change publication stays limited to the synthetic fixture/,
+	grep: /publication stays limited to the synthetic fixture/,
 	fullyParallel: false,
 	forbidOnly: true,
 	retries: 0,
