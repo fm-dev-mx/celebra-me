@@ -41,11 +41,17 @@
 			object-position: var(--hero-focal-point-default, center 30%);
 
 			@media (width <= 991px) {
-				object-position: var(--hero-focal-point-mobile, var(--hero-focal-point-default, center 30%));
+				object-position: var(
+					--hero-focal-point-mobile,
+					var(--hero-focal-point-default, center 30%)
+				);
 			}
 
 			@media (width >= 992px) {
-				object-position: var(--hero-focal-point-desktop, var(--hero-focal-point-default, center 30%));
+				object-position: var(
+					--hero-focal-point-desktop,
+					var(--hero-focal-point-default, center 30%)
+				);
 			}
 		}
 	}
@@ -103,16 +109,10 @@
 		letter-spacing: 0.01em;
 		text-align: left;
 		text-transform: none;
-		background: linear-gradient(
-			115deg,
-			var(--hero-title-color-start) 0%,
-			var(--hero-title-color-mid) 46%,
-			var(--hero-title-color-end) 100%
-		);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
+		color: var(--hero-title-color-mid, var(--color-diamond-white));
+		-webkit-text-fill-color: var(--hero-title-color-mid, var(--color-diamond-white));
 		-webkit-text-stroke: 0;
-		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%); // Standardized shadow instead of filter
+		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%);
 	}
 
 	.invitation-hero__portrait {
