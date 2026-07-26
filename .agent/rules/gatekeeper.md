@@ -310,35 +310,47 @@ When the reviewed work is a **release checkpoint** or a clearly product-visible 
 
 Run the closest available match, **scaled to the change scope**:
 
-**A) Small localized style/copy/asset changes — fast pre-commit confidence:**
+**A) Small localized style/copy/asset changes — fast local confidence:**
 
 ```sh
-pnpm validate:staged       # ESLint + Stylelint + Prettier + related Jest on STAGED files only
+pnpm validate:changed      # Agent default when the WORKING TREE matches task scope
 pnpm agent:git-safety:check
 ```
 
-`pnpm validate:staged` is **strictly staged** (the Git index). It does not look at unstaged
-working-tree edits and does not auto-format anything. It no-ops successfully when there are no
-staged matching files.
+Agents normally cannot stage changes, so `pnpm validate:changed` is the default fast path. It
+validates tracked, staged, and untracked working-tree files without modifying the Git index. When
+unrelated user-owned changes are present, do not let them widen validation scope: run the
+corresponding lint, format, or related-test command against the explicit task files and report the
+excluded pre-existing scope.
 
-Prettier is intentionally **advisory** here: the repo carries pre-existing formatting debt in staged
-files that is not part of the workflow change. Blocking on that debt would conflate scope. ESLint,
-Stylelint, and related Jest are hard gates. New or modified files in the workflow commit must still
-be formatted — advisory is not a license to commit unformatted code.
+Use `pnpm validate:staged` instead only when the requested review boundary is explicitly the staged
+index, such as a human pre-commit check. It does not look at unstaged edits and no-ops successfully
+when there are no staged matching files. Do not run both commands for the same file set.
+
+Prettier is intentionally **advisory** here: the repo carries pre-existing formatting debt in
+reviewed files that is not part of the workflow change. Blocking on that debt would conflate scope.
+ESLint, Stylelint, and related Jest are hard gates. New or modified files in the workflow commit
+must still be formatted — advisory is not a license to commit unformatted code.
 
 **B) Shared component, schema, adapter, render-data, routing, Supabase, or content-resolution
 changes — broader local feedback:**
 
 ```sh
 pnpm validate:changed      # ESLint + Stylelint + Prettier + related Jest on WORKING-TREE files
-pnpm type-check            # astro check (whole repo)
-pnpm test:changed          # Jest for staged source files via --findRelatedTests
+pnpm type-check            # When TS/Astro contracts, types, schemas, adapters, or routing can change
 pnpm validate:event-parity # when event/content parity can be affected
 pnpm agent:git-safety:check
 ```
 
 Use `pnpm validate:changed` when you have unstaged edits you want feedback on before staging. Use
-`pnpm test:changed` to run only the tests that cover the files you have staged.
+`pnpm test:changed` only as a standalone staged-source Jest check; do not run it after
+`pnpm validate:changed`, which already runs related Jest tests. The unrelated-worktree scope rule
+from Tier A also applies here.
+
+`pnpm type-check` is required when executable TypeScript or Astro changes can affect shared
+contracts, type flow, schemas, adapters, render assembly, or routing. It is not required for
+documentation, copy-only, asset-only, or SCSS-only changes. Prefer focused domain validation when it
+proves the changed contract more directly.
 
 **C) Final pre-push / pre-deploy confidence (full validation, do not skip):**
 

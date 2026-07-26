@@ -53,13 +53,22 @@ tests/
 
 ## Running Tests
 
-| Command                   | Purpose          |
-| ------------------------- | ---------------- |
-| `pnpm test`               | Run all tests    |
-| `pnpm test -- --verbose`  | Verbose output   |
-| `pnpm test -- --watch`    | Watch mode       |
-| `pnpm test -- --coverage` | Coverage report  |
-| `pnpm build`              | Build validation |
+| Command                   | Purpose                                         |
+| ------------------------- | ----------------------------------------------- |
+| `pnpm validate:changed`   | Working-tree validation, including related Jest |
+| `pnpm validate:staged`    | Staged-index pre-commit validation              |
+| `pnpm test:changed`       | Standalone related Jest for staged source files |
+| `pnpm test`               | Run all tests                                   |
+| `pnpm test -- --verbose`  | Verbose output                                  |
+| `pnpm test -- --watch`    | Watch mode                                      |
+| `pnpm test -- --coverage` | Coverage report                                 |
+| `pnpm build`              | Build validation                                |
+
+Select the proportional tier from `.agent/rules/gatekeeper.md`. Do not follow
+`pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest `--findRelatedTests`
+for changed source files. Reserve the full test suite and build for the contracts and release
+checkpoints that require them. When unrelated user-owned changes are in the working tree, validate
+explicit task files instead of widening the run to all changed files.
 
 ## Test File Conventions
 
@@ -301,7 +310,8 @@ test('RSVP form submission', async ({ page }) => {
 
 Before submitting a PR:
 
-- [ ] All tests pass (`pnpm test`)
+- [ ] The Gatekeeper validation tier selected for the change passes
+- [ ] The full suite passes when the change is at a pre-push or pre-deploy checkpoint
 - [ ] New utilities have corresponding tests
 - [ ] React components with state have tests
 - [ ] Coverage does not decrease

@@ -7,10 +7,12 @@ entry point for coding agents.
 ## Loading Order
 
 1. Read this file.
-2. Read `.agent/index.md` for the active discovery map.
-3. Read `.agent/load-skills.md` before using repository skills.
-4. Read `.agent/rules/gatekeeper.md` before changing files.
-5. Load only the smallest relevant rule, workflow, skill, domain doc, brief, or template.
+2. Read `.agent/rules/gatekeeper.md` and `.agent/rules/git-safety.md`.
+3. Consult `.agent/index.md` only when the task needs discovery of an active rule, workflow, skill,
+   or canonical doc; use its Minimal Load Matrix instead of reading unrelated catalogs.
+4. Read `.agent/load-skills.md` immediately before using a repository skill.
+5. Load only the smallest relevant rule, workflow, skill, domain doc, brief, or template. A
+   prerequisite already loaded in this task is an assertion, not an instruction to reread it.
 
 ## Authority Order
 

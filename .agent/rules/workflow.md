@@ -8,8 +8,9 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
 
 ## Operating Procedure
 
-1. **Load governance:** read `AGENTS.md`, `.agent/index.md`, `gatekeeper.md`, and `git-safety.md`;
-   then load only the relevant domain rule, workflow, skill, and canonical doc.
+1. **Load governance:** read `AGENTS.md`, `gatekeeper.md`, and `git-safety.md`. Consult
+   `.agent/index.md` only when discovery is needed, then load only the relevant domain rule,
+   workflow, skill, and canonical doc. Do not reread prerequisites already loaded for the task.
 2. **Inspect state:** identify the current branch and distinguish staged, unstaged, and untracked
    work. Treat all pre-existing worktree and index state as user-owned.
 3. **Set scope:** state the requested outcome, allowed files, non-goals, safety boundaries, and
@@ -22,6 +23,19 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
    is a blocker; report it instead of repairing it automatically.
 7. **Report:** list files changed, validations and skips, remaining risks, worktree status, and
    whether any Git write or production action occurred.
+
+## Proportional Execution
+
+- Reuse evidence gathered earlier in the task. Do not repeat the same repository scan, diff audit,
+  or central-file read unless state changed or the prior result is insufficient.
+- Before retrying a project CLI with different flags, inspect its documented contract or `--help`.
+- Discover an external tool or MCP server once per session, then reuse its schema. Batch independent
+  reads and browser inspections when the runtime supports it.
+- For a bounded visual refinement, implement one explicit hypothesis, verify one representative
+  mobile viewport immediately, then broaden QA. Run focused checks during iteration and the complete
+  required validation tier once when the milestone closes.
+- Do not launch a subagent after already performing the same central investigation. Delegate only
+  independent work that meets every criterion in `agent-routing.md`.
 
 ## Agent-Specific Git Rules
 

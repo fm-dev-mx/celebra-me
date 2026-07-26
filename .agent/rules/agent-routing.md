@@ -56,6 +56,10 @@ Use a temporary subagent only when the work meets **all** of these criteria:
 3. It has explicit file or output boundaries.
 4. It has clear success criteria and a verification path.
 
+Estimated minutes, file count, or creation of a component/page do not independently justify a
+handoff. If the orchestrator already performed the central investigation, it must not delegate the
+same exploration again.
+
 ## When NOT to Delegate
 
 - Tasks requiring tight visual coordination or owner approval.

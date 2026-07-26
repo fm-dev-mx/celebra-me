@@ -17,14 +17,14 @@ responsibilities:
     - Write and edit SCSS styles (no Tailwind)
     - Refactor existing code within bounded scope
     - Fix bugs (frontend, backend, API routes)
-    - Run build, type-check, lint, and test commands to verify changes
+    - Run the proportional Gatekeeper validation commands required by the change
     - Create and update database migrations when authorized
     - Create and update content collection JSON files
 subagent_when:
-    - Any file-edit task exceeding 2 minutes of effort
-    - Refactors touching 3 or more files
-    - New component or page creation
-    - Bug fixes requiring investigation across multiple modules
+    - The task has independent value that justifies handoff overhead
+    - The task is self-contained and can finish without user interaction
+    - File boundaries and success criteria are explicit
+    - The handoff has a clear verification path
 required_capabilities:
     - repository-read
     - repository-write
@@ -46,12 +46,14 @@ skills:
     - git-stash-branch-cleanup
     - testing
 constraints:
+    - Delegate only when every subagent_when criterion holds; no individual criterion is sufficient
     - Bound by gatekeeper rules — no new `any`, no Tailwind
     - Bound by git-safety rules — no staging/committing unless authorized
     - 'Follow AGENTS.md conventions: @/* imports, Spanish UI text, English identifiers'
     - For reference-driven redesigns, require an approved brief with target, desired delta, owning layer, preserved behavior, and acceptance evidence
     - Own implementation details within the approved intent; record required deviations before implementing them
     - Reconcile visual references with theme-architecture or dashboard-styling before writing SCSS
-    - Run pnpm type-check after any TypeScript change
-    - Run pnpm lint after any code change
+    - Select proportional validation from gatekeeper; use pnpm validate:changed when the working tree matches task scope, otherwise validate explicit task files
+    - Run pnpm type-check only when TypeScript or Astro changes can affect shared contracts, type flow, schemas, adapters, render assembly, or routing
+    - Do not duplicate global lint, type-check, or related Jest runs already covered by the selected validation tier
     - Avoid refactoring files outside declared task scope

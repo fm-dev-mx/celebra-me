@@ -4,18 +4,19 @@ This file defines how any compatible runtime loads and uses repository skills.
 
 ## Prerequisites
 
-Before loading skills, read:
-
-- [`AGENTS.md`](../AGENTS.md) — entry point
-- `.agent/index.md` — discovery map for all skills and workflows
+Before loading a skill, read [`AGENTS.md`](../AGENTS.md) and the base rules it requires. Consult
+`.agent/index.md` only when discovery is needed to identify the relevant skill or workflow.
+Prerequisites already loaded in the current task must not be reread.
 
 ## Loading Protocol
 
 1. Treat `.agent/skills/*/SKILL.md` as the tracked canonical source.
 2. Load only skills relevant to the current task; never preload the full directory.
-3. Follow `related_skills` only when the task needs the additional context.
-4. Respect the frontmatter schema in `.agent/skills/SCHEMA.md`.
-5. If the runtime requires local installation, copy or link the required skill into its supported
+3. Treat skill `preconditions` as required state, not repeated read instructions when already
+   satisfied in the current task.
+4. Follow `related_skills` only when the task needs the additional context.
+5. Respect the frontmatter schema in `.agent/skills/SCHEMA.md`.
+6. If the runtime requires local installation, copy or link the required skill into its supported
    local location without changing the canonical source.
 
 ## External Tool Protocols (not repo skills)

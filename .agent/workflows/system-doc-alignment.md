@@ -55,11 +55,10 @@ If a required path is missing, stop and report it.
 6. Remove or archive stale active references. Archived documents may retain legacy paths only when
    clearly marked as historical.
 7. After edits, detect the closest available verification scripts from `package.json` and
-   `scripts/cli.mjs`, then run only the relevant checks in Gatekeeper order:
-   - type checking: `pnpm type-check` or `pnpm astro check`
-   - linting: `pnpm lint`
-   - tests: `pnpm test` when runtime or test-facing contracts changed
-   - schema validation: `pnpm ops validate-schema` when schema or theme-contract surfaces changed
+   `scripts/cli.mjs`, then use the proportional tier owned by `gatekeeper.md`. Documentation-only
+   governance work normally uses structure validation, link checks, formatting, and Git safety. Add
+   focused tests only when an executable validation contract changed; do not default to global
+   type-check, lint, test, or build for documentation-only edits.
 
 ## Guardrails
 

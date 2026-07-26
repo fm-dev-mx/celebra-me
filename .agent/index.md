@@ -1,6 +1,7 @@
 # Agent Discovery Index
 
-Use this file after reading `AGENTS.md`. It is the current discovery map for the repository.
+Use this file after reading `AGENTS.md` when the task needs discovery. It is the current map of
+active repository guidance, not part of the minimum bootstrap for every task.
 
 ## Start Here
 
@@ -200,6 +201,8 @@ background only.
 ## Minimal Load Matrix
 
 Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/git-safety.md`.
+Consult this matrix to choose only the additions required by the task; do not reread base
+prerequisites that are already loaded.
 
 | Task type                         | Add                                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------------------- |

@@ -36,7 +36,8 @@ Use a subagent only when the task creates ONE of these benefits:
 
 ## When NOT to Use a Subagent
 
-- **Trivial edits** — single-line fix, typo, one-file change (<2 min)
+- **Small bounded edits** — single-line fixes, typos, and focused changes the orchestrator can
+  complete with less overhead than a handoff
 - **Unclear tasks** — you'd need to ask clarifying questions (subagents cannot use `clarify`)
 - **Insufficient context** — the subagent would need more background than the handoff can provide
 - **Tightly coupled creative decisions** — visual coordination that requires seeing intermediate
@@ -187,8 +188,12 @@ Constraints:
 - Bound by .agent/rules/gatekeeper.md — review rules before changing files
 
 Validation:
-- Run `pnpm type-check` after TypeScript changes
-- Run `pnpm lint` after code changes
+- Select the proportional tier from `.agent/rules/gatekeeper.md`
+- Use `pnpm validate:changed` when the working tree matches task scope; otherwise validate only the
+  explicit task files
+- Add `pnpm type-check` only when TS/Astro contracts, types, schemas, adapters, render assembly, or
+  routing can change
+- Do not repeat related Jest, global lint, or type-check commands already covered by the selected tier
 - Report any pre-existing lint errors separately
 
 Output format:
@@ -349,8 +354,9 @@ After a subagent completes, the orchestrator MUST:
    or inspect the saved output only if a reliable cache path is provided.
 3. **Verify file changes** — cross-check claimed modifications with repository reads and
    `git status`. Subagent outputs are self-reported.
-4. **Re-run validation** — subagent-reported test/lint results are self-reported; run
-   `pnpm type-check` and `pnpm lint` yourself after synthesis.
+4. **Verify proportionally once** — subagent-reported validation is self-reported; run the selected
+   Gatekeeper tier against the synthesized working tree. Do not automatically repeat global lint,
+   type-check, or related Jest when the selected tier does not require it.
 5. **Check for conflicts between subagents** — when merging outputs from multiple subagents,
    explicitly verify they don't contradict each other (e.g., copywriter proposed different text than
    what builder already changed, or visual director selected a different palette than what's in the
