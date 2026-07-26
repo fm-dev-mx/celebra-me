@@ -24,7 +24,7 @@ interface Props {
 	audioUrl?: string;
 	teaserDetails?: string;
 	card: RevealCardData;
-	previewState?: 'closed' | 'opened';
+	previewState?: 'closed' | 'opened' | 'letter';
 }
 
 const {
@@ -57,7 +57,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 ---
 
 <ds-envelope-reveal
-	class="envelope-wrapper"
+	class:list={[
+		'envelope-wrapper',
+		previewState === 'letter' && 'is-letter-held',
+		previewState === 'opened' && 'is-preview-opened',
+	]}
 	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
 	data-variant={variant}
@@ -202,12 +206,25 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 			};
 
-			/** Hold the open letter on-screen for `pnpm screenshot` step 03/04.
-			 * Do not add `is-preview-opened` — audit CSS hides that class with display:none. */
+			/** Hold the open letter on-screen for click-based screenshot fallbacks.
+			 * Do not add `is-preview-opened` — audit CSS hides that class with display:none.
+			 * Prefer `?reveal=letter` (previewState=letter / is-letter-held) for 03/04. */
 			const holdLetterForScreenshotCapture = () => {
-				this.classList.add('is-opening');
+				this.classList.add('is-letter-held');
 				showCardToAccessibility();
 			};
+
+			// Screenshot contract: ?reveal=letter — measurable envelope + card, no teardown.
+			if (this.dataset.previewState === 'letter') {
+				this.classList.add('is-letter-held');
+				this.hidden = false;
+				document.documentElement.classList.add('envelope-open');
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'letter-held';
+				}
+				showCardToAccessibility();
+				return;
+			}
 
 			if (this.dataset.previewState === 'opened') {
 				this.classList.add('is-preview-opened');

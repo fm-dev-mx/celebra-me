@@ -550,23 +550,6 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Reveal trigger text patterns (ordered by priority)
-// ---------------------------------------------------------------------------
-
-export const REVEAL_TRIGGER_TEXTS: string[] = [
-	'abrir',
-	'open',
-	'ver invitación',
-	'view invitation',
-	'descubrir',
-	'discover',
-	'continue',
-	'continuar',
-	'tap to open',
-	'toca para abrir',
-];
-
-// ---------------------------------------------------------------------------
 // Defaults
 // ---------------------------------------------------------------------------
 

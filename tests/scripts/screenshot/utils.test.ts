@@ -49,6 +49,14 @@ describe('screenshot CLI utilities', () => {
 		expect(
 			intersectRectWithViewport({ x: 0, y: 900, width: 390, height: 200 }, viewport),
 		).toBeNull();
+
+		// 100vh section 1px taller than viewport — clamp so page.screenshot accepts clip
+		expect(
+			intersectRectWithViewport(
+				{ x: 0, y: 0, width: 360, height: 741 },
+				{ width: 360, height: 740 },
+			),
+		).toEqual({ x: 0, y: 0, width: 360, height: 740 });
 	});
 
 	it('resolves mobile-small as a temporary alias for canonical mobile-narrow', () => {

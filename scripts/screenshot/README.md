@@ -181,10 +181,21 @@ cannot be confused with the canonical `05-invitation-full-page.png`.
 | -------------------------------- | ------------------------------------------------------- |
 | `01-initial-closed-viewport.png` | Closed reveal state (viewport only)                     |
 | `02-reveal-closed.png`           | Reveal section, unopened                                |
-| `03-reveal-letter-open.png`      | Letter/card content visible                             |
-| `04-reveal-transition-open.png`  | Reveal transition (envelope flap)                       |
+| `03-reveal-letter-open.png`      | Letter/card via `?reveal=letter` (measurable hold)      |
+| `04-reveal-transition-open.png`  | Reveal section via same `?reveal=letter` state          |
 | `10-*-{section}.png`             | Per-section captures (before full-page in full QA)      |
 | `05-invitation-full-page.png`    | Open invitation full page: vertical composite of `10-*` |
+
+### Screenshot reveal URL contract
+
+| `reveal=`                    | Layout                                                                       | Used by                     |
+| ---------------------------- | ---------------------------------------------------------------------------- | --------------------------- |
+| `closed` (+ `forceEnvelope`) | Envelope/cover closed                                                        | `01`, `02`                  |
+| `letter` (+ `forceEnvelope`) | Envelope + letter held (`is-letter-held`; audit does **not** `display:none`) | `03`, `04` (one navigation) |
+| `open`                       | Invitation open; reveal removed from audit layout                            | `10-*`, `05`                |
+
+Navigation is skipped when the page is already on the same `screenshot`/`reveal`/`forceEnvelope`
+URL. Closed/letter prepares skip full-page lazy-scroll (only `reveal=open` needs section warm-up).
 
 `05-invitation-full-page` is built by stacking the same-run section captures (source of truth) after
 a deterministic `?screenshot=1&reveal=open` (one retry). Invitations must expose
@@ -237,13 +248,12 @@ Mobile-small is accepted as a CLI alias for `mobile-narrow`; reports use the can
 
 ## Reveal Detection Priority
 
-1. **Query params**: `?screenshot=1&reveal=open` / `?screenshot=1&reveal=closed` (`reveal=closed`
-   also sets `forceEnvelope=true` so a prior open in the same browser context cannot skip/hide the
-   envelope via `localStorage`)
+1. **Query params (authoritative for invitation steps)**:
+   - `?screenshot=1&reveal=closed&forceEnvelope=true` — closed envelope
+   - `?screenshot=1&reveal=letter&forceEnvelope=true` — letter held for `03`/`04` (server-painted)
+   - `?screenshot=1&reveal=open` — open invitation for sections / `05`
 2. **Data attributes**: `[data-screenshot="reveal-section"]`, `[data-screenshot="reveal-trigger"]`,
    `[data-screenshot="reveal-letter"]`
-3. **Click automation**: Finds and clicks the trigger (force-click if attached but not visible)
-4. **Text fallback**: Matches against "abrir", "ver invitación", "descubrir", etc.
 
 ## Page Stability
 
@@ -344,9 +354,9 @@ optional elements produce warnings, not errors.
 **Page loads but screenshots are empty** → Check the dev server is running. Try `pnpm dev` in
 another terminal.
 
-**Reveal not opening** → Ensure your page supports `?screenshot=1&reveal=open` server-side
-(preferred path). Or add `data-screenshot="reveal-trigger"` to the button for click automation
-fallback.
+**Reveal not opening** → Ensure your page supports `?screenshot=1&reveal=open` (and `?reveal=letter`
+for held-letter steps) server-side. Mark hosts with `data-screenshot="reveal-section"` /
+`reveal-letter` as needed.
 
 **Missing sections in full QA** → Add `data-screenshot-section="{name}"` to the section wrapper. The
 tool warns about missing elements but continues.

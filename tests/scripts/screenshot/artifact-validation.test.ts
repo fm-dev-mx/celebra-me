@@ -119,4 +119,103 @@ describe('screenshot artifact validation freshness', () => {
 
 		expect(result.valid).toBe(true);
 	});
+
+	it('passes hero strip check when composite top matches a tall standalone hero (strip-vs-strip)', async () => {
+		const fullPagePath = path.join(tempDir, 'full-composite.png');
+		const standalonePath = path.join(tempDir, '10-01-hero.png');
+		// Tall hero (simulates mobile @2x): top strip red, lower half blue.
+		// Solid-color full-hero resize previously failed strip-vs-full; strip-vs-strip must pass.
+		const heroHeight = 1600;
+		const heroWidth = 720;
+		const topBand = await sharp({
+			create: {
+				width: heroWidth,
+				height: 120,
+				channels: 3,
+				background: { r: 180, g: 40, b: 40 },
+			},
+		})
+			.png()
+			.toBuffer();
+		const bottomBand = await sharp({
+			create: {
+				width: heroWidth,
+				height: heroHeight - 120,
+				channels: 3,
+				background: { r: 20, g: 20, b: 180 },
+			},
+		})
+			.png()
+			.toBuffer();
+		await sharp({
+			create: {
+				width: heroWidth,
+				height: heroHeight,
+				channels: 3,
+				background: { r: 0, g: 0, b: 0 },
+			},
+		})
+			.composite([
+				{ input: topBand, top: 0, left: 0 },
+				{ input: bottomBand, top: 120, left: 0 },
+			])
+			.png()
+			.toFile(standalonePath);
+
+		const quote = await sharp({
+			create: {
+				width: heroWidth,
+				height: 400,
+				channels: 3,
+				background: { r: 40, g: 180, b: 40 },
+			},
+		})
+			.png()
+			.toBuffer();
+
+		await sharp({
+			create: {
+				width: heroWidth,
+				height: heroHeight + 400,
+				channels: 3,
+				background: { r: 0, g: 0, b: 0 },
+			},
+		})
+			.composite([
+				{ input: await sharp(standalonePath).png().toBuffer(), top: 0, left: 0 },
+				{ input: quote, top: heroHeight, left: 0 },
+			])
+			.png()
+			.toFile(fullPagePath);
+
+		const result = await verifySectionCropInclusion({
+			fullPagePath,
+			sectionId: 'hero',
+			sectionBounds: { y: 0, height: heroHeight / 2 },
+			topY: 0,
+			deviceScaleFactor: 2,
+			standalonePath,
+		});
+
+		expect(result.valid).toBe(true);
+	});
+
+	it('fails hero strip check when composite top differs from standalone hero strip', async () => {
+		const fullPagePath = path.join(tempDir, 'full-mismatch.png');
+		const standalonePath = path.join(tempDir, 'hero-mismatch.png');
+		await writeSolidPng(fullPagePath, 720, 2000, { r: 200, g: 20, b: 20 });
+		await writeSolidPng(standalonePath, 720, 1600, { r: 20, g: 200, b: 20 });
+
+		const result = await verifySectionCropInclusion({
+			fullPagePath,
+			sectionId: 'hero',
+			sectionBounds: { y: 0, height: 800 },
+			topY: 0,
+			deviceScaleFactor: 2,
+			standalonePath,
+		});
+
+		expect(result.valid).toBe(false);
+		expect(result.errorCode).toBe('SECTION_CAPTURE_MISMATCH');
+	});
 });

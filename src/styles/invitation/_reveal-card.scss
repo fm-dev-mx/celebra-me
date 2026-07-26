@@ -199,7 +199,8 @@
 	}
 }
 
-.envelope-wrapper.is-preview-opened {
+.envelope-wrapper.is-preview-opened,
+.envelope-wrapper.is-letter-held {
 	.envelope-tease,
 	.envelope-flap,
 	.envelope-pocket {

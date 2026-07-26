@@ -277,9 +277,21 @@ async function compareHeroStripSimilarity(
 		.raw()
 		.toBuffer();
 
+	// Strip-vs-strip: compare the same top band from the standalone hero
+	// (resizing the full tall hero to 64×32 produced false SECTION_CAPTURE_MISMATCH).
+	const standaloneMeta = await sharp(standalonePath).metadata();
+	const standaloneWidth = standaloneMeta.width || 0;
+	const standaloneHeight = standaloneMeta.height || 0;
+	const standaloneStripHeight = Math.min(stripHeight, Math.max(1, standaloneHeight));
 	const standaloneStrip = await sharp(standalonePath)
-		.resize(64, 32, { fit: 'fill' })
+		.extract({
+			left: 0,
+			top: 0,
+			width: Math.max(1, standaloneWidth),
+			height: standaloneStripHeight,
+		})
 		.ensureAlpha()
+		.resize(64, 32, { fit: 'fill' })
 		.raw()
 		.toBuffer();
 

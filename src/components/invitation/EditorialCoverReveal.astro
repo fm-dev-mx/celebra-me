@@ -17,8 +17,7 @@ interface Props {
 	heroLabel?: string;
 	heroDate: string;
 	heroVenueName?: string;
-	guestName?: string;
-	previewState?: 'closed' | 'opened';
+	previewState?: 'closed' | 'opened' | 'letter';
 	backgroundImage?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
 	focalPoint?: string;
@@ -37,7 +36,6 @@ const {
 	heroLabel,
 	heroDate,
 	heroVenueName,
-	guestName,
 	previewState,
 	backgroundImage,
 	portrait,
@@ -76,7 +74,8 @@ const shouldRenderHidden =
 ---
 
 <ds-editorial-cover
-	class="editorial-cover-wrapper"
+	class:list={['editorial-cover-wrapper', previewState === 'letter' && 'is-letter-held']}
+	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
 	data-variant={variant || ''}
 	data-preview-state={previewState}
@@ -147,14 +146,6 @@ const shouldRenderHidden =
 			{heroVenueName && <p class="editorial-cover__venue">{heroVenueName}</p>}
 		</div>
 
-		<!-- Guest name (if personalizing) -->
-		{guestName && (
-			<p class="editorial-cover__guest">
-				<small class="editorial-cover__guest-label">Entrega especial para</small>
-				<strong class="editorial-cover__guest-name">{guestName}</strong>
-			</p>
-		)}
-
 		<!-- CTA button -->
 		<div class="editorial-cover__action">
 			<button
@@ -215,9 +206,19 @@ const shouldRenderHidden =
 				}
 			};
 
+			// Screenshot contract: ?reveal=letter — keep cover measurable (not hidden).
+			if (this.dataset.previewState === 'letter') {
+				this.classList.add('is-letter-held');
+				this.hidden = false;
+				document.documentElement.classList.add('envelope-open');
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'letter-held';
+				}
+				return;
+			}
+
 			// Preview state handling
 			if (this.dataset.previewState === 'opened') {
-				this.classList.add('is-revealed');
 				clearRevealPhase();
 				document.documentElement.classList.remove('envelope-open');
 				if (invitationRoot instanceof HTMLElement) {

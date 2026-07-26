@@ -16,7 +16,6 @@ import {
 	type ScreenshotMode,
 	type ScreenshotSelectorConfig,
 	KNOWN_SECTIONS,
-	REVEAL_TRIGGER_TEXTS,
 	DEFAULT_NAVIGATION_TIMEOUT,
 	DEFAULT_NETWORK_IDLE_TIMEOUT,
 	DEFAULT_ELEMENT_TIMEOUT,
@@ -723,6 +722,7 @@ export async function waitForHeroReady(page: Page): Promise<void> {
 				const bg = style.backgroundImage;
 				return Boolean(bg && bg !== 'none');
 			},
+			undefined,
 			{ timeout: DEFAULT_IMAGE_TIMEOUT },
 		);
 	} catch {
@@ -850,6 +850,7 @@ export async function waitForLayoutHeightStable(page: Page): Promise<void> {
 				const third = readHeight();
 				return Math.abs(first - second) < 2 && Math.abs(second - third) < 2;
 			},
+			undefined,
 			{ timeout: 3000 },
 		);
 	} catch {
@@ -884,6 +885,7 @@ export async function prepareAuditPage(
 	page: Page,
 	criticalSelectors: ScreenshotSelectorConfig[],
 	hideSelectors: string[] = [],
+	opts: { skipLazyScroll?: boolean } = {},
 ): Promise<void> {
 	await page.evaluate(() => {
 		document.documentElement.dataset.screenshot = 'audit';
@@ -892,7 +894,9 @@ export async function prepareAuditPage(
 		});
 	});
 	await waitForPageStability(page);
-	await scrollForLazyLoad(page);
+	if (!opts.skipLazyScroll) {
+		await scrollForLazyLoad(page);
+	}
 	await storePreNormalizationSelectorState(page, criticalSelectors);
 	await normalizeForAudit(page);
 	await normalizeOperationalOverlaysForAudit(page, hideSelectors);
@@ -959,7 +963,8 @@ async function normalizeForAudit(page: Page): Promise<void> {
         animation-delay: 0s !important;
       }
 
-      /* Remove reveal/cover from layout when in open/preview-opened or revealed state */
+      /* Remove reveal/cover from layout only for fully-open invitation capture.
+         Do NOT hide letter-held / is-letter-held (?reveal=letter) — steps 03/04 need a box. */
       html[data-screenshot='audit'] [data-screenshot='reveal-section'][data-preview-state='opened'],
       html[data-screenshot='audit'] [data-screenshot='reveal-section'].is-preview-opened,
       html[data-screenshot='audit'] .event-theme-wrapper[data-reveal-state='revealed'] [data-screenshot='reveal-section'],
@@ -1043,20 +1048,23 @@ async function normalizeOperationalOverlaysForAudit(
 // URL & Navigation
 // =============================================================================
 
+export type ScreenshotRevealState = 'open' | 'closed' | 'letter';
+
 /**
  * Build a screenshot-mode URL by adding query parameters.
  * Merges with any existing query params on the URL.
  *
- * When `reveal=closed`, also sets `forceEnvelope=true` so `RevealManager.shouldSkipEnvelope()`
- * does not hide the envelope after a prior open in the same browser context (localStorage).
+ * - `closed` / `letter`: also sets `forceEnvelope=true` so localStorage cannot skip the envelope.
+ * - `letter`: server paints measurable envelope + card (`previewState=letter` / `is-letter-held`).
+ * - `open`: invitation content; audit CSS removes the reveal from layout.
  */
-export function buildScreenshotUrl(baseUrl: string, revealState?: 'open' | 'closed'): string {
+export function buildScreenshotUrl(baseUrl: string, revealState?: ScreenshotRevealState): string {
 	const url = new URL(baseUrl);
 	url.searchParams.set('screenshot', '1');
 	if (revealState) {
 		url.searchParams.set('reveal', revealState);
 	}
-	if (revealState === 'closed') {
+	if (revealState === 'closed' || revealState === 'letter') {
 		url.searchParams.set('forceEnvelope', 'true');
 	}
 	return url.toString();
@@ -1085,7 +1093,31 @@ export function clearEnvelopeOpenedKeys(storage: {
 }
 
 /**
+ * True when the page is already on the same screenshot navigation target
+ * (path + screenshot/reveal/forceEnvelope). Skips redundant full reloads.
+ */
+export function isSameScreenshotNavigationUrl(currentHref: string, targetHref: string): boolean {
+	try {
+		const current = new URL(currentHref);
+		const target = new URL(targetHref);
+		if (current.origin !== target.origin || current.pathname !== target.pathname) {
+			return false;
+		}
+		const keys = ['screenshot', 'reveal', 'forceEnvelope'] as const;
+		for (const key of keys) {
+			if ((current.searchParams.get(key) ?? '') !== (target.searchParams.get(key) ?? '')) {
+				return false;
+			}
+		}
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * Navigate to a URL and wait for the page to stabilise.
+ * No-ops (no goto / no prepare) when already on the same screenshot URL.
  */
 export async function navigateTo(
 	page: Page,
@@ -1095,6 +1127,11 @@ export async function navigateTo(
 	criticalSelectors: ScreenshotSelectorConfig[] = [],
 	hideSelectors: string[] = [],
 ): Promise<void> {
+	// Same URL: skip goto and avoid stacking Playwright init scripts.
+	if (isSameScreenshotNavigationUrl(page.url(), url)) {
+		return;
+	}
+
 	// Inject esbuild __name helper globally to prevent "ReferenceError: __name is not defined"
 	// when transpiled evaluate/waitForFunction callbacks are executed in the browser context.
 	await page.addInitScript(() => {
@@ -1153,7 +1190,16 @@ export async function navigateTo(
 	});
 
 	if (mode === 'audit') {
-		await prepareAuditPage(page, criticalSelectors, hideSelectors);
+		let skipLazyScroll: boolean;
+		try {
+			const reveal = new URL(url).searchParams.get('reveal');
+			skipLazyScroll = reveal === 'closed' || reveal === 'letter';
+		} catch {
+			skipLazyScroll = false;
+		}
+		await prepareAuditPage(page, criticalSelectors, hideSelectors, {
+			skipLazyScroll,
+		});
 		return;
 	}
 
@@ -1191,51 +1237,6 @@ async function findRevealSection(page: Page): Promise<string | null> {
 }
 
 /**
- * Find the reveal trigger button/link using data attributes and text fallbacks.
- * Returns the selector string, or null if not found.
- */
-async function findRevealTrigger(page: Page): Promise<string | null> {
-	// Priority 1: data attribute
-	try {
-		const count = await page.locator('[data-screenshot="reveal-trigger"]').count();
-		if (count > 0) return '[data-screenshot="reveal-trigger"]';
-	} catch {
-		// Selector/parsing failed — skip
-	}
-
-	// Priority 2: text content matching
-	for (const text of REVEAL_TRIGGER_TEXTS) {
-		try {
-			// Try case-insensitive text matching with has-text
-			const locator = page
-				.getByRole('button')
-				.or(page.getByRole('link'))
-				.filter({ hasText: new RegExp(text, 'i') });
-			const count = await locator.count();
-			if (count > 0) {
-				// Return generic selector: first match
-				return `text=${text}`;
-			}
-		} catch {
-			// Locator or selector failed — skip
-		}
-	}
-
-	// Priority 3: generic text match on any element
-	for (const text of REVEAL_TRIGGER_TEXTS) {
-		try {
-			const locator = page.locator(`:has-text("${text}")`).first();
-			const count = await locator.count();
-			if (count > 0) return `:has-text("${text}")`;
-		} catch {
-			// Locator or selector failed — skip
-		}
-	}
-
-	return null;
-}
-
-/**
  * Find the reveal letter/card content element.
  * Returns the selector, or null if not found.
  */
@@ -1259,7 +1260,6 @@ async function findRevealLetter(page: Page): Promise<string | null> {
 	return null;
 }
 
-const REVEAL_TRIGGER_ATTACH_TIMEOUT = 5_000;
 const REVEAL_LETTER_LAID_OUT_TIMEOUT = 5_000;
 
 /**
@@ -1298,6 +1298,7 @@ export async function waitForRevealLetterLaidOut(
 					window.getComputedStyle(letter).display !== 'none'
 				);
 			},
+			undefined,
 			{ timeout },
 		);
 		return true;
@@ -1307,68 +1308,31 @@ export async function waitForRevealLetterLaidOut(
 }
 
 /**
- * Try to open the reveal section by clicking the trigger.
- * Returns true if the reveal was triggered, false otherwise.
- *
- * Waits for `attached` (not only `visible`) so a seal that Playwright marks as
- * hidden (e.g. host `[hidden]` race, opacity) can still be force-clicked in
- * screenshot automation.
- *
- * After click, waits for a non-zero laid-out reveal letter when present — the old
- * `visibility !== hidden` check passed even when the host was already `[hidden]`
- * (0×0 measure / locator.screenshot fallback).
+ * Wait until reveal-section (envelope/cover) has a non-zero layout box and is not hidden.
  */
-export async function openRevealSection(page: Page): Promise<boolean> {
-	const trigger = await findRevealTrigger(page);
-	if (!trigger) return false;
-
+export async function waitForRevealSectionLaidOut(
+	page: Page,
+	timeout = REVEAL_LETTER_LAID_OUT_TIMEOUT,
+): Promise<boolean> {
 	try {
-		const locator = trigger.startsWith('text=')
-			? page.getByText(new RegExp(trigger.replace('text=', ''), 'i')).first()
-			: page.locator(trigger).first();
-
-		await locator.waitFor({ state: 'attached', timeout: REVEAL_TRIGGER_ATTACH_TIMEOUT });
-
-		const isVisible = await locator.isVisible().catch(() => false);
-		if (!isVisible) {
-			console.warn(
-				'  ⚠ Reveal trigger attached but not visible; forcing click for screenshot automation',
-			);
-			await locator.click({ force: true, timeout: REVEAL_TRIGGER_ATTACH_TIMEOUT });
-		} else {
-			await locator.click({ timeout: REVEAL_TRIGGER_ATTACH_TIMEOUT });
-		}
-
-		const letterCount = await page.locator('[data-screenshot="reveal-letter"]').count();
-		if (letterCount > 0) {
-			const laidOut = await waitForRevealLetterLaidOut(page);
-			if (!laidOut) {
-				console.warn(
-					'  ⚠ Reveal letter present but not laid out after click (host hidden or 0×0 box)',
-				);
-				return false;
-			}
-			return true;
-		}
-
-		// No letter hook (e.g. editorial cover) — fall back to stage/card visibility.
 		await page.waitForFunction(
 			() => {
-				const card = document.querySelector('[data-envelope-card]');
-				if (!card) return true;
-				if (card instanceof HTMLElement) {
-					const host = card.closest('ds-envelope-reveal, .envelope-wrapper');
-					if (host instanceof HTMLElement && host.hidden) return false;
-					const rect = card.getBoundingClientRect();
-					if (rect.width < 1 || rect.height < 1) return false;
-				}
-				return window.getComputedStyle(card).visibility !== 'hidden';
+				const section = document.querySelector(
+					'[data-screenshot="reveal-section"], ds-envelope-reveal, ds-editorial-cover',
+				);
+				if (!(section instanceof HTMLElement) || section.hidden) return false;
+				const rect = section.getBoundingClientRect();
+				return (
+					rect.width >= 1 &&
+					rect.height >= 1 &&
+					window.getComputedStyle(section).display !== 'none'
+				);
 			},
-			{ timeout: REVEAL_LETTER_LAID_OUT_TIMEOUT },
+			undefined,
+			{ timeout },
 		);
 		return true;
-	} catch (err) {
-		console.warn(`  ⚠ Could not click reveal trigger: ${err}`);
+	} catch {
 		return false;
 	}
 }
@@ -1721,7 +1685,7 @@ async function resetScrollAndAssertAboveFold(page: Page, selector: string): Prom
 	await page.evaluate(() => {
 		window.scrollTo(0, 0);
 	});
-	await page.waitForFunction(() => Math.abs(window.scrollY) <= 1, { timeout: 3000 });
+	await page.waitForFunction(() => Math.abs(window.scrollY) <= 1, undefined, { timeout: 3000 });
 	await page.waitForTimeout(150);
 
 	const visible = await page
@@ -1872,6 +1836,14 @@ async function screenshotLocatorToPath(
 	});
 }
 
+/**
+ * Single-shot page clip for elements that fit (or nearly fit) one viewport.
+ * Clamps to the viewport — Playwright rejects clips taller than the viewport by
+ * ~1px when sections are `100vh`/`100svh`, and the old `locator.screenshot`
+ * fallback stitched with mid-frame seams + next-section bleed (ivory bands).
+ *
+ * Returns false when the element does not fit so the caller can tile-stitch.
+ */
 async function captureShortElementFullExtent(
 	page: Page,
 	locator: Locator,
@@ -1879,29 +1851,35 @@ async function captureShortElementFullExtent(
 	format: OutputFormat,
 	viewportHeight: number,
 ): Promise<boolean> {
+	const viewport = page.viewportSize();
+	if (!viewport) return false;
+
 	const box = await locator.boundingBox();
-	if (box && box.height > 0 && box.width > 0 && box.y + box.height <= viewportHeight + 1) {
-		try {
-			await page.screenshot({
-				path: outputPath,
-				clip: {
-					x: Math.max(0, box.x),
-					y: Math.max(0, box.y),
-					width: box.width,
-					height: box.height,
-				},
-				...playwrightFormatOptions(format),
-			});
-			return true;
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			if (!message.includes('Clipped area is either empty or outside the resulting image')) {
-				throw error;
-			}
-		}
+	if (!box || box.width <= 0 || box.height <= 0) return false;
+
+	// Near-full-viewport sections (common for interludes / RSVP) must use a
+	// clamped page clip, not locator.screenshot stitching.
+	if (box.height > viewportHeight + 2) {
+		return false;
 	}
-	await screenshotLocatorToPath(locator, outputPath, format);
-	return true;
+
+	const clip = intersectRectWithViewport(box, viewport);
+	if (!clip) return false;
+
+	try {
+		await page.screenshot({
+			path: outputPath,
+			clip,
+			...playwrightFormatOptions(format),
+		});
+		return true;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (!message.includes('Clipped area is either empty or outside the resulting image')) {
+			throw error;
+		}
+		return false;
+	}
 }
 
 async function stitchTallElementTiles(
@@ -1956,11 +1934,17 @@ async function stitchTallElementTiles(
 					...playwrightFormatOptions(format),
 				});
 			} catch {
-				// Quirk fallback for complex CSS / 2x DPR — full element, stop tiling
-				await screenshotLocatorToPath(locator, tileFile, format);
-				await fs.promises.copyFile(tileFile, outputPath);
-				await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-				return true;
+				// Retry once with a strictly viewport-clamped clip (no locator.screenshot —
+				// Playwright's element stitch introduces horizontal seams on ~1vh sections).
+				const clamped = intersectRectWithViewport(box, viewport);
+				if (!clamped) {
+					throw new Error('element clip unavailable during tile capture retry');
+				}
+				await page.screenshot({
+					path: tileFile,
+					clip: clamped,
+					...playwrightFormatOptions(format),
+				});
 			}
 
 			const meta = await sharp(tileFile).metadata();
@@ -2005,13 +1989,8 @@ async function stitchTallElementTiles(
 		return true;
 	} catch (err) {
 		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-		console.warn(`  ⚠ Full-section stitch failed (${err}); falling back to locator.screenshot`);
-		await locator.evaluate((element) => {
-			element.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
-		});
-		await page.waitForTimeout(100);
-		await screenshotLocatorToPath(locator, outputPath, format);
-		return true;
+		console.warn(`  ⚠ Full-section stitch failed (${err})`);
+		return false;
 	}
 }
 
@@ -2053,8 +2032,18 @@ async function captureElementFullExtent(
 		}
 	}
 
-	if (metrics.height <= viewport.height + 1) {
-		return captureShortElementFullExtent(page, locator, outputPath, format, viewport.height);
+	// Prefer a clamped one-shot clip for ~viewport-tall sections. If that fails
+	// (subpixel overflow, sticky offset), fall through to controlled tile stitch —
+	// never Playwright locator.screenshot auto-stitch.
+	if (metrics.height <= viewport.height + 2) {
+		const captured = await captureShortElementFullExtent(
+			page,
+			locator,
+			outputPath,
+			format,
+			viewport.height,
+		);
+		if (captured) return true;
 	}
 
 	return stitchTallElementTiles(page, locator, outputPath, format, metrics, viewport);
@@ -2533,7 +2522,7 @@ export async function captureInvitationScreenshots(
 		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}`);
 	}
 
-	// Open for sections/05 via query-param only (retry once). Click remains for 03/04.
+	// Open for sections/05 via query-param only (retry once).
 	const ensureOpenState = async (): Promise<boolean> => {
 		if (revealOpened) return true;
 		const t = mark('open reveal');
@@ -2543,6 +2532,37 @@ export async function captureInvitationScreenshots(
 		});
 		t();
 		return revealOpened;
+	};
+
+	/** Navigate to ?reveal=letter once per viewport; 03 and 04 reuse the same page. */
+	let letterHeldReady: boolean | null = null;
+	const ensureLetterState = async (): Promise<boolean> => {
+		if (letterHeldReady !== null) return letterHeldReady;
+		const t = mark('ensureLetterState');
+		const letterUrl = buildScreenshotUrl(job.url, 'letter');
+		await navigateTo(
+			page,
+			letterUrl,
+			job.mode,
+			job.animationHandling,
+			job.criticalSelectors,
+			job.hideSelectors,
+		);
+		const letterCount = await page.locator('[data-screenshot="reveal-letter"]').count();
+		const ready =
+			letterCount > 0
+				? await waitForRevealLetterLaidOut(page)
+				: await waitForRevealSectionLaidOut(page);
+		if (!ready) {
+			console.warn(
+				letterCount > 0
+					? '  ⚠ reveal=letter letter not laid out (server ?reveal=letter contract)'
+					: '  ⚠ reveal=letter section not laid out (no reveal-letter hook)',
+			);
+		}
+		letterHeldReady = ready;
+		t();
+		return ready;
 	};
 
 	/** True when invitation section tasks may run (reveal opened or no reveal required). */
@@ -2596,25 +2616,39 @@ export async function captureInvitationScreenshots(
 					});
 				}
 			} else if (t.invitationStep === 'reveal-letter-open') {
-				// Capture intermediate letter-open state by clicking seal trigger on closed page BEFORE entering final open state
-				await ensureClosedState();
-				const isOpened = await openRevealSection(page);
+				const letterReady = await ensureLetterState();
 				let captured = false;
-				if (isOpened) {
+				if (letterReady) {
 					const letterSelector = await findRevealLetter(page);
 					if (letterSelector) {
-						const stillLaidOut = await waitForRevealLetterLaidOut(page, 2_000);
-						if (!stillLaidOut) {
-							console.warn(
-								'  ⚠ Reveal letter lost layout before capture; skipping 03-reveal-letter-open',
-							);
-						} else {
+						const result = await captureElement(
+							page,
+							letterSelector,
+							taskPath,
+							format,
+							{
+								sectionExtent: 'viewport',
+							},
+						);
+						if (result) {
+							result.viewportName = viewportName;
+							result.label = t.label;
+							results.push(result);
+							console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
+							captured = true;
+						}
+					} else {
+						// Editorial cover: no letter hook — capture reveal-section instead.
+						const revealSelector = await findRevealSection(page);
+						if (revealSelector) {
 							const result = await captureElement(
 								page,
-								letterSelector,
+								revealSelector,
 								taskPath,
 								format,
-								{ sectionExtent: 'viewport' },
+								{
+									sectionExtent: 'viewport',
+								},
 							);
 							if (result) {
 								result.viewportName = viewportName;
@@ -2637,11 +2671,9 @@ export async function captureInvitationScreenshots(
 					});
 				}
 			} else if (t.invitationStep === 'reveal-open') {
-				// Capture intermediate reveal-open state while envelope is open before entering final open state
-				await ensureClosedState();
-				const isOpened = await openRevealSection(page);
+				const letterReady = await ensureLetterState();
 				let captured = false;
-				if (isOpened) {
+				if (letterReady) {
 					const revealSelector = await findRevealSection(page);
 					if (revealSelector) {
 						const result = await captureElement(page, revealSelector, taskPath, format);

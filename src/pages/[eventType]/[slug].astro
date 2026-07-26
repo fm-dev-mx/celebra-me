@@ -36,9 +36,14 @@ const skipEnvelope = Astro.url.searchParams.get('skipEnvelope') === 'true';
 
 // ── Screenshot mode ───────────────────────────────────────────────────
 const screenshotMode = Astro.url.searchParams.has('screenshot');
-const revealState = Astro.url.searchParams.get('reveal') as 'open' | 'closed' | null;
+const revealState = Astro.url.searchParams.get('reveal') as 'open' | 'closed' | 'letter' | null;
 const animationsOff = screenshotMode || Astro.url.searchParams.has('animations');
-const previewState = screenshotMode && revealState === 'open' ? 'opened' : undefined;
+const previewState =
+	screenshotMode && revealState === 'open'
+		? 'opened'
+		: screenshotMode && revealState === 'letter'
+			? 'letter'
+			: undefined;
 
 // Server-Timing instrumentation
 let resolveContentDur: number | null = null;
