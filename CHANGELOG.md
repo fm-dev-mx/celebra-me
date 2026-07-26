@@ -17,33 +17,87 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Changed
 
+<!-- Pending product/operator-visible changes for the next checkpoint. -->
+
+## [0.13.0-beta.1] - 2026-07-25
+
+Platform, managed-invitation lifecycle, and client-invitation evolution since `v0.12.0`.
+
+### Added
+
+- **Managed invitation lifecycle**: unified `invitation:update` pipeline with semantic plans,
+  approval/provenance, asset reconciliation, legacy production adoption, safe partial-failure
+  cleanup, and Spanish CLI presenter — replacing fragmented promote/package CLIs.
+- **Cloudinary asset provider**: provider-neutral invitation asset columns, Cloudinary adapter,
+  apply/import/reorganize helpers, and operator scripts (script-scoped credentials).
+- **Client invitations**: Romina Ríos Chaparro visual/venue finalization; Abril Michelle Becerra Rea
+  invitation definition, assets, and hero/gallery role work (detail in `docs/invitations/`; Abril
+  production not verified in this checkpoint).
+- **Location zoom**: optional map zoom on coordinate schema, intake mapper, and venue/map
+  components; rustic static-tile map style option.
+- **Preview E2E harness**: external Vercel Preview Playwright configs/modes (public / provision /
+  publication) with hardened timing and idempotency checks.
+
+### Changed
+
 - **Platform baseline**: Astro 7.1.x (`@astrojs/vercel` 11.x, `@astrojs/react` 6.x, Vite 8) and a
   hybrid TypeScript arrangement (CLI **7.0.2** via `@typescript/native`; tooling API via
   `@typescript/typescript6` for ESLint / `astro check` / `ts-jest`). Coordinated latest-stable
   dependency refresh; Jest transforms only the ESM `htmlparser2` parser graph while Vite bundles
-  that graph for Vercel SSR, instead of overriding production parsers; ESLint 10 uses
-  `eslint-plugin-import-x` for supported peers; global SCSS no longer uses Astro-scoped `:global()`
-  (Lightning CSS safe).
-- **Agent governance SSOT**: ownership matrix and invitation authority chain in `.agent/index.md`;
-  layered CHANGELOG policy in `docs/core/release-process.md`; Context7/Impeccable/Hermes discovery
-  rules in skill loaders; DB/env ownership headers; CHANGELOG milestone checklist; Hermes host
-  discovery verification note. Celebra workflows `staged-code-review`, `staged-code-review-apply`,
-  `release-prepare`, `git-stash-branch-cleanup`, `client-invitation-audit`,
-  `production-sql-patches`, and `demo-content-consistency` promoted into `.agent/skills/`;
-  `theme-system-extension` absorbed into `theme-architecture`; plan hygiene absorbed into
-  `documentation-governance` (host Hermes copies redirect here).
-- **Env contract alignment**: runtime typing and `.env.example` reconciled; Cloudinary credentials
-  treated as script-only operational inputs (not app `ImportMetaEnv`).
+  that graph for Vercel SSR; ESLint 10 uses `eslint-plugin-import-x` for supported peers; global
+  SCSS no longer uses Astro-scoped `:global()` (Lightning CSS safe).
 - **Invitation SCSS delivery**: redundant per-section preset passthroughs removed; preset bundles
   remain the CSS delivery surface via the section CSS resolver.
-- **Provisioning and screenshot tooling**: Cloudinary apply/import helpers and screenshot capture
-  utilities modularized for clearer operator workflows.
+- **Env contract alignment**: runtime typing and `.env.example` reconciled; Cloudinary credentials
+  treated as script-only operational inputs (not app `ImportMetaEnv`).
+- **Operator docs contract**: ownership matrix / invitation authority chain and layered CHANGELOG
+  policy refreshed in `.agent/index.md` and `docs/core/release-process.md`.
+- **Screenshot QA tooling**: section-based inventory, physical verification, and modular capture
+  utilities for clearer operator workflows.
+- **CI / validation**: shared validation runner and `validate:structure` gate in `pnpm run ci`;
+  pre-commit runs lint-staged then source-based related Jest tests; E2E infra/visual tiers via
+  `scripts/run-e2e-tier.mjs`; commit-validation workflow job split and display rename.
 
-### Tests / Validation
+### Fixed
 
-- **Shared validation runner** and `validate:structure` gate wired into `pnpm run ci`; pre-commit
-  runs lint-staged then source-based related Jest tests; E2E infra/visual tiers via
-  `scripts/run-e2e-tier.mjs`.
+- **Vercel SSR sanitize-html**: bundle the full `sanitize-html` runtime graph so production SSR does
+  not miss transitive parser modules.
+- **Invitation root landmark**: replace invitation-root `<main>` wrapper with `<div>` to avoid
+  nested landmark conflicts with the page layout.
+- **EditorialMagazineHero screenshot marker**: keep section marker attributes for capture/audit
+  tooling.
+- **Provision diagnostics**: post-RPC event lookup, array comparison guards in update plans, and
+  stronger preflight/asset reconciliation errors.
+
+### Data / model
+
+- Schema impact summary: managed invitation release provenance; atomic Romina legacy adoption (+
+  digest schema); invitation-assets Cloudinary provider columns. Full history remains in
+  `supabase/migrations/`.
+
+### Verification
+
+| Check      | Result                                                    |
+| :--------- | :-------------------------------------------------------- |
+| Type-check | Passed — 0 errors, 0 warnings, 0 hints                    |
+| Tests      | Passed — 320 suites, 3983 tests; 1 suite / 1 test skipped |
+| Build      | Passed — Astro SSR + Vercel adapter + sitemap             |
+
+### Known caveats
+
+- Database-dependent production use requires applying the summarized migrations before deploying
+  dependent app/operator paths (`docs/core/release-process.md` → Database-dependent releases).
+
+## [0.12.0] - 2026-07-20
+
+Security and operational hardening checkpoint (tagged `v0.12.0`; changelog entry recorded
+retrospectively at the `0.13.0-beta.1` prepare step).
+
+### Fixed
+
+- **CodeQL / security hardening**: unbiased ID generation via `crypto.randomInt`; exact and
+  dot-delimited hostname validation for analytics/script domains; workflow `contents: read`
+  permissions; operational security and alert remediation policy in gatekeeper rules.
 
 ## [0.11.0-beta.1] - 2026-07-07
 
