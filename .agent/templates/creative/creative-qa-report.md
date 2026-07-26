@@ -49,14 +49,16 @@ brand: celebra-me
 ## UI / Invitation Visual QA
 
 When reviewing shipped invitation or marketing UI (not only generated images), also apply the
-`frontend-design` Visual Critique / Polish Checklist (brand-first viewport, one job per section,
-theme tokens, hierarchy, spacing, contrast/focus, reduced-motion, Spanish copy fit, distill).
+`frontend-design` Visual Critique / Polish Checklist (register, brand-first viewport, one job per
+section, theme tokens, hierarchy, spacing, contrast floors, structural bans, reduced-motion, Spanish
+copy fit, distill, slop test).
 
 Use `Pass`, `Fail`, `Blocked`, or `N/A`. A pass requires evidence at every viewport named by the
 brief; `Blocked` identifies evidence or environment that could not be obtained.
 
 | Area                                                                         | Status | Affected section / viewport | Evidence and notes |
 | ---------------------------------------------------------------------------- | ------ | --------------------------- | ------------------ |
+| Register named (Persuade vs Operate)                                         |        |                             |                    |
 | Reference fidelity and approved deviations                                   |        |                             |                    |
 | Responsive behavior and reflow                                               |        |                             |                    |
 | Content legibility, contrast, and focus                                      |        |                             |                    |
@@ -64,6 +66,7 @@ brief; `Blocked` identifies evidence or environment that could not be obtained.
 | Image resolution, crop, focal point, and treatment                           |        |                             |                    |
 | Layout rhythm, alignment, and spacing                                        |        |                             |                    |
 | Component, token, preset, and theme consistency                              |        |                             |                    |
+| Structural anti-slop (no side-tabs, nested/ghost cards, eyebrow scaffolding) |        |                             |                    |
 | Accessibility-relevant visual behavior and reduced motion                    |        |                             |                    |
 | Cross-page, cross-section, or sibling-preset regressions                     |        |                             |                    |
 | Rendered technical defects, overflow, broken assets, or interaction failures |        |                             |                    |

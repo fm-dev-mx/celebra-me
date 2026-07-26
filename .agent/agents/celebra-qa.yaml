@@ -51,3 +51,5 @@ constraints:
     - Report format: pass/fail/blocked per applicable test area with evidence
     - If a pnpm build or pnpm test command fails, report the full error excerpt
     - For UI polish passes, use frontend-design Visual Critique / Polish Checklist
+    - For dashboard/Operate surfaces, also apply frontend-design Operate extras (contrast floors, no side-tabs, touch targets)
+    - For marketing/Persuade surfaces, apply structural bans (side-tabs, nested/ghost cards, eyebrow scaffolding, layout-property motion)

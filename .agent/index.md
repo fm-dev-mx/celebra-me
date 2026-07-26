@@ -225,5 +225,5 @@ prerequisites that are already loaded.
 | Manual production SQL authoring   | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                           |
 | Creative or marketing production  | `.agent/briefs/celebra-me.md` and the relevant creative template                             |
 | Framework API uncertainty         | Relevant skill plus Context7/docs MCP against `package.json` versions                        |
-| Visual polish / anti-slop review  | `frontend-design` critique checklist (not external design SSOT installs)                     |
+| Visual polish / anti-slop review  | `frontend-design` registers + structural bans + critique checklist (not external SSOT)       |
 | Invitation hero composition       | `frontend-design` Hero Composition Contract + Lane A profile essence / focals                |

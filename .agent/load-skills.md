@@ -27,8 +27,9 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
   references inside framework skills (`astro-patterns`, `backend-engineering`, `supabase`,
   `testing`). Never install a duplicate `.agent/skills/context7/`.
 - **Impeccable.style** — do not install as a parallel design SSOT (root PRODUCT/DESIGN markdown
-  files are forbidden). Anti-slop and polish/critique ideas belong inside `frontend-design` and
-  visual-director templates only.
+  files are forbidden; no CI `impeccable detect` gate). Selective anti-slop absorption (registers,
+  structural bans, Adapt rules for cream/glass, intervention loop) lives in `frontend-design` and
+  visual-director templates only. Temporary installs for audit must be uninstalled before merge.
 - **Global Hermes (or other host) skills** — may exist outside the repository for cross-project
   tooling. They never override `.agent/skills/`. See External Runtime Discovery below. Do **not**
   dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
