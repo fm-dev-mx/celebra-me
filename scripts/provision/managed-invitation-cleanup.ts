@@ -231,9 +231,20 @@ export async function cleanupHostedPsqlResources(
 		sql: string,
 		dbUrl: string,
 		options?: { throwOnError?: boolean },
-	) => { status: number },
+	) => { status: number; stderr?: string },
+	storageApi?: {
+		supabaseUrl: string;
+		serviceRoleKey: string;
+	},
 ): Promise<CleanupResult> {
-	const execPsql = runPsqlFn ?? runPsql;
+	const execPsql = (sql: string): void => {
+		const result = (runPsqlFn ?? runPsql)(sql, targetDbUrl, { throwOnError: false });
+		if (result.status !== 0) {
+			throw new Error(
+				result.stderr?.trim() || `psql cleanup failed with status ${result.status}`,
+			);
+		}
+	};
 
 	return executeCleanup({ invitationSlug: slug, trackedResources }, async (res) => {
 		switch (res.type) {
@@ -243,54 +254,61 @@ export async function cleanupHostedPsqlResources(
 				const userId = parts[1]!;
 				execPsql(
 					`delete from public.event_memberships where event_id = '${eventId}'::uuid and user_id = '${userId}'::uuid;`,
-					targetDbUrl,
 				);
 				return true;
 			}
 			case 'event': {
-				execPsql(`delete from public.events where id = '${res.id}'::uuid;`, targetDbUrl);
+				execPsql(`delete from public.events where id = '${res.id}'::uuid;`);
 				return true;
 			}
 			case 'invitation_content_draft': {
 				execPsql(
 					`delete from public.invitation_content_drafts where id = '${res.id}'::uuid;`,
-					targetDbUrl,
 				);
 				return true;
 			}
 			case 'published_invitation_content': {
 				execPsql(
 					`delete from public.published_invitation_content where invitation_project_id = '${res.id}'::uuid;`,
-					targetDbUrl,
 				);
 				return true;
 			}
 			case 'invitation_asset': {
-				execPsql(
-					`delete from public.invitation_assets where id = '${res.id}'::uuid;`,
-					targetDbUrl,
-				);
+				execPsql(`delete from public.invitation_assets where id = '${res.id}'::uuid;`);
 				return true;
 			}
 			case 'storage_object': {
-				execPsql(
-					`delete from storage.objects where bucket_id = 'invitation-assets' and name = '${res.id}';`,
-					targetDbUrl,
-				);
+				// Hosted Supabase blocks direct SQL deletes on storage.objects; use Storage API.
+				if (!storageApi?.supabaseUrl || !storageApi.serviceRoleKey) {
+					throw new Error(
+						`Cannot remove storage object "${res.id}" without Supabase Storage API credentials.`,
+					);
+				}
+				const objectUrl = `${storageApi.supabaseUrl.replace(/\/+$/, '')}/storage/v1/object/invitation-assets/${res.id}`;
+				const response = await fetch(objectUrl, {
+					method: 'DELETE',
+					headers: {
+						Authorization: `Bearer ${storageApi.serviceRoleKey}`,
+						apikey: storageApi.serviceRoleKey,
+					},
+				});
+				// 404 means the object is already gone — treat as cleaned.
+				if (!response.ok && response.status !== 404) {
+					const body = await response.text().catch(() => '');
+					throw new Error(
+						`Storage API delete failed for "${res.id}" (HTTP ${response.status}): ${body.slice(0, 200)}`,
+					);
+				}
 				return true;
 			}
 			case 'managed_invitation_release_provenance': {
 				execPsql(
 					`delete from public.managed_invitation_release_provenance where invitation_id = '${res.id}'::uuid;`,
-					targetDbUrl,
 				);
 				return true;
 			}
 			case 'invitation': {
-				execPsql(
-					`delete from public.invitations where id = '${res.id}'::uuid;`,
-					targetDbUrl,
-				);
+				execPsql(`delete from public.invitations where id = '${res.id}'::uuid;`);
 				return true;
 			}
 			case 'preview_identity':

@@ -13,6 +13,7 @@ import {
 	validateEnvironmentUrlsPreflight,
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
+	PROD_SECRET_FILES,
 	type DbTarget,
 } from '../db/db-target-config.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
@@ -51,10 +52,7 @@ import {
 	type ObservedStorageState,
 	type AssetReconciliationResult,
 } from './asset-reconciliation.ts';
-import {
-	apply3WaySemanticPatch,
-	type UpdateScope,
-} from './semantic-delta.ts';
+import { apply3WaySemanticPatch, type UpdateScope } from './semantic-delta.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -283,7 +281,8 @@ function fetchTargetDbAssets(
 				height: row.height !== null ? Number(row.height) : null,
 				validationVersion: Number(row.validation_version ?? 1),
 				originalMimeType: (row.original_mime_type as string) ?? null,
-				originalFileSize: row.original_file_size !== null ? Number(row.original_file_size) : null,
+				originalFileSize:
+					row.original_file_size !== null ? Number(row.original_file_size) : null,
 				altText: (row.default_alt_text as string) ?? null,
 				provider: (row.provider as string) ?? 'supabase',
 				providerPublicId: (row.provider_public_id as string) ?? null,
@@ -319,17 +318,31 @@ async function probeStorageStates(
 		const batch = pathsToProbe.slice(i, i + BATCH_SIZE);
 		await Promise.all(
 			batch.map(async (storagePath) => {
-				const dbAsset = targetDbAssets.find((t) => t.storagePath === storagePath || t.providerPublicId === storagePath);
-				const targetAssetUrl = dbAsset?.secureUrl ?? (storagePath.startsWith('http') ? storagePath : `${targetStorageUrl}/${storagePath}`);
+				const dbAsset = targetDbAssets.find(
+					(t) => t.storagePath === storagePath || t.providerPublicId === storagePath,
+				);
+				const targetAssetUrl =
+					dbAsset?.secureUrl ??
+					(storagePath.startsWith('http')
+						? storagePath
+						: `${targetStorageUrl}/${storagePath}`);
 				try {
 					const fetchRes = await fetch(targetAssetUrl);
 					if (fetchRes.ok) {
 						const ab = await fetchRes.arrayBuffer();
 						const hash = sha256Bytes(new Uint8Array(ab));
-						observedStorage[storagePath] = { present: true, sha256: hash, httpStatus: fetchRes.status };
+						observedStorage[storagePath] = {
+							present: true,
+							sha256: hash,
+							httpStatus: fetchRes.status,
+						};
 						verifiedAssetHashes[storagePath] = hash;
 					} else {
-						observedStorage[storagePath] = { present: false, sha256: null, httpStatus: fetchRes.status };
+						observedStorage[storagePath] = {
+							present: false,
+							sha256: null,
+							httpStatus: fetchRes.status,
+						};
 					}
 				} catch {
 					observedStorage[storagePath] = { present: false, sha256: null };
@@ -417,7 +430,9 @@ async function scanAssetStatus(
 
 	for (const item of reconciliation.unreferencedAssets) {
 		if (item.plannedAction === 'PRUNE') {
-			const targetRecord = targetDbAssets.find((r) => r.storagePath === item.targetStoragePath);
+			const targetRecord = targetDbAssets.find(
+				(r) => r.storagePath === item.targetStoragePath,
+			);
 			if (targetRecord) assetsToDelete.push(targetRecord);
 			assetActions.push({
 				resource: 'invitation_assets',
@@ -707,9 +722,15 @@ function scanTargetState(
 	eventType: string,
 	ownerUserId: string,
 	existingInvitation: Record<string, unknown> | null,
+	preferredInvitationId?: string,
 ): TargetScanResult {
-	const existingInv = existingInvitation;
-	const targetInvitationId = existingInv ? (existingInv.id as string) : randomUUID();
+	// New invitations must keep a stable ID across plan → apply in the same release.
+	// randomUUID() here previously made planId diverge and blocked first-time Preview/Production applies.
+	const targetInvitationId = existingInvitation
+		? (existingInvitation.id as string)
+		: preferredInvitationId && UUID_PATTERN.test(preferredInvitationId)
+			? preferredInvitationId
+			: randomUUID();
 
 	const draftResult = runPsql(
 		`select row_to_json(t) from (select id, status, updated_at, content from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1) t;`,
@@ -731,7 +752,7 @@ function scanTargetState(
 		{ tuplesOnly: true, throwOnError: false },
 	);
 	const existingEvent = eventResult.stdout.trim() ? parsePsqlJson(eventResult.stdout) : null;
-	if (existingInv && existingEvent && existingEvent.owner_user_id !== ownerUserId) {
+	if (existingInvitation && existingEvent && existingEvent.owner_user_id !== ownerUserId) {
 		throw new Error(`Target event owner does not match the invitation owner for "${slug}".`);
 	}
 
@@ -746,7 +767,7 @@ function scanTargetState(
 	}
 
 	return {
-		existingInv,
+		existingInv: existingInvitation,
 		existingDraft,
 		existingPub,
 		existingEvent,
@@ -784,19 +805,34 @@ function analyzeTargetDrift(
 	assetRefs: UploadedAssetMap,
 	existingInvitation: Record<string, unknown> | null,
 	updateScope: UpdateScope = 'content-only',
+	preferredInvitationId?: string,
 ) {
 	const slug = pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
-	const scanned = scanTargetState(targetDbUrl, slug, eventType, ownerUserId, existingInvitation);
+	const scanned = scanTargetState(
+		targetDbUrl,
+		slug,
+		eventType,
+		ownerUserId,
+		existingInvitation,
+		preferredInvitationId,
+	);
 
 	let targetDraftContent: Record<string, unknown>;
 	let targetPublishedContent: Record<string, unknown>;
 
-	if (scanned.existingDraft?.content && (updateScope === 'content-only' || updateScope === 'assets-only')) {
-		const prevCanonical = (scanned.existingPub?.content as Record<string, unknown>) ??
+	if (
+		scanned.existingDraft?.content &&
+		(updateScope === 'content-only' || updateScope === 'assets-only')
+	) {
+		const prevCanonical =
+			(scanned.existingPub?.content as Record<string, unknown>) ??
 			(scanned.existingDraft.content as Record<string, unknown>);
-		const currCanonical = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<string, unknown>;
+		const currCanonical = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
+			string,
+			unknown
+		>;
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
 			currentCanonical: currCanonical,
@@ -888,7 +924,8 @@ function resolveTargetAssetRefs(
 
 	return Object.fromEntries(
 		pkg.assets.map((asset) => {
-			const existingRecord = byPath.get(asset.storagePath) ?? byDisplayName.get(asset.displayName);
+			const existingRecord =
+				byPath.get(asset.storagePath) ?? byDisplayName.get(asset.displayName);
 			const assetId = (existingRecord?.id as string) ?? randomUUID();
 			const storagePath = (existingRecord?.storage_path as string) ?? asset.storagePath;
 			return [
@@ -922,7 +959,8 @@ export function computeTargetAssetFingerprint(targetDbUrl: string, invitationId:
 
 	const extractRefs = (str: string) => {
 		const refs: string[] = [];
-		const regex = /"type"\s*:\s*"uploaded"\s*,\s*"assetId"\s*:\s*"([^"]+)"\s*,\s*"src"\s*:\s*"([^"]+)"/g;
+		const regex =
+			/"type"\s*:\s*"uploaded"\s*,\s*"assetId"\s*:\s*"([^"]+)"\s*,\s*"src"\s*:\s*"([^"]+)"/g;
 		let m: RegExpExecArray | null;
 		while ((m = regex.exec(str)) !== null) {
 			refs.push(`${m[1]}:${m[2]}`);
@@ -931,7 +969,13 @@ export function computeTargetAssetFingerprint(targetDbUrl: string, invitationId:
 	};
 
 	return createHash('sha256')
-		.update(JSON.stringify({ dbRows, draftRefs: extractRefs(draftContent), pubRefs: extractRefs(pubContent) }))
+		.update(
+			JSON.stringify({
+				dbRows,
+				draftRefs: extractRefs(draftContent),
+				pubRefs: extractRefs(pubContent),
+			}),
+		)
 		.digest('hex');
 }
 
@@ -971,12 +1015,15 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	);
 	const ownerUserId = identity.ownerUserId;
 
+	// Prefer the invitation ID retained in the confirmed plan so plan → apply stays stable for creates.
+	const preferredInvitationId = options.plan?.targetPreconditions.targetInvitationId;
 	const initialScan = scanTargetState(
 		targetDbUrl,
 		pkg.invitation.slug,
 		pkg.invitation.eventType,
 		ownerUserId,
 		identity.existingInvitation,
+		preferredInvitationId,
 	);
 	const assetRefs = resolveTargetAssetRefs(
 		pkg,
@@ -985,7 +1032,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		targetStorageUrl,
 	);
 	const updateScope = options.updateScope ?? 'content-only';
-	const assetPolicy = options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+	const assetPolicy =
+		options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 
 	const drift = analyzeTargetDrift(
 		pkg,
@@ -995,6 +1043,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		assetRefs,
 		identity.existingInvitation,
 		updateScope,
+		initialScan.targetInvitationId,
 	);
 	const {
 		assetsToUpload,
@@ -1193,7 +1242,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	}
 
 	// ── APPLY PHASE ───────────────────────────────────────────────────────
-	const preApplyAssetFingerprint = computeTargetAssetFingerprint(targetDbUrl, drift.targetInvitationId);
+	const preApplyAssetFingerprint = computeTargetAssetFingerprint(
+		targetDbUrl,
+		drift.targetInvitationId,
+	);
 	const trackedResources: TrackedResource[] = [];
 	if (expectedTarget === 'preview') {
 		trackedResources.push(
@@ -1320,7 +1372,20 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		}
 		const serviceRoleKey =
 			options.serviceRoleKey ||
-			getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES);
+			(expectedTarget === 'preview'
+				? getSecretFromEnvOrFiles(
+						'PREVIEW_SUPABASE_SERVICE_ROLE_KEY',
+						PREVIEW_SECRET_FILES,
+					) || getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
+				: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES) ||
+					getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES));
+		if (!serviceRoleKey && assetsToUpload.length > 0) {
+			throw new Error(
+				expectedTarget === 'preview'
+					? 'Preview Storage uploads require PREVIEW_SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_ROLE_KEY in Preview secret files.'
+					: 'Production Storage uploads require PROD_SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_ROLE_KEY in Production secret files.',
+			);
+		}
 
 		if (assetsToUpload.length > 0) {
 			mutationStarted = true;
@@ -1470,13 +1535,26 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			},
 		};
 	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactCredentials(message)}`);
+		const serviceRoleKeyForCleanup =
+			options.serviceRoleKey ||
+			(expectedTarget === 'preview'
+				? getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
+				: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES)) ||
+			getSecretFromEnvOrFiles(
+				'SUPABASE_SERVICE_ROLE_KEY',
+				expectedTarget === 'preview' ? PREVIEW_SECRET_FILES : PROD_SECRET_FILES,
+			);
 		const cleanupResult = await cleanupHostedPsqlResources(
 			targetDbUrl,
 			drift.slug,
 			trackedResources,
+			undefined,
+			serviceRoleKeyForCleanup
+				? { supabaseUrl: targetSupabaseUrl, serviceRoleKey: serviceRoleKeyForCleanup }
+				: undefined,
 		);
-		const message = err instanceof Error ? err.message : String(err);
-		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactCredentials(message)}`);
 		const recoveryStatus =
 			cleanupResult.status === 'CAMBIOS_REVERTIDOS'
 				? 'ERROR — CAMBIOS REVERTIDOS'
