@@ -236,10 +236,18 @@
 		align-items: start;
 		padding-block: 0.75rem;
 		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
-		transition: padding-inline 180ms ease;
+		transition: transform 180ms ease;
 
 		&:hover {
-			padding-inline: 0.4rem;
+			transform: translateX(0.4rem);
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+
+			&:hover {
+				transform: none;
+			}
 		}
 	}
 
