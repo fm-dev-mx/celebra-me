@@ -32,8 +32,8 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
 - **Global Hermes (or other host) skills** — may exist outside the repository for cross-project
   tooling. They never override `.agent/skills/`. See External Runtime Discovery below. Do **not**
   dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
-  review, release prepare, stash cleanup) into `.agent/skills/` when they are part of this product's
-  operating contract, then point the host at `.agent/skills` via `external_dirs`.
+  review, branch lane / release prep, stash cleanup) into `.agent/skills/` when they are part of
+  this product's operating contract, then point the host at `.agent/skills` via `external_dirs`.
 
 ## Constraints
 
@@ -80,9 +80,9 @@ software-development, database, media, git, research, and computer-use. Those st
 Celebra-me tracked skills (canonical) cover product contracts only, for example: `astro-patterns`,
 `backend-engineering`, `frontend-design`, `theme-architecture`, `supabase`, `supabase-postgres`,
 `testing`, `copywriting-es`, `commit-planner`, `staged-code-review`, `staged-code-review-apply`,
-`release-prepare`, `git-stash-branch-cleanup`, `client-invitation-audit`, `production-sql-patches`,
-`demo-content-consistency`, `documentation-governance`, and related domain skills listed in
-`.agent/index.md`.
+`branch-lane`, `release-prepare` (deprecated stub), `git-stash-branch-cleanup`,
+`client-invitation-audit`, `production-sql-patches`, `demo-content-consistency`,
+`documentation-governance`, and related domain skills listed in `.agent/index.md`.
 
 **Rule:** Hermes provides tooling discovery; `.agent/` provides Celebra-me authority. Overlap in
 names never overrides `.agent/skills/`.

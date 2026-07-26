@@ -15,7 +15,7 @@ preconditions:
 related_skills:
   - staged-code-review
   - staged-code-review-apply
-  - release-prepare
+  - branch-lane
   - git-stash-branch-cleanup
 related_docs:
   - docs/core/git-governance.md

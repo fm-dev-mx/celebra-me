@@ -1,9 +1,10 @@
 # Git Governance: Commit Policy
 
 **Status:** Active  
-**Last Updated:** 2026-07-25  
-**Change Note:** Points release history readers to the layered CHANGELOG policy in
-`release-process.md`. Branch model remains develop trunk / main protected via fast-forward.
+**Last Updated:** 2026-07-26  
+**Change Note:** Documents production-tip recovery when `main` drifts, points agents at
+`branch-lane`, and notes `ALLOW_MAIN_PUSH` for local main pushes. Branch model remains develop trunk
+/ main protected via fast-forward.
 
 ## Overview
 
@@ -198,6 +199,15 @@ judgment.
 
 ## Production Promotion
 
+Agent-facing procedure for sync / release prep / FF promote:
+[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). This section
+remains the human policy SSOT.
+
+### Preferred hotfix path
+
+Land the fix on `develop`, validate, then fast-forward `main`. That keeps the invariant `main` ⊂
+`develop` without a recovery merge.
+
 ### Fast-Forward Flow
 
 When a release is ready:
@@ -205,7 +215,7 @@ When a release is ready:
 ```bash
 # 1. Ensure develop is up to date and validated
 git checkout develop
-git pull --rebase
+git pull --ff-only
 pnpm run ci
 
 # 2. Fast-forward main to match develop
@@ -215,15 +225,28 @@ git merge --ff-only develop
 # 3. Tag the release
 git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
 
-# 4. Push main and the tag
-git push origin main
+# 4. Push main and the tag (local pre-push blocks main without the override)
+ALLOW_MAIN_PUSH=true git push origin main
 git push origin vX.Y.Z
 ```
 
 Rules:
 
-- `main` is always a subset of `develop` — never diverges.
-- `git merge --ff-only` fails if `main` has drifted; investigate before force-pushing.
+- `main` should remain a subset of `develop` — do not plan work that diverges `main` on purpose.
+- `git merge --ff-only` fails if `main` has drifted; do not force-push to “fix” it.
 - Tags are annotated (`-a`) to carry release metadata.
 - Never rewrite or force-push `main` without explicit approval.
 - Rollback: `git revert` on `develop`, then fast-forward promote again.
+- Direct commits on `main` are blocked by `pre-commit`; promotion is FF-only from `develop`.
+
+### Production tip recovery (when `main` drifted)
+
+If `main` already contains commits that are not on `develop` (for example an emergency hotfix
+committed directly to production), restore the invariant before the next FF promote:
+
+1. Merge `main` into `develop` (no rebase, no reset-hard of trunk).
+2. Resolve conflicts deliberately on `develop`.
+3. Validate on `develop`, then resume the Fast-Forward Flow.
+
+Agents use `branch-lane` mode `sync-main-into-develop` for that recovery. Prefer avoiding this path
+by landing hotfixes on `develop` first.

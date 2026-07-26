@@ -42,7 +42,7 @@ skills:
     - staged-code-review
     - staged-code-review-apply
     - commit-planner
-    - release-prepare
+    - branch-lane
     - git-stash-branch-cleanup
     - testing
 constraints:

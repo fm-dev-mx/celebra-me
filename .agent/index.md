@@ -58,9 +58,10 @@ state and never has authority over these definitions.
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
+| `branch-lane`                 | sync main→develop, release prep, FF promote develop→main           |
 | `git-stash-branch-cleanup`    | audit and clean stale stashes/branches with confirmation           |
 | `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
-| `release-prepare`             | prepare version bump + CHANGELOG without commit/tag/push           |
+| `release-prepare`             | deprecated stub → use `branch-lane` (mode release-prepare)         |
 | `seo-metadata`                | metadata, sharing, and search presentation                         |
 | `staged-code-review`          | simplification-first analysis of staged git changes (read-only)    |
 | `staged-code-review-apply`    | gated application of staged-code-review fixes (no stage/commit)    |
@@ -217,7 +218,7 @@ prerequisites that are already loaded.
 | Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans    |
 | Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                           |
 | Staged review before commit       | `staged-code-review` then `staged-code-review-apply`                                         |
-| Release candidate prep            | `release-prepare` and `docs/core/release-process.md`                                         |
+| Release / branch lane             | `branch-lane` and `docs/core/release-process.md` / `docs/core/git-governance.md`             |
 | Stash / branch housekeeping       | `git-stash-branch-cleanup`                                                                   |
 | Real invitation pre-work audit    | `client-invitation-audit` (then `managed-invitation-lifecycle` to apply)                     |
 | Demo date / transform consistency | `demo-content-consistency`                                                                   |

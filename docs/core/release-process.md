@@ -1,13 +1,17 @@
 # Release Process — Celebra-me
 
 **Status:** Active  
-**Last Updated:** 2026-07-25
+**Last Updated:** 2026-07-26
 
 ## Overview
 
 This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
 repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
 release branches, no automation runners, no semantic-release.
+
+Agent procedure for preparing a release candidate (and related develop/main lane ops):
+[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md) mode
+`release-prepare`. This document remains the policy SSOT.
 
 ## Layered CHANGELOG Policy
 
