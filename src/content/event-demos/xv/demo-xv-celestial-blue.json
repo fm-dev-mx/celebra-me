@@ -214,7 +214,7 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "sealIcon": "flower",
+        "sealIcon": "wax-monogram",
         "sealInitials": "C·F",
         "microcopy": "Abre tu invitación",
         "closedPalette": {

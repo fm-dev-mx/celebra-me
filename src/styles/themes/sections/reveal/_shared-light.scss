@@ -28,3 +28,40 @@
 	--reveal-card-border: color-mix(in srgb, var(--color-action-accent) 16%, transparent);
 	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
+
+// Cool silver/ice wax seal for celestial-blue parametric embossed monogram.
+// Serif monogram (Georgia) vs Cormorant envelope name / Pinyon calligraphy.
+.envelope-wrapper[data-variant='celestial-blue'] {
+	--wax-seal-highlight: var(--color-ice-blue);
+	--wax-seal-mid: color-mix(in srgb, var(--color-cold-silver) 72%, var(--color-satin-blue));
+	--wax-seal-deep: color-mix(in srgb, var(--color-satin-blue) 38%, var(--color-soft-graphite));
+	--wax-seal-letter: var(--color-deep-blue-graphite);
+	--wax-seal-shadow: var(--color-deep-blue-graphite);
+	--wax-seal-font-family: georgia, 'Times New Roman', serif;
+	--env-seal-accent: var(--color-satin-blue);
+
+	.envelope-seal-hint {
+		color: color-mix(in srgb, var(--color-soft-graphite) 55%, var(--color-cold-silver));
+		opacity: 60%;
+	}
+
+	// Letter card follows cool celestial paper, not warm ivory defaults.
+	--env-paper-bg: color-mix(
+		in srgb,
+		var(--color-ice-blue) 12%,
+		var(--color-envelope-paper-ivory)
+	);
+	--reveal-card-bg: color-mix(
+		in srgb,
+		var(--color-ice-blue) 10%,
+		var(--color-envelope-paper-ivory)
+	);
+	--reveal-card-text-primary: var(--color-deep-blue-graphite);
+	--reveal-card-text-secondary: color-mix(
+		in srgb,
+		var(--color-soft-graphite) 62%,
+		var(--color-cold-silver)
+	);
+	--reveal-card-border: color-mix(in srgb, var(--color-cold-silver) 36%, transparent);
+	--reveal-card-accent: color-mix(in srgb, var(--color-satin-blue) 42%, var(--color-cold-silver));
+}
