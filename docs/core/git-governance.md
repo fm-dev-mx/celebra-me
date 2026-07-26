@@ -199,7 +199,7 @@ judgment.
 
 ## Production Promotion
 
-Agent-facing procedure for sync / release prep / FF promote:
+Agent-facing procedure (default FF promote, optional release prep, sync recovery):
 [`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). This section
 remains the human policy SSOT.
 

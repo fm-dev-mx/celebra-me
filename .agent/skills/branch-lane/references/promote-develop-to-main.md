@@ -1,4 +1,4 @@
-# Mode C — `promote-develop-to-main`
+# Default mode — `promote-develop-to-main`
 
 Load after `.agent/skills/branch-lane/SKILL.md`. **Follow the Fast-Forward Flow in**
 [`docs/core/git-governance.md`](../../../../docs/core/git-governance.md) — do not invent a parallel
@@ -6,7 +6,8 @@ promotion policy. This reference adds agent operational gaps (hooks, validation,
 
 ## Intent
 
-Update protected `main` to match `develop` using **fast-forward only**.
+**Default lane** for solo trunk work on `develop`: update protected `main` to match `develop` using
+**fast-forward only**.
 
 ## Preconditions
 

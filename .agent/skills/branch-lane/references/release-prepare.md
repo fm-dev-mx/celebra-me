@@ -1,4 +1,4 @@
-# Mode B — `release-prepare`
+# Optional mode — `release-prepare`
 
 Load after `.agent/skills/branch-lane/SKILL.md`. **Policy authority:**
 [`docs/core/release-process.md`](../../../../docs/core/release-process.md). This reference does not

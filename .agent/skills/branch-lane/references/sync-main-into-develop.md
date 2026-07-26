@@ -1,13 +1,13 @@
-# Mode A — `sync-main-into-develop`
+# Recovery mode — `sync-main-into-develop`
 
 Load after `.agent/skills/branch-lane/SKILL.md`. Policy background:
 [`docs/core/git-governance.md`](../../../../docs/core/git-governance.md) (Production tip recovery).
 
 ## Intent
 
-Merge commits that exist on `main` but not on `develop` into trunk. Typical case: a production
-hotfix landed on `main` while `develop` continued. Prefer landing hotfixes on `develop` first; use
-this mode only when the invariant `main` ⊂ `develop` is already broken.
+**Recovery only** — not the default lane. Merge commits that exist on `main` but not on `develop`
+into trunk when the invariant `main` ⊂ `develop` is already broken (e.g. emergency commit on
+production). Prefer landing hotfixes on `develop` and using **`promote-develop-to-main`** instead.
 
 Integration: **merge** only (not rebase, not reset-hard).
 

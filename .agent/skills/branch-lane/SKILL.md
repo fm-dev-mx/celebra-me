@@ -1,21 +1,21 @@
 ---
 name: branch-lane
 description: |
-  Bidirectional develop/main lane for Celebra-me: (1) sync commits from main into develop
-  after production hotfixes, (2) prepare a release candidate (version + CHANGELOG), and
-  (3) propose or execute fast-forward promotion of develop onto main. Absorbs release-prepare.
-  Never force-pushes. Git writes require explicit authorization in the current task.
+  Default develop→main lane for Celebra-me solo trunk: fast-forward promote develop onto main,
+  optionally prepare a release candidate (version + CHANGELOG), and recover by merging main into
+  develop only when production drifted. Absorbs release-prepare. Never force-pushes. Git writes
+  require explicit authorization in the current task.
 domain: workflow
-version: 1.1.0
+version: 1.2.0
 absorbed_skills: [release-prepare]
 when_to_use:
-  - User asks to sync main into develop / pass main to develop / realinear develop con main
-  - Production hotfix landed on main and develop must absorb it
+  - User asks to promote develop to main / fast-forward main / "promueve a main"
+  - Solo trunk work on develop is ready for production
   - User asks to prepare a release or release candidate (former release-prepare)
   - Version bump / changelog promotion for a checkpoint
-  - User asks to promote develop to main via fast-forward
-  - Phrases like "pasa main a develop", "sincroniza develop con main", "prepara release",
-    "fast-forward main", "promueve a main"
+  - Production hotfix already on main must be absorbed into develop (recovery)
+  - Phrases like "fast-forward main", "promueve a main", "prepara release", "pasa main a develop",
+    "sincroniza develop con main"
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -38,6 +38,9 @@ related_docs:
 Canonical agent procedure for the linear two-branch model. **Policy SSOT** stays in docs — this
 skill does not redefine it.
 
+**Default assumption (solo trunk):** daily work lands on `develop`; production advances by
+fast-forward from `develop` onto `main`. Prefer that path.
+
 | Authority                   | Doc                                                                     |
 | --------------------------- | ----------------------------------------------------------------------- |
 | Branch model, FF, promotion | [`docs/core/git-governance.md`](../../../docs/core/git-governance.md)   |
@@ -46,18 +49,23 @@ skill does not redefine it.
 
 ## Modes (choose exactly one)
 
-| Mode                      | Direction               | Load                                                                             |
-| ------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
-| `sync-main-into-develop`  | `main` → `develop`      | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
-| `release-prepare`         | files only              | [`references/release-prepare.md`](references/release-prepare.md)                 |
-| `promote-develop-to-main` | `develop` → `main` (FF) | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
+| Priority    | Mode                      | Direction               | Role                                        | Load                                                                             |
+| ----------- | ------------------------- | ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Default** | `promote-develop-to-main` | `develop` → `main` (FF) | Habitual production update                  | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
+| Optional    | `release-prepare`         | files only              | Version + CHANGELOG before a checkpoint     | [`references/release-prepare.md`](references/release-prepare.md)                 |
+| Recovery    | `sync-main-into-develop`  | `main` → `develop`      | Only if `main` has commits not in `develop` | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
 
 ### Selection
 
-1. Sync / “pasa main a develop” / hotfix back-port → Mode A
-2. Prepare release / version bump / CHANGELOG → Mode B
-3. Promote / FF main / “promueve a main” → Mode C
-4. If ambiguous, ask — do not guess a Git write
+1. Promote / FF main / “promueve a main” / bare `branch-lane` when `develop` is ahead and FF is
+   possible → **`promote-develop-to-main` (default)**
+2. Prepare release / version bump / CHANGELOG → **`release-prepare`**
+3. Sync / “pasa main a develop” / hotfix already on `main` → **`sync-main-into-develop` (recovery)**
+4. If still ambiguous after preflight, ask — do not guess a Git write
+
+**Bare skill invocation:** run shared preflight. If working tree is clean, `main` ⊂ `develop`, and
+`develop` is ahead → propose **default promote** (do not run sync). If `main` has exclusive commits
+→ propose recovery sync first. If tips are equal → no-op report.
 
 Load **only** the selected reference after this file. Do not preload all three.
 
@@ -72,7 +80,7 @@ Load **only** the selected reference after this file. Do not preload all three.
 - Branch/stash cleanup → `git-stash-branch-cleanup`, not this skill.
 - `release-prepare` may edit only paths allowed in its reference.
 
-## Shared Git preflight (Modes A and C)
+## Shared Git preflight (promote and sync modes)
 
 ```bash
 git status --short
@@ -88,8 +96,9 @@ behind, or diverged from `origin/develop` before proceeding.
 
 ## Cross-mode flow
 
-- Preferred hotfix path: land on `develop`, validate, Mode C (keeps `main` ⊂ `develop`).
-- If `main` already has commits not in `develop`: Mode A first, then resume trunk; Mode C only when
-  FF is possible.
-- Normal release: Mode B → authorize commit (`commit-planner`) → push `develop` → Mode C.
+- **Habitual:** work on `develop` → (optional `release-prepare` + commit) → push `develop` →
+  **`promote-develop-to-main`**.
+- Hotfixes: land on `develop`, validate, then promote (keeps `main` ⊂ `develop`).
+- Recovery only: if `main` already has commits not in `develop`, run `sync-main-into-develop`, then
+  resume trunk; promote only when FF is possible again.
 - When the user only asks to “prepare” or “what should we do”, propose commands and wait for yes.

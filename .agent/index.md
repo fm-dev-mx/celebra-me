@@ -58,7 +58,7 @@ state and never has authority over these definitions.
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
-| `branch-lane`                 | sync main→develop, release prep, FF promote develop→main           |
+| `branch-lane`                 | default FF promote develop→main; release prep; sync recovery       |
 | `git-stash-branch-cleanup`    | audit and clean stale stashes/branches with confirmation           |
 | `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
 | `release-prepare`             | deprecated stub → use `branch-lane` (mode release-prepare)         |

@@ -29,8 +29,8 @@ related_docs:
 Do not follow this file as an operational procedure. When this skill name is triggered:
 
 1. Load `.agent/skills/branch-lane/SKILL.md`.
-2. Run **Mode B — `release-prepare`** (or Mode A / Mode C if the user actually asked for sync or
-   fast-forward promotion).
+2. Run **`release-prepare`** (or default **`promote-develop-to-main`** / recovery
+   **`sync-main-into-develop`** if that is what the user asked for).
 3. Ignore any cached copy of the old standalone release-prepare workflow.
 
 Canonical home: `.agent/skills/branch-lane/SKILL.md`.
