@@ -639,9 +639,16 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		border-radius: 10px 10px 0 0;
 	}
 
+	// Carto Voyager suburban tiles read as blank on ivory; drop photo overlays and boost contrast.
+	.event-location__card[data-media-mode='map'] .event-location__card-image-container {
+		--location-container-overlay-before: transparent;
+		--location-container-overlay-after: transparent;
+	}
+
 	// Suburban Carto tiles are nearly white; keep contrast without a heavy inset top seam.
 	.event-location .google-map-container[data-map-style='rustic'] {
-		--map-frame-filter: contrast(1.22) saturate(1.12) brightness(0.96) sepia(0.03);
+		--map-surface: var(--abril-warm-sand);
+		--map-frame-filter: contrast(1.48) saturate(1.28) brightness(0.86) sepia(0.05);
 		--map-border: rgb(var(--abril-antique-gold-rgb) / 16%);
 		--map-shadow: inset 0 -18px 28px -22px rgb(var(--abril-wine-dark-rgb) / 10%);
 		--map-overlay: linear-gradient(
