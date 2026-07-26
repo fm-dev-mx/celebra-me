@@ -7,19 +7,20 @@ import {
 
 loadPlaywrightEnvironment();
 const preview = validateAuthenticatedPreviewEnvironment(process.env, {
-	executionMode: 'provision',
+	executionMode: 'publication',
 });
-process.env.PLAYWRIGHT_PREVIEW_EXECUTION_MODE = 'provision';
+process.env.PLAYWRIGHT_PREVIEW_EXECUTION_MODE = 'publication';
 
 export default defineConfig({
 	testDir: './tests/e2e/preview',
-	testMatch: ['provision-preview-fixture.spec.ts'],
+	testMatch: ['authenticated-preview.spec.ts'],
+	grep: /no-change publication stays limited to the synthetic fixture/,
 	fullyParallel: false,
 	forbidOnly: true,
 	retries: 0,
 	workers: 1,
 	reporter: 'list',
-	outputDir: `${PREVIEW_OUTPUT_ROOT}/preview-provision`,
+	outputDir: `${PREVIEW_OUTPUT_ROOT}/preview-publication`,
 	preserveOutput: 'never',
 	use: {
 		...devices['Desktop Chrome'],
@@ -29,5 +30,5 @@ export default defineConfig({
 		video: 'off',
 		storageState: undefined,
 	},
-	projects: [{ name: 'preview-fixture-provision' }],
+	projects: [{ name: 'preview-publication' }],
 });

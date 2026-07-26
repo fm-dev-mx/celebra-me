@@ -57,10 +57,10 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                        | Relationship                                          |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                  | Present in app/runtime typing; omitted from template. |
+| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Relationship                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `operational-script-only`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Present in app/runtime typing; omitted from template. |
 
 The Cloudinary variables are server-only operational inputs for trusted provisioning scripts. Never
 create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files.
@@ -112,35 +112,50 @@ Required for authenticated Preview runs:
 
 ```text
 PLAYWRIGHT_BASE_URL
+PLAYWRIGHT_PREVIEW_SUPABASE_URL
 PLAYWRIGHT_HOST_LOGIN
 PLAYWRIGHT_HOST_PASSWORD
 VERCEL_AUTOMATION_BYPASS_SECRET
 PLAYWRIGHT_PREVIEW_INVITATION_ID
 ```
 
+`PLAYWRIGHT_BASE_URL` must use HTTPS and match either the stable Celebra-me Preview alias, the
+`develop` branch alias, or an immutable Celebra-me deployment hostname repeated exactly in
+`PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. The explicit immutable-host value is required because
+an arbitrary `*.vercel.app` suffix does not prove Preview identity. Production domains are always
+rejected. `PLAYWRIGHT_PREVIEW_SUPABASE_URL` must resolve to project ref `iwipdvisoyerfdytuhwi`; the
+Production ref is always rejected before any remote request.
+
+Public and authenticated read-only commands require the provisioning, publication, and debug guards
+to be present and exactly `false`. Missing flags fail closed before Deployment Protection bypass or
+application authentication.
+
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the idempotent Preview fixture
 command (`pnpm test:e2e:preview:provision`): create or reconcile slug `e2e-preview-publication`,
 copy demo-derived content, and run publication preflight. It does **not** publish.
 
-`PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true` separately authorizes fixture-only publication (baseline
-publish during provisioning, and the serialized publication smoke in `pnpm test:e2e:preview`). It is
-false by default. Neither flag authorizes Production operations.
+`PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true` separately authorizes fixture-only publication through
+`pnpm test:e2e:preview:publish`. Provisioning requires publication to remain `false` and contains no
+publication request. Publication requires provisioning to remain `false`, a configured fixture UUID,
+the canonical fixture slug, the dedicated Preview account, and the verified Preview environment.
+Neither flag authorizes Production operations.
 
 Run public smoke checks with `pnpm test:e2e:preview:public` and authenticated checks with
 `pnpm test:e2e:preview`. Run fixture provisioning only after explicit owner approval with
 `pnpm test:e2e:preview:provision`, then copy the printed non-secret fixture UUID to
-`PLAYWRIGHT_PREVIEW_INVITATION_ID` in `.env.e2e.local`. Authorize publication separately when a
-baseline or smoke publish is required.
+`PLAYWRIGHT_PREVIEW_INVITATION_ID` in `.env.e2e.local`. Run publication only as the separate
+`pnpm test:e2e:preview:publish` command after explicit authorization.
 
 The Deployment Protection secret is sent only during a single same-origin health request that asks
 Vercel to establish its bypass cookie. It is never configured as a global browser header, so
 cross-origin image, font, analytics, Supabase, and Cloudinary requests cannot receive it.
 
-Authenticated Preview projects always disable screenshots, video, traces, and persistent
-`storageState`. `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS=true` enables only a sanitized JSON attachment
-containing route outcomes, status codes, counts, and booleans; it never includes request bodies,
-headers, cookies, tokens, login values, or CSRF values. Preview configs also disable Playwright's
-automatic failure-time page snapshot so authenticated DOM content cannot be written to the report.
+Preview projects always disable screenshots, video, traces, and persistent `storageState`, and
+discard temporary test output after execution. Debug artifacts currently fail closed when enabled.
+The diagnostics serializer accepts only an explicit allowlist of finite counters and booleans; it
+rejects strings and unknown fields so request bodies, URLs, headers, cookies, tokens, login values,
+and CSRF values cannot be attached. All Preview output paths remain below the ignored
+`output/playwright/` root.
 
 ## Cleanup Notes
 

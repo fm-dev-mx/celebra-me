@@ -22,6 +22,7 @@
         "test:e2e:preview": "playwright test --config=playwright.preview.config.ts",
         "test:e2e:preview:public": "playwright test --config=playwright.preview-public.config.ts",
         "test:e2e:preview:provision": "playwright test --config=playwright.preview-provision.config.ts",
+        "test:e2e:preview:publish": "playwright test --config=playwright.preview-publication.config.ts",
         "test:e2e:infra": "node scripts/run-e2e-tier.mjs infra",
         "test:e2e:visual": "node scripts/run-e2e-tier.mjs visual",
         "type-check": "astro check && tsc --noEmit -p tsconfig.json",

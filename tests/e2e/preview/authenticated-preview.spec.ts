@@ -10,7 +10,6 @@ import {
 	PREVIEW_FIXTURE_TITLE,
 } from '../../../scripts/playwright/preview-environment';
 import {
-	attachSafePreviewDiagnostics,
 	getJson,
 	loginAsPreviewAdmin,
 	mutateJson,
@@ -41,6 +40,8 @@ async function assertFixtureGuards(page: Parameters<typeof readSessionIdentity>[
 		configuredFixtureId: preview.fixtureId,
 		targetInvitationId: context.invitation.id,
 		targetSlug: context.invitation.slug,
+		targetOwnerEmail: session.email,
+		targetEnvironment: preview.runtime.targetEnvironment,
 	});
 	return { context, session };
 }
@@ -48,7 +49,7 @@ async function assertFixtureGuards(page: Parameters<typeof readSessionIdentity>[
 test.describe.serial('Authenticated external Preview', () => {
 	test('login, dashboard navigation, fixture preflight, and logout stay authorized', async ({
 		page,
-	}, testInfo) => {
+	}) => {
 		await loginAsPreviewAdmin(page, preview);
 		await expect(page.getByRole('heading', { name: 'Invitados', exact: true })).toBeVisible();
 
@@ -66,13 +67,6 @@ test.describe.serial('Authenticated external Preview', () => {
 		expect(Array.isArray(preflight.changedPaths)).toBe(true);
 		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
 
-		const diagnostics: Record<string, string | number | boolean> = {
-			login: true,
-			adminDashboard: true,
-			editor: true,
-			preflightChangedPathCount: preflight.changedPaths.length,
-			hasPublishedContent: context.publication.hasPublishedContent,
-		};
 		if (context.publication.hasPublishedContent) {
 			await expect(page.getByText('La versión pública está actualizada')).toBeVisible();
 			expect(preflight.changedPaths).toEqual([]);
@@ -80,9 +74,7 @@ test.describe.serial('Authenticated external Preview', () => {
 				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
 			);
 			expect(publicResponse.status()).toBe(200);
-			diagnostics.publicStatus = publicResponse.status();
 		}
-		await attachSafePreviewDiagnostics(testInfo, preview.debugArtifacts, diagnostics);
 
 		await page.getByRole('button', { name: 'Cerrar sesión' }).click();
 		await expect(page).toHaveURL(/\/login$/);
@@ -100,9 +92,7 @@ test.describe.serial('Authenticated external Preview', () => {
 			'Publication requires PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true.',
 		);
 
-		test('no-change publication stays limited to the synthetic fixture', async ({
-			page,
-		}, testInfo) => {
+		test('no-change publication stays limited to the synthetic fixture', async ({ page }) => {
 			await loginAsPreviewAdmin(page, preview);
 			const { context } = await assertFixtureGuards(page);
 			expect(context.publication.hasPublishedContent).toBe(true);
@@ -138,13 +128,6 @@ test.describe.serial('Authenticated external Preview', () => {
 				'Post-publication editor check',
 			);
 			expect(editor.publication.hasUnpublishedChanges).toBe(false);
-			await attachSafePreviewDiagnostics(testInfo, preview.debugArtifacts, {
-				publicationOptIn: true,
-				idempotent: result.idempotent,
-				publishedVersion: result.publishedContent.version,
-				postPublicationChangedPathCount: after.changedPaths.length,
-				publicStatus: publicResponse.status(),
-			});
 		});
 	});
 });

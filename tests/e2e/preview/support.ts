@@ -1,7 +1,11 @@
-import { expect, type APIResponse, type Page, type TestInfo } from '@playwright/test';
+import { expect, type APIResponse, type Page } from '@playwright/test';
 import type {
 	AuthenticatedPreviewEnvironment,
 	PlaywrightRuntimeEnvironment,
+} from '../../../scripts/playwright/preview-environment';
+import {
+	executePreviewMutation,
+	executePreviewRead,
 } from '../../../scripts/playwright/preview-environment';
 
 export interface SessionIdentity {
@@ -92,11 +96,12 @@ export async function establishDeploymentProtectionBypass(
 	}
 }
 
-async function expectSuccessfulJson<T>(response: APIResponse, operation: string): Promise<T> {
-	if (!response.ok()) {
-		throw new Error(`${operation} failed with HTTP ${response.status()}.`);
+async function parseSuccessfulJson<T>(response: APIResponse, operation: string): Promise<T> {
+	try {
+		return (await response.json()) as T;
+	} catch {
+		throw new Error(`${operation} failed with HTTP ${response.status()}; retries=0.`);
 	}
-	return (await response.json()) as T;
 }
 
 export async function loginAsPreviewAdmin(
@@ -123,8 +128,7 @@ export async function loginAsPreviewAdmin(
 }
 
 export async function readSessionIdentity(page: Page): Promise<SessionIdentity> {
-	const response = await page.request.get('/api/auth/session');
-	const payload = await expectSuccessfulJson<unknown>(response, 'Session identity check');
+	const payload = await getJson<unknown>(page, '/api/auth/session', 'Session identity check');
 	if (
 		!isRecord(payload) ||
 		typeof payload.userId !== 'string' ||
@@ -143,7 +147,8 @@ export async function readCsrfToken(page: Page): Promise<string> {
 }
 
 export async function getJson<T>(page: Page, path: string, operation: string): Promise<T> {
-	return expectSuccessfulJson<T>(await page.request.get(path), operation);
+	const response = await executePreviewRead(operation, () => page.request.get(path));
+	return parseSuccessfulJson<T>(response, operation);
 }
 
 export async function mutateJson<T>(
@@ -154,12 +159,14 @@ export async function mutateJson<T>(
 	operation: string,
 ): Promise<T> {
 	const csrfToken = await readCsrfToken(page);
-	const response = await page.request.fetch(path, {
-		method,
-		headers: { 'X-CSRF-Token': csrfToken },
-		data: body,
-	});
-	return expectSuccessfulJson<T>(response, operation);
+	const response = await executePreviewMutation(operation, () =>
+		page.request.fetch(path, {
+			method,
+			headers: { 'X-CSRF-Token': csrfToken },
+			data: body,
+		}),
+	);
+	return parseSuccessfulJson<T>(response, operation);
 }
 
 export async function readInvitationList(page: Page): Promise<InvitationSummary[]> {
@@ -188,16 +195,4 @@ export async function readPublicationPreflight(
 		`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/preflight`,
 		'Publication preflight',
 	);
-}
-
-export async function attachSafePreviewDiagnostics(
-	testInfo: TestInfo,
-	enabled: boolean,
-	diagnostics: Record<string, string | number | boolean>,
-): Promise<void> {
-	if (!enabled) return;
-	await testInfo.attach('preview-diagnostics', {
-		body: Buffer.from(JSON.stringify(diagnostics, null, 2)),
-		contentType: 'application/json',
-	});
 }
