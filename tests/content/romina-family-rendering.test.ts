@@ -14,10 +14,12 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 		);
 
 		expect(publishedProjection.family).toBeDefined();
-		expect(publishedProjection.family?.labels?.sectionSubtitle).toBe('Familia');
-		expect(publishedProjection.family?.labels?.sectionTitle).toBe(
-			'Con el amor de mis padres y la compañía de mis padrinos',
-		);
+		const sectionSubtitle = publishedProjection.family?.labels?.sectionSubtitle;
+		const sectionTitle = publishedProjection.family?.labels?.sectionTitle;
+		expect(sectionSubtitle).toEqual(expect.any(String));
+		expect(sectionSubtitle!.length).toBeGreaterThan(0);
+		expect(sectionTitle).toEqual(expect.any(String));
+		expect(sectionTitle!.length).toBeGreaterThan(0);
 		// Obsolete top-level eyebrow and title on family object should be absent
 		expect((publishedProjection.family as Record<string, unknown>).eyebrow).toBeUndefined();
 
@@ -28,10 +30,8 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 			data: publishedProjection,
 		});
 		expect(viewModel.sections.family).toBeDefined();
-		expect(viewModel.sections.family?.labels?.sectionSubtitle).toBe('Familia');
-		expect(viewModel.sections.family?.labels?.sectionTitle).toBe(
-			'Con el amor de mis padres y la compañía de mis padrinos',
-		);
+		expect(viewModel.sections.family?.labels?.sectionSubtitle).toBe(sectionSubtitle);
+		expect(viewModel.sections.family?.labels?.sectionTitle).toBe(sectionTitle);
 
 		// 4. Render Plan + Section Render Descriptors -> Family component props
 		const renderPlan = buildInvitationRenderPlan(viewModel);
@@ -45,12 +45,16 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 		});
 
 		const familyDescriptor = descriptors.find((d) => d.component === 'family');
-		expect(familyDescriptor).toBeDefined();
-		if (familyDescriptor && familyDescriptor.component === 'family') {
-			expect(familyDescriptor.props.labels?.sectionSubtitle).toBe('Familia');
-			expect(familyDescriptor.props.labels?.sectionTitle).toBe(
-				'Con el amor de mis padres y la compañía de mis padrinos',
-			);
-		}
+		expect(familyDescriptor).toEqual(
+			expect.objectContaining({
+				component: 'family',
+				props: expect.objectContaining({
+					labels: expect.objectContaining({
+						sectionSubtitle,
+						sectionTitle,
+					}),
+				}),
+			}),
+		);
 	});
 });

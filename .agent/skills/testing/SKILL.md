@@ -76,6 +76,24 @@ explicit task files instead of widening the run to all changed files.
 - **Location**: Mirror `src/` structure in `tests/`
 - **Example**: `src/utils/email.ts` → `tests/utils/email.test.ts`
 
+## Invitation Copy Assertions
+
+Do not couple pipeline/contract coverage to exact editable invitation wording (labels, titles,
+phrases, venue names, section copy, and similar host/editor fields).
+
+| Test kind                                                    | Exact invitation copy? | Rule                                                                                                                                                         |
+| ------------------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pipeline / adapter / descriptor / projection contracts       | No                     | Assert shape, presence/absence, and value propagation: read the value from the fixture/source under test and expect the same value downstream.               |
+| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input.                                                                                 |
+| Invitation content golden / published-content regression     | Yes, when intentional  | Allowed only when the test’s stated purpose is content fidelity for a named fixture; name/describe it as such. Failures mean the wording changed on purpose. |
+| Product/system defaults (non-client editable UI/system copy) | Yes                    | Allowed.                                                                                                                                                     |
+
+Editor edits to DB drafts do not by themselves fail provision/fixture-based suites. Do not invent
+editor-sync requirements for those tests.
+
+**Acceptance check:** a contract/pipeline test still passes if invitation wording in its source
+fixture changes, provided structure and propagation remain correct.
+
 ## Unit Test Patterns
 
 ### Testing Pure Functions
