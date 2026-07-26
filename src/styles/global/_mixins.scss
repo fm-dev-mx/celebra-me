@@ -49,6 +49,15 @@
 	}
 }
 
+// Hide scrollbar chrome while keeping scroll (wheel, touch, keyboard) functional.
+@mixin hide-scrollbar {
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 @mixin typography($variant) {
 	@if map.has-key(typography-tokens.$authoring-scale, $variant) {
 		$typography-styles: map.get(typography-tokens.$authoring-scale, $variant);

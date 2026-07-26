@@ -140,7 +140,15 @@ const fpDesktop = focalPointDesktop || fpDefault;
 
 				<div class="invitation-hero__title-wrapper">
 					<h1 class="invitation-hero__title">
-						<span class="invitation-hero__title-line">{firstName}</span>
+						<span class="invitation-hero__title-line">
+							{firstName.split(/\s+/).map((word) => (
+								<span
+									class={`invitation-hero__title-word invitation-hero__title-word--${word.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+								>
+									{word}
+								</span>
+							))}
+						</span>
 						{surnames.map((surname) => (
 							<Fragment>
 								<br />

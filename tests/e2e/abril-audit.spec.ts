@@ -47,7 +47,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			await expect(hero).toBeVisible();
 			const heroTitle = page.locator('.hero__title, h1');
 			await expect(heroTitle).toBeVisible();
-			await expect(heroTitle).toContainText('Abril Michelle');
+			await expect(heroTitle).toContainText(/Abril\s*Michelle/);
 
 			// Check hero background image presence
 			const heroBg = page.locator(
@@ -181,7 +181,35 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
 			expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
 
-			// 7. Console & Network error checks
+			// 7. Traverse the page so lazy interlude media is present in full-page evidence.
+			await page.evaluate(async () => {
+				const sections = document.querySelectorAll<HTMLElement>(
+					'[data-screenshot-section]',
+				);
+				const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+				document.documentElement.style.scrollBehavior = 'auto';
+
+				for (const section of sections) {
+					const sectionTop =
+						section.getBoundingClientRect().top +
+						window.scrollY -
+						window.innerHeight / 3;
+					window.scrollTo(0, sectionTop);
+					await new Promise<void>((resolve) => {
+						window.setTimeout(resolve, 150);
+					});
+				}
+
+				window.scrollTo({ top: 0 });
+				document.documentElement.style.scrollBehavior = previousScrollBehavior;
+			});
+			await page.waitForFunction(() =>
+				Array.from(
+					document.querySelectorAll<HTMLImageElement>('.invitation-interlude__image'),
+				).every((image) => image.complete && image.naturalWidth > 0),
+			);
+
+			// 8. Console & Network error checks
 			expect(consoleErrors).toEqual([]);
 			expect(networkErrors).toEqual([]);
 

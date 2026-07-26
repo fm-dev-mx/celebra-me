@@ -4,12 +4,26 @@
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 
 // Abril Michelle Becerra Rea — romantic-editorial dusty rose & antique gold visual profile.
-// Hero essence: cinematic graded portrait, monumental two-line Cormorant name over a translucent
-// XV monogram, single-line metadata. Approved crop untouched (payload focals).
+// Essence: cinematic portrait, compact Cormorant hierarchy in the photograph's negative space,
+// one palace arch, and two photographic overlaps joined by atmospheric blends.
+// Approved crop untouched (payload focals).
 // Loaded strictly through invitation-profiles/abril-michelle-becerra-rea.scss.
 // See frontend-design → Invitation Hero Composition Contract.
+
+// Document scrollbar lives on html/body; event scope is on the invitation wrapper.
+// Override global `scrollbar-gutter: stable` so full-bleed compositions stay optically centered.
+html:has(.event--abril-michelle-becerra-rea),
+html:has(.event--abril-michelle-becerra-rea) body {
+	scrollbar-gutter: auto;
+
+	@include mixins.hide-scrollbar;
+}
+
 .event--abril-michelle-becerra-rea.theme-preset--premiere-floral {
 	--font-display: 'Cormorant Garamond Variable', serif;
+	--abril-transition-arch-height: clamp(2.75rem, 5vw, 5.5rem);
+	--abril-transition-overlap: clamp(3.5rem, 7vw, 6.75rem);
+	--abril-transition-blend-depth: clamp(4.5rem, 8vw, 7.5rem);
 
 	// Brand & Theme Palette
 	--abril-dusty-rose: rgb(212 165 165);
@@ -27,11 +41,6 @@
 	--abril-dark-neutral-rgb: 45 36 36;
 	--abril-wine-dark: rgb(65 42 45);
 	--abril-wine-dark-rgb: 65 42 45;
-
-	// Cinematic grading tone: near-black plum derived from wine-dark. Dense and saturated
-	// where the veil sits — mid-opacity wine over the light wall reads hazy/cheap.
-	--abril-noir: rgb(30 18 21);
-	--abril-noir-rgb: 30 18 21;
 
 	// Surface & Tokens
 	--color-surface-primary: var(--abril-ivory);
@@ -66,24 +75,31 @@
 		0 12px 30px rgb(var(--abril-warm-sand-rgb) / 24%);
 
 	// Hero — full-bleed photo + compact copy in the photograph's negative space.
-	// Card/title-gradient/badge tokens from the preset are unused here (no glass card;
-	// solid ivory title; ::after uses --hero-overlay-gradient only).
+	// Editorial cover composition: champagne & graphite color grade, clear 4-level typography hierarchy.
+	--abril-champagne: rgb(244 235 220);
+	--abril-champagne-rgb: 244 235 220;
+	--abril-graphite: rgb(26 24 28);
+	--abril-graphite-rgb: 26 24 28;
 	--hero-badge-text: var(--abril-ivory);
 	--hero-label-color: var(--abril-antique-gold);
-	--hero-divider-color: rgb(var(--abril-antique-gold-rgb) / 82%);
+	--hero-divider-color: rgb(var(--abril-antique-gold-rgb) / 60%);
 	--hero-meta-color: var(--abril-ivory);
 	--hero-scroll-indicator-color: rgb(var(--abril-ivory-rgb) / 72%);
 	--hero-overlay-gradient:
 		linear-gradient(
 			180deg,
-			rgb(var(--abril-noir-rgb) / 78%) 0%,
-			rgb(var(--abril-noir-rgb) / 58%) 16%,
-			rgb(var(--abril-noir-rgb) / 30%) 34%,
-			transparent 52%,
-			transparent 78%,
-			rgb(var(--abril-noir-rgb) / 36%) 100%
+			rgb(var(--abril-graphite-rgb) / 62%) 0%,
+			rgb(var(--abril-graphite-rgb) / 38%) 22%,
+			rgb(var(--abril-graphite-rgb) / 10%) 42%,
+			transparent 60%,
+			transparent 82%,
+			rgb(var(--abril-graphite-rgb) / 48%) 100%
 		),
-		radial-gradient(ellipse at 50% 42%, transparent 48%, rgb(var(--abril-noir-rgb) / 24%) 100%);
+		radial-gradient(
+			ellipse at 50% 20%,
+			rgb(var(--abril-champagne-rgb) / 16%) 0%,
+			transparent 55%
+		);
 
 	// Quote
 	--quote-bg:
@@ -196,7 +212,22 @@
 		}
 	}
 
-	// Distinct from Romina (botanical/Parisienne) and Jewelry-Box (frosted card).
+	// Subdued top header so navigation recedes gracefully behind the editorial cover title
+	.event-header {
+		opacity: 78%;
+		transition: opacity 0.3s ease;
+
+		&:hover,
+		&:focus-within {
+			opacity: 100%;
+		}
+
+		.event-header__title {
+			color: rgb(var(--abril-ivory-rgb) / 78%);
+		}
+	}
+
+	// Cinematic Editorial Cover — Abril Michelle Hero Composition
 	.invitation-hero {
 		justify-content: flex-start;
 		align-items: center;
@@ -204,14 +235,13 @@
 		text-align: center;
 		color: var(--abril-ivory);
 
-		// Editorial starfield dots add noise over the portrait — remove.
 		&::before {
 			content: none;
 		}
 
-		// Cinematic grade: the photo reads intentionally lit, never covered by a flat wash.
+		// Retouch & color grade photo: crisp skin tones, visible hair/dress detail, warm candle glow.
 		.invitation-hero__background img {
-			filter: contrast(1.06) saturate(1.05) brightness(0.98);
+			filter: contrast(1.05) saturate(1.04) brightness(1.01);
 		}
 
 		.invitation-hero__background::after {
@@ -220,7 +250,7 @@
 
 		.invitation-hero__content {
 			position: absolute;
-			top: clamp(#{tokens.$spacing-16}, 11svh, #{tokens.$spacing-24});
+			top: clamp(#{tokens.$spacing-12}, 9svh, #{tokens.$spacing-16});
 			right: 0;
 			left: 0;
 			z-index: 1;
@@ -246,7 +276,7 @@
 			}
 
 			@include mixins.respond-to(lg) {
-				top: clamp(#{tokens.$spacing-24}, 16svh, #{tokens.$spacing-32});
+				top: clamp(#{tokens.$spacing-16}, 12svh, #{tokens.$spacing-24});
 				right: auto;
 				left: clamp(#{tokens.$spacing-8}, 8vw, #{tokens.$spacing-24});
 				align-items: flex-start;
@@ -257,55 +287,24 @@
 			}
 		}
 
-		// Monumental translucent XV monogram — bridges typography and photograph,
-		// fills the dead zone between the copy stack and the subject.
-		.invitation-hero__content::before {
-			content: 'XV';
-			position: absolute;
-			inset: -1.75rem 0 auto;
-			z-index: -1;
-			display: block;
-			width: auto;
-			height: auto;
-			font-family: var(--font-display);
-			font-size: clamp(8.75rem, 40vw, 12rem);
-			font-style: normal;
-			font-weight: 500;
-			line-height: 0.9;
-			letter-spacing: 0.04em;
-			color: rgb(var(--abril-antique-gold-rgb) / 7%);
-			background: none;
-			border: none;
-			box-shadow: none;
-			backdrop-filter: none;
-			transform: none;
-			mix-blend-mode: normal;
-			-webkit-text-stroke: 1px rgb(var(--abril-antique-gold-rgb) / 26%);
-			pointer-events: none;
-			user-select: none;
-
-			@include mixins.respond-to(lg) {
-				inset: -2.5rem auto auto -0.04em;
-				font-size: clamp(11rem, 12.5vw, 13.5rem);
-			}
-		}
-
+		// Remove background XV monogram and unnecessary content overlays.
+		.invitation-hero__content::before,
 		.invitation-hero__content::after {
 			content: none;
 		}
 
+		// 1. MIS XV AÑOS
 		.invitation-hero__label {
 			grid-area: auto;
-			margin: 0 0 tokens.$spacing-3;
+			margin: 0 0 tokens.$spacing-2;
 			font-family: var(--font-label);
-			font-size: clamp(0.62rem, 1.7vw, 0.72rem);
-			font-weight: 500;
-			letter-spacing: 0.34em;
+			font-size: clamp(0.68rem, 1.8vw, 0.76rem);
+			font-weight: 600;
+			letter-spacing: 0.38em;
 			text-transform: uppercase;
 			color: var(--hero-label-color);
-			text-shadow: 0 1px 2px rgb(var(--abril-noir-rgb) / 45%);
+			text-shadow: none;
 
-			// Editorial side dashes are clutter next to the XV monogram.
 			&::before,
 			&::after {
 				content: none;
@@ -317,13 +316,14 @@
 			margin: 0;
 		}
 
+		// 2. Abril Michelle (Serif display: Abril in Roman, Michelle in Italic)
 		.invitation-hero__title {
 			grid-area: auto;
-			margin: 0;
+			margin: 0 0 tokens.$spacing-3;
 			font-family: var(--font-display);
 			font-style: normal;
 			font-weight: 400;
-			font-size: clamp(3rem, 14.5vw, 3.65rem);
+			font-size: clamp(3.15rem, 13.5vw, 3.8rem);
 			letter-spacing: 0.005em;
 			line-height: 0.98;
 			text-transform: none;
@@ -333,54 +333,57 @@
 			-webkit-text-fill-color: var(--abril-ivory);
 			mix-blend-mode: normal;
 			transform: none;
-			text-shadow: 0 1px 2px rgb(var(--abril-noir-rgb) / 40%);
+			text-shadow: none;
 
 			@include mixins.respond-to(md) {
-				font-size: clamp(3.6rem, 7.5vw, 4.4rem);
+				font-size: clamp(3.8rem, 7.5vw, 4.5rem);
 			}
 
 			@include mixins.respond-to(lg) {
-				font-size: clamp(4.3rem, 5.4vw, 5.4rem);
+				font-size: clamp(4.2rem, 5.2vw, 5.4rem);
 			}
 		}
 
-		// Editorial two-line name: min-content forces "Abril" / "Michelle" onto separate
-		// lines; the base italic + ::first-line reset renders line 1 roman, line 2 italic.
 		.invitation-hero__title-line {
 			display: block;
-			width: min-content;
+			width: auto;
 			margin-inline: auto;
-			font-style: italic;
-
-			&::first-line {
-				font-style: normal;
-			}
 
 			@include mixins.respond-to(lg) {
 				margin-inline: 0;
 			}
 		}
 
-		.invitation-hero__divider {
+		.invitation-hero__title-word {
 			display: block;
-			width: 4.25rem;
-			height: 1px;
-			margin: tokens.$spacing-4 auto;
-			background: linear-gradient(
-				90deg,
-				transparent 0%,
-				var(--hero-divider-color) 50%,
-				transparent 100%
-			);
+			margin-inline: auto;
 
 			@include mixins.respond-to(lg) {
+				display: inline-block;
 				margin-inline: 0;
-				background: linear-gradient(90deg, var(--hero-divider-color) 0%, transparent 100%);
 			}
 		}
 
-		// Metadata as one designed line (date ✦ time ✦ venue) instead of a stacked data sheet.
-		// Mobile keeps the date on its own row; time · venue share the second row.
+		.invitation-hero__title-word--abril {
+			font-style: normal;
+			font-weight: 400;
+
+			@include mixins.respond-to(lg) {
+				margin-right: 0.24em;
+			}
+		}
+
+		.invitation-hero__title-word--michelle {
+			font-style: italic;
+			font-weight: 400;
+		}
+
+		// Remove decorative line divider to integrate typography directly into composition
+		.invitation-hero__divider {
+			display: none;
+		}
+
+		// Metadata stack: Date and Time · Venue
 		.invitation-hero__details {
 			position: static;
 			inset: auto;
@@ -389,7 +392,7 @@
 			align-items: baseline;
 			justify-content: center;
 			width: auto;
-			gap: tokens.$spacing-2 tokens.$spacing-3;
+			gap: tokens.$spacing-1 tokens.$spacing-2;
 			margin: 0;
 			padding: 0;
 			background: transparent;
@@ -402,52 +405,55 @@
 			}
 		}
 
+		// 3. 12 DE SEPTIEMBRE DE 2026
 		.invitation-hero__date {
 			flex-basis: 100%;
 			margin: 0;
 			font-family: var(--font-label);
-			font-size: clamp(0.7rem, 1.9vw, 0.78rem);
+			font-size: clamp(0.74rem, 1.9vw, 0.82rem);
 			font-weight: 500;
 			line-height: 1.4;
-			letter-spacing: 0.22em;
+			letter-spacing: 0.24em;
 			text-transform: uppercase;
 			color: var(--abril-ivory);
 			opacity: 100%;
-			text-shadow: 0 1px 2px rgb(var(--abril-noir-rgb) / 45%);
+			text-shadow: none;
 
 			@include mixins.respond-to(lg) {
 				flex-basis: auto;
 			}
 		}
 
+		// 4. 5:00 P. M. · GARDEN PALACE
 		.invitation-hero__time {
 			margin: 0;
 			font-family: var(--font-label);
-			font-size: clamp(0.7rem, 1.9vw, 0.78rem);
+			font-size: clamp(0.72rem, 1.8vw, 0.8rem);
 			font-weight: 500;
 			line-height: 1.4;
 			letter-spacing: 0.18em;
 			text-transform: uppercase;
 			color: rgb(var(--abril-ivory-rgb) / 92%);
 			opacity: 100%;
-			text-shadow: 0 1px 2px rgb(var(--abril-noir-rgb) / 45%);
+			text-shadow: none;
 		}
 
 		.invitation-hero__time::before {
 			content: none;
 
 			@include mixins.respond-to(lg) {
-				content: '✦';
-				margin-right: tokens.$spacing-3;
-				font-size: 0.55em;
-				color: rgb(var(--abril-antique-gold-rgb) / 85%);
+				content: '·';
+				margin-inline: tokens.$spacing-2;
+				font-size: 1.1em;
+				font-weight: 600;
+				color: var(--abril-antique-gold);
 			}
 		}
 
 		.invitation-hero__venue {
 			margin: 0;
 			font-family: var(--font-label);
-			font-size: clamp(0.7rem, 1.9vw, 0.78rem);
+			font-size: clamp(0.72rem, 1.8vw, 0.8rem);
 			font-style: normal;
 			font-weight: 500;
 			line-height: 1.4;
@@ -455,23 +461,23 @@
 			text-transform: uppercase;
 			color: rgb(var(--abril-ivory-rgb) / 92%);
 			opacity: 100%;
-			text-shadow: 0 1px 2px rgb(var(--abril-noir-rgb) / 45%);
+			text-shadow: none;
 
 			&::before {
-				content: '✦';
-				margin-right: tokens.$spacing-3;
-				font-size: 0.55em;
-				color: rgb(var(--abril-antique-gold-rgb) / 85%);
+				content: '·';
+				margin-inline: tokens.$spacing-2;
+				font-size: 1.1em;
+				font-weight: 600;
+				color: var(--abril-antique-gold);
 			}
 
-			// A lowercase italic "en" breaks the tracked metadata rhythm.
 			.calligraphy-accent {
 				display: none;
 			}
 		}
 
 		.invitation-hero__scroll-indicator {
-			bottom: tokens.$spacing-6;
+			bottom: tokens.$spacing-4;
 			color: var(--hero-scroll-indicator-color);
 		}
 
@@ -485,78 +491,75 @@
 			.invitation-hero__background::after {
 				background:
 					linear-gradient(
-						97deg,
-						rgb(var(--abril-noir-rgb) / 74%) 0%,
-						rgb(var(--abril-noir-rgb) / 48%) 26%,
-						rgb(var(--abril-noir-rgb) / 16%) 44%,
-						transparent 60%
+						105deg,
+						rgb(var(--abril-graphite-rgb) / 64%) 0%,
+						rgb(var(--abril-graphite-rgb) / 32%) 30%,
+						transparent 58%
 					),
 					linear-gradient(
 						180deg,
-						rgb(var(--abril-noir-rgb) / 30%) 0%,
-						transparent 32%,
-						transparent 76%,
-						rgb(var(--abril-noir-rgb) / 34%) 100%
-					),
-					radial-gradient(
-						ellipse at 62% 44%,
-						transparent 52%,
-						rgb(var(--abril-noir-rgb) / 20%) 100%
+						rgb(var(--abril-graphite-rgb) / 20%) 0%,
+						transparent 35%,
+						transparent 82%,
+						rgb(var(--abril-graphite-rgb) / 42%) 100%
 					);
 			}
 		}
 	}
 
-	// Choreographed hero reveal — gated on revealed state so the envelope flow stays
-	// authoritative, and on prefers-reduced-motion so the preset's reduced-motion
-	// overrides (and deterministic E2E geometry) keep winning under `reduce`.
+	// Choreographed non-looping entrance sequence (1.5s-2.0s duration)
 	@media (prefers-reduced-motion: no-preference) {
 		&[data-reveal-state='revealed'] .invitation-hero {
-			// Slow Ken Burns settle: the crop is unchanged; only a gentle scale release.
+			// Step 1: Image reveal (smooth scale-down & fade)
 			.invitation-hero__background img {
-				transform-origin: 50% 32%;
-				animation: abril-hero-kenburns 7.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+				transform-origin: 50% 38%;
+				animation: abril-hero-photo-reveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 			}
 
-			.invitation-hero__content::before {
-				animation: abril-hero-watermark 1.9s var(--ease-out, ease-out) 0.85s both;
+			// Step 2: Candle emphasis (subtle warm light bloom accent)
+			.invitation-hero__background::after {
+				animation: abril-hero-candle-bloom 1.6s ease-out 0.2s both;
 			}
 
-			// One-time gold sweep across the name, ending on solid ivory.
+			// Step 3: Masked name & content appearance
+			.invitation-hero__label {
+				animation: motion-fade-in-down 0.8s ease-out 0.3s both;
+			}
+
 			.invitation-hero__title {
-				background: linear-gradient(
-					105deg,
-					var(--abril-ivory) 0%,
-					var(--abril-ivory) 42%,
-					rgb(236 211 156) 50%,
-					var(--abril-ivory) 58%,
-					var(--abril-ivory) 100%
-				);
-				background-size: 260% auto;
-				background-clip: text;
-				-webkit-text-fill-color: transparent;
-				animation:
-					motion-fade-in-up 0.8s var(--ease-out) 0.3s forwards,
-					abril-hero-gold-sweep 2.4s ease-in-out 1.5s forwards;
+				animation: abril-hero-name-appear 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
 			}
 
-			// Keep the preset's mobile guardrail: no gradient-clipped text on small GPUs.
-			@include mixins.respond-below(md) {
-				.invitation-hero__title {
-					background: none;
-					-webkit-text-fill-color: var(--abril-ivory);
-					animation: motion-fade-in-up 0.8s var(--ease-out) 0.3s forwards;
-				}
+			.invitation-hero__details {
+				animation: motion-fade-in-up 0.8s ease-out 0.75s both;
 			}
 		}
 	}
 
-	// Countdown — high-contrast wine panel
+	// Countdown — wine-on-wine depth only (light overlays read as a plastic mauve band)
 	.countdown-section {
-		background: linear-gradient(145deg, rgb(52 32 35) 0%, var(--abril-wine-dark) 100%);
+		background:
+			linear-gradient(
+				180deg,
+				rgb(70 46 50) 0%,
+				rgb(62 40 44) 22%,
+				var(--abril-wine-dark) 48%,
+				rgb(48 30 33) 100%
+			),
+			radial-gradient(ellipse 150% 110% at 72% -18%, rgb(78 52 56) 0%, transparent 62%);
 		color: var(--abril-ivory);
 
+		// Kill premiere-floral editorial spotlight (::before radial at 50%/40%).
+		&::before {
+			content: none;
+			display: none;
+		}
+
 		.countdown-title {
+			// Clear premiere-editorial metallic rose text fill (reads as a mauve haze band).
+			background: none;
+			background-clip: border-box;
+			-webkit-text-fill-color: var(--abril-ivory);
 			color: var(--abril-ivory);
 			letter-spacing: 0.18em;
 		}
@@ -582,10 +585,31 @@
 		}
 	}
 
-	// Location — touch targets + focus rings
+	// Location — map frame stability, touch targets, focus rings
 	.event-location {
+		--location-image-aspect-ratio: 4 / 3;
+		--location-image-aspect-ratio-sm: 4 / 3;
+		--location-image-aspect-ratio-xs: 5 / 4;
+
+		background:
+			radial-gradient(
+				ellipse 140% var(--abril-transition-blend-depth) at 18% 0%,
+				rgb(var(--abril-wine-dark-rgb) / 34%) 0%,
+				rgb(var(--abril-wine-dark-rgb) / 12%) 42%,
+				transparent 78%
+			),
+			var(--location-bg);
+
 		&__card {
+			border-top: 0;
 			box-shadow: var(--location-card-shadow);
+		}
+
+		&__card-image-outer-frame,
+		&__card-image-inner-frame,
+		&__card-image-container {
+			overflow: hidden;
+			border-radius: 10px 10px 0 0;
 		}
 
 		&__nav-button {
@@ -599,16 +623,380 @@
 				transform 0.2s ease,
 				box-shadow 0.2s ease,
 				border-color 0.2s ease;
-
-			&:focus-visible {
-				outline: 2px solid var(--abril-antique-gold);
-				outline-offset: 3px;
-			}
-
-			&:active {
-				transform: translateY(1px);
-			}
 		}
+
+		&__nav-button:focus-visible {
+			outline: 2px solid var(--abril-antique-gold);
+			outline-offset: 3px;
+		}
+
+		&__nav-button:active {
+			transform: translateY(1px);
+		}
+	}
+
+	.event-location .google-map-container {
+		border-radius: 10px 10px 0 0;
+	}
+
+	// Suburban Carto tiles are nearly white; keep contrast without a heavy inset top seam.
+	.event-location .google-map-container[data-map-style='rustic'] {
+		--map-frame-filter: contrast(1.22) saturate(1.12) brightness(0.96) sepia(0.03);
+		--map-border: rgb(var(--abril-antique-gold-rgb) / 16%);
+		--map-shadow: inset 0 -18px 28px -22px rgb(var(--abril-wine-dark-rgb) / 10%);
+		--map-overlay: linear-gradient(
+			180deg,
+			rgb(var(--abril-ivory-rgb) / 2%) 0%,
+			transparent 28%,
+			rgb(var(--abril-wine-dark-rgb) / 4%) 100%
+		);
+	}
+
+	// RSVP confirmed state: readable contrast + clear primary/secondary hierarchy
+	.rsvp[data-state='confirmed'] {
+		--color-glass-bg: rgb(var(--abril-wine-dark-rgb) / 94%);
+		--color-glass-border: 1px solid rgb(var(--abril-antique-gold-rgb) / 52%);
+		--color-text-primary: var(--abril-ivory);
+		--color-text-secondary: rgb(var(--abril-ivory-rgb) / 90%);
+		--color-text-on-dark: var(--abril-ivory);
+		--color-text-on-dark-rgb: var(--abril-ivory-rgb);
+		--rsvp-title-color: var(--abril-antique-gold);
+
+		color: var(--abril-ivory);
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__greeting-icon {
+		color: var(--abril-antique-gold);
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__greeting-message {
+		font-family: var(--font-display);
+		font-size: clamp(1.45rem, 4vw, 1.9rem);
+		font-weight: 500;
+		color: var(--abril-ivory);
+		line-height: 1.3;
+		margin-bottom: tokens.$spacing-2;
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__greeting-message-body {
+		font-family: var(--font-body);
+		font-size: clamp(0.95rem, 2vw, 1.05rem);
+		color: rgb(var(--abril-ivory-rgb) / 94%);
+		line-height: 1.5;
+		margin-block: tokens.$spacing-2 tokens.$spacing-4;
+		max-width: 36ch;
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__greeting-submessage {
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		color: rgb(var(--abril-ivory-rgb) / 84%);
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__calendar {
+		display: flex;
+		justify-content: center;
+		margin-top: tokens.$spacing-4;
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__button--calendar {
+		display: inline-flex;
+		justify-content: center;
+		width: min(100%, 22rem);
+		background: var(--abril-antique-gold);
+		border: 1px solid var(--abril-antique-gold);
+		color: var(--abril-wine-dark);
+		font-weight: 600;
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__button--calendar:hover,
+	.rsvp[data-state='confirmed'] .rsvp__button--calendar:focus-visible {
+		background: var(--abril-ivory);
+		border-color: var(--abril-ivory);
+		color: var(--abril-wine-dark);
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__calendar-option {
+		color: var(--abril-wine-dark);
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__secondary-button {
+		margin-top: tokens.$spacing-3;
+		background: transparent;
+		border: 1px solid rgb(var(--abril-ivory-rgb) / 55%);
+		color: rgb(var(--abril-ivory-rgb) / 92%);
+		font-weight: 500;
+	}
+
+	.rsvp[data-state='confirmed'] .rsvp__secondary-button:hover,
+	.rsvp[data-state='confirmed'] .rsvp__secondary-button:focus-visible {
+		background: rgb(var(--abril-ivory-rgb) / 12%);
+		border-color: var(--abril-antique-gold);
+		color: var(--abril-ivory);
+	}
+
+	// Intersections use one arch, two photographic overlaps, and atmospheric blends.
+	// The overlaps enter reserved lower spacing, never the preceding content.
+	#invitation-sections-container
+		> .invitation-section-wrapper:is(
+			[data-screenshot-section='interlude-1'],
+			[data-screenshot-section='interlude-2']
+		) {
+		position: relative;
+		z-index: 2;
+		margin-top: calc(0px - var(--abril-transition-overlap));
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: clamp(1.5rem, 9vw, 9rem);
+			z-index: 3;
+			width: clamp(4rem, 11vw, 8rem);
+			height: 1px;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--abril-antique-gold-rgb) / 54%),
+				transparent
+			);
+			pointer-events: none;
+		}
+
+		.invitation-interlude {
+			box-shadow: 0 -24px 52px -38px rgb(var(--abril-wine-dark-rgb) / 72%);
+		}
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='interlude-2']::before {
+		right: clamp(1.5rem, 9vw, 9rem);
+		left: auto;
+	}
+
+	// Hero → quote: a soft graphite and dusty-rose atmosphere settles into ivory.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='quote']
+		.quote-section {
+		--quote-text-color: var(--abril-wine-dark);
+		--quote-author-color: rgb(var(--abril-dark-neutral-rgb) / 78%);
+
+		padding-block: max(
+				var(--quote-padding-block),
+				calc(var(--abril-transition-blend-depth) + 1rem)
+			)
+			max(var(--quote-padding-block), calc(var(--abril-transition-overlap) + 2rem));
+		background:
+			radial-gradient(
+				ellipse 110% var(--abril-transition-blend-depth) at 0% 0%,
+				rgb(var(--abril-graphite-rgb) / 28%) 0%,
+				rgb(var(--abril-dusty-rose-rgb) / 14%) 38%,
+				transparent 76%
+			),
+			var(--abril-ivory);
+	}
+
+	// Family → countdown: reserve blend depth; background is owned by `.countdown-section`.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='countdown']
+		.countdown-section {
+		padding-top: max(7rem, calc(var(--abril-transition-blend-depth) + 1.5rem));
+	}
+
+	// Countdown → location: cards begin only after the wine-to-ivory blend.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='location']
+		.event-location {
+		--location-padding-block: max(
+				clamp(4.5rem, 8vw, 6.5rem),
+				calc(var(--abril-transition-blend-depth) + 1.5rem)
+			)
+			max(clamp(4rem, 6vh, 6rem), calc(var(--abril-transition-overlap) + 2.5rem));
+	}
+
+	// The photo exits are matched to the next light plane.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='interlude-1']
+		.invitation-interlude::after {
+		background:
+			radial-gradient(
+				ellipse 210% 36% at 18% 100%,
+				var(--abril-rose-soft) 0%,
+				rgb(var(--abril-rose-soft-rgb) / 44%) 24%,
+				transparent 64%
+			),
+			var(--interlude-overlay);
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='interlude-2']
+		.invitation-interlude::after {
+		background:
+			radial-gradient(
+				ellipse 220% 34% at 84% 100%,
+				var(--abril-ivory) 0%,
+				rgb(var(--abril-ivory-rgb) / 44%) 24%,
+				transparent 64%
+			),
+			var(--interlude-overlay);
+	}
+
+	.family {
+		background:
+			radial-gradient(
+				ellipse at 34% 0%,
+				rgb(var(--abril-rose-soft-rgb) / 78%) 0%,
+				rgb(var(--abril-dusty-rose-rgb) / 16%) 34%,
+				transparent 62%
+			),
+			var(--family-bg);
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='family'][data-after-interlude]
+		> .family {
+		/* stylelint-disable-next-line declaration-no-important */
+		padding-top: max(clamp(5rem, 9vw, 8rem), var(--abril-transition-blend-depth)) !important;
+	}
+
+	// Interlude 2 → itinerary stays pale; itinerary → gallery shares one neutral plane.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='itinerary'][data-after-interlude]
+		> .itinerary {
+		/* stylelint-disable-next-line declaration-no-important */
+		padding-top: max(clamp(5rem, 9vw, 8rem), var(--abril-transition-blend-depth)) !important;
+	}
+
+	.itinerary {
+		--itinerary-bg:
+			radial-gradient(
+				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,
+				rgb(var(--abril-rose-soft-rgb) / 16%) 0%,
+				transparent 72%
+			),
+			var(--abril-ivory);
+
+		background: var(--itinerary-bg);
+	}
+
+	.gallery-section {
+		--gallery-section-padding-block: clamp(5rem, 9vw, 8rem)
+			max(clamp(5rem, 9vw, 8rem), calc(var(--abril-transition-arch-height) + 2.75rem));
+		--gallery-section-bg: var(--abril-ivory);
+
+		background: var(--abril-ivory);
+	}
+
+	// Gallery → RSVP: the only arch — shallow asymmetrical palace curve, solid wine.
+	// SVG mask (not border-radius) keeps the peak smooth and avoids mauve subpixel seams.
+	--abril-gallery-rsvp-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V16.2C12.5 16.2 22.8 9.4 38 8.2C48.5 7.4 57 7.8 66.5 8.8C79 10.2 90.5 12.8 100 15.4V24Z'/%3E%3C/svg%3E");
+
+	#invitation-sections-container > .invitation-section-wrapper[data-screenshot-section='rsvp'] {
+		position: relative;
+		background: var(--abril-wine-dark);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset-inline: -1px;
+			top: calc(0px - var(--abril-transition-arch-height) - 1px);
+			z-index: 1;
+			height: calc(var(--abril-transition-arch-height) + 5px);
+			background-color: var(--abril-wine-dark);
+			mask-image: var(--abril-gallery-rsvp-arch-mask);
+			mask-repeat: no-repeat;
+			mask-size: 100% 100%;
+			mask-position: center bottom;
+			transform: translateZ(0);
+			backface-visibility: hidden;
+			pointer-events: none;
+		}
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-screenshot-section='rsvp']
+		.rsvp-section {
+		position: relative;
+		z-index: 1;
+		background:
+			radial-gradient(
+				ellipse at 68% 34%,
+				rgb(var(--abril-dusty-rose-rgb) / 8%) 0%,
+				transparent 46%
+			),
+			var(--abril-wine-dark);
+	}
+
+	// RSVP → thank you: wine diffuses into champagne and ivory without a hard boundary.
+	.thank-you-section {
+		padding-top: max(8rem, calc(var(--abril-transition-blend-depth) + 2rem));
+		background:
+			radial-gradient(
+				ellipse 110% var(--abril-transition-blend-depth) at 88% 0%,
+				var(--abril-wine-dark) 0%,
+				rgb(var(--abril-wine-dark-rgb) / 48%) 32%,
+				rgb(var(--abril-dusty-rose-rgb) / 10%) 58%,
+				transparent 80%
+			),
+			var(--abril-ivory);
+	}
+
+	.thank-you-section .thank-you-image {
+		filter: saturate(1.04) contrast(1.04) brightness(1.02);
+	}
+
+	// 4-item editorial gallery: override premiere-floral 12-col irregular spans
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(1rem, 2.5vw, 1.5rem);
+		max-width: 880px;
+		margin-inline: auto;
+
+		& > * {
+			grid-column: auto;
+		}
+
+		@include mixins.respond-to(md) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: clamp(1.15rem, 2.4vw, 1.75rem);
+		}
+	}
+
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item {
+		aspect-ratio: 4 / 5;
+		border-radius: 12px;
+		border: 1px solid rgb(var(--abril-antique-gold-rgb) / 28%);
+		box-shadow: 0 16px 40px rgb(var(--abril-wine-dark-rgb) / 14%);
+		overflow: hidden;
+	}
+
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: var(
+			--gallery-item-focal-point-mobile,
+			var(--gallery-item-focal-point, 50% 40%)
+		);
+		filter: saturate(1.03) contrast(1.03) brightness(1.01) grayscale(0);
+		transition:
+			transform 0.4s ease,
+			filter 0.4s ease;
+	}
+
+	@include mixins.respond-to(md) {
+		.gallery-section[data-variant='premiere-floral'] .gallery-grid__item img {
+			object-position: var(
+				--gallery-item-focal-point-desktop,
+				var(--gallery-item-focal-point, 50% 40%)
+			);
+		}
+	}
+
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item:hover img {
+		transform: scale(1.03);
+		filter: saturate(1.08) contrast(1.05) brightness(1.02) grayscale(0);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -618,34 +1006,38 @@
 	}
 }
 
-@keyframes abril-hero-kenburns {
+@keyframes abril-hero-photo-reveal {
 	from {
-		transform: scale(1.055);
+		opacity: 40%;
+		transform: scale(1.04);
 	}
 
 	to {
+		opacity: 100%;
 		transform: scale(1);
 	}
 }
 
-@keyframes abril-hero-watermark {
+@keyframes abril-hero-candle-bloom {
+	from {
+		opacity: 40%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
+@keyframes abril-hero-name-appear {
 	from {
 		opacity: 0%;
-		transform: translateY(10px);
+		transform: translateY(14px);
+		clip-path: inset(0 0 100% 0);
 	}
 
 	to {
 		opacity: 100%;
 		transform: translateY(0);
-	}
-}
-
-@keyframes abril-hero-gold-sweep {
-	from {
-		background-position: 130% center;
-	}
-
-	to {
-		background-position: -30% center;
+		clip-path: inset(0 0 0 0);
 	}
 }
