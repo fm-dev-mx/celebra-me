@@ -188,6 +188,7 @@ guide their named invitation but do not replace cross-cutting architecture or ru
 - `docs/domains/rsvp/database.md`
 - `docs/domains/theme/architecture.md`
 - `docs/domains/theme/motion.md`
+- `docs/domains/theme/section-intersections.md`
 - `docs/domains/theme/typography.md`
 - `docs/domains/tracking/commercial-attribution.md`
 

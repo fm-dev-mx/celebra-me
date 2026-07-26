@@ -42,6 +42,11 @@ Every managed digital invitation must define:
   verified source binaries (JPEG, PNG, WebP).
 - **Storage Conventions**: Storage path `managed/<slug>/<key>.webp` in bucket `invitation-assets`.
 
+When a new invitation uses custom section-to-section composition, select and verify it against the
+canonical [Invitation Section Intersection System](../domains/theme/section-intersections.md). That
+theme-domain document owns the reusable patterns and review criteria; this creation contract does
+not redefine them.
+
 ---
 
 ## 2. Required Pipeline Invariants
