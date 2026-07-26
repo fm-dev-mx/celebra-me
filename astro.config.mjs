@@ -129,12 +129,22 @@ export default defineConfig({
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
 		ssr: {
-			// Vercel's serverless loader cannot require htmlparser2@12 (ESM-only)
-			// through sanitize-html's CommonJS entrypoint. Bundle that parser chain
-			// so Vite resolves the CJS-to-ESM interop during the SSR build.
+			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
+			// bare requires in its bundled CommonJS entrypoint are not traced into the
+			// function, and htmlparser2@12 is ESM-only. Bundle the bounded SSR chain.
 			noExternal: isBuildCommand
 				? [
 						'sanitize-html',
+						'escape-string-regexp',
+						'is-plain-object',
+						'deepmerge',
+						'parse-srcset',
+						'postcss',
+						'picocolors',
+						'source-map-js',
+						'nanoid',
+						'launder',
+						'dayjs',
 						'htmlparser2',
 						'entities',
 						'domhandler',

@@ -208,9 +208,18 @@ against TypeScript ≥7.1 and pass `pnpm lint` + `pnpm type-check` + `pnpm valid
 
 `sanitize-html@2.17.6` intentionally resolves its production parser to `htmlparser2@12`; do not
 override that security update to an older parser. Vercel's serverless loader cannot load the
-CommonJS `sanitize-html` entry when it synchronously requires the ESM-only parser. The bounded
+CommonJS `sanitize-html` entry when it synchronously requires the ESM-only parser, and the Vercel
+function tracer can leave its `escape-string-regexp` require unresolved. The bounded
 `vite.ssr.noExternal` list in `astro.config.mjs` therefore bundles only this runtime graph:
 
+- `sanitize-html` sanitizes indication markup and requires the rest of this bounded graph;
+- `escape-string-regexp` safely converts wildcard attribute and class patterns into regular
+  expressions;
+- `is-plain-object` and `deepmerge` normalize and merge sanitizer options;
+- `parse-srcset` validates responsive image source sets;
+- `postcss` parses inline style attributes when that sanitizer option is enabled and uses
+  `picocolors`, `source-map-js`, and `nanoid`;
+- `launder` rejects unsafe URL schemes and uses `dayjs` for date normalization;
 - `htmlparser2` parses markup and depends on `entities`, `domhandler`, and `domutils`;
 - `entities` decodes and encodes HTML entities;
 - `domhandler` builds the DOM tree and uses `domelementtype` for node classification;
