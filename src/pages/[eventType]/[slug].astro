@@ -231,7 +231,7 @@ const wrapperDataAttributes = page
 					</style>
 				)
 			}
-			<main class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
+			<div class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
 				{
 					!skipEnvelope && page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>
@@ -365,7 +365,7 @@ const wrapperDataAttributes = page
 								/>
 							)}
 						</div>
-					</main>
+					</div>
 		</Layout>
 	) : (
 		<InvitationError />
