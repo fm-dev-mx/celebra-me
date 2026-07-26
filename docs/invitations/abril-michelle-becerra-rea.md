@@ -2,16 +2,16 @@
 
 ## 1. Overview
 
-| Parameter                         | Value                                                                  |
-| --------------------------------- | ---------------------------------------------------------------------- |
-| **Invitation Slug**               | `abril-michelle-becerra-rea`                                           |
-| **Event Type**                    | `xv` (Quinceañera)                                                     |
-| **Current Managed Status**        | `Registrada`                                                           |
-| **Local Environment Status**      | `STABILIZED & VERIFIED` (premium polish pass 2026-07-25)               |
-| **Preview Environment Status**    | `NOT VERIFIED` (Out of scope)                                          |
-| **Production Environment Status** | `NOT VERIFIED` (Out of scope)                                          |
-| **Last Verified Date**            | `2026-07-25`                                                           |
-| **Published Version (Local)**     | `v7` (2026-07-25 approved crop restored + hero composition correction) |
+| Parameter                         | Value                                                          |
+| --------------------------------- | -------------------------------------------------------------- |
+| **Invitation Slug**               | `abril-michelle-becerra-rea`                                   |
+| **Event Type**                    | `xv` (Quinceañera)                                             |
+| **Current Managed Status**        | `Registrada`                                                   |
+| **Local Environment Status**      | `STABILIZED & VERIFIED` (refine pass Local `v8`, 2026-07-25)   |
+| **Preview Environment Status**    | `NOT VERIFIED` (Out of scope)                                  |
+| **Production Environment Status** | `NOT VERIFIED` (Out of scope)                                  |
+| **Last Verified Date**            | `2026-07-25`                                                   |
+| **Published Version (Local)**     | `v9` (copy/assets/maps/gallery/RSVP/calendar/thank-you refine) |
 
 ### Version History Note (`v1` → `v2`)
 
@@ -59,7 +59,7 @@ Storage mutations when content is unchanged.
 - **Google Maps URL:** `https://maps.app.goo.gl/PKbLyRbrjiLfcc4C6`
 - **Apple Maps URL:**
   `https://maps.apple.com/?q=Templo+y+Ex+Convento+de+Nuestra+Senora+de+la+Merced+Lagos+de+Moreno`
-- **Coordinates:** `lat: 21.3542979, lng: -101.9320163`
+- **Coordinates:** `lat: 21.3542979, lng: -101.9320163`, `zoom: 16`
 - **Known Discrepancies:** None.
 
 ### Reception Venue
@@ -108,15 +108,15 @@ Storage mutations when content is unchanged.
 | ---------------------------- | ----------------------------------------------------------------------------------- | ------------------------ | ------------------------------------- | ----------- | -------------------- |
 | `hero-desktop`               | `src/assets/invitations/abril-michelle-becerra-rea/hero-desktop.webp`               | Hero + OG                | `50% 42%` desktop / `50% 40%` default | Provisional | Final studio         |
 | `hero-mobile`                | `src/assets/invitations/abril-michelle-becerra-rea/hero-mobile.webp`                | Hero mobile              | `50% 38%`                             | Provisional | Final studio         |
-| `family-portrait`            | `src/assets/invitations/abril-michelle-becerra-rea/family-portrait.webp`            | **Family featured**      | `50% 35%`                             | Provisional | Final studio         |
+| `family-portrait`            | `src/assets/invitations/abril-michelle-becerra-rea/family-portrait.webp`            | Gallery 2                | `50% 28%`                             | Provisional | Final studio         |
 | `interlude-crown`            | `src/assets/invitations/abril-michelle-becerra-rea/interlude-crown.webp`            | Interlude after quote    | `50% 50%`                             | Decorative  | Optional             |
 | `interlude-palace`           | `src/assets/invitations/abril-michelle-becerra-rea/interlude-palace.webp`           | Interlude after location | `50% 50%`                             | Decorative  | Optional venue photo |
-| `thank-you-confetti`         | `src/assets/invitations/abril-michelle-becerra-rea/thank-you-confetti.webp`         | Thank You                | `50% 40%`                             | Provisional | Final studio         |
+| `thank-you-confetti`         | `src/assets/invitations/abril-michelle-becerra-rea/thank-you-confetti.webp`         | Reserve                  | `50% 40%`                             | Provisional | Final studio         |
 | `gallery-01-candles`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-01-candles.webp`         | Gallery 1                | `50% 50%`                             | Provisional | Final studio         |
-| `gallery-02-bw-cake`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-02-bw-cake.webp`         | Gallery 2                | `50% 40%`                             | Provisional | Final studio         |
+| `gallery-02-bw-cake`         | `src/assets/invitations/abril-michelle-becerra-rea/gallery-02-bw-cake.webp`         | **Family featured**      | `48% 32%`                             | Provisional | Final studio         |
 | `gallery-03-seated-balloons` | `src/assets/invitations/abril-michelle-becerra-rea/gallery-03-seated-balloons.webp` | Gallery 3                | `50% 35%`                             | Provisional | Final studio         |
 | `gallery-04-white-suit`      | `src/assets/invitations/abril-michelle-becerra-rea/gallery-04-white-suit.webp`      | Gallery 4                | `50% 32%`                             | Provisional | Final studio         |
-| `gallery-05-white-dress`     | `src/assets/invitations/abril-michelle-becerra-rea/gallery-05-white-dress.webp`     | Gallery 5                | `50% 40%`                             | Provisional | Final studio         |
+| `gallery-05-white-dress`     | `src/assets/invitations/abril-michelle-becerra-rea/gallery-05-white-dress.webp`     | **Thank You featured**   | `50% 40%`                             | Provisional | Final studio         |
 
 **Removed orphans (2026-07-25):** `hero.webp`, `gallery-01.webp`, `gallery-02.webp`,
 `gallery-03.webp`, `crown-detail.webp`, `closing.webp` (superseded v1 filenames).
@@ -176,7 +176,8 @@ Storage mutations when content is unchanged.
     `.event-location__*`).
   - Extended Lane A tokens (family, location, interlude, countdown, envelope, PA) for dusty-rose
     Jewelry Box finish.
-  - Reassigned Family featured → `family-portrait`; Gallery item 2 → `gallery-02-bw-cake`.
+  - Reassigned Family featured → `family-portrait`; Gallery item 2 → `gallery-02-bw-cake` (later
+    restored to Family = B&W cake; Gallery 2 = tiara portrait).
   - Removed six orphaned v1 WebP assets; refreshed this inventory.
   - Client gates unchanged: reception street spelling + final studio photos.
 - **2026-07-25:** Hero face-safe composition pass (Local `v6`):
@@ -196,6 +197,15 @@ Storage mutations when content is unchanged.
     negative space; mobile/tablet center it above the subject, desktop aligns it left.
   - Added E2E contract assertions across the five existing audit viewports for crop preservation,
     grouped metadata, no frosted band, and reset editorial transforms.
+- **2026-07-25:** Full refine pass (copy, assets, maps, gallery, RSVP, calendar, thank-you):
+  - Unified Spanish usted voice; removed filler and generic “inolvidable” phrasing.
+  - Locked Thank You → `gallery-05-white-dress` (removed from gallery); `thank-you-confetti`
+    retained as reserve only.
+  - **2026-07-26:** Family featured → `gallery-02-bw-cake`; Gallery item 2 → `family-portrait`.
+  - Ceremony map zoom `16`, reception zoom `15`; calendar title `XV de Abril Michelle` at
+    `5:00 p. m.` (`2026-09-12T23:00:00.000Z`) with Garden Palace location and no invented end time.
+  - Editorial 2×2 gallery grid (uniform `4 / 5`) in profile SCSS; RSVP confirmed contrast +
+    personalized fallbacks. Local published `v9`, dry-run `IN_SYNC`.
 
 ---
 
@@ -236,13 +246,13 @@ Storage mutations when content is unchanged.
 
 ### Lane A (done / in this cycle)
 
-| Item                                                     | Status                                                               |
-| -------------------------------------------------------- | -------------------------------------------------------------------- |
-| Profile SCSS premium tokens + correct BEM selectors      | Done                                                                 |
-| Family featured = `family-portrait`; B&W cake in gallery | Done                                                                 |
-| Orphan v1 asset cleanup                                  | Done                                                                 |
-| Docs §5 inventory sync                                   | Done                                                                 |
-| Local apply after content remap                          | Done — Local `v5`; hero experiments `v6`; corrected crop/layout `v7` |
+| Item                                                              | Status                                                               |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Profile SCSS premium tokens + correct BEM selectors               | Done                                                                 |
+| Family featured = `gallery-02-bw-cake`; tiara portrait in gallery | Done                                                                 |
+| Orphan v1 asset cleanup                                           | Done                                                                 |
+| Docs §5 inventory sync                                            | Done                                                                 |
+| Local apply after content remap                                   | Done — Local `v5`; hero experiments `v6`; corrected crop/layout `v7` |
 
 ### Lane A (blocked on client)
 

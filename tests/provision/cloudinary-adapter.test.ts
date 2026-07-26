@@ -141,29 +141,31 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			}
 		});
 
-		it('uses dedicated family portrait for Family and B&W cake in Gallery', () => {
+		it('uses B&W cake portrait for Family, sharp dress portrait for Thank-you, and unique assets in Gallery', () => {
 			const semanticMap = buildSemanticAssetMap(abrilInvitation);
 			const content = buildAbrilPublishedContent(semanticMap) as any;
 
-			// Family section receives the dedicated portrait
-			expect(content.family.featuredImage.assetId).toContain('family-portrait');
+			// Family section receives the editorial B&W cake portrait
+			expect(content.family.featuredImage.assetId).toContain('gallery-02-bw-cake');
 
-			// Gallery item 2 receives the editorial B&W cake portrait
-			expect(content.gallery.items[1].image.assetId).toContain('gallery-02-bw-cake');
-			expect(content.gallery.items[1].alt).toBe(
-				'Retrato en blanco y negro sosteniendo el pastel',
-			);
+			// Thank-you section receives the sharp white dress portrait
+			expect(content.thankYou.image.assetId).toContain('gallery-05-white-dress');
 
-			// Check all 5 gallery items use unique assets
+			// Gallery item 2 receives the tiara/gloves portrait
+			expect(content.gallery.items[1].image.assetId).toContain('family-portrait');
+			expect(content.gallery.items[1].alt).toBe('Abril Michelle luciendo tiara y guantes');
+
+			// Check all 4 gallery items use unique assets
 			const galleryAssetIds = content.gallery.items.map((item: any) => item.image.assetId);
 			const uniqueGalleryAssetIds = new Set(galleryAssetIds);
-			expect(uniqueGalleryAssetIds.size).toBe(5);
+			expect(uniqueGalleryAssetIds.size).toBe(4);
 
-			// Family image is NOT duplicated in Gallery
+			// Family image and Thank-you image are NOT duplicated in Gallery
 			expect(galleryAssetIds).not.toContain(content.family.featuredImage.assetId);
+			expect(galleryAssetIds).not.toContain(content.thankYou.image.assetId);
 		});
 
-		it('includes 5 unique gallery items, family portrait, 2 interludes, and thank you image', () => {
+		it('keeps family, gallery, interludes, and thank-you assets in the inventory without role collisions', () => {
 			const keys = ABRIL_ASSET_SPECS.map((s) => s.key);
 			expect(keys).toContain('family-portrait');
 			expect(keys).toContain('interlude-crown');
@@ -174,6 +176,30 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(keys).toContain('gallery-03-seated-balloons');
 			expect(keys).toContain('gallery-04-white-suit');
 			expect(keys).toContain('gallery-05-white-dress');
+
+			const content = buildAbrilPublishedContent(buildSemanticAssetMap(abrilInvitation)) as {
+				family: { featuredImage: { assetId: string } };
+				thankYou: { image: { assetId: string } };
+				gallery: { items: Array<{ image: { assetId: string } }> };
+			};
+			expect(content.family.featuredImage.assetId).toContain('gallery-02-bw-cake');
+			expect(content.thankYou.image.assetId).toContain('gallery-05-white-dress');
+			expect(content.gallery.items).toHaveLength(4);
+			expect(
+				content.gallery.items.some((item) =>
+					item.image.assetId.includes('gallery-05-white-dress'),
+				),
+			).toBe(false);
+			expect(
+				content.gallery.items.some((item) =>
+					item.image.assetId.includes('gallery-02-bw-cake'),
+				),
+			).toBe(false);
+			expect(
+				content.gallery.items.some((item) =>
+					item.image.assetId.includes('family-portrait'),
+				),
+			).toBe(true);
 		});
 	});
 

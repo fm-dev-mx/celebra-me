@@ -58,10 +58,10 @@ export const ABRIL_ASSET_SPECS = [
 		key: 'family-portrait',
 		relativePath: 'family-portrait.webp',
 		provider: 'cloudinary',
-		displayName: 'Abril Michelle — familia y tiara',
+		displayName: 'Abril Michelle — tiara y guantes',
 		alt: 'Abril Michelle luciendo tiara y guantes',
 		focalPoint: {
-			default: '50% 35%',
+			default: '50% 28%',
 		},
 	},
 	{
@@ -105,10 +105,13 @@ export const ABRIL_ASSET_SPECS = [
 		key: 'gallery-02-bw-cake',
 		relativePath: 'gallery-02-bw-cake.webp',
 		provider: 'cloudinary',
-		displayName: 'Abril Michelle — retrato blanco y negro pastel',
-		alt: 'Retrato en blanco y negro sosteniendo el pastel',
+		displayName: 'Abril Michelle — familia blanco y negro pastel',
+		alt: 'Retrato en blanco y negro con el pastel',
 		focalPoint: {
-			default: '50% 40%',
+			default: '48% 32%',
+			mobile: '48% 30%',
+			tablet: '48% 32%',
+			desktop: '48% 34%',
 		},
 	},
 	{
@@ -131,6 +134,9 @@ export const ABRIL_ASSET_SPECS = [
 		provider: 'cloudinary',
 		displayName: 'Abril Michelle — vestido blanco y pastel',
 		alt: 'Abril Michelle con vestido blanco, pastel y globos',
+		focalPoint: {
+			default: '50% 28%',
+		},
 	},
 ] as const;
 
@@ -151,7 +157,8 @@ export function buildAbrilPublishedContent(
 		templateId: 'xv-premiere-floral',
 		visualProfileId: ABRIL_EVENT.visualProfileId,
 		title: ABRIL_EVENT.title,
-		description: 'Acompáñame a celebrar un día inolvidable en mis XV años.',
+		description:
+			'Acompáñenos a celebrar los XV años de Abril Michelle Becerra Rea el 12 de septiembre de 2026 en Lagos de Moreno.',
 		theme: { preset: ABRIL_EVENT.themeId },
 		eventTiming: {
 			localDateTime: ABRIL_EVENT.localDateTime,
@@ -199,7 +206,7 @@ export function buildAbrilPublishedContent(
 			},
 		},
 		quote: {
-			text: 'Con la ilusión de comenzar una nueva etapa y el amor de quienes me acompañan, celebro la alegría de mis XV años.',
+			text: 'Con la bendición de mi familia y la alegría de quienes me acompañan, celebro mis XV años.',
 			author: 'Abril Michelle',
 		},
 		family: {
@@ -214,18 +221,17 @@ export function buildAbrilPublishedContent(
 			],
 			labels: {
 				sectionSubtitle: 'Familia',
-				sectionTitle: 'Con el amor de mis padres y el apoyo de mis padrinos',
-				parentsTitle: 'Con la bendición de mis padres',
-				godparentsTitle: 'Acompañada por mis padrinos',
-				sectionMessage:
-					'Gracias por guiarme con amor en cada instante. Su presencia y cariño hacen que este día sea infinitamente especial.',
+				sectionTitle: 'Con el amor de mis padres y mis padrinos',
+				parentsTitle: 'Mis padres',
+				godparentsTitle: 'Mis padrinos',
+				sectionMessage: 'Su guía y su cariño acompañan cada paso de esta celebración.',
 			},
-			featuredImage: assets['family-portrait'],
-			focalPoint: '50% 35%',
+			featuredImage: assets['gallery-02-bw-cake'],
+			focalPoint: '48% 32%',
 		},
 		countdown: {
 			title: 'LA CELEBRACIÓN COMIENZA EN',
-			footerText: 'Misa · 3:00 p. m.',
+			footerText: 'Misa de acción de gracias · 3:00 p. m.',
 		},
 		location: {
 			visibility: 'public',
@@ -245,10 +251,11 @@ export function buildAbrilPublishedContent(
 				coordinates: {
 					lat: 21.3542979,
 					lng: -101.9320163,
+					zoom: 16,
 				},
 			},
 			reception: {
-				venueEvent: 'Recepción y fiesta',
+				venueEvent: 'Recepción',
 				venueName: 'Garden Palace',
 				address: receptionAddress,
 				city: 'Lagos de Moreno, Jalisco',
@@ -260,7 +267,7 @@ export function buildAbrilPublishedContent(
 				coordinates: {
 					lat: 21.3206241,
 					lng: -101.9328009,
-					zoom: 14,
+					zoom: 15,
 				},
 			},
 		},
@@ -281,69 +288,86 @@ export function buildAbrilPublishedContent(
 			},
 		],
 		itinerary: {
-			title: 'Programa del evento',
+			title: 'Programa',
 			items: [
 				{ time: '3:00 p. m.', label: 'Misa', iconName: 'Church' },
 				{ time: '5:00 p. m.', label: 'Recepción', iconName: 'Reception' },
 				{ time: '6:00 p. m.', label: 'Cena', iconName: 'Dinner' },
 				{ time: '7:00 p. m.', label: 'Vals', iconName: 'Waltz' },
-				{ time: '12:00 a. m.', label: 'Cierre de evento', iconName: 'Sparkles' },
+				{ time: '12:00 a. m.', label: 'Cierre', iconName: 'Sparkles' },
 			],
 		},
 		gallery: {
 			eyebrow: 'Galería',
 			title: 'Abril Michelle',
-			subtitle: 'Un recuerdo de elegancia, familia y momentos inolvidables',
+			subtitle: 'Retratos de una tarde hecha para recordar',
 			items: [
 				{
 					image: assets['gallery-01-candles'],
-					alt: 'Primer plano oscuro con velas 1 y 5',
-					focalPointMobile: '50% 50%',
-					focalPointDesktop: '50% 50%',
+					alt: 'Abril Michelle con velas encendidas en forma de 15',
+					focalPoint: '50% 42%',
+					focalPointMobile: '50% 40%',
+					focalPointDesktop: '50% 42%',
 				},
 				{
-					image: assets['gallery-02-bw-cake'],
-					alt: 'Retrato en blanco y negro sosteniendo el pastel',
-					focalPoint: '50% 40%',
+					image: assets['family-portrait'],
+					alt: 'Abril Michelle luciendo tiara y guantes',
+					focalPoint: '50% 28%',
+					focalPointMobile: '50% 26%',
+					focalPointDesktop: '50% 30%',
 				},
 				{
 					image: assets['gallery-03-seated-balloons'],
 					alt: 'Abril Michelle sentada con globos dorados y pastel',
-					focalPoint: '50% 35%',
+					focalPoint: '42% 38%',
+					focalPointMobile: '40% 36%',
+					focalPointDesktop: '44% 38%',
 				},
 				{
 					image: assets['gallery-04-white-suit'],
 					alt: 'Abril Michelle con traje blanco y globos 15',
-					focalPoint: '50% 32%',
-				},
-				{
-					image: assets['gallery-05-white-dress'],
-					alt: 'Abril Michelle con vestido blanco, pastel y globos',
-					focalPoint: '50% 40%',
+					focalPoint: '50% 28%',
+					focalPointMobile: '50% 26%',
+					focalPointDesktop: '50% 30%',
 				},
 			],
 		},
 		rsvp: {
 			title: 'Confirme su asistencia',
-			subcopy:
-				'Será un honor contar con su presencia. Por favor, confirme su asistencia para acompañarnos en esta celebración.',
+			subcopy: 'Reserve su lugar para acompañarnos el 12 de septiembre.',
 			guestCap: 4,
 			accessMode: 'personalized-only',
 			confirmationMode: 'api',
 			confirmationMessage:
-				'Gracias por confirmar su asistencia. Será un gusto compartir este día tan especial con usted.',
+				'Su confirmación quedó registrada. Nos alegra saber que celebrará con nosotros.',
+			responseMessages: {
+				confirmed: {
+					title: '¡Gracias por confirmar, {guestName}!',
+					subtitle: 'Su asistencia ha quedado registrada.',
+				},
+				declined: {
+					title: 'Lamentamos que no pueda acompañarnos, {guestName}.',
+					subtitle: 'Gracias por avisarnos.',
+				},
+			},
+			calendar: {
+				title: 'XV de Abril Michelle',
+				description:
+					'Recepción de los XV años de Abril Michelle Becerra Rea. Garden Palace, Macedio Ayala núm. 70, Lagos de Moreno, Jalisco. Inicia a las 5:00 p. m.',
+				startsAt: '2026-09-12T23:00:00.000Z',
+			},
 			personalizedAccess: {
 				title: 'Pase de acceso',
-				subtitle: 'Esta invitación ha sido preparada especialmente para:',
-				footerText: 'Favor de confirmar su asistencia en el formulario.',
+				subtitle: 'Esta invitación ha sido preparada para:',
+				footerText: 'Confirme su asistencia en el formulario.',
 			},
 		},
 		thankYou: {
-			message: 'Gracias por formar parte de este momento inolvidable.',
+			message: 'Gracias por acompañarnos en esta celebración.',
 			closingName: 'Abril Michelle',
 			date: '12 de septiembre de 2026',
-			image: assets['thank-you-confetti'],
-			focalPoint: '50% 40%',
+			image: assets['gallery-05-white-dress'],
+			focalPoint: '50% 28%',
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

@@ -100,14 +100,39 @@ describe('Abril Michelle local invitation content', () => {
 		expect(typedContent.location.ceremony.coordinates).toEqual({
 			lat: 21.3542979,
 			lng: -101.9320163,
+			zoom: 16,
 		});
 		expect(typedContent.location.reception.coordinates).toEqual({
 			lat: 21.3206241,
 			lng: -101.9328009,
-			zoom: 14,
+			zoom: 15,
 		});
 
-		expect(result.data!.gallery!.items).toHaveLength(5);
+		expect(result.data!.gallery!.items).toHaveLength(4);
+		expect(result.data!.rsvp!.calendar).toEqual({
+			title: 'XV de Abril Michelle',
+			description:
+				'Recepción de los XV años de Abril Michelle Becerra Rea. Garden Palace, Macedio Ayala núm. 70, Lagos de Moreno, Jalisco. Inicia a las 5:00 p. m.',
+			startsAt: '2026-09-12T23:00:00.000Z',
+		});
+		expect(result.data!.rsvp!.responseMessages?.confirmed?.title).toContain('{guestName}');
+
+		const assets = buildTestAssets();
+		expect(result.data!.thankYou!.image).toEqual(assets['gallery-05-white-dress']);
+		expect(result.data!.family!.featuredImage).toEqual(assets['gallery-02-bw-cake']);
+
+		const galleryIds = result.data!.gallery!.items.map((item) =>
+			typeof item.image === 'object' && item.image && 'assetId' in item.image
+				? String(item.image.assetId)
+				: '',
+		);
+		expect(galleryIds).toContain(assets['family-portrait'].assetId);
+		expect(galleryIds).not.toContain(assets['gallery-02-bw-cake'].assetId);
+		expect(galleryIds).not.toContain(assets['gallery-05-white-dress'].assetId);
+		expect(assets['gallery-02-bw-cake'].assetId).not.toEqual(
+			assets['gallery-05-white-dress'].assetId,
+		);
+
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('gifts');
 		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
