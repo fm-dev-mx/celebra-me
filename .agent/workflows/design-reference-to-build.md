@@ -59,7 +59,8 @@ evidence.
 | Interpret references and draft visual direction                                  | Visual-director                                                                                   |
 | Approve the brief against the current request and canonical authorities          | Orchestrator; ask the user only when an unresolved choice would materially change intent or scope |
 | Choose implementation details inside the approved intent and technical contracts | Builder                                                                                           |
-| Approve copy or data changes                                                     | Copywriter or owning content/data contract; user approval when new client facts are required      |
+| Prepare and validate copy changes                                                | Copywriter, under the owning content contract                                                     |
+| Implement approved data changes                                                  | Builder, under the owning content/data workflow                                                   |
 | Validate reference fidelity and rendered visual quality                          | QA, against the brief rather than a new creative direction                                        |
 | Validate technical correctness                                                   | QA and the validation tier owned by `gatekeeper.md`                                               |
 | Decide task completion                                                           | Orchestrator, only after required QA and validation evidence passes                               |
@@ -135,8 +136,9 @@ remain executable through explicit component/section references in any compatibl
 
 1. Compare the changed surface with the reference, recorded baseline, and each brief criterion at
    every required viewport.
-2. Complete the UI/invitation section of `creative-qa-report`; every finding needs severity, status,
-   affected viewport/section, expected result, actual result, and evidence.
+2. Complete the UI/invitation section of `creative-qa-report`; every finding needs severity,
+   `Pass`/`Fail`/`Blocked` status, affected viewport/section, expected result, actual result,
+   evidence, and a remediation or blocking reason.
 3. Apply the `frontend-design` Visual Critique / Polish Checklist.
 4. Verify accessibility and the relevant screenshot sequence using
    [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).

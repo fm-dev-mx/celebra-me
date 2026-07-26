@@ -45,9 +45,9 @@ constraints:
     - Do NOT modify any file unless the task explicitly authorizes remediation
     - For reference-driven work, report baseline and post-change evidence at every required viewport
     - Validate visual fidelity against the approved brief and technical correctness against canonical contracts; do not redefine creative direction
-    - Request revisions with severity, status, affected section/viewport, expected result, actual result, and evidence
+    - Request revisions with severity, Pass/Fail/Blocked status, affected section/viewport, expected result, actual result, evidence, and remediation or blocking reason
     - Document all issues with: file path, line number, severity, screenshot evidence
     - Use data-attribute selectors over fragile CSS/text matching for screenshots
-    - Report format: pass/fail per test area with evidence
+    - Report format: pass/fail/blocked per applicable test area with evidence
     - If a pnpm build or pnpm test command fails, report the full error excerpt
     - For UI polish passes, use frontend-design Visual Critique / Polish Checklist

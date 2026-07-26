@@ -74,10 +74,10 @@ not show enough evidence; do not infer silently.
 
 ## Focus and Boundaries
 
-| Priority | Target section or element | Desired change | Owning layer |
-| -------- | ------------------------- | -------------- | ------------ |
-| P0       |                           |                |              |
-| P1       |                           |                |              |
+| Priority | Target section or element | Section intent | Desired change | Owning layer |
+| -------- | ------------------------- | -------------- | -------------- | ------------ |
+| P0       |                           |                |                |              |
+| P1       |                           |                |                |              |
 
 Owning layer: copy/data, asset, semantic/component token, section layout/variant, or
 invitation-scoped override.
@@ -125,5 +125,4 @@ Do not start visual implementation when any applicable condition is unresolved:
 - the target section and desired delta are too broad to form a focused iteration unit;
 - a reference conflict or unsupported detail prevents an observable acceptance criterion;
 - a real invitation has not classified the work as Lane A or Lane B through
-  `client-invitation-audit`;
-- parallel tasks would edit the same preset, section variant, layout contract, or file.
+  `client-invitation-audit`.

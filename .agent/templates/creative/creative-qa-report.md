@@ -75,9 +75,9 @@ brief; `Blocked` identifies evidence or environment that could not be obtained.
 Severity: `Critical` blocks safe delivery or core use; `Important` fails an approved criterion or
 causes a material regression; `Minor` is observable but does not block acceptance.
 
-| ID  | Severity | Status                    | Section / viewport | Source file / line | Criterion | Expected | Actual | Evidence | Revision owner |
-| --- | -------- | ------------------------- | ------------------ | ------------------ | --------- | -------- | ------ | -------- | -------------- |
-|     |          | Open / Resolved / Blocked |                    |                    |           |          |        |          |                |
+| ID  | Severity | Status                | Section / viewport | Source file / line | Criterion | Expected | Actual | Evidence | Remediation or blocking reason | Revision owner |
+| --- | -------- | --------------------- | ------------------ | ------------------ | --------- | -------- | ------ | -------- | ------------------------------ | -------------- |
+|     |          | Pass / Fail / Blocked |                    |                    |           |          |        |          |                                |                |
 
 ## Technical QA
 
