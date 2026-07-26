@@ -138,13 +138,22 @@ function resolveGreetingMessages(
 	celebrantName?: string,
 	eventType?: string,
 ): { title: string; subtitle: string } {
-	const vars = { guestName: name, celebrantName };
+	const trimmedName = name.trim();
+	const vars = { guestName: trimmedName, celebrantName };
 	const statusKey = attendanceStatus === 'confirmed' ? 'confirmed' : 'declined';
 	const defaults = getDefaultResponseMessages(eventType, statusKey);
 	const custom = responseMessages?.[statusKey];
 
+	let rawTitle = custom?.title ?? defaults.title;
+	if (!trimmedName && rawTitle.includes('{guestName}')) {
+		rawTitle =
+			statusKey === 'confirmed'
+				? '¡Gracias por confirmar su asistencia!'
+				: 'Gracias por avisarnos.';
+	}
+
 	return {
-		title: interpolateRsvpMessage(custom?.title ?? defaults.title, vars),
+		title: interpolateRsvpMessage(rawTitle, vars),
 		subtitle: interpolateRsvpMessage(custom?.subtitle ?? defaults.subtitle, vars),
 	};
 }
@@ -226,6 +235,8 @@ export const SubmittedState = forwardRef<
 		eventStartsAt?: string;
 		eventTimeZone?: string;
 		eventSlug?: string;
+		calendarTitle?: string;
+		calendarDescription?: string;
 	}
 >((props, ref) => {
 	const {
@@ -247,6 +258,8 @@ export const SubmittedState = forwardRef<
 		eventStartsAt,
 		eventTimeZone,
 		eventSlug,
+		calendarTitle,
+		calendarDescription,
 	} = props;
 
 	const { eventType } = useRsvpContext();
@@ -297,7 +310,8 @@ export const SubmittedState = forwardRef<
 				{isConfirmed && (
 					<AddToCalendarButton
 						eventData={buildCalendarEventInput({
-							title: celebrantName || title,
+							title: calendarTitle || celebrantName || title,
+							description: calendarDescription,
 							startsAt: eventStartsAt,
 							timezone: eventTimeZone,
 							revealedLocation,
@@ -341,7 +355,7 @@ export const SubmittedState = forwardRef<
 							className="rsvp__secondary-button"
 							onClick={onChangeResponse}
 						>
-							Cambiar mi respuesta
+							Cambiar su respuesta
 						</button>
 					</div>
 				)}

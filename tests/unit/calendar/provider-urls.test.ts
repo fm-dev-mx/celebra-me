@@ -1,9 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import {
-	DEFAULT_PROVIDER_EVENT_DURATION_HOURS,
-	buildGoogleCalendarUrl,
-	buildOutlookCalendarUrl,
-} from '@/lib/calendar/provider-urls';
+import { buildGoogleCalendarUrl, buildOutlookCalendarUrl } from '@/lib/calendar/provider-urls';
 import type { CalendarEventInput } from '@/lib/calendar/types';
 
 function makeInput(overrides: Partial<CalendarEventInput> = {}): CalendarEventInput {
@@ -23,7 +19,7 @@ function makeInput(overrides: Partial<CalendarEventInput> = {}): CalendarEventIn
 }
 
 describe('calendar provider URLs', () => {
-	it('builds Google Calendar URLs with UTC Z dates and no ctz parameter', () => {
+	it('builds Google Calendar URLs with UTC Z dates and ctz parameter when timezone is provided', () => {
 		const url = new URL(
 			buildGoogleCalendarUrl(makeInput({ endsAt: '2026-08-02T07:00:00.000Z' })),
 		);
@@ -32,7 +28,7 @@ describe('calendar provider URLs', () => {
 		expect(url.searchParams.get('action')).toBe('TEMPLATE');
 		expect(url.searchParams.get('text')).toBe('Boda de Ana & Carlos');
 		expect(url.searchParams.get('dates')).toBe('20260802T030000Z/20260802T070000Z');
-		expect(url.searchParams.has('ctz')).toBe(false);
+		expect(url.searchParams.get('ctz')).toBe('America/Mazatlan');
 	});
 
 	it('builds Outlook URLs against outlook.office.com', () => {
@@ -76,12 +72,11 @@ describe('calendar provider URLs', () => {
 		expect(outlook.searchParams.has('location')).toBe(false);
 	});
 
-	it('uses DEFAULT_PROVIDER_EVENT_DURATION_HOURS as fallback when endsAt is missing', () => {
+	it('uses startsAt as end date fallback when endsAt is missing without inventing duration', () => {
 		const google = new URL(buildGoogleCalendarUrl(makeInput({ endsAt: undefined })));
 		const outlook = new URL(buildOutlookCalendarUrl(makeInput({ endsAt: undefined })));
 
-		expect(DEFAULT_PROVIDER_EVENT_DURATION_HOURS).toBe(2);
-		expect(google.searchParams.get('dates')).toBe('20260802T030000Z/20260802T050000Z');
-		expect(outlook.searchParams.get('enddt')).toBe('2026-08-02T05:00:00Z');
+		expect(google.searchParams.get('dates')).toBe('20260802T030000Z/20260802T030000Z');
+		expect(outlook.searchParams.get('enddt')).toBe('2026-08-02T03:00:00Z');
 	});
 });

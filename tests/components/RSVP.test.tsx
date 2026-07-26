@@ -1190,7 +1190,7 @@ describe('RSVP Component', () => {
 				within(status).getByRole('link', { name: /Ver ubicación en Google Maps/i }),
 			).toHaveAttribute('href', 'https://maps.example.com/salon-garcia');
 			expect(
-				screen.getByRole('button', { name: /Cambiar mi respuesta/i }),
+				screen.getByRole('button', { name: /Cambiar su respuesta/i }),
 			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /^Cancelar$/i })).not.toBeInTheDocument();
 		});
@@ -1210,7 +1210,7 @@ describe('RSVP Component', () => {
 				allowResponseEditing: true,
 			});
 
-			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByRole('button', { name: /Cambiar su respuesta/i }));
 
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
 			expect(screen.getByLabelText(/Número de asistentes/i)).toHaveValue(2);
@@ -1241,7 +1241,7 @@ describe('RSVP Component', () => {
 				allowResponseEditing: true,
 			});
 
-			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByRole('button', { name: /Cambiar su respuesta/i }));
 			await user.click(screen.getByLabelText(/No podré/i));
 			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
 
@@ -1268,7 +1268,7 @@ describe('RSVP Component', () => {
 				allowResponseEditing: true,
 			});
 
-			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByRole('button', { name: /Cambiar su respuesta/i }));
 			await user.clear(screen.getByLabelText(/Número de asistentes/i));
 			await user.type(screen.getByLabelText(/Número de asistentes/i), '4');
 			await user.clear(screen.getByLabelText(/Mensaje para el festejado/i));
@@ -1319,7 +1319,7 @@ describe('RSVP Component', () => {
 				allowResponseEditing: true,
 			});
 
-			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByRole('button', { name: /Cambiar su respuesta/i }));
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
@@ -1588,7 +1588,7 @@ describe('RSVP Component', () => {
 				allowResponseEditing: true,
 			});
 
-			await user.click(screen.getByRole('button', { name: /Cambiar mi respuesta/i }));
+			await user.click(screen.getByRole('button', { name: /Cambiar su respuesta/i }));
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 

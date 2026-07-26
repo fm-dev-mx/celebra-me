@@ -1,18 +1,19 @@
 import type { CalendarEventInput } from '@/lib/calendar/types';
 import type { LocationSection } from '@/lib/adapters/types';
 
-function getFirstVenueField(
+function getPreferredVenueField(
 	location: LocationSection,
 	field: 'venueName' | 'address' | 'googleMapsUrl',
 ): string | undefined {
-	const firstVenue = location.venues?.[0];
-	return firstVenue?.[field] ?? location.ceremony?.[field] ?? location.reception?.[field];
+	return (
+		location.venues?.[0]?.[field] ?? location.reception?.[field] ?? location.ceremony?.[field]
+	);
 }
 
 function buildLocation(revealedLocation: LocationSection): CalendarEventInput['location'] {
-	const venueName = getFirstVenueField(revealedLocation, 'venueName');
-	const address = getFirstVenueField(revealedLocation, 'address');
-	const mapsUrl = getFirstVenueField(revealedLocation, 'googleMapsUrl');
+	const venueName = getPreferredVenueField(revealedLocation, 'venueName');
+	const address = getPreferredVenueField(revealedLocation, 'address');
+	const mapsUrl = getPreferredVenueField(revealedLocation, 'googleMapsUrl');
 
 	if (!venueName && !address && !mapsUrl) return undefined;
 
@@ -25,17 +26,19 @@ function buildLocation(revealedLocation: LocationSection): CalendarEventInput['l
 
 export function buildCalendarEventInput(input: {
 	title: string;
+	description?: string;
 	startsAt?: string;
 	timezone?: string;
 	revealedLocation?: LocationSection;
 	fileName?: string;
 }): CalendarEventInput | null {
-	const { title, startsAt } = input;
+	const { title, description, startsAt } = input;
 
 	if (!startsAt) return null;
 
 	const result: CalendarEventInput = { title, startsAt };
 
+	if (description) result.description = description;
 	if (input.timezone) result.timezone = input.timezone;
 	if (input.fileName) result.fileName = input.fileName;
 	if (input.revealedLocation) {

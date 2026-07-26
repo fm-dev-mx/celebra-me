@@ -57,6 +57,8 @@ interface RSVPProps {
 	allowResponseEditing?: boolean;
 	eventStartsAt?: string;
 	eventTimeZone?: string;
+	calendarTitle?: string;
+	calendarDescription?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,6 +134,8 @@ const RSVP: React.FC<RSVPProps> = ({
 	allowResponseEditing = ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	eventStartsAt,
 	eventTimeZone,
+	calendarTitle,
+	calendarDescription,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const successRef = useRef<HTMLDivElement>(null);
@@ -342,6 +346,8 @@ const RSVP: React.FC<RSVPProps> = ({
 								eventStartsAt={eventStartsAt}
 								eventTimeZone={eventTimeZone}
 								eventSlug={eventSlug}
+								calendarTitle={calendarTitle}
+								calendarDescription={calendarDescription}
 							/>
 						</motion.div>
 					) : (

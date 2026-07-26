@@ -1,7 +1,5 @@
 import type { CalendarEventInput } from '@/lib/calendar/types';
 
-export const DEFAULT_PROVIDER_EVENT_DURATION_HOURS = 2;
-
 const GOOGLE_CALENDAR_BASE_URL = 'https://calendar.google.com/calendar/render';
 const OUTLOOK_CALENDAR_BASE_URL = 'https://outlook.office.com/calendar/deeplink/compose';
 
@@ -16,8 +14,7 @@ function toValidDate(value: string): Date {
 function resolveProviderEndDate(input: CalendarEventInput): Date {
 	if (input.endsAt) return toValidDate(input.endsAt);
 
-	const startsAt = toValidDate(input.startsAt);
-	return new Date(startsAt.getTime() + DEFAULT_PROVIDER_EVENT_DURATION_HOURS * 60 * 60 * 1000);
+	return toValidDate(input.startsAt);
 }
 
 function stripMsFromIso(date: Date): string {
@@ -52,6 +49,7 @@ export function buildGoogleCalendarUrl(input: CalendarEventInput): string {
 		dates: `${formatGoogleUtcDate(startsAt)}/${formatGoogleUtcDate(endsAt)}`,
 	});
 
+	if (input.timezone) params.set('ctz', input.timezone);
 	if (input.description) params.set('details', input.description);
 	if (location) params.set('location', location);
 

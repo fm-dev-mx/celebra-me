@@ -99,6 +99,45 @@ describe('buildCalendarEventInput', () => {
 		expect(result!.location!.mapsUrl).toBe('https://maps.example.com/iglesia');
 	});
 
+	it('prefers reception over ceremony when venues array is absent', () => {
+		const revealedLocation = {
+			visibility: 'public' as const,
+			ceremony: {
+				venueEvent: 'Misa',
+				venueName: 'Templo',
+				address: 'Centro 1',
+				date: '12 de septiembre de 2026',
+				time: '3:00 p. m.',
+			},
+			reception: {
+				venueEvent: 'Recepción',
+				venueName: 'Garden Palace',
+				address: 'Macedio Ayala núm. 70',
+				date: '12 de septiembre de 2026',
+				time: '5:00 p. m.',
+			},
+		};
+
+		const result = buildCalendarEventInput({
+			title: 'XV de Abril Michelle',
+			description: 'Recepción de los XV años.',
+			startsAt: '2026-09-12T23:00:00.000Z',
+			timezone: 'America/Mexico_City',
+			revealedLocation: revealedLocation as unknown as LocationSection,
+		});
+
+		expect(result).toMatchObject({
+			title: 'XV de Abril Michelle',
+			description: 'Recepción de los XV años.',
+			startsAt: '2026-09-12T23:00:00.000Z',
+			timezone: 'America/Mexico_City',
+			location: {
+				venueName: 'Garden Palace',
+				address: 'Macedio Ayala núm. 70',
+			},
+		});
+	});
+
 	it('prefers venue data from venues array over ceremony/reception', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,

@@ -50,6 +50,14 @@ export const rsvpSchema = z
 			})
 			.strict()
 			.optional(),
+		calendar: z
+			.object({
+				title: z.string().optional(),
+				description: z.string().optional(),
+				startsAt: z.string().optional(),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict()
 	.optional();

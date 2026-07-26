@@ -493,9 +493,10 @@ function buildItinerarySectionData(context: AdaptationContext) {
 function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 	const { data, normalizedPreset } = context;
 	if (!data.rsvp) return undefined;
-	const eventStartsAt = data.eventTiming?.startsAtUtc ?? data.hero.date;
+	const { calendar, ...rsvpRest } = data.rsvp;
+	const eventStartsAt = calendar?.startsAt ?? data.eventTiming?.startsAtUtc ?? data.hero.date;
 	return {
-		...data.rsvp,
+		...rsvpRest,
 		eventSlug: entrySlug,
 		eventType: data.eventType,
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
@@ -503,6 +504,8 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		eventStartsAt,
 		eventTimeZone: data.eventTiming?.timeZone,
 		locationVisibility: data.location?.visibility,
+		calendarTitle: calendar?.title,
+		calendarDescription: calendar?.description,
 	};
 }
 
