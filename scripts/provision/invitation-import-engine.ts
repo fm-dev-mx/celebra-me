@@ -22,6 +22,7 @@ import {
 	updatePreviewAdminRole,
 	ensureHostProfile,
 } from '../db/preview-sync-guards.ts';
+import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import {
 	hashPublicMetadata,
 	hashPublicationProjection,
@@ -187,13 +188,15 @@ export interface TargetInvitationIdentity {
 
 /** Resolves ownership from the selected target before any plan or write is constructed. */
 export function resolveTargetInvitationIdentity(input: {
-	target: 'preview' | 'production';
 	slug: string;
 	explicitOwnerId?: string;
+	/** Planned/reused dedicated host owner for new invitation creates. */
+	plannedHostOwnerId?: string;
 	activeInvitations: Array<Record<string, unknown>>;
 	archivedInvitations: Array<Record<string, unknown>>;
-	previewOwnerUserId?: string;
 	ownerExists: (ownerUserId: string) => boolean;
+	/** When true, skip auth.users existence check (dry-run create of a not-yet-created host). */
+	allowMissingOwnerDuringDryRunCreate?: boolean;
 }): TargetInvitationIdentity {
 	if (input.activeInvitations.length > 1)
 		throw new Error(`Target contains multiple active invitations for slug "${input.slug}".`);
@@ -202,49 +205,59 @@ export function resolveTargetInvitationIdentity(input: {
 	const existingInvitation = input.activeInvitations[0] ?? null;
 	const ownerUserId = existingInvitation
 		? String(existingInvitation.created_by ?? '')
-		: input.target === 'preview'
-			? (input.previewOwnerUserId ?? '')
-			: (input.explicitOwnerId ?? '');
+		: (input.explicitOwnerId ?? input.plannedHostOwnerId ?? '');
 	if (existingInvitation && existingInvitation.kind !== 'client')
 		throw new Error(`Target invitation "${input.slug}" is not a client invitation.`);
 	if (!ownerUserId || !UUID_PATTERN.test(ownerUserId))
 		throw new Error(
 			existingInvitation
 				? `Target invitation "${input.slug}" has a missing or invalid owner.`
-				: 'Creating a new Production invitation requires an explicit --owner-user-id <UUID>.',
+				: 'Creating a new hosted invitation requires a dedicated host owner plan or --owner-user-id <UUID>.',
 		);
 	if (existingInvitation && input.explicitOwnerId && input.explicitOwnerId !== ownerUserId)
 		throw new Error(
 			`--owner-user-id does not match the existing target owner for "${input.slug}".`,
 		);
-	if (!input.ownerExists(ownerUserId))
+	const ownerExists = input.ownerExists(ownerUserId);
+	if (!ownerExists && !(input.allowMissingOwnerDuringDryRunCreate && !existingInvitation)) {
 		throw new Error(
 			`Target owner UUID "${ownerUserId}" does not exist in target auth.users table.`,
 		);
+	}
 	return { existingInvitation, ownerUserId, isNewInvitation: !existingInvitation };
 }
 
-function resolveTargetIdentity(
-	expectedTarget: 'preview' | 'production',
+function loadTargetInvitationRows(
 	slug: string,
-	explicitOwnerId: string | undefined,
 	targetDbUrl: string,
-): TargetInvitationIdentity {
-	const rows = parsePsqlJsonArray(
+): Array<Record<string, unknown>> {
+	return parsePsqlJsonArray(
 		runPsql(
 			`select json_agg(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, archived_at from public.invitations where slug = ${sqlLiteral(slug)} order by archived_at nulls first, id) t;`,
 			targetDbUrl,
 			{ tuplesOnly: true, throwOnError: false },
 		).stdout,
 	);
+}
+
+function resolveTargetIdentity(
+	slug: string,
+	explicitOwnerId: string | undefined,
+	targetDbUrl: string,
+	options?: {
+		invitationRows?: Array<Record<string, unknown>>;
+		plannedHostOwnerId?: string;
+		allowMissingOwnerDuringDryRunCreate?: boolean;
+	},
+): TargetInvitationIdentity {
+	const rows = options?.invitationRows ?? loadTargetInvitationRows(slug, targetDbUrl);
 	return resolveTargetInvitationIdentity({
-		target: expectedTarget,
 		slug,
 		explicitOwnerId,
+		plannedHostOwnerId: options?.plannedHostOwnerId,
 		activeInvitations: rows.filter((row) => row.archived_at === null),
 		archivedInvitations: rows.filter((row) => row.archived_at !== null),
-		previewOwnerUserId:
-			expectedTarget === 'preview' ? resolvePreviewAdminUser(targetDbUrl) : undefined,
+		allowMissingOwnerDuringDryRunCreate: options?.allowMissingOwnerDuringDryRunCreate,
 		ownerExists: (ownerUserId) =>
 			Boolean(
 				runPsql(
@@ -1007,13 +1020,36 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const projectRef = validatedUrls.projectRef;
 	const targetStorageUrl = validatedUrls.storageUrl;
 	const targetClassification = classifyDbTarget(targetDbUrl, { apiUrl: targetSupabaseUrl });
-	const identity = resolveTargetIdentity(
-		expectedTarget,
-		pkg.invitation.slug,
-		explicitOwnerId,
+	const invitationRows = loadTargetInvitationRows(pkg.invitation.slug, targetDbUrl);
+	const existingInvitationRow = invitationRows.find((row) => row.archived_at === null) ?? null;
+	const serviceRoleKeyForHost =
+		options.serviceRoleKey ||
+		(expectedTarget === 'preview'
+			? getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES) ||
+				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
+			: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES) ||
+				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES));
+	const hostOwnerPlan = await resolveAndEnsureInvitationHostOwner({
+		slug: pkg.invitation.slug,
+		displayName: pkg.invitation.clientName || pkg.invitation.title,
 		targetDbUrl,
-	);
+		supabaseUrl: targetSupabaseUrl,
+		serviceRoleKey: serviceRoleKeyForHost || undefined,
+		explicitOwnerId,
+		existingOwnerUserId: existingInvitationRow
+			? String(existingInvitationRow.created_by ?? '')
+			: null,
+		preferredCreateOwnerId: options.plan?.targetPreconditions.targetOwnerUserId,
+		dryRun,
+	});
+	const identity = resolveTargetIdentity(pkg.invitation.slug, explicitOwnerId, targetDbUrl, {
+		invitationRows,
+		plannedHostOwnerId: hostOwnerPlan.ownerUserId,
+		allowMissingOwnerDuringDryRunCreate:
+			dryRun && hostOwnerPlan.action === 'OWNER_CREATE_PLANNED',
+	});
 	const ownerUserId = identity.ownerUserId;
+	const hostOwnerAction = hostOwnerPlan.action;
 
 	// Prefer the invitation ID retained in the confirmed plan so plan → apply stays stable for creates.
 	const preferredInvitationId = options.plan?.targetPreconditions.targetInvitationId;
@@ -1082,20 +1118,38 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			targetDbUrl,
 			{ tuplesOnly: true },
 		).stdout.trim() === 't';
+	if (hostOwnerAction === 'OWNER_CREATE_PLANNED') {
+		actions.push({
+			resource: 'auth_host',
+			name: 'Host Auth de la invitación',
+			action: 'create',
+			detail: hostOwnerPlan.detail,
+		});
+	} else if (hostOwnerAction === 'OWNER_REUSE') {
+		actions.push({
+			resource: 'auth_host',
+			name: 'Host Auth de la invitación',
+			action: 'reuse',
+			detail: hostOwnerPlan.detail,
+		});
+	}
+
 	if (hasManagedChanges) {
-		if (expectedTarget === 'preview') {
+		const previewAdminId =
+			expectedTarget === 'preview' ? resolvePreviewAdminUser(targetDbUrl) : null;
+		if (expectedTarget === 'preview' && previewAdminId && ownerUserId === previewAdminId) {
 			actions.push(
 				{
 					resource: 'preview_identity',
 					name: 'Rol administrativo de Preview',
 					action: 'replace',
-					detail: 'Verificar el rol del propietario dedicado de Preview',
+					detail: 'Verificar el rol del administrador de Preview',
 				},
 				{
 					resource: 'preview_identity',
 					name: 'Perfil anfitrión de Preview',
 					action: 'replace',
-					detail: 'Verificar el perfil anfitrión dedicado de Preview',
+					detail: 'Verificar el perfil anfitrión del administrador de Preview',
 				},
 			);
 		}
@@ -1127,6 +1181,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		packageHash: pkg.packageHash,
 		verifiedProjectRef: projectRef,
 		targetInvitationId: drift.targetInvitationId,
+		targetOwnerUserId: ownerUserId,
 		existingDraftUpdatedAt: drift.existingDraft?.updated_at as string | undefined,
 		existingPublishedVersion: drift.existingPub?.version as number | undefined,
 		assetStateHash,
@@ -1197,6 +1252,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			packageHash: pkg.packageHash,
 			verifiedProjectRef: projectRef,
 			targetInvitationId: drift.targetInvitationId,
+			targetOwnerUserId: ownerUserId,
 			existingDraftUpdatedAt: drift.existingDraft?.updated_at as string | undefined,
 			existingPublishedVersion: drift.existingPub?.version as number | undefined,
 			assetStateHash,
@@ -1360,25 +1416,20 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	try {
 		assertDraftRevisionUnchanged(targetDbUrl, drift.existingDraft);
 		if (expectedTarget === 'preview') {
-			updatePreviewAdminRole(targetDbUrl, ownerUserId);
-			mutationStarted = true;
-			executedMutations++;
-			completedDatabaseWrites.updates++;
-			markResourceOverwritten('preview_identity', `app_user_roles:${ownerUserId}`);
-			ensureHostProfile(targetDbUrl, ownerUserId);
-			executedMutations++;
-			completedDatabaseWrites.updates++;
-			markResourceOverwritten('preview_identity', `host_profiles:${ownerUserId}`);
+			const previewAdminId = resolvePreviewAdminUser(targetDbUrl);
+			if (ownerUserId === previewAdminId) {
+				updatePreviewAdminRole(targetDbUrl, ownerUserId);
+				mutationStarted = true;
+				executedMutations++;
+				completedDatabaseWrites.updates++;
+				markResourceOverwritten('preview_identity', `app_user_roles:${ownerUserId}`);
+				ensureHostProfile(targetDbUrl, ownerUserId);
+				executedMutations++;
+				completedDatabaseWrites.updates++;
+				markResourceOverwritten('preview_identity', `host_profiles:${ownerUserId}`);
+			}
 		}
-		const serviceRoleKey =
-			options.serviceRoleKey ||
-			(expectedTarget === 'preview'
-				? getSecretFromEnvOrFiles(
-						'PREVIEW_SUPABASE_SERVICE_ROLE_KEY',
-						PREVIEW_SECRET_FILES,
-					) || getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
-				: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES) ||
-					getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES));
+		const serviceRoleKey = serviceRoleKeyForHost;
 		if (!serviceRoleKey && assetsToUpload.length > 0) {
 			throw new Error(
 				expectedTarget === 'preview'
@@ -1465,14 +1516,21 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			drift.targetInvitationId,
 			targetStorageUrl,
 		);
+		// Re-load invitation identity after apply. Creates start with existingInvitation=null;
+		// reusing that null here made final verification invent a new ID and always fail.
+		const postApplyInvitation =
+			loadTargetInvitationRows(pkg.invitation.slug, targetDbUrl).find(
+				(row) => row.archived_at === null,
+			) ?? null;
 		const finalDrift = analyzeTargetDrift(
 			pkg,
 			targetStorageUrl,
 			targetDbUrl,
 			ownerUserId,
 			finalAssetRefs,
-			identity.existingInvitation,
+			postApplyInvitation,
 			updateScope,
+			drift.targetInvitationId,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,

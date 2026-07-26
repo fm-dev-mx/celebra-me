@@ -146,7 +146,7 @@ Options:
   --confirm-scope              Coordinated release scope confirmation required for non-interactive Production apply
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
   --json                       Format output as JSON
-  --owner-user-id <uuid>       Required only when creating a new hosted invitation; optional assertion for an existing target owner
+  --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host (slug@clientes.celebra.invalid)
   --adoption-plan              Read-only plan for the isolated Production legacy adoption
   --adoption-apply             Apply the isolated Production legacy adoption after exact confirmation
   --approval-artifact <path>   Exact approved Preview artifact required for legacy adoption
@@ -328,7 +328,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						choices: [
 							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
 							{ name: 'Preview', value: 'preview' },
-							{ name: 'Producción (Sincronización Local → Preview → Producción)', value: 'production' },
+							{
+								name: 'Producción (Sincronización Local → Preview → Producción)',
+								value: 'production',
+							},
 							{ name: 'Local y Preview', value: 'local,preview' },
 						],
 					}),
@@ -365,9 +368,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					const policyChoice = await select({
 						message: '¿Cómo deseas manejar las fotografías y otros archivos?',
 						choices: [
-							{ name: 'Verificar y reutilizar los existentes (verify)', value: 'verify' },
-							{ name: 'Subir únicamente los archivos faltantes (missing)', value: 'missing' },
-							{ name: 'Sincronizar archivos faltantes y modificados (sync)', value: 'sync' },
+							{
+								name: 'Verificar y reutilizar los existentes (verify)',
+								value: 'verify',
+							},
+							{
+								name: 'Subir únicamente los archivos faltantes (missing)',
+								value: 'missing',
+							},
+							{
+								name: 'Sincronizar archivos faltantes y modificados (sync)',
+								value: 'sync',
+							},
 						],
 					});
 					args.push('--asset-policy', policyChoice);
@@ -377,11 +389,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const rawScope = value(args, '--update-scope');
-	const updateScope: UpdateScope = rawScope === 'content-and-assets' || rawScope === 'assets-only'
-		? rawScope
-		: 'content-only';
+	const updateScope: UpdateScope =
+		rawScope === 'content-and-assets' || rawScope === 'assets-only' ? rawScope : 'content-only';
 
-	const rawAssetPolicy = value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+	const rawAssetPolicy =
+		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
 	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
 
@@ -821,8 +833,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		},
 		expectedStorageMutations: {
 			uploads: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.uploads, 0),
-			overwrites: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.overwrites, 0),
-			moves: targetPlans.reduce((sum, tp) => sum + (tp.expectedStorageMutations.moves ?? 0), 0),
+			overwrites: targetPlans.reduce(
+				(sum, tp) => sum + tp.expectedStorageMutations.overwrites,
+				0,
+			),
+			moves: targetPlans.reduce(
+				(sum, tp) => sum + (tp.expectedStorageMutations.moves ?? 0),
+				0,
+			),
 			deletes: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.deletes, 0),
 		},
 		actions: localResult ? localResult.actions : [],
@@ -954,8 +972,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					tp.expectedStorageMutations.deletes > 0 ||
 					tp.expectedStorageMutations.overwrites > 0,
 			),
-			databaseDeletes: targetPlans.reduce((s, tp) => s + tp.expectedDatabaseWrites.deletes, 0),
-			storageDeletes: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.deletes, 0),
+			databaseDeletes: targetPlans.reduce(
+				(s, tp) => s + tp.expectedDatabaseWrites.deletes,
+				0,
+			),
+			storageDeletes: targetPlans.reduce(
+				(s, tp) => s + tp.expectedStorageMutations.deletes,
+				0,
+			),
 			storageOverwrites: targetPlans.reduce(
 				(s, tp) => s + tp.expectedStorageMutations.overwrites,
 				0,
@@ -1001,7 +1025,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								environment: targets.join(', '),
 								completedOperations: 0,
 								databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-								storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+								storageMutations: {
+									uploads: 0,
+									overwrites: 0,
+									moves: 0,
+									deletes: 0,
+								},
 								reason: 'Publicación coordinada cancelada por el operador (alcance no aceptado).',
 								functionalChanges: planData.functionalChanges,
 								targetResults,
@@ -1036,7 +1065,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								environment: targets.join(', '),
 								completedOperations: 0,
 								databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-								storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+								storageMutations: {
+									uploads: 0,
+									overwrites: 0,
+									moves: 0,
+									deletes: 0,
+								},
 								reason: `Cancelado: el slug escrito ("${typedSlug}") no coincide con "${slug}".`,
 								functionalChanges: planData.functionalChanges,
 								targetResults,
@@ -1080,7 +1114,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									environment: targets.join(', '),
 									completedOperations: 0,
 									databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-									storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+									storageMutations: {
+										uploads: 0,
+										overwrites: 0,
+										moves: 0,
+										deletes: 0,
+									},
 									reason: 'Cancelado por el operador antes de ejecutar operaciones destructivas.',
 									functionalChanges: planData.functionalChanges,
 									targetResults,
@@ -1142,7 +1181,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 				return;
 			}
-		} else if (nonInteractive && destInfo.hasDestructive && !args.includes('--confirm-destructive')) {
+		} else if (
+			nonInteractive &&
+			destInfo.hasDestructive &&
+			!args.includes('--confirm-destructive')
+		) {
 			throw new Error(
 				`El plan contiene operaciones destructivas (${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage). La ejecución no interactiva requiere --confirm-destructive.`,
 			);

@@ -49,18 +49,15 @@ export interface TargetPreconditions {
 	assetManifestHash?: string;
 	verifiedProjectRef?: string;
 	targetInvitationId?: string;
+	/** Stable owner UUID for new invitation creates (plan→apply). */
+	targetOwnerUserId?: string;
 	existingDraftUpdatedAt?: string;
 	existingPublishedVersion?: number;
 	assetStateHash?: string;
 }
 
 export type PlanExecutionStatus =
-	| 'PLANNED'
-	| 'EXECUTED'
-	| 'IN_SYNC'
-	| 'REVERTED'
-	| 'FAILED_NEEDS_REVIEW'
-	| 'STALE';
+	'PLANNED' | 'EXECUTED' | 'IN_SYNC' | 'REVERTED' | 'FAILED_NEEDS_REVIEW' | 'STALE';
 
 export interface ExecutionReceipt {
 	planId: string;
@@ -142,6 +139,7 @@ export function verifyPlanPreconditions(
 		existingDraftUpdatedAt?: string;
 		existingPublishedVersion?: number;
 		targetInvitationId?: string;
+		targetOwnerUserId?: string;
 		assetStateHash?: string;
 		assetManifestHash?: string;
 	},
@@ -185,6 +183,13 @@ export function verifyPlanPreconditions(
 		return {
 			ok: false,
 			reason: `PRECONDITION_FAILED: Precondition failed: target invitation ID changed (expected ${targetPreconditions.targetInvitationId}, got ${currentState.targetInvitationId}).`,
+		};
+	}
+
+	if (mismatch('targetOwnerUserId')) {
+		return {
+			ok: false,
+			reason: `PRECONDITION_FAILED: Precondition failed: target owner user ID changed (expected ${targetPreconditions.targetOwnerUserId}, got ${currentState.targetOwnerUserId}).`,
 		};
 	}
 
@@ -443,11 +448,19 @@ export function buildSemanticFunctionalChanges(params: {
 			}
 			return;
 		}
-		if (Array.isArray(sourceValue) && !Array.isArray(targetValue) && targetCanonical === undefined) {
+		if (
+			Array.isArray(sourceValue) &&
+			!Array.isArray(targetValue) &&
+			targetCanonical === undefined
+		) {
 			walk(section, fieldPath, sourceValue, []);
 			return;
 		}
-		if (Array.isArray(targetValue) && !Array.isArray(sourceValue) && sourceCanonical === undefined) {
+		if (
+			Array.isArray(targetValue) &&
+			!Array.isArray(sourceValue) &&
+			sourceCanonical === undefined
+		) {
 			walk(section, fieldPath, [], targetValue);
 			return;
 		}

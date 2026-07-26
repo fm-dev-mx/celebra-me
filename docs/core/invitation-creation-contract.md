@@ -29,10 +29,14 @@ Every managed digital invitation must define:
 - **Base Demo ID** (`baseDemoId`): Pre-existing demo snapshot ID paired with the selected theme.
 - **Client Details**: Client name, client email, client WhatsApp number, and photo reception status.
 - **Owner Policy**:
-  - **Local**: Default local super admin or explicit `--owner-user-id <UUID>`.
-  - **Preview**: Resolved Preview admin user (`iwipdvisoyerfdytuhwi`).
-  - **Production**: Preserve the owner resolved from the existing target invitation. Require
-    explicit `--owner-user-id <UUID>` only when creating a new hosted invitation.
+  - **All targets**: Preserve the existing invitation owner on updates.
+  - **New creates**: Ensure a dedicated Auth host per slug
+    (`{slug_with_underscores}@clientes.celebra.invalid`). UUID may differ per environment; do not
+    copy Local UUIDs across projects. Dry-run reports `OWNER_REUSE` | `OWNER_CREATE_PLANNED` |
+    `OWNER_CONFLICT`.
+  - **Override**: `--owner-user-id <UUID>` is optional assertion/override only; happy path does not
+    require a manually discovered owner. Preview admin / shared operator accounts are not the
+    default owner for new client invitations.
 - **Event Date & Time Zone**: ISO date string (`hero.date`) and IANA time zone (e.g.
   `America/Mexico_City`).
 - **Section Inclusions & Omissions**: Explicit list of included sections; omitted optional sections

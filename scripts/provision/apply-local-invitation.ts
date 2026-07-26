@@ -19,7 +19,7 @@ function deriveDeterministicUuid(namespace: string, seed: string): string {
 	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
 	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	hashPublicMetadata,
@@ -38,6 +38,7 @@ import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { uploadOrReconcileCloudinaryAsset } from './cloudinary-adapter.ts';
+import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 
 const BUCKET = 'invitation-assets';
 
@@ -95,48 +96,27 @@ export interface LocalApplyResult {
 // Owner Resolution
 // ---------------------------------------------------------------------------
 
-async function resolveLocalOwner(
-	supabase: SupabaseClient,
-	explicitOwnerId?: string,
-): Promise<string> {
-	if (explicitOwnerId) {
-		const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-		if (!uuidPattern.test(explicitOwnerId)) {
-			throw new Error(`Owner User ID "${explicitOwnerId}" is not a valid UUID.`);
-		}
-		const { data } = await supabase
-			.from('app_user_roles')
-			.select('user_id')
-			.eq('user_id', explicitOwnerId)
-			.maybeSingle();
-		if (data?.user_id) return data.user_id as string;
-		throw new Error(
-			`Explicit local owner UUID "${explicitOwnerId}" does not have an eligible role.`,
-		);
-	}
-
-	const { data: adminRole } = await supabase
-		.from('app_user_roles')
-		.select('user_id')
-		.eq('role', 'super_admin')
-		.order('created_at', { ascending: true })
-		.limit(1)
-		.maybeSingle();
-
-	if (adminRole?.user_id) return adminRole.user_id as string;
-
-	const { data: anyRole } = await supabase
-		.from('app_user_roles')
-		.select('user_id')
-		.order('created_at', { ascending: true })
-		.limit(1)
-		.maybeSingle();
-
-	if (anyRole?.user_id) return anyRole.user_id as string;
-
-	throw new Error(
-		'No local admin user found in persistent-local database. Run pnpm db:local:bootstrap-admin first.',
-	);
+async function resolveLocalOwner(options: {
+	slug: string;
+	displayName: string;
+	explicitOwnerId?: string;
+	apiUrl: string;
+	serviceRoleKey: string;
+	dbUrl: string;
+	apply: boolean;
+	existingOwnerUserId?: string | null;
+}): Promise<string> {
+	const hostPlan = await resolveAndEnsureInvitationHostOwner({
+		slug: options.slug,
+		displayName: options.displayName,
+		targetDbUrl: options.dbUrl,
+		supabaseUrl: options.apiUrl,
+		serviceRoleKey: options.serviceRoleKey,
+		explicitOwnerId: options.explicitOwnerId,
+		existingOwnerUserId: options.existingOwnerUserId,
+		dryRun: !options.apply,
+	});
+	return hostPlan.ownerUserId;
 }
 
 type VerificationAsset = NormalizedInvitationAsset & { imageHash: string };
@@ -225,7 +205,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	});
 
 	const definition = getInvitationDefinition(slug);
-	const ownerUserId = await resolveLocalOwner(supabase, explicitOwnerId);
 	const release = await buildNormalizedInvitationRelease({ slug, sourceDir });
 	const packageHash = serializeInvitationPackage(release).packageHash;
 	const preset = findDemoPreset(definition.baseDemoId);
@@ -245,6 +224,17 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.eq('slug', slug)
 		.is('archived_at', null)
 		.maybeSingle();
+
+	const ownerUserId = await resolveLocalOwner({
+		slug,
+		displayName: definition.clientName || definition.title,
+		explicitOwnerId,
+		apiUrl: env.apiUrl,
+		serviceRoleKey: env.serviceRoleKey,
+		dbUrl: env.dbUrl,
+		apply: isApply,
+		existingOwnerUserId: existingInv?.created_by ? String(existingInv.created_by) : null,
+	});
 
 	const invitationId = (existingInv?.id as string) || deriveDeterministicUuid('invitation', slug);
 
