@@ -39,7 +39,7 @@ const {
 	stampText,
 	stampYear,
 	eventSlug,
-	tooltipText = 'ACCEDER A LA INVITACIÓN',
+	tooltipText,
 	variant,
 	audioUrl,
 	teaserDetails,
@@ -51,6 +51,8 @@ const sealImageSrc = sealImage
 	? (typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src)
 	: undefined;
 const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
+// Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
+const sealHintText = tooltipText?.trim() || 'Toque el sello';
 const skipParams = new URLSearchParams(Astro.url.search);
 skipParams.set('skipEnvelope', 'true');
 const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
@@ -115,11 +117,13 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 								/>
 							)
 						}
+						{
+							sealIcon !== 'wax-monogram' && (
+								<div class="envelope-seal-button__pulse" aria-hidden="true"></div>
+							)
+						}
 					</div>
-					<div class="envelope-seal-button__pulse"></div>
-					<span class="envelope-tooltip" data-envelope-tooltip hidden>
-						{tooltipText}
-					</span>
+					<span class="envelope-seal-hint" aria-hidden="true">{sealHintText}</span>
 				</button>
 			</div>
 
@@ -183,7 +187,6 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			});
 
 			const openButton = this.querySelector('[data-envelope-open]');
-			const tooltip = this.querySelector('[data-envelope-tooltip]');
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
 
@@ -276,18 +279,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			document.documentElement.classList.add('envelope-open');
 
-			const tooltipTimeout = window.setTimeout(() => {
-				if (tooltip instanceof HTMLElement) {
-					tooltip.hidden = false;
-				}
-			}, 1500);
-
 			openButton?.addEventListener('click', (event) => {
 				event.stopPropagation();
 				event.preventDefault();
-
-				clearTimeout(tooltipTimeout);
-				if (tooltip instanceof HTMLElement) tooltip.hidden = true;
 
 				manager.playOpenSound();
 				manager.setStoredFlag();

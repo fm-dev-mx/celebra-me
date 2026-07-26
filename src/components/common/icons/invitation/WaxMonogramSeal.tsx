@@ -5,17 +5,22 @@ interface WaxMonogramSealProps extends IconProps {
 	initials?: string;
 }
 
+/** Font size in viewBox units (120). Tuned for ~56–84px rendered seals. */
 function resolveInitialsFontSize(initials: string): number {
 	const length = initials.trim().length;
-	if (length <= 2) return 34;
-	if (length === 3) return 26;
-	return 20;
+	if (length <= 2) return 48;
+	if (length === 3) return 38;
+	return 30;
 }
 
 /**
  * Embossed wax-seal monogram for envelope reveal.
  * Parametric initials; rose-gold defaults overridable via CSS vars:
- * --wax-seal-highlight, --wax-seal-mid, --wax-seal-deep, --wax-seal-shadow.
+ * --wax-seal-highlight, --wax-seal-mid, --wax-seal-deep, --wax-seal-letter,
+ * --wax-seal-shadow, --wax-seal-font-family.
+ *
+ * Typography defaults to a refined serif/label face (not --font-calligraphy)
+ * so seal initials do not twin the envelope name script.
  */
 export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 	className,
@@ -26,9 +31,9 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 	const gradId = `wax-grad-${rawId}`;
 	const rimGradId = `wax-rim-${rawId}`;
 	const embossId = `wax-emboss-${rawId}`;
+	const letterId = `wax-letter-${rawId}`;
 	const softShadowId = `wax-shadow-${rawId}`;
 	const label = initials?.trim() || undefined;
-	const fontSize = label ? resolveInitialsFontSize(label) : 34;
 
 	return (
 		<svg
@@ -107,6 +112,30 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 						k4="0"
 					/>
 				</filter>
+				{/* Soft lift for initials — contrast via shadow only (no text stroke). */}
+				<filter
+					id={letterId}
+					x="-20%"
+					y="-20%"
+					width="140%"
+					height="140%"
+					colorInterpolationFilters="sRGB"
+				>
+					<feDropShadow
+						dx="0"
+						dy="0.9"
+						stdDeviation="0.5"
+						floodColor="var(--wax-seal-shadow, #4a2a24)"
+						floodOpacity="0.4"
+					/>
+					<feDropShadow
+						dx="0"
+						dy="-0.35"
+						stdDeviation="0.3"
+						floodColor="#fff8f4"
+						floodOpacity="0.28"
+					/>
+				</filter>
 			</defs>
 
 			{/* Melted wax body */}
@@ -123,8 +152,8 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 				/>
 			</g>
 
-			{/* Recessed basin */}
-			<circle cx="60" cy="60" r="38" fill="var(--wax-seal-deep, #c4897c)" opacity="0.28" />
+			{/* Recessed basin — slightly lighter so letters read on top */}
+			<circle cx="60" cy="60" r="38" fill="var(--wax-seal-deep, #c4897c)" opacity="0.18" />
 			<circle
 				cx="60"
 				cy="60"
@@ -157,20 +186,20 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 			</g>
 
 			{/* Soft top-left sheen on basin */}
-			<ellipse cx="48" cy="46" rx="22" ry="16" fill="#fff8f4" opacity="0.14" />
+			<ellipse cx="48" cy="46" rx="22" ry="16" fill="#fff8f4" opacity="0.1" />
 
 			{label ? (
 				<text
 					x="60"
-					y="62"
+					y="63"
 					textAnchor="middle"
 					dominantBaseline="middle"
-					fontSize={fontSize}
-					fontFamily="var(--wax-seal-font-family, var(--font-calligraphy, 'Pinyon Script', cursive))"
+					fontSize={resolveInitialsFontSize(label)}
+					fontFamily="var(--wax-seal-font-family, var(--font-label, var(--font-display, Georgia, 'Times New Roman', serif)))"
 					fontWeight="400"
-					letterSpacing={label.length <= 2 ? '0.04em' : '0.01em'}
-					fill="var(--wax-seal-letter, #8f5a50)"
-					filter={`url(#${embossId})`}
+					letterSpacing={label.length <= 2 ? '0.06em' : '0.03em'}
+					fill="var(--wax-seal-letter, #5c322c)"
+					filter={`url(#${letterId})`}
 				>
 					{label}
 				</text>
@@ -180,10 +209,10 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 					cy="60"
 					r="8"
 					fill="none"
-					stroke="var(--wax-seal-letter, #8f5a50)"
+					stroke="var(--wax-seal-letter, #5c322c)"
 					strokeWidth="1.2"
 					opacity="0.55"
-					filter={`url(#${embossId})`}
+					filter={`url(#${letterId})`}
 				/>
 			)}
 		</svg>

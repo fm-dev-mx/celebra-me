@@ -57,14 +57,14 @@ const ENVELOPE_FIELDS = [
 	{ key: 'stampYear', label: 'Año del sello', placeholder: 'Ejemplo: 2026', maxLength: 10 },
 	{
 		key: 'tooltipText',
-		label: 'Texto del botón',
-		placeholder: 'Ejemplo: Abrir invitación',
+		label: 'Pista junto al sello (opcional)',
+		placeholder: 'Ejemplo: Toque el sello',
 		maxLength: 100,
 	},
 	{
 		key: 'microcopy',
-		label: 'Texto inferior',
-		placeholder: 'Ejemplo: Toca para abrir',
+		label: 'Texto inferior (secundario)',
+		placeholder: 'Ejemplo: Descubra su invitación',
 		maxLength: 100,
 	},
 	{

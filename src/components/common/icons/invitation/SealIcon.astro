@@ -21,7 +21,7 @@ const initials = sealInitials?.trim();
 
 {
 	sealIcon === 'wax-monogram' ? (
-		<WaxMonogramSealIcon size={32} initials={initials} className={className} />
+		<WaxMonogramSealIcon initials={initials} className={className} />
 	) : isParametricSealIcon(sealIcon) && initials ? (
 		<MonogramSealIcon size={32} initials={initials} className={className} />
 	) : (

@@ -2,18 +2,19 @@
 
 .envelope-wrapper {
 	--reveal-card-bg: var(--color-envelope-paper-ivory);
-	--reveal-card-border: color-mix(in srgb, rgb(150 125 110) 18%, transparent);
+	--reveal-card-border: color-mix(in srgb, rgb(150 125 110) 16%, transparent);
 	--reveal-card-text-primary: rgb(63 58 55);
 	--reveal-card-text-secondary: color-mix(in srgb, rgb(72 64 59) 58%, transparent);
 	--reveal-card-accent: color-mix(in srgb, rgb(150 125 110) 22%, transparent);
 	--reveal-card-grain-opacity: 1;
 	--reveal-card-font-display: var(--font-display);
+	--reveal-card-radius: 4px;
 	--reveal-card-shadow:
-		0 6px 16px color-mix(in srgb, rgb(63 58 55) 8%, transparent),
-		0 18px 44px color-mix(in srgb, rgb(63 58 55) 10%, transparent),
-		inset 0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 32%, transparent),
-		inset 0 -1px 2px color-mix(in srgb, rgb(150 125 110) 10%, transparent);
-	--reveal-card-width: min(86vw, 420px);
+		0 4px 12px color-mix(in srgb, rgb(63 58 55) 6%, transparent),
+		0 14px 32px color-mix(in srgb, rgb(63 58 55) 8%, transparent),
+		inset 0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 18%, transparent),
+		inset 0 -1px 2px color-mix(in srgb, rgb(150 125 110) 8%, transparent);
+	--reveal-card-width: min(86vw, 400px);
 	--reveal-card-viewport-gap: 2rem;
 	--reveal-card-safe-padding: max(1rem, env(safe-area-inset-top)) 1rem
 		max(1rem, env(safe-area-inset-bottom));
@@ -48,14 +49,14 @@
 	max-height: var(--reveal-card-max-height);
 	overflow: hidden;
 	background:
-		radial-gradient(
-			ellipse at 50% 18%,
-			color-mix(in srgb, var(--color-surface-elevated) 30%, transparent),
-			transparent 60%
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-surface-elevated) 8%, transparent) 0%,
+			transparent 42%
 		),
 		var(--reveal-card-bg);
 	border: 1px solid var(--reveal-card-border);
-	border-radius: 12px;
+	border-radius: var(--reveal-card-radius);
 	box-shadow: var(--reveal-card-shadow);
 	color: var(--reveal-card-text-primary);
 
@@ -68,14 +69,13 @@
 		border-radius: inherit;
 		opacity: var(--reveal-card-grain-opacity, 100%);
 		background:
-			radial-gradient(ellipse at 50% 80%, rgb(0 0 0 / 5%), transparent 60%),
-			radial-gradient(ellipse at 80% 20%, rgb(0 0 0 / 4%), transparent 50%),
-			radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / 3.5%), transparent 45%),
+			radial-gradient(ellipse at 50% 80%, rgb(0 0 0 / 4%), transparent 58%),
+			radial-gradient(ellipse at 78% 18%, rgb(0 0 0 / 2.5%), transparent 48%),
 			repeating-linear-gradient(
 				0deg,
 				transparent,
 				transparent 1px,
-				rgb(0 0 0 / 1.2%) 1px,
+				rgb(0 0 0 / 1.1%) 1px,
 				transparent 2px
 			);
 	}
@@ -88,15 +88,16 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	min-height: min(50svh, 420px);
+	gap: 0.05rem;
+	min-height: min(38svh, 320px);
 	max-height: inherit;
-	padding: clamp(2rem, 6vw, 2.8rem);
+	padding: clamp(1.55rem, 4.5vw, 2.15rem) clamp(1.35rem, 4vw, 1.9rem);
 	overflow-y: auto;
 	text-align: center;
 }
 
 .invitation-reveal-card__label {
-	margin: 0 0 0.35rem;
+	margin: 0 0 0.2rem;
 	font-family: var(--font-body);
 	font-size: clamp(0.56rem, 2vw, 0.68rem);
 	font-weight: 500;
@@ -110,14 +111,14 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 0.1rem;
+	gap: 0.08rem;
 	margin: 0;
 	font-family: var(--reveal-card-font-display);
 	font-size: clamp(1.55rem, 7vw, 2rem);
-	font-weight: 550;
+	font-weight: 500;
 	letter-spacing: -0.01em;
 	color: var(--reveal-card-text-primary);
-	line-height: 1.1;
+	line-height: 1.08;
 	text-wrap: balance;
 }
 
@@ -131,30 +132,30 @@
 }
 
 .invitation-reveal-card__date {
-	margin: 0.2rem 0 0;
+	margin: 0.15rem 0 0;
 	font-family: var(--font-body);
 	font-size: clamp(0.58rem, 2.2vw, 0.7rem);
 	font-weight: 500;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--reveal-card-text-secondary);
-	line-height: 1.4;
+	line-height: 1.35;
 }
 
 .invitation-reveal-card__tagline {
-	margin: 0.35rem 0 0;
+	margin: 0.25rem 0 0;
 	font-family: var(--font-body-narrative);
 	font-size: clamp(0.76rem, 2.8vw, 0.92rem);
 	font-style: italic;
 	font-weight: 400;
 	color: color-mix(in srgb, var(--reveal-card-text-primary) 55%, transparent);
-	line-height: 1.4;
+	line-height: 1.35;
 }
 
 .invitation-reveal-card__divider {
-	width: min(6rem, 35%);
+	width: min(5.5rem, 32%);
 	height: 1px;
-	margin: 0.6rem 0 0;
+	margin: 0.45rem 0 0;
 	background: linear-gradient(to right, transparent, var(--reveal-card-accent), transparent);
 }
 
@@ -162,10 +163,10 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 0.25rem;
+	gap: 0.2rem;
 	width: 100%;
-	margin-top: 0.6rem;
-	padding-top: clamp(0.15rem, 1svh, 0.45rem);
+	margin-top: 0.45rem;
+	padding-top: clamp(0.1rem, 0.8svh, 0.35rem);
 }
 
 .invitation-reveal-card__guest-label {
@@ -229,8 +230,8 @@
 	}
 
 	.invitation-reveal-card__inner {
-		min-height: min(50svh, 400px);
-		padding: clamp(1.5rem, 5vw, 2rem);
+		min-height: min(36svh, 300px);
+		padding: clamp(1.35rem, 4.5vw, 1.75rem) clamp(1.15rem, 4vw, 1.55rem);
 	}
 }
 

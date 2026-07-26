@@ -463,8 +463,10 @@ describe('InvitationEditor', () => {
 		expect(screen.getByLabelText('Etiqueta del documento')).toHaveValue('Primera Comunión');
 		expect(screen.getByLabelText('Texto del sello postal')).toHaveValue('Luna y Estrella');
 		expect(screen.getByLabelText('Año del sello')).toHaveValue('2026');
-		expect(screen.getByLabelText('Texto del botón')).toHaveValue('Abrir invitación');
-		expect(screen.getByLabelText('Texto inferior')).toHaveValue('Toca para abrir');
+		expect(screen.getByLabelText('Pista junto al sello (opcional)')).toHaveValue(
+			'Abrir invitación',
+		);
+		expect(screen.getByLabelText('Texto inferior (secundario)')).toHaveValue('Toca para abrir');
 		expect(screen.getByLabelText('Etiqueta de tarjeta')).toHaveValue(
 			'Nuestra Primera Comunión',
 		);

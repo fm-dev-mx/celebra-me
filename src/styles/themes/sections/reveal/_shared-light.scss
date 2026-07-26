@@ -3,19 +3,28 @@
 .envelope-wrapper[data-variant='jewelry-box'],
 .envelope-wrapper[data-variant='jewelry-box-wedding'] {
 	--env-bg: radial-gradient(
-		circle at center,
+		ellipse at 50% 40%,
 		var(--color-surface-primary) 0%,
-		var(--color-surface-primary) 100%
+		color-mix(in srgb, var(--color-surface-primary) 92%, var(--color-surface-soft)) 100%
 	);
-	--env-paper-bg: var(--color-envelope-paper-ivory);
-	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 22%, transparent);
+	--env-paper-bg: color-mix(
+		in srgb,
+		var(--color-envelope-paper-ivory) 88%,
+		var(--color-surface-primary)
+	);
+	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 18%, transparent);
 	--env-text-primary: var(--color-action-primary);
 	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 28%, transparent);
-	--env-tooltip-bg: var(--color-glass-bg);
-	--env-tooltip-border: var(--color-glass-border);
-	--env-tooltip-shadow: var(--shadow-premium);
-	--env-shadow-container: var(--shadow-premium);
-	--reveal-card-bg: var(--color-envelope-paper-ivory);
+	--env-shadow-container:
+		0 24px 48px color-mix(in srgb, var(--color-surface-dark) 14%, transparent),
+		0 6px 14px color-mix(in srgb, var(--color-surface-dark) 6%, transparent);
+	--reveal-card-bg: color-mix(
+		in srgb,
+		var(--color-envelope-paper-ivory) 86%,
+		var(--color-surface-primary)
+	);
 	--reveal-card-text-primary: var(--color-action-primary);
 	--reveal-card-text-secondary: var(--color-text-emphasis);
+	--reveal-card-border: color-mix(in srgb, var(--color-action-accent) 16%, transparent);
+	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
