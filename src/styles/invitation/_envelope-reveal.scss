@@ -33,7 +33,7 @@
 	--env-container-radius: 6px;
 	--env-grid: 35% 25% 40%;
 	--env-zone-width: 85cqw;
-	--env-seal-size: 58px;
+	--env-seal-size: var(--spacing-12);
 	--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	--env-phase-exit-duration: var(--duration-long);
 
@@ -403,10 +403,8 @@
 	position: relative;
 	z-index: 20;
 	display: inline-flex;
-	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 0.45rem;
 	padding: 0;
 	background: none;
 	border: 0;
@@ -415,13 +413,13 @@
 	&:focus-visible {
 		border-radius: 50%;
 		outline: 2px solid var(--env-seal-accent);
-		outline-offset: 8px;
+		outline-offset: var(--spacing-2);
 	}
 }
 
 .envelope-seal-button__pulse {
 	position: absolute;
-	inset: -8px;
+	inset: calc(var(--spacing-2) * -1);
 	border: 1px solid color-mix(in srgb, var(--env-seal-accent) 28%, transparent);
 	border-radius: 50%;
 	opacity: 0%;
@@ -442,8 +440,8 @@
 	box-shadow: var(--env-shadow-seal);
 
 	.seal-icon {
-		width: 32px;
-		height: 32px;
+		width: var(--spacing-8);
+		height: var(--spacing-8);
 		color: var(--env-seal-icon-override, var(--env-seal-icon));
 		filter: drop-shadow(
 				0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 50%, transparent)
@@ -452,9 +450,11 @@
 	}
 }
 
-// Discrete editorial open cue under the seal — no bubble, pointer, or glass chrome.
+// Discrete editorial open cue — absolutely placed so it does not shift the disc off the fold.
 .envelope-seal-hint {
-	position: relative;
+	position: absolute;
+	top: calc(100% + var(--spacing-2));
+	left: 50%;
 	z-index: 1;
 	max-width: min(14rem, 70cqw);
 	margin: 0;
@@ -471,13 +471,11 @@
 	text-wrap: balance;
 	opacity: 58%;
 	pointer-events: none;
+	transform: translateX(-50%);
 }
 
 // Parametric embossed wax SVG — full-bleed seal body (no circular chrome behind it).
-// Larger footprint so serif monogram initials stay legible at mobile seal sizes.
 .envelope-seal-button[data-seal-icon='wax-monogram'] {
-	--env-seal-size: clamp(56px, 15vw, 84px);
-
 	.envelope-seal-button__visual {
 		background: transparent;
 		border: none;
@@ -490,6 +488,21 @@
 		width: 100%;
 		height: 100%;
 		filter: none;
+	}
+}
+
+// Wax size + flap-fold anchor (50% pocket/flap seam). Sizes use spacing tokens + cqw
+// against .envelope-container; breakpoint overrides use existing respond-* mixins only.
+.envelope-wrapper:has([data-seal-icon='wax-monogram']) {
+	--env-seal-size: clamp(var(--spacing-10), 15cqw, var(--spacing-16));
+
+	.envelope-zone--seal {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: 30;
+		min-height: 0;
+		transform: translate(-50%, -50%);
 	}
 }
 
@@ -567,22 +580,6 @@
 		inset 0 0 0 1px color-mix(in srgb, var(--color-surface-elevated) 10%, transparent);
 }
 
-@include mixins.respond-below(sm) {
-	.envelope-wrapper {
-		--env-container-width: min(88vw, 320px);
-		--env-container-ratio: 0.8;
-		--env-seal-size: 30px;
-	}
-
-	.envelope-seal-button {
-		padding: 7px;
-	}
-
-	.envelope-zone--identity {
-		gap: 0.25rem;
-	}
-}
-
 @include mixins.respond-below(md) {
 	.envelope-wrapper {
 		--env-container-width: min(88vw, 340px);
@@ -590,8 +587,12 @@
 		--env-container-max-height: min(78svh, 580px);
 		--env-grid: 32% 28% 40%;
 		--env-zone-width: 100%;
-		--env-seal-size: 40px;
+		--env-seal-size: var(--spacing-10);
 		--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
+	}
+
+	.envelope-wrapper:has([data-seal-icon='wax-monogram']) {
+		--env-seal-size: clamp(var(--spacing-10), 16cqw, 3.5rem);
 	}
 
 	.envelope-tease {
@@ -623,8 +624,26 @@
 }
 
 @include mixins.respond-below(sm) {
+	.envelope-wrapper {
+		--env-container-width: min(88vw, 320px);
+		--env-container-ratio: 0.8;
+		--env-seal-size: var(--spacing-8);
+	}
+
+	.envelope-wrapper:has([data-seal-icon='wax-monogram']) {
+		--env-seal-size: clamp(var(--spacing-10), 15cqw, var(--spacing-12));
+	}
+
+	.envelope-seal-button {
+		padding: var(--spacing-2);
+	}
+
 	.envelope-seal-button[data-seal-icon='wax-monogram'] {
 		padding: 0;
+	}
+
+	.envelope-zone--identity {
+		gap: 0.25rem;
 	}
 }
 
@@ -632,6 +651,10 @@
 	.envelope-wrapper {
 		--env-container-width: clamp(300px, 50vw, 550px);
 		--env-container-max-height: 400px;
+	}
+
+	.envelope-wrapper:has([data-seal-icon='wax-monogram']) {
+		--env-seal-size: clamp(var(--spacing-12), 12cqw, var(--spacing-16));
 	}
 
 	.envelope-tease {
@@ -655,6 +678,10 @@
 		--env-container-max-height: 80svh;
 		--env-grid: 28% 32% 40%;
 		--env-title-size: clamp(1.2rem, 5vw, 1.8rem);
+	}
+
+	.envelope-wrapper:has([data-seal-icon='wax-monogram']) {
+		--env-seal-size: var(--spacing-10);
 	}
 
 	.envelope-tease {
@@ -707,7 +734,7 @@
 // Activated via content config: "sealVariant": "premium-rose"
 // ---------------------------------------------------------------------------
 .envelope-wrapper[data-seal-variant='premium-rose'] {
-	--env-seal-size: clamp(56px, 16vw, 100px);
+	--env-seal-size: clamp(var(--spacing-12), 16cqw, var(--spacing-24));
 	--env-premium-seal-accent: var(--env-seal-accent, rgb(216 27 96));
 	--env-container-width: min(96vw, 520px);
 	--env-container-ratio: 1.2;
