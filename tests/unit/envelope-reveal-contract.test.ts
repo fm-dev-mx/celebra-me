@@ -1,4 +1,9 @@
-import { buildOpeningViewModel, buildRevealCard } from '@/lib/invitation/reveal-card';
+import {
+	SEAL_ICON_MAP,
+	buildOpeningViewModel,
+	buildRevealCard,
+	isParametricSealIcon,
+} from '@/lib/invitation/reveal-card';
 
 describe('buildRevealCard', () => {
 	it('builds the canonical reveal card data with defaults', () => {
@@ -124,5 +129,18 @@ describe('buildOpeningViewModel', () => {
 		});
 
 		expect(opening.card.guestName).toBe('María García');
+	});
+});
+
+describe('envelope seal icon variants', () => {
+	it('maps flat and embossed monogram seals to distinct icon components', () => {
+		expect(SEAL_ICON_MAP.monogram).toBe('MonogramSeal');
+		expect(SEAL_ICON_MAP['wax-monogram']).toBe('WaxMonogramSeal');
+	});
+
+	it('treats monogram and wax-monogram as parametric seal icons', () => {
+		expect(isParametricSealIcon('monogram')).toBe(true);
+		expect(isParametricSealIcon('wax-monogram')).toBe(true);
+		expect(isParametricSealIcon('flower')).toBe(false);
 	});
 });

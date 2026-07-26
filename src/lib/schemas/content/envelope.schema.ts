@@ -9,7 +9,9 @@ export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional().default(false),
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
-		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
+		sealIcon: z
+			.enum(['boot', 'heart', 'monogram', 'wax-monogram', 'flower', 'special-edition'])
+			.optional(),
 		sealInitials: z.string().max(4).optional(),
 		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['premium-rose']).optional(),

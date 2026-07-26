@@ -107,7 +107,7 @@ const ENVELOPE_FIELDS = [
 		key: 'sealInitials',
 		label: 'Monograma / iniciales',
 		placeholder: 'Ejemplo: A·L',
-		maxLength: 12,
+		maxLength: 4,
 	},
 ] as const;
 
@@ -148,8 +148,7 @@ export default function EnvelopeSectionEditor({
 						onChange={(event) =>
 							onChange({
 								sealColor: (event.target.value || undefined) as
-									| XareniSealColor
-									| undefined,
+									XareniSealColor | undefined,
 							})
 						}
 					>

@@ -168,8 +168,10 @@ export const envelopeSchema = z
 		guestLabel: z.string().trim().max(80).optional(),
 		guestNameFallback: z.string().trim().max(200).optional(),
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).optional(),
-		sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
-		sealInitials: z.string().trim().max(12).optional(),
+		sealIcon: z
+			.enum(['boot', 'heart', 'monogram', 'wax-monogram', 'flower', 'special-edition'])
+			.optional(),
+		sealInitials: z.string().trim().max(4).optional(),
 		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['premium-rose']).optional(),
 		microcopy: z.string().max(100).optional(),

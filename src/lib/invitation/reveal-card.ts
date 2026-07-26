@@ -1,11 +1,25 @@
 import type { IconName } from '@/lib/icons/icon-catalog';
 
-export type EnvelopeSealIcon = 'boot' | 'heart' | 'monogram' | 'flower' | 'special-edition';
+export type EnvelopeSealIcon =
+	'boot' | 'heart' | 'monogram' | 'wax-monogram' | 'flower' | 'special-edition';
+
+/** Seal icons that render parametric initials when `sealInitials` is present. */
+export const PARAMETRIC_SEAL_ICONS = [
+	'monogram',
+	'wax-monogram',
+] as const satisfies readonly EnvelopeSealIcon[];
+
+export type ParametricSealIcon = (typeof PARAMETRIC_SEAL_ICONS)[number];
+
+export function isParametricSealIcon(sealIcon: EnvelopeSealIcon): sealIcon is ParametricSealIcon {
+	return (PARAMETRIC_SEAL_ICONS as readonly string[]).includes(sealIcon);
+}
 
 export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 	boot: 'BootSeal',
 	heart: 'HeartSeal',
 	monogram: 'MonogramSeal',
+	'wax-monogram': 'WaxMonogramSeal',
 	flower: 'FlowerSeal',
 	'special-edition': 'Diamond',
 };

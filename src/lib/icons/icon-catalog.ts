@@ -120,6 +120,12 @@ export const ICON_CATALOG = [
 		keywords: ['monograma', 'iniciales', 'sello', 'letras'],
 	},
 	{
+		name: 'WaxMonogramSeal',
+		label: 'Sello de cera',
+		category: 'decorative',
+		keywords: ['sello', 'cera', 'monograma', 'iniciales', 'lacre', 'wax'],
+	},
+	{
 		name: 'Party',
 		label: 'Fiesta',
 		category: 'party',
