@@ -58,7 +58,7 @@ export const ABRIL_ASSET_SPECS = [
 		key: 'family-portrait',
 		relativePath: 'family-portrait.webp',
 		provider: 'cloudinary',
-		displayName: 'Abril Michelle — tiara y guantes',
+		displayName: 'Abril Michelle — familia y tiara',
 		alt: 'Abril Michelle luciendo tiara y guantes',
 		focalPoint: {
 			default: '50% 28%',
@@ -105,7 +105,7 @@ export const ABRIL_ASSET_SPECS = [
 		key: 'gallery-02-bw-cake',
 		relativePath: 'gallery-02-bw-cake.webp',
 		provider: 'cloudinary',
-		displayName: 'Abril Michelle — familia blanco y negro pastel',
+		displayName: 'Abril Michelle — retrato blanco y negro pastel',
 		alt: 'Retrato en blanco y negro con el pastel',
 		focalPoint: {
 			default: '48% 32%',
@@ -179,7 +179,7 @@ export function buildAbrilPublishedContent(
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {
 			name: 'Abril Michelle',
-			label: 'MIS XV AÑOS',
+			label: 'CELEBRO MIS XV',
 			date: ABRIL_EVENT.startsAtUtc,
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
@@ -191,14 +191,14 @@ export function buildAbrilPublishedContent(
 		},
 		envelope: {
 			disabled: false,
-			cardLabel: 'MIS XV AÑOS',
+			cardLabel: 'CELEBRO MIS XV',
 			envelopeName: 'Abril Michelle Becerra Rea',
 			cardName: 'Abril Michelle',
 			cardTagline: '12 · 09 · 2026',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
 			sealInitials: 'AM',
-			microcopy: 'Abra su invitación',
+			microcopy: 'Descubra su invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -206,7 +206,7 @@ export function buildAbrilPublishedContent(
 			},
 		},
 		quote: {
-			text: 'Con la bendición de mi familia y la alegría de quienes me acompañan, celebro mis XV años.',
+			text: 'Hoy, rodeada del amor que me ha formado, abro una nueva etapa y celebro mis XV años.',
 			author: 'Abril Michelle',
 		},
 		family: {
@@ -221,24 +221,24 @@ export function buildAbrilPublishedContent(
 			],
 			labels: {
 				sectionSubtitle: 'Familia',
-				sectionTitle: 'Con el amor de mis padres y mis padrinos',
-				parentsTitle: 'Mis padres',
-				godparentsTitle: 'Mis padrinos',
-				sectionMessage: 'Su guía y su cariño acompañan cada paso de esta celebración.',
+				sectionTitle: 'Guiada por mis padres y bendecida por mis padrinos',
+				parentsTitle: 'Con el amor de',
+				godparentsTitle: 'Mis padrinos de honor',
+				sectionMessage: 'Su ejemplo y su ternura sostienen cada instante de esta noche.',
 			},
 			featuredImage: assets['gallery-02-bw-cake'],
 			focalPoint: '48% 32%',
 		},
 		countdown: {
-			title: 'LA CELEBRACIÓN COMIENZA EN',
-			footerText: 'Misa de acción de gracias · 3:00 p. m.',
+			title: 'EL GRAN DÍA SE ACERCA',
+			footerText: 'Ceremonia en La Merced · 3:00 p. m.',
 		},
 		location: {
 			visibility: 'public',
 			introEyebrow: 'SÁBADO · 12 DE SEPTIEMBRE DE 2026',
-			introHeading: 'Ceremonia y recepción',
+			introHeading: 'De la fe al brindis',
 			ceremony: {
-				venueEvent: 'Misa de acción de gracias',
+				venueEvent: 'Ceremonia de acción de gracias',
 				venueName: 'Templo y Ex Convento de Nuestra Señora de la Merced',
 				address: ceremonyAddress,
 				city: 'Lagos de Moreno, Jalisco',
@@ -255,7 +255,7 @@ export function buildAbrilPublishedContent(
 				},
 			},
 			reception: {
-				venueEvent: 'Recepción',
+				venueEvent: 'Recepción y celebración',
 				venueName: 'Garden Palace',
 				address: receptionAddress,
 				city: 'Lagos de Moreno, Jalisco',
@@ -267,7 +267,7 @@ export function buildAbrilPublishedContent(
 				coordinates: {
 					lat: 21.3206241,
 					lng: -101.9328009,
-					zoom: 15,
+					zoom: 16,
 				},
 			},
 		},
@@ -288,19 +288,19 @@ export function buildAbrilPublishedContent(
 			},
 		],
 		itinerary: {
-			title: 'Programa',
+			title: 'Momentos de la celebración',
 			items: [
-				{ time: '3:00 p. m.', label: 'Misa', iconName: 'Church' },
-				{ time: '5:00 p. m.', label: 'Recepción', iconName: 'Reception' },
-				{ time: '6:00 p. m.', label: 'Cena', iconName: 'Dinner' },
-				{ time: '7:00 p. m.', label: 'Vals', iconName: 'Waltz' },
-				{ time: '12:00 a. m.', label: 'Cierre', iconName: 'Sparkles' },
+				{ time: '3:00 p. m.', label: 'Acción de gracias', iconName: 'Church' },
+				{ time: '5:00 p. m.', label: 'Bienvenida', iconName: 'Reception' },
+				{ time: '6:00 p. m.', label: 'Cena de gala', iconName: 'Dinner' },
+				{ time: '7:00 p. m.', label: 'Vals de honor', iconName: 'Waltz' },
+				{ time: '12:00 a. m.', label: 'Último baile', iconName: 'Sparkles' },
 			],
 		},
 		gallery: {
-			eyebrow: 'Galería',
+			eyebrow: 'Recuerdos',
 			title: 'Abril Michelle',
-			subtitle: 'Retratos de una tarde hecha para recordar',
+			subtitle: 'Luz, elegancia y la emoción de sus XV',
 			items: [
 				{
 					image: assets['gallery-01-candles'],
@@ -333,7 +333,7 @@ export function buildAbrilPublishedContent(
 			],
 		},
 		rsvp: {
-			title: 'Confirme su asistencia',
+			title: 'Reserve su lugar en la celebración',
 			subcopy: 'Reserve su lugar para acompañarnos el 12 de septiembre.',
 			guestCap: 4,
 			accessMode: 'personalized-only',
@@ -357,13 +357,13 @@ export function buildAbrilPublishedContent(
 				startsAt: '2026-09-12T23:00:00.000Z',
 			},
 			personalizedAccess: {
-				title: 'Pase de acceso',
+				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'Confirme su asistencia en el formulario.',
 			},
 		},
 		thankYou: {
-			message: 'Gracias por acompañarnos en esta celebración.',
+			message: 'Gracias por hacer más luminosa esta celebración.',
 			closingName: 'Abril Michelle',
 			date: '12 de septiembre de 2026',
 			image: assets['gallery-05-white-dress'],

@@ -105,7 +105,7 @@ describe('Abril Michelle local invitation content', () => {
 		expect(typedContent.location.reception.coordinates).toEqual({
 			lat: 21.3206241,
 			lng: -101.9328009,
-			zoom: 15,
+			zoom: 16,
 		});
 
 		expect(result.data!.gallery!.items).toHaveLength(4);
