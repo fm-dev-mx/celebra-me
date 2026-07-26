@@ -116,6 +116,8 @@ export const thankYouSchema = z
 	.object({
 		message: z.string(),
 		closingName: z.string(),
+		/** Footer closing phrase; falls back to product default when omitted. */
+		closingPhrase: z.string().optional(),
 		date: z.string().optional(),
 		image: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),

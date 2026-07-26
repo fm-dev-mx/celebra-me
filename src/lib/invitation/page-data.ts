@@ -48,7 +48,11 @@ export interface InvitationPageContext {
 		  })
 		| undefined;
 	footerVariant: ThemePreset;
+	/** Invitation-specific footer closing; defaults to product phrase. */
+	footerClosingPhrase: string;
 }
+
+const DEFAULT_FOOTER_CLOSING_PHRASE = 'Con cariño';
 
 export function buildLayoutData(viewModel: InvitationViewModel, guestName: string | undefined) {
 	const image = viewModel.sharing?.ogImage ?? viewModel.hero.backgroundImage;
@@ -174,6 +178,9 @@ export function buildPageContextFromViewModel(input: {
 		heroVenueName,
 		envelope: envelopeData,
 		footerVariant: resolveFooterVariant(sectionStyles, theme.preset, isPreview),
+		footerClosingPhrase:
+			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||
+			DEFAULT_FOOTER_CLOSING_PHRASE,
 		viewModel: renderViewModel,
 		renderPlan: buildInvitationRenderPlan(renderViewModel, {
 			hasGuestContext: Boolean(guestContext),

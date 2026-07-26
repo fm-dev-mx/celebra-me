@@ -365,6 +365,7 @@ export function buildAbrilPublishedContent(
 		thankYou: {
 			message: 'Gracias por hacer más luminosa esta celebración.',
 			closingName: 'Abril Michelle',
+			closingPhrase: 'Con gratitud',
 			date: '12 de septiembre de 2026',
 			image: assets['gallery-05-white-dress'],
 			focalPoint: '50% 28%',

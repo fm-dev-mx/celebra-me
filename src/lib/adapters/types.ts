@@ -325,6 +325,7 @@ export interface InvitationViewModel {
 		thankYou?: {
 			message: string;
 			closingName: string;
+			closingPhrase?: string;
 			date?: string;
 			image?: ImageAsset;
 			focalPoint?: string;

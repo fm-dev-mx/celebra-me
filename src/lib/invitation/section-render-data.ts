@@ -323,17 +323,19 @@ function renderSection(
 			return renderGiftsSection(sections);
 
 		case 'thankYou':
-			return sections.thankYou
-				? {
-						component: 'thankYou' as const,
-						props: {
-							...sections.thankYou,
-							variant: resolveSectionVariant(sections.thankYou, variant),
-							showThankYouBranding:
-								pageContext.viewModel.brandingVisibility.showThankYouBranding,
-						},
-					}
-				: null;
+			if (!sections.thankYou) return null;
+			{
+				const { closingPhrase: _closingPhrase, ...thankYouProps } = sections.thankYou;
+				return {
+					component: 'thankYou' as const,
+					props: {
+						...thankYouProps,
+						variant: resolveSectionVariant(sections.thankYou, variant),
+						showThankYouBranding:
+							pageContext.viewModel.brandingVisibility.showThankYouBranding,
+					},
+				};
+			}
 	}
 }
 
