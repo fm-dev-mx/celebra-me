@@ -189,27 +189,61 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--pa-count-color: var(--abril-wine-dark);
 	--pa-divider-diamond-bg: var(--abril-ivory);
 
-	// Envelope seal
-	--monogram-font-size: 7.5px;
-	--monogram-letter-spacing: 1.2px;
+	// Envelope seal — embossed wax SVG (sealIcon: wax-monogram)
+	--wax-seal-highlight: rgb(248 228 210);
+	--wax-seal-mid: color-mix(in srgb, var(--abril-dusty-rose) 62%, var(--abril-antique-gold));
+	--wax-seal-deep: color-mix(in srgb, var(--abril-antique-gold) 42%, var(--abril-wine-dark));
+	--wax-seal-letter: color-mix(in srgb, var(--abril-wine-dark) 82%, black);
+	--wax-seal-shadow: var(--abril-wine-dark);
 
-	.envelope-seal-button__visual {
-		background: radial-gradient(
-			circle at 34% 32%,
-			rgb(244 220 198) 0%,
-			var(--abril-antique-gold) 48%,
-			rgb(138 100 70) 100%
-		);
-		border: 1px solid rgb(var(--abril-antique-gold-rgb) / 64%);
-		box-shadow:
-			0 12px 28px rgb(var(--abril-wine-dark-rgb) / 28%),
-			inset 0 2px 5px rgb(255 255 255 / 65%),
-			inset 0 -3px 7px rgb(0 0 0 / 42%);
+	// Closed envelope stage — dusty rose / antique gold, not generic cream.
+	.envelope-wrapper {
+		--env-bg:
+			radial-gradient(
+				ellipse 120% 90% at 50% 28%,
+				rgb(var(--abril-rose-soft-rgb) / 72%) 0%,
+				rgb(var(--abril-dusty-rose-rgb) / 18%) 42%,
+				transparent 70%
+			),
+			radial-gradient(
+				ellipse at 78% 88%,
+				rgb(var(--abril-antique-gold-rgb) / 12%) 0%,
+				transparent 55%
+			),
+			linear-gradient(
+				168deg,
+				var(--abril-cream) 0%,
+				var(--abril-ivory) 58%,
+				var(--abril-warm-sand) 100%
+			);
+		--env-paper-bg: color-mix(in srgb, var(--abril-ivory) 82%, var(--abril-rose-soft));
+		--env-paper-border: rgb(var(--abril-antique-gold-rgb) / 28%);
+		--env-text-primary: var(--abril-wine-dark);
+		--env-text-secondary: rgb(var(--abril-dark-neutral-rgb) / 62%);
+		--env-accent: var(--abril-antique-gold);
+		--env-shadow-container:
+			0 26px 52px rgb(var(--abril-wine-dark-rgb) / 16%),
+			0 8px 18px rgb(var(--abril-dusty-rose-rgb) / 14%);
+		--reveal-card-bg: color-mix(in srgb, var(--abril-ivory) 88%, var(--abril-rose-soft));
+		--reveal-card-border: rgb(var(--abril-antique-gold-rgb) / 26%);
+		--reveal-card-text-primary: var(--abril-wine-dark);
+		--reveal-card-text-secondary: rgb(var(--abril-dark-neutral-rgb) / 58%);
+		--reveal-card-accent: rgb(var(--abril-antique-gold-rgb) / 42%);
+	}
 
-		.seal-icon {
-			color: var(--abril-wine-dark);
-			filter: drop-shadow(0 1px 1px rgb(255 255 255 / 40%));
-		}
+	.envelope-name {
+		font-weight: 400;
+		color: rgb(var(--abril-wine-dark-rgb) / 78%);
+	}
+
+	.envelope-seal-hint {
+		color: rgb(var(--abril-wine-dark-rgb) / 52%);
+		opacity: 62%;
+	}
+
+	.envelope-external-instruction {
+		color: rgb(var(--abril-dark-neutral-rgb) / 58%);
+		opacity: 68%;
 	}
 
 	// Subdued top header so navigation recedes gracefully behind the editorial cover title

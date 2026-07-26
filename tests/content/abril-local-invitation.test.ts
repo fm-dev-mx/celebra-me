@@ -55,7 +55,10 @@ describe('Abril Michelle local invitation content', () => {
 				startsAtUtc: '2026-09-12T21:00:00.000Z',
 			},
 			rsvp: { accessMode: 'personalized-only' },
-			envelope: { sealInitials: 'AM' },
+			envelope: {
+				sealIcon: 'wax-monogram',
+				sealInitials: 'AM',
+			},
 			thankYou: { closingName: 'Abril Michelle', date: '12 de septiembre de 2026' },
 		});
 		const typedContent = content as {

@@ -2,16 +2,16 @@
 
 ## 1. Overview
 
-| Parameter                         | Value                                                          |
-| --------------------------------- | -------------------------------------------------------------- |
-| **Invitation Slug**               | `abril-michelle-becerra-rea`                                   |
-| **Event Type**                    | `xv` (Quinceañera)                                             |
-| **Current Managed Status**        | `Registrada`                                                   |
-| **Local Environment Status**      | `STABILIZED & VERIFIED` (refine pass Local `v8`, 2026-07-25)   |
-| **Preview Environment Status**    | `NOT VERIFIED` (Out of scope)                                  |
-| **Production Environment Status** | `NOT VERIFIED` (Out of scope)                                  |
-| **Last Verified Date**            | `2026-07-25`                                                   |
-| **Published Version (Local)**     | `v9` (copy/assets/maps/gallery/RSVP/calendar/thank-you refine) |
+| Parameter                         | Value                                                        |
+| --------------------------------- | ------------------------------------------------------------ |
+| **Invitation Slug**               | `abril-michelle-becerra-rea`                                 |
+| **Event Type**                    | `xv` (Quinceañera)                                           |
+| **Current Managed Status**        | `Registrada`                                                 |
+| **Local Environment Status**      | `STABILIZED & VERIFIED` (refine pass Local `v8`, 2026-07-25) |
+| **Preview Environment Status**    | `NOT VERIFIED` (Out of scope)                                |
+| **Production Environment Status** | `NOT VERIFIED` (Out of scope)                                |
+| **Last Verified Date**            | `2026-07-25`                                                 |
+| **Published Version (Local)**     | `v13` (wax-monogram seal + gallery variant sync)             |
 
 ### Version History Note (`v1` → `v2`)
 
@@ -77,6 +77,8 @@ Storage mutations when content is unchanged.
 
 ## 4. Visual Direction
 
+- **Envelope Seal:** `sealIcon: wax-monogram` with initials `AM` (parametric embossed wax SVG;
+  dusty-rose / antique-gold tokens via profile `--wax-seal-*`).
 - **Base Demo & Theme:** `demo-xv-premiere-floral` / `premiere-floral`
 - **Visual Profile ID:** `abril-michelle-becerra-rea`
 - **Hero essence (Lane A):** Dusty-rose / antique-gold directional veil; Cormorant display;

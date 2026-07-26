@@ -194,9 +194,8 @@ export function buildAbrilPublishedContent(
 			cardLabel: 'CELEBRO MIS XV',
 			envelopeName: 'Abril Michelle Becerra Rea',
 			cardName: 'Abril Michelle',
-			cardTagline: '12 · 09 · 2026',
 			sealStyle: 'wax',
-			sealIcon: 'monogram',
+			sealIcon: 'wax-monogram',
 			sealInitials: 'AM',
 			microcopy: 'Descubra su invitación',
 			closedPalette: {
