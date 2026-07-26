@@ -79,7 +79,7 @@ describe('canonical validation contract', () => {
 		expect(() => fs.readFileSync(workflowPath, 'utf8')).not.toThrow();
 		const workflow = fs.readFileSync(workflowPath, 'utf8');
 
-		expect(workflow).toContain('name: Commit Validation ADU');
+		expect(workflow).toContain('name: Repository CI');
 		expect(workflow).toContain('policy-validation:');
 		expect(workflow).toContain('name: Repository Policy');
 		expect(workflow).toContain('application-validation:');

@@ -174,9 +174,9 @@ judgment.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
    pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
-4. CI workflow `Commit Validation ADU` (`.github/workflows/commit-validation.yml`) runs on push to
-   `develop` and on pull requests targeting `main`. It reports two parallel jobs with
-   non-overlapping validation:
+4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on push to `develop`
+   and on pull requests targeting `main`. It reports two parallel jobs with non-overlapping
+   validation:
    - **Repository Policy** — commit-message range checks and `pnpm ops check-links`
    - **Application Suite** — canonical `pnpm run ci` (after Playwright Chromium install)
      Checkout/pnpm/Node/install setup is duplicated per job because GitHub Actions jobs do not share
