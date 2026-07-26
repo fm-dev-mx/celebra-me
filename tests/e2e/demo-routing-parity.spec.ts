@@ -56,7 +56,7 @@ test.describe('Demo Routing Parity', () => {
 		// Validate that the URL remains intact and standard fallback rendering occurs
 		const url = page.url();
 		expect(url).toContain('invite=invalid-demo-id');
-		await expect(page.locator('main.event-theme-wrapper')).toBeVisible();
+		await expect(page.locator('.event-theme-wrapper')).toBeVisible();
 	});
 
 	test.describe('Showroom – XV (multi-demo)', () => {
