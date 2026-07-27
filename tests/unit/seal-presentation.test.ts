@@ -1,6 +1,5 @@
 import {
 	resolveSealPresentation,
-	isParametricSealIcon,
 	SEAL_ICON_MAP,
 } from '@/lib/invitation/reveal-card';
 
@@ -174,12 +173,26 @@ describe('resolveSealPresentation', () => {
 });
 
 describe('parametric seal icon checks', () => {
-	it('identifies parametric seal icons correctly', () => {
-		expect(isParametricSealIcon('wax-organic')).toBe(true);
-		expect(isParametricSealIcon('wax-medallion')).toBe(true);
-		expect(isParametricSealIcon('wax-monogram')).toBe(true);
-		expect(isParametricSealIcon('monogram')).toBe(true);
-		expect(isParametricSealIcon('flower')).toBe(false);
+	it('identifies parametric seal icons via resolveSealPresentation renderer', () => {
+		// Parametric icons resolve to a renderer that supports initials
+		const parametric = ['monogram', 'wax-organic', 'wax-medallion'];
+		const nonParametric = ['vector-icon', 'raster'];
+
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'wax-organic' }).renderer,
+		);
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'wax-medallion' }).renderer,
+		);
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'wax-monogram' }).renderer,
+		);
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'monogram' }).renderer,
+		);
+		expect(nonParametric).toContain(
+			resolveSealPresentation({ sealIcon: 'flower' }).renderer,
+		);
 	});
 
 	it('maps seal icons to components in SEAL_ICON_MAP', () => {

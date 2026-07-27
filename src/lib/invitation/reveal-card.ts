@@ -11,32 +11,6 @@ export type EnvelopeSealIcon =
 	| 'flower'
 	| 'special-edition';
 
-/**
- * Seal icons that render parametric initials when `sealInitials` is present.
- *
- * @deprecated Use `resolveSealPresentation()` to determine the renderer path.
- *   The rendering logic in `SealIcon.astro` now switches on `SealPresentation.renderer`
- *   directly; this const and its related type/guard exist only for backward-compat tests.
- */
-export const PARAMETRIC_SEAL_ICONS = [
-	'monogram',
-	'wax-monogram',
-	'wax-organic',
-	'wax-medallion',
-] as const satisfies readonly EnvelopeSealIcon[];
-
-/**
- * @deprecated Use `resolveSealPresentation()` instead.
- */
-export type ParametricSealIcon = (typeof PARAMETRIC_SEAL_ICONS)[number];
-
-/**
- * @deprecated Use the `renderer` field on `SealPresentation` from `resolveSealPresentation()` instead.
- */
-export function isParametricSealIcon(sealIcon: EnvelopeSealIcon): sealIcon is ParametricSealIcon {
-	return (PARAMETRIC_SEAL_ICONS as readonly string[]).includes(sealIcon);
-}
-
 export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 	boot: 'BootSeal',
 	heart: 'HeartSeal',

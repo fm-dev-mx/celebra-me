@@ -2,7 +2,7 @@ import {
 	SEAL_ICON_MAP,
 	buildOpeningViewModel,
 	buildRevealCard,
-	isParametricSealIcon,
+	resolveSealPresentation,
 } from '@/lib/invitation/reveal-card';
 
 describe('buildRevealCard', () => {
@@ -139,8 +139,18 @@ describe('envelope seal icon variants', () => {
 	});
 
 	it('treats monogram and wax-monogram as parametric seal icons', () => {
-		expect(isParametricSealIcon('monogram')).toBe(true);
-		expect(isParametricSealIcon('wax-monogram')).toBe(true);
-		expect(isParametricSealIcon('flower')).toBe(false);
+		// Parametric icons resolve to a renderer that supports initials
+		const parametric = ['monogram', 'wax-organic', 'wax-medallion'];
+		const nonParametric = ['vector-icon', 'raster'];
+
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'monogram' }).renderer,
+		);
+		expect(parametric).toContain(
+			resolveSealPresentation({ sealIcon: 'wax-monogram' }).renderer,
+		);
+		expect(nonParametric).toContain(
+			resolveSealPresentation({ sealIcon: 'flower' }).renderer,
+		);
 	});
 });
