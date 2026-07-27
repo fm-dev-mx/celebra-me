@@ -5,10 +5,15 @@ is ignored by git except this README.
 
 ## Conventions
 
-| Path                  | Purpose                                               | Lifecycle                      |
-| --------------------- | ----------------------------------------------------- | ------------------------------ |
-| `handoffs/<task-id>/` | Structured handoff between sequential delegated tasks | Delete after task completes    |
-| Other files/dirs      | Scratch work, scripts, screenshots, QA artifacts      | Not tracked; clean up manually |
+| Path                         | Purpose                                               | Lifecycle                                          |
+| ---------------------------- | ----------------------------------------------------- | -------------------------------------------------- |
+| `handoffs/<task-id>/`        | Structured handoff between sequential delegated tasks | Delete after task completes                        |
+| `branch-lane-clearance.json` | Resumable branch-lane fingerprint (SHAs/hashes only)  | Overwritten or deleted on invalidate / session end |
+| Other files/dirs             | Scratch work, scripts, screenshots, QA artifacts      | Not tracked; clean up manually                     |
+
+`branch-lane-clearance.json` must never contain credentials, connection strings, dumps, or PII. It
+is bound to repository/worktree identity and is invalidated when mode, SHAs, working tree,
+sensitive-file set, or audit contract version change.
 
 ## Structured Handoffs
 

@@ -199,9 +199,10 @@ judgment.
 
 ## Production Promotion
 
-Agent-facing procedure (default FF promote, optional release prep, sync recovery):
-[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). When the lane
-range includes database-sensitive changes, agents stop and hand off to
+Agent-facing procedure (interactive orchestrator: default FF promote, optional release prep, sync
+recovery, auto database-parity routing):
+[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). Database-sensitive
+ranges automatically invoke
 [`.agent/skills/database-parity/SKILL.md`](../../.agent/skills/database-parity/SKILL.md) before
 remote integration or promotion. This section remains the human Git policy SSOT.
 

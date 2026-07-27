@@ -6,7 +6,7 @@ redefine that policy.
 
 **No Git writes.** Never commit, tag, push, deploy, or publish here. Propose those steps; wait for
 explicit authorization (then `commit-planner` for commits). After the release commit is on
-`develop`, promotion uses Mode C.
+`develop`, promotion uses `promote-develop-to-main`.
 
 ## Allowed file edits
 
@@ -57,12 +57,15 @@ with evidence.
 **Database-sensitive advisory (non-blocking for file edits):**
 
 ```bash
-pnpm db:branch:parity -- --base <BASELINE> --head HEAD
+pnpm db:branch:parity -- --base <BASELINE> --head HEAD --json
 ```
 
-If database-sensitive paths appear, report them and require
-[`database-parity`](../../database-parity/SKILL.md) clearance before a later promote. Allowed
-`package.json` / `CHANGELOG.md` edits may continue.
+If `requiresParityAudit` is true, report findings with status `Skipped` for promote-time parity
+(file edits may continue) and require [`database-parity`](../../database-parity/SKILL.md) clearance
+before a later database-sensitive promote. Do not treat healthy sensitive detection as a failure.
+
+Release-file edits themselves still require explicit authorization (`Needs authorization`) before
+writing `package.json` / `CHANGELOG.md`.
 
 ### 4. Select next version
 
@@ -116,69 +119,9 @@ Report whether to:
   `docs/core/git-governance.md` + `commitlint.config.cjs`)
 - create annotated tag `vX.Y.Z`
 - push / deploy / publish
-- run Mode C after `develop` includes the release commit
+- run `promote-develop-to-main` after `develop` includes the release commit
 
-## Report template
+## Report
 
-```md
-## Branch Lane Report — release-prepare
-
-### Decision
-
-Prepared / Corrected / Rejected
-
-### Baseline
-
-- Previous version:
-- Baseline commit:
-- Baseline source:
-- Conflicts found:
-- Final baseline decision:
-
-### Selected Version
-
-- New version:
-- Recommended tag:
-- Release theme:
-- Reasoning:
-
-### Change Summary
-
-| Category                      | Summary |
-| ----------------------------- | ------- |
-| Added / Changed / Fixed / ... | ...     |
-| Production Risks              | ...     |
-
-### Database-sensitive advisory
-
-- sensitive files (if any):
-- database-parity required before promote: yes/no |
-
-### Files Changed
-
-| File         | Status   | Notes               |
-| ------------ | -------- | ------------------- |
-| package.json | modified | version → X.Y.Z     |
-| CHANGELOG.md | modified | promoted Unreleased |
-
-### Validation
-
-| Check      | Result |
-| ---------- | ------ |
-| type-check | ...    |
-| test       | ...    |
-| build      | ...    |
-
-### Next Steps (not executed)
-
-- Commit: <recommended message or "await authorization">
-- Tag: <recommended annotated tag or none>
-- Push / deploy: <only if evidenced>
-- Promote: Mode C after develop is ready
-```
-
-## Hard constraints
-
-- No commit, tag, push, deploy, or publish inside this mode.
-- Policy conflicts: `docs/core/release-process.md` wins.
-- Do not over-bump from file/commit count alone.
+Use the parent nine-section orchestrator report. Include version selection evidence and any
+database-sensitive advisory (`Skipped` until promote).

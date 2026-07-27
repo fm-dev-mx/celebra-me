@@ -1,17 +1,16 @@
 ---
 name: database-parity
 description: |
-  Authoritative branch-lane handoff for database-sensitive changes: compare migration identity and
-  content between refs, detect duplicates and applied-file mutation risk, audit Local/Preview/
-  Production migration history and schema drift, evaluate Production guest/RSVP backup coverage,
-  and clear or block resume of Git integration/promotion. Does not redefine database ops policy.
+  Authoritative branch-lane delegate for database-sensitive validation: migration identity/content
+  findings, Local/Preview/Production read-only audits when credentials resolve, Production
+  guest/RSVP backup coverage, Preview completeness, and clearance fingerprint updates. Invoked
+  automatically by branch-lane — not a separate user entry point for the lane flow.
 domain: workflow
-version: 1.0.0
+version: 2.0.0
 when_to_use:
-  - branch-lane detects database-sensitive changes before promote or sync
-  - User asks for a database-parity audit between main and develop
+  - branch-lane sets requiresParityAudit or identityStatus fail handling
+  - User asks for a database-parity audit between main and develop (standalone)
   - Release or promotion range includes migrations, DB scripts, or production SQL manifests
-  - Need to verify migration divergence, duplicates, content mutation, or schema drift before promote
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -32,72 +31,58 @@ related_docs:
 
 # Database Parity
 
-Canonical **agent handoff** when [`branch-lane`](../branch-lane/SKILL.md) stops because the lane
-range includes database-sensitive changes.
+Delegate of [`branch-lane`](../branch-lane/SKILL.md) for database-sensitive validation. For the
+supported Git lane flow, **users enter via `branch-lane`**; this skill runs automatically when
+parity routing is required.
 
-**Policy / ops SSOT** remains [`docs/database-workflow.md`](../../../docs/database-workflow.md) and
-[`.agent/rules/database.md`](../../rules/database.md). This skill orchestrates checks; it does not
-duplicate guard policy, embed migrate/backup/deploy into `branch-lane`, or treat Preview as a
-Production backup.
+**Policy / ops SSOT:** [`docs/database-workflow.md`](../../../docs/database-workflow.md) and
+[`.agent/rules/database.md`](../../rules/database.md).
 
-Preview and Production writes, backups, restores, real-data copies, and migration applications
-require **explicit current-task authorization** under existing governance.
+Statuses match the branch-lane contract: `Pass` | `Needs decision` | `Needs authorization` |
+`Needs manual action` | `Fail` | `Hard blocked` | `Skipped`.
 
-## Inputs
+## Inputs (from branch-lane)
 
-| Input | Source |
-| ----- | ------ |
-| Lane mode | `promote-develop-to-main` / `sync-main-into-develop` / advisory from `release-prepare` |
-| Base / head refs | From branch-lane gate (`origin/main`↔`origin/develop`, or baseline..HEAD) |
-| Sensitive file list | `pnpm db:branch:parity` report |
+| Input                                 | Source                                                   |
+| ------------------------------------- | -------------------------------------------------------- |
+| Mode                                  | promote / sync / release advisory                        |
+| Base / head refs + SHAs               | Lane range                                               |
+| `pnpm db:branch:parity --json` result | Already run by orchestrator; re-run if fingerprint stale |
+| Clearance fingerprint                 | `.agent/tmp/branch-lane-clearance.json`                  |
 
 ## Procedure
 
-### 1. Confirm database-sensitive scope
+### 1. Confirm scope
 
-Re-run (or reuse) the lane command and record the affected files:
+Reuse trustworthy parity JSON when the clearance fingerprint still matches. If stale, re-run:
 
 ```bash
-pnpm db:branch:parity -- --base <base> --head <head>
+pnpm db:branch:parity -- --base <base> --head <head> --json
 ```
 
-Sensitive path classes (classifier SSOT:
-`scripts/db/database-sensitive-paths.ts`):
+### 2. Migration identity findings
 
-- `supabase/migrations/**` and related Supabase test/verification/config paths
-- `scripts/db/**`, `scripts/manual/production-patches/**`, `scripts/sql/**`
-- `docs/database-workflow.md`, `docs/domains/database/**`
-- `.agent/rules/database.md`, `.agent/rules/manual-sql-manifest.md`
+| Finding                                                 | Status                                                                                  |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Duplicate / malformed version                           | `Hard blocked`                                                                          |
+| Same version, different content (applied-file mutation) | `Hard blocked` — **never accept as exception**; restore original + corrective migration |
+| Head-only versions                                      | Continue; remote audits required                                                        |
+| Base-only / intentional non-critical divergence         | `Needs decision`                                                                        |
+| Correctable file/path issues                            | `Fail`                                                                                  |
 
-App runtime / content Zod under `src/` is **not** a gate trigger.
+### 3. Workspace integrity
 
-### 2. Migration identity and branch divergence
-
-Interpret the same `db:branch:parity` report. Validation must use version identity and content
-hashes — **not filename sorting alone**:
-
-| Check | Finding |
-| ----- | ------- |
-| Duplicate 14-digit version on a ref | Block — ambiguous ordering |
-| Malformed migration filename | Block |
-| Version only on head | New / pending relative to base |
-| Version only on base | Divergence — investigate |
-| Same version, different content hash | Applied-file mutation risk — block unless owner accepts with evidence |
-
-### 3. Workspace integrity (when migrations are in scope)
-
-When CI-class confidence is required for a migration-bearing promote:
+When CI-class confidence is required for migration-bearing promote:
 
 ```bash
 pnpm db:validate:pipeline
 ```
 
-Otherwise note the lighter substitute used. Do not claim full pipeline validation without running
-it.
+Otherwise record `Skipped` with explicit reason. Never claim pipeline pass without running it.
 
-### 4. Remote migration history and schema drift (read-only)
+### 4. Remote audits (read-only)
 
-When credentials exist and the user authorizes the exact read-only audit:
+When credentials **already resolve** and policy permits read-only access, run automatically:
 
 ```bash
 pnpm db:local:audit
@@ -105,109 +90,62 @@ pnpm db:preview:audit
 pnpm db:prod:audit
 ```
 
-Cover:
+- Missing credentials → `Needs manual action` (exact env/secret file locations; never print secrets)
+- Technical/command failure → `Fail` with remediation
+- Unexplained Production schema/history errors → `Hard blocked` until fixed (incompatible structural
+  drift is not a soft accept)
+- Intentional non-critical drift with evidence → `Needs decision` (owner disposition)
 
-- pending local migrations not applied remotely
-- extra remote versions not in the workspace
-- reordered or divergent remote history
-- unexplained schema drift vs the disposable canonical reference
+Do not ask the user whether to run an audit when the URL already resolves and the task is the
+branch-lane parity path — run it. Still require authorization for any **write**.
 
-Fail closed on unresolved Production history/schema errors unless the human owner explicitly accepts
-the finding for this task.
+### 5. Code-to-schema / unapplied migrations
 
-### 5. Application dependencies on unapplied migrations
+Pending Production migrations required by app/tests:
 
-If Production (or the promote target) still has pending migrations that the application/tests
-already require, **block** promote clearance until migrations are applied through the approved
-workflow (`pnpm db:preview:migrate` / `pnpm db:prod:migrate` with separate authorization) or the
-owner explicitly accepts shipping code that depends on unapplied schema.
+- Recommend approved migrate path → `Needs authorization`
+- Shipping without apply → only via explicit `Needs decision` acceptance (non-critical only)
 
-### 6. Production backup coverage (guest / RSVP critical)
+### 6. Production backup coverage (guest / RSVP)
 
-Independently from Preview:
+Inventory `.backups/prod/` (no commit). Missing/stale for a migration-bearing Production window →
+`Needs authorization` for `pnpm db:prod:backup`.
 
-1. Inventory recent dumps under `.backups/prod/` (gitignored; do not commit).
-2. If coverage is missing or stale for a migration-bearing Production window, request authorization
-   for `pnpm db:prod:backup` before recommending migrate/promote.
-3. **Preview is never a Production backup.** Do not cite Preview dumps or Preview sync as guest/RSVP
-   recovery coverage.
+**Preview is never a Production backup.**
 
-### 7. Preview completeness for migration-bearing releases
+### 7. Preview completeness
 
-Before returning promote clearance when migrations (or DB-sensitive scripts that affect schema) are
-in the range:
-
-- Prefer a passing `pnpm db:preview:audit` (and Preview migrate when separately authorized).
-- Incomplete Preview validation **blocks** clearance unless the human owner explicitly accepts that
-  limitation in this task.
+Migration-bearing promote without Preview audit → block clearance (`Needs authorization` to run
+Preview audit/migrate, or `Needs decision` to accept incomplete Preview as intentional non-critical
+limitation).
 
 ### 8. Clearance back to branch-lane
 
-Resume [`branch-lane`](../branch-lane/SKILL.md) only when:
+When all findings are `Pass` or explicitly accepted non-critical `Needs decision` items:
 
-- every finding is **resolved**, or
-- every remaining finding is **explicitly accepted** by the human owner for this task.
+1. Write clearance fingerprint via `scripts/db/branch-lane-clearance.ts` (`clearanceStatus: Pass` or
+   document accepted exceptions in the report — never for content mutation).
+2. Return control to `branch-lane` for Git authorization / execution.
 
 Do not silently continue promote/sync.
 
-## Report template
+## Prompt format (when human input remains)
 
-```md
-## Database Parity Report
+1. What was detected
+2. Why input is required
+3. Recommended option
+4. Alternatives and consequences
+5. Exact action that will follow
 
-### Decision
+## Report
 
-Cleared / Blocked / Cleared-with-owner-acceptance
-
-### Range
-
-- base:
-- head:
-- branch-lane mode:
-
-### Database-sensitive files
-
-- ...
-
-### Migration identity / content
-
-- head-only:
-- base-only:
-- content mutations:
-- duplicates:
-- malformed:
-
-### Remote audits
-
-| Target | Command | Result | Notes |
-| ------ | ------- | ------ | ----- |
-| local | db:local:audit | ... | ... |
-| preview | db:preview:audit | ... | ... |
-| production | db:prod:audit | ... | ... |
-
-### Code-to-schema dependencies
-
-- pending migrations required by app/tests:
-- owner acceptance (if any):
-
-### Production backup coverage
-
-- `.backups/prod/` inventory:
-- `db:prod:backup` authorized/run: yes/no
-- Preview treated as backup: **no**
-
-### Owner-accepted findings
-
-- ...
-
-### Clearance for branch-lane
-
-- resume promote/sync: yes/no
-```
+Use the same nine-section structure as `branch-lane`. Include remote audit table, backup coverage,
+owner-accepted findings, fingerprint path (no secrets), and clearance yes/no.
 
 ## Hard constraints
 
-- No force-push; no rebase of `main`/`develop` from this skill.
+- No force-push; no rebase of `main`/`develop`.
 - No Production/Preview writes without explicit current-task authorization.
-- Do not copy guest, RSVP, Auth, or other prohibited Production data into Preview.
-- Do not embed this procedure inside `branch-lane` beyond the detection handoff.
+- Do not copy prohibited Production data into Preview.
+- Do not embed this procedure inside `branch-lane` beyond orchestration/routing.
+- Never accept applied-migration content mutation as an exception.

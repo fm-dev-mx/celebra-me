@@ -152,24 +152,30 @@ pnpm db:sql:lint -- --file <path>
 
 ### Branch-lane database-parity audit
 
-When [`branch-lane`](../.agent/skills/branch-lane/SKILL.md) detects database-sensitive changes in a
-promote or sync range, it **stops** before remote integration/promotion and hands off to
-[`.agent/skills/database-parity/SKILL.md`](../.agent/skills/database-parity/SKILL.md).
-
-Executable, read-only branch compare (no database connection):
+[`branch-lane`](../.agent/skills/branch-lane/SKILL.md) is the user entry point. It always runs
+branch parity for the lane range and **automatically** invokes
+[`.agent/skills/database-parity/SKILL.md`](../.agent/skills/database-parity/SKILL.md) when
+`requiresParityAudit` is true or migration identity fails.
 
 ```bash
-pnpm db:branch:parity -- --base origin/main --head origin/develop
+pnpm db:branch:parity -- --base origin/main --head origin/develop --json
 ```
 
-That command reports database-sensitive paths and compares migration **identity** and **content
-hashes** between refs (duplicates, head-only/base-only versions, same-version content mutation). It
-does not replace hosted audits.
+Machine-readable fields include `identityStatus`, `sensitiveChanges`, `sensitiveFiles`, `findings`,
+and `requiresParityAudit`. Exit `0` means the analysis is trustworthy even when parity routing is
+required; exit `≠0` means invalid input, technical failure, or identity violation.
 
-Complete the agent procedure in `database-parity`, including (when authorized) Local / Preview /
-Production `pnpm db:*:audit`, Production guest/RSVP backup coverage via `pnpm db:prod:backup` /
-`.backups/prod/` (Preview is never a Production backup), and explicit owner acceptance of any
-remaining findings before resuming `branch-lane`.
+Healthy database-sensitive changes are **not** CLI failures — they route to `database-parity`.
+Applied migration content mutation is `Hard blocked` and must never be accepted as an exception
+(restore original file + corrective migration).
+
+Resumable clearance evidence lives in gitignored `.agent/tmp/branch-lane-clearance.json` (SHAs and
+hashes only; no credentials). Stale fingerprints invalidate automatically and re-run affected
+checks.
+
+Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
+credentials resolve. Production guest/RSVP backup coverage uses `pnpm db:prod:backup` /
+`.backups/prod/` — Preview is never a Production backup.
 
 ### Blocked refresh aliases
 

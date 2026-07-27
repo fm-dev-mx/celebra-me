@@ -2,7 +2,7 @@
 
 Load after `.agent/skills/branch-lane/SKILL.md`. **Follow the Fast-Forward Flow in**
 [`docs/core/git-governance.md`](../../../../docs/core/git-governance.md) — do not invent a parallel
-promotion policy. This reference adds agent operational gaps (hooks, validation, recovery).
+promotion policy. Orchestration, statuses, and parity routing live in the parent skill.
 
 ## Intent
 
@@ -11,28 +11,21 @@ promotion policy. This reference adds agent operational gaps (hooks, validation,
 
 ## Preconditions
 
-- Shared Git preflight completed; working tree clean.
-- `origin/main` is an ancestor of `origin/develop` (FF possible). If `main` has commits not in
-  `develop`: **abort**, recommend sync recovery first — never force-push to “fix” drift.
-- Database-sensitive gate passed (or findings cleared via `database-parity`). If the gate stops,
-  do not promote.
-- User explicitly authorized checkout / FF merge / push (and tag, if any) in this task.
+- Parent orchestrator discovery completed; mode selected as `promote-develop-to-main`.
+- Working tree clean (or explicit exception authorized) — else `Hard blocked`.
+- `origin/main` is an ancestor of `origin/develop` (FF possible). Else `Needs decision` → recovery
+  sync first — never force-push.
+- `pnpm db:branch:parity -- --base origin/main --head origin/develop --json` completed.
+  - `identityStatus: fail` → do not promote (`Hard blocked` / `Fail` per findings).
+  - `requiresParityAudit: true` → parent already invoked `database-parity`; clearance fingerprint
+    must be valid before writes.
+- User explicitly authorized the planned Git writes in this task (`Needs authorization` until yes).
 
 ## Procedure
 
-0. Database-sensitive gate (mandatory before any promote write):
-
-```bash
-pnpm db:branch:parity -- --base origin/main --head origin/develop
-```
-
-If exit code is non-zero or the report lists database-sensitive files: **stop**, list those files,
-hand off to [`database-parity`](../../database-parity/SKILL.md). Do not run CI-for-promote,
-checkout `main`, merge, tag, or push until parity findings are resolved or explicitly accepted by
-the human owner.
-
-1. On `develop`, update and validate before touching `main` (governance requires CI-class
-   confidence):
+1. Confirm clearance fingerprint still matches (parent handles). If invalidated, re-run affected
+   checks — do not treat staleness alone as failure.
+2. On `develop`, update and validate before touching `main`:
 
 ```bash
 git switch develop
@@ -40,11 +33,11 @@ git pull --ff-only origin develop
 pnpm run ci
 ```
 
-If `ci` is too heavy for the authorized scope, state that explicitly, run the closest
-gatekeeper-appropriate substitute, and do **not** claim full CI passed. Do not promote on a red
-suite without an explicit user override in this task.
+If `ci` is too heavy for the authorized scope, state that explicitly (`Skipped` with reason), run
+the closest gatekeeper-appropriate substitute, and do **not** claim full CI passed. Red CI without
+an explicit current-task override → `Fail` / stop (do not invent bypass authority).
 
-2. Fast-forward `main` (no non-FF fallback):
+3. Fast-forward `main` (no non-FF fallback):
 
 ```bash
 git switch main
@@ -52,15 +45,15 @@ git pull --ff-only origin main
 git merge --ff-only develop
 ```
 
-If `merge --ff-only` fails: stop, report drift, suggest `sync-main-into-develop`.
+If `merge --ff-only` fails: `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
 
-3. Tag only if separately authorized (usually after `release-prepare` + release commit):
+4. Tag only if separately authorized:
 
 ```bash
 git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
 ```
 
-4. Push only if authorized. Local `pre-push` blocks `main` unless the override env is set:
+5. Push only if authorized:
 
 ```bash
 ALLOW_MAIN_PUSH=true git push origin main
@@ -68,47 +61,9 @@ ALLOW_MAIN_PUSH=true git push origin main
 git push origin vX.Y.Z
 ```
 
-Never `--force` / `--force-with-lease`. Do not commit on `main` (pre-commit blocks it); promotion is
-FF-only from `develop`.
+Never `--force` / `--force-with-lease`. Do not commit on `main`.
 
-## Report template
+## Report
 
-```md
-## Branch Lane Report — promote-develop-to-main
-
-### Decision
-
-Completed / Aborted / Blocked (FF impossible)
-
-### Tips
-
-- origin/develop:
-- origin/main (before):
-- main (after):
-
-### Database-sensitive gate
-
-- command: `pnpm db:branch:parity -- --base origin/main --head origin/develop`
-- sensitive files:
-- parity handoff required: yes/no
-- owner acceptance (if any):
-
-### Validation
-
-- command run (ci or substitute):
-- result:
-
-### Actions
-
-- ff-only merge:
-- tag:
-- push authorized: yes/no
-- ALLOW_MAIN_PUSH used: yes/no
-- push result:
-
-### git status --short
-
-### Next steps
-
-- ...
-```
+Use the parent nine-section report. Include parity JSON summary, clearance fingerprint validity, and
+each finding's status fields.
