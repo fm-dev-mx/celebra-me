@@ -61,16 +61,19 @@ approval, and recovery.
 
 1. **Intake & Normalization**: Raw asset binaries must pass MIME, dimension, and sharpness checks;
    normalized WebP delivery assets must carry `sourceHash` and `assetManifestHash`.
-2. **Canonical Publication Validation**: `draftContent` must validate against `eventContentSchema`
+2. **Package freshness**: A file `--package` must match the current managed definition `sourceHash`
+   (or use an explicit `--allow-stale-package` override). Regenerate the package after every
+   definition change before hosted apply.
+3. **Canonical Publication Validation**: `draftContent` must validate against `eventContentSchema`
    before release acceptance, packaging, or database/storage mutation.
-3. **Immutable Operational Plan**: Applies must be backed by a deterministic `OperationalPlan`
+4. **Immutable Operational Plan**: Applies must be backed by a deterministic `OperationalPlan`
    (`planId`, target preconditions, functional changes, physical DB/Storage counts).
-4. **Drift Protection**: Target preconditions must be re-checked immediately before apply; abort on
+5. **Drift Protection**: Target preconditions must be re-checked immediately before apply; abort on
    drift.
-5. **Bounded DB & Storage Apply**: Publication uses the atomic publication boundary. Other hosted
+6. **Bounded DB & Storage Apply**: Publication uses the atomic publication boundary. Other hosted
    upserts and Storage writes use compensation. Never claim a full rollback without verified restore
    of every completed mutation.
-6. **Provenance Recording**: Release provenance must be recorded in
+7. **Provenance Recording**: Release provenance must be recorded in
    `public.managed_invitation_release_provenance`.
-7. **Preview Approval Binding**: Production deployment requires an approved Preview artifact that
+8. **Preview Approval Binding**: Production deployment requires an approved Preview artifact that
    matches exact source/package hashes and plan ID when the runbook requires that gate.

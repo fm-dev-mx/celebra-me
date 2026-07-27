@@ -4,9 +4,7 @@ import { exportInvitationPackage, type InvitationPackageData } from './invitatio
 import { validatePackageData } from './invitation-import-engine.ts';
 
 export type PackageInputErrorCode =
-	| 'PACKAGE_SOURCE_CONFLICT'
-	| 'PACKAGE_NOT_FOUND'
-	| 'PACKAGE_INVALID';
+	'PACKAGE_SOURCE_CONFLICT' | 'PACKAGE_NOT_FOUND' | 'PACKAGE_INVALID' | 'PACKAGE_STALE';
 
 export class PackageInputError extends Error {
 	constructor(
@@ -23,12 +21,16 @@ export interface ResolvedInvitationPackageInput {
 	packageData: InvitationPackageData;
 	packagePath?: string;
 	source: 'file-package' | 'managed-definition';
+	/** Current managed-definition sourceHash from dry-run export when resolved. */
+	definitionSourceHash?: string;
 }
 
 export async function resolveInvitationPackageInput(input: {
 	slug: string;
 	sourceDir?: string;
 	packagePath?: string;
+	/** Skip sourceHash freshness check against the current managed definition. */
+	allowStalePackage?: boolean;
 	exportPackage?: typeof exportInvitationPackage;
 }): Promise<ResolvedInvitationPackageInput> {
 	if (input.sourceDir && input.packagePath) {
@@ -48,12 +50,39 @@ export async function resolveInvitationPackageInput(input: {
 		}
 		try {
 			const parsed = JSON.parse(readFileSync(absolutePath, 'utf8')) as InvitationPackageData;
+			const packageData = validatePackageData(parsed);
+			if (packageData.sourceSlug !== input.slug) {
+				throw new PackageInputError(
+					'PACKAGE_INVALID',
+					`El paquete pertenece a "${packageData.sourceSlug}", no a "${input.slug}".`,
+				);
+			}
+
+			const exported = await (input.exportPackage ?? exportInvitationPackage)({
+				slug: input.slug,
+				sourceDir: input.sourceDir ?? '',
+				dryRun: true,
+			});
+			const definitionSourceHash = exported.packageData.sourceHash;
+			if (!input.allowStalePackage && packageData.sourceHash !== definitionSourceHash) {
+				throw new PackageInputError(
+					'PACKAGE_STALE',
+					'El paquete está desactualizado respecto a la definición administrada actual (sourceHash distinto). Regenere el paquete desde la definición y vuelva a planificar, o use --allow-stale-package solo si el desfase es intencional.',
+					{
+						packageSourceHash: packageData.sourceHash,
+						definitionSourceHash,
+					},
+				);
+			}
+
 			return {
-				packageData: validatePackageData(parsed),
+				packageData,
 				packagePath: absolutePath,
 				source: 'file-package',
+				definitionSourceHash,
 			};
 		} catch (error) {
+			if (error instanceof PackageInputError) throw error;
 			throw new PackageInputError(
 				'PACKAGE_INVALID',
 				'El paquete no es válido o no supera la verificación de integridad. Genérelo nuevamente y repita el preflight.',
@@ -68,7 +97,11 @@ export async function resolveInvitationPackageInput(input: {
 			sourceDir: input.sourceDir ?? '',
 			dryRun: true,
 		});
-		return { packageData: exported.packageData, source: 'managed-definition' };
+		return {
+			packageData: exported.packageData,
+			source: 'managed-definition',
+			definitionSourceHash: exported.packageData.sourceHash,
+		};
 	} catch (error) {
 		throw new PackageInputError(
 			'PACKAGE_INVALID',

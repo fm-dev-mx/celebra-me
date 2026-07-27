@@ -14,7 +14,7 @@ import {
 const dirs: string[] = [];
 afterEach(() => dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true })));
 
-function validPackage(): InvitationPackageData {
+function validPackage(overrides?: Partial<InvitationPackageData>): InvitationPackageData {
 	const hash = 'a'.repeat(64);
 	const payload: Omit<InvitationPackageData, 'packageHash'> = {
 		schemaVersion: '2.0.0',
@@ -42,6 +42,7 @@ function validPackage(): InvitationPackageData {
 		publishedContent: { content: {} },
 		event: { title: 'Fixture', eventType: 'xv', status: 'published' },
 		assets: [],
+		...overrides,
 	};
 	return { ...payload, packageHash: computePackageHash(payload) };
 }
@@ -54,13 +55,24 @@ function fixtureFile(contents: string): string {
 	return path;
 }
 
+function matchingExport(pkg: InvitationPackageData) {
+	return jest.fn(async () => ({
+		packageData: pkg,
+		packagePath: null,
+		stats: {
+			slug: pkg.sourceSlug,
+			assetCount: 0,
+			totalBytes: 0,
+			hasPublishedContent: true as const,
+			packageHash: pkg.packageHash,
+		},
+	}));
+}
+
 describe('managed invitation package input integration', () => {
 	it('uses an in-memory package exported from the managed definition', async () => {
 		const pkg = validPackage();
-		const exportPackage = jest.fn(async () => ({
-			packageData: pkg,
-			stats: { packageHash: pkg.packageHash },
-		}));
+		const exportPackage = matchingExport(pkg);
 		const result = await resolveInvitationPackageInput({
 			slug: 'fixture',
 			sourceDir: 'assets/fixture',
@@ -70,12 +82,44 @@ describe('managed invitation package input integration', () => {
 		expect(result.packageData.packageHash).toBe(pkg.packageHash);
 	});
 
-	it('loads and validates an immutable file package', async () => {
+	it('loads and validates an immutable file package when sourceHash matches the definition', async () => {
 		const pkg = validPackage();
 		const path = fixtureFile(JSON.stringify(pkg));
-		const result = await resolveInvitationPackageInput({ slug: 'fixture', packagePath: path });
+		const result = await resolveInvitationPackageInput({
+			slug: 'fixture',
+			packagePath: path,
+			exportPackage: matchingExport(pkg) as never,
+		});
 		expect(result.source).toBe('file-package');
 		expect(result.packagePath).toBe(path);
+		expect(result.definitionSourceHash).toBe(pkg.sourceHash);
+	});
+
+	it('blocks a stale file package whose sourceHash differs from the current definition', async () => {
+		const pkg = validPackage();
+		const path = fixtureFile(JSON.stringify(pkg));
+		const live = validPackage({ sourceHash: 'c'.repeat(64) });
+		const error = await resolveInvitationPackageInput({
+			slug: 'fixture',
+			packagePath: path,
+			exportPackage: matchingExport(live) as never,
+		}).catch((caught: unknown) => caught);
+		expect(error).toBeInstanceOf(PackageInputError);
+		expect(error).toMatchObject({ code: 'PACKAGE_STALE' });
+	});
+
+	it('allows an intentional stale package with allowStalePackage', async () => {
+		const pkg = validPackage();
+		const path = fixtureFile(JSON.stringify(pkg));
+		const live = validPackage({ sourceHash: 'c'.repeat(64) });
+		const result = await resolveInvitationPackageInput({
+			slug: 'fixture',
+			packagePath: path,
+			allowStalePackage: true,
+			exportPackage: matchingExport(live) as never,
+		});
+		expect(result.source).toBe('file-package');
+		expect(result.packageData.sourceHash).toBe(pkg.sourceHash);
 	});
 
 	it.each([
@@ -91,9 +135,11 @@ describe('managed invitation package input integration', () => {
 					: fixtureFile(
 							JSON.stringify({ ...validPackage(), packageHash: 'f'.repeat(64) }),
 						);
-		const error = await resolveInvitationPackageInput({ slug: 'fixture', packagePath }).catch(
-			(caught: unknown) => caught,
-		);
+		const error = await resolveInvitationPackageInput({
+			slug: 'fixture',
+			packagePath,
+			exportPackage: matchingExport(validPackage()) as never,
+		}).catch((caught: unknown) => caught);
 		expect(error).toBeInstanceOf(PackageInputError);
 		expect(error).toMatchObject({ code });
 	});

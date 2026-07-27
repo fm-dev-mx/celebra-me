@@ -35,6 +35,7 @@ const VALID_FLAGS = new Set([
 	'--technical',
 	'--owner-user-id',
 	'--package',
+	'--allow-stale-package',
 	'--approval-artifact',
 	'--adoption-plan',
 	'--adoption-apply',

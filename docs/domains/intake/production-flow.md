@@ -54,6 +54,17 @@ an optional override/assertion, not required on the happy path. Dry-run reports 
 inspected and planned before any mutation; a blocked or unevaluated target aborts the complete apply
 phase across all targets.
 
+### Package freshness (definition vs `--package`)
+
+- `--source-dir` (or no package path) builds from the **current** managed definition.
+- `--package <path>` is an immutable snapshot. After any definition/content change (copy, seal,
+  sections, assets), **regenerate** the package before Preview/Production apply.
+- The CLI compares the file package `sourceHash` to a dry-run export of the current definition and
+  fails with `PACKAGE_STALE` on mismatch. Use `--allow-stale-package` only for intentional
+  historical replays.
+- Do not reuse a long-lived release JSON across definition edits: Local can look correct while
+  Preview/Production still serve the stale package (for example `envelope.sealIcon`).
+
 ## Publication integrity rollout
 
 Phase one retains the old seven-argument RPC only as a service-role fail-closed

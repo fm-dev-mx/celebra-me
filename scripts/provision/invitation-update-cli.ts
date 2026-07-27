@@ -139,6 +139,7 @@ Options:
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
   --source-dir <dir>           Directory containing source assets (optional if assets exist in DB/Storage)
   --package <path>             Immutable package; mutually exclusive with --source-dir
+  --allow-stale-package        Allow --package whose sourceHash differs from the current managed definition (intentional only)
   --dry-run                    Simulate changes without performing writes
   --apply                      Perform actual database and storage updates
   --non-interactive            Skip interactive prompts for non-TTY execution
@@ -476,7 +477,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const executionPlans = new Map<InvitationUpdateTarget, OperationalPlan>();
 	let packageInput;
 	try {
-		packageInput = await resolveInvitationPackageInput({ slug, sourceDir, packagePath });
+		packageInput = await resolveInvitationPackageInput({
+			slug,
+			sourceDir,
+			packagePath,
+			allowStalePackage: args.includes('--allow-stale-package'),
+		});
 	} catch (error) {
 		const inputError =
 			error instanceof PackageInputError
