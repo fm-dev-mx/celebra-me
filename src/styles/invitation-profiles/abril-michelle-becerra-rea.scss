@@ -1124,8 +1124,10 @@ html:has(.event--abril-michelle-becerra-rea) body {
 			filter 0.4s ease;
 	}
 
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item[data-layout-role='feature'],
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item[data-image-key='thank-you-confetti'] {
+	.gallery-section[data-variant='premiere-floral']
+		.gallery-grid__item[data-layout-role='feature'],
+	.gallery-section[data-variant='premiere-floral']
+		.gallery-grid__item[data-image-key='thank-you-confetti'] {
 		grid-column: 1 / -1;
 		aspect-ratio: 8 / 5;
 	}
