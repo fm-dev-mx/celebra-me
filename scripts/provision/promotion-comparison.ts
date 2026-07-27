@@ -138,14 +138,18 @@ export function rewritePackageStorageUrls(val: unknown, targetStorageUrl: string
 
 export function checkTargetDivergenceConflict(
 	slug: string,
-	targetDraftContent: Record<string, unknown>,
+	proposedContent: Record<string, unknown>,
 	existingDraft: Record<string, unknown> | null,
 	existingPub: Record<string, unknown> | null,
+	options?: {
+		packageContentHash?: string;
+	},
 ): void {
 	if (!existingDraft) return;
 	if ((existingDraft.status as string) !== 'draft') return;
 
-	const pkgDraftHash = hashPublicationProjection(targetDraftContent);
+	const proposedHash = hashPublicationProjection(proposedContent);
+	const packageHash = options?.packageContentHash ?? proposedHash;
 	const targetDraftHash = hashPublicationProjection(
 		(existingDraft.content as Record<string, unknown>) ?? {},
 	);
@@ -153,9 +157,13 @@ export function checkTargetDivergenceConflict(
 		? hashPublicationProjection((existingPub.content as Record<string, unknown>) ?? {})
 		: null;
 
-	if (targetDraftHash !== pkgDraftHash && targetDraftHash !== targetPubHash) {
+	if (targetDraftHash !== proposedHash && targetDraftHash !== targetPubHash) {
+		const publishedVersion =
+			existingPub && existingPub.version !== undefined && existingPub.version !== null
+				? String(existingPub.version)
+				: 'none';
 		throw new Error(
-			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${String(existingPub?.version ?? 'none')}; package content hash ${pkgDraftHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}.`,
+			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${publishedVersion}; package content hash ${packageHash}; proposed merged-content hash ${proposedHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}.`,
 		);
 	}
 }

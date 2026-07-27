@@ -271,7 +271,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		: { data: null };
 	const { data: existingProvenance } = await supabase
 		.from('managed_invitation_release_provenance')
-		.select('invitation_id')
+		.select('invitation_id, managed_projection')
 		.eq('invitation_id', invitationId)
 		.maybeSingle();
 
@@ -425,6 +425,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	const updateScope: UpdateScope = options.updateScope ?? 'content-only';
+	const packageCanonicalContent = materializeAssetReferences(
+		release.draftContent,
+		assetMap,
+	) as Record<string, unknown>;
+	const packageContentHash = hashPublicationProjection(packageCanonicalContent);
 
 	let proposedContent: Record<string, unknown>;
 	if (
@@ -432,28 +437,29 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
 		const prevCanonical =
+			(existingProvenance?.managed_projection as Record<string, unknown> | null) ??
 			(existingPub?.content as Record<string, unknown>) ??
 			(existingDraft.content as Record<string, unknown>);
-		const currCanonical = materializeAssetReferences(release.draftContent, assetMap) as Record<
-			string,
-			unknown
-		>;
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
-			currentCanonical: currCanonical,
+			currentCanonical: packageCanonicalContent,
 			currentTarget: existingDraft.content as Record<string, unknown>,
 			scope: updateScope,
 			targetName: slug,
 		});
 		if (patchRes.blocked) {
-			throw new Error(patchRes.blockReason ?? 'Asset preservation violation detected.');
+			const driftPaths = patchRes.deltas
+				.filter((delta) => delta.status === 'DRIFT' || delta.status === 'BLOCKED_BY_SCOPE')
+				.map((delta) => delta.path);
+			throw new Error(
+				driftPaths.length > 0
+					? `${patchRes.blockReason ?? 'Asset preservation violation detected.'} conflicting paths: ${driftPaths.join(', ')}`
+					: (patchRes.blockReason ?? 'Asset preservation violation detected.'),
+			);
 		}
 		proposedContent = patchRes.patchedContent;
 	} else {
-		proposedContent = materializeAssetReferences(release.draftContent, assetMap) as Record<
-			string,
-			unknown
-		>;
+		proposedContent = packageCanonicalContent;
 	}
 	const isInvitationIdentical = Boolean(
 		existingInv &&
@@ -490,7 +496,15 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					updated_at: existingDraft.updated_at as string,
 				}
 			: null,
-		existingPub ? { content: existingPub.content as Record<string, unknown> } : null,
+		existingPub
+			? {
+					content: existingPub.content as Record<string, unknown>,
+					version: existingPub.version,
+				}
+			: null,
+		{
+			packageContentHash,
+		},
 	);
 
 	const isDraftContentIdentical =
@@ -941,19 +955,33 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			}
 		}
 
-		// 3. Upsert Draft
+		// 3. Upsert Draft (conditional on expected revision when updating)
 		let draftId = existingDraft?.id as string | undefined;
 		let draftUpdatedAt = existingDraft?.updated_at as string | undefined;
+		const expectedDraftUpdatedAt =
+			constructedPlan.targetPreconditions.existingDraftUpdatedAt ??
+			(existingDraft?.updated_at as string | undefined);
 
 		if (!isDraftContentIdentical || !existingDraft) {
 			if (existingDraft) {
+				if (!expectedDraftUpdatedAt) {
+					throw new Error(
+						'Target draft update requires an expected revision (updated_at) from the plan.',
+					);
+				}
 				const { data, error } = await supabase
 					.from('invitation_content_drafts')
 					.update({ content: proposedContent, status: 'draft', submission_id: null })
 					.eq('id', existingDraft.id)
+					.eq('updated_at', expectedDraftUpdatedAt)
 					.select('id, updated_at')
-					.single();
+					.maybeSingle();
 				if (error) throw error;
+				if (!data) {
+					throw new Error(
+						'Target draft changed after planning; refusing to overwrite a stale revision.',
+					);
+				}
 				markOverwritten('invitation_content_draft', existingDraft.id as string);
 				draftId = data.id as string;
 				draftUpdatedAt = data.updated_at as string;
@@ -1112,7 +1140,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				.single(),
 			supabase
 				.from('invitation_content_drafts')
-				.select('content')
+				.select('content, updated_at')
 				.eq('invitation_project_id', invitationId)
 				.is('deleted_at', null)
 				.maybeSingle(),
@@ -1209,6 +1237,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				'Final Local verification failed; managed-release provenance was not recorded.',
 			);
 
+		const appliedDraftUpdatedAt =
+			(finalDraft.data?.updated_at as string | undefined) ?? draftUpdatedAt ?? null;
 		const { error: provenanceError } = await supabase
 			.from('managed_invitation_release_provenance')
 			.upsert({
@@ -1224,6 +1254,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					.update(canonicalize(proposedContent))
 					.digest('hex'),
 				asset_manifest_hash: release.assetManifestHash,
+				managed_projection: proposedContent,
+				applied_draft_updated_at: appliedDraftUpdatedAt,
 				applied_at: new Date().toISOString(),
 			});
 		if (provenanceError) throw provenanceError;

@@ -9,10 +9,7 @@ import {
 	updateInvitationConditionally,
 } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
-import {
-	InvitationEditorSectionSchemas,
-	type InvitationEditorSectionKey,
-} from '@/lib/intake/schemas/invitation-editor.schema';
+import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type {
 	Invitation,
@@ -29,9 +26,12 @@ import {
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { hasRsvpContent } from '@/lib/intake/utils';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
+import {
+	applyDraftMutation,
+	DraftRevisionConflictError,
+} from '@/lib/intake/services/draft-mutation.service';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -151,54 +151,39 @@ export async function saveInvitationEditorSection(
 	section: InvitationEditorSectionKey,
 	input: { expectedUpdatedAt: string; value: unknown },
 ) {
-	const valueResult = InvitationEditorSectionSchemas[section].safeParse(input.value);
-	if (!valueResult.success) {
-		throw new ApiError(422, 'bad_request', 'Revisa los campos marcados antes de guardar.', {
-			issues: valueResult.error.issues,
+	const published = await findPublishedByInvitationId(invitationId);
+
+	try {
+		const result = await applyDraftMutation({
+			invitationId,
+			expectedDraftUpdatedAt: input.expectedUpdatedAt,
+			patch: { kind: 'section', section, value: input.value },
+			actor: 'editor',
+			skipDocumentSchema: true,
 		});
+
+		return {
+			section,
+			value: input.value,
+			draftUpdatedAt: result.draftUpdatedAt,
+			publication: {
+				hasPublishedContent: !!published,
+				version: published?.version ?? null,
+				publishedAt: published?.publishedAt ?? null,
+				hasUnpublishedChanges: true,
+			},
+		};
+	} catch (error) {
+		if (error instanceof DraftRevisionConflictError) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+				{ currentDraftUpdatedAt: error.currentDraftUpdatedAt },
+			);
+		}
+		throw error;
 	}
-
-	// Use the persisted draft (not hydrated content) as baseline so
-	// demo-originated values are never persisted into the draft.
-	// When no draft exists, seed from published content to prevent sparse drafts.
-	const [draft, published] = await Promise.all([
-		findDraftByInvitationId(invitationId),
-		findPublishedByInvitationId(invitationId),
-	]);
-	const currentContent = draft?.content ?? published?.content ?? {};
-	const normalizedValue = valueResult.data;
-	const nextContent = applySectionValue(currentContent, section, normalizedValue);
-
-	const savedDraft = draft
-		? await updateDraftContentConditionally(draft.id, input.expectedUpdatedAt, {
-				content: nextContent,
-				status: 'draft',
-			})
-		: await upsertDraft({
-				invitationId,
-				submissionId: null,
-				content: nextContent,
-			});
-
-	if (!savedDraft) {
-		throw new ApiError(
-			409,
-			'conflict',
-			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-		);
-	}
-
-	return {
-		section,
-		value: input.value,
-		draftUpdatedAt: savedDraft.updatedAt,
-		publication: {
-			hasPublishedContent: !!published,
-			version: published?.version ?? null,
-			publishedAt: published?.publishedAt ?? null,
-			hasUnpublishedChanges: true,
-		},
-	};
 }
 
 export async function saveInvitationEditorMetadata(

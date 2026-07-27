@@ -725,6 +725,7 @@ interface TargetScanResult {
 	existingPub: Record<string, unknown> | null;
 	existingEvent: Record<string, unknown> | null;
 	existingMember: Record<string, unknown> | null;
+	managedProjection: Record<string, unknown> | null;
 	targetInvitationId: string;
 	pubQuery: string;
 }
@@ -759,6 +760,20 @@ function scanTargetState(
 	});
 	const existingPub = pubResult.stdout.trim() ? parsePsqlJson(pubResult.stdout) : null;
 
+	const provenanceResult = runPsql(
+		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	const existingProvenance = provenanceResult.stdout.trim()
+		? parsePsqlJson(provenanceResult.stdout)
+		: null;
+	const managedProjection =
+		existingProvenance?.managed_projection &&
+		typeof existingProvenance.managed_projection === 'object'
+			? (existingProvenance.managed_projection as Record<string, unknown>)
+			: null;
+
 	const eventResult = runPsql(
 		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where slug = ${sqlLiteral(slug)} and deleted_at is null limit 1) t;`,
 		targetDbUrl,
@@ -785,6 +800,7 @@ function scanTargetState(
 		existingPub,
 		existingEvent,
 		existingMember,
+		managedProjection,
 		targetInvitationId,
 		pubQuery,
 	};
@@ -834,21 +850,23 @@ function analyzeTargetDrift(
 
 	let targetDraftContent: Record<string, unknown>;
 	let targetPublishedContent: Record<string, unknown>;
+	const packageCanonicalContent = materializeAssetReferences(
+		pkg.draft.content,
+		assetRefs,
+	) as Record<string, unknown>;
+	const packageContentHash = hashPublicationProjection(packageCanonicalContent);
 
 	if (
 		scanned.existingDraft?.content &&
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
 		const prevCanonical =
+			scanned.managedProjection ??
 			(scanned.existingPub?.content as Record<string, unknown>) ??
 			(scanned.existingDraft.content as Record<string, unknown>);
-		const currCanonical = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
-			string,
-			unknown
-		>;
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
-			currentCanonical: currCanonical,
+			currentCanonical: packageCanonicalContent,
 			currentTarget: scanned.existingDraft.content as Record<string, unknown>,
 			scope: updateScope,
 			targetName: slug,
@@ -859,10 +877,7 @@ function analyzeTargetDrift(
 		targetDraftContent = patchRes.patchedContent;
 		targetPublishedContent = patchRes.patchedContent;
 	} else {
-		targetDraftContent = materializeAssetReferences(pkg.draft.content, assetRefs) as Record<
-			string,
-			unknown
-		>;
+		targetDraftContent = packageCanonicalContent;
 		targetPublishedContent = materializeAssetReferences(
 			pkg.publishedContent?.content ?? pkg.draft.content,
 			assetRefs,
@@ -874,6 +889,7 @@ function analyzeTargetDrift(
 		targetDraftContent,
 		scanned.existingDraft,
 		scanned.existingPub,
+		{ packageContentHash },
 	);
 
 	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
@@ -1560,7 +1576,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			.digest('hex');
 		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(drift.targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		executedMutations++;
