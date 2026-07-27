@@ -61,6 +61,7 @@
         ]
     },
     "family": {
+        "featuredImage": "family",
         "parents": {
             "father": "Alejandro Torres Mendoza",
             "mother": "Mariana Fernanda Rivas"
@@ -180,7 +181,7 @@
         {
             "image": "interlude01",
             "afterSection": "location",
-            "alt": "Camila Fernanda con vestido azul cielo en Cuernavaca",
+            "alt": "Logia cubierta de Hacienda Los Claustros al anochecer",
             "height": "screen",
             "focalPoint": "50% 35%",
             "lightX": "44%",
@@ -189,7 +190,7 @@
         {
             "image": "interlude02",
             "afterSection": "family",
-            "alt": "Retrato elegante de Camila Fernanda",
+            "alt": "Detalle de tiara y tul azul cielo",
             "height": "screen",
             "focalPoint": "50% 25%",
             "lightX": "54%",
@@ -198,7 +199,7 @@
         {
             "image": "interlude03",
             "afterSection": "itinerary",
-            "alt": "Detalle de la celebración en Hacienda Los Claustros",
+            "alt": "Jardín de recepción con faroles en Hacienda Los Claustros",
             "height": "screen",
             "focalPoint": "54% 62%",
             "lightX": "68%",
@@ -208,7 +209,7 @@
         {
             "image": "interlude04",
             "afterSection": "rsvp",
-            "alt": "Retrato final de Camila Fernanda en tonos plata y azul",
+            "alt": "Tul azul hielo y atmósfera plata-azul",
             "height": "screen",
             "focalPoint": "50% 34%",
             "lightX": "42%",
