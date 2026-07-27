@@ -4,6 +4,8 @@ export * from './HeartSeal';
 export * from './Heartbreak';
 export * from './MonogramSeal';
 export * from './WaxMonogramSeal';
+export * from './WaxOrganicSeal';
+export * from './WaxMedallionSeal';
 export * from './FlowerSeal';
 export * from './MapLocation';
 export * from './Crown';

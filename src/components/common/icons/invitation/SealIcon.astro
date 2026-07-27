@@ -1,30 +1,53 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
 import { MonogramSealIcon } from './MonogramSeal';
-import { WaxMonogramSealIcon } from './WaxMonogramSeal';
+import { WaxOrganicSealIcon } from './WaxOrganicSeal';
+import { WaxMedallionSealIcon } from './WaxMedallionSeal';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	SEAL_ICON_MAP,
-	isParametricSealIcon,
+	resolveSealPresentation,
 	type EnvelopeSealIcon,
+	type SealPresentation,
 } from '@/lib/invitation/reveal-card';
 
 interface Props {
-	sealIcon: EnvelopeSealIcon;
+	presentation?: SealPresentation;
+	sealIcon?: EnvelopeSealIcon;
+	sealStyle?: 'wax' | 'ribbon' | 'flower' | 'monogram';
 	sealInitials?: string;
+	sealVariant?: string;
+	sealColor?: string;
+	sealImage?: ImageAsset;
 	class?: string;
+	idPrefix?: string;
 }
 
-const { sealIcon, sealInitials, class: className } = Astro.props;
-const sealIconName = SEAL_ICON_MAP[sealIcon];
-const initials = sealInitials?.trim();
+const { class: className, idPrefix, presentation: providedPresentation, ...inputProps } = Astro.props;
+
+const presentation = providedPresentation ?? resolveSealPresentation(inputProps);
+const sealIconName = presentation.icon ? SEAL_ICON_MAP[presentation.icon] : undefined;
+const initials = presentation.initials?.trim();
 ---
 
 {
-	sealIcon === 'wax-monogram' ? (
-		<WaxMonogramSealIcon initials={initials} className={className} />
-	) : isParametricSealIcon(sealIcon) && initials ? (
+	presentation.renderer === 'wax-organic' ? (
+		<WaxOrganicSealIcon initials={initials} className={className} idPrefix={idPrefix} />
+	) : presentation.renderer === 'wax-medallion' ? (
+		<WaxMedallionSealIcon initials={initials} className={className} idPrefix={idPrefix} />
+	) : presentation.renderer === 'monogram' && initials ? (
 		<MonogramSealIcon size={32} initials={initials} className={className} />
-	) : (
+	) : presentation.renderer === 'raster' && presentation.image ? (
+		<img
+			src={typeof presentation.image.src === 'string' ? presentation.image.src : presentation.image.src.src}
+			alt={presentation.image.alt || ''}
+			class:list={['seal-icon', 'seal-icon--image', className]}
+			loading="eager"
+			decoding="async"
+		/>
+	) : presentation.renderer === 'vector-icon' && sealIconName ? (
 		<Icon name={sealIconName} class={className} />
+	) : (
+		<WaxOrganicSealIcon initials={initials} className={className} idPrefix={idPrefix} />
 	)
 }

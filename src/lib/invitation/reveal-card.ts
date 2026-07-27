@@ -1,16 +1,38 @@
 import type { IconName } from '@/lib/icons/icon-catalog';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 
 export type EnvelopeSealIcon =
-	'boot' | 'heart' | 'monogram' | 'wax-monogram' | 'flower' | 'special-edition';
+	| 'boot'
+	| 'heart'
+	| 'monogram'
+	| 'wax-monogram'
+	| 'wax-organic'
+	| 'wax-medallion'
+	| 'flower'
+	| 'special-edition';
 
-/** Seal icons that render parametric initials when `sealInitials` is present. */
+/**
+ * Seal icons that render parametric initials when `sealInitials` is present.
+ *
+ * @deprecated Use `resolveSealPresentation()` to determine the renderer path.
+ *   The rendering logic in `SealIcon.astro` now switches on `SealPresentation.renderer`
+ *   directly; this const and its related type/guard exist only for backward-compat tests.
+ */
 export const PARAMETRIC_SEAL_ICONS = [
 	'monogram',
 	'wax-monogram',
+	'wax-organic',
+	'wax-medallion',
 ] as const satisfies readonly EnvelopeSealIcon[];
 
+/**
+ * @deprecated Use `resolveSealPresentation()` instead.
+ */
 export type ParametricSealIcon = (typeof PARAMETRIC_SEAL_ICONS)[number];
 
+/**
+ * @deprecated Use the `renderer` field on `SealPresentation` from `resolveSealPresentation()` instead.
+ */
 export function isParametricSealIcon(sealIcon: EnvelopeSealIcon): sealIcon is ParametricSealIcon {
 	return (PARAMETRIC_SEAL_ICONS as readonly string[]).includes(sealIcon);
 }
@@ -20,9 +42,128 @@ export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 	heart: 'HeartSeal',
 	monogram: 'MonogramSeal',
 	'wax-monogram': 'WaxMonogramSeal',
+	'wax-organic': 'WaxMonogramSeal',
+	'wax-medallion': 'WaxMonogramSeal',
 	flower: 'FlowerSeal',
 	'special-edition': 'Diamond',
 };
+
+export type SealRendererType =
+	'wax-organic' | 'wax-medallion' | 'monogram' | 'vector-icon' | 'raster';
+
+export interface SealPresentation {
+	renderer: SealRendererType;
+	skin?: string;
+	initials?: string;
+	icon?: EnvelopeSealIcon;
+	image?: ImageAsset;
+}
+
+export interface EnvelopeSealInput {
+	sealStyle?: 'wax' | 'ribbon' | 'flower' | 'monogram';
+	sealIcon?: EnvelopeSealIcon;
+	sealInitials?: string;
+	sealVariant?: string;
+	sealColor?: string;
+	sealImage?: ImageAsset;
+}
+
+/**
+ * Pure resolver mapping raw envelope configuration to a normalized SealPresentation.
+ *
+ * Precedence:
+ * 1. Raster Image (`sealImage` present) -> 'raster'
+ * 2. Explicit Structural Selection (`wax-medallion` / `wax-organic`) -> 'wax-medallion' | 'wax-organic'
+ * 3. Existing Icon & Style Contracts (`wax-monogram` -> 'wax-organic', `monogram` -> 'monogram', etc.)
+ * 4. Fallback Default -> 'wax-organic'
+ */
+export function resolveSealPresentation(input: EnvelopeSealInput = {}): SealPresentation {
+	const initials = input.sealInitials?.trim() || undefined;
+	const skin = input.sealColor || input.sealVariant;
+
+	// 1. Raster image precedence (explicit asset input)
+	if (input.sealImage && Boolean(input.sealImage.src)) {
+		return {
+			renderer: 'raster',
+			image: input.sealImage,
+			skin: input.sealVariant,
+			initials,
+		};
+	}
+
+	// 2. Canonical structural selection via sealIcon
+	if (input.sealIcon === 'wax-medallion') {
+		return {
+			renderer: 'wax-medallion',
+			skin,
+			initials,
+			icon: 'wax-medallion',
+		};
+	}
+
+	if (input.sealIcon === 'wax-organic') {
+		return {
+			renderer: 'wax-organic',
+			skin,
+			initials,
+			icon: 'wax-organic',
+		};
+	}
+
+	// 3. Existing icon & style contracts
+	if (input.sealIcon === 'wax-monogram') {
+		return {
+			renderer: 'wax-organic',
+			skin,
+			initials,
+			icon: 'wax-monogram',
+		};
+	}
+
+	if (input.sealIcon === 'monogram' || input.sealStyle === 'monogram') {
+		return {
+			renderer: 'monogram',
+			skin,
+			initials,
+			icon: 'monogram',
+		};
+	}
+
+	if (input.sealIcon && ['boot', 'heart', 'flower', 'special-edition'].includes(input.sealIcon)) {
+		return {
+			renderer: 'vector-icon',
+			icon: input.sealIcon,
+			skin,
+			initials,
+		};
+	}
+
+	if (input.sealStyle === 'flower') {
+		return {
+			renderer: 'vector-icon',
+			icon: 'flower',
+			skin,
+			initials,
+		};
+	}
+
+	if (input.sealStyle === 'ribbon') {
+		return {
+			renderer: 'vector-icon',
+			icon: 'special-edition',
+			skin,
+			initials,
+		};
+	}
+
+	// 4. Default fallback: wax-organic
+	return {
+		renderer: 'wax-organic',
+		skin,
+		initials,
+		icon: 'wax-organic',
+	};
+}
 
 export interface RevealCardData {
 	label: string;
