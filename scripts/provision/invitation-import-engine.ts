@@ -36,6 +36,7 @@ import {
 	checkTargetDivergenceConflict,
 	buildResourceActions,
 } from './promotion-comparison.ts';
+import { resolveManagedMergeBaseline } from './managed-merge-baseline.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
@@ -860,10 +861,11 @@ function analyzeTargetDrift(
 		scanned.existingDraft?.content &&
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
-		const prevCanonical =
-			scanned.managedProjection ??
-			(scanned.existingPub?.content as Record<string, unknown>) ??
-			(scanned.existingDraft.content as Record<string, unknown>);
+		const prevCanonical = resolveManagedMergeBaseline({
+			managedProjection: scanned.managedProjection,
+			publishedContent: scanned.existingPub?.content as Record<string, unknown> | undefined,
+			draftContent: scanned.existingDraft.content as Record<string, unknown>,
+		});
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
 			currentCanonical: packageCanonicalContent,

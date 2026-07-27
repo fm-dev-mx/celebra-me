@@ -26,6 +26,7 @@ import {
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
+import { resolveManagedMergeBaseline } from './managed-merge-baseline.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	buildNormalizedInvitationRelease,
@@ -436,10 +437,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		existingDraft?.content &&
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
-		const prevCanonical =
-			(existingProvenance?.managed_projection as Record<string, unknown> | null) ??
-			(existingPub?.content as Record<string, unknown>) ??
-			(existingDraft.content as Record<string, unknown>);
+		const prevCanonical = resolveManagedMergeBaseline({
+			managedProjection: existingProvenance?.managed_projection as
+				| Record<string, unknown>
+				| null
+				| undefined,
+			publishedContent: existingPub?.content as Record<string, unknown> | undefined,
+			draftContent: existingDraft.content as Record<string, unknown>,
+		});
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
 			currentCanonical: packageCanonicalContent,
