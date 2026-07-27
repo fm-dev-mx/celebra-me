@@ -173,7 +173,7 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 | `soft_delete_invitation_project(uuid)`     | `archive_invitation(uuid)`  |
 | `restore_invitation_project(uuid)`         | `restore_invitation(uuid)`  |
 | `backfill_guest_invitations_from_legacy()` | Intake pipeline             |
-| `deleted_events` view                      | `archived_invitations` view |
+| `deleted_events` view (dropped)            | `archived_invitations` view |
 
 ## Security Model
 
@@ -232,8 +232,9 @@ or invitation-domain changes.
 3. **Drop deprecated RPCs**: `soft_delete_event`, `restore_event`, `soft_delete_invitation_project`,
    `restore_invitation_project`, `backfill_guest_invitations_from_legacy` after verifying no callers
    remain.
-4. **Drop deprecated views**: `deleted_events` (unused; `deleted_invitation_projects` already
-   dropped in migration 36).
+4. **Drop deprecated views**: `deleted_events` — done in
+   `20260726170000_drop_deleted_events_view.sql` (`deleted_invitation_projects` already dropped
+   earlier).
 5. **Remove compatibility view**: `invitation_projects` view (created in migration 36) after the new
    build is deployed and verified.
 6. **Add NOT NULL to `short_id`**: After verifying all rows have a value.

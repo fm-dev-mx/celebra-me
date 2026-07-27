@@ -69,7 +69,6 @@ const ALLOWED_LOCAL_ADDITIONS = {
 		'sales_orders',
 		'customers',
 		'commercial_record_classifications',
-		'deleted_events',
 		'pg_all_foreign_keys',
 		'tap_funky',
 	]),

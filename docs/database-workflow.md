@@ -22,7 +22,7 @@ Local -> Production: allowed only for reviewed migrations.
 ## Production Reconciliation Status (point-in-time)
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
-- The repository currently contains **62** versioned migration files. Never infer hosted status or
+- The repository currently contains **64** versioned migration files. Never infer hosted status or
   pending counts from this number; obtain current Production state with the read-only
   `pnpm db:prod:audit` workflow.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations in
