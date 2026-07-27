@@ -17,6 +17,9 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Changed
 
+- **Celestial Blue demo**: Ice Loggia talent photo set, Look P interludes, family featured image,
+  and cooler shared-light envelope/seal polish.
+
 <!-- Pending product/operator-visible changes for the next checkpoint. -->
 
 ## [0.13.0-beta.1] - 2026-07-25

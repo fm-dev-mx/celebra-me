@@ -29,39 +29,346 @@
 	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
 
-// Cool silver/ice wax seal for celestial-blue parametric embossed monogram.
-// Serif monogram (Georgia) vs Cormorant envelope name / Pinyon calligraphy.
+// Cool silver/ice stationery reveal — paper weight, embossed wax, editorial type.
 .envelope-wrapper[data-variant='celestial-blue'] {
-	--wax-seal-highlight: var(--color-ice-blue);
-	--wax-seal-mid: color-mix(in srgb, var(--color-cold-silver) 72%, var(--color-satin-blue));
-	--wax-seal-deep: color-mix(in srgb, var(--color-satin-blue) 38%, var(--color-soft-graphite));
-	--wax-seal-letter: var(--color-deep-blue-graphite);
-	--wax-seal-shadow: var(--color-deep-blue-graphite);
-	--wax-seal-font-family: georgia, 'Times New Roman', serif;
+	--env-bg:
+		radial-gradient(
+			ellipse 78% 58% at 50% 38%,
+			rgb(var(--color-diamond-white-rgb) / 96%) 0%,
+			rgb(var(--color-cool-ivory-rgb) / 94%) 42%,
+			color-mix(in srgb, var(--color-ice-blue) 28%, var(--color-cool-ivory)) 72%,
+			color-mix(in srgb, var(--color-deep-blue-graphite) 14%, var(--color-cool-ivory)) 100%
+		),
+		var(--color-cool-ivory);
+	--env-paper-bg: linear-gradient(
+		158deg,
+		color-mix(in srgb, var(--color-diamond-white) 42%, var(--color-ice-blue)) 0%,
+		color-mix(in srgb, var(--color-ice-blue) 68%, var(--color-satin-blue)) 46%,
+		color-mix(in srgb, var(--color-satin-blue) 58%, var(--color-cold-silver)) 100%
+	);
+	--env-paper-border: color-mix(in srgb, var(--color-liquid-silver) 62%, transparent);
+	--env-text-primary: var(--color-deep-blue-graphite);
+	--env-text-secondary: color-mix(
+		in srgb,
+		var(--color-soft-graphite) 72%,
+		var(--color-cold-silver)
+	);
+	--env-accent: color-mix(in srgb, var(--color-satin-blue) 55%, var(--color-cold-silver));
+	--env-shadow-container:
+		0 36px 72px rgb(var(--color-deep-blue-graphite-rgb) / 14%),
+		0 12px 28px rgb(var(--color-deep-blue-graphite-rgb) / 8%),
+		0 2px 0 rgb(var(--color-diamond-white-rgb) / 55%);
+	--env-title-size: clamp(1.55rem, 6.2cqw, 2.35rem);
 	--env-seal-accent: var(--color-satin-blue);
 
-	.envelope-seal-hint {
-		color: color-mix(in srgb, var(--color-soft-graphite) 55%, var(--color-cold-silver));
-		opacity: 60%;
-	}
-
-	// Letter card follows cool celestial paper, not warm ivory defaults.
-	--env-paper-bg: color-mix(
+	// Cool ice/silver wax — higher contrast than the shared rose-gold defaults.
+	--wax-seal-highlight: color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-ice-blue));
+	--wax-seal-mid: color-mix(in srgb, var(--color-cold-silver) 48%, var(--color-satin-blue));
+	--wax-seal-deep: color-mix(in srgb, var(--color-soft-graphite) 52%, var(--color-satin-blue));
+	--wax-seal-letter: var(--color-deep-blue-graphite);
+	--wax-seal-shadow: var(--color-deep-blue-graphite);
+	--wax-seal-sheen: var(--color-diamond-white);
+	--wax-seal-emboss-shadow: color-mix(
 		in srgb,
-		var(--color-ice-blue) 12%,
-		var(--color-envelope-paper-ivory)
+		var(--color-deep-blue-graphite) 72%,
+		var(--color-satin-blue)
 	);
-	--reveal-card-bg: color-mix(
-		in srgb,
-		var(--color-ice-blue) 10%,
-		var(--color-envelope-paper-ivory)
+	--wax-seal-font-family: var(--font-display), georgia, 'Times New Roman', serif;
+
+	// Letter card — cool stationery plate continuous with the refined envelope.
+	--reveal-card-bg: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-ice-blue)) 0%,
+		color-mix(in srgb, var(--color-ice-blue) 22%, var(--color-envelope-paper-ivory)) 48%,
+		color-mix(in srgb, var(--color-cool-ivory) 82%, var(--color-cold-silver)) 100%
 	);
 	--reveal-card-text-primary: var(--color-deep-blue-graphite);
 	--reveal-card-text-secondary: color-mix(
 		in srgb,
-		var(--color-soft-graphite) 62%,
+		var(--color-soft-graphite) 68%,
 		var(--color-cold-silver)
 	);
-	--reveal-card-border: color-mix(in srgb, var(--color-cold-silver) 36%, transparent);
-	--reveal-card-accent: color-mix(in srgb, var(--color-satin-blue) 42%, var(--color-cold-silver));
+	--reveal-card-border: color-mix(in srgb, var(--color-liquid-silver) 58%, transparent);
+	--reveal-card-font-display: var(--font-calligraphy), cursive;
+	--env-font-display: var(--font-calligraphy), cursive;
+	--reveal-card-radius: 2px;
+	--reveal-card-grain-opacity: 0.85;
+	--reveal-card-shadow:
+		0 2px 4px rgb(var(--color-deep-blue-graphite-rgb) / 6%),
+		0 18px 42px rgb(var(--color-deep-blue-graphite-rgb) / 12%),
+		0 36px 68px rgb(var(--color-deep-blue-graphite-rgb) / 8%),
+		inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%),
+		inset 0 -1px 2px rgb(var(--color-deep-blue-graphite-rgb) / 5%),
+		inset 0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 28%);
+	--reveal-card-enter-y: 22px;
+	--reveal-card-rest-y: clamp(-36px, -5.5svh, -18px);
+
+	.invitation-reveal-card {
+		background:
+			linear-gradient(180deg, rgb(var(--color-diamond-white-rgb) / 22%) 0%, transparent 38%),
+			var(--reveal-card-bg);
+
+		&::before {
+			background:
+				radial-gradient(
+					ellipse at 50% 82%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 4%),
+					transparent 58%
+				),
+				radial-gradient(
+					ellipse at 78% 16%,
+					rgb(var(--color-satin-blue-rgb) / 6%),
+					transparent 48%
+				),
+				repeating-linear-gradient(
+					0deg,
+					transparent,
+					transparent 1px,
+					rgb(var(--color-deep-blue-graphite-rgb) / 1.4%) 1px,
+					transparent 2px
+				);
+		}
+
+		// Inner silver plate frame — stationery, not UI chrome.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0.55rem;
+			z-index: 0;
+			pointer-events: none;
+			border: 1px solid rgb(var(--color-liquid-silver-rgb) / 42%);
+			border-radius: 1px;
+			box-shadow: inset 0 0 0 1px rgb(var(--color-diamond-white-rgb) / 35%);
+		}
+	}
+
+	.invitation-reveal-card__inner {
+		gap: 0.35rem;
+		padding: clamp(1.85rem, 5vw, 2.45rem) clamp(1.55rem, 4.5vw, 2.15rem);
+	}
+
+	.invitation-reveal-card__label {
+		margin: 0 0 0.35rem;
+		font-size: clamp(0.58rem, 2vw, 0.7rem);
+		font-weight: 500;
+		letter-spacing: 0.34em;
+		color: var(--reveal-card-text-secondary);
+		opacity: 78%;
+	}
+
+	.invitation-reveal-card__name {
+		font-size: clamp(1.75rem, 7.5vw, 2.35rem);
+		font-weight: 400;
+		letter-spacing: 0.01em;
+		line-height: 1.18;
+		color: var(--reveal-card-text-primary);
+		text-shadow: 0 1px 0 rgb(var(--color-diamond-white-rgb) / 50%);
+	}
+
+	.invitation-reveal-card__date {
+		margin: 0.35rem 0 0;
+		font-size: clamp(0.6rem, 2.2vw, 0.72rem);
+		font-weight: 500;
+		letter-spacing: 0.22em;
+		color: color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver));
+		opacity: 82%;
+	}
+
+	.invitation-reveal-card__tagline {
+		margin: 0.4rem 0 0;
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
+		color: color-mix(in srgb, var(--color-soft-graphite) 58%, var(--color-cold-silver));
+	}
+
+	.invitation-reveal-card__divider {
+		width: min(7rem, 38%);
+		height: 1px;
+		margin: 0.65rem 0 0.15rem;
+		background: linear-gradient(
+			to right,
+			transparent,
+			color-mix(in srgb, var(--color-liquid-silver) 55%, var(--color-satin-blue)),
+			transparent
+		);
+		opacity: 90%;
+	}
+
+	.invitation-reveal-card__guest {
+		gap: 0.3rem;
+		margin-top: 0.55rem;
+		padding-top: clamp(0.2rem, 1svh, 0.45rem);
+	}
+
+	.invitation-reveal-card__guest-label {
+		letter-spacing: 0.22em;
+		opacity: 70%;
+	}
+
+	.invitation-reveal-card__guest-name {
+		font-family: var(--font-display), georgia, serif;
+		font-size: clamp(1.05rem, 5.2vw, 1.55rem);
+		font-style: normal;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		text-transform: none;
+		color: color-mix(in srgb, var(--color-deep-blue-graphite) 82%, var(--color-cold-silver));
+	}
+
+	// Keep base `envCardRise` name — EnvelopeReveal completes on that animationend.
+	&.is-opening .envelope-reveal-stage {
+		animation-duration: calc(var(--duration-reveal) + 0.15s);
+	}
+
+	.envelope-container {
+		&::after {
+			box-shadow: var(--env-shadow-container);
+		}
+	}
+
+	.envelope-base,
+	.envelope-pocket,
+	.envelope-flap {
+		background:
+			linear-gradient(
+				168deg,
+				rgb(var(--color-diamond-white-rgb) / 28%) 0%,
+				transparent 36%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 6%) 100%
+			),
+			var(--env-paper-bg);
+		border-color: var(--env-paper-border);
+
+		&::before {
+			opacity: 42%;
+			background:
+				radial-gradient(
+					ellipse at 50% 8%,
+					rgb(var(--color-diamond-white-rgb) / 14%),
+					transparent 48%
+				),
+				repeating-linear-gradient(
+					0deg,
+					transparent,
+					transparent 2px,
+					rgb(var(--color-deep-blue-graphite-rgb) / 2.2%) 2px,
+					transparent 3px
+				);
+		}
+	}
+
+	.envelope-pocket {
+		box-shadow: inset 0 12px 22px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
+
+		&::after {
+			height: 1px;
+			background: linear-gradient(
+				to right,
+				transparent,
+				color-mix(in srgb, var(--color-liquid-silver) 70%, transparent),
+				transparent
+			);
+		}
+	}
+
+	.envelope-flap {
+		filter: drop-shadow(0 16px 28px rgb(var(--color-deep-blue-graphite-rgb) / 14%));
+
+		&::after {
+			height: 1px;
+			background: linear-gradient(
+				to right,
+				transparent,
+				color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-liquid-silver)),
+				transparent
+			);
+			opacity: 70%;
+		}
+	}
+
+	.envelope-name {
+		font-weight: 400;
+		letter-spacing: 0.01em;
+		line-height: 1.2;
+		text-shadow: 0 1px 0 rgb(var(--color-diamond-white-rgb) / 45%);
+	}
+
+	.envelope-details {
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.2em;
+		color: color-mix(in srgb, var(--color-soft-graphite) 78%, var(--color-cold-silver));
+		opacity: 78%;
+	}
+
+	.tease-divider {
+		width: 8rem;
+		background: linear-gradient(
+			to right,
+			transparent,
+			color-mix(in srgb, var(--color-liquid-silver) 68%, var(--color-satin-blue)),
+			transparent
+		);
+		opacity: 85%;
+	}
+
+	.envelope-seal-hint {
+		color: color-mix(in srgb, var(--color-soft-graphite) 68%, var(--color-cold-silver));
+		font-size: 0.58rem;
+		font-weight: 500;
+		letter-spacing: 0.34em;
+		opacity: 72%;
+	}
+
+	.envelope-external-instruction {
+		opacity: 82%;
+		filter: none;
+
+		p {
+			color: color-mix(in srgb, var(--color-soft-graphite) 70%, var(--color-cold-silver));
+			letter-spacing: 0.4em;
+		}
+	}
+
+	.instruction-line {
+		width: 28px;
+		background: linear-gradient(
+			to right,
+			transparent,
+			color-mix(in srgb, var(--color-liquid-silver) 70%, var(--color-satin-blue)),
+			transparent
+		);
+		opacity: 45%;
+	}
+
+	// Quiet seal — no looping glow; tactile hover/focus only.
+	.envelope-seal-button[data-seal-icon='wax-monogram'] {
+		.envelope-seal-button__visual {
+			animation: none;
+			transition:
+				transform var(--duration-standard) var(--ease-premium),
+				filter var(--duration-standard) var(--ease-premium);
+			filter: drop-shadow(0 6px 14px rgb(var(--color-deep-blue-graphite-rgb) / 22%))
+				drop-shadow(0 1px 0 rgb(var(--color-diamond-white-rgb) / 35%));
+		}
+
+		&:hover .envelope-seal-button__visual,
+		&:focus-visible .envelope-seal-button__visual {
+			transform: scale(1.03) translateY(-1px);
+			filter: drop-shadow(0 10px 20px rgb(var(--color-deep-blue-graphite-rgb) / 28%))
+				drop-shadow(0 1px 0 rgb(var(--color-diamond-white-rgb) / 45%));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.envelope-seal-button[data-seal-icon='wax-monogram'] {
+			.envelope-seal-button__visual,
+			&:hover .envelope-seal-button__visual,
+			&:focus-visible .envelope-seal-button__visual {
+				transition: none;
+				transform: none;
+			}
+		}
+	}
 }

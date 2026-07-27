@@ -17,7 +17,8 @@ function resolveInitialsFontSize(initials: string): number {
  * Embossed wax-seal monogram for envelope reveal.
  * Parametric initials; rose-gold defaults overridable via CSS vars:
  * --wax-seal-highlight, --wax-seal-mid, --wax-seal-deep, --wax-seal-letter,
- * --wax-seal-shadow, --wax-seal-font-family.
+ * --wax-seal-shadow, --wax-seal-sheen, --wax-seal-emboss-shadow,
+ * --wax-seal-font-family.
  *
  * Typography defaults to a refined serif/label face (not --font-calligraphy)
  * so seal initials do not twin the envelope name script.
@@ -83,14 +84,18 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 				>
 					<feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="blur" />
 					<feOffset dx="0.6" dy="0.9" result="offsetBlur" />
-					<feFlood floodColor="#5c322c" floodOpacity="0.45" result="shadowColor" />
+					<feFlood
+						floodColor="var(--wax-seal-emboss-shadow, #5c322c)"
+						floodOpacity="0.45"
+						result="shadowColor"
+					/>
 					<feComposite in="shadowColor" in2="offsetBlur" operator="in" result="shadow" />
 					<feSpecularLighting
 						in="blur"
 						surfaceScale="2.4"
 						specularConstant="0.85"
 						specularExponent="18"
-						lightingColor="#fff8f4"
+						lightingColor="var(--wax-seal-sheen, #fff8f4)"
 						result="spec"
 					>
 						<fePointLight x="-24" y="-36" z="48" />
@@ -132,7 +137,7 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 						dx="0"
 						dy="-0.35"
 						stdDeviation="0.3"
-						floodColor="#fff8f4"
+						floodColor="var(--wax-seal-sheen, #fff8f4)"
 						floodOpacity="0.28"
 					/>
 				</filter>
@@ -186,7 +191,14 @@ export const WaxMonogramSealIcon: FC<WaxMonogramSealProps> = ({
 			</g>
 
 			{/* Soft top-left sheen on basin */}
-			<ellipse cx="48" cy="46" rx="22" ry="16" fill="#fff8f4" opacity="0.1" />
+			<ellipse
+				cx="48"
+				cy="46"
+				rx="22"
+				ry="16"
+				fill="var(--wax-seal-sheen, #fff8f4)"
+				opacity="0.12"
+			/>
 
 			{label ? (
 				<text
