@@ -24,6 +24,7 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
 import '@/styles/invitation.scss';
 
+import { evaluatePreviewRevision } from '@/lib/editor/preview-revision';
 import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
 
 const { id } = Astro.params;
@@ -97,18 +98,13 @@ const [draft, published] = await Promise.all([
 ]);
 
 const requestedRevision = Astro.url.searchParams.get('revision');
-let revisionMismatch = false;
-if (requestedRevision) {
-	if (!draft?.updatedAt) {
-		revisionMismatch = true;
-		errorMessage =
-			'La revisión solicitada no está disponible: no hay un borrador guardado.';
-	} else if (draft.updatedAt !== requestedRevision) {
-		revisionMismatch = true;
-		errorMessage =
-			'La revisión de vista previa no coincide con el borrador guardado. Vuelve a guardar o recarga la vista previa.';
-	}
-}
+const revisionGate = evaluatePreviewRevision({
+	requestedRevision,
+	draftUpdatedAt: draft?.updatedAt,
+	priorError: errorMessage,
+});
+const revisionMismatch = revisionGate.revisionMismatch;
+errorMessage = revisionGate.errorMessage;
 
 const effectiveContent =
 	revisionMismatch || errorMessage
