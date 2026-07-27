@@ -17,10 +17,29 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Changed
 
-- **Celestial Blue demo**: Ice Loggia talent photo set, Look P interludes, family featured image,
-  and cooler shared-light envelope/seal polish.
-
 <!-- Pending product/operator-visible changes for the next checkpoint. -->
+
+## [0.14.0-beta.1] - 2026-07-27
+
+Envelope seal system, new talent packs, and Celestial Blue evolution since `v0.13.0-beta.1`.
+
+### Added
+
+- **Envelope seal system**: wax-organic, wax-medallion, and wax-monogram renderers with resolution resolver, container-query size tiers, and seal-icon integration — supporting multi-renderer seal profiles per invitation.
+- **Raster seal content**: document renderer model and envelope seal configuration in the content schema.
+- **New talent packs**: Ice Loggia (Camila, 24 shots), Ice Waves (Camila), and Marble Moon (Camila, 20 shots) with model documentation and shot prompts (`src/assets/images/talents/`).
+- **Provision sourceHash validation**: reject stale file packages with mismatched source hashes during import.
+
+### Changed
+
+- **Celestial Blue demo**: Ice Loggia talent photo refresh, Look P interludes, family featured image, desktop hero crop, and cooler shared-light envelope/seal polish with deeper satin wax palette and richer shadows.
+- **Wax-monogram seal**: redesigned with pressed atelier aesthetic and separator support.
+- **Envelope reveal**: integrated multi-renderer seals with wax-monogram anchor on flap fold and shared-light sheen polish.
+- **Celestial Blue reveal theme**: deeper satin wax palette and richer shadow profiles.
+
+### Data / model
+
+- Schema: dropped unused `deleted_events` view (`20260726170000_drop_deleted_events_view`).
 
 ## [0.13.0-beta.1] - 2026-07-25
 
