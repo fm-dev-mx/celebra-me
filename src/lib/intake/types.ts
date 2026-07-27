@@ -168,6 +168,10 @@ export interface InvitationAsset {
 	validationVersion?: number;
 	originalMimeType?: string;
 	originalFileSize?: number;
+	provider?: 'supabase' | 'cloudinary';
+	providerPublicId?: string;
+	secureUrl?: string;
+	sha256?: string;
 	createdAt: string;
 	updatedAt: string;
 	deletedAt?: string;

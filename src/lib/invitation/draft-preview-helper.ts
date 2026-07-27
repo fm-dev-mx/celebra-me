@@ -2,7 +2,7 @@ import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.map
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
-import { getPublicUrl } from '@/lib/intake/storage';
+import { preferUploadedDeliverySrc } from '@/lib/intake/services/asset-delivery';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { Invitation } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
@@ -49,21 +49,36 @@ export function selectPreviewContent(input: {
  */
 function resolveUploadedRefs(
 	content: Record<string, unknown>,
-	assets: Array<{ id: string; bucket: string; storagePath: string }>,
+	assets: Array<{
+		id: string;
+		bucket: string;
+		storagePath: string;
+		provider?: string;
+		providerPublicId?: string;
+		secureUrl?: string;
+	}>,
 ): Record<string, unknown> {
-	const assetMap = new Map(
-		assets.map((a) => [a.id, { bucket: a.bucket, storagePath: a.storagePath }]),
-	);
+	const assetMap = new Map(assets.map((a) => [a.id, a]));
 
 	function walk(value: unknown): unknown {
 		if (!value || typeof value !== 'object') return value;
 		const obj = value as Record<string, unknown>;
-		if (obj.type === 'uploaded' && typeof obj.assetId === 'string' && !obj.src) {
+		if (obj.type === 'uploaded' && typeof obj.assetId === 'string') {
 			const record = assetMap.get(obj.assetId as string);
-			if (record) {
-				return { ...obj, src: getPublicUrl(record.bucket, record.storagePath) };
-			}
-			return obj;
+			if (!record) return obj;
+			const frozenSrc = typeof obj.src === 'string' ? obj.src : null;
+			const src = preferUploadedDeliverySrc({
+				asset: {
+					id: record.id,
+					provider: record.provider,
+					bucket: record.bucket,
+					storagePath: record.storagePath,
+					providerPublicId: record.providerPublicId,
+					secureUrl: record.secureUrl,
+				},
+				frozenSrc,
+			});
+			return { ...obj, src };
 		}
 		if (Array.isArray(value)) {
 			return value.map(walk);

@@ -9,7 +9,10 @@ import {
 	restoreAsset as restoreAssetRepo,
 	softDeleteAsset,
 } from '@/lib/intake/repositories/asset.repository';
-import { uploadToStorage, getPublicUrl, DEFAULT_BUCKET } from '@/lib/intake/storage';
+import { uploadToStorage, DEFAULT_BUCKET } from '@/lib/intake/storage';
+import {
+	resolveAssetDeliveryUrl,
+} from '@/lib/intake/services/asset-delivery';
 import {
 	collectAssetUsage,
 	collectAssetUsagesByInvitation,
@@ -21,6 +24,17 @@ import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { isEventAssetKey, getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
 import type { InvitationAsset } from '@/lib/intake/types';
 import { normalizeInvitationImage } from '@/lib/intake/services/asset-policy';
+
+function deliverySourceFromAsset(asset: InvitationAsset) {
+	return {
+		id: asset.id,
+		provider: asset.provider ?? 'supabase',
+		bucket: asset.bucket,
+		storagePath: asset.storagePath,
+		providerPublicId: asset.providerPublicId,
+		secureUrl: asset.secureUrl,
+	};
+}
 
 export interface UploadAssetResult {
 	asset: InvitationAsset;
@@ -55,7 +69,7 @@ export async function uploadAsset(
 		originalFileSize: normalized.originalFileSize,
 	});
 
-	const src = getPublicUrl(DEFAULT_BUCKET, storagePath);
+	const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
 
 	return { asset, src };
 }
@@ -163,7 +177,7 @@ export async function listAssets(
 	if (filter === 'archived') {
 		const archivedAssets = await findArchivedAssetsByInvitationId(invitationId);
 		return archivedAssets.map((asset) => {
-			const src = getPublicUrl(asset.bucket, asset.storagePath);
+			const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
 			return {
 				...asset,
 				src,
@@ -186,7 +200,7 @@ export async function listAssets(
 
 	const uploaded: AssetWithUsage[] = assets.map((asset) => {
 		const usage = usageByAssetId.get(asset.id);
-		const src = getPublicUrl(asset.bucket, asset.storagePath);
+		const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
 		return {
 			...asset,
 			src,
@@ -299,7 +313,7 @@ export async function importDemoAsset(
 		originalFileSize: normalized.originalFileSize,
 	});
 
-	const src = getPublicUrl(DEFAULT_BUCKET, storagePath);
+	const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
 
 	return { asset, src };
 }

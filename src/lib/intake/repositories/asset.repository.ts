@@ -15,12 +15,18 @@ interface AssetRow {
 	validation_version: number;
 	original_mime_type: string | null;
 	original_file_size: number | null;
+	provider: string | null;
+	provider_public_id: string | null;
+	secure_url: string | null;
+	sha256: string | null;
 	created_at: string;
 	updated_at: string;
 	deleted_at: string | null;
 }
 
 function toInvitationAsset(row: AssetRow): InvitationAsset {
+	const provider =
+		row.provider === 'cloudinary' || row.provider === 'supabase' ? row.provider : 'supabase';
 	return {
 		id: row.id,
 		invitationId: row.invitation_id,
@@ -35,6 +41,10 @@ function toInvitationAsset(row: AssetRow): InvitationAsset {
 		validationVersion: row.validation_version,
 		originalMimeType: row.original_mime_type ?? undefined,
 		originalFileSize: row.original_file_size ?? undefined,
+		provider,
+		providerPublicId: row.provider_public_id ?? undefined,
+		secureUrl: row.secure_url ?? undefined,
+		sha256: row.sha256 ?? undefined,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 		deletedAt: row.deleted_at ?? undefined,
@@ -42,7 +52,7 @@ function toInvitationAsset(row: AssetRow): InvitationAsset {
 }
 
 const SELECT_COLUMNS =
-	'id,invitation_id,display_name,default_alt_text,bucket,storage_path,mime_type,width,height,file_size,validation_version,original_mime_type,original_file_size,created_at,updated_at,deleted_at';
+	'id,invitation_id,display_name,default_alt_text,bucket,storage_path,mime_type,width,height,file_size,validation_version,original_mime_type,original_file_size,provider,provider_public_id,secure_url,sha256,created_at,updated_at,deleted_at';
 
 export async function createAsset(input: {
 	invitationId: string;

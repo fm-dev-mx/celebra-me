@@ -9,7 +9,7 @@ import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.map
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
-import { getPublicUrl } from '@/lib/intake/storage';
+import { preferUploadedDeliverySrc } from '@/lib/intake/services/asset-delivery';
 import type {
 	Invitation,
 	InvitationAsset,
@@ -281,7 +281,19 @@ async function freezeUploadedContentRefs(
 				);
 			}
 			assertUploadedAssetPolicy(asset, path, legacyPublishedAssetIds.has(assetId));
-			return { ...obj, src: getPublicUrl(asset.bucket, asset.storagePath) };
+			const frozenSrc = typeof obj.src === 'string' ? obj.src : null;
+			const src = preferUploadedDeliverySrc({
+				asset: {
+					id: asset.id,
+					provider: asset.provider,
+					bucket: asset.bucket,
+					storagePath: asset.storagePath,
+					providerPublicId: asset.providerPublicId,
+					secureUrl: asset.secureUrl,
+				},
+				frozenSrc,
+			});
+			return { ...obj, src };
 		}
 
 		if (Array.isArray(value)) {
