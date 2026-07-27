@@ -327,9 +327,8 @@ begin
       'envelope', jsonb_build_object(
         'disabled', false,
         'sealStyle', 'wax',
-        'sealIcon', 'monogram',
-        'sealInitials', 'LL',
         'sealVariant', 'premium-rose',
+        'sealImage', 'sealImage',
         'microcopy', 'Toca para abrir mi invitación',
         'documentLabel', 'Baby Shower',
         'cardLabel', 'Baby Shower',

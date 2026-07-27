@@ -113,7 +113,7 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "sealIcon": "heart",
+        "sealIcon": "wax-organic",
         "sealInitials": "N·N",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {

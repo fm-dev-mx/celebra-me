@@ -178,9 +178,8 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "sealIcon": "monogram",
-        "sealInitials": "LC",
         "sealVariant": "premium-rose",
+        "sealImage": "sealImage",
         "microcopy": "Abrir invitación",
         "documentLabel": "Baby Shower",
         "stampText": "Luna Celeste",

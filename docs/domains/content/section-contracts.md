@@ -22,15 +22,29 @@ digital invitations.
 ## 2. Envelope (`envelope`)
 
 - **Purpose**: Interactive wax-sealed envelope opening experience for guests.
-- **Required Inputs**: `enabled` (boolean), `sealStyle`, `sealIcon`, `documentLabel`, `stampText`,
-  `stampYear`.
-- **Optional Inputs**: `sealInitials`, `sealVariant`, `sealImage`, `closedPalette`, `coverEdition`,
-  `revealVariant`.
-- **Seal icon variants**: `monogram` (flat initials ring), `wax-monogram` (embossed parametric wax
-  SVG), plus glyph seals (`boot`, `heart`, `flower`, `special-edition`). Raster
-  `sealVariant: premium-rose` + `sealImage` remains available for art-directed fixed seals.
-- **Rendering & Omission**: If `enabled: false` or omitted, invitation opens directly on Hero fold
-  without envelope animation.
+- **Required Inputs**: `enabled` (boolean), `sealStyle`, `documentLabel`, `stampText`, `stampYear`.
+- **Optional Inputs**: `sealIcon`, `sealInitials`, `sealVariant`, `sealColor`, `sealImage`, `closedPalette`, `coverEdition`, `revealVariant`.
+- **Seal Renderer Model**:
+  - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming die relief.
+  - `wax-medallion`: Precision circular concentric medallion seal (baseline `main` seal structure).
+  - `monogram`: Flat parametric stationery initials ring.
+  - `vector-icon`: Flat vector icon badge (`boot`, `heart`, `flower`, `special-edition`).
+  - `raster`: Pre-rendered photo/3D asset mask (`sealImage`).
+- **Resolution Precedence**: `resolveSealPresentation()` maps configuration in order:
+  1. `sealImage` present -> `raster` renderer.
+  2. `sealVariant` / `sealIcon` explicit selection -> `wax-organic` or `wax-medallion`.
+  3. Existing icon contract -> `wax-monogram` maps to `wax-organic`, `monogram` to `monogram`, etc.
+  4. Default fallback -> `wax-organic`.
+- **Discrete Fixed-Size Tiers & Container Queries**:
+  - Sizing follows `.envelope-container` inline size via progressive `@container` queries:
+    - `--env-seal-size-compact: 44px;` (Default / `< 360px` container width)
+    - `--env-seal-size-standard: 56px;` (`@container (min-width: 360px)`)
+    - `--env-seal-size-large: 68px;` (`@container (min-width: 480px)`)
+  - Seal size is constant within each tier. Fluid `clamp()`, `cqw`, or `vw` scaling is forbidden.
+- **Closure Anchor Positioning Contract**:
+  - Position `.envelope-zone--seal` absolutely at `top: 50%; left: 50%; transform: translate(-50%, -50%);` relative to `.envelope-container`.
+  - Seal center aligns directly with the 50% flap/pocket fold seam within `max(2px, 1% of seal width)` tolerance.
+- **Rendering & Omission**: If `disabled: true` or envelope omitted, invitation opens directly on Hero fold without envelope animation.
 
 ---
 

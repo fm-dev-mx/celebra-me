@@ -17,12 +17,11 @@ update public.published_invitation_content
 set content = jsonb_set(
   content,
   '{envelope}',
-  coalesce(content->'envelope', '{}'::jsonb) || jsonb_build_object(
+  (coalesce(content->'envelope', '{}'::jsonb) - 'sealIcon' - 'sealInitials') || jsonb_build_object(
     'disabled', coalesce(content->'envelope'->>'disabled', 'false')::boolean,
     'sealStyle', 'wax',
-    'sealIcon', 'monogram',
-    'sealInitials', coalesce(content->'envelope'->>'sealInitials', 'LL'),
     'sealVariant', 'premium-rose',
+    'sealImage', 'sealImage',
     'microcopy', 'Toca para abrir mi invitación',
     'documentLabel', 'Baby Shower',
     'cardLabel', coalesce(content->'envelope'->>'cardLabel', 'Baby Shower'),
@@ -37,11 +36,7 @@ set content = jsonb_set(
   )
 )
 where event_type = 'baby-shower'
-  and slug = 'leah-lexa'
-  and (
-    content->'envelope'->>'sealVariant' is distinct from 'premium-rose'
-    or content->'envelope'->>'sealStyle' is distinct from 'wax'
-  );
+  and slug = 'leah-lexa';
 
 exception when others then
   rollback;
