@@ -148,7 +148,7 @@ export interface EnvelopeViewModel {
 		sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 		sealIcon?: EnvelopeSealIcon;
 		sealInitials?: string;
-		sealVariant?: 'premium-rose';
+		sealVariant?: 'wax-organic' | 'wax-medallion' | 'premium-rose' | string;
 		sealImage?: ImageAsset;
 		microcopy: string;
 		documentLabel?: string;

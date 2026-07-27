@@ -369,7 +369,11 @@
 	}
 
 	// Quiet seal — no looping glow; tactile hover/focus only.
-	.envelope-seal-button[data-seal-icon='wax-monogram'] {
+	.envelope-seal-button[data-seal-icon='wax-monogram'],
+	.envelope-seal-button[data-seal-icon='wax-organic'],
+	.envelope-seal-button[data-seal-icon='wax-medallion'],
+	.envelope-seal-button[data-seal-renderer='wax-organic'],
+	.envelope-seal-button[data-seal-renderer='wax-medallion'] {
 		.envelope-seal-button__visual {
 			animation: none;
 			transition:
@@ -388,7 +392,11 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.envelope-seal-button[data-seal-icon='wax-monogram'] {
+		.envelope-seal-button[data-seal-icon='wax-monogram'],
+		.envelope-seal-button[data-seal-icon='wax-organic'],
+		.envelope-seal-button[data-seal-icon='wax-medallion'],
+		.envelope-seal-button[data-seal-renderer='wax-organic'],
+		.envelope-seal-button[data-seal-renderer='wax-medallion'] {
 			.envelope-seal-button__visual,
 			&:hover .envelope-seal-button__visual,
 			&:focus-visible .envelope-seal-button__visual {

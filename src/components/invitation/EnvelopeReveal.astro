@@ -3,6 +3,7 @@ import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.a
 import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
+	resolveSealPresentation,
 	type EnvelopeSealIcon,
 	type RevealCardData,
 } from '@/lib/invitation/reveal-card';
@@ -12,7 +13,7 @@ interface Props {
 	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 	sealIcon?: EnvelopeSealIcon;
 	sealInitials?: string;
-	sealVariant?: 'premium-rose';
+	sealVariant?: string;
 	sealImage?: ImageAsset;
 	microcopy: string;
 	documentLabel?: string;
@@ -30,7 +31,7 @@ interface Props {
 const {
 	name,
 	sealStyle,
-	sealIcon = 'monogram',
+	sealIcon,
 	sealInitials,
 	sealVariant,
 	sealImage,
@@ -47,10 +48,15 @@ const {
 	previewState,
 } = Astro.props;
 
-const sealImageSrc = sealImage
-	? (typeof sealImage.src === 'string' ? sealImage.src : sealImage.src.src)
-	: undefined;
-const sealImageUrl = sealImageSrc ? `url("${sealImageSrc}")` : 'none';
+const sealPresentation = resolveSealPresentation({
+	sealStyle,
+	sealIcon,
+	sealInitials,
+	sealVariant,
+	sealImage,
+});
+
+const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
 const skipParams = new URLSearchParams(Astro.url.search);
@@ -98,27 +104,18 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					type="button"
 					class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
 					data-envelope-open
-					data-seal-icon={sealIcon}
+					data-seal-icon={sealPresentation.icon || sealIcon || 'wax-organic'}
+					data-seal-renderer={sealPresentation.renderer}
 					data-screenshot="reveal-trigger"
 					aria-label="Abrir sobre de la invitación"
 				>
 					<div class="envelope-seal-button__visual">
+						<SealIcon
+							presentation={sealPresentation}
+							class="seal-icon"
+						/>
 						{
-							sealImageSrc ? (
-								<span
-									class="seal-icon seal-icon--image"
-									aria-hidden="true"
-								/>
-							) : (
-								<SealIcon
-									sealIcon={sealIcon}
-									sealInitials={sealInitials}
-									class="seal-icon"
-								/>
-							)
-						}
-						{
-							sealIcon !== 'wax-monogram' && (
+							!isWaxRenderer && (
 								<div class="envelope-seal-button__pulse" aria-hidden="true"></div>
 							)
 						}
@@ -319,11 +316,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	customElements.define('ds-envelope-reveal', DsEnvelopeReveal);
 </script>
 
-<style define:vars={{ sealImageUrl }}>
-	.envelope-wrapper {
-		--env-seal-image: var(--sealImageUrl);
-	}
-
+<style>
 	.envelope-no-js-fallback {
 		position: absolute;
 		z-index: 20;

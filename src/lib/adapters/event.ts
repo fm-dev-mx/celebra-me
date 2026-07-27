@@ -242,10 +242,9 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,
-			sealImage:
-				data.envelope.sealVariant === 'premium-rose'
-					? resolveAsset(eventSlug, 'sealImage', data.title)
-					: undefined,
+			sealImage: data.envelope.sealImage
+				? resolveAsset(eventSlug, data.envelope.sealImage, data.title)
+				: undefined,
 			microcopy: data.envelope.microcopy,
 			documentLabel: data.envelope.documentLabel,
 			stampText: data.envelope.stampText,
