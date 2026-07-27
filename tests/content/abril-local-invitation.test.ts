@@ -3,12 +3,19 @@ import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resol
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
 	buildAbrilPublishedContent,
 	ABRIL_ASSET_SPECS,
 	ABRIL_EVENT,
 	type AbrilAssetMap,
 } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
+
+const abrilProfilePath = path.join(
+	process.cwd(),
+	'src/styles/invitation-profiles/abril-michelle-becerra-rea.scss',
+);
 
 function buildTestAssets(): AbrilAssetMap {
 	return Object.fromEntries(
@@ -37,6 +44,29 @@ describe('Abril Michelle local invitation content', () => {
 				themeId: ABRIL_EVENT.themeId,
 			}),
 		).toEqual({ ok: true });
+	});
+
+	it('side-loads celestial itinerary styles with demo-parity tokens and Bodoni watermark', () => {
+		const profile = fs.readFileSync(abrilProfilePath, 'utf8');
+		expect(profile).toContain(
+			"@use '../themes/sections/itinerary/celestial-blue' as itinerary-celestial-blue;",
+		);
+		expect(profile).toContain(
+			"@use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;",
+		);
+		expect(profile).toContain(".itinerary[data-variant='celestial-blue']");
+		expect(profile).toContain('--itinerary-paper-white: rgb(253 251 247);');
+		expect(profile).toContain('--itinerary-ink-dark: rgb(26 42 58);');
+		expect(profile).toContain('--color-liquid-silver: rgb(200 208 212);');
+		expect(profile).toContain("'Bodoni Moda Variable'");
+		expect(profile).toContain('font-style: italic;');
+		expect(profile).toContain('font-size: 3.5rem;');
+		expect(profile).toContain('font-size: 4.75rem;');
+		expect(profile).toContain('font-size: 6rem;');
+		expect(profile).toContain('padding-top: 5.25rem;');
+		expect(profile).toContain('--countdown-value-size-desktop: 4.5rem;');
+		expect(profile).toContain('font-size: 5.25rem;');
+		expect(profile).toMatch(/\.itinerary:not\(\[data-variant=['"]celestial-blue['"]\]\)/);
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {

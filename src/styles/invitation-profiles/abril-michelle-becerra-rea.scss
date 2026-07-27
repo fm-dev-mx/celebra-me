@@ -1,7 +1,11 @@
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
+
+// Abril uses the celestial-blue itinerary variant (Bodoni watermark, paper gradient, demo-parity tokens).
+@use '../themes/sections/itinerary/celestial-blue' as itinerary-celestial-blue;
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;
 @use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
 @use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
@@ -166,29 +170,74 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--location-nav-bg: rgb(var(--abril-dusty-rose-rgb) / 22%);
 	--location-nav-color: var(--abril-wine-dark);
 
-	// Celestial program itinerary token bridge — scoped to Abril's profile stylesheet.
-	--itinerary-paper-white: var(--abril-ivory);
-	--itinerary-cream: var(--abril-cream);
-	--itinerary-ink-dark: var(--abril-wine-dark);
-	--itinerary-ink-dark-rgb: var(--abril-wine-dark-rgb);
-	--itinerary-slate: var(--abril-dark-neutral);
-	--itinerary-slate-rgb: var(--abril-dark-neutral-rgb);
-	--color-cool-ivory: var(--abril-cream);
-	--color-liquid-silver: var(--abril-antique-gold);
-	--color-liquid-silver-rgb: var(--abril-antique-gold-rgb);
-
-	// Itinerary / gallery
+	// Itinerary / gallery (shared card accent; celestial program tokens live under the variant block)
 	--itinerary-card-bg: var(--abril-ivory);
 	--itinerary-accent: var(--abril-antique-gold);
 	--gallery-card-shadow: 0 16px 40px rgb(var(--abril-wine-dark-rgb) / 12%);
 	--theme-image-filter-gallery: saturate(1.02) contrast(1.02) brightness(1.01);
 
-	// The Celestial program keeps its own editorial type hierarchy without changing Abril's other sections.
+	// Celestial program: demo-xv-celestial-blue parity (style + colors); Bodoni watermark only.
 	.itinerary[data-variant='celestial-blue'] {
+		--itinerary-paper-white: rgb(253 251 247);
+		--itinerary-cream: rgb(245 241 230);
+		--itinerary-ink-dark: rgb(26 42 58);
+		--itinerary-ink-dark-rgb: 26 42 58;
+		--itinerary-slate: rgb(44 62 80);
+		--itinerary-slate-rgb: 44 62 80;
+		--color-cool-ivory: rgb(244 241 234);
+		--color-liquid-silver: rgb(200 208 212);
+		--color-liquid-silver-rgb: 200 208 212;
+		--color-soft-graphite-rgb: 31 37 41;
 		--font-display: 'Cormorant Garamond Variable', georgia, serif;
 		--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
 		--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
 		--font-calligraphy: 'Pinyon Script', cursive;
+
+		// Prefer celestial paper plane over Abril's rose blend on this section.
+		background: linear-gradient(
+			180deg,
+			var(--itinerary-paper-white) 0%,
+			var(--itinerary-cream) 100%
+		);
+
+		// Reserve a top band so the watermark never intersects program rows.
+		.itinerary__program-panel {
+			padding-top: 5.25rem;
+
+			@include mixins.respond-to(md) {
+				padding-top: 6.75rem;
+			}
+
+			@include mixins.respond-to(lg) {
+				padding-top: 8.25rem;
+			}
+		}
+
+		.itinerary__program-monogram {
+			top: 0.75rem;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 0;
+			font-family: 'Bodoni Moda Variable', 'Cormorant Garamond Variable', georgia, serif;
+			font-style: italic;
+			font-weight: 400;
+			font-size: 3.5rem;
+			line-height: 1;
+			letter-spacing: 0.12em;
+			color: var(--itinerary-slate);
+			opacity: 7%;
+			mix-blend-mode: multiply;
+
+			@include mixins.respond-to(md) {
+				top: 1rem;
+				font-size: 4.75rem;
+			}
+
+			@include mixins.respond-to(lg) {
+				top: 1.15rem;
+				font-size: 6rem;
+			}
+		}
 	}
 
 	// Interlude
@@ -598,6 +647,9 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 	// Countdown — wine-on-wine depth only (light overlays read as a plastic mauve band)
 	.countdown-section {
+		--countdown-value-size-mobile: 2.85rem;
+		--countdown-value-size-desktop: 4.5rem;
+
 		background:
 			linear-gradient(
 				180deg,
@@ -632,6 +684,25 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 		.countdown__value {
 			color: var(--abril-antique-gold);
+			font-size: 2.85rem;
+			line-height: 1;
+			overflow: visible;
+
+			@include mixins.respond-to(sm) {
+				font-size: 3.35rem;
+			}
+
+			@include mixins.respond-to(md) {
+				font-size: 4rem;
+			}
+
+			@include mixins.respond-to(lg) {
+				font-size: 4.75rem;
+			}
+
+			@include mixins.respond-to(xl) {
+				font-size: 5.25rem;
+			}
 		}
 
 		.countdown__label {
@@ -934,7 +1005,8 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		padding-top: max(clamp(5rem, 9vw, 8rem), var(--abril-transition-blend-depth)) !important;
 	}
 
-	.itinerary {
+	// Non-celestial itinerary fallback only — celestial-blue owns its paper gradient above.
+	.itinerary:not([data-variant='celestial-blue']) {
 		--itinerary-bg:
 			radial-gradient(
 				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,

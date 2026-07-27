@@ -173,8 +173,59 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			// 4. Itinerary / Schedule verification
 			const itinerarySection = page.locator('section.itinerary, .itinerary');
 			await expect(itinerarySection).toBeVisible();
+			await expect(itinerarySection).toHaveAttribute('data-variant', 'celestial-blue');
+
+			const paperSurface = itinerarySection.locator('.itinerary__program-paper-surface');
+			await expect(paperSurface).toBeAttached();
+			const parchmentStyles = await paperSurface.evaluate((el) => {
+				const style = getComputedStyle(el);
+				return {
+					filter: style.filter,
+					position: style.position,
+					zIndex: style.zIndex,
+				};
+			});
+			expect(parchmentStyles.position).toBe('absolute');
+			expect(parchmentStyles.filter).toMatch(/deckle-edge-filter/);
+			expect(Number(parchmentStyles.zIndex)).toBe(0);
+
+			const monogram = itinerarySection.locator('.itinerary__program-monogram');
+			await expect(monogram).toHaveText('AM');
+			const monogramStyles = await monogram.evaluate((el) => {
+				const style = getComputedStyle(el);
+				return {
+					fontFamily: style.fontFamily,
+					fontStyle: style.fontStyle,
+					fontSize: style.fontSize,
+					opacity: style.opacity,
+					zIndex: style.zIndex,
+				};
+			});
+			expect(monogramStyles.fontFamily).toContain('Bodoni Moda Variable');
+			expect(monogramStyles.fontStyle).toBe('italic');
+			expect(monogramStyles.opacity).toBe('0.07');
+			expect(Number(monogramStyles.zIndex)).toBe(0);
 
 			const itineraryRows = itinerarySection.locator('.itinerary__program-row');
+			const watermarkClearsText = await page.evaluate(() => {
+				const mono = document.querySelector('.itinerary__program-monogram');
+				const firstRow = document.querySelector('.itinerary__program-row');
+				if (!(mono instanceof HTMLElement) || !(firstRow instanceof HTMLElement)) {
+					return false;
+				}
+				const monoBox = mono.getBoundingClientRect();
+				const rowBox = firstRow.getBoundingClientRect();
+				const monoStack = Number(getComputedStyle(mono).zIndex) || 0;
+				const listStack =
+					Number(
+						getComputedStyle(
+							document.querySelector('.itinerary__program-list') as HTMLElement,
+						).zIndex,
+					) || 0;
+				return monoBox.bottom <= rowBox.top && monoStack < listStack;
+			});
+			expect(watermarkClearsText).toBe(true);
+
 			await expect(itineraryRows).toHaveCount(ITINERARY_ITEMS.length);
 			for (const [index, item] of ITINERARY_ITEMS.entries()) {
 				await expect(
@@ -200,6 +251,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 					time: readFont('.itinerary__program-row-time'),
 					fontsLoaded: {
 						cormorant: document.fonts.check('400 1em "Cormorant Garamond Variable"'),
+						bodoni: document.fonts.check('italic 400 1em "Bodoni Moda Variable"'),
 						instrument: document.fonts.check('600 1em "Instrument Sans Variable"'),
 						pinyon: document.fonts.check('400 1em "Pinyon Script"'),
 					},
@@ -211,6 +263,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			expect(itineraryTypography.time).toContain('Instrument Sans Variable');
 			expect(itineraryTypography.fontsLoaded).toEqual({
 				cormorant: true,
+				bodoni: true,
 				instrument: true,
 				pinyon: true,
 			});
