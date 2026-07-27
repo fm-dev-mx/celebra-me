@@ -326,13 +326,13 @@ describe('InvitationEditor', () => {
 		fireEvent.click(within(nav).getByRole('button', { name: 'Frase' }));
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal#quote-section',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&revision=2026-05-30T02%3A00%3A00Z&revealState=internal#quote-section',
 		);
 
 		fireEvent.click(within(nav).getByRole('button', { name: 'Agradecimiento' }));
 		expect(screen.getByTitle('Vista previa de la invitación')).toHaveAttribute(
 			'src',
-			'/dashboard/invitaciones/proj-1/preview?embed=1&v=0&revealState=internal#thank-you-section',
+			'/dashboard/invitaciones/proj-1/preview?embed=1&revision=2026-05-30T02%3A00%3A00Z&revealState=internal#thank-you-section',
 		);
 	});
 
@@ -526,7 +526,7 @@ describe('InvitationEditor', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Vista previa' }));
 
 		expect(open).toHaveBeenCalledWith(
-			'/dashboard/invitaciones/proj-1/preview?v=0',
+			'/dashboard/invitaciones/proj-1/preview?revision=2026-05-30T02%3A00%3A00Z',
 			'_blank',
 			'noopener,noreferrer',
 		);

@@ -96,15 +96,46 @@ const [draft, published] = await Promise.all([
 	!errorMessage ? findPublishedByInvitationId(id) : null,
 ]);
 
-const effectiveContent = computeEffectiveContent(draft?.content, published?.content);
+const requestedRevision = Astro.url.searchParams.get('revision');
+let revisionMismatch = false;
+if (requestedRevision) {
+	if (!draft?.updatedAt) {
+		revisionMismatch = true;
+		errorMessage =
+			'La revisión solicitada no está disponible: no hay un borrador guardado.';
+	} else if (draft.updatedAt !== requestedRevision) {
+		revisionMismatch = true;
+		errorMessage =
+			'La revisión de vista previa no coincide con el borrador guardado. Vuelve a guardar o recarga la vista previa.';
+	}
+}
+
+const effectiveContent =
+	revisionMismatch || errorMessage
+		? {}
+		: computeEffectiveContent(draft?.content, published?.content);
 const hasAnyContent = Object.keys(effectiveContent).length > 0;
 const publishedAssetLookupSlug = getAssetSlugFromContent(published?.content);
-const previewLabel = draft?.content ? 'Borrador + publicado' : published?.content ? 'Versión pública' : 'Vacío';
+const previewLabel = draft?.content
+	? requestedRevision
+		? `Borrador (revisión ${requestedRevision})`
+		: 'Borrador + publicado'
+	: published?.content
+		? 'Versión pública'
+		: 'Vacío';
 
-if (hasAnyContent && invitation) {
-	pageCtx = await tryBuildContext(effectiveContent as unknown as Record<string, unknown>, previewLabel, publishedAssetLookupSlug);
-	if (!pageCtx && published?.content) {
-		pageCtx = await tryBuildContext(published.content, 'Versión pública', publishedAssetLookupSlug);
+if (!revisionMismatch && hasAnyContent && invitation) {
+	pageCtx = await tryBuildContext(
+		effectiveContent as unknown as Record<string, unknown>,
+		previewLabel,
+		publishedAssetLookupSlug,
+	);
+	if (!pageCtx && published?.content && !requestedRevision) {
+		pageCtx = await tryBuildContext(
+			published.content,
+			'Versión pública',
+			publishedAssetLookupSlug,
+		);
 		if (pageCtx) {
 			previewWarning = 'El borrador actual tiene errores. Mostrando la versión pública.';
 		}
@@ -114,10 +145,11 @@ if (hasAnyContent && invitation) {
 	}
 }
 
-if (!pageCtx && !errorMessage && invitation) {
+if (!pageCtx && !errorMessage && invitation && !revisionMismatch) {
 	pageCtx = await tryBuildContext({}, 'Vacío');
 	if (!pageCtx) {
-		errorMessage = 'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
+		errorMessage =
+			'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';
 	}
 }
 

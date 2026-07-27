@@ -600,7 +600,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 		refreshSavedPreview,
 	]);
 
-	const previewUrl = buildPreviewUrl(invitationId, previewVersion, false);
+	const previewUrl = buildPreviewUrl(
+		invitationId,
+		editor.context.draftUpdatedAt,
+		false,
+		undefined,
+		previewVersion,
+	);
 	const backUrl = '/dashboard/invitaciones';
 	const publishDisabled = useMemo(
 		() =>
@@ -1234,6 +1240,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					paneRef={previewPaneRef}
 					invitationId={invitationId}
 					hasUnsavedChanges={dirty.size > 0}
+					draftRevision={editor.context.draftUpdatedAt}
 					previewVersion={previewVersion}
 					previewHash={previewHash}
 					onReload={refreshSavedPreview}

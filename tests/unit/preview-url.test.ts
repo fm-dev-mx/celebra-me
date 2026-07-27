@@ -21,9 +21,17 @@ describe('buildPreviewUrl', () => {
 		expect(buildPreviewUrl('proj/1&2', 0, false)).toContain('proj%2F1%262');
 	});
 
-	it('includes the preview version in the query string', () => {
+	it('includes the preview version in the query string when no revision is provided', () => {
 		expect(buildPreviewUrl('proj-1', 42, false)).toContain('v=42');
 		expect(buildPreviewUrl('proj-1', 999999, false)).toContain('v=999999');
+	});
+
+	it('prefers draft revision over numeric cache-bust version', () => {
+		expect(
+			buildPreviewUrl('proj-1', '2026-07-27T17:22:00.216614+00:00', true, 'internal', 9),
+		).toBe(
+			'/dashboard/invitaciones/proj-1/preview?embed=1&revision=2026-07-27T17%3A22%3A00.216614%2B00%3A00&revealState=internal',
+		);
 	});
 
 	it('includes the requested reveal preview state', () => {

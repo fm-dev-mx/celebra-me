@@ -30,6 +30,7 @@ export function getPreviewScale(
 interface Props {
 	invitationId: string;
 	hasUnsavedChanges: boolean;
+	draftRevision?: string | null;
 	previewVersion: number;
 	onReload: () => void;
 	paneRef?: RefObject<HTMLElement | null>;
@@ -39,6 +40,7 @@ interface Props {
 export default function EditorPreviewPane({
 	invitationId,
 	hasUnsavedChanges,
+	draftRevision = null,
 	previewVersion,
 	onReload,
 	paneRef,
@@ -46,10 +48,22 @@ export default function EditorPreviewPane({
 }: Props) {
 	const [device, setDevice] = useState<PreviewDevice>('mobile');
 	const [revealState, setRevealState] = useState<RevealPreviewState>('internal');
-	const iframeBaseUrl = buildPreviewUrl(invitationId, previewVersion, true, revealState);
+	const iframeBaseUrl = buildPreviewUrl(
+		invitationId,
+		draftRevision,
+		true,
+		revealState,
+		previewVersion,
+	);
 	const iframeSrc = previewHash ? `${iframeBaseUrl}${previewHash}` : iframeBaseUrl;
-	const iframeKey = `preview-v${previewVersion}-${revealState}`;
-	const fullPreviewUrl = buildPreviewUrl(invitationId, previewVersion, false);
+	const iframeKey = `preview-r${draftRevision ?? 'none'}-v${previewVersion}-${revealState}`;
+	const fullPreviewUrl = buildPreviewUrl(
+		invitationId,
+		draftRevision,
+		false,
+		undefined,
+		previewVersion,
+	);
 	const viewportWidth = DEVICE_VIEWPORT_WIDTHS[device];
 
 	const frameRef = useRef<HTMLDivElement>(null);
