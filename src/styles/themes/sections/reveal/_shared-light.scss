@@ -29,51 +29,76 @@
 	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
 
-// Cool silver/ice stationery reveal — paper weight, embossed wax, editorial type.
+// Soft night stationery — satin-blue field, cold paper envelope, deep wax jewel.
 .envelope-wrapper[data-variant='celestial-blue'] {
 	--env-bg:
 		radial-gradient(
-			ellipse 78% 58% at 50% 38%,
-			rgb(var(--color-diamond-white-rgb) / 96%) 0%,
-			rgb(var(--color-cool-ivory-rgb) / 94%) 42%,
-			color-mix(in srgb, var(--color-ice-blue) 28%, var(--color-cool-ivory)) 72%,
-			color-mix(in srgb, var(--color-deep-blue-graphite) 14%, var(--color-cool-ivory)) 100%
+			ellipse 72% 54% at 50% 36%,
+			color-mix(in srgb, var(--color-ice-blue) 62%, var(--color-satin-blue)) 0%,
+			var(--color-satin-blue) 38%,
+			color-mix(in srgb, var(--color-satin-blue) 68%, var(--color-deep-blue-graphite)) 72%,
+			color-mix(in srgb, var(--color-deep-blue-graphite) 48%, var(--color-satin-blue)) 100%
 		),
-		var(--color-cool-ivory);
+		color-mix(in srgb, var(--color-satin-blue) 72%, var(--color-deep-blue-graphite));
 	--env-paper-bg: linear-gradient(
 		158deg,
-		color-mix(in srgb, var(--color-diamond-white) 42%, var(--color-ice-blue)) 0%,
-		color-mix(in srgb, var(--color-ice-blue) 68%, var(--color-satin-blue)) 46%,
-		color-mix(in srgb, var(--color-satin-blue) 58%, var(--color-cold-silver)) 100%
+		var(--color-diamond-white) 0%,
+		color-mix(in srgb, var(--color-pearl-gray) 42%, var(--color-diamond-white)) 36%,
+		color-mix(in srgb, var(--color-ice-blue) 16%, var(--color-diamond-white)) 68%,
+		color-mix(in srgb, var(--color-pearl-gray) 78%, var(--color-cold-silver)) 100%
 	);
-	--env-paper-border: color-mix(in srgb, var(--color-liquid-silver) 62%, transparent);
+	--env-paper-border: color-mix(
+		in srgb,
+		var(--color-liquid-silver) 58%,
+		var(--color-cold-silver)
+	);
 	--env-text-primary: var(--color-deep-blue-graphite);
 	--env-text-secondary: color-mix(
 		in srgb,
-		var(--color-soft-graphite) 72%,
+		var(--color-soft-graphite) 68%,
 		var(--color-cold-silver)
 	);
-	--env-accent: color-mix(in srgb, var(--color-satin-blue) 55%, var(--color-cold-silver));
+	--env-accent: color-mix(in srgb, var(--color-satin-blue) 45%, var(--color-deep-blue-graphite));
 	--env-shadow-container:
-		0 36px 72px rgb(var(--color-deep-blue-graphite-rgb) / 14%),
-		0 12px 28px rgb(var(--color-deep-blue-graphite-rgb) / 8%),
-		0 2px 0 rgb(var(--color-diamond-white-rgb) / 55%);
+		0 40px 80px rgb(var(--color-deep-blue-graphite-rgb) / 32%),
+		0 14px 32px rgb(var(--color-deep-blue-graphite-rgb) / 18%),
+		0 2px 0 rgb(var(--color-diamond-white-rgb) / 28%);
 	--env-title-size: clamp(1.55rem, 6.2cqw, 2.35rem);
-	--env-seal-accent: var(--color-satin-blue);
-
-	// Cool ice/silver wax — higher contrast than the shared rose-gold defaults.
-	--wax-seal-highlight: color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-ice-blue));
-	--wax-seal-mid: color-mix(in srgb, var(--color-cold-silver) 48%, var(--color-satin-blue));
-	--wax-seal-deep: color-mix(in srgb, var(--color-soft-graphite) 52%, var(--color-satin-blue));
-	--wax-seal-letter: var(--color-deep-blue-graphite);
-	--wax-seal-shadow: var(--color-deep-blue-graphite);
-	--wax-seal-sheen: var(--color-diamond-white);
-	--wax-seal-emboss-shadow: color-mix(
+	--env-seal-accent: color-mix(
 		in srgb,
-		var(--color-deep-blue-graphite) 72%,
+		var(--color-satin-blue) 55%,
+		var(--color-deep-blue-graphite)
+	);
+
+	// Deep satin wax — richer than the paper field so the seal reads as pressed cera.
+	--wax-seal-highlight: color-mix(
+		in srgb,
+		var(--color-diamond-white) 32%,
 		var(--color-satin-blue)
 	);
-	--wax-seal-font-family: var(--font-display), georgia, 'Times New Roman', serif;
+	--wax-seal-mid: color-mix(
+		in srgb,
+		var(--color-satin-blue) 82%,
+		var(--color-deep-blue-graphite)
+	);
+	--wax-seal-deep: color-mix(
+		in srgb,
+		var(--color-deep-blue-graphite) 52%,
+		var(--color-satin-blue)
+	);
+
+	// Darker wax, not ink: keeps the monogram inside the seal's material family.
+	--wax-seal-letter: color-mix(
+		in srgb,
+		var(--color-deep-blue-graphite) 86%,
+		var(--color-satin-blue)
+	);
+	--wax-seal-shadow: var(--color-deep-blue-graphite);
+	--wax-seal-emboss-shadow: color-mix(
+		in srgb,
+		var(--color-deep-blue-graphite) 78%,
+		var(--color-satin-blue)
+	);
 
 	// Letter card — cool stationery plate continuous with the refined envelope.
 	--reveal-card-bg: linear-gradient(
@@ -233,57 +258,57 @@
 		background:
 			linear-gradient(
 				168deg,
-				rgb(var(--color-diamond-white-rgb) / 28%) 0%,
-				transparent 36%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 6%) 100%
+				rgb(var(--color-diamond-white-rgb) / 72%) 0%,
+				transparent 42%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 5%) 100%
 			),
 			var(--env-paper-bg);
 		border-color: var(--env-paper-border);
 
 		&::before {
-			opacity: 42%;
+			opacity: 55%;
 			background:
 				radial-gradient(
 					ellipse at 50% 8%,
-					rgb(var(--color-diamond-white-rgb) / 14%),
-					transparent 48%
+					rgb(var(--color-diamond-white-rgb) / 55%),
+					transparent 52%
 				),
 				repeating-linear-gradient(
 					0deg,
 					transparent,
 					transparent 2px,
-					rgb(var(--color-deep-blue-graphite-rgb) / 2.2%) 2px,
+					rgb(var(--color-deep-blue-graphite-rgb) / 2.8%) 2px,
 					transparent 3px
 				);
 		}
 	}
 
 	.envelope-pocket {
-		box-shadow: inset 0 12px 22px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
+		box-shadow: inset 0 14px 26px rgb(var(--color-deep-blue-graphite-rgb) / 8%);
 
 		&::after {
 			height: 1px;
 			background: linear-gradient(
 				to right,
 				transparent,
-				color-mix(in srgb, var(--color-liquid-silver) 70%, transparent),
+				color-mix(in srgb, var(--color-liquid-silver) 62%, transparent),
 				transparent
 			);
 		}
 	}
 
 	.envelope-flap {
-		filter: drop-shadow(0 16px 28px rgb(var(--color-deep-blue-graphite-rgb) / 14%));
+		filter: drop-shadow(0 18px 30px rgb(var(--color-deep-blue-graphite-rgb) / 18%));
 
 		&::after {
 			height: 1px;
 			background: linear-gradient(
 				to right,
 				transparent,
-				color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-liquid-silver)),
+				color-mix(in srgb, var(--color-diamond-white) 72%, var(--color-liquid-silver)),
 				transparent
 			);
-			opacity: 70%;
+			opacity: 78%;
 		}
 	}
 
@@ -291,15 +316,15 @@
 		font-weight: 400;
 		letter-spacing: 0.01em;
 		line-height: 1.2;
-		text-shadow: 0 1px 0 rgb(var(--color-diamond-white-rgb) / 45%);
+		text-shadow: 0 1px 0 rgb(var(--color-diamond-white-rgb) / 70%);
 	}
 
 	.envelope-details {
 		font-size: 0.68rem;
 		font-weight: 500;
 		letter-spacing: 0.2em;
-		color: color-mix(in srgb, var(--color-soft-graphite) 78%, var(--color-cold-silver));
-		opacity: 78%;
+		color: color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver));
+		opacity: 80%;
 	}
 
 	.tease-divider {
@@ -307,27 +332,28 @@
 		background: linear-gradient(
 			to right,
 			transparent,
-			color-mix(in srgb, var(--color-liquid-silver) 68%, var(--color-satin-blue)),
+			color-mix(in srgb, var(--color-liquid-silver) 58%, var(--color-satin-blue)),
 			transparent
 		);
-		opacity: 85%;
+		opacity: 78%;
 	}
 
 	.envelope-seal-hint {
-		color: color-mix(in srgb, var(--color-soft-graphite) 68%, var(--color-cold-silver));
+		color: color-mix(in srgb, var(--color-soft-graphite) 62%, var(--color-cold-silver));
 		font-size: 0.58rem;
 		font-weight: 500;
 		letter-spacing: 0.34em;
-		opacity: 72%;
+		opacity: 74%;
 	}
 
 	.envelope-external-instruction {
-		opacity: 82%;
+		opacity: 90%;
 		filter: none;
 
 		p {
-			color: color-mix(in srgb, var(--color-soft-graphite) 70%, var(--color-cold-silver));
+			color: color-mix(in srgb, var(--color-diamond-white) 82%, var(--color-ice-blue));
 			letter-spacing: 0.4em;
+			text-shadow: 0 1px 2px rgb(var(--color-deep-blue-graphite-rgb) / 22%);
 		}
 	}
 
@@ -336,10 +362,10 @@
 		background: linear-gradient(
 			to right,
 			transparent,
-			color-mix(in srgb, var(--color-liquid-silver) 70%, var(--color-satin-blue)),
+			color-mix(in srgb, var(--color-diamond-white) 55%, var(--color-ice-blue)),
 			transparent
 		);
-		opacity: 45%;
+		opacity: 55%;
 	}
 
 	// Quiet seal — no looping glow; tactile hover/focus only.
@@ -349,15 +375,15 @@
 			transition:
 				transform var(--duration-standard) var(--ease-premium),
 				filter var(--duration-standard) var(--ease-premium);
-			filter: drop-shadow(0 6px 14px rgb(var(--color-deep-blue-graphite-rgb) / 22%))
-				drop-shadow(0 1px 0 rgb(var(--color-diamond-white-rgb) / 35%));
+			filter: drop-shadow(0 8px 16px rgb(var(--color-deep-blue-graphite-rgb) / 38%))
+				drop-shadow(0 2px 4px rgb(var(--color-deep-blue-graphite-rgb) / 22%));
 		}
 
 		&:hover .envelope-seal-button__visual,
 		&:focus-visible .envelope-seal-button__visual {
 			transform: scale(1.03) translateY(-1px);
-			filter: drop-shadow(0 10px 20px rgb(var(--color-deep-blue-graphite-rgb) / 28%))
-				drop-shadow(0 1px 0 rgb(var(--color-diamond-white-rgb) / 45%));
+			filter: drop-shadow(0 12px 22px rgb(var(--color-deep-blue-graphite-rgb) / 44%))
+				drop-shadow(0 3px 6px rgb(var(--color-deep-blue-graphite-rgb) / 26%));
 		}
 	}
 
