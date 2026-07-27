@@ -41,6 +41,7 @@ interface ImportMetaEnv {
 	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
+	readonly CLOUDINARY_CLOUD_NAME: string;
 }
 
 interface ImportMeta {
