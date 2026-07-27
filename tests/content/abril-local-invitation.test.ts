@@ -57,7 +57,7 @@ describe('Abril Michelle local invitation content', () => {
 			rsvp: { accessMode: 'personalized-only' },
 			envelope: {
 				sealIcon: 'wax-monogram',
-				sealInitials: 'AM',
+				sealInitials: 'A·M',
 			},
 			thankYou: { closingName: 'Abril Michelle', date: '12 de septiembre de 2026' },
 		});

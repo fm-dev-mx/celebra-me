@@ -2,6 +2,7 @@
 @use '../tokens' as tokens;
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource-variable/eb-garamond/index.css' as eb-garamond;
 
 // Abril Michelle Becerra Rea — romantic-editorial dusty rose & antique gold visual profile.
 // Essence: cinematic portrait, compact Cormorant hierarchy in the photograph's negative space,
@@ -189,12 +190,17 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--pa-count-color: var(--abril-wine-dark);
 	--pa-divider-diamond-bg: var(--abril-ivory);
 
-	// Envelope seal — embossed wax SVG (sealIcon: wax-monogram)
+	// Envelope seal — same wax-monogram geometry as shared reveal; color tokens only.
 	--wax-seal-highlight: rgb(248 228 210);
 	--wax-seal-mid: color-mix(in srgb, var(--abril-dusty-rose) 62%, var(--abril-antique-gold));
 	--wax-seal-deep: color-mix(in srgb, var(--abril-antique-gold) 42%, var(--abril-wine-dark));
 	--wax-seal-letter: color-mix(in srgb, var(--abril-wine-dark) 82%, black);
 	--wax-seal-shadow: var(--abril-wine-dark);
+	--wax-seal-emboss-shadow: color-mix(
+		in srgb,
+		var(--abril-wine-dark) 72%,
+		var(--abril-antique-gold)
+	);
 
 	// Closed envelope stage — dusty rose / antique gold, not generic cream.
 	.envelope-wrapper {

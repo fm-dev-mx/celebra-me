@@ -196,7 +196,7 @@ export function buildAbrilPublishedContent(
 			cardName: 'Abril Michelle',
 			sealStyle: 'wax',
 			sealIcon: 'wax-monogram',
-			sealInitials: 'AM',
+			sealInitials: 'A·M',
 			microcopy: 'Descubra su invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',

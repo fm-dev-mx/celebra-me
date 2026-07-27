@@ -37,11 +37,10 @@
 	--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	--env-phase-exit-duration: var(--duration-long);
 
-	// Wax monogram role: refined serif/label — never twin envelope name calligraphy.
-	--wax-seal-font-family: var(
-		--font-label,
-		var(--font-display, Georgia, 'Times New Roman', serif)
-	);
+	// Wax monogram role: shared atelier serif for every wax-monogram seal.
+	// Never twin envelope name calligraphy; themes may recolor, not retype.
+	--wax-seal-font-family:
+		'EB Garamond Variable', 'EB Garamond', georgia, 'Times New Roman', serif;
 
 	position: fixed;
 	inset: 0;
