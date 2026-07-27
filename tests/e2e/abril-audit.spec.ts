@@ -11,6 +11,28 @@ const VIEWPORTS = [
 ] as const;
 
 const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'abril-audit-screenshots');
+const ITINERARY_ITEMS = [
+	{
+		title: 'Acción de gracias',
+		description: 'Un momento de gratitud para iniciar esta fecha tan especial.',
+	},
+	{
+		title: 'Bienvenida',
+		description: 'Nos reunimos con alegría para compartir una tarde inolvidable.',
+	},
+	{
+		title: 'Cena de gala',
+		description: 'Brindaremos por los sueños que comienzan a florecer.',
+	},
+	{
+		title: 'Vals de honor',
+		description: 'Una tradición llena de emoción, música y recuerdos.',
+	},
+	{
+		title: 'Cierre',
+		description: 'Despedimos la noche celebrando cada instante compartido.',
+	},
+] as const;
 
 test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () => {
 	test.beforeAll(() => {
@@ -45,7 +67,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			// 1. Hero verification
 			const hero = page.locator('#inicio, .hero');
 			await expect(hero).toBeVisible();
-			const heroTitle = page.locator('.hero__title, h1');
+			const heroTitle = page.locator('.invitation-hero__title');
 			await expect(heroTitle).toBeVisible();
 			await expect(heroTitle).toContainText(/Abril\s*Michelle/);
 
@@ -123,7 +145,9 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const ceremonyAddr = page.locator('text=Agustín Rivera 433-C');
 			await expect(ceremonyAddr).toBeVisible();
 
-			const receptionAddr = page.locator('text=Macedio Ayala núm. 70');
+			const receptionAddr = page
+				.locator('.event-location__card-content-address-text')
+				.filter({ hasText: 'Macedio Ayala núm. 70' });
 			await expect(receptionAddr).toBeVisible();
 
 			// Directions links preserve exact Google Maps URLs
@@ -150,30 +174,86 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const itinerarySection = page.locator('section.itinerary, .itinerary');
 			await expect(itinerarySection).toBeVisible();
 
-			const itineraryMisa = itinerarySection.getByRole('heading', {
-				name: 'Misa',
-				exact: true,
-			});
-			await expect(itineraryMisa).toBeVisible();
+			const itineraryRows = itinerarySection.locator('.itinerary__program-row');
+			await expect(itineraryRows).toHaveCount(ITINERARY_ITEMS.length);
+			for (const [index, item] of ITINERARY_ITEMS.entries()) {
+				await expect(
+					itineraryRows.nth(index).locator('.itinerary__program-row-title'),
+				).toHaveText(item.title);
+				await expect(
+					itineraryRows.nth(index).locator('.itinerary__program-row-desc'),
+				).toHaveText(item.description);
+			}
+			await expect(itinerarySection.getByText('Último baile', { exact: true })).toHaveCount(
+				0,
+			);
 
-			const itineraryRecepcion = itinerarySection.getByRole('heading', {
-				name: 'Recepción',
-				exact: true,
+			const itineraryTypography = await itinerarySection.evaluate(async (element) => {
+				await document.fonts.ready;
+				const readFont = (selector: string) =>
+					getComputedStyle(element.querySelector<HTMLElement>(selector)!).fontFamily;
+
+				return {
+					heading: readFont('.itinerary__title'),
+					title: readFont('.itinerary__program-row-title'),
+					description: readFont('.itinerary__program-row-desc'),
+					time: readFont('.itinerary__program-row-time'),
+					fontsLoaded: {
+						cormorant: document.fonts.check('400 1em "Cormorant Garamond Variable"'),
+						instrument: document.fonts.check('600 1em "Instrument Sans Variable"'),
+						pinyon: document.fonts.check('400 1em "Pinyon Script"'),
+					},
+				};
 			});
-			await expect(itineraryRecepcion).toBeVisible();
+			expect(itineraryTypography.heading).toContain('Cormorant Garamond Variable');
+			expect(itineraryTypography.title).toContain('Pinyon Script');
+			expect(itineraryTypography.description).toContain('Instrument Sans Variable');
+			expect(itineraryTypography.time).toContain('Instrument Sans Variable');
+			expect(itineraryTypography.fontsLoaded).toEqual({
+				cormorant: true,
+				instrument: true,
+				pinyon: true,
+			});
 
 			// 5. Gallery & alt text verification
-			const galleryItems = page.locator(
-				'.gallery__item, .gallery img, img[alt*="Abril Michelle"]',
-			);
+			const gallerySection = page.locator('.gallery-section[data-variant="premiere-floral"]');
+			await expect(gallerySection).toBeVisible();
+			const galleryItems = gallerySection.locator('.gallery-grid__item');
 			const galleryCount = await galleryItems.count();
-			expect(galleryCount).toBeGreaterThanOrEqual(4);
+			expect(galleryCount).toBe(5);
 
 			// Check all gallery images have alt attributes
 			for (let i = 0; i < galleryCount; i++) {
-				const img = galleryItems.nth(i);
+				const img = galleryItems.nth(i).locator('img');
 				const alt = await img.getAttribute('alt');
 				expect(alt).toBeTruthy();
+			}
+
+			const galleryComposition = await galleryItems.evaluateAll((items) =>
+				items.map((item) => {
+					const rect = item.getBoundingClientRect();
+					const image = item.querySelector('img')!;
+					const style = getComputedStyle(item);
+					return {
+						alt: image.alt,
+						aspectRatio: style.aspectRatio,
+						gridColumn: style.gridColumn,
+						top: rect.top,
+						width: rect.width,
+						height: rect.height,
+					};
+				}),
+			);
+			const confetti = galleryComposition[2];
+			expect(confetti.alt).toBe('Abril Michelle con vestido rosa y confeti');
+			expect(confetti.aspectRatio).toBe('8 / 5');
+			expect(confetti.gridColumn).toBe('1 / -1');
+			expect(confetti.width / confetti.height).toBeCloseTo(8 / 5, 1);
+			if (viewport.width >= 768) {
+				expect(galleryComposition[0].top).toBeCloseTo(galleryComposition[1].top, 0);
+				expect(confetti.top).toBeGreaterThan(galleryComposition[0].top);
+				expect(galleryComposition[3].top).toBeGreaterThan(confetti.top);
+				expect(galleryComposition[3].top).toBeCloseTo(galleryComposition[4].top, 0);
 			}
 
 			// 6. Horizontal overflow check
@@ -219,6 +299,9 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 				`abril-${viewport.name}-${viewport.width}x${viewport.height}.png`,
 			);
 			await page.screenshot({ path: screenshotPath, fullPage: true });
+			await gallerySection.screenshot({
+				path: path.join(ARTIFACT_ROOT, `abril-gallery-${viewport.name}.png`),
+			});
 		});
 	}
 
@@ -239,7 +322,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.reload({ waitUntil: 'networkidle' });
 
-		const heroTitle = page.locator('.hero__title, h1');
+		const heroTitle = page.locator('.invitation-hero__title');
 		await expect(heroTitle).toBeVisible();
 	});
 });

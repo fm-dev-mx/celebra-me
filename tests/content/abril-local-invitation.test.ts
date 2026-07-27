@@ -61,6 +61,26 @@ describe('Abril Michelle local invitation content', () => {
 			},
 			thankYou: { closingName: 'Abril Michelle', date: '12 de septiembre de 2026' },
 		});
+		expect(result.data!.sectionStyles?.itinerary?.variant).toBe('celestial-blue');
+		expect(result.data!.itinerary?.items).toEqual([
+			expect.objectContaining({ label: 'Acción de gracias' }),
+			expect.objectContaining({ label: 'Bienvenida' }),
+			expect.objectContaining({ label: 'Cena de gala' }),
+			expect.objectContaining({ label: 'Vals de honor' }),
+			expect.objectContaining({ label: 'Cierre' }),
+		]);
+		expect(result.data!.itinerary?.items).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ label: 'Último baile' })]),
+		);
+		for (const item of result.data!.itinerary?.items ?? []) {
+			expect(item.description?.trim()).toBeTruthy();
+		}
+		expect(result.data!.gifts?.items).toHaveLength(1);
+		expect(result.data!.gifts?.items.map((item) => item.type)).toEqual(['cash']);
+		expect(result.data!.sectionOrder).toBeDefined();
+		const sectionOrder = result.data!.sectionOrder!;
+		expect(sectionOrder.indexOf('gifts')).toBe(sectionOrder.indexOf('gallery') + 1);
+		expect(sectionOrder.indexOf('personalizedAccess')).toBe(sectionOrder.indexOf('gifts') + 1);
 		const typedContent = content as {
 			hero: { portrait?: unknown; backgroundImage?: unknown };
 			location: {
@@ -113,7 +133,7 @@ describe('Abril Michelle local invitation content', () => {
 
 		const assets = buildTestAssets();
 		expect(result.data!.gallery!.variant).toBe('premiere-floral');
-		expect(result.data!.gallery!.items).toHaveLength(4);
+		expect(result.data!.gallery!.items).toHaveLength(5);
 		const galleryIds = result.data!.gallery!.items.map((item) =>
 			typeof item.image === 'object' && item.image && 'assetId' in item.image
 				? String(item.image.assetId)
@@ -122,9 +142,11 @@ describe('Abril Michelle local invitation content', () => {
 		expect(galleryIds).toEqual([
 			assets['gallery-01-candles'].assetId,
 			assets['family-portrait'].assetId,
+			assets['thank-you-confetti'].assetId,
 			assets['gallery-03-seated-balloons'].assetId,
 			assets['gallery-04-white-suit'].assetId,
 		]);
+		expect(new Set(galleryIds).size).toBe(5);
 		expect(result.data!.rsvp!.calendar).toEqual({
 			title: 'XV de Abril Michelle',
 			description:
@@ -140,7 +162,7 @@ describe('Abril Michelle local invitation content', () => {
 		);
 
 		expect(content).not.toHaveProperty('music');
-		expect(content).not.toHaveProperty('gifts');
+		expect(content).toHaveProperty('gifts');
 		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
 		expect(typedContent.location.reception.googleMapsUrl).toMatch(/^https:\/\//);
 	});
@@ -165,6 +187,7 @@ describe('Abril Michelle local invitation content', () => {
 		expect(page.renderPlan).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ type: 'section', section: 'gallery' }),
+				expect.objectContaining({ type: 'section', section: 'gifts' }),
 			]),
 		);
 	});

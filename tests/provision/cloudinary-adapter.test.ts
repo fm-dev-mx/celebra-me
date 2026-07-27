@@ -155,10 +155,11 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(content.gallery.items[1].image.assetId).toContain('family-portrait');
 			expect(content.gallery.items[1].alt).toBe('Abril Michelle luciendo tiara y guantes');
 
-			// Check all 4 gallery items use unique assets
+			// Check all 5 gallery items use unique assets
 			const galleryAssetIds = content.gallery.items.map((item: any) => item.image.assetId);
 			const uniqueGalleryAssetIds = new Set(galleryAssetIds);
-			expect(uniqueGalleryAssetIds.size).toBe(4);
+			expect(uniqueGalleryAssetIds.size).toBe(5);
+			expect(galleryAssetIds[2]).toContain('thank-you-confetti');
 
 			// Family image and Thank-you image are NOT duplicated in Gallery
 			expect(galleryAssetIds).not.toContain(content.family.featuredImage.assetId);
@@ -184,7 +185,8 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			};
 			expect(content.family.featuredImage.assetId).toContain('gallery-02-bw-cake');
 			expect(content.thankYou.image.assetId).toContain('gallery-05-white-dress');
-			expect(content.gallery.items).toHaveLength(4);
+			expect(content.gallery.items).toHaveLength(5);
+			expect(content.gallery.items[2]?.image.assetId).toContain('thank-you-confetti');
 			expect(
 				content.gallery.items.some((item) =>
 					item.image.assetId.includes('gallery-05-white-dress'),

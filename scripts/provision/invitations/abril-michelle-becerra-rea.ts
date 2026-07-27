@@ -172,10 +172,14 @@ export function buildAbrilPublishedContent(
 			'location',
 			'itinerary',
 			'gallery',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		],
+		sectionStyles: {
+			itinerary: { variant: 'celestial-blue' },
+		},
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {
 			name: 'Abril Michelle',
@@ -289,11 +293,48 @@ export function buildAbrilPublishedContent(
 		itinerary: {
 			title: 'Momentos de la celebración',
 			items: [
-				{ time: '3:00 p. m.', label: 'Acción de gracias', iconName: 'Church' },
-				{ time: '5:00 p. m.', label: 'Bienvenida', iconName: 'Reception' },
-				{ time: '6:00 p. m.', label: 'Cena de gala', iconName: 'Dinner' },
-				{ time: '7:00 p. m.', label: 'Vals de honor', iconName: 'Waltz' },
-				{ time: '12:00 a. m.', label: 'Último baile', iconName: 'Sparkles' },
+				{
+					time: '3:00 p. m.',
+					label: 'Acción de gracias',
+					description: 'Un momento de gratitud para iniciar esta fecha tan especial.',
+					iconName: 'Church',
+				},
+				{
+					time: '5:00 p. m.',
+					label: 'Bienvenida',
+					description: 'Nos reunimos con alegría para compartir una tarde inolvidable.',
+					iconName: 'Reception',
+				},
+				{
+					time: '6:00 p. m.',
+					label: 'Cena de gala',
+					description: 'Brindaremos por los sueños que comienzan a florecer.',
+					iconName: 'Dinner',
+				},
+				{
+					time: '7:00 p. m.',
+					label: 'Vals de honor',
+					description: 'Una tradición llena de emoción, música y recuerdos.',
+					iconName: 'Waltz',
+				},
+				{
+					time: '12:00 a. m.',
+					label: 'Cierre',
+					description: 'Despedimos la noche celebrando cada instante compartido.',
+					iconName: 'Sparkles',
+				},
+			],
+		},
+		gifts: {
+			title: 'Lluvia de Sobres',
+			subtitle:
+				'Su presencia es nuestro mayor regalo. Si desea tener un detalle, contaremos con un buzón durante la recepción.',
+			items: [
+				{
+					type: 'cash',
+					title: 'Lluvia de Sobres',
+					text: 'Contaremos con un buzón durante la recepción.',
+				},
 			],
 		},
 		gallery: {
@@ -315,6 +356,13 @@ export function buildAbrilPublishedContent(
 					focalPoint: '50% 28%',
 					focalPointMobile: '50% 26%',
 					focalPointDesktop: '50% 30%',
+				},
+				{
+					image: assets['thank-you-confetti'],
+					alt: 'Abril Michelle con vestido rosa y confeti',
+					focalPoint: '50% 40%',
+					focalPointMobile: '50% 50%',
+					focalPointDesktop: '50% 50%',
 				},
 				{
 					image: assets['gallery-03-seated-balloons'],
