@@ -2,13 +2,15 @@
 /* eslint-disable no-restricted-syntax -- item-level focal points must override theme crop fallbacks */
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
+import { getGalleryPreviewRole } from '@/lib/components/gallery/gallery-presentation';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
 	alt?: string;
 	caption?: string;
 	key?: string;
+	layoutRole?: 'feature' | 'wide' | 'standard';
+	aspectRatio?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -34,15 +36,19 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	{
 		items.map((item, index) => {
 			const { src, width, height } = resolveImage(item.image);
+			const layoutRole = getGalleryPreviewRole(index, variant, item.layoutRole);
+			const layoutClass = `gallery-grid__item--${layoutRole}`;
+			const aspectStyle = item.aspectRatio ? `aspect-ratio: ${item.aspectRatio};` : '';
 			return (
 			<div
-				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
+				class:list={['gallery-grid__item', layoutClass]}
 				data-gallery-item
 				data-gallery-index={index}
+				data-layout-role={layoutRole}
 				data-image-key={item.key}
 				data-gallery-src={src}
 				data-gallery-caption={item.caption ?? ''}
-				style={`${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
+				style={`${aspectStyle}${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
 				tabindex="0"
 				role="button"
 				aria-label={item.alt || item.caption || `Ver imagen ${index + 1}`}

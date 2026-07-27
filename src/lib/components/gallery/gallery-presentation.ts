@@ -9,8 +9,15 @@ export const GALLERY_ROLE_LABELS: Record<GalleryPreviewRole, string> = {
 	standard: 'Estándar',
 };
 
-export function getGalleryPreviewRole(index: number, variant?: string): GalleryPreviewRole {
-	return getLayoutClass(index, variant).replace('gallery-grid__item--', '') as GalleryPreviewRole;
+export function getGalleryPreviewRole(
+	index: number,
+	variant?: string,
+	layoutRole?: GalleryPreviewRole | string,
+): GalleryPreviewRole {
+	return getLayoutClass(index, variant, layoutRole).replace(
+		'gallery-grid__item--',
+		'',
+	) as GalleryPreviewRole;
 }
 
 export function getGalleryPreviewAspectRatio(

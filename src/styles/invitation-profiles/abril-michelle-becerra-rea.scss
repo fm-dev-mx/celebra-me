@@ -1,9 +1,7 @@
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
-@use '../themes/sections/itinerary/celestial-blue' as itinerary-celestial-blue;
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
-@use '@fontsource-variable/eb-garamond/index.css' as eb-garamond;
 @use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
 @use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
@@ -1054,7 +1052,8 @@ html:has(.event--abril-michelle-becerra-rea) body {
 			filter 0.4s ease;
 	}
 
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item[data-gallery-index='2'] {
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item[data-layout-role='feature'],
+	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item[data-image-key='thank-you-confetti'] {
 		grid-column: 1 / -1;
 		aspect-ratio: 8 / 5;
 	}

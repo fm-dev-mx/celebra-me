@@ -115,20 +115,25 @@ export default function GalleryEditor({
 			<div className="invitation-editor__gallery-grid">
 				{value.items.map((item, index) => {
 					const src = resolveAssetSrc(item.image, assetLookupSlug, assets);
-					const role = getGalleryPreviewRole(index, variant);
+					const role = getGalleryPreviewRole(index, variant, item.layoutRole);
+					const itemKey = item.key ?? imageItemKey(item.image);
 					return (
 						<article
 							className="invitation-editor__gallery-item"
-							key={`${index}-${imageItemKey(item.image)}`}
+							key={item.key ?? `${index}-${imageItemKey(item.image)}`}
 							data-layout-role={role}
+							data-image-key={item.key}
 						>
 							<div className="invitation-editor__gallery-item-header">
 								<strong>Fotografía {index + 1}</strong>
-								<span>{GALLERY_ROLE_LABELS[role]}</span>
+								<span>
+									{GALLERY_ROLE_LABELS[role]}
+									{item.key ? ` · ${item.key}` : ''}
+								</span>
 							</div>
 							<div className="invitation-editor__gallery-item-config">
 								<span className="invitation-editor__gallery-item-key">
-									{imageItemKey(item.image)}
+									{itemKey}
 								</span>
 								{invitationId && (
 									<div className="invitation-editor__gallery-item-actions">

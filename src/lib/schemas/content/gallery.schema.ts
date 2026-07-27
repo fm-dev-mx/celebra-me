@@ -11,6 +11,9 @@ export const gallerySchema = z
 		presentation: z.enum(['pet-keepsake']).optional(),
 		items: z.array(
 			z.object({
+				key: z.string().min(1).max(120).optional(),
+				layoutRole: z.enum(['feature', 'wide', 'standard']).optional(),
+				aspectRatio: z.string().min(1).max(32).optional(),
 				image: AssetSchema,
 				alt: z.string().min(1).max(500).optional(),
 				caption: z.string().optional(),

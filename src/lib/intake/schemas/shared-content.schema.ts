@@ -71,6 +71,9 @@ export const gallerySchema = z
 		items: z.array(
 			z
 				.object({
+					key: optionalText(120),
+					layoutRole: z.enum(['feature', 'wide', 'standard']).optional(),
+					aspectRatio: optionalText(32),
 					image: editableAssetSchema,
 					alt: optionalText(500),
 					caption: optionalText(500),

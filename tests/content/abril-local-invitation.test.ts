@@ -104,6 +104,16 @@ describe('Abril Michelle local invitation content', () => {
 				godparents: Array<{ name: string }>;
 			};
 			rsvp: { subcopy: string };
+			gallery: {
+				items: Array<{
+					key?: string;
+					layoutRole?: string;
+					aspectRatio?: string;
+					focalPoint?: string;
+					focalPointMobile?: string;
+					focalPointDesktop?: string;
+				}>;
+			};
 		};
 
 		expect(typedContent.hero.portrait).toBeUndefined();
@@ -147,6 +157,16 @@ describe('Abril Michelle local invitation content', () => {
 			assets['gallery-04-white-suit'].assetId,
 		]);
 		expect(new Set(galleryIds).size).toBe(5);
+		const confettiItem = typedContent.gallery.items[2];
+		expect(confettiItem).toMatchObject({
+			key: 'thank-you-confetti',
+			layoutRole: 'feature',
+			aspectRatio: '8 / 5',
+		});
+		expect(JSON.stringify(typedContent.gallery.items)).not.toMatch(/100%\s*56%/);
+		expect(confettiItem.focalPoint).not.toBe('100% 56%');
+		expect(confettiItem.focalPointMobile).not.toBe('100% 56%');
+		expect(confettiItem.focalPointDesktop).not.toBe('100% 56%');
 		expect(result.data!.rsvp!.calendar).toEqual({
 			title: 'XV de Abril Michelle',
 			description:

@@ -241,19 +241,32 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 						top: rect.top,
 						width: rect.width,
 						height: rect.height,
+						layoutRole: item.getAttribute('data-layout-role'),
+						imageKey: item.getAttribute('data-image-key'),
 					};
 				}),
 			);
-			const confetti = galleryComposition[2];
-			expect(confetti.alt).toBe('Abril Michelle con vestido rosa y confeti');
-			expect(confetti.aspectRatio).toBe('8 / 5');
-			expect(confetti.gridColumn).toBe('1 / -1');
-			expect(confetti.width / confetti.height).toBeCloseTo(8 / 5, 1);
+			const confetti =
+				galleryComposition.find(
+					(item) =>
+						item.layoutRole === 'feature' || item.imageKey === 'thank-you-confetti',
+				) ?? null;
+			expect(confetti).not.toBeNull();
+			expect(confetti!.alt).toBe('Abril Michelle con vestido rosa y confeti');
+			expect(confetti!.aspectRatio).toBe('8 / 5');
+			expect(confetti!.gridColumn).toBe('1 / -1');
+			expect(confetti!.width / confetti!.height).toBeCloseTo(8 / 5, 1);
+			expect(
+				confetti!.layoutRole === 'feature' || confetti!.imageKey === 'thank-you-confetti',
+			).toBe(true);
 			if (viewport.width >= 768) {
 				expect(galleryComposition[0].top).toBeCloseTo(galleryComposition[1].top, 0);
-				expect(confetti.top).toBeGreaterThan(galleryComposition[0].top);
-				expect(galleryComposition[3].top).toBeGreaterThan(confetti.top);
-				expect(galleryComposition[3].top).toBeCloseTo(galleryComposition[4].top, 0);
+				expect(confetti!.top).toBeGreaterThan(galleryComposition[0].top);
+				const afterFeature = galleryComposition.filter(
+					(item) => item.top > confetti!.top + 1,
+				);
+				expect(afterFeature.length).toBeGreaterThanOrEqual(2);
+				expect(afterFeature[0]!.top).toBeCloseTo(afterFeature[1]!.top, 0);
 			}
 
 			// 6. Horizontal overflow check

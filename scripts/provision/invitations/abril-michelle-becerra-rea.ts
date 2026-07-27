@@ -344,6 +344,7 @@ export function buildAbrilPublishedContent(
 			variant: 'premiere-floral',
 			items: [
 				{
+					key: 'gallery-01-candles',
 					image: assets['gallery-01-candles'],
 					alt: 'Abril Michelle con velas encendidas en forma de 15',
 					focalPoint: '50% 42%',
@@ -351,6 +352,7 @@ export function buildAbrilPublishedContent(
 					focalPointDesktop: '50% 42%',
 				},
 				{
+					key: 'family-portrait',
 					image: assets['family-portrait'],
 					alt: 'Abril Michelle luciendo tiara y guantes',
 					focalPoint: '50% 28%',
@@ -358,13 +360,17 @@ export function buildAbrilPublishedContent(
 					focalPointDesktop: '50% 30%',
 				},
 				{
+					key: 'thank-you-confetti',
+					layoutRole: 'feature',
+					aspectRatio: '8 / 5',
 					image: assets['thank-you-confetti'],
 					alt: 'Abril Michelle con vestido rosa y confeti',
-					focalPoint: '50% 40%',
-					focalPointMobile: '50% 50%',
-					focalPointDesktop: '50% 50%',
+					focalPoint: '72% 36%',
+					focalPointMobile: '72% 34%',
+					focalPointDesktop: '70% 36%',
 				},
 				{
+					key: 'gallery-03-seated-balloons',
 					image: assets['gallery-03-seated-balloons'],
 					alt: 'Abril Michelle sentada con globos dorados y pastel',
 					focalPoint: '42% 38%',
@@ -372,6 +378,7 @@ export function buildAbrilPublishedContent(
 					focalPointDesktop: '44% 38%',
 				},
 				{
+					key: 'gallery-04-white-suit',
 					image: assets['gallery-04-white-suit'],
 					alt: 'Abril Michelle con traje blanco y globos 15',
 					focalPoint: '50% 28%',

@@ -444,7 +444,13 @@ function buildGallerySectionData(context: AdaptationContext) {
 				image: string | AssetSource;
 				alt?: string;
 				caption?: string;
+				key?: string;
+				layoutRole?: 'feature' | 'wide' | 'standard';
+				aspectRatio?: string;
 				focalPoint?: string;
+				focalPointMobile?: string;
+				focalPointTablet?: string;
+				focalPointDesktop?: string;
 			}) => {
 				const resolved = resolveAsset(eventSlug, item.image, data.title);
 				if (!resolved) {
@@ -453,9 +459,11 @@ function buildGallerySectionData(context: AdaptationContext) {
 					);
 					return null;
 				}
+				const stableKey =
+					item.key ?? (typeof item.image === 'string' ? item.image : undefined);
 				return {
 					...item,
-					key: typeof item.image === 'string' ? item.image : undefined,
+					key: stableKey,
 					image: resolved,
 				};
 			},

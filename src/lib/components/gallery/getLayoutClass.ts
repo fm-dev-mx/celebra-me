@@ -42,7 +42,23 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 
 type LayoutVariant = keyof typeof strategies;
 
-export function getLayoutClass(index: number, variant?: string): LayoutClass {
+export type GalleryLayoutRole = 'feature' | 'wide' | 'standard';
+
+function layoutRoleToClass(role: GalleryLayoutRole | string | undefined): LayoutClass | null {
+	if (role === 'feature') return FEATURE;
+	if (role === 'wide') return WIDE;
+	if (role === 'standard') return STANDARD;
+	return null;
+}
+
+export function getLayoutClass(
+	index: number,
+	variant?: string,
+	layoutRole?: GalleryLayoutRole | string,
+): LayoutClass {
+	const fromRole = layoutRoleToClass(layoutRole);
+	if (fromRole) return fromRole;
+
 	const strategy = strategies[variant as LayoutVariant];
 
 	if (!strategy) {
