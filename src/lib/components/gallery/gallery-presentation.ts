@@ -23,7 +23,11 @@ export function getGalleryPreviewRole(
 export function getGalleryPreviewAspectRatio(
 	role: GalleryPreviewRole,
 	viewport: GalleryPreviewViewport,
+	contentAspectRatio?: string,
 ): string {
+	const fromContent = contentAspectRatio?.trim();
+	if (fromContent) return fromContent;
+
 	if (viewport === 'mobile') return '4 / 5';
 	// Tablet uses desktop aspect ratios (2-column grid approximates desktop behavior)
 	if (role === 'feature') return '16 / 10';

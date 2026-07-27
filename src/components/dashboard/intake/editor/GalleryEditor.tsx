@@ -162,6 +162,7 @@ export default function GalleryEditor({
 										data-aspect-ratio={getGalleryPreviewAspectRatio(
 											role,
 											cropMode,
+											item.aspectRatio,
 										)}
 									>
 										{src ? (

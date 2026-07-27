@@ -26,6 +26,12 @@ describe('gallery presentation', () => {
 		expect(getGalleryPreviewAspectRatio('wide', 'desktop')).toBe('4 / 3');
 	});
 
+	it('prefers an explicit content aspect ratio over role defaults', () => {
+		expect(getGalleryPreviewAspectRatio('feature', 'desktop', '8 / 5')).toBe('8 / 5');
+		expect(getGalleryPreviewAspectRatio('feature', 'desktop')).toBe('16 / 10');
+		expect(getGalleryPreviewAspectRatio('feature', 'desktop', '   ')).toBe('16 / 10');
+	});
+
 	it('emits persisted focal points as public gallery item overrides', () => {
 		const component = readFileSync(
 			resolve(process.cwd(), 'src/components/invitation/PhotoGallery.astro'),

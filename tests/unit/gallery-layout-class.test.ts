@@ -19,4 +19,10 @@ describe('getLayoutClass', () => {
 		expect(getLayoutClass(0, 'jewelry-box')).toBe('gallery-grid__item--feature');
 		expect(getLayoutClass(1, 'jewelry-box')).toBe('gallery-grid__item--standard');
 	});
+
+	it('honors an explicit layoutRole over variant index strategies', () => {
+		expect(getLayoutClass(3, 'premiere-floral', 'feature')).toBe(
+			'gallery-grid__item--feature',
+		);
+	});
 });
