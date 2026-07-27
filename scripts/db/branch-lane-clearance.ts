@@ -1,5 +1,8 @@
 /**
- * branch-lane-clearance.ts — Resumable clearance fingerprint for branch-lane.
+ * branch-lane-clearance.ts — Write-ready clearance fingerprint for branch-lane.
+ *
+ * Distinct from checkpoint (partial read-only progress): clearance means validated
+ * evidence permitting the next authorized write.
  *
  * Stores temporary evidence under .agent/tmp/ (gitignored). Never stores credentials
  * or personal data. Stale fingerprints invalidate automatically; staleness alone is

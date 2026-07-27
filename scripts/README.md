@@ -61,6 +61,8 @@ execute the same retained plans. Any blocked selected target aborts the complete
 | `pnpm db:prod:backup`                 | `scripts/db/`  | read-only production data dump                                                  |
 | `pnpm db:prod:audit`                  | `scripts/db/`  | read-only production migration history & schema audit                           |
 | `pnpm db:branch:parity`               | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`) |
+| `pnpm db:branch:diagnose`             | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)    |
+| `pnpm db:branch:remediate-disposable` | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)        |
 | `pnpm db:prod:migrate`                | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)        |
 | `pnpm db:preview:migrate`             | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                          |
 | `pnpm db:preview:audit`               | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                         |

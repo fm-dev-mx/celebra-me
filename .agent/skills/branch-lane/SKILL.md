@@ -3,11 +3,12 @@ name: branch-lane
 description: |
   Interactive, resumable orchestrator for Celebra-me develop/main Git lane: auto-discovers mode,
   always runs branch migration parity, automatically delegates database-sensitive validation to
-  database-parity, consolidates authorization prompts, and reports Pass / Needs* / Fail /
-  Hard blocked / Skipped with a nine-section status report. Never force-pushes. Git writes require
-  explicit authorization in the current task.
+  database-parity, exhausts safe read-only diagnosis before any user prompt, persists checkpoints
+  distinct from clearance, consolidates authorization only after the plan is stable, and reports
+  Pass / Needs* / Fail / Hard blocked / Skipped in a nine-section status report. Never force-pushes.
+  Git writes require explicit authorization in the current task.
 domain: workflow
-version: 2.0.0
+version: 2.1.0
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -55,12 +56,20 @@ deployments. Those stay in `database-parity` / `docs/database-workflow.md`. Exec
 
 - `scripts/db/branch-lane-status.ts` — status + mode selection
 - `scripts/db/branch-migration-parity.ts` — `pnpm db:branch:parity`
-- `scripts/db/branch-lane-clearance.ts` — resumable clearance fingerprint (`.agent/tmp/`)
+- `scripts/db/branch-lane-checkpoint.ts` — partial read-only progress (`.agent/tmp/`)
+- `scripts/db/branch-lane-clearance.ts` — write-ready clearance fingerprint (`.agent/tmp/`)
+- `scripts/db/branch-lane-diagnosis.ts` — read-only diagnosis / auth-plan helpers
+- `scripts/db/branch-lane-diagnose.ts` — `pnpm db:branch:diagnose` (evidence → JSON)
+- `scripts/db/branch-lane-disposable-remediate.ts` — verified disposable remediation
+  (`pnpm db:branch:remediate-disposable`)
 
 ## Status contract
 
 Use exactly: `Pass` | `Needs decision` | `Needs authorization` | `Needs manual action` | `Fail` |
 `Hard blocked` | `Skipped`.
+
+Do **not** invent informal variants (for example `Pass (info)`). Put routing context in the finding
+`id`, `cause`, or description while keeping a valid status.
 
 Every non-`Pass` finding must include **cause**, **impact**, **owner**, **remediation**, **next
 step**.
@@ -77,6 +86,47 @@ step**.
 **Applied migration content mutation is never an acceptable exception.** Restore the original file
 and add a corrective migration.
 
+## Proactive read-only rule (non-negotiable)
+
+On every invocation, **exhaust safe automatic investigation before any user prompt**:
+
+1. Gather Git/repo facts without asking.
+2. Run parity and, when required, delegate `database-parity` immediately.
+3. For every `Fail` / ambiguous audit signal, run all reliable **read-only** diagnosis available
+   (files, Git, migration SQL, audit output, scripts, already-resolved credentials).
+4. When diagnosis classifies disposable reference as stale/incomplete, run **verified disposable
+   remediation** (`pnpm db:branch:remediate-disposable` / `db:disposable:reset`) — a disposable-only
+   write, not read-only. If disposable identity cannot be proven → `Hard blocked`.
+5. **Never ask** whether the agent should investigate a correctable finding.
+6. Ask only when the next step requires a write/remote mutation outside verified disposable
+   remediation, explicit authorization, business risk acceptance, unavailable credentials/access, a
+   manual operation the agent cannot perform, or an ambiguity evidence cannot resolve.
+7. Do **not** present Preview, Production, or Git-write authorization until blocking read-only
+   diagnosis and any verified disposable remediation are complete and the consolidated plan is
+   stable.
+8. When no user action is required yet, say so explicitly and continue automatic work.
+
+Helpers: `mayRequestUserInput`, `buildConsolidatedAuthorizationPlan` in
+`scripts/db/branch-lane-diagnosis.ts`.
+
+## Checkpoint vs clearance
+
+| Artifact   | File                                     | Meaning                                                      |
+| ---------- | ---------------------------------------- | ------------------------------------------------------------ |
+| Checkpoint | `.agent/tmp/branch-lane-checkpoint.json` | Reusable **partial** read-only evidence; blockers may remain |
+| Clearance  | `.agent/tmp/branch-lane-clearance.json`  | Validated evidence permitting the **next authorized write**  |
+
+Fingerprint fields (both): `mode`, `baseSha`, `headSha`, `workingTreeFingerprint`,
+`sensitiveFileSetFingerprint`, `repoIdentityFingerprint`, `auditContractVersion`.
+
+Checkpoint also stores: `completedChecks`, `unresolvedFindings`, optional `diagnosis` snapshot.
+
+- Match → reuse unaffected completed checks; re-run only invalidated work.
+- Mismatch → invalidate silently and re-run (staleness alone is not a user-facing `Fail`).
+- Never store secrets, PII, credential-bearing URLs, or database contents.
+- Clearance `Pass` is written only after database-parity (when required) is clear for the planned
+  write. Checkpoint may be written earlier after meaningful read-only progress.
+
 ## Modes
 
 | Priority | Mode                      | Direction                       | Load                                                                             |
@@ -86,6 +136,9 @@ and add a corrective migration.
 | Recovery | `sync-main-into-develop`  | `main` → `develop` (merge only) | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
 
 Load **only** the selected reference after this file.
+
+Always state proposed Git actions with **exact source branch, target branch, and audited commit
+SHAs** (see `formatLaneDirection`).
 
 ## Orchestrator loop
 
@@ -149,38 +202,48 @@ Invoke immediately when:
 - remote history/schema validation is required for clearance (head-only migrations, etc.).
 
 Do not dump parity procedure into this skill. Pass mode, base/head SHAs, and sensitive file list.
+Expect `database-parity` to diagnose local audit failures automatically before returning control for
+authorization.
 
-### 5. Resume fingerprint
+### 5. Resume: checkpoint then clearance
 
-Before any write, evaluate clearance via `scripts/db/branch-lane-clearance.ts`:
+Before writes, evaluate checkpoint then clearance:
 
-Fingerprint fields: `mode`, `baseSha`, `headSha`, `workingTreeFingerprint`,
-`sensitiveFileSetFingerprint`, `repoIdentityFingerprint`, `auditContractVersion`, `clearanceStatus`.
+1. `evaluateResumeCheckpoint` — reuse completed read-only checks when valid.
+2. `evaluateResumeClearance` — only when write-ready evidence is required.
 
-- Match → reuse completed evidence; skip unaffected steps
-- Mismatch → invalidate silently and re-run affected checks (staleness alone is not a user-facing
-  `Fail`)
-- Store only under `.agent/tmp/branch-lane-clearance.json` (gitignored); never store secrets/PII
+Persist checkpoint after meaningful read-only progress. Persist clearance only when the next
+authorized write is fully validated.
 
-### 6. Authorization and decisions
+### 6. Authorization and decisions (after diagnosis is stable)
 
-Ask only when a genuine human input remains. Consolidate compatible approvals into the **minimum**
-number of prompts. Every prompt must state:
+Ask only when `mayRequestUserInput` is true (no remaining automatic steps). Consolidate compatible
+approvals into the **minimum** number of prompts via `buildConsolidatedAuthorizationPlan`. Every
+prompt must state:
 
 1. What was detected
 2. Why input is required
 3. Recommended option
-4. Alternatives and consequences
-5. Exact action that will follow
+4. Alternatives and consequences (exclude Git-only when Hard blocked / incompatible)
+5. Exact action that will follow, including **source → target @ SHAs**
 
 Require explicit current-task authorization before:
 
 - Git writes, pushes, merges, tags, release-file edits
-- Preview/Production DB writes
+- Preview/Production DB writes (and persistent-local mutations)
 - Backups, restores, rollbacks, real-data copies
 - Acceptance of intentional **non-critical** discrepancies (`Needs decision`)
 
 Never accept applied-migration content mutation as an exception.
+
+**Git-only promote alternative:** offer only after compatibility is demonstrated
+(`evaluateGitOnlyPromotionAlternative`). If head requires pending remote schema → `Hard blocked`,
+not an owner-acceptable exception.
+
+**Backups:** require a fresh pre-migration Production backup based on risk/policy (state immediately
+before migrate), not merely because the newest dump has a different calendar date. When
+`pnpm db:prod:migrate` already creates that backup, do not demand a separate backup authorization
+solely for date skew — see `evaluateProductionBackupRequirement`.
 
 ### 7. Manual actions
 
@@ -190,7 +253,9 @@ When the agent cannot complete a step, report `Needs manual action` with:
 - required environment/location
 - expected result
 - verification method
-- how to resume `/branch-lane` (re-invoke; fingerprint will validate)
+- how to resume `/branch-lane` (re-invoke; checkpoint/clearance fingerprints will validate)
+
+State what the agent will do automatically on resume vs what the human must do.
 
 ### 8. Execute authorized Git steps
 
@@ -204,10 +269,10 @@ Always present:
 2. Current state
 3. Planned actions
 4. Completed actions
-5. Findings (status + cause/impact/owner/remediation/next step)
-6. Decision or authorization required
+5. Findings (status + cause/impact/owner/remediation/next step) **and diagnosis**
+6. Decision or authorization required (or explicit “none yet — continuing investigation”)
 7. Manual action required
-8. Next step
+8. Next step (automatic vs human)
 9. Final status (`Pass` / partial / unresolved) — distinguish objective complete vs incomplete
 
 ## Shared hard constraints
@@ -216,14 +281,15 @@ Always present:
 - No commit/tag/push/deploy/publish unless the **current task** authorizes that exact operation.
 - User-owned working tree: never stash/discard/overwrite without authorization.
 - Branch/stash cleanup → `git-stash-branch-cleanup`, not this skill.
-- No migration/schema-parity/backup/data-copy/deploy logic inside this skill.
+- No migration/schema-parity/backup/data-copy/deploy logic inside this skill (diagnosis helpers and
+  orchestration only).
 - Preview is never a Production backup.
 - Do not expose credentials or personal data in prompts, logs, temp files, or reports.
 
 ## Cross-mode flow
 
 - Habitual: work on `develop` → (optional `release-prepare`) → push `develop` → parity → (auto
-  `database-parity` if needed) → authorize → **promote**.
+  `database-parity` + diagnosis) → checkpoint → authorize → **promote**.
 - Recovery: parity → (auto `database-parity` if needed) → authorize → **merge** sync → later promote
   when FF possible.
 - Release-prepare: advisory parity only; require parity clearance before a later DB-sensitive

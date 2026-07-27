@@ -59,6 +59,8 @@
         "db:local:migrate": "tsx scripts/db/apply-local-migrations.ts",
         "db:local:audit": "tsx scripts/db/db-guard.ts check --target persistent-local --operation audit && tsx scripts/db/audit-db.ts --target persistent-local",
         "db:branch:parity": "tsx scripts/db/branch-migration-parity.ts",
+        "db:branch:diagnose": "tsx scripts/db/branch-lane-diagnose.ts",
+        "db:branch:remediate-disposable": "tsx scripts/db/branch-lane-disposable-remediate.ts",
         "db:disposable:start": "tsx scripts/db/disposable-test-env.ts start",
         "db:disposable:reset": "tsx scripts/db/disposable-test-env.ts reset",
         "db:disposable:test": "tsx scripts/db/disposable-test-env.ts run-tests",

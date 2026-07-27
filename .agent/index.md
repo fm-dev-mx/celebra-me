@@ -55,11 +55,11 @@ state and never has authority over these definitions.
 | `client-invitation-audit`     | pre-implementation audit for real invitations + two-lane spec      |
 | `commit-planner`              | commit partitioning and message planning                           |
 | `copywriting-es`              | Spanish UI and invitation copy standards                           |
-| `database-parity`             | branch-lane DB delegate; migration/schema/backup audit + clearance |
+| `database-parity`             | branch-lane DB delegate; diagnosis, audits, checkpoint + clearance |
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
-| `branch-lane`                 | interactive Git lane orchestrator; auto-routes DB parity           |
+| `branch-lane`                 | Git lane orchestrator; read-only diagnosis before auth prompts     |
 | `git-stash-branch-cleanup`    | audit and clean stale stashes/branches with confirmation           |
 | `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
 | `release-prepare`             | deprecated stub → use `branch-lane` (mode release-prepare)         |

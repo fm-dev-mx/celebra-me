@@ -169,13 +169,27 @@ Healthy database-sensitive changes are **not** CLI failures — they route to `d
 Applied migration content mutation is `Hard blocked` and must never be accepted as an exception
 (restore original file + corrective migration).
 
-Resumable clearance evidence lives in gitignored `.agent/tmp/branch-lane-clearance.json` (SHAs and
-hashes only; no credentials). Stale fingerprints invalidate automatically and re-run affected
-checks.
+`branch-lane` / `database-parity` must exhaust safe **read-only** diagnosis (including
+persistent-local vs disposable drift classification via `pnpm db:branch:diagnose`) before asking for
+decisions or authorization. When diagnosis concludes the disposable reference is stale, **verified
+disposable remediation** (`pnpm db:branch:remediate-disposable` → `pnpm db:disposable:reset`) is an
+automated disposable-only write — not read-only — and must not target persistent-local, Preview, or
+Production. Unverified rebuild targets are `Hard blocked`. Preview / Production / persistent-local
+writes still require explicit authorization. Git-only promote while remotes lack required migrations
+is `Hard blocked` unless compatibility is demonstrated.
+
+Resumable evidence (SHAs/hashes only; no credentials):
+
+- Checkpoint: `.agent/tmp/branch-lane-checkpoint.json` — partial read-only progress
+- Clearance: `.agent/tmp/branch-lane-clearance.json` — write-ready gate
+
+Stale fingerprints invalidate automatically and re-run affected checks.
 
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
 credentials resolve. Production guest/RSVP backup coverage uses `pnpm db:prod:backup` /
-`.backups/prod/` — Preview is never a Production backup.
+`.backups/prod/` — require a fresh pre-migration dump based on migrate risk (state immediately
+before mutation), not merely calendar-day age; `pnpm db:prod:migrate` already creates that
+pre-migration backup. Preview is never a Production backup.
 
 ### Blocked refresh aliases
 
