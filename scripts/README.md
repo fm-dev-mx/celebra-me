@@ -60,6 +60,7 @@ execute the same retained plans. Any blocked selected target aborts the complete
 | `pnpm db:push`                        | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                |
 | `pnpm db:prod:backup`                 | `scripts/db/`  | read-only production data dump                                                 |
 | `pnpm db:prod:audit`                  | `scripts/db/`  | read-only production migration history & schema audit                          |
+| `pnpm db:branch:parity`               | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive path detection      |
 | `pnpm db:prod:migrate`                | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)       |
 | `pnpm db:preview:migrate`             | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                         |
 | `pnpm db:preview:audit`               | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                        |

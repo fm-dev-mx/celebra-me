@@ -200,8 +200,10 @@ judgment.
 ## Production Promotion
 
 Agent-facing procedure (default FF promote, optional release prep, sync recovery):
-[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). This section
-remains the human policy SSOT.
+[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). When the lane
+range includes database-sensitive changes, agents stop and hand off to
+[`.agent/skills/database-parity/SKILL.md`](../../.agent/skills/database-parity/SKILL.md) before
+remote integration or promotion. This section remains the human Git policy SSOT.
 
 ### Preferred hotfix path
 

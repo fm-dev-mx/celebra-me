@@ -54,6 +54,16 @@ git log --oneline <BASELINE>..HEAD
 Summarize into Keep a Changelog groups. Do not invent user-facing impact. Note production risks only
 with evidence.
 
+**Database-sensitive advisory (non-blocking for file edits):**
+
+```bash
+pnpm db:branch:parity -- --base <BASELINE> --head HEAD
+```
+
+If database-sensitive paths appear, report them and require
+[`database-parity`](../../database-parity/SKILL.md) clearance before a later promote. Allowed
+`package.json` / `CHANGELOG.md` edits may continue.
+
 ### 4. Select next version
 
 Follow SemVer + pre-release rules in `docs/core/release-process.md`:
@@ -138,6 +148,11 @@ Prepared / Corrected / Rejected
 | ----------------------------- | ------- |
 | Added / Changed / Fixed / ... | ...     |
 | Production Risks              | ...     |
+
+### Database-sensitive advisory
+
+- sensitive files (if any):
+- database-parity required before promote: yes/no |
 
 ### Files Changed
 

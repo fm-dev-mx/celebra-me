@@ -4,9 +4,10 @@ description: |
   Default develop→main lane for Celebra-me solo trunk: fast-forward promote develop onto main,
   optionally prepare a release candidate (version + CHANGELOG), and recover by merging main into
   develop only when production drifted. Absorbs release-prepare. Never force-pushes. Git writes
-  require explicit authorization in the current task.
+  require explicit authorization in the current task. Stops and hands off to database-parity when
+  the lane range includes database-sensitive changes.
 domain: workflow
-version: 1.2.0
+version: 1.3.0
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -25,11 +26,13 @@ preconditions:
   - Load only the selected mode reference under .agent/skills/branch-lane/references/
 related_skills:
   - commit-planner
+  - database-parity
   - documentation-governance
   - git-stash-branch-cleanup
 related_docs:
   - docs/core/git-governance.md
   - docs/core/release-process.md
+  - docs/database-workflow.md
   - CHANGELOG.md
 ---
 
@@ -46,6 +49,11 @@ fast-forward from `develop` onto `main`. Prefer that path.
 | Branch model, FF, promotion | [`docs/core/git-governance.md`](../../../docs/core/git-governance.md)   |
 | Versions, tags, changelog   | [`docs/core/release-process.md`](../../../docs/core/release-process.md) |
 | Agent Git authorization     | [`.agent/rules/git-safety.md`](../../rules/git-safety.md)               |
+| Database ops / parity audit | [`docs/database-workflow.md`](../../../docs/database-workflow.md) + [`database-parity`](../database-parity/SKILL.md) |
+
+This skill is **Git-only**. It does not run migrations, schema audits, backups, data copies, or
+deployments. When the lane range includes database-sensitive changes, stop and hand off to
+[`database-parity`](../database-parity/SKILL.md).
 
 ## Modes (choose exactly one)
 
@@ -79,6 +87,7 @@ Load **only** the selected reference after this file. Do not preload all three.
 - Mid merge/rebase/cherry-pick/bisect or detached HEAD: **abort**.
 - Branch/stash cleanup → `git-stash-branch-cleanup`, not this skill.
 - `release-prepare` may edit only paths allowed in its reference.
+- No migration, schema-parity, backup, data-copy, or deployment logic inside this skill.
 
 ## Shared Git preflight (promote and sync modes)
 
@@ -94,11 +103,42 @@ Abort unless the working tree is clean (or an exception is explicitly authorized
 mid-rebase/merge, and the user authorized the planned writes. Report whether `origin/main` is ahead,
 behind, or diverged from `origin/develop` before proceeding.
 
+## Database-sensitive gate (promote and sync)
+
+After shared preflight and **before any remote integration or promotion write**, detect
+database-sensitive changes for the mode range:
+
+| Mode                      | Range                                       |
+| ------------------------- | ------------------------------------------- |
+| `promote-develop-to-main` | `origin/main` → `origin/develop` (`--base origin/main --head origin/develop`) |
+| `sync-main-into-develop`  | `origin/develop` → `origin/main` (`--base origin/develop --head origin/main`) |
+
+```bash
+pnpm db:branch:parity -- --base <base> --head <head>
+```
+
+**Behavior:**
+
+- **No database-sensitive hits and migration identity/content OK** → continue the selected Git mode
+  normally.
+- **Database-sensitive hits and/or migration identity failures** → **stop**. List the affected
+  files from the command report. Do **not** checkout/merge/push/promote. Load
+  [`database-parity`](../database-parity/SKILL.md), require findings resolved or explicitly accepted
+  by the human owner, then resume this skill only after clearance.
+
+Do not re-implement database rules here. The gate only detects and routes.
+
+### `release-prepare` advisory
+
+`release-prepare` may edit release files even when `baseline..HEAD` includes database-sensitive
+paths. Report the advisory and require `database-parity` clearance before a later promote — do not
+block the allowed `package.json` / `CHANGELOG.md` edits.
+
 ## Cross-mode flow
 
 - **Habitual:** work on `develop` → (optional `release-prepare` + commit) → push `develop` →
-  **`promote-develop-to-main`**.
+  database-sensitive gate → **`promote-develop-to-main`**.
 - Hotfixes: land on `develop`, validate, then promote (keeps `main` ⊂ `develop`).
-- Recovery only: if `main` already has commits not in `develop`, run `sync-main-into-develop`, then
-  resume trunk; promote only when FF is possible again.
+- Recovery only: if `main` already has commits not in `develop`, run database-sensitive gate, then
+  `sync-main-into-develop` (merge only), then resume trunk; promote only when FF is possible again.
 - When the user only asks to “prepare” or “what should we do”, propose commands and wait for yes.

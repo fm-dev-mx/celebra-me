@@ -142,12 +142,34 @@ pnpm db:disposable:reset
 pnpm db:validate:pipeline
 pnpm db:prod:backup
 pnpm db:prod:audit
+pnpm db:branch:parity -- --base <ref> --head <ref>
 pnpm db:prod:migrate
 pnpm db:preview:migrate
 pnpm db:preview:audit
 pnpm db:prod:patch -- --file <path>
 pnpm db:sql:lint -- --file <path>
 ```
+
+### Branch-lane database-parity audit
+
+When [`branch-lane`](../.agent/skills/branch-lane/SKILL.md) detects database-sensitive changes in a
+promote or sync range, it **stops** before remote integration/promotion and hands off to
+[`.agent/skills/database-parity/SKILL.md`](../.agent/skills/database-parity/SKILL.md).
+
+Executable, read-only branch compare (no database connection):
+
+```bash
+pnpm db:branch:parity -- --base origin/main --head origin/develop
+```
+
+That command reports database-sensitive paths and compares migration **identity** and **content
+hashes** between refs (duplicates, head-only/base-only versions, same-version content mutation). It
+does not replace hosted audits.
+
+Complete the agent procedure in `database-parity`, including (when authorized) Local / Preview /
+Production `pnpm db:*:audit`, Production guest/RSVP backup coverage via `pnpm db:prod:backup` /
+`.backups/prod/` (Preview is never a Production backup), and explicit owner acceptance of any
+remaining findings before resuming `branch-lane`.
 
 ### Blocked refresh aliases
 

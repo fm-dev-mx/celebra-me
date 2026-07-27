@@ -16,8 +16,20 @@ Integration: **merge** only (not rebase, not reset-hard).
 - Shared Git preflight from the parent skill completed (`fetch` done).
 - Commits reachable from `origin/main` that are not on `origin/develop`. If none → no-op report; do
   not create an empty merge.
+- Database-sensitive gate passed (or findings cleared via `database-parity`). If the gate stops, do
+  not merge or push.
 
 ## Procedure
+
+0. Database-sensitive gate (mandatory before any sync merge/push):
+
+```bash
+pnpm db:branch:parity -- --base origin/develop --head origin/main
+```
+
+If exit code is non-zero or the report lists database-sensitive files: **stop**, list those files,
+hand off to [`database-parity`](../../database-parity/SKILL.md). Do not merge or push until parity
+findings are resolved or explicitly accepted by the human owner.
 
 1. Confirm with the user: merge `origin/main` into `develop`, and whether push is authorized.
 2. With authorization:
@@ -63,6 +75,13 @@ Completed / Aborted / No-op
 - origin/develop tip:
 - Commits on main not in develop:
 - Commits on develop not in main:
+
+### Database-sensitive gate
+
+- command: `pnpm db:branch:parity -- --base origin/develop --head origin/main`
+- sensitive files:
+- parity handoff required: yes/no
+- owner acceptance (if any):
 
 ### Actions
 

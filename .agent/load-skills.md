@@ -81,7 +81,7 @@ software-development, database, media, git, research, and computer-use. Those st
 Celebra-me tracked skills (canonical) cover product contracts only, for example: `astro-patterns`,
 `backend-engineering`, `frontend-design`, `theme-architecture`, `supabase`, `supabase-postgres`,
 `testing`, `copywriting-es`, `commit-planner`, `staged-code-review`, `staged-code-review-apply`,
-`branch-lane`, `release-prepare` (deprecated stub), `git-stash-branch-cleanup`,
+`branch-lane`, `database-parity`, `release-prepare` (deprecated stub), `git-stash-branch-cleanup`,
 `client-invitation-audit`, `production-sql-patches`, `demo-content-consistency`,
 `documentation-governance`, and related domain skills listed in `.agent/index.md`.
 

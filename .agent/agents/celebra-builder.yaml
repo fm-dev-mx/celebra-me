@@ -43,6 +43,7 @@ skills:
     - staged-code-review-apply
     - commit-planner
     - branch-lane
+    - database-parity
     - git-stash-branch-cleanup
     - testing
 constraints:

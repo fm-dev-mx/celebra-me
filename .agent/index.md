@@ -55,6 +55,7 @@ state and never has authority over these definitions.
 | `client-invitation-audit`     | pre-implementation audit for real invitations + two-lane spec      |
 | `commit-planner`              | commit partitioning and message planning                           |
 | `copywriting-es`              | Spanish UI and invitation copy standards                           |
+| `database-parity`             | branch-lane DB-sensitive handoff; migration/schema/backup audit    |
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
@@ -124,6 +125,7 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Theme/preset runtime authority      | `.agent/rules/invitation-preset-source-of-truth.md` | Snapshots, published JSON alone                |
 | Schema / content shape              | `docs/core/content-schema.md` + live Zod            | Invitation ops notes                           |
 | Database operations                 | `docs/database-workflow.md`                         | Schema overview ERD                            |
+| Branch↔DB parity handoff            | `.agent/skills/database-parity`                     | `branch-lane` (detects only; no DB ops)        |
 | Database schema overview            | `docs/domains/database/overview.md`                 | Ops runbooks                                   |
 | Environment variable hierarchy      | `docs/env-workflow.md`                              | Database workflow                              |
 | Brand / voice                       | `.agent/briefs/celebra-me.md`                       | Root PRODUCT/DESIGN markdown files (forbidden) |
@@ -219,6 +221,7 @@ prerequisites that are already loaded.
 | Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                           |
 | Staged review before commit       | `staged-code-review` then `staged-code-review-apply`                                         |
 | Release / branch lane             | `branch-lane` and `docs/core/release-process.md` / `docs/core/git-governance.md`             |
+| Branch-lane DB-sensitive handoff  | `database-parity` plus `docs/database-workflow.md` / `.agent/rules/database.md`              |
 | Stash / branch housekeeping       | `git-stash-branch-cleanup`                                                                   |
 | Real invitation pre-work audit    | `client-invitation-audit` (then `managed-invitation-lifecycle` to apply)                     |
 | Demo date / transform consistency | `demo-content-consistency`                                                                   |

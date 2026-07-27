@@ -13,10 +13,23 @@ promotion policy. This reference adds agent operational gaps (hooks, validation,
 
 - Shared Git preflight completed; working tree clean.
 - `origin/main` is an ancestor of `origin/develop` (FF possible). If `main` has commits not in
-  `develop`: **abort**, recommend Mode A first — never force-push to “fix” drift.
+  `develop`: **abort**, recommend sync recovery first — never force-push to “fix” drift.
+- Database-sensitive gate passed (or findings cleared via `database-parity`). If the gate stops,
+  do not promote.
 - User explicitly authorized checkout / FF merge / push (and tag, if any) in this task.
 
 ## Procedure
+
+0. Database-sensitive gate (mandatory before any promote write):
+
+```bash
+pnpm db:branch:parity -- --base origin/main --head origin/develop
+```
+
+If exit code is non-zero or the report lists database-sensitive files: **stop**, list those files,
+hand off to [`database-parity`](../../database-parity/SKILL.md). Do not run CI-for-promote,
+checkout `main`, merge, tag, or push until parity findings are resolved or explicitly accepted by
+the human owner.
 
 1. On `develop`, update and validate before touching `main` (governance requires CI-class
    confidence):
@@ -39,9 +52,9 @@ git pull --ff-only origin main
 git merge --ff-only develop
 ```
 
-If `merge --ff-only` fails: stop, report drift, suggest Mode A.
+If `merge --ff-only` fails: stop, report drift, suggest `sync-main-into-develop`.
 
-3. Tag only if separately authorized (usually after Mode B + release commit):
+3. Tag only if separately authorized (usually after `release-prepare` + release commit):
 
 ```bash
 git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
@@ -72,6 +85,13 @@ Completed / Aborted / Blocked (FF impossible)
 - origin/develop:
 - origin/main (before):
 - main (after):
+
+### Database-sensitive gate
+
+- command: `pnpm db:branch:parity -- --base origin/main --head origin/develop`
+- sensitive files:
+- parity handoff required: yes/no
+- owner acceptance (if any):
 
 ### Validation
 
