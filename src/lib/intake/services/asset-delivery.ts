@@ -59,8 +59,13 @@ export function resolveAssetDeliveryUrl(asset: AssetDeliverySource): string {
 			);
 		}
 
-		const normalizedId = publicId.replace(/^\/+/, '').replace(/\.webp$/i, '');
-		return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${normalizedId}.webp`;
+		const extensionSource = (asset.storagePath || publicId).replace(/^\/+/, '');
+		const extensionMatch = extensionSource.match(/\.([a-z0-9]+)$/i);
+		const extension = extensionMatch?.[1]?.toLowerCase() ?? 'webp';
+		const normalizedId = publicId
+			.replace(/^\/+/, '')
+			.replace(/\.[a-z0-9]+$/i, '');
+		return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${normalizedId}.${extension}`;
 	}
 
 	if (provider === 'supabase') {

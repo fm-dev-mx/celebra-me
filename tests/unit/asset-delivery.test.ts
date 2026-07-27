@@ -50,6 +50,29 @@ describe('resolveAssetDeliveryUrl', () => {
 		).toBe('https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/hero.webp');
 	});
 
+	it('preserves the source extension when falling back without secure_url', () => {
+		process.env.CLOUDINARY_CLOUD_NAME = 'demo';
+		expect(
+			resolveAssetDeliveryUrl({
+				provider: 'cloudinary',
+				bucket: 'invitation-assets',
+				storagePath: 'managed/abril/hero.jpg',
+				providerPublicId: 'xv/abril/assets/hero.jpg',
+			}),
+		).toBe('https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/hero.jpg');
+	});
+
+	it('throws when cloudinary fallback lacks CLOUDINARY_CLOUD_NAME', () => {
+		expect(() =>
+			resolveAssetDeliveryUrl({
+				provider: 'cloudinary',
+				bucket: 'invitation-assets',
+				storagePath: 'managed/abril/hero.jpg',
+				providerPublicId: 'xv/abril/assets/hero.jpg',
+			}),
+		).toThrow(/CLOUDINARY_CLOUD_NAME/);
+	});
+
 	it('throws for an unsupported provider', () => {
 		expect(() =>
 			resolveAssetDeliveryUrl({
