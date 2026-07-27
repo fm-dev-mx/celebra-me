@@ -21,6 +21,7 @@ export default [
 			'.build/',
 			'coverage/',
 			'public/',
+			'temp/',
 			'*.log',
 			'*.tmp',
 			'*.min.js',
