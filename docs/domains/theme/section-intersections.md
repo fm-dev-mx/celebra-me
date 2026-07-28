@@ -61,6 +61,8 @@ connects the adjacent sections.
   reserved space rather than create cumulative layout shift.
 - Limit overlap ownership to the selected media or decoration. Do not lift an entire content section
   over another section.
+- Keep full-bleed media sharp and intact. The overlap must be legible through reserved space,
+  surface continuity, or a restrained edge detail rather than a crop, blur, or opaque veil.
 - Validate `object-fit`, focal points, and crops at every required viewport.
 - Keep faces, captions, controls, and essential content outside the crop-risk and overlap zones.
 - Bound shadows and stacking so the element reads as depth, not as a floating card detached from the
@@ -109,6 +111,23 @@ Choose the treatment in this order:
 4. Select one primary pattern only when it improves continuity or narrative emphasis.
 5. If two adjacent sections cannot protect contrast, crop, or content safety at all proof viewports,
    remove the treatment.
+
+## Composition Cadence
+
+Each profile should classify its boundaries before styling them:
+
+- **Neutral:** information-heavy, functional, or closing sections remain clean and fully spaced.
+- **Bridge:** one selected overlap or atmospheric blend connects a related photograph and surface.
+- **Climax:** an arch or the final atmospheric transition marks a narrative turn; reserve these for
+  one or two moments in the invitation.
+
+Record only the non-neutral mappings in `intersection-profiles.ts`; the absence of a mapping is the
+intentional neutral default. A profile stylesheet must reserve its predecessor's trailing space for
+an overlap and document any non-obvious stacking relationship beside the selector. Do not promote a
+profile cadence to shared code until it has proven reusable without depending on client identity.
+
+Treat a bridge as a short material handoff, not a new section background: match the adjacent surface
+colors, keep the transition zone shallow, and never hide, desaturate, or soften the selected media.
 
 ## Accessibility, Performance, and Responsive Constraints
 
@@ -163,8 +182,9 @@ Current explicit mappings:
 
 - Abril retains its two interlude overlaps, gallery → RSVP arch, and atmospheric blends through the
   `abril-michelle-becerra-rea` visual composition profile.
-- Celestial uses exactly two treatments: location → following interlude is `arch`; RSVP → following
-  interlude is `atmospheric-blend`.
+- Celestial uses two photographic bridges (family → tiara and itinerary → lantern), a soft detail →
+  gallery blend, the location → architecture arch, and the RSVP → tul atmospheric finale. Its
+  remaining boundaries are intentionally neutral.
 
 ## Required Proof
 

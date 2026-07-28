@@ -199,20 +199,6 @@
 		margin-top: clamp(1.35rem, 5vw, 2.35rem);
 	}
 
-	&.has-motion:not(.is-visible) .signature-block {
-		opacity: 0%;
-		transform: translateY(10px);
-		transition:
-			opacity var(--duration-premium, 1s) var(--ease-premium),
-			transform var(--duration-premium, 1s) var(--ease-premium);
-		transition-delay: 0.35s;
-	}
-
-	&.has-motion.is-visible .signature-block {
-		opacity: 100%;
-		transform: translateY(0);
-	}
-
 	.closing-name {
 		margin: 0;
 		padding-block: 0.2em;
@@ -323,5 +309,27 @@
 			transform: scale(1.03);
 			filter: saturate(0.98) contrast(1) brightness(1.04);
 		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion:not(.is-visible)
+		.thank-you-section[data-variant='celestial-blue']
+		.signature-block {
+		opacity: 0%;
+		transform: translateY(10px);
+		transition:
+			opacity var(--duration-premium, 1s) var(--ease-premium),
+			transform var(--duration-premium, 1s) var(--ease-premium);
+		transition-delay: 0.35s;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion.is-visible
+		.thank-you-section[data-variant='celestial-blue']
+		.signature-block {
+		opacity: 100%;
+		transform: translateY(0);
 	}
 }

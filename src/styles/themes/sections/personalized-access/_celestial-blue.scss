@@ -170,8 +170,15 @@
 		}
 	}
 
-	// Scroll reveal — preserve paper tilt through motion states
-	&.has-motion:not(.is-visible) .access-card {
+}
+
+// The document coordinator owns state on the section wrapper, not on the section itself.
+// Keep the card's paper tilt while it enters, then reveal the reservation count as a second beat.
+@media (prefers-reduced-motion: no-preference) {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(.is-visible)
+		.personalized-access[data-variant='celestial-blue']
+		.access-card {
 		opacity: 0%;
 		transform: translateY(var(--motion-reveal-distance, 16px)) rotate(var(--pa-paper-tilt));
 		filter: blur(var(--motion-reveal-blur, 4px));
@@ -184,32 +191,20 @@
 				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
-	&.has-motion.is-visible .access-card {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
+		.personalized-access[data-variant='celestial-blue']
+		.access-card {
 		opacity: 100%;
 		transform: translateY(0) rotate(var(--pa-paper-tilt));
 		filter: blur(0);
 	}
 
-	&.has-motion.is-visible .access-card__count {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
+		.personalized-access[data-variant='celestial-blue']
+		.access-card__count {
 		animation: pa-celestial-count-in 0.55s var(--ease-premium, ease) 0.12s both;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.access-card {
-			transform: none;
-		}
-
-		&.has-motion:not(.is-visible) .access-card,
-		&.has-motion.is-visible .access-card {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-			transition: none;
-		}
-
-		&.has-motion.is-visible .access-card__count {
-			animation: none;
-		}
 	}
 }
 

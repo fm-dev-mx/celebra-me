@@ -9,7 +9,7 @@
 
 .event-theme-wrapper[data-reveal-state='revealed'] .invitation-hero[data-variant='celestial-blue'] {
 	.invitation-hero__content {
-		animation-duration: 1.1s;
+		animation-duration: var(--motion-hero-media-duration);
 		animation-timing-function: var(--ease-premium);
 	}
 }

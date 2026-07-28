@@ -1,0 +1,415 @@
+@use '../global/mixins' as mixins;
+
+// Celestial Blue demo — midnight conservatory: a directional ink-blue veil, silver constellation
+// and long editorial name stack create a cinematic first impression without competing with Camila's
+// portrait. The composition remains a full-bleed photograph, never a floating hero card.
+
+.event--demo-xv-celestial-blue.theme-preset--celestial-blue {
+	--motion-hero-media-duration: 0.86s;
+	--motion-hero-media-delay: 0s;
+	--motion-hero-eyebrow-duration: 0.48s;
+	--motion-hero-eyebrow-delay: 0.08s;
+	--motion-hero-title-duration: 0.72s;
+	--motion-hero-title-delay: 0.16s;
+	--motion-hero-details-duration: 0.56s;
+	--motion-hero-details-delay: 0.34s;
+	--motion-hero-affordance-duration: 0.4s;
+	--motion-hero-affordance-delay: 0.72s;
+	--celestial-constellation-opacity: 0.74;
+	--celestial-portal-thread: rgb(var(--color-liquid-silver-rgb) / 72%);
+	--celestial-portal-light: rgb(var(--color-satin-blue-rgb) / 34%);
+	--celestial-family-overlap-depth: clamp(2rem, 8vw, 4rem);
+	--celestial-itinerary-overlap-depth: clamp(2.25rem, 9vw, 4rem);
+
+	.invitation-hero[data-variant='celestial-blue'] {
+		isolation: isolate;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			opacity: var(--celestial-constellation-opacity);
+			background:
+				radial-gradient(circle at 13% 17%, rgb(var(--color-diamond-white-rgb) / 82%) 0 1px, transparent 1.8px),
+				radial-gradient(circle at 26% 29%, rgb(var(--color-satin-blue-rgb) / 72%) 0 1.2px, transparent 2px),
+				radial-gradient(circle at 42% 13%, rgb(var(--color-diamond-white-rgb) / 56%) 0 0.8px, transparent 1.6px),
+				radial-gradient(circle at 18% 53%, rgb(var(--color-liquid-silver-rgb) / 62%) 0 0.8px, transparent 1.6px),
+				radial-gradient(ellipse 64% 72% at 8% 52%, rgb(var(--color-satin-blue-rgb) / 18%) 0%, transparent 72%);
+			mix-blend-mode: screen;
+			pointer-events: none;
+
+			@media (prefers-reduced-motion: no-preference) {
+				animation:
+					celestial-constellation-reveal var(--motion-hero-media-duration) var(--ease-premium) both,
+					celestial-constellation-drift var(--motion-ambient-duration, 14s) var(--ease-premium)
+						var(--motion-hero-media-duration) infinite alternate;
+			}
+		}
+
+		.invitation-hero__background {
+			&::after {
+				background:
+					radial-gradient(ellipse 72% 68% at 8% 68%, rgb(var(--color-deep-blue-graphite-rgb) / 82%) 0%, transparent 76%),
+					radial-gradient(circle at 18% 32%, rgb(var(--color-satin-blue-rgb) / 24%) 0%, transparent 38%),
+					linear-gradient(105deg, rgb(var(--color-deep-blue-graphite-rgb) / 72%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 18%) 48%, rgb(var(--color-deep-blue-graphite-rgb) / 54%) 100%),
+					linear-gradient(180deg, transparent 38%, rgb(var(--color-deep-blue-graphite-rgb) / 72%) 100%);
+			}
+
+			img {
+				@media (prefers-reduced-motion: no-preference) {
+					animation: celestial-hero-media-reveal var(--motion-hero-media-duration)
+						var(--ease-premium) both;
+				}
+			}
+		}
+
+		.invitation-hero__content {
+			position: relative;
+			z-index: 2;
+		}
+
+		.invitation-hero__title-wrapper::after {
+			content: '';
+			display: block;
+			width: clamp(2.75rem, 8vw, 5.25rem);
+			height: 1px;
+			margin-top: clamp(0.9rem, 2.3vw, 1.45rem);
+			background: linear-gradient(90deg, var(--celestial-portal-thread), transparent);
+			box-shadow: 0 0 18px var(--celestial-portal-light);
+		}
+
+		.invitation-hero__divider {
+			display: none;
+		}
+
+		.invitation-hero__details {
+			margin-left: 0;
+			padding-left: clamp(0.95rem, 2vw, 1.35rem);
+			border-left: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+		}
+
+		@include mixins.respond-below(sm) {
+			&::before {
+				opacity: calc(var(--celestial-constellation-opacity) * 72%);
+				background:
+					radial-gradient(circle at 16% 16%, rgb(var(--color-diamond-white-rgb) / 76%) 0 1px, transparent 1.8px),
+					radial-gradient(circle at 33% 24%, rgb(var(--color-satin-blue-rgb) / 70%) 0 1px, transparent 1.8px),
+					radial-gradient(ellipse 105% 48% at 18% 58%, rgb(var(--color-satin-blue-rgb) / 16%) 0%, transparent 72%);
+			}
+
+			.invitation-hero__details {
+				margin-inline: auto;
+				padding-left: 0;
+				border-left: 0;
+			}
+		}
+	}
+
+	// Photographic bridges are deliberately shallow. The media stays sharp and the prior surface
+	// remains readable; a small silver thread is the only visible delimiter.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='family']
+		> .family {
+		padding-bottom: max(
+			clamp(5rem, 9vw, 8rem),
+			calc(var(--celestial-family-overlap-depth) + 1rem)
+		);
+	}
+
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'][data-intersection-source='family'] {
+		--intersection-depth: var(--celestial-family-overlap-depth);
+
+		background: var(--family-bg, var(--color-surface-primary));
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: clamp(1.1rem, 2.6vw, 1.75rem);
+			left: clamp(1.25rem, 7vw, 7rem);
+			z-index: 1;
+			width: clamp(3.25rem, 10vw, 7rem);
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--celestial-portal-thread), transparent);
+			box-shadow: 0 0 14px var(--celestial-portal-light);
+			pointer-events: none;
+		}
+
+		.invitation-interlude {
+			--interlude-image-filter: saturate(1.02) contrast(1.02) brightness(0.94);
+			--interlude-overlay:
+				linear-gradient(180deg, rgb(var(--color-deep-blue-graphite-rgb) / 4%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 34%) 100%);
+		}
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='itinerary']
+		> .itinerary {
+		padding-bottom: max(
+			clamp(4rem, 8vw, 6rem),
+			calc(var(--celestial-itinerary-overlap-depth) + 1rem)
+		);
+	}
+
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'][data-intersection-source='itinerary'] {
+		--intersection-depth: var(--celestial-itinerary-overlap-depth);
+
+		background: var(--itinerary-paper-white, var(--color-surface-primary));
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: clamp(1.1rem, 2.6vw, 1.75rem);
+			right: clamp(1.25rem, 7vw, 7rem);
+			z-index: 1;
+			width: clamp(3.25rem, 10vw, 7rem);
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--celestial-portal-thread), transparent);
+			box-shadow: 0 0 14px var(--celestial-portal-light);
+			pointer-events: none;
+		}
+
+		.invitation-interlude {
+			--interlude-image-filter: saturate(1.03) contrast(1.03) brightness(0.9);
+			--interlude-overlay:
+				linear-gradient(180deg, rgb(var(--color-deep-blue-graphite-rgb) / 5%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 38%) 100%);
+		}
+	}
+
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='arch'][data-intersection-source='location'] {
+		--intersection-arch-height: clamp(3rem, 6vw, 5rem);
+		--intersection-surface: rgb(var(--color-deep-blue-graphite-rgb));
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: calc(0px - var(--intersection-arch-height) + 0.95rem) 7% auto;
+			z-index: 2;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--celestial-portal-thread) 26%, var(--celestial-portal-light) 50%, transparent 82%);
+			box-shadow: 0 0 18px var(--celestial-portal-light);
+			pointer-events: none;
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
+			&.is-visible::after {
+				animation: celestial-portal-thread-arrival var(--motion-reveal-duration) var(--ease-premium) both;
+				transform-origin: center;
+			}
+		}
+
+		.invitation-interlude {
+			--interlude-image-filter: saturate(1.14) contrast(1.08) brightness(0.82);
+			--interlude-overlay:
+				radial-gradient(ellipse 88% 54% at 50% 0%, rgb(var(--color-satin-blue-rgb) / 30%) 0%, transparent 74%),
+				radial-gradient(circle at 50% 16%, rgb(var(--color-diamond-white-rgb) / 16%) 0%, transparent 26%),
+				linear-gradient(180deg, rgb(var(--color-deep-blue-graphite-rgb) / 8%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 54%) 100%);
+		}
+	}
+
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='atmospheric-blend'][data-intersection-source='rsvp'] {
+		--intersection-depth: clamp(3.5rem, 8vw, 5rem);
+		--intersection-blend:
+			radial-gradient(ellipse 94% 54% at 30% 0%, rgb(var(--color-ice-blue-rgb) / 16%) 0%, transparent 62%),
+			radial-gradient(ellipse 74% 70% at 76% 0%, rgb(var(--color-satin-blue-rgb) / 18%) 0%, transparent 72%),
+			linear-gradient(180deg, rgb(var(--color-deep-blue-graphite-rgb) / 0%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 72%) 100%);
+
+		.invitation-interlude {
+			--interlude-image-filter: saturate(1.06) contrast(1.04) brightness(0.86);
+			--interlude-overlay:
+				linear-gradient(
+					180deg,
+					rgb(var(--color-deep-blue-graphite-rgb) / 38%) 0%,
+					rgb(var(--color-satin-blue-rgb) / 18%) 12%,
+					transparent 22%
+				),
+				linear-gradient(180deg, rgb(var(--color-deep-blue-graphite-rgb) / 4%) 0%, rgb(var(--color-deep-blue-graphite-rgb) / 62%) 100%);
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
+			&.is-visible::before {
+				animation: celestial-blend-arrival var(--motion-reveal-duration) var(--ease-premium) both;
+				transform-origin: top center;
+			}
+		}
+	}
+
+	// The family and itinerary interludes are intentional pauses; motion returns at the two
+	// narrative pivots only: location and the atmospheric RSVP exit.
+	@media (prefers-reduced-motion: no-preference) {
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='family'].is-visible
+			.invitation-interlude__image,
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='itinerary'].is-visible
+			.invitation-interlude__image {
+			animation: none;
+		}
+	}
+
+	// Gallery expands like a constellation: one anchor image, then three restrained visual waves.
+	// The itinerary answers with an ink-like disclosure, not another card entrance.
+	@media (prefers-reduced-motion: no-preference) {
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion:not(.is-visible)
+			.gallery-grid__item {
+			opacity: 0%;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion:not(.is-visible)
+			.gallery-grid__item:first-child {
+			translate: 0 1.25rem;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion:not(.is-visible)
+			.gallery-grid__item:not(:first-child) {
+			translate: 0 0.75rem;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion.is-visible
+			.gallery-grid__item:first-child {
+			animation: celestial-gallery-anchor-reveal var(--motion-reveal-duration) var(--ease-premium)
+				backwards;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion.is-visible
+			.gallery-grid__item:not(:first-child) {
+			animation: celestial-gallery-wave-reveal var(--motion-reveal-duration) var(--ease-premium)
+				backwards;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion.is-visible
+			.gallery-grid__item:is(:nth-child(2), :nth-child(3)) {
+			animation-delay: 120ms;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion.is-visible
+			.gallery-grid__item:is(:nth-child(4), :nth-child(5), :nth-child(6)) {
+			animation-delay: 220ms;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='gallery'].has-motion.is-visible
+			.gallery-grid__item:is(:nth-child(7), :nth-child(8)) {
+			animation-delay: 320ms;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='itinerary'].has-motion:not(.is-visible)
+			.itinerary__program-flourish,
+			.itinerary__program-row {
+			opacity: 0%;
+			translate: 0 0.75rem;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='itinerary'].has-motion.is-visible
+			.itinerary__program-flourish {
+			animation: celestial-gallery-wave-reveal var(--motion-reveal-duration)
+				var(--ease-premium) backwards;
+		}
+
+		#invitation-sections-container
+			> .invitation-section-wrapper[data-section-kind='itinerary'].has-motion.is-visible
+			.itinerary__program-row {
+			animation: celestial-gallery-wave-reveal var(--motion-reveal-duration) var(--ease-premium)
+				180ms backwards;
+		}
+
+		@for $index from 1 through 5 {
+			#invitation-sections-container
+				> .invitation-section-wrapper[data-section-kind='itinerary'].has-motion.is-visible
+				.itinerary__program-row:nth-child(#{$index}) {
+				animation-delay: calc(180ms + (#{$index - 1} * 70ms));
+			}
+		}
+	}
+}
+
+@keyframes celestial-hero-media-reveal {
+	from {
+		opacity: 0%;
+		scale: 1.055;
+	}
+
+	to {
+		opacity: 100%;
+		scale: 1;
+	}
+}
+
+@keyframes celestial-constellation-reveal {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: var(--celestial-constellation-opacity);
+	}
+}
+
+@keyframes celestial-constellation-drift {
+	from {
+		opacity: calc(var(--celestial-constellation-opacity) * 68%);
+		background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+	}
+
+	to {
+		opacity: var(--celestial-constellation-opacity);
+		background-position: 10px -14px, -6px 11px, 8px 7px, -9px -6px, 0 0;
+	}
+}
+
+@keyframes celestial-portal-thread-arrival {
+	from {
+		opacity: 0%;
+		transform: scaleX(0.3);
+	}
+
+	to {
+		opacity: 100%;
+		transform: scaleX(1);
+	}
+}
+
+@keyframes celestial-blend-arrival {
+	from {
+		opacity: 0%;
+		transform: scaleY(0.58);
+	}
+
+	to {
+		opacity: 100%;
+		transform: scaleY(1);
+	}
+}
+
+@keyframes celestial-gallery-anchor-reveal {
+	from {
+		opacity: 0%;
+		translate: 0 1.25rem;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes celestial-gallery-wave-reveal {
+	from {
+		opacity: 0%;
+		translate: 0 0.75rem;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}

@@ -15,6 +15,29 @@ describe('invitation intersection profiles', () => {
 		});
 	});
 
+	it('maps Celestial bridges and climaxes explicitly', () => {
+		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-family')).toEqual({
+			family: 'overlap',
+			source: 'family',
+		});
+		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'gallery')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-family',
+		});
+		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-location')).toEqual({
+			family: 'arch',
+			source: 'location',
+		});
+		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-itinerary')).toEqual({
+			family: 'overlap',
+			source: 'itinerary',
+		});
+		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-rsvp')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'rsvp',
+		});
+	});
+
 	it('defaults unknown profiles to a neutral boundary', () => {
 		expect(resolveRenderPlanIntersection('unknown-profile', 'gallery')).toEqual({
 			family: 'neutral',

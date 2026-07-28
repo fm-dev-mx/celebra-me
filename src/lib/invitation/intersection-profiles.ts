@@ -28,7 +28,10 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},
 	'demo-xv-celestial-blue': {
+		'interlude-after-family': { family: 'overlap', source: 'family' },
+		gallery: { family: 'atmospheric-blend', source: 'interlude-after-family' },
 		'interlude-after-location': { family: 'arch', source: 'location' },
+		'interlude-after-itinerary': { family: 'overlap', source: 'itinerary' },
 		'interlude-after-rsvp': { family: 'atmospheric-blend', source: 'rsvp' },
 	},
 };
