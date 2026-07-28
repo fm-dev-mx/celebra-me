@@ -522,17 +522,24 @@
 	}
 
 	&.has-motion &__card {
+		transition:
+			opacity var(--duration-premium) var(--ease-out),
+			transform var(--duration-premium) var(--ease-out),
+			box-shadow var(--duration-snappy) var(--ease-standard);
+	}
+
+	&.has-motion:not(.is-visible) &__card {
 		opacity: 0%;
 		transform: translateY(12px);
-		will-change: transform, box-shadow, opacity;
 	}
 
 	&.has-motion.is-visible &__card {
-		animation: invitation-location-fade-in-up-soft var(--duration-premium) var(--ease-out) both;
+		opacity: 100%;
+		transform: translateY(0);
 	}
 
 	&.has-motion.is-visible &__card-wrapper + &__card-wrapper &__card {
-		animation-delay: 0.1s;
+		transition-delay: 0.08s;
 	}
 
 	&__card-image-outer-frame {
@@ -1080,8 +1087,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.event-location.has-motion.is-visible .event-location__card {
-		animation: none;
+	.event-location.has-motion .event-location__card {
+		opacity: 100%;
+		transform: none;
 		transition: none;
 	}
 }

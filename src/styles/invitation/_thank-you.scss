@@ -137,14 +137,17 @@
 
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
-		opacity: 0%;
-		transform: scale(0.95);
 		transition:
 			opacity var(--duration-premium, 1s) var(--ease-premium),
 			transform var(--duration-premium, 1s) var(--ease-premium);
 	}
 
-	.thank-you-section.is-visible & {
+	.thank-you-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: scale(0.95);
+	}
+
+	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: scale(1);
 	}
@@ -175,15 +178,18 @@
 
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
-		opacity: 0%;
-		transform: translateY(15px);
 		transition:
 			opacity var(--duration-premium, 1s) var(--ease-premium),
 			transform var(--duration-premium, 1s) var(--ease-premium);
 		transition-delay: 0.15s;
 	}
 
-	.thank-you-section.is-visible & {
+	.thank-you-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: translateY(15px);
+	}
+
+	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: translateY(0);
 	}
@@ -211,15 +217,18 @@
 .signature-block {
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
-		opacity: 0%;
-		transform: translateY(12px) scale(0.98);
 		transition:
 			opacity var(--duration-premium, 1s) var(--ease-premium),
 			transform var(--duration-premium, 1s) var(--ease-premium);
 		transition-delay: 0.3s;
 	}
 
-	.thank-you-section.is-visible & {
+	.thank-you-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: translateY(12px) scale(0.98);
+	}
+
+	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: translateY(0) scale(1);
 	}
@@ -254,12 +263,15 @@
 
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
-		opacity: 0%;
 		transition: opacity var(--duration-premium, 1s) var(--ease-premium);
 		transition-delay: 0.5s;
 	}
 
-	.thank-you-section.is-visible & {
+	.thank-you-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+	}
+
+	.thank-you-section.has-motion.is-visible & {
 		opacity: 40%;
 	}
 }

@@ -214,11 +214,14 @@
 	}
 
 	&.has-motion .itinerary__item {
-		opacity: 0%;
-		transform: translateY(18px);
 		transition:
 			opacity var(--duration-reveal) var(--ease-premium),
 			transform var(--duration-reveal) var(--ease-premium);
+	}
+
+	&.has-motion:not(.is-visible) .itinerary__item {
+		opacity: 0%;
+		transform: translateY(18px);
 	}
 
 	&.has-motion.is-visible .itinerary__item {
@@ -228,7 +231,7 @@
 
 	@for $i from 1 through 10 {
 		&.has-motion.is-visible .itinerary__item:nth-child(#{$i}) {
-			transition-delay: #{$i * 0.12s};
+			transition-delay: #{($i - 1) * 0.08s};
 		}
 	}
 

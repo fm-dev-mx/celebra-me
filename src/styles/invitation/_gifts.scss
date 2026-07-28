@@ -48,13 +48,20 @@
 		transform: translateY(0);
 	}
 
+	&.has-motion &__header {
+		transition:
+			opacity var(--duration-premium) var(--ease-premium),
+			transform var(--duration-premium) var(--ease-premium);
+	}
+
 	&.has-motion:not(.is-visible) &__header {
 		opacity: 0%;
 		transform: translateY(20px);
 	}
 
-	&.is-visible &__header {
-		animation: motion-fade-in-up var(--duration-premium) var(--ease-premium) forwards;
+	&.has-motion.is-visible &__header {
+		opacity: 100%;
+		transform: translateY(0);
 	}
 
 	&__eyebrow {
@@ -149,8 +156,6 @@
 
 	// Entrance states on scroll
 	.gifts-section.has-motion & {
-		opacity: 0%;
-		transform: translateY(18px);
 		transition:
 			opacity var(--duration-premium, 0.65s) var(--ease-premium),
 			transform var(--duration-premium, 0.65s) var(--ease-premium),
@@ -159,12 +164,17 @@
 
 		@for $i from 1 through 6 {
 			&:nth-child(#{$i}) {
-				transition-delay: #{0.15s + ($i * 0.08s)};
+				transition-delay: #{($i - 1) * 0.08s};
 			}
 		}
 	}
 
-	.gifts-section.is-visible & {
+	.gifts-section.has-motion:not(.is-visible) & {
+		opacity: 0%;
+		transform: translateY(18px);
+	}
+
+	.gifts-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: translateY(0);
 

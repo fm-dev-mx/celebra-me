@@ -431,17 +431,20 @@
 
 	&.has-motion .event-location__indications-container {
 		animation: none;
-		opacity: 0%;
-		transform: translateY(18px);
 		transition:
 			opacity var(--duration-reveal) var(--ease-premium),
 			transform var(--duration-reveal) var(--ease-premium);
 	}
 
+	&.has-motion:not(.is-visible) .event-location__indications-container {
+		opacity: 0%;
+		transform: translateY(18px);
+	}
+
 	&.has-motion.is-visible .event-location__indications-container {
 		opacity: 100%;
 		transform: translateY(0);
-		transition-delay: 0.3s;
+		transition-delay: 0.24s;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

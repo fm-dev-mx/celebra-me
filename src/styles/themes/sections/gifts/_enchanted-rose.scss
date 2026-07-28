@@ -219,13 +219,16 @@
 	}
 
 	&.has-motion .gift-card {
-		opacity: 0%;
-		transform: translateY(18px);
 		transition:
 			opacity var(--duration-premium) var(--ease-premium),
 			transform var(--duration-premium) var(--ease-premium),
 			border-color var(--duration-snappy) var(--ease-premium),
 			box-shadow var(--duration-snappy) var(--ease-premium);
+	}
+
+	&.has-motion:not(.is-visible) .gift-card {
+		opacity: 0%;
+		transform: translateY(18px);
 	}
 
 	&.has-motion.is-visible .gift-card {
