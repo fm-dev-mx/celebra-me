@@ -35,8 +35,16 @@ html:has(.event--alba-rosa-quinones) body {
 	--alba-navy-rgb: 32 35 40;
 	--alba-gold: rgb(179 154 99);
 	--alba-gold-rgb: 179 154 99;
+	--alba-champagne: rgb(201 184 148);
+	--alba-champagne-rgb: 201 184 148;
 	--alba-stone: rgb(112 108 101);
 	--alba-stone-rgb: 112 108 101;
+	--alba-limestone: rgb(228 224 216);
+	--alba-limestone-rgb: 228 224 216;
+	--alba-stone-light: rgb(233 229 222);
+	--alba-stone-light-rgb: 233 229 222;
+	--alba-graphite-elevated: rgb(56 58 62);
+	--alba-graphite-elevated-rgb: 56 58 62;
 	--font-display: 'Cormorant Garamond Variable', georgia, serif;
 	--font-calligraphy: 'Pinyon Script', cursive;
 	--color-surface-primary: var(--alba-ivory);
@@ -57,6 +65,87 @@ html:has(.event--alba-rosa-quinones) body {
 	--color-gold-500-rgb: var(--alba-gold-rgb);
 	--color-border-subtle: rgb(var(--alba-stone-rgb) / 34%);
 	--color-border-emphasis: var(--alba-gold);
+
+	// Neutralize inherited luxury-hacienda coffee/bronze chrome (no café tones anywhere)
+	--color-surface-secondary: var(--alba-cream);
+	--color-surface-secondary-rgb: var(--alba-cream-rgb);
+	--color-surface-elevated: var(--alba-graphite-elevated);
+	--color-surface-elevated-rgb: var(--alba-graphite-elevated-rgb);
+	--color-surface-canvas: var(--alba-ivory);
+	--color-border-premium: rgb(var(--alba-champagne-rgb) / 26%);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		rgb(var(--alba-champagne-rgb) / 55%) 0%,
+		rgb(var(--alba-champagne-rgb) / 25%) 50%,
+		rgb(var(--alba-champagne-rgb) / 60%) 100%
+	);
+
+	// Header / menu chrome — graphite, ivory, champagne hairline
+	--header-bg-scrolled: linear-gradient(
+		180deg,
+		rgb(var(--alba-navy-rgb) / 94%) 0%,
+		rgb(24 26 29 / 90%) 100%
+	);
+	--header-border-scrolled: 1px solid rgb(var(--alba-champagne-rgb) / 20%);
+	--header-nav-color: rgb(var(--alba-ivory-rgb) / 92%);
+	--header-nav-hover: var(--alba-ivory);
+	--header-cta-glow: 0 10px 26px rgb(0 0 0 / 28%);
+
+	// Music player — neutral graphite/champagne
+	--music-player-prompt-bg: linear-gradient(
+		140deg,
+		rgb(var(--alba-ivory-rgb) / 92%) 0%,
+		rgb(var(--alba-cream-rgb) / 86%) 100%
+	);
+	--music-player-prompt-color: rgb(var(--alba-charcoal-rgb) / 85%);
+	--music-player-prompt-border: 1px solid rgb(var(--alba-champagne-rgb) / 34%);
+	--music-player-prompt-accent: var(--alba-champagne);
+	--music-player-button-color: var(--alba-charcoal);
+	--music-player-button-border: 1px solid rgb(var(--alba-champagne-rgb) / 26%);
+	--music-player-ring-color: rgb(var(--alba-champagne-rgb) / 45%);
+
+	// Personalized access — same graphite environment as RSVP, champagne hairlines
+	--pa-card-bg-color: var(--alba-navy);
+	--pa-card-bg-image: linear-gradient(
+		165deg,
+		rgb(var(--alba-graphite-elevated-rgb) / 88%) 0%,
+		rgb(var(--alba-navy-rgb) / 96%) 100%
+	);
+	--pa-card-border: 1px solid rgb(var(--alba-champagne-rgb) / 30%);
+	--pa-card-shadow: 0 25px 60px rgb(0 0 0 / 35%);
+	--pa-card-inner-border: 1px solid rgb(var(--alba-champagne-rgb) / 18%);
+	--pa-card-glow: radial-gradient(
+		circle at top center,
+		rgb(var(--alba-sage-rgb) / 14%),
+		transparent 45%
+	);
+	--pa-corner-color: rgb(var(--alba-champagne-rgb) / 80%);
+	--pa-eyebrow-color: var(--alba-champagne);
+	--pa-title-color: rgb(var(--alba-champagne-rgb) / 70%);
+	--pa-subtitle-color: rgb(var(--alba-ivory-rgb) / 82%);
+	--pa-label-color: rgb(var(--alba-champagne-rgb) / 74%);
+	--pa-guest-color: var(--alba-champagne);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--alba-champagne-rgb) / 80%) 50%,
+		transparent 100%
+	);
+	--pa-divider-diamond-bg: var(--alba-navy);
+	--pa-divider-diamond-border-color: rgb(var(--alba-champagne-rgb) / 80%);
+	--pa-divider-diamond-shadow: 0 0 10px rgb(var(--alba-champagne-rgb) / 15%);
+	--pa-count-frame-border: 1px solid rgb(var(--alba-champagne-rgb) / 55%);
+	--pa-count-frame-inner-border: 0.5px solid rgb(var(--alba-champagne-rgb) / 15%);
+	--pa-count-color: rgb(var(--alba-ivory-rgb) / 80%);
+	--pa-footer-border-top: 1px solid rgb(var(--alba-champagne-rgb) / 15%);
+	--pa-footer-bg: none;
+	--pa-footer-text-color: rgb(var(--alba-ivory-rgb) / 62%);
+
+	// Photography carries the color: strip inherited sepia washes
+	--theme-image-filter-hero: contrast(1.05) brightness(0.94) saturate(0.98);
+	--theme-image-filter-portrait: contrast(1.03) brightness(0.99) saturate(0.98);
+	--theme-image-filter-gallery: contrast(1.02) brightness(0.98) saturate(0.98);
+	--interlude-image-filter: contrast(1.04) brightness(0.94) saturate(0.96);
 	--intersection-arch-height: clamp(3rem, 5.5vw, 6rem);
 	--intersection-depth: clamp(4rem, 8vw, 7.5rem);
 	--hero-name-size-mobile: clamp(2.35rem, 8.5vw, 3.2rem);
@@ -79,12 +168,12 @@ html:has(.event--alba-rosa-quinones) body {
 	);
 	--gallery-section-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
 	--gifts-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
-	--family-bg: linear-gradient(
-		180deg,
-		rgb(236 230 220) 0%,
-		var(--alba-cream) 40%,
-		var(--alba-ivory) 100%
-	);
+
+	// Family: one flat neutral surface, no patterned/diagonal texture
+	--family-bg: var(--alba-stone-light);
+	--family-texture-image: none;
+	--family-texture-opacity: 0%;
+	--family-vignette-bg: none;
 
 	// ==========================================================================
 	// 2. SECTION INTERSECTIONS (ASYMMETRIC OVERLAPS & TONAL SEAMS)
@@ -99,30 +188,11 @@ html:has(.event--alba-rosa-quinones) body {
 			);
 		}
 
-		&[data-section-kind='gallery'] {
-			--intersection-surface: var(--alba-navy);
-			--intersection-blend: linear-gradient(
-				180deg,
-				rgb(var(--alba-navy-rgb) / 65%) 0%,
-				rgb(var(--alba-ivory-rgb) / 88%) 70%,
-				transparent 100%
-			);
-		}
-
-		&[data-section-kind='gifts'],
-		&[data-section-kind='personalized-access'] {
+		&[data-section-kind='gifts'] {
 			--intersection-blend: linear-gradient(
 				180deg,
 				rgb(var(--alba-cream-rgb) / 45%) 0%,
-				rgb(var(--alba-navy-rgb) / 22%) 100%
-			);
-		}
-
-		&[data-section-kind='rsvp'] {
-			--intersection-blend: linear-gradient(
-				180deg,
-				rgb(var(--alba-navy-rgb) / 0%) 0%,
-				rgb(var(--alba-sage-rgb) / 16%) 100%
+				transparent 100%
 			);
 		}
 
@@ -146,6 +216,240 @@ html:has(.event--alba-rosa-quinones) body {
 
 	.invitation-section-wrapper[data-intersection='arch'] {
 		--intersection-surface: var(--alba-navy);
+	}
+
+	// --------------------------------------------------------------------------
+	// Asymmetric diagonal cuts (shared `overlap` primitive + profile geometry).
+	// Two major boundaries visibly break the full-width horizontal axis:
+	// Paris → Gallery (limestone rises left-deep) and Gifts → graphite
+	// (ink descends right-deep). Same language, mirrored directions.
+	// --------------------------------------------------------------------------
+	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='gallery'] {
+		--intersection-depth: clamp(3.5rem, 9vw, 7rem);
+
+		.gallery-section {
+			--alba-cut-deep: clamp(3.5rem, 9vw, 7rem);
+			--alba-cut-shallow: clamp(0.5rem, 1.5vw, 1.25rem);
+
+			clip-path: polygon(
+				0 var(--alba-cut-deep),
+				58% var(--alba-cut-shallow),
+				100% 0,
+				100% 100%,
+				0 100%
+			);
+			padding-top: calc(clamp(3.5rem, 7vw, 6rem) + var(--alba-cut-deep));
+		}
+	}
+
+	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='rsvp'] {
+		--intersection-depth: clamp(3rem, 8vw, 6.5rem);
+
+		.rsvp-section {
+			--alba-cut-deep: clamp(3rem, 8vw, 6.5rem);
+			--alba-cut-shallow: clamp(0.5rem, 1.5vw, 1.25rem);
+
+			clip-path: polygon(
+				0 0,
+				42% var(--alba-cut-shallow),
+				100% var(--alba-cut-deep),
+				100% 100%,
+				0 100%
+			);
+			padding-top: calc(clamp(4rem, 9vw, 6.5rem) + var(--alba-cut-deep));
+		}
+
+		// Geometry applies to the outer shell only (RSVP nests .rsvp-section)
+		.rsvp-section .rsvp-section {
+			clip-path: none;
+			padding: 0;
+		}
+	}
+
+	// ==========================================================================
+	// 2a. HEADER & MOBILE MENU — GRAPHITE / IVORY / CHAMPAGNE (NO CAFÉ)
+	// Declared on the element to outrank the hacienda header theme hooks.
+	// ==========================================================================
+	.header-base[data-variant='luxury-hacienda'] {
+		--header-bg: linear-gradient(
+			180deg,
+			rgb(var(--alba-navy-rgb) / 40%) 0%,
+			rgb(var(--alba-navy-rgb) / 0%) 100%
+		);
+		--header-bg-scrolled: linear-gradient(
+			180deg,
+			rgb(var(--alba-navy-rgb) / 94%) 0%,
+			rgb(24 26 29 / 90%) 100%
+		);
+		--header-nav-color: rgb(var(--alba-ivory-rgb) / 92%);
+		--header-nav-color-transparent: rgb(var(--alba-ivory-rgb) / 92%);
+		--header-border-bottom: 1px solid rgb(var(--alba-champagne-rgb) / 20%);
+		--mobile-drawer-bg: rgb(24 26 29 / 98%);
+		--mobile-drawer-border: rgb(var(--alba-champagne-rgb) / 24%);
+		--mobile-drawer-link-color: var(--alba-ivory);
+		--mobile-drawer-link-hover: var(--alba-champagne);
+		--mobile-drawer-login-color: rgb(var(--alba-ivory-rgb) / 68%);
+		--mobile-drawer-login-hover-color: var(--alba-champagne);
+		--mobile-drawer-cta-bg: var(--alba-champagne);
+		--mobile-drawer-cta-color: var(--alba-navy);
+		--mobile-drawer-cta-border: 1px solid rgb(var(--alba-champagne-rgb) / 40%);
+		--mobile-drawer-cta-shadow: 0 12px 28px rgb(0 0 0 / 24%);
+		--mobile-drawer-cta-hover-bg: var(--alba-navy);
+		--mobile-drawer-cta-hover-color: var(--alba-champagne);
+		--mobile-drawer-cta-hover-border: 1px solid rgb(var(--alba-champagne-rgb) / 60%);
+		--mobile-drawer-cta-hover-shadow: 0 14px 32px rgb(0 0 0 / 40%);
+		--mobile-drawer-footer-copy: rgb(var(--alba-ivory-rgb) / 50%);
+		--mobile-signature-color: rgb(var(--alba-ivory-rgb) / 65%);
+		--mobile-close-button-color: var(--alba-ivory);
+	}
+
+	// ==========================================================================
+	// 2b. REVEAL / ENVELOPE (GRAPHITE → IVORY ENVELOPE → LETTER → CHAMPAGNE SEAL)
+	// ==========================================================================
+	.envelope-wrapper[data-variant='luxury-hacienda'] {
+		// Deep graphite/ink stage — replaces the inherited café radial
+		--env-bg: radial-gradient(
+			ellipse at 50% 34%,
+			rgb(44 47 52) 0%,
+			var(--alba-navy) 52%,
+			rgb(22 24 27) 100%
+		);
+
+		// Warm-ivory envelope paper with charcoal typography
+		--env-paper-bg: linear-gradient(
+			160deg,
+			rgb(246 244 240) 0%,
+			var(--alba-ivory) 55%,
+			rgb(233 230 224) 100%
+		);
+		--env-paper-border: rgb(var(--alba-stone-rgb) / 30%);
+		--env-text-primary: var(--alba-charcoal);
+		--env-text-secondary: rgb(var(--alba-ink-rgb) / 78%);
+		--env-accent: var(--alba-champagne);
+		--env-seal-accent: var(--alba-champagne);
+
+		// Satin champagne seal — no yellow gold, copper, or bronze
+		--env-seal-bg: radial-gradient(
+			circle at 34% 30%,
+			rgb(226 214 189) 0%,
+			var(--alba-champagne) 46%,
+			rgb(158 143 114) 100%
+		);
+		--env-seal-icon: rgb(var(--alba-charcoal-rgb) / 72%);
+		--env-shadow-container: 0 28px 56px rgb(0 0 0 / 38%), 0 6px 16px rgb(0 0 0 / 22%);
+		--env-shadow-seal:
+			0 8px 20px rgb(0 0 0 / 32%), inset 0 1px 2px rgb(255 255 255 / 55%),
+			inset 0 -2px 6px rgb(var(--alba-stone-rgb) / 38%);
+
+		// Opaque letter — removes the translucent ghost layer behind the card
+		--reveal-card-bg: var(--alba-ivory);
+		--reveal-card-border: rgb(var(--alba-stone-rgb) / 26%);
+		--reveal-card-text-primary: var(--alba-charcoal);
+		--reveal-card-text-secondary: rgb(var(--alba-ink-rgb) / 72%);
+		--reveal-card-accent: rgb(var(--alba-champagne-rgb) / 55%);
+		--reveal-card-shadow: 0 18px 44px rgb(0 0 0 / 30%);
+
+		.envelope-container::after {
+			box-shadow: var(--env-shadow-container);
+		}
+
+		// Simplify paper layers: plain matte ivory, no parchment washes
+		.envelope-base,
+		.envelope-pocket,
+		.envelope-flap {
+			background: var(--env-paper-bg);
+			border-color: var(--env-paper-border);
+		}
+
+		.envelope-flap {
+			filter: drop-shadow(0 10px 24px rgb(0 0 0 / 26%));
+		}
+
+		.envelope-name {
+			color: var(--env-text-primary);
+			text-shadow: none;
+		}
+
+		.envelope-details,
+		.envelope-manifest-label,
+		.envelope-stamp {
+			color: var(--env-text-secondary);
+		}
+
+		.envelope-stamp {
+			background: transparent;
+			border-color: rgb(var(--alba-stone-rgb) / 24%);
+		}
+
+		.envelope-external-instruction p {
+			color: rgb(var(--alba-ivory-rgb) / 85%);
+			text-shadow: none;
+		}
+
+		.instruction-line {
+			background: linear-gradient(
+				to right,
+				transparent,
+				rgb(var(--alba-champagne-rgb) / 70%) 30%,
+				rgb(var(--alba-champagne-rgb) / 70%) 70%,
+				transparent
+			);
+		}
+
+		.envelope-seal-button__visual {
+			border: 1px solid rgb(255 255 255 / 35%);
+			background: var(--env-seal-bg);
+			box-shadow: var(--env-shadow-seal);
+
+			&::after {
+				background: radial-gradient(
+					circle at 30% 30%,
+					rgb(255 255 255 / 32%) 0%,
+					transparent 50%
+				);
+			}
+
+			.seal-icon {
+				color: var(--env-seal-icon-override, var(--env-seal-icon));
+				filter: none;
+			}
+		}
+
+		.tease-divider {
+			background: linear-gradient(
+				to right,
+				transparent,
+				rgb(var(--alba-champagne-rgb) / 50%) 30%,
+				rgb(var(--alba-champagne-rgb) / 50%) 70%,
+				transparent
+			);
+		}
+
+		.invitation-reveal-card {
+			background: var(--reveal-card-bg);
+			border: 1px solid var(--reveal-card-border);
+			box-shadow: var(--reveal-card-shadow);
+		}
+
+		.invitation-reveal-card__name {
+			color: var(--reveal-card-text-primary);
+			text-shadow: none;
+		}
+
+		.invitation-reveal-card__divider {
+			background: linear-gradient(
+				to right,
+				transparent,
+				rgb(var(--alba-champagne-rgb) / 65%),
+				transparent
+			);
+		}
+
+		// Closed state shows exactly one identity hierarchy: the envelope.
+		// The letter stays fully hidden until the seal is opened.
+		&:not(.is-opening, .is-letter-held, .is-preview-opened) .envelope-reveal-stage {
+			visibility: hidden;
+		}
 	}
 
 	// ==========================================================================
@@ -200,7 +504,14 @@ html:has(.event--alba-rosa-quinones) body {
 		// Tablet & Intermediate aspect ratios (640px – 991px, near-square ~906x870, 768x1024)
 		@media (width >= 640px) and (width <= 991px) {
 			.invitation-hero__background img {
-				object-position: 72% 28%;
+				object-position: 72% 22%;
+			}
+
+			// Short/near-square viewports (~906x870): keep the full face in frame
+			@media (aspect-ratio >= 9/10) {
+				.invitation-hero__background img {
+					object-position: 62% 14%;
+				}
 			}
 
 			.invitation-hero__background::after {
@@ -252,7 +563,10 @@ html:has(.event--alba-rosa-quinones) body {
 				max-width: min(38rem, 44vw);
 				margin: 0;
 				margin-left: clamp(2.5rem, 7vw, 6.5rem);
-				padding-bottom: 0;
+
+				// Reserve room for the scroll indicator so the date never clips
+				// or collides at short desktop heights (e.g. 1440x900).
+				padding-block: clamp(4.5rem, 10vh, 6rem) clamp(4.5rem, 12vh, 7rem);
 				padding-inline: 0;
 			}
 		}
@@ -299,7 +613,7 @@ html:has(.event--alba-rosa-quinones) body {
 		}
 
 		.invitation-hero__title-line--surname {
-			display: inline-block;
+			display: block;
 			font-family: inherit;
 			font-style: normal;
 			font-weight: 400;
@@ -310,12 +624,11 @@ html:has(.event--alba-rosa-quinones) body {
 			opacity: 100%;
 		}
 
-		.invitation-hero__title-line--surname + br {
+		// The markup separates title lines with <br>; with block lines those
+		// breaks render as blank lines and split the name with a hole.
+		.invitation-hero__title-line + br,
+		.invitation-hero__title br {
 			display: none;
-		}
-
-		.invitation-hero__title-line--surname + br + .invitation-hero__title-line--surname {
-			margin-left: 0.28em;
 		}
 
 		.invitation-hero__divider {
@@ -348,14 +661,23 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	// ==========================================================================
-	// 4. LOCATION SECTION REDESIGN (ASYMMETRIC EDITORIAL LAYOUT)
+	// 4. LOCATION SECTION — EDITORIAL TYPOGRAPHY, NO CARD UI
+	// Hierarchy: date (eyebrow) → venue → time → address → navigation → dress code
 	// ==========================================================================
 	.event-location {
 		background: var(--location-bg);
-		padding-block: clamp(4rem, 8vw, 6.5rem);
+		padding-block: clamp(4rem, 8vw, 6.5rem) clamp(3.25rem, 7vw, 5.5rem);
+		padding-inline: clamp(1.25rem, 5vw, 2.5rem);
 
 		&__intro {
-			margin-bottom: clamp(2.25rem, 5vw, 3.5rem);
+			max-width: min(62rem, 100%);
+			margin-inline: auto;
+			margin-bottom: clamp(2rem, 5vw, 3.25rem);
+			text-align: center;
+
+			@media (width >= 768px) {
+				text-align: left;
+			}
 		}
 
 		&__eyebrow {
@@ -372,46 +694,109 @@ html:has(.event--alba-rosa-quinones) body {
 			font-size: clamp(2.2rem, 5.5vw, 3.4rem);
 			color: var(--alba-charcoal);
 			font-weight: 400;
+
+			// Editorial rule extending from the heading into the open width
+			@media (width >= 768px) {
+				display: flex;
+				align-items: center;
+				gap: clamp(1.5rem, 4vw, 2.5rem);
+
+				&::after {
+					content: '';
+					flex: 1;
+					height: 1px;
+					background: linear-gradient(
+						to right,
+						rgb(var(--alba-stone-rgb) / 40%),
+						transparent
+					);
+				}
+			}
 		}
 
-		// Asymmetric editorial container layout on wider viewports
-		&__container {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: clamp(1.5rem, 4vw, 2.75rem);
-			max-width: min(64rem, calc(100% - 2.5rem));
+		&__container,
+		&__container--single {
+			display: block;
+			max-width: min(62rem, 100%);
 			margin-inline: auto;
-
-			@media (width >= 768px) {
-				grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-				align-items: center;
-				gap: clamp(2.5rem, 5vw, 4.5rem);
-			}
 		}
 
 		&__card-wrapper {
 			width: 100%;
+			max-width: none;
 		}
 
+		// Redundant intermediate heading ("CELEBRACIÓN") and flourish removed
+		&__card-title,
+		&__card-flourish {
+			display: none;
+		}
+
+		// The venue block is typography on the section surface — not a card
 		&__card {
-			border: 1px solid rgb(var(--alba-gold-rgb) / 28%);
-			background: rgb(252 249 244 / 82%);
-			box-shadow: 0 12px 36px rgb(0 0 0 / 5%);
-			border-radius: 2px;
-			padding: clamp(1.75rem, 4vw, 2.75rem);
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+			padding: 0;
+			backdrop-filter: none;
+			max-width: none;
+
+			.rivet {
+				display: none;
+			}
+		}
+
+		&__card-content {
+			padding: 0;
+			text-align: center;
 
 			@media (width >= 768px) {
-				border-left: 2px solid var(--alba-gold);
+				display: grid;
+				grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+				gap: clamp(2.5rem, 6vw, 4.5rem);
+				align-items: end;
+				text-align: left;
 			}
+		}
+
+		&__card-content-list {
+			margin: 0;
+			padding: 0;
 		}
 
 		&__card-content-place {
 			font-family: var(--font-display);
-			font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+			font-size: clamp(2.1rem, 5.5vw, 3.3rem);
 			font-weight: 400;
 			color: var(--alba-charcoal);
-			line-height: 1.1;
-			margin-bottom: 0.75rem;
+			line-height: 1.06;
+			letter-spacing: 0.01em;
+			margin-bottom: 0.85rem;
+		}
+
+		// Date appears once, in the intro eyebrow
+		&__card-content-date {
+			display: none;
+		}
+
+		&__card-content-hour {
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: rgb(var(--alba-ink-rgb) / 74%);
+			margin-bottom: clamp(1.1rem, 2.5vw, 1.6rem);
+		}
+
+		&__card-content-address {
+			justify-content: center;
+			border: none;
+			padding-top: 0;
+
+			@media (width >= 768px) {
+				justify-content: flex-start;
+			}
 		}
 
 		&__card-content-address-text {
@@ -419,54 +804,182 @@ html:has(.event--alba-rosa-quinones) body {
 			font-size: clamp(0.95rem, 2vw, 1.08rem);
 			color: rgb(var(--alba-ink-rgb) / 84%);
 			line-height: 1.6;
+			max-width: 26rem;
 		}
 
-		&__nav-button {
-			background: var(--alba-navy);
-			color: var(--alba-ivory);
-			border: 1px solid var(--alba-navy);
-			font-family: var(--font-label, sans-serif);
-			font-size: 0.78rem;
-			letter-spacing: 0.18em;
-			font-weight: 600;
-			text-transform: uppercase;
-			padding: 0.85rem 1.5rem;
-			transition: all 0.3s ease;
+		// Copy affordance: quiet inline ghost, no boxed icon
+		&__card-content-copy-button {
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+			padding: 0.25rem;
+			color: rgb(var(--alba-stone-rgb) / 75%);
+			opacity: 100%;
+			transition: color 0.25s ease;
 
 			&:hover,
 			&:focus-visible {
-				background: var(--alba-gold);
-				color: var(--alba-navy);
-				border-color: var(--alba-gold);
+				color: var(--alba-charcoal);
+				background: transparent;
+			}
+		}
+
+		// Navigation: refined text actions instead of pill buttons
+		&__card-navigation-buttons {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
+			margin-top: 1.5rem;
+
+			@media (width >= 768px) {
+				margin-top: 0;
+				align-items: flex-start;
+				padding-left: clamp(1.5rem, 3vw, 2.25rem);
+				border-left: 1px solid rgb(var(--alba-stone-rgb) / 32%);
+			}
+		}
+
+		&__nav-button {
+			background: transparent;
+			border: none;
+			border-radius: 0;
+			border-bottom: 1px solid rgb(var(--alba-champagne-rgb) / 65%);
+			color: var(--alba-charcoal);
+			font-family: var(--font-label, sans-serif);
+			font-size: 0.74rem;
+			letter-spacing: 0.2em;
+			font-weight: 600;
+			text-transform: uppercase;
+			padding: 0.35rem 0.1rem;
+			box-shadow: none;
+			transition:
+				color 0.25s ease,
+				border-color 0.25s ease;
+			white-space: nowrap;
+
+			&::after {
+				content: ' \2197';
+				font-size: 0.85em;
+				color: rgb(var(--alba-stone-rgb) / 85%);
+			}
+
+			&:hover,
+			&:focus-visible {
+				background: transparent;
+				color: var(--alba-ink);
+				border-color: var(--alba-charcoal);
+				transform: none;
+				box-shadow: none;
+			}
+		}
+
+		// Dress code as metadata, not another card
+		&__indications-container {
+			max-width: min(62rem, 100%);
+			margin-inline: auto;
+			margin-top: clamp(2.5rem, 5vw, 3.75rem);
+		}
+
+		&__divider {
+			display: block;
+			width: 100%;
+			height: 1px;
+			margin: 0 0 clamp(1.25rem, 2.5vw, 1.75rem);
+			background: linear-gradient(
+				to right,
+				rgb(var(--alba-stone-rgb) / 32%),
+				rgb(var(--alba-stone-rgb) / 8%)
+			);
+		}
+
+		&__indications-heading {
+			display: none;
+		}
+
+		&__indications {
+			display: block;
+		}
+
+		&__indication-item {
+			background: transparent;
+			border: none;
+			border-radius: 0;
+			padding: 0;
+			box-shadow: none;
+			display: flex;
+			align-items: baseline;
+			justify-content: center;
+			gap: 0.75rem;
+
+			@media (width >= 768px) {
+				justify-content: flex-start;
+			}
+		}
+
+		&__indication-icon {
+			display: none;
+		}
+
+		&__indication-text {
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.74rem, 1.7vw, 0.82rem);
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: rgb(var(--alba-ink-rgb) / 72%);
+
+			strong {
+				color: var(--alba-charcoal);
+				font-weight: 600;
 			}
 		}
 	}
 
 	// ==========================================================================
-	// 5. PARIS INTERLUDE (EDITORIAL CONSTRAINED PRESENTATION)
+	// 5. PARIS INTERLUDE — NATURAL PROPORTIONS, NO DESTRUCTIVE CROP OR UPSCALE
 	// ==========================================================================
 	.invitation-interlude {
 		--interlude-bg: var(--alba-navy);
-		--interlude-image-filter: saturate(1.02) contrast(1.03) brightness(0.96);
+		--interlude-image-filter: contrast(1.03) brightness(0.97) saturate(0.98);
 
 		background: var(--interlude-bg);
-		padding-block: clamp(2rem, 5vw, 4rem);
 
-		.invitation-interlude__media {
-			min-height: clamp(22rem, 65vh, 42rem);
+		// Mobile: full-bleed cover, window shifted left so Alba is not half-cut
+		--interlude-focal-x: 34%;
+		--interlude-focal-y: 30%;
 
-			@media (width >= 768px) {
-				max-width: min(68rem, calc(100% - 4rem));
-				margin-inline: auto;
-				max-height: min(78vh, 46rem);
-				box-shadow: 0 16px 48px rgb(0 0 0 / 28%);
-				overflow: hidden;
+		// Tablet/desktop: the photograph keeps its own proportions as an
+		// off-center editorial plate on graphite (partial bleed, zero crop).
+		@media (width >= 768px) {
+			min-height: 0;
+			padding-block: clamp(3rem, 7vw, 5.5rem);
+
+			&[data-interlude-index='1'],
+			&[data-interlude-index='2'] {
+				min-height: 0;
 			}
-		}
 
-		.invitation-interlude__image {
-			object-fit: cover;
-			object-position: 50% 40%;
+			.invitation-interlude__media {
+				position: relative;
+				inset: auto;
+				width: min(38rem, 54vw);
+				height: auto;
+				margin-inline: clamp(2.5rem, 10vw, 10rem) auto;
+				box-shadow: 0 20px 52px rgb(0 0 0 / 32%);
+			}
+
+			.invitation-interlude__image {
+				position: static;
+				width: 100%;
+				height: auto;
+				object-fit: contain;
+			}
+
+			// The vignette belongs to the full-bleed treatment only
+			&::after {
+				content: none;
+			}
 		}
 	}
 
@@ -474,19 +987,48 @@ html:has(.event--alba-rosa-quinones) body {
 	// 6. GALLERY SECTION (FEATURED + SUPPORTING GRID)
 	// ==========================================================================
 	.gallery-section {
+		// Light limestone surface — overrides the preset's dark café band
+		// (declared at element level so it wins over the variant theme).
+		--gallery-section-bg: linear-gradient(
+			180deg,
+			var(--alba-limestone) 0%,
+			rgb(222 218 209) 100%
+		);
 		--gallery-grid-columns-mobile: 1;
 		--gallery-grid-columns-tablet: 2;
 		--gallery-grid-columns-desktop: 2;
 		--gallery-item-aspect-ratio: 4 / 5;
 		--gallery-item-aspect-ratio-feature: 3 / 4;
 		--gallery-item-border: none;
-		--gallery-item-shadow: 0 14px 36px rgb(0 0 0 / 10%);
+		--gallery-item-frame-border: none;
+		--gallery-item-frame-opacity: 0;
+		--gallery-item-shadow: 0 16px 38px rgb(var(--alba-charcoal-rgb) / 14%);
+		--gallery-item-emphasis-shadow: 0 18px 42px rgb(var(--alba-charcoal-rgb) / 16%);
+		--gallery-item-hover-shadow: 0 22px 48px rgb(var(--alba-charcoal-rgb) / 18%);
+		--gallery-item-emphasis-border-color: transparent;
+		--gallery-item-hover-border-color: transparent;
 		--gallery-item-radius: 0;
 		--gallery-item-padding: 0;
+		--gallery-item-frame-inset: 0;
 		--gallery-item-bg: transparent;
 		--gallery-item-hover-transform: translateY(-2px);
+
+		// Photography carries the color — no sepia washes
+		--gallery-item-image-filter-rest: contrast(1.02) saturate(0.98) brightness(0.99);
+		--gallery-item-image-filter-in-view: contrast(1.03) saturate(1) brightness(1);
+		--gallery-item-image-filter-hover: contrast(1.04) saturate(1.02) brightness(1.01);
+		--gallery-item-image-base-filter: var(--gallery-item-image-filter-rest);
+		--gallery-item-image-emphasis-filter: var(--gallery-item-image-filter-in-view);
+		--gallery-item-image-hover-filter: var(--gallery-item-image-filter-hover);
 		--gallery-title-color: var(--alba-charcoal);
 		--gallery-subtitle-color: rgb(var(--alba-ink-rgb) / 72%);
+		--gallery-overlay-bg: linear-gradient(
+			to top,
+			rgb(var(--alba-charcoal-rgb) / 45%) 0%,
+			transparent 55%
+		);
+		--gallery-caption-color: var(--alba-ivory);
+		--gallery-caption-bg: rgb(var(--alba-charcoal-rgb) / 35%);
 
 		background: var(--gallery-section-bg);
 		padding-block: clamp(3.5rem, 7vw, 6rem);
@@ -583,8 +1125,9 @@ html:has(.event--alba-rosa-quinones) body {
 			border-radius: 0;
 		}
 
+		// Albert Memorial frame: keep Alba fully inside the crop
 		.gallery-grid__item[data-gallery-index='2'] img {
-			object-position: 52% 72%;
+			object-position: 60% 84%;
 		}
 	}
 
@@ -593,22 +1136,36 @@ html:has(.event--alba-rosa-quinones) body {
 	// ==========================================================================
 	.gifts-section {
 		background: var(--gifts-bg);
-		padding-block: clamp(3.25rem, 7vw, 5.5rem);
+
+		// Bottom clearance hosts the graphite diagonal that descends from RSVP
+		padding-block: clamp(2.75rem, 6vw, 4.5rem)
+			calc(clamp(2.75rem, 6vw, 4.5rem) + clamp(3rem, 8vw, 6.5rem));
 
 		&__title {
 			font-family: var(--font-display);
 			font-size: clamp(1.85rem, 4vw, 2.6rem);
 			font-weight: 400;
 			color: var(--alba-charcoal);
+
+			// Single restrained champagne hairline as the only motif
+			&::after {
+				content: '';
+				display: block;
+				width: 3rem;
+				height: 1px;
+				margin: 1rem auto 0;
+				background: rgb(var(--alba-champagne-rgb) / 75%);
+			}
 		}
 
 		&__subtitle {
-			max-width: 34rem;
+			max-width: 32rem;
 			margin-inline: auto;
-			font-family: var(--font-body);
-			font-size: clamp(1.02rem, 2.2vw, 1.18rem);
-			line-height: 1.75;
-			color: rgb(var(--alba-ink-rgb) / 82%);
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+			line-height: 1.65;
+			color: rgb(var(--alba-ink-rgb) / 84%);
 			text-wrap: balance;
 		}
 
@@ -630,7 +1187,12 @@ html:has(.event--alba-rosa-quinones) body {
 		--color-surface-dark: var(--alba-navy);
 		--color-surface-dark-rgb: var(--alba-navy-rgb);
 		--color-text-primary: var(--alba-ivory);
+
+		// The hacienda RSVP theme derives labels from the -rgb channel token;
+		// without this override labels render dark-on-graphite (illegible).
+		--color-text-primary-rgb: var(--alba-ivory-rgb);
 		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 88%);
+		--color-text-muted: rgb(var(--alba-ivory-rgb) / 62%);
 		--color-border-subtle: rgb(var(--alba-gold-rgb) / 28%);
 		--rsvp-title-size: clamp(1.85rem, 4.5vw, 2.65rem);
 		--rsvp-body-size: clamp(1.05rem, 2.4vw, 1.2rem);
@@ -639,21 +1201,47 @@ html:has(.event--alba-rosa-quinones) body {
 		--color-glass-bg: transparent;
 		--color-glass-border: transparent;
 		--shadow-premium: none;
-		--rsvp-field-bg: rgb(var(--alba-ivory-rgb) / 6%);
-		--rsvp-field-bg-focus: rgb(var(--alba-ivory-rgb) / 12%);
+		--rsvp-label-color: rgb(var(--alba-ivory-rgb) / 80%);
+		--rsvp-placeholder-color: rgb(var(--alba-ivory-rgb) / 46%);
+		--rsvp-field-bg: rgb(var(--alba-ivory-rgb) / 7%);
+		--rsvp-field-bg-focus: rgb(var(--alba-ivory-rgb) / 13%);
 		--rsvp-field-border: rgb(var(--alba-gold-rgb) / 32%);
 		--rsvp-title-color: var(--alba-ivory);
 		--rsvp-title-font: var(--font-display);
 
-		background:
-			radial-gradient(circle at 50% 18%, rgb(var(--alba-sage-rgb) / 18%), transparent 62%),
-			linear-gradient(180deg, var(--alba-navy) 0%, rgb(27 29 32) 100%);
 		color: var(--alba-ivory);
 	}
 
+	// One coherent graphite environment: the section paints the surface once;
+	// inner panels stay transparent (no nested dark rectangles or seams).
+	.personalized-access,
+	.rsvp-section {
+		background:
+			radial-gradient(circle at 50% 18%, rgb(var(--alba-sage-rgb) / 18%), transparent 62%),
+			linear-gradient(180deg, var(--alba-navy) 0%, rgb(27 29 32) 100%);
+	}
+
+	.rsvp-section {
+		// The base contract centers the card in a full viewport; that produced
+		// large idle dead space. Content-driven height instead.
+		min-block-size: auto;
+		padding-block: clamp(4rem, 9vw, 6.5rem);
+
+		// RSVP renders a nested .rsvp-section shell — the surface, padding and
+		// intersection geometry belong to the outer element only.
+		.rsvp-section {
+			background: none;
+			padding: 0;
+			min-block-size: auto;
+			clip-path: none;
+		}
+	}
+
 	.rsvp {
+		background: transparent;
+
 		&[data-variant='luxury-hacienda'] {
-			background-color: transparent;
+			background: transparent;
 			border: none;
 			box-shadow: none;
 			backdrop-filter: none;
@@ -807,34 +1395,19 @@ html:has(.event--alba-rosa-quinones) body {
 			border: none;
 			padding: 0;
 			background: transparent;
-			box-shadow: 0 12px 36px rgb(0 0 0 / 8%);
-			border-radius: 0;
-			overflow: hidden;
+			box-shadow: 0 18px 44px rgb(var(--alba-charcoal-rgb) / 16%);
 
-			// Soft vignette echoing the courtyard arch safely without clipping subjects
-			&::after {
-				content: '';
-				position: absolute;
-				inset: 0;
-				pointer-events: none;
-				background:
-					radial-gradient(
-						ellipse 72% 64% at 50% 40%,
-						transparent 48%,
-						rgb(var(--alba-charcoal-rgb) / 16%) 100%
-					),
-					linear-gradient(
-						180deg,
-						rgb(var(--alba-cream-rgb) / 0%) 72%,
-						rgb(var(--alba-cream-rgb) / 32%) 100%
-					);
-			}
+			// Arch-top mask echoing the real courtyard arch in the photograph.
+			// The rounded crown only trims wall/sky; every person stays intact.
+			border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+			overflow: hidden;
 
 			img {
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
 				object-position: var(--family-focal-point, 50% 50%);
+				filter: contrast(1.02) saturate(0.98) brightness(1);
 			}
 		}
 
@@ -855,9 +1428,36 @@ html:has(.event--alba-rosa-quinones) body {
 			text-wrap: balance;
 			text-align: center;
 
+			// The quote reads as the photograph's caption, not a floating block:
+			// a champagne hairline anchors it to the image.
+			&::before {
+				content: '';
+				display: block;
+				width: 3rem;
+				height: 1px;
+				margin: 0 auto 1.15rem;
+				background: rgb(var(--alba-champagne-rgb) / 80%);
+			}
+
 			@media (width >= 992px) {
 				text-align: left;
 				margin: 0;
+
+				&::before {
+					margin-inline: 0;
+				}
+			}
+		}
+
+		// Desktop: caption sits against the photo's lower third, tied to it
+		@media (width >= 992px) {
+			.family__header {
+				place-self: end start;
+				padding-bottom: clamp(2rem, 5vw, 3.5rem);
+			}
+
+			.family__container {
+				gap: clamp(2rem, 4vw, 3rem);
 			}
 		}
 
@@ -869,12 +1469,19 @@ html:has(.event--alba-rosa-quinones) body {
 	// ==========================================================================
 	// 10. THANK YOU SECTION (INTIMATE CLOSING MEMORY & SPLIT GRID)
 	// ==========================================================================
+	// Let the memory photo cross the Family → Thank You boundary
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		position: relative;
+		z-index: 2;
+	}
+
 	.thank-you-section[data-variant='editorial-magazine'] {
 		background: var(--alba-navy);
 		color: var(--alba-ivory);
 		min-height: auto;
 		display: flex;
 		align-items: center;
+		overflow: visible;
 		padding: clamp(3.5rem, 8vw, 6.5rem) clamp(1rem, 5vw, 4rem);
 
 		&::before {
@@ -911,16 +1518,21 @@ html:has(.event--alba-rosa-quinones) body {
 			height: auto;
 			aspect-ratio: 4 / 5;
 			border-radius: 0;
-			border: none;
-			background: transparent;
+			border: 6px solid var(--alba-ivory);
+			background: var(--alba-ivory);
 			box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
 			padding: 0;
 			justify-self: center;
 			overflow: hidden;
 
+			// Photographic bleed: the framed memory crosses the Family boundary,
+			// straddling stone and graphite instead of sitting inside one band.
+			margin-top: calc(-1 * (clamp(3.5rem, 8vw, 6.5rem) + clamp(2.5rem, 6vw, 4.5rem)));
+
 			@media (width >= 768px) {
 				max-width: min(15.5rem, 100%);
 				justify-self: end;
+				margin-top: calc(-1 * (clamp(3.5rem, 8vw, 6.5rem) + clamp(3rem, 7vw, 5.5rem)));
 			}
 
 			.thank-you-editorial__image-shell {
@@ -972,13 +1584,16 @@ html:has(.event--alba-rosa-quinones) body {
 				content: none;
 			}
 
+			// The floated drop cap fractured the first word ("G racias");
+			// a quiet continuous paragraph reads more editorial.
 			.drop-cap {
-				color: var(--alba-gold);
-				font-family: var(--font-display);
-				font-size: 3.2em;
-				float: left;
-				line-height: 0.78;
-				padding-right: 0.12em;
+				float: none;
+				display: inline;
+				font-family: inherit;
+				font-size: inherit;
+				line-height: inherit;
+				color: inherit;
+				padding: 0;
 				text-shadow: none;
 			}
 		}

@@ -37,11 +37,15 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 	'alba-rosa-quinones': {
 		location: { family: 'atmospheric-blend', source: 'hero' },
 		'interlude-after-location': { family: 'arch', source: 'location' },
-		gallery: { family: 'atmospheric-blend', source: 'interlude-after-location' },
+		// Diagonal limestone cut over the Paris plate (asymmetric, off-center)
+		gallery: { family: 'overlap', source: 'interlude-after-location' },
 		gifts: { family: 'atmospheric-blend', source: 'gallery' },
-		'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
-		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+		// Personalized access renders near the top on guest links; neutral seam
+		'personalized-access': { family: 'atmospheric-blend', source: 'hero' },
+		// Graphite descends into the gifts ivory with a mirrored diagonal
+		rsvp: { family: 'overlap', source: 'gifts' },
 		family: { family: 'atmospheric-blend', source: 'rsvp' },
+		// Thank You keeps the blend; the memory photo itself crosses the seam
 		thankYou: { family: 'atmospheric-blend', source: 'family' },
 	},
 };
