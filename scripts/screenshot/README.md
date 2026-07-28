@@ -356,7 +356,9 @@ another terminal.
 
 **Reveal not opening** → Ensure your page supports `?screenshot=1&reveal=open` (and `?reveal=letter`
 for held-letter steps) server-side. Mark hosts with `data-screenshot="reveal-section"` /
-`reveal-letter` as needed.
+`reveal-letter` as needed. For the full reveal-gate state machine, the `data-reveal-state` values to
+wait on, and stuck-at-`sealed` diagnosis, see
+[`docs/domains/invitations/reveal-gate-automation.md`](../../docs/domains/invitations/reveal-gate-automation.md).
 
 **Missing sections in full QA** → Add `data-screenshot-section="{name}"` to the section wrapper. The
 tool warns about missing elements but continues.

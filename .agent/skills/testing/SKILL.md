@@ -18,6 +18,7 @@ outputs:
 related_skills: []
 related_docs:
   - docs/core/project-conventions.md
+  - docs/domains/invitations/reveal-gate-automation.md
 ---
 
 # Testing
@@ -292,37 +293,34 @@ describe('Event Schema', () => {
 
 Use `pnpm build` when a change affects route assembly, static assets, or metadata generation.
 
-## E2E Testing (Future)
+## E2E Testing (Playwright)
 
-When Playwright is set up:
+Playwright is configured; specs live in `tests/e2e/`. Run them through the `test:e2e*` scripts in
+`package.json`.
 
-```tsx
-// e2e/invitation.spec.ts
+```ts
+// tests/e2e/invitation.spec.ts
 import { test, expect } from '@playwright/test';
 
 test('XV invitation loads correctly', async ({ page }) => {
-  await page.goto('/xv/demo-xv');
+  await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true');
 
-  // Check countdown is visible
   await expect(page.locator('.countdown')).toBeVisible();
-
-  // Check RSVP form
   await expect(page.getByRole('heading', { name: /celebrar/i })).toBeVisible();
 });
-
-test('RSVP form submission', async ({ page }) => {
-  await page.goto('/xv/demo-xv');
-
-  // Select attendance
-  await page.getByLabel(/Sí, asistiré/i).click();
-
-  // Submit
-  await page.getByRole('button', { name: /Confirmar/i }).click();
-
-  // Check confirmation
-  await expect(page.getByText(/Gracias por confirmar/i)).toBeVisible();
-});
 ```
+
+### Invitation reveal gate
+
+Public invitation routes render a reveal gate (sealed envelope or editorial cover) in front of the
+content. Never drive it with a bare `click()` plus a fixed sleep: the real open transition takes
+~3.2–3.4 s, and a short sample reports a false hang or, worse, measures a gated page as if it were
+open.
+
+Use `?skipEnvelope=true` for any spec that is not testing the transition itself, and wait on
+`data-reveal-state` with a bounded `waitForFunction` that throws on timeout. The supported URL
+contract, the state values, a copy-pasteable helper, and stuck-at-`sealed` diagnosis live in
+[`docs/domains/invitations/reveal-gate-automation.md`](../../../docs/domains/invitations/reveal-gate-automation.md).
 
 ## Verification Checklist
 

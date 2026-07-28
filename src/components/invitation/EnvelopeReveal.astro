@@ -164,6 +164,30 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
 
 	const EXIT_ANIMATION_MS = 2200;
+	const CARD_RISE_FALLBACK_MARGIN_MS = 1200;
+	const CARD_RISE_FALLBACK_FLOOR_MS = 4000;
+
+	/**
+	 * Longest plausible `envCardRise` runtime for the active theme, read from computed style so
+	 * preset overrides of `--duration-reveal` stay covered. Used as the safety deadline: if
+	 * `animationend` never arrives (missing stylesheet, interrupted or throttled animation,
+	 * non-animatable card), the reveal must still complete instead of stranding `sealed`.
+	 */
+	const resolveCardRiseFallbackMs = (card: HTMLElement) => {
+		const readLongestMs = (value: string) =>
+			value.split(',').reduce((longest, part) => {
+				const trimmed = part.trim();
+				const parsed = Number.parseFloat(trimmed);
+				if (!Number.isFinite(parsed)) return longest;
+				return Math.max(longest, trimmed.endsWith('ms') ? parsed : parsed * 1000);
+			}, 0);
+
+		const styles = getComputedStyle(card);
+		const animated =
+			readLongestMs(styles.animationDelay) + readLongestMs(styles.animationDuration);
+
+		return Math.max(CARD_RISE_FALLBACK_FLOOR_MS, animated + CARD_RISE_FALLBACK_MARGIN_MS);
+	};
 
 	class DsEnvelopeReveal extends HTMLElement {
 		connectedCallback() {
@@ -186,6 +210,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const openButton = this.querySelector('[data-envelope-open]');
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
+			let isOpening = false;
 
 			/** Screenshot tool needs the letter laid out; do not race-hide the host. */
 			const isScreenshotCaptureMode = () => {
@@ -334,18 +359,26 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					return;
 				}
 
+				if (isOpening) return;
+				isOpening = true;
+
 				this.classList.add('is-opening');
 
 				if (revealCard instanceof HTMLElement) {
+					const fallbackTimer = window.setTimeout(
+						completeReveal,
+						resolveCardRiseFallbackMs(revealCard),
+					);
 					const onAnimationEnd = (e: AnimationEvent) => {
 						if (e.animationName.includes('envCardRise')) {
+							window.clearTimeout(fallbackTimer);
 							revealCard.removeEventListener('animationend', onAnimationEnd);
 							completeReveal();
 						}
 					};
 					revealCard.addEventListener('animationend', onAnimationEnd);
 				} else {
-					window.setTimeout(completeReveal, 2000);
+					window.setTimeout(completeReveal, CARD_RISE_FALLBACK_FLOOR_MS);
 				}
 			});
 		}

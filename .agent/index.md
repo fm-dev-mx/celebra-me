@@ -109,32 +109,33 @@ historical and not active authority.
 
 One owner per concern. Other files may link here; they must not redefine the same policy.
 
-| Aspect                              | Owner                                               | Not the owner                                  |
-| ----------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
-| Agent discovery / active inventory  | `.agent/index.md`                                   | Archived plans, point-in-time reports          |
-| Validation tiers / review contract  | `.agent/rules/gatekeeper.md`                        | `docs/core/git-governance.md`, workflows       |
-| Agent operating procedure           | `.agent/rules/workflow.md`                          | Human branch/release policy docs               |
-| Git authorization / worktree safety | `.agent/rules/git-safety.md`                        | Commit-message style docs                      |
-| Human branch, commit, promotion     | `docs/core/git-governance.md`                       | Agent workflow rules                           |
-| Release checkpoints / version tags  | `docs/core/release-process.md`                      | Per-invitation notes                           |
-| Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)         | Migrations, invitation ops notes               |
-| Invitation identity requirements    | `docs/core/invitation-creation-contract.md`         | Runbook, agent workflow, safety rule           |
-| Invitation production runbook       | `docs/domains/intake/production-flow.md`            | Creation contract, agent workflow              |
-| Agent invitation procedure          | `.agent/workflows/managed-invitation-lifecycle.md`  | Runbook semantics, CLI flag copies             |
-| Invitation agent safety constraints | `.agent/rules/invitation-production.md`             | Runbook steps, creation field lists            |
-| Theme/preset runtime authority      | `.agent/rules/invitation-preset-source-of-truth.md` | Snapshots, published JSON alone                |
-| Schema / content shape              | `docs/core/content-schema.md` + live Zod            | Invitation ops notes                           |
-| Database operations                 | `docs/database-workflow.md`                         | Schema overview ERD                            |
-| Branch↔DB parity handoff            | `.agent/skills/database-parity`                     | `branch-lane` (orchestrates; no DB ops logic)  |
-| Database schema overview            | `docs/domains/database/overview.md`                 | Ops runbooks                                   |
-| Environment variable hierarchy      | `docs/env-workflow.md`                              | Database workflow                              |
-| Brand / voice                       | `.agent/briefs/celebra-me.md`                       | Root PRODUCT/DESIGN markdown files (forbidden) |
-| Visual design intent                | `.agent/skills/frontend-design`                     | External design installs as SSOT               |
-| Theme tokens / SCSS architecture    | `docs/domains/theme/` + `theme-architecture` skill  | Brand brief alone                              |
-| Per-client invitation evidence      | `docs/invitations/` per-slug notes                  | `docs/core/`, system CHANGELOG dumps           |
-| Schema history                      | `supabase/migrations/` (+ manual SQL manifest)      | Full migration lists in CHANGELOG              |
-| Canonical skills                    | `.agent/skills/` (each skill SKILL file)            | `.agents/`, global Hermes skills               |
-| Available commands                  | `package.json`                                      | Copied command tables in stale docs            |
+| Aspect                              | Owner                                                | Not the owner                                  |
+| ----------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
+| Agent discovery / active inventory  | `.agent/index.md`                                    | Archived plans, point-in-time reports          |
+| Validation tiers / review contract  | `.agent/rules/gatekeeper.md`                         | `docs/core/git-governance.md`, workflows       |
+| Agent operating procedure           | `.agent/rules/workflow.md`                           | Human branch/release policy docs               |
+| Git authorization / worktree safety | `.agent/rules/git-safety.md`                         | Commit-message style docs                      |
+| Human branch, commit, promotion     | `docs/core/git-governance.md`                        | Agent workflow rules                           |
+| Release checkpoints / version tags  | `docs/core/release-process.md`                       | Per-invitation notes                           |
+| Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)          | Migrations, invitation ops notes               |
+| Invitation identity requirements    | `docs/core/invitation-creation-contract.md`          | Runbook, agent workflow, safety rule           |
+| Invitation production runbook       | `docs/domains/intake/production-flow.md`             | Creation contract, agent workflow              |
+| Agent invitation procedure          | `.agent/workflows/managed-invitation-lifecycle.md`   | Runbook semantics, CLI flag copies             |
+| Invitation agent safety constraints | `.agent/rules/invitation-production.md`              | Runbook steps, creation field lists            |
+| Reveal-gate automation / bypass     | `docs/domains/invitations/reveal-gate-automation.md` | Screenshot README, motion tokens doc           |
+| Theme/preset runtime authority      | `.agent/rules/invitation-preset-source-of-truth.md`  | Snapshots, published JSON alone                |
+| Schema / content shape              | `docs/core/content-schema.md` + live Zod             | Invitation ops notes                           |
+| Database operations                 | `docs/database-workflow.md`                          | Schema overview ERD                            |
+| Branch↔DB parity handoff            | `.agent/skills/database-parity`                      | `branch-lane` (orchestrates; no DB ops logic)  |
+| Database schema overview            | `docs/domains/database/overview.md`                  | Ops runbooks                                   |
+| Environment variable hierarchy      | `docs/env-workflow.md`                               | Database workflow                              |
+| Brand / voice                       | `.agent/briefs/celebra-me.md`                        | Root PRODUCT/DESIGN markdown files (forbidden) |
+| Visual design intent                | `.agent/skills/frontend-design`                      | External design installs as SSOT               |
+| Theme tokens / SCSS architecture    | `docs/domains/theme/` + `theme-architecture` skill   | Brand brief alone                              |
+| Per-client invitation evidence      | `docs/invitations/` per-slug notes                   | `docs/core/`, system CHANGELOG dumps           |
+| Schema history                      | `supabase/migrations/` (+ manual SQL manifest)       | Full migration lists in CHANGELOG              |
+| Canonical skills                    | `.agent/skills/` (each skill SKILL file)             | `.agents/`, global Hermes skills               |
+| Available commands                  | `package.json`                                       | Copied command tables in stale docs            |
 
 ### Invitation authority chain
 
@@ -171,6 +172,7 @@ Load in this order for managed invitation work; do not copy semantics across lay
 - `docs/domains/intake/internal-invitation-editor.md`
 - `docs/domains/intake/production-flow.md`
 - `docs/domains/invitations/public-response-cache-policy.md`
+- `docs/domains/invitations/reveal-gate-automation.md`
 
 `docs/invitations/` contains invitation-specific finalization and operational notes. Those files may
 guide their named invitation but do not replace cross-cutting architecture or runbooks.
@@ -216,6 +218,7 @@ prerequisites that are already loaded.
 | Backend or data work              | `backend-engineering`, relevant domain docs, and API/database rules                           |
 | Documentation or governance drift | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                     |
 | Testing or regression work        | `testing` and affected domain docs                                                            |
+| Browser automation on invitations | `docs/domains/invitations/reveal-gate-automation.md` before scripting any reveal interaction  |
 | Supabase or database work         | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md`  |
 | Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans     |
 | Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                            |
