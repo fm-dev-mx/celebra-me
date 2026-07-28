@@ -263,7 +263,7 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 				).filter,
 				familyReservedPadding: Number.parseFloat(
 					getComputedStyle(
-						familyOverlapElement.previousElementSibling?.querySelector('.family')!,
+						familyOverlapElement.previousElementSibling!.querySelector('.family')!,
 					).paddingBottom,
 				),
 				galleryTitleColor: getComputedStyle(
@@ -280,7 +280,7 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 				).filter,
 				itineraryReservedPadding: Number.parseFloat(
 					getComputedStyle(
-						itineraryOverlapElement.previousElementSibling?.querySelector('.itinerary')!,
+						itineraryOverlapElement.previousElementSibling!.querySelector('.itinerary')!,
 					).paddingBottom,
 				),
 				blendDepth: Number.parseFloat(getComputedStyle(blendElement, '::before').height),
