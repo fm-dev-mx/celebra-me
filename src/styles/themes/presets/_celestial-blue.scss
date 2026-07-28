@@ -281,26 +281,24 @@
 	--family-group-padding: 0;
 	--family-group-border-left: 0;
 
-	// Surface & Watermark
+	// Surface & Watermark — no SVG displacement filters on this panel.
+	// Deckle / artisan feDisplacementMap remesh at some widths and leave stray ticks/streaks over text.
 	--family-panel-surface-bg: radial-gradient(
 		circle at 30% 20%,
-		rgb(var(--color-diamond-white-rgb) / 90%) 0%,
-		rgb(var(--color-cool-ivory-rgb) / 84%) 100%
+		rgb(var(--color-diamond-white-rgb) / 94%) 0%,
+		rgb(var(--color-cool-ivory-rgb) / 90%) 100%
 	);
-	--family-panel-surface-filter: url('#deckle-edge-filter');
-	--family-panel-surface-inset: -0.2rem;
+	--family-panel-surface-filter: none;
+	--family-panel-surface-inset: 0;
 	--family-panel-surface-opacity: 1;
 	--family-panel-edge-border: none;
 	--family-panel-edge-shadow: none;
 
-	// Additional nested surface textures for celestial-blue
-	--family-panel-surface-before-content: '';
-	--family-panel-surface-before-opacity: 0.22;
-	--family-panel-surface-before-filter: url('#artisan-paper-texture');
-	--family-panel-surface-after-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
-	--family-panel-surface-after-shadow: inset 1px 1px 0 rgb(255 255 255 / 80%);
-	--family-panel-surface-after-opacity: 0.9;
-	--family-panel-surface-after-bg: none;
+	// Grain only via tiled noise background (no displacement)
+	--family-panel-surface-after-border: none;
+	--family-panel-surface-after-shadow: none;
+	--family-panel-surface-after-opacity: 0.045;
+	--family-panel-surface-after-bg: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 	--family-panel-watermark-color: rgb(var(--color-satin-blue-rgb) / 15%);
 	--family-panel-watermark-font: var(--font-display);
 	--family-panel-watermark-size: clamp(5.5rem, 13vw, 9rem);
