@@ -4,6 +4,11 @@
 @use '../../tokens/system/type' as sys-type;
 
 .theme-preset--jewelry-box {
+	// Motion recipe
+	--motion-reveal-distance: 16px;
+	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-blur: 4px;
+
 	// 💎 Color Architecture: Gold, Pearl & Glass
 	--color-surface-primary: #{sys.$sys-color-gold-50};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-gold-50)};

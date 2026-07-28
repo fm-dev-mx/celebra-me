@@ -6,6 +6,11 @@
 /* --- PRESET: Jewelry Box Wedding --- */
 
 .theme-preset--jewelry-box-wedding {
+	// Motion recipe
+	--motion-reveal-distance: 16px;
+	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-blur: 4px;
+
 	// 💎 Layer 1 & 2: Surface Architecture
 	--color-surface-primary: #{sys.$sys-color-champagne-50};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-champagne-50)};

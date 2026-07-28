@@ -523,23 +523,39 @@
 
 	&.has-motion &__card {
 		transition:
-			opacity var(--duration-premium) var(--ease-out),
-			transform var(--duration-premium) var(--ease-out),
+			opacity var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-out)),
+			transform var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-out)),
+			filter var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-out)),
 			box-shadow var(--duration-snappy) var(--ease-standard);
 	}
 
-	&.has-motion:not(.is-visible) &__card {
-		opacity: 0%;
-		transform: translateY(12px);
+	@media (prefers-reduced-motion: no-preference) {
+		&.has-motion:not(.is-visible) &__card {
+			opacity: 0%;
+			transform: translateY(var(--motion-reveal-distance, 18px));
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.has-motion:not(.is-visible) &__card {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	&.has-motion.is-visible &__card {
 		opacity: 100%;
 		transform: translateY(0);
+		filter: blur(0);
 	}
 
 	&.has-motion.is-visible &__card-wrapper + &__card-wrapper &__card {
-		transition-delay: 0.08s;
+		transition-delay: var(--motion-stagger-step, 0.08s);
 	}
 
 	&__card-image-outer-frame {
@@ -1090,6 +1106,7 @@
 	.event-location.has-motion .event-location__card {
 		opacity: 100%;
 		transform: none;
+		filter: none;
 		transition: none;
 	}
 }

@@ -7,6 +7,13 @@
 // Uses portrait as full-bleed background for clean luxury editorial cover aesthetic
 // ==========================================================================
 
+.event-theme-wrapper[data-reveal-state='revealed'] .invitation-hero[data-variant='celestial-blue'] {
+	.invitation-hero__content {
+		animation-duration: 1.1s;
+		animation-timing-function: var(--ease-premium);
+	}
+}
+
 .invitation-hero[data-variant='celestial-blue'] {
 	justify-content: flex-end;
 	min-height: 100svh;

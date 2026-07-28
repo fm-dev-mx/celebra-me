@@ -1,4 +1,11 @@
 .theme-preset--enchanted-rose {
+	// Motion recipe
+	--motion-reveal-distance: 18px;
+	--motion-reveal-duration: var(--duration-reveal);
+	--motion-reveal-blur: 4px;
+	--motion-ambient-scale-to: 1.03;
+	--motion-ambient-duration: 18s;
+
 	// ---------------------------------------------------------------------
 	// Base palette
 	// ---------------------------------------------------------------------

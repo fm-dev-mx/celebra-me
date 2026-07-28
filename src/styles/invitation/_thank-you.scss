@@ -138,18 +138,34 @@
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
 		transition:
-			opacity var(--duration-premium, 1s) var(--ease-premium),
-			transform var(--duration-premium, 1s) var(--ease-premium);
+			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
-	.thank-you-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
-		transform: scale(0.95);
+	@media (prefers-reduced-motion: no-preference) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 0%;
+			transform: scale(0.95) translateY(var(--motion-reveal-distance, 18px));
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: scale(1);
+		filter: blur(0);
 	}
 
 	@include mixins.respond-to(sm) {
@@ -179,19 +195,35 @@
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
 		transition:
-			opacity var(--duration-premium, 1s) var(--ease-premium),
-			transform var(--duration-premium, 1s) var(--ease-premium);
+			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium));
 		transition-delay: 0.15s;
 	}
 
-	.thank-you-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
-		transform: translateY(15px);
+	@media (prefers-reduced-motion: no-preference) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 0%;
+			transform: translateY(var(--motion-reveal-distance, 18px));
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: translateY(0);
+		filter: blur(0);
 	}
 }
 
@@ -218,19 +250,35 @@
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
 		transition:
-			opacity var(--duration-premium, 1s) var(--ease-premium),
-			transform var(--duration-premium, 1s) var(--ease-premium);
+			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium));
 		transition-delay: 0.3s;
 	}
 
-	.thank-you-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
-		transform: translateY(12px) scale(0.98);
+	@media (prefers-reduced-motion: no-preference) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 0%;
+			transform: translateY(calc(var(--motion-reveal-distance, 18px) * 0.6)) scale(0.98);
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	.thank-you-section.has-motion.is-visible & {
 		opacity: 100%;
 		transform: translateY(0) scale(1);
+		filter: blur(0);
 	}
 }
 
@@ -263,16 +311,31 @@
 
 	// Scroll reveal setup
 	.thank-you-section.has-motion & {
-		transition: opacity var(--duration-premium, 1s) var(--ease-premium);
+		transition:
+			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
+				var(--motion-reveal-ease, var(--ease-premium));
 		transition-delay: 0.5s;
 	}
 
-	.thank-you-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
+	@media (prefers-reduced-motion: no-preference) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 0%;
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.thank-you-section.has-motion:not(.is-visible) & {
+			opacity: 40%;
+			filter: none;
+		}
 	}
 
 	.thank-you-section.has-motion.is-visible & {
 		opacity: 40%;
+		filter: blur(0);
 	}
 }
 

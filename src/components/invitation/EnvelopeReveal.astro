@@ -255,22 +255,42 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					const scrollBehavior: ScrollBehavior = prefersReducedMotion
 						? 'auto'
 						: 'smooth';
+					const sceneFadeRaw = getComputedStyle(invitationRoot)
+						.getPropertyValue('--motion-scene-fade')
+						.trim();
+					const parsedFade = Number.parseFloat(sceneFadeRaw);
+					const sceneFadeMs =
+						prefersReducedMotion || Number.isNaN(parsedFade)
+							? prefersReducedMotion
+								? 0
+								: 240
+							: sceneFadeRaw.endsWith('ms')
+								? Math.round(parsedFade)
+								: Math.round(parsedFade * 1000);
 
-					if (hero instanceof HTMLElement) {
-						const rect = hero.getBoundingClientRect();
-						const inView =
-							rect.top >= -8 &&
-							rect.top <= window.innerHeight * 0.35 &&
-							rect.bottom > 0;
-						if (!inView) {
-							hero.scrollIntoView({
-								block: 'start',
-								inline: 'nearest',
-								behavior: scrollBehavior,
-							});
+					const settleScroll = () => {
+						if (hero instanceof HTMLElement) {
+							const rect = hero.getBoundingClientRect();
+							const inView =
+								rect.top >= -8 &&
+								rect.top <= window.innerHeight * 0.35 &&
+								rect.bottom > 0;
+							if (!inView) {
+								hero.scrollIntoView({
+									block: 'start',
+									inline: 'nearest',
+									behavior: scrollBehavior,
+								});
+							}
+						} else if (window.scrollY > 0) {
+							window.scrollTo({ top: 0, left: 0, behavior: scrollBehavior });
 						}
-					} else if (window.scrollY > 0) {
-						window.scrollTo({ top: 0, left: 0, behavior: scrollBehavior });
+					};
+
+					if (sceneFadeMs > 0) {
+						window.setTimeout(settleScroll, sceneFadeMs);
+					} else {
+						settleScroll();
 					}
 				});
 

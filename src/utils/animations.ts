@@ -15,8 +15,8 @@ export function createIntersectionObserver(
 	options: ObserverOptions = {},
 ): IntersectionObserver | null {
 	const {
-		threshold = 0.1,
-		rootMargin = '0px 0px -50px 0px',
+		threshold = 0.12,
+		rootMargin = '0px 0px -12% 0px',
 		onObserved,
 		onFallback,
 		failOpenAfterMs = DEFAULT_FAIL_OPEN_MS,

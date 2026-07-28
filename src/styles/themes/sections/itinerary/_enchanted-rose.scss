@@ -221,7 +221,7 @@
 
 	&.has-motion:not(.is-visible) .itinerary__item {
 		opacity: 0%;
-		transform: translateY(18px);
+		transform: translateY(calc(var(--motion-reveal-distance, 18px)));
 	}
 
 	&.has-motion.is-visible .itinerary__item {
@@ -231,7 +231,9 @@
 
 	@for $i from 1 through 10 {
 		&.has-motion.is-visible .itinerary__item:nth-child(#{$i}) {
-			transition-delay: #{($i - 1) * 0.08s};
+			transition-delay: calc(
+				min(#{$i - 1} * var(--motion-stagger-step, 0.08s), var(--motion-stagger-cap, 0.48s))
+			);
 		}
 	}
 

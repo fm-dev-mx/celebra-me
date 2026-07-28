@@ -23,6 +23,13 @@
 	}
 }
 
+.event-theme-wrapper[data-reveal-state='revealed'] .invitation-hero[data-variant='enchanted-rose'] {
+	.invitation-hero__content {
+		animation-duration: 1.15s;
+		animation-timing-function: var(--ease-premium);
+	}
+}
+
 .invitation-hero[data-variant='enchanted-rose'] {
 	justify-content: flex-end;
 	min-height: 100svh;

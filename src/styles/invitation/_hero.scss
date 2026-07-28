@@ -280,33 +280,33 @@
 
 .event-theme-wrapper[data-reveal-state='revealed'] {
 	.invitation-hero__content {
-		animation: invitation-hero-content-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+		animation: invitation-hero-content-reveal 1.2s var(--ease-premium) 0s forwards;
 	}
 
 	.invitation-hero__label {
-		animation: motion-fade-in-up 0.6s var(--ease-out) 0.15s forwards;
+		animation: motion-fade-in-up 0.6s var(--ease-out) 0.12s forwards;
 	}
 
 	.invitation-hero__title {
 		animation:
-			motion-fade-in-up 0.75s var(--ease-out) 0.25s forwards,
+			motion-fade-in-up 0.75s var(--ease-out) 0.22s forwards,
 			invitation-specular-glint 8s var(--ease-standard, ease-in-out) 1.25s infinite;
 	}
 
 	.invitation-hero__nickname-badge {
-		animation: motion-fade-in-up 0.6s var(--ease-out) 0.35s forwards;
+		animation: motion-fade-in-up 0.6s var(--ease-out) 0.32s forwards;
 	}
 
 	.invitation-hero__divider {
-		animation: invitation-grow-line 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+		animation: invitation-grow-line 0.8s var(--ease-premium) 0.4s forwards;
 	}
 
 	.invitation-hero__details {
-		animation: motion-fade-in-up 0.7s var(--ease-out) 0.55s forwards;
+		animation: motion-fade-in-up 0.7s var(--ease-out) 0.5s forwards;
 	}
 
 	.invitation-hero__scroll-indicator {
-		animation: motion-fade-in 1.2s var(--ease-out) 0.9s forwards;
+		animation: motion-fade-in 1.2s var(--ease-out) 0.85s forwards;
 	}
 
 	.invitation-hero__scroll-chevron {

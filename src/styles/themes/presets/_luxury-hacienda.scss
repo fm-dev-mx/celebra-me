@@ -4,6 +4,13 @@
 @use '../../tokens/system/type' as sys-type;
 
 .theme-preset--luxury-hacienda {
+	// Motion recipe
+	--motion-reveal-distance: 10px;
+	--motion-reveal-duration: var(--duration-slower);
+	--motion-reveal-blur: 0;
+	--motion-stagger-step: 0.06s;
+	--motion-ambient-scale-to: 1;
+
 	// ---------------------------------------------------------------------
 	// Core semantic tokens (single source of truth for the preset palette)
 	// ---------------------------------------------------------------------

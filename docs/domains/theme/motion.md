@@ -1,6 +1,6 @@
 # Motion Tokens
 
-**Last Updated:** 2026-07-16
+**Last Updated:** 2026-07-27
 
 ## Overview
 
@@ -48,6 +48,27 @@ Animations should always consume semantic tokens defined in
 | ----------------------- | -------------------------------------------------------------- |
 | `--transition-snappy`   | opacity, transform, border-color, box-shadow                   |
 | `--transition-standard` | opacity, transform, border-color, box-shadow, background-color |
+
+## Motion Recipe Tokens (Premium Reveals)
+
+Preset-level recipes tune shared section reveals without changing selector structure. Defaults live
+in `src/styles/tokens/semantic/_motion.scss`; presets override under `.theme-preset--*`.
+
+| Token                       | Meaning                               | Guardrail                                                          |
+| --------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| `--motion-reveal-distance`  | Entrance translate distance           | Small drift (~10–24px), no layout motion                           |
+| `--motion-reveal-duration`  | Entrance duration                     | `animation-motion` bands (≤ ~1.2s)                                 |
+| `--motion-reveal-ease`      | Entrance easing                       | Usually `--ease-premium`                                           |
+| `--motion-reveal-blur`      | Pending-state blur                    | Only under `prefers-reduced-motion: no-preference`; 0 when reduced |
+| `--motion-stagger-step`     | Stagger step between items            | ≤ 0.1s                                                             |
+| `--motion-stagger-cap`      | Maximum stagger delay                 | ≤ ~0.5s                                                            |
+| `--motion-ambient-scale-to` | Ambient scale target (e.g. interlude) | Subtle (≤ ~1.05); reduced-motion disables                          |
+| `--motion-ambient-duration` | Ambient loop duration                 | Slow; no scroll math                                               |
+| `--motion-scene-fade`       | Envelope→hero handoff delay           | 0 under reduced-motion                                             |
+
+Hard contract remains: content is visible in SSR; pending hide only under
+`.has-motion:not(.is-visible)`; IntersectionObserver fail-open reveals all; reduced-motion reveals
+immediately and disables ambient/parallax.
 
 ## Implementation Pattern
 

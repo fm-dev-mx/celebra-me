@@ -1,4 +1,11 @@
 .theme-preset--celestial-blue {
+	// Motion recipe
+	--motion-reveal-distance: 20px;
+	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-blur: 6px;
+	--motion-ambient-scale-to: 1.035;
+	--motion-ambient-duration: 16s;
+
 	// ---------------------------------------------------------------------
 	// Base palette
 	// ---------------------------------------------------------------------

@@ -205,35 +205,70 @@
 		}
 	}
 
-	&.has-motion:not(.is-visible) .gifts-section__header {
-		opacity: 0%;
-		transform: translateY(18px);
+	&.has-motion .gifts-section__header {
+		transition:
+			opacity var(--motion-reveal-duration, var(--duration-reveal))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-reveal))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-reveal))
+				var(--motion-reveal-ease, var(--ease-premium));
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		&.has-motion:not(.is-visible) .gifts-section__header {
+			opacity: 0%;
+			transform: translateY(var(--motion-reveal-distance, 18px));
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.has-motion:not(.is-visible) .gifts-section__header {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	&.has-motion.is-visible .gifts-section__header {
 		opacity: 100%;
 		transform: translateY(0);
-		transition:
-			opacity var(--duration-reveal) var(--ease-premium),
-			transform var(--duration-reveal) var(--ease-premium);
+		filter: blur(0);
 	}
 
 	&.has-motion .gift-card {
 		transition:
-			opacity var(--duration-premium) var(--ease-premium),
-			transform var(--duration-premium) var(--ease-premium),
+			opacity var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium)),
 			border-color var(--duration-snappy) var(--ease-premium),
 			box-shadow var(--duration-snappy) var(--ease-premium);
 	}
 
-	&.has-motion:not(.is-visible) .gift-card {
-		opacity: 0%;
-		transform: translateY(18px);
+	@media (prefers-reduced-motion: no-preference) {
+		&.has-motion:not(.is-visible) .gift-card {
+			opacity: 0%;
+			transform: translateY(var(--motion-reveal-distance, 18px));
+			filter: blur(var(--motion-reveal-blur, 0));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.has-motion:not(.is-visible) .gift-card {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+		}
 	}
 
 	&.has-motion.is-visible .gift-card {
 		opacity: 100%;
 		transform: translateY(0);
+		filter: blur(0);
 	}
 
 	&.has-motion.is-visible .gift-card:first-child {

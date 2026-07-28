@@ -63,8 +63,10 @@
 		opacity: 100%;
 		transform: translate3d(0, 0, 0) scale(1);
 		transition:
-			opacity 800ms var(--ease-premium),
-			transform 800ms var(--ease-premium);
+			opacity var(--motion-reveal-duration, 800ms)
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, 800ms)
+				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
 	&.is-visible &__media {
@@ -72,9 +74,18 @@
 		transform: translate3d(0, 0, 0) scale(1);
 	}
 
-	&.has-motion:not(.is-visible) &__media {
-		opacity: 0%;
-		transform: translate3d(0, 24px, 0) scale(1);
+	@media (prefers-reduced-motion: no-preference) {
+		&.has-motion:not(.is-visible) &__media {
+			opacity: 0%;
+			transform: translate3d(0, var(--motion-reveal-distance, 24px), 0) scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.has-motion:not(.is-visible) &__media {
+			opacity: 100%;
+			transform: none;
+		}
 	}
 
 	&__image {
@@ -89,6 +100,20 @@
 		filter: var(--interlude-image-filter, saturate(0.96) contrast(1.02));
 		transform: none;
 		transition: filter 260ms ease-out;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		&.is-visible &__image {
+			animation: interlude-ambient var(--motion-ambient-duration, 14s) var(--ease-premium)
+				infinite alternate;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&.is-visible &__image {
+			animation: none;
+			transform: none;
+		}
 	}
 
 	// ---- responsive focal adjustments ----

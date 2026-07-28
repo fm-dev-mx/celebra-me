@@ -46,6 +46,17 @@ $semantic-motion: (
 		border-color var(--duration-standard) var(--ease-standard),
 		box-shadow var(--duration-standard) var(--ease-standard),
 		background-color var(--duration-standard) var(--ease-standard);
+
+	// Motion recipe defaults (presets may override)
+	--motion-reveal-distance: 18px;
+	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-ease: var(--ease-premium);
+	--motion-reveal-blur: 0;
+	--motion-stagger-step: 0.08s;
+	--motion-stagger-cap: 0.48s;
+	--motion-ambient-scale-to: 1.03;
+	--motion-ambient-duration: 14s;
+	--motion-scene-fade: 0.3s;
 }
 
 @function ease($token) {
