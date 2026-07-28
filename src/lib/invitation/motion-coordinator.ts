@@ -5,8 +5,6 @@ const INVITATION_REVEAL_OBSERVER_OPTIONS = {
 	rootMargin: '0px 0px -12% 0px',
 } as const;
 
-const INVITATION_REVEAL_FAIL_OPEN_MS = 8000;
-
 type RevealWrapper = HTMLElement & {
 	dataset: DOMStringMap & { reveal?: InvitationRevealRecipe };
 };
@@ -71,15 +69,7 @@ export function initInvitationMotion(root: Document = document): void {
 		return;
 	}
 
-	const pending = new Set(wrappers);
-	let failOpenTimer: number | undefined;
 	let observer: IntersectionObserver | undefined;
-
-	const clearTimer = () => {
-		if (failOpenTimer === undefined) return;
-		window.clearTimeout(failOpenTimer);
-		failOpenTimer = undefined;
-	};
 
 	try {
 		observer = new IntersectionObserver((entries) => {
@@ -87,10 +77,8 @@ export function initInvitationMotion(root: Document = document): void {
 				if (!entry.isIntersecting) continue;
 				const wrapper = entry.target as RevealWrapper;
 				reveal(wrapper);
-				pending.delete(wrapper);
 				observer?.unobserve(wrapper);
 			}
-			if (pending.size === 0) clearTimer();
 		}, INVITATION_REVEAL_OBSERVER_OPTIONS);
 
 		for (const wrapper of wrappers) {
@@ -102,10 +90,4 @@ export function initInvitationMotion(root: Document = document): void {
 		failOpen(wrappers);
 		return;
 	}
-
-	failOpenTimer = window.setTimeout(() => {
-		failOpen(pending);
-		pending.clear();
-		observer?.disconnect();
-	}, INVITATION_REVEAL_FAIL_OPEN_MS);
 }

@@ -59,7 +59,6 @@ recipe uses one documented observer signature:
 ```text
 threshold: 0.12
 rootMargin: 0px 0px -12% 0px
-fail-open timeout: 8000 ms
 once: true
 ```
 
@@ -68,7 +67,9 @@ The contract is mandatory:
 1. SSR and no-JavaScript content is visible.
 2. The coordinator adds `has-motion` only after `observe()` succeeds.
 3. Intersection adds `is-visible`, reveals marked items, and unobserves the wrapper.
-4. Missing/throwing observation and timeout remove pending motion and reveal everything.
+4. Missing or throwing observation removes pending motion and reveals everything. Once observation
+   registers successfully, an off-screen section remains pending until it intersects; elapsed time
+   alone must never consume its entrance.
 5. Reduced motion reveals immediately without constructing the reveal observer.
 6. Item staggering is CSS-only; items are not independently observed.
 7. Invitation motion does not use scroll listeners or animation-frame scroll loops.
