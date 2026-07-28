@@ -25,20 +25,29 @@ export function createIntersectionObserver(
 	const elements = Array.from(document.querySelectorAll(selector));
 	const revealed = new Set<Element>();
 	let observer: IntersectionObserver | null = null;
+	let failOpenTimer: number | undefined;
+
+	const clearFailOpenTimer = () => {
+		if (failOpenTimer === undefined) return;
+		window.clearTimeout(failOpenTimer);
+		failOpenTimer = undefined;
+	};
 
 	const reveal = (target: Element) => {
 		if (once && revealed.has(target)) return;
 		revealed.add(target);
 		callback(target);
 		if (once) observer?.unobserve(target);
+		if (revealed.size >= elements.length) clearFailOpenTimer();
 	};
 
 	const failOpen = () => {
-			elements.forEach((target) => {
-				if (!revealed.has(target)) onFallback?.(target);
-				reveal(target);
-			});
-		};
+		failOpenTimer = undefined;
+		elements.forEach((target) => {
+			if (!revealed.has(target)) onFallback?.(target);
+			reveal(target);
+		});
+	};
 
 	if (elements.length === 0) return null;
 	if (typeof window.IntersectionObserver !== 'function') {
@@ -66,7 +75,7 @@ export function createIntersectionObserver(
 		return null;
 	}
 
-	window.setTimeout(failOpen, failOpenAfterMs);
+	failOpenTimer = window.setTimeout(failOpen, failOpenAfterMs);
 	return observer;
 }
 
