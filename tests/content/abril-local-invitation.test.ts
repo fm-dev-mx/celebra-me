@@ -46,15 +46,17 @@ describe('Abril Michelle local invitation content', () => {
 		).toEqual({ ok: true });
 	});
 
-	it('side-loads celestial itinerary styles with demo-parity tokens and Bodoni watermark', () => {
+	it('loads the behavior-named paper itinerary with demo-parity tokens and Bodoni watermark', () => {
 		const profile = fs.readFileSync(abrilProfilePath, 'utf8');
 		expect(profile).toContain(
-			"@use '../themes/sections/itinerary/celestial-blue' as itinerary-celestial-blue;",
+			"@use '../themes/sections/itinerary/timeline-paper' as itinerary-timeline-paper;",
 		);
 		expect(profile).toContain(
 			"@use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;",
 		);
-		expect(profile).toContain(".itinerary[data-variant='celestial-blue']");
+		expect(profile).toContain(
+			".itinerary:is([data-variant='timeline-paper'], [data-variant='celestial-blue'])",
+		);
 		expect(profile).toContain('--itinerary-paper-white: rgb(253 251 247);');
 		// Paper and metal stay at demo parity, but the ink is deliberately re-tinted warm so
 		// the reused celestial variant stops clashing with Abril's palette.
@@ -69,7 +71,9 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain('padding-top: 5.25rem;');
 		expect(profile).toContain('--countdown-value-size-desktop: 4.5rem;');
 		expect(profile).toContain('font-size: 5.25rem;');
-		expect(profile).toMatch(/\.itinerary:not\(\[data-variant=['"]celestial-blue['"]\]\)/);
+		expect(profile).toContain(
+			".itinerary:not([data-variant='timeline-paper'], [data-variant='celestial-blue'])",
+		);
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {
@@ -94,7 +98,7 @@ describe('Abril Michelle local invitation content', () => {
 			},
 			thankYou: { closingName: 'Abril Michelle', date: '12 de septiembre de 2026' },
 		});
-		expect(result.data!.sectionStyles?.itinerary?.variant).toBe('celestial-blue');
+		expect(result.data!.sectionStyles?.itinerary?.variant).toBe('timeline-paper');
 		expect(result.data!.itinerary?.items).toEqual([
 			expect.objectContaining({ label: 'Acción de gracias' }),
 			expect.objectContaining({ label: 'Bienvenida' }),

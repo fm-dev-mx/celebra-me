@@ -8,7 +8,12 @@ import {
 	type ImageAsset,
 } from '@/lib/assets/asset-registry';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
-import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
+import {
+	ITINERARY_VARIANTS,
+	THEME_PRESETS,
+	type ItineraryVariant,
+	type ThemePreset,
+} from '@/lib/theme/theme-contract';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
 	InvitationViewModel,
@@ -177,6 +182,15 @@ function sectionVariant(
 	fallback: ThemePreset,
 ): ThemePreset {
 	return pickVariant(`sectionStyles.${section}.variant`, candidate, THEME_PRESETS, fallback);
+}
+
+function itineraryVariant(candidate: string | undefined, fallback: ThemePreset): ItineraryVariant {
+	return pickVariant<ItineraryVariant>(
+		'sectionStyles.itinerary.variant',
+		candidate,
+		ITINERARY_VARIANTS,
+		fallback,
+	);
 }
 
 function buildHero(context: AdaptationContext): HeroViewModel {
@@ -489,11 +503,7 @@ function buildItinerarySectionData(context: AdaptationContext) {
 
 	return {
 		...data.itinerary,
-		variant: sectionVariant(
-			'itinerary',
-			data.sectionStyles?.itinerary?.variant,
-			normalizedPreset,
-		),
+		variant: itineraryVariant(data.sectionStyles?.itinerary?.variant, normalizedPreset),
 	};
 }
 

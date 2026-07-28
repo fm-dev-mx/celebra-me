@@ -1,115 +1,115 @@
-# Motion Tokens
+# Invitation Motion System
 
-**Last Updated:** 2026-07-27
+**Status:** Sole normative authority for invitation motion
+**Last updated:** 2026-07-27
 
-## Overview
+This document owns invitation motion categories, timing limits, reveal recipes, observer behavior,
+ambient decoration, hero sequencing, and reduced motion. Operational skills and other domain docs
+may link here but must not repeat normative values. Archived plans and reports are historical
+evidence only.
 
-Celebra-me motion tokens define the rhythm and feel of digital invitations. Motion is part of the
-semantic token layer, not a separate token layer.
+## Categories and limits
 
-## Core Principles
+| Category             | Purpose                                      | Limit                                                                           |
+| -------------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
+| Initial entrance     | Introduce the first hero composition         | Each role ≤ 900 ms; complete sequence ≤ 1.6 s                                   |
+| In-view reveal       | Introduce a below-fold section once          | 400–700 ms                                                                      |
+| Interaction feedback | Confirm hover, focus, press, or RSVP state   | ≤ 250 ms                                                                        |
+| Ambient decoration   | Give non-semantic media slow visual life     | 14 s default; an established theme token may use an equivalent compatible value |
+| Reduced motion       | Present the complete final state immediately | No geometric motion, loops, or stagger delay                                    |
 
-1. **Subtle & Floating (Jewelry Box)**: Focus on slow fades, gentle scale-ups, and luxury timing.
-2. **Dynamic & Bouncy (Modern)**: Focus on energy, overshoot effects, and elastic transitions.
-3. **Rustic & Grounded (Hacienda)**: Minimal movement, focusing on revealed textures rather than
-   structural shifts.
+The essential hero title and event information must be visible within one second. Ambient motion is
+decorative, conveys no required information, and runs only under
+`prefers-reduced-motion: no-preference`.
 
-## Technical Foundation: Semantic Tokens
+## Semantic implementation
 
-Animations should always consume semantic tokens defined in
-`src/styles/tokens/semantic/_motion.scss`.
+Motion belongs to the semantic token layer in `src/styles/tokens/semantic/_motion.scss`.
 
-### Durations
+- Use `--motion-interaction-duration` for direct feedback.
+- Use `--motion-reveal-duration`, `--motion-reveal-distance`, and `--motion-reveal-ease` for section
+  recipes.
+- Use `--motion-stagger-step` and `--motion-stagger-cap` only for CSS item staggering.
+- Use `--motion-ambient-duration` and `--motion-ambient-scale-to` only for decorative ambient media.
+- Hero role variables own duration and delay for `media`, `eyebrow`, `title`, `details`, and
+  `affordance`.
 
-| Token                 | Value | Usage                                |
-| --------------------- | ----- | ------------------------------------ |
-| `--duration-fast`     | 0.1s  | Instant feedback, micro-interactions |
-| `--duration-snappy`   | 0.2s  | UI feedback, buttons                 |
-| `--duration-standard` | 0.4s  | Standard transitions                 |
-| `--duration-slower`   | 0.6s  | Slower reveals                       |
-| `--duration-premium`  | 1s    | Premium reveals (Jewelry Box, etc.)  |
-| `--duration-reveal`   | 1.6s  | Staggered entrance sequences         |
-| `--duration-long`     | 2s    | Extended animations                  |
+Themes may override semantic values within the limits above. They do not own reveal selector
+structure, observer creation, or reduced-motion mechanics.
 
-### Easing Functions
+## Reveal recipes
 
-| Token              | Bezier                                  | Usage                              |
-| ------------------ | --------------------------------------- | ---------------------------------- |
-| `--ease-out`       | `cubic-bezier(0, 0, 0.2, 1)`            | Exit animations                    |
-| `--ease-standard`  | `cubic-bezier(0.4, 0, 0.2, 1)`          | Standard transitions               |
-| `--ease-snappy`    | `cubic-bezier(0.25, 1, 0.5, 1)`         | Fast entrance, smooth finish       |
-| `--ease-premium`   | `cubic-bezier(0.16, 1, 0.3, 1)`         | Luxury floating effects            |
-| `--ease-overshoot` | `cubic-bezier(0.3, 1.5, 0.7, 1)`        | Overshoot emphasis                 |
-| `--ease-bouncy`    | `cubic-bezier(0.68, -0.55, 0.27, 1.55)` | Youth-oriented elastic transitions |
+The closed recipe set is:
 
-### Shorthand Transition Variables
+- `none`: no entrance motion; content remains in its final state.
+- `fade`: opacity-only section reveal.
+- `fade-up`: opacity plus a small vertical entrance.
+- `media-scale`: one-time media reveal followed by optional ambient decoration.
+- `stagger-group`: one observed section whose marked items use CSS delays.
 
-| Token                   | Applies to                                                     |
-| ----------------------- | -------------------------------------------------------------- |
-| `--transition-snappy`   | opacity, transform, border-color, box-shadow                   |
-| `--transition-standard` | opacity, transform, border-color, box-shadow, background-color |
+`InvitationSections.astro` publishes the selected recipe as `data-reveal`. Shared mechanics live in
+`src/styles/invitation/_motion-system.scss`. Sections may provide tokens and `data-reveal-item`
+markers, but must not create observers.
 
-## Motion Recipe Tokens (Premium Reveals)
+## Document-scoped observation contract
 
-Preset-level recipes tune shared section reveals without changing selector structure. Defaults live
-in `src/styles/tokens/semantic/_motion.scss`; presets override under `.theme-preset--*`.
+`src/lib/invitation/motion-coordinator.ts` is the only invitation reveal coordinator. Every current
+recipe uses one documented observer signature:
 
-| Token                       | Meaning                               | Guardrail                                                          |
-| --------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
-| `--motion-reveal-distance`  | Entrance translate distance           | Small drift (~10–24px), no layout motion                           |
-| `--motion-reveal-duration`  | Entrance duration                     | `animation-motion` bands (≤ ~1.2s)                                 |
-| `--motion-reveal-ease`      | Entrance easing                       | Usually `--ease-premium`                                           |
-| `--motion-reveal-blur`      | Pending-state blur                    | Only under `prefers-reduced-motion: no-preference`; 0 when reduced |
-| `--motion-stagger-step`     | Stagger step between items            | ≤ 0.1s                                                             |
-| `--motion-stagger-cap`      | Maximum stagger delay                 | ≤ ~0.5s                                                            |
-| `--motion-ambient-scale-to` | Ambient scale target (e.g. interlude) | Subtle (≤ ~1.05); reduced-motion disables                          |
-| `--motion-ambient-duration` | Ambient loop duration                 | Slow; no scroll math                                               |
-| `--motion-scene-fade`       | Envelope→hero handoff delay           | 0 under reduced-motion                                             |
-
-Hard contract remains: content is visible in SSR; pending hide only under
-`.has-motion:not(.is-visible)`; IntersectionObserver fail-open reveals all; reduced-motion reveals
-immediately and disables ambient/parallax.
-
-## Implementation Pattern
-
-Sections may define their own keyframes or use global utility classes. Theme-specific motion should
-flow through semantic or component tokens where it is reused. Reveal content is visible in the
-server-rendered baseline. `src/utils/animations.ts` adds `has-motion` only after an
-`IntersectionObserver` is successfully attached; CSS may hide pending reveal items only beneath that
-class.
-
-```scss
-.has-motion .my-section[data-variant='jewelry-box'] {
-  .reveal-item {
-    opacity: 0;
-    transform: translateY(10px);
-    transition:
-      opacity var(--duration-premium) var(--ease-premium),
-      transform var(--duration-premium) var(--ease-premium);
-
-    &.is-visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
+```text
+threshold: 0.12
+rootMargin: 0px 0px -12% 0px
+fail-open timeout: 8000 ms
+once: true
 ```
 
-If observation is unavailable, throws, or exceeds the safety timeout, the runtime removes
-`has-motion` and reveals all items. Reduced-motion users are revealed immediately. New motion must
-preserve this fail-open behavior so content is never dependent on JavaScript to become readable.
+The contract is mandatory:
 
-## Accessibility (Reduced Motion)
+1. SSR and no-JavaScript content is visible.
+2. The coordinator adds `has-motion` only after `observe()` succeeds.
+3. Intersection adds `is-visible`, reveals marked items, and unobserves the wrapper.
+4. Missing/throwing observation and timeout remove pending motion and reveal everything.
+5. Reduced motion reveals immediately without constructing the reveal observer.
+6. Item staggering is CSS-only; items are not independently observed.
+7. Invitation motion does not use scroll listeners or animation-frame scroll loops.
 
-All animations **MUST** respect the `prefers-reduced-motion` media query.
+Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
+invitation section owners and do not change this contract.
 
-```scss
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
+## Hero timing roles
+
+Every standard invitation hero maps its animation to these roles:
+
+| Role         | Content                                   |
+| ------------ | ----------------------------------------- |
+| `media`      | Background image and decorative overlay   |
+| `eyebrow`    | Event label                               |
+| `title`      | Celebrant/event title                     |
+| `details`    | Date, time, venue, and supporting divider |
+| `affordance` | Scroll cue                                |
+
+Theme/profile choreography may change token values but must keep the individual and complete
+sequence limits. The title and details remain the priority; ambient glints or bounce never delay
+them.
+
+## Reduced-motion contract
+
+Under `prefers-reduced-motion: reduce`:
+
+- disable translation, scale, rotation, tilt, bounce, parallax-like effects, stagger delays, and
+  ambient loops;
+- set animation and transition delays to zero;
+- show hero and reveal content in its final readable state;
+- permit only immediate non-geometric feedback such as color, border, outline, or a static shadow;
+- do not depend on `has-motion` or another runtime class for the override;
+- preserve focus visibility, validation, announcements, and interaction semantics.
+
+Computed styles and rendered geometry are browser-tested on both audited invitations. A reduced
+motion hover must not change an audited element's bounding box or transform matrix.
+
+## Intersection relationship
+
+Section intersections are static composition primitives governed by
+[`section-intersections.md`](section-intersections.md). Motion is optional and never required to
+understand an intersection. Ambient image scaling is not parallax; no scroll-position transform is
+part of the invitation system.

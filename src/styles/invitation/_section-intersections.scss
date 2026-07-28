@@ -1,0 +1,54 @@
+.invitation-section-wrapper {
+	--intersection-depth: clamp(3rem, 7vw, 6.75rem);
+	--intersection-arch-height: clamp(2.75rem, 5vw, 5.5rem);
+	--intersection-surface: var(--color-surface-primary);
+	--intersection-blend: radial-gradient(
+		ellipse 130% 100% at 70% 0%,
+		rgb(var(--color-action-accent-rgb) / 16%) 0%,
+		transparent 72%
+	);
+	--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V16.2C12.5 16.2 22.8 9.4 38 8.2C48.5 7.4 57 7.8 66.5 8.8C79 10.2 90.5 12.8 100 15.4V24Z'/%3E%3C/svg%3E");
+}
+
+.invitation-section-wrapper[data-intersection='overlap'] {
+	position: relative;
+	z-index: 2;
+	margin-top: calc(0px - var(--intersection-depth));
+}
+
+.invitation-section-wrapper[data-intersection='arch'] {
+	position: relative;
+	background: var(--intersection-surface);
+	clip-path: inset(calc(0px - var(--intersection-arch-height) - 2px) 0 0 0);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: calc(0px - var(--intersection-arch-height) - 1px);
+		z-index: 1;
+		height: calc(var(--intersection-arch-height) + 3px);
+		background: var(--intersection-surface);
+		mask: var(--intersection-arch-mask) center bottom / 100% 100% no-repeat;
+		pointer-events: none;
+	}
+}
+
+.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+	position: relative;
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		z-index: 0;
+		height: var(--intersection-depth);
+		background: var(--intersection-blend);
+		pointer-events: none;
+	}
+
+	> * {
+		position: relative;
+		z-index: 1;
+	}
+}

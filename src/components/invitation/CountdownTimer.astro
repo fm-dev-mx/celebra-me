@@ -29,7 +29,7 @@ const segments = [
 <div class="countdown__timer" data-countdown data-target-iso={targetIso} data-is-demo={isDemo ? "true" : undefined}>
 	{
 		segments.map((segment, index) => (
-			<div class="countdown__segment" data-index={index} data-unit={segment.key}>
+			<div class="countdown__segment" data-index={index} data-unit={segment.key} data-reveal-item>
 				<div class="countdown__value-wrapper">
 					<span
 						class="countdown__value"

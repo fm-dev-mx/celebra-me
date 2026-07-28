@@ -1,8 +1,8 @@
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
 
-// Abril uses the celestial-blue itinerary variant (Bodoni watermark, paper gradient, demo-parity tokens).
-@use '../themes/sections/itinerary/celestial-blue' as itinerary-celestial-blue;
+// Abril uses the behavior-named timeline-paper itinerary with warm profile tokens.
+@use '../themes/sections/itinerary/timeline-paper' as itinerary-timeline-paper;
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 @use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;
@@ -30,6 +30,8 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--abril-transition-arch-height: clamp(2.75rem, 5vw, 5.5rem);
 	--abril-transition-overlap: clamp(3.5rem, 7vw, 6.75rem);
 	--abril-transition-blend-depth: clamp(4.5rem, 8vw, 7.5rem);
+	--intersection-arch-height: var(--abril-transition-arch-height);
+	--intersection-depth: var(--abril-transition-overlap);
 
 	// Brand & Theme Palette
 	--abril-dusty-rose: rgb(212 165 165);
@@ -177,7 +179,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--theme-image-filter-gallery: saturate(1.02) contrast(1.02) brightness(1.01);
 
 	// Celestial program: demo-xv-celestial-blue parity (style + colors); Bodoni watermark only.
-	.itinerary[data-variant='celestial-blue'] {
+	.itinerary:is([data-variant='timeline-paper'], [data-variant='celestial-blue']) {
 		--itinerary-paper-white: rgb(253 251 247);
 		--itinerary-cream: rgb(245 241 230);
 
@@ -328,7 +330,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	// Subdued top header so navigation recedes gracefully behind the editorial cover title
 	.event-header {
 		opacity: 78%;
-		transition: opacity 0.3s ease;
+		transition: opacity var(--motion-interaction-duration, 0.2s) ease;
 
 		&:hover,
 		&:focus-within {
@@ -626,31 +628,36 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		}
 	}
 
-	// Choreographed non-looping entrance sequence (1.5s-2.0s duration)
+	// Choreographed entrance uses the shared hero roles and completes within 1.6 seconds.
 	@media (prefers-reduced-motion: no-preference) {
 		&[data-reveal-state='revealed'] .invitation-hero {
 			// Step 1: Image reveal (smooth scale-down & fade)
 			.invitation-hero__background img {
 				transform-origin: 50% 38%;
-				animation: abril-hero-photo-reveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+				animation: abril-hero-photo-reveal var(--motion-hero-media-duration)
+					cubic-bezier(0.16, 1, 0.3, 1) var(--motion-hero-media-delay) both;
 			}
 
 			// Step 2: Candle emphasis (subtle warm light bloom accent)
 			.invitation-hero__background::after {
-				animation: abril-hero-candle-bloom 1.6s ease-out 0.2s both;
+				animation: abril-hero-candle-bloom var(--motion-hero-media-duration) ease-out
+					var(--motion-hero-media-delay) both;
 			}
 
 			// Step 3: Masked name & content appearance
 			.invitation-hero__label {
-				animation: motion-fade-in-down 0.8s ease-out 0.3s both;
+				animation: motion-fade-in-down var(--motion-hero-eyebrow-duration) ease-out
+					var(--motion-hero-eyebrow-delay) both;
 			}
 
 			.invitation-hero__title {
-				animation: abril-hero-name-appear 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+				animation: abril-hero-name-appear var(--motion-hero-title-duration)
+					cubic-bezier(0.16, 1, 0.3, 1) var(--motion-hero-title-delay) both;
 			}
 
 			.invitation-hero__details {
-				animation: motion-fade-in-up 0.8s ease-out 0.75s both;
+				animation: motion-fade-in-up var(--motion-hero-details-duration) ease-out
+					var(--motion-hero-details-delay) both;
 			}
 		}
 	}
@@ -886,14 +893,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	// Intersections use one arch, two photographic overlaps, and atmospheric blends.
 	// The overlaps enter reserved lower spacing, never the preceding content.
 	#invitation-sections-container
-		> .invitation-section-wrapper:is(
-			[data-screenshot-section='interlude-1'],
-			[data-screenshot-section='interlude-2']
-		) {
-		position: relative;
-		z-index: 2;
-		margin-top: calc(0px - var(--abril-transition-overlap));
-
+		> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'] {
 		&::before {
 			content: '';
 			position: absolute;
@@ -917,14 +917,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='interlude-2']::before {
+		> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='location']::before {
 		right: clamp(1.5rem, 9vw, 9rem);
 		left: auto;
 	}
 
 	// Hero → quote: a soft graphite and dusty-rose atmosphere settles into ivory.
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='quote']
+		> .invitation-section-wrapper[data-section-kind='quote'][data-intersection='atmospheric-blend']
 		.quote-section {
 		--quote-text-color: var(--abril-wine-dark);
 		--quote-author-color: rgb(var(--abril-dark-neutral-rgb) / 78%);
@@ -946,14 +946,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 	// Family → countdown: reserve blend depth; background is owned by `.countdown-section`.
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='countdown']
+		> .invitation-section-wrapper[data-section-kind='countdown'][data-intersection='atmospheric-blend']
 		.countdown-section {
 		padding-top: max(7rem, calc(var(--abril-transition-blend-depth) + 1.5rem));
 	}
 
 	// Countdown → location: cards begin only after the wine-to-ivory blend.
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='location']
+		> .invitation-section-wrapper[data-section-kind='location'][data-intersection='atmospheric-blend']
 		.event-location {
 		--location-padding-block: max(
 				clamp(4.5rem, 8vw, 6.5rem),
@@ -964,7 +964,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 	// The photo exits are matched to the next light plane.
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='interlude-1']
+		> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='quote']
 		.invitation-interlude::after {
 		background:
 			radial-gradient(
@@ -977,7 +977,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='interlude-2']
+		> .invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='location']
 		.invitation-interlude::after {
 		background:
 			radial-gradient(
@@ -1001,7 +1001,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='family'][data-after-interlude]
+		> .invitation-section-wrapper[data-section-kind='family'][data-intersection-source='interlude-after-quote']
 		> .family {
 		/* stylelint-disable-next-line declaration-no-important */
 		padding-top: max(clamp(5rem, 9vw, 8rem), var(--abril-transition-blend-depth)) !important;
@@ -1009,14 +1009,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 	// Interlude 2 → itinerary stays pale; itinerary → gallery shares one neutral plane.
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='itinerary'][data-after-interlude]
+		> .invitation-section-wrapper[data-section-kind='itinerary'][data-intersection-source='interlude-after-location']
 		> .itinerary {
 		/* stylelint-disable-next-line declaration-no-important */
 		padding-top: max(clamp(5rem, 9vw, 8rem), var(--abril-transition-blend-depth)) !important;
 	}
 
-	// Non-celestial itinerary fallback only — celestial-blue owns its paper gradient above.
-	.itinerary:not([data-variant='celestial-blue']) {
+	// Non-paper fallback only — timeline-paper owns its paper gradient above.
+	.itinerary:not([data-variant='timeline-paper'], [data-variant='celestial-blue']) {
 		--itinerary-bg:
 			radial-gradient(
 				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,
@@ -1040,30 +1040,16 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	// SVG mask (not border-radius) keeps the peak smooth and avoids mauve subpixel seams.
 	--abril-gallery-rsvp-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V16.2C12.5 16.2 22.8 9.4 38 8.2C48.5 7.4 57 7.8 66.5 8.8C79 10.2 90.5 12.8 100 15.4V24Z'/%3E%3C/svg%3E");
 
-	#invitation-sections-container > .invitation-section-wrapper[data-screenshot-section='rsvp'] {
-		position: relative;
-		background: var(--abril-wine-dark);
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='rsvp'][data-intersection='arch'] {
+		--intersection-surface: var(--abril-wine-dark);
+		--intersection-arch-mask: var(--abril-gallery-rsvp-arch-mask);
 
-		&::before {
-			content: '';
-			position: absolute;
-			inset-inline: -1px;
-			top: calc(0px - var(--abril-transition-arch-height) - 1px);
-			z-index: 1;
-			height: calc(var(--abril-transition-arch-height) + 5px);
-			background-color: var(--abril-wine-dark);
-			mask-image: var(--abril-gallery-rsvp-arch-mask);
-			mask-repeat: no-repeat;
-			mask-size: 100% 100%;
-			mask-position: center bottom;
-			transform: translateZ(0);
-			backface-visibility: hidden;
-			pointer-events: none;
-		}
+		background: var(--abril-wine-dark);
 	}
 
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-screenshot-section='rsvp']
+		> .invitation-section-wrapper[data-section-kind='rsvp'][data-intersection='arch']
 		.rsvp-section {
 		position: relative;
 		z-index: 1;
@@ -1077,7 +1063,9 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	// RSVP → thank you: wine diffuses into champagne and ivory without a hard boundary.
-	.thank-you-section {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='thankYou'][data-intersection='atmospheric-blend']
+		.thank-you-section {
 		padding-top: max(8rem, calc(var(--abril-transition-blend-depth) + 2rem));
 		background:
 			radial-gradient(
@@ -1130,8 +1118,8 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		);
 		filter: saturate(1.03) contrast(1.03) brightness(1.01) grayscale(0);
 		transition:
-			transform 0.4s ease,
-			filter 0.4s ease;
+			transform var(--motion-interaction-duration, 0.2s) ease,
+			filter var(--motion-interaction-duration, 0.2s) ease;
 	}
 
 	.gallery-section[data-variant='premiere-floral']

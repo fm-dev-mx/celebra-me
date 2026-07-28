@@ -17,7 +17,6 @@ import {
 } from '@/components/invitation/rsvp-logic';
 import RsvpContext from '@/components/invitation/rsvp-context';
 import {
-	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
 	type RevealedLocation,
@@ -147,7 +146,6 @@ const RSVP: React.FC<RSVPProps> = ({
 		phone,
 		countryCode,
 		showPhoneField,
-		isPersonalized,
 		isPublicRsvp,
 		attendanceStatus,
 		attendeeCount,
@@ -275,11 +273,6 @@ const RSVP: React.FC<RSVPProps> = ({
 		submitted,
 	});
 
-	/* ----- render paths ----- */
-	if (!isPersonalized && !isPublicRsvp) {
-		return <LockedPreview title={title} variant={variant} />;
-	}
-
 	/* ----- track attendance transitions ----- */
 	const handleAttendanceChange = useCallback(
 		(status: 'confirmed' | 'declined') => {
@@ -316,7 +309,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.98 }}
-							transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+							transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
 						>
 							<SubmittedState
 								ref={successRef}
@@ -356,7 +349,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							initial={prefersReducedMotion ? undefined : { opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-							transition={{ duration: 0.5 }}
+							transition={{ duration: 0.2 }}
 						>
 							<RsvpFormView
 								ref={sectionRef}

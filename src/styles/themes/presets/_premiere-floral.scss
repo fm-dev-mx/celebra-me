@@ -8,7 +8,7 @@
 	// composition set in Cormorant Garamond at display size, and a high-contrast serif
 	// degrades faster than celestial's cooler, lower-contrast type under the same blur.
 	--motion-reveal-distance: 16px;
-	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-duration: var(--duration-slower);
 	--motion-reveal-blur: 4px;
 	--motion-ambient-scale-to: 1.028;
 	--motion-ambient-duration: 18s;

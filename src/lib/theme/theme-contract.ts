@@ -98,9 +98,31 @@ export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;
 
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
+export const INVITATION_REVEAL_RECIPES = [
+	'none',
+	'fade',
+	'fade-up',
+	'media-scale',
+	'stagger-group',
+] as const;
+
+export type InvitationRevealRecipe = (typeof INVITATION_REVEAL_RECIPES)[number];
+
+export const SECTION_INTERSECTION_FAMILIES = [
+	'neutral',
+	'arch',
+	'overlap',
+	'atmospheric-blend',
+] as const;
+
+export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
+
+export const ITINERARY_BEHAVIOR_VARIANTS = ['timeline-paper'] as const;
+export const ITINERARY_VARIANTS = [...THEME_PRESETS, ...ITINERARY_BEHAVIOR_VARIANTS] as const;
+
 // Semantic aliases for section-specific variations (all now match the main preset)
 export type QuoteVariant = ThemePreset;
 export type CountdownVariant = ThemePreset;
 export type LocationVariant = ThemePreset;
 export type SharedSectionVariant = ThemePreset;
-export type ItineraryVariant = ThemePreset;
+export type ItineraryVariant = (typeof ITINERARY_VARIANTS)[number];

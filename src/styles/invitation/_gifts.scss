@@ -44,40 +44,6 @@
 
 	&__header {
 		margin-bottom: var(--spacing-xl);
-		opacity: 100%;
-		transform: translateY(0);
-	}
-
-	&.has-motion &__header {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, var(--duration-premium))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium))
-				var(--motion-reveal-ease, var(--ease-premium));
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		&.has-motion:not(.is-visible) &__header {
-			opacity: 0%;
-			transform: translateY(var(--motion-reveal-distance, 18px));
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		&.has-motion:not(.is-visible) &__header {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-		}
-	}
-
-	&.has-motion.is-visible &__header {
-		opacity: 100%;
-		transform: translateY(0);
-		filter: blur(0);
 	}
 
 	&__eyebrow {
@@ -170,51 +136,7 @@
 		border-color var(--duration-snappy) var(--ease-standard),
 		box-shadow var(--duration-snappy) var(--ease-standard);
 
-	// Entrance states on scroll
-	.gifts-section.has-motion & {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium, 0.65s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, var(--duration-premium, 0.65s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium, 0.65s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			border-color var(--duration-snappy) var(--ease-standard),
-			box-shadow var(--duration-snappy) var(--ease-standard);
-
-		@for $i from 1 through 6 {
-			&:nth-child(#{$i}) {
-				transition-delay: calc(
-					min(
-						#{$i - 1} * var(--motion-stagger-step, 0.08s),
-						var(--motion-stagger-cap, 0.48s)
-					)
-				);
-			}
-		}
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.gifts-section.has-motion:not(.is-visible) & {
-			opacity: 0%;
-			transform: translateY(var(--motion-reveal-distance, 18px));
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.gifts-section.has-motion:not(.is-visible) & {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-		}
-	}
-
-	.gifts-section.has-motion.is-visible & {
-		opacity: 100%;
-		transform: translateY(0);
-		filter: blur(0);
-
+	@media (hover: hover) and (pointer: fine) {
 		&:hover {
 			transform: translateY(-10px);
 			box-shadow: var(--shadow-premium);

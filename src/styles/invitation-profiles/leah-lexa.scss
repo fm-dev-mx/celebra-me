@@ -1,6 +1,2 @@
 @use '../themes/sections/leah-lexa-rhythm';
-
-.event--leah-lexa {
-	// Uses shared public envelope tier tokens (--env-seal-size-compact/standard/large)
-}
-
+@use '../themes/sections/location/leah-lexa' as location-leah-lexa;

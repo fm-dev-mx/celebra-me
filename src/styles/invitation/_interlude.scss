@@ -60,32 +60,6 @@
 		width: 100%;
 		height: 100%;
 		background: var(--interlude-bg, var(--color-surface-dark));
-		opacity: 100%;
-		transform: translate3d(0, 0, 0) scale(1);
-		transition:
-			opacity var(--motion-reveal-duration, 800ms)
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, 800ms)
-				var(--motion-reveal-ease, var(--ease-premium));
-	}
-
-	&.is-visible &__media {
-		opacity: 100%;
-		transform: translate3d(0, 0, 0) scale(1);
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		&.has-motion:not(.is-visible) &__media {
-			opacity: 0%;
-			transform: translate3d(0, var(--motion-reveal-distance, 24px), 0) scale(1);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		&.has-motion:not(.is-visible) &__media {
-			opacity: 100%;
-			transform: none;
-		}
 	}
 
 	&__image {

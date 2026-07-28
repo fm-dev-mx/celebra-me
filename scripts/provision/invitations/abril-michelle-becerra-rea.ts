@@ -178,7 +178,7 @@ export function buildAbrilPublishedContent(
 			'thankYou',
 		],
 		sectionStyles: {
-			itinerary: { variant: 'celestial-blue' },
+			itinerary: { variant: 'timeline-paper' },
 		},
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {

@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 const ERRORS = [];
 const WARNINGS = [];
 
-// Allow specific sections to have additional valid variants beyond THEME_PRESETS
+// Allow legacy section-specific variants beyond THEME_PRESETS. Behavior variants declared by the
+// theme contract are loaded separately below.
 const SECTION_SPECIFIC_VARIANTS = {
 	gallery: ['single'],
 };
@@ -40,6 +41,7 @@ function extractContractVariants() {
 	}
 
 	const themeVariants = parseArrayConst('THEME_PRESETS');
+	const itineraryBehaviorVariants = parseArrayConst('ITINERARY_BEHAVIOR_VARIANTS');
 	const variants = {};
 	for (const key of Object.keys(SECTION_DIRECTORIES)) {
 		variants[key] = new Set(themeVariants);
@@ -47,6 +49,9 @@ function extractContractVariants() {
 			for (const v of SECTION_SPECIFIC_VARIANTS[key]) {
 				variants[key].add(v);
 			}
+		}
+		if (key === 'itinerary') {
+			for (const variant of itineraryBehaviorVariants) variants[key].add(variant);
 		}
 	}
 	return variants;

@@ -187,9 +187,23 @@ function safeJson(value: unknown): string {
 	}
 }
 
-jest.mock('@/lib/assets/discovery', () => ({
-	discoverEventModules: jest.fn(() => ({})),
-}));
+jest.mock('@/lib/assets/discovery', () => {
+	const { readdirSync } = jest.requireActual('node:fs') as typeof import('node:fs');
+	const { join } = jest.requireActual('node:path') as typeof import('node:path');
+	const { EVENT_KEYS } = jest.requireActual(
+		'@/lib/assets/asset-keys',
+	) as typeof import('@/lib/assets/asset-keys');
+	const asset = '/test-asset.webp';
+	const assets = Object.fromEntries(EVENT_KEYS.map((key) => [key, asset]));
+	const eventRoot = join(process.cwd(), 'src', 'assets', 'images', 'events');
+	const modules = Object.fromEntries(
+		readdirSync(eventRoot, { withFileTypes: true })
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => [`../../assets/images/events/${entry.name}/index.ts`, assets]),
+	);
+
+	return { discoverEventModules: jest.fn(() => modules) };
+});
 
 // Mock framer-motion to avoid issues in JSDOM and suppress motion prop leakage warnings
 jest.mock('framer-motion', () => {

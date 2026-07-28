@@ -43,6 +43,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 			<div
 				class:list={['gallery-grid__item', layoutClass]}
 				data-gallery-item
+				data-reveal-item
 				data-gallery-index={index}
 				data-layout-role={layoutRole}
 				data-image-key={item.key}
@@ -80,18 +81,10 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 </div>
 
 <script>
-	import { initSectionReveal } from '@/utils/animations';
-
 	const initGallery = () => {
 		const gallery = document.querySelector('[data-gallery]');
 		if (!gallery) return;
 		const galleryItems = Array.from(gallery.querySelectorAll('[data-gallery-item]'));
-
-		initSectionReveal(
-			'[data-gallery-item]',
-			{ onReveal: (item) => ((item as HTMLElement).dataset.inView = 'true') },
-			{ threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
-		);
 
 		const invitationRoot = gallery.closest('[data-event-slug]');
 

@@ -1,0 +1,26 @@
+---
+interface Props {
+	title: string;
+	variant?: string;
+}
+
+const { title, variant } = Astro.props;
+---
+
+<section id="rsvp" data-screenshot-section="rsvp" class="rsvp-section">
+	<div class="rsvp" data-variant={variant} data-state="locked">
+		<header class="rsvp__header">
+			<p class="rsvp__eyebrow">RSVP</p>
+			<span class="rsvp__separator" aria-hidden="true">◆</span>
+			<h2 class="rsvp__title">{title}</h2>
+		</header>
+		<div class="rsvp__locked-card" role="status" aria-live="polite" aria-atomic="true">
+			<p class="rsvp__locked-message">
+				Las reservas para este evento se gestionan de forma personalizada.
+			</p>
+			<p class="rsvp__locked-detail">
+				Si recibiste tu invitación directa, utiliza el enlace exclusivo que te fue compartido.
+			</p>
+		</div>
+	</div>
+</section>

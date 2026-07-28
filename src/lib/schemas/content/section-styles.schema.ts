@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { ITINERARY_VARIANTS, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { rsvpSectionStyleSchema } from '@/lib/schemas/content/rsvp.schema';
 
 const variantOnlySectionStyleSchema = z
@@ -27,7 +27,12 @@ export const sectionStylesSchema = z
 		family: variantOnlySectionStyleSchema.optional(),
 		gifts: variantOnlySectionStyleSchema.optional(),
 		gallery: variantOnlySectionStyleSchema.optional(),
-		itinerary: variantOnlySectionStyleSchema.optional(),
+		itinerary: z
+			.object({
+				variant: z.enum(ITINERARY_VARIANTS).optional(),
+			})
+			.strict()
+			.optional(),
 		thankYou: variantOnlySectionStyleSchema.optional(),
 		footer: variantOnlySectionStyleSchema.optional(),
 		rsvp: rsvpSectionStyleSchema,

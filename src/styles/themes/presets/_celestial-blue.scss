@@ -1,10 +1,19 @@
 .theme-preset--celestial-blue {
 	// Motion recipe
 	--motion-reveal-distance: 20px;
-	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-duration: var(--duration-slower);
 	--motion-reveal-blur: 6px;
 	--motion-ambient-scale-to: 1.035;
 	--motion-ambient-duration: 16s;
+	--intersection-depth: clamp(3rem, 7vw, 6rem);
+	--intersection-arch-height: clamp(2.5rem, 4.5vw, 5rem);
+	--intersection-surface: rgb(var(--color-deep-blue-graphite-rgb));
+	--intersection-blend: radial-gradient(
+		ellipse 150% 100% at 36% 0%,
+		rgb(var(--color-liquid-silver-rgb) / 26%) 0%,
+		rgb(var(--color-satin-blue-rgb) / 12%) 34%,
+		transparent 74%
+	);
 
 	// ---------------------------------------------------------------------
 	// Base palette

@@ -1,9 +1,18 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { InvitationViewModel } from '@/lib/adapters/types';
+import {
+	resolveRenderPlanIntersection,
+	type RenderPlanIntersection,
+} from '@/lib/invitation/intersection-profiles';
 import { CONTENT_SECTION_KEYS, type ThemePreset } from '@/lib/theme/theme-contract';
 
-export type InterludeRenderItem = {
+type RenderPlanMetadata = {
+	intersection: RenderPlanIntersection;
+};
+
+export type InterludeRenderItem = RenderPlanMetadata & {
 	type: 'interlude';
+	afterSection: keyof InvitationViewModel['sections'];
 	image: ImageAsset;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
@@ -15,13 +24,13 @@ export type InterludeRenderItem = {
 };
 
 export type InvitationRenderPlanItem =
-	| {
+	| (RenderPlanMetadata & {
 			type: 'section';
 			section: keyof InvitationViewModel['sections'];
-	  }
-	| {
+	  })
+	| (RenderPlanMetadata & {
 			type: 'personalized-access';
-	  }
+	  })
 	| InterludeRenderItem;
 
 const DEFAULT_THEME_PRESET: ThemePreset = 'jewelry-box';
@@ -38,13 +47,21 @@ function appendSectionWithInterludes(
 	viewModel: InvitationViewModel,
 	section: keyof InvitationViewModel['sections'],
 ): void {
-	items.push({ type: 'section', section });
+	items.push({
+		type: 'section',
+		section,
+		intersection: resolveRenderPlanIntersection(viewModel.visualProfileId, section),
+	});
 
 	for (const interlude of (viewModel.interludes ?? []).filter(
 		(i) => i.afterSection === section,
 	)) {
 		items.push(
-			interludeToRenderItem(interlude, viewModel.theme.preset ?? DEFAULT_THEME_PRESET),
+			interludeToRenderItem(
+				interlude,
+				viewModel.theme.preset ?? DEFAULT_THEME_PRESET,
+				viewModel.visualProfileId,
+			),
 		);
 	}
 }
@@ -52,9 +69,15 @@ function appendSectionWithInterludes(
 function interludeToRenderItem(
 	interlude: NonNullable<InvitationViewModel['interludes']>[number],
 	themePreset: ThemePreset,
+	visualProfileId?: string,
 ): InterludeRenderItem {
 	return {
 		type: 'interlude',
+		afterSection: interlude.afterSection,
+		intersection: resolveRenderPlanIntersection(
+			visualProfileId,
+			`interlude-after-${interlude.afterSection}`,
+		),
 		image: interlude.image,
 		alt: interlude.alt,
 		height: interlude.height,
@@ -82,7 +105,13 @@ export function buildInvitationRenderPlan(
 	if (sectionOrder) {
 		for (const section of sectionOrder) {
 			if (section === 'personalizedAccess') {
-				items.push({ type: 'personalized-access' });
+				items.push({
+					type: 'personalized-access',
+					intersection: resolveRenderPlanIntersection(
+						viewModel.visualProfileId,
+						'personalized-access',
+					),
+				});
 				continue;
 			}
 
@@ -94,7 +123,13 @@ export function buildInvitationRenderPlan(
 			if (!hasRenderableSection(viewModel, section)) continue;
 
 			if (section === 'rsvp' && showPersonalizedAccess) {
-				items.push({ type: 'personalized-access' });
+				items.push({
+					type: 'personalized-access',
+					intersection: resolveRenderPlanIntersection(
+						viewModel.visualProfileId,
+						'personalized-access',
+					),
+				});
 			}
 
 			appendSectionWithInterludes(items, viewModel, section);

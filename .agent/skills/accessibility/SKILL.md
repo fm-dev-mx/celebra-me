@@ -154,21 +154,10 @@ $accent: #8b5a2b; // Verify contrast before use
 
 ## Motion and Animation
 
-### Reduced Motion
-
-Always respect user preference:
-
-```scss
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
+Invitation motion and reduced-motion behavior are governed exclusively by
+[`docs/domains/theme/motion.md`](../../../docs/domains/theme/motion.md). Do not duplicate its values
+or selectors here. Accessibility review must verify the final state, computed styles, rendered
+geometry, focus behavior, and announcements rather than treating a media query's presence as proof.
 
 ### Auto-Playing Content
 

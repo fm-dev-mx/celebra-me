@@ -13,13 +13,13 @@ Section intersections can make an invitation read as one continuous editorial co
 preserving clear section boundaries. They are hierarchy tools, not a requirement to decorate every
 transition.
 
-This system distills the approved Abril direction into reusable guidance. Abril's client-specific
-selectors and values remain evidence, not canonical implementation. The reusable vocabulary is
-limited to three primary patterns:
+This system distills the approved Abril direction into reusable guidance. The reusable closed set
+contains a neutral default and three primary patterns:
 
-1. Editorial arch
-2. Layered overlap
-3. Atmospheric blend
+1. Neutral
+2. Editorial arch
+3. Layered overlap
+4. Atmospheric blend
 
 A discontinuous champagne or golden thread may appear as a secondary detail. It must never become a
 continuous divider running through the full invitation.
@@ -146,16 +146,36 @@ Shared capabilities must remain generic and configurable:
 - Promote profile behavior into shared theme architecture only after it proves reusable across
   invitations and can be expressed without client identity.
 
+## Render-plan metadata contract
+
+Reusable mechanics are selected before rendering and copied onto stable wrapper attributes:
+
+- `data-intersection`: `neutral`, `arch`, `overlap`, or `atmospheric-blend`;
+- `data-intersection-source`: explicit source identity from the selected composition profile;
+- `data-section-kind`: stable incoming section kind.
+
+Selection is owned by `src/lib/invitation/intersection-profiles.ts` and copied through the render
+plan. CSS must not infer a family from route slug, JSON order, screenshot order, `nth-*`, incidental
+adjacency, or a theme name. Profiles may set visual tokens against these stable attributes; shared
+mechanics live in `src/styles/invitation/_section-intersections.scss`.
+
+Current explicit mappings:
+
+- Abril retains its two interlude overlaps, gallery → RSVP arch, and atmospheric blends through the
+  `abril-michelle-becerra-rea` visual composition profile.
+- Celestial uses exactly two treatments: location → following interlude is `arch`; RSVP → following
+  interlude is `atmospheric-blend`.
+
 ## Required Proof
 
 Review every implemented intersection at all five repository viewports:
 
 | Viewport   | Required evidence                                                            |
 | ---------- | ---------------------------------------------------------------------------- |
+| `320×800`  | Narrow-mobile crop, content clearance, and no horizontal overflow            |
 | `360×800`  | Mobile crop, content clearance, focus visibility, and no horizontal overflow |
 | `390×844`  | Primary mobile composition and complete transition depth                     |
-| `768×1024` | Tablet spacing, media focal safety, and stacking behavior                    |
-| `1024×768` | Landscape content clearance and section-surface continuity                   |
+| `430×932`  | Wide-mobile spacing, media focal safety, and stacking behavior               |
 | `1440×900` | Desktop scale, restraint, and bounded transition depth                       |
 
 Capture full-page screenshots at `390×844` and `1440×900`. Use the remaining three viewports for

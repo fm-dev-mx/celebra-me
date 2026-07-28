@@ -23,9 +23,11 @@ digital invitations.
 
 - **Purpose**: Interactive wax-sealed envelope opening experience for guests.
 - **Required Inputs**: `enabled` (boolean), `sealStyle`, `documentLabel`, `stampText`, `stampYear`.
-- **Optional Inputs**: `sealIcon`, `sealInitials`, `sealVariant`, `sealColor`, `sealImage`, `closedPalette`, `coverEdition`, `revealVariant`.
+- **Optional Inputs**: `sealIcon`, `sealInitials`, `sealVariant`, `sealColor`, `sealImage`,
+  `closedPalette`, `coverEdition`, `revealVariant`.
 - **Seal Renderer Model**:
-  - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming die relief.
+  - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming
+    die relief.
   - `wax-medallion`: Precision circular concentric medallion seal (baseline `main` seal structure).
   - `monogram`: Flat parametric stationery initials ring.
   - `vector-icon`: Flat vector icon badge (`boot`, `heart`, `flower`, `special-edition`).
@@ -42,9 +44,12 @@ digital invitations.
     - `--env-seal-size-large: 68px;` (`@container (min-width: 480px)`)
   - Seal size is constant within each tier. Fluid `clamp()`, `cqw`, or `vw` scaling is forbidden.
 - **Closure Anchor Positioning Contract**:
-  - Position `.envelope-zone--seal` absolutely at `top: 50%; left: 50%; transform: translate(-50%, -50%);` relative to `.envelope-container`.
-  - Seal center aligns directly with the 50% flap/pocket fold seam within `max(2px, 1% of seal width)` tolerance.
-- **Rendering & Omission**: If `disabled: true` or envelope omitted, invitation opens directly on Hero fold without envelope animation.
+  - Position `.envelope-zone--seal` absolutely at
+    `top: 50%; left: 50%; transform: translate(-50%, -50%);` relative to `.envelope-container`.
+  - Seal center aligns directly with the 50% flap/pocket fold seam within
+    `max(2px, 1% of seal width)` tolerance.
+- **Rendering & Omission**: If `disabled: true` or envelope omitted, invitation opens directly on
+  Hero fold without envelope animation.
 
 ---
 
@@ -104,6 +109,8 @@ digital invitations.
 - **Purpose**: Timeline of event activities (ceremony, reception, dinner, party, toast).
 - **Required Inputs**: `items` array with `time`, `title`.
 - **Optional Inputs**: `subtitle`, `description`, `icon`, `variant`.
+- **Variant Contract**: Use the behavior name `timeline-paper` for the reusable paper program.
+  `celestial-blue` is accepted only as a stored-content compatibility alias.
 - **Rendering & Omission**: Optional section.
 
 ---
@@ -114,7 +121,9 @@ digital invitations.
   WhatsApp/API submission.
 - **Required Inputs**: `confirmationMode` (`api` | `whatsapp`), `deadlineIso`, `guestCap`.
 - **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`, `personalizedAccess`.
-- **Rendering & Omission**: Mandatory for invitations requiring RSVP confirmation.
+- **Rendering & Omission**: Mandatory for invitations requiring RSVP confirmation. A public
+  `personalized-only` RSVP without guest context renders a static locked Astro state; demo and
+  guest-backed states render the interactive React island.
 
 ---
 

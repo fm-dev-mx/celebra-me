@@ -69,12 +69,12 @@
 		border: 1px solid transparent;
 		border-radius: 999px;
 		transition:
-			color 260ms var(--ease-premium),
-			opacity 260ms ease,
-			background-color 260ms ease,
-			border-color 260ms ease,
-			box-shadow 260ms ease,
-			transform 260ms var(--ease-premium);
+			color var(--motion-interaction-duration, 200ms) var(--ease-premium),
+			opacity var(--motion-interaction-duration, 200ms) ease,
+			background-color var(--motion-interaction-duration, 200ms) ease,
+			border-color var(--motion-interaction-duration, 200ms) ease,
+			box-shadow var(--motion-interaction-duration, 200ms) ease,
+			transform var(--motion-interaction-duration, 200ms) var(--ease-premium);
 		color: var(--header-nav-color);
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -92,8 +92,8 @@
 			transform: scaleX(0.36);
 			transform-origin: center;
 			transition:
-				opacity 260ms ease,
-				transform 320ms var(--ease-premium);
+				opacity var(--motion-interaction-duration, 200ms) ease,
+				transform var(--motion-interaction-duration, 200ms) var(--ease-premium);
 		}
 
 		&:hover {

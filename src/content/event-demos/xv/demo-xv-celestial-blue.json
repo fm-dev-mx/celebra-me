@@ -3,6 +3,7 @@
     "isDemo": true,
     "templateId": "xv-celestial-blue",
     "_assetSlug": "demo-xv-celestial-blue",
+    "visualProfileId": "demo-xv-celestial-blue",
     "title": "XV Años — Camila Fernanda",
     "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
     "theme": {
@@ -10,10 +11,9 @@
         "preset": "celestial-blue"
     },
     "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
+        "itinerary": {
+            "variant": "timeline-paper"
+        }
     },
     "hero": {
         "name": "Camila Torres Rivas",
@@ -220,7 +220,6 @@
         }
     ],
     "envelope": {
-        "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "wax-monogram",
         "sealInitials": "C·F",

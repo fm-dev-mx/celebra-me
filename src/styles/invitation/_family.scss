@@ -445,41 +445,7 @@
 		);
 	}
 
-	&__reveal {
-		opacity: 100%;
-		transform: none;
-	}
-
-	&.has-motion &__reveal {
-		transition:
-			opacity var(--family-reveal-duration, 0.65s)
-				var(--family-reveal-ease, var(--ease-premium)),
-			filter var(--family-reveal-duration, 0.65s)
-				var(--family-reveal-ease, var(--ease-premium)),
-			transform var(--family-reveal-duration, 0.65s)
-				var(--family-reveal-ease, var(--ease-premium));
-		transition-delay: var(--family-reveal-delay, 0s);
-	}
-
-	&.has-motion:not(.is-visible) &__reveal {
-		opacity: var(--family-reveal-initial-opacity, 0%);
-		filter: var(--family-reveal-initial-filter, none);
-		transform: translateY(var(--family-reveal-initial-translate-y, 16px));
-	}
-
-	&.is-visible &__reveal {
-		opacity: 100%;
-		filter: blur(0);
-		transform: translateY(0);
-	}
-
-	&__group--children {
-		--family-reveal-delay: 0.24s;
-	}
-
 	&__group--parents {
-		--family-reveal-delay: 0.32s;
-
 		max-width: var(--family-parents-max-width, none);
 		margin-inline: var(--family-parents-margin-inline, auto);
 		padding: var(--family-parents-padding, clamp(0.9rem, 2vw, 1.35rem) 0);
@@ -494,10 +460,6 @@
 		}
 	}
 
-	&__group--godparents {
-		--family-reveal-delay: 0.4s;
-	}
-
 	// When a section follows an interlude, collapse the top padding so content
 	// begins immediately below the full-bleed image, avoiding a visible light band.
 	[data-after-interlude] > & {
@@ -508,16 +470,6 @@
 		&__panel:not(&__panel--no-media) {
 			grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
 			align-items: center;
-		}
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.family {
-		&__reveal {
-			opacity: 100%;
-			transform: none;
-			transition: none;
 		}
 	}
 }

@@ -42,7 +42,7 @@
 	--gallery-item-hover-border-color: var(--gallery-item-emphasis-border-color);
 	--gallery-item-emphasis-shadow: 0 10px 26px rgb(0 0 0 / 11%);
 	--gallery-item-hover-shadow: 0 14px 30px rgb(0 0 0 / 15%);
-	--gallery-item-transition-duration: 420ms;
+	--gallery-item-transition-duration: var(--motion-interaction-duration, 200ms);
 	--gallery-item-transition-ease: var(--ease-premium);
 	--gallery-item-focus-outline: 2px solid rgb(var(--color-action-accent-rgb) / 65%);
 	--gallery-item-focus-outline-offset: 3px;
@@ -194,30 +194,12 @@
 		box-shadow: var(--gallery-item-shadow);
 		backdrop-filter: var(--gallery-item-backdrop-filter);
 
-		// Entrance reveal setup
+		// The document coordinator owns entry; these transitions are interaction feedback only.
 		opacity: 100%;
 		transform: translateY(0) var(--gallery-item-emphasis-transform, none);
 		transition:
-			opacity var(--motion-reveal-duration, var(--gallery-item-transition-duration))
-				var(--motion-reveal-ease, var(--gallery-item-transition-ease)),
-			transform var(--motion-reveal-duration, var(--gallery-item-transition-duration))
-				var(--motion-reveal-ease, var(--gallery-item-transition-ease)),
-			filter var(--motion-reveal-duration, var(--gallery-item-transition-duration))
-				var(--motion-reveal-ease, var(--gallery-item-transition-ease)),
 			border-color var(--gallery-item-transition-duration) ease,
 			box-shadow var(--gallery-item-transition-duration) ease;
-
-		// Staggered delay for scroll entry
-		@for $i from 1 through 12 {
-			&:nth-child(#{$i}) {
-				transition-delay: calc(
-					min(
-						#{$i - 1} * var(--motion-stagger-step, 0.08s),
-						var(--motion-stagger-cap, 0.48s)
-					)
-				);
-			}
-		}
 
 		img {
 			width: 100%;
@@ -248,23 +230,6 @@
 				filter: var(--gallery-item-image-filter-in-view);
 				transform: scale(var(--gallery-item-image-scale-in-view));
 				mix-blend-mode: var(--gallery-item-image-emphasis-blend);
-			}
-		}
-
-		@media (prefers-reduced-motion: no-preference) {
-			&.has-motion:not(.is-visible) {
-				opacity: 0%;
-				transform: translateY(var(--motion-reveal-distance, 18px))
-					var(--gallery-item-transform, none);
-				filter: blur(var(--motion-reveal-blur, 0));
-			}
-		}
-
-		@media (prefers-reduced-motion: reduce) {
-			&.has-motion:not(.is-visible) {
-				opacity: 100%;
-				transform: none;
-				filter: none;
 			}
 		}
 
@@ -336,7 +301,7 @@
 		color: var(--gallery-lightbox-close-color);
 		cursor: pointer;
 		padding: 0.5rem;
-		transition: transform 0.3s ease;
+		transition: transform var(--motion-interaction-duration, 0.2s) ease;
 
 		&:hover {
 			transform: rotate(90deg);

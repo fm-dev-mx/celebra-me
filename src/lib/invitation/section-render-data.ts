@@ -1,7 +1,13 @@
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
-import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
+import {
+	THEME_PRESETS,
+	type ItineraryVariant,
+	type InvitationRevealRecipe,
+	type SectionIntersectionFamily,
+	type ThemePreset,
+} from '@/lib/theme/theme-contract';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
@@ -72,7 +78,7 @@ type DescriptorData =
 	| {
 			component: 'itinerary';
 			props: SectionData<'itinerary'> & {
-				variant: ThemePreset;
+				variant: ItineraryVariant;
 				monogram: string;
 				subtitle?: string;
 			};
@@ -103,7 +109,27 @@ type DescriptorData =
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
-export type InvitationSectionRenderDescriptor = { afterInterlude: boolean } & DescriptorData;
+export type InvitationSectionRenderDescriptor = {
+	afterInterlude: boolean;
+	intersection: SectionIntersectionFamily;
+	intersectionSource: string;
+	reveal: InvitationRevealRecipe;
+	renderMode?: 'interactive' | 'locked';
+} & DescriptorData;
+
+const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe> = {
+	interlude: 'media-scale',
+	quote: 'fade-up',
+	family: 'stagger-group',
+	gallery: 'stagger-group',
+	countdown: 'stagger-group',
+	location: 'stagger-group',
+	itinerary: 'stagger-group',
+	rsvp: 'fade',
+	gifts: 'stagger-group',
+	thankYou: 'fade-up',
+	'personalized-access': 'fade-up',
+};
 
 function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlock) {
 	return {
@@ -231,10 +257,10 @@ function getMonogram(name: string): string {
  * Unlike adapters/event.ts sectionVariant(), this does NOT validate against
  * THEME_PRESETS — it is a simple null-coalescing for the render descriptor.
  */
-function resolveSectionVariant<T extends { variant?: ThemePreset }>(
+function resolveSectionVariant<TVariant extends string, T extends { variant?: TVariant }>(
 	sectionData: T,
-	fallback: ThemePreset,
-): ThemePreset {
+	fallback: TVariant,
+): TVariant {
 	return sectionData.variant ?? fallback;
 }
 
@@ -308,7 +334,7 @@ function renderSection(
 						component: 'itinerary' as const,
 						props: {
 							...sections.itinerary,
-							variant: resolveSectionVariant(sections.itinerary, variant),
+							variant: sections.itinerary.variant ?? variant,
 							monogram: getMonogram(hero.name),
 							subtitle: sections.itinerary.subtitle,
 						},
@@ -346,31 +372,58 @@ function renderBlock(
 	renderPlan: InvitationRenderPlanItem[],
 ): InvitationSectionRenderDescriptor | null {
 	const afterInterlude = index > 0 && renderPlan[index - 1].type === 'interlude';
+	const metadata = {
+		afterInterlude,
+		intersection: block.intersection.family,
+		intersectionSource: block.intersection.source,
+	};
 
 	switch (block.type) {
 		case 'interlude':
-			return { ...renderInterlude(pageContext, block), afterInterlude };
+			return {
+				...renderInterlude(pageContext, block),
+				...metadata,
+				reveal: REVEAL_RECIPES.interlude,
+			};
 
 		case 'personalized-access':
-			return withAfterInterlude(renderPersonalizedAccess(pageContext), afterInterlude);
+			return withRenderMetadata(renderPersonalizedAccess(pageContext), metadata);
 
 		case 'section': {
 			const nextSectionLink =
 				block.section === 'location' ? findNextSectionLink(renderPlan, index) : undefined;
 
-			return withAfterInterlude(
+			return withRenderMetadata(
 				renderSection(pageContext, block.section, nextSectionLink),
-				afterInterlude,
+				metadata,
 			);
 		}
 	}
 }
 
-function withAfterInterlude<T extends DescriptorData>(
+function withRenderMetadata<T extends DescriptorData>(
 	descriptor: T | null,
-	afterInterlude: boolean,
+	metadata: Pick<
+		InvitationSectionRenderDescriptor,
+		'afterInterlude' | 'intersection' | 'intersectionSource'
+	>,
 ): InvitationSectionRenderDescriptor | null {
-	return descriptor ? { ...descriptor, afterInterlude } : null;
+	if (!descriptor) return null;
+
+	const isLockedRsvp =
+		descriptor.component === 'rsvp' &&
+		descriptor.props.accessMode === 'personalized-only' &&
+		!descriptor.props.initialGuestData?.inviteId &&
+		!descriptor.props.isDemoPreview;
+
+	return {
+		...descriptor,
+		...metadata,
+		reveal: isLockedRsvp ? 'none' : REVEAL_RECIPES[descriptor.component],
+		...(descriptor.component === 'rsvp'
+			? { renderMode: isLockedRsvp ? ('locked' as const) : ('interactive' as const) }
+			: {}),
+	};
 }
 
 function prioritizePersonalizedAccess(

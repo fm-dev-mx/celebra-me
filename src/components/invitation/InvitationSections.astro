@@ -6,6 +6,7 @@ import Gallery from '@/components/invitation/Gallery.astro';
 import Gifts from '@/components/invitation/Gifts.astro';
 import Interlude from '@/components/invitation/Interlude.astro';
 import Itinerary from '@/components/invitation/Itinerary.astro';
+import LockedRsvpPreview from '@/components/invitation/LockedRsvpPreview.astro';
 import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
 import Quote from '@/components/invitation/Quote.astro';
 import RSVP from '@/components/invitation/RSVP';
@@ -54,7 +55,7 @@ const expectedSectionIds = [
 	data-expected-sections={JSON.stringify(expectedSectionIds)}
 >
 	{
-		sections.map(({component, props, afterInterlude}, index) => {
+		sections.map(({component, props, afterInterlude, intersection, intersectionSource, reveal, renderMode}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
 
 			return (
@@ -64,6 +65,10 @@ const expectedSectionIds = [
 						? interludeId(index)
 						: component}
 					class="invitation-section-wrapper"
+					data-section-kind={component}
+					data-intersection={intersection}
+					data-intersection-source={intersectionSource}
+					data-reveal={reveal}
 					{...(afterInterlude && { 'data-after-interlude': '' })}
 				>
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
@@ -73,7 +78,8 @@ const expectedSectionIds = [
 					{component === 'countdown' && <Countdown {...props} />}
 					{component === 'location' && <EventLocation {...props} />}
 					{component === 'itinerary' && <Itinerary {...props} />}
-					{component === 'rsvp' && <RSVP client:visible {...props} />}
+					{component === 'rsvp' && renderMode === 'locked' && <LockedRsvpPreview title={props.title} variant={props.variant} />}
+					{component === 'rsvp' && renderMode !== 'locked' && <RSVP client:visible {...props} />}
 					{component === 'gifts' && <Gifts {...props} />}
 					{component === 'thankYou' && <ThankYou {...props} />}
 					{component === 'personalized-access' && <PersonalizedAccess {...props} />}
@@ -82,3 +88,9 @@ const expectedSectionIds = [
 		})
 	}
 </div>
+
+<script>
+	import { initInvitationMotion } from '@/lib/invitation/motion-coordinator';
+
+	initInvitationMotion();
+</script>

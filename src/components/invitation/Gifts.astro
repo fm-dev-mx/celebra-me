@@ -112,7 +112,7 @@ const ICON_MAP = {
 					const Icon = ICON_MAP[gift.type];
 					const giftNumber = String(index + 1).padStart(2, '0');
 					return (
-						<div class={`gift-card gift-card--${gift.type}`}>
+						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
 								{isEditorialMagazine && (
 									<div class="gift-card__folio" aria-hidden="true">
@@ -206,9 +206,6 @@ const ICON_MAP = {
 	</div>
 </section>
 <script>
-	import { initSectionReveal } from '@/utils/animations';
-
-	initSectionReveal('.gifts-section');
 
 	document.querySelectorAll('.copy-button').forEach((button) => {
 		const labelCopy = button.getAttribute('data-label-copy') || 'Copiar';

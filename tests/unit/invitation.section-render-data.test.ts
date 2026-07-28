@@ -11,6 +11,19 @@ import {
 } from '@/lib/invitation/page-data';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
+jest.mock('@/lib/assets/asset-registry', () => {
+	const actual = jest.requireActual('@/lib/assets/asset-registry');
+	return {
+		...actual,
+		getEventAsset: jest.fn(() => ({
+			src: '/test-asset.webp',
+			width: 1,
+			height: 1,
+			format: 'webp',
+		})),
+	};
+});
+
 type RsvpDescriptor = Extract<InvitationSectionRenderDescriptor, { component: 'rsvp' }>;
 type PersonalizedAccessDescriptor = Extract<
 	InvitationSectionRenderDescriptor,
@@ -48,6 +61,19 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 }
 
 describe('buildInvitationSectionRenderDescriptors', () => {
+	it('marks a public personalized-only RSVP for server-only rendering', () => {
+		const pageContext = { ...setupDemoPageContext(), isDemoPreview: false };
+		const rsvp = pageContext.viewModel.sections.rsvp;
+		expect(rsvp).toBeDefined();
+		if (!rsvp) return;
+		rsvp.accessMode = 'personalized-only';
+
+		const descriptor =
+			buildInvitationSectionRenderDescriptors(pageContext).find(isRsvpDescriptor);
+
+		expect(descriptor).toMatchObject({ renderMode: 'locked', reveal: 'none' });
+	});
+
 	it('derives the next anchorable section for location navigation from the render plan', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',

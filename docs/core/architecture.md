@@ -70,6 +70,12 @@ the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
   layer.
 - The active invitation route uses `src/lib/invitation/page-data.ts` to normalize page-ready data
   from adapters, theme contracts, and guest context before `.astro` rendering.
+- Invitation section order, interlude placement, and section-intersection metadata are resolved in
+  the invitation render plan. `InvitationSections.astro` renders those explicit descriptors and
+  starts one document-level reveal coordinator; individual sections do not own viewport observers.
+- A public personalized-only RSVP without guest context is rendered as static Astro markup. The
+  React RSVP island is reserved for demo or guest-backed interactive states, so the locked state
+  cannot request the RSVP or Framer Motion client graph.
 - When route logic becomes non-trivial, prefer a feature-owned `page-data.ts` or equivalent module
   over reintroducing a global route-assembly layer.
 - Retire compatibility helpers once their runtime consumers are gone; a helper kept alive only by an

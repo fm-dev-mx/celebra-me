@@ -80,9 +80,9 @@
 		gap: 0.35rem;
 		position: relative;
 		transition:
-			border-color 0.4s ease,
-			box-shadow 0.4s ease,
-			transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+			border-color var(--motion-interaction-duration, 0.2s) ease,
+			box-shadow var(--motion-interaction-duration, 0.2s) ease,
+			transform var(--motion-interaction-duration, 0.2s) cubic-bezier(0.16, 1, 0.3, 1);
 
 		&::before {
 			content: '';

@@ -31,7 +31,7 @@ export type RevealedLocation = LocationSection;
 
 // --- Sub-components ---
 
-type RsvpShellState = 'form' | 'locked' | 'confirmed' | 'declined';
+type RsvpShellState = 'form' | 'confirmed' | 'declined';
 
 const RsvpShell = forwardRef<
 	HTMLElement,
@@ -108,28 +108,6 @@ function SubmitButtonText({
 	return buttonLabel;
 }
 SubmitButtonText.displayName = 'SubmitButtonText';
-
-export function LockedPreview({ title, variant }: { title: string; variant?: string }) {
-	return (
-		<RsvpShell
-			state="locked"
-			variant={variant}
-			header={<RsvpVisibleHeader title={title} eyebrow="RSVP" variant={variant} />}
-		>
-			<div className="rsvp__locked-card" role="status" aria-live="polite">
-				<p className="rsvp__locked-eyebrow">RSVP</p>
-				<p className="rsvp__locked-message">
-					Las reservas para este evento se gestionan de forma personalizada.
-				</p>
-				<p className="rsvp__locked-detail">
-					Si recibiste tu invitación directa, utiliza el enlace exclusivo que te fue
-					compartido.
-				</p>
-			</div>
-		</RsvpShell>
-	);
-}
-LockedPreview.displayName = 'LockedPreview';
 
 function resolveGreetingMessages(
 	attendanceStatus: AttendanceStatus,
@@ -578,7 +556,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						className="rsvp__actions"
 						initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
 					>
 						<motion.button
 							type="submit"

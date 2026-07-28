@@ -56,10 +56,10 @@
 		padding: clamp(2rem, 4vw, 3.5rem) 1.5rem;
 		border-radius: 4px;
 		transition:
-			transform var(--duration-slower) var(--ease-premium),
-			border-color var(--duration-slower) var(--ease-premium),
-			background-color var(--duration-slower) var(--ease-premium),
-			box-shadow var(--duration-slower) var(--ease-premium);
+			transform var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+			border-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+			background-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+			box-shadow var(--motion-interaction-duration, 0.2s) var(--ease-premium);
 
 		&:hover {
 			transform: translateY(-8px);

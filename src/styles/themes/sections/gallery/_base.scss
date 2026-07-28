@@ -44,7 +44,7 @@
 	--gallery-item-hover-border-color: transparent;
 	--gallery-item-emphasis-shadow: none;
 	--gallery-item-hover-shadow: none;
-	--gallery-item-transition-duration: 500ms;
+	--gallery-item-transition-duration: var(--motion-interaction-duration, 200ms);
 	--gallery-item-transition-ease: var(--ease-premium);
 	--gallery-item-image-radius: 0;
 	--gallery-item-image-fit: cover;
@@ -86,13 +86,22 @@
 /* Base focal point resolution — ensures admin-set focal points work for all themes.
    Overridden by theme-specific rules where needed. */
 .gallery-section .gallery-grid__item img {
-	object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+	object-position: var(
+		--gallery-item-focal-point-mobile,
+		var(--gallery-item-focal-point, var(--gallery-item-image-position, center))
+	);
 
 	@include mixins.respond-to(md) {
-		object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+		object-position: var(
+			--gallery-item-focal-point-tablet,
+			var(--gallery-item-focal-point, var(--gallery-item-image-position, center))
+		);
 	}
 
 	@include mixins.respond-to(lg) {
-		object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, var(--gallery-item-image-position, center)));
+		object-position: var(
+			--gallery-item-focal-point-desktop,
+			var(--gallery-item-focal-point, var(--gallery-item-image-position, center))
+		);
 	}
 }

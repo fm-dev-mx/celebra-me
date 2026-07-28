@@ -135,39 +135,6 @@
 	box-shadow: var(--shadow-subtle);
 	overflow: hidden;
 
-	// Scroll reveal setup
-	.thank-you-section.has-motion & {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium));
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 0%;
-			transform: scale(0.95) translateY(var(--motion-reveal-distance, 18px));
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-		}
-	}
-
-	.thank-you-section.has-motion.is-visible & {
-		opacity: 100%;
-		transform: scale(1);
-		filter: blur(0);
-	}
-
 	@include mixins.respond-to(sm) {
 		width: 280px;
 		height: 280px;
@@ -191,40 +158,6 @@
 .message-container {
 	max-width: 550px;
 	perspective: 1000px;
-
-	// Scroll reveal setup
-	.thank-you-section.has-motion & {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium));
-		transition-delay: 0.15s;
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 0%;
-			transform: translateY(var(--motion-reveal-distance, 18px));
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-		}
-	}
-
-	.thank-you-section.has-motion.is-visible & {
-		opacity: 100%;
-		transform: translateY(0);
-		filter: blur(0);
-	}
 }
 
 .thank-you-message {
@@ -243,42 +176,6 @@
 		padding-right: 0.1em;
 		color: var(--color-text-emphasis);
 		text-shadow: 1px 1px 2px rgb(0 0 0 / 10%);
-	}
-}
-
-.signature-block {
-	// Scroll reveal setup
-	.thank-you-section.has-motion & {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			transform var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium));
-		transition-delay: 0.3s;
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 0%;
-			transform: translateY(calc(var(--motion-reveal-distance, 18px) * 0.6)) scale(0.98);
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 100%;
-			transform: none;
-			filter: none;
-		}
-	}
-
-	.thank-you-section.has-motion.is-visible & {
-		opacity: 100%;
-		transform: translateY(0) scale(1);
-		filter: blur(0);
 	}
 }
 
@@ -309,55 +206,4 @@
 	letter-spacing: 0.15em;
 	text-transform: uppercase;
 
-	// Scroll reveal setup
-	.thank-you-section.has-motion & {
-		transition:
-			opacity var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium)),
-			filter var(--motion-reveal-duration, var(--duration-premium, 1s))
-				var(--motion-reveal-ease, var(--ease-premium));
-		transition-delay: 0.5s;
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 0%;
-			filter: blur(var(--motion-reveal-blur, 0));
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.thank-you-section.has-motion:not(.is-visible) & {
-			opacity: 40%;
-			filter: none;
-		}
-	}
-
-	.thank-you-section.has-motion.is-visible & {
-		opacity: 40%;
-		filter: blur(0);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.thank-you-section {
-		.photo-frame,
-		.message-container,
-		.signature-block,
-		.thank-you-footer {
-			/* stylelint-disable-next-line declaration-no-important */
-			opacity: 100% !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			transform: none !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			transition: none !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			animation: none !important;
-		}
-
-		.thank-you-footer {
-			/* stylelint-disable-next-line declaration-no-important */
-			opacity: 40% !important;
-		}
-	}
 }

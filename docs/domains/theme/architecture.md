@@ -188,6 +188,14 @@ tokens. They should consume semantic tokens and component tokens by default.
 Theme identity belongs in the preset. If a section requires theme-specific behavior, expose that
 behavior through a public component token and let the preset provide the value.
 
+## Behavior-Named Section Variants
+
+Reusable section mechanics use behavior names instead of borrowing another theme's identity. The
+paper itinerary behavior is `timeline-paper`; `celestial-blue` remains an accepted compatibility
+alias while stored invitation data migrates. New content and profiles must request `timeline-paper`.
+Compatibility aliases may forward to the behavior implementation, but they must not become a second
+source of structure or tokens.
+
 ## Runtime CSS Delivery
 
 - `src/styles/invitation.scss` keeps shared invitation structure and imports the existing

@@ -24,7 +24,7 @@ const { items, variant, monogram } = Astro.props;
 			{items.map((item, index) => {
 				const num = String(index + 1).padStart(2, '0');
 				return (
-					<li class="itinerary__program-row" data-itinerary-item>
+					<li class="itinerary__program-row" data-itinerary-item data-reveal-item>
 						<span class="itinerary__program-row-num" aria-hidden="true">{num}</span>
 						<time class="itinerary__program-row-time">{formatTime12h(item.time)}</time>
 						<div class="itinerary__program-row-content">
@@ -39,12 +39,3 @@ const { items, variant, monogram } = Astro.props;
 		</ol>
 	</div>
 </div>
-
-<script>
-	import { initSectionReveal } from '@/utils/animations';
-
-	initSectionReveal('[data-itinerary-item]', undefined, {
-		threshold: 0.15,
-		rootMargin: '0px 0px -100px 0px',
-	});
-</script>

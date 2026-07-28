@@ -22,16 +22,6 @@
 	max-width: 860px;
 	width: 100%;
 	text-align: center;
-	opacity: 100%;
-	transform: translateY(0);
-	transition:
-		opacity var(--duration-premium, 0.5s) var(--ease-premium, cubic-bezier(0.16, 1, 0.3, 1)),
-		transform var(--duration-premium, 0.5s) var(--ease-premium, cubic-bezier(0.16, 1, 0.3, 1));
-
-	.countdown-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
-		transform: translateY(20px);
-	}
 }
 
 .countdown-title {
@@ -101,40 +91,9 @@
 	align-items: center;
 	gap: 0.4rem;
 	position: relative;
-	opacity: 100%;
-	transform: translateY(0);
 	transition:
-		opacity var(--duration-slower, 0.5s) var(--ease-out, ease-out),
-		transform var(--duration-slower, 0.5s) var(--ease-out, ease-out),
-		border-color 0.3s ease,
-		box-shadow 0.3s ease;
-
-	@for $i from 0 through 3 {
-		&[data-index='#{$i}'] {
-			transition-delay: calc(0.15s + (#{$i} * 0.08s));
-		}
-	}
-
-	&[data-unit='days'] {
-		transition-delay: calc(0.15s + (0 * 0.08s));
-	}
-
-	&[data-unit='hours'] {
-		transition-delay: calc(0.15s + (1 * 0.08s));
-	}
-
-	&[data-unit='minutes'] {
-		transition-delay: calc(0.15s + (2 * 0.08s));
-	}
-
-	&[data-unit='seconds'] {
-		transition-delay: calc(0.15s + (3 * 0.08s));
-	}
-
-	.countdown-section.has-motion:not(.is-visible) & {
-		opacity: 0%;
-		transform: translateY(12px);
-	}
+		border-color var(--motion-interaction-duration, 0.2s) ease,
+		box-shadow var(--motion-interaction-duration, 0.2s) ease;
 
 	@include mixins.respond-to(sm) {
 		padding: var(--countdown-segment-padding-desktop, 2rem 1.25rem);

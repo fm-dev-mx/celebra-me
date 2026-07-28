@@ -121,25 +121,6 @@ describe('RSVP Component', () => {
 			expect(screen.queryByLabelText(/Número de asistentes/i)).not.toBeInTheDocument();
 		});
 
-		it('shows a locked preview when no personalized inviteId is provided', async () => {
-			render(
-				<RSVP
-					eventType="xv"
-					eventSlug="demo-xv-jewelry-box"
-					title="¿Vienes a celebrar conmigo?"
-					guestCap={2}
-					accessMode="personalized-only"
-					confirmationMessage="Gracias"
-				/>,
-			);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Si recibiste tu invitación directa/i)).toBeInTheDocument();
-			});
-
-			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
-		});
-
 		it('unlocks the form for hybrid public RSVP', async () => {
 			const user = userEvent.setup();
 			render(
@@ -717,24 +698,8 @@ describe('RSVP Component', () => {
 			expect(card.querySelector(':scope > form.rsvp__form')).toBeInTheDocument();
 		});
 
-		it('renders the canonical RSVP shell for locked and submitted states', async () => {
+		it('renders the canonical RSVP shell for submitted states', async () => {
 			const user = userEvent.setup();
-			const locked = render(
-				<RSVP
-					eventType="xv"
-					eventSlug="demo-xv-jewelry-box"
-					title="¿Vienes a celebrar conmigo?"
-					guestCap={2}
-					accessMode="personalized-only"
-					confirmationMessage="Gracias"
-				/>,
-			);
-
-			const lockedCard = locked.container.querySelector('#rsvp.rsvp-section > .rsvp');
-			expect(lockedCard).toHaveAttribute('data-state', 'locked');
-			expect(lockedCard?.querySelector(':scope > .rsvp__header')).toBeInTheDocument();
-			locked.unmount();
-
 			const submitted = render(<RSVP {...defaultProps} />);
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'Test User');
 			await user.click(screen.getByLabelText(/No podré/i));

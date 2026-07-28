@@ -49,7 +49,7 @@ $semantic-motion: (
 
 	// Motion recipe defaults (presets may override)
 	--motion-reveal-distance: 18px;
-	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-duration: var(--duration-slower);
 	--motion-reveal-ease: var(--ease-premium);
 	--motion-reveal-blur: 0;
 	--motion-stagger-step: 0.08s;
@@ -57,6 +57,17 @@ $semantic-motion: (
 	--motion-ambient-scale-to: 1.03;
 	--motion-ambient-duration: 14s;
 	--motion-scene-fade: 0.3s;
+	--motion-interaction-duration: var(--duration-snappy);
+	--motion-hero-media-duration: 0.9s;
+	--motion-hero-media-delay: 0s;
+	--motion-hero-eyebrow-duration: 0.6s;
+	--motion-hero-eyebrow-delay: 0.08s;
+	--motion-hero-title-duration: 0.8s;
+	--motion-hero-title-delay: 0.12s;
+	--motion-hero-details-duration: 0.65s;
+	--motion-hero-details-delay: 0.3s;
+	--motion-hero-affordance-duration: 0.6s;
+	--motion-hero-affordance-delay: 0.7s;
 }
 
 @function ease($token) {

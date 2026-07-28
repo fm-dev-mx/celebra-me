@@ -4,13 +4,13 @@ import '@/styles/invitation/_itinerary.scss';
 import TimelineList from './TimelineList.astro';
 import ItineraryProgram from './ItineraryProgram.astro';
 import type { ItineraryItem } from '@/lib/adapters/types';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
+import type { ItineraryVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	title?: string;
 	subtitle?: string;
 	items: ItineraryItem[];
-	variant?: ThemePreset;
+	variant?: ItineraryVariant;
 	monogram?: string;
 }
 
@@ -36,7 +36,7 @@ const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props
 		<div class="itinerary__timeline">
 			<div class="itinerary__line-start" aria-hidden="true"></div>
 
-			{variant === 'celestial-blue' ? (
+			{variant === 'timeline-paper' || variant === 'celestial-blue' ? (
 				<ItineraryProgram items={items} variant={variant} monogram={monogram} />
 			) : (
 				<TimelineList items={items} variant={variant} />

@@ -207,7 +207,6 @@ const isSingleVenue = displayVenues.length === 1;
 </section>
 <script>
 	import { initCopyButtons, revealIOSOnly } from '@/utils/ui';
-	import { initSectionReveal } from '@/utils/animations';
 
 	const sections = document.querySelectorAll('.event-location');
 
@@ -215,7 +214,6 @@ const isSingleVenue = displayVenues.length === 1;
 		initCopyButtons('.copy-button', 'data-address');
 		revealIOSOnly('[data-apple-link]');
 
-		initSectionReveal('.event-location');
 	}
 
 	if (document.querySelector('[data-gated-location]')) {

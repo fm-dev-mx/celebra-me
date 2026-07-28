@@ -8,6 +8,11 @@ This document describes how invitation gallery variants work **today**, what bre
 them as theme-independent, and the **deferred** product target (fixed layout roles). It does not
 authorize implementing that target in an invitation polish pass.
 
+Gallery entrance behavior is independent of gallery layout naming. The render plan selects the
+behavior-named `stagger-group` recipe, items expose `data-reveal-item`, and the document coordinator
+observes the gallery section once. [`motion.md`](motion.md) is the sole authority for timing and
+reduced motion.
+
 ---
 
 ## 1. Current contract (as-is)
@@ -124,6 +129,11 @@ Required follow-through (platform work):
 5. Migrate demos and managed invites to explicit layout roles.
 
 Until that ships, treat §1–§3 as authoritative.
+
+The itinerary compatibility alias `celestial-blue` → `timeline-paper` is an example of the bounded
+migration strategy gallery layouts should eventually follow: introduce a behavior name, preserve the
+required legacy value, and keep palette ownership in theme tokens. It does not change the deferred
+gallery scope above.
 
 ---
 

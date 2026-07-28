@@ -234,7 +234,7 @@ if (!hasContent) return;
 	<div class="family__bg-texture" aria-hidden="true"></div>
 
 	<Container class="family__container">
-		<header class="family__header family__reveal">
+		<header class="family__header family__reveal" data-reveal-item>
 			<div class="family__header-inner">
 				<span class="family__eyebrow">{resolvedLabels.sectionSubtitle}</span>
 				<h2 class="family__title">{resolvedLabels.sectionTitle}</h2>
@@ -250,7 +250,7 @@ if (!hasContent) return;
 			<div class="family__content-overlay" aria-hidden="true"></div>
 
 			{shouldRenderMedia && (
-				<figure class="family__media family__reveal">
+				<figure class="family__media family__reveal" data-reveal-item>
 					<div class="family__media-frame">
 						<OptimizedImage
 							imagePath={imagePath}
@@ -270,6 +270,7 @@ if (!hasContent) return;
 							`family__group--${block.id}`,
 							'family__reveal',
 						]}
+						data-reveal-item
 					>
 						<h3 class="family__group-title">{block.title}</h3>
 						{block.godparentGroups ? (
@@ -334,8 +335,3 @@ if (!hasContent) return;
 		--family-focal-point: var(--familyFocalPoint);
 	}
 </style>
-<script>
-	import { initSectionReveal } from '@/utils/animations';
-
-	initSectionReveal('.family');
-</script>

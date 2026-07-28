@@ -38,6 +38,24 @@ jest.mock('@/lib/intake/repositories/publication.repository', () => ({
 	replayAtomicPublication: jest.fn(),
 }));
 
+jest.mock('@/lib/assets/asset-registry', () => {
+	const actual = jest.requireActual('@/lib/assets/asset-registry');
+	const eventSlugs = new Set([
+		'ana-sofia-cota-guillen',
+		'demo-xv-editorial',
+		'demo-xv-jewelry-box',
+	]);
+	return {
+		...actual,
+		isValidEvent: jest.fn((event: string) => eventSlugs.has(event)),
+		getEventAsset: jest.fn((event: string) =>
+			eventSlugs.has(event)
+				? { src: '/test-asset.webp', width: 1, height: 1, format: 'webp' }
+				: undefined,
+		),
+	};
+});
+
 import {
 	findDraftByInvitationId,
 	updateDraftStatus,
@@ -83,6 +101,11 @@ const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollect
 const VALID_UUID_1 = '550e8400-e29b-41d4-a716-446655440001';
 const VALID_UUID_2 = '550e8400-e29b-41d4-a716-446655440002';
 const MISSING_UUID = '550e8400-e29b-41d4-a716-446655449999';
+const KNOWN_EVENT_SLUGS = new Set([
+	'ana-sofia-cota-guillen',
+	'demo-xv-editorial',
+	'demo-xv-jewelry-box',
+]);
 
 const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
 	{
@@ -242,6 +265,14 @@ const approvedDraft = { ...validDraft, status: 'approved' as const };
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	jest.mocked(assetRegistry.isValidEvent).mockImplementation((event) =>
+		KNOWN_EVENT_SLUGS.has(event),
+	);
+	jest.mocked(assetRegistry.getEventAsset).mockImplementation((event) =>
+		KNOWN_EVENT_SLUGS.has(event)
+			? ({ src: '/test-asset.webp', width: 1, height: 1, format: 'webp' } as never)
+			: undefined,
+	);
 	mockFindAssets.mockResolvedValue([]);
 	mockGetCollection.mockResolvedValue([MINIMAL_DEMO_ENTRY]);
 	mockFindEventByProjectId.mockResolvedValue(undefined as any);

@@ -67,8 +67,8 @@
 	}
 
 	&__content {
-		animation: invitation-hero-content-reveal var(--duration-reveal) var(--ease-premium) 0.5s
-			forwards;
+		animation: invitation-hero-content-reveal var(--motion-hero-title-duration)
+			var(--ease-premium) 0s forwards;
 	}
 
 	&__label {
@@ -79,7 +79,8 @@
 		letter-spacing: 0.3em;
 		margin-bottom: 0.5rem;
 		opacity: 0%;
-		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.8s forwards;
+		animation: motion-fade-in-up var(--motion-hero-eyebrow-duration) var(--ease-out)
+			var(--motion-hero-eyebrow-delay) forwards;
 		color: var(--hero-label-color, var(--color-text-emphasis));
 	}
 
@@ -100,13 +101,15 @@
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
-			motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards,
+			motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+				var(--motion-hero-title-delay) forwards,
 			invitation-specular-glint 8s var(--ease-standard, ease-in-out) infinite;
 	}
 
 	&__nickname-badge {
 		opacity: 0%;
-		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1.2s forwards;
+		animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+			var(--motion-hero-title-delay) forwards;
 
 		span {
 			background: linear-gradient(
@@ -129,7 +132,8 @@
 		margin: 1.5rem auto;
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: invitation-grow-line var(--duration-premium) var(--ease-premium) 1.2s forwards;
+		animation: invitation-grow-line var(--motion-hero-details-duration) var(--ease-premium)
+			var(--motion-hero-details-delay) forwards;
 	}
 
 	&__details {
@@ -137,7 +141,8 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1.4s forwards;
+		animation: motion-fade-in-up var(--motion-hero-details-duration) var(--ease-out)
+			var(--motion-hero-details-delay) forwards;
 	}
 
 	&__date {
@@ -170,7 +175,8 @@
 		align-items: center;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: motion-fade-in 1.5s var(--ease-out) 2.5s forwards;
+		animation: motion-fade-in var(--motion-hero-affordance-duration) var(--ease-out)
+			var(--motion-hero-affordance-delay) forwards;
 		color: var(--hero-scroll-indicator-color, rgb(255 255 255 / 70%));
 		pointer-events: none;
 	}
@@ -280,33 +286,40 @@
 
 .event-theme-wrapper[data-reveal-state='revealed'] {
 	.invitation-hero__content {
-		animation: invitation-hero-content-reveal 1.2s var(--ease-premium) 0s forwards;
+		animation: invitation-hero-content-reveal var(--motion-hero-title-duration)
+			var(--ease-premium) 0s forwards;
 	}
 
 	.invitation-hero__label {
-		animation: motion-fade-in-up 0.6s var(--ease-out) 0.12s forwards;
+		animation: motion-fade-in-up var(--motion-hero-eyebrow-duration) var(--ease-out)
+			var(--motion-hero-eyebrow-delay) forwards;
 	}
 
 	.invitation-hero__title {
 		animation:
-			motion-fade-in-up 0.75s var(--ease-out) 0.22s forwards,
+			motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+				var(--motion-hero-title-delay) forwards,
 			invitation-specular-glint 8s var(--ease-standard, ease-in-out) 1.25s infinite;
 	}
 
 	.invitation-hero__nickname-badge {
-		animation: motion-fade-in-up 0.6s var(--ease-out) 0.32s forwards;
+		animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+			var(--motion-hero-title-delay) forwards;
 	}
 
 	.invitation-hero__divider {
-		animation: invitation-grow-line 0.8s var(--ease-premium) 0.4s forwards;
+		animation: invitation-grow-line var(--motion-hero-details-duration) var(--ease-premium)
+			var(--motion-hero-details-delay) forwards;
 	}
 
 	.invitation-hero__details {
-		animation: motion-fade-in-up 0.7s var(--ease-out) 0.5s forwards;
+		animation: motion-fade-in-up var(--motion-hero-details-duration) var(--ease-out)
+			var(--motion-hero-details-delay) forwards;
 	}
 
 	.invitation-hero__scroll-indicator {
-		animation: motion-fade-in 1.2s var(--ease-out) 0.85s forwards;
+		animation: motion-fade-in var(--motion-hero-affordance-duration) var(--ease-out)
+			var(--motion-hero-affordance-delay) forwards;
 	}
 
 	.invitation-hero__scroll-chevron {
@@ -319,11 +332,12 @@
 			// Mobile: strip gradient text to avoid shimmer/performance artifacts on low-end GPUs
 			background: none;
 			-webkit-text-fill-color: initial;
-			animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.25s forwards;
+			animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+				var(--motion-hero-title-delay) forwards;
 		}
 
 		.invitation-hero__nickname-badge span {
-			animation-delay: 0.35s;
+			animation-delay: var(--motion-hero-title-delay);
 		}
 	}
 }

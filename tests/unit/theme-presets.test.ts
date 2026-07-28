@@ -300,7 +300,6 @@ describe('Celestial blue section coverage', () => {
 		'src/styles/themes/sections/hero/_celestial-blue.scss',
 		'src/styles/themes/sections/gallery/_celestial-blue.scss',
 		'src/styles/themes/sections/countdown/_celestial-blue.scss',
-		'src/styles/themes/sections/itinerary/_celestial-blue.scss',
 		'src/styles/themes/sections/rsvp/_celestial-blue.scss',
 		'src/styles/themes/sections/thank-you/_celestial-blue.scss',
 	];
@@ -310,6 +309,21 @@ describe('Celestial blue section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='celestial-blue'");
 		}
+	});
+
+	it('keeps the celestial itinerary name as a thin alias to the behavior module', () => {
+		const alias = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/sections/itinerary/_celestial-blue.scss'),
+			'utf8',
+		);
+		const behavior = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/sections/itinerary/_timeline-paper.scss'),
+			'utf8',
+		);
+
+		expect(alias).toContain("@forward 'timeline-paper'");
+		expect(behavior).toContain("[data-variant='celestial-blue']");
+		expect(behavior).toContain("[data-variant='timeline-paper']");
 	});
 
 	it('styles location through the base location contract', () => {
