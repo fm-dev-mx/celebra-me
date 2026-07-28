@@ -119,7 +119,9 @@ async function verifyDbAssets(
 		}
 		const storagePath = match.storage_path as string;
 		if (!storagePath || storagePath.includes('C:\\') || storagePath.includes('/Users/')) {
-			reasons.push(`Local filesystem path leaked in storage_path for asset "${spec.displayName}".`);
+			reasons.push(
+				`Local filesystem path leaked in storage_path for asset "${spec.displayName}".`,
+			);
 		}
 		const mime = match.mime_type as string;
 		if (!ALLOWED_MIME_TYPES.includes(mime)) {
@@ -133,7 +135,8 @@ async function verifyDbAssets(
 	}
 
 	if (missingAssetCount === 0) details.assetComplete = true;
-	if (corruptedStorageCount === 0 && missingAssetCount === 0) details.storageBinaryVerified = true;
+	if (corruptedStorageCount === 0 && missingAssetCount === 0)
+		details.storageBinaryVerified = true;
 }
 
 async function verifyStorageBinary(
@@ -146,12 +149,16 @@ async function verifyStorageBinary(
 			.from('invitation-assets')
 			.download(storagePath);
 		if (downloadErr || !binaryData || binaryData.size === 0) {
-			reasons.push(`Storage binary missing or unreadable for "${storagePath}": ${downloadErr?.message}`);
+			reasons.push(
+				`Storage binary missing or unreadable for "${storagePath}": ${downloadErr?.message}`,
+			);
 			return 1;
 		}
 		return 0;
 	} catch (err) {
-		reasons.push(`Storage download error for "${storagePath}": ${err instanceof Error ? err.message : String(err)}`);
+		reasons.push(
+			`Storage download error for "${storagePath}": ${err instanceof Error ? err.message : String(err)}`,
+		);
 		return 1;
 	}
 }
@@ -180,10 +187,13 @@ function verifyPublishedContent(
 	}
 
 	const location = pubContent.location as Record<string, unknown> | undefined;
-	if (location?.ceremony && location?.reception) {
-		const cer = location.ceremony as Record<string, unknown>;
-		const rec = location.reception as Record<string, unknown>;
-		if (cer.mapUrl && rec.mapUrl) {
+	const ceremony = location?.ceremony as Record<string, unknown> | undefined;
+	const reception = location?.reception as Record<string, unknown> | undefined;
+	const venues = [ceremony, reception].filter((venue): venue is Record<string, unknown> =>
+		Boolean(venue && typeof venue === 'object'),
+	);
+	if (venues.length > 0) {
+		if (venues.every((venue) => typeof venue.mapUrl === 'string' && venue.mapUrl.length > 0)) {
 			details.mapsValid = true;
 		} else {
 			reasons.push('Location maps URLs missing for ceremony or reception.');
@@ -223,7 +233,9 @@ export async function evaluateInvitationReadiness(options?: {
 	try {
 		env = resolveLocalEnv(options?.projectRoot);
 	} catch (err) {
-		reasons.push(`Persistent-local environment unavailable: ${err instanceof Error ? err.message : String(err)}`);
+		reasons.push(
+			`Persistent-local environment unavailable: ${err instanceof Error ? err.message : String(err)}`,
+		);
 		return { slug, verdict: 'BLOCKED', exitCode: 2, reasons, details };
 	}
 
@@ -263,7 +275,11 @@ export async function evaluateInvitationReadiness(options?: {
 		.limit(1)
 		.maybeSingle();
 
-	verifyPublishedContent(pubData?.content as Record<string, unknown> | undefined, reasons, details);
+	verifyPublishedContent(
+		pubData?.content as Record<string, unknown> | undefined,
+		reasons,
+		details,
+	);
 
 	// Final Verdict Determination
 	if (reasons.length === 0) {
