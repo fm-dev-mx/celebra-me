@@ -5,8 +5,6 @@ const REVEAL_OBSERVER_OPTIONS = {
 	rootMargin: '0px 0px -12% 0px',
 } as const;
 
-const REVEAL_FAIL_OPEN_MS = 8000;
-
 function renderWrappers(): HTMLElement[] {
 	document.body.innerHTML = `
 		<div id="invitation-sections-container">
@@ -26,12 +24,10 @@ function setReducedMotion(matches: boolean): void {
 
 describe('invitation motion coordinator', () => {
 	beforeEach(() => {
-		jest.useFakeTimers();
 		setReducedMotion(false);
 	});
 
 	afterEach(() => {
-		jest.useRealTimers();
 		delete (window as Window & { IntersectionObserver?: typeof IntersectionObserver })
 			.IntersectionObserver;
 	});
@@ -95,7 +91,7 @@ describe('invitation motion coordinator', () => {
 		expect(wrappers.some((wrapper) => wrapper.classList.contains('has-motion'))).toBe(false);
 	});
 
-	it('uses the timeout as a final fail-open path', () => {
+	it('keeps wrappers pending until intersection when observer registration succeeds', () => {
 		const wrappers = renderWrappers();
 		window.IntersectionObserver = jest.fn(() => ({
 			observe: jest.fn(),
@@ -104,11 +100,12 @@ describe('invitation motion coordinator', () => {
 		})) as never;
 
 		initInvitationMotion();
-		jest.advanceTimersByTime(REVEAL_FAIL_OPEN_MS);
 
 		expect(
 			wrappers.slice(0, 2).every((wrapper) => wrapper.classList.contains('is-visible')),
-		).toBe(true);
+		).toBe(false);
+		expect(wrappers[0]).toHaveClass('has-motion');
+		expect(wrappers[1]).toHaveClass('has-motion');
 	});
 
 	it('reveals immediately without an observer under reduced motion', () => {
