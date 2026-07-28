@@ -126,7 +126,12 @@
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": {
+            "title": "Tu lugar en la celebración",
+            "subtitle": "Reservado especialmente para ti",
+            "footerText": "Confirma abajo para asegurar tus lugares"
+        }
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",

@@ -1,0 +1,236 @@
+.personalized-access[data-variant='celestial-blue'] {
+	--pa-paper-tilt: -0.55deg;
+
+	position: relative;
+	background:
+		radial-gradient(
+			ellipse 70% 45% at 50% 0%,
+			rgb(var(--color-ice-blue-rgb) / 38%) 0%,
+			transparent 68%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-cool-ivory) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 42%) 100%
+		);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 1px;
+		width: min(14rem, 52%);
+		margin-inline: auto;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgb(var(--color-liquid-silver-rgb) / 62%) 50%,
+			transparent 100%
+		);
+		pointer-events: none;
+	}
+
+	.personalized-access__container {
+		width: min(100%, 28.5rem);
+	}
+
+	.access-card {
+		transform: rotate(var(--pa-paper-tilt));
+		isolation: isolate;
+		border-radius: var(--pa-card-border-radius, clamp(1.35rem, 3.5vw, 1.85rem));
+
+		// Soft paper lift — avoids a hard rectangular drop shadow
+		box-shadow:
+			0 1px 0 rgb(var(--color-diamond-white-rgb) / 82%),
+			0 14px 28px -22px rgb(var(--color-deep-blue-graphite-rgb) / 26%),
+			0 36px 64px -36px rgb(var(--color-deep-blue-graphite-rgb) / 16%),
+			8px 28px 40px -30px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
+
+		// Inner frame follows the soft outer radius
+		&::before {
+			inset: 0.85rem;
+			border-radius: calc(var(--pa-card-border-radius, 1.75rem) - 0.55rem);
+			border-color: rgb(var(--color-satin-blue-rgb) / 10%);
+			opacity: 72%;
+		}
+
+		// Paper fiber grain + soft sheen (keeps text sharp; texture stays on the surface layer)
+		&::after {
+			inset: 0;
+			border-radius: inherit;
+			background:
+				radial-gradient(
+					ellipse 80% 55% at 50% 0%,
+					rgb(var(--color-diamond-white-rgb) / 42%) 0%,
+					transparent 58%
+				),
+				var(
+					--quote-texture-bg,
+					url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
+				);
+			background-size:
+				auto,
+				220px 220px;
+			opacity: 42%;
+			mix-blend-mode: multiply;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		// Subtle fibrous displacement — same filter language as itinerary paper
+		&__ornaments {
+			display: none;
+		}
+
+		&__header {
+			padding: 2.15rem 1.9rem 1.2rem;
+			gap: 0.55rem;
+		}
+
+		&__seal {
+			width: 2.85rem;
+			color: var(--color-satin-blue);
+
+			svg {
+				opacity: 72%;
+			}
+		}
+
+		&__subtitle {
+			font-weight: 400;
+			font-size: 0.82rem;
+			max-width: 18rem;
+		}
+
+		&__body {
+			padding: 0.7rem 1.9rem 1.55rem;
+			gap: 1.05rem;
+		}
+
+		&__field,
+		&__quota {
+			gap: 0.4rem;
+		}
+
+		&__guest {
+			font-size: clamp(1.75rem, 3.6vw + 0.9rem, 2.35rem);
+			line-height: 1.05;
+		}
+
+		&__divider {
+			width: min(12rem, 58%);
+			margin-inline: auto;
+		}
+
+		&__count-frame {
+			min-width: 0;
+			padding: 0.15rem 0 0;
+		}
+
+		&__count {
+			font-family: var(--font-display);
+			font-weight: 400;
+			font-size: clamp(2.75rem, 7vw, 3.75rem);
+			line-height: 0.9;
+		}
+
+		&__footer {
+			padding: 0.95rem 1.9rem 1.55rem;
+			position: relative;
+
+			// Soft fade instead of a hard rectangular rule
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 12%;
+				right: 12%;
+				height: 1px;
+				background: linear-gradient(
+					90deg,
+					transparent 0%,
+					rgb(var(--color-liquid-silver-rgb) / 42%) 50%,
+					transparent 100%
+				);
+				pointer-events: none;
+			}
+
+			p {
+				font-size: 0.82rem;
+				line-height: 1.55;
+				max-width: 20rem;
+			}
+		}
+	}
+
+	// Low-cost ambient seal drift (GPU-only) — on the seal shell so SVG hover still works
+	@media (prefers-reduced-motion: no-preference) {
+		.access-card__seal {
+			animation: pa-celestial-seal-drift 16s var(--ease-premium, ease) infinite alternate;
+		}
+	}
+
+	// Scroll reveal — preserve paper tilt through motion states
+	&.has-motion:not(.is-visible) .access-card {
+		opacity: 0%;
+		transform: translateY(var(--motion-reveal-distance, 16px)) rotate(var(--pa-paper-tilt));
+		filter: blur(var(--motion-reveal-blur, 4px));
+		transition:
+			opacity var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			transform var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium)),
+			filter var(--motion-reveal-duration, var(--duration-premium))
+				var(--motion-reveal-ease, var(--ease-premium));
+	}
+
+	&.has-motion.is-visible .access-card {
+		opacity: 100%;
+		transform: translateY(0) rotate(var(--pa-paper-tilt));
+		filter: blur(0);
+	}
+
+	&.has-motion.is-visible .access-card__count {
+		animation: pa-celestial-count-in 0.55s var(--ease-premium, ease) 0.12s both;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.access-card {
+			transform: none;
+		}
+
+		&.has-motion:not(.is-visible) .access-card,
+		&.has-motion.is-visible .access-card {
+			opacity: 100%;
+			transform: none;
+			filter: none;
+			transition: none;
+		}
+
+		&.has-motion.is-visible .access-card__count {
+			animation: none;
+		}
+	}
+}
+
+@keyframes pa-celestial-seal-drift {
+	from {
+		transform: rotate(-6deg) scale(1);
+	}
+
+	to {
+		transform: rotate(8deg) scale(1.04);
+	}
+}
+
+@keyframes pa-celestial-count-in {
+	from {
+		opacity: 0%;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}

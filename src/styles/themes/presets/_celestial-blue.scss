@@ -671,75 +671,81 @@
 	--location-indication-strong-font-weight: 600;
 
 	// ---------------------------------------------------------------------
-	// Personalized Access Section
+	// Personalized Access Section — soft paper credential (not a glass tile)
 	// ---------------------------------------------------------------------
-	--pa-card-bg-color: var(--color-surface-dark);
-	--pa-card-bg-image: linear-gradient(
-		170deg,
-		var(--color-deep-blue-graphite) 0%,
-		var(--color-deep-blue-graphite) 50%,
-		var(--color-surface-dark) 100%
-	);
-	--pa-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 25%);
+	--pa-card-bg-color: var(--color-cool-ivory);
+	--pa-card-bg-image:
+		radial-gradient(
+			ellipse 90% 70% at 28% 12%,
+			rgb(var(--color-diamond-white-rgb) / 92%) 0%,
+			transparent 58%
+		),
+		radial-gradient(
+			ellipse 70% 55% at 78% 88%,
+			rgb(var(--color-ice-blue-rgb) / 28%) 0%,
+			transparent 62%
+		),
+		linear-gradient(
+			168deg,
+			rgb(var(--color-diamond-white-rgb) / 96%) 0%,
+			var(--color-cool-ivory) 48%,
+			rgb(var(--color-pearl-gray-rgb) / 55%) 100%
+		);
+	--pa-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 36%);
+	--pa-card-border-radius: clamp(1.35rem, 3.5vw, 1.85rem);
 	--pa-card-shadow:
-		0 20px 50px rgb(0 0 0 / 45%), inset 0 0 40px rgb(var(--color-ice-blue-rgb) / 10%);
-	--pa-card-inner-border: 1px solid rgb(var(--color-ice-blue-rgb) / 20%);
-	--pa-card-inner-radius: 0.5rem;
-	--pa-card-glow: radial-gradient(
-		circle at top center,
-		rgb(var(--color-ice-blue-rgb) / 15%),
-		transparent 50%
-	);
-	--pa-corner-size: 1.25rem;
-	--pa-corner-dot-size: 0.25rem;
-	--pa-corner-color: var(--color-liquid-silver);
-	--pa-corner-opacity: 55%;
-	--pa-corner-glow-blur: 8px;
-	--pa-eyebrow-color: var(--color-liquid-silver);
-	--pa-eyebrow-tracking: 0.3em;
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 78%),
+		0 18px 40px -28px rgb(var(--color-deep-blue-graphite-rgb) / 28%),
+		0 42px 72px -40px rgb(var(--color-deep-blue-graphite-rgb) / 18%);
+	--pa-card-inset: 0.7rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-satin-blue-rgb) / 12%);
+	--pa-card-inner-radius: clamp(1rem, 2.8vw, 1.35rem);
+	--pa-card-glow: none;
+	--pa-corner-size: 1.1rem;
+	--pa-corner-dot-size: 0.2rem;
+	--pa-corner-color: rgb(var(--color-satin-blue-rgb) / 72%);
+	--pa-corner-opacity: 0%;
+	--pa-corner-glow-blur: 0;
+	--pa-eyebrow-color: rgb(var(--color-soft-graphite-rgb) / 48%);
+	--pa-eyebrow-tracking: 0.28em;
 	--pa-title-font: var(--font-display);
-	--pa-title-tracking: 0.22em;
-	--pa-title-color: var(--color-liquid-silver);
-	--pa-title-shadow: 0 2px 6px rgb(0 0 0 / 30%);
-	--pa-subtitle-color: var(--color-text-on-dark);
+	--pa-title-size: clamp(1.05rem, 1.4vw + 0.85rem, 1.35rem);
+	--pa-title-tracking: 0.2em;
+	--pa-title-color: var(--color-deep-blue-graphite);
+	--pa-title-shadow: none;
+	--pa-subtitle-font: var(--font-body);
+	--pa-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 62%);
 	--pa-guest-font: var(--font-display);
 	--pa-guest-weight: 400;
-	--pa-guest-color: var(--color-text-on-dark);
-	--pa-guest-tracking: 0;
+	--pa-guest-color: var(--color-deep-blue-graphite);
+	--pa-guest-tracking: 0.01em;
 	--pa-divider-gradient: linear-gradient(
 		90deg,
 		transparent 0%,
-		var(--color-liquid-silver) 50%,
+		rgb(var(--color-liquid-silver-rgb) / 58%) 50%,
 		transparent 100%
 	);
-	--pa-divider-opacity: 65%;
-	--pa-divider-diamond-bg: var(--color-deep-blue-graphite);
-	--pa-divider-diamond-border-color: var(--color-liquid-silver);
-	--pa-divider-diamond-shadow: 0 0 8px rgb(var(--color-ice-blue-rgb) / 30%);
-	--pa-count-frame-radius: 0.5rem;
-	--pa-count-frame-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 35%);
-	--pa-count-frame-bg: linear-gradient(
-		180deg,
-		rgb(var(--color-ice-blue-rgb) / 15%),
-		rgb(var(--color-ice-blue-rgb) / 5%)
-	);
-	--pa-count-frame-shadow:
-		0 12px 30px rgb(0 0 0 / 30%), inset 0 0 15px rgb(var(--color-ice-blue-rgb) / 10%);
+	--pa-divider-opacity: 100%;
+	--pa-divider-diamond-bg: var(--color-cool-ivory);
+	--pa-divider-diamond-border-color: rgb(var(--color-satin-blue-rgb) / 48%);
+	--pa-divider-diamond-shadow: 0 0 0 0.22rem rgb(var(--color-cool-ivory-rgb) / 88%);
+	--pa-count-frame-radius: 0;
+	--pa-count-frame-border: none;
+	--pa-count-frame-bg: transparent;
+	--pa-count-frame-shadow: none;
 	--pa-count-frame-inner-display: none;
-	--pa-count-frame-inner-inset: 4px;
-	--pa-count-frame-inner-border: 0.5px solid rgb(var(--color-liquid-silver-rgb) / 15%);
-	--pa-count-color: var(--color-liquid-silver);
-	--pa-count-shadow: 0 3px 8px rgb(0 0 0 / 25%);
-	--pa-footer-border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 18%);
+	--pa-count-color: var(--color-satin-blue);
+	--pa-count-shadow: none;
+	--pa-footer-border-top: none;
 	--pa-footer-bg: linear-gradient(
 		180deg,
-		rgb(var(--color-deep-blue-graphite-rgb) / 30%),
-		rgb(var(--color-deep-blue-graphite-rgb) / 50%)
+		transparent 0%,
+		rgb(var(--color-ice-blue-rgb) / 16%) 100%
 	);
-	--pa-footer-text-color: var(--color-text-on-dark);
-	--pa-footer-text-font-style: italic;
-	--pa-footer-text-tracking: 0;
-	--pa-label-color: rgb(var(--color-liquid-silver-rgb) / 80%);
+	--pa-footer-text-color: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--pa-footer-text-font-style: normal;
+	--pa-footer-text-tracking: 0.01em;
+	--pa-label-color: rgb(var(--color-soft-graphite-rgb) / 48%);
 	--pa-label-opacity: 1;
-	--pa-label-tracking: 0.24em;
+	--pa-label-tracking: 0.22em;
 }
