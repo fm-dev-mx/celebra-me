@@ -1,0 +1,107 @@
+import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
+import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+	ALBA_ASSET_SPECS,
+	ALBA_EVENT,
+	buildAlbaPublishedContent,
+	type AlbaAssetMap,
+} from '../../scripts/provision/invitations/alba-rosa-quinones.ts';
+
+const albaProfilePath = path.join(
+	process.cwd(),
+	'src/styles/invitation-profiles/alba-rosa-quinones.scss',
+);
+
+const albaAssetDir = path.join(process.cwd(), 'src/assets/invitations/alba-rosa-quinones');
+
+function buildTestAssets(): AlbaAssetMap {
+	return Object.fromEntries(
+		ALBA_ASSET_SPECS.map((spec, index) => [
+			spec.key,
+			{
+				type: 'uploaded' as const,
+				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
+			},
+		]),
+	) as AlbaAssetMap;
+}
+
+describe('Alba Rosa Quiñones local invitation content', () => {
+	it('uses a consistent luxury-hacienda catalog entry', () => {
+		const preset = findDemoPreset(ALBA_EVENT.baseDemoId);
+		expect(preset).toMatchObject({
+			id: 'demo-cumple-luxury-hacienda',
+			eventType: 'cumple',
+			themeId: 'luxury-hacienda',
+		});
+		expect(
+			checkPublishGuard({
+				baseDemoId: ALBA_EVENT.baseDemoId,
+				themeId: ALBA_EVENT.themeId,
+			}),
+		).toEqual({ ok: true });
+	});
+
+	it('ships Palette 1 Jardín Cobalto Lane A profile', () => {
+		const profile = fs.readFileSync(albaProfilePath, 'utf8');
+		expect(profile).toContain('.event--alba-rosa-quinones.theme-preset--luxury-hacienda');
+		expect(profile).toContain('--alba-ivory');
+		expect(profile).toContain('--alba-cobalt');
+		expect(profile).toContain('Palette 1 of 3: Jardín Cobalto');
+	});
+
+	it('has WebP release sources for every declared asset', () => {
+		for (const spec of ALBA_ASSET_SPECS) {
+			const filePath = path.join(albaAssetDir, spec.relativePath);
+			expect(fs.existsSync(filePath)).toBe(true);
+			expect(path.extname(spec.relativePath)).toBe('.webp');
+		}
+		expect(fs.existsSync(path.join(albaAssetDir, 'gallery-04-cafe.webp'))).toBe(false);
+	});
+
+	it('builds schema-valid published content with unique photo roles', () => {
+		const content = buildAlbaPublishedContent(buildTestAssets());
+		const result = eventContentSchema.safeParse(content);
+		expect(result.success).toBe(true);
+		const serialized = JSON.stringify(content);
+		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
+		expect(content.hero).toMatchObject({
+			date: '2026-09-11T20:00:00.000Z',
+		});
+		expect(content.sectionOrder).toEqual([
+			'location',
+			'gallery',
+			'gifts',
+			'personalizedAccess',
+			'rsvp',
+			'thankYou',
+			'family',
+		]);
+		expect(content.rsvp).toMatchObject({
+			confirmationMode: 'api',
+			accessMode: 'hybrid',
+		});
+		expect(content.gifts).toMatchObject({
+			items: [{ type: 'cash' }],
+		});
+		expect(content.family).toMatchObject({
+			presentation: 'with-photo',
+			labels: {
+				sectionMessage: 'El corazón de esta celebración es mi familia.',
+			},
+		});
+		expect(content.gallery).toMatchObject({
+			items: expect.arrayContaining([
+				expect.objectContaining({ key: 'gallery-01-paris' }),
+				expect.objectContaining({ key: 'gallery-05-albert' }),
+			]),
+		});
+		expect((content.gallery as { items: unknown[] }).items).toHaveLength(4);
+		expect(content.music).toBeUndefined();
+		expect(content.itinerary).toBeUndefined();
+	});
+});

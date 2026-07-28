@@ -34,6 +34,14 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		'interlude-after-itinerary': { family: 'overlap', source: 'itinerary' },
 		'interlude-after-rsvp': { family: 'atmospheric-blend', source: 'rsvp' },
 	},
+	'alba-rosa-quinones': {
+		location: { family: 'atmospheric-blend', source: 'hero' },
+		'interlude-after-location': { family: 'arch', source: 'location' },
+		gallery: { family: 'atmospheric-blend', source: 'interlude-after-location' },
+		rsvp: { family: 'atmospheric-blend', source: 'gifts' },
+		family: { family: 'atmospheric-blend', source: 'rsvp' },
+		thankYou: { family: 'atmospheric-blend', source: 'family' },
+	},
 };
 
 export function resolveRenderPlanIntersection(

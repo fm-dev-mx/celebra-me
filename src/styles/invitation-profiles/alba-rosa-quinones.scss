@@ -1,0 +1,325 @@
+@use '../global/mixins' as mixins;
+
+// Alba Rosa Quiñones — Lane A profile on luxury-hacienda.
+// Refined Palette 1: Jardín Cobalto
+// (cream paper + garden charcoal + cobalt accent from the hero dress + navy RSVP).
+// Essence: cobalt garden portrait, unified Cormorant/Bodoni display hierarchy,
+// 2-column editorial family card, and a left-side directional veil on desktop.
+
+html:has(.event--alba-rosa-quinones),
+html:has(.event--alba-rosa-quinones) body {
+	scrollbar-gutter: auto;
+
+	@include mixins.hide-scrollbar;
+}
+
+.event--alba-rosa-quinones.theme-preset--luxury-hacienda {
+	// --- Palette 1: Jardín Cobalto (REFINED) ---
+	--alba-ivory: rgb(252 249 244);
+	--alba-ivory-rgb: 252 249 244;
+	--alba-cream: rgb(244 238 228);
+	--alba-cream-rgb: 244 238 228;
+	--alba-warm-sand: rgb(228 216 198);
+	--alba-warm-sand-rgb: 228 216 198;
+	--alba-garden: rgb(58 72 58);
+	--alba-garden-rgb: 58 72 58;
+	--alba-charcoal: rgb(42 38 34);
+	--alba-charcoal-rgb: 42 38 34;
+	--alba-ink: rgb(52 46 40);
+	--alba-ink-rgb: 52 46 40;
+	--alba-cobalt: rgb(36 74 140);
+	--alba-cobalt-rgb: 36 74 140;
+	--alba-navy: rgb(22 30 46);
+	--alba-navy-rgb: 22 30 46;
+	--alba-gold: rgb(197 160 89);
+	--alba-gold-rgb: 197 160 89;
+	--alba-stone: rgb(148 136 118);
+	--alba-stone-rgb: 148 136 118;
+
+	--color-surface-primary: var(--alba-ivory);
+	--color-surface-primary-rgb: var(--alba-ivory-rgb);
+	--color-surface-soft: var(--alba-cream);
+	--color-surface-dark: var(--alba-navy);
+	--color-surface-dark-rgb: var(--alba-navy-rgb);
+	--color-text-primary: var(--alba-ink);
+	--color-text-primary-rgb: var(--alba-ink-rgb);
+	--color-text-emphasis: var(--alba-charcoal);
+	--color-text-secondary: rgb(var(--alba-ink-rgb) / 78%);
+	--color-text-on-dark: var(--alba-ivory);
+	--color-action-primary: var(--alba-navy);
+	--color-action-primary-rgb: var(--alba-navy-rgb);
+	--color-action-accent: var(--alba-cobalt);
+	--color-action-accent-rgb: var(--alba-cobalt-rgb);
+	--color-gold-500: var(--alba-gold);
+	--color-gold-500-rgb: var(--alba-gold-rgb);
+	--color-border-subtle: rgb(var(--alba-stone-rgb) / 34%);
+	--color-border-emphasis: var(--alba-gold);
+
+	--hero-name-size-mobile: clamp(2.35rem, 8.5vw, 3.2rem);
+	--hero-label-letter-spacing: 0.24em;
+
+	// ------------------------------------------------------------------
+	// Gifts Section — Soft Cream Parchment with Gold Accent
+	// ------------------------------------------------------------------
+	--gifts-bg:
+		radial-gradient(ellipse at 50% 0%, rgb(var(--alba-gold-rgb) / 12%), transparent 55%),
+		linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
+	--gifts-text-color: var(--alba-ink);
+	--gifts-title-color: var(--alba-charcoal);
+	--gifts-subtitle-color: rgb(var(--alba-ink-rgb) / 82%);
+	--gifts-card-bg: rgb(252 249 244 / 85%);
+	--gifts-card-border: 1px solid rgb(var(--alba-gold-rgb) / 35%);
+	--gifts-card-title-color: var(--alba-charcoal);
+	--gifts-icon-color: var(--alba-cobalt);
+	--gifts-card-shadow: 0 12px 32px rgb(0 0 0 / 6%), inset 0 1px 0 rgb(255 255 255 / 80%);
+
+	// ------------------------------------------------------------------
+	// RSVP & Personalized Access — Deep Cobalt Navy Atmosphere
+	// ------------------------------------------------------------------
+	.rsvp,
+	.personalized-access {
+		--color-surface-primary: var(--alba-navy);
+		--color-surface-primary-rgb: var(--alba-navy-rgb);
+		--color-text-primary: var(--alba-ivory);
+		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 82%);
+		--rsvp-title-size: clamp(1.85rem, 4.5vw, 2.65rem);
+		--rsvp-body-size: clamp(1.05rem, 2.4vw, 1.2rem);
+	}
+
+	--location-bg: linear-gradient(
+		180deg,
+		var(--alba-ivory) 0%,
+		var(--alba-cream) 55%,
+		rgb(236 228 214) 100%
+	);
+	--family-bg: linear-gradient(
+		180deg,
+		var(--alba-cream) 0%,
+		var(--alba-ivory) 55%,
+		rgb(238 232 222) 100%
+	);
+	--family-texture-opacity: 0%;
+	--family-vignette-bg: transparent;
+	--family-panel-bg: transparent;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-panel-radius: 0;
+	--family-media-bg: transparent;
+	--family-media-border: none;
+	--family-media-shadow: none;
+	--family-media-padding: 0;
+	--family-media-inner-border: none;
+	--family-media-inner-shadow: none;
+	--family-media-corner-opacity: 0%;
+	--family-media-filter: none;
+	--family-media-radius: 0;
+	--family-text-primary: var(--alba-ink);
+	--family-text-muted: rgb(var(--alba-ink-rgb) / 78%);
+	--family-accent: var(--alba-cobalt);
+
+	.gallery {
+		--gallery-title-size: clamp(1.75rem, 4vw, 2.4rem);
+	}
+
+	// ------------------------------------------------------------------
+	// Hero — art-directed composition for landscape desktop + portrait mobile
+	// ------------------------------------------------------------------
+	.invitation-hero[data-variant='luxury-hacienda'] {
+		.invitation-hero__background img {
+			filter: contrast(1.03) saturate(1.02) brightness(1.01);
+		}
+
+		// Softer overlay: preserve photographic quality; left-biased veil on desktop
+		.invitation-hero__background::after {
+			background:
+				linear-gradient(
+					to right,
+					rgb(var(--alba-charcoal-rgb) / 54%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 22%) 40%,
+					transparent 75%
+				),
+				linear-gradient(
+					to top,
+					rgb(var(--alba-charcoal-rgb) / 65%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 15%) 42%,
+					transparent 65%
+				);
+			opacity: 100%;
+
+			@media (width <= 991px) {
+				background: linear-gradient(
+					to top,
+					rgb(var(--alba-charcoal-rgb) / 82%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 32%) 42%,
+					transparent 70%
+				);
+			}
+		}
+
+		.invitation-hero__content {
+			padding-top: 0;
+			margin-bottom: 0;
+			justify-content: flex-end;
+			padding-bottom: clamp(4.5rem, 10vh, 7rem);
+
+			@media (width >= 992px) {
+				align-items: flex-start;
+				text-align: left;
+				justify-content: center;
+				max-width: min(38rem, 44vw);
+				margin: 0;
+				margin-left: clamp(2.5rem, 7vw, 6.5rem);
+				padding-bottom: 0;
+				padding-inline: 0;
+			}
+		}
+
+		.invitation-hero__title {
+			text-transform: none;
+			letter-spacing: 0.02em;
+			font-weight: 500;
+			background: none;
+			background-clip: border-box;
+			color: var(--alba-ivory);
+			-webkit-text-fill-color: var(--alba-ivory);
+			text-shadow:
+				0 1px 3px rgb(0 0 0 / 40%),
+				0 8px 24px rgb(0 0 0 / 30%);
+			font-size: clamp(2.45rem, 6vw, 3.75rem);
+
+			@media (width <= 540px) {
+				font-size: clamp(2.15rem, 9vw, 2.75rem);
+				letter-spacing: 0.01em;
+			}
+		}
+
+		.invitation-hero__title-line--surname {
+			display: inline-block;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			font-size: 0.88em;
+			font-weight: 400;
+			opacity: 100%;
+			color: rgb(var(--alba-ivory-rgb) / 95%);
+		}
+
+		// Keep the two surnames together as one deliberate second line.
+		.invitation-hero__title-line--surname + br {
+			display: none;
+		}
+
+		.invitation-hero__title-line--surname + br + .invitation-hero__title-line--surname {
+			margin-left: 0.28em;
+		}
+
+		.invitation-hero__label {
+			letter-spacing: 0.28em;
+			color: var(--alba-ivory);
+			font-weight: 600;
+			opacity: 100%;
+			margin-bottom: 0.85rem;
+			text-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+		}
+
+		.invitation-hero__nickname-badge {
+			margin: 0.35rem 0 1.4rem;
+			font-size: clamp(1rem, 2.4vw, 1.2rem);
+			color: rgb(var(--alba-ivory-rgb) / 88%);
+		}
+
+		.invitation-hero__divider {
+			margin: 1.25rem 0;
+			opacity: 55%;
+			background: rgb(var(--alba-ivory-rgb) / 55%);
+
+			@media (width >= 992px) {
+				margin-left: 0;
+				margin-right: auto;
+			}
+		}
+
+		.invitation-hero__date,
+		.invitation-hero__time,
+		.invitation-hero__venue {
+			text-shadow: 0 2px 10px rgb(0 0 0 / 35%);
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Family — 2-column editorial card: portrait photo + phrase
+	// ------------------------------------------------------------------
+	.family {
+		padding-block: clamp(4rem, 9vw, 7rem);
+
+		.family__eyebrow,
+		.family__title,
+		.family__header-divider {
+			display: none;
+		}
+
+		.family__header {
+			margin-bottom: 0;
+		}
+
+		.family__panel {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 2.5rem;
+			padding: 0;
+			max-width: min(52rem, 100%);
+			align-items: center;
+
+			@media (width >= 992px) {
+				grid-template-columns: 1.05fr 1fr;
+				gap: 3.5rem;
+			}
+		}
+
+		.family__media {
+			margin: 0;
+		}
+
+		.family__media-frame {
+			aspect-ratio: 994 / 1280;
+			max-height: min(72vh, 48rem);
+			margin-inline: auto;
+			border: 1px solid rgb(var(--alba-gold-rgb) / 38%);
+			padding: 0.6rem;
+			background: var(--alba-ivory);
+			box-shadow: 0 18px 45px rgb(0 0 0 / 12%);
+			border-radius: 2px;
+		}
+
+		.family__content {
+			display: block;
+
+			.family__group {
+				margin: 0;
+			}
+
+			.family__group-title {
+				display: none;
+			}
+		}
+
+		.family__message {
+			max-width: 28rem;
+			margin: 0 auto;
+			font-family: var(--font-display, serif);
+			font-size: clamp(1.35rem, 3vw, 1.85rem);
+			font-style: italic;
+			line-height: 1.5;
+			color: var(--alba-ink);
+			text-wrap: balance;
+
+			@media (width >= 992px) {
+				text-align: left;
+				margin: 0;
+			}
+		}
+
+		.family__panel::after {
+			content: none;
+		}
+	}
+}
