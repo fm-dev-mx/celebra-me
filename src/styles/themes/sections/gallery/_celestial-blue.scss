@@ -57,6 +57,12 @@
 	--gallery-overlay-emphasis-opacity: 0.82;
 	--gallery-overlay-hover-opacity: 0.9;
 	--gallery-caption-size: clamp(0.7rem, 1vw, 0.78rem);
+
+	// The title is a full sentence at display size, so it needs body-copy contrast and
+	// sentence case. Declared here rather than in the preset because _gallery.scss sets
+	// these two tokens on `.gallery-section` itself, which outranks any ancestor preset.
+	--gallery-title-color: var(--color-deep-blue-graphite);
+	--gallery-title-transform: none;
 	--gallery-lightbox-bg: rgb(var(--color-deep-blue-graphite-rgb) / 86%);
 	--gallery-lightbox-close-color: rgb(var(--color-diamond-white-rgb) / 92%);
 	--gallery-lightbox-image-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 52%);
