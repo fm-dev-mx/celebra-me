@@ -14,7 +14,6 @@
 // Not in contract (internal / content-driven / behavior):
 //   --interlude-focal-point          Set by observer from data-focal-point
 //   --interlude-focal-x/y            Internal focal derivation
-//   --interlude-parallax-offset      Set by observer scroll math
 //   --interlude-light-x/y            Set by observer for celestial highlight
 // ==========================================================================
 
@@ -75,7 +74,7 @@
 
 	&.has-motion:not(.is-visible) &__media {
 		opacity: 0%;
-		transform: translate3d(0, 24px, 0) scale(1.015);
+		transform: translate3d(0, 24px, 0) scale(1);
 	}
 
 	&__image {
@@ -88,10 +87,8 @@
 		object-position: var(--interlude-focal-point);
 		transform-origin: var(--interlude-focal-point);
 		filter: var(--interlude-image-filter, saturate(0.96) contrast(1.02));
-		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0);
-		transition:
-			filter 260ms ease-out,
-			transform 800ms var(--ease-premium);
+		transform: none;
+		transition: filter 260ms ease-out;
 	}
 
 	// ---- responsive focal adjustments ----
