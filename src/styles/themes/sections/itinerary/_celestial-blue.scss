@@ -240,7 +240,9 @@
 
 		@for $i from 1 through 20 {
 			&:nth-child(#{$i}) {
-				transition-delay: #{$i * 0.12s};
+				$delay: ($i - 1) * 0.08s;
+
+				transition-delay: if($delay > 0.48s, 0.48s, $delay);
 			}
 		}
 	}
