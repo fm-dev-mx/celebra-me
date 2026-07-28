@@ -52,7 +52,7 @@ state and never has authority over these definitions.
 | `astro-patterns`              | Astro rendering, routing, and client-boundary guidance             |
 | `backend-engineering`         | API routes, services, validation, and integrations                 |
 | `celebra-delegation-patterns` | provider-neutral subagent requests, handoffs, and synthesis        |
-| `client-invitation-audit`     | pre-implementation audit for real invitations + two-lane spec      |
+| `client-invitation-audit`     | preparation + pre-implementation audit for real invitations        |
 | `commit-planner`              | commit partitioning and message planning                           |
 | `copywriting-es`              | Spanish UI and invitation copy standards                           |
 | `database-parity`             | branch-lane DB delegate; diagnosis, audits, checkpoint + clearance |
@@ -88,12 +88,19 @@ state and never has authority over these definitions.
 | `social-image-brief`     | social post or carousel copy and image prompt structure     |
 | `video-frame-brief`      | initial/final video frame prompt with generation parameters |
 
+## Available Templates (Invitation)
+
+| Template             | File                                                  | Purpose                                              |
+| -------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| `preparation-state`  | `.agent/templates/invitation/preparation-state.md`    | Canonical per-slug state under `docs/invitations/`   |
+
 ## Available Workflows
 
 | Workflow                        | File                                                | Use when                                                         |
 | ------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
 | `design-reference-to-build`     | `.agent/workflows/design-reference-to-build.md`     | visual work moves from references through implementation and QA  |
 | `error-remediation`             | `.agent/workflows/error-remediation.md`             | a command, test, or validation check fails                       |
+| `invitation-preparation`        | `.agent/workflows/invitation-preparation.md`        | prepare a new/resumed client invitation before implementation    |
 | `managed-invitation-lifecycle`  | `.agent/workflows/managed-invitation-lifecycle.md`  | a managed invitation moves through local, preview, or production |
 | `plan-authoring`                | `.agent/workflows/plan-authoring.md`                | work needs sequencing or a durable tracked plan                  |
 | `system-doc-alignment`          | `.agent/workflows/system-doc-alignment.md`          | docs, governance metadata, or discovery links may be stale       |
@@ -119,6 +126,9 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Release checkpoints / version tags  | `docs/core/release-process.md`                       | Per-invitation notes                           |
 | Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)          | Migrations, invitation ops notes               |
 | Invitation identity requirements    | `docs/core/invitation-creation-contract.md`          | Runbook, agent workflow, safety rule           |
+| Invitation preparation semantics    | `docs/core/invitation-preparation-contract.md`       | Per-invite Markdown, publication readiness     |
+| Invitation preparation procedure    | `.agent/workflows/invitation-preparation.md`         | Creation contract, managed lifecycle           |
+| Event-type prep completeness (exec) | `src/lib/invitation-preparation/`                    | Narrative docs alone                           |
 | Invitation production runbook       | `docs/domains/intake/production-flow.md`             | Creation contract, agent workflow              |
 | Agent invitation procedure          | `.agent/workflows/managed-invitation-lifecycle.md`   | Runbook semantics, CLI flag copies             |
 | Invitation agent safety constraints | `.agent/rules/invitation-production.md`              | Runbook steps, creation field lists            |
@@ -132,12 +142,29 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Brand / voice                       | `.agent/briefs/celebra-me.md`                        | Root PRODUCT/DESIGN markdown files (forbidden) |
 | Visual design intent                | `.agent/skills/frontend-design`                      | External design installs as SSOT               |
 | Theme tokens / SCSS architecture    | `docs/domains/theme/` + `theme-architecture` skill   | Brand brief alone                              |
-| Per-client invitation evidence      | `docs/invitations/` per-slug notes                   | `docs/core/`, system CHANGELOG dumps           |
+| Per-client invitation state         | `docs/invitations/` (one Markdown file per slug)     | `.agent/plans/`, system CHANGELOG dumps        |
 | Schema history                      | `supabase/migrations/` (+ manual SQL manifest)       | Full migration lists in CHANGELOG              |
 | Canonical skills                    | `.agent/skills/` (each skill SKILL file)             | `.agents/`, global Hermes skills               |
 | Available commands                  | `package.json`                                       | Copied command tables in stale docs            |
 
 ### Invitation authority chain
+
+Conceptual lifecycle: **Preparation → Implementation → Managed lifecycle / publication**.
+
+#### Preparation (before payloads / invite SCSS)
+
+Load in this order; do not copy semantics across layers:
+
+1. **Preparation workflow** — `.agent/workflows/invitation-preparation.md` (orchestration).
+2. **Preparation contract** — `docs/core/invitation-preparation-contract.md` (classifications,
+   placeholders, readiness, Markdown schema).
+3. **Analysis skill** — `.agent/skills/client-invitation-audit` (extraction, completeness, assets,
+   two-lane audit).
+4. **Executable evaluation** — `src/lib/invitation-preparation/` (deterministic completeness and
+   readiness).
+5. **Durable state** — `docs/invitations/` per-slug Markdown (canonical preparation SoT).
+
+#### Publication / managed updates (after preparation readiness allows implementation)
 
 Load in this order for managed invitation work; do not copy semantics across layers:
 
@@ -147,6 +174,9 @@ Load in this order for managed invitation work; do not copy semantics across lay
 4. **Safety rule** — `.agent/rules/invitation-production.md` (agent hard constraints).
 5. **Executable CLI** — `pnpm invitation:update -- --help` and live provision scripts
    (flags/behavior).
+
+Technical Local/Preview/Production readiness remains owned by the CLI/`invitation-readiness.ts`
+and is independent from preparation readiness.
 
 ## Canonical Docs
 
@@ -158,6 +188,7 @@ Load in this order for managed invitation work; do not copy semantics across lay
 - `docs/core/git-governance.md`
 - `docs/core/agent-interaction.md`
 - `docs/core/invitation-creation-contract.md`
+- `docs/core/invitation-preparation-contract.md`
 - `docs/core/release-process.md`
 - `docs/core/sensitive-data-guide.md`
 
@@ -174,9 +205,11 @@ Load in this order for managed invitation work; do not copy semantics across lay
 - `docs/domains/invitations/public-response-cache-policy.md`
 - `docs/domains/invitations/reveal-gate-automation.md`
 
-`docs/invitations/` contains invitation-specific finalization and operational notes. Those files may
-guide their named invitation but do not replace cross-cutting architecture or runbooks.
+`docs/invitations/` contains canonical per-slug preparation state (one Markdown file per slug) plus
+optional companion evidence (asset reports, copy audits). See `docs/invitations/README.md`. Those
+files may guide their named invitation but do not replace cross-cutting architecture or runbooks.
 
+- `docs/invitations/README.md`
 - `docs/invitations/valentina-hernandez.md`
 - `docs/invitations/xareni-iyarit-asset-report.md`
 - `docs/invitations/america-johana-asset-report.md`
@@ -226,7 +259,8 @@ prerequisites that are already loaded.
 | Release / branch lane             | `branch-lane` (orchestrator) + `docs/core/release-process.md` / `docs/core/git-governance.md` |
 | Branch-lane DB-sensitive routing  | `database-parity` (auto-invoked) + `docs/database-workflow.md` / `.agent/rules/database.md`   |
 | Stash / branch housekeeping       | `git-stash-branch-cleanup`                                                                    |
-| Real invitation pre-work audit    | `client-invitation-audit` (then `managed-invitation-lifecycle` to apply)                      |
+| Real invitation preparation       | `invitation-preparation` workflow + `client-invitation-audit`                             |
+| Real invitation implementation    | `client-invitation-audit` two-lane spec, then `managed-invitation-lifecycle` to apply     |
 | Demo date / transform consistency | `demo-content-consistency`                                                                    |
 | Manual production SQL authoring   | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                            |
 | Creative or marketing production  | `.agent/briefs/celebra-me.md` and the relevant creative template                              |

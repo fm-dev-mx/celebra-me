@@ -21,8 +21,8 @@ Every managed digital invitation must define:
 
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
 - **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`).
-- **Event Type** (`eventType`): Supported event type (e.g. `xv`, `boda`, `cumpleanos`,
-  `baby-shower`, `bautizo`).
+- **Event Type** (`eventType`): Supported event type from live `EVENT_TYPES` (e.g. `xv`, `boda`,
+  `cumple`, `baby-shower`, `bautizo`, `primera-comunion`).
 - **Theme Preset** (`themeId`): A valid theme preset from `THEME_PRESETS` (e.g. `enchanted-rose`,
   `editorial-magazine`, `jewelry-box`).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.

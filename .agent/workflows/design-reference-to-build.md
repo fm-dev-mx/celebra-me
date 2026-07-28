@@ -23,6 +23,9 @@ directly under `.agent/rules/agent-routing.md`.
 - Dashboard styling boundaries: `.agent/rules/dashboard-styling.md`
 - Validation tiers: `.agent/rules/gatekeeper.md`
 - Real invitation discovery: `client-invitation-audit`
+- Invitation preparation readiness: `.agent/workflows/invitation-preparation.md` and
+  `docs/invitations/<slug>.md` (do not implement invite-specific visuals while readiness is
+  `NOT_READY`)
 - Invitation lifecycle: `.agent/workflows/managed-invitation-lifecycle.md`
 
 Figma frames, screenshots, Mobbin examples, and other external references are optional inputs. They

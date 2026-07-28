@@ -50,7 +50,11 @@ authority above.
 - `.agent/rules/workflow.md` owns agent operating procedure.
 - `.agent/rules/git-safety.md` owns Git authorization and worktree preservation.
 - `docs/core/git-governance.md` owns human branch and commit policy.
-- `docs/core/invitation-creation-contract.md` owns invitation identity requirements.
+- Invitation identity requirements live in
+  [`docs/core/invitation-creation-contract.md`](docs/core/invitation-creation-contract.md).
+- Invitation preparation (before implementation) is owned by
+  `.agent/workflows/invitation-preparation.md` and
+  `docs/core/invitation-preparation-contract.md`; durable state is `docs/invitations/<slug>.md`.
 - `docs/domains/intake/production-flow.md` owns the invitation production runbook.
 - `docs/core/release-process.md` owns release checkpoints and layered CHANGELOG policy.
 - `.agent/plans/README.md` owns the contract for plans that need repository tracking.

@@ -25,7 +25,7 @@ owns the command inventory.
 | Command                     | Canonical Script               | Purpose                                                                                                                 |
 | --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                   |
-| `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | optimize and copy the current demo asset set into the expected invitation asset slots                                   |
+| `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | **Legacy one-shot** (hardcoded demo WebP copy). Not the managed invitation asset pipeline — use invitation preparation asset protocol + `normalizeInvitationImage` / provision release normalization. |
 | `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
 | `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                         |
 | `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                              |

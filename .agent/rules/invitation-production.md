@@ -12,6 +12,14 @@ The canonical operational source is
 before creating, editing, publishing, or validating an invitation. Content structure is defined by
 [`docs/core/content-schema.md`](../../docs/core/content-schema.md). Identity requirements live in
 [`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
+Preparation semantics (classifications, placeholders, preparation readiness) live in
+[`docs/core/invitation-preparation-contract.md`](../../docs/core/invitation-preparation-contract.md)
+and `.agent/workflows/invitation-preparation.md`. Do not begin invitation-specific implementation
+while preparation readiness is `NOT_READY`.
+
+Obsolete one-shot: `pnpm ops optimize-assets` / `scripts/optimize-assets.mjs` is a hardcoded legacy
+demo helper — **not** the managed invitation asset pipeline. Use preparation asset protocol +
+`normalizeInvitationImage` / provision release normalization instead.
 
 ## Required preflight
 

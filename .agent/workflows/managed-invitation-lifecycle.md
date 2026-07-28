@@ -12,6 +12,11 @@ invitation updates. Operational policy and lifecycle semantics live in
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Executable
 CLI behavior lives in `scripts/provision/invitation-update-cli.ts` and its imported services.
 
+**Preparation prerequisite:** New client invitations should complete
+[`.agent/workflows/invitation-preparation.md`](./invitation-preparation.md) until preparation
+readiness is `READY_WITH_PLACEHOLDERS` or `READY_FOR_IMPLEMENTATION`. Durable preparation state lives
+at `docs/invitations/<slug>.md`. This lifecycle workflow does not own preparation semantics.
+
 ## Procedure
 
 1. Read the canonical production runbook and `.agent/rules/invitation-production.md`.
