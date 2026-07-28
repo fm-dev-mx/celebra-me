@@ -32,6 +32,8 @@ export const envelopeSchema = z
 		cardTagline: z.string().trim().max(120).optional(),
 		guestLabel: z.string().trim().max(80).optional(),
 		guestNameFallback: z.string().trim().max(200).optional(),
+		guestPlacement: z.enum(['inside-envelope', 'outside-envelope']).optional(),
+		showCardAction: z.boolean().optional(),
 		microcopy: z.string().default('Toca para abrir mi invitación'),
 		documentLabel: z.string().optional(),
 		stampText: z.string().optional(),

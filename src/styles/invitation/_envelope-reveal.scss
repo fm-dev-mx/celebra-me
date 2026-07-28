@@ -37,6 +37,7 @@
 	--env-seal-size-standard: 56px;
 	--env-seal-size-large: 68px;
 	--env-seal-size: var(--env-seal-size-compact);
+	--env-focus-ring: var(--env-seal-accent);
 	--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	--env-phase-exit-duration: var(--duration-long);
 
@@ -397,13 +398,24 @@
 		transform var(--duration-standard) var(--ease-standard),
 		filter var(--duration-standard) var(--ease-standard);
 
-	p {
-		margin: 0;
+	&__button {
+		min-height: 44px;
+		padding: 0;
+		color: inherit;
+		font: inherit;
 		font-family: var(--font-body);
 		font-size: 0.65rem;
 		font-weight: 500;
 		letter-spacing: 0.45em;
 		text-transform: uppercase;
+		background: transparent;
+		border: 0;
+		cursor: pointer;
+
+		&:focus-visible {
+			outline: 2px solid var(--env-focus-ring);
+			outline-offset: 4px;
+		}
 	}
 }
 
@@ -422,15 +434,18 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	min-width: 48px;
+	min-height: 48px;
 	padding: 0;
 	background: none;
 	border: 0;
 	cursor: pointer;
 
 	&:focus-visible {
-		border-radius: 50%;
-		outline: 2px solid var(--env-seal-accent);
-		outline-offset: var(--spacing-2);
+		.envelope-seal-button__visual {
+			outline: 3px solid var(--env-focus-ring);
+			outline-offset: 4px;
+		}
 	}
 }
 
@@ -536,6 +551,13 @@
 
 	.envelope-flap-shadow {
 		animation: invitation-env-shadow-drop var(--duration-reveal) forwards var(--ease-premium);
+	}
+}
+
+.envelope-wrapper.is-letter-held,
+.envelope-wrapper.is-preview-opened {
+	.envelope-external-instruction {
+		display: none;
 	}
 }
 

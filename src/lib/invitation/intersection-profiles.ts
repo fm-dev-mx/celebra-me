@@ -35,15 +35,17 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		'interlude-after-rsvp': { family: 'atmospheric-blend', source: 'rsvp' },
 	},
 	'alba-rosa-quinones': {
-		location: { family: 'atmospheric-blend', source: 'hero' },
+		// Quiet pause after the dark hero before warm Location
+		countdown: { family: 'atmospheric-blend', source: 'hero' },
+		location: { family: 'atmospheric-blend', source: 'countdown' },
 		'interlude-after-location': { family: 'arch', source: 'location' },
 		// Diagonal limestone cut over the Paris plate (asymmetric, off-center)
 		gallery: { family: 'overlap', source: 'interlude-after-location' },
+		// Legend pause divides gallery photography from the personal pass
 		gifts: { family: 'atmospheric-blend', source: 'gallery' },
-		// Personalized access renders near the top on guest links; neutral seam
-		'personalized-access': { family: 'atmospheric-blend', source: 'hero' },
-		// Graphite descends into the gifts ivory with a mirrored diagonal
-		rsvp: { family: 'overlap', source: 'gifts' },
+		'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+		// Restore the signature graphite diagonal into RSVP (axis-breaking cut)
+		rsvp: { family: 'overlap', source: 'personalized-access' },
 		family: { family: 'atmospheric-blend', source: 'rsvp' },
 		// Thank You keeps the blend; the memory photo itself crosses the seam
 		thankYou: { family: 'atmospheric-blend', source: 'family' },

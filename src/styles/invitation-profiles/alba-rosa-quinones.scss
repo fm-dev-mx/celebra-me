@@ -4,9 +4,8 @@
 @use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
 // Alba Rosa Quiñones — Lane A profile on luxury-hacienda.
-// Neutral editorial palette: the photography, not the interface, carries color.
-// Coherent Cormorant display system, Paris interlude, featured+support gallery,
-// legend-only gifts, integrated dark graphite RSVP, arch-led Family, intimate Thank You.
+// Neutral editorial palette: photography carries color; UI stays luminous neutrals.
+// 3-band rhythm: light editorial → pause cream → coherent ink (pass → RSVP).
 
 html:has(.event--alba-rosa-quinones),
 html:has(.event--alba-rosa-quinones) body {
@@ -17,53 +16,71 @@ html:has(.event--alba-rosa-quinones) body {
 
 .event--alba-rosa-quinones.theme-preset--luxury-hacienda {
 	// ==========================================================================
-	// 1. NEUTRAL EDITORIAL PALETTE & TOKENS
+	// 1. NEUTRAL EDITORIAL PALETTE (3-band cohesion — older-reader legibility)
+	// Light ivory/cream, one pause cream, one cool-neutral ink family. Champagne accent-only.
 	// ==========================================================================
-	--alba-ivory: rgb(243 242 238);
-	--alba-ivory-rgb: 243 242 238;
-	--alba-cream: rgb(220 216 208);
-	--alba-cream-rgb: 220 216 208;
-	--alba-warm-sand: rgb(199 192 181);
-	--alba-warm-sand-rgb: 199 192 181;
-	--alba-charcoal: rgb(45 45 43);
-	--alba-charcoal-rgb: 45 45 43;
-	--alba-ink: rgb(76 74 69);
-	--alba-ink-rgb: 76 74 69;
-	--alba-sage: rgb(124 129 121);
-	--alba-sage-rgb: 124 129 121;
-	--alba-navy: rgb(32 35 40);
-	--alba-navy-rgb: 32 35 40;
-	--alba-gold: rgb(179 154 99);
-	--alba-gold-rgb: 179 154 99;
-	--alba-champagne: rgb(201 184 148);
-	--alba-champagne-rgb: 201 184 148;
-	--alba-stone: rgb(112 108 101);
-	--alba-stone-rgb: 112 108 101;
-	--alba-limestone: rgb(228 224 216);
-	--alba-limestone-rgb: 228 224 216;
-	--alba-stone-light: rgb(233 229 222);
-	--alba-stone-light-rgb: 233 229 222;
-	--alba-graphite-elevated: rgb(56 58 62);
-	--alba-graphite-elevated-rgb: 56 58 62;
+	// Light editorial band
+	--alba-ivory: rgb(250 248 244);
+	--alba-ivory-rgb: 250 248 244;
+	--alba-cream: rgb(239 234 226);
+	--alba-cream-rgb: 239 234 226;
+	--alba-warm-sand: rgb(210 202 190);
+	--alba-warm-sand-rgb: 210 202 190;
+	--alba-limestone: rgb(242 237 230);
+	--alba-limestone-rgb: 242 237 230;
+	--alba-stone-light: rgb(243 238 230);
+	--alba-stone-light-rgb: 243 238 230;
+
+	// Text / emphasis on light surfaces (stable, high contrast)
+	--alba-charcoal: rgb(40 38 36);
+	--alba-charcoal-rgb: 40 38 36;
+	--alba-ink: rgb(44 42 39);
+	--alba-ink-rgb: 44 42 39;
+	--alba-stone: rgb(98 94 88);
+	--alba-stone-rgb: 98 94 88;
+
+	// Functional micro-accent only (not atmospheric fills)
+	--alba-sage: rgb(118 124 116);
+	--alba-sage-rgb: 118 124 116;
+
+	// Ink family (cool-neutral — pass lifted, RSVP/Thank You deep)
+	--alba-navy: rgb(31 34 38);
+	--alba-navy-rgb: 31 34 38;
+	--alba-graphite-elevated: rgb(74 76 80);
+	--alba-graphite-elevated-rgb: 74 76 80;
+	--alba-pass-surface: rgb(74 76 80);
+	--alba-pass-surface-rgb: 74 76 80;
+	--alba-rsvp-surface: rgb(31 34 38);
+	--alba-rsvp-surface-rgb: 31 34 38;
+
+	// Pause band (countdown + gifts) — one warm cream, not a third greige
+	--alba-pause-surface: rgb(243 238 230);
+	--alba-pause-surface-rgb: 243 238 230;
+
+	// Accent — cleaner champagne; hairlines/labels only
+	--alba-gold: rgb(186 164 118);
+	--alba-gold-rgb: 186 164 118;
+	--alba-champagne: rgb(206 190 154);
+	--alba-champagne-rgb: 206 190 154;
 	--font-display: 'Cormorant Garamond Variable', georgia, serif;
 	--font-calligraphy: 'Pinyon Script', cursive;
 	--color-surface-primary: var(--alba-ivory);
 	--color-surface-primary-rgb: var(--alba-ivory-rgb);
 	--color-surface-soft: var(--alba-cream);
-	--color-surface-dark: var(--alba-navy);
-	--color-surface-dark-rgb: var(--alba-navy-rgb);
+	--color-surface-dark: var(--alba-rsvp-surface);
+	--color-surface-dark-rgb: var(--alba-rsvp-surface-rgb);
 	--color-text-primary: var(--alba-ink);
 	--color-text-primary-rgb: var(--alba-ink-rgb);
 	--color-text-emphasis: var(--alba-charcoal);
-	--color-text-secondary: rgb(var(--alba-ink-rgb) / 78%);
+	--color-text-secondary: rgb(var(--alba-ink-rgb) / 88%);
 	--color-text-on-dark: var(--alba-ivory);
-	--color-action-primary: var(--alba-navy);
-	--color-action-primary-rgb: var(--alba-navy-rgb);
+	--color-action-primary: var(--alba-rsvp-surface);
+	--color-action-primary-rgb: var(--alba-rsvp-surface-rgb);
 	--color-action-accent: var(--alba-sage);
 	--color-action-accent-rgb: var(--alba-sage-rgb);
 	--color-gold-500: var(--alba-gold);
 	--color-gold-500-rgb: var(--alba-gold-rgb);
-	--color-border-subtle: rgb(var(--alba-stone-rgb) / 34%);
+	--color-border-subtle: rgb(var(--alba-stone-rgb) / 30%);
 	--color-border-emphasis: var(--alba-gold);
 
 	// Neutralize inherited luxury-hacienda coffee/bronze chrome (no café tones anywhere)
@@ -72,105 +89,92 @@ html:has(.event--alba-rosa-quinones) body {
 	--color-surface-elevated: var(--alba-graphite-elevated);
 	--color-surface-elevated-rgb: var(--alba-graphite-elevated-rgb);
 	--color-surface-canvas: var(--alba-ivory);
-	--color-border-premium: rgb(var(--alba-champagne-rgb) / 26%);
+	--color-border-premium: rgb(var(--alba-champagne-rgb) / 28%);
 	--color-frame-bg: linear-gradient(
 		135deg,
-		rgb(var(--alba-champagne-rgb) / 55%) 0%,
-		rgb(var(--alba-champagne-rgb) / 25%) 50%,
-		rgb(var(--alba-champagne-rgb) / 60%) 100%
+		rgb(var(--alba-champagne-rgb) / 50%) 0%,
+		rgb(var(--alba-champagne-rgb) / 22%) 50%,
+		rgb(var(--alba-champagne-rgb) / 55%) 100%
 	);
 
-	// Header / menu chrome — graphite, ivory, champagne hairline
+	// Header / menu chrome — ink family + ivory
 	--header-bg-scrolled: linear-gradient(
 		180deg,
-		rgb(var(--alba-navy-rgb) / 94%) 0%,
-		rgb(24 26 29 / 90%) 100%
+		rgb(var(--alba-rsvp-surface-rgb) / 94%) 0%,
+		rgb(var(--alba-rsvp-surface-rgb) / 90%) 100%
 	);
-	--header-border-scrolled: 1px solid rgb(var(--alba-champagne-rgb) / 20%);
-	--header-nav-color: rgb(var(--alba-ivory-rgb) / 92%);
+	--header-border-scrolled: 1px solid rgb(var(--alba-champagne-rgb) / 22%);
+	--header-nav-color: rgb(var(--alba-ivory-rgb) / 94%);
 	--header-nav-hover: var(--alba-ivory);
-	--header-cta-glow: 0 10px 26px rgb(0 0 0 / 28%);
+	--header-cta-glow: 0 10px 26px rgb(0 0 0 / 24%);
 
-	// Music player — neutral graphite/champagne
+	// Music player — luminous neutrals + champagne accent
 	--music-player-prompt-bg: linear-gradient(
 		140deg,
-		rgb(var(--alba-ivory-rgb) / 92%) 0%,
-		rgb(var(--alba-cream-rgb) / 86%) 100%
+		rgb(var(--alba-ivory-rgb) / 96%) 0%,
+		rgb(var(--alba-cream-rgb) / 90%) 100%
 	);
-	--music-player-prompt-color: rgb(var(--alba-charcoal-rgb) / 85%);
-	--music-player-prompt-border: 1px solid rgb(var(--alba-champagne-rgb) / 34%);
+	--music-player-prompt-color: rgb(var(--alba-charcoal-rgb) / 90%);
+	--music-player-prompt-border: 1px solid rgb(var(--alba-champagne-rgb) / 36%);
 	--music-player-prompt-accent: var(--alba-champagne);
 	--music-player-button-color: var(--alba-charcoal);
-	--music-player-button-border: 1px solid rgb(var(--alba-champagne-rgb) / 26%);
-	--music-player-ring-color: rgb(var(--alba-champagne-rgb) / 45%);
+	--music-player-button-border: 1px solid rgb(var(--alba-champagne-rgb) / 28%);
+	--music-player-ring-color: rgb(var(--alba-champagne-rgb) / 48%);
 
-	// Personalized access — same graphite environment as RSVP, champagne hairlines
-	--pa-card-bg-color: var(--alba-navy);
-	--pa-card-bg-image: linear-gradient(
-		165deg,
-		rgb(var(--alba-graphite-elevated-rgb) / 88%) 0%,
-		rgb(var(--alba-navy-rgb) / 96%) 100%
-	);
-	--pa-card-border: 1px solid rgb(var(--alba-champagne-rgb) / 30%);
-	--pa-card-shadow: 0 25px 60px rgb(0 0 0 / 35%);
-	--pa-card-inner-border: 1px solid rgb(var(--alba-champagne-rgb) / 18%);
-	--pa-card-glow: radial-gradient(
-		circle at top center,
-		rgb(var(--alba-sage-rgb) / 14%),
-		transparent 45%
-	);
-	--pa-corner-color: rgb(var(--alba-champagne-rgb) / 80%);
-	--pa-eyebrow-color: var(--alba-champagne);
-	--pa-title-color: rgb(var(--alba-champagne-rgb) / 70%);
-	--pa-subtitle-color: rgb(var(--alba-ivory-rgb) / 82%);
-	--pa-label-color: rgb(var(--alba-champagne-rgb) / 74%);
-	--pa-guest-color: var(--alba-champagne);
+	// Personalized access — same ink family as RSVP (lifted plate); champagne accent-only
+	--pa-card-bg-color: rgb(58 60 64);
+	--pa-card-bg-image: none;
+	--pa-card-border: 1px solid rgb(var(--alba-champagne-rgb) / 24%);
+	--pa-card-shadow: none;
+	--pa-card-inner-border: 0;
+	--pa-card-glow: none;
+	--pa-corner-color: rgb(var(--alba-champagne-rgb) / 58%);
+	--pa-eyebrow-color: rgb(var(--alba-champagne-rgb) / 82%);
+	--pa-title-color: rgb(var(--alba-ivory-rgb) / 84%);
+	--pa-subtitle-color: rgb(var(--alba-ivory-rgb) / 90%);
+	--pa-label-color: rgb(var(--alba-champagne-rgb) / 76%);
+	--pa-guest-color: var(--alba-ivory);
 	--pa-divider-gradient: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--alba-champagne-rgb) / 80%) 50%,
+		rgb(var(--alba-champagne-rgb) / 58%) 50%,
 		transparent 100%
 	);
-	--pa-divider-diamond-bg: var(--alba-navy);
-	--pa-divider-diamond-border-color: rgb(var(--alba-champagne-rgb) / 80%);
-	--pa-divider-diamond-shadow: 0 0 10px rgb(var(--alba-champagne-rgb) / 15%);
-	--pa-count-frame-border: 1px solid rgb(var(--alba-champagne-rgb) / 55%);
-	--pa-count-frame-inner-border: 0.5px solid rgb(var(--alba-champagne-rgb) / 15%);
-	--pa-count-color: rgb(var(--alba-ivory-rgb) / 80%);
-	--pa-footer-border-top: 1px solid rgb(var(--alba-champagne-rgb) / 15%);
+	--pa-divider-diamond-bg: rgb(58 60 64);
+	--pa-divider-diamond-border-color: rgb(var(--alba-champagne-rgb) / 58%);
+	--pa-divider-diamond-shadow: none;
+	--pa-count-frame-border: 1px solid rgb(var(--alba-champagne-rgb) / 42%);
+	--pa-count-frame-inner-border: 0;
+	--pa-count-color: rgb(var(--alba-ivory-rgb) / 94%);
+	--pa-footer-border-top: 1px solid rgb(var(--alba-ivory-rgb) / 14%);
 	--pa-footer-bg: none;
-	--pa-footer-text-color: rgb(var(--alba-ivory-rgb) / 62%);
+	--pa-footer-text-color: rgb(var(--alba-ivory-rgb) / 80%);
 
 	// Photography carries the color: strip inherited sepia washes
-	--theme-image-filter-hero: contrast(1.05) brightness(0.94) saturate(0.98);
-	--theme-image-filter-portrait: contrast(1.03) brightness(0.99) saturate(0.98);
-	--theme-image-filter-gallery: contrast(1.02) brightness(0.98) saturate(0.98);
-	--interlude-image-filter: contrast(1.04) brightness(0.94) saturate(0.96);
+	--theme-image-filter-hero: contrast(1.05) brightness(0.96) saturate(0.98);
+	--theme-image-filter-portrait: contrast(1.03) brightness(1) saturate(0.98);
+	--theme-image-filter-gallery: contrast(1.02) brightness(0.99) saturate(0.98);
+	--interlude-image-filter: contrast(1.04) brightness(0.96) saturate(0.96);
 	--intersection-arch-height: clamp(3rem, 5.5vw, 6rem);
 	--intersection-depth: clamp(4rem, 8vw, 7.5rem);
 	--hero-name-size-mobile: clamp(2.35rem, 8.5vw, 3.2rem);
 	--hero-label-letter-spacing: 0.28em;
 
-	// Atmospheric blends for section transitions
+	// Atmospheric blends stay inside the 3-band system (no sage wash)
 	--intersection-blend: linear-gradient(
 		180deg,
-		rgb(var(--alba-navy-rgb) / 0%) 0%,
-		rgb(var(--alba-sage-rgb) / 12%) 42%,
-		rgb(var(--alba-cream-rgb) / 55%) 100%
+		rgb(var(--alba-rsvp-surface-rgb) / 0%) 0%,
+		rgb(var(--alba-cream-rgb) / 40%) 50%,
+		rgb(var(--alba-cream-rgb) / 70%) 100%
 	);
 
-	// Section specific background rhythm
-	--location-bg: linear-gradient(
-		180deg,
-		var(--alba-ivory) 0%,
-		var(--alba-cream) 55%,
-		rgb(238 230 218) 100%
-	);
+	// Section surfaces: light editorial / pause cream / ink
+	--location-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
 	--gallery-section-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
-	--gifts-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
+	--gifts-bg: var(--alba-pause-surface);
 
-	// Family: one flat neutral surface, no patterned/diagonal texture
-	--family-bg: var(--alba-stone-light);
+	// Family stays in the light editorial band (not a fourth greige)
+	--family-bg: var(--alba-ivory);
 	--family-texture-image: none;
 	--family-texture-opacity: 0%;
 	--family-vignette-bg: none;
@@ -179,19 +183,42 @@ html:has(.event--alba-rosa-quinones) body {
 	// 2. SECTION INTERSECTIONS (ASYMMETRIC OVERLAPS & TONAL SEAMS)
 	// ==========================================================================
 	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
-		&[data-section-kind='location'] {
+		&[data-section-kind='countdown'] {
+			--intersection-depth: clamp(2.5rem, 5vw, 4rem);
 			--intersection-blend: linear-gradient(
 				180deg,
-				rgb(var(--alba-charcoal-rgb) / 35%) 0%,
-				rgb(var(--alba-cream-rgb) / 75%) 55%,
+				rgb(var(--alba-rsvp-surface-rgb) / 50%) 0%,
+				rgb(var(--alba-pause-surface-rgb) / 92%) 58%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='location'] {
+			--intersection-depth: clamp(2.25rem, 4.5vw, 3.5rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-pause-surface-rgb) / 92%) 0%,
+				rgb(var(--alba-ivory-rgb) / 70%) 55%,
 				transparent 100%
 			);
 		}
 
 		&[data-section-kind='gifts'] {
+			--intersection-depth: clamp(3rem, 6vw, 5rem);
 			--intersection-blend: linear-gradient(
 				180deg,
-				rgb(var(--alba-cream-rgb) / 45%) 0%,
+				rgb(var(--alba-cream-rgb) / 75%) 0%,
+				rgb(var(--alba-pause-surface-rgb) / 45%) 50%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='personalized-access'] {
+			--intersection-depth: clamp(3rem, 7vw, 5.5rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-pause-surface-rgb) / 90%) 0%,
+				rgb(var(--alba-pass-surface-rgb) / 42%) 52%,
 				transparent 100%
 			);
 		}
@@ -199,8 +226,8 @@ html:has(.event--alba-rosa-quinones) body {
 		&[data-section-kind='family'] {
 			--intersection-blend: linear-gradient(
 				180deg,
-				rgb(var(--alba-navy-rgb) / 55%) 0%,
-				rgb(var(--alba-cream-rgb) / 90%) 65%,
+				rgb(var(--alba-rsvp-surface-rgb) / 65%) 0%,
+				rgb(var(--alba-ivory-rgb) / 92%) 65%,
 				transparent 100%
 			);
 		}
@@ -208,21 +235,20 @@ html:has(.event--alba-rosa-quinones) body {
 		&[data-section-kind='thankYou'] {
 			--intersection-blend: linear-gradient(
 				180deg,
-				rgb(var(--alba-cream-rgb) / 35%) 0%,
-				rgb(var(--alba-navy-rgb) / 50%) 100%
+				rgb(var(--alba-ivory-rgb) / 40%) 0%,
+				rgb(var(--alba-rsvp-surface-rgb) / 55%) 100%
 			);
 		}
 	}
 
 	.invitation-section-wrapper[data-intersection='arch'] {
-		--intersection-surface: var(--alba-navy);
+		--intersection-surface: var(--alba-rsvp-surface);
 	}
 
 	// --------------------------------------------------------------------------
 	// Asymmetric diagonal cuts (shared `overlap` primitive + profile geometry).
-	// Two major boundaries visibly break the full-width horizontal axis:
-	// Paris → Gallery (limestone rises left-deep) and Gifts → graphite
-	// (ink descends right-deep). Same language, mirrored directions.
+	// Paris → Gallery: limestone rises left-deep.
+	// Pass/Gifts → RSVP: graphite descends right-deep (restored signature cut).
 	// --------------------------------------------------------------------------
 	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='gallery'] {
 		--intersection-depth: clamp(3.5rem, 9vw, 7rem);
@@ -256,7 +282,7 @@ html:has(.event--alba-rosa-quinones) body {
 				100% 100%,
 				0 100%
 			);
-			padding-top: calc(clamp(4rem, 9vw, 6.5rem) + var(--alba-cut-deep));
+			padding-top: calc(clamp(3.5rem, 8vw, 5.75rem) + var(--alba-cut-deep));
 		}
 
 		// Geometry applies to the outer shell only (RSVP nests .rsvp-section)
@@ -266,6 +292,21 @@ html:has(.event--alba-rosa-quinones) body {
 		}
 	}
 
+	// Host clearance for the descending RSVP diagonal (guest: pass; public: gifts)
+	.invitation-section-wrapper[data-section-kind='personalized-access']:has(
+			+ .invitation-section-wrapper[data-section-kind='rsvp']
+		)
+		.personalized-access {
+		padding-block-end: calc(clamp(2.75rem, 6vw, 4.25rem) + clamp(3rem, 8vw, 6.5rem));
+	}
+
+	.invitation-section-wrapper[data-section-kind='gifts']:has(
+			+ .invitation-section-wrapper[data-section-kind='rsvp']
+		)
+		.gifts-section {
+		padding-block-end: calc(clamp(3.25rem, 7vw, 5.25rem) + clamp(3rem, 8vw, 6.5rem));
+	}
+
 	// ==========================================================================
 	// 2a. HEADER & MOBILE MENU — GRAPHITE / IVORY / CHAMPAGNE (NO CAFÉ)
 	// Declared on the element to outrank the hacienda header theme hooks.
@@ -273,33 +314,33 @@ html:has(.event--alba-rosa-quinones) body {
 	.header-base[data-variant='luxury-hacienda'] {
 		--header-bg: linear-gradient(
 			180deg,
-			rgb(var(--alba-navy-rgb) / 40%) 0%,
-			rgb(var(--alba-navy-rgb) / 0%) 100%
+			rgb(var(--alba-rsvp-surface-rgb) / 40%) 0%,
+			rgb(var(--alba-rsvp-surface-rgb) / 0%) 100%
 		);
 		--header-bg-scrolled: linear-gradient(
 			180deg,
-			rgb(var(--alba-navy-rgb) / 94%) 0%,
-			rgb(24 26 29 / 90%) 100%
+			rgb(var(--alba-rsvp-surface-rgb) / 94%) 0%,
+			rgb(var(--alba-rsvp-surface-rgb) / 90%) 100%
 		);
-		--header-nav-color: rgb(var(--alba-ivory-rgb) / 92%);
-		--header-nav-color-transparent: rgb(var(--alba-ivory-rgb) / 92%);
-		--header-border-bottom: 1px solid rgb(var(--alba-champagne-rgb) / 20%);
-		--mobile-drawer-bg: rgb(24 26 29 / 98%);
+		--header-nav-color: rgb(var(--alba-ivory-rgb) / 94%);
+		--header-nav-color-transparent: rgb(var(--alba-ivory-rgb) / 94%);
+		--header-border-bottom: 1px solid rgb(var(--alba-champagne-rgb) / 22%);
+		--mobile-drawer-bg: rgb(var(--alba-rsvp-surface-rgb) / 98%);
 		--mobile-drawer-border: rgb(var(--alba-champagne-rgb) / 24%);
 		--mobile-drawer-link-color: var(--alba-ivory);
 		--mobile-drawer-link-hover: var(--alba-champagne);
-		--mobile-drawer-login-color: rgb(var(--alba-ivory-rgb) / 68%);
+		--mobile-drawer-login-color: rgb(var(--alba-ivory-rgb) / 76%);
 		--mobile-drawer-login-hover-color: var(--alba-champagne);
 		--mobile-drawer-cta-bg: var(--alba-champagne);
-		--mobile-drawer-cta-color: var(--alba-navy);
+		--mobile-drawer-cta-color: var(--alba-rsvp-surface);
 		--mobile-drawer-cta-border: 1px solid rgb(var(--alba-champagne-rgb) / 40%);
 		--mobile-drawer-cta-shadow: 0 12px 28px rgb(0 0 0 / 24%);
-		--mobile-drawer-cta-hover-bg: var(--alba-navy);
+		--mobile-drawer-cta-hover-bg: var(--alba-rsvp-surface);
 		--mobile-drawer-cta-hover-color: var(--alba-champagne);
 		--mobile-drawer-cta-hover-border: 1px solid rgb(var(--alba-champagne-rgb) / 60%);
 		--mobile-drawer-cta-hover-shadow: 0 14px 32px rgb(0 0 0 / 40%);
-		--mobile-drawer-footer-copy: rgb(var(--alba-ivory-rgb) / 50%);
-		--mobile-signature-color: rgb(var(--alba-ivory-rgb) / 65%);
+		--mobile-drawer-footer-copy: rgb(var(--alba-ivory-rgb) / 68%);
+		--mobile-signature-color: rgb(var(--alba-ivory-rgb) / 76%);
 		--mobile-close-button-color: var(--alba-ivory);
 	}
 
@@ -310,47 +351,65 @@ html:has(.event--alba-rosa-quinones) body {
 		// Deep graphite/ink stage — replaces the inherited café radial
 		--env-bg: radial-gradient(
 			ellipse at 50% 34%,
-			rgb(44 47 52) 0%,
-			var(--alba-navy) 52%,
+			rgb(var(--alba-pass-surface-rgb) / 100%) 0%,
+			var(--alba-rsvp-surface) 52%,
 			rgb(22 24 27) 100%
 		);
 
 		// Warm-ivory envelope paper with charcoal typography
 		--env-paper-bg: linear-gradient(
 			160deg,
-			rgb(246 244 240) 0%,
+			var(--alba-ivory) 0%,
 			var(--alba-ivory) 55%,
-			rgb(233 230 224) 100%
+			var(--alba-cream) 100%
 		);
 		--env-paper-border: rgb(var(--alba-stone-rgb) / 30%);
 		--env-text-primary: var(--alba-charcoal);
-		--env-text-secondary: rgb(var(--alba-ink-rgb) / 78%);
+		--env-text-secondary: rgb(var(--alba-ink-rgb) / 86%);
 		--env-accent: var(--alba-champagne);
 		--env-seal-accent: var(--alba-champagne);
+		--env-focus-ring: var(--alba-champagne);
 
-		// Satin champagne seal — no yellow gold, copper, or bronze
+		// Satin champagne seal — restrained, not yellow-gold / bronze / brown
 		--env-seal-bg: radial-gradient(
-			circle at 34% 30%,
-			rgb(226 214 189) 0%,
-			var(--alba-champagne) 46%,
-			rgb(158 143 114) 100%
+			circle at 34% 28%,
+			rgb(232 222 200) 0%,
+			rgb(210 194 160) 42%,
+			rgb(176 160 128) 100%
 		);
-		--env-seal-icon: rgb(var(--alba-charcoal-rgb) / 72%);
-		--env-shadow-container: 0 28px 56px rgb(0 0 0 / 38%), 0 6px 16px rgb(0 0 0 / 22%);
+		--env-seal-icon: rgb(var(--alba-charcoal-rgb) / 68%);
+		--env-shadow-container: 0 24px 48px rgb(0 0 0 / 34%), 0 6px 14px rgb(0 0 0 / 18%);
 		--env-shadow-seal:
-			0 8px 20px rgb(0 0 0 / 32%), inset 0 1px 2px rgb(255 255 255 / 55%),
-			inset 0 -2px 6px rgb(var(--alba-stone-rgb) / 38%);
+			0 6px 14px rgb(0 0 0 / 28%), inset 0 1px 1px rgb(255 255 255 / 48%),
+			inset 0 -1px 4px rgb(var(--alba-stone-rgb) / 32%);
 
-		// Opaque letter — removes the translucent ghost layer behind the card
+		// Letter proportions — taller editorial plate with breathing room
+		--env-container-width: clamp(318px, 46vw, 590px);
+		--env-container-ratio: 1.28;
+		--env-container-max-height: min(60svh, 440px);
+		--env-grid: 28% 32% 40%;
+		--env-title-size: clamp(1.6rem, 5cqw, 2.1rem);
+		--env-seal-size-compact: 40px;
+		--env-seal-size-standard: 48px;
+		--env-seal-size-large: 54px;
+
+		// Opaque letter — no translucent ghost layers
 		--reveal-card-bg: var(--alba-ivory);
-		--reveal-card-border: rgb(var(--alba-stone-rgb) / 26%);
+		--reveal-card-border: rgb(var(--alba-stone-rgb) / 22%);
 		--reveal-card-text-primary: var(--alba-charcoal);
-		--reveal-card-text-secondary: rgb(var(--alba-ink-rgb) / 72%);
+		--reveal-card-text-secondary: rgb(var(--alba-ink-rgb) / 68%);
 		--reveal-card-accent: rgb(var(--alba-champagne-rgb) / 55%);
-		--reveal-card-shadow: 0 18px 44px rgb(0 0 0 / 30%);
+		--reveal-card-shadow: 0 20px 48px rgb(0 0 0 / 28%), 0 4px 12px rgb(0 0 0 / 12%);
+		--reveal-card-width: min(78vw, 360px);
+		--reveal-card-rest-y: clamp(-48px, -7svh, -28px);
 
-		.envelope-container::after {
-			box-shadow: var(--env-shadow-container);
+		.envelope-container {
+			// Slight controlled offset vs the letter for depth
+			transform: translateX(-0.6rem);
+
+			&::after {
+				box-shadow: var(--env-shadow-container);
+			}
 		}
 
 		// Simplify paper layers: plain matte ivory, no parchment washes
@@ -362,67 +421,221 @@ html:has(.event--alba-rosa-quinones) body {
 		}
 
 		.envelope-flap {
-			filter: drop-shadow(0 10px 24px rgb(0 0 0 / 26%));
+			filter: drop-shadow(0 8px 20px rgb(0 0 0 / 22%));
+		}
+
+		.envelope-tease {
+			padding: 1.25rem 1.5rem 1.1rem;
+		}
+
+		.envelope-zone--stamp {
+			// Closed envelope: no stamp/date crowding above the seal
+			display: none;
+		}
+
+		.envelope-zone--identity {
+			gap: 0.55rem;
+			padding-top: 0.35rem;
 		}
 
 		.envelope-name {
+			max-width: 78cqw;
+			margin: 0;
 			color: var(--env-text-primary);
+			font-family: var(--font-display, georgia, serif);
+			font-weight: 500;
+			font-size: var(--env-title-size);
+			letter-spacing: 0.06em;
+			line-height: 1.2;
+			text-transform: uppercase;
 			text-shadow: none;
 		}
 
-		.envelope-details,
+		// The shared teaser normally contains venue logistics. The closed Alba envelope
+		// keeps its own concise, senior-readable occasion and date hierarchy instead.
+		.envelope-details {
+			font-size: 0;
+			font-weight: 600;
+			line-height: 1;
+			margin-top: 0.4rem;
+			opacity: 100%;
+
+			&::before,
+			&::after {
+				display: block;
+				font-family: var(--font-label, sans-serif);
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+
+			&::before {
+				content: '70 AÑOS';
+				font-size: clamp(1.05rem, 3.5cqw, 1.16rem);
+				letter-spacing: 0.12em;
+				line-height: 1.35;
+				color: var(--alba-charcoal);
+				opacity: 85%;
+			}
+
+			&::after {
+				content: '11 · SEP · 2026';
+				margin-top: 0.38rem;
+				font-size: clamp(0.7rem, 7cqw, 0.85rem);
+				letter-spacing: 0.2em;
+				line-height: 1.35;
+				color: rgb(var(--alba-ink-rgb) / 70%);
+			}
+		}
+
 		.envelope-manifest-label,
 		.envelope-stamp {
-			color: var(--env-text-secondary);
+			display: none;
 		}
 
-		.envelope-stamp {
-			background: transparent;
-			border-color: rgb(var(--alba-stone-rgb) / 24%);
-		}
-
-		.envelope-external-instruction p {
-			color: rgb(var(--alba-ivory-rgb) / 85%);
-			text-shadow: none;
-		}
-
-		.instruction-line {
+		.tease-divider {
+			width: 4.5rem;
+			margin: 0 auto 0.1rem;
+			opacity: 70%;
 			background: linear-gradient(
 				to right,
 				transparent,
-				rgb(var(--alba-champagne-rgb) / 70%) 30%,
-				rgb(var(--alba-champagne-rgb) / 70%) 70%,
+				rgb(var(--alba-champagne-rgb) / 55%) 30%,
+				rgb(var(--alba-champagne-rgb) / 55%) 70%,
 				transparent
 			);
 		}
 
+		// Seal stays secondary to identity — compact satin champagne disc
 		.envelope-seal-button__visual {
-			border: 1px solid rgb(255 255 255 / 35%);
+			width: clamp(2.5rem, 7cqw, 3.5rem);
+			height: clamp(2.5rem, 7cqw, 3.5rem);
+			border: 1px solid rgb(255 255 255 / 28%);
 			background: var(--env-seal-bg);
 			box-shadow: var(--env-shadow-seal);
 
 			&::after {
 				background: radial-gradient(
-					circle at 30% 30%,
-					rgb(255 255 255 / 32%) 0%,
-					transparent 50%
+					circle at 30% 28%,
+					rgb(255 255 255 / 28%) 0%,
+					transparent 52%
 				);
 			}
 
 			.seal-icon {
+				width: 1.35rem;
+				height: 1.35rem;
 				color: var(--env-seal-icon-override, var(--env-seal-icon));
 				filter: none;
 			}
 		}
 
-		.tease-divider {
-			background: linear-gradient(
-				to right,
-				transparent,
-				rgb(var(--alba-champagne-rgb) / 50%) 30%,
-				rgb(var(--alba-champagne-rgb) / 50%) 70%,
-				transparent
-			);
+		// Hide tiny redundant hint text inside seal button to avoid clutter
+		.envelope-seal-hint {
+			display: none;
+		}
+
+		.envelope-external-instruction {
+			margin-top: 0.85rem;
+			opacity: 100%;
+
+			&__button {
+				color: var(--alba-ivory);
+				font-family: var(--font-label, sans-serif);
+				font-size: clamp(0.875rem, 2vw, 0.95rem);
+				font-weight: 600;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				text-shadow: none;
+				background: rgb(var(--alba-navy-rgb) / 90%);
+				border: 1px solid rgb(var(--alba-champagne-rgb) / 45%);
+				padding: 0.55rem 1.4rem;
+				border-radius: 9999px;
+				box-shadow: 0 4px 16px rgb(0 0 0 / 28%);
+				display: inline-block;
+				min-height: 46px;
+			}
+		}
+
+		// Guest information is deliberately outside the paper and below its identity.
+		// It has room to wrap before the only external CTA on every viewport.
+		.envelope-guest-external {
+			position: relative;
+			z-index: 1000;
+			display: grid;
+			gap: 0.35rem;
+			width: min(88vw, 32rem);
+			margin: clamp(0.65rem, 1.8svh, 1rem) auto 0;
+			padding-inline: 0.75rem;
+			color: var(--alba-ivory);
+			text-align: center;
+			transition:
+				opacity var(--duration-standard) var(--ease-standard),
+				transform var(--duration-standard) var(--ease-standard);
+
+			.personalized-label {
+				margin: 0;
+				font-family: var(--font-label, sans-serif);
+				font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+				font-weight: 600;
+				letter-spacing: 0.16em;
+				line-height: 1.35;
+				text-transform: uppercase;
+				color: rgb(var(--alba-ivory-rgb) / 78%);
+			}
+
+			.personalized-name {
+				overflow-wrap: anywhere;
+				font-family: var(--font-display);
+				font-size: clamp(1.05rem, 4.2vw, 1.45rem);
+				font-weight: 600;
+				line-height: 1.15;
+				letter-spacing: 0.025em;
+				color: var(--alba-ivory);
+			}
+		}
+
+		&.is-opening .envelope-guest-external,
+		&.is-letter-held .envelope-guest-external,
+		&.is-preview-opened .envelope-guest-external {
+			opacity: 0%;
+			pointer-events: none;
+			transform: translateY(-0.5rem);
+		}
+
+		@include mixins.respond-below(sm) {
+			--env-container-width: min(86vw, 336px);
+			--env-container-max-height: min(54svh, 340px);
+			--env-title-size: clamp(1.5rem, 4.4cqw, 1.9rem);
+
+			.envelope-tease {
+				padding: 0.75rem 1rem;
+			}
+
+			.envelope-zone--identity {
+				gap: 0.3rem;
+			}
+
+			.envelope-external-instruction {
+				margin-top: 0.55rem;
+			}
+
+			.envelope-guest-external {
+				margin-top: 0.5rem;
+			}
+		}
+
+		.envelope-external-instruction__button:focus-visible {
+			outline-color: var(--alba-champagne);
+		}
+
+		.instruction-line {
+			display: none;
+		}
+
+		// Emerging letter — 70 AÑOS -> full name -> date. Opening is already complete.
+		.envelope-reveal-stage {
+			// Keep transform free for the rise animation; offset via padding
+			padding-inline-start: clamp(1.25rem, 3vw, 2rem);
 		}
 
 		.invitation-reveal-card {
@@ -431,12 +644,64 @@ html:has(.event--alba-rosa-quinones) body {
 			box-shadow: var(--reveal-card-shadow);
 		}
 
+		.invitation-reveal-card__inner {
+			gap: 0.4rem;
+			min-height: min(44svh, 360px);
+			padding: clamp(2.25rem, 6vw, 3rem) clamp(1.75rem, 5vw, 2.5rem);
+		}
+
+		.invitation-reveal-card__label {
+			margin: 0 0 0.65rem;
+			color: rgb(107 92 59);
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(1rem, 3.2vw, 1.2rem);
+			font-weight: 600;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			opacity: 100%;
+		}
+
 		.invitation-reveal-card__name {
+			gap: 0.2rem;
 			color: var(--reveal-card-text-primary);
+			font-size: clamp(1.75rem, 6.8vw, 2.25rem);
+			font-weight: 500;
+			letter-spacing: 0.03em;
+			line-height: 1.12;
+			text-transform: uppercase;
 			text-shadow: none;
+
+			// Birthday letter: stacked given name + surnames (not a couple ampersand)
+			> span:last-child {
+				font-size: 0.78em;
+				font-weight: 400;
+				letter-spacing: 0.08em;
+				color: var(--alba-ink);
+				opacity: 92%;
+			}
+		}
+
+		.invitation-reveal-card__ampersand {
+			display: none;
+		}
+
+		.invitation-reveal-card__date {
+			margin-top: 0.95rem;
+			color: var(--alba-ink);
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.75rem, 2.2vw, 0.86rem);
+			font-weight: 600;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+		}
+
+		.invitation-reveal-card__tagline {
+			display: none;
 		}
 
 		.invitation-reveal-card__divider {
+			width: min(4.5rem, 28%);
+			margin-top: 1rem;
 			background: linear-gradient(
 				to right,
 				transparent,
@@ -571,17 +836,22 @@ html:has(.event--alba-rosa-quinones) body {
 			}
 		}
 
-		// 1. Eyebrow: 70 AÑOS
+		// 1. Eyebrow: 70 AÑOS — champagne occasion leitmotif, subordinate to the dominant headline
 		.invitation-hero__label {
 			font-family: var(--font-label, sans-serif);
-			letter-spacing: 0.28em;
-			color: var(--alba-gold);
-			font-size: clamp(0.72rem, 1.8vw, 0.84rem);
+			letter-spacing: 0.24em;
+			color: var(--alba-champagne);
+			font-size: clamp(0.85rem, 2.2vw, 1.02rem);
 			font-weight: 600;
 			text-transform: uppercase;
 			opacity: 100%;
-			margin-bottom: 0.75rem;
-			text-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+			margin-bottom: 0.85rem;
+			text-shadow: 0 2px 12px rgb(0 0 0 / 55%);
+		}
+
+		// Nickname badge would compete with the occasion marker — omit from Hero hierarchy
+		.invitation-hero__nickname-badge {
+			display: none;
 		}
 
 		// 2. Headline: Alba Rosa Quiñones López
@@ -661,18 +931,141 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	// ==========================================================================
-	// 4. LOCATION SECTION — EDITORIAL TYPOGRAPHY, NO CARD UI
+	// 4. COUNTDOWN — QUIET PAUSE DIVIDER (HERO → LOCATION)
+	// Same mineral pause language as Gifts: depth, breath, elder-legible type.
+	// ==========================================================================
+	.countdown-section {
+		background: var(--alba-pause-surface);
+		box-shadow: none;
+		min-height: auto;
+		padding: clamp(2rem, 4.5vw, 3.25rem) clamp(1.25rem, 5vw, 2.5rem)
+			clamp(1.75rem, 4vw, 2.75rem);
+		border-block: 1px solid rgb(var(--alba-stone-rgb) / 22%);
+
+		&::after {
+			content: none;
+		}
+
+		.countdown-container {
+			max-width: 34rem;
+		}
+
+		.countdown-timer-wrapper {
+			margin: 0;
+		}
+
+		.countdown-title {
+			font-family: var(--font-label, sans-serif);
+			margin: 0 0 0.55rem;
+			font-size: clamp(0.95rem, 2.3vw, 1.1rem);
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			line-height: 1.25;
+			color: var(--alba-charcoal);
+			text-shadow: none;
+		}
+
+		.countdown__timer {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0;
+			justify-content: center;
+		}
+
+		.countdown__segment:not([data-unit='days']) {
+			display: none;
+		}
+
+		.countdown__segment {
+			display: grid;
+			gap: 0.15rem;
+			padding: 0;
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+			will-change: auto;
+
+			&::before,
+			&::after {
+				display: none;
+			}
+
+			&:hover {
+				transform: none;
+				border-color: transparent;
+				box-shadow: none;
+			}
+		}
+
+		.countdown__value {
+			font-family: var(--font-display);
+			display: inline-flex;
+			font-size: clamp(4.25rem, 15vw, 6.25rem);
+			font-weight: 600;
+			letter-spacing: 0;
+			line-height: 0.95;
+			color: var(--alba-charcoal);
+			text-shadow: none;
+		}
+
+		.countdown__value-wrapper {
+			height: auto;
+			width: auto;
+			overflow: visible;
+			min-height: 0;
+		}
+
+		.countdown__label {
+			display: none;
+		}
+
+		.countdown__unit {
+			display: inline;
+			margin-left: 0.45rem;
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+			font-weight: 700;
+			letter-spacing: 0.06em;
+			line-height: 1.2;
+			color: var(--alba-charcoal);
+		}
+
+		.countdown__context {
+			display: block;
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.98rem, 2.1vw, 1.08rem);
+			font-weight: 700;
+			letter-spacing: 0.05em;
+			line-height: 1.4;
+			color: var(--alba-ink);
+		}
+
+		.countdown-date,
+		.countdown-footer {
+			display: none;
+		}
+
+		.countdown__status {
+			margin: 0.75rem 0 0;
+			font-family: var(--font-body);
+			font-size: clamp(1rem, 2.2vw, 1.15rem);
+			font-weight: 600;
+			color: var(--alba-charcoal);
+		}
+	}
+
+	// ==========================================================================
+	// 5. LOCATION SECTION — EDITORIAL TYPOGRAPHY + DISCREET STREET MAP
 	// Hierarchy: date (eyebrow) → venue → time → address → navigation → dress code
 	// ==========================================================================
 	.event-location {
 		background: var(--location-bg);
-		padding-block: clamp(4rem, 8vw, 6.5rem) clamp(3.25rem, 7vw, 5.5rem);
+		padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(2.75rem, 6vw, 4.5rem);
 		padding-inline: clamp(1.25rem, 5vw, 2.5rem);
 
 		&__intro {
 			max-width: min(62rem, 100%);
 			margin-inline: auto;
-			margin-bottom: clamp(2rem, 5vw, 3.25rem);
+			margin-bottom: clamp(1.25rem, 3vw, 2rem);
 			text-align: center;
 
 			@media (width >= 768px) {
@@ -682,14 +1075,15 @@ html:has(.event--alba-rosa-quinones) body {
 
 		&__eyebrow {
 			font-family: var(--font-label, sans-serif);
-			font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-			letter-spacing: 0.26em;
-			color: var(--alba-gold);
+			font-size: clamp(0.875rem, 1.8vw, 0.94rem);
+			letter-spacing: 0.08em;
+			color: rgb(var(--alba-ink-rgb) / 90%);
 			font-weight: 600;
 			text-transform: uppercase;
 		}
 
 		&__heading {
+			display: none;
 			font-family: var(--font-display);
 			font-size: clamp(2.2rem, 5.5vw, 3.4rem);
 			color: var(--alba-charcoal);
@@ -741,38 +1135,111 @@ html:has(.event--alba-rosa-quinones) body {
 			padding: 0;
 			backdrop-filter: none;
 			max-width: none;
+			display: grid;
+			grid-template-areas:
+				'content'
+				'map';
+			gap: clamp(1.25rem, 3vw, 2rem);
+			overflow: visible;
 
 			.rivet {
 				display: none;
 			}
 		}
 
+		// The shared Carto street map stays a supporting editorial plate. It is
+		// intentionally static: no commercial pins, controls, or interaction-only cues.
+		&__card-image-outer-frame {
+			grid-area: map;
+			padding: 0;
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+		}
+
+		&__card-image-inner-frame {
+			padding: 0;
+			border: 1px solid rgb(var(--alba-champagne-rgb) / 28%);
+			box-shadow: none;
+		}
+
+		&__card-image-container {
+			aspect-ratio: 16 / 9;
+			background: var(--alba-limestone);
+		}
+
+		.google-map-container[data-map-style='rustic'] {
+			--map-frame-filter: grayscale(0.2) saturate(0.72) contrast(1.24) brightness(0.97);
+			--map-border: rgb(var(--alba-champagne-rgb) / 24%);
+			--map-shadow: none;
+			--map-overlay: rgb(var(--alba-ivory-rgb) / 3%);
+		}
+
+		.rustic-map-pin {
+			color: var(--alba-charcoal);
+		}
+
+		.rustic-map-pulse {
+			background: rgb(var(--alba-champagne-rgb) / 65%);
+			box-shadow: 0 0 10px rgb(var(--alba-champagne-rgb) / 72%);
+		}
+
 		&__card-content {
+			grid-area: content;
 			padding: 0;
 			text-align: center;
 
 			@media (width >= 768px) {
-				display: grid;
-				grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-				gap: clamp(2.5rem, 6vw, 4.5rem);
-				align-items: end;
+				display: flex;
+				align-items: flex-start;
+				gap: 0;
 				text-align: left;
+			}
+		}
+
+		@media (width < 768px) {
+			&__card {
+				display: flex;
+				flex-direction: column;
+				gap: clamp(1.25rem, 4vw, 1.75rem);
+			}
+
+			&__card-content {
+				display: contents;
+			}
+
+			&__card-content-list {
+				order: 1;
+			}
+
+			&__card-image-outer-frame {
+				order: 2;
+			}
+
+			&__card-navigation-buttons {
+				order: 3;
+				margin-top: 0;
 			}
 		}
 
 		&__card-content-list {
 			margin: 0;
 			padding: 0;
+			list-style: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
 		}
 
 		&__card-content-place {
 			font-family: var(--font-display);
-			font-size: clamp(2.1rem, 5.5vw, 3.3rem);
+			font-size: clamp(2.25rem, 6.2vw, 3.55rem);
 			font-weight: 400;
 			color: var(--alba-charcoal);
 			line-height: 1.06;
 			letter-spacing: 0.01em;
-			margin-bottom: 0.85rem;
+			margin-bottom: 0.5rem;
+			order: 2;
 		}
 
 		// Date appears once, in the intro eyebrow
@@ -782,17 +1249,27 @@ html:has(.event--alba-rosa-quinones) body {
 
 		&__card-content-hour {
 			font-family: var(--font-label, sans-serif);
-			font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-			letter-spacing: 0.22em;
+			font-size: clamp(1rem, 2vw, 1.1rem);
+			letter-spacing: 0.07em;
+			font-weight: 700;
 			text-transform: uppercase;
-			color: rgb(var(--alba-ink-rgb) / 74%);
-			margin-bottom: clamp(1.1rem, 2.5vw, 1.6rem);
+			color: rgb(var(--alba-ink-rgb) / 90%);
+			margin-bottom: 0.65rem;
+			order: 1;
 		}
 
 		&__card-content-address {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 2.75rem;
+			align-items: center;
+			gap: 0.35rem;
 			justify-content: center;
 			border: none;
-			padding-top: 0;
+			padding-top: 1rem;
+			margin-top: 0.25rem;
+			width: min(100%, 29rem);
+			border-top: 1px solid rgb(var(--alba-stone-rgb) / 25%);
+			order: 3;
 
 			@media (width >= 768px) {
 				justify-content: flex-start;
@@ -801,9 +1278,9 @@ html:has(.event--alba-rosa-quinones) body {
 
 		&__card-content-address-text {
 			font-family: var(--font-body);
-			font-size: clamp(0.95rem, 2vw, 1.08rem);
-			color: rgb(var(--alba-ink-rgb) / 84%);
-			line-height: 1.6;
+			font-size: clamp(1rem, 2.2vw, 1.12rem);
+			color: rgb(var(--alba-ink-rgb) / 90%);
+			line-height: 1.55;
 			max-width: 26rem;
 		}
 
@@ -813,7 +1290,11 @@ html:has(.event--alba-rosa-quinones) body {
 			border: none;
 			box-shadow: none;
 			border-radius: 0;
-			padding: 0.25rem;
+			display: inline-grid;
+			place-items: center;
+			width: 2.75rem;
+			height: 2.75rem;
+			padding: 0;
 			color: rgb(var(--alba-stone-rgb) / 75%);
 			opacity: 100%;
 			transition: color 0.25s ease;
@@ -825,39 +1306,43 @@ html:has(.event--alba-rosa-quinones) body {
 			}
 		}
 
-		// Navigation: refined text actions instead of pill buttons
+		// Navigation actions prioritize clear touch feedback over decorative treatment.
 		&__card-navigation-buttons {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			gap: 1rem;
-			margin-top: 1.5rem;
+			gap: 0.6rem;
+			margin-top: 0.5rem;
 
 			@media (width >= 768px) {
-				margin-top: 0;
-				align-items: flex-start;
-				padding-left: clamp(1.5rem, 3vw, 2.25rem);
-				border-left: 1px solid rgb(var(--alba-stone-rgb) / 32%);
+				margin-top: clamp(1.5rem, 3vw, 2.25rem);
+				align-items: stretch;
+				padding-left: 0;
+				border-left: 0;
 			}
 		}
 
 		&__nav-button {
-			background: transparent;
-			border: none;
-			border-radius: 0;
-			border-bottom: 1px solid rgb(var(--alba-champagne-rgb) / 65%);
+			width: min(100%, 18rem);
+			justify-content: center;
+			background: rgb(var(--alba-ivory-rgb) / 44%);
+			border: 1px solid rgb(var(--alba-stone-rgb) / 48%);
+			border-radius: 2px;
 			color: var(--alba-charcoal);
 			font-family: var(--font-label, sans-serif);
-			font-size: 0.74rem;
-			letter-spacing: 0.2em;
+			display: inline-flex;
+			align-items: center;
+			min-height: 3rem;
+			font-size: 0.95rem;
+			letter-spacing: 0.04em;
 			font-weight: 600;
 			text-transform: uppercase;
-			padding: 0.35rem 0.1rem;
+			padding: 0.65rem 1rem;
 			box-shadow: none;
 			transition:
 				color 0.25s ease,
 				border-color 0.25s ease;
-			white-space: nowrap;
+			white-space: normal;
 
 			&::after {
 				content: ' \2197';
@@ -867,11 +1352,43 @@ html:has(.event--alba-rosa-quinones) body {
 
 			&:hover,
 			&:focus-visible {
-				background: transparent;
-				color: var(--alba-ink);
+				background: var(--alba-charcoal);
+				outline: 2px solid var(--alba-charcoal);
+				outline-offset: 2px;
+				color: var(--alba-ivory);
 				border-color: var(--alba-charcoal);
 				transform: none;
 				box-shadow: none;
+			}
+		}
+
+		@media (width >= 768px) {
+			&__card {
+				grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+				grid-template-areas:
+					'content map'
+					'content navigation';
+				align-items: start;
+				gap: 0.75rem clamp(2.5rem, 6vw, 5rem);
+			}
+
+			&__card-content {
+				display: contents;
+			}
+
+			&__card-content-list {
+				grid-area: content;
+				align-items: flex-start;
+			}
+
+			&__card-navigation-buttons {
+				grid-area: navigation;
+				align-items: stretch;
+				margin-top: 0;
+			}
+
+			&__card-image-container {
+				aspect-ratio: 4 / 5;
 			}
 		}
 
@@ -879,11 +1396,17 @@ html:has(.event--alba-rosa-quinones) body {
 		&__indications-container {
 			max-width: min(62rem, 100%);
 			margin-inline: auto;
-			margin-top: clamp(2.5rem, 5vw, 3.75rem);
+			margin-top: clamp(1.75rem, 4vw, 2.5rem);
+
+			@media (width >= 768px) {
+				width: calc(54% - clamp(1.25rem, 3vw, 2.5rem));
+				margin-left: 0;
+				margin-right: auto;
+			}
 		}
 
 		&__divider {
-			display: block;
+			display: none;
 			width: 100%;
 			height: 1px;
 			margin: 0 0 clamp(1.25rem, 2.5vw, 1.75rem);
@@ -918,16 +1441,20 @@ html:has(.event--alba-rosa-quinones) body {
 			}
 		}
 
+		&__indications::before {
+			display: none;
+		}
+
 		&__indication-icon {
 			display: none;
 		}
 
 		&__indication-text {
 			font-family: var(--font-label, sans-serif);
-			font-size: clamp(0.74rem, 1.7vw, 0.82rem);
-			letter-spacing: 0.18em;
+			font-size: clamp(0.875rem, 1.7vw, 0.94rem);
+			letter-spacing: 0.1em;
 			text-transform: uppercase;
-			color: rgb(var(--alba-ink-rgb) / 72%);
+			color: rgb(var(--alba-ink-rgb) / 88%);
 
 			strong {
 				color: var(--alba-charcoal);
@@ -940,7 +1467,7 @@ html:has(.event--alba-rosa-quinones) body {
 	// 5. PARIS INTERLUDE — NATURAL PROPORTIONS, NO DESTRUCTIVE CROP OR UPSCALE
 	// ==========================================================================
 	.invitation-interlude {
-		--interlude-bg: var(--alba-navy);
+		--interlude-bg: var(--alba-rsvp-surface);
 		--interlude-image-filter: contrast(1.03) brightness(0.97) saturate(0.98);
 
 		background: var(--interlude-bg);
@@ -987,13 +1514,8 @@ html:has(.event--alba-rosa-quinones) body {
 	// 6. GALLERY SECTION (FEATURED + SUPPORTING GRID)
 	// ==========================================================================
 	.gallery-section {
-		// Light limestone surface — overrides the preset's dark café band
-		// (declared at element level so it wins over the variant theme).
-		--gallery-section-bg: linear-gradient(
-			180deg,
-			var(--alba-limestone) 0%,
-			rgb(222 218 209) 100%
-		);
+		// Light editorial band — same ivory/cream axis as Location (no fourth greige)
+		--gallery-section-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
 		--gallery-grid-columns-mobile: 1;
 		--gallery-grid-columns-tablet: 2;
 		--gallery-grid-columns-desktop: 2;
@@ -1021,7 +1543,7 @@ html:has(.event--alba-rosa-quinones) body {
 		--gallery-item-image-emphasis-filter: var(--gallery-item-image-filter-in-view);
 		--gallery-item-image-hover-filter: var(--gallery-item-image-filter-hover);
 		--gallery-title-color: var(--alba-charcoal);
-		--gallery-subtitle-color: rgb(var(--alba-ink-rgb) / 72%);
+		--gallery-subtitle-color: rgb(var(--alba-ink-rgb) / 88%);
 		--gallery-overlay-bg: linear-gradient(
 			to top,
 			rgb(var(--alba-charcoal-rgb) / 45%) 0%,
@@ -1042,7 +1564,7 @@ html:has(.event--alba-rosa-quinones) body {
 
 		&__subtitle {
 			font-family: var(--font-body);
-			color: rgb(var(--alba-ink-rgb) / 72%);
+			color: rgb(var(--alba-ink-rgb) / 88%);
 			font-size: clamp(0.95rem, 2vw, 1.1rem);
 		}
 
@@ -1132,40 +1654,43 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	// ==========================================================================
-	// 7. GIFTS SECTION (QUIET EDITORIAL PAUSE)
+	// 7. GIFTS — QUIET PAUSE DIVIDER (GALLERY → PASS)
+	// Mineral pause surface shared with Countdown; depth and breath before the pass.
 	// ==========================================================================
 	.gifts-section {
-		background: var(--gifts-bg);
+		--gifts-bg: var(--alba-pause-surface);
 
-		// Bottom clearance hosts the graphite diagonal that descends from RSVP
-		padding-block: clamp(2.75rem, 6vw, 4.5rem)
-			calc(clamp(2.75rem, 6vw, 4.5rem) + clamp(3rem, 8vw, 6.5rem));
+		background: var(--gifts-bg);
+		padding-block: clamp(3.5rem, 8vw, 5.75rem);
+		padding-inline: clamp(1.25rem, 5vw, 2.5rem);
+		border-block: 1px solid rgb(var(--alba-stone-rgb) / 18%);
 
 		&__title {
 			font-family: var(--font-display);
-			font-size: clamp(1.85rem, 4vw, 2.6rem);
+			font-size: clamp(1.95rem, 4.2vw, 2.75rem);
 			font-weight: 400;
 			color: var(--alba-charcoal);
+			letter-spacing: 0.02em;
 
 			// Single restrained champagne hairline as the only motif
 			&::after {
 				content: '';
 				display: block;
-				width: 3rem;
+				width: 3.25rem;
 				height: 1px;
-				margin: 1rem auto 0;
-				background: rgb(var(--alba-champagne-rgb) / 75%);
+				margin: 1.15rem auto 0;
+				background: rgb(var(--alba-champagne-rgb) / 70%);
 			}
 		}
 
 		&__subtitle {
-			max-width: 32rem;
-			margin-inline: auto;
+			max-width: 34rem;
+			margin: 1.35rem auto 0;
 			font-family: var(--font-display);
 			font-style: italic;
-			font-size: clamp(1.15rem, 2.5vw, 1.4rem);
-			line-height: 1.65;
-			color: rgb(var(--alba-ink-rgb) / 84%);
+			font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+			line-height: 1.7;
+			color: rgb(var(--alba-ink-rgb) / 94%);
 			text-wrap: balance;
 		}
 
@@ -1177,23 +1702,20 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	// ==========================================================================
-	// 8. RSVP & PERSONALIZED ACCESS (UNIFIED GRAPHITE ATMOSPHERE & HIGH CONTRAST)
+	// 8. PERSONALIZED PASS → RSVP (INK FAMILY: LIFTED PASS → DEEP ACTION)
+	// Same cool-neutral ink hue; distinction from surface step + control affordance.
 	// ==========================================================================
 	.rsvp,
 	.personalized-access,
 	.rsvp-section {
-		--color-surface-primary: var(--alba-navy);
-		--color-surface-primary-rgb: var(--alba-navy-rgb);
-		--color-surface-dark: var(--alba-navy);
-		--color-surface-dark-rgb: var(--alba-navy-rgb);
 		--color-text-primary: var(--alba-ivory);
 
 		// The hacienda RSVP theme derives labels from the -rgb channel token;
 		// without this override labels render dark-on-graphite (illegible).
 		--color-text-primary-rgb: var(--alba-ivory-rgb);
-		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 88%);
-		--color-text-muted: rgb(var(--alba-ivory-rgb) / 62%);
-		--color-border-subtle: rgb(var(--alba-gold-rgb) / 28%);
+		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 90%);
+		--color-text-muted: rgb(var(--alba-ivory-rgb) / 76%);
+		--color-border-subtle: rgb(var(--alba-gold-rgb) / 30%);
 		--rsvp-title-size: clamp(1.85rem, 4.5vw, 2.65rem);
 		--rsvp-body-size: clamp(1.05rem, 2.4vw, 1.2rem);
 		--rsvp-bg: transparent;
@@ -1201,31 +1723,86 @@ html:has(.event--alba-rosa-quinones) body {
 		--color-glass-bg: transparent;
 		--color-glass-border: transparent;
 		--shadow-premium: none;
-		--rsvp-label-color: rgb(var(--alba-ivory-rgb) / 80%);
-		--rsvp-placeholder-color: rgb(var(--alba-ivory-rgb) / 46%);
-		--rsvp-field-bg: rgb(var(--alba-ivory-rgb) / 7%);
-		--rsvp-field-bg-focus: rgb(var(--alba-ivory-rgb) / 13%);
-		--rsvp-field-border: rgb(var(--alba-gold-rgb) / 32%);
+		--rsvp-label-color: rgb(var(--alba-ivory-rgb) / 86%);
+		--rsvp-placeholder-color: rgb(var(--alba-ivory-rgb) / 52%);
+		--rsvp-field-bg: rgb(var(--alba-ivory-rgb) / 9%);
+		--rsvp-field-bg-focus: rgb(var(--alba-ivory-rgb) / 15%);
+		--rsvp-field-border: rgb(var(--alba-gold-rgb) / 38%);
 		--rsvp-title-color: var(--alba-ivory);
 		--rsvp-title-font: var(--font-display);
 
 		color: var(--alba-ivory);
 	}
 
-	// One coherent graphite environment: the section paints the surface once;
-	// inner panels stay transparent (no nested dark rectangles or seams).
-	.personalized-access,
-	.rsvp-section {
-		background:
-			radial-gradient(circle at 50% 18%, rgb(var(--alba-sage-rgb) / 18%), transparent 62%),
-			linear-gradient(180deg, var(--alba-navy) 0%, rgb(27 29 32) 100%);
+	.personalized-access {
+		--color-surface-primary: var(--alba-pass-surface);
+		--color-surface-primary-rgb: var(--alba-pass-surface-rgb);
+		--color-surface-dark: var(--alba-pass-surface);
+		--color-surface-dark-rgb: var(--alba-pass-surface-rgb);
+
+		background: var(--alba-pass-surface);
+		padding-block: clamp(3rem, 6.5vw, 4.75rem) clamp(2.75rem, 6vw, 4.25rem);
+		padding-inline: clamp(1rem, 4vw, 1.5rem);
+
+		.personalized-access__container {
+			width: min(100%, 28rem);
+			margin-inline: auto;
+		}
+
+		.access-card {
+			border-radius: 0.5rem;
+		}
+
+		.access-card::before {
+			display: none;
+		}
+
+		.access-card__ornaments {
+			display: none;
+		}
+
+		.access-card__header {
+			padding: 1.85rem 1.5rem 1.15rem;
+			gap: 0.55rem;
+		}
+
+		.access-card__body {
+			padding: 1.15rem 1.5rem 1.5rem;
+			gap: 1.15rem;
+		}
+
+		.access-card__guest {
+			font-size: clamp(1.75rem, 4.5vw + 0.7rem, 2.35rem);
+			font-weight: 500;
+			color: var(--pa-guest-color);
+		}
+
+		.access-card__subtitle {
+			color: var(--pa-subtitle-color);
+			font-weight: 500;
+		}
+
+		.access-card__footer {
+			padding: 1rem 1.5rem 1.35rem;
+		}
+
+		.access-card__footer p {
+			color: var(--pa-footer-text-color);
+			font-size: 0.92rem;
+		}
 	}
 
 	.rsvp-section {
-		// The base contract centers the card in a full viewport; that produced
-		// large idle dead space. Content-driven height instead.
+		--color-surface-primary: var(--alba-rsvp-surface);
+		--color-surface-primary-rgb: var(--alba-rsvp-surface-rgb);
+		--color-surface-dark: var(--alba-rsvp-surface);
+		--color-surface-dark-rgb: var(--alba-rsvp-surface-rgb);
+
+		background: var(--alba-rsvp-surface);
+
+		// Content-driven height. Start padding is owned by the overlap cut rule.
 		min-block-size: auto;
-		padding-block: clamp(4rem, 9vw, 6.5rem);
+		padding-block-end: clamp(4rem, 9vw, 6.5rem);
 
 		// RSVP renders a nested .rsvp-section shell — the surface, padding and
 		// intersection geometry belong to the outer element only.
@@ -1238,6 +1815,23 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	.rsvp {
+		--rsvp-card-max-width: 34rem;
+		--rsvp-radio-bg: rgb(var(--alba-ivory-rgb) / 9%);
+		--rsvp-radio-bg-hover: rgb(var(--alba-ivory-rgb) / 14%);
+		--rsvp-radio-border: rgb(var(--alba-champagne-rgb) / 42%);
+		--rsvp-radio-selected-bg: rgb(var(--alba-ivory-rgb) / 16%);
+		--rsvp-radio-selected-border: var(--alba-champagne);
+		--rsvp-radio-selected-shadow: none;
+		--rsvp-radio-indicator-border: rgb(var(--alba-champagne-rgb) / 55%);
+		--rsvp-radio-indicator-bg: transparent;
+		--rsvp-radio-indicator-dot: var(--alba-champagne);
+		--rsvp-radio-label-color: rgb(var(--alba-ivory-rgb) / 88%);
+		--rsvp-radio-label-color-selected: var(--alba-ivory);
+		--rsvp-radio-focus-ring:
+			0 0 0 2px var(--alba-rsvp-surface), 0 0 0 4px var(--alba-champagne);
+		--rsvp-radio-group-gap: 0.75rem;
+		--rsvp-radio-card-padding: 0.85rem 1rem;
+
 		background: transparent;
 
 		&[data-variant='luxury-hacienda'] {
@@ -1247,41 +1841,71 @@ html:has(.event--alba-rosa-quinones) body {
 			backdrop-filter: none;
 		}
 
+		&__eyebrow {
+			color: rgb(var(--alba-champagne-rgb) / 72%);
+			font-size: 0.68rem;
+			letter-spacing: 0.28em;
+			margin-bottom: 0.65rem;
+		}
+
 		&__title {
 			font-family: var(--font-display);
 			font-weight: 400;
+			font-size: var(--rsvp-title-size);
+			line-height: 1.15;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
 			color: var(--alba-ivory);
 		}
 
 		&__subcopy {
-			color: rgb(var(--alba-ivory-rgb) / 88%);
+			margin-top: 0.65rem;
+			font-size: clamp(0.98rem, 2.1vw, 1.08rem);
+			line-height: 1.55;
+			color: rgb(var(--alba-ivory-rgb) / 86%);
 		}
 
-		// Attendance Radio Button Contrast (Default, Hover, Selected, Focus, Disabled)
-		.rsvp__radio-card {
-			min-height: 4.5rem;
-			padding: 1rem 1.25rem;
-			border: 1px solid rgb(var(--alba-gold-rgb) / 35%);
-			background: rgb(var(--alba-ivory-rgb) / 6%);
-			color: var(--alba-ivory);
-			transition: all 0.25s ease;
+		// Attendance controls: obvious affordance + full-card selected treatment.
+		// Nested under .rsvp__radio-group so these beat the client-bundled base RSVP rules.
+		.rsvp__radio-group .rsvp__radio-card {
+			min-height: 3rem;
+			padding: var(--rsvp-radio-card-padding);
+			border: 1px solid var(--rsvp-radio-border);
+			background: var(--rsvp-radio-bg);
+			color: var(--rsvp-radio-label-color);
+			box-shadow: none;
+			transition:
+				background-color 0.2s ease,
+				border-color 0.2s ease,
+				box-shadow 0.2s ease,
+				color 0.2s ease;
 
-			&:hover {
-				background: rgb(var(--alba-ivory-rgb) / 12%);
-				border-color: var(--alba-gold);
+			&:hover:not(:has(input:disabled)) {
+				background: var(--rsvp-radio-bg-hover);
+				border-color: rgb(var(--alba-champagne-rgb) / 68%);
+			}
+
+			&:active:not(:has(input:disabled)) {
+				background: rgb(var(--alba-ivory-rgb) / 18%);
+				border-color: var(--alba-champagne);
 			}
 
 			&:focus-within {
-				outline: 2px solid var(--alba-gold);
-				outline-offset: 2px;
-				border-color: var(--alba-gold);
+				outline: none;
+				box-shadow: none;
+			}
+
+			&:focus-within:has(input:focus-visible) {
+				outline: 2px solid var(--alba-champagne);
+				outline-offset: 3px;
+				border-color: var(--alba-champagne);
 			}
 
 			&:has(input:checked) {
-				background: rgb(var(--alba-sage-rgb) / 35%);
-				border-color: var(--alba-gold);
-				color: var(--alba-ivory);
-				font-weight: 600;
+				background: rgb(var(--alba-ivory-rgb) / 18%);
+				border: 2px solid var(--alba-champagne);
+				color: var(--rsvp-radio-label-color-selected);
+				box-shadow: inset 0 0 0 1px rgb(var(--alba-champagne-rgb) / 30%);
 			}
 
 			&:has(input:disabled) {
@@ -1293,17 +1917,29 @@ html:has(.event--alba-rosa-quinones) body {
 			.rsvp__radio-label {
 				color: inherit;
 				font-family: var(--font-label, sans-serif);
-				font-size: clamp(0.88rem, 2vw, 1rem);
+				font-size: clamp(0.9rem, 2.1vw, 1.02rem);
 				font-weight: 600;
-				letter-spacing: 0.05em;
+				letter-spacing: 0.04em;
+				line-height: 1.3;
 			}
+
+			&:has(input:checked) .rsvp__radio-label {
+				font-weight: 700;
+			}
+		}
+
+		// Side-by-side while readable; stack before Spanish labels get cramped
+		@media (width <= 480px) {
+			--rsvp-radio-columns: 1fr;
+			--rsvp-radio-card-justify: flex-start;
 		}
 
 		// Primary Action Button (High-Contrast Legibility)
 		.rsvp__button,
 		button[type='submit'] {
+			min-height: 3rem;
 			background: var(--alba-ivory);
-			color: var(--alba-navy);
+			color: var(--alba-rsvp-surface);
 			border: 1px solid var(--alba-ivory);
 			font-family: var(--font-label, sans-serif);
 			font-size: 0.8rem;
@@ -1311,22 +1947,19 @@ html:has(.event--alba-rosa-quinones) body {
 			letter-spacing: 0.2em;
 			text-transform: uppercase;
 			padding: 0.9rem 1.8rem;
-			transition: all 0.3s ease;
+			transition:
+				background-color 0.25s ease,
+				color 0.25s ease,
+				border-color 0.25s ease;
 
 			&:hover,
 			&:focus-visible {
 				background: var(--alba-gold);
-				color: var(--alba-navy);
+				color: var(--alba-rsvp-surface);
 				border-color: var(--alba-gold);
 				outline: 2px solid var(--alba-gold);
 				outline-offset: 2px;
 			}
-		}
-	}
-
-	.personalized-access {
-		.access-card__ornaments {
-			display: none;
 		}
 	}
 
@@ -1424,7 +2057,7 @@ html:has(.event--alba-rosa-quinones) body {
 			font-style: italic;
 			font-weight: 400;
 			line-height: 1.4;
-			color: var(--alba-ink);
+			color: var(--alba-charcoal);
 			text-wrap: balance;
 			text-align: center;
 
@@ -1476,7 +2109,7 @@ html:has(.event--alba-rosa-quinones) body {
 	}
 
 	.thank-you-section[data-variant='editorial-magazine'] {
-		background: var(--alba-navy);
+		background: var(--alba-rsvp-surface);
 		color: var(--alba-ivory);
 		min-height: auto;
 		display: flex;
@@ -1485,15 +2118,7 @@ html:has(.event--alba-rosa-quinones) body {
 		padding: clamp(3.5rem, 8vw, 6.5rem) clamp(1rem, 5vw, 4rem);
 
 		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			pointer-events: none;
-			background: radial-gradient(
-				circle at 70% 28%,
-				rgb(var(--alba-sage-rgb) / 18%),
-				transparent 68%
-			);
+			content: none;
 		}
 
 		.thank-you-editorial {
@@ -1572,7 +2197,7 @@ html:has(.event--alba-rosa-quinones) body {
 
 		// Single gratitude message rendering guard
 		.thank-you-message {
-			color: rgb(var(--alba-ivory-rgb) / 88%);
+			color: rgb(var(--alba-ivory-rgb) / 92%);
 			font-family: var(--font-body);
 			font-size: clamp(1.02rem, 1.85vw, 1.2rem);
 			line-height: 1.8;

@@ -26,6 +26,8 @@ interface Props {
 	teaserDetails?: string;
 	card: RevealCardData;
 	previewState?: 'closed' | 'opened' | 'letter';
+	guestPlacement?: 'inside-envelope' | 'outside-envelope';
+	showCardAction?: boolean;
 }
 
 const {
@@ -46,6 +48,8 @@ const {
 	teaserDetails,
 	card,
 	previewState,
+	guestPlacement = 'inside-envelope',
+	showCardAction = true,
 } = Astro.props;
 
 const sealPresentation = resolveSealPresentation({
@@ -132,7 +136,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				</div>
 
 				{
-					card.guestName && (
+					guestPlacement === 'inside-envelope' && card.guestName && (
 						<div class="guest-personalized">
 							<p class="personalized-label">{card.guestLabel}</p>
 							<strong class="personalized-name">{card.guestName}</strong>
@@ -144,13 +148,33 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	</div>
 
 	<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
-		<InvitationRevealCard card={card} />
+		<InvitationRevealCard
+			card={card}
+			showAction={showCardAction}
+			showGuest={guestPlacement !== 'outside-envelope'}
+		/>
 	</div>
 
 	{
+		guestPlacement === 'outside-envelope' && card.guestName && (
+			<div class="envelope-guest-external">
+				<p class="personalized-label">{card.guestLabel}</p>
+				<strong class="personalized-name">{card.guestName}</strong>
+			</div>
+		)
+	}
+
+	{
 		microcopy && (
-			<div class="envelope-external-instruction" data-envelope-microcopy>
-				<p>{microcopy}</p>
+			<div class="envelope-external-instruction">
+				<button
+					type="button"
+					class="envelope-external-instruction__button"
+					data-envelope-open
+					aria-label="Abrir la invitación"
+				>
+					{microcopy}
+				</button>
 				<div class="instruction-line"></div>
 			</div>
 		)
@@ -207,10 +231,17 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				devSkipEnabled,
 			});
 
-			const openButton = this.querySelector('[data-envelope-open]');
 			const revealCard = this.querySelector('[data-envelope-card]');
+			const openButtons = Array.from(this.querySelectorAll<HTMLButtonElement>('[data-envelope-open]'));
+			const closedOpenButtons = openButtons.filter(
+				(button) => !button.closest('[data-envelope-card]'),
+			);
+			const letterOpenButtons = openButtons.filter((button) =>
+				Boolean(button.closest('[data-envelope-card]')),
+			);
 			let hasRevealed = false;
 			let isOpening = false;
+			let isLetterVisible = false;
 
 			/** Screenshot tool needs the letter laid out; do not race-hide the host. */
 			const isScreenshotCaptureMode = () => {
@@ -239,6 +270,36 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				showCardToAccessibility();
 			};
 
+			const setClosedControlsDisabled = (disabled: boolean) => {
+				closedOpenButtons.forEach((button) => {
+					button.disabled = disabled;
+				});
+			};
+
+			const setLetterControlsDisabled = (disabled: boolean) => {
+				letterOpenButtons.forEach((button) => {
+					button.disabled = disabled;
+				});
+			};
+
+			setLetterControlsDisabled(true);
+
+			const focusRevealedDestination = () => {
+				const destination = document.querySelector<HTMLElement>(
+					'#event-header a[href], [data-screenshot="invitation-open-content"] a[href], [data-screenshot="invitation-open-content"] button:not([disabled])',
+				);
+				if (destination) {
+					destination.focus({ preventScroll: true });
+					return;
+				}
+
+				const hero = document.getElementById('inicio');
+				if (hero instanceof HTMLElement) {
+					hero.tabIndex = -1;
+					hero.focus({ preventScroll: true });
+				}
+			};
+
 			// Screenshot contract: ?reveal=letter — measurable envelope + card, no teardown.
 			if (this.dataset.previewState === 'letter') {
 				this.classList.add('is-letter-held');
@@ -264,12 +325,17 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
+				setClosedControlsDisabled(true);
+				setLetterControlsDisabled(true);
 
 				document.documentElement.classList.remove('envelope-open');
 				showCardToAccessibility();
 
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'revealed';
+				}
+				if (this.contains(document.activeElement)) {
+					focusRevealedDestination();
 				}
 
 				window.requestAnimationFrame(() => {
@@ -339,47 +405,68 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			document.documentElement.classList.add('envelope-open');
 
-			openButton?.addEventListener('click', (event) => {
-				event.stopPropagation();
-				event.preventDefault();
+			const requestOpen = () => {
+				if (hasRevealed) return;
+
+				if (isLetterVisible) {
+					manager.setStoredFlag();
+					completeReveal();
+					return;
+				}
+
+				if (isOpening) return;
+				isOpening = true;
+				setClosedControlsDisabled(true);
 
 				manager.playOpenSound();
 				manager.setStoredFlag();
 
-				// Audit/raw screenshot click path: hold the letter painted. Later steps
-				// open invitation content via ?reveal=open (fresh navigation).
+				// Screenshot capture intentionally holds the letter instead of hiding the host.
 				if (isScreenshotCaptureMode()) {
+					isLetterVisible = true;
 					holdLetterForScreenshotCapture();
 					return;
 				}
 
 				if (getMotionPreference()) {
 					completeReveal();
-					this.hidden = true;
 					return;
 				}
 
-				if (isOpening) return;
-				isOpening = true;
-
 				this.classList.add('is-opening');
+
+				const showLetter = () => {
+					if (hasRevealed || isLetterVisible) return;
+					isLetterVisible = true;
+					showCardToAccessibility();
+					setLetterControlsDisabled(false);
+					completeReveal();
+				};
 
 				if (revealCard instanceof HTMLElement) {
 					const fallbackTimer = window.setTimeout(
-						completeReveal,
+						showLetter,
 						resolveCardRiseFallbackMs(revealCard),
 					);
 					const onAnimationEnd = (e: AnimationEvent) => {
 						if (e.animationName.includes('envCardRise')) {
 							window.clearTimeout(fallbackTimer);
 							revealCard.removeEventListener('animationend', onAnimationEnd);
-							completeReveal();
+							showLetter();
 						}
 					};
 					revealCard.addEventListener('animationend', onAnimationEnd);
 				} else {
-					window.setTimeout(completeReveal, CARD_RISE_FALLBACK_FLOOR_MS);
+					window.setTimeout(showLetter, CARD_RISE_FALLBACK_FLOOR_MS);
 				}
+			};
+
+			openButtons.forEach((button) => {
+				button.addEventListener('click', (event) => {
+					event.stopPropagation();
+					event.preventDefault();
+					requestOpen();
+				});
 			});
 		}
 	}

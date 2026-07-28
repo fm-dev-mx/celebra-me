@@ -158,6 +158,8 @@ export interface EnvelopeViewModel {
 		variant?: ThemePreset;
 		name: string;
 		teaserDetails: string;
+		guestPlacement?: 'inside-envelope' | 'outside-envelope';
+		showCardAction?: boolean;
 		card: RevealCardData;
 		colors: {
 			background?: string;

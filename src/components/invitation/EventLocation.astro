@@ -124,10 +124,10 @@ const isSingleVenue = displayVenues.length === 1;
 
 <section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
-	{introHeading && (
+	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">
 			{introEyebrow && <p class="event-location__eyebrow">{introEyebrow}</p>}
-			<h2 class="event-location__heading">{introHeading}</h2>
+			{introHeading && <h2 class="event-location__heading">{introHeading}</h2>}
 			{introLede && <p class="event-location__lede">{introLede}</p>}
 		</header>
 	)}

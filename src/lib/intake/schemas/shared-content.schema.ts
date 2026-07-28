@@ -170,6 +170,8 @@ export const envelopeSchema = z
 		cardTagline: z.string().trim().max(120).optional(),
 		guestLabel: z.string().trim().max(80).optional(),
 		guestNameFallback: z.string().trim().max(200).optional(),
+		guestPlacement: z.enum(['inside-envelope', 'outside-envelope']).optional(),
+		showCardAction: z.boolean().optional(),
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).optional(),
 		sealIcon: z
 			.enum([

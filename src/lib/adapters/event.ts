@@ -266,6 +266,8 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			tooltipText: data.envelope.tooltipText,
 			variant: normalizedPreset,
 			name: opening.envelope.name,
+			guestPlacement: data.envelope.guestPlacement,
+			showCardAction: data.envelope.showCardAction,
 			card: opening.card,
 			colors: {
 				background: data.envelope.closedPalette?.background

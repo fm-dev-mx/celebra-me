@@ -38,12 +38,15 @@ const segments = [
 					>
 						{segment.value.toString().padStart(2, '0')}
 					</span>
+					<span class="countdown__unit">{segment.label}</span>
 				</div>
 				<span class="countdown__label">{segment.label}</span>
+				{segment.key === 'days' && <span class="countdown__context">Para celebrar</span>}
 			</div>
 		))
 	}
 </div>
+<p class="countdown__status" data-countdown-status aria-live="polite" hidden>La celebración ya comenzó</p>
 
 <script>
 	const countdownRoots = Array.from(document.querySelectorAll('[data-countdown]'));
@@ -68,6 +71,14 @@ const segments = [
 
 		const updateCountdown = () => {
 			const difference = new Date(effectiveTarget).getTime() - Date.now();
+			const hasStarted = difference <= 0;
+			root.toggleAttribute('hidden', hasStarted);
+			const status = root
+				.closest('.countdown-section')
+				?.querySelector('[data-countdown-status]');
+			if (status instanceof HTMLElement) {
+				status.hidden = !hasStarted;
+			}
 			const values =
 				difference > 0
 					? {

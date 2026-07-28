@@ -44,4 +44,31 @@ describe('invitation intersection profiles', () => {
 			source: 'gallery',
 		});
 	});
+
+	it('maps Alba Rosa pause dividers and the RSVP diagonal cut', () => {
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'countdown')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'hero',
+		});
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'location')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'countdown',
+		});
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'gifts')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'gallery',
+		});
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'personalized-access')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'gifts',
+		});
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'rsvp')).toEqual({
+			family: 'overlap',
+			source: 'personalized-access',
+		});
+		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'gallery')).toEqual({
+			family: 'overlap',
+			source: 'interlude-after-location',
+		});
+	});
 });

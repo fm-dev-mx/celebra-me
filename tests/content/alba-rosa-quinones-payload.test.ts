@@ -71,8 +71,22 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
 		expect(content.hero).toMatchObject({
 			date: '2026-09-11T20:00:00.000Z',
+			label: '70 AÑOS',
+		});
+		expect(content.hero).not.toHaveProperty('nickname');
+		expect(content.envelope).toMatchObject({
+			cardLabel: '70 AÑOS',
+			envelopeName: 'Alba Rosa',
+			cardName: 'Alba Rosa',
+			cardSecondaryName: 'Quiñones López',
+			guestPlacement: 'outside-envelope',
+			showCardAction: false,
+			sealInitials: 'A·R',
+			microcopy: 'ABRIR LA INVITACIÓN',
+			tooltipText: 'ABRIR LA INVITACIÓN',
 		});
 		expect(content.sectionOrder).toEqual([
+			'countdown',
 			'location',
 			'gallery',
 			'gifts',
@@ -84,6 +98,16 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 		expect(content.rsvp).toMatchObject({
 			confirmationMode: 'api',
 			accessMode: 'hybrid',
+		});
+		expect(content.countdown).toMatchObject({
+			title: 'FALTAN',
+		});
+		expect(content.location).toMatchObject({
+			introEyebrow: '11 DE SEPTIEMBRE DE 2026',
+			reception: {
+				venueName: 'Canta Luna Campestre',
+				coordinates: { lat: 25.833891, lng: -109.052681, zoom: 15 },
+			},
 		});
 		expect(content.gifts).toMatchObject({
 			subtitle: expect.stringContaining('sobre'),

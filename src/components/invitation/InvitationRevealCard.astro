@@ -3,9 +3,11 @@ import type { RevealCardData } from '@/lib/invitation/reveal-card';
 
 interface Props {
 	card: RevealCardData;
+	showAction?: boolean;
+	showGuest?: boolean;
 }
 
-const { card } = Astro.props;
+const { card, showAction = true, showGuest = true } = Astro.props;
 ---
 
 <article class="invitation-reveal-card" aria-label={card.label} data-screenshot="reveal-letter">
@@ -33,10 +35,25 @@ const { card } = Astro.props;
 		<div class="invitation-reveal-card__divider" aria-hidden="true"></div>
 
 		{
-			card.guestName && (
+			showGuest && card.guestName && (
 				<div class="invitation-reveal-card__guest">
 					<p class="invitation-reveal-card__guest-label">{card.guestLabel}</p>
 					<strong class="invitation-reveal-card__guest-name">{card.guestName}</strong>
+				</div>
+			)
+		}
+
+		{
+			showAction && (
+				<div class="invitation-reveal-card__action-wrapper">
+					<button
+						type="button"
+						class="invitation-reveal-card__action"
+						data-envelope-open
+						aria-label="Abrir la invitación"
+					>
+						ABRIR LA INVITACIÓN
+					</button>
 				</div>
 			)
 		}

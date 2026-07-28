@@ -186,14 +186,17 @@ function joinHonoreeNames(primaryName: string, secondaryName: string | undefined
 }
 
 export function formatCardDate(date: string): string {
-	return new Intl.DateTimeFormat('es-MX', {
+	const rawFormatted = new Intl.DateTimeFormat('es-MX', {
 		day: 'numeric',
 		month: 'short',
 		year: 'numeric',
 		timeZone: 'UTC',
-	})
-		.format(new Date(date))
-		.replace(/ /g, ' · ')
+	}).format(new Date(date));
+
+	return rawFormatted
+		.replace(/sept\.?/i, 'SEP')
+		.replace(/\./g, '')
+		.replace(/\s+/g, ' · ')
 		.toUpperCase();
 }
 

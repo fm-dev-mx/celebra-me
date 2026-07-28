@@ -14,21 +14,37 @@ describe('reveal gate automation contract', () => {
 		expect(componentSource).toContain('CARD_RISE_FALLBACK_FLOOR_MS');
 		expect(componentSource).toContain('CARD_RISE_FALLBACK_MARGIN_MS');
 
-		const clickHandler =
-			componentSource.match(
-				/openButton\?\.addEventListener\('click'[\s\S]*?\n\t{3}\}\);/u,
-			)?.[0] ?? '';
+		const requestOpen =
+			componentSource.match(/const requestOpen = \(\) => \{[\s\S]*?\n\t\t\t\};/u)?.[0] ?? '';
 
 		// The animationend listener must be paired with a timer so a non-firing or interrupted
 		// envCardRise animation cannot strand the invitation at data-reveal-state="sealed".
-		expect(clickHandler).toContain("addEventListener('animationend', onAnimationEnd)");
-		expect(clickHandler).toContain('resolveCardRiseFallbackMs(revealCard)');
-		expect(clickHandler).toContain('window.clearTimeout(fallbackTimer)');
+		expect(requestOpen).toContain("addEventListener('animationend', onAnimationEnd)");
+		expect(requestOpen).toContain('resolveCardRiseFallbackMs(revealCard)');
+		expect(requestOpen).toContain('window.clearTimeout(fallbackTimer)');
 	});
 
 	it('guards against repeated open clicks stacking listeners and timers', () => {
 		expect(componentSource).toContain('let isOpening = false;');
 		expect(componentSource).toContain('if (isOpening) return;');
+	});
+
+	it('routes every real Reveal control through the canonical requestOpen path', () => {
+		expect(componentSource).toContain('const requestOpen = () =>');
+		expect(componentSource).toContain("querySelectorAll<HTMLButtonElement>('[data-envelope-open]')");
+		expect(componentSource).toContain('setClosedControlsDisabled(true);');
+		expect(componentSource).not.toContain('data-envelope-open-letter');
+		expect(componentSource).toContain('focusRevealedDestination');
+	});
+
+	it('keeps closed and letter CTA visibility mutually exclusive in shared styles', () => {
+		const envelopeStyles = readSource('src/styles/invitation/_envelope-reveal.scss');
+		expect(envelopeStyles).toContain('.envelope-wrapper.is-letter-held');
+		expect(envelopeStyles).toContain('.envelope-wrapper.is-preview-opened');
+		expect(envelopeStyles).toContain('display: none;');
+		expect(envelopeStyles).toContain('--env-focus-ring');
+		expect(envelopeStyles).toContain('.envelope-seal-button__visual');
+		expect(envelopeStyles).toContain('outline: 3px solid var(--env-focus-ring);');
 	});
 
 	it('keeps the documented reveal-state vocabulary', () => {

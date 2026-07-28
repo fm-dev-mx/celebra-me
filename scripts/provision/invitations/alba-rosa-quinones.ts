@@ -136,6 +136,7 @@ export function buildAlbaPublishedContent(
 			startsAtUtc: ALBA_EVENT.startsAtUtc,
 		},
 		sectionOrder: [
+			'countdown',
 			'location',
 			'gallery',
 			'gifts',
@@ -165,9 +166,8 @@ export function buildAlbaPublishedContent(
 		_assetSlug: ALBA_EVENT.assetSlug,
 		hero: {
 			name: 'Alba Rosa Quiñones López',
-			label: '70 Años',
-			// Occasion line only — time/venue live in Location (Hero stays person → occasion → date).
-			nickname: 'Una noche para celebrar su vida',
+			// Occasion marker only — time/venue live in Location (Hero: 70 AÑOS → name → date).
+			label: '70 AÑOS',
 			date: ALBA_EVENT.heroDate,
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
@@ -180,13 +180,18 @@ export function buildAlbaPublishedContent(
 		envelope: {
 			disabled: false,
 			cardLabel: '70 AÑOS',
-			envelopeName: 'Alba Rosa Quiñones López',
+			// Closed envelope: ceremonial short identity; letter carries full stacked name.
+			envelopeName: 'Alba Rosa',
+			teaserDetails: '70 AÑOS',
 			cardName: 'Alba Rosa',
+			cardSecondaryName: 'Quiñones López',
+			guestPlacement: 'outside-envelope',
+			showCardAction: false,
 			sealStyle: 'monogram',
 			sealIcon: 'monogram',
 			sealInitials: 'A·R',
-			microcopy: 'Toque el sello para abrir la invitación',
-			tooltipText: 'Abrir la invitación',
+			microcopy: 'ABRIR LA INVITACIÓN',
+			tooltipText: 'ABRIR LA INVITACIÓN',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -200,8 +205,7 @@ export function buildAlbaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
-			introEyebrow: 'VIERNES · 11 DE SEPTIEMBRE DE 2026',
-			introHeading: 'Los esperamos',
+			introEyebrow: '11 DE SEPTIEMBRE DE 2026',
 			reception: {
 				venueEvent: 'Celebración',
 				venueName: 'Canta Luna Campestre',
@@ -212,14 +216,22 @@ export function buildAlbaPublishedContent(
 				mapUrl: mapsSearchUrl,
 				googleMapsUrl: mapsSearchUrl,
 				appleMapsUrl: 'https://maps.apple.com/?q=Canta+Luna+Campestre+Los+Mochis+Sinaloa',
+				coordinates: {
+					lat: 25.833891,
+					lng: -109.052681,
+					zoom: 15,
+				},
 			},
 			indications: [
 				{
 					iconName: 'DressCode',
 					styleVariant: 'default',
-					text: 'Código de vestimenta: Formal',
+					text: 'Vestimenta — Formal',
 				},
 			],
+		},
+		countdown: {
+			title: 'FALTAN',
 		},
 		gallery: {
 			eyebrow: 'Recuerdos',

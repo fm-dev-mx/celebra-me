@@ -159,6 +159,30 @@
 	background: linear-gradient(to right, transparent, var(--reveal-card-accent), transparent);
 }
 
+.invitation-reveal-card__action-wrapper {
+	margin-top: 1.1rem;
+}
+
+.invitation-reveal-card__action {
+	min-height: 44px;
+	padding: 0.65rem 1.2rem;
+	font-family: var(--font-body);
+	font-size: clamp(0.66rem, 2vw, 0.8rem);
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	line-height: 1.2;
+	text-transform: uppercase;
+	color: var(--reveal-card-text-primary);
+	background: transparent;
+	border: 1px solid var(--reveal-card-accent);
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--env-focus-ring);
+		outline-offset: 3px;
+	}
+}
+
 .invitation-reveal-card__guest {
 	display: flex;
 	flex-direction: column;
