@@ -56,7 +56,10 @@ describe('Abril Michelle local invitation content', () => {
 		);
 		expect(profile).toContain(".itinerary[data-variant='celestial-blue']");
 		expect(profile).toContain('--itinerary-paper-white: rgb(253 251 247);');
-		expect(profile).toContain('--itinerary-ink-dark: rgb(26 42 58);');
+		// Paper and metal stay at demo parity, but the ink is deliberately re-tinted warm so
+		// the reused celestial variant stops clashing with Abril's palette.
+		expect(profile).toContain('--itinerary-ink-dark: var(--abril-dark-neutral);');
+		expect(profile).toContain('--itinerary-slate: var(--abril-wine-dark);');
 		expect(profile).toContain('--color-liquid-silver: rgb(200 208 212);');
 		expect(profile).toContain("'Bodoni Moda Variable'");
 		expect(profile).toContain('font-style: italic;');

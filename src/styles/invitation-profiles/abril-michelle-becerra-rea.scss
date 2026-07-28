@@ -180,10 +180,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	.itinerary[data-variant='celestial-blue'] {
 		--itinerary-paper-white: rgb(253 251 247);
 		--itinerary-cream: rgb(245 241 230);
-		--itinerary-ink-dark: rgb(26 42 58);
-		--itinerary-ink-dark-rgb: 26 42 58;
-		--itinerary-slate: rgb(44 62 80);
-		--itinerary-slate-rgb: 44 62 80;
+
+		// Re-tint the reused celestial-blue itinerary into the warm palette. These four
+		// tokens must stay in this block: the variant declares them on the itinerary
+		// element itself, so an equivalent declaration on the profile root is dead code.
+		--itinerary-ink-dark: var(--abril-dark-neutral);
+		--itinerary-ink-dark-rgb: var(--abril-dark-neutral-rgb);
+		--itinerary-slate: var(--abril-wine-dark);
+		--itinerary-slate-rgb: var(--abril-wine-dark-rgb);
 		--color-cool-ivory: rgb(244 241 234);
 		--color-liquid-silver: rgb(200 208 212);
 		--color-liquid-silver-rgb: 200 208 212;
@@ -411,8 +415,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 			font-weight: 600;
 			letter-spacing: 0.38em;
 			text-transform: uppercase;
-			color: var(--hero-label-color);
-			text-shadow: none;
+
+			// The eyebrow sits on the bare photographic wall, which is mid-grey on mobile
+			// and only darkened by the overlay on desktop. Champagne plus a graphite veil
+			// carries both; a colour change alone does not.
+			color: var(--abril-champagne);
+			text-shadow:
+				0 1px 2px rgb(var(--abril-graphite-rgb) / 55%),
+				0 2px 14px rgb(var(--abril-graphite-rgb) / 40%);
 
 			&::before,
 			&::after {
