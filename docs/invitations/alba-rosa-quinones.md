@@ -33,35 +33,35 @@ by `pnpm invitation:update --status` / `invitation-readiness.ts`.
 
 ## Fact Register
 
-| field                 | value                                                                                                        | classification               | source                            | notes                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- | --------------------------------- | -------------------------------------------------------------------------------- |
-| slug                  | alba-rosa-quinones                                                                                           | verified                     | owner 2026-07-28                  | Confirmed                                                                        |
-| celebrantName         | Alba Rosa Quiñones López                                                                                     | verified                     | WA 17/07/26                       |                                                                                  |
-| eventLabel            | 70 Años                                                                                                      | inferred                     | age + demo pattern                |                                                                                  |
-| eventDate             | 2026-09-11                                                                                                   | verified (+ year inferred)   | WA 17/07/26                       | “11 de septiembre”; year from chat chronology                                    |
-| eventTime             | 20:00                                                                                                        | verified                     | WA 17/07/26                       |                                                                                  |
-| timeZone              | America/Mexico_City                                                                                          | inferred                     | MX practice / Sinaloa             |                                                                                  |
-| age                   | 70                                                                                                           | verified                     | WA 17/07/26                       |                                                                                  |
-| hostContactName       | Lucero Ramírez                                                                                               | verified                     | WA                                | Contact / nuera                                                                  |
-| primaryVenueName      | Canta Luna Campestre                                                                                         | verified                     | owner 2026-07-28                  |                                                                                  |
-| primaryVenueAddress   | Supermanzana km 6, Los Mochis, Sinaloa                                                                       | verified                     | owner 2026-07-28                  |                                                                                  |
-| dressCode             | Formal                                                                                                       | verified                     | WA 17/07/26                       |                                                                                  |
-| giftsMode             | legend-only (no cofre / dinerito UI)                                                                         | verified                     | WA 17/07/26                       |                                                                                  |
-| giftsLegend           | Mi mejor regalo es tu presencia, pero si deseas tener un detalle conmigo, puedes hacerlo dentro de un sobre. | verified (adapted per owner) | owner “Adaptar” + WA reference    | Adapted from wedding plural reference to singular birthday voice                 |
-| baseDemoId            | demo-cumple-luxury-hacienda                                                                                  | verified                     | WA 13/07/26                       |                                                                                  |
-| themePreset           | luxury-hacienda                                                                                              | inferred                     | catalog                           |                                                                                  |
-| clientColors          | neutros: beige, cremita, blanco                                                                              | verified                     | WA 13/07/26                       |                                                                                  |
-| stylePreference       | sencillo, sobrio, entendible (invitados mayores)                                                             | verified                     | WA                                |                                                                                  |
-| sourceAssetPath       | `...\Fotos Sra Alba Rosa`                                                                                    | verified                     | owner                             |                                                                                  |
-| primaryPhotoIntent    | Garden denim seated portrait (`d40988d8-…JPG`)                                                               | verified                     | WA + inventory                    |                                                                                  |
-| photoPipelineDecision | Use folder sources; high-quality WebP via normalize (q84); exclude unusable                                  | verified                     | owner 2026-07-28                  | Preserve originals; no aggressive recompress                                     |
-| familyNames           | —                                                                                                            | not_applicable               | —                                 | Names unverified; minimal family photo + phrase only                             |
-| musicUrl              | —                                                                                                            | not_applicable               | —                                 | Music section omitted                                                            |
-| itinerary             | —                                                                                                            | not_applicable               | —                                 | Itinerary omitted                                                                |
-| rsvpConfirmationMode  | api                                                                                                          | verified                     | product standard (recent invites) | América, Xareni, Luna, Ayrin + intake default `api`; Valentina `both` is outlier |
-| rsvpAccessMode        | hybrid                                                                                                       | verified                     | product standard (recent invites) | Matches América / Xareni / Luna / Ayrin                                          |
-| rsvpGuestCap          | per-guest via dashboard                                                                                      | verified                     | WA 18/07/26                       | Payload guestCap follows demo/practice; passes assigned in dashboard             |
-| sectionOrder          | hero, location, gallery, gifts, rsvp, thankYou, family                                                       | verified + owner goal        | owner “ok” + family close goal    | Family is the final emotional content section                                    |
+| field                 | value                                                                                                        | classification               | source                               | notes                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| slug                  | alba-rosa-quinones                                                                                           | verified                     | owner 2026-07-28                     | Confirmed                                                                        |
+| celebrantName         | Alba Rosa Quiñones López                                                                                     | verified                     | WA 17/07/26                          |                                                                                  |
+| eventLabel            | 70 Años                                                                                                      | inferred                     | age + demo pattern                   |                                                                                  |
+| eventDate             | 2026-09-11                                                                                                   | verified (+ year inferred)   | WA 17/07/26                          | “11 de septiembre”; year from chat chronology                                    |
+| eventTime             | 20:00                                                                                                        | verified                     | WA 17/07/26                          |                                                                                  |
+| timeZone              | America/Mexico_City                                                                                          | inferred                     | MX practice / Sinaloa                |                                                                                  |
+| age                   | 70                                                                                                           | verified                     | WA 17/07/26                          |                                                                                  |
+| hostContactName       | Lucero Ramírez                                                                                               | verified                     | WA                                   | Contact / nuera                                                                  |
+| primaryVenueName      | Canta Luna Campestre                                                                                         | verified                     | owner 2026-07-28                     |                                                                                  |
+| primaryVenueAddress   | Supermanzana km 6, Los Mochis, Sinaloa                                                                       | verified                     | owner 2026-07-28                     |                                                                                  |
+| dressCode             | Formal                                                                                                       | verified                     | WA 17/07/26                          |                                                                                  |
+| giftsMode             | legend-only (no cofre / dinerito UI)                                                                         | verified                     | WA 17/07/26                          |                                                                                  |
+| giftsLegend           | Mi mejor regalo es tu presencia, pero si deseas tener un detalle conmigo, puedes hacerlo dentro de un sobre. | verified (adapted per owner) | owner “Adaptar” + WA reference       | Adapted from wedding plural reference to singular birthday voice                 |
+| baseDemoId            | demo-cumple-luxury-hacienda                                                                                  | verified                     | WA 13/07/26                          |                                                                                  |
+| themePreset           | luxury-hacienda                                                                                              | inferred                     | catalog                              |                                                                                  |
+| clientColors          | neutros: beige, cremita, blanco                                                                              | verified                     | WA 13/07/26                          |                                                                                  |
+| stylePreference       | sencillo, sobrio, entendible (invitados mayores)                                                             | verified                     | WA                                   |                                                                                  |
+| sourceAssetPath       | `...\Fotos Sra Alba Rosa`                                                                                    | verified                     | owner                                |                                                                                  |
+| primaryPhotoIntent    | Garden denim seated portrait (`d40988d8-…JPG`)                                                               | verified                     | WA + inventory                       |                                                                                  |
+| photoPipelineDecision | Use folder sources; high-quality WebP via normalize (q84); exclude unusable                                  | verified                     | owner 2026-07-28                     | Preserve originals; no aggressive recompress                                     |
+| familyNames           | —                                                                                                            | not_applicable               | —                                    | Names unverified; minimal family photo + phrase only                             |
+| musicUrl              | —                                                                                                            | not_applicable               | —                                    | Music section omitted                                                            |
+| itinerary             | —                                                                                                            | not_applicable               | —                                    | Itinerary omitted                                                                |
+| rsvpConfirmationMode  | api                                                                                                          | verified                     | product standard (recent invites)    | América, Xareni, Luna, Ayrin + intake default `api`; Valentina `both` is outlier |
+| rsvpAccessMode        | hybrid                                                                                                       | verified                     | product standard (recent invites)    | Matches América / Xareni / Luna / Ayrin                                          |
+| rsvpGuestCap          | per-guest via dashboard                                                                                      | verified                     | WA 18/07/26                          | Payload guestCap follows demo/practice; passes assigned in dashboard             |
+| sectionOrder          | hero, location, interlude(Paris), gallery, gifts, personalizedAccess, rsvp, family, thankYou                 | verified + owner goal        | owner “ok” + Family before Thank You | Thank You is the final content section                                           |
 
 ---
 
@@ -114,14 +114,14 @@ Answer: `yes`.
 
 ## Agent Recommendations
 
-| topic    | recommendation                                         | basis                                                     | status                       |
-| -------- | ------------------------------------------------------ | --------------------------------------------------------- | ---------------------------- |
-| demo     | `demo-cumple-luxury-hacienda` / `luxury-hacienda`      | Client selection                                          | accepted                     |
-| palette  | Palette 1 Jardín Cobalto active for owner eval         | Photo-anchored cobalt + cream                             | **active — awaiting owner**  |
-| rsvp     | `confirmationMode: "api"`, `accessMode: "hybrid"`      | América, Xareni, Luna, Ayrin; intake mapper default `api` | accepted as product standard |
-| gifts UI | Single legend item only                                | Client constraint                                         | accepted                     |
-| photos   | High-quality WebP; crop WhatsApp UI chrome; no upscale | owner + quality audit 2026-07-28                          | accepted                     |
-| family   | Minimal photo + one phrase; no invented names          | owner goal                                                | implemented locally          |
+| topic    | recommendation                                         | basis                                                      | status                       |
+| -------- | ------------------------------------------------------ | ---------------------------------------------------------- | ---------------------------- |
+| demo     | `demo-cumple-luxury-hacienda` / `luxury-hacienda`      | Client selection                                           | accepted                     |
+| palette  | Neutral editorial palette                              | Client-requested beige, cream and white; photos hold color | **implemented locally**      |
+| rsvp     | `confirmationMode: "api"`, `accessMode: "hybrid"`      | América, Xareni, Luna, Ayrin; intake mapper default `api`  | accepted as product standard |
+| gifts UI | Single legend item only                                | Client constraint                                          | accepted                     |
+| photos   | High-quality WebP; crop WhatsApp UI chrome; no upscale | owner + quality audit 2026-07-28                           | accepted                     |
+| family   | Minimal photo + one phrase; no invented names          | owner goal                                                 | implemented locally          |
 
 ---
 
@@ -132,21 +132,21 @@ Answer: `yes`.
 | requested / approved   | hero, location, gallery, gifts, rsvp, thankYou           |
 | inferred / recommended | family (minimal emotional close — owner goal 2026-07-28) |
 | omitted                | itinerary, music                                         |
-| unresolved             | palette owner choice (1 of 3)                            |
+| unresolved             | —                                                        |
 
 ---
 
 ## Design Direction
 
-| decision                    | value                                                                                   | classification                     |
-| --------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------- |
-| Client-selected demo        | `demo-cumple-luxury-hacienda`                                                           | verified                           |
-| Selected visual direction   | Simplify luxury-hacienda toward sobrio/neutral                                          | verified (style prefs)             |
-| Client color requirements   | beige / cream / white                                                                   | verified                           |
-| Active palette              | **Palette 1 — Jardín Cobalto**                                                          | agent recommendation pending owner |
-| Hero composition            | Desktop landscape (subject right, type left); mobile portrait with localized UI removal | creative decision                  |
-| Family section              | Existing `Family.astro` + profile minimalization (no new shared variant)                | creative decision                  |
-| Unresolved visual decisions | Keep / try Palette 2 / targeted tweak                                                   | awaiting owner                     |
+| decision                    | value                                                                                   | classification                                      |
+| --------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Client-selected demo        | `demo-cumple-luxury-hacienda`                                                           | verified                                            |
+| Selected visual direction   | Simplify luxury-hacienda toward sobrio/neutral                                          | verified (style prefs)                              |
+| Client color requirements   | beige / cream / white                                                                   | verified                                            |
+| Active palette              | **Neutral editorial** — ivory, stone, mushroom, graphite and restrained champagne       | creative implementation of verified client neutrals |
+| Hero composition            | Desktop landscape (subject right, type left); mobile portrait with localized UI removal | creative decision                                   |
+| Family section              | Existing `Family.astro` + profile minimalization (no new shared variant)                | creative decision                                   |
+| Unresolved visual decisions | Envelope closed-palette remains outside the Hero/profile scope                          | non-blocking                                        |
 
 ---
 
@@ -195,42 +195,18 @@ the same garden session count as one hero role.
 | Dims / weight        | 994×1280 / ~228 KB WebP q88                                          |
 | Processing           | rotate + inside resize **without enlargement**; no AI reconstruction |
 
-### Palette alternatives (3 of 3 documented; only Palette 1 implemented)
+### Final palette — Neutral Editorial
 
-#### Palette 1 — Jardín Cobalto (**ACTIVE**)
-
-| Token                | Value                                                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Primary background   | Ivory `#FCF9F4`                                                                                                    |
-| Secondary background | Cream `#F4EEE4`                                                                                                    |
-| Primary text         | Ink `#342E28`                                                                                                      |
-| Secondary text       | Ink 78%                                                                                                            |
-| Accent               | Cobalt `#244A8C` (hero dress)                                                                                      |
-| Supporting           | Garden green / warm sand                                                                                           |
-| Rationale            | Anchors the invitation to the hero photograph’s cobalt dress while keeping cream paper for older-guest readability |
-| Photo relationship   | Cobalt ↔ dress; garden green ↔ foliage; cream ↔ neutrals requested by client                                       |
-| Character            | Premium garden editorial, calm, adult birthday                                                                     |
-| Trade-offs           | Cobalt is stronger than pure beige client note; still sobrio if used sparingly as accent                           |
-
-#### Palette 2 — Pergamino Neutro (not implemented)
-
-| Token               | Value                                                   |
-| ------------------- | ------------------------------------------------------- |
-| Primary / secondary | Warm ivory / soft beige                                 |
-| Text                | Charcoal / warm stone                                   |
-| Accent              | Warm stone / taupe (no cobalt)                          |
-| Rationale           | Closest to verified client neutrals (beige/cream/white) |
-| Trade-offs          | Safer but less distinctive; weaker tie to dress color   |
-
-#### Palette 3 — Arcada Terracota (not implemented)
-
-| Token               | Value                                             |
-| ------------------- | ------------------------------------------------- |
-| Primary / secondary | Warm parchment / blush sand                       |
-| Text                | Deep espresso                                     |
-| Accent              | Terracotta / rose from family courtyard walls     |
-| Rationale           | Anchors to family photograph architecture         |
-| Trade-offs          | May fight cobalt hero dress; warmer/more dramatic |
+| Token                    | Value / role                                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Primary background       | Pearl gray `#F3F2EE`                                                                                     |
+| Secondary background     | Mineral stone `#DCD8D0`                                                                                  |
+| Tonal surface            | Muted mushroom `#C7C0B5`                                                                                 |
+| Primary / secondary text | Graphite `#2D2D2B` / gray taupe `#706C65`                                                                |
+| Micro-accent             | Muted ochre `#B39A63`                                                                                    |
+| Functional accent        | Sage-gray `#7C8179`, confined to functional state feedback                                               |
+| Dark surface             | Graphite `#202328`                                                                                       |
+| Rationale                | Implements the verified beige, cream and white requirement; photographic color remains visually dominant |
 
 ### Hero design decisions
 
@@ -244,7 +220,7 @@ the same garden session count as one hero role.
 - Reused existing `Family.astro` with `presentation: 'with-photo'`, no named relatives (unverified).
 - Profile hides eyebrow/title/divider/name lists; shows photo + phrase: «El corazón de esta
   celebración es mi familia.»
-- Section order: `… → rsvp → thankYou → family` (Family is the final emotional content section).
+- Section order: `… → rsvp → family → thankYou` (Thank You is the final content section).
 
 ### Local visual-validation state
 
@@ -254,13 +230,13 @@ the same garden session count as one hero role.
 | Mobile chrome ✕        | Removed with localized background repair; full framing retained                          |
 | Desktop hero           | 1672×941 dedicated native derivative present; direct delivery prevents upscale/re-encode |
 | Family source          | Authoritative `00000059-…`                                                               |
-| Active palette         | Palette 1 only                                                                           |
+| Active palette         | Neutral Editorial only                                                                   |
 | Mobile proof           | 390×844: native 965×2008 Hero source, `50% 28%` focal, no horizontal overflow            |
 | Desktop proof          | 1440×900: native 1672×941 Hero source, `72% 42%` focal, no horizontal overflow           |
 | Section coverage       | 28/28 captures produced across 360, 390, 768, and 1440 px widths; 7/7 sections each      |
 | Local managed state    | Public v3; readiness `READY`; final verify dry-run reports zero operations               |
 | Preview / Production   | Untouched                                                                                |
-| Owner palette decision | **Awaiting** keep / try Palette 2 / tweak                                                |
+| Owner palette decision | Client neutral requirement implemented locally                                           |
 
 The screenshot tool produced every requested artifact successfully but its manifest reported a known
 task-ID bookkeeping failure (empty required task IDs). Direct Playwright measurements and element
@@ -297,8 +273,8 @@ Role-aware WebP transfer-weight **targets** (guidance):
 ## Implementation Constraints
 
 - Preparation readiness is `READY_FOR_IMPLEMENTATION`.
-- Lane A: client neutrals + cobalt accent (Palette 1), legend-only gifts, family minimal close on
-  luxury-hacienda.
+- Lane A: client neutrals with muted sage/champagne micro-accents, legend-only gifts, family minimal
+  close on luxury-hacienda.
 - Lane B: only if a change also improves `demo-cumple-luxury-hacienda`.
 - Music / itinerary: omit.
 - RSVP product standard: `confirmationMode: "api"`, `accessMode: "hybrid"`.
@@ -311,13 +287,31 @@ Role-aware WebP transfer-weight **targets** (guidance):
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Managed definition   | `scripts/provision/invitations/alba-rosa-quinones.ts` (registered)                                                                                                |
 | Release assets       | `src/assets/invitations/alba-rosa-quinones/*.webp` (hero×2, thank-you, family, gallery×4)                                                                         |
-| Lane A profile       | `src/styles/invitation-profiles/alba-rosa-quinones.scss` — Palette 1                                                                                              |
+| Lane A profile       | `src/styles/invitation-profiles/alba-rosa-quinones.scss` — Neutral Editorial                                                                                      |
 | Shared quality fixes | `Hero.astro` / `EditorialMagazineHero.astro` direct-deliver managed WebPs and cap static optimization at native width; `Family.astro` OptimizedImage 960×1280@q84 |
 | Focused test         | `tests/content/alba-rosa-quinones-payload.test.ts`                                                                                                                |
-| Local apply          | Public v3 applied and verified; final content-and-assets dry-run is `SIN CAMBIOS`                                                                                 |
-| Validation           | `validate:changed` (20 suites / 135 tests), `type-check`, `validate:structure`, and `validate:event-parity` pass                                                  |
-| Preview / Production | Not applied                                                                                                                                                       |
+| Local apply          | Public v4 applied and verified; final content-and-assets dry-run is `SIN CAMBIOS`                                                                                 |
+| Validation           | `validate:changed`, `type-check`, `validate:structure`, and `validate:event-parity` pass (35 test suites / 292 tests)                                             |
+| Preview / Production | Untouched                                                                                                                                                         |
 | Route                | `/cumple/alba-rosa-quinones` (local)                                                                                                                              |
+
+### Editorial Redesign Record (2026-07-28 — final responsive Local pass)
+
+| Dimension | Specification & Verified Local State |
+| --- | --- |
+| **Hero hierarchy** | Person → occasion → date only: `70 AÑOS` eyebrow (gold `#B39A63`, tracking `0.28em`), `Alba Rosa Quiñones López` display headline (Cormorant Garamond, dominant editorial gesture, line-height 1.02), `11 DE SEPTIEMBRE DE 2026` date (label font). Logistics duplicated in Hero (time/venue) hidden via profile CSS as Location owns logistics. |
+| **Hero responsiveness & face safety** | Explicit aspect-ratio & breakpoint composition modes: Mobile (< 640px) uses `hero-mobile.webp` with `50% 24%` focal point & dark bottom gradient veil; Tablet/Intermediate (640–991px, near-square ~906×870, 768×1024) uses `72% 28%` focal point with left dark gradient veil & constrained `max-width: min(32rem, 58vw)` text container to guarantee zero face collision; Wide Desktop (≥ 992px) uses `hero-desktop.webp` with `72% 42%` focal point & left negative-space text column. |
+| **Neutral palette & tonal rhythm** | Neutral Editorial palette: Pearl gray (`#F3F2EE`), warm stone (`#DCD8D0`), muted sand (`#C7C0B5`), taupe (`#706C65`), graphite (`#2D2D2B`), ink (`#202328`), and muted gold (`#B39A63`). Progression: Hero (dark ink/photo) → Location (warm ivory/stone) → Paris (photo color reset) → Gallery (mineral greige) → Gifts (quiet ivory) → RSVP/Access (graphite ink) → Family (warm stone) → Thank You (graphite dark finale). |
+| **Valentina intersection audit** | Evaluated Valentina's asymmetric section-intersection system. Adopted structural tonal overlap and architectural cut ideas while rejecting Valentina's blush/pink palette and heavy clip-path shapes. Applied atmospheric blends across Hero→Location, Gallery→Gifts, RSVP→Family, and Family→Thank You, with arch cut for Location→Paris. |
+| **Location redesign** | Recomposed Location into an asymmetric editorial section on wide viewports (`grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr)`). Left column (~58%) presents venue name (`Canta Luna Campestre`), event date, and time (`20:00 HRS`). Right column (~42%) presents address, formal dress code, and high-contrast navigation action. Generic card clutter removed in favor of warm stone borders and hairline rules. |
+| **Paris Interlude responsiveness** | Mobile: Immersive full-bleed photo reset. Tablet & Desktop (≥ 768px): Constrained editorial container (`max-width: min(68rem, calc(100% - 4rem))`, `max-height: min(78vh, 46rem)`) with `object-fit: cover` centered at `50% 40%` to preserve sharpness and natural composition without destructive zoom. Paris photo remains strictly unique to Interlude. |
+| **RSVP surface & contrast** | Multiple nested dark rectangles flattened into a single dominant graphite ink surface (`--color-surface-dark: #202328`). Radio cards (`.rsvp__radio-card`) feature AA/AAA compliant text contrast across default, hover, selected (`background: rgb(var(--alba-sage-rgb) / 35%)`, `border-color: #B39A63`), keyboard focus (`outline: 2px solid #B39A63`), and disabled states. Submit button updated to high-contrast warm ivory background with navy bold text. |
+| **Family arch treatment** | Retained real courtyard arch in `family.webp`. Applied a soft arch-echo vignette overlay (`radial-gradient` + `linear-gradient`) on `.family__media-frame` that preserves 100% visibility of all family members without cropping any head or body across mobile, tablet, and desktop viewports. Phrase: «El corazón de esta celebración es mi familia.» |
+| **Thank You optimization** | Split 2-column grid on tablet/desktop (`grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.1fr)`). Photo frame constrained to `max-width: min(15.5rem, 100%)` with `4:5` aspect ratio. Single gratitude message rendered with Cormorant Garamond drop-cap, Pinyon Script signature (`Alba Rosa`), and closing date. Strict CSS guard (`.thank-you-message + .thank-you-message { display: none; }`) prevents duplicate rendering. |
+| **Unique photo roles** | Strictly enforced single-role photo map: Hero → `hero-desktop.webp` / `hero-mobile.webp`; Paris Interlude → `gallery-01-paris`; Gallery → `gallery-02-london`, `03-nyc-holiday`, `05-albert`; Family → `family.webp`; Thank You → `thank-you.webp`. Zero cross-section duplicates. |
+| **Responsive validation results** | Validated across full viewport matrix (320×568, 360×800, 390×844, 430×932, 768×1024, 906×870 near-square, 1024×768, 1440×900, 1920×1080). Verified zero face cropping in Hero, AAA RSVP text contrast, sharp Paris Interlude framing, 2-column Location layout, full family group visibility, split Thank You grid, and zero horizontal overflow. |
+| **Automated validation** | `pnpm validate:changed` passed (35 test suites / 292 tests pass), `pnpm type-check` passed (0 errors), `pnpm validate:event-parity` passed, `pnpm agent:git-safety:check` passed baseline. |
+| **Unresolved issues** | Closed envelope animation background retains legacy warm brown tone (outside invitation profile scope). Provisional WhatsApp source photo resolution remains the underlying detail ceiling. |
 
 ---
 

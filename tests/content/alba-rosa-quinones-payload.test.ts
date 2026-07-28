@@ -46,12 +46,12 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 		).toEqual({ ok: true });
 	});
 
-	it('ships Palette 1 Jardín Cobalto Lane A profile', () => {
+	it('ships a neutral editorial Lane A profile', () => {
 		const profile = fs.readFileSync(albaProfilePath, 'utf8');
 		expect(profile).toContain('.event--alba-rosa-quinones.theme-preset--luxury-hacienda');
 		expect(profile).toContain('--alba-ivory');
-		expect(profile).toContain('--alba-cobalt');
-		expect(profile).toContain('Palette 1 of 3: Jardín Cobalto');
+		expect(profile).toContain('--alba-sage');
+		expect(profile).toContain('Neutral editorial palette');
 	});
 
 	it('has WebP release sources for every declared asset', () => {
@@ -78,16 +78,32 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 			'gifts',
 			'personalizedAccess',
 			'rsvp',
-			'thankYou',
 			'family',
+			'thankYou',
 		]);
 		expect(content.rsvp).toMatchObject({
 			confirmationMode: 'api',
 			accessMode: 'hybrid',
 		});
 		expect(content.gifts).toMatchObject({
+			subtitle: expect.stringContaining('sobre'),
 			items: [{ type: 'cash' }],
 		});
+		expect(content.thankYou).toMatchObject({
+			message: expect.stringMatching(/^Gracias por acompañarme/),
+			closingName: 'Alba Rosa',
+		});
+		expect(
+			(
+				(content.thankYou as { message: string }).message.match(
+					/Gracias por acompañarme/g,
+				) ?? []
+			).length,
+		).toBe(1);
+		expect(content.sectionStyles).toMatchObject({
+			thankYou: { variant: 'editorial-magazine' },
+		});
+		expect((content.interludes as unknown[]).length).toBe(1);
 		expect(content.family).toMatchObject({
 			presentation: 'with-photo',
 			labels: {
@@ -96,11 +112,11 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 		});
 		expect(content.gallery).toMatchObject({
 			items: expect.arrayContaining([
-				expect.objectContaining({ key: 'gallery-01-paris' }),
+				expect.objectContaining({ key: 'gallery-02-london' }),
 				expect.objectContaining({ key: 'gallery-05-albert' }),
 			]),
 		});
-		expect((content.gallery as { items: unknown[] }).items).toHaveLength(4);
+		expect((content.gallery as { items: unknown[] }).items).toHaveLength(3);
 		expect(content.music).toBeUndefined();
 		expect(content.itinerary).toBeUndefined();
 	});

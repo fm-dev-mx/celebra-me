@@ -1,10 +1,12 @@
 @use '../global/mixins' as mixins;
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
 // Alba Rosa Quiñones — Lane A profile on luxury-hacienda.
-// Refined Palette 1: Jardín Cobalto
-// (cream paper + garden charcoal + cobalt accent from the hero dress + navy RSVP).
-// Essence: cobalt garden portrait, unified Cormorant/Bodoni display hierarchy,
-// 2-column editorial family card, and a left-side directional veil on desktop.
+// Neutral editorial palette: the photography, not the interface, carries color.
+// Coherent Cormorant display system, Paris interlude, featured+support gallery,
+// legend-only gifts, integrated dark graphite RSVP, arch-led Family, intimate Thank You.
 
 html:has(.event--alba-rosa-quinones),
 html:has(.event--alba-rosa-quinones) body {
@@ -14,28 +16,29 @@ html:has(.event--alba-rosa-quinones) body {
 }
 
 .event--alba-rosa-quinones.theme-preset--luxury-hacienda {
-	// --- Palette 1: Jardín Cobalto (REFINED) ---
-	--alba-ivory: rgb(252 249 244);
-	--alba-ivory-rgb: 252 249 244;
-	--alba-cream: rgb(244 238 228);
-	--alba-cream-rgb: 244 238 228;
-	--alba-warm-sand: rgb(228 216 198);
-	--alba-warm-sand-rgb: 228 216 198;
-	--alba-garden: rgb(58 72 58);
-	--alba-garden-rgb: 58 72 58;
-	--alba-charcoal: rgb(42 38 34);
-	--alba-charcoal-rgb: 42 38 34;
-	--alba-ink: rgb(52 46 40);
-	--alba-ink-rgb: 52 46 40;
-	--alba-cobalt: rgb(36 74 140);
-	--alba-cobalt-rgb: 36 74 140;
-	--alba-navy: rgb(22 30 46);
-	--alba-navy-rgb: 22 30 46;
-	--alba-gold: rgb(197 160 89);
-	--alba-gold-rgb: 197 160 89;
-	--alba-stone: rgb(148 136 118);
-	--alba-stone-rgb: 148 136 118;
-
+	// ==========================================================================
+	// 1. NEUTRAL EDITORIAL PALETTE & TOKENS
+	// ==========================================================================
+	--alba-ivory: rgb(243 242 238);
+	--alba-ivory-rgb: 243 242 238;
+	--alba-cream: rgb(220 216 208);
+	--alba-cream-rgb: 220 216 208;
+	--alba-warm-sand: rgb(199 192 181);
+	--alba-warm-sand-rgb: 199 192 181;
+	--alba-charcoal: rgb(45 45 43);
+	--alba-charcoal-rgb: 45 45 43;
+	--alba-ink: rgb(76 74 69);
+	--alba-ink-rgb: 76 74 69;
+	--alba-sage: rgb(124 129 121);
+	--alba-sage-rgb: 124 129 121;
+	--alba-navy: rgb(32 35 40);
+	--alba-navy-rgb: 32 35 40;
+	--alba-gold: rgb(179 154 99);
+	--alba-gold-rgb: 179 154 99;
+	--alba-stone: rgb(112 108 101);
+	--alba-stone-rgb: 112 108 101;
+	--font-display: 'Cormorant Garamond Variable', georgia, serif;
+	--font-calligraphy: 'Pinyon Script', cursive;
 	--color-surface-primary: var(--alba-ivory);
 	--color-surface-primary-rgb: var(--alba-ivory-rgb);
 	--color-surface-soft: var(--alba-cream);
@@ -48,119 +51,199 @@ html:has(.event--alba-rosa-quinones) body {
 	--color-text-on-dark: var(--alba-ivory);
 	--color-action-primary: var(--alba-navy);
 	--color-action-primary-rgb: var(--alba-navy-rgb);
-	--color-action-accent: var(--alba-cobalt);
-	--color-action-accent-rgb: var(--alba-cobalt-rgb);
+	--color-action-accent: var(--alba-sage);
+	--color-action-accent-rgb: var(--alba-sage-rgb);
 	--color-gold-500: var(--alba-gold);
 	--color-gold-500-rgb: var(--alba-gold-rgb);
 	--color-border-subtle: rgb(var(--alba-stone-rgb) / 34%);
 	--color-border-emphasis: var(--alba-gold);
-
+	--intersection-arch-height: clamp(3rem, 5.5vw, 6rem);
+	--intersection-depth: clamp(4rem, 8vw, 7.5rem);
 	--hero-name-size-mobile: clamp(2.35rem, 8.5vw, 3.2rem);
-	--hero-label-letter-spacing: 0.24em;
+	--hero-label-letter-spacing: 0.28em;
 
-	// ------------------------------------------------------------------
-	// Gifts Section — Soft Cream Parchment with Gold Accent
-	// ------------------------------------------------------------------
-	--gifts-bg:
-		radial-gradient(ellipse at 50% 0%, rgb(var(--alba-gold-rgb) / 12%), transparent 55%),
-		linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
-	--gifts-text-color: var(--alba-ink);
-	--gifts-title-color: var(--alba-charcoal);
-	--gifts-subtitle-color: rgb(var(--alba-ink-rgb) / 82%);
-	--gifts-card-bg: rgb(252 249 244 / 85%);
-	--gifts-card-border: 1px solid rgb(var(--alba-gold-rgb) / 35%);
-	--gifts-card-title-color: var(--alba-charcoal);
-	--gifts-icon-color: var(--alba-cobalt);
-	--gifts-card-shadow: 0 12px 32px rgb(0 0 0 / 6%), inset 0 1px 0 rgb(255 255 255 / 80%);
+	// Atmospheric blends for section transitions
+	--intersection-blend: linear-gradient(
+		180deg,
+		rgb(var(--alba-navy-rgb) / 0%) 0%,
+		rgb(var(--alba-sage-rgb) / 12%) 42%,
+		rgb(var(--alba-cream-rgb) / 55%) 100%
+	);
 
-	// ------------------------------------------------------------------
-	// RSVP & Personalized Access — Deep Cobalt Navy Atmosphere
-	// ------------------------------------------------------------------
-	.rsvp,
-	.personalized-access {
-		--color-surface-primary: var(--alba-navy);
-		--color-surface-primary-rgb: var(--alba-navy-rgb);
-		--color-text-primary: var(--alba-ivory);
-		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 82%);
-		--rsvp-title-size: clamp(1.85rem, 4.5vw, 2.65rem);
-		--rsvp-body-size: clamp(1.05rem, 2.4vw, 1.2rem);
-	}
-
+	// Section specific background rhythm
 	--location-bg: linear-gradient(
 		180deg,
 		var(--alba-ivory) 0%,
 		var(--alba-cream) 55%,
-		rgb(236 228 214) 100%
+		rgb(238 230 218) 100%
 	);
+	--gallery-section-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
+	--gifts-bg: linear-gradient(180deg, var(--alba-ivory) 0%, var(--alba-cream) 100%);
 	--family-bg: linear-gradient(
 		180deg,
-		var(--alba-cream) 0%,
-		var(--alba-ivory) 55%,
-		rgb(238 232 222) 100%
+		rgb(236 230 220) 0%,
+		var(--alba-cream) 40%,
+		var(--alba-ivory) 100%
 	);
-	--family-texture-opacity: 0%;
-	--family-vignette-bg: transparent;
-	--family-panel-bg: transparent;
-	--family-panel-border: none;
-	--family-panel-shadow: none;
-	--family-panel-radius: 0;
-	--family-media-bg: transparent;
-	--family-media-border: none;
-	--family-media-shadow: none;
-	--family-media-padding: 0;
-	--family-media-inner-border: none;
-	--family-media-inner-shadow: none;
-	--family-media-corner-opacity: 0%;
-	--family-media-filter: none;
-	--family-media-radius: 0;
-	--family-text-primary: var(--alba-ink);
-	--family-text-muted: rgb(var(--alba-ink-rgb) / 78%);
-	--family-accent: var(--alba-cobalt);
 
-	.gallery {
-		--gallery-title-size: clamp(1.75rem, 4vw, 2.4rem);
-	}
-
-	// ------------------------------------------------------------------
-	// Hero — art-directed composition for landscape desktop + portrait mobile
-	// ------------------------------------------------------------------
-	.invitation-hero[data-variant='luxury-hacienda'] {
-		.invitation-hero__background img {
-			filter: contrast(1.03) saturate(1.02) brightness(1.01);
+	// ==========================================================================
+	// 2. SECTION INTERSECTIONS (ASYMMETRIC OVERLAPS & TONAL SEAMS)
+	// ==========================================================================
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		&[data-section-kind='location'] {
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-charcoal-rgb) / 35%) 0%,
+				rgb(var(--alba-cream-rgb) / 75%) 55%,
+				transparent 100%
+			);
 		}
 
-		// Softer overlay: preserve photographic quality; left-biased veil on desktop
+		&[data-section-kind='gallery'] {
+			--intersection-surface: var(--alba-navy);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-navy-rgb) / 65%) 0%,
+				rgb(var(--alba-ivory-rgb) / 88%) 70%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='gifts'],
+		&[data-section-kind='personalized-access'] {
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-cream-rgb) / 45%) 0%,
+				rgb(var(--alba-navy-rgb) / 22%) 100%
+			);
+		}
+
+		&[data-section-kind='rsvp'] {
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-navy-rgb) / 0%) 0%,
+				rgb(var(--alba-sage-rgb) / 16%) 100%
+			);
+		}
+
+		&[data-section-kind='family'] {
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-navy-rgb) / 55%) 0%,
+				rgb(var(--alba-cream-rgb) / 90%) 65%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='thankYou'] {
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--alba-cream-rgb) / 35%) 0%,
+				rgb(var(--alba-navy-rgb) / 50%) 100%
+			);
+		}
+	}
+
+	.invitation-section-wrapper[data-intersection='arch'] {
+		--intersection-surface: var(--alba-navy);
+	}
+
+	// ==========================================================================
+	// 3. HERO RESPONSIVENESS & TYPOGRAPHY HIERARCHY
+	// ==========================================================================
+	.invitation-hero[data-variant='luxury-hacienda'] {
+		position: relative;
+		overflow: hidden;
+
+		.invitation-hero__background img {
+			filter: contrast(1.04) saturate(1.03) brightness(1.01);
+		}
+
+		// Responsive composition & focal point rules
 		.invitation-hero__background::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
 			background:
 				linear-gradient(
 					to right,
-					rgb(var(--alba-charcoal-rgb) / 54%) 0%,
-					rgb(var(--alba-charcoal-rgb) / 22%) 40%,
-					transparent 75%
+					rgb(var(--alba-charcoal-rgb) / 65%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 25%) 48%,
+					transparent 78%
 				),
 				linear-gradient(
 					to top,
-					rgb(var(--alba-charcoal-rgb) / 65%) 0%,
-					rgb(var(--alba-charcoal-rgb) / 15%) 42%,
-					transparent 65%
+					rgb(var(--alba-charcoal-rgb) / 72%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 20%) 42%,
+					transparent 70%
 				);
 			opacity: 100%;
+		}
 
-			@media (width <= 991px) {
+		// Mobile portrait (< 640px)
+		@media (width <= 639px) {
+			.invitation-hero__background img {
+				object-position: var(--hero-focal-point-mobile, 50% 24%);
+			}
+
+			.invitation-hero__background::after {
 				background: linear-gradient(
 					to top,
-					rgb(var(--alba-charcoal-rgb) / 82%) 0%,
-					rgb(var(--alba-charcoal-rgb) / 32%) 42%,
-					transparent 70%
+					rgb(var(--alba-charcoal-rgb) / 88%) 0%,
+					rgb(var(--alba-charcoal-rgb) / 35%) 45%,
+					transparent 72%
 				);
 			}
 		}
 
+		// Tablet & Intermediate aspect ratios (640px – 991px, near-square ~906x870, 768x1024)
+		@media (width >= 640px) and (width <= 991px) {
+			.invitation-hero__background img {
+				object-position: 72% 28%;
+			}
+
+			.invitation-hero__background::after {
+				background:
+					linear-gradient(
+						to right,
+						rgb(var(--alba-charcoal-rgb) / 78%) 0%,
+						rgb(var(--alba-charcoal-rgb) / 38%) 52%,
+						transparent 82%
+					),
+					linear-gradient(
+						to top,
+						rgb(var(--alba-charcoal-rgb) / 78%) 0%,
+						rgb(var(--alba-charcoal-rgb) / 22%) 45%,
+						transparent 75%
+					);
+			}
+		}
+
+		// Wide desktop (≥ 992px)
+		@media (width >= 992px) {
+			.invitation-hero__background img {
+				object-position: 72% 42%;
+			}
+		}
+
+		// Content framing & alignment
 		.invitation-hero__content {
 			padding-top: 0;
 			margin-bottom: 0;
 			justify-content: flex-end;
-			padding-bottom: clamp(4.5rem, 10vh, 7rem);
+			padding-bottom: clamp(4rem, 9vh, 6.5rem);
+
+			@media (width >= 640px) and (width <= 991px) {
+				align-items: flex-start;
+				text-align: left;
+				justify-content: flex-end;
+				max-width: min(32rem, 58vw);
+				margin: 0;
+				margin-left: clamp(2rem, 5vw, 4rem);
+				padding-bottom: clamp(4.5rem, 10vh, 7rem);
+				padding-inline: 0;
+			}
 
 			@media (width >= 992px) {
 				align-items: flex-start;
@@ -174,36 +257,59 @@ html:has(.event--alba-rosa-quinones) body {
 			}
 		}
 
+		// 1. Eyebrow: 70 AÑOS
+		.invitation-hero__label {
+			font-family: var(--font-label, sans-serif);
+			letter-spacing: 0.28em;
+			color: var(--alba-gold);
+			font-size: clamp(0.72rem, 1.8vw, 0.84rem);
+			font-weight: 600;
+			text-transform: uppercase;
+			opacity: 100%;
+			margin-bottom: 0.75rem;
+			text-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+		}
+
+		// 2. Headline: Alba Rosa Quiñones López
 		.invitation-hero__title {
+			font-family: var(--font-display);
+			font-style: normal;
+			font-weight: 400;
+			letter-spacing: 0.012em;
+			line-height: 1.02;
 			text-transform: none;
-			letter-spacing: 0.02em;
-			font-weight: 500;
 			background: none;
 			background-clip: border-box;
 			color: var(--alba-ivory);
 			-webkit-text-fill-color: var(--alba-ivory);
 			text-shadow:
-				0 1px 3px rgb(0 0 0 / 40%),
-				0 8px 24px rgb(0 0 0 / 30%);
-			font-size: clamp(2.45rem, 6vw, 3.75rem);
+				0 1px 3px rgb(0 0 0 / 45%),
+				0 8px 24px rgb(0 0 0 / 35%);
+			font-size: clamp(2.5rem, 6.5vw, 4.25rem);
 
 			@media (width <= 540px) {
-				font-size: clamp(2.15rem, 9vw, 2.75rem);
-				letter-spacing: 0.01em;
+				font-size: clamp(2.25rem, 9.5vw, 2.9rem);
+				letter-spacing: 0.008em;
+				line-height: 1.04;
 			}
+		}
+
+		.invitation-hero__title-line {
+			display: block;
 		}
 
 		.invitation-hero__title-line--surname {
 			display: inline-block;
-			letter-spacing: 0.12em;
-			text-transform: uppercase;
-			font-size: 0.88em;
+			font-family: inherit;
+			font-style: normal;
 			font-weight: 400;
+			font-size: 0.92em;
+			letter-spacing: 0.018em;
+			text-transform: none;
+			color: inherit;
 			opacity: 100%;
-			color: rgb(var(--alba-ivory-rgb) / 95%);
 		}
 
-		// Keep the two surnames together as one deliberate second line.
 		.invitation-hero__title-line--surname + br {
 			display: none;
 		}
@@ -212,44 +318,436 @@ html:has(.event--alba-rosa-quinones) body {
 			margin-left: 0.28em;
 		}
 
-		.invitation-hero__label {
-			letter-spacing: 0.28em;
-			color: var(--alba-ivory);
-			font-weight: 600;
-			opacity: 100%;
-			margin-bottom: 0.85rem;
-			text-shadow: 0 2px 8px rgb(0 0 0 / 45%);
-		}
-
-		.invitation-hero__nickname-badge {
-			margin: 0.35rem 0 1.4rem;
-			font-size: clamp(1rem, 2.4vw, 1.2rem);
-			color: rgb(var(--alba-ivory-rgb) / 88%);
-		}
-
 		.invitation-hero__divider {
-			margin: 1.25rem 0;
-			opacity: 55%;
-			background: rgb(var(--alba-ivory-rgb) / 55%);
+			margin: 1.25rem 0 1rem;
+			opacity: 48%;
+			background: rgb(var(--alba-ivory-rgb) / 50%);
+			max-width: 4.5rem;
 
-			@media (width >= 992px) {
+			@media (width >= 640px) {
 				margin-left: 0;
 				margin-right: auto;
 			}
 		}
 
-		.invitation-hero__date,
+		// 3. Date: 11 DE SEPTIEMBRE DE 2026
+		.invitation-hero__date {
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.76rem, 1.8vw, 0.88rem);
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: rgb(var(--alba-ivory-rgb) / 92%);
+			text-shadow: 0 2px 10px rgb(0 0 0 / 35%);
+		}
+
+		// Logistics duplication removed from Hero (owned by Location)
 		.invitation-hero__time,
 		.invitation-hero__venue {
-			text-shadow: 0 2px 10px rgb(0 0 0 / 35%);
+			display: none;
 		}
 	}
 
-	// ------------------------------------------------------------------
-	// Family — 2-column editorial card: portrait photo + phrase
-	// ------------------------------------------------------------------
+	// ==========================================================================
+	// 4. LOCATION SECTION REDESIGN (ASYMMETRIC EDITORIAL LAYOUT)
+	// ==========================================================================
+	.event-location {
+		background: var(--location-bg);
+		padding-block: clamp(4rem, 8vw, 6.5rem);
+
+		&__intro {
+			margin-bottom: clamp(2.25rem, 5vw, 3.5rem);
+		}
+
+		&__eyebrow {
+			font-family: var(--font-label, sans-serif);
+			font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+			letter-spacing: 0.26em;
+			color: var(--alba-gold);
+			font-weight: 600;
+			text-transform: uppercase;
+		}
+
+		&__heading {
+			font-family: var(--font-display);
+			font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+			color: var(--alba-charcoal);
+			font-weight: 400;
+		}
+
+		// Asymmetric editorial container layout on wider viewports
+		&__container {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: clamp(1.5rem, 4vw, 2.75rem);
+			max-width: min(64rem, calc(100% - 2.5rem));
+			margin-inline: auto;
+
+			@media (width >= 768px) {
+				grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+				align-items: center;
+				gap: clamp(2.5rem, 5vw, 4.5rem);
+			}
+		}
+
+		&__card-wrapper {
+			width: 100%;
+		}
+
+		&__card {
+			border: 1px solid rgb(var(--alba-gold-rgb) / 28%);
+			background: rgb(252 249 244 / 82%);
+			box-shadow: 0 12px 36px rgb(0 0 0 / 5%);
+			border-radius: 2px;
+			padding: clamp(1.75rem, 4vw, 2.75rem);
+
+			@media (width >= 768px) {
+				border-left: 2px solid var(--alba-gold);
+			}
+		}
+
+		&__card-content-place {
+			font-family: var(--font-display);
+			font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+			font-weight: 400;
+			color: var(--alba-charcoal);
+			line-height: 1.1;
+			margin-bottom: 0.75rem;
+		}
+
+		&__card-content-address-text {
+			font-family: var(--font-body);
+			font-size: clamp(0.95rem, 2vw, 1.08rem);
+			color: rgb(var(--alba-ink-rgb) / 84%);
+			line-height: 1.6;
+		}
+
+		&__nav-button {
+			background: var(--alba-navy);
+			color: var(--alba-ivory);
+			border: 1px solid var(--alba-navy);
+			font-family: var(--font-label, sans-serif);
+			font-size: 0.78rem;
+			letter-spacing: 0.18em;
+			font-weight: 600;
+			text-transform: uppercase;
+			padding: 0.85rem 1.5rem;
+			transition: all 0.3s ease;
+
+			&:hover,
+			&:focus-visible {
+				background: var(--alba-gold);
+				color: var(--alba-navy);
+				border-color: var(--alba-gold);
+			}
+		}
+	}
+
+	// ==========================================================================
+	// 5. PARIS INTERLUDE (EDITORIAL CONSTRAINED PRESENTATION)
+	// ==========================================================================
+	.invitation-interlude {
+		--interlude-bg: var(--alba-navy);
+		--interlude-image-filter: saturate(1.02) contrast(1.03) brightness(0.96);
+
+		background: var(--interlude-bg);
+		padding-block: clamp(2rem, 5vw, 4rem);
+
+		.invitation-interlude__media {
+			min-height: clamp(22rem, 65vh, 42rem);
+
+			@media (width >= 768px) {
+				max-width: min(68rem, calc(100% - 4rem));
+				margin-inline: auto;
+				max-height: min(78vh, 46rem);
+				box-shadow: 0 16px 48px rgb(0 0 0 / 28%);
+				overflow: hidden;
+			}
+		}
+
+		.invitation-interlude__image {
+			object-fit: cover;
+			object-position: 50% 40%;
+		}
+	}
+
+	// ==========================================================================
+	// 6. GALLERY SECTION (FEATURED + SUPPORTING GRID)
+	// ==========================================================================
+	.gallery-section {
+		--gallery-grid-columns-mobile: 1;
+		--gallery-grid-columns-tablet: 2;
+		--gallery-grid-columns-desktop: 2;
+		--gallery-item-aspect-ratio: 4 / 5;
+		--gallery-item-aspect-ratio-feature: 3 / 4;
+		--gallery-item-border: none;
+		--gallery-item-shadow: 0 14px 36px rgb(0 0 0 / 10%);
+		--gallery-item-radius: 0;
+		--gallery-item-padding: 0;
+		--gallery-item-bg: transparent;
+		--gallery-item-hover-transform: translateY(-2px);
+		--gallery-title-color: var(--alba-charcoal);
+		--gallery-subtitle-color: rgb(var(--alba-ink-rgb) / 72%);
+
+		background: var(--gallery-section-bg);
+		padding-block: clamp(3.5rem, 7vw, 6rem);
+
+		&__title {
+			font-family: var(--font-display);
+			font-size: clamp(2rem, 4.5vw, 3rem);
+			color: var(--alba-charcoal);
+			font-weight: 400;
+		}
+
+		&__subtitle {
+			font-family: var(--font-body);
+			color: rgb(var(--alba-ink-rgb) / 72%);
+			font-size: clamp(0.95rem, 2vw, 1.1rem);
+		}
+
+		&__eyebrow {
+			font-family: var(--font-label, sans-serif);
+			letter-spacing: 0.24em;
+			color: var(--alba-gold);
+		}
+	}
+
+	.gallery-section .gallery-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-auto-flow: row;
+		gap: clamp(0.85rem, 2vw, 1.35rem);
+		max-width: min(58rem, 100%);
+		margin-inline: auto;
+		align-items: stretch;
+
+		@media (width >= 768px) {
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+			grid-template-rows: auto auto;
+			gap: 1.15rem 1.35rem;
+		}
+
+		.gallery-grid__item,
+		.gallery-grid__item--feature,
+		.gallery-grid__item--wide,
+		.gallery-grid__item--standard {
+			grid-column: auto;
+			grid-row: auto;
+			border: none;
+			border-radius: 0;
+			overflow: hidden;
+			box-shadow: 0 14px 36px rgb(0 0 0 / 10%);
+			max-height: none;
+		}
+
+		@media (width >= 768px) {
+			.gallery-grid__item--feature,
+			.gallery-grid__item[data-gallery-index='0'] {
+				grid-column: 1;
+				grid-row: 1 / span 2;
+				align-self: stretch;
+				height: 100%;
+			}
+
+			.gallery-grid__item[data-gallery-index='1'] {
+				grid-column: 2;
+				grid-row: 1;
+			}
+
+			.gallery-grid__item[data-gallery-index='2'] {
+				grid-column: 2;
+				grid-row: 2;
+			}
+		}
+
+		@media (width <= 767px) {
+			.gallery-grid__item[data-gallery-index='0'] {
+				max-width: min(22rem, 92%);
+				margin-inline: auto;
+			}
+
+			.gallery-grid__item[data-gallery-index='1'] {
+				max-width: min(18rem, 84%);
+				margin-inline: 0 auto;
+			}
+
+			.gallery-grid__item[data-gallery-index='2'] {
+				max-width: min(20rem, 88%);
+				margin-inline: auto 0;
+			}
+		}
+
+		.gallery-grid__item img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 0;
+		}
+
+		.gallery-grid__item[data-gallery-index='2'] img {
+			object-position: 52% 72%;
+		}
+	}
+
+	// ==========================================================================
+	// 7. GIFTS SECTION (QUIET EDITORIAL PAUSE)
+	// ==========================================================================
+	.gifts-section {
+		background: var(--gifts-bg);
+		padding-block: clamp(3.25rem, 7vw, 5.5rem);
+
+		&__title {
+			font-family: var(--font-display);
+			font-size: clamp(1.85rem, 4vw, 2.6rem);
+			font-weight: 400;
+			color: var(--alba-charcoal);
+		}
+
+		&__subtitle {
+			max-width: 34rem;
+			margin-inline: auto;
+			font-family: var(--font-body);
+			font-size: clamp(1.02rem, 2.2vw, 1.18rem);
+			line-height: 1.75;
+			color: rgb(var(--alba-ink-rgb) / 82%);
+			text-wrap: balance;
+		}
+
+		&__flourish,
+		&__separator,
+		.gifts-grid {
+			display: none;
+		}
+	}
+
+	// ==========================================================================
+	// 8. RSVP & PERSONALIZED ACCESS (UNIFIED GRAPHITE ATMOSPHERE & HIGH CONTRAST)
+	// ==========================================================================
+	.rsvp,
+	.personalized-access,
+	.rsvp-section {
+		--color-surface-primary: var(--alba-navy);
+		--color-surface-primary-rgb: var(--alba-navy-rgb);
+		--color-surface-dark: var(--alba-navy);
+		--color-surface-dark-rgb: var(--alba-navy-rgb);
+		--color-text-primary: var(--alba-ivory);
+		--color-text-secondary: rgb(var(--alba-ivory-rgb) / 88%);
+		--color-border-subtle: rgb(var(--alba-gold-rgb) / 28%);
+		--rsvp-title-size: clamp(1.85rem, 4.5vw, 2.65rem);
+		--rsvp-body-size: clamp(1.05rem, 2.4vw, 1.2rem);
+		--rsvp-bg: transparent;
+		--rsvp-radius-card: 0;
+		--color-glass-bg: transparent;
+		--color-glass-border: transparent;
+		--shadow-premium: none;
+		--rsvp-field-bg: rgb(var(--alba-ivory-rgb) / 6%);
+		--rsvp-field-bg-focus: rgb(var(--alba-ivory-rgb) / 12%);
+		--rsvp-field-border: rgb(var(--alba-gold-rgb) / 32%);
+		--rsvp-title-color: var(--alba-ivory);
+		--rsvp-title-font: var(--font-display);
+
+		background:
+			radial-gradient(circle at 50% 18%, rgb(var(--alba-sage-rgb) / 18%), transparent 62%),
+			linear-gradient(180deg, var(--alba-navy) 0%, rgb(27 29 32) 100%);
+		color: var(--alba-ivory);
+	}
+
+	.rsvp {
+		&[data-variant='luxury-hacienda'] {
+			background-color: transparent;
+			border: none;
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+
+		&__title {
+			font-family: var(--font-display);
+			font-weight: 400;
+			color: var(--alba-ivory);
+		}
+
+		&__subcopy {
+			color: rgb(var(--alba-ivory-rgb) / 88%);
+		}
+
+		// Attendance Radio Button Contrast (Default, Hover, Selected, Focus, Disabled)
+		.rsvp__radio-card {
+			min-height: 4.5rem;
+			padding: 1rem 1.25rem;
+			border: 1px solid rgb(var(--alba-gold-rgb) / 35%);
+			background: rgb(var(--alba-ivory-rgb) / 6%);
+			color: var(--alba-ivory);
+			transition: all 0.25s ease;
+
+			&:hover {
+				background: rgb(var(--alba-ivory-rgb) / 12%);
+				border-color: var(--alba-gold);
+			}
+
+			&:focus-within {
+				outline: 2px solid var(--alba-gold);
+				outline-offset: 2px;
+				border-color: var(--alba-gold);
+			}
+
+			&:has(input:checked) {
+				background: rgb(var(--alba-sage-rgb) / 35%);
+				border-color: var(--alba-gold);
+				color: var(--alba-ivory);
+				font-weight: 600;
+			}
+
+			&:has(input:disabled) {
+				opacity: 50%;
+				cursor: not-allowed;
+			}
+
+			label,
+			.rsvp__radio-label {
+				color: inherit;
+				font-family: var(--font-label, sans-serif);
+				font-size: clamp(0.88rem, 2vw, 1rem);
+				font-weight: 600;
+				letter-spacing: 0.05em;
+			}
+		}
+
+		// Primary Action Button (High-Contrast Legibility)
+		.rsvp__button,
+		button[type='submit'] {
+			background: var(--alba-ivory);
+			color: var(--alba-navy);
+			border: 1px solid var(--alba-ivory);
+			font-family: var(--font-label, sans-serif);
+			font-size: 0.8rem;
+			font-weight: 700;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			padding: 0.9rem 1.8rem;
+			transition: all 0.3s ease;
+
+			&:hover,
+			&:focus-visible {
+				background: var(--alba-gold);
+				color: var(--alba-navy);
+				border-color: var(--alba-gold);
+				outline: 2px solid var(--alba-gold);
+				outline-offset: 2px;
+			}
+		}
+	}
+
+	.personalized-access {
+		.access-card__ornaments {
+			display: none;
+		}
+	}
+
+	// ==========================================================================
+	// 9. FAMILY SECTION (ARCHITECTURAL VIGNETTE & GROUP SAFETY)
+	// ==========================================================================
 	.family {
-		padding-block: clamp(4rem, 9vw, 7rem);
+		background: var(--family-bg);
+		padding-block: clamp(3.75rem, 8vw, 6.5rem);
 
 		.family__eyebrow,
 		.family__title,
@@ -257,60 +755,105 @@ html:has(.event--alba-rosa-quinones) body {
 			display: none;
 		}
 
+		.family__container {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: clamp(1.75rem, 4vw, 2.75rem);
+			align-items: center;
+			max-width: min(56rem, 100%);
+			margin-inline: auto;
+
+			@media (width >= 992px) {
+				grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
+				gap: clamp(2.5rem, 5vw, 4rem);
+			}
+		}
+
 		.family__header {
 			margin-bottom: 0;
+			order: 2;
+
+			@media (width >= 992px) {
+				order: 0;
+				grid-column: 2;
+				grid-row: 1;
+				place-self: center start;
+			}
 		}
 
 		.family__panel {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: 2.5rem;
+			display: contents;
 			padding: 0;
-			max-width: min(52rem, 100%);
-			align-items: center;
-
-			@media (width >= 992px) {
-				grid-template-columns: 1.05fr 1fr;
-				gap: 3.5rem;
-			}
+			max-width: none;
 		}
 
 		.family__media {
 			margin: 0;
+			order: 1;
+
+			@media (width >= 992px) {
+				grid-column: 1;
+				grid-row: 1;
+			}
 		}
 
 		.family__media-frame {
+			position: relative;
 			aspect-ratio: 994 / 1280;
-			max-height: min(72vh, 48rem);
+			width: 100%;
+			max-width: min(32rem, 100%);
+			max-height: min(82vh, 50rem);
 			margin-inline: auto;
-			border: 1px solid rgb(var(--alba-gold-rgb) / 38%);
-			padding: 0.6rem;
-			background: var(--alba-ivory);
-			box-shadow: 0 18px 45px rgb(0 0 0 / 12%);
-			border-radius: 2px;
+			border: none;
+			padding: 0;
+			background: transparent;
+			box-shadow: 0 12px 36px rgb(0 0 0 / 8%);
+			border-radius: 0;
+			overflow: hidden;
+
+			// Soft vignette echoing the courtyard arch safely without clipping subjects
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				background:
+					radial-gradient(
+						ellipse 72% 64% at 50% 40%,
+						transparent 48%,
+						rgb(var(--alba-charcoal-rgb) / 16%) 100%
+					),
+					linear-gradient(
+						180deg,
+						rgb(var(--alba-cream-rgb) / 0%) 72%,
+						rgb(var(--alba-cream-rgb) / 32%) 100%
+					);
+			}
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				object-position: var(--family-focal-point, 50% 50%);
+			}
 		}
 
-		.family__content {
-			display: block;
-
-			.family__group {
-				margin: 0;
-			}
-
-			.family__group-title {
-				display: none;
-			}
+		.family__content,
+		.family__content-overlay {
+			display: none;
 		}
 
 		.family__message {
-			max-width: 28rem;
+			max-width: 22rem;
 			margin: 0 auto;
-			font-family: var(--font-display, serif);
-			font-size: clamp(1.35rem, 3vw, 1.85rem);
+			font-family: var(--font-display);
+			font-size: clamp(1.45rem, 3.2vw, 2.05rem);
 			font-style: italic;
-			line-height: 1.5;
+			font-weight: 400;
+			line-height: 1.4;
 			color: var(--alba-ink);
 			text-wrap: balance;
+			text-align: center;
 
 			@media (width >= 992px) {
 				text-align: left;
@@ -320,6 +863,174 @@ html:has(.event--alba-rosa-quinones) body {
 
 		.family__panel::after {
 			content: none;
+		}
+	}
+
+	// ==========================================================================
+	// 10. THANK YOU SECTION (INTIMATE CLOSING MEMORY & SPLIT GRID)
+	// ==========================================================================
+	.thank-you-section[data-variant='editorial-magazine'] {
+		background: var(--alba-navy);
+		color: var(--alba-ivory);
+		min-height: auto;
+		display: flex;
+		align-items: center;
+		padding: clamp(3.5rem, 8vw, 6.5rem) clamp(1rem, 5vw, 4rem);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			background: radial-gradient(
+				circle at 70% 28%,
+				rgb(var(--alba-sage-rgb) / 18%),
+				transparent 68%
+			);
+		}
+
+		.thank-you-editorial {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: clamp(1.75rem, 5vw, 3rem);
+			place-items: center;
+			width: 100%;
+			max-width: 52rem;
+			margin: 0 auto;
+
+			@media (width >= 768px) {
+				grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.1fr);
+				place-items: center stretch;
+				gap: clamp(2rem, 5vw, 3.5rem);
+			}
+		}
+
+		.thank-you-editorial__media.photo-frame {
+			width: 100%;
+			max-width: min(16.5rem, 72vw);
+			height: auto;
+			aspect-ratio: 4 / 5;
+			border-radius: 0;
+			border: none;
+			background: transparent;
+			box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+			padding: 0;
+			justify-self: center;
+			overflow: hidden;
+
+			@media (width >= 768px) {
+				max-width: min(15.5rem, 100%);
+				justify-self: end;
+			}
+
+			.thank-you-editorial__image-shell {
+				width: 100%;
+				height: 100%;
+			}
+
+			.photo-image {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				object-position: var(--thank-you-focal-point, 48% 22%);
+				border-radius: 0;
+				filter: saturate(0.96) contrast(1.02) brightness(0.98);
+				transition: filter 0.45s ease;
+			}
+
+			&:hover .photo-image {
+				transform: none;
+				filter: saturate(1) contrast(1.03) brightness(1);
+			}
+		}
+
+		.thank-you-editorial__copy {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 1.5rem;
+			max-width: 28rem;
+
+			@media (width >= 768px) {
+				align-items: flex-start;
+				text-align: left;
+			}
+		}
+
+		// Single gratitude message rendering guard
+		.thank-you-message {
+			color: rgb(var(--alba-ivory-rgb) / 88%);
+			font-family: var(--font-body);
+			font-size: clamp(1.02rem, 1.85vw, 1.2rem);
+			line-height: 1.8;
+			letter-spacing: -0.01em;
+			margin: 0;
+
+			&::before,
+			&::after {
+				content: none;
+			}
+
+			.drop-cap {
+				color: var(--alba-gold);
+				font-family: var(--font-display);
+				font-size: 3.2em;
+				float: left;
+				line-height: 0.78;
+				padding-right: 0.12em;
+				text-shadow: none;
+			}
+		}
+
+		.message-container + .message-container,
+		.thank-you-message + .thank-you-message {
+			display: none;
+		}
+
+		.signature-block {
+			margin-top: 0.35rem;
+		}
+
+		.closing-name {
+			font-family: var(--font-calligraphy);
+			font-size: clamp(2.6rem, 6.5vw, 3.8rem);
+			color: var(--alba-gold);
+			-webkit-text-fill-color: currentcolor;
+			line-height: 1.1;
+			margin: 0;
+		}
+
+		.closing-date {
+			color: rgb(var(--alba-ivory-rgb) / 58%);
+			font-family: var(--font-label);
+			font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			margin-top: 0.35rem;
+		}
+
+		.thank-you-footer {
+			margin-top: 1.25rem;
+			padding-top: 1.1rem;
+			border-top: 1px solid rgb(var(--alba-gold-rgb) / 18%);
+			width: 100%;
+			color: rgb(var(--alba-ivory-rgb) / 36%);
+			font-family: var(--font-label);
+			font-size: 0.65rem;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+		}
+	}
+
+	// Restrained motion for accessibility
+	@media (prefers-reduced-motion: reduce) {
+		.gallery-grid__item,
+		.thank-you-editorial__media.photo-frame .photo-image,
+		.invitation-hero [data-reveal-item],
+		.family__reveal {
+			transition: none;
+			transform: none;
 		}
 	}
 }

@@ -53,10 +53,10 @@ export const ALBA_ASSET_SPECS = [
 		displayName: 'Alba Rosa — portada móvil',
 		alt: 'Alba Rosa sentada en un jardín, retrato vertical',
 		focalPoint: {
-			default: '50% 28%',
-			mobile: '50% 28%',
-			tablet: '50% 30%',
-			desktop: '50% 30%',
+			default: '50% 26%',
+			mobile: '50% 26%',
+			tablet: '50% 28%',
+			desktop: '50% 28%',
 		},
 	},
 	{
@@ -65,7 +65,7 @@ export const ALBA_ASSET_SPECS = [
 		displayName: 'Alba Rosa — agradecimiento',
 		alt: 'Alba Rosa en una terraza de café con una copa',
 		focalPoint: {
-			default: '50% 32%',
+			default: '48% 22%',
 		},
 	},
 	{
@@ -74,7 +74,7 @@ export const ALBA_ASSET_SPECS = [
 		displayName: 'Alba Rosa — familia',
 		alt: 'Alba Rosa junto a su familia bajo un arco',
 		focalPoint: {
-			default: '50% 62%',
+			default: '50% 58%',
 		},
 	},
 	{
@@ -137,7 +137,6 @@ export function buildAlbaPublishedContent(
 		},
 		sectionOrder: [
 			'location',
-			'interlude-after-location',
 			'gallery',
 			'gifts',
 			'personalizedAccess',
@@ -145,29 +144,36 @@ export function buildAlbaPublishedContent(
 			'family',
 			'thankYou',
 		],
-		'interlude-after-location': {
-			image: assets['gallery-01-paris'],
-			alt: 'Alba Rosa frente a la Torre Eiffel en París',
-			height: 'tall',
-			focalPoint: '35% 40%',
-		},
+		interludes: [
+			{
+				afterSection: 'location',
+				image: assets['gallery-01-paris'],
+				alt: 'Alba Rosa frente a la Torre Eiffel en París',
+				height: 'tall',
+				focalPoint: '35% 40%',
+			},
+		],
 		sectionStyles: {
 			location: {
 				showFlourishes: false,
 			},
 			rsvp: {},
+			thankYou: {
+				variant: 'editorial-magazine',
+			},
 		},
 		_assetSlug: ALBA_EVENT.assetSlug,
 		hero: {
 			name: 'Alba Rosa Quiñones López',
 			label: '70 Años',
+			// Occasion line only — time/venue live in Location (Hero stays person → occasion → date).
 			nickname: 'Una noche para celebrar su vida',
 			date: ALBA_EVENT.heroDate,
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
 			focalPoint: '68% 42%',
-			focalPointMobile: '50% 28%',
+			focalPointMobile: '50% 26%',
 			focalPointTablet: '62% 40%',
 			focalPointDesktop: '72% 42%',
 		},
@@ -217,43 +223,49 @@ export function buildAlbaPublishedContent(
 		},
 		gallery: {
 			eyebrow: 'Recuerdos',
-			title: 'Momentos de Alba Rosa',
-			subtitle: 'Una vida llena de viajes, sonrisas y cariño',
+			title: 'Momentos',
+			subtitle: 'Viajes, sonrisas y cariño',
 			items: [
 				{
 					key: 'gallery-02-london',
 					image: assets['gallery-02-london'],
 					alt: 'Alba Rosa junto a una cabina telefónica roja en Londres',
 					focalPoint: '42% 38%',
+					layoutRole: 'feature',
+					aspectRatio: '3 / 4',
 				},
 				{
 					key: 'gallery-03-nyc-holiday',
 					image: assets['gallery-03-nyc-holiday'],
 					alt: 'Alba Rosa en una plaza iluminada de Nueva York',
-					focalPoint: '50% 32%',
+					focalPoint: '50% 28%',
+					layoutRole: 'standard',
+					aspectRatio: '4 / 5',
 				},
 				{
 					key: 'gallery-05-albert',
 					image: assets['gallery-05-albert'],
 					alt: 'Alba Rosa frente al Albert Memorial en Londres',
 					focalPoint: '55% 55%',
+					layoutRole: 'wide',
+					aspectRatio: '5 / 4',
 				},
 			],
 		},
 		gifts: {
 			title: 'Regalos',
 			subtitle: giftsLegend,
+			// Cash stub retained for schema stability; profile hides card UI (legend-only presentation).
 			items: [
 				{
 					type: 'cash',
 					title: 'Un detalle',
-					text: 'Muestra de cariño dentro de un sobre',
 				},
 			],
 		},
 		rsvp: {
 			title: 'Confirme su asistencia',
-			subcopy: 'Su confirmación nos ayuda a recibirlo con mucho cariño el 11 de septiembre.',
+			subcopy: 'Su confirmación nos ayuda a recibirlo con cariño.',
 			guestCap: 6,
 			accessMode: 'hybrid',
 			confirmationMode: 'api',
@@ -284,7 +296,7 @@ export function buildAlbaPublishedContent(
 		family: {
 			presentation: 'with-photo',
 			featuredImage: assets.family,
-			focalPoint: '50% 62%',
+			focalPoint: '50% 58%',
 			labels: {
 				sectionSubtitle: '',
 				sectionTitle: '',
@@ -298,7 +310,8 @@ export function buildAlbaPublishedContent(
 			closingPhrase: 'Con cariño',
 			date: '11 de septiembre de 2026',
 			image: assets['thank-you'],
-			focalPoint: '50% 32%',
+			// Tighter face-forward crop for intimate finale (not a second Hero).
+			focalPoint: '48% 22%',
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

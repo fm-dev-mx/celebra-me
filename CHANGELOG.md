@@ -10,14 +10,17 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
-### Added (pending)
+### Added
 
-<!-- Product/operator-visible items for the next release. Not every commit. -->
-<!-- Client invitation detail → docs/invitations/<slug>.md; schema history → supabase/migrations/. -->
+- **Alba Rosa Quiñones**: cumple 70 invitation on luxury-hacienda with Lane A Jardín Cobalto
+  profile, 8 managed-release WebP assets, interludes content model, and intersection profiles.
 
 ### Changed
 
-<!-- Pending product/operator-visible changes for the next checkpoint. -->
+- **Alba Rosa Quiñones**: final Local editorial redesign — simplified Hero (person → occasion →
+  date), fixed Gallery luxury-hacienda span blowup into featured+support composition, legend-only
+  Gifts presentation, integrated navy RSVP surface, arch-led Family layout, intimate Thank You
+  scale, and stronger atmospheric/arch intersections under Palette 1 Jardín Cobalto.
 
 ## [0.14.0-beta.1] - 2026-07-27
 
@@ -25,16 +28,24 @@ Envelope seal system, new talent packs, and Celestial Blue evolution since `v0.1
 
 ### Added
 
-- **Envelope seal system**: wax-organic, wax-medallion, and wax-monogram renderers with resolution resolver, container-query size tiers, and seal-icon integration — supporting multi-renderer seal profiles per invitation.
-- **Raster seal content**: document renderer model and envelope seal configuration in the content schema.
-- **New talent packs**: Ice Loggia (Camila, 24 shots), Ice Waves (Camila), and Marble Moon (Camila, 20 shots) with model documentation and shot prompts (`src/assets/images/talents/`).
-- **Provision sourceHash validation**: reject stale file packages with mismatched source hashes during import.
+- **Envelope seal system**: wax-organic, wax-medallion, and wax-monogram renderers with resolution
+  resolver, container-query size tiers, and seal-icon integration — supporting multi-renderer seal
+  profiles per invitation.
+- **Raster seal content**: document renderer model and envelope seal configuration in the content
+  schema.
+- **New talent packs**: Ice Loggia (Camila, 24 shots), Ice Waves (Camila), and Marble Moon (Camila,
+  20 shots) with model documentation and shot prompts (`src/assets/images/talents/`).
+- **Provision sourceHash validation**: reject stale file packages with mismatched source hashes
+  during import.
 
 ### Changed
 
-- **Celestial Blue demo**: Ice Loggia talent photo refresh, Look P interludes, family featured image, desktop hero crop, and cooler shared-light envelope/seal polish with deeper satin wax palette and richer shadows.
+- **Celestial Blue demo**: Ice Loggia talent photo refresh, Look P interludes, family featured
+  image, desktop hero crop, and cooler shared-light envelope/seal polish with deeper satin wax
+  palette and richer shadows.
 - **Wax-monogram seal**: redesigned with pressed atelier aesthetic and separator support.
-- **Envelope reveal**: integrated multi-renderer seals with wax-monogram anchor on flap fold and shared-light sheen polish.
+- **Envelope reveal**: integrated multi-renderer seals with wax-monogram anchor on flap fold and
+  shared-light sheen polish.
 - **Celestial Blue reveal theme**: deeper satin wax palette and richer shadow profiles.
 
 ### Data / model
