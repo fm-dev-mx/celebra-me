@@ -28,6 +28,19 @@
 	}
 }
 
+// Mirror of motion-fade-in-up: enters from above, travelling downward into place.
+@keyframes motion-fade-in-down {
+	from {
+		opacity: 0%;
+		transform: translateY(-20px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
 // Ambient interlude life (CSS-only; reduced-motion safe via usage gates)
 @keyframes interlude-ambient {
 	from {

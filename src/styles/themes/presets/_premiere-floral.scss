@@ -3,6 +3,19 @@
 @use '../../tokens/system/color' as sys;
 
 .theme-preset--premiere-floral {
+	// Motion recipe — romantic editorial: slower, softer, less travel.
+	// Blur stays at 4px rather than celestial-blue's 6px: the hero is a large photographic
+	// composition set in Cormorant Garamond at display size, and a high-contrast serif
+	// degrades faster than celestial's cooler, lower-contrast type under the same blur.
+	--motion-reveal-distance: 16px;
+	--motion-reveal-duration: var(--duration-premium);
+	--motion-reveal-blur: 4px;
+	--motion-ambient-scale-to: 1.028;
+	--motion-ambient-duration: 18s;
+
+	// ---------------------------------------------------------------------
+	// Base palette
+	// ---------------------------------------------------------------------
 	--color-surface-primary: #{sys.$sys-color-floral-50};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-50)};
 	--color-surface-soft: #{sys.$sys-color-neutral-0};
