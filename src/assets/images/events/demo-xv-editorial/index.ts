@@ -17,13 +17,18 @@ import interlude03 from './interlude-03.webp';
 import gallery15 from './gallery-15.webp';
 import interlude04 from './interlude-04.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
+// Decorative venue maps (demo-safe). Shared from enchanted-rose pack while media fallback is active.
+import mapCeremony from '../demo-xv-enchanted-rose/map-ceremony.webp';
+import mapReception from '../demo-xv-enchanted-rose/map-reception.webp';
 
 export const assets = {
 	hero,
 	portrait,
 	family,
 	familyAlt,
-	jardin: gallery03, // Reused as the demo venue editorial frame
+	jardin: gallery03, // Venue editorial frame (also used by cumple-luxury-hacienda, editorial-magazine, etc.)
+	mapCeremony,
+	mapReception,
 	signature,
 	gallery: [
 		gallery01, // 0 -> gallery01
