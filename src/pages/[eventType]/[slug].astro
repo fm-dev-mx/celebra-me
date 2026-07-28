@@ -363,7 +363,11 @@ const wrapperDataAttributes = page
 							{page.viewModel.music && (
 								<MusicPlayer
 									url={page.viewModel.music.url}
-									autoPlay={page.viewModel.music.autoPlay}
+									autoPlay={
+										page.viewModel.isDemo && import.meta.env.DEV
+											? false
+											: page.viewModel.music.autoPlay
+									}
 									title={page.viewModel.music.title}
 									revealMode={page.viewModel.music.revealMode}
 									variant={page.viewModel.theme.preset}
