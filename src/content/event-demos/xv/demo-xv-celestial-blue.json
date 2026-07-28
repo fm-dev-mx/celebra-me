@@ -100,9 +100,7 @@
             { "image": "gallery05", "caption": "Sonrisas que iluminan la noche." },
             { "image": "gallery06", "caption": "Detalles que cuentan una historia." },
             { "image": "gallery07", "caption": "Brillo y distinción en cada rincón." },
-            { "image": "gallery08", "caption": "La magia de los quince años." },
-            { "image": "gallery09", "caption": "Gratitud y felicidad compartida." },
-            { "image": "gallery10", "caption": "Un capítulo que comienza con luz propia." }
+            { "image": "gallery08", "caption": "La magia de los quince años." }
         ]
     },
     "gifts": {

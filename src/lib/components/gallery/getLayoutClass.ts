@@ -19,7 +19,7 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 	},
 	'celestial-blue': {
 		featureIndices: [0, 5, 6],
-		wideIndices: [2, 3, 8, 9],
+		wideIndices: [2, 3, 7],
 	},
 	'enchanted-rose': {
 		featureIndices: [0, 5],
