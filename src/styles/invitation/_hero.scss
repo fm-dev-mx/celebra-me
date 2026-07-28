@@ -247,6 +247,12 @@
 		animation: none;
 	}
 
+	.invitation-hero__title-wrapper {
+		opacity: 0%;
+		transform: translateY(20px);
+		animation: none;
+	}
+
 	.invitation-hero__label,
 	.invitation-hero__title,
 	.invitation-hero__nickname-badge,
