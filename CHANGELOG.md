@@ -8,21 +8,70 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 Política por capas (qué va aquí vs notas por invitación vs migraciones):
 [`docs/core/release-process.md`](docs/core/release-process.md).
 
-## [Unreleased]
+## [0.15.0-beta.1] - 2026-07-28
+
+Alba Rosa Quiñones client invitation, premium motion system, and preview infrastructure since
+`v0.14.0-beta.1`.
 
 ### Added
 
 - **Alba Rosa Quiñones**: cumple 70 invitation on luxury-hacienda with Lane A Jardín Cobalto
   profile, 8 managed-release WebP assets, interludes content model, and intersection profiles.
+- **Premium motion system**: unified reveal coordinator with tokenized premium recipes, ambient
+  interlude, intersection profiles, bounded safety timer, and scroll-reveal contract.
+- **Celestial Blue cinematic demo**: cinematic demo profile with editorial intersection treatments;
+  motion audit and closure documentation.
+- **Preview revision tracking**: draft revision gate replacing cache-busting version parameter;
+  optimistic concurrency via provenance projection on drafts.
+- **Asset delivery service**: provider-aware URL resolution for Supabase and Cloudinary with
+  fallback chain.
+- **Draft mutation service**: managed merge baseline resolution and draft mutation with provenance.
+- **Invitation preparation system**: readiness classification, event completeness checks, image
+  optimization, owner decision pack, and markdown state serialization.
+- **Branch lane tooling v2.1**: migration parity, lane status, diagnosis, checkpoint, clearance,
+  disposable remediation, and database-sensitive path detection scripts.
+- **Locked RSVP preview component**: `LockedRsvpPreview.astro` for pre-RSVP gate state.
+- **Celestial Blue paper credential theme**: personalized-access theme integration.
+- **Itinerary timeline paper variant**: `_timeline-paper.scss` section theme.
+- **Enchanted Rose location maps**: restored demo maps.
 
 ### Changed
 
-- **Alba Rosa Quiñones**: final Local editorial redesign — simplified Hero (person → occasion →
-  date), fixed Gallery luxury-hacienda span blowup into featured+support composition, legend-only
-  Gifts presentation, integrated navy RSVP surface, arch-led Family layout, intimate Thank You
-  scale, and stronger atmospheric/arch intersections under Palette 1 Jardín Cobalto.
+- **Alba Rosa Quiñones**: final editorial redesign — neutral palette, simplified Hero
+  (person → occasion → date), diagonal cuts, café removal, responsive fixes, integrated navy RSVP
+  surface, arch-led Family layout.
+- **Celestial Blue demo**: SVG displacement filter replaced with grain noise on family panel;
+  gallery reduced from 10 to 8 images.
+- **Envelope reveal**: integrated multi-renderer seals with wax-monogram anchor on flap fold;
+  softened post-open hero scroll handoff.
+- **Abril profile**: celestial-blue itinerary variant with Bodoni watermark; gifts section added.
+- **Animations**: fail-open timer cleared on full reveal; parallax and competing transforms removed
+  from interlude; entrances gated to revealed state.
+- **Itinerary section**: stagger delays capped for celestial/enchanted presets.
+- **Gallery**: content aspect ratio support in preview crops; key, layoutRole, and aspectRatio
+  fields for metadata-driven layout.
+- **Theme presets**: various refinements across celestial-blue, enchanted-rose, jewelry-box,
+  luxury-hacienda, and premiere-floral.
+- **Music**: autoplay suppressed in dev/demo mode.
 
-## [0.14.0-beta.1] - 2026-07-27
+### Fixed
+
+- Multiple scroll-reveal selector and timing resolutions across invitation sections.
+- Gallery count and title display alignment for celestial-blue.
+
+### Data / model
+
+- New migration: `20260727180000_managed_provenance_projection_baseline` (managed release
+  provenance projection, optimistic concurrency on drafts).
+- Shared content schema: intersection profiles field added.
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+## [0.14.0-beta.1]
 
 Envelope seal system, new talent packs, and Celestial Blue evolution since `v0.13.0-beta.1`.
 
