@@ -61,23 +61,30 @@ const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 
 const bgSrc = resolveImage(backgroundImage);
 const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
-const optimizedMobileBg = (resolvedMobileBg && !isEditorialMagazine)
-	? await getImage({
-			src: resolvedMobileBg,
-			width: 640,
-			format: 'webp',
-			quality: 80,
-	  })
-	: null;
+const remoteMobileBgSrc =
+	backgroundImageMobile &&
+	'src' in backgroundImageMobile &&
+	typeof backgroundImageMobile.src === 'string'
+		? backgroundImageMobile.src
+		: null;
+// Managed release assets are already normalized WebP derivatives. Serve their
+// remote URL directly to avoid a second encode and accidental enlargement.
+const mobileBgSrc =
+	resolvedMobileBg && !isEditorialMagazine
+		? remoteMobileBgSrc
+			? remoteMobileBgSrc
+			: (
+					await getImage({
+						src: resolvedMobileBg,
+						width: Math.min(1080, resolvedMobileBg.width),
+						format: 'webp',
+						quality: 84,
+					})
+				).src
+		: null;
 
-const optimizedDesktopBg = (backgroundImageDesktop && !isEditorialMagazine)
-	? await getImage({
-			src: backgroundImageDesktop.src,
-			width: 1920,
-			format: 'webp',
-			quality: 80,
-	  })
-	: null;
+const desktopBgSrc =
+	backgroundImageDesktop && !isEditorialMagazine ? backgroundImageDesktop.src : null;
 
 const portraitSrc = portrait ? resolveImage(portrait) : null;
 
@@ -116,11 +123,11 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	>
 			<div class="invitation-hero__background">
 				<picture>
-					{optimizedMobileBg && (
-						<source media="(max-width: 991px)" srcset={optimizedMobileBg.src} />
+					{mobileBgSrc && (
+						<source media="(max-width: 991px)" srcset={mobileBgSrc} />
 					)}
-					{optimizedDesktopBg && (
-						<source media="(min-width: 992px)" srcset={optimizedDesktopBg.src} />
+					{desktopBgSrc && (
+						<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 					)}
 					<Image
 						src={bgSrc}
@@ -128,7 +135,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 						width={1080}
 						height={1920}
 						format="webp"
-						quality={80}
+						quality={84}
 						loading="eager"
 						fetchpriority={highPriority ? 'high' : undefined}
 					/>
@@ -141,11 +148,11 @@ const fpDesktop = focalPointDesktop || fpDefault;
 				<div class="invitation-hero__title-wrapper">
 					<h1 class="invitation-hero__title">
 						<span class="invitation-hero__title-line">
-							{firstName.split(/\s+/).map((word) => (
+							{firstName.split(/\s+/).map((word, index, words) => (
 								<span
 									class={`invitation-hero__title-word invitation-hero__title-word--${word.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
 								>
-									{word}
+									{word}{index < words.length - 1 ? ' ' : ''}
 								</span>
 							))}
 						</span>

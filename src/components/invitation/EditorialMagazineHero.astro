@@ -51,23 +51,26 @@ const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 
 const bgSrc = resolveImage(backgroundImage);
 const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
-const optimizedMobileBg = resolvedMobileBg
-	? await getImage({
-			src: resolvedMobileBg,
-			width: 640,
-			format: 'webp',
-			quality: 80,
-	  })
+const remoteMobileBgSrc =
+	backgroundImageMobile &&
+	'src' in backgroundImageMobile &&
+	typeof backgroundImageMobile.src === 'string'
+		? backgroundImageMobile.src
+		: null;
+const mobileBgSrc = resolvedMobileBg
+	? remoteMobileBgSrc
+		? remoteMobileBgSrc
+		: (
+				await getImage({
+					src: resolvedMobileBg,
+					width: Math.min(1080, resolvedMobileBg.width),
+					format: 'webp',
+					quality: 84,
+				})
+			).src
 	: null;
 
-const optimizedDesktopBg = backgroundImageDesktop
-	? await getImage({
-			src: backgroundImageDesktop.src,
-			width: 1920,
-			format: 'webp',
-			quality: 80,
-	  })
-	: null;
+const desktopBgSrc = backgroundImageDesktop?.src ?? null;
 
 const portraitSrc = portrait ? resolveImage(portrait) : null;
 
@@ -106,11 +109,11 @@ const fpDesktop = focalPointDesktop || fpDefault;
 
 	<div class="invitation-hero__background">
 		<picture>
-			{optimizedMobileBg && (
-				<source media="(max-width: 991px)" srcset={optimizedMobileBg.src} />
+			{mobileBgSrc && (
+				<source media="(max-width: 991px)" srcset={mobileBgSrc} />
 			)}
-			{optimizedDesktopBg && (
-				<source media="(min-width: 992px)" srcset={optimizedDesktopBg.src} />
+			{desktopBgSrc && (
+				<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 			)}
 			<Image
 				src={bgSrc}
