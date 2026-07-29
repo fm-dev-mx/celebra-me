@@ -16,5 +16,5 @@ if [ "$current_branch" = "main" ]; then
 fi
 
 echo "🛡️ Running pre-commit checks..."
-pnpm lint-staged
-pnpm test:changed
+cmd.exe /c "pnpm lint-staged"
+cmd.exe /c "pnpm test:changed"
