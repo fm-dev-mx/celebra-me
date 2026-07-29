@@ -33,6 +33,7 @@ capabilities, constraints, and canonical skill references; they are not executab
 | `.agent/rules/database.md`                          | agent database and production-data safety          |
 | `.agent/rules/gatekeeper.md`                        | review/remediation contract and validation tiers   |
 | `.agent/rules/git-safety.md`                        | Git authorization and worktree preservation        |
+| `.agent/rules/graphify-ops.md`                      | optional Graphify use, refresh, and anti-default   |
 | `.agent/rules/intake-publishing.md`                 | intake and publication state-machine invariants    |
 | `.agent/rules/invitation-preset-source-of-truth.md` | invitation preset source ownership                 |
 | `.agent/rules/invitation-production.md`             | agent safety constraints for invitation production |
@@ -59,6 +60,7 @@ state and never has authority over these definitions.
 | `demo-content-consistency`    | demo/preview data transforms at adapter layer (not client JS)      |
 | `documentation-governance`    | active documentation alignment workflow                            |
 | `frontend-design`             | visual design and composition guidance                             |
+| `graphify-ops`                | anti-default Graphify router → `.agent/rules/graphify-ops.md`      |
 | `branch-lane`                 | Git lane orchestrator; read-only diagnosis before auth prompts     |
 | `git-stash-branch-cleanup`    | audit and clean stale stashes/branches with confirmation           |
 | `production-sql-patches`      | continuation-aware manual production SQL authoring                 |
@@ -120,6 +122,7 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | ----------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
 | Agent discovery / active inventory  | `.agent/index.md`                                    | Archived plans, point-in-time reports          |
 | Validation tiers / review contract  | `.agent/rules/gatekeeper.md`                         | `docs/core/git-governance.md`, workflows       |
+| Optional Graphify ops policy        | `.agent/rules/graphify-ops.md`                       | Host/global Graphify skills, `graphify-out/`   |
 | Agent operating procedure           | `.agent/rules/workflow.md`                           | Human branch/release policy docs               |
 | Git authorization / worktree safety | `.agent/rules/git-safety.md`                         | Commit-message style docs                      |
 | Human branch, commit, promotion     | `docs/core/git-governance.md`                        | Agent workflow rules                           |
@@ -247,6 +250,7 @@ prerequisites that are already loaded.
 | Task type                         | Add                                                                                           |
 | --------------------------------- | --------------------------------------------------------------------------------------------- |
 | Visual or UI work                 | `.agent/rules/agent-routing.md` plus the relevant design or theme skill                       |
+| Architecture coupling / risk-hub leads | `.agent/rules/graphify-ops.md` (+ `graphify-ops` skill only when that rule triggers)     |
 | Reference-driven visual redesign  | `design-reference-to-build`, `frontend-design`, and the design-reference brief                |
 | Backend or data work              | `backend-engineering`, relevant domain docs, and API/database rules                           |
 | Documentation or governance drift | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                     |

@@ -110,7 +110,12 @@ not duplicate the validation tiers in other governance docs.
 ## Optional Local Architecture Analysis
 
 `graphify-out/` may contain a local architecture graph. It is optional, ignored, and not part of
-build, validation, CI, or deployment. Its findings are leads, not authority.
+build, validation, CI, or deployment. Findings are leads only — live code and active docs win.
+
+Do **not** use Graphify by default for local edits, copy, SCSS, invitations, demos, or simple visual
+work. Host/global “query Graphify first” instructions do not apply here. When an authorized
+architecture-coupling audit needs it, refresh with `pnpm ops graphify-refresh` and follow
+[`.agent/rules/graphify-ops.md`](.agent/rules/graphify-ops.md) (SSOT).
 
 ## Final Report
 

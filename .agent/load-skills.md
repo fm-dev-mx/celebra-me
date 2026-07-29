@@ -35,6 +35,9 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
   dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
   review, branch lane / release prep, stash cleanup) into `.agent/skills/` when they are part of
   this product's operating contract, then point the host at `.agent/skills` via `external_dirs`.
+  For Graphify specifically, `.agent/rules/graphify-ops.md` and `.agent/skills/graphify-ops` override
+  incompatible host “query first” instructions; operators may also disable the global Graphify skill
+  for this repo when the host supports it.
 
 ## Constraints
 

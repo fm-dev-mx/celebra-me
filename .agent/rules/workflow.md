@@ -33,7 +33,12 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
   reads and browser inspections when the runtime supports it.
 - For a bounded visual refinement, implement one explicit hypothesis, verify one representative
   mobile viewport immediately, then broaden QA. Run focused checks during iteration and the complete
-  required validation tier once when the milestone closes.
+  required validation tier once when the milestone closes. Follow gatekeeper §5.3 for screenshot
+  scope; do not generalize section-intersection five-viewport proof to unrelated UI.
+- Prefer direct file reads and `rg` for known modules or invitation paths before launching a broad
+  explore/subagent sweep.
+- In the final report, name the Gatekeeper tier used (A/B/C), visual-evidence choices or skips, and
+  whether Graphify was unused (default) or authorized under `graphify-ops`.
 - Do not launch a subagent after already performing the same central investigation. Delegate only
   independent work that meets every criterion in `agent-routing.md`.
 
