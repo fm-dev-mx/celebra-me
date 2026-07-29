@@ -1,5 +1,6 @@
 import type { InvitationUpdateTarget } from './invitation-update-options.ts';
 import type { TargetApplyResultData, TargetPlanData } from './invitation-update-presenter.ts';
+import type { MutationOutcomeStatus } from '../../src/lib/intake/mutations/outcome.ts';
 
 const ZERO_DATABASE_WRITES = { inserts: 0, updates: 0, deletes: 0 };
 const ZERO_STORAGE_MUTATIONS = { uploads: 0, overwrites: 0, moves: 0, deletes: 0 };
@@ -30,6 +31,15 @@ export type LifecycleFinalStatus =
 	| 'BLOQUEADO'
 	| 'ERROR — CAMBIOS REVERTIDOS'
 	| 'ERROR — REQUIERE REVISIÓN';
+
+export function toMutationOutcomeStatus(
+	status: TargetApplyResultData['status'],
+): MutationOutcomeStatus {
+	if (status === 'SIN CAMBIOS') return 'replayed';
+	if (status === 'CAMBIOS APLICADOS') return 'applied';
+	if (status === 'ERROR — REQUIERE REVISIÓN') return 'partial';
+	return 'not_applied';
+}
 
 function zeroResult(
 	target: InvitationUpdateTarget,

@@ -64,26 +64,26 @@ function guardResult(
 
 describe('classifyDbTarget', () => {
 	describe('production', () => {
-		it('detects supabase.co hosts', () => {
+		it('detects the allowlisted Production supabase.co host', () => {
 			classification({
-				dbUrl: 'postgresql://postgres:secret@db.abcdef12345.supabase.co:5432/postgres',
+				dbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 				expectedTarget: 'production',
-				expectedReason: /Supabase cloud host/,
+				expectedReason: /allowlisted Production/,
 			});
 		});
 
-		it('detects supabase.com hosts', () => {
+		it('detects the allowlisted Production supabase.com host', () => {
 			classification({
-				dbUrl: 'postgresql://postgres:secret@db.abcdef12345.supabase.com:5432/postgres',
+				dbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.com:5432/postgres',
 				expectedTarget: 'production',
 			});
 		});
 
-		it('detects subdomain supabase.co hosts', () => {
+		it('rejects an arbitrary Supabase cloud project', () => {
 			classification({
 				dbUrl: 'postgresql://user:pass@project-ref.supabase.co:6543/postgres',
-				expectedTarget: 'production',
-				expectedReason: /Supabase cloud host/,
+				expectedTarget: 'unknown',
+				expectedReason: /not allowlisted/,
 			});
 		});
 
@@ -461,6 +461,4 @@ describe('validateDumpIntegrity', () => {
 		expect(result.ok).toBe(false);
 		expect(result.errors[0]).toMatch(/not found/);
 	});
-
 });
-

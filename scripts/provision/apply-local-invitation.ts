@@ -43,6 +43,10 @@ import { cleanupLocalResources, type TrackedResource } from './managed-invitatio
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { uploadOrReconcileCloudinaryAsset } from './cloudinary-adapter.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
+import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { resolveManagedInvitationMetadata } from '../../src/lib/intake/mutations/ownership.ts';
+import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
 
 const BUCKET = 'invitation-assets';
 
@@ -226,17 +230,28 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
 
-	const route = `/${definition.eventType}/${definition.slug}`;
-
 	// Check existing invitation
-	const { data: existingInv } = await supabase
+	const { data: existingProvenanceLink } = await supabase
+		.from('managed_invitation_release_provenance')
+		.select('invitation_id')
+		.eq('definition_slug', slug)
+		.maybeSingle();
+	let existingInvitationQuery = supabase
 		.from('invitations')
 		.select(
 			'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
 		)
-		.eq('slug', slug)
-		.is('archived_at', null)
-		.maybeSingle();
+		.is('archived_at', null);
+	existingInvitationQuery = existingProvenanceLink?.invitation_id
+		? existingInvitationQuery.eq('id', existingProvenanceLink.invitation_id)
+		: existingInvitationQuery.eq('slug', slug);
+	const { data: existingInv } = await existingInvitationQuery.maybeSingle();
+
+	await verifySupabaseApiCredential({
+		apiUrl: env.apiUrl,
+		credential: env.serviceRoleKey,
+		expectedProjectRef: SUPABASE_PROJECT_REFS.local,
+	});
 
 	const ownerUserId = await resolveLocalOwner({
 		slug,
@@ -249,6 +264,39 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		apply: isApply,
 		existingOwnerUserId: existingInv?.created_by ? String(existingInv.created_by) : null,
 	});
+	const targetMetadata = resolveManagedInvitationMetadata(
+		{
+			title: definition.title,
+			slug: definition.slug,
+			eventType: definition.eventType,
+			baseDemoId: definition.baseDemoId,
+			themeId: definition.themeId,
+			snapshot: preset as unknown as Record<string, unknown>,
+			clientName: definition.clientName,
+			clientEmail: definition.clientEmail ?? '',
+			clientWhatsapp: definition.clientWhatsapp ?? '',
+			photosReceived: definition.photosReceived ?? true,
+			ownerUserId,
+		},
+		existingInv
+			? {
+					title: String(existingInv.title),
+					slug: String(existingInv.slug),
+					eventType: String(existingInv.event_type),
+					baseDemoId: String(existingInv.base_demo_id),
+					themeId: String(existingInv.theme_id),
+					snapshot: existingInv.snapshot as Record<string, unknown>,
+					clientName: String(existingInv.client_name ?? ''),
+					clientEmail: String(existingInv.client_email ?? ''),
+					clientWhatsapp: String(existingInv.client_whatsapp ?? ''),
+					photosReceived: Boolean(existingInv.photos_received),
+					ownerUserId: String(existingInv.created_by),
+					status: String(existingInv.status),
+				}
+			: null,
+	);
+	const targetSlug = targetMetadata.slug;
+	const route = `/${definition.eventType}/${targetSlug}`;
 
 	const invitationId = (existingInv?.id as string) || deriveDeterministicUuid('invitation', slug);
 
@@ -271,7 +319,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const { data: existingEvent } = await supabase
 		.from('events')
 		.select('id, owner_user_id, event_type, title, status, invitation_project_id')
-		.eq('slug', slug)
+		.eq('slug', targetSlug)
 		.is('deleted_at', null)
 		.maybeSingle();
 	const { data: existingMembership } = existingEvent?.id
@@ -481,24 +529,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	const isInvitationIdentical = Boolean(
 		existingInv &&
-		existingInv.title === definition.title &&
 		existingInv.event_type === definition.eventType &&
 		existingInv.base_demo_id === definition.baseDemoId &&
 		existingInv.theme_id === definition.themeId &&
 		canonicalize(existingInv.snapshot) === canonicalize(preset) &&
-		existingInv.kind === 'client' &&
-		existingInv.client_name === definition.clientName &&
-		existingInv.client_email === (definition.clientEmail ?? '') &&
-		existingInv.client_whatsapp === (definition.clientWhatsapp ?? '') &&
-		existingInv.photos_received === (definition.photosReceived ?? true) &&
-		existingInv.created_by === ownerUserId,
+		existingInv.kind === 'client',
 	);
 	const isEventIdentical = Boolean(
 		existingEvent &&
 		existingEvent.owner_user_id === ownerUserId &&
 		existingEvent.event_type === definition.eventType &&
-		existingEvent.title === definition.title &&
-		existingEvent.status === 'published' &&
 		existingEvent.invitation_project_id === invitationId,
 	);
 	const isMembershipIdentical = existingMembership?.membership_role === 'owner';
@@ -697,6 +737,23 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	if (!isApply || isZeroDrift) {
+		if (isApply && isZeroDrift) {
+			const { error } = await supabase.from('invitation_mutation_operation_receipts').insert({
+				operation_id: operationIdFromPlanId(constructedPlan.planId),
+				invitation_id: invitationId,
+				environment: 'local',
+				project_ref: SUPABASE_PROJECT_REFS.local,
+				actor_type: 'operator',
+				origin: 'managed_cli_local',
+				command_kind: 'managed_invitation_apply',
+				input_hashes: { sourceHash: release.sourceHash, packageHash },
+				expected_state: constructedPlan.targetPreconditions,
+				status: 'replayed',
+				completed_steps: ['target_verified', 'existing_result_reused'],
+				result: { planId: constructedPlan.planId, publishedVersion: targetVersion },
+			});
+			if (error && error.code !== '23505') throw error;
+		}
 		return {
 			slug,
 			route,
@@ -788,17 +845,17 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	try {
 		// 1. Ensure Invitation Record
 		const invMetadata = {
-			title: definition.title,
+			title: targetMetadata.title,
 			event_type: definition.eventType,
-			status: 'draft',
+			status: targetMetadata.status,
 			base_demo_id: definition.baseDemoId,
 			theme_id: definition.themeId,
 			snapshot: preset,
-			client_name: definition.clientName,
-			client_email: definition.clientEmail ?? '',
-			client_whatsapp: definition.clientWhatsapp ?? '',
-			photos_received: definition.photosReceived ?? true,
-			created_by: ownerUserId,
+			client_name: targetMetadata.clientName,
+			client_email: targetMetadata.clientEmail,
+			client_whatsapp: targetMetadata.clientWhatsapp,
+			photos_received: targetMetadata.photosReceived,
+			created_by: targetMetadata.ownerUserId,
 			kind: 'client',
 		};
 
@@ -813,7 +870,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
-				.insert({ id: invitationId, slug, ...invMetadata });
+				.insert({ id: invitationId, slug: targetSlug, ...invMetadata });
 			if (error) throw error;
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
 		}
@@ -1068,7 +1125,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					p_public_metadata_hash: publicMetaHash,
 					p_projection_hash: projectionHash,
 					p_idempotency_key: randomUUID(),
-					p_slug: slug,
+					p_slug: targetSlug,
 					p_event_type: definition.eventType,
 					p_is_demo: false,
 					p_content: proposedContent,
@@ -1086,7 +1143,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const { data: currentEvent } = await supabase
 				.from('events')
 				.select('id')
-				.eq('slug', slug)
+				.eq('slug', targetSlug)
 				.is('deleted_at', null)
 				.maybeSingle();
 			if (currentEvent?.id) {
@@ -1099,9 +1156,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const { error: eventError } = await supabase.from('events').insert({
 				id: eventId,
 				owner_user_id: ownerUserId,
-				slug,
+				slug: targetSlug,
 				event_type: definition.eventType,
-				title: definition.title,
+				title: targetMetadata.title,
 				status: 'published',
 				invitation_project_id: invitationId,
 			});
@@ -1111,10 +1168,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const { error: eventError } = await supabase
 				.from('events')
 				.update({
-					owner_user_id: ownerUserId,
 					event_type: definition.eventType,
-					title: definition.title,
-					status: 'published',
 					invitation_project_id: invitationId,
 				})
 				.eq('id', eventId);
@@ -1181,7 +1235,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			supabase
 				.from('events')
 				.select('id, owner_user_id, event_type, title, status, invitation_project_id')
-				.eq('slug', slug)
+				.eq('slug', targetSlug)
 				.is('deleted_at', null)
 				.maybeSingle(),
 			supabase
@@ -1231,22 +1285,20 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const finalEventRow = finalEvent.data as Record<string, unknown> | null;
 		const verified = Boolean(
 			finalInvitationRow &&
-			finalInvitationRow.title === definition.title &&
+			finalInvitationRow.title === targetMetadata.title &&
 			finalInvitationRow.event_type === definition.eventType &&
 			finalInvitationRow.base_demo_id === definition.baseDemoId &&
 			finalInvitationRow.theme_id === definition.themeId &&
 			finalInvitationRow.kind === 'client' &&
-			finalInvitationRow.client_name === definition.clientName &&
-			finalInvitationRow.client_email === (definition.clientEmail ?? '') &&
-			finalInvitationRow.client_whatsapp === (definition.clientWhatsapp ?? '') &&
-			finalInvitationRow.photos_received === (definition.photosReceived ?? true) &&
-			finalInvitationRow.created_by === ownerUserId &&
+			finalInvitationRow.client_name === targetMetadata.clientName &&
+			finalInvitationRow.client_email === targetMetadata.clientEmail &&
+			finalInvitationRow.client_whatsapp === targetMetadata.clientWhatsapp &&
+			finalInvitationRow.photos_received === targetMetadata.photosReceived &&
+			finalInvitationRow.created_by === targetMetadata.ownerUserId &&
 			canonicalize(finalDraft.data?.content) === canonicalize(proposedContent) &&
 			canonicalize(finalPublication.data?.content) === canonicalize(proposedContent) &&
 			finalEventRow?.owner_user_id === ownerUserId &&
 			finalEventRow.event_type === definition.eventType &&
-			finalEventRow.title === definition.title &&
-			finalEventRow.status === 'published' &&
 			finalEventRow.invitation_project_id === invitationId &&
 			finalMembership.data?.membership_role === 'owner' &&
 			assetsVerified.every(Boolean),
@@ -1287,6 +1339,28 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				isPreExisting: false,
 			});
 		}
+		const { error: receiptError } = await supabase
+			.from('invitation_mutation_operation_receipts')
+			.insert({
+				operation_id: operationIdFromPlanId(constructedPlan.planId),
+				invitation_id: invitationId,
+				environment: 'local',
+				project_ref: SUPABASE_PROJECT_REFS.local,
+				actor_type: 'operator',
+				origin: 'managed_cli_local',
+				command_kind: 'managed_invitation_apply',
+				input_hashes: { sourceHash: release.sourceHash, packageHash },
+				expected_state: constructedPlan.targetPreconditions,
+				status: 'applied',
+				completed_steps: [
+					'target_verified',
+					'content_applied',
+					'published',
+					'provenance_recorded',
+				],
+				result: { planId: constructedPlan.planId, publishedVersion: finalVersion },
+			});
+		if (receiptError) throw receiptError;
 
 		return {
 			slug,

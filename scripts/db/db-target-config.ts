@@ -9,17 +9,14 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export type DbTarget =
-	| 'production'
-	| 'preview'
-	| 'persistent-local'
-	| 'disposable-test'
-	| 'unknown';
+	'production' | 'preview' | 'persistent-local' | 'disposable-test' | 'unknown';
 
 export interface ClassificationResult {
 	target: DbTarget;
@@ -50,10 +47,11 @@ export function validateEnvironmentUrlsPreflight(input: {
 		throw new Error(`Target "${target}" requires a non-empty database connection URL.`);
 	}
 	const projectRef = extractSupabaseProjectRef(targetDbUrl);
+	const expectedProjectRef = SUPABASE_PROJECT_REFS[target];
 
-	if (target === 'preview' && projectRef !== 'iwipdvisoyerfdytuhwi') {
+	if (projectRef !== expectedProjectRef) {
 		throw new Error(
-			`Preview promotion safety abort: expected Preview project "iwipdvisoyerfdytuhwi", got "${projectRef}".`,
+			`${target === 'preview' ? 'Preview' : 'Production'} promotion safety abort: expected project "${expectedProjectRef}", got "${projectRef}".`,
 		);
 	}
 
@@ -63,7 +61,9 @@ export function validateEnvironmentUrlsPreflight(input: {
 		try {
 			parsedApi = new URL(explicitSupabaseUrl);
 		} catch {
-			throw new Error(`Invalid explicit Supabase API URL provided: "${explicitSupabaseUrl}".`);
+			throw new Error(
+				`Invalid explicit Supabase API URL provided: "${explicitSupabaseUrl}".`,
+			);
 		}
 		if (
 			parsedApi.hostname.includes('pooler.supabase.com') ||
@@ -313,7 +313,7 @@ export function classifyDbTarget(
 	try {
 		const projectRef = extractSupabaseProjectRef(dbUrl);
 		const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-		let previewProjectRef = 'iwipdvisoyerfdytuhwi';
+		let previewProjectRef: string = SUPABASE_PROJECT_REFS.preview;
 		if (previewDbUrl) {
 			try {
 				previewProjectRef = extractSupabaseProjectRef(previewDbUrl);
@@ -329,20 +329,30 @@ export function classifyDbTarget(
 				dbUrl,
 			};
 		}
-
+		if (projectRef === SUPABASE_PROJECT_REFS.production) {
+			return {
+				target: 'production',
+				reason: `Matches allowlisted Production project reference (${projectRef})`,
+				dbUrl,
+			};
+		}
 		return {
-			target: 'production',
-			reason: `Supabase cloud host for project reference (${projectRef})`,
+			target: 'unknown',
+			reason: `Supabase project reference is not allowlisted (${projectRef})`,
 			dbUrl,
 		};
 	} catch {
-		// Fall back to host-suffix matching if project ref extraction fails
+		// A cloud-shaped host without a verifiable allowlisted ref remains unknown.
 		if (
 			SUPABASE_HOST_SUFFIXES.some(
 				(suffix) => hostname === suffix.slice(1) || hostname.endsWith(suffix),
 			)
 		) {
-			return { target: 'production', reason: `Supabase cloud host: ${hostname}`, dbUrl };
+			return {
+				target: 'unknown',
+				reason: `Supabase cloud host does not expose an allowlisted project ref: ${hostname}`,
+				dbUrl,
+			};
 		}
 	}
 

@@ -14,8 +14,17 @@ import {
 import { checkUnknownFlags } from '../../scripts/provision/invitation-update-options.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { verifyPreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
+import { toMutationOutcomeStatus } from '../../scripts/provision/invitation-lifecycle-execution.ts';
 
 describe('Managed Lifecycle Remediation Suite', () => {
+	it.each([
+		['SIN CAMBIOS', 'replayed'],
+		['CAMBIOS APLICADOS', 'applied'],
+		['ERROR — REQUIERE REVISIÓN', 'partial'],
+		['BLOQUEADO', 'not_applied'],
+	] as const)('maps adapter result %s to canonical outcome %s', (status, expected) => {
+		expect(toMutationOutcomeStatus(status)).toBe(expected);
+	});
 	describe('Server-Safe Import Boundary & Module Safety', () => {
 		it('detects PNG, WebP, and JPEG MIME types correctly', () => {
 			expect(detectFileMimeType('photo.png')).toBe('image/png');
@@ -92,9 +101,14 @@ describe('Managed Lifecycle Remediation Suite', () => {
 			const previewPooler =
 				'postgresql://postgres.iwipdvisoyerfdytuhwi:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
 			const prodPooler =
-				'postgresql://postgres.fmdevmxprod:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
+				'postgresql://postgres.ineitkdkyrxqyressllp:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
 			expect(classifyDbTarget(previewPooler).target).toBe('preview');
 			expect(classifyDbTarget(prodPooler).target).toBe('production');
+			expect(
+				classifyDbTarget(
+					'postgresql://postgres.arbitrary:pass@aws-0-sa-east-1.pooler.supabase.com:6543/postgres',
+				).target,
+			).toBe('unknown');
 		});
 
 		it('redacts credentials and database connection strings in errors', () => {

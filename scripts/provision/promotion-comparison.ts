@@ -11,12 +11,6 @@ import { hashPublicationProjection } from '../../src/lib/intake/services/publica
 // Normalisation
 // ---------------------------------------------------------------------------
 
-function valEq(a: unknown, b: unknown): boolean {
-	const normA = a === '' || a === undefined ? null : a;
-	const normB = b === '' || b === undefined ? null : b;
-	return normA === normB;
-}
-
 export function canonicalizeValue(val: unknown, targetStorageUrl?: string): unknown {
 	if (val === null || val === undefined) return null;
 	if (typeof val === 'string') {
@@ -60,14 +54,10 @@ export function checkInvitationMetadataIdentical(
 ): boolean {
 	if (!existingInv) return false;
 	return (
-		existingInv.title === pkgInv.title &&
+		existingInv.event_type === pkgInv.eventType &&
 		existingInv.base_demo_id === pkgInv.baseDemoId &&
 		existingInv.theme_id === pkgInv.themeId &&
 		existingInv.kind === pkgInv.kind &&
-		valEq(existingInv.client_name, pkgInv.clientName) &&
-		valEq(existingInv.client_email, pkgInv.clientEmail) &&
-		valEq(existingInv.client_whatsapp, pkgInv.clientWhatsapp) &&
-		Boolean(existingInv.photos_received) === Boolean(pkgInv.photosReceived) &&
 		isSemanticallyEqual(pkgInv.snapshot, existingInv.snapshot, targetStorageUrl)
 	);
 }
@@ -99,11 +89,9 @@ export function checkEventAndMembershipIdentical(
 	existingMember: Record<string, unknown> | null,
 ): boolean {
 	if (!existingEvent || !existingMember) return false;
-	const eventTitle = pkg.event?.title ?? pkg.invitation.title;
 	return (
 		existingEvent.owner_user_id === ownerUserId &&
-		existingEvent.title === eventTitle &&
-		existingEvent.status === 'published' &&
+		existingEvent.event_type === pkg.invitation.eventType &&
 		existingEvent.invitation_project_id === targetInvitationId &&
 		existingMember.user_id === ownerUserId &&
 		existingMember.membership_role === 'owner'

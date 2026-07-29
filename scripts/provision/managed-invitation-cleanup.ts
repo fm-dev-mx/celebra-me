@@ -57,6 +57,24 @@ export interface CleanupResult {
 	status: 'CAMBIOS_REVERTIDOS' | 'REQUIERE_REVISION';
 }
 
+const RSVP_CHILD_TABLES = ['guest_invitations', 'event_claim_codes'] as const;
+
+async function assertLocalEventHasNoRsvpState(
+	supabase: SupabaseClient,
+	eventId: string,
+): Promise<void> {
+	for (const table of RSVP_CHILD_TABLES) {
+		const { count, error } = await supabase
+			.from(table)
+			.select('id', { count: 'exact', head: true })
+			.eq('event_id', eventId);
+		if (error) throw new Error(error.message);
+		if ((count ?? 0) > 0) {
+			throw new Error(`RSVP_PROTECTED_EVENT: ${table} contains durable RSVP state.`);
+		}
+	}
+}
+
 export function classifyTrackedResource(
 	resource: TrackedResource,
 ): CleanupResult['classifications'][number]['classification'] {
@@ -177,6 +195,7 @@ export async function cleanupLocalResources(
 				return ensureDeleted(error);
 			}
 			case 'event': {
+				await assertLocalEventHasNoRsvpState(supabase, res.id);
 				const { error } = await supabase.from('events').delete().eq('id', res.id);
 				return ensureDeleted(error);
 			}
@@ -258,7 +277,15 @@ export async function cleanupHostedPsqlResources(
 				return true;
 			}
 			case 'event': {
-				execPsql(`delete from public.events where id = '${res.id}'::uuid;`);
+				execPsql(`
+do $$
+begin
+  if exists (select 1 from public.guest_invitations where event_id = '${res.id}'::uuid)
+     or exists (select 1 from public.event_claim_codes where event_id = '${res.id}'::uuid) then
+    raise exception 'RSVP_PROTECTED_EVENT: event contains durable RSVP state';
+  end if;
+  delete from public.events where id = '${res.id}'::uuid;
+end $$;`);
 				return true;
 			}
 			case 'invitation_content_draft': {

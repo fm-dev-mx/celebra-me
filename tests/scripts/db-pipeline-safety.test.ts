@@ -55,10 +55,10 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			expect(result.reason).toContain('Matches PREVIEW_DB_URL');
 		});
 
-		it('classifies production cloud host not matching PREVIEW_DB_URL as production target', () => {
+		it('classifies only the explicit Production project as production', () => {
 			delete process.env.PREVIEW_DB_URL;
 			const prodUrl =
-				'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres';
 
 			const result = classifyDbTarget(prodUrl);
 			expect(result.target).toBe('production');
@@ -131,7 +131,7 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 
 	describe('db-guard.ts production migration rules', () => {
 		const prodUrl =
-			'postgresql://postgres:secret@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+			'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres';
 		const prodClassification = classifyDbTarget(prodUrl);
 
 		it('blocks migrate operation when no CONFIRM_PROD_MIGRATION env is set', () => {
@@ -161,7 +161,7 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 		});
 
 		it('permits migrate operation ONLY when CONFIRM_PROD_MIGRATION matches exact host', () => {
-			process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE aws-0-us-west-2.pooler.supabase.com';
+			process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE db.ineitkdkyrxqyressllp.supabase.co';
 
 			const result = guardProduction(prodClassification, 'migrate');
 			expect(result.ok).toBe(true);

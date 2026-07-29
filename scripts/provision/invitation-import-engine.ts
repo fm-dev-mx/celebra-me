@@ -63,7 +63,9 @@ import {
 	type ConflictResolutions,
 	type UpdateScope,
 } from './semantic-delta.ts';
+import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
 import { sortPathPolicy } from './conflict-resolutions.ts';
+import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -244,7 +246,7 @@ function loadTargetInvitationRows(
 ): Array<Record<string, unknown>> {
 	return parsePsqlJsonArray(
 		runPsql(
-			`select json_agg(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, archived_at from public.invitations where slug = ${sqlLiteral(slug)} order by archived_at nulls first, id) t;`,
+			`select json_agg(t) from (select distinct i.id, i.slug, i.title, i.event_type, i.status, i.base_demo_id, i.theme_id, i.kind, i.snapshot, i.client_name, i.client_email, i.client_whatsapp, i.photos_received, i.created_by, i.archived_at from public.invitations i left join public.managed_invitation_release_provenance p on p.invitation_id = i.id where i.slug = ${sqlLiteral(slug)} or p.definition_slug = ${sqlLiteral(slug)} order by i.archived_at nulls first, i.id) t;`,
 			targetDbUrl,
 			{ tuplesOnly: true, throwOnError: false },
 		).stdout,
@@ -551,6 +553,7 @@ interface DatabaseUpsertParams {
 	targetSnapshot: Record<string, unknown>;
 	targetDraftContent: Record<string, unknown>;
 	targetPublishedContent: Record<string, unknown>;
+	existingInv: Record<string, unknown> | null;
 	existingDraft: Record<string, unknown> | null;
 	existingPub: Record<string, unknown> | null;
 	shouldUpsertInv: boolean;
@@ -644,6 +647,7 @@ function executePublicationRpcCall(
 	}
 }
 
+// eslint-disable-next-line complexity -- Hosted adapter applies one verified plan across related DB resources while preserving target-owned fields.
 function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	const {
 		targetDbUrl,
@@ -654,6 +658,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 		pkg,
 		targetSnapshot,
 		targetDraftContent,
+		existingInv,
 		existingDraft,
 		shouldUpsertInv,
 		assetsForDbUpsert,
@@ -664,7 +669,19 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	let count = 0;
 
 	if (shouldUpsertInv) {
-		const invUpsertSql = `insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(pkg.invitation.title)}, ${sqlLiteral(eventType)}, 'draft', ${sqlLiteral(pkg.invitation.baseDemoId)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(JSON.stringify(targetSnapshot))}::jsonb, ${sqlLiteral(pkg.invitation.clientName)}, ${sqlLiteral(pkg.invitation.clientEmail)}, ${sqlLiteral(pkg.invitation.clientWhatsapp)}, ${pkg.invitation.photosReceived ? 'true' : 'false'}, '${ownerUserId}'::uuid) on conflict (slug) where (archived_at is null) do update set title = excluded.title, base_demo_id = excluded.base_demo_id, theme_id = excluded.theme_id, snapshot = excluded.snapshot, client_name = excluded.client_name, client_email = excluded.client_email, client_whatsapp = excluded.client_whatsapp, photos_received = excluded.photos_received, updated_at = now() returning id;`;
+		const effectiveSlug = (existingInv?.slug as string | undefined) ?? slug;
+		const effectiveTitle = (existingInv?.title as string | undefined) ?? pkg.invitation.title;
+		const effectiveStatus = (existingInv?.status as string | undefined) ?? 'draft';
+		const effectiveClientName =
+			(existingInv?.client_name as string | undefined) ?? pkg.invitation.clientName;
+		const effectiveClientEmail =
+			(existingInv?.client_email as string | undefined) ?? pkg.invitation.clientEmail;
+		const effectiveClientWhatsapp =
+			(existingInv?.client_whatsapp as string | undefined) ?? pkg.invitation.clientWhatsapp;
+		const effectivePhotosReceived =
+			(existingInv?.photos_received as boolean | undefined) ?? pkg.invitation.photosReceived;
+		const effectiveOwner = (existingInv?.created_by as string | undefined) ?? ownerUserId;
+		const invUpsertSql = `insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, ${sqlLiteral(pkg.invitation.baseDemoId)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(JSON.stringify(targetSnapshot))}::jsonb, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set event_type = excluded.event_type, base_demo_id = excluded.base_demo_id, theme_id = excluded.theme_id, kind = excluded.kind, snapshot = excluded.snapshot, updated_at = now() returning id;`;
 		runPsql(invUpsertSql, targetDbUrl, { tuplesOnly: true });
 		count++;
 	}
@@ -710,7 +727,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 
 	if (shouldUpsertEvent) {
 		const eventRes = runPsql(
-			`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(pkg.event?.title ?? pkg.invitation.title)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set title = excluded.title, status = 'published', invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
+			`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(pkg.event?.title ?? pkg.invitation.title)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set event_type = excluded.event_type, invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
 			targetDbUrl,
 			{ tuplesOnly: true },
 		);
@@ -852,7 +869,9 @@ function analyzeTargetDrift(
 	preferredInvitationId?: string,
 	conflictResolutions?: ConflictResolutions,
 ) {
-	const slug = pkg.invitation.slug;
+	const slug =
+		(typeof existingInvitation?.slug === 'string' && existingInvitation.slug) ||
+		pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
 	const scanned = scanTargetState(
@@ -1068,6 +1087,13 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
 			: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES) ||
 				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES));
+	if (serviceRoleKeyForHost) {
+		await verifySupabaseApiCredential({
+			apiUrl: targetSupabaseUrl,
+			credential: serviceRoleKeyForHost,
+			expectedProjectRef: projectRef,
+		});
+	}
 	const hostLoginAlias = pkg.invitation.hostLoginAlias;
 	if (!hostLoginAlias || typeof hostLoginAlias !== 'string') {
 		throw new Error(
@@ -1315,6 +1341,12 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const executionPlan = options.plan ?? currentPlan;
 
 	if (dryRun || isZeroDrift) {
+		if (!dryRun && isZeroDrift) {
+			runPsql(
+				`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result) values ('${operationIdFromPlanId(executionPlan.planId)}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'replayed', array['target_verified','existing_result_reused'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: targetVersion }))}::jsonb) on conflict (operation_id) do nothing;`,
+				targetDbUrl,
+			);
+		}
 		return {
 			packageHash: pkg.packageHash,
 			slug: drift.slug,
@@ -1526,6 +1558,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			) as Record<string, unknown>,
 			targetDraftContent: drift.targetDraftContent,
 			targetPublishedContent: drift.targetPublishedContent,
+			existingInv: drift.existingInv,
 			existingDraft: drift.existingDraft,
 			existingPub: drift.existingPub,
 			shouldUpsertInv: !drift.isInvMetadataIdentical || !drift.existingInv,
@@ -1615,6 +1648,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		executedMutations++;
 		if (provenanceExists) completedDatabaseWrites.updates++;
 		else completedDatabaseWrites.inserts++;
+		runPsql(
+			`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result) values ('${operationIdFromPlanId(executionPlan.planId)}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'applied', array['target_verified','content_applied','published','provenance_recorded'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: finalPublishedVersion }))}::jsonb);`,
+			targetDbUrl,
+		);
 		return {
 			packageHash: pkg.packageHash,
 			slug: drift.slug,
