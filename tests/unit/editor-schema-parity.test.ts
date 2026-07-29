@@ -151,7 +151,7 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		},
 	},
 	sharing: {
-		whatsappTemplate:
+		invitation:
 			'Hola {name}, soy Leah Lexa. Te comparto la invitación a mi Baby Shower: {inviteUrl}',
 		ogImage: 'hero',
 		ogDescription:
