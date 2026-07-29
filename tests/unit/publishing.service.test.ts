@@ -38,6 +38,10 @@ jest.mock('@/lib/intake/repositories/publication.repository', () => ({
 	replayAtomicPublication: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/repositories/managed-release-provenance.repository', () => ({
+	clearManagedProjectionAncestor: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
 	const eventSlugs = new Set([
@@ -83,6 +87,7 @@ import {
 	commitAtomicPublication,
 	replayAtomicPublication,
 } from '@/lib/intake/repositories/publication.repository';
+import { clearManagedProjectionAncestor } from '@/lib/intake/repositories/managed-release-provenance.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
@@ -165,6 +170,9 @@ const mockCommitAtomic = commitAtomicPublication as jest.MockedFunction<
 >;
 const mockReplayAtomic = replayAtomicPublication as jest.MockedFunction<
 	typeof replayAtomicPublication
+>;
+const mockClearManagedProjection = clearManagedProjectionAncestor as jest.MockedFunction<
+	typeof clearManagedProjectionAncestor
 >;
 
 const baseProject = {
@@ -450,6 +458,38 @@ describe('publishDraft', () => {
 		);
 		expect(mockUpdateDraftStatus).toHaveBeenCalledWith('draft-1', 'approved');
 		expect(mockUpdateProject).toHaveBeenCalledWith('proj-1', { status: 'published' });
+		expect(mockClearManagedProjection).toHaveBeenCalledWith('proj-1');
+	});
+
+	it('still returns success when clearing managed projection fails after commit', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(baseProject as any);
+		mockClearManagedProjection.mockRejectedValueOnce(new Error('provenance unavailable'));
+
+		await expect(publishDraft('proj-1')).resolves.toMatchObject({
+			draft: { status: 'approved' },
+		});
+		expect(mockClearManagedProjection).toHaveBeenCalledWith('proj-1');
+	});
+
+	it('does not clear managed projection when publish fails before commit', async () => {
+		mockGetProject.mockResolvedValue(baseProject as never);
+		mockFindDraft.mockResolvedValue(validDraft as never);
+
+		await expect(
+			publishDraft('proj-1', {
+				draftRevision: validDraft.updatedAt,
+				publishedVersion: null,
+				publicMetadataHash: '00000000000000000000000000000000',
+				projectionHash: '00000000000000000000000000000000',
+				idempotencyKey: VALID_UUID_1,
+			}),
+		).rejects.toMatchObject({ status: 409, code: 'conflict' });
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+		expect(mockClearManagedProjection).not.toHaveBeenCalled();
 	});
 
 	it('derives eventTiming.startsAtUtc during publish', async () => {
@@ -742,6 +782,7 @@ describe('publishDraft', () => {
 			code: 'not_found',
 		});
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockClearManagedProjection).not.toHaveBeenCalled();
 	});
 
 	it('rejects when invitation not found', async () => {

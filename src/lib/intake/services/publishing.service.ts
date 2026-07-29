@@ -30,6 +30,7 @@ import {
 	commitAtomicPublication,
 	replayAtomicPublication,
 } from '@/lib/intake/repositories/publication.repository';
+import { clearManagedProjectionAncestor } from '@/lib/intake/repositories/managed-release-provenance.repository';
 import {
 	createPublicationComparison,
 	hashPublicMetadata,
@@ -610,7 +611,7 @@ export async function publishDraft(
 		);
 	}
 
-	return commitAtomicPublication({
+	const result = await commitAtomicPublication({
 		invitationId,
 		draftId: draft.id,
 		expectedDraftUpdatedAt: reviewedPreflight.draftRevision,
@@ -623,4 +624,14 @@ export async function publishDraft(
 		isDemo: invitation.kind === 'demo',
 		content: publishedContent,
 	});
+
+	// Editor publish supersedes the last managed ancestor; clear it so the next
+	// invitation:update merges against published content instead of stale projection.
+	try {
+		await clearManagedProjectionAncestor(invitationId);
+	} catch {
+		// Provenance may be absent for non-managed invitations; never fail publish.
+	}
+
+	return result;
 }
