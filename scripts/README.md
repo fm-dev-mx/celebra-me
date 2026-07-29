@@ -57,18 +57,6 @@ execute the same retained plans. Any blocked selected target aborts the complete
 
 | Command                                    | Owner          | Purpose                                                                         |
 | ------------------------------------------ | -------------- | ------------------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                   |
-| `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | **Legacy one-shot** (hardcoded demo WebP copy). Not the managed invitation asset pipeline — use invitation preparation asset protocol + `normalizeInvitationImage` / provision release normalization. |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                         |
-| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                              |
-| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                 |
-| `pnpm ops new-invitation`   | `scripts/new-invitation.mjs`   | disabled fail-closed guard; real/client invitations are DB-published content                                            |
-| `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and continue managed invitations from an exact package, with per-target independent plans, semantic diffs, and truthful recovery |
-| `pnpm validate:event-parity` | `scripts/validate-event-parity.ts` | compare content events against the Supabase `events` table    |
-| `pnpm validate:structure`    | `scripts/validate-structure.mjs`   | validate deterministic repository and agent structure rules   |
-| `pnpm validate:staged`       | `scripts/validate-staged.mjs`      | validate staged files without modifying them                  |
-| `pnpm validate:changed`      | `scripts/validate-changed.mjs`     | validate staged, unstaged, and untracked working-tree changes |
 | `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                 |
 | `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                                  |
 | `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage recovery set                      |
