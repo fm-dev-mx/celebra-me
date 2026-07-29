@@ -174,6 +174,15 @@ Not all situations fit the conventions. If a change requires deviating:
 - This directory is ignored by git to keep the repository clean.
 - When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
 
+### Invitation copy in automated tests
+
+Do not couple schema, mapper, publish, or provision **contract** tests to editable invitation
+wording. Prefer shape, presence/absence, enums, numeric ranges, and value propagation from the
+test’s own fixture constants. Exact Spanish (or soft-match) belongs only in named content-golden
+suites under `tests/content/<slug>-payload.test.ts`. Full rules and author checklist:
+[`.agent/skills/testing/SKILL.md`](../../.agent/skills/testing/SKILL.md) → **Invitation Copy
+Assertions**.
+
 ## 12) Platform Version Policy
 
 `package.json` is the source of truth for installed versions. As of 2026-07-25:

@@ -85,7 +85,8 @@ phrases, venue names, section copy, and similar host/editor fields).
 | Test kind                                                    | Exact invitation copy? | Rule                                                                                                                                                         |
 | ------------------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Pipeline / adapter / descriptor / projection contracts       | No                     | Assert shape, presence/absence, and value propagation: read the value from the fixture/source under test and expect the same value downstream.               |
-| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input.                                                                                 |
+| Schema allowlist / “parity” fixtures                         | No                     | Use synthetic tokens (`'Honoree'`, `'Open invitation'`). Assert Zod `success`, `toHaveProperty` / unknown-key rejection, enums, and numeric ranges — never client Spanish from a named invitation. |
+| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input (prefer named constants; avoid copy-pasting live client wording).                 |
 | Invitation content golden / published-content regression     | Yes, when intentional  | Allowed only when the test’s stated purpose is content fidelity for a named fixture; name/describe it as such. Failures mean the wording changed on purpose. |
 | Product/system defaults (non-client editable UI/system copy) | Yes                    | Allowed.                                                                                                                                                     |
 
@@ -94,6 +95,29 @@ editor-sync requirements for those tests.
 
 **Acceptance check:** a contract/pipeline test still passes if invitation wording in its source
 fixture changes, provided structure and propagation remain correct.
+
+**Author checklist:** would this test fail solely because a host renamed a tooltip or venue in the
+editor or package? If yes, reclassify the assert (propagation / shape / enum) or move exact copy
+into a named content-golden suite under `tests/content/<slug>-payload.test.ts`.
+
+### Preferred contract patterns
+
+```typescript
+// Propagation (good): same constant in / out
+const TEASER = 'Sample teaser';
+expect(saved.teaserDetails).toBe(baseline.teaserDetails); // or TEASER
+
+// Shape / allowlist (good)
+expect(InvitationEditorSectionSchemas.envelope.safeParse(payload).success).toBe(true);
+expect(parsed.data).toHaveProperty('revealVariant');
+
+// Literal client copy in a contract suite (bad)
+expect(saved.tooltipText).toBe('ABRIR LA INVITACIÓN');
+```
+
+Golden content fidelity stays in `tests/content/<slug>-payload.test.ts` (or an equivalently named
+describe). Do not embed real client Spanish in schema/mapper/provision contract fixtures “for
+parity.”
 
 ## Unit Test Patterns
 

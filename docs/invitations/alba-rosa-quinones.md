@@ -289,10 +289,10 @@ Role-aware WebP transfer-weight **targets** (guidance):
 | Release assets       | `src/assets/invitations/alba-rosa-quinones/*.webp` (hero×2, thank-you, family, gallery×4)                                                                         |
 | Lane A profile       | `src/styles/invitation-profiles/alba-rosa-quinones.scss` — Neutral Editorial                                                                                      |
 | Shared quality fixes | `Hero.astro` / `EditorialMagazineHero.astro` direct-deliver managed WebPs and cap static optimization at native width; `Family.astro` OptimizedImage 960×1280@q84 |
-| Focused test         | `tests/content/alba-rosa-quinones-payload.test.ts`                                                                                                                |
+| Focused test         | `tests/content/alba-rosa-quinones-payload.test.ts` — **content golden** (exact Spanish / soft-match intentional). Editor schema, section-save, publish, and provision contract suites must not assert this wording; see `.agent/skills/testing/SKILL.md` → Invitation Copy Assertions. |
 | Local apply          | Public v4 applied and verified; final content-and-assets dry-run is `SIN CAMBIOS`                                                                                 |
 | Validation           | `validate:changed`, `type-check`, `validate:structure`, and `validate:event-parity` pass (35 test suites / 292 tests)                                             |
-| Preview / Production | Untouched                                                                                                                                                         |
+| Preview / Production | Untouched — see [alba-rosa-quinones-merge-conflicts.md](./alba-rosa-quinones-merge-conflicts.md) for merge-conflict resolution when promoting |
 | Route                | `/cumple/alba-rosa-quinones` (local)                                                                                                                              |
 
 ### Editorial Redesign Record (2026-07-28 — final responsive Local pass)
