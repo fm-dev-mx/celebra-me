@@ -50,7 +50,8 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
   approved ignored secret files and are intentionally absent from `.env.example` and app typing.
-- **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables.
+- **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
+  server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
   them out of templates unless a future workflow reintroduces them intentionally.
 
@@ -162,6 +163,14 @@ rejects strings and unknown fields so request bodies, URLs, headers, cookies, to
 and CSRF values cannot be attached. All Preview output paths remain below the ignored
 `output/playwright/` root.
 
+## Canonical local Playwright server lifecycle
+
+The default `playwright.config.ts` passes `ASTRO_DEV_BACKGROUND=1` to its web server. Astro 7 uses
+that marker to stay in the foreground under an agent runtime, so Playwright owns and terminates the
+process on Windows instead of observing an early wrapper exit and leaving a detached listener on
+port 4321. `reuseExistingServer` is false unless the operator deliberately sets
+`PLAYWRIGHT_REUSE_EXISTING_SERVER=true`. Canonical CI and release validation must use the default
+isolated behavior and must not depend on a previously running server.
 
 ## Cleanup Notes
 

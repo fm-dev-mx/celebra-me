@@ -270,6 +270,16 @@ a real defect.
 
 ## Verification
 
+Canonical CI includes a stable subset of `tests/e2e/envelope-reveal-interaction.spec.ts`: real
+open/reveal, Enter/Space keyboard behavior, focus transfer, reduced motion, representative shared
+invitation behavior, and the Alba-specific regression. Expensive matrix/focus-ring variants are
+tagged `@extended` and remain available outside `pnpm test:e2e:ci`.
+
+On Windows, run canonical E2E with no pre-existing listener on port 4321. The default Playwright
+config supplies `ASTRO_DEV_BACKGROUND=1`, keeping Astro in the foreground so Playwright owns and
+stops it. Reusing a deliberately managed server requires the explicit
+`PLAYWRIGHT_REUSE_EXISTING_SERVER=true` opt-in; release validation must not use that opt-in.
+
 The contract above was verified against a running dev server with a headless Playwright probe
 covering: `?skipEnvelope=true` on a demo and a real invitation, `?screenshot=1&reveal=open`,
 `?screenshot=1&reveal=letter&forceEnvelope=true`, storage seeding on a real invitation, storage

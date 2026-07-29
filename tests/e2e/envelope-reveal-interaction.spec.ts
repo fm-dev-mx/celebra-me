@@ -99,7 +99,7 @@ test.describe('shared envelope reveal interaction', () => {
 		await expectRevealed(page);
 	});
 
-	test('keeps one CTA in the letter preview and uses an accessible focus ring', async ({
+	test('@extended keeps one CTA in the letter preview and uses an accessible focus ring', async ({
 		page,
 	}) => {
 		await page.goto('/cumple/demo-cumple-luxury-hacienda?screenshot=1&reveal=letter', {
@@ -179,7 +179,7 @@ test.describe('shared envelope reveal interaction', () => {
 	});
 
 	for (const route of representativeRoutes) {
-		test(`reveals representative shared invitation ${route}`, async ({ page }) => {
+		test(`@extended reveals representative shared invitation ${route}`, async ({ page }) => {
 			await page.goto(route, { waitUntil: 'domcontentloaded' });
 			await page.getByRole('button', { name: 'Abrir la invitación' }).click();
 			await expectRevealed(page);

@@ -39,7 +39,11 @@ export default defineConfig({
 		: {
 				command: webServerCommand,
 				url: runtime.webServerURL,
-				reuseExistingServer: !process.env.CI,
+				// Astro 7 auto-backgrounds `astro dev` when it detects an agent runtime. Playwright
+				// must own a foreground process or it reports an early exit and leaves a detached
+				// Windows server behind. This environment marker suppresses that auto-detection.
+				env: { ASTRO_DEV_BACKGROUND: '1' },
+				reuseExistingServer: process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true',
 				timeout: 120_000,
 			},
 });
