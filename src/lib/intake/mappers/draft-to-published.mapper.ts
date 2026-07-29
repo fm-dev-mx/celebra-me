@@ -594,26 +594,29 @@ function mapThankYouSection(
 	priorThankYou: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	const message = str(draftThankYou?.message);
+	if (!draftThankYou) {
+		return ctx.isDemo && demoThankYou ? { ...demoThankYou } : undefined;
+	}
+	const message = str(draftThankYou.message);
 	const overlayFields: Record<string, unknown> = {};
-	if (draftThankYou?.focalPoint !== undefined)
+	if (draftThankYou.focalPoint !== undefined)
 		overlayFields.focalPoint = draftThankYou.focalPoint;
-	if (draftThankYou?.closingPhrase !== undefined)
+	if (draftThankYou.closingPhrase !== undefined)
 		overlayFields.closingPhrase = draftThankYou.closingPhrase;
-	if (draftThankYou?.overlayAnchor !== undefined)
+	if (draftThankYou.overlayAnchor !== undefined)
 		overlayFields.overlayAnchor = draftThankYou.overlayAnchor;
-	if (draftThankYou?.overlaySafeArea !== undefined)
+	if (draftThankYou.overlaySafeArea !== undefined)
 		overlayFields.overlaySafeArea = draftThankYou.overlaySafeArea;
 	if (message) {
 		return {
 			message,
-			closingName: str(draftThankYou?.closingName) || demoStr(ctx, demoThankYou?.closingName),
-			image: draftThankYou?.image ?? demoValue(ctx, demoThankYou?.image),
+			closingName: str(draftThankYou.closingName) || demoStr(ctx, demoThankYou?.closingName),
+			image: draftThankYou.image ?? demoValue(ctx, demoThankYou?.image),
 			...clientPriorFields(ctx, priorThankYou, ['date', 'closingPhrase']),
 			...overlayFields,
 		};
 	}
-	if (draftThankYou?.image) {
+	if (draftThankYou.image) {
 		return {
 			message: '',
 			closingName: '',
