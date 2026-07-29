@@ -31,16 +31,47 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 
 ## Validation Role of Preview vs Local Default
 
-- **Local Default**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`) is the default target across all worktree lanes (`celebra-me` root, `.worktrees/dev-lane`, `.worktrees/val-lane`) for normal development, unit testing, component/SCSS iteration, and disposable destructive migration reconstruction.
-- **Preview Validation Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments) is an explicit pre-Production validation environment reserved for workflows requiring broader hosted verification, including:
+- **Local Default**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`) is the default target
+  across all worktree lanes (`celebra-me` root, `.worktrees/dev-lane`, `.worktrees/val-lane`) for
+  normal development, unit testing, component/SCSS iteration, and disposable destructive migration
+  reconstruction.
+- **Preview Validation Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments) is an explicit
+  pre-Production validation environment reserved for workflows requiring broader hosted
+  verification, including:
   - Hosted SSR and Vercel edge/runtime behavior,
   - Supabase Auth and MFA flows,
   - Invitation publication and provisioning preflights,
   - Storage asset host resolution,
   - Hosted database migration sanity audits (`pnpm db:preview:audit`),
   - Representative Preview E2E test suites (`pnpm test:e2e:preview`).
-- **Worktree Authorization Invariant**: Worktree path location grants no environment privilege (`path ≠ privilege`). Being inside `.worktrees/val-lane` does not grant automatic Preview or Production mutation permission. Environment access is determined strictly by task scope, target environment, operation risk, and existing repository safety rules.
+- **Worktree Authorization Invariant**: Worktree path location grants no environment privilege
+  (`path ≠ privilege`). Being inside `.worktrees/val-lane` does not grant automatic Preview or
+  Production mutation permission. Environment access is determined strictly by task scope, target
+  environment, operation risk, and existing repository safety rules.
 
+## Credential Preflight and Fail-Fast Taxonomy
+
+Operations that depend on external credentials or secrets (Supabase Auth/DB, Vercel Preview
+deployments, Cloudinary asset provisioning) must perform a credential preflight check before
+execution:
+
+1. **Taxonomy of Operational Failures**:
+   - **Missing Access / Credential** → `Environmental Blocker`: When a required environment variable
+     or secret file is absent, operations stop immediately. Report status `Needs manual action`
+     naming the missing input. No retry loops, no speculative `.env` edits, and no fallback to
+     Production endpoints.
+   - **Credential Present but Rejected** → `Authentication Diagnosis`: Perform one bounded
+     diagnostic pass (verify project ref, hostname, or credential format). Stop if unresolved; do
+     not guess credentials or bypass security guards.
+   - **Valid Access + Operation Failure** → `Application Diagnosis`: Proceed with normal technical
+     diagnosis of the application error.
+
+2. **Preflight Principles**:
+   - **Credential Availability ≠ Operation Authorization**: Having valid API keys or DB connection
+     strings in your environment does not grant permission to run remote mutations unless the
+     current task explicitly authorizes that operation.
+   - **Zero Speculative Edits**: Never modify `.env` or `.env.local` files speculatively to bypass
+     missing access or failed authentication checks.
 
 ## Variable Categories
 

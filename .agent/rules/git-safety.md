@@ -77,13 +77,17 @@ current task.
 ## Three-Lane Worktree Structure & Path Privilege Invariant
 
 The repository operates with three native Git worktree lanes:
+
 - **Integration Lane**: canonical root worktree (`celebra-me`, trunk `develop`).
-- **Development Lane**: persistent reusable worktree (`.worktrees/dev-lane`) using ephemeral task branches.
-- **Validation Lane**: persistent reusable worktree (`.worktrees/val-lane`) using ephemeral task branches.
+- **Development Lane**: persistent reusable worktree (`.worktrees/dev-lane`) using ephemeral task
+  branches.
+- **Validation Lane**: persistent reusable worktree (`.worktrees/val-lane`) using ephemeral task
+  branches.
 
 ### Path Authorization Invariant
 
-Being located inside `.worktrees/dev-lane` or `.worktrees/val-lane` **does not grant** Git write permissions or environment/database mutation authority.
+Being located inside `.worktrees/dev-lane` or `.worktrees/val-lane` **does not grant** Git write
+permissions or environment/database mutation authority.
 
 ```text
 Environment authorization =
@@ -93,10 +97,32 @@ task scope
 + existing repository safety rules
 ```
 
-Worktree path is an isolation directory, not an authorization token. Agents inside any lane remain bound by task-scoped authorization for Git writes, database mutations, and remote operational calls.
+Worktree path is an isolation directory, not an authorization token. Agents inside any lane remain
+bound by task-scoped authorization for Git writes, database mutations, and remote operational calls.
+
+### Multi-Agent Lane Ownership & Preflight
+
+Before making any file edits or running commands inside a worktree lane, agents **must** establish
+the following state:
+
+```text
+1. worktree path
+2. current branch / detached state
+3. working-tree cleanliness (clean / dirty)
+4. active task ownership
+5. target environment
+```
+
+**Lane Invariants:**
+
+- `1 active task = 1 branch = 1 worktree`
+- An agent can claim a lane only if it is **idle (detached HEAD)** and **clean**, or already
+  assigned to the **current task**.
+- If a lane is occupied by another active task or contains pre-existing/unrelated dirty changes:
+  **STOP** — do not switch, stash, reset, clean, overwrite, or repurpose the lane. Use another
+  available lane or report the conflict to the user.
 
 ---
-
 
 ## Agent Session Workflow
 

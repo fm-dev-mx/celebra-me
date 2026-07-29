@@ -11,8 +11,10 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
 1. **Load governance:** read `AGENTS.md`, `gatekeeper.md`, and `git-safety.md`. Consult
    `.agent/index.md` only when discovery is needed, then load only the relevant domain rule,
    workflow, skill, and canonical doc. Do not reread prerequisites already loaded for the task.
-2. **Inspect state:** identify the current branch and distinguish staged, unstaged, and untracked
-   work. Treat all pre-existing worktree and index state as user-owned.
+2. **Inspect state & preflight lane:** establish worktree path, current branch / detached state,
+   working-tree cleanliness, task ownership, and target environment. Verify
+   `1 task = 1 branch = 1 worktree`. Claim a lane only if idle and clean, or already assigned to the
+   current task. Treat all pre-existing worktree state as user-owned.
 3. **Set scope:** state the requested outcome, allowed files, non-goals, safety boundaries, and
    verification path. Use conversation-scoped planning unless the tracked-plan threshold is met.
 4. **Implement narrowly:** edit only authorized files. Do not opportunistically clean unrelated
@@ -23,6 +25,32 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
    is a blocker; report it instead of repairing it automatically.
 7. **Report:** list files changed, validations and skips, remaining risks, worktree status, and
    whether any Git write or production action occurred.
+
+## Credential and Access Fail-Fast Rules
+
+When an operational step requires external access or credentials (Supabase Auth/DB, Vercel,
+Cloudinary, Preview/Production endpoints):
+
+1. **Preflight Access**: Check for required credentials/access before attempting dependent
+   operational commands.
+2. **Fail-Fast Classification**:
+   - **Required Access Missing** → `Environmental Blocker`: Stop immediately. Report required
+     environment variables or configuration (`Needs manual action`). Do not retry or attempt
+     speculative `.env` edits.
+   - **Credential Present but Rejected** → `Authentication Diagnosis`: Perform one bounded
+     diagnostic pass (verify URL, project ref, or credentials format). If unresolved, stop and
+     report.
+   - **Valid Access + Technical Error** → `Technical Diagnosis`: Proceed with normal technical
+     diagnosis.
+3. **Strict Prohibitions**:
+   - Do **not** repeatedly rerun failing access-dependent commands without new evidence.
+   - Do **not** guess or invent secret values or environment variables.
+   - Do **not** make speculative edits to `.env`, `.env.local`, or configuration files to bypass
+     access failures.
+   - Do **not** expose secret values in logs, reports, or prompts.
+   - Do **not** copy credentials between environments or use Production as a fallback when Preview
+     access is missing.
+   - Credential availability **never** grants operation authorization.
 
 ## Proportional Execution
 
@@ -44,13 +72,16 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
 
 ## Agent-Specific Git Rules
 
-- Operate within the designated persistent worktree lane (`celebra-me` root for Integration, `.worktrees/dev-lane` for Development, `.worktrees/val-lane` for Validation) on ephemeral task branches.
+- Operate within the designated persistent worktree lane (`celebra-me` root for Integration,
+  `.worktrees/dev-lane` for Development, `.worktrees/val-lane` for Validation) on ephemeral task
+  branches.
+- Task branches must be created explicitly from `develop`: `git switch -c <task-branch> develop`.
+  Never create task branches from detached HEAD.
 - Worktree path location grants no environment privileges (`path ≠ privilege`).
 - Work on the current branch. Do not create, switch, merge, rebase, delete, or clean branches unless
   the user explicitly requests that exact operation.
 - Do not stage, commit, stash, discard, or rewrite worktree/history state without current-task
   authorization under `git-safety.md`.
-
 - Never force-push or rewrite shared history autonomously.
 - Branch cleanup, release tagging, production promotion, and rollback are separate tasks requiring
   explicit authorization.
