@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(37);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -70,5 +70,72 @@ select is((select relrowsecurity from pg_class where oid='public.invitation_publ
 select is((select count(*) from information_schema.table_privileges where table_schema='public' and table_name='invitation_publication_idempotency' and grantee='service_role'), 3::bigint, 'only intended service role table privileges remain');
 select is((select confdeltype from pg_constraint where conname = 'invitation_publication_idempotency_invitation_id_fkey'), 'r', 'invitation deletion is restricted by receipt retention');
 select is((select confdeltype from pg_constraint where conname = 'invitation_publication_idempotency_draft_id_fkey'), 'r', 'draft deletion is restricted by receipt retention');
+
+select has_function('public', 'save_invitation_metadata_atomic', array['uuid','uuid','timestamp with time zone','timestamp with time zone','jsonb','boolean','jsonb','text','text','uuid','text','text'], 'atomic metadata reopen RPC exists');
+select has_function('public', 'restore_invitation_from_published_atomic', array['uuid','uuid','timestamp with time zone','timestamp with time zone','uuid','integer','jsonb','text','text','uuid','text','text'], 'atomic restore RPC exists');
+select ok(not has_function_privilege('authenticated', 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)', 'EXECUTE'), 'authenticated cannot execute metadata reopen');
+select ok(not has_function_privilege('authenticated', 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)', 'EXECUTE'), 'authenticated cannot execute restore');
+
+insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');
+insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
+values ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', '{"title":"Borrador anterior"}'::jsonb, 'approved');
+insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at)
+values ('50000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', 'editor-atomic', 'xv', false, '{"title":"Título público","description":"Publicado"}'::jsonb, 1, now());
+create temporary table editor_atomic_baseline as
+select i.updated_at as invitation_updated_at, d.updated_at as draft_updated_at
+from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id=i.id
+where i.id='20000000-0000-0000-0000-000000000003';
+create temporary table metadata_atomic_result as
+select public.save_invitation_metadata_atomic(
+  '60000000-0000-0000-0000-000000000003',
+  '20000000-0000-0000-0000-000000000003', invitation_updated_at, draft_updated_at,
+  '{"title":"Título editado","slug":"editor-editado","status":"published","clientName":"Cliente","clientEmail":"","clientWhatsapp":"","photosReceived":true}'::jsonb,
+  true, '{"title":"Borrador anterior"}'::jsonb, 'local', 'local-test',
+  '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
+) as result from editor_atomic_baseline;
+select is((select title from public.invitations where id='20000000-0000-0000-0000-000000000003'), 'Título editado', 'metadata title commits atomically');
+select is((select status from public.invitation_content_drafts where id='30000000-0000-0000-0000-000000000003'), 'draft', 'metadata public change reopens draft atomically');
+select is((select status from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-000000000003'), 'applied', 'metadata receipt commits with state');
+select is((select public.save_invitation_metadata_atomic(
+  '60000000-0000-0000-0000-000000000003',
+  '20000000-0000-0000-0000-000000000003', invitation_updated_at, draft_updated_at,
+  '{"title":"Título editado","slug":"editor-editado","status":"published","clientName":"Cliente","clientEmail":"","clientWhatsapp":"","photosReceived":true}'::jsonb,
+  true, '{"title":"Borrador anterior"}'::jsonb, 'local', 'local-test',
+  '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
+) ->> 'idempotent' from editor_atomic_baseline), 'true', 'metadata retry returns stored result');
+select is((select count(*) from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-000000000003'), 1::bigint, 'metadata replay remains one append-only receipt');
+select throws_like(
+  $$select public.save_invitation_metadata_atomic('60000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000003',(select invitation_updated_at - interval '1 second' from editor_atomic_baseline),null,'{"title":"Stale","slug":"stale","status":"published","clientName":"","clientEmail":"","clientWhatsapp":"","photosReceived":false}',false,null,'local','local-test','10000000-0000-0000-0000-000000000001','admin','editor')$$,
+  '%editor_stale_invitation%', 'stale metadata invitation revision rolls back'
+);
+
+create temporary table restore_atomic_baseline as
+select i.updated_at as invitation_updated_at, d.updated_at as draft_updated_at
+from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id=i.id
+where i.id='20000000-0000-0000-0000-000000000003';
+create temporary table restore_atomic_result as
+select public.restore_invitation_from_published_atomic(
+  '70000000-0000-0000-0000-000000000003',
+  '20000000-0000-0000-0000-000000000003', invitation_updated_at, draft_updated_at,
+  '50000000-0000-0000-0000-000000000003', 1,
+  '{"title":"Título público","description":"Publicado"}'::jsonb, 'local', 'local-test',
+  '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
+) as result from restore_atomic_baseline;
+select is((select title from public.invitations where id='20000000-0000-0000-0000-000000000003'), 'Título público', 'restore resets invitation metadata from published source');
+select is((select content->>'description' from public.invitation_content_drafts where id='30000000-0000-0000-0000-000000000003'), 'Publicado', 'restore replaces draft content atomically');
+select is((select status from public.invitation_mutation_operation_receipts where operation_id='70000000-0000-0000-0000-000000000003'), 'applied', 'restore receipt commits with state');
+select is((select public.restore_invitation_from_published_atomic(
+  '70000000-0000-0000-0000-000000000003',
+  '20000000-0000-0000-0000-000000000003', invitation_updated_at, draft_updated_at,
+  '50000000-0000-0000-0000-000000000003', 1,
+  '{"title":"Título público","description":"Publicado"}'::jsonb, 'local', 'local-test',
+  '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
+) ->> 'idempotent' from restore_atomic_baseline), 'true', 'restore retry returns stored result');
+update public.published_invitation_content set version=2 where id='50000000-0000-0000-0000-000000000003';
+select throws_like(
+  $$select public.restore_invitation_from_published_atomic('70000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000003',(select updated_at from public.invitations where id='20000000-0000-0000-0000-000000000003'),(select updated_at from public.invitation_content_drafts where id='30000000-0000-0000-0000-000000000003'),'50000000-0000-0000-0000-000000000003',1,'{}','local','local-test','10000000-0000-0000-0000-000000000001','admin','editor')$$,
+  '%editor_stale_published%', 'restore rejects a changed published version'
+);
 select * from finish();
 rollback;

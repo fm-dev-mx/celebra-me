@@ -94,6 +94,9 @@ SELECT only on `guest_invitations` and `guest_invitation_audit`; mutations are e
 RSVP-specific authenticated RLS paths and RPCs remain authoritative. Invitation permanent deletion
 is service-owned and its RPC blocks events with guests, claim codes, or memberships; managed
 compensation also preflights guests and claim codes before removing an operation-created event.
+The Phase 2 editor RPCs touch only `invitations`, `invitation_content_drafts`,
+`published_invitation_content` (read/lock for restore), and append-only mutation receipts. They have
+service-role-only execute grants and no guest-table grants.
 
 ## Active URL Patterns Backed By The Schema
 
@@ -166,6 +169,8 @@ The Asset Library is scoped to `invitations`. Upload APIs write metadata to `inv
 store binary files in Supabase Storage. The database row records the Storage bucket/path, display
 name, optional alt text, MIME type, dimensions, file size, and soft-delete state. Local refreshes
 can copy this metadata from production, but DB dumps do not copy Storage objects.
+Managed rows additionally record definition slug, semantic source key, SHA-256, and operation ID.
+Null managed ownership means target-owned: package absence alone can never prune that row.
 
 ### Deprecated RPCs
 
