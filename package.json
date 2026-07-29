@@ -52,6 +52,7 @@
         "db:local:validate": "tsx scripts/db/validate-local-db.ts",
         "db:prod:backup": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/backup-prod.ts",
         "db:prod:backup:critical": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/backup-critical-production.ts",
+        "db:prod:backup:daily": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/daily-critical-production-backup.ts",
         "db:backup:verify-manifest": "tsx scripts/db/verify-backup-manifest.ts",
         "db:backup:create-manifest": "tsx scripts/db/create-backup-manifest.ts",
         "db:backup:create-disposable-fixture": "tsx scripts/db/create-disposable-recovery-backup.ts",

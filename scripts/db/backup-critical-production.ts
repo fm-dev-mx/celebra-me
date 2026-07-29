@@ -26,6 +26,10 @@ import {
 	type StorageObjectArchive,
 } from './storage-object-archive.ts';
 import {
+	assertWindowsEfsEncrypted,
+	prepareEncryptedLocalDirectory,
+} from './local-backup-operations.ts';
+import {
 	assertProductionDbUrl,
 	getProdDbUrl,
 	redactDbUrl,
@@ -129,6 +133,7 @@ async function main(): Promise<void> {
 	const outputDir = resolve('.backups', 'prod', `critical-${timestamp()}`);
 	incompleteOutputDir = outputDir;
 	mkdirSync(outputDir, { recursive: true });
+	prepareEncryptedLocalDirectory(outputDir);
 	const databasePath = resolve(outputDir, 'database.sql');
 	const authPath = resolve(outputDir, 'auth.sql');
 	const storageMetadataPath = resolve(outputDir, 'storage-metadata.sql');
@@ -304,6 +309,10 @@ async function main(): Promise<void> {
 	};
 	validateCriticalBackupManifest(manifest);
 	writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
+	assertWindowsEfsEncrypted([
+		manifestPath,
+		...manifest.artifacts.map((artifact) => artifact.path),
+	]);
 
 	console.info('Critical Production backup completed and verified.');
 	console.info(`- Manifest: ${manifestPath}`);
@@ -312,6 +321,7 @@ async function main(): Promise<void> {
 	console.info(`- Storage objects: ${archive.objects.length}`);
 	console.info(`- Critical tables: ${Object.keys(after.tables).length}`);
 	console.info(`- Integrity profile: ${after.profile}`);
+	console.info(`CRITICAL_BACKUP_MANIFEST=${manifestPath}`);
 	incompleteOutputDir = null;
 }
 

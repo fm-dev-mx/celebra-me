@@ -161,7 +161,7 @@ async function main(): Promise<void> {
 	console.info('5. Creating a complete read-only pre-migration critical recovery point...');
 	runCommand(
 		'npx',
-		['tsx', 'scripts/db/backup-critical-production.ts', '--integrity-profile=pre-phase3'],
+		['tsx', 'scripts/db/daily-critical-production-backup.ts', '--integrity-profile=pre-phase3'],
 		{
 			env: { ...process.env, PROD_DB_URL: prodDbUrl },
 			redact: [prodDbUrl],

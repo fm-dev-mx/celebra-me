@@ -24,7 +24,9 @@ describe('Phase 3 operational contracts', () => {
 
 	it('captures complete recovery before migration and verifies schema before code', () => {
 		const workflow = read('scripts/db/push-prod-migrations.ts');
-		const firstCriticalBackup = workflow.indexOf("'scripts/db/backup-critical-production.ts'");
+		const firstCriticalBackup = workflow.indexOf(
+			"'scripts/db/daily-critical-production-backup.ts'",
+		);
 		const preMigrationProfile = workflow.indexOf("'--integrity-profile=pre-phase3'");
 		const migration = workflow.indexOf('// 7. DB Push execution');
 		const contract = workflow.indexOf("'scripts/db/verify-mutation-schema-contract.ts'");
@@ -55,5 +57,22 @@ describe('Phase 3 operational contracts', () => {
 		expect(classifyStorageDownloadFailure('{"message":"Object not found"}')).toBe('not_found');
 		expect(classifyStorageDownloadFailure('{"error":"Invalid path"}')).toBe('invalid_request');
 		expect(classifyStorageDownloadFailure('backend detail')).toBe('unknown');
+	});
+
+	it('keeps daily Production backup local and outside ordinary validation', () => {
+		const packageJson = JSON.parse(read('package.json')) as {
+			scripts: Record<string, string>;
+		};
+		const daily = packageJson.scripts['db:prod:backup:daily'];
+		expect(daily).toContain('db-guard.ts check --target production --operation backup');
+		expect(daily).toContain('daily-critical-production-backup.ts');
+		expect(packageJson.scripts.ci).not.toContain('db:prod:backup');
+		expect(packageJson.scripts.build).not.toContain('db:prod:backup');
+
+		const workflow = read('scripts/db/daily-critical-production-backup.ts');
+		expect(workflow).toContain('estimatedMonthlyEgressBytes');
+		expect(workflow).toContain('manifestVerified: true');
+		expect(workflow).toContain('planCriticalBackupRetention');
+		expect(workflow).not.toContain('vercel');
 	});
 });
