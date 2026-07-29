@@ -1,5 +1,5 @@
 begin;
-select plan(37);
+select plan(49);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -75,6 +75,18 @@ select has_function('public', 'save_invitation_metadata_atomic', array['uuid','u
 select has_function('public', 'restore_invitation_from_published_atomic', array['uuid','uuid','timestamp with time zone','timestamp with time zone','uuid','integer','jsonb','text','text','uuid','text','text'], 'atomic restore RPC exists');
 select ok(not has_function_privilege('authenticated', 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)', 'EXECUTE'), 'authenticated cannot execute metadata reopen');
 select ok(not has_function_privilege('authenticated', 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)', 'EXECUTE'), 'authenticated cannot execute restore');
+select ok(not has_table_privilege('service_role', 'public.guest_invitations', 'INSERT'), 'service role cannot insert guest confirmations directly');
+select ok(not has_table_privilege('service_role', 'public.guest_invitations', 'UPDATE'), 'service role cannot update guest confirmations directly');
+select ok(not has_table_privilege('service_role', 'public.guest_invitations', 'DELETE'), 'service role cannot delete guest confirmations directly');
+select ok(not has_table_privilege('service_role', 'public.guest_invitation_audit', 'INSERT'), 'service role cannot insert guest audit directly');
+select ok(not has_table_privilege('service_role', 'public.guest_invitation_audit', 'UPDATE'), 'service role cannot update guest audit directly');
+select ok(not has_table_privilege('service_role', 'public.guest_invitation_audit', 'DELETE'), 'service role cannot delete guest audit directly');
+select ok(has_table_privilege('service_role', 'public.invitation_mutation_operation_receipts', 'SELECT'), 'service role can read mutation receipts');
+select ok(has_table_privilege('service_role', 'public.invitation_mutation_operation_receipts', 'INSERT'), 'service role can append mutation receipts');
+select ok(not has_table_privilege('service_role', 'public.invitation_mutation_operation_receipts', 'UPDATE'), 'service role cannot update mutation receipts');
+select ok(not has_table_privilege('service_role', 'public.invitation_mutation_operation_receipts', 'DELETE'), 'service role cannot delete mutation receipts');
+select ok(position('guest_invitations' in pg_get_functiondef('public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure)) = 0, 'metadata RPC does not touch guest confirmation tables');
+select ok(position('guest_invitations' in pg_get_functiondef('public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure)) = 0, 'restore RPC does not touch guest confirmation tables');
 
 insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
 values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');

@@ -96,6 +96,33 @@ describe('managed lifecycle executable contracts', () => {
 		it('accepts the exact source, package, project, revision, version, and asset state', () => {
 			expect(verifyPlanPreconditions(plan(), unchangedState)).toEqual({ ok: true });
 		});
+
+		it('rejects draft or publication creation after a plan recorded their absence', () => {
+			const absentPlan = plan();
+			absentPlan.targetPreconditions.existingDraftUpdatedAt = undefined;
+			absentPlan.targetPreconditions.existingPublishedVersion = undefined;
+			const absentState = {
+				...unchangedState,
+				existingDraftUpdatedAt: undefined,
+				existingPublishedVersion: undefined,
+			};
+			expect(verifyPlanPreconditions(absentPlan, absentState)).toEqual({ ok: true });
+			expect(
+				verifyPlanPreconditions(absentPlan, {
+					...absentState,
+					existingDraftUpdatedAt: '2026-07-23T12:00:00.000Z',
+				}),
+			).toMatchObject({
+				ok: false,
+				reason: expect.stringMatching(/draft updated timestamp/i),
+			});
+			expect(
+				verifyPlanPreconditions(absentPlan, {
+					...absentState,
+					existingPublishedVersion: 1,
+				}),
+			).toMatchObject({ ok: false, reason: expect.stringMatching(/published version/i) });
+		});
 	});
 
 	describe('functional semantic projection', () => {

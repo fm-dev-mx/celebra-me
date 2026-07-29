@@ -93,10 +93,17 @@ Invitation administration does not own guest confirmations. Its runtime service-
 SELECT only on `guest_invitations` and `guest_invitation_audit`; mutations are explicitly revoked.
 RSVP-specific authenticated RLS paths and RPCs remain authoritative. Invitation permanent deletion
 is service-owned and its RPC blocks events with guests, claim codes, or memberships; managed
-compensation also preflights guests and claim codes before removing an operation-created event.
-The Phase 2 editor RPCs touch only `invitations`, `invitation_content_drafts`,
+compensation also preflights guests and claim codes before removing an operation-created event. The
+Phase 2 editor RPCs touch only `invitations`, `invitation_content_drafts`,
 `published_invitation_content` (read/lock for restore), and append-only mutation receipts. They have
 service-role-only execute grants and no guest-table grants.
+
+The complete disposable recovery drill in `docs/database-workflow.md` fingerprints guest rows and
+audit history deterministically and verifies event/invitation/owner links, memberships, claim codes,
+confirmation and delivery state, attendee totals, response timestamps, soft deletes, uniqueness, and
+phone/country invariants after restore. Row counts alone are not accepted as RSVP recovery proof.
+The pgTAP contract also proves the invitation service role cannot insert, update, or delete guest
+confirmations or guest audit rows.
 
 ## Active URL Patterns Backed By The Schema
 
@@ -168,9 +175,9 @@ ongoing deployment rollout. They will be renamed to `invitation_id` after verifi
 The Asset Library is scoped to `invitations`. Upload APIs write metadata to `invitation_assets` and
 store binary files in Supabase Storage. The database row records the Storage bucket/path, display
 name, optional alt text, MIME type, dimensions, file size, and soft-delete state. Local refreshes
-can copy this metadata from production, but DB dumps do not copy Storage objects.
-Managed rows additionally record definition slug, semantic source key, SHA-256, and operation ID.
-Null managed ownership means target-owned: package absence alone can never prune that row.
+can copy this metadata from production, but DB dumps do not copy Storage objects. Managed rows
+additionally record definition slug, semantic source key, SHA-256, and operation ID. Null managed
+ownership means target-owned: package absence alone can never prune that row.
 
 ### Deprecated RPCs
 

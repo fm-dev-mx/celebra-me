@@ -149,6 +149,9 @@ function main(): void {
 	console.info('   - Running stale-baseline publication test...');
 	runDisposableTestCommand('run-stale-baseline-test');
 
+	console.info('   - Running Phase 3 Editor/managed/publication/asset concurrency test...');
+	runDisposableTestCommand('run-phase3-concurrency-test');
+
 	console.info('✅ Application DB flow tests passed.\n');
 
 	// 9. Conditional Preview checks

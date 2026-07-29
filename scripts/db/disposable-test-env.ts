@@ -16,6 +16,7 @@
  *   tsx scripts/db/disposable-test-env.ts run-tests
  *   tsx scripts/db/disposable-test-env.ts run-application-flow
  *   tsx scripts/db/disposable-test-env.ts run-concurrency-test
+ *   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test
  *   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test
  *   tsx scripts/db/disposable-test-env.ts stop
  *   tsx scripts/db/disposable-test-env.ts cleanup
@@ -87,6 +88,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
+  tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
@@ -612,6 +614,21 @@ function cmdRunConcurrencyTest(): void {
 	}
 }
 
+function cmdRunPhase3ConcurrencyTest(): void {
+	console.info('=== Disposable Test Environment: Phase 3 System Concurrency ===\n');
+	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/phase3-system-concurrency-test.ts']);
+	console.info(result.stdout || '');
+	if (result.status !== 0) {
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('Phase 3 concurrency stderr:', cleanStderr || '(none)');
+		console.error('Phase 3 concurrency stdout:', cleanStdout || '(none)');
+		fail(
+			`Application assertion failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
+	}
+}
+
 function cmdRunStaleBaselineTest(): void {
 	console.info('=== Disposable Test Environment: Publication Stale Baselines ===\n');
 	const result = runCommand('npx', [
@@ -683,6 +700,9 @@ async function main(): Promise<void> {
 			break;
 		case 'run-concurrency-test':
 			cmdRunConcurrencyTest();
+			break;
+		case 'run-phase3-concurrency-test':
+			cmdRunPhase3ConcurrencyTest();
 			break;
 		case 'run-stale-baseline-test':
 			cmdRunStaleBaselineTest();

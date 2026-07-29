@@ -145,8 +145,10 @@ export function verifyPlanPreconditions(
 	},
 ): { ok: boolean; reason?: string } {
 	const { targetPreconditions } = plan;
+	const hasPrecondition = (key: keyof TargetPreconditions): boolean =>
+		Object.prototype.hasOwnProperty.call(targetPreconditions, key);
 	const mismatch = (key: keyof TargetPreconditions): boolean =>
-		targetPreconditions[key] !== undefined && targetPreconditions[key] !== currentState[key];
+		hasPrecondition(key) && targetPreconditions[key] !== currentState[key];
 
 	if (mismatch('sourceHash') || plan.sourceHash !== currentState.sourceHash) {
 		return {
@@ -194,7 +196,7 @@ export function verifyPlanPreconditions(
 	}
 
 	if (
-		targetPreconditions.existingDraftUpdatedAt !== undefined &&
+		hasPrecondition('existingDraftUpdatedAt') &&
 		normalizeTimestamp(targetPreconditions.existingDraftUpdatedAt) !==
 			normalizeTimestamp(currentState.existingDraftUpdatedAt)
 	) {

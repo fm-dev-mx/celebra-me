@@ -20,10 +20,7 @@ import {
 	upsertUserRoleService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
-import {
-	logAdminAction,
-	logAdminActionStrict,
-} from '@/lib/rsvp/services/audit-logger.service';
+import { logAdminAction, logAdminActionStrict } from '@/lib/rsvp/services/audit-logger.service';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
 import { findMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
 
@@ -95,8 +92,9 @@ const logAdminActionStrictMock = logAdminActionStrict as jest.MockedFunction<
 const adminResetAuthUserPasswordMock = adminResetAuthUserPassword as jest.MockedFunction<
 	typeof adminResetAuthUserPassword
 >;
-const recordInvitationMutationOutcomeMock =
-	recordInvitationMutationOutcome as jest.MockedFunction<typeof recordInvitationMutationOutcome>;
+const recordInvitationMutationOutcomeMock = recordInvitationMutationOutcome as jest.MockedFunction<
+	typeof recordInvitationMutationOutcome
+>;
 const findMutationOperationReceiptMock = findMutationOperationReceipt as jest.MockedFunction<
 	typeof findMutationOperationReceipt
 >;
@@ -184,7 +182,7 @@ describe('rsvp user admin service', () => {
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({ operationId: OPERATION_ID }),
 			);
-		const receiptInput = recordInvitationMutationOutcomeMock.mock.calls.at(-1)?.[0];
+			const receiptInput = recordInvitationMutationOutcomeMock.mock.calls.at(-1)?.[0];
 			expect(JSON.stringify(receiptInput)).not.toContain(
 				result.credentials!.temporaryPassword,
 			);
@@ -204,6 +202,24 @@ describe('rsvp user admin service', () => {
 			expect(recordInvitationMutationOutcomeMock).toHaveBeenCalledWith(
 				expect.objectContaining({ status: 'partial' }),
 			);
+		});
+
+		it('returns partial without rotating Auth when the receipt write fails after success', async () => {
+			recordInvitationMutationOutcomeMock.mockRejectedValueOnce(
+				new Error('receipt unavailable'),
+			);
+			const result = await resetUserPasswordAdmin({
+				userId: 'user-host',
+				actorUserId: 'admin-1',
+				credentialOperationId: OPERATION_ID,
+				commandContext: COMMAND_CONTEXT,
+			});
+			expect(result.outcome).toMatchObject({
+				status: 'partial',
+				completedSteps: ['auth_password_updated', 'audit_logged'],
+			});
+			expect(result.credentials?.temporaryPassword).toBeDefined();
+			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledTimes(1);
 		});
 
 		it('repairs a partial retry without rotating Auth again', async () => {
@@ -236,7 +252,7 @@ describe('rsvp user admin service', () => {
 			expect(result.credentials?.temporaryPassword).toBe(
 				deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-service-secret'),
 			);
-	});
+		});
 	});
 
 	it('creates a new admin-managed user without persisting the password', async () => {
@@ -521,11 +537,11 @@ describe('rsvp user admin service', () => {
 			findAuthUserByEmailMock.mockResolvedValue(null);
 
 			const result = await updateUserLoginAliasAdmin({
-					userId: 'user-host',
-					loginAlias: 'alba_quinones',
-					actorUserId: 'admin-1',
-					aliasOperationId: OPERATION_ID,
-					commandContext: COMMAND_CONTEXT,
+				userId: 'user-host',
+				loginAlias: 'alba_quinones',
+				actorUserId: 'admin-1',
+				aliasOperationId: OPERATION_ID,
+				commandContext: COMMAND_CONTEXT,
 			});
 			expect(result.outcome.status).toBe('not_applied');
 			expect(adminUpdateManagedLoginAliasMock).not.toHaveBeenCalled();
@@ -565,6 +581,41 @@ describe('rsvp user admin service', () => {
 			expect(recordInvitationMutationOutcomeMock).toHaveBeenCalledWith(
 				expect.objectContaining({ status: 'partial' }),
 			);
+		});
+
+		it('returns partial without repeating Auth when the alias receipt write fails', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_anterior@clientes.celebra.invalid',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: { login_alias: 'abril_anterior' },
+				app_metadata: {},
+			});
+			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
+			findAuthUserByEmailMock.mockResolvedValue(null);
+			adminUpdateManagedLoginAliasMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_becerra@clientes.celebra.invalid',
+				login_alias: 'abril_becerra',
+				created_at: '2026-04-01T00:00:00.000Z',
+			});
+			recordInvitationMutationOutcomeMock.mockRejectedValueOnce(
+				new Error('receipt unavailable'),
+			);
+
+			const result = await updateUserLoginAliasAdmin({
+				userId: 'user-host',
+				loginAlias: 'abril_becerra',
+				actorUserId: 'admin-1',
+				aliasOperationId: OPERATION_ID,
+				commandContext: COMMAND_CONTEXT,
+			});
+
+			expect(result.outcome).toMatchObject({
+				status: 'partial',
+				completedSteps: ['auth_alias_updated', 'audit_logged'],
+			});
+			expect(adminUpdateManagedLoginAliasMock).toHaveBeenCalledTimes(1);
 		});
 
 		it('repairs a partial alias mutation without applying Auth twice', async () => {
