@@ -8,10 +8,11 @@
  *   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
  *   3. Production schema audit (`audit-db.ts --target production`)
  *   4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
- *   5. Automatic pre-migration backup (`.backups/prod/...`)
+ *   5. Automatic pre-migration public-data dump (`.backups/prod/...`)
  *   6. Interactive user confirmation (`MIGRATE <hostname>` or `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`)
  *   7. Migration application (`supabase db push --db-url <url> --yes`)
- *   8. Post-migration schema verification (`supabase_migrations.schema_migrations`)
+ *   8. Post-migration schema/application contract verification
+ *   9. Complete post-migration critical backup (DB, Auth, Storage metadata/bytes)
  *
  * Current Production Status:
  *   - Hosted reconciliation state must be established by the current read-only audit.
@@ -21,17 +22,14 @@
  *   - PROD_DB_URL env variable or PROD_SECRET_FILES (.env.production.local, .env.prod.local, .secrets/prod-db-url, .tmp/secrets/prod-db-url).
  */
 
-import { resolve } from 'node:path';
 import {
 	assertProductionDbUrl,
-	createProdBackup,
 	fail,
 	getProdDbUrl,
 	redactDbUrl,
 	requireProductionConfirmation,
 	runCommand,
 	runPsql,
-	timestamp,
 } from './db-workflow-lib.ts';
 
 async function main(): Promise<void> {
@@ -158,16 +156,15 @@ async function main(): Promise<void> {
 		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
 	}
 
-	// 5. Database Backup
-	const backupPath = resolve(
-		process.cwd(),
-		'.backups',
-		'prod',
-		`prod-public-data-before-migrations-${timestamp()}.sql`,
-	);
-	console.info(`5. Creating production backup before migrating: ${backupPath}`);
-	createProdBackup(prodDbUrl, backupPath, false);
-	console.info('✅ Production backup complete.\n');
+	// 5. Pre-migration database backup. The current hosted schema may predate the receipt and
+	// provenance objects required by the complete Phase 3 integrity contract, so the legacy public
+	// dump is the only non-circular precondition for the migrations that create those objects.
+	console.info('5. Creating a read-only pre-migration public-data dump...');
+	runCommand('npx', ['tsx', 'scripts/db/backup-prod.ts'], {
+		env: { ...process.env, PROD_DB_URL: prodDbUrl },
+		redact: [prodDbUrl],
+	});
+	console.info('✅ Pre-migration public-data dump completed.\n');
 
 	// 6. Explicit User Confirmation
 	console.info('6. Prompting for explicit production migration confirmation...');
@@ -204,8 +201,24 @@ async function main(): Promise<void> {
 			'Post-migration verification failed. Some allowlisted migrations were not recorded in remote.',
 		);
 	}
+	runCommand(
+		'npx',
+		['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', 'production'],
+		{
+			env: { ...process.env, PROD_DB_URL: prodDbUrl },
+			redact: [prodDbUrl],
+		},
+	);
 
-	console.info('✅ Post-migration verification passed. All expected migrations are active.');
+	console.info(
+		'✅ Post-migration verification passed. Migrations and application DB contract are active.',
+	);
+	console.info('9. Creating the complete post-migration critical recovery set...');
+	runCommand('npx', ['tsx', 'scripts/db/backup-critical-production.ts'], {
+		env: { ...process.env, PROD_DB_URL: prodDbUrl },
+		redact: [prodDbUrl],
+	});
+	console.info('✅ Complete post-migration critical recovery set verified.');
 	console.info('Production migration workflow completed successfully.');
 }
 

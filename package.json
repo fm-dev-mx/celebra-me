@@ -84,7 +84,8 @@
 		"db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
 		"db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts",
 		"db:prod:backup:critical": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/backup-critical-production.ts",
-		"db:backup:create-disposable-fixture": "tsx scripts/db/create-disposable-recovery-backup.ts"
+		"db:backup:create-disposable-fixture": "tsx scripts/db/create-disposable-recovery-backup.ts",
+		"db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts"
 	},
 	"dependencies": {
 		"@astrojs/vercel": "11.0.3",

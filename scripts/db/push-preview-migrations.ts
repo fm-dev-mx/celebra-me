@@ -47,7 +47,16 @@ function main(): void {
 	if (result.status !== 0) {
 		fail(`Preview migration failed with exit code ${result.status}.`);
 	}
-	console.info('✅ Preview migration complete.');
+	console.info(
+		'Verifying the application mutation schema contract before Preview code deployment...',
+	);
+	runCommand('npx', [
+		'tsx',
+		'scripts/db/verify-mutation-schema-contract.ts',
+		'--target',
+		'preview',
+	]);
+	console.info('✅ Preview migration and mutation contract verification complete.');
 }
 
 try {

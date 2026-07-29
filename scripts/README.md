@@ -74,6 +74,7 @@ execute the same retained plans. Any blocked selected target aborts the complete
 | `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage recovery set                      |
 | `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                          |
 | `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only             |
+| `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification              |
 | `pnpm db:prod:audit`                       | `scripts/db/`  | read-only production migration history & schema audit                           |
 | `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`) |
 | `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)    |

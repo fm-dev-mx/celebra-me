@@ -315,16 +315,24 @@ metadata hash and therefore do not invalidate a confirmation.
 Required order:
 
 1. Validate migrations in the disposable/local environment.
-2. Back up and apply required migrations in production through the authorized migration workflow.
+2. Create the pre-migration public-data backup and apply required migrations through the authorized
+   Production workflow.
 3. Verify the RPC signature, execute grants, tables/columns, constraints, bucket limit, and
    migration history.
-4. Deploy application code that depends on those migrations.
-5. Run the production smoke tests below and inspect Vercel/Supabase logs.
+4. Create and verify the complete post-migration critical DB/Auth/Storage recovery set.
+5. Deploy application code that depends on those migrations.
+6. Run the production smoke tests below and inspect Vercel/Supabase logs.
 
 Application code must not be deployed before its required database migration. In particular,
 reviewed atomic publication requires `20260717193000_publication_preflight_integrity.sql` (after
 `20260715210301_atomic_invitation_publication.sql`), and asset metadata gating requires
-`20260715210512_invitation_asset_delivery_gate.sql`.
+`20260715210512_invitation_asset_delivery_gate.sql`. Append-only operation history and resumable
+metadata/restore operations additionally require `20260729140514` and `20260729152113`.
+
+After migration, `pnpm db:contract:verify -- --target production` must confirm the tables, columns,
+RPC signatures, grants, append-only receipt restrictions, and guest-table privilege revocations
+before dependent application code is deployed. The Preview migration workflow performs the same
+check for Preview.
 
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production
