@@ -19,6 +19,34 @@ Production -> Local: allowed for read-only refreshes and backups.
 Local -> Production: allowed only for reviewed migrations.
 ```
 
+## Production backup and recovery authority
+
+The repository owner (or explicitly delegated Production operator) owns backup creation, access,
+restore authorization, and drills. Targets are RPO ≤ 15 minutes and RTO ≤ 4 hours. Repository access
+on 2026-07-29 did not expose a trustworthy control-plane statement for the Production Supabase plan,
+PITR enablement, retention, or last successful platform backup. These remain unverified and must not
+be claimed; the operator must verify and record dashboard posture before a Production change.
+
+The independent critical set comprises the public database (including invitation, RSVP, publication,
+provenance, and operation receipts), Auth reconstruction data, Storage metadata, and actual critical
+Storage object bytes. A DB dump or `storage.objects` rows alone are incomplete. Artifacts stay in
+encrypted, access-restricted storage outside Git, retaining 30 daily and 12 monthly recovery points
+pending a verified stronger platform policy.
+
+Every set uses the SHA-256 manifest in `scripts/db/backup-manifest.ts`. Create one with
+`pnpm db:backup:create-manifest -- --output=<path> --database=<file> --auth=<file>
+--storage-metadata=<file> --storage-objects=<file>`, then verify with
+`pnpm db:backup:verify-manifest -- --manifest=<path>`; missing, empty/truncated, size-mismatched, or
+checksum-mismatched artifacts fail closed. An external schedule is required if verified PITR cannot
+meet RPO, but none is claimed configured while platform posture and a sanctioned encrypted
+destination are unavailable.
+
+Restores are disposable-only, never Production. After loading all four artifact classes, run
+`pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url>`. The
+verifier rejects hosted targets, checks critical counts and orphan guest/audit/event relationships,
+and records elapsed time. Manifest success is not recovery proof; a complete timed drill remains
+Goal 4 evidence.
+
 ## Production Reconciliation Status (point-in-time)
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
