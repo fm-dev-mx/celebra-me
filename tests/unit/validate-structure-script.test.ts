@@ -88,6 +88,16 @@ describe('validate-structure script', () => {
 		}
 	});
 
+	it('rejects bare pnpm ci in active governance', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(fixtureRoot, '.agent/rules/gatekeeper.md', 'Run `pnpm ci`.\n');
+			expect(validateFixture(fixtureRoot).join('\n')).toContain('use "pnpm run ci"');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
 	it('reports invalid references, metadata, plans, links, and tracked scratch files', () => {
 		const fixtureRoot = createFixture();
 		try {

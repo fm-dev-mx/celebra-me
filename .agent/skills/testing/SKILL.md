@@ -66,7 +66,7 @@ tests/
 | `pnpm build`              | Build validation                                |
 
 Select the proportional tier from `.agent/rules/gatekeeper.md` and **name that tier (A/B/C) plus
-intentional skips** in the closing report. Do not run `pnpm ci`, full `pnpm test`, or `pnpm build`
+intentional skips** in the closing report. Do not run `pnpm run ci`, full `pnpm test`, or `pnpm build`
 for tier A/B work unless risk escalates. Prefer `pnpm type-check` or focused domain checks over a
 full Astro build when only contracts/types need proof (`pnpm build` already re-runs type-check).
 

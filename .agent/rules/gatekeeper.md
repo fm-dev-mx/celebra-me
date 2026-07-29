@@ -368,7 +368,7 @@ pnpm build
 pnpm agent:git-safety:check
 ```
 
-`pnpm ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app`
+`pnpm run ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app`
 (`astro build`) after its earlier type-check to avoid duplicating the check. `pnpm ci:quick` runs
 `astro check`, deterministic structure validation, and a scoped ESLint pass and is for fast feedback
 only; it is **safe in CI** (it does not depend on local Git staging state) but **must not** replace

@@ -322,6 +322,35 @@ function validateTrackedFiles(root, trackedFiles) {
 	return errors;
 }
 
+function listMarkdownFilesRecursively(directory) {
+	if (!existsSync(directory)) return [];
+	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+		const target = path.join(directory, entry.name);
+		if (entry.isDirectory()) return listMarkdownFilesRecursively(target);
+		return entry.isFile() && entry.name.endsWith('.md') ? [target] : [];
+	});
+}
+
+function validateCanonicalCiInvocation(root) {
+	const errors = [];
+	const files = [
+		...['AGENTS.md', 'README.md']
+			.map((file) => path.join(root, file))
+			.filter((file) => existsSync(file)),
+		...['.agent/rules', '.agent/workflows', '.agent/skills', 'docs/core', 'docs/domains'].flatMap(
+			(directory) => listMarkdownFilesRecursively(path.join(root, directory)),
+		),
+	];
+	for (const file of files) {
+		if (/\bpnpm ci\b(?!:)/u.test(readFileSync(file, 'utf8'))) {
+			errors.push(
+				`${normalizePath(path.relative(root, file))}: use "pnpm run ci"; bare "pnpm ci" invokes pnpm's install command.`,
+			);
+		}
+	}
+	return errors;
+}
+
 export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	const skills = validateSkills(root);
 	return [
@@ -329,6 +358,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...validateRoles(root, skills.skillNames),
 		...validateIndex(root, skills.skillNames),
 		...validateActivePlans(root),
+		...validateCanonicalCiInvocation(root),
 		...validateTrackedFiles(root, trackedFiles ?? getTrackedFiles(root)),
 	].sort();
 }
