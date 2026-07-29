@@ -79,8 +79,9 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 									aria-label="Contraseña temporal"
 								/>
 								<p className="dashboard-form-help">
-									Esta contraseña no se volverá a mostrar después de cerrar este
-									modal.
+									Formato corto y fácil de dictar (ej. Luna-4827!). No se volverá a
+									mostrar después de cerrar este modal; el cliente deberá crear su
+									propia contraseña al iniciar sesión.
 								</p>
 							</div>
 							<div className="dashboard-modal__actions dashboard-modal__actions--full">

@@ -44,16 +44,15 @@ describe('rsvp user admin service', () => {
 		jest.clearAllMocks();
 	});
 
-	it('generates secure temporary passwords with required entropy and character classes', () => {
+	it('generates short memorable temporary passwords with secure randomness', () => {
 		const pwd1 = generateTemporaryPassword();
 		const pwd2 = generateTemporaryPassword();
-		expect(pwd1.length).toBeGreaterThanOrEqual(16);
-		expect(pwd2.length).toBeGreaterThanOrEqual(16);
+		const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
+		expect(pwd1).toMatch(pattern);
+		expect(pwd2).toMatch(pattern);
 		expect(pwd1).not.toBe(pwd2);
-		expect(pwd1).toMatch(/[A-Z]/);
-		expect(pwd1).toMatch(/[a-z]/);
-		expect(pwd1).toMatch(/[0-9]/);
-		expect(pwd1).toMatch(/[!@#$%^&*()_+-=]/);
+		expect(pwd1.length).toBeLessThanOrEqual(16);
+		expect(pwd1).not.toMatch(/[áéíóúñü]/i);
 	});
 
 	it('creates a new admin-managed user without persisting the password', async () => {

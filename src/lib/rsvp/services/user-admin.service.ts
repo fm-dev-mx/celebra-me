@@ -110,38 +110,123 @@ export async function changeUserRoleAdmin(input: {
 	};
 }
 
+/** Short Spanish words (no accents) for memorable temporary passwords. */
+const TEMP_PASSWORD_WORDS = [
+	'agua',
+	'alma',
+	'alto',
+	'amigo',
+	'angel',
+	'arbol',
+	'arena',
+	'azul',
+	'barco',
+	'bello',
+	'bosque',
+	'brisa',
+	'bueno',
+	'campo',
+	'canto',
+	'casa',
+	'cielo',
+	'claro',
+	'coral',
+	'costa',
+	'cueva',
+	'danza',
+	'dulce',
+	'eco',
+	'estrella',
+	'faro',
+	'fiesta',
+	'flor',
+	'foco',
+	'fuente',
+	'gala',
+	'girasol',
+	'golpe',
+	'grano',
+	'guarda',
+	'guia',
+	'hoja',
+	'isla',
+	'jardin',
+	'joya',
+	'lago',
+	'lazo',
+	'leon',
+	'libro',
+	'lima',
+	'lince',
+	'linea',
+	'liso',
+	'luna',
+	'luz',
+	'mango',
+	'mar',
+	'marco',
+	'mesa',
+	'meta',
+	'miel',
+	'mirada',
+	'montana',
+	'motor',
+	'mundo',
+	'nieve',
+	'nube',
+	'oasis',
+	'ola',
+	'oro',
+	'pajaro',
+	'palo',
+	'papel',
+	'pared',
+	'paso',
+	'paz',
+	'perla',
+	'piano',
+	'piedra',
+	'plaza',
+	'pluma',
+	'puerta',
+	'punto',
+	'rama',
+	'rayo',
+	'rio',
+	'roca',
+	'rosa',
+	'sal',
+	'silla',
+	'sol',
+	'sombra',
+	'suenos',
+	'taza',
+	'techo',
+	'tempo',
+	'tierra',
+	'tigre',
+	'trigo',
+	'valle',
+	'viento',
+	'villa',
+	'vino',
+	'vista',
+	'voz',
+] as const;
+
+/** Easy-to-locate keyboard symbols for temporary passwords. */
+const TEMP_PASSWORD_SYMBOLS = ['!', '@', '#', '$', '%', '*'] as const;
+
+/**
+ * Generates a short, memorable temporary password using CSPRNG.
+ * Format: Word-####! (easy to dictate; change required on first login).
+ */
 export function generateTemporaryPassword(): string {
-	const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-	const lowercase = 'abcdefghijkmnopqrstuvwxyz';
-	const digits = '23456789';
-	const symbols = '!@#$%^&*()_+-=';
-
-	const getChar = (chars: string) => chars[randomInt(0, chars.length)];
-
-	const required = [
-		getChar(uppercase),
-		getChar(uppercase),
-		getChar(lowercase),
-		getChar(lowercase),
-		getChar(digits),
-		getChar(digits),
-		getChar(symbols),
-		getChar(symbols),
-	];
-
-	const allChars = uppercase + lowercase + digits + symbols;
-	for (let i = 0; i < 8; i += 1) {
-		required.push(getChar(allChars));
-	}
-
-	for (let i = required.length - 1; i > 0; i -= 1) {
-		const j = randomInt(0, i + 1);
-		const temp = required[i];
-		required[i] = required[j];
-		required[j] = temp;
-	}
-
-	return required.join('');
+	const raw = TEMP_PASSWORD_WORDS[randomInt(0, TEMP_PASSWORD_WORDS.length)];
+	const word = raw.charAt(0).toUpperCase() + raw.slice(1);
+	const digits = String(randomInt(0, 10_000)).padStart(4, '0');
+	const symbol = TEMP_PASSWORD_SYMBOLS[randomInt(0, TEMP_PASSWORD_SYMBOLS.length)];
+	return `${word}-${digits}${symbol}`;
 }
 
 function generateManagedLoginAlias(): string {
@@ -304,7 +389,6 @@ export async function resetUserPasswordAdmin(input: {
 		},
 	};
 }
-
 
 export async function updateUserEventMembershipAdmin(input: {
 	userId: string;
